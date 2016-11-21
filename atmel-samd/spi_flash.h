@@ -48,6 +48,8 @@ bool spi_flash_write_block(const uint8_t *src, uint32_t block);
 mp_uint_t spi_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t spi_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
+void mark_flash_cache_for_gc(void);
+
 extern const struct _mp_obj_type_t spi_flash_type;
 
 struct _fs_user_mount_t;

@@ -8,3 +8,4 @@ the Atmel SAMD21 port
     :maxdepth: 2
 
     ../atmel-samd/README
+    esp8266/index.rst

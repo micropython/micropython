@@ -28,14 +28,10 @@
 #include <assert.h>
 
 #include "py/nlr.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_PROPERTY
-
-typedef struct _mp_obj_property_t {
-    mp_obj_base_t base;
-    mp_obj_t proxy[3]; // getter, setter, deleter
-} mp_obj_property_t;
 
 STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     enum { ARG_fget, ARG_fset, ARG_fdel, ARG_doc };

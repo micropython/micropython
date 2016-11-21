@@ -41,6 +41,7 @@ struct _nlr_buf_t {
     nlr_buf_t *prev;
     void *ret_val; // always a concrete object (an exception instance)
 #if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
+#define MICROPY_NLR_SETJMP (0)
 #if defined(__i386__)
     void *regs[6];
 #elif defined(__x86_64__)

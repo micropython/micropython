@@ -8,7 +8,7 @@
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PB03
 
-#define MICROPY_HW_NEOPIXEL PIN_PA30
+#define MICROPY_HW_NEOPIXEL &pin_PA30
 
 #define SPI_FLASH_BAUDRATE  (1000000)
 
@@ -33,3 +33,5 @@
 #define SPI_FLASH_SERCOM      SERCOM4
 
 #define AUTORESET_DELAY_MS 500
+
+#define FLASH_INCLUDE "spi_flash.h"

@@ -19,3 +19,5 @@
 #define SPI_FLASH_SERCOM      SERCOM4
 
 #define AUTORESET_DELAY_MS 500
+
+#define FLASH_INCLUDE "spi_flash.h"

@@ -110,7 +110,10 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         // this should not be applied to class types, as will result in extra
         // lookup either.
         if (lookup->meth_offset != 0 && mp_obj_is_native_type(type)) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
             if (*(void**)((char*)type + lookup->meth_offset) != NULL) {
+#pragma GCC diagnostic pop
                 DEBUG_printf("mp_obj_class_lookup: matched special meth slot for %s\n", qstr_str(lookup->attr));
                 lookup->dest[0] = MP_OBJ_SENTINEL;
                 return;
@@ -368,7 +371,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
             if (member[0] == MP_OBJ_NULL) {
                 // https://docs.python.org/3/reference/datamodel.html#object.__hash__
                 // "User-defined classes have __eq__() and __hash__() methods by default;
-                // with them, all objects compare unequal (except with themselves) and 
+                // with them, all objects compare unequal (except with themselves) and
                 // x.__hash__() returns an appropriate value such that x == y implies
                 // both that x is y and hash(x) == hash(y)."
                 return MP_OBJ_NEW_SMALL_INT((mp_uint_t)self_in);

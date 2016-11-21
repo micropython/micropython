@@ -11,6 +11,7 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/smallint.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "mpconfigboard.h"
 #include "mphalport.h"
@@ -126,7 +127,7 @@ void usb_rx_notify(void)
     }
 }
 
-int receive_usb() {
+int receive_usb(void) {
     if (usb_rx_count == 0) {
         return 0;
     }
@@ -197,8 +198,8 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // string. If there isn't we risk getting caught in a loop within the usb
     // code as it tries to send all the characters it can't buffer.
     uint32_t start = 0;
-    uint32_t start_tick = mp_hal_ticks_ms();
-    uint32_t duration = 0;
+    uint64_t start_tick = common_hal_time_monotonic();
+    uint64_t duration = 0;
     if (mp_cdc_enabled) {
         while (start < len && duration < 10) {
             uint8_t buffer_space = udi_cdc_get_free_tx_buffer();
@@ -213,17 +214,17 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
             if (mp_msc_enabled) {
                 udi_msc_process_trans();
             }
-            duration = (mp_hal_ticks_ms() - start_tick) & MP_SMALL_INT_POSITIVE_MASK;
+            duration = (common_hal_time_monotonic() - start_tick);
         }
     }
     #endif
 }
 
+extern int interrupt_char;
 void mp_hal_set_interrupt_char(int c) {
     if (c != -1) {
         mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
     }
-    extern int interrupt_char;
     interrupt_char = c;
 }
 
@@ -232,15 +233,15 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     // storage transactions in the meantime.
     // TODO(tannewt): Break out of this delay on KeyboardInterrupt too.
     if (mp_msc_enabled) {
-        uint32_t start_tick = mp_hal_ticks_ms();
-        uint32_t duration = 0;
+        uint64_t start_tick = common_hal_time_monotonic();
+        uint64_t duration = 0;
         while (duration < delay) {
             udi_msc_process_trans();
             // Check to see if we've been CTRL-Ced by autoreset or the user.
             if(MP_STATE_VM(mp_pending_exception) == MP_STATE_PORT(mp_kbd_exception)) {
                 break;
             }
-            duration = (mp_hal_ticks_ms() - start_tick) & MP_SMALL_INT_POSITIVE_MASK;
+            duration = (common_hal_time_monotonic() - start_tick);
         }
     } else {
         delay_ms(delay);

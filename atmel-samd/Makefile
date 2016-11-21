@@ -31,7 +31,6 @@ INC += -I.
 INC += -I..
 INC += -I../lib/mp-readline
 INC += -I../lib/timeutils
-INC += -Icommon-hal/modules/
 INC += -Iasf_conf/
 INC += -Iasf/common/boards/
 INC += -Iasf/common/services/sleepmgr/
@@ -79,7 +78,23 @@ CFLAGS_CORTEX_M0 = \
 	-msoft-float \
 	-mfloat-abi=soft \
 	-fsingle-precision-constant \
+	-fno-strict-aliasing \
 	-Wdouble-promotion \
+	-Wno-endif-labels \
+	-Wstrict-prototypes \
+	-Werror-implicit-function-declaration \
+	-Wpointer-arith \
+	-Wfloat-equal \
+	-Wundef \
+	-Wshadow \
+	-Wwrite-strings \
+	-Wsign-compare \
+	-Wmissing-format-attribute \
+	-Wno-deprecated-declarations \
+	-Wpacked \
+	-Wnested-externs \
+	-Wunreachable-code \
+	-Wcast-align \
 	-D__SAMD21G18A__ \
 	-DUSB_DEVICE_PRODUCT_ID=$(USB_PID) \
 	-DUSB_DEVICE_VENDOR_ID=$(USB_VID) \
@@ -92,9 +107,15 @@ CFLAGS_CORTEX_M0 = \
 	-DEXTINT_CALLBACK_MODE=true \
 	-DUDD_ENABLE \
 	-DUSART_CALLBACK_MODE=true \
+	-DSPI_CALLBACK_MODE=false \
+	-DI2C_MASTER_CALLBACK_MODE=false \
+	-DDAC_CALLBACK_MODE=false \
+	-DTCC_ASYNC=false \
+	-DADC_CALLBACK_MODE=false \
 	-DTC_ASYNC=true \
-	-DUSB_DEVICE_LPM_SUPPORT
-CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
+	-DUSB_DEVICE_LPM_SUPPORT \
+	--param max-inline-insns-single=500
+CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 
 #Debugging/Optimization
 # TODO(tannewt): Figure out what NDEBUG does. Adding it to the debug build
@@ -154,17 +175,10 @@ SRC_C = \
 	builtin_open.c \
 	fatfs_port.c \
 	main.c \
-	modmachine.c \
-	modmachine_adc.c \
-	modmachine_dac.c \
-	modmachine_pin.c \
-	modmachine_pwm.c \
-	modneopixel_write.c \
 	moduos.c \
-	modutime.c \
 	mphalport.c \
-	pin_named_pins.c \
-	samdneopixel.c \
+	samd21_pins.c \
+	neopixel_status.c \
 	tick.c \
 	$(FLASH_IMPL) \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \
@@ -178,7 +192,6 @@ SRC_C = \
 	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
 	asf/sam0/utils/cmsis/samd21/source/system_samd21.c \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
-	boards/samd21_pins.c \
 	boards/$(BOARD)/init.c \
 	boards/$(BOARD)/pins.c \
 	lib/fatfs/ff.c \
@@ -194,12 +207,19 @@ STM_SRC_C = $(addprefix stmhal/,\
 	input.c \
 	)
 
-# TODO(tannewt): Use this sed line to extract the RST docs from these sources:
-#   sed': sed -n 's+^//|++p' ../api/machine.c
-#
-# RST lines are prefixed with //|
 SRC_BINDINGS = \
-	modules/machine.c
+	board/__init__.c \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
+	nativeio/__init__.c \
+	nativeio/AnalogIn.c \
+	nativeio/AnalogOut.c \
+	nativeio/DigitalInOut.c \
+	nativeio/I2C.c \
+	nativeio/PWMOut.c \
+	nativeio/SPI.c \
+	neopixel_write/__init__.c \
+	time/__init__.c
 
 SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
                         $(addprefix common-hal/, $(SRC_BINDINGS))

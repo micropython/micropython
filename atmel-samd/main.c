@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "py/nlr.h"
@@ -24,9 +23,9 @@
 
 #include "autoreset.h"
 #include "mpconfigboard.h"
-#include "modmachine_pin.h"
-#include "samdneopixel.h"
+#include "neopixel_status.h"
 #include "tick.h"
+#include FLASH_INCLUDE
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -82,7 +81,7 @@ extern void flash_init_vfs(fs_user_mount_t *vfs);
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
-void init_flash_fs() {
+void init_flash_fs(void) {
     // init the vfs object
     fs_user_mount_t *vfs = &fs_user_mount_flash;
     vfs->str = "/flash";
@@ -148,9 +147,7 @@ void init_flash_fs() {
         } else {
             // doesn't exist, create fresh file
 
-            FIL fp;
             f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
-            UINT n;
             f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
             // TODO check we could write n bytes
             f_close(&fp);
@@ -174,7 +171,7 @@ void init_flash_fs() {
 static char *stack_top;
 static char heap[16384];
 
-void reset_mp() {
+void reset_mp(void) {
     new_status_color(0x8f, 0x00, 0x8f);
     autoreset_stop();
     autoreset_enable();
@@ -196,11 +193,9 @@ void reset_mp() {
     mp_obj_list_init(mp_sys_argv, 0);
 
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-
-    pin_init0();
 }
 
-void reset_samd21() {
+void reset_samd21(void) {
     // Reset all SERCOMs except the one being used by the SPI flash.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
     for (int i = 0; i < SERCOM_INST_NUM; i++) {
@@ -215,7 +210,7 @@ void reset_samd21() {
     // TODO(tannewt): Reset all of the pins too.
 }
 
-void start_mp() {
+void start_mp(void) {
     #ifdef AUTORESET_DELAY_MS
         mp_hal_stdout_tx_str("\r\n");
         mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
@@ -233,109 +228,6 @@ void start_mp() {
     mp_hal_stdout_tx_str("\r\nmain.py output:\r\n");
     pyexec_file("main.py");
 }
-
-int main(int argc, char **argv) {
-    // initialise the cpu and peripherals
-    #if MICROPY_MIN_USE_SAMD21_MCU
-    void samd21_init(void);
-    samd21_init();
-    #endif
-
-
-    int stack_dummy;
-    // Store the location of stack_dummy as an approximation for the top of the
-    // stack so the GC can account for objects that may be referenced by the
-    // stack between here and where gc_collect is called.
-    stack_top = (char*)&stack_dummy;
-    reset_mp();
-
-    // Initialise the local flash filesystem after the gc in case we need to
-    // grab memory from it. Create it if needed, mount in on /flash, and set it
-    // as current dir.
-    init_flash_fs();
-
-    // Start USB after getting everything going.
-    #ifdef USB_REPL
-        udc_start();
-    #endif
-
-    // Run boot and main.
-    start_mp();
-
-    // Main script is finished, so now go into REPL mode.
-    // The REPL mode can change, or it can request a soft reset.
-    int exit_code = 0;
-    for (;;) {
-        new_status_color(0x3f, 0x3f, 0x3f);
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            exit_code = pyexec_raw_repl();
-        } else {
-            exit_code = pyexec_friendly_repl();
-        }
-        if (exit_code == PYEXEC_FORCED_EXIT) {
-            mp_hal_stdout_tx_str("soft reboot\r\n");
-            reset_samd21();
-            reset_mp();
-            start_mp();
-        } else if (exit_code != 0) {
-            break;
-        }
-    }
-    mp_deinit();
-    return 0;
-}
-
-void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    void *dummy;
-    gc_collect_start();
-    // This naively collects all object references from an approximate stack
-    // range.
-    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
-    gc_collect_end();
-    gc_dump_info();
-}
-
-mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    #if MICROPY_VFS_FAT
-    return fat_vfs_lexer_new_from_file(filename);
-    #else
-    (void)filename;
-    return NULL;
-    #endif
-}
-
-mp_import_stat_t fat_vfs_import_stat(const char *path);
-mp_import_stat_t mp_import_stat(const char *path) {
-    #if MICROPY_VFS_FAT
-    return fat_vfs_import_stat(path);
-    #else
-    (void)path;
-    return MP_IMPORT_STAT_NO_EXIST;
-    #endif
-}
-
-void mp_keyboard_interrupt(void) {
-    MP_STATE_VM(mp_pending_exception) = MP_STATE_PORT(mp_kbd_exception);
-}
-
-void nlr_jump_fail(void *val) {
-}
-
-void NORETURN __fatal_error(const char *msg) {
-    while (1);
-}
-
-#ifndef NDEBUG
-void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
-    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    __fatal_error("Assertion failed");
-}
-#endif
-
-#if MICROPY_MIN_USE_SAMD21_MCU
 
 #ifdef UART_REPL
 struct usart_module usart_instance;
@@ -399,15 +291,103 @@ void samd21_init(void) {
     // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
     // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
+    neopixel_status_init();
+}
 
-    #ifdef MICROPY_HW_NEOPIXEL
-        struct port_config pin_conf;
-        port_get_config_defaults(&pin_conf);
+int main(int argc, char **argv) {
+    // initialise the cpu and peripherals
+    samd21_init();
 
-        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-        port_pin_set_config(MICROPY_HW_NEOPIXEL, &pin_conf);
-        port_pin_set_output_level(MICROPY_HW_NEOPIXEL, false);
+    int stack_dummy;
+    // Store the location of stack_dummy as an approximation for the top of the
+    // stack so the GC can account for objects that may be referenced by the
+    // stack between here and where gc_collect is called.
+    stack_top = (char*)&stack_dummy;
+    reset_mp();
+
+    // Initialise the local flash filesystem after the gc in case we need to
+    // grab memory from it. Create it if needed, mount in on /flash, and set it
+    // as current dir.
+    init_flash_fs();
+
+    // Start USB after getting everything going.
+    #ifdef USB_REPL
+        udc_start();
+    #endif
+
+    // Run boot and main.
+    start_mp();
+
+    // Main script is finished, so now go into REPL mode.
+    // The REPL mode can change, or it can request a soft reset.
+    int exit_code = 0;
+    for (;;) {
+        new_status_color(0x3f, 0x3f, 0x3f);
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            exit_code = pyexec_raw_repl();
+        } else {
+            exit_code = pyexec_friendly_repl();
+        }
+        if (exit_code == PYEXEC_FORCED_EXIT) {
+            mp_hal_stdout_tx_str("soft reboot\r\n");
+            reset_samd21();
+            reset_mp();
+            start_mp();
+        } else if (exit_code != 0) {
+            break;
+        }
+    }
+    mp_deinit();
+    return 0;
+}
+
+void gc_collect(void) {
+    // WARNING: This gc_collect implementation doesn't try to get root
+    // pointers from CPU registers, and thus may function incorrectly.
+    void *dummy;
+    gc_collect_start();
+    // This naively collects all object references from an approximate stack
+    // range.
+    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    mark_flash_cache_for_gc();
+    gc_collect_end();
+    gc_dump_info();
+}
+
+mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
+mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    #if MICROPY_VFS_FAT
+    return fat_vfs_lexer_new_from_file(filename);
+    #else
+    (void)filename;
+    return NULL;
     #endif
 }
 
+mp_import_stat_t fat_vfs_import_stat(const char *path);
+mp_import_stat_t mp_import_stat(const char *path) {
+    #if MICROPY_VFS_FAT
+    return fat_vfs_import_stat(path);
+    #else
+    (void)path;
+    return MP_IMPORT_STAT_NO_EXIST;
+    #endif
+}
+
+void mp_keyboard_interrupt(void) {
+    MP_STATE_VM(mp_pending_exception) = MP_STATE_PORT(mp_kbd_exception);
+}
+
+void nlr_jump_fail(void *val) {
+}
+
+void NORETURN __fatal_error(const char *msg) {
+    while (1);
+}
+
+#ifndef NDEBUG
+void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
+    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    __fatal_error("Assertion failed");
+}
 #endif

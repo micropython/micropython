@@ -34,7 +34,7 @@
 #include "py/objarray.h"
 #include "py/stream.h"
 
-#if MICROPY_PY_OS_DUPTERM
+#ifdef MICROPY_PY_OS_DUPTERM
 
 void mp_uos_deactivate(const char *msg, mp_obj_t exc) {
     mp_obj_t term = MP_STATE_PORT(term_obj);

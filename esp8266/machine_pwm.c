@@ -40,7 +40,7 @@ typedef struct _pyb_pwm_obj_t {
     uint8_t channel;
 } pyb_pwm_obj_t;
 
-STATIC bool pwm_inited = false;
+bool pwm_inited = false;
 
 /******************************************************************************/
 // MicroPython bindings for PWM

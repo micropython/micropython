@@ -39,6 +39,9 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 typedef struct _mp_obj_complex_t {
     mp_obj_base_t base;
     mp_float_t real;
@@ -247,5 +250,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
     }
     return mp_obj_new_complex(lhs_real, lhs_imag);
 }
+
+#pragma GCC diagnostic pop
 
 #endif
