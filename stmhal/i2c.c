@@ -340,6 +340,8 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
             return;
     }
 
+    #if defined(MCU_SERIES_F4)
+
     if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
         if (hi2c->XferCount != 0U) {
             hi2c->Instance->DR = *hi2c->pBuffPtr++;
@@ -353,6 +355,13 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
             hi2c->State = HAL_I2C_STATE_READY;
         }
     }
+
+    #else
+
+    // if not an F4 MCU, use the HAL's IRQ handler
+    HAL_I2C_EV_IRQHandler(hi2c);
+
+    #endif
 }
 
 void i2c_er_irq_handler(mp_uint_t i2c_id) {
@@ -377,6 +386,8 @@ void i2c_er_irq_handler(mp_uint_t i2c_id) {
         default:
             return;
     }
+
+    #if defined(MCU_SERIES_F4)
 
     uint32_t sr1 = hi2c->Instance->SR1;
 
@@ -404,6 +415,13 @@ void i2c_er_irq_handler(mp_uint_t i2c_id) {
         hi2c->ErrorCode |= HAL_I2C_ERROR_OVR;
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_OVR);
     }
+
+    #else
+
+    // if not an F4 MCU, use the HAL's IRQ handler
+    HAL_I2C_ER_IRQHandler(hi2c);
+
+    #endif
 }
 
 STATIC HAL_StatusTypeDef i2c_wait_dma_finished(I2C_HandleTypeDef *i2c, uint32_t timeout) {
