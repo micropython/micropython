@@ -1,6 +1,7 @@
 # check that we can do certain things without allocating heap memory
 
 import micropython
+import sys
 
 def f1(a):
     print(a)
@@ -17,8 +18,15 @@ def f3(a, b, c, d):
 
 global_var = 1
 
+# preallocate exception instance with some room for a traceback
+global_exc = StopIteration()
+try:
+    raise global_exc
+except:
+    pass
+
 def test():
-    global global_var
+    global global_var, global_exc
     global_var = 2      # set an existing global variable
     for i in range(2):  # for loop
         f1(i)           # function call
@@ -27,6 +35,13 @@ def test():
         f2(i)           # default arg (second one)
         f2(i, i)        # 2 args
     f3(1, 2, 3, 4)  # function with lots of local state
+
+    # test that we can generate a traceback without allocating
+    global_exc.__traceback__ = None
+    try:
+        raise global_exc
+    except StopIteration as e:
+        sys.print_exception(e)
 
 # call test() with heap allocation disabled
 micropython.heap_lock()
