@@ -339,6 +339,29 @@ g_pfnVectors:
 
 /*******************************************************************************
 *
+* Create a landing "function" that is used by pydfu.py.
+*
+* The DFU documentation takes the address + 4 and loads the contents of that
+* memory into the PC. There is a note, which says:
+*
+*   "If the address pointer points to an address that does not contain
+*    executable code, then the device is reset and, depending on the
+*    state of the boot pins, may re-enter the bootloader mode."
+*
+* that reset seems to be the thing that "fixes" the WDT and allows it to be
+* used without having to press the reset button.
+*
+* See: https://github.com/micropython/micropython/issues/2635 for more
+* discussion of this issue.
+*
+*******************************************************************************/
+
+  .align 9  /* The vector table is less than 0x200 bytes, so this will align to 0x08000200 */
+  .word 0xffffffff      /* SP (not used) */
+  .word 0xffffffff      /* PC */
+
+/*******************************************************************************
+*
 * Provide weak aliases for each Exception handler to the Default_Handler.
 * As they are weak aliases, any function with the same name will override
 * this definition.

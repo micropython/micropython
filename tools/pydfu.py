@@ -220,7 +220,7 @@ def exit_dfu():
     """Exit DFU mode, and start running the program."""
 
     # set jump address
-    set_address(0x08000000)
+    set_address(0x08000200)
 
     # Send DNLOAD with 0 length to exit DFU
     __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 0, __DFU_INTERFACE,
