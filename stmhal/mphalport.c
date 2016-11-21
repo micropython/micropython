@@ -104,11 +104,11 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     } else if (gpio == GPIOE) {
         __GPIOE_CLK_ENABLE();
     #endif
-    #ifdef __GPIOF_CLK_ENABLE
+    #if defined(GPIOF) && defined(__GPIOF_CLK_ENABLE)
     } else if (gpio == GPIOF) {
         __GPIOF_CLK_ENABLE();
     #endif
-    #ifdef __GPIOG_CLK_ENABLE
+    #if defined(GPIOG) && defined(__GPIOG_CLK_ENABLE)
     } else if (gpio == GPIOG) {
         __GPIOG_CLK_ENABLE();
     #endif
