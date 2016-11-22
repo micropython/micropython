@@ -95,7 +95,7 @@ CFLAGS_CORTEX_M0 = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-D__SAMD21G18A__ \
+	-D__$(CHIP_VARIANT)__ \
 	-DUSB_DEVICE_PRODUCT_ID=$(USB_PID) \
 	-DUSB_DEVICE_VENDOR_ID=$(USB_VID) \
 	-DBOARD=USER_BOARD \
