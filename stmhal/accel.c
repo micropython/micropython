@@ -69,7 +69,7 @@ STATIC void accel_start(void) {
     I2CHandle1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
     I2CHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
     I2CHandle1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLED;
+    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
     I2CHandle1.Init.OwnAddress1     = PYB_I2C_MASTER_ADDRESS;
     I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
     i2c_init(&I2CHandle1);

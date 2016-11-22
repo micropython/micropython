@@ -45,14 +45,6 @@
 #define MICROPY_HW_I2C_BAUDRATE_MAX 400000
 #endif
 
-#if !defined(I2C_NOSTRETCH_DISABLE)
-// Assumes that the F7 firmware is newer, so the F4 firmware will eventually
-// catchup. I2C_NOSTRETCH_DISABLED was renamed to I2C_NOSTRETCH_DISABLE
-// in the F7 so we use the F7 constant and provide a backwards compatabilty
-// #define here.
-#define I2C_NOSTRETCH_DISABLE I2C_NOSTRETCH_DISABLED
-#endif
-
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
 ///
@@ -503,7 +495,6 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, mp_uint_t n_args,
     init->AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
     init->DualAddressMode = I2C_DUALADDRESS_DISABLED;
     init->GeneralCallMode = args[3].u_bool ? I2C_GENERALCALL_ENABLED : I2C_GENERALCALL_DISABLED;
-    init->NoStretchMode   = I2C_NOSTRETCH_DISABLED;
     init->OwnAddress2     = 0; // unused
     init->NoStretchMode   = I2C_NOSTRETCH_DISABLE;
 
