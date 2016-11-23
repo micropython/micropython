@@ -387,7 +387,8 @@ STATIC mp_obj_t machine_i2c_write(mp_obj_t self_in, mp_obj_t buf_in) {
         mp_raise_OSError(-ret);
     }
 
-    return mp_const_none;
+    // return number of acks received
+    return MP_OBJ_NEW_SMALL_INT(ret);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_write_obj, machine_i2c_write);
 
@@ -426,7 +427,8 @@ STATIC mp_obj_t machine_i2c_writeto(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
-    return mp_const_none;
+    // return number of acks received
+    return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_writeto_obj, machine_i2c_writeto);
 
