@@ -34,7 +34,7 @@
 typedef struct _mp_machine_i2c_p_t {
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);
-    int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len);
+    int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
     int (*write)(mp_obj_base_t *obj, const uint8_t *src, size_t len);
     int (*readfrom)(mp_obj_base_t *obj, uint16_t addr, uint8_t *dest, size_t len, bool stop);
     int (*writeto)(mp_obj_base_t *obj, uint16_t addr, const uint8_t *src, size_t len, bool stop);

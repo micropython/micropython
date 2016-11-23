@@ -346,8 +346,8 @@ STATIC mp_obj_t machine_i2c_stop(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_stop_obj, machine_i2c_stop);
 
-STATIC mp_obj_t machine_i2c_readinto(mp_obj_t self_in, mp_obj_t buf_in) {
-    mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t machine_i2c_readinto(size_t n_args, const mp_obj_t *args) {
+    mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
     if (i2c_p->read == NULL) {
         mp_raise_msg(&mp_type_OSError, "I2C operation not supported");
@@ -355,17 +355,20 @@ STATIC mp_obj_t machine_i2c_readinto(mp_obj_t self_in, mp_obj_t buf_in) {
 
     // get the buffer to read into
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+
+    // work out if we want to send a nack at the end
+    bool nack = (n_args == 2) ? true : mp_obj_is_true(args[2]);
 
     // do the read
-    int ret = i2c_p->read(self, bufinfo.buf, bufinfo.len);
+    int ret = i2c_p->read(self, bufinfo.buf, bufinfo.len, nack);
     if (ret != 0) {
         mp_raise_OSError(-ret);
     }
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_readinto_obj, machine_i2c_readinto);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_readinto_obj, 2, 3, machine_i2c_readinto);
 
 STATIC mp_obj_t machine_i2c_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
@@ -579,10 +582,10 @@ int mp_machine_soft_i2c_stop(mp_obj_base_t *self_in) {
     return mp_hal_i2c_stop(self);
 }
 
-int mp_machine_soft_i2c_read(mp_obj_base_t *self_in, uint8_t *dest, size_t len) {
+int mp_machine_soft_i2c_read(mp_obj_base_t *self_in, uint8_t *dest, size_t len, bool nack) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
     while (len--) {
-        int ret = mp_hal_i2c_read_byte(self, dest++, len == 0);
+        int ret = mp_hal_i2c_read_byte(self, dest++, nack && (len == 0));
         if (ret != 0) {
             return ret;
         }
