@@ -62,7 +62,10 @@ STATIC int mp_hal_i2c_scl_release(machine_i2c_obj_t *self) {
     for (; mp_hal_pin_read(self->scl) == 0 && count; --count) {
         mp_hal_delay_us_fast(1);
     }
-    return count != 0;
+    if (count == 0) {
+        return -MP_ETIMEDOUT;
+    }
+    return 0; // success
 }
 
 STATIC void mp_hal_i2c_sda_low(machine_i2c_obj_t *self) {
@@ -81,9 +84,12 @@ STATIC int mp_hal_i2c_start(machine_i2c_obj_t *self) {
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
     int ret = mp_hal_i2c_scl_release(self);
+    if (ret != 0) {
+        return ret;
+    }
     mp_hal_i2c_sda_low(self);
     mp_hal_i2c_delay(self);
-    return ret;
+    return 0; // success
 }
 
 STATIC int mp_hal_i2c_stop(machine_i2c_obj_t *self) {
@@ -106,6 +112,10 @@ STATIC void mp_hal_i2c_init(machine_i2c_obj_t *self, uint32_t freq) {
     mp_hal_i2c_stop(self); // ignore error
 }
 
+// return value:
+//    0 - byte written and ack received
+//    1 - byte written and nack received
+//   <0 - error, with errno being the negative of the return value
 STATIC int mp_hal_i2c_write_byte(machine_i2c_obj_t *self, uint8_t val) {
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_low(self);
@@ -117,26 +127,31 @@ STATIC int mp_hal_i2c_write_byte(machine_i2c_obj_t *self, uint8_t val) {
             mp_hal_i2c_sda_low(self);
         }
         mp_hal_i2c_delay(self);
-        if (!mp_hal_i2c_scl_release(self)) {
+        int ret = mp_hal_i2c_scl_release(self);
+        if (ret != 0) {
             mp_hal_i2c_sda_release(self);
-            return 0; // failure
+            return ret;
         }
         mp_hal_i2c_scl_low(self);
     }
 
     mp_hal_i2c_sda_release(self);
     mp_hal_i2c_delay(self);
-    if (!mp_hal_i2c_scl_release(self)) {
-        return 0; // failure
+    int ret = mp_hal_i2c_scl_release(self);
+    if (ret != 0) {
+        return ret;
     }
 
-    int ret = mp_hal_i2c_sda_read(self);
+    int ack = mp_hal_i2c_sda_read(self);
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_low(self);
 
-    return !ret;
+    return ack;
 }
 
+// return value:
+//    0 - success
+//   <0 - error, with errno being the negative of the return value
 STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack) {
     mp_hal_i2c_delay(self);
     mp_hal_i2c_scl_low(self);
@@ -144,8 +159,9 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
 
     uint8_t data = 0;
     for (int i = 7; i >= 0; i--) {
-        if (!mp_hal_i2c_scl_release(self)) {
-            return 0;
+        int ret = mp_hal_i2c_scl_release(self);
+        if (ret != 0) {
+            return ret;
         }
         data = (data << 1) | mp_hal_i2c_sda_read(self);
         mp_hal_i2c_scl_low(self);
@@ -158,67 +174,98 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
         mp_hal_i2c_sda_low(self);
     }
     mp_hal_i2c_delay(self);
-    if (!mp_hal_i2c_scl_release(self)) {
+    int ret = mp_hal_i2c_scl_release(self);
+    if (ret != 0) {
         mp_hal_i2c_sda_release(self);
-        return 0; // failure
+        return ret;
     }
     mp_hal_i2c_scl_low(self);
     mp_hal_i2c_sda_release(self);
 
-    return 1; // success
+    return 0; // success
 }
 
-STATIC void mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, const uint8_t *src, size_t len, bool stop) {
+// return value:
+//  >=0 - number of acks received
+//   <0 - error, with errno being the negative of the return value
+STATIC int mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, const uint8_t *src, size_t len, bool stop) {
     // start the I2C transaction
-    if (!mp_hal_i2c_start(self)) {
-        goto er;
+    int ret = mp_hal_i2c_start(self);
+    if (ret != 0) {
+        return ret;
     }
 
     // write the slave address
-    if (!mp_hal_i2c_write_byte(self, addr << 1)) {
-        goto er;
+    ret = mp_hal_i2c_write_byte(self, addr << 1);
+    if (ret < 0) {
+        return ret;
+    } else if (ret != 0) {
+        // nack received, release the bus cleanly
+        mp_hal_i2c_stop(self);
+        return -MP_ENODEV;
     }
 
     // write the buffer to the I2C memory
+    int num_acks = 0;
     while (len--) {
-        if (!mp_hal_i2c_write_byte(self, *src++)) {
-            goto er;
+        ret = mp_hal_i2c_write_byte(self, *src++);
+        if (ret < 0) {
+            return ret;
+        } else if (ret != 0) {
+            // nack received, stop sending
+            break;
+        }
+        ++num_acks;
+    }
+
+    // finish the I2C transaction
+    if (stop) {
+        ret = mp_hal_i2c_stop(self);
+        if (ret != 0) {
+            return ret;
+        }
+    }
+
+    return num_acks;
+}
+
+// return value:
+//    0 - success
+//   <0 - error, with errno being the negative of the return value
+STATIC int mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dest, size_t len, bool stop) {
+    // start the I2C transaction
+    int ret = mp_hal_i2c_start(self);
+    if (ret != 0) {
+        return ret;
+    }
+
+    // write the slave address
+    ret = mp_hal_i2c_write_byte(self, (addr << 1) | 1);
+    if (ret < 0) {
+        return ret;
+    } else if (ret != 0) {
+        // nack received, release the bus cleanly
+        mp_hal_i2c_stop(self);
+        return -MP_ENODEV;
+    }
+
+    // read the bytes from the slave
+    while (len--) {
+        ret = mp_hal_i2c_read_byte(self, dest++, len == 0);
+        if (ret != 0) {
+            return ret;
         }
     }
 
     // finish the I2C transaction
-    if (stop && !mp_hal_i2c_stop(self)) {
-        goto er;
-    }
-    return;
-
-er:
-    mp_hal_i2c_stop(self); // ignore error
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
-}
-
-STATIC void mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dest, size_t len, bool stop) {
-    // start the I2C transaction
-    if (!mp_hal_i2c_start(self)) {
-        goto er;
-    }
-
-    if (!mp_hal_i2c_write_byte(self, (addr << 1) | 1)) {
-        goto er;
-    }
-    while (len--) {
-        if (!mp_hal_i2c_read_byte(self, dest++, len == 0)) {
-            goto er;
+    if (stop) {
+        ret = mp_hal_i2c_stop(self);
+        if (ret != 0) {
+            return ret;
         }
     }
-    if (stop && !mp_hal_i2c_stop(self)) {
-        goto er;
-    }
-    return;
 
-er:
-    mp_hal_i2c_stop(self); // ignore error
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
+    return 0; // success
 }
 
 /******************************************************************************/
@@ -279,7 +326,7 @@ STATIC mp_obj_t machine_i2c_start(mp_obj_t self_in) {
     }
     int ret = i2c_p->start(self);
     if (ret != 0) {
-        mp_raise_OSError(ret);
+        mp_raise_OSError(-ret);
     }
     return mp_const_none;
 }
@@ -293,7 +340,7 @@ STATIC mp_obj_t machine_i2c_stop(mp_obj_t self_in) {
     }
     int ret = i2c_p->stop(self);
     if (ret != 0) {
-        mp_raise_OSError(ret);
+        mp_raise_OSError(-ret);
     }
     return mp_const_none;
 }
@@ -313,7 +360,7 @@ STATIC mp_obj_t machine_i2c_readinto(mp_obj_t self_in, mp_obj_t buf_in) {
     // do the read
     int ret = i2c_p->read(self, bufinfo.buf, bufinfo.len);
     if (ret != 0) {
-        mp_raise_OSError(ret);
+        mp_raise_OSError(-ret);
     }
 
     return mp_const_none;
@@ -333,8 +380,8 @@ STATIC mp_obj_t machine_i2c_write(mp_obj_t self_in, mp_obj_t buf_in) {
 
     // do the write
     int ret = i2c_p->write(self, bufinfo.buf, bufinfo.len);
-    if (ret != 0) {
-        mp_raise_OSError(ret);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
     }
 
     return mp_const_none;
@@ -346,7 +393,10 @@ STATIC mp_obj_t machine_i2c_readfrom(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(nbytes_in));
-    i2c_p->readfrom(self, mp_obj_get_int(addr_in), (uint8_t*)vstr.buf, vstr.len, true);
+    int ret = i2c_p->readfrom(self, mp_obj_get_int(addr_in), (uint8_t*)vstr.buf, vstr.len, true);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_readfrom_obj, machine_i2c_readfrom);
@@ -356,7 +406,10 @@ STATIC mp_obj_t machine_i2c_readfrom_into(mp_obj_t self_in, mp_obj_t addr_in, mp
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    i2c_p->readfrom(self, mp_obj_get_int(addr_in), bufinfo.buf, bufinfo.len, true);
+    int ret = i2c_p->readfrom(self, mp_obj_get_int(addr_in), bufinfo.buf, bufinfo.len, true);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_readfrom_into_obj, machine_i2c_readfrom_into);
@@ -366,7 +419,10 @@ STATIC mp_obj_t machine_i2c_writeto(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    i2c_p->writeto(self, mp_obj_get_int(addr_in), bufinfo.buf, bufinfo.len, true);
+    int ret = i2c_p->writeto(self, mp_obj_get_int(addr_in), bufinfo.buf, bufinfo.len, true);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_i2c_writeto_obj, machine_i2c_writeto);
@@ -380,7 +436,7 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
         memaddr_buf[memaddr_len++] = memaddr >> i;
     }
     int ret = i2c_p->writeto(self, addr, memaddr_buf, memaddr_len, false);
-    if (ret != 0) {
+    if (ret != memaddr_len) {
         // must generate STOP
         i2c_p->writeto(self, addr, NULL, 0, true);
         return ret;
@@ -438,8 +494,12 @@ STATIC mp_obj_t machine_i2c_readfrom_mem(size_t n_args, const mp_obj_t *pos_args
     vstr_init_len(&vstr, mp_obj_get_int(args[ARG_n].u_obj));
 
     // do the transfer
-    read_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
+    int ret = read_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
         args[ARG_addrsize].u_int, (uint8_t*)vstr.buf, vstr.len);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
+
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_obj, 1, machine_i2c_readfrom_mem);
@@ -456,8 +516,11 @@ STATIC mp_obj_t machine_i2c_readfrom_mem_into(size_t n_args, const mp_obj_t *pos
     mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_WRITE);
 
     // do the transfer
-    read_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
+    int ret = read_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
         args[ARG_addrsize].u_int, bufinfo.buf, bufinfo.len);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_readfrom_mem_into_obj, 1, machine_i2c_readfrom_mem_into);
@@ -473,8 +536,12 @@ STATIC mp_obj_t machine_i2c_writeto_mem(size_t n_args, const mp_obj_t *pos_args,
     mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_READ);
 
     // do the transfer
-    write_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
+    int ret = write_mem(pos_args[0], args[ARG_addr].u_int, args[ARG_memaddr].u_int,
         args[ARG_addrsize].u_int, bufinfo.buf, bufinfo.len);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
+    }
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_writeto_mem_obj, 1, machine_i2c_writeto_mem);
@@ -504,25 +571,20 @@ STATIC MP_DEFINE_CONST_DICT(machine_i2c_locals_dict, machine_i2c_locals_dict_tab
 
 int mp_machine_soft_i2c_start(mp_obj_base_t *self_in) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    if (!mp_hal_i2c_start(self)) {
-        return MP_ETIMEDOUT;
-    }
-    return 0; // success
+    return mp_hal_i2c_start(self);
 }
 
 int mp_machine_soft_i2c_stop(mp_obj_base_t *self_in) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    if (!mp_hal_i2c_stop(self)) {
-        return MP_ETIMEDOUT;
-    }
-    return 0; // success
+    return mp_hal_i2c_stop(self);
 }
 
 int mp_machine_soft_i2c_read(mp_obj_base_t *self_in, uint8_t *dest, size_t len) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
     while (len--) {
-        if (!mp_hal_i2c_read_byte(self, dest++, len == 0)) {
-            return MP_ETIMEDOUT;
+        int ret = mp_hal_i2c_read_byte(self, dest++, len == 0);
+        if (ret != 0) {
+            return ret;
         }
     }
     return 0; // success
@@ -530,24 +592,28 @@ int mp_machine_soft_i2c_read(mp_obj_base_t *self_in, uint8_t *dest, size_t len) 
 
 int mp_machine_soft_i2c_write(mp_obj_base_t *self_in, const uint8_t *src, size_t len) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
+    int num_acks = 0;
     while (len--) {
-        if (!mp_hal_i2c_write_byte(self, *src++)) {
-            return MP_ETIMEDOUT;
+        int ret = mp_hal_i2c_write_byte(self, *src++);
+        if (ret < 0) {
+            return ret;
+        } else if (ret != 0) {
+            // nack received, stop sending
+            break;
         }
+        ++num_acks;
     }
-    return 0; // success
+    return num_acks;
 }
 
 int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    mp_hal_i2c_read(self, addr, dest, len, stop);
-    return 0; // success
+    return mp_hal_i2c_read(self, addr, dest, len, stop);
 }
 
 int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    mp_hal_i2c_write(self, addr, src, len, stop);
-    return 0; // success
+    return mp_hal_i2c_write(self, addr, src, len, stop);
 }
 
 STATIC const mp_machine_i2c_p_t mp_machine_soft_i2c_p = {
