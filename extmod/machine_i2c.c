@@ -188,7 +188,9 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
 // return value:
 //  >=0 - number of acks received
 //   <0 - error, with errno being the negative of the return value
-STATIC int mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, const uint8_t *src, size_t len, bool stop) {
+STATIC int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+    machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
+
     // start the I2C transaction
     int ret = mp_hal_i2c_start(self);
     if (ret != 0) {
@@ -232,7 +234,9 @@ STATIC int mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, const uint8_t
 // return value:
 //    0 - success
 //   <0 - error, with errno being the negative of the return value
-STATIC int mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dest, size_t len, bool stop) {
+STATIC int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+    machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
+
     // start the I2C transaction
     int ret = mp_hal_i2c_start(self);
     if (ret != 0) {
@@ -580,16 +584,6 @@ STATIC const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_i2c_locals_dict, machine_i2c_locals_dict_table);
 
-int mp_machine_soft_i2c_start(mp_obj_base_t *self_in) {
-    machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    return mp_hal_i2c_start(self);
-}
-
-int mp_machine_soft_i2c_stop(mp_obj_base_t *self_in) {
-    machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    return mp_hal_i2c_stop(self);
-}
-
 int mp_machine_soft_i2c_read(mp_obj_base_t *self_in, uint8_t *dest, size_t len, bool nack) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
     while (len--) {
@@ -617,19 +611,9 @@ int mp_machine_soft_i2c_write(mp_obj_base_t *self_in, const uint8_t *src, size_t
     return num_acks;
 }
 
-int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
-    machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    return mp_hal_i2c_read(self, addr, dest, len, stop);
-}
-
-int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
-    machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
-    return mp_hal_i2c_write(self, addr, src, len, stop);
-}
-
 STATIC const mp_machine_i2c_p_t mp_machine_soft_i2c_p = {
-    .start = mp_machine_soft_i2c_start,
-    .stop = mp_machine_soft_i2c_stop,
+    .start = (int(*)(mp_obj_base_t*))mp_hal_i2c_start,
+    .stop = (int(*)(mp_obj_base_t*))mp_hal_i2c_stop,
     .read = mp_machine_soft_i2c_read,
     .write = mp_machine_soft_i2c_write,
     .readfrom = mp_machine_soft_i2c_readfrom,
