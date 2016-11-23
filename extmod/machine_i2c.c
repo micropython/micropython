@@ -293,16 +293,14 @@ STATIC mp_obj_t machine_i2c_obj_init(size_t n_args, const mp_obj_t *args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_init_obj, 1, machine_i2c_obj_init);
 
 STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
-    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_base_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
     for (int addr = 0x08; addr < 0x78; ++addr) {
-        if (mp_hal_i2c_start(self)) {
-            int ack = mp_hal_i2c_write_byte(self, (addr << 1));
-            if (ack) {
-                mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
-            }
-            mp_hal_i2c_stop(self); // ignore error
+        int ret = i2c_p->writeto(self, addr, NULL, 0, true);
+        if (ret == 0) {
+            mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
         }
     }
     return list;
