@@ -35,13 +35,7 @@
 
 #if MICROPY_PY_MACHINE_I2C
 
-typedef struct _machine_i2c_obj_t {
-    mp_obj_base_t base;
-    uint32_t us_delay;
-    uint32_t us_timeout;
-    mp_hal_pin_obj_t scl;
-    mp_hal_pin_obj_t sda;
-} machine_i2c_obj_t;
+typedef mp_machine_soft_i2c_obj_t machine_i2c_obj_t;
 
 STATIC void mp_hal_i2c_delay(machine_i2c_obj_t *self) {
     // We need to use an accurate delay to get acceptable I2C
@@ -188,7 +182,7 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
 // return value:
 //  >=0 - number of acks received
 //   <0 - error, with errno being the negative of the return value
-STATIC int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
 
     // start the I2C transaction
@@ -234,7 +228,7 @@ STATIC int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, co
 // return value:
 //    0 - success
 //   <0 - error, with errno being the negative of the return value
-STATIC int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
 
     // start the I2C transaction
@@ -582,7 +576,7 @@ STATIC const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_writeto_mem), MP_ROM_PTR(&machine_i2c_writeto_mem_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(machine_i2c_locals_dict, machine_i2c_locals_dict_table);
+MP_DEFINE_CONST_DICT(mp_machine_soft_i2c_locals_dict, machine_i2c_locals_dict_table);
 
 int mp_machine_soft_i2c_read(mp_obj_base_t *self_in, uint8_t *dest, size_t len, bool nack) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t*)self_in;
@@ -625,7 +619,7 @@ const mp_obj_type_t machine_i2c_type = {
     .name = MP_QSTR_I2C,
     .make_new = machine_i2c_make_new,
     .protocol = &mp_machine_soft_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_I2C
