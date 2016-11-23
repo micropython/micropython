@@ -168,29 +168,14 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
     return 1; // success
 }
 
-// addr is the device address, memaddr is a memory address sent big-endian
-STATIC int mp_hal_i2c_write_addresses(machine_i2c_obj_t *self, uint8_t addr,
-        uint32_t memaddr, uint8_t addrsize) {
-    if (!mp_hal_i2c_write_byte(self, addr << 1)) {
-        return 0; // error
-    }
-    for (int16_t i = addrsize - 8; i >= 0; i -= 8) {
-        if (!mp_hal_i2c_write_byte(self, memaddr >> i)) {
-            return 0; // error
-        }
-    }
-    return 1; // success
-}
-
-STATIC void mp_hal_i2c_write_mem(machine_i2c_obj_t *self, uint8_t addr,
-        uint32_t memaddr, uint8_t addrsize, const uint8_t *src, size_t len, bool stop) {
+STATIC void mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, const uint8_t *src, size_t len, bool stop) {
     // start the I2C transaction
     if (!mp_hal_i2c_start(self)) {
         goto er;
     }
 
-    // write the slave address and the memory address within the slave
-    if (!mp_hal_i2c_write_addresses(self, addr, memaddr, addrsize)) {
+    // write the slave address
+    if (!mp_hal_i2c_write_byte(self, addr << 1)) {
         goto er;
     }
 
@@ -212,23 +197,10 @@ er:
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
 }
 
-STATIC void mp_hal_i2c_read_mem(machine_i2c_obj_t *self, uint8_t addr,
-        uint32_t memaddr, uint8_t addrsize, uint8_t *dest, size_t len, bool stop) {
+STATIC void mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dest, size_t len, bool stop) {
     // start the I2C transaction
     if (!mp_hal_i2c_start(self)) {
         goto er;
-    }
-
-    if (addrsize) {
-        // write the slave address and the memory address within the slave
-        if (!mp_hal_i2c_write_addresses(self, addr, memaddr, addrsize)) {
-            goto er;
-        }
-
-        // i2c_read will do a repeated start, and then read the I2C memory
-        if (!mp_hal_i2c_start(self)) {
-            goto er;
-        }
     }
 
     if (!mp_hal_i2c_write_byte(self, (addr << 1) | 1)) {
@@ -247,14 +219,6 @@ STATIC void mp_hal_i2c_read_mem(machine_i2c_obj_t *self, uint8_t addr,
 er:
     mp_hal_i2c_stop(self); // ignore error
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
-}
-
-STATIC void mp_hal_i2c_write(machine_i2c_obj_t *self, uint8_t addr, const uint8_t *src, size_t len, bool stop) {
-    mp_hal_i2c_write_mem(self, addr, 0, 0, src, len, stop);
-}
-
-STATIC void mp_hal_i2c_read(machine_i2c_obj_t *self, uint8_t addr, uint8_t *dest, size_t len, bool stop) {
-    mp_hal_i2c_read_mem(self, addr, 0, 0, dest, len, stop);
 }
 
 /******************************************************************************/
