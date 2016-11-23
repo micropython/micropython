@@ -1,14 +1,14 @@
 """
 LED fade/flash example using asyncio.
 
-This example uses continually fades a LED on and off, and switches to a
+This example continually fades a LED on and off, and switches to a
 quicker flash for a small period when a button is pressed.
 
 The LED and BUTTON objects are imported from the board/hardware config module.
 You need to copy the config file for your board to a suitable location.
 
 Tested on the Olimex E407 board, which has one LED and one button.
-See examples/hwapi/hwconfig_OLIMEX_E407.py for an example config module
+See `examples/hwapi/hwconfig_OLIMEX_E407.py` for an example config module
 
 This example was extended from LED fade example using asyncio
 https://github.com/micropython/micropython/commit/99e5badeb1e2e6aeffd3b3d56902d4257e168326
@@ -20,7 +20,7 @@ from hwconfig import LED, BUTTON
 #=============================================================================
 
 async def pwm_cycle(led, duty, cycles):
-    """A task to flash or fade the LED depending global count variable."""
+    """A task to pulse width modulate the LED to provide varying intesities."""
 
     duty_off = 20 - duty
     for i in range(cycles):
@@ -47,7 +47,7 @@ async def fade_led(led):
 #=============================================================================
 
 async def flash_led(led, delay):
-    """A task to flash or fade the LED."""
+    """A task to flash the LED."""
 
     # led on
     led.value(1)
