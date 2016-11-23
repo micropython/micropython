@@ -60,13 +60,13 @@ int vprintf(const char *fmt, va_list ap) {
 }
 
 #if MICROPY_DEBUG_PRINTERS
+extern const mp_print_t MICROPY_DEBUG_PRINTER_DEST;
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     #ifndef MICROPY_DEBUG_PRINTER_DEST
     #define MICROPY_DEBUG_PRINTER_DEST mp_plat_print
     #endif
-    extern const mp_print_t MICROPY_DEBUG_PRINTER_DEST;
     int ret = mp_vprintf(&MICROPY_DEBUG_PRINTER_DEST, fmt, ap);
     va_end(ap);
     return ret;
