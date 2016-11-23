@@ -153,21 +153,20 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
             case 2: // SEEK_END
                 f_lseek(&self->fp, f_size(&self->fp) + s->offset);
                 break;
-        } else if (request == MP_STREAM_FLUSH) {
-	    res = f_sync(&self->fp);
-	    if (res != FR_OK) {
-		mp_raise_OSError(fresult_to_errno_table[res]);
-	    }
-	    return mp_const_none;
-	} else {
-        s->offset = f_tell(&self->fp);
-        return 0;
+        }
 
-    }
-
-
-
-    else {
+	s->offset = f_tell(&self->fp);
+	return 0;
+	
+    } else if (request == MP_STREAM_FLUSH) {
+	res = f_sync(&self->fp);
+	if (res != FR_OK) {
+	    mp_raise_OSError(fresult_to_errno_table[res]);
+	    
+	}
+	return 0;
+	
+    } else {
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
