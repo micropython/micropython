@@ -45,14 +45,6 @@
 #define MICROPY_HW_I2C_BAUDRATE_MAX 400000
 #endif
 
-#if !defined(I2C_NOSTRETCH_DISABLE)
-// Assumes that the F7 firmware is newer, so the F4 firmware will eventually
-// catchup. I2C_NOSTRETCH_DISABLED was renamed to I2C_NOSTRETCH_DISABLE
-// in the F7 so we use the F7 constant and provide a backwards compatabilty
-// #define here.
-#define I2C_NOSTRETCH_DISABLE I2C_NOSTRETCH_DISABLED
-#endif
-
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
 ///
@@ -253,6 +245,24 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     const pyb_i2c_obj_t *self = &pyb_i2c_obj[i2c_unit - 1];
     dma_invalidate_channel(self->tx_dma_descr);
     dma_invalidate_channel(self->rx_dma_descr);
+    
+    if (0) {
+    #if defined(MICROPY_HW_I2C1_SCL)
+    } else if (i2c->Instance == I2C1) {
+        HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+        HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
+    } else if (i2c->Instance == I2C2) {
+        HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
+        HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    } else if (i2c->Instance == I2C3) {
+        HAL_NVIC_EnableIRQ(I2C3_EV_IRQn);
+        HAL_NVIC_EnableIRQ(I2C3_ER_IRQn);
+    #endif
+    }
 }
 
 void i2c_deinit(I2C_HandleTypeDef *i2c) {
@@ -263,18 +273,24 @@ void i2c_deinit(I2C_HandleTypeDef *i2c) {
         __I2C1_FORCE_RESET();
         __I2C1_RELEASE_RESET();
         __I2C1_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(I2C1_EV_IRQn);
+        HAL_NVIC_DisableIRQ(I2C1_ER_IRQn);
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c->Instance == I2C2) {
         __I2C2_FORCE_RESET();
         __I2C2_RELEASE_RESET();
         __I2C2_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(I2C2_EV_IRQn);
+        HAL_NVIC_DisableIRQ(I2C2_ER_IRQn);
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     } else if (i2c->Instance == I2C3) {
         __I2C3_FORCE_RESET();
         __I2C3_RELEASE_RESET();
         __I2C3_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(I2C3_EV_IRQn);
+        HAL_NVIC_DisableIRQ(I2C3_ER_IRQn);
     #endif
     }
 }
@@ -291,6 +307,113 @@ STATIC void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
     // bus was/is busy, need to reset the peripheral to get it to work again
     i2c_deinit(i2c);
     i2c_init(i2c);
+}
+
+void i2c_ev_irq_handler(mp_uint_t i2c_id) {
+    I2C_HandleTypeDef *hi2c;
+
+    switch (i2c_id) {
+        #if defined(MICROPY_HW_I2C1_SCL)
+        case 1:
+            hi2c = &I2CHandle1;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C2_SCL)
+        case 2:
+            hi2c = &I2CHandle2;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C3_SCL)
+        case 3:
+            hi2c = &I2CHandle3;
+            break;
+        #endif
+        default:
+            return;
+    }
+
+    #if defined(MCU_SERIES_F4)
+
+    if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
+        if (hi2c->XferCount != 0U) {
+            hi2c->Instance->DR = *hi2c->pBuffPtr++;
+            hi2c->XferCount--;
+        } else {
+            __HAL_I2C_DISABLE_IT(hi2c, I2C_IT_EVT | I2C_IT_BUF | I2C_IT_ERR);
+            if (hi2c->XferOptions != I2C_FIRST_FRAME) {
+                hi2c->Instance->CR1 |= I2C_CR1_STOP;
+            }
+            hi2c->Mode = HAL_I2C_MODE_NONE;
+            hi2c->State = HAL_I2C_STATE_READY;
+        }
+    }
+
+    #else
+
+    // if not an F4 MCU, use the HAL's IRQ handler
+    HAL_I2C_EV_IRQHandler(hi2c);
+
+    #endif
+}
+
+void i2c_er_irq_handler(mp_uint_t i2c_id) {
+    I2C_HandleTypeDef *hi2c;
+
+    switch (i2c_id) {
+        #if defined(MICROPY_HW_I2C1_SCL)
+        case 1:
+            hi2c = &I2CHandle1;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C2_SCL)
+        case 2:
+            hi2c = &I2CHandle2;
+            break;
+        #endif
+        #if defined(MICROPY_HW_I2C3_SCL)
+        case 3:
+            hi2c = &I2CHandle3;
+            break;
+        #endif
+        default:
+            return;
+    }
+
+    #if defined(MCU_SERIES_F4)
+
+    uint32_t sr1 = hi2c->Instance->SR1;
+
+    // I2C Bus error
+    if (sr1 & I2C_FLAG_BERR) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_BERR;
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_BERR);
+    }
+
+    // I2C Arbitration Loss error
+    if (sr1 & I2C_FLAG_ARLO) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_ARLO;
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_ARLO);
+    }
+
+    // I2C Acknowledge failure
+    if (sr1 & I2C_FLAG_AF) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
+        SET_BIT(hi2c->Instance->CR1,I2C_CR1_STOP);
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
+    }
+
+    // I2C Over-Run/Under-Run
+    if (sr1 & I2C_FLAG_OVR) {
+        hi2c->ErrorCode |= HAL_I2C_ERROR_OVR;
+        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_OVR);
+    }
+
+    #else
+
+    // if not an F4 MCU, use the HAL's IRQ handler
+    HAL_I2C_ER_IRQHandler(hi2c);
+
+    #endif
 }
 
 STATIC HAL_StatusTypeDef i2c_wait_dma_finished(I2C_HandleTypeDef *i2c, uint32_t timeout) {
@@ -372,7 +495,6 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, mp_uint_t n_args,
     init->AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
     init->DualAddressMode = I2C_DUALADDRESS_DISABLED;
     init->GeneralCallMode = args[3].u_bool ? I2C_GENERALCALL_ENABLED : I2C_GENERALCALL_DISABLED;
-    init->NoStretchMode   = I2C_NOSTRETCH_DISABLED;
     init->OwnAddress2     = 0; // unused
     init->NoStretchMode   = I2C_NOSTRETCH_DISABLE;
 

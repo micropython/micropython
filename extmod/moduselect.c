@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_PY_USELECT
+
 #include <stdio.h>
 
 #include "py/runtime.h"
@@ -309,3 +312,5 @@ const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
+
+#endif // MICROPY_PY_USELECT

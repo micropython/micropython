@@ -34,3 +34,5 @@ extern const mp_obj_type_t pyb_i2c_type;
 
 void i2c_init0(void);
 void i2c_init(I2C_HandleTypeDef *i2c);
+void i2c_ev_irq_handler(mp_uint_t i2c_id);
+void i2c_er_irq_handler(mp_uint_t i2c_id);

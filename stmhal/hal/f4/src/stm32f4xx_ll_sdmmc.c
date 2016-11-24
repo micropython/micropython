@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_ll_sdmmc.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-June-2014
+  * @version V1.5.2
+  * @date    22-September-2016
   * @brief   SDMMC Low Layer HAL module driver.
   *    
   *          This file provides firmware functions to manage the following 
@@ -21,13 +21,6 @@
          peripheral bus and MultiMedia cards (MMCs), SD memory cards, SDIO cards and CE-ATA
          devices.
 
-    [..] The MultiMedia Card system specifications are available through the MultiMedia Card
-         Association website at www.mmca.org, published by the MMCA technical committee.
-         SD memory card and SD I/O card system specifications are available through the SD card
-         Association website at www.sdcard.org.
-         CE-ATA system specifications are available through the CE-ATA work group web site at
-         www.ce-ata.org.
-    
     [..] The SDIO features include the following:
          (+) Full compliance with MultiMedia Card System Specification Version 4.2. Card support
              for three different databus modes: 1-bit (default), 4-bit and 8-bit
@@ -67,7 +60,7 @@
           peripheral.
 
       (+) Enable the Power ON State using the SDIO_PowerState_ON(SDIOx) 
-          function and disable it using the function HAL_SDIO_PowerState_OFF(SDIOx).
+          function and disable it using the function SDIO_PowerState_OFF(SDIOx).
                 
       (+) Enable/Disable the clock using the __SDIO_ENABLE()/__SDIO_DISABLE() macros.
   
@@ -107,7 +100,7 @@
       (#) First, user has to fill the data structure (pointer to
           SDIO_DataInitTypeDef) according to the selected data type to be received.
           The parameters that should be filled are:
-           (++) Data TimeOut
+           (++) Data Timeout
            (++) Data Length
            (++) Data Block size
            (++) Data Transfer direction: should be from card (To SDIO)
@@ -127,7 +120,7 @@
      (#) First, user has to fill the data structure (pointer to
          SDIO_DataInitTypeDef) according to the selected data type to be received.
          The parameters that should be filled are:
-          (++) Data TimeOut
+          (++) Data Timeout
           (++) Data Length
           (++) Data Block size
           (++) Data Transfer direction:  should be to card (To CARD)
@@ -145,7 +138,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -179,13 +172,17 @@
   * @{
   */
 
-/** @defgroup SDMMC 
-  * @brief SDMMC HAL module driver
+/** @defgroup SDMMC_LL SDMMC Low Layer
+  * @brief Low layer module for SD and MMC driver
   * @{
   */
 
-#if defined (HAL_SD_MODULE_ENABLED) || defined(HAL_MMC_MODULE_ENABLED)
-
+#if defined(HAL_SD_MODULE_ENABLED) || defined(HAL_MMC_MODULE_ENABLED)
+#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx) || defined(STM32F417xx) || \
+    defined(STM32F427xx) || defined(STM32F437xx) || defined(STM32F429xx) || defined(STM32F439xx) || \
+    defined(STM32F401xC) || defined(STM32F401xE) || defined(STM32F411xE) || defined(STM32F446xx) || \
+    defined(STM32F469xx) || defined(STM32F479xx) || defined(STM32F412Zx) || defined(STM32F412Vx) || \
+    defined(STM32F412Rx) || defined(STM32F412Cx)
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -193,11 +190,11 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-/** @defgroup SDIO_Private_Functions
+/** @defgroup SDMMC_LL_Exported_Functions SDMMC_LL Exported Functions
   * @{
   */
 
-/** @defgroup HAL_SDIO_Group1 Initialization/de-initialization functions 
+/** @defgroup HAL_SDMMC_LL_Group1 Initialization/de-initialization functions 
  *  @brief    Initialization and Configuration functions 
  *
 @verbatim    
@@ -219,7 +216,7 @@
   */
 HAL_StatusTypeDef SDIO_Init(SDIO_TypeDef *SDIOx, SDIO_InitTypeDef Init)
 {
-  uint32_t tmpreg = 0; 
+  uint32_t tmpreg = 0U; 
 
   /* Check the parameters */
   assert_param(IS_SDIO_ALL_INSTANCE(SDIOx));
@@ -245,13 +242,11 @@ HAL_StatusTypeDef SDIO_Init(SDIO_TypeDef *SDIOx, SDIO_InitTypeDef Init)
   return HAL_OK;
 }
 
-
-
 /**
   * @}
   */
 
-/** @defgroup HAL_SDIO_Group2 I/O operation functions 
+/** @defgroup HAL_SDMMC_LL_Group2 I/O operation functions 
  *  @brief   Data transfers functions 
  *
 @verbatim   
@@ -295,7 +290,7 @@ HAL_StatusTypeDef SDIO_WriteFIFO(SDIO_TypeDef *SDIOx, uint32_t *pWriteData)
   * @}
   */
 
-/** @defgroup HAL_SDIO_Group3 Peripheral Control functions 
+/** @defgroup HAL_SDMMC_LL_Group3 Peripheral Control functions 
  *  @brief   management functions 
  *
 @verbatim   
@@ -331,7 +326,7 @@ HAL_StatusTypeDef SDIO_PowerState_ON(SDIO_TypeDef *SDIOx)
 HAL_StatusTypeDef SDIO_PowerState_OFF(SDIO_TypeDef *SDIOx)
 {
   /* Set power state to OFF */
-  SDIOx->POWER = (uint32_t)0x00000000;
+  SDIOx->POWER = (uint32_t)0x00000000U;
   
   return HAL_OK;
 }
@@ -360,7 +355,7 @@ uint32_t SDIO_GetPowerState(SDIO_TypeDef *SDIOx)
   */
 HAL_StatusTypeDef SDIO_SendCommand(SDIO_TypeDef *SDIOx, SDIO_CmdInitTypeDef *SDIO_CmdInitStruct)
 {
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg = 0U;
   
   /* Check the parameters */
   assert_param(IS_SDIO_CMD_INDEX(SDIO_CmdInitStruct->CmdIndex));
@@ -406,7 +401,7 @@ uint8_t SDIO_GetCommandResponse(SDIO_TypeDef *SDIOx)
   */
 uint32_t SDIO_GetResponse(uint32_t SDIO_RESP)
 {
-  __IO uint32_t tmp = 0;
+  __IO uint32_t tmp = 0U;
 
   /* Check the parameters */
   assert_param(IS_SDIO_RESP(SDIO_RESP));
@@ -427,7 +422,7 @@ uint32_t SDIO_GetResponse(uint32_t SDIO_RESP)
   */
 HAL_StatusTypeDef SDIO_DataConfig(SDIO_TypeDef *SDIOx, SDIO_DataInitTypeDef* SDIO_DataInitStruct)
 {
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg = 0U;
   
   /* Check the parameters */
   assert_param(IS_SDIO_DATA_LENGTH(SDIO_DataInitStruct->DataLength));
@@ -436,7 +431,7 @@ HAL_StatusTypeDef SDIO_DataConfig(SDIO_TypeDef *SDIOx, SDIO_DataInitTypeDef* SDI
   assert_param(IS_SDIO_TRANSFER_MODE(SDIO_DataInitStruct->TransferMode));
   assert_param(IS_SDIO_DPSM(SDIO_DataInitStruct->DPSM));
 
-  /* Set the SDIO Data TimeOut value */
+  /* Set the SDIO Data Timeout value */
   SDIOx->DTIMER = SDIO_DataInitStruct->DataTimeOut;
 
   /* Set the SDIO DataLength value */
@@ -501,7 +496,9 @@ HAL_StatusTypeDef SDIO_SetSDIOReadWaitMode(uint32_t SDIO_ReadWaitMode)
 /**
   * @}
   */
-
+#endif /* STM32F405xx || STM32F415xx || STM32F407xx || STM32F417xx || STM32F427xx || STM32F437xx || STM32F429xx || STM32F439xx ||
+          STM32F401xC || STM32F401xE || STM32F411xE || STM32F446xx || STM32F469xx || STM32F479xx || STM32F412Zx || STM32F412Vx ||
+          STM32F412Rx || STM32F412Cx */
 #endif /* (HAL_SD_MODULE_ENABLED) || (HAL_MMC_MODULE_ENABLED) */
 /**
   * @}

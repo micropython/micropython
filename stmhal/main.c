@@ -372,9 +372,9 @@ int main(void) {
         // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
         // which behaves more or less like normal SRAM.
         __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #else
+        #elif defined(CCMDATARAM_BASE)
         // enable the CCM RAM
-        __CCMDATARAMEN_CLK_ENABLE();
+        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
         #endif
     #endif
 

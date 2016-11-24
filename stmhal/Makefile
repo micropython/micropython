@@ -145,16 +145,15 @@ SRC_C = \
 	pybstdio.c \
 	help.c \
 	input.c \
+	machine_i2c.c \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
 	moduos.c \
 	modutime.c \
-	moduselect.c \
 	modusocket.c \
 	modnetwork.c \
 	import.c \
-	lexerfatfs.c \
 	extint.c \
 	usrsw.c \
 	rng.c \

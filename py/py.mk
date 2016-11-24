@@ -113,9 +113,8 @@ PY_O_BASENAME = \
 	mpprint.o \
 	unicode.o \
 	mpz.o \
+	reader.o \
 	lexer.o \
-	lexerstr.o \
-	lexerunix.o \
 	parse.o \
 	scope.o \
 	compile.o \
@@ -134,6 +133,7 @@ PY_O_BASENAME = \
 	parsenumbase.o \
 	parsenum.o \
 	emitglue.o \
+	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
 	nativeglue.o \
@@ -219,6 +219,7 @@ PY_O_BASENAME = \
 	../extmod/modussl_axtls.o \
 	../extmod/modussl_mbedtls.o \
 	../extmod/modurandom.o \
+	../extmod/moduselect.o \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
@@ -227,7 +228,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_lexer.o \
+	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
 	../extmod/uos_dupterm.o \

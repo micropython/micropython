@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_dma_ex.h
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-June-2014
+  * @version V1.5.2
+  * @date    22-September-2016
   * @brief   Header file of DMA HAL extension module.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -55,25 +55,55 @@
   */ 
 
 /* Exported types ------------------------------------------------------------*/
-
+/** @defgroup DMAEx_Exported_Types DMAEx Exported Types
+  * @brief DMAEx Exported types
+  * @{
+  */
+   
 /** 
   * @brief  HAL DMA Memory definition  
   */ 
 typedef enum
 {
-  MEMORY0      = 0x00,    /*!< Memory 0     */
-  MEMORY1      = 0x01,    /*!< Memory 1     */
-
+  MEMORY0      = 0x00U,    /*!< Memory 0     */
+  MEMORY1      = 0x01U     /*!< Memory 1     */
 }HAL_DMA_MemoryTypeDef;
 
-/* Exported constants --------------------------------------------------------*/ 
-/* Exported macro ------------------------------------------------------------*/
+/**
+  * @}
+  */
 
 /* Exported functions --------------------------------------------------------*/
+/** @defgroup DMAEx_Exported_Functions DMAEx Exported Functions
+  * @brief   DMAEx Exported functions
+  * @{
+  */
+
+/** @defgroup DMAEx_Exported_Functions_Group1 Extended features functions
+  * @brief   Extended features functions
+  * @{
+  */
+
 /* IO operation functions *******************************************************/
 HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t SecondMemAddress, uint32_t DataLength);
 HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t SecondMemAddress, uint32_t DataLength);
 HAL_StatusTypeDef HAL_DMAEx_ChangeMemory(DMA_HandleTypeDef *hdma, uint32_t Address, HAL_DMA_MemoryTypeDef memory);
+
+/**
+  * @}
+  */
+/**
+  * @}
+  */
+         
+/* Private functions ---------------------------------------------------------*/
+/** @defgroup DMAEx_Private_Functions DMAEx Private Functions
+  * @brief DMAEx Private functions
+  * @{
+  */
+/**
+  * @}
+  */
 
 /**
   * @}
@@ -87,6 +117,6 @@ HAL_StatusTypeDef HAL_DMAEx_ChangeMemory(DMA_HandleTypeDef *hdma, uint32_t Addre
 }
 #endif
 
-#endif /* __STM32F4xx_HAL_DMA_H */
+#endif /*__STM32F4xx_HAL_DMA_EX_H*/
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

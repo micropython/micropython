@@ -16,6 +16,7 @@
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
+#define MICROPY_READER_FATFS        (MICROPY_VFS_FAT)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)

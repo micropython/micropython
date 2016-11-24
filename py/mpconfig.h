@@ -381,6 +381,16 @@
 /*****************************************************************************/
 /* Python internal features                                                  */
 
+// Whether to use the POSIX reader for importing files
+#ifndef MICROPY_READER_POSIX
+#define MICROPY_READER_POSIX (0)
+#endif
+
+// Whether to use the FatFS reader for importing files
+#ifndef MICROPY_READER_FATFS
+#define MICROPY_READER_FATFS (0)
+#endif
+
 // Hook for the VM at the start of the opcode loop (can contain variable
 // definitions usable by the other hook functions)
 #ifndef MICROPY_VM_HOOK_INIT
@@ -861,6 +871,11 @@ typedef double mp_float_t;
 // Whether to provide "uerrno" module
 #ifndef MICROPY_PY_UERRNO
 #define MICROPY_PY_UERRNO (0)
+#endif
+
+// Whether to provide "uselect" module (baremetal implementation)
+#ifndef MICROPY_PY_USELECT
+#define MICROPY_PY_USELECT (0)
 #endif
 
 // Whether to provide "utime" module functions implementation

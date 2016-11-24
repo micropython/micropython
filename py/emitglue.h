@@ -74,21 +74,4 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
 
-#if MICROPY_PERSISTENT_CODE_LOAD
-typedef struct _mp_reader_t {
-    void *data;
-    mp_uint_t (*read_byte)(void *data);
-    void (*close)(void *data);
-} mp_reader_t;
-
-mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
-mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
-mp_raw_code_t *mp_raw_code_load_file(const char *filename);
-#endif
-
-#if MICROPY_PERSISTENT_CODE_SAVE
-void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
-void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
-#endif
-
 #endif // __MICROPY_INCLUDED_PY_EMITGLUE_H__
