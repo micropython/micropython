@@ -54,16 +54,16 @@ static uint32_t object_size(uint8_t indent_level, mp_obj_t obj);
 
 static uint32_t int_size(uint8_t indent_level, mp_obj_t obj) {
     if (MP_OBJ_IS_SMALL_INT(obj)) {
-        return sizeof(mp_obj_t);
+        return 0;
     }
     if (!VERIFY_PTR(obj)) {
         return 0;
     }
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
         mp_obj_int_t* i = MP_OBJ_TO_PTR(obj);
-        return sizeof(mp_obj_int_t) + i->mpz.len * sizeof(mpz_dig_t);
+        return gc_nbytes(obj) + gc_nbytes(i->mpz.dig);
     #else
-        return sizeof(mp_obj_int_t);
+        return gc_nbytes(obj);
     #endif
 }
 
@@ -76,17 +76,17 @@ static uint32_t string_size(uint8_t indent_level, mp_obj_t obj) {
         }
         indent(indent_level);
         mp_printf(&mp_plat_print, "%s\n", s);
-        return qstr_len(qs);
+        return 0;
     } else { // MP_OBJ_IS_TYPE(o, &mp_type_str)
         mp_obj_str_t* s = MP_OBJ_TO_PTR(obj);
-        return sizeof(mp_obj_str_t) + s->len * sizeof(const byte);
+        return gc_nbytes(s) + gc_nbytes(s->data);
     }
 }
 
 static uint32_t map_size(uint8_t indent_level, const mp_map_t *map) {
-    uint32_t total_size = 0;
+    uint32_t total_size = gc_nbytes(map->table);
     for (int i = 0; i < map->used; i++) {
-        uint32_t this_size = sizeof(mp_map_elem_t);
+        uint32_t this_size = 0;
         indent(indent_level);
         if (map->table[i].key != NULL) {
             mp_print_str(&mp_plat_print, "key: ");
@@ -103,12 +103,11 @@ static uint32_t map_size(uint8_t indent_level, const mp_map_t *map) {
         total_size += this_size;
     }
 
-    total_size += sizeof(mp_map_elem_t) * (map->alloc - map->used);
     return total_size;
 }
 
 static uint32_t dict_size(uint8_t indent_level, mp_obj_dict_t *dict) {
-    uint32_t total_size = sizeof(mp_obj_dict_t);
+    uint32_t total_size = gc_nbytes(dict);
 
     indent(indent_level);
     mp_printf(&mp_plat_print, "Dictionary @%x\n", dict);
@@ -133,7 +132,7 @@ static uint32_t function_size(uint8_t indent_level, mp_obj_t obj) {
         return 0;
     } else if (MP_OBJ_IS_TYPE(obj, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t* fn = MP_OBJ_TO_PTR(obj);
-        uint32_t total_size = gc_nbytes(fn->bytecode) + gc_nbytes(fn->const_table);
+        uint32_t total_size = gc_nbytes(fn) + gc_nbytes(fn->bytecode) + gc_nbytes(fn->const_table);
         #if MICROPY_DEBUG_PRINTERS
         mp_printf(&mp_plat_print, "BYTECODE START\n");
         mp_bytecode_print(fn, fn->bytecode, gc_nbytes(fn->bytecode), fn->const_table);
@@ -157,18 +156,27 @@ static uint32_t function_size(uint8_t indent_level, mp_obj_t obj) {
 }
 
 static uint32_t array_size(uint8_t indent_level, mp_obj_array_t *array) {
-    uint32_t total_size = sizeof(mp_obj_array_t);
+    uint32_t total_size = gc_nbytes(array);
 
-    int typecode_size = mp_binary_get_size('@', array->typecode, NULL);
-    total_size += typecode_size * (array->free + array->len);
+    uint32_t item_size = gc_nbytes(array->items);
+    total_size += item_size;
     indent(indent_level);
-    mp_printf(&mp_plat_print, "Array of size: %u\n\n", (array->free + array->len));
+    mp_printf(&mp_plat_print, "Array of size: %u\n\n", item_size);
+
+    return total_size;
+}
+
+static uint32_t memoryview_size(uint8_t indent_level, mp_obj_array_t *array) {
+    uint32_t total_size = gc_nbytes(array);
+
+    indent(indent_level);
+    mp_printf(&mp_plat_print, "memoryview\n");
 
     return total_size;
 }
 
 static uint32_t type_size(uint8_t indent_level, mp_obj_type_t *type) {
-    uint32_t total_size = sizeof(mp_obj_type_t);
+    uint32_t total_size = gc_nbytes(type);
 
     // mp_obj_base_t base;
     // qstr name;
@@ -218,7 +226,7 @@ static uint32_t type_size(uint8_t indent_level, mp_obj_type_t *type) {
 
 
 static uint32_t instance_size(uint8_t indent_level, mp_obj_instance_t *instance) {
-    uint32_t total_size = sizeof(mp_obj_instance_t);
+    uint32_t total_size = gc_nbytes(instance);
 
     total_size += map_size(indent_level, &instance->members);
 
@@ -226,7 +234,7 @@ static uint32_t instance_size(uint8_t indent_level, mp_obj_instance_t *instance)
 }
 
 static uint32_t module_size(uint8_t indent_level, mp_obj_module_t *module) {
-    uint32_t total_size = sizeof(mp_obj_module_t);
+    uint32_t total_size = gc_nbytes(module);
 
     indent(indent_level);
     mp_printf(&mp_plat_print, ".globals\n");
@@ -264,7 +272,9 @@ static uint32_t object_size(uint8_t indent_level, mp_obj_t obj) {
         return type_size(indent_level, MP_OBJ_TO_PTR(obj));
     } else if (type == &mp_type_bytearray || type == &mp_type_array) {
         return array_size(indent_level, MP_OBJ_TO_PTR(obj));
-    } else if (MP_OBJ_IS_OBJ(obj) && VERIFY_PTR(type)) {
+    } else if (type == &mp_type_memoryview) {
+        return memoryview_size(indent_level, MP_OBJ_TO_PTR(obj));
+    }  else if (MP_OBJ_IS_OBJ(obj) && VERIFY_PTR(type)) {
         return instance_size(indent_level, MP_OBJ_TO_PTR(obj));
     }
 
