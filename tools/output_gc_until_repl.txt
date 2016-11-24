@@ -1,0 +1,28 @@
+tar ext :2331
+monitor reset
+set width 0
+set height 0
+set verbose off
+set logging file mylog.txt
+set logging overwrite on
+set logging redirect on
+set logging on
+set remote hardware-breakpoint-limit 4
+
+# gc log
+break gc.c:110
+commands
+backtrace
+p/x start_block
+p/x length
+continue
+end
+
+break mp_hal_stdin_rx_chr
+
+continue
+
+delete
+
+disconnect
+quit
