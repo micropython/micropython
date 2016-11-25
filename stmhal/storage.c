@@ -38,7 +38,7 @@
 #include "storage.h"
 #include "irq.h"
 
-#if defined(STM32F405xx) || defined(STM32F407xx)
+#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx)
 
 #define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
 #define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of CCM
