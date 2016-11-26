@@ -8,6 +8,6 @@ l = list(d.values())
 l.sort()
 print(l)
 
-# argument to fromkeys is a generator
-d = dict.fromkeys(i + 1 for i in range(1))
+# argument to fromkeys has no __len__
+d = dict.fromkeys(reversed(range(1)))
 print(d)
