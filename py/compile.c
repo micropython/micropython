@@ -1203,8 +1203,6 @@ STATIC void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // TODO proper and/or short circuiting
-
     uint l_end = comp_next_label(comp);
 
     // optimisation: don't emit anything when "if False"
