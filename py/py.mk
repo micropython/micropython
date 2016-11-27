@@ -120,6 +120,7 @@ PY_O_BASENAME = \
 	compile.o \
 	emitcommon.o \
 	emitbc.o \
+	asmbase.o \
 	asmx64.o \
 	emitnx64.o \
 	asmx86.o \

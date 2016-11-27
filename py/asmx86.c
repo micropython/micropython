@@ -100,80 +100,6 @@
 
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 
-struct _asm_x86_t {
-    uint pass;
-    mp_uint_t code_offset;
-    mp_uint_t code_size;
-    byte *code_base;
-    byte dummy_data[8];
-
-    mp_uint_t max_num_labels;
-    mp_uint_t *label_offsets;
-    int num_locals;
-};
-
-asm_x86_t *asm_x86_new(mp_uint_t max_num_labels) {
-    asm_x86_t *as;
-
-    as = m_new0(asm_x86_t, 1);
-    as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(mp_uint_t, max_num_labels);
-
-    return as;
-}
-
-void asm_x86_free(asm_x86_t *as, bool free_code) {
-    if (free_code) {
-        MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
-    }
-    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
-    m_del_obj(asm_x86_t, as);
-}
-
-void asm_x86_start_pass(asm_x86_t *as, mp_uint_t pass) {
-    if (pass == ASM_X86_PASS_COMPUTE) {
-        // reset all labels
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
-    } else if (pass == ASM_X86_PASS_EMIT) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
-        if (as->code_base == NULL) {
-            assert(0);
-        }
-    }
-    as->pass = pass;
-    as->code_offset = 0;
-}
-
-void asm_x86_end_pass(asm_x86_t *as) {
-    (void)as;
-}
-
-// all functions must go through this one to emit bytes
-STATIC byte *asm_x86_get_cur_to_write_bytes(asm_x86_t *as, int num_bytes_to_write) {
-    //printf("emit %d\n", num_bytes_to_write);
-    if (as->pass < ASM_X86_PASS_EMIT) {
-        as->code_offset += num_bytes_to_write;
-        return as->dummy_data;
-    } else {
-        assert(as->code_offset + num_bytes_to_write <= as->code_size);
-        byte *c = as->code_base + as->code_offset;
-        as->code_offset += num_bytes_to_write;
-        return c;
-    }
-}
-
-mp_uint_t asm_x86_get_code_pos(asm_x86_t *as) {
-    return as->code_offset;
-}
-
-mp_uint_t asm_x86_get_code_size(asm_x86_t *as) {
-    return as->code_size;
-}
-
-void *asm_x86_get_code(asm_x86_t *as) {
-    return as->code_base;
-}
-
 STATIC void asm_x86_write_byte_1(asm_x86_t *as, byte b1) {
     byte* c = asm_x86_get_cur_to_write_bytes(as, 1);
     c[0] = b1;
@@ -198,21 +124,6 @@ STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
     c[1] = IMM32_L1(w32);
     c[2] = IMM32_L2(w32);
     c[3] = IMM32_L3(w32);
-}
-
-// align must be a multiple of 2
-void asm_x86_align(asm_x86_t* as, mp_uint_t align) {
-    // TODO fill unused data with NOPs?
-    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
-}
-
-void asm_x86_data(asm_x86_t* as, mp_uint_t bytesize, mp_uint_t val) {
-    byte *c = asm_x86_get_cur_to_write_bytes(as, bytesize);
-    // machine is little endian
-    for (uint i = 0; i < bytesize; i++) {
-        *c++ = val;
-        val >>= 8;
-    }
 }
 
 STATIC void asm_x86_write_r32_disp(asm_x86_t *as, int r32, int disp_r32, int disp_offset) {
@@ -417,19 +328,6 @@ void asm_x86_test_r8_with_r8(asm_x86_t *as, int src_r32_a, int src_r32_b) {
 
 void asm_x86_setcc_r8(asm_x86_t *as, mp_uint_t jcc_type, int dest_r8) {
     asm_x86_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R32(0) | MODRM_RM_REG | MODRM_RM_R32(dest_r8));
-}
-
-void asm_x86_label_assign(asm_x86_t *as, mp_uint_t label) {
-    assert(label < as->max_num_labels);
-    if (as->pass < ASM_X86_PASS_EMIT) {
-        // assign label offset
-        assert(as->label_offsets[label] == (mp_uint_t)-1);
-        as->label_offsets[label] = as->code_offset;
-    } else {
-        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
-        //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
-        assert(as->label_offsets[label] == as->code_offset);
-    }
 }
 
 STATIC mp_uint_t get_label_dest(asm_x86_t *as, mp_uint_t label) {

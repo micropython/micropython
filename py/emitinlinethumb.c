@@ -63,13 +63,15 @@ emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels) {
     emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
     emit->max_num_labels = max_num_labels;
     emit->label_lookup = m_new(qstr, max_num_labels);
-    emit->as = asm_thumb_new(max_num_labels);
+    emit->as = m_new0(asm_thumb_t, 1);
+    mp_asm_base_init(&emit->as->base, max_num_labels);
     return emit;
 }
 
 void emit_inline_thumb_free(emit_inline_asm_t *emit) {
     m_del(qstr, emit->label_lookup, emit->max_num_labels);
-    asm_thumb_free(emit->as, false);
+    mp_asm_base_deinit(&emit->as->base, false);
+    m_del_obj(asm_thumb_t, emit->as);
     m_del_obj(emit_inline_asm_t, emit);
 }
 
@@ -80,7 +82,7 @@ STATIC void emit_inline_thumb_start_pass(emit_inline_asm_t *emit, pass_kind_t pa
     if (emit->pass == MP_PASS_CODE_SIZE) {
         memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
     }
-    asm_thumb_start_pass(emit->as, pass == MP_PASS_EMIT ? ASM_THUMB_PASS_EMIT : ASM_THUMB_PASS_COMPUTE);
+    mp_asm_base_start_pass(&emit->as->base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
     asm_thumb_entry(emit->as, 0);
 }
 
@@ -89,9 +91,9 @@ STATIC void emit_inline_thumb_end_pass(emit_inline_asm_t *emit, mp_uint_t type_s
     asm_thumb_end_pass(emit->as);
 
     if (emit->pass == MP_PASS_EMIT) {
-        void *f = asm_thumb_get_code(emit->as);
+        void *f = mp_asm_base_get_code(&emit->as->base);
         mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f,
-            asm_thumb_get_code_size(emit->as), NULL, emit->scope->num_pos_args, 0, type_sig);
+            mp_asm_base_get_code_size(&emit->as->base), NULL, emit->scope->num_pos_args, 0, type_sig);
     }
 }
 
@@ -125,16 +127,16 @@ STATIC bool emit_inline_thumb_label(emit_inline_asm_t *emit, mp_uint_t label_num
         }
     }
     emit->label_lookup[label_num] = label_id;
-    asm_thumb_label_assign(emit->as, label_num);
+    mp_asm_base_label_assign(&emit->as->base, label_num);
     return true;
 }
 
 STATIC void emit_inline_thumb_align(emit_inline_asm_t *emit, mp_uint_t align) {
-    asm_thumb_align(emit->as, align);
+    mp_asm_base_align(&emit->as->base, align);
 }
 
 STATIC void emit_inline_thumb_data(emit_inline_asm_t *emit, mp_uint_t bytesize, mp_uint_t val) {
-    asm_thumb_data(emit->as, bytesize, val);
+    mp_asm_base_data(&emit->as->base, bytesize, val);
 }
 
 typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;

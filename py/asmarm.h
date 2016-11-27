@@ -28,9 +28,7 @@
 #define __MICROPY_INCLUDED_PY_ASMARM_H__
 
 #include "py/misc.h"
-
-#define ASM_ARM_PASS_COMPUTE (1)
-#define ASM_ARM_PASS_EMIT    (2)
+#include "py/asmbase.h"
 
 #define ASM_ARM_REG_R0  (0)
 #define ASM_ARM_REG_R1  (1)
@@ -68,22 +66,16 @@
 #define ASM_ARM_CC_LE (0xd << 28)
 #define ASM_ARM_CC_AL (0xe << 28)
 
-typedef struct _asm_arm_t asm_arm_t;
+typedef struct _asm_arm_t {
+    mp_asm_base_t base;
+    uint push_reglist;
+    uint stack_adjust;
+} asm_arm_t;
 
-asm_arm_t *asm_arm_new(uint max_num_labels);
-void asm_arm_free(asm_arm_t *as, bool free_code);
-void asm_arm_start_pass(asm_arm_t *as, uint pass);
 void asm_arm_end_pass(asm_arm_t *as);
-uint asm_arm_get_code_pos(asm_arm_t *as);
-uint asm_arm_get_code_size(asm_arm_t *as);
-void *asm_arm_get_code(asm_arm_t *as);
 
 void asm_arm_entry(asm_arm_t *as, int num_locals);
 void asm_arm_exit(asm_arm_t *as);
-void asm_arm_label_assign(asm_arm_t *as, uint label);
-
-void asm_arm_align(asm_arm_t* as, uint align);
-void asm_arm_data(asm_arm_t* as, uint bytesize, uint val);
 
 void asm_arm_bkpt(asm_arm_t *as);
 

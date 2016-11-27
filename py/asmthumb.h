@@ -27,9 +27,7 @@
 #define __MICROPY_INCLUDED_PY_ASMTHUMB_H__
 
 #include "py/misc.h"
-
-#define ASM_THUMB_PASS_COMPUTE (1)
-#define ASM_THUMB_PASS_EMIT    (2)
+#include "py/asmbase.h"
 
 #define ASM_THUMB_REG_R0  (0)
 #define ASM_THUMB_REG_R1  (1)
@@ -64,23 +62,16 @@
 #define ASM_THUMB_CC_GT (0xc)
 #define ASM_THUMB_CC_LE (0xd)
 
-typedef struct _asm_thumb_t asm_thumb_t;
+typedef struct _asm_thumb_t {
+    mp_asm_base_t base;
+    uint32_t push_reglist;
+    uint32_t stack_adjust;
+} asm_thumb_t;
 
-asm_thumb_t *asm_thumb_new(uint max_num_labels);
-void asm_thumb_free(asm_thumb_t *as, bool free_code);
-void asm_thumb_start_pass(asm_thumb_t *as, uint pass);
 void asm_thumb_end_pass(asm_thumb_t *as);
-uint asm_thumb_get_code_pos(asm_thumb_t *as);
-uint asm_thumb_get_code_size(asm_thumb_t *as);
-void *asm_thumb_get_code(asm_thumb_t *as);
 
 void asm_thumb_entry(asm_thumb_t *as, int num_locals);
 void asm_thumb_exit(asm_thumb_t *as);
-
-void asm_thumb_label_assign(asm_thumb_t *as, uint label);
-
-void asm_thumb_align(asm_thumb_t* as, uint align);
-void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val);
 
 // argument order follows ARM, in general dest is first
 // note there is a difference between movw and mov.w, and many others!

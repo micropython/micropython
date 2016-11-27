@@ -28,6 +28,7 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
+#include "py/asmbase.h"
 
 // AMD64 calling convention is:
 //  - args pass in: RDI, RSI, RDX, RCX, R08, R09
@@ -40,9 +41,6 @@
 // the destination is the first argument.
 // NOTE: this is a change from the old convention used in this file and
 // some functions still use the old (reverse) convention.
-
-#define ASM_X64_PASS_COMPUTE (1)
-#define ASM_X64_PASS_EMIT    (2)
 
 #define ASM_X64_REG_RAX (0)
 #define ASM_X64_REG_RCX (1)
@@ -72,18 +70,15 @@
 #define ASM_X64_CC_JLE (0xe) // less or equal, signed
 #define ASM_X64_CC_JG  (0xf) // greater, signed
 
-typedef struct _asm_x64_t asm_x64_t;
+typedef struct _asm_x64_t {
+    mp_asm_base_t base;
+    byte dummy_data[4]; // in addition to dummy_data in base
+    int num_locals;
+} asm_x64_t;
 
-asm_x64_t* asm_x64_new(mp_uint_t max_num_labels);
-void asm_x64_free(asm_x64_t* as, bool free_code);
-void asm_x64_start_pass(asm_x64_t *as, uint pass);
-void asm_x64_end_pass(asm_x64_t *as);
-mp_uint_t asm_x64_get_code_pos(asm_x64_t *as);
-mp_uint_t asm_x64_get_code_size(asm_x64_t* as);
-void* asm_x64_get_code(asm_x64_t* as);
-
-void asm_x64_align(asm_x64_t *as, mp_uint_t align);
-void asm_x64_data(asm_x64_t *as, mp_uint_t bytesize, mp_uint_t val);
+static inline void asm_x64_end_pass(asm_x64_t *as) {
+    (void)as;
+}
 
 void asm_x64_nop(asm_x64_t* as);
 void asm_x64_push_r64(asm_x64_t* as, int src_r64);
@@ -111,7 +106,6 @@ void asm_x64_mul_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
 void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);
-void asm_x64_label_assign(asm_x64_t* as, mp_uint_t label);
 void asm_x64_jmp_label(asm_x64_t* as, mp_uint_t label);
 void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, mp_uint_t label);
 void asm_x64_entry(asm_x64_t* as, int num_locals);

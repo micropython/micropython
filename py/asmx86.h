@@ -28,6 +28,7 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
+#include "py/asmbase.h"
 
 // x86 cdecl calling convention is:
 //  - args passed on the stack in reverse order
@@ -41,9 +42,6 @@
 // the destination is the first argument.
 // NOTE: this is a change from the old convention used in this file and
 // some functions still use the old (reverse) convention.
-
-#define ASM_X86_PASS_COMPUTE (1)
-#define ASM_X86_PASS_EMIT    (2)
 
 #define ASM_X86_REG_EAX (0)
 #define ASM_X86_REG_ECX (1)
@@ -75,18 +73,15 @@
 #define ASM_X86_CC_JLE (0xe) // less or equal, signed
 #define ASM_X86_CC_JG  (0xf) // greater, signed
 
-typedef struct _asm_x86_t asm_x86_t;
+typedef struct _asm_x86_t {
+    mp_asm_base_t base;
+    byte dummy_data[4]; // in addition to dummy_data in base
+    int num_locals;
+} asm_x86_t;
 
-asm_x86_t* asm_x86_new(mp_uint_t max_num_labels);
-void asm_x86_free(asm_x86_t* as, bool free_code);
-void asm_x86_start_pass(asm_x86_t *as, mp_uint_t pass);
-void asm_x86_end_pass(asm_x86_t *as);
-mp_uint_t asm_x86_get_code_pos(asm_x86_t *as);
-mp_uint_t asm_x86_get_code_size(asm_x86_t* as);
-void* asm_x86_get_code(asm_x86_t* as);
-
-void asm_x86_align(asm_x86_t *as, mp_uint_t align);
-void asm_x86_data(asm_x86_t *as, mp_uint_t bytesize, mp_uint_t val);
+static inline void asm_x86_end_pass(asm_x86_t *as) {
+    (void)as;
+}
 
 void asm_x86_mov_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32);
@@ -108,7 +103,6 @@ void asm_x86_mul_r32_r32(asm_x86_t* as, int dest_r32, int src_r32);
 void asm_x86_cmp_r32_with_r32(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_test_r8_with_r8(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_setcc_r8(asm_x86_t* as, mp_uint_t jcc_type, int dest_r8);
-void asm_x86_label_assign(asm_x86_t* as, mp_uint_t label);
 void asm_x86_jmp_label(asm_x86_t* as, mp_uint_t label);
 void asm_x86_jcc_label(asm_x86_t* as, mp_uint_t jcc_type, mp_uint_t label);
 void asm_x86_entry(asm_x86_t* as, mp_uint_t num_locals);
