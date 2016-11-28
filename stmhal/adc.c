@@ -426,7 +426,7 @@ typedef struct _pyb_adc_all_obj_t {
     ADC_HandleTypeDef handle;
 } pyb_adc_all_obj_t;
 
-void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
+void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_mask) {
 
     switch (resolution) {
         case 6:  resolution = ADC_RESOLUTION6b;  break;
@@ -439,15 +439,20 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
     }
 
     for (uint32_t channel = ADC_FIRST_GPIO_CHANNEL; channel <= ADC_LAST_GPIO_CHANNEL; ++channel) {
-        // Channels 0-16 correspond to real pins. Configure the GPIO pin in
-        // ADC mode.
-        const pin_obj_t *pin = pin_adc1[channel];
-        mp_hal_gpio_clock_enable(pin->gpio);
-        GPIO_InitTypeDef GPIO_InitStructure;
-        GPIO_InitStructure.Pin = pin->pin_mask;
-        GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-        GPIO_InitStructure.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+        // only initialise those channels that are selected with the en_mask
+        if (en_mask & (1 << channel)) {
+            // Channels 0-16 correspond to real pins. Configure the GPIO pin in
+            // ADC mode.
+            const pin_obj_t *pin = pin_adc1[channel];
+            if (pin) {
+                mp_hal_gpio_clock_enable(pin->gpio);
+                GPIO_InitTypeDef GPIO_InitStructure;
+                GPIO_InitStructure.Pin = pin->pin_mask;
+                GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
+                GPIO_InitStructure.Pull = GPIO_NOPULL;
+                HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+            }
+        }
     }
 
     adcx_clock_enable();
@@ -536,12 +541,17 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 
 STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // make ADCAll object
     pyb_adc_all_obj_t *o = m_new_obj(pyb_adc_all_obj_t);
     o->base.type = &pyb_adc_all_type;
-    adc_init_all(o, mp_obj_get_int(args[0])); // args[0] is the resolution
+    mp_int_t res = mp_obj_get_int(args[0]);
+    uint32_t en_mask = 0xffffffff;
+    if (n_args > 1) {
+        en_mask =  mp_obj_get_int(args[1]);
+    }
+    adc_init_all(o, res, en_mask);
 
     return o;
 }
