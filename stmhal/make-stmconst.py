@@ -193,6 +193,11 @@ def main():
 
     periphs, reg_defs = parse_file(args.file[0])
 
+    # add legacy GPIO constants that were removed when upgrading CMSIS
+    if 'GPIO' in reg_defs and 'stm32f4' in args.file[0]:
+        reg_defs['GPIO'].append(['BSRRL', 0x18, 16, 'legacy register'])
+        reg_defs['GPIO'].append(['BSRRH', 0x1a, 16, 'legacy register'])
+
     modules = []
     needed_qstrs = set()
     needed_mpzs = set()
