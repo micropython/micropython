@@ -98,10 +98,12 @@
 //|   import time
 //|
 //|   with nativeio.DigitalInOut(D13) as led:
-//|     led.value = True
-//|     time.sleep(0.1)
-//|     led.value = False
-//|     time.sleep(0.1)
+//|     led.switch_to_output()
+//|     while True:
+//|       led.value = True
+//|       time.sleep(0.1)
+//|       led.value = False
+//|       time.sleep(0.1)
 //|
 
 STATIC const mp_rom_map_elem_t nativeio_module_globals_table[] = {
