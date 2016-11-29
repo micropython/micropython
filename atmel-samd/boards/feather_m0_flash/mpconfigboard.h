@@ -20,4 +20,4 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#define FLASH_INCLUDE "spi_flash.h"
+#include "spi_flash.h"

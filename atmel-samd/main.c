@@ -25,7 +25,6 @@
 #include "mpconfigboard.h"
 #include "neopixel_status.h"
 #include "tick.h"
-#include FLASH_INCLUDE
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -341,7 +340,6 @@ void gc_collect(void) {
     // This naively collects all object references from an approximate stack
     // range.
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
-    mark_flash_cache_for_gc();
     gc_collect_end();
     gc_dump_info();
 }

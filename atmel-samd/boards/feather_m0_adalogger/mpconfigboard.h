@@ -8,4 +8,4 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#define FLASH_INCLUDE "internal_flash.h"
+#include "internal_flash.h"

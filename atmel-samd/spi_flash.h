@@ -30,6 +30,10 @@
 
 #include "mpconfigport.h"
 
+// We use this when we can allocate the whole cache in RAM.
+#define FLASH_ROOT_POINTERS \
+    uint8_t** flash_ram_cache; \
+
 // Erase sector size.
 #define SPI_FLASH_SECTOR_SIZE (0x1000 - 100)
 
@@ -47,8 +51,6 @@ bool spi_flash_write_block(const uint8_t *src, uint32_t block);
 // these return 0 on success, non-zero on error
 mp_uint_t spi_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t spi_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
-
-void mark_flash_cache_for_gc(void);
 
 extern const struct _mp_obj_type_t spi_flash_type;
 

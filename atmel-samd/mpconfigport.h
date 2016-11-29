@@ -158,5 +158,6 @@ extern const struct _mp_obj_module_t uheap_module;
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t mp_kbd_exception; \
+    FLASH_ROOT_POINTERS \
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

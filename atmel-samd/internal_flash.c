@@ -242,8 +242,6 @@ mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, ui
     return 0; // success
 }
 
-void mark_flash_cache_for_gc(void) {}
-
 /******************************************************************************/
 // MicroPython bindings
 //

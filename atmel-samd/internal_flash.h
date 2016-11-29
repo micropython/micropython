@@ -30,6 +30,8 @@
 
 #include "mpconfigport.h"
 
+#define FLASH_ROOT_POINTERS (0)
+
 #define INTERNAL_FLASH_BLOCK_SIZE (512)
 
 #define INTERNAL_FLASH_SYSTICK_MASK    (0x1ff) // 512ms
@@ -46,8 +48,6 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block);
 // these return 0 on success, non-zero on error
 mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
-
-void mark_flash_cache_for_gc(void);
 
 extern const struct _mp_obj_type_t internal_flash_type;
 

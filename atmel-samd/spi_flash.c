@@ -71,9 +71,6 @@ static uint32_t current_sector;
 // cache.
 static uint32_t dirty_mask;
 
-// We use this when we can allocate the whole cache in RAM.
-static uint8_t** ram_cache;
-
 // Address of the scratch flash sector.
 #define SCRATCH_SECTOR (flash_size - sector_size)
 
@@ -239,7 +236,7 @@ void spi_flash_init(void) {
 
         current_sector = NO_SECTOR_LOADED;
         dirty_mask = 0;
-        ram_cache = NULL;
+        MP_STATE_VM(flash_ram_cache) = NULL;
 
         spi_flash_is_initialised = true;
     }
@@ -291,8 +288,8 @@ static bool flush_scratch_flash(void) {
 static bool allocate_ram_cache(void) {
     uint8_t blocks_per_sector = sector_size / FLASH_BLOCK_SIZE;
     uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
-    ram_cache = gc_alloc(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
-    if (ram_cache == NULL) {
+    MP_STATE_VM(flash_ram_cache) = gc_alloc(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
+    if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
     }
     // Declare i and j outside the loops in case we fail to allocate everything
@@ -307,7 +304,7 @@ static bool allocate_ram_cache(void) {
                 success = false;
                 break;
             }
-            ram_cache[i * pages_per_block + j] = page_cache;
+            MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j] = page_cache;
         }
         if (!success) {
             break;
@@ -320,12 +317,12 @@ static bool allocate_ram_cache(void) {
         i++;
         for (; i > 0; i--) {
             for (; j > 0; j--) {
-                gc_free(ram_cache[(i - 1) * pages_per_block + (j - 1)]);
+                gc_free(MP_STATE_VM(flash_ram_cache)[(i - 1) * pages_per_block + (j - 1)]);
             }
             j = pages_per_block;
         }
-        gc_free(ram_cache);
-        ram_cache = NULL;
+        gc_free(MP_STATE_VM(flash_ram_cache));
+        MP_STATE_VM(flash_ram_cache) = NULL;
     }
     return success;
 }
@@ -343,7 +340,7 @@ static bool flush_ram_cache(bool keep_cache) {
             for (uint8_t j = 0; j < pages_per_block; j++) {
                 copy_to_ram_ok = read_flash(
                     current_sector + (i * pages_per_block + j) * page_size,
-                    ram_cache[i * pages_per_block + j],
+                    MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                     page_size);
                 if (!copy_to_ram_ok) {
                     break;
@@ -364,17 +361,17 @@ static bool flush_ram_cache(bool keep_cache) {
     for (uint8_t i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
         for (uint8_t j = 0; j < pages_per_block; j++) {
             write_flash(current_sector + (i * pages_per_block + j) * page_size,
-                        ram_cache[i * pages_per_block + j],
+                        MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                         page_size);
             if (!keep_cache) {
-                gc_free(ram_cache[i * pages_per_block + j]);
+                gc_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
         }
     }
     // We're done with the cache for now so give it back.
     if (!keep_cache) {
-        gc_free(ram_cache);
-        ram_cache = NULL;
+        gc_free(MP_STATE_VM(flash_ram_cache));
+        MP_STATE_VM(flash_ram_cache) = NULL;
     }
     return true;
 }
@@ -391,7 +388,7 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
         temp_status_color(0x8f, 0x00, 0x00);
     #endif
     // If we've cached to the flash itself flush from there.
-    if (ram_cache == NULL) {
+    if (MP_STATE_VM(flash_ram_cache) == NULL) {
         flush_scratch_flash();
     } else {
         flush_ram_cache(keep_cache);
@@ -494,11 +491,11 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
         uint8_t mask = 1 << (block_index);
         // We're reading from the currently cached sector.
         if (current_sector == this_sector && (mask & dirty_mask) > 0) {
-            if (ram_cache != NULL) {
+            if (MP_STATE_VM(flash_ram_cache) != NULL) {
                 uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
                 for (int i = 0; i < pages_per_block; i++) {
                     memcpy(dest + i * page_size,
-                           ram_cache[block_index * pages_per_block + i],
+                           MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
                            page_size);
                 }
                 return true;
@@ -534,7 +531,7 @@ bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
             if (current_sector != NO_SECTOR_LOADED) {
                 spi_flash_flush_keep_cache(true);
             }
-            if (ram_cache == NULL && !allocate_ram_cache()) {
+            if (MP_STATE_VM(flash_ram_cache) == NULL && !allocate_ram_cache()) {
                 erase_sector(SCRATCH_SECTOR);
                 wait_for_flash_ready();
             }
@@ -543,10 +540,10 @@ bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
         }
         dirty_mask |= mask;
         // Copy the block to the appropriate cache.
-        if (ram_cache != NULL) {
+        if (MP_STATE_VM(flash_ram_cache) != NULL) {
             uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
             for (int i = 0; i < pages_per_block; i++) {
-                memcpy(ram_cache[block_index * pages_per_block + i],
+                memcpy(MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
                        data + i * page_size,
                        page_size);
             }
@@ -574,19 +571,6 @@ mp_uint_t spi_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_
         }
     }
     return 0; // success
-}
-
-void mark_flash_cache_for_gc(void) {
-    if (current_sector != NO_SECTOR_LOADED && ram_cache != NULL) {
-        gc_mark_block(ram_cache);
-        uint8_t blocks_per_sector = sector_size / FLASH_BLOCK_SIZE;
-        uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
-        for (uint8_t i = 0; i < blocks_per_sector; i++) {
-            for (uint8_t j = 0; j < pages_per_block; j++) {
-                gc_mark_block(ram_cache[i * pages_per_block + j]);
-            }
-        }
-    }
 }
 
 /******************************************************************************/
