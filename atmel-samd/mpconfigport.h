@@ -113,6 +113,7 @@ typedef long mp_off_t;
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t microcontroller_module;
+extern const struct _mp_obj_module_t bitbangio_module;
 extern const struct _mp_obj_module_t nativeio_module;
 extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t uos_module;
@@ -122,6 +123,7 @@ extern const struct _mp_obj_module_t uheap_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_nativeio), (mp_obj_t)&nativeio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
