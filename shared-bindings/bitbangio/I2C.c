@@ -28,6 +28,7 @@
 // bitbangio.I2C class.
 
 #include "shared-bindings/bitbangio/I2C.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "py/runtime.h"
 //| .. currentmodule:: bitbangio
@@ -46,23 +47,25 @@
 //|   :param int freq: The clock frequency
 //|
 STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-   mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-   bitbangio_i2c_obj_t *self = m_new_obj(bitbangio_i2c_obj_t);
-   self->base.type = &bitbangio_i2c_type;
-   mp_map_t kw_args;
-   mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-   enum { ARG_scl, ARG_sda, ARG_freq };
-   static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-   };
-   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-   mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-   const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
-   const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
-   shared_module_bitbangio_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
-   return (mp_obj_t)self;
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+    bitbangio_i2c_obj_t *self = m_new_obj(bitbangio_i2c_obj_t);
+    self->base.type = &bitbangio_i2c_type;
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+    enum { ARG_scl, ARG_sda, ARG_freq };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    assert_pin(args[ARG_scl].u_obj, false);
+    assert_pin(args[ARG_sda].u_obj, false);
+    const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
+    shared_module_bitbangio_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
+    return (mp_obj_t)self;
 }
 
 //|   .. method:: I2C.deinit()
@@ -70,9 +73,9 @@ STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     Releases control of the underlying hardware so other classes can use it.
 //|
 STATIC mp_obj_t bitbangio_i2c_obj_deinit(mp_obj_t self_in) {
-   bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   shared_module_bitbangio_i2c_deinit(self);
-   return mp_const_none;
+    bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    shared_module_bitbangio_i2c_deinit(self);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_deinit_obj, bitbangio_i2c_obj_deinit);
 
@@ -81,7 +84,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_deinit_obj, bitbangio_i2c_obj_deinit);
 //|     No-op used in Context Managers.
 //|
 STATIC mp_obj_t bitbangio_i2c_obj___enter__(mp_obj_t self_in) {
-   return self_in;
+    return self_in;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c___enter___obj, bitbangio_i2c_obj___enter__);
 
@@ -103,16 +106,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_i2c_obj___exit___obj, 4, 4,
 //|      its address (including a read bit) is sent on the bus.
 //|
 STATIC mp_obj_t bitbangio_i2c_scan(mp_obj_t self_in) {
-   bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   mp_obj_t list = mp_obj_new_list(0, NULL);
-   // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
-   for (int addr = 0x08; addr < 0x78; ++addr) {
-       bool success = shared_module_bitbangio_i2c_probe(self, addr);
-       if (success) {
+    bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
+    for (int addr = 0x08; addr < 0x78; ++addr) {
+        bool success = shared_module_bitbangio_i2c_probe(self, addr);
+        if (success) {
            mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
-       }
-   }
-   return list;
+        }
+    }
+    return list;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_scan_obj, bitbangio_i2c_scan);
 
@@ -174,8 +177,8 @@ STATIC const mp_rom_map_elem_t bitbangio_i2c_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(bitbangio_i2c_locals_dict, bitbangio_i2c_locals_dict_table);
 
 const mp_obj_type_t bitbangio_i2c_type = {
-   { &mp_type_type },
-   .name = MP_QSTR_I2C,
-   .make_new = bitbangio_i2c_make_new,
-   .locals_dict = (mp_obj_dict_t*)&bitbangio_i2c_locals_dict,
+    { &mp_type_type },
+    .name = MP_QSTR_I2C,
+    .make_new = bitbangio_i2c_make_new,
+    .locals_dict = (mp_obj_dict_t*)&bitbangio_i2c_locals_dict,
 };

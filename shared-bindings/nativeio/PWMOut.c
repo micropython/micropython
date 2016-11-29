@@ -28,6 +28,7 @@
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/PWMOut.h"
 
 //| .. currentmodule:: nativeio
@@ -48,6 +49,7 @@
 STATIC mp_obj_t nativeio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
     mp_obj_t pin_obj = args[0];
+    assert_pin(pin_obj, false);
     const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
 
     // create PWM object from the given pin

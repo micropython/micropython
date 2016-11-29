@@ -26,6 +26,9 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "py/nlr.h"
+#include "py/obj.h"
+
 //| .. currentmodule:: microcontroller
 //|
 //| :class:`Pin` --- Pin reference
@@ -44,3 +47,9 @@ const mp_obj_type_t mcu_pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
 };
+
+void assert_pin(mp_obj_t obj, bool none_ok) {
+    if ((obj != mp_const_none || !none_ok) && !MP_OBJ_IS_TYPE(obj, &mcu_pin_type)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Expected a Pin"));
+    }
+}

@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "shared-bindings/bitbangio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "py/runtime.h"
 
@@ -76,8 +77,11 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    assert_pin(args[ARG_clock].u_obj, false);
+    assert_pin(args[ARG_MOSI].u_obj, true);
+    assert_pin(args[ARG_MISO].u_obj, true);
     const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(args[ARG_clock].u_obj);
-     const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
+    const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
     const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(args[ARG_MISO].u_obj);
     shared_module_bitbangio_spi_construct(self, clock, mosi, miso, args[ARG_baudrate].u_int);
     return (mp_obj_t)self;

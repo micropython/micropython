@@ -27,6 +27,7 @@
 // This file contains all of the Python API definitions for the
 // nativeio.I2C class.
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/I2C.h"
 
 #include "py/runtime.h"
@@ -46,23 +47,25 @@
 //|   :param int freq: The clock frequency
 //|
 STATIC mp_obj_t nativeio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-   mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-   nativeio_i2c_obj_t *self = m_new_obj(nativeio_i2c_obj_t);
-   self->base.type = &nativeio_i2c_type;
-   mp_map_t kw_args;
-   mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-   enum { ARG_scl, ARG_sda, ARG_freq };
-   static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-   };
-   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-   mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-   const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
-   const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
-   common_hal_nativeio_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
-   return (mp_obj_t)self;
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+    nativeio_i2c_obj_t *self = m_new_obj(nativeio_i2c_obj_t);
+    self->base.type = &nativeio_i2c_type;
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+    enum { ARG_scl, ARG_sda, ARG_freq };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    assert_pin(args[ARG_scl].u_obj, false);
+    assert_pin(args[ARG_sda].u_obj, false);
+    const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
+    common_hal_nativeio_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
+    return (mp_obj_t)self;
 }
 
 //|   .. method:: I2C.deinit()

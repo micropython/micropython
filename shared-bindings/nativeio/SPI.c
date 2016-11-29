@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/SPI.h"
 
 #include "py/runtime.h"
@@ -59,28 +60,31 @@
 // TODO(tannewt): Support LSB SPI.
 // TODO(tannewt): Support phase, polarity and bit order.
 STATIC mp_obj_t nativeio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-   mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-   nativeio_spi_obj_t *self = m_new_obj(nativeio_spi_obj_t);
-   self->base.type = &nativeio_spi_type;
-   mp_map_t kw_args;
-   mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-   enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
-   static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_MOSI, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_MISO, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
-       { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-       { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-       { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
-   };
-   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-   mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-   const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(args[ARG_clock].u_obj);
-   const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
-   const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(args[ARG_MISO].u_obj);
-   common_hal_nativeio_spi_construct(self, clock, mosi, miso, args[ARG_baudrate].u_int);
-   return (mp_obj_t)self;
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+    nativeio_spi_obj_t *self = m_new_obj(nativeio_spi_obj_t);
+    self->base.type = &nativeio_spi_type;
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+    enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_MOSI, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_MISO, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    assert_pin(args[ARG_clock].u_obj, false);
+    assert_pin(args[ARG_MOSI].u_obj, true);
+    assert_pin(args[ARG_MISO].u_obj, true);
+    const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
+    const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(args[ARG_MISO].u_obj);
+    common_hal_nativeio_spi_construct(self, clock, mosi, miso, args[ARG_baudrate].u_int);
+    return (mp_obj_t)self;
 }
 
 //|   .. method:: SPI.deinit()

@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/DigitalInOut.h"
 
 //| .. currentmodule:: nativeio
@@ -60,6 +61,7 @@ STATIC mp_obj_t nativeio_digitalinout_make_new(const mp_obj_type_t *type,
     nativeio_digitalinout_obj_t *self = m_new_obj(nativeio_digitalinout_obj_t);
     self->base.type = &nativeio_digitalinout_type;
 
+    assert_pin(args[0], false);
     mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(args[0]);
     common_hal_nativeio_digitalinout_construct(self, pin);
 

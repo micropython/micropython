@@ -32,4 +32,6 @@
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t mcu_pin_type;
 
+void assert_pin(mp_obj_t obj, bool none_ok);
+
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__

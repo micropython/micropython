@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/AnalogIn.h"
 
 //| .. currentmodule:: nativeio
@@ -60,6 +61,7 @@ STATIC mp_obj_t nativeio_analogin_make_new(const mp_obj_type_t *type,
 
     // 1st argument is the pin
     mp_obj_t pin_obj = args[0];
+    assert_pin(pin_obj, false);
 
     nativeio_analogin_obj_t *self = m_new_obj(nativeio_analogin_obj_t);
     self->base.type = &nativeio_analogin_type;

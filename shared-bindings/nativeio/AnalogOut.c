@@ -29,6 +29,7 @@
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/AnalogOut.h"
 
 //| .. currentmodule:: nativeio
@@ -57,10 +58,11 @@ STATIC mp_obj_t nativeio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
+    assert_pin(args[0], false);
+    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(args[0]);
+
     nativeio_analogout_obj_t *self = m_new_obj(nativeio_analogout_obj_t);
     self->base.type = &nativeio_analogout_type;
-
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(args[0]);
 
     common_hal_nativeio_analogout_construct(self, pin);
 
