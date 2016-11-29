@@ -224,7 +224,7 @@ reset:
 
 $(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)esptool.py elf2image $^
+	$(Q)python2 $(shell which esptool.py) elf2image $^
 	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x0[1-f]000.bin $@
 
 $(BUILD)/firmware.elf: $(OBJ)
