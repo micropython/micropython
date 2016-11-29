@@ -98,9 +98,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_i2c_obj___exit___obj, 4, 4, 
 
 //|   .. method:: I2C.scan()
 //|
-//|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
-//|      those that respond.  A device responds if it pulls the SDA line low after
-//|      its address (including a read bit) is sent on the bus.
+//|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
+//|      list of those that respond.
+//|
+//|      :return: List of device ids on the I2C bus
+//|      :rtype: list
 //|
 STATIC mp_obj_t nativeio_i2c_scan(mp_obj_t self_in) {
    nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -116,31 +118,69 @@ STATIC mp_obj_t nativeio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c_scan_obj, nativeio_i2c_scan);
 
-//|   .. method:: I2C.readfrom_into(address, buffer)
+//|   .. method:: I2C.readfrom_into(address, buffer, \*, start=0, end=len(buffer))
 //|
 //|      Read into ``buffer`` from the slave specified by ``address``.
-//|      The number of bytes read will be the length of `buf`.
+//|      The number of bytes read will be the length of ``buffer``.
 //|
-STATIC mp_obj_t nativeio_i2c_readfrom_into(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t buf_in) {
-    nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+//|      If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|      as if ``buffer[start:end]``. This will not cause an allocation like
+//|      ``buf[start:end]`` will so it saves memory.
+//|
+//|      :param int address: 7-bit device address
+//|      :param bytearray buffer: buffer to write into
+//|      :param int start: Index to start writing at
+//|      :param int end: Index to write up to but not include
+//|
+STATIC mp_obj_t nativeio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    common_hal_nativeio_i2c_read(self, mp_obj_get_int(addr_in), (uint8_t*)bufinfo.buf, bufinfo.len);
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    int32_t end = args[ARG_end].u_int;
+    if (end < 0) {
+        end += bufinfo.len;
+    }
+    uint32_t len = max(0, min((int32_t) bufinfo.len, end - args[ARG_start].u_int));
+    int32_t start = args[ARG_start].u_int;
+    common_hal_nativeio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, len);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_3(nativeio_i2c_readfrom_into_obj, nativeio_i2c_readfrom_into);
+MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_i2c_readfrom_into_obj, 3, nativeio_i2c_readfrom_into);
 
-//|   .. method:: I2C.writeto(address, buffer, stop=True)
+//|   .. method:: I2C.writeto(address, buffer, \*, start=0, end=len(buffer), stop=True)
 //|
 //|      Write the bytes from ``buffer`` to the slave specified by ``address``.
 //|      Transmits a stop bit if ``stop`` is set.
 //|
+//|      If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|      as if ``buffer[start:end]``. This will not cause an allocation like
+//|      ``buffer[start:end]`` will so it saves memory.
+//|
+//|      :param int address: 7-bit device address
+//|      :param bytearray buffer: buffer containing the bytes to write
+//|      :param int start: Index to start writing from
+//|      :param int end: Index to read up to but not include
+//|      :param bool stop: If true, output an I2C stop condition after the
+//|                        buffer is written
+//|
 STATIC mp_obj_t nativeio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_address, ARG_buffer, ARG_stop };
+    enum { ARG_address, ARG_buffer, ARG_start, ARG_end, ARG_stop };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_stop,       MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -150,9 +190,16 @@ STATIC mp_obj_t nativeio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
+    int32_t end = args[ARG_end].u_int;
+    if (end < 0) {
+        end += bufinfo.len;
+    }
+    uint32_t len = max(0, min((int32_t) bufinfo.len, end - args[ARG_start].u_int));
+    int32_t start = args[ARG_start].u_int;
+
     // do the transfer
     bool ok = common_hal_nativeio_i2c_write(self, args[ARG_address].u_int,
-        bufinfo.buf, bufinfo.len, args[ARG_stop].u_bool);
+        ((uint8_t*) bufinfo.buf) + start, len, args[ARG_stop].u_bool);
     if (!ok) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
     }
