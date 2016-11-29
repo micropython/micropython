@@ -19,6 +19,7 @@ if platform.python_version_tuple()[0] == '2':
 elif platform.python_version_tuple()[0] == '3':
     bytes_cons = bytes
     from html.entities import name2codepoint
+    unichr = chr
 # end compatibility code
 
 # Blacklist of qstrings that are specially handled in further
