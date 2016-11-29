@@ -45,9 +45,6 @@ void gc_collect_start(void);
 void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
-// During a collect, use this to mark blocks used in C but allocated using gc_alloc.
-void gc_mark_block(void * ptr);
-
 void *gc_alloc(size_t n_bytes, bool has_finaliser);
 void gc_free(void *ptr); // does not call finaliser
 size_t gc_nbytes(const void *ptr);
