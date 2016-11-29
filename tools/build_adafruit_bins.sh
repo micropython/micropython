@@ -1,12 +1,11 @@
 rm -rf atmel-samd/build*
 rm -rf esp8266/build*
 
-make -C atmel-samd BOARD=cplay_m0_flash
-make -C atmel-samd BOARD=feather_m0_basic
-make -C atmel-samd BOARD=feather_m0_flash
-make -C atmel-samd BOARD=metro_m0_flash
-make -C atmel-samd BOARD=trinket_m0
-make -C atmel-samd BOARD=gemma_m0
+ATMEL_BOARDS="cplay_m0_flash feather_m0_basic feather_m0_adalogger feather_m0_flash metro_m0_flash trinket_m0 gemma_m0"
+
+for board in $ATMEL_BOARDS; do
+    make -C atmel-samd BOARD=$board
+done
 make -C esp8266 BOARD=feather_huzzah
 
 version=`git describe --tags --exact-match`
@@ -14,10 +13,7 @@ if [ $? -ne 0 ]; then
     version=`git rev-parse --short HEAD`
 fi
 
-cp atmel-samd/build-cplay_m0_flash/firmware.bin bin/adafruit-micropython-cplay_m0_flash-$version.bin
-cp atmel-samd/build-feather_m0_basic/firmware.bin bin/adafruit-micropython-feather_m0_basic-$version.bin
-cp atmel-samd/build-feather_m0_flash/firmware.bin bin/adafruit-micropython-feather_m0_flash-$version.bin
-cp atmel-samd/build-metro_m0_flash/firmware.bin bin/adafruit-micropython-metro_m0_flash-$version.bin
-cp atmel-samd/build-trinket_m0/firmware.bin bin/adafruit-micropython-trinket_m0-$version.bin
-cp atmel-samd/build-gemma_m0/firmware.bin bin/adafruit-micropython-gemma_m0-$version.bin
+for board in $ATMEL_BOARDS; do
+    cp atmel-samd/build-$board/firmware.bin bin/adafruit-micropython-$board-$version.bin
+done
 cp esp8266/build/firmware-combined.bin bin/adafruit-micropython-feather_huzzah-$version.bin
