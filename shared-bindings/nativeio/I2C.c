@@ -146,17 +146,17 @@ STATIC mp_obj_t nativeio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_ar
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
-    int32_t end = args[ARG_end].u_int;
+    uint32_t end = args[ARG_end].u_int;
     if (end < 0) {
         end += bufinfo.len;
     }
-    uint32_t len = end - args[ARG_start].u_int;
-    if (len > (int32_t) bufinfo.len) {
-        len = bufinfo.len;
-    } else if (len < 0) {
+    uint32_t start = args[ARG_start].u_int;
+    uint32_t len = end - start;
+    if (end < start) {
         len = 0;
+    } else if (len > bufinfo.len) {
+        len = bufinfo.len;
     }
-    int32_t start = args[ARG_start].u_int;
     common_hal_nativeio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, len);
     return mp_const_none;
 }
@@ -195,17 +195,17 @@ STATIC mp_obj_t nativeio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    int32_t end = args[ARG_end].u_int;
+    uint32_t end = args[ARG_end].u_int;
     if (end < 0) {
         end += bufinfo.len;
     }
-    uint32_t len = end - args[ARG_start].u_int;
-    if (len > (int32_t) bufinfo.len) {
-        len = bufinfo.len;
-    } else if (len < 0) {
+    uint32_t start = args[ARG_start].u_int;
+    uint32_t len = end - start;
+    if (end < start) {
         len = 0;
+    } else if (len > bufinfo.len) {
+        len = bufinfo.len;
     }
-    int32_t start = args[ARG_start].u_int;
 
     // do the transfer
     bool ok = common_hal_nativeio_i2c_write(self, args[ARG_address].u_int,
