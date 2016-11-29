@@ -43,12 +43,12 @@ static int console_irq_input_hook(uint8_t ch)
         i_put = i_next;
     }
     //printk("%x\n", ch);
-    nano_isr_sem_give(&uart_sem);
+    k_sem_give(&uart_sem);
     return 1;
 }
 
 uint8_t zephyr_getchar(void) {
-    nano_task_sem_take(&uart_sem, TICKS_UNLIMITED);
+    k_sem_take(&uart_sem, K_FOREVER);
     unsigned int key = irq_lock();
     uint8_t c = uart_ringbuf[i_get++];
     i_get &= UART_BUFSIZE - 1;
@@ -57,7 +57,7 @@ uint8_t zephyr_getchar(void) {
 }
 
 void zephyr_getchar_init(void) {
-    nano_sem_init(&uart_sem);
+    k_sem_init(&uart_sem, 0, UINT_MAX);
     uart_console_in_debug_hook_install(console_irq_input_hook);
     // All NULLs because we're interested only in the callback above
     uart_register_input(NULL, NULL, NULL);
