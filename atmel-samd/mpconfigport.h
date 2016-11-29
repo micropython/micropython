@@ -160,4 +160,8 @@ extern const struct _mp_obj_module_t uheap_module;
     mp_obj_t mp_kbd_exception; \
     FLASH_ROOT_POINTERS \
 
+bool udi_msc_process_trans(void);
+#define MICROPY_VM_HOOK_LOOP udi_msc_process_trans();
+#define MICROPY_VM_HOOK_RETURN udi_msc_process_trans();
+
 #endif  // __INCLUDED_MPCONFIGPORT_H

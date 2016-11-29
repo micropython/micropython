@@ -154,10 +154,9 @@ int receive_usb(void) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        // Process any mass storage transfers.
-        if (mp_msc_enabled) {
-            udi_msc_process_trans();
-        }
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
         #ifdef USB_REPL
         if (reset_next_character) {
             return CHAR_CTRL_D;
@@ -211,9 +210,9 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
                 }
             }
             start += transmit;
-            if (mp_msc_enabled) {
-                udi_msc_process_trans();
-            }
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
             duration = (common_hal_time_monotonic() - start_tick);
         }
     }
@@ -236,7 +235,9 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         uint64_t start_tick = common_hal_time_monotonic();
         uint64_t duration = 0;
         while (duration < delay) {
-            udi_msc_process_trans();
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
             // Check to see if we've been CTRL-Ced by autoreset or the user.
             if(MP_STATE_VM(mp_pending_exception) == MP_STATE_PORT(mp_kbd_exception)) {
                 break;
