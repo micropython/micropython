@@ -56,18 +56,7 @@ static const char fresh_code_txt[] =
 ;
 
 static const char fresh_readme_txt[] =
-"This is an Adafruit MicroPython board\r\n"
-"\r\n"
-"You can get started right away by writing your Python code in 'code.txt'.\r\n"
-"\r\n"
-"For a serial prompt:\r\n"
-" - Windows: you need to go to 'Device manager', right click on the unknown device,\r\n"
-"   then update the driver software, using the 'pybcdc.inf' file found on this drive.\r\n"
-"   Then use a terminal program like Hyperterminal or putty.\r\n"
-" - Mac OS X: use the command: screen /dev/tty.usbmodem*\r\n"
-" - Linux: use the command: screen /dev/ttyACM0\r\n"
-"\r\n"
-"Please visit https://learn.adafruit.com/category/micropython for further help.\r\n"
+"https://learn.adafruit.com/category/micropython\r\n"
 ;
 
 extern void flash_init_vfs(fs_user_mount_t *vfs);
