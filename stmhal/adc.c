@@ -637,6 +637,13 @@ STATIC mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
     return mp_obj_new_float(data);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
+
+STATIC mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
+    pyb_adc_all_obj_t *self = self_in;
+    adc_read_core_vref(&self->handle);
+    return mp_obj_new_float(3.3 * adc_refcor);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_vref_obj, adc_all_read_vref);
 #endif
 
 STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
@@ -645,6 +652,7 @@ STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
 #if MICROPY_PY_BUILTINS_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vbat), (mp_obj_t)&adc_all_read_core_vbat_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vref), (mp_obj_t)&adc_all_read_core_vref_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_vref), (mp_obj_t)&adc_all_read_vref_obj},
 #endif
 };
 
