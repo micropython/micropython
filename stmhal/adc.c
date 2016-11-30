@@ -55,14 +55,28 @@
 #define ADCx_CLK_ENABLE         __ADC1_CLK_ENABLE
 #define ADC_NUM_CHANNELS        (19)
 
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F4)
+
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_CAL_ADDRESS         (0x1fff7a2a)
+
+#elif defined(MCU_SERIES_F7)
+
+#define ADC_FIRST_GPIO_CHANNEL  (0)
+#define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_CAL_ADDRESS         (0x1ff0f44a)
+
 #elif defined(MCU_SERIES_L4)
+
 #define ADC_FIRST_GPIO_CHANNEL  (1)
 #define ADC_LAST_GPIO_CHANNEL   (16)
+#define ADC_CAL_ADDRESS         (0x1fff75aa)
+
 #else
+
 #error Unsupported processor
+
 #endif
 
 #if defined(STM32F405xx) || defined(STM32F415xx) || \
@@ -83,6 +97,10 @@
 /* Core temperature sensor definitions */
 #define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resoultion) */
 #define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
+
+// scale and calibration values for VBAT and VREF
+#define ADC_SCALE (3.3f / 4095)
+#define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
 
 typedef struct _pyb_obj_adc_t {
     mp_obj_base_t base;
@@ -513,6 +531,9 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
+// correction factor for reference value
+STATIC volatile float adc_refcor = 1.0f;
+
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VBAT);
 
@@ -520,8 +541,16 @@ float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
 
-    // multiplier is 3.3/4095
-    return raw_value * VBAT_DIV * 0.8058608058608059e-3f;
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
+    // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
+    // conversions to work.  VBATE is enabled by the above call to read
+    // the channel, and here we disable VBATE so a subsequent call for
+    // TEMPSENSOR or VREFINT works correctly.
+    ADC->CCR &= ~ADC_CCR_VBATE;
+    #endif
+
+    return raw_value * VBAT_DIV * ADC_SCALE * adc_refcor;
 }
 
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
@@ -531,8 +560,10 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
 
-    // multiplier is 3.3/4095
-    return raw_value * 0.8058608058608059e-3f;
+    // update the reference correction factor
+    adc_refcor = ((float)(*VREFIN_CAL)) / ((float)raw_value);
+
+    return (*VREFIN_CAL) * ADC_SCALE;
 }
 #endif
 
