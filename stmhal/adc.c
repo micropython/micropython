@@ -115,6 +115,18 @@ typedef struct _pyb_obj_adc_t {
     ADC_HandleTypeDef handle;
 } pyb_obj_adc_t;
 
+// convert user-facing channel number into internal channel number
+static inline uint32_t adc_get_internal_channel(uint32_t channel) {
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    // on F4 and F7 MCUs we want channel 16 to always be the TEMPSENSOR
+    // (on some MCUs ADC_CHANNEL_TEMPSENSOR=16, on others it doesn't)
+    if (channel == 16) {
+        channel = ADC_CHANNEL_TEMPSENSOR;
+    }
+    #endif
+    return channel;
+}
+
 STATIC bool is_adcx_channel(int channel) {
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     return IS_ADC_CHANNEL(channel);
@@ -273,7 +285,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
     uint32_t channel;
 
     if (MP_OBJ_IS_INT(pin_obj)) {
-        channel = mp_obj_get_int(pin_obj);
+        channel = adc_get_internal_channel(mp_obj_get_int(pin_obj));
     } else {
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC1) == 0) {
@@ -605,7 +617,7 @@ STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
 STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     pyb_adc_all_obj_t *self = self_in;
-    uint32_t chan = mp_obj_get_int(channel);
+    uint32_t chan = adc_get_internal_channel(mp_obj_get_int(channel));
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
 }
