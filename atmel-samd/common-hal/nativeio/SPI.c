@@ -44,6 +44,8 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
 
     Sercom* sercom = NULL;
     uint32_t clock_pinmux = 0;
+    bool mosi_none = mosi == mp_const_none;
+    bool miso_none = miso == mp_const_none;
     uint32_t mosi_pinmux = 0;
     uint32_t miso_pinmux = 0;
     uint8_t clock_pad = 0;
@@ -58,14 +60,25 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         clock_pinmux = clock->sercom[i].pinmux;
         clock_pad = clock->sercom[i].pad;
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
-            mosi_pinmux = mosi->sercom[j].pinmux;
-            mosi_pad = mosi->sercom[j].pad;
-            for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
-                if (potential_sercom == miso->sercom[k].sercom) {
-                    miso_pinmux = miso->sercom[k].pinmux;
-                    miso_pad = miso->sercom[k].pad;
-                    sercom = potential_sercom;
+            if (!mosi_none) {
+                if(potential_sercom == mosi->sercom[j].sercom) {
+                    mosi_pinmux = mosi->sercom[j].pinmux;
+                    mosi_pad = mosi->sercom[j].pad;
+                    if (miso_none) {
+                        sercom = potential_sercom;
+                    }
+                } else {
                     break;
+                }
+            }
+            if (!miso_none) {
+                for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
+                    if (potential_sercom == miso->sercom[k].sercom) {
+                        miso_pinmux = miso->sercom[k].pinmux;
+                        miso_pad = miso->sercom[k].pad;
+                        sercom = potential_sercom;
+                        break;
+                    }
                 }
             }
             if (sercom != NULL) {
@@ -77,7 +90,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "No hardware support available with those pins."));
     }
 
@@ -109,8 +122,12 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
                              &config_spi_master.pinmux_pad2,
                              &config_spi_master.pinmux_pad3};
     *pinmuxes[clock_pad] = clock_pinmux;
-    *pinmuxes[mosi_pad] = mosi_pinmux;
-    *pinmuxes[miso_pad] = miso_pinmux;
+    if (!mosi_none) {
+        *pinmuxes[mosi_pad] = mosi_pinmux;
+    }
+    if (!miso_none) {
+        *pinmuxes[miso_pad] = miso_pinmux;
+    }
 
     config_spi_master.mode_specific.master.baudrate = baudrate;
 

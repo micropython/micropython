@@ -26,6 +26,7 @@
 
 #include "mpconfigport.h"
 
+#include "py/nlr.h"
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/types.h"
@@ -40,18 +41,29 @@ extern void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
         const mcu_pin_obj_t * miso, uint32_t baudrate) {
     digitalinout_result_t result = common_hal_nativeio_digitalinout_construct(&self->clock, clock);
     if (result != DIGITALINOUT_OK) {
-        return;
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "Clock pin init failed."));
     }
-    result = common_hal_nativeio_digitalinout_construct(&self->mosi, mosi);
-    if (result != DIGITALINOUT_OK) {
-        common_hal_nativeio_digitalinout_deinit(&self->clock);
-        return;
+    if (mosi != mp_const_none) {
+        result = common_hal_nativeio_digitalinout_construct(&self->mosi, mosi);
+        if (result != DIGITALINOUT_OK) {
+            common_hal_nativeio_digitalinout_deinit(&self->clock);
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "MOSI pin init failed."));
+        }
+        self->has_mosi = true;
     }
-    result = common_hal_nativeio_digitalinout_construct(&self->miso, miso);
-    if (result != DIGITALINOUT_OK) {
-        common_hal_nativeio_digitalinout_deinit(&self->clock);
-        common_hal_nativeio_digitalinout_deinit(&self->mosi);
-        return;
+    if (miso != mp_const_none) {
+        result = common_hal_nativeio_digitalinout_construct(&self->miso, miso);
+        if (result != DIGITALINOUT_OK) {
+            common_hal_nativeio_digitalinout_deinit(&self->clock);
+            if (mosi != mp_const_none) {
+                common_hal_nativeio_digitalinout_deinit(&self->mosi);
+            }
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+                "MISO pin init failed."));
+        }
+        self->has_miso = true;
     }
 
     self->delay_half = 500000 / baudrate;
@@ -66,13 +78,25 @@ extern void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
 
 extern void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self) {
     common_hal_nativeio_digitalinout_deinit(&self->clock);
-    common_hal_nativeio_digitalinout_deinit(&self->mosi);
-    common_hal_nativeio_digitalinout_deinit(&self->miso);
+    if (self->has_mosi) {
+        common_hal_nativeio_digitalinout_deinit(&self->mosi);
+    }
+    if (self->has_miso) {
+        common_hal_nativeio_digitalinout_deinit(&self->miso);
+    }
 }
 
 bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self,
         const uint8_t *write_buffer, size_t write_buffer_len,
         uint8_t *read_buffer, size_t read_buffer_len) {
+    if (write_buffer_len > 0 && !self->has_mosi) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "Cannot write without MOSI pin."));
+    }
+    if (read_buffer_len > 0 && !self->has_miso) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "Cannot read without MISO pin."));
+    }
     uint32_t delay_half = self->delay_half;
 
     // only MSB transfer is implemented
@@ -95,7 +119,9 @@ bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self,
         }
 
         // Clock out zeroes while we read.
-        common_hal_nativeio_digitalinout_set_value(&self->mosi, false);
+        if (self->has_mosi) {
+            common_hal_nativeio_digitalinout_set_value(&self->mosi, false);
+        }
         for (size_t i = 0; i < read_buffer_len; ++i) {
             uint8_t data_in = 0;
             for (int j = 0; j < 8; ++j, data_out <<= 1) {
@@ -135,7 +161,9 @@ bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self,
         MICROPY_EVENT_POLL_HOOK;
         #endif
     }
-    common_hal_nativeio_digitalinout_set_value(&self->mosi, false);
+    if (self->has_mosi) {
+        common_hal_nativeio_digitalinout_set_value(&self->mosi, false);
+    }
     for (size_t i = 0; i < read_buffer_len; ++i) {
         uint8_t data_in = 0;
         for (int j = 0; j < 8; ++j) {

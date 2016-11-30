@@ -68,8 +68,8 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
        { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_MOSI, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_MISO, MP_ARG_REQUIRED | MP_ARG_OBJ },
+       { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+       { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },

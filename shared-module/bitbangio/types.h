@@ -41,7 +41,9 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     nativeio_digitalinout_obj_t clock;
+    bool has_mosi;
     nativeio_digitalinout_obj_t mosi;
+    bool has_miso;
     nativeio_digitalinout_obj_t miso;
     uint32_t delay_half;
     uint8_t polarity;
