@@ -60,18 +60,24 @@
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
+#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
+#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
 
 #elif defined(MCU_SERIES_F7)
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_CAL_ADDRESS         (0x1ff0f44a)
+#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
+#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
 
 #elif defined(MCU_SERIES_L4)
 
 #define ADC_FIRST_GPIO_CHANNEL  (1)
 #define ADC_LAST_GPIO_CHANNEL   (16)
 #define ADC_CAL_ADDRESS         (0x1fff75aa)
+#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS - 2))
+#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 0x20))
 
 #else
 
@@ -534,6 +540,16 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 // correction factor for reference value
 STATIC volatile float adc_refcor = 1.0f;
 
+float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
+    int32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_TEMPSENSOR);
+
+    // constants assume 12-bit resolution so we scale the raw value to 12-bits
+    raw_value <<= (12 - adc_get_resolution(adcHandle));
+
+    float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
+    return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
+}
+
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VBAT);
 
@@ -597,8 +613,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel)
 
 STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = self_in;
+    #if MICROPY_PY_BUILTINS_FLOAT
+    float data = adc_read_core_temp_float(&self->handle);
+    return mp_obj_new_float(data);
+    #else
     int data  = adc_read_core_temp(&self->handle);
     return mp_obj_new_int(data);
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
 
