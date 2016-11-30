@@ -30,7 +30,7 @@
 
 #include "mpconfigport.h"
 
-#define FLASH_ROOT_POINTERS (0)
+#define FLASH_ROOT_POINTERS
 
 #define INTERNAL_FLASH_BLOCK_SIZE (512)
 
