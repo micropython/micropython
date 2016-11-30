@@ -39,7 +39,7 @@
 
 void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso, uint32_t baudrate) {
+        const mcu_pin_obj_t * miso) {
     struct spi_config config_spi_master;
     spi_get_config_defaults(&config_spi_master);
 
@@ -67,9 +67,10 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
                     mosi_pad = mosi->sercom[j].pad;
                     if (miso_none) {
                         sercom = potential_sercom;
+                        break;
                     }
                 } else {
-                    break;
+                    continue;
                 }
             }
             if (!miso_none) {
@@ -130,8 +131,6 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         *pinmuxes[miso_pad] = miso_pinmux;
     }
 
-    config_spi_master.mode_specific.master.baudrate = baudrate;
-
     spi_init(&self->spi_master_instance, sercom, &config_spi_master);
 
     spi_enable(&self->spi_master_instance);
@@ -141,8 +140,64 @@ void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self) {
     spi_disable(&self->spi_master_instance);
 }
 
+bool common_hal_nativeio_spi_configure(nativeio_spi_obj_t *self,
+        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    // TODO(tannewt): Check baudrate first before changing it.
+    enum status_code status = spi_set_baudrate(&self->spi_master_instance, baudrate);
+    if (status != STATUS_OK) {
+        return false;
+    }
+
+    SercomSpi *const spi_module = &(self->spi_master_instance.hw->SPI);
+    // If the settings are already what we want then don't reset them.
+    if (spi_module->CTRLA.bit.CPHA == phase &&
+        spi_module->CTRLA.bit.CPOL == polarity &&
+        spi_module->CTRLB.bit.CHSIZE == (bits - 8)) {
+        return true;
+    }
+
+    spi_disable(&self->spi_master_instance);
+    while (spi_is_syncing(&self->spi_master_instance)) {
+        /* Wait until the synchronization is complete */
+    }
+
+    spi_module->CTRLA.bit.CPHA = phase;
+    spi_module->CTRLA.bit.CPOL = polarity;
+    spi_module->CTRLB.bit.CHSIZE = bits - 8;
+
+    while (spi_is_syncing(&self->spi_master_instance)) {
+        /* Wait until the synchronization is complete */
+    }
+
+    /* Enable the module */
+    spi_enable(&self->spi_master_instance);
+
+    while (spi_is_syncing(&self->spi_master_instance)) {
+        /* Wait until the synchronization is complete */
+    }
+
+    return true;
+}
+
+bool common_hal_nativeio_spi_try_lock(nativeio_spi_obj_t *self) {
+    self->has_lock = spi_lock(&self->spi_master_instance) == STATUS_OK;
+    return self->has_lock;
+}
+
+bool common_hal_nativeio_spi_has_lock(nativeio_spi_obj_t *self) {
+    return self->has_lock;
+}
+
+void common_hal_nativeio_spi_unlock(nativeio_spi_obj_t *self) {
+    self->has_lock = false;
+    spi_unlock(&self->spi_master_instance);
+}
+
 bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
+    if (len == 0) {
+        return true;
+    }
     enum status_code status = spi_write_buffer_wait(
         &self->spi_master_instance,
         data,
@@ -152,6 +207,9 @@ bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self,
 
 bool common_hal_nativeio_spi_read(nativeio_spi_obj_t *self,
         uint8_t *data, size_t len) {
+    if (len == 0) {
+        return true;
+    }
     enum status_code status = spi_read_buffer_wait(
         &self->spi_master_instance,
         data,

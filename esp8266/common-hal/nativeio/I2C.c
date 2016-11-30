@@ -40,6 +40,17 @@ bool common_hal_nativeio_i2c_probe(nativeio_i2c_obj_t *self, uint8_t addr) {
     return false;
 }
 
+bool common_hal_nativeio_i2c_try_lock(nativeio_i2c_obj_t *self) {
+    return false;
+}
+
+bool common_hal_nativeio_i2c_has_lock(nativeio_i2c_obj_t *self) {
+    return false;
+}
+
+void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self) {
+}
+
 bool common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
         const uint8_t * data, size_t len, bool transmit_stop_bit) {
     return false;

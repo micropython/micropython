@@ -71,7 +71,7 @@ void common_hal_nativeio_digitalinout_switch_to_output(
         WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
         WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); // output
     } else if (!self->open_drain) {
-        gpio_output_set(0, 0, 1 << self->pin->gpio_function, 0);
+        gpio_output_set(0, 0, 1 << self->pin->gpio_number, 0);
         PIN_PULLUP_DIS(self->pin->peripheral);
     }
     common_hal_nativeio_digitalinout_set_value(self, value);
@@ -88,7 +88,6 @@ void common_hal_nativeio_digitalinout_set_value(
         if (self->open_drain) {
             // Disable output.
             gpio_output_set(0, 0, 0, 1 << self->pin->gpio_number);
-            PIN_PULLUP_EN(self->pin->peripheral);
         } else {
             // Set high
             gpio_output_set(1 << self->pin->gpio_number, 0, 0, 0);
@@ -96,7 +95,6 @@ void common_hal_nativeio_digitalinout_set_value(
     } else {
         if (self->open_drain) {
             // Enable the output
-            PIN_PULLUP_DIS(self->pin->peripheral);
             gpio_output_set(0, 0, 1 << self->pin->gpio_number, 0);
         }
         // Set low

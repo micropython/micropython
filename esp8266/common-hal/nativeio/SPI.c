@@ -26,6 +26,7 @@
 
 #include "esp8266/ets_alt_task.h"
 #include "esp8266/hspi.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/nativeio/SPI.h"
 #include "py/nlr.h"
 
@@ -37,17 +38,62 @@ extern const mcu_pin_obj_t pin_MTDI;
 
 void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso, uint32_t baudrate) {
+        const mcu_pin_obj_t * miso) {
     if (clock != &pin_MTMS || mosi != &pin_MTCK || miso != &pin_MTDI) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             "Pins not valid for SPI"));
     }
+    spi_init(HSPI);
 }
 
 void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self) {
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 0);
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 0);
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 0);
+}
+
+bool common_hal_nativeio_spi_configure(nativeio_spi_obj_t *self,
+        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    if (bits != 8) {
+        return false;
+    }
+    if (baudrate == 80000000L) {
+        // Special case for full speed.
+        spi_init_gpio(HSPI, SPI_CLK_80MHZ_NODIV);
+        spi_clock(HSPI, 0, 0);
+    } else if (baudrate > 40000000L) {
+        return false;
+    } else {
+        uint32_t divider = 40000000L / baudrate;
+        uint16_t prediv = MIN(divider, SPI_CLKDIV_PRE + 1);
+        uint16_t cntdiv = (divider / prediv) * 2; // cntdiv has to be even
+        if (cntdiv > SPI_CLKCNT_N + 1 || cntdiv == 0 || prediv == 0) {
+            return false;
+        }
+        spi_init_gpio(HSPI, SPI_CLK_USE_DIV);
+        spi_clock(HSPI, prediv, cntdiv);
+    }
+    spi_mode(HSPI, phase, polarity);
+    return true;
+}
+
+bool common_hal_nativeio_spi_try_lock(nativeio_spi_obj_t *self) {
+    bool success = false;
+    common_hal_mcu_disable_interrupts();
+    if (!self->locked) {
+        self->locked = true;
+        success = true;
+    }
+    common_hal_mcu_enable_interrupts();
+    return success;
+}
+
+bool common_hal_nativeio_spi_has_lock(nativeio_spi_obj_t *self) {
+    return self->locked;
+}
+
+void common_hal_nativeio_spi_unlock(nativeio_spi_obj_t *self) {
+    self->locked = false;
 }
 
 bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self,

@@ -31,6 +31,9 @@
 
 extern void common_hal_mcu_delay_us(uint32_t);
 
+extern void common_hal_mcu_disable_interrupts(void);
+extern void common_hal_mcu_enable_interrupts(void);
+
 extern const mp_obj_dict_t mcu_pin_globals;
 
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__

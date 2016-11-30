@@ -68,11 +68,13 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     struct i2c_master_module i2c_master_instance;
+    bool has_lock;
 } nativeio_i2c_obj_t;
 
 typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
     struct spi_module spi_master_instance;
+    bool has_lock;
 } nativeio_spi_obj_t;
 
 typedef struct {

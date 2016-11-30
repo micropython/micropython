@@ -36,18 +36,20 @@ typedef struct {
     nativeio_digitalinout_obj_t scl;
     nativeio_digitalinout_obj_t sda;
     uint32_t us_delay;
+    volatile bool locked;
 } bitbangio_i2c_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
     nativeio_digitalinout_obj_t clock;
-    bool has_mosi;
     nativeio_digitalinout_obj_t mosi;
-    bool has_miso;
     nativeio_digitalinout_obj_t miso;
     uint32_t delay_half;
-    uint8_t polarity;
-    uint8_t phase;
+    bool has_miso:1;
+    bool has_mosi:1;
+    uint8_t polarity:1;
+    uint8_t phase:1;
+    volatile bool locked:1;
 } bitbangio_spi_obj_t;
 
 #endif // __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__

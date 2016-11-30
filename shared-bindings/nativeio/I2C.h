@@ -46,9 +46,13 @@ extern const mp_obj_type_t nativeio_i2c_type;
 extern void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
                                               const mcu_pin_obj_t * scl,
                                               const mcu_pin_obj_t * sda,
-                                              uint32_t freq);
+                                              uint32_t frequency);
 
 extern void common_hal_nativeio_i2c_deinit(nativeio_i2c_obj_t *self);
+
+extern bool common_hal_nativeio_i2c_try_lock(nativeio_i2c_obj_t *self);
+extern bool common_hal_nativeio_i2c_has_lock(nativeio_i2c_obj_t *self);
+extern void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self);
 
 // Probe the bus to see if a device acknowledges the given address.
 extern bool common_hal_nativeio_i2c_probe(nativeio_i2c_obj_t *self, uint8_t addr);

@@ -40,11 +40,11 @@
 #define TIMEOUT 1
 
 void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
-        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t freq) {
+        const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency) {
     struct i2c_master_config config_i2c_master;
     i2c_master_get_config_defaults(&config_i2c_master);
     // Struct takes the argument in Khz not Hz.
-    config_i2c_master.baud_rate = freq / 1000;
+    config_i2c_master.baud_rate = frequency / 1000;
     Sercom* sercom = NULL;
     uint32_t sda_pinmux = 0;
     uint32_t scl_pinmux = 0;
@@ -104,6 +104,25 @@ bool common_hal_nativeio_i2c_probe(nativeio_i2c_obj_t *self, uint8_t addr) {
     enum status_code status = i2c_master_write_packet_wait(
         &self->i2c_master_instance, &packet);
     return status == STATUS_OK;
+}
+
+void common_hal_nativeio_i2c_configure(nativeio_i2c_obj_t *self,
+        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
+    return;
+}
+
+bool common_hal_nativeio_i2c_try_lock(nativeio_i2c_obj_t *self) {
+    self->has_lock = i2c_master_lock(&self->i2c_master_instance) == STATUS_OK;
+    return self->has_lock;
+}
+
+bool common_hal_nativeio_i2c_has_lock(nativeio_i2c_obj_t *self) {
+    return self->has_lock;
+}
+
+void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self) {
+    self->has_lock = false;
+    i2c_master_unlock(&self->i2c_master_instance);
 }
 
 bool common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,

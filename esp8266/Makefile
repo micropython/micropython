@@ -1,5 +1,3 @@
-include ../py/mkenv.mk
-
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
 BOARD ?= feather_huzzah
@@ -8,7 +6,9 @@ $(error Invalid BOARD specified)
 endif
 
 # If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
+BUILD ?= build
+
+include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h

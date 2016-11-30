@@ -58,6 +58,7 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
+    bool locked;
 } nativeio_spi_obj_t;
 
 typedef struct {

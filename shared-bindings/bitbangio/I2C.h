@@ -39,9 +39,13 @@ extern const mp_obj_type_t bitbangio_i2c_type;
 extern void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
                                                   const mcu_pin_obj_t * scl,
                                                   const mcu_pin_obj_t * sda,
-                                                  uint32_t freq);
+                                                  uint32_t frequency);
 
 extern void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self);
+
+extern bool shared_module_bitbangio_i2c_try_lock(bitbangio_i2c_obj_t *self);
+extern bool shared_module_bitbangio_i2c_has_lock(bitbangio_i2c_obj_t *self);
+extern void shared_module_bitbangio_i2c_unlock(bitbangio_i2c_obj_t *self);
 
 // Probe the bus to see if a device acknowledges the given address.
 extern bool shared_module_bitbangio_i2c_probe(bitbangio_i2c_obj_t *self, uint8_t addr);

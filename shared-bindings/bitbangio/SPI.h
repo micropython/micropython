@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,14 +38,21 @@ extern const mp_obj_type_t bitbangio_spi_type;
 // Construct an underlying SPI object.
 extern void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
     const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-    const mcu_pin_obj_t * miso, uint32_t baudrate);
+    const mcu_pin_obj_t * miso);
 
 extern void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self);
 
-// Write out write_buffer then read read_buffer. Returns true on success, false
-// otherwise.
-extern bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self,
-    const uint8_t *write_buffer, size_t write_buffer_len,
-    uint8_t *read_buffer, size_t read_buffer_len);
+extern void shared_module_bitbangio_spi_configure(bitbangio_spi_obj_t *self,
+    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits);
+
+extern bool shared_module_bitbangio_spi_try_lock(bitbangio_spi_obj_t *self);
+extern bool shared_module_bitbangio_spi_has_lock(bitbangio_spi_obj_t *self);
+extern void shared_module_bitbangio_spi_unlock(bitbangio_spi_obj_t *self);
+
+// Writes out the given data.
+extern bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t *data, size_t len);
+
+// Reads in len bytes while outputting zeroes.
+extern bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len);
 
 #endif // __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H__

@@ -36,7 +36,7 @@
 //| :class:`I2C` --- Two wire serial protocol
 //| ------------------------------------------
 //|
-//| .. class:: I2C(scl, sda, \*, freq=400000)
+//| .. class:: I2C(scl, sda, \*, frequency=400000)
 //|
 //|   I2C is a two-wire protocol for communicating between devices.  At the
 //|   physical level it consists of 2 wires: SCL and SDA, the clock and data
@@ -44,7 +44,7 @@
 //|
 //|   :param ~microcontroller.Pin scl: The clock pin
 //|   :param ~microcontroller.Pin sda: The data pin
-//|   :param int freq: The clock frequency
+//|   :param int frequency: The clock frequency
 //|
 STATIC mp_obj_t nativeio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
@@ -52,11 +52,11 @@ STATIC mp_obj_t nativeio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->base.type = &nativeio_i2c_type;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-    enum { ARG_scl, ARG_sda, ARG_freq };
+    enum { ARG_scl, ARG_sda, ARG_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -64,7 +64,7 @@ STATIC mp_obj_t nativeio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, 
     assert_pin(args[ARG_sda].u_obj, false);
     const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
     const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
-    common_hal_nativeio_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
+    common_hal_nativeio_i2c_construct(self, scl, sda, args[ARG_frequency].u_int);
     return (mp_obj_t)self;
 }
 
@@ -99,6 +99,12 @@ STATIC mp_obj_t nativeio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_i2c___exit___obj, 4, 4, nativeio_i2c_obj___exit__);
 
+static void check_lock(nativeio_i2c_obj_t *self) {
+    if (!common_hal_nativeio_i2c_has_lock(self)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Function requires I2C lock."));
+    }
+}
+
 //|   .. method:: I2C.scan()
 //|
 //|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
@@ -109,6 +115,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_i2c___exit___obj, 4, 4, nati
 //|
 STATIC mp_obj_t nativeio_i2c_scan(mp_obj_t self_in) {
    nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+   check_lock(self);
    mp_obj_t list = mp_obj_new_list(0, NULL);
    // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
    for (int addr = 0x08; addr < 0x78; ++addr) {
@@ -120,6 +127,26 @@ STATIC mp_obj_t nativeio_i2c_scan(mp_obj_t self_in) {
    return list;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c_scan_obj, nativeio_i2c_scan);
+
+//|   .. method:: I2C.try_lock()
+//|
+//|     Attempts to grab the I2C lock. Returns True on success.
+//|
+STATIC mp_obj_t nativeio_i2c_obj_try_lock(mp_obj_t self_in) {
+    common_hal_nativeio_i2c_try_lock(MP_OBJ_TO_PTR(self_in));
+    return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c_try_lock_obj, nativeio_i2c_obj_try_lock);
+
+//|   .. method:: I2C.unlock()
+//|
+//|     Releases the I2C lock.
+//|
+STATIC mp_obj_t nativeio_i2c_obj_unlock(mp_obj_t self_in) {
+    common_hal_nativeio_i2c_unlock(MP_OBJ_TO_PTR(self_in));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c_unlock_obj, nativeio_i2c_obj_unlock);
 
 //|   .. method:: I2C.readfrom_into(address, buffer, \*, start=0, end=len(buffer))
 //|
@@ -144,6 +171,7 @@ STATIC mp_obj_t nativeio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_ar
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -191,6 +219,7 @@ STATIC mp_obj_t nativeio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp
         { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     nativeio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -225,6 +254,9 @@ STATIC const mp_rom_map_elem_t nativeio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_i2c___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_i2c___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&nativeio_i2c_scan_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_try_lock), MP_ROM_PTR(&nativeio_i2c_try_lock_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlock), MP_ROM_PTR(&nativeio_i2c_unlock_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&nativeio_i2c_readfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&nativeio_i2c_writeto_obj) },

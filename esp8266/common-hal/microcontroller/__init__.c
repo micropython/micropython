@@ -28,11 +28,27 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "eagle_soc.h"
-#include "osapi.h"
+#include "ets_alt_task.h"
 #include "etshal.h"
+#include "osapi.h"
+#include "xtirq.h"
+
+#define ETS_LOOP_ITER_BIT (12)
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     os_delay_us(delay);
+}
+
+static uint16_t saved_interrupt_state;
+void common_hal_mcu_disable_interrupts() {
+    saved_interrupt_state = disable_irq();
+    saved_interrupt_state = (saved_interrupt_state & ~(1 << ETS_LOOP_ITER_BIT)) | (ets_loop_iter_disable << ETS_LOOP_ITER_BIT);
+    ets_loop_iter_disable = 1;
+}
+
+void common_hal_mcu_enable_interrupts() {
+    ets_loop_iter_disable = (saved_interrupt_state >> ETS_LOOP_ITER_BIT) & 1;
+    enable_irq(saved_interrupt_state & ~(1 << ETS_LOOP_ITER_BIT));
 }
 
 // This macro is used to simplify pin definition in boards/<board>/pins.c

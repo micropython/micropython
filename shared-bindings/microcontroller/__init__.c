@@ -70,6 +70,26 @@ STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 
+//|   .. method:: disable_interrupts()
+//|
+//|     Disable all interrupts. Be very careful, this can stall everything.
+//|
+STATIC mp_obj_t mcu_disable_interrupts(void) {
+    common_hal_mcu_disable_interrupts();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
+
+//|   .. method:: enable_interrupts()
+//|
+//|     Enable the interrupts that were enabled at the last disable.
+//|
+STATIC mp_obj_t mcu_enable_interrupts(void) {
+    common_hal_mcu_enable_interrupts();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
+
 //| :mod:`microcontroller.pin` --- Microcontroller pin names
 //| --------------------------------------------------------
 //|
@@ -87,6 +107,8 @@ const mp_obj_module_t mcu_pin_module = {
 STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_Pin),   MP_ROM_PTR(&mcu_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_pin),  MP_ROM_PTR(&mcu_pin_module) },
 };

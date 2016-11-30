@@ -36,7 +36,7 @@
 //| :class:`I2C` --- Two wire serial protocol
 //| ------------------------------------------
 //|
-//| .. class:: I2C(scl, sda, \*, freq=400000)
+//| .. class:: I2C(scl, sda, \* frequency=400000)
 //|
 //|   I2C is a two-wire protocol for communicating between devices.  At the
 //|   physical level it consists of 2 wires: SCL and SDA, the clock and data
@@ -44,7 +44,7 @@
 //|
 //|   :param ~microcontroller.Pin scl: The clock pin
 //|   :param ~microcontroller.Pin sda: The data pin
-//|   :param int freq: The clock frequency
+//|   :param int frequency: The clock frequency of the bus
 //|
 STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
@@ -52,11 +52,11 @@ STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args,
     self->base.type = &bitbangio_i2c_type;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-    enum { ARG_scl, ARG_sda, ARG_freq };
+    enum { ARG_scl, ARG_sda, ARG_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -64,7 +64,7 @@ STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args,
     assert_pin(args[ARG_sda].u_obj, false);
     const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
     const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
-    shared_module_bitbangio_i2c_construct(self, scl, sda, args[ARG_freq].u_int);
+    shared_module_bitbangio_i2c_construct(self, scl, sda, args[ARG_frequency].u_int);
     return (mp_obj_t)self;
 }
 
@@ -99,6 +99,12 @@ STATIC mp_obj_t bitbangio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_i2c_obj___exit___obj, 4, 4, bitbangio_i2c_obj___exit__);
 
+static void check_lock(bitbangio_i2c_obj_t *self) {
+    if (!shared_module_bitbangio_i2c_has_lock(self)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Function requires I2C lock."));
+    }
+}
+
 //|   .. method:: I2C.scan()
 //|
 //|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
@@ -107,6 +113,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_i2c_obj___exit___obj, 4, 4,
 //|
 STATIC mp_obj_t bitbangio_i2c_scan(mp_obj_t self_in) {
     bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_lock(self);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
     for (int addr = 0x08; addr < 0x78; ++addr) {
@@ -119,19 +126,97 @@ STATIC mp_obj_t bitbangio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_scan_obj, bitbangio_i2c_scan);
 
-//|   .. method:: I2C.writeto(address, buffer, stop=True)
+//|   .. method:: I2C.try_lock()
+//|
+//|     Attempts to grab the I2C lock. Returns True on success.
+//|
+STATIC mp_obj_t bitbangio_i2c_obj_try_lock(mp_obj_t self_in) {
+    shared_module_bitbangio_i2c_try_lock(MP_OBJ_TO_PTR(self_in));
+    return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_try_lock_obj, bitbangio_i2c_obj_try_lock);
+
+//|   .. method:: I2C.unlock()
+//|
+//|     Releases the I2C lock.
+//|
+STATIC mp_obj_t bitbangio_i2c_obj_unlock(mp_obj_t self_in) {
+    shared_module_bitbangio_i2c_unlock(MP_OBJ_TO_PTR(self_in));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_unlock_obj, bitbangio_i2c_obj_unlock);
+
+//|   .. method:: I2C.readfrom_into(address, buffer, \*, start=0, end=len(buffer))
+//|
+//|      Read into ``buffer`` from the slave specified by ``address``.
+//|      The number of bytes read will be the length of ``buffer``.
+//|
+//|      If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|      as if ``buffer[start:end]``. This will not cause an allocation like
+//|      ``buf[start:end]`` will so it saves memory.
+//|
+//|      :param int address: 7-bit device address
+//|      :param bytearray buffer: buffer to write into
+//|      :param int start: Index to start writing at
+//|      :param int end: Index to write up to but not include
+//|
+STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    check_lock(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    int32_t end = args[ARG_end].u_int;
+    if (end < 0) {
+        end += bufinfo.len;
+    }
+    uint32_t start = args[ARG_start].u_int;
+    uint32_t len = end - start;
+    if ((uint32_t) end < start) {
+        len = 0;
+    } else if (len > bufinfo.len) {
+        len = bufinfo.len;
+    }
+    shared_module_bitbangio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, len);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_readfrom_into);
+
+//|   .. method:: I2C.writeto(address, buffer, \*, start=0, end=len(buffer), stop=True)
 //|
 //|      Write the bytes from ``buffer`` to the slave specified by ``address``.
 //|      Transmits a stop bit if ``stop`` is set.
 //|
+//|      If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|      as if ``buffer[start:end]``. This will not cause an allocation like
+//|      ``buffer[start:end]`` will so it saves memory.
+//|
+//|      :param int address: 7-bit device address
+//|      :param bytearray buffer: buffer containing the bytes to write
+//|      :param int start: Index to start writing from
+//|      :param int end: Index to read up to but not include
+//|      :param bool stop: If true, output an I2C stop condition after the
+//|                        buffer is written
+//|
 STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_address, ARG_buffer, ARG_stop };
+    enum { ARG_address, ARG_buffer, ARG_start, ARG_end, ARG_stop };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_stop,       MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -139,9 +224,21 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
+    int32_t end = args[ARG_end].u_int;
+    if (end < 0) {
+        end += bufinfo.len;
+    }
+    uint32_t start = args[ARG_start].u_int;
+    uint32_t len = end - start;
+    if ((uint32_t) end < start) {
+        len = 0;
+    } else if (len > bufinfo.len) {
+        len = bufinfo.len;
+    }
+
     // do the transfer
     bool ok = shared_module_bitbangio_i2c_write(self, args[ARG_address].u_int,
-        bufinfo.buf, bufinfo.len, args[ARG_stop].u_bool);
+        ((uint8_t*) bufinfo.buf) + start, len, args[ARG_stop].u_bool);
     if (!ok) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
     }
@@ -149,27 +246,15 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_writeto);
 
-//|   .. method:: I2C.readfrom_into(address, buffer)
-//|
-//|      Read into ``buffer`` from the slave specified by ``address``.
-//|      The number of bytes read will be the length of `buf`.
-//|
-STATIC mp_obj_t bitbangio_i2c_readfrom_into(mp_obj_t self_in, mp_obj_t addr_in, mp_obj_t buf_in) {
-    bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    shared_module_bitbangio_i2c_read(self, mp_obj_get_int(addr_in), (uint8_t*)bufinfo.buf, bufinfo.len);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_3(bitbangio_i2c_readfrom_into_obj, bitbangio_i2c_readfrom_into);
-
 STATIC const mp_rom_map_elem_t bitbangio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&bitbangio_i2c_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&bitbangio_i2c___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&bitbangio_i2c_obj___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&bitbangio_i2c_scan_obj) },
 
-    // standard bus operations
+    { MP_ROM_QSTR(MP_QSTR_try_lock), MP_ROM_PTR(&bitbangio_i2c_try_lock_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlock), MP_ROM_PTR(&bitbangio_i2c_unlock_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_writeto), MP_ROM_PTR(&bitbangio_i2c_writeto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&bitbangio_i2c_readfrom_into_obj) },
 };

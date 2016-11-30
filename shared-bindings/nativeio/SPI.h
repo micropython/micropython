@@ -38,9 +38,15 @@ extern const mp_obj_type_t nativeio_spi_type;
 // Construct an underlying SPI object.
 extern void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
     const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-    const mcu_pin_obj_t * miso, uint32_t baudrate);
+    const mcu_pin_obj_t * miso);
 
 extern void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self);
+
+extern bool common_hal_nativeio_spi_configure(nativeio_spi_obj_t *self, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits);
+
+extern bool common_hal_nativeio_spi_try_lock(nativeio_spi_obj_t *self);
+extern bool common_hal_nativeio_spi_has_lock(nativeio_spi_obj_t *self);
+extern void common_hal_nativeio_spi_unlock(nativeio_spi_obj_t *self);
 
 // Writes out the given data.
 extern bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self, const uint8_t *data, size_t len);

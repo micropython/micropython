@@ -141,8 +141,8 @@ STATIC bool read_byte(bitbangio_i2c_obj_t *self, uint8_t *val, bool ack) {
 void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
                                            const mcu_pin_obj_t * scl,
                                            const mcu_pin_obj_t * sda,
-                                           uint32_t freq) {
-    self->us_delay = 500000 / freq;
+                                           uint32_t frequency) {
+    self->us_delay = 500000 / frequency;
     if (self->us_delay == 0) {
         self->us_delay = 1;
     }
@@ -164,6 +164,25 @@ void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
 void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self) {
     common_hal_nativeio_digitalinout_deinit(&self->scl);
     common_hal_nativeio_digitalinout_deinit(&self->sda);
+}
+
+bool shared_module_bitbangio_i2c_try_lock(bitbangio_i2c_obj_t *self) {
+    bool success = false;
+    common_hal_mcu_disable_interrupts();
+    if (!self->locked) {
+        self->locked = true;
+        success = true;
+    }
+    common_hal_mcu_enable_interrupts();
+    return success;
+}
+
+bool shared_module_bitbangio_i2c_has_lock(bitbangio_i2c_obj_t *self) {
+    return self->locked;
+}
+
+void shared_module_bitbangio_i2c_unlock(bitbangio_i2c_obj_t *self) {
+    self->locked = false;
 }
 
 bool shared_module_bitbangio_i2c_probe(bitbangio_i2c_obj_t *self, uint8_t addr) {

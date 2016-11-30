@@ -32,6 +32,21 @@ void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
 }
 
+// Interrupt flags that will be saved and restored during disable/Enable
+// interrupt functions below.
+static irqflags_t irq_flags;
+void common_hal_mcu_disable_interrupts(void) {
+    // Disable all interrupt sources for timing critical sections.
+    // Disable ASF-based interrupts.
+    irq_flags = cpu_irq_save();
+}
+
+void common_hal_mcu_enable_interrupts(void) {
+    // Enable all interrupt sources after timing critical sections.
+    // Restore ASF-based interrupts.
+    cpu_irq_restore(irq_flags);
+}
+
 // This maps MCU pin names to pin objects.
 STATIC const mp_map_elem_t mcu_pin_global_dict_table[] = {
 // Pins in datasheet order.
