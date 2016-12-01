@@ -54,3 +54,7 @@ print(buf)
 # char out of font range set to chr(127)
 fbuf.text(str(chr(31)), 0, 0)
 print(buf)
+
+# test legacy constructor
+fbuf = framebuf.FrameBuffer1(buf, w, h)
+fbuf = framebuf.FrameBuffer1(buf, w, h, w)

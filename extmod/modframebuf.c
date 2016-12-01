@@ -310,9 +310,32 @@ STATIC const mp_obj_type_t mp_type_framebuf = {
     .locals_dict = (mp_obj_t)&framebuf_locals_dict,
 };
 
+// this factory function is provided for backwards compatibility with old FrameBuffer1 class
+STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args) {
+    mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
+    o->base.type = &mp_type_framebuf;
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
+    o->buf = bufinfo.buf;
+
+    o->width = mp_obj_get_int(args[1]);
+    o->height = mp_obj_get_int(args[2]);
+    o->format = FRAMEBUF_MVLSB;
+    if (n_args >= 4) {
+        o->stride = mp_obj_get_int(args[3]);
+    } else {
+        o->stride = o->width;
+    }
+
+    return MP_OBJ_FROM_PTR(o);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(legacy_framebuffer1_obj, 3, 4, legacy_framebuffer1);
+
 STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_framebuf) },
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer), MP_ROM_PTR(&mp_type_framebuf) },
+    { MP_ROM_QSTR(MP_QSTR_FrameBuffer1), MP_ROM_PTR(&legacy_framebuffer1_obj) },
     { MP_ROM_QSTR(MP_QSTR_MVLSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_RGB565), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565) },
 };
