@@ -140,6 +140,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj
 STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(o_in);
 
+    if (request == MP_STREAM_FLUSH) {
+	file_obj_flush(o_in);
+	return 0;
+    }
+    
     if (request == MP_STREAM_SEEK) {
         struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
 
