@@ -111,6 +111,9 @@ typedef long mp_off_t;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
+// board specific definitions
+#include "mpconfigboard.h"
+
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t microcontroller_module;
 extern const struct _mp_obj_module_t bitbangio_module;
@@ -121,20 +124,24 @@ extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t uheap_module;
 
+#if BOARD_FLASH_SIZE > 192000
+    #define EXTRA_BUILTIN_MODULES \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
+#else
+    #define EXTRA_BUILTIN_MODULES
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_nativeio), (mp_obj_t)&nativeio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }
+    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
+    EXTRA_BUILTIN_MODULES
 
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }
-
-// board specific definitions
-#include "mpconfigboard.h"
 
 #ifndef MICROPY_PIN_DEFS_PORT_H
 #define MICROPY_PIN_DEFS_PORT_H "pins.h"
