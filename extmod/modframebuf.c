@@ -44,10 +44,12 @@ typedef struct _mp_obj_framebuf_t {
 
 typedef void (*setpixel_t)(const mp_obj_framebuf_t*, int, int, uint32_t);
 typedef uint32_t (*getpixel_t)(const mp_obj_framebuf_t*, int, int);
+typedef void (*fill_rect_t)(const mp_obj_framebuf_t *, int, int, int, int, uint32_t);
 
 typedef struct _mp_framebuf_p_t {
     setpixel_t setpixel;
     getpixel_t getpixel;
+    fill_rect_t fill_rect;
 } mp_framebuf_p_t;
 
 // Functions for MVLSB format
@@ -62,6 +64,18 @@ STATIC uint32_t mvlsb_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return (((uint8_t*)fb->buf)[(y >> 3) * fb->stride + x] >> (y & 0x07)) & 0x01;
 }
 
+STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+    while (h--) {
+        uint8_t *b = &((uint8_t*)fb->buf)[(y >> 3) * fb->stride + x];
+        uint8_t offset = y & 0x07;
+        for (int ww = w; ww; --ww) {
+            *b = (*b & ~(0x01 << offset)) | ((col != 0) << offset);
+            ++b;
+        }
+        ++y;
+    }
+}
+
 // Functions for RGB565 format
 
 STATIC void rgb565_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
@@ -72,13 +86,23 @@ STATIC uint32_t rgb565_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return ((uint16_t*)fb->buf)[x + y * fb->stride];
 }
 
+STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t colour) {
+    uint16_t *b = &((uint16_t*)fb->buf)[x + y * fb->stride];
+    while (h--) {
+        for (int ww = w; ww; --ww) {
+            *b++ = colour;
+        }
+        b += fb->stride - w;
+    }
+}
+
 // constants for formats
 #define FRAMEBUF_MVLSB  (0)
 #define FRAMEBUF_RGB565 (1)
 
 STATIC mp_framebuf_p_t formats[] = {
-    [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel},
-    [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel},
+    [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
+    [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
 };
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
@@ -123,11 +147,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t col = mp_obj_get_int(col_in);
-    for (int y = 0; y < self->height; ++y) {
-        for (int x = 0; x < self->width; ++x) {
-            setpixel(self, x, y, col);
-        }
-    }
+    formats[self->format].fill_rect(self, 0, 0, self->width, self->height, col);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(framebuf_fill_obj, framebuf_fill);
@@ -153,11 +173,8 @@ STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
     x = MAX(MIN(x, self->width), 0);
     y = MAX(MIN(y, self->height), 0);
 
-    for (; y < yend; ++y) {
-        for (int xc = x; xc < xend; ++xc) {
-            setpixel(self, xc, y, color);
-        }
-    }
+    formats[self->format].fill_rect(self, x, y, xend - x, yend - y, color);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_fill_rect_obj, 6, 6, framebuf_fill_rect);
