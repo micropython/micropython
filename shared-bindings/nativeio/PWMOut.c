@@ -100,7 +100,7 @@ STATIC mp_obj_t nativeio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args
     common_hal_nativeio_pwmout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_pwmout_obj___exit___obj, 4, 4, nativeio_pwmout_obj___exit__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_pwmout___exit___obj, 4, 4, nativeio_pwmout_obj___exit__);
 
 //|   .. attribute:: duty_cycle
 //|
@@ -135,6 +135,8 @@ mp_obj_property_t nativeio_pwmout_duty_cycle_obj = {
 
 STATIC const mp_rom_map_elem_t nativeio_pwmout_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_pwmout___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_pwmout___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_pwmout_deinit_obj) },
 
     // Properties

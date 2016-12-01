@@ -97,7 +97,7 @@ STATIC mp_obj_t nativeio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     common_hal_nativeio_i2c_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_i2c_obj___exit___obj, 4, 4, nativeio_i2c_obj___exit__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_i2c___exit___obj, 4, 4, nativeio_i2c_obj___exit__);
 
 //|   .. method:: I2C.scan()
 //|
@@ -149,13 +149,13 @@ STATIC mp_obj_t nativeio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_ar
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
-    uint32_t end = args[ARG_end].u_int;
+    int32_t end = args[ARG_end].u_int;
     if (end < 0) {
         end += bufinfo.len;
     }
     uint32_t start = args[ARG_start].u_int;
     uint32_t len = end - start;
-    if (end < start) {
+    if ((uint32_t) end < start) {
         len = 0;
     } else if (len > bufinfo.len) {
         len = bufinfo.len;
@@ -198,13 +198,13 @@ STATIC mp_obj_t nativeio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    uint32_t end = args[ARG_end].u_int;
+    int32_t end = args[ARG_end].u_int;
     if (end < 0) {
         end += bufinfo.len;
     }
     uint32_t start = args[ARG_start].u_int;
     uint32_t len = end - start;
-    if (end < start) {
+    if ((uint32_t) end < start) {
         len = 0;
     } else if (len > bufinfo.len) {
         len = bufinfo.len;
@@ -223,7 +223,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_i2c_writeto_obj, 1, nativeio_i2c_writ
 STATIC const mp_rom_map_elem_t nativeio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_i2c_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_i2c___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_i2c_obj___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_i2c___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&nativeio_i2c_scan_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_readfrom_into), MP_ROM_PTR(&nativeio_i2c_readfrom_into_obj) },
