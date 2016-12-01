@@ -3,6 +3,12 @@
 
 #include "common-hal/microcontroller/types.h"
 
+#define MUX_C 2
+#define MUX_D 3
+#define MUX_E 4
+#define MUX_F 5
+#define PINMUX(pin, mux) ((((uint32_t) pin) << 16) | (mux))
+
 // Pins in datasheet order.
 #ifdef PIN_PA00
 extern const mcu_pin_obj_t pin_PA00;

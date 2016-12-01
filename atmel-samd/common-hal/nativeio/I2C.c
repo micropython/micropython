@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
+#include "samd21_pins.h"
 
 // We use ENABLE registers below we don't want to treat as a macro.
 #undef ENABLE
@@ -54,11 +55,11 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
             sda->sercom[i].pad != 0) {
             continue;
         }
-        sda_pinmux = sda->sercom[i].pinmux;
+        sda_pinmux = PINMUX(sda->pin, (i == 0) ? MUX_C : MUX_D);
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (potential_sercom == scl->sercom[j].sercom &&
                 scl->sercom[j].pad == 1) {
-                scl_pinmux = scl->sercom[j].pinmux;
+                scl_pinmux = PINMUX(scl->pin, (j == 0) ? MUX_C : MUX_D);
                 sercom = potential_sercom;
                 break;
             }

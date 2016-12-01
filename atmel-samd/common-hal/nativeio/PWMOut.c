@@ -29,35 +29,20 @@
 #include "py/runtime.h"
 #include "shared-bindings/nativeio/PWMOut.h"
 
+#include "samd21_pins.h"
+
 void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu_pin_obj_t* pin, uint16_t duty) {
     self->pin = pin;
     self->using_primary_timer = true;
 
-    if (pin->primary_timer.tc == 0 && pin->primary_timer.tcc == 0 &&
-        pin->secondary_timer.tc == 0 && pin->secondary_timer.tcc == 0) {
+    if (pin->primary_timer.tc == 0 && pin->secondary_timer.tc == 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "PWM not supported on pin %q", self->pin->name));
     }
 
     // TODO(tannewt): Support output on multiple timer channels at once.
     const pin_timer_t* t = &pin->primary_timer;
-    if (t->tcc != 0) {
-        struct tcc_config config_tcc;
-        tcc_get_config_defaults(&config_tcc, t->tcc);
-
-        config_tcc.counter.clock_prescaler = TCC_CLOCK_PRESCALER_DIV256;
-        config_tcc.counter.period = 0xFF;
-        config_tcc.compare.wave_generation = TCC_WAVE_GENERATION_SINGLE_SLOPE_PWM;
-        config_tcc.compare.match[t->channel] = duty;
-
-        config_tcc.pins.enable_wave_out_pin[t->wave_output] = true;
-        config_tcc.pins.wave_out_pin[t->wave_output] = t->pin;
-        config_tcc.pins.wave_out_pin_mux[t->wave_output] = t->mux;
-
-        tcc_init(&self->tcc_instance, t->tcc, &config_tcc);
-
-        tcc_enable(&self->tcc_instance);
-    } else {
+    if (t->is_tc) {
         struct tc_config config_tc;
         tc_get_config_defaults(&config_tc);
 
@@ -68,12 +53,28 @@ void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu
         config_tc.counter_8_bit.compare_capture_channel[t->channel] = duty;
 
         config_tc.pwm_channel[t->wave_output].enabled = true;
-        config_tc.pwm_channel[t->wave_output].pin_out = t->pin;
-        config_tc.pwm_channel[t->wave_output].pin_mux = t->mux;
+        config_tc.pwm_channel[t->wave_output].pin_out = pin->pin;
+        config_tc.pwm_channel[t->wave_output].pin_mux = MUX_E;
 
         tc_init(&self->tc_instance, t->tc, &config_tc);
 
         tc_enable(&self->tc_instance);
+    } else {
+        struct tcc_config config_tcc;
+        tcc_get_config_defaults(&config_tcc, t->tcc);
+
+        config_tcc.counter.clock_prescaler = TCC_CLOCK_PRESCALER_DIV256;
+        config_tcc.counter.period = 0xFF;
+        config_tcc.compare.wave_generation = TCC_WAVE_GENERATION_SINGLE_SLOPE_PWM;
+        config_tcc.compare.match[t->channel] = duty;
+
+        config_tcc.pins.enable_wave_out_pin[t->wave_output] = true;
+        config_tcc.pins.wave_out_pin[t->wave_output] = pin->pin;
+        config_tcc.pins.wave_out_pin_mux[t->wave_output] = MUX_E;
+
+        tcc_init(&self->tcc_instance, t->tcc, &config_tcc);
+
+        tcc_enable(&self->tcc_instance);
     }
 }
 
@@ -82,10 +83,10 @@ extern void common_hal_nativeio_pwmout_deinit(nativeio_pwmout_obj_t* self) {
     if (!self->using_primary_timer) {
       t = &self->pin->secondary_timer;
     }
-    if (t->tcc != 0) {
-      tcc_disable(&self->tcc_instance);
-    } else {
+    if (t->is_tc) {
       tc_disable(&self->tc_instance);
+    } else {
+      tcc_disable(&self->tcc_instance);
     }
 }
 

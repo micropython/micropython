@@ -40,30 +40,30 @@
 #include "py/obj.h"
 
 typedef struct {
-  Sercom *const sercom;
-  uint8_t pad;
-  uint32_t pinmux;
+    Sercom *const sercom;
+    uint8_t pad;
 } pin_sercom_t;
 
 typedef struct {
-  Tc *const tc;
-  Tcc *const tcc;
-  uint8_t channel;
-  uint8_t wave_output;
-  uint32_t pin;
-  uint32_t mux;
+    union {
+        Tc *const tc;
+        Tcc *const tcc;
+    };
+    bool is_tc:1;
+    uint8_t channel:3;
+    uint8_t wave_output:4;
 } pin_timer_t;
 
 #define NUM_SERCOMS_PER_PIN 2
 typedef struct {
     mp_obj_base_t base;
     qstr name;
-    uint32_t pin;
-    bool has_adc;
-    enum adc_positive_input adc_input;
-    pin_timer_t primary_timer;
-    pin_timer_t secondary_timer;
-    pin_sercom_t sercom[NUM_SERCOMS_PER_PIN];
+    uint8_t pin;
+    bool has_adc:1;
+    enum adc_positive_input adc_input:7;
+    pin_timer_t primary_timer; // Mux E
+    pin_timer_t secondary_timer; // Mux F
+    pin_sercom_t sercom[NUM_SERCOMS_PER_PIN]; // Mux C and D
 } mcu_pin_obj_t;
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_TYPES_H__

@@ -29,6 +29,7 @@
 
 #include "shared-bindings/nativeio/SPI.h"
 #include "py/nlr.h"
+#include "samd21_pins.h"
 
 // We use ENABLE registers below we don't want to treat as a macro.
 #undef ENABLE
@@ -57,12 +58,12 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
             potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {
             continue;
         }
-        clock_pinmux = clock->sercom[i].pinmux;
+        clock_pinmux = PINMUX(clock->pin, (i == 0) ? MUX_C : MUX_D);
         clock_pad = clock->sercom[i].pad;
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (!mosi_none) {
                 if(potential_sercom == mosi->sercom[j].sercom) {
-                    mosi_pinmux = mosi->sercom[j].pinmux;
+                    mosi_pinmux = PINMUX(mosi->pin, (j == 0) ? MUX_C : MUX_D);
                     mosi_pad = mosi->sercom[j].pad;
                     if (miso_none) {
                         sercom = potential_sercom;
@@ -74,7 +75,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
             if (!miso_none) {
                 for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
                     if (potential_sercom == miso->sercom[k].sercom) {
-                        miso_pinmux = miso->sercom[k].pinmux;
+                        miso_pinmux = PINMUX(miso->pin, (k == 0) ? MUX_C : MUX_D);
                         miso_pad = miso->sercom[k].pad;
                         sercom = potential_sercom;
                         break;
