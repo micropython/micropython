@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "lib/fatfs/ff.h"
 #include "extmod/fsusermount.h"
+#include "mphalport.h"
 
 #include "sdcard.h"
 #include "pin.h"
@@ -37,6 +38,7 @@
 #include "bufhelper.h"
 #include "dma.h"
 #include "irq.h"
+
 
 #if MICROPY_HW_HAS_SDCARD
 
@@ -221,6 +223,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         dma_init(&sd_rx_dma, &dma_SDIO_0_RX, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
 
+        MP_HAL_CLEANINVALIDATECACHE(dest, num_blocks * SDCARD_BLOCK_SIZE);
         err = HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
         if (err == SD_OK) {
             // wait for DMA transfer to finish, with a large timeout
@@ -240,6 +243,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         memmove(orig_dest, dest, num_blocks * SDCARD_BLOCK_SIZE);
         memcpy(dest, &saved_word, orig_dest - dest);
     }
+
 
     return err;
 }
@@ -277,6 +281,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         dma_init(&sd_tx_dma, &dma_SDIO_0_TX, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
 
+        MP_HAL_CLEANCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
         err = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
         if (err == SD_OK) {
             // wait for DMA transfer to finish, with a large timeout
