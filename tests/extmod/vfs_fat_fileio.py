@@ -89,6 +89,11 @@ with vfs.open("foo_file.txt") as f2:
     f2.seek(-2, 2) # SEEK_END
     print(f2.read(1))
 
+# using constructor of FileIO type to open a file
+FileIO = type(f)
+with FileIO("foo_file.txt") as f:
+    print(f.read())
+
 # dirs
 vfs.mkdir("foo_dir")
 
