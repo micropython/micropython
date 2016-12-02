@@ -55,11 +55,7 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
         mp_map_elem_t *elem = mp_map_lookup(poll_map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         if (elem->value == NULL) {
             // object not found; get its ioctl and add it to the poll list
-            mp_obj_type_t *type = mp_obj_get_type(obj[i]);
-            const mp_stream_p_t *stream_p = type->protocol;
-            if (stream_p == NULL || stream_p->ioctl == NULL) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object with stream.ioctl required"));
-            }
+            const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
             poll_obj_t *poll_obj = m_new_obj(poll_obj_t);
             poll_obj->obj = obj[i];
             poll_obj->ioctl = stream_p->ioctl;
