@@ -140,6 +140,14 @@ print(vfs.listdir("foo_dir"))
 vfs.rename("foo_dir/file.txt", "moved-to-root.txt")
 print(vfs.listdir())
 
+# check that renaming to existing file will overwrite it
+with vfs.open("temp", "w") as f:
+    f.write("new text")
+vfs.rename("temp", "moved-to-root.txt")
+print(vfs.listdir())
+with vfs.open("moved-to-root.txt") as f:
+    print(f.read())
+
 # valid removes
 vfs.remove("foo_dir/sub_file.txt")
 vfs.remove("foo_file.txt")
