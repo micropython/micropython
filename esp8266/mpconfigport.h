@@ -63,6 +63,7 @@
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URE              (1)
+#define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_LWIP             (1)
@@ -164,6 +165,7 @@ extern const struct _mp_obj_module_t onewire_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_uselect }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
