@@ -46,7 +46,6 @@
 #include "uart.h"
 #include "pybuart.h"
 #include "mpirq.h"
-#include "pybioctl.h"
 #include "pybsleep.h"
 #include "mpexception.h"
 #include "py/mpstate.h"
@@ -630,14 +629,14 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
     mp_uint_t ret;
     uart_check_init(self);
 
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_IOCTL_POLL_RD) && uart_rx_any(self)) {
-            ret |= MP_IOCTL_POLL_RD;
+        if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self)) {
+            ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_IOCTL_POLL_WR) && MAP_UARTSpaceAvail(self->reg)) {
-            ret |= MP_IOCTL_POLL_WR;
+        if ((flags & MP_STREAM_POLL_WR) && MAP_UARTSpaceAvail(self->reg)) {
+            ret |= MP_STREAM_POLL_WR;
         }
     } else {
         *errcode = EINVAL;
