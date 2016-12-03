@@ -40,7 +40,7 @@ STATIC mp_obj_t mod_time_time(void) {
      * single precision floats so the fraction component will start to
      * lose precision on devices with a long uptime.
      */
-    return mp_obj_new_int(sys_tick_get() / sys_clock_ticks_per_sec);
+    return mp_obj_new_int(k_uptime_get() / 1000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
