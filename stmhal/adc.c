@@ -198,14 +198,13 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
+    adcHandle->Init.Resolution            = ADC_RESOLUTION_12B;
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    adcHandle->Init.Resolution            = ADC_RESOLUTION12b;
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
     adcHandle->Init.EOCSelection          = DISABLE;
 #elif defined(MCU_SERIES_L4)
-    adcHandle->Init.Resolution            = ADC_RESOLUTION_12B;
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
     adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
@@ -465,10 +464,10 @@ typedef struct _pyb_adc_all_obj_t {
 void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_mask) {
 
     switch (resolution) {
-        case 6:  resolution = ADC_RESOLUTION6b;  break;
-        case 8:  resolution = ADC_RESOLUTION8b;  break;
-        case 10: resolution = ADC_RESOLUTION10b; break;
-        case 12: resolution = ADC_RESOLUTION12b; break;
+        case 6:  resolution = ADC_RESOLUTION_6B;  break;
+        case 8:  resolution = ADC_RESOLUTION_8B;  break;
+        case 10: resolution = ADC_RESOLUTION_10B; break;
+        case 12: resolution = ADC_RESOLUTION_12B; break;
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "resolution %d not supported", resolution));
@@ -505,7 +504,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
     adcHandle->Init.DMAContinuousRequests = DISABLE;
     adcHandle->Init.EOCSelection          = DISABLE;
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
 #elif defined(MCU_SERIES_L4)
@@ -531,9 +530,9 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     uint32_t res_reg = __HAL_ADC_GET_RESOLUTION(adcHandle);
 
     switch (res_reg) {
-        case ADC_RESOLUTION6b:  return 6;
-        case ADC_RESOLUTION8b:  return 8;
-        case ADC_RESOLUTION10b: return 10;
+        case ADC_RESOLUTION_6B:  return 6;
+        case ADC_RESOLUTION_8B:  return 8;
+        case ADC_RESOLUTION_10B: return 10;
     }
     return 12;
 }
