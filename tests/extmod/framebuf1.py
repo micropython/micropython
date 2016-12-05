@@ -30,6 +30,26 @@ print(buf)
 # get pixel
 print(fbuf.pixel(0, 0), fbuf.pixel(1, 1))
 
+# hline
+fbuf.fill(0)
+fbuf.hline(0, 1, w, 1)
+print('hline', buf)
+
+# vline
+fbuf.fill(0)
+fbuf.vline(1, 0, h, 1)
+print('vline', buf)
+
+# rect
+fbuf.fill(0)
+fbuf.rect(1, 1, 3, 3, 1)
+print('rect', buf)
+
+# line
+fbuf.fill(0)
+fbuf.line(1, 1, 3, 3, 1)
+print('line', buf)
+
 # scroll
 fbuf.fill(0)
 fbuf.pixel(2, 7, 1)
