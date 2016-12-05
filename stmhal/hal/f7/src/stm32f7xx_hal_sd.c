@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_sd.c
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   SD card HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the Secure Digital (SD) peripheral:
@@ -149,7 +149,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -206,67 +206,67 @@
                                                     SDMMC_FLAG_CMDREND  | SDMMC_FLAG_CMDSENT  | SDMMC_FLAG_DATAEND  |\
                                                     SDMMC_FLAG_DBCKEND))
 
-#define SDMMC_CMD0TIMEOUT                ((uint32_t)0x00010000)
+#define SDMMC_CMD0TIMEOUT                ((uint32_t)0x00010000U)
 
 /**
   * @brief  Mask for errors Card Status R1 (OCR Register)
   */
-#define SD_OCR_ADDR_OUT_OF_RANGE        ((uint32_t)0x80000000)
-#define SD_OCR_ADDR_MISALIGNED          ((uint32_t)0x40000000)
-#define SD_OCR_BLOCK_LEN_ERR            ((uint32_t)0x20000000)
-#define SD_OCR_ERASE_SEQ_ERR            ((uint32_t)0x10000000)
-#define SD_OCR_BAD_ERASE_PARAM          ((uint32_t)0x08000000)
-#define SD_OCR_WRITE_PROT_VIOLATION     ((uint32_t)0x04000000)
-#define SD_OCR_LOCK_UNLOCK_FAILED       ((uint32_t)0x01000000)
-#define SD_OCR_COM_CRC_FAILED           ((uint32_t)0x00800000)
-#define SD_OCR_ILLEGAL_CMD              ((uint32_t)0x00400000)
-#define SD_OCR_CARD_ECC_FAILED          ((uint32_t)0x00200000)
-#define SD_OCR_CC_ERROR                 ((uint32_t)0x00100000)
-#define SD_OCR_GENERAL_UNKNOWN_ERROR    ((uint32_t)0x00080000)
-#define SD_OCR_STREAM_READ_UNDERRUN     ((uint32_t)0x00040000)
-#define SD_OCR_STREAM_WRITE_OVERRUN     ((uint32_t)0x00020000)
-#define SD_OCR_CID_CSD_OVERWRITE        ((uint32_t)0x00010000)
-#define SD_OCR_WP_ERASE_SKIP            ((uint32_t)0x00008000)
-#define SD_OCR_CARD_ECC_DISABLED        ((uint32_t)0x00004000)
-#define SD_OCR_ERASE_RESET              ((uint32_t)0x00002000)
-#define SD_OCR_AKE_SEQ_ERROR            ((uint32_t)0x00000008)
-#define SD_OCR_ERRORBITS                ((uint32_t)0xFDFFE008)
+#define SD_OCR_ADDR_OUT_OF_RANGE        ((uint32_t)0x80000000U)
+#define SD_OCR_ADDR_MISALIGNED          ((uint32_t)0x40000000U)
+#define SD_OCR_BLOCK_LEN_ERR            ((uint32_t)0x20000000U)
+#define SD_OCR_ERASE_SEQ_ERR            ((uint32_t)0x10000000U)
+#define SD_OCR_BAD_ERASE_PARAM          ((uint32_t)0x08000000U)
+#define SD_OCR_WRITE_PROT_VIOLATION     ((uint32_t)0x04000000U)
+#define SD_OCR_LOCK_UNLOCK_FAILED       ((uint32_t)0x01000000U)
+#define SD_OCR_COM_CRC_FAILED           ((uint32_t)0x00800000U)
+#define SD_OCR_ILLEGAL_CMD              ((uint32_t)0x00400000U)
+#define SD_OCR_CARD_ECC_FAILED          ((uint32_t)0x00200000U)
+#define SD_OCR_CC_ERROR                 ((uint32_t)0x00100000U)
+#define SD_OCR_GENERAL_UNKNOWN_ERROR    ((uint32_t)0x00080000U)
+#define SD_OCR_STREAM_READ_UNDERRUN     ((uint32_t)0x00040000U)
+#define SD_OCR_STREAM_WRITE_OVERRUN     ((uint32_t)0x00020000U)
+#define SD_OCR_CID_CSD_OVERWRITE        ((uint32_t)0x00010000U)
+#define SD_OCR_WP_ERASE_SKIP            ((uint32_t)0x00008000U)
+#define SD_OCR_CARD_ECC_DISABLED        ((uint32_t)0x00004000U)
+#define SD_OCR_ERASE_RESET              ((uint32_t)0x00002000U)
+#define SD_OCR_AKE_SEQ_ERROR            ((uint32_t)0x00000008U)
+#define SD_OCR_ERRORBITS                ((uint32_t)0xFDFFE008U)
 
 /**
   * @brief  Masks for R6 Response
   */
-#define SD_R6_GENERAL_UNKNOWN_ERROR     ((uint32_t)0x00002000)
-#define SD_R6_ILLEGAL_CMD               ((uint32_t)0x00004000)
-#define SD_R6_COM_CRC_FAILED            ((uint32_t)0x00008000)
+#define SD_R6_GENERAL_UNKNOWN_ERROR     ((uint32_t)0x00002000U)
+#define SD_R6_ILLEGAL_CMD               ((uint32_t)0x00004000U)
+#define SD_R6_COM_CRC_FAILED            ((uint32_t)0x00008000U)
 
-#define SD_VOLTAGE_WINDOW_SD            ((uint32_t)0x80100000)
-#define SD_HIGH_CAPACITY                ((uint32_t)0x40000000)
-#define SD_STD_CAPACITY                 ((uint32_t)0x00000000)
-#define SD_CHECK_PATTERN                ((uint32_t)0x000001AA)
+#define SD_VOLTAGE_WINDOW_SD            ((uint32_t)0x80100000U)
+#define SD_HIGH_CAPACITY                ((uint32_t)0x40000000U)
+#define SD_STD_CAPACITY                 ((uint32_t)0x00000000U)
+#define SD_CHECK_PATTERN                ((uint32_t)0x000001AAU)
 
-#define SD_MAX_VOLT_TRIAL               ((uint32_t)0x0000FFFF)
-#define SD_ALLZERO                      ((uint32_t)0x00000000)
+#define SD_MAX_VOLT_TRIAL               ((uint32_t)0x0000FFFFU)
+#define SD_ALLZERO                      ((uint32_t)0x00000000U)
 
-#define SD_WIDE_BUS_SUPPORT             ((uint32_t)0x00040000)
-#define SD_SINGLE_BUS_SUPPORT           ((uint32_t)0x00010000)
-#define SD_CARD_LOCKED                  ((uint32_t)0x02000000)
+#define SD_WIDE_BUS_SUPPORT             ((uint32_t)0x00040000U)
+#define SD_SINGLE_BUS_SUPPORT           ((uint32_t)0x00010000U)
+#define SD_CARD_LOCKED                  ((uint32_t)0x02000000U)
 
-#define SD_DATATIMEOUT                  ((uint32_t)0xFFFFFFFF)
-#define SD_0TO7BITS                     ((uint32_t)0x000000FF)
-#define SD_8TO15BITS                    ((uint32_t)0x0000FF00)
-#define SD_16TO23BITS                   ((uint32_t)0x00FF0000)
-#define SD_24TO31BITS                   ((uint32_t)0xFF000000)
-#define SD_MAX_DATA_LENGTH              ((uint32_t)0x01FFFFFF)
+#define SD_DATATIMEOUT                  ((uint32_t)0xFFFFFFFFU)
+#define SD_0TO7BITS                     ((uint32_t)0x000000FFU)
+#define SD_8TO15BITS                    ((uint32_t)0x0000FF00U)
+#define SD_16TO23BITS                   ((uint32_t)0x00FF0000U)
+#define SD_24TO31BITS                   ((uint32_t)0xFF000000U)
+#define SD_MAX_DATA_LENGTH              ((uint32_t)0x01FFFFFFU)
 
-#define SD_HALFFIFO                     ((uint32_t)0x00000008)
-#define SD_HALFFIFOBYTES                ((uint32_t)0x00000020)
+#define SD_HALFFIFO                     ((uint32_t)0x00000008U)
+#define SD_HALFFIFOBYTES                ((uint32_t)0x00000020U)
 
 /**
   * @brief  Command Class Supported
   */
-#define SD_CCCC_LOCK_UNLOCK             ((uint32_t)0x00000080)
-#define SD_CCCC_WRITE_PROT              ((uint32_t)0x00000040)
-#define SD_CCCC_ERASE                   ((uint32_t)0x00000020)
+#define SD_CCCC_LOCK_UNLOCK             ((uint32_t)0x00000080U)
+#define SD_CCCC_WRITE_PROT              ((uint32_t)0x00000040U)
+#define SD_CCCC_ERASE                   ((uint32_t)0x00000020U)
 
 /**
   * @brief  Following commands are SD Card Specific commands.
@@ -413,6 +413,9 @@ HAL_StatusTypeDef HAL_SD_DeInit(SD_HandleTypeDef *hsd)
   */
 __weak void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hsd);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_MspInit could be implemented in the user file
    */
@@ -425,6 +428,9 @@ __weak void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
   */
 __weak void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hsd);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_MspDeInit could be implemented in the user file
    */
@@ -453,14 +459,14 @@ __weak void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd)
   * @brief  Reads block(s) from a specified address in a card. The Data transfer
   *         is managed by polling mode.
   * @param  hsd: SD handle
-  * @param  pReadBuffer: pointer to the buffer that will contain the received data 
-  * @param  BlockNumber: Block number from where data is to be read (byte address = BlockNumber * BlockSize)
+  * @param  pReadBuffer: pointer to the buffer that will contain the received data
+  * @param  ReadAddr: Address from where data is to be read
   * @param  BlockSize: SD card Data block size
   *   @note BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of SD blocks to read
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint64_t ReadAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef  sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -470,16 +476,10 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_
   /* Initialize data control register */
   hsd->Instance->DCTRL = 0;
 
-  uint32_t ReadAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    ReadAddr = BlockNumber;
-  }
-  else
-  {
-    // should not overflow for standard-capacity cards
-    ReadAddr = BlockNumber * BlockSize;
+    ReadAddr /= 512;
   }
 
   /* Set Block Size for Card */
@@ -518,7 +518,7 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_
     sdmmc_cmdinitstructure.CmdIndex = SD_CMD_READ_SINGLE_BLOCK;
   }
 
-  sdmmc_cmdinitstructure.Argument         = ReadAddr;
+  sdmmc_cmdinitstructure.Argument         = (uint32_t)ReadAddr;
   SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
 
   /* Read block(s) in polling mode */
@@ -636,13 +636,13 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_
   *         transfer is managed by polling mode.
   * @param  hsd: SD handle
   * @param  pWriteBuffer: pointer to the buffer that will contain the data to transmit
-  * @param  BlockNumber: Block number to where data is to be written (byte address = BlockNumber * BlockSize)
+  * @param  WriteAddr: Address from where data is to be written
   * @param  BlockSize: SD card Data block size
   * @note   BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of SD blocks to write
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint64_t WriteAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -654,16 +654,10 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32
   /* Initialize data control register */
   hsd->Instance->DCTRL = 0;
 
-  uint32_t WriteAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    WriteAddr = BlockNumber;
-  }
-  else
-  {
-    // should not overflow for standard-capacity cards
-    WriteAddr = BlockNumber * BlockSize;
+    WriteAddr /= 512;
   }
 
   /* Set Block Size for Card */
@@ -693,7 +687,7 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32
     sdmmc_cmdinitstructure.CmdIndex = SD_CMD_WRITE_SINGLE_BLOCK;
   }
 
-  sdmmc_cmdinitstructure.Argument         = WriteAddr;
+  sdmmc_cmdinitstructure.Argument         = (uint32_t)WriteAddr;
   SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
 
   /* Check for error conditions */
@@ -852,13 +846,13 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32
   *         to check the completion of the read process
   * @param  hsd: SD handle
   * @param  pReadBuffer: Pointer to the buffer that will contain the received data
-  * @param  BlockNumber: Block number from where data is to be read (byte address = BlockNumber * BlockSize)
+  * @param  ReadAddr: Address from where data is to be read
   * @param  BlockSize: SD card Data block size
   * @note   BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of blocks to read.
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint64_t ReadAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -898,16 +892,10 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uin
   /* Enable the DMA Channel */
   HAL_DMA_Start_IT(hsd->hdmarx, (uint32_t)&hsd->Instance->FIFO, (uint32_t)pReadBuffer, (uint32_t)(BlockSize * NumberOfBlocks)/4);
 
-  uint32_t ReadAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    ReadAddr = BlockNumber;
-  }
-  else
-  {
-    // should not overflow for standard-capacity cards
-    ReadAddr = BlockNumber * BlockSize;
+    ReadAddr /= 512;
   }
 
   /* Set Block Size for Card */
@@ -947,7 +935,7 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uin
     sdmmc_cmdinitstructure.CmdIndex = SD_CMD_READ_SINGLE_BLOCK;
   }
 
-  sdmmc_cmdinitstructure.Argument         = ReadAddr;
+  sdmmc_cmdinitstructure.Argument         = (uint32_t)ReadAddr;
   SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
 
   /* Check for error conditions */
@@ -974,13 +962,13 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uin
   *         to check the completion of the write process (by SD current status polling).
   * @param  hsd: SD handle
   * @param  pWriteBuffer: pointer to the buffer that will contain the data to transmit
-  * @param  BlockNumber: Block number to where data is to be written (byte address = BlockNumber * BlockSize)
+  * @param  WriteAddr: Address from where data is to be read
   * @param  BlockSize: the SD card Data block size
   * @note   BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of blocks to write
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint64_t WriteAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -1020,16 +1008,10 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, ui
   /* Enable SDMMC DMA transfer */
   __HAL_SD_SDMMC_DMA_ENABLE(hsd);
 
-  uint32_t WriteAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    WriteAddr = BlockNumber;
-  }
-  else
-  {
-    // should not overflow for standard-capacity cards
-    WriteAddr = BlockNumber * BlockSize;
+    WriteAddr /= 512;
   }
 
   /* Set Block Size for Card */
@@ -1395,6 +1377,9 @@ void HAL_SD_IRQHandler(SD_HandleTypeDef *hsd)
   */
 __weak void HAL_SD_XferCpltCallback(SD_HandleTypeDef *hsd)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hsd);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_XferCpltCallback could be implemented in the user file
    */
@@ -1407,6 +1392,9 @@ __weak void HAL_SD_XferCpltCallback(SD_HandleTypeDef *hsd)
   */
 __weak void HAL_SD_XferErrorCallback(SD_HandleTypeDef *hsd)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hsd);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_XferErrorCallback could be implemented in the user file
    */
@@ -1420,6 +1408,9 @@ __weak void HAL_SD_XferErrorCallback(SD_HandleTypeDef *hsd)
   */
 __weak void HAL_SD_DMA_RxCpltCallback(DMA_HandleTypeDef *hdma)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdma);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_DMA_RxCpltCallback could be implemented in the user file
    */
@@ -1433,6 +1424,9 @@ __weak void HAL_SD_DMA_RxCpltCallback(DMA_HandleTypeDef *hdma)
   */
 __weak void HAL_SD_DMA_RxErrorCallback(DMA_HandleTypeDef *hdma)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdma);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_DMA_RxErrorCallback could be implemented in the user file
    */
@@ -1446,6 +1440,9 @@ __weak void HAL_SD_DMA_RxErrorCallback(DMA_HandleTypeDef *hdma)
   */
 __weak void HAL_SD_DMA_TxCpltCallback(DMA_HandleTypeDef *hdma)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdma);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_DMA_TxCpltCallback could be implemented in the user file
    */
@@ -1459,6 +1456,9 @@ __weak void HAL_SD_DMA_TxCpltCallback(DMA_HandleTypeDef *hdma)
   */
 __weak void HAL_SD_DMA_TxErrorCallback(DMA_HandleTypeDef *hdma)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hdma);
+
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_SD_DMA_TxErrorCallback could be implemented in the user file
    */
@@ -1499,7 +1499,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->RCA      = (uint16_t)(hsd->RCA);
 
   /* Byte 0 */
-  tmp = (hsd->CSD[0] & 0xFF000000) >> 24;
+  tmp = (hsd->CSD[0] & 0xFF000000U) >> 24;
   pCardInfo->SD_csd.CSDStruct      = (uint8_t)((tmp & 0xC0) >> 6);
   pCardInfo->SD_csd.SysSpecVersion = (uint8_t)((tmp & 0x3C) >> 2);
   pCardInfo->SD_csd.Reserved1      = tmp & 0x03;
@@ -1517,16 +1517,16 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->SD_csd.MaxBusClkFrec = (uint8_t)tmp;
 
   /* Byte 4 */
-  tmp = (hsd->CSD[1] & 0xFF000000) >> 24;
+  tmp = (hsd->CSD[1] & 0xFF000000U) >> 24;
   pCardInfo->SD_csd.CardComdClasses = (uint16_t)(tmp << 4);
 
   /* Byte 5 */
-  tmp = (hsd->CSD[1] & 0x00FF0000) >> 16;
+  tmp = (hsd->CSD[1] & 0x00FF0000U) >> 16;
   pCardInfo->SD_csd.CardComdClasses |= (uint16_t)((tmp & 0xF0) >> 4);
   pCardInfo->SD_csd.RdBlockLen       = (uint8_t)(tmp & 0x0F);
 
   /* Byte 6 */
-  tmp = (hsd->CSD[1] & 0x0000FF00) >> 8;
+  tmp = (hsd->CSD[1] & 0x0000FF00U) >> 8;
   pCardInfo->SD_csd.PartBlockRead   = (uint8_t)((tmp & 0x80) >> 7);
   pCardInfo->SD_csd.WrBlockMisalign = (uint8_t)((tmp & 0x40) >> 6);
   pCardInfo->SD_csd.RdBlockMisalign = (uint8_t)((tmp & 0x20) >> 5);
@@ -1538,23 +1538,23 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
     pCardInfo->SD_csd.DeviceSize = (tmp & 0x03) << 10;
 
     /* Byte 7 */
-    tmp = (uint8_t)(hsd->CSD[1] & 0x000000FF);
+    tmp = (uint8_t)(hsd->CSD[1] & 0x000000FFU);
     pCardInfo->SD_csd.DeviceSize |= (tmp) << 2;
 
     /* Byte 8 */
-    tmp = (uint8_t)((hsd->CSD[2] & 0xFF000000) >> 24);
+    tmp = (uint8_t)((hsd->CSD[2] & 0xFF000000U) >> 24);
     pCardInfo->SD_csd.DeviceSize |= (tmp & 0xC0) >> 6;
 
     pCardInfo->SD_csd.MaxRdCurrentVDDMin = (tmp & 0x38) >> 3;
     pCardInfo->SD_csd.MaxRdCurrentVDDMax = (tmp & 0x07);
 
     /* Byte 9 */
-    tmp = (uint8_t)((hsd->CSD[2] & 0x00FF0000) >> 16);
+    tmp = (uint8_t)((hsd->CSD[2] & 0x00FF0000U) >> 16);
     pCardInfo->SD_csd.MaxWrCurrentVDDMin = (tmp & 0xE0) >> 5;
     pCardInfo->SD_csd.MaxWrCurrentVDDMax = (tmp & 0x1C) >> 2;
     pCardInfo->SD_csd.DeviceSizeMul      = (tmp & 0x03) << 1;
     /* Byte 10 */
-    tmp = (uint8_t)((hsd->CSD[2] & 0x0000FF00) >> 8);
+    tmp = (uint8_t)((hsd->CSD[2] & 0x0000FF00U) >> 8);
     pCardInfo->SD_csd.DeviceSizeMul |= (tmp & 0x80) >> 7;
 
     pCardInfo->CardCapacity  = (pCardInfo->SD_csd.DeviceSize + 1) ;
@@ -1565,23 +1565,23 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   else if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     /* Byte 7 */
-    tmp = (uint8_t)(hsd->CSD[1] & 0x000000FF);
+    tmp = (uint8_t)(hsd->CSD[1] & 0x000000FFU);
     pCardInfo->SD_csd.DeviceSize = (tmp & 0x3F) << 16;
 
     /* Byte 8 */
-    tmp = (uint8_t)((hsd->CSD[2] & 0xFF000000) >> 24);
+    tmp = (uint8_t)((hsd->CSD[2] & 0xFF000000U) >> 24);
 
     pCardInfo->SD_csd.DeviceSize |= (tmp << 8);
 
     /* Byte 9 */
-    tmp = (uint8_t)((hsd->CSD[2] & 0x00FF0000) >> 16);
+    tmp = (uint8_t)((hsd->CSD[2] & 0x00FF0000U) >> 16);
 
     pCardInfo->SD_csd.DeviceSize |= (tmp);
 
     /* Byte 10 */
-    tmp = (uint8_t)((hsd->CSD[2] & 0x0000FF00) >> 8);
+    tmp = (uint8_t)((hsd->CSD[2] & 0x0000FF00U) >> 8);
 
-    pCardInfo->CardCapacity  = ((pCardInfo->SD_csd.DeviceSize + 1ULL)) * 512 * 1024;
+    pCardInfo->CardCapacity = (uint64_t)(((uint64_t)pCardInfo->SD_csd.DeviceSize + 1) * 512 * 1024);
     pCardInfo->CardBlockSize = 512;
   }
   else
@@ -1599,7 +1599,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->SD_csd.WrProtectGrSize = (tmp & 0x7F);
 
   /* Byte 12 */
-  tmp = (uint8_t)((hsd->CSD[3] & 0xFF000000) >> 24);
+  tmp = (uint8_t)((hsd->CSD[3] & 0xFF000000U) >> 24);
   pCardInfo->SD_csd.WrProtectGrEnable = (tmp & 0x80) >> 7;
   pCardInfo->SD_csd.ManDeflECC        = (tmp & 0x60) >> 5;
   pCardInfo->SD_csd.WrSpeedFact       = (tmp & 0x1C) >> 2;
@@ -1627,7 +1627,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->SD_csd.Reserved4 = 1;
 
   /* Byte 0 */
-  tmp = (uint8_t)((hsd->CID[0] & 0xFF000000) >> 24);
+  tmp = (uint8_t)((hsd->CID[0] & 0xFF000000U) >> 24);
   pCardInfo->SD_cid.ManufacturerID = tmp;
 
   /* Byte 1 */
@@ -1643,7 +1643,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->SD_cid.ProdName1 = tmp << 24;
 
   /* Byte 4 */
-  tmp = (uint8_t)((hsd->CID[1] & 0xFF000000) >> 24);
+  tmp = (uint8_t)((hsd->CID[1] & 0xFF000000U) >> 24);
   pCardInfo->SD_cid.ProdName1 |= tmp << 16;
 
   /* Byte 5 */
@@ -1659,7 +1659,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->SD_cid.ProdName2 = tmp;
 
   /* Byte 8 */
-  tmp = (uint8_t)((hsd->CID[2] & 0xFF000000) >> 24);
+  tmp = (uint8_t)((hsd->CID[2] & 0xFF000000U) >> 24);
   pCardInfo->SD_cid.ProdRev = tmp;
 
   /* Byte 9 */
@@ -1675,7 +1675,7 @@ HAL_SD_ErrorTypedef HAL_SD_Get_CardInfo(SD_HandleTypeDef *hsd, HAL_SD_CardInfoTy
   pCardInfo->SD_cid.ProdSN |= tmp << 8;
 
   /* Byte 12 */
-  tmp = (uint8_t)((hsd->CID[3] & 0xFF000000) >> 24);
+  tmp = (uint8_t)((hsd->CID[3] & 0xFF000000U) >> 24);
   pCardInfo->SD_cid.ProdSN |= tmp;
 
   /* Byte 13 */
@@ -1840,7 +1840,7 @@ HAL_SD_ErrorTypedef HAL_SD_HighSpeed (SD_HandleTypeDef *hsd)
     SDMMC_DataConfig(hsd->Instance, &sdmmc_datainitstructure);
 
     /* Send CMD6 switch mode */
-    sdmmc_cmdinitstructure.Argument         = 0x80FFFF01;
+    sdmmc_cmdinitstructure.Argument         = 0x80FFFF01U;
     sdmmc_cmdinitstructure.CmdIndex         = SD_CMD_HS_SWITCH;
     SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
 
@@ -2121,55 +2121,55 @@ HAL_SD_ErrorTypedef HAL_SD_GetCardStatus(SD_HandleTypeDef *hsd, HAL_SD_CardStatu
   pCardStatus->SECURED_MODE = (uint8_t)tmp;
 
   /* Byte 2 */
-  tmp = (sd_status[2] & 0xFF);
-  pCardStatus->SD_CARD_TYPE = (uint8_t)(tmp << 8);
+  tmp = (sd_status[0] & 0x00FF0000) >> 16;
+  pCardStatus->SD_CARD_TYPE = (uint16_t)(tmp << 8);
 
   /* Byte 3 */
-  tmp = (sd_status[3] & 0xFF);
-  pCardStatus->SD_CARD_TYPE |= (uint8_t)tmp;
+  tmp = (sd_status[0] & 0xFF000000) >> 24;
+  pCardStatus->SD_CARD_TYPE |= (uint16_t)tmp;
 
   /* Byte 4 */
-  tmp = (sd_status[4] & 0xFF);
-  pCardStatus->SIZE_OF_PROTECTED_AREA = (uint8_t)(tmp << 24);
+  tmp = (sd_status[1] & 0xFF);
+  pCardStatus->SIZE_OF_PROTECTED_AREA = (uint32_t)(tmp << 24);
 
   /* Byte 5 */
-  tmp = (sd_status[5] & 0xFF);
-  pCardStatus->SIZE_OF_PROTECTED_AREA |= (uint8_t)(tmp << 16);
+  tmp = (sd_status[1] & 0xFF00) >> 8;
+  pCardStatus->SIZE_OF_PROTECTED_AREA |= (uint32_t)(tmp << 16);
 
   /* Byte 6 */
-  tmp = (sd_status[6] & 0xFF);
-  pCardStatus->SIZE_OF_PROTECTED_AREA |= (uint8_t)(tmp << 8);
+  tmp = (sd_status[1] & 0xFF0000) >> 16;
+  pCardStatus->SIZE_OF_PROTECTED_AREA |= (uint32_t)(tmp << 8);
 
   /* Byte 7 */
-  tmp = (sd_status[7] & 0xFF);
-  pCardStatus->SIZE_OF_PROTECTED_AREA |= (uint8_t)tmp;
+  tmp = (sd_status[1] & 0xFF000000) >> 24;
+  pCardStatus->SIZE_OF_PROTECTED_AREA |= (uint32_t)tmp;
 
   /* Byte 8 */
-  tmp = (sd_status[8] & 0xFF);
+  tmp = (sd_status[2] & 0xFF);
   pCardStatus->SPEED_CLASS = (uint8_t)tmp;
 
   /* Byte 9 */
-  tmp = (sd_status[9] & 0xFF);
+  tmp = (sd_status[2] & 0xFF00) >> 8;
   pCardStatus->PERFORMANCE_MOVE = (uint8_t)tmp;
 
   /* Byte 10 */
-  tmp = (sd_status[10] & 0xF0) >> 4;
+  tmp = (sd_status[2] & 0xF00000) >> 20;
   pCardStatus->AU_SIZE = (uint8_t)tmp;
 
   /* Byte 11 */
-  tmp = (sd_status[11] & 0xFF);
-  pCardStatus->ERASE_SIZE = (uint8_t)(tmp << 8);
+  tmp = (sd_status[2] & 0xFF000000) >> 24;
+  pCardStatus->ERASE_SIZE = (uint16_t)(tmp << 8);
 
   /* Byte 12 */
-  tmp = (sd_status[12] & 0xFF);
-  pCardStatus->ERASE_SIZE |= (uint8_t)tmp;
+  tmp = (sd_status[3] & 0xFF);
+  pCardStatus->ERASE_SIZE |= (uint16_t)tmp;
 
   /* Byte 13 */
-  tmp = (sd_status[13] & 0xFC) >> 2;
+  tmp = (sd_status[3] & 0xFC00) >> 10;
   pCardStatus->ERASE_TIMEOUT = (uint8_t)tmp;
 
   /* Byte 13 */
-  tmp = (sd_status[13] & 0x3);
+  tmp = (sd_status[3] & 0x0300) >> 8;
   pCardStatus->ERASE_OFFSET = (uint8_t)tmp;
 
   return errorstate;
