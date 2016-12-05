@@ -109,6 +109,48 @@ void uart_deinit(void) {
     }
 }
 
+STATIC bool uart_exists(int uart_id) {
+    if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
+        // safeguard against pyb_uart_obj_all array being configured too small
+        return false;
+    }
+    switch (uart_id) {
+        #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
+        case PYB_UART_1: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
+        case PYB_UART_2: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
+        case PYB_UART_3: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
+        case PYB_UART_4: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
+        case PYB_UART_5: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART6_TX) && defined(MICROPY_HW_UART6_RX)
+        case PYB_UART_6: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART7_TX) && defined(MICROPY_HW_UART7_RX)
+        case PYB_UART_7: return true;
+        #endif
+
+        #if defined(MICROPY_HW_UART8_TX) && defined(MICROPY_HW_UART8_RX)
+        case PYB_UART_8: return true;
+        #endif
+
+        default: return false;
+    }
+}
+
 // assumes Init parameters have been set up correctly
 STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
@@ -650,7 +692,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
         }
     } else {
         uart_id = mp_obj_get_int(args[0]);
-        if (uart_id < 1 || uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
+        if (!uart_exists(uart_id)) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_id));
         }
     }
