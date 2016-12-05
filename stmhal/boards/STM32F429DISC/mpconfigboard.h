@@ -25,7 +25,6 @@
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_A9)
 #define MICROPY_HW_UART1_RX     (pin_A10)
-
 #define MICROPY_HW_UART2_TX     (pin_D8)
 #define MICROPY_HW_UART2_RX     (pin_D9)
 

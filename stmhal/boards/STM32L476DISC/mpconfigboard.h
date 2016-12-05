@@ -28,7 +28,6 @@
 // USART config
 #define MICROPY_HW_UART2_TX     (pin_D5)
 #define MICROPY_HW_UART2_RX     (pin_D6)
-
 // USART 2 is connected to the virtual com port on the ST-LINK
 #define MICROPY_HW_UART_REPL        PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD   115200

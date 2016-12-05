@@ -153,7 +153,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             break;
         #endif
 
-        #if defined(USART3) && defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
+        #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
         case PYB_UART_3:
             uart_unit = 3;
             UARTx = USART3;
@@ -174,17 +174,18 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             break;
         #endif
 
-        #if defined(UART4) && defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
+        #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
         case PYB_UART_4:
             uart_unit = 4;
             UARTx = UART4;
             irqn = UART4_IRQn;
             pins[0] = &MICROPY_HW_UART4_TX;
             pins[1] = &MICROPY_HW_UART4_RX;
+            __UART4_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(UART5) && defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
+        #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
         case PYB_UART_5:
             uart_unit = 5;
             UARTx = UART5;
@@ -211,14 +212,15 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             return false;
     }
 
-    uint32_t mode = GPIO_MODE_AF_PP;
-    uint32_t pull = GPIO_PULLUP;
+    uint32_t mode = MP_HAL_PIN_MODE_ALT;
+    uint32_t pull = MP_HAL_PIN_PULL_UP;
 
     for (uint i = 0; i < 4; i++) {
-        printf("pin %d %p\n", i, pins[i]);
-        if (pins[i]!=NULL) {
+        if (pins[i] != NULL) {
             bool ret = mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_UART, uart_unit);
-            printf("ret=%d\n", ret);
+            if (!ret) {
+                return false;
+            }
         }
     }
 

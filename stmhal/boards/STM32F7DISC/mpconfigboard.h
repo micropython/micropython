@@ -37,13 +37,10 @@ void STM32F7DISC_board_early_init(void);
 // UART config
 #define MICROPY_HW_UART1_TX         (pin_A9)
 #define MICROPY_HW_UART1_RX         (pin_B7)
-
 #define MICROPY_HW_UART6_TX         (pin_C6)
 #define MICROPY_HW_UART6_RX         (pin_C7)
-
 #define MICROPY_HW_UART7_TX         (pin_F6)
 #define MICROPY_HW_UART7_RX         (pin_F7)
-
 #define MICROPY_HW_UART_REPL        PYB_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
