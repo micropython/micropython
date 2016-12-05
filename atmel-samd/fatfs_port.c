@@ -42,5 +42,5 @@ const PARTITION VolToPart[MICROPY_FATFS_VOLUMES] = {
 
 DWORD get_fattime(void) {
     // TODO(tannewt): Support the RTC.
-    return ((2016) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
+    return ((2016 - 1980) << 25) | ((9) << 21) | ((1) << 16) | ((16) << 11) | ((43) << 5) | (35 / 2);
 }
