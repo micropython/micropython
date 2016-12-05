@@ -35,6 +35,7 @@
 #include "py/mphal.h"
 #include "uart.h"
 #include "irq.h"
+#include "genhdr/pins.h"
 
 //TODO: Add UART7/8 support for MCU_SERIES_F7
 
@@ -114,120 +115,93 @@ void uart_deinit(void) {
 STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
-    uint32_t GPIO_Pin, GPIO_Pin2 = 0;
-    uint8_t GPIO_AF_UARTx = 0;
-    GPIO_TypeDef* GPIO_Port = NULL;
-    GPIO_TypeDef* GPIO_Port2 = NULL;
+    int uart_unit;
+
+    const pin_obj_t *pins[4] = {0};
 
     switch (uart_obj->uart_id) {
-        #if defined(MICROPY_HW_UART1_PORT) && defined(MICROPY_HW_UART1_PINS)
-        // USART1 is on PA9/PA10 (CK on PA8), PB6/PB7
+        #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)
         case PYB_UART_1:
+            uart_unit = 1;
             UARTx = USART1;
             irqn = USART1_IRQn;
-            GPIO_AF_UARTx = GPIO_AF7_USART1;
-            GPIO_Port = MICROPY_HW_UART1_PORT;
-            GPIO_Pin = MICROPY_HW_UART1_PINS;
+            pins[0] = &MICROPY_HW_UART1_TX;
+            pins[1] = &MICROPY_HW_UART1_RX;
             __USART1_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(MICROPY_HW_UART1_TX_PORT) && \
-            defined(MICROPY_HW_UART1_TX_PIN) && \
-            defined(MICROPY_HW_UART1_RX_PORT) && \
-            defined(MICROPY_HW_UART1_RX_PIN)
-        case PYB_UART_1:
-            UARTx = USART1;
-            irqn = USART1_IRQn;
-            GPIO_AF_UARTx = GPIO_AF7_USART1;
-            GPIO_Port  = MICROPY_HW_UART1_TX_PORT;
-            GPIO_Pin   = MICROPY_HW_UART1_TX_PIN;
-            GPIO_Port2 = MICROPY_HW_UART1_RX_PORT;
-            GPIO_Pin2  = MICROPY_HW_UART1_RX_PIN;
-            __USART1_CLK_ENABLE();
-            break;
-        #endif
-
-        #if defined(MICROPY_HW_UART2_PORT) && defined(MICROPY_HW_UART2_PINS)
+        #if defined(MICROPY_HW_UART2_TX) && defined(MICROPY_HW_UART2_RX)
         case PYB_UART_2:
+            uart_unit = 2;
             UARTx = USART2;
             irqn = USART2_IRQn;
-            GPIO_AF_UARTx = GPIO_AF7_USART2;
-            GPIO_Port = MICROPY_HW_UART2_PORT;
-            GPIO_Pin = MICROPY_HW_UART2_PINS;
+            pins[0] = &MICROPY_HW_UART2_TX;
+            pins[1] = &MICROPY_HW_UART2_RX;
             #if defined(MICROPY_HW_UART2_RTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
-                GPIO_Pin |= MICROPY_HW_UART2_RTS;
+                pins[2] = &MICROPY_HW_UART2_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART2_CTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
-                GPIO_Pin |= MICROPY_HW_UART2_CTS;
+                pins[3] = &MICROPY_HW_UART2_CTS;
             }
             #endif
             __USART2_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(USART3) && defined(MICROPY_HW_UART3_PORT) && defined(MICROPY_HW_UART3_PINS)
-        // USART3 is on PB10/PB11 (CK,CTS,RTS on PB12,PB13,PB14), PC10/PC11 (CK on PC12), PD8/PD9 (CK on PD10)
+        #if defined(MICROPY_HW_UART3_TX) && defined(MICROPY_HW_UART3_RX)
         case PYB_UART_3:
+            uart_unit = 3;
             UARTx = USART3;
             irqn = USART3_IRQn;
-            GPIO_AF_UARTx = GPIO_AF7_USART3;
-            GPIO_Port = MICROPY_HW_UART3_PORT;
-            GPIO_Pin = MICROPY_HW_UART3_PINS;
+            pins[0] = &MICROPY_HW_UART3_TX;
+            pins[1] = &MICROPY_HW_UART3_RX;
             #if defined(MICROPY_HW_UART3_RTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
-                GPIO_Pin |= MICROPY_HW_UART3_RTS;
+                pins[2] = &MICROPY_HW_UART3_RTS;
             }
             #endif
             #if defined(MICROPY_HW_UART3_CTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
-                GPIO_Pin |= MICROPY_HW_UART3_CTS;
+                pins[3] = &MICROPY_HW_UART3_CTS;
             }
             #endif
             __USART3_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(UART4) && defined(MICROPY_HW_UART4_PORT) && defined(MICROPY_HW_UART4_PINS)
-        // UART4 is on PA0/PA1, PC10/PC11
+        #if defined(MICROPY_HW_UART4_TX) && defined(MICROPY_HW_UART4_RX)
         case PYB_UART_4:
+            uart_unit = 4;
             UARTx = UART4;
             irqn = UART4_IRQn;
-            GPIO_AF_UARTx = GPIO_AF8_UART4;
-            GPIO_Port = MICROPY_HW_UART4_PORT;
-            GPIO_Pin = MICROPY_HW_UART4_PINS;
+            pins[0] = &MICROPY_HW_UART4_TX;
+            pins[1] = &MICROPY_HW_UART4_RX;
             __UART4_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(UART5) && \
-            defined(MICROPY_HW_UART5_TX_PORT) && \
-            defined(MICROPY_HW_UART5_TX_PIN) && \
-            defined(MICROPY_HW_UART5_RX_PORT) && \
-            defined(MICROPY_HW_UART5_RX_PIN)
+        #if defined(MICROPY_HW_UART5_TX) && defined(MICROPY_HW_UART5_RX)
         case PYB_UART_5:
+            uart_unit = 5;
             UARTx = UART5;
             irqn = UART5_IRQn;
-            GPIO_AF_UARTx = GPIO_AF8_UART5;
-            GPIO_Port = MICROPY_HW_UART5_TX_PORT;
-            GPIO_Port2 = MICROPY_HW_UART5_RX_PORT;
-            GPIO_Pin = MICROPY_HW_UART5_TX_PIN;
-            GPIO_Pin2 = MICROPY_HW_UART5_RX_PIN;
+            pins[0] = &MICROPY_HW_UART5_TX;
+            pins[1] = &MICROPY_HW_UART5_RX;
             __UART5_CLK_ENABLE();
             break;
         #endif
 
-        #if defined(MICROPY_HW_UART6_PORT) && defined(MICROPY_HW_UART6_PINS)
-        // USART6 is on PC6/PC7 (CK on PC8)
+        #if defined(MICROPY_HW_UART6_TX) && defined(MICROPY_HW_UART6_RX)
         case PYB_UART_6:
+            uart_unit = 6;
             UARTx = USART6;
             irqn = USART6_IRQn;
-            GPIO_AF_UARTx = GPIO_AF8_USART6;
-            GPIO_Port = MICROPY_HW_UART6_PORT;
-            GPIO_Pin = MICROPY_HW_UART6_PINS;
+            pins[0] = &MICROPY_HW_UART6_TX;
+            pins[1] = &MICROPY_HW_UART6_RX;
             __USART6_CLK_ENABLE();
             break;
         #endif
@@ -237,25 +211,20 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             return false;
     }
 
+    uint32_t mode = MP_HAL_PIN_MODE_ALT;
+    uint32_t pull = MP_HAL_PIN_PULL_UP;
+
+    for (uint i = 0; i < 4; i++) {
+        if (pins[i] != NULL) {
+            bool ret = mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_UART, uart_unit);
+            if (!ret) {
+                return false;
+            }
+        }
+    }
+
     uart_obj->irqn = irqn;
     uart_obj->uart.Instance = UARTx;
-
-    // init GPIO
-    mp_hal_gpio_clock_enable(GPIO_Port);
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Pin = GPIO_Pin;
-    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Pull = GPIO_PULLUP;
-    GPIO_InitStructure.Alternate = GPIO_AF_UARTx;
-    HAL_GPIO_Init(GPIO_Port, &GPIO_InitStructure);
-
-    // init GPIO for second pin if needed
-    if (GPIO_Port2 != NULL) {
-        mp_hal_gpio_clock_enable(GPIO_Port2);
-        GPIO_InitStructure.Pin = GPIO_Pin2;
-        HAL_GPIO_Init(GPIO_Port2, &GPIO_InitStructure);
-    }
 
     // init UARTx
     HAL_UART_Init(&uart_obj->uart);
