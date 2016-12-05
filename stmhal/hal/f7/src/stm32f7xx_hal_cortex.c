@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_cortex.c
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   CORTEX HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the CORTEX:
@@ -70,7 +70,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -269,6 +269,46 @@ uint32_t HAL_SYSTICK_Config(uint32_t TicksNumb)
   */
 
 #if (__MPU_PRESENT == 1)
+/**
+  * @brief  Disables the MPU
+  * @retval None
+  */
+void HAL_MPU_Disable(void)
+{
+  /* Make sure outstanding transfers are done */
+  __DMB();
+
+  /* Disable fault exceptions */
+  SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
+
+  /* Disable the MPU and clear the control register*/
+  MPU->CTRL = 0;
+}
+
+/**
+  * @brief  Enables the MPU
+  * @param  MPU_Control: Specifies the control mode of the MPU during hard fault,
+  *          NMI, FAULTMASK and privileged access to the default memory
+  *          This parameter can be one of the following values:
+  *            @arg MPU_HFNMI_PRIVDEF_NONE
+  *            @arg MPU_HARDFAULT_NMI
+  *            @arg MPU_PRIVILEGED_DEFAULT
+  *            @arg MPU_HFNMI_PRIVDEF
+  * @retval None
+  */
+void HAL_MPU_Enable(uint32_t MPU_Control)
+{
+  /* Enable the MPU */
+  MPU->CTRL = MPU_Control | MPU_CTRL_ENABLE_Msk;
+
+  /* Enable fault exceptions */
+  SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
+
+  /* Ensure MPU setting take effects */
+  __DSB();
+  __ISB();
+}
+
 /**
   * @brief  Initializes and configures the Region and the memory to be protected.
   * @param  MPU_Init: Pointer to a MPU_Region_InitTypeDef structure that contains
