@@ -113,6 +113,21 @@ static inline uint32_t getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return formats[fb->format].getpixel(fb, x, y);
 }
 
+STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+    if (x + w <= 0 || y + h <= 0 || y >= fb->height || x >= fb->width) {
+        // No operation needed.
+        return;
+    }
+
+    // clip to the framebuffer
+    int xend = MIN(fb->width, x + w);
+    int yend = MIN(fb->height, y + h);
+    x = MAX(x, 0);
+    y = MAX(y, 0);
+
+    formats[fb->format].fill_rect(fb, x, y, xend - x, yend - y, col);
+}
+
 STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 4, 5, false);
 
@@ -162,18 +177,7 @@ STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
     mp_int_t height = mp_obj_get_int(args[4]);
     mp_int_t color = mp_obj_get_int(args[5]);
 
-    if (x + width <= 0 || y + height <= 0 || y >= self->height || x >= self->width) {
-        // No operation needed.
-        return mp_const_none;
-    }
-
-    // clip to the framebuffer
-    int xend = MIN(self->width, x + width);
-    int yend = MIN(self->height, y + height);
-    x = MAX(MIN(x, self->width), 0);
-    y = MAX(MIN(y, self->height), 0);
-
-    formats[self->format].fill_rect(self, x, y, xend - x, yend - y, color);
+    fill_rect(self, x, y, width, height, color);
 
     return mp_const_none;
 }
@@ -195,6 +199,115 @@ STATIC mp_obj_t framebuf_pixel(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_pixel_obj, 3, 4, framebuf_pixel);
+
+STATIC mp_obj_t framebuf_hline(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t w = mp_obj_get_int(args[3]);
+    mp_int_t col = mp_obj_get_int(args[4]);
+
+    fill_rect(self, x, y, w, 1, col);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_hline_obj, 5, 5, framebuf_hline);
+
+STATIC mp_obj_t framebuf_vline(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t h = mp_obj_get_int(args[3]);
+    mp_int_t col = mp_obj_get_int(args[4]);
+
+    fill_rect(self, x, y, 1, h, col);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_vline_obj, 5, 5, framebuf_vline);
+
+STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t w = mp_obj_get_int(args[3]);
+    mp_int_t h = mp_obj_get_int(args[4]);
+    mp_int_t col = mp_obj_get_int(args[5]);
+
+    fill_rect(self, x, y, w, 1, col);
+    fill_rect(self, x, y + h- 1, w, 1, col);
+    fill_rect(self, x, y, 1, h, col);
+    fill_rect(self, x + w- 1, y, 1, h, col);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 6, framebuf_rect);
+
+STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x1 = mp_obj_get_int(args[1]);
+    mp_int_t y1 = mp_obj_get_int(args[2]);
+    mp_int_t x2 = mp_obj_get_int(args[3]);
+    mp_int_t y2 = mp_obj_get_int(args[4]);
+    mp_int_t col = mp_obj_get_int(args[5]);
+
+    mp_int_t dx = x2 - x1;
+    mp_int_t sx;
+    if (dx > 0) {
+        sx = 1;
+    } else {
+        dx = -dx;
+        sx = -1;
+    }
+
+    mp_int_t dy = y2 - y1;
+    mp_int_t sy;
+    if (dy > 0) {
+        sy = 1;
+    } else {
+        dy = -dy;
+        sy = -1;
+    }
+
+    bool steep;
+    if (dy > dx) {
+        mp_int_t temp;
+        temp = x1; x1 = y1; y1 = temp;
+        temp = dx; dx = dy; dy = temp;
+        temp = sx; sx = sy; sy = temp;
+        steep = true;
+    } else {
+        steep = false;
+    }
+
+    mp_int_t e = 2 * dy - dx;
+    for (mp_int_t i = 0; i < dx; ++i) {
+        if (steep) {
+            setpixel(self, y1, x1, col);
+        } else {
+            setpixel(self, x1, y1, col);
+        }
+        while (e >= 0) {
+            y1 += sy;
+            e -= 2 * dx;
+        }
+        x1 += sx;
+        e += 2 * dy;
+    }
+
+    setpixel(self, x2, y2, col);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
 
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -314,6 +427,10 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&framebuf_fill_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&framebuf_pixel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hline), MP_ROM_PTR(&framebuf_hline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_vline), MP_ROM_PTR(&framebuf_vline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&framebuf_rect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&framebuf_line_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
