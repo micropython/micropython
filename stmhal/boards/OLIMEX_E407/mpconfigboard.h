@@ -23,29 +23,25 @@
 #define MICROPY_HW_CLK_PLLQ (7)
 
 // UART config
-#define MICROPY_HW_UART1_PORT (GPIOB)
-#define MICROPY_HW_UART1_PINS (GPIO_PIN_6 | GPIO_PIN_7)
-
-#define MICROPY_HW_UART2_PORT (GPIOA)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
-#define MICROPY_HW_UART2_RTS  (GPIO_PIN_1)
-#define MICROPY_HW_UART2_CTS  (GPIO_PIN_0)
-
-#define MICROPY_HW_UART3_PORT (GPIOD)
-#define MICROPY_HW_UART3_PINS (GPIO_PIN_8 | GPIO_PIN_9)
-#define MICROPY_HW_UART3_RTS  (GPIO_PIN_12)
-#define MICROPY_HW_UART3_CTS  (GPIO_PIN_11)
-
+#define MICROPY_HW_UART1_TX     (pin_B6)
+#define MICROPY_HW_UART1_RX     (pin_B7)
+#define MICROPY_HW_UART2_TX     (pin_A2)
+#define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART2_RTS    (pin_A1)
+#define MICROPY_HW_UART2_CTS    (pin_A0)
+#define MICROPY_HW_UART3_TX     (pin_D8)
+#define MICROPY_HW_UART3_RX     (pin_D9)
+#define MICROPY_HW_UART3_RTS    (pin_D12)
+#define MICROPY_HW_UART3_CTS    (pin_D11)
 #if MICROPY_HW_HAS_SWITCH == 0
 // NOTE: A0 also connects to the user switch. To use UART4 you should 
 //       set MICROPY_HW_HAS_SWITCH to 0, and also remove SB20 (on the back
 //       of the board near the USER switch).
-#define MICROPY_HW_UART4_PORT (GPIOA)
-#define MICROPY_HW_UART4_PINS (GPIO_PIN_0 | GPIO_PIN_1)
+#define MICROPY_HW_UART4_TX     (pin_A0)
+#define MICROPY_HW_UART4_RX     (pin_A1)
 #endif
-
-#define MICROPY_HW_UART6_PORT (GPIOC)
-#define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
+#define MICROPY_HW_UART6_TX     (pin_C6)
+#define MICROPY_HW_UART6_RX     (pin_C7)
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B8)
