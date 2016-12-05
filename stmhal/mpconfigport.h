@@ -187,8 +187,10 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 #if defined(MCU_SERIES_F7)
 #define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_UART (8)
 #else
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_UART (6)
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -215,7 +217,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     struct _pyb_uart_obj_t *pyb_stdio_uart; \
     \
     /* pointers to all UART objects (if they have been created) */ \
-    struct _pyb_uart_obj_t *pyb_uart_obj_all[6]; \
+    struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_MAX_UART]; \
     \
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[2]; \

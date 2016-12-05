@@ -37,8 +37,6 @@
 #include "irq.h"
 #include "genhdr/pins.h"
 
-//TODO: Add UART7/8 support for MCU_SERIES_F7
-
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
 ///
@@ -203,6 +201,28 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             pins[0] = &MICROPY_HW_UART6_TX;
             pins[1] = &MICROPY_HW_UART6_RX;
             __USART6_CLK_ENABLE();
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_UART7_TX) && defined(MICROPY_HW_UART7_RX)
+        case PYB_UART_7:
+            uart_unit = 7;
+            UARTx = UART7;
+            irqn = UART7_IRQn;
+            pins[0] = &MICROPY_HW_UART7_TX;
+            pins[1] = &MICROPY_HW_UART7_RX;
+            __UART7_CLK_ENABLE();
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_UART8_TX) && defined(MICROPY_HW_UART8_RX)
+        case PYB_UART_8:
+            uart_unit = 8;
+            UARTx = UART8;
+            irqn = UART8_IRQn;
+            pins[0] = &MICROPY_HW_UART8_TX;
+            pins[1] = &MICROPY_HW_UART8_RX;
+            __UART8_CLK_ENABLE();
             break;
         #endif
 
@@ -537,7 +557,19 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
     // compute actual baudrate that was configured
     // (this formula assumes UART_OVERSAMPLING_16)
-    uint32_t actual_baudrate;
+    uint32_t actual_baudrate = 0;
+    #if defined(MCU_SERIES_F7)
+    UART_ClockSourceTypeDef clocksource = UART_CLOCKSOURCE_UNDEFINED;
+    UART_GETCLOCKSOURCE(&self->uart, clocksource);
+    switch (clocksource) {
+        case UART_CLOCKSOURCE_PCLK1:  actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
+        case UART_CLOCKSOURCE_PCLK2:  actual_baudrate = HAL_RCC_GetPCLK2Freq(); break;
+        case UART_CLOCKSOURCE_HSI:    actual_baudrate = HSI_VALUE; break;
+        case UART_CLOCKSOURCE_SYSCLK: actual_baudrate = HAL_RCC_GetSysClockFreq(); break;
+        case UART_CLOCKSOURCE_LSE:    actual_baudrate = LSE_VALUE; break;
+        case UART_CLOCKSOURCE_UNDEFINED: break;
+    }
+    #else
     if (self->uart.Instance == USART1
         #if defined(USART6)
         || self->uart.Instance == USART6
@@ -547,6 +579,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     } else {
         actual_baudrate = HAL_RCC_GetPCLK1Freq();
     }
+    #endif
     actual_baudrate /= self->uart.Instance->BRR;
 
     // check we could set the baudrate within 5%
@@ -693,6 +726,20 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __USART6_FORCE_RESET();
         __USART6_RELEASE_RESET();
         __USART6_CLK_DISABLE();
+    #endif
+    #if defined(UART7)
+    } else if (uart->Instance == UART7) {
+        HAL_NVIC_DisableIRQ(UART7_IRQn);
+        __UART7_FORCE_RESET();
+        __UART7_RELEASE_RESET();
+        __UART7_CLK_DISABLE();
+    #endif
+    #if defined(UART8)
+    } else if (uart->Instance == UART8) {
+        HAL_NVIC_DisableIRQ(UART8_IRQn);
+        __UART8_FORCE_RESET();
+        __UART8_RELEASE_RESET();
+        __UART8_CLK_DISABLE();
     #endif
     }
     return mp_const_none;
