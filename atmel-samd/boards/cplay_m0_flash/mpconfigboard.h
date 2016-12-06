@@ -17,6 +17,9 @@
 #define SPI_FLASH_CS          PIN_PB08
 #define SPI_FLASH_SERCOM      SERCOM4
 
+#define MICROPY_PORT_A        (PORT_PA12 | PORT_PA24 | PORT_PA25)
+#define MICROPY_PORT_B        (PORT_PB08 | PORT_PB10 | PORT_PB11)
+
 #define AUTORESET_DELAY_MS 500
 
 #include "spi_flash.h"

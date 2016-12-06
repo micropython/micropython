@@ -88,6 +88,7 @@ extern void common_hal_nativeio_pwmout_deinit(nativeio_pwmout_obj_t* self) {
     } else {
       tcc_disable(&self->tcc_instance);
     }
+    reset_pin(self->pin->pin);
 }
 
 extern void common_hal_nativeio_pwmout_set_duty_cycle(nativeio_pwmout_obj_t* self, uint16_t duty) {

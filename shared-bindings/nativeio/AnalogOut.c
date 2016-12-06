@@ -63,7 +63,7 @@ STATIC mp_obj_t nativeio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
 
     nativeio_analogout_obj_t *self = m_new_obj(nativeio_analogout_obj_t);
     self->base.type = &nativeio_analogout_type;
-
+    assert_pin_free(pin);
     common_hal_nativeio_analogout_construct(self, pin);
 
     return self;
@@ -81,6 +81,26 @@ STATIC mp_obj_t nativeio_analogout_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogout_deinit_obj, nativeio_analogout_deinit);
+
+//|   .. method:: __enter__()
+//|
+//|      No-op used by Context Managers.
+//|
+STATIC mp_obj_t nativeio_analogout___enter__(mp_obj_t self_in) {
+   return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogout___enter___obj, nativeio_analogout___enter__);
+
+//|   .. method:: __exit__()
+//|
+//|      Automatically deinitializes the hardware when exiting a context.
+//|
+STATIC mp_obj_t nativeio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    common_hal_nativeio_analogout_deinit(args[0]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_analogout___exit___obj, 4, 4, nativeio_analogout___exit__);
 
 //|   .. attribute:: value
 //|
@@ -107,7 +127,9 @@ mp_obj_property_t nativeio_analogout_value_obj = {
 
 STATIC const mp_rom_map_elem_t nativeio_analogout_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&nativeio_analogout_deinit_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_analogout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),  MP_ROM_PTR(&nativeio_analogout___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),   MP_ROM_PTR(&nativeio_analogout___exit___obj) },
 
     // Properties
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&nativeio_analogout_value_obj },

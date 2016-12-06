@@ -63,6 +63,7 @@ STATIC mp_obj_t nativeio_digitalinout_make_new(const mp_obj_type_t *type,
 
     assert_pin(args[0], false);
     mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(args[0]);
+    assert_pin_free(pin);
     common_hal_nativeio_digitalinout_construct(self, pin);
 
     return (mp_obj_t)self;

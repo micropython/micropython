@@ -32,6 +32,7 @@
 #include "shared-bindings/nativeio/AnalogOut.h"
 
 #include "asf/sam0/drivers/dac/dac.h"
+#include "samd21_pins.h"
 
 void common_hal_nativeio_analogout_construct(nativeio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
@@ -61,6 +62,7 @@ void common_hal_nativeio_analogout_construct(nativeio_analogout_obj_t* self,
 void common_hal_nativeio_analogout_deinit(nativeio_analogout_obj_t *self) {
     dac_disable(&self->dac_instance);
     dac_chan_disable(&self->dac_instance, DAC_CHANNEL_0);
+    reset_pin(PIN_PA02);
 }
 
 void common_hal_nativeio_analogout_set_value(nativeio_analogout_obj_t *self,

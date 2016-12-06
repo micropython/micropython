@@ -31,6 +31,8 @@
 #include "py/nlr.h"
 
 #include "eagle_soc.h"
+#include "c_types.h"
+#include "gpio.h"
 
 extern const mcu_pin_obj_t pin_MTMS;
 extern const mcu_pin_obj_t pin_MTCK;
@@ -48,8 +50,16 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
 
 void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self) {
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 0);
+    PIN_PULLUP_DIS(PERIPHS_IO_MUX_MTDI_U);
+
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 0);
+    PIN_PULLUP_DIS(PERIPHS_IO_MUX_MTCK_U);
+
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 0);
+    PIN_PULLUP_DIS(PERIPHS_IO_MUX_MTMS_U);
+
+    // Turn off outputs 12 - 14.
+    gpio_output_set(0x0, 0x0, 0x0, 0x7 << 12);
 }
 
 bool common_hal_nativeio_spi_configure(nativeio_spi_obj_t *self,

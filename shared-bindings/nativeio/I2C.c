@@ -63,7 +63,9 @@ STATIC mp_obj_t nativeio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, 
     assert_pin(args[ARG_scl].u_obj, false);
     assert_pin(args[ARG_sda].u_obj, false);
     const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
+    assert_pin_free(scl);
     const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
+    assert_pin_free(sda);
     common_hal_nativeio_i2c_construct(self, scl, sda, args[ARG_frequency].u_int);
     return (mp_obj_t)self;
 }

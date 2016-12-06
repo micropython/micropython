@@ -38,6 +38,7 @@
 #include "lib/utils/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
+#include "common-hal/microcontroller/Pin.h"
 
 STATIC char heap[36 * 1024];
 
@@ -58,6 +59,7 @@ STATIC void mp_reset(void) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     MP_STATE_PORT(dupterm_arr_obj) = MP_OBJ_NULL;
+    reset_pins();
     pin_init0();
     readline_init0();
     dupterm_task_init();

@@ -42,8 +42,12 @@ digitalinout_result_t common_hal_nativeio_digitalinout_construct(
 }
 
 void common_hal_nativeio_digitalinout_deinit(nativeio_digitalinout_obj_t* self) {
-    uint32_t pin_mask = 1 << self->pin->gpio_number;
-    gpio_output_set(0x0, 0x0, 0x0, pin_mask);
+    if (self->pin->gpio_number < 16) {
+        uint32_t pin_mask = 1 << self->pin->gpio_number;
+        gpio_output_set(0x0, 0x0, 0x0, pin_mask);
+        PIN_FUNC_SELECT(self->pin->peripheral, 0);
+        PIN_PULLUP_DIS(self->pin->peripheral);
+    }
 }
 
 void common_hal_nativeio_digitalinout_switch_to_input(

@@ -7,6 +7,9 @@
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PB03
 
+#define MICROPY_PORT_A        (PORT_PA24 | PORT_PA25 | PORT_PA27)
+#define MICROPY_PORT_B        (PORT_PB03)
+
 #define AUTORESET_DELAY_MS 500
 
 #include "internal_flash.h"

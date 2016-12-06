@@ -77,8 +77,11 @@ STATIC mp_obj_t nativeio_spi_make_new(const mp_obj_type_t *type, size_t n_args, 
     assert_pin(args[ARG_MOSI].u_obj, true);
     assert_pin(args[ARG_MISO].u_obj, true);
     const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(args[ARG_clock].u_obj);
+    assert_pin_free(clock);
     const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(args[ARG_MOSI].u_obj);
+    assert_pin_free(mosi);
     const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(args[ARG_MISO].u_obj);
+    assert_pin_free(miso);
     common_hal_nativeio_spi_construct(self, clock, mosi, miso);
     return (mp_obj_t)self;
 }

@@ -66,10 +66,42 @@ STATIC mp_obj_t nativeio_analogin_make_new(const mp_obj_type_t *type,
     nativeio_analogin_obj_t *self = m_new_obj(nativeio_analogin_obj_t);
     self->base.type = &nativeio_analogin_type;
     const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
+    assert_pin_free(pin);
     common_hal_nativeio_analogin_construct(self, pin);
 
     return (mp_obj_t) self;
 }
+
+//|   .. method:: deinit()
+//|
+//|      Turn off the AnalogIn and release the pin for other use.
+//|
+STATIC mp_obj_t nativeio_analogin_deinit(mp_obj_t self_in) {
+   nativeio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+   common_hal_nativeio_analogin_deinit(self);
+   return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin_deinit_obj, nativeio_analogin_deinit);
+
+//|   .. method:: __enter__()
+//|
+//|      No-op used by Context Managers.
+//|
+STATIC mp_obj_t nativeio_analogin___enter__(mp_obj_t self_in) {
+   return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin___enter___obj, nativeio_analogin___enter__);
+
+//|   .. method:: __exit__()
+//|
+//|      Automatically deinitializes the hardware when exiting a context.
+//|
+STATIC mp_obj_t nativeio_analogin___exit__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    common_hal_nativeio_analogin_deinit(args[0]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_analogin___exit___obj, 4, 4, nativeio_analogin___exit__);
 
 //|   .. attribute:: value
 //|
@@ -95,6 +127,9 @@ mp_obj_property_t nativeio_analogin_value_obj = {
 };
 
 STATIC const mp_rom_map_elem_t nativeio_analogin_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit),                 MP_ROM_PTR(&nativeio_analogin_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&nativeio_analogin___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),               MP_ROM_PTR(&nativeio_analogin___exit___obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), MP_ROM_PTR(&nativeio_analogin_value_obj)},
 };
 

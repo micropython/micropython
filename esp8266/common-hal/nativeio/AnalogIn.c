@@ -31,12 +31,23 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mphal.h"
+#include "common-hal/microcontroller/__init__.h"
 #include "shared-bindings/nativeio/AnalogIn.h"
 
 #include "user_interface.h"
 
+volatile bool adc_in_use = false;
+
 void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
+    if (pin != &pin_TOUT) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin %q does not have ADC capabilities", pin->name));
+    }
+    adc_in_use = true;
+}
+
+void common_hal_nativeio_analogin_deinit(nativeio_analogin_obj_t* self) {
+    adc_in_use = false;
 }
 
 uint16_t common_hal_nativeio_analogin_get_value(nativeio_analogin_obj_t *self) {

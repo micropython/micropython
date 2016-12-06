@@ -24,28 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
+#ifndef __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H__
+#define __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H__
 
-#include "eagle_soc.h"
+void reset_pins(void);
 
-extern volatile bool adc_in_use;
-
-bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
-    return (pin == &pin_TOUT && adc_in_use) ||
-            ((READ_PERI_REG(pin->peripheral) &
-                (PERIPHS_IO_MUX_FUNC<<PERIPHS_IO_MUX_FUNC_S)) == 0 &&
-             (GPIO_REG_READ(GPIO_ENABLE_ADDRESS) & (1 << pin->gpio_number)) == 0 &&
-             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0 );
-}
-
-void reset_pins(void) {
-    for (int i = 0; i < 17; i++) {
-        if (i == 0 || (i > 6 && i < 13) || i == 12) {
-            continue;
-        }
-        uint32_t peripheral = PERIPHS_IO_MUX + i * 4;
-        PIN_FUNC_SELECT(peripheral, 0);
-        PIN_PULLUP_DIS(peripheral);
-    }
-}
+#endif  // __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H__

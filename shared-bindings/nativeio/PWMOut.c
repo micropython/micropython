@@ -51,6 +51,7 @@ STATIC mp_obj_t nativeio_pwmout_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_obj_t pin_obj = args[0];
     assert_pin(pin_obj, false);
     const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
+    assert_pin_free(pin);
 
     // create PWM object from the given pin
     nativeio_pwmout_obj_t *self = m_new_obj(nativeio_pwmout_obj_t);
@@ -135,9 +136,9 @@ mp_obj_property_t nativeio_pwmout_duty_cycle_obj = {
 
 STATIC const mp_rom_map_elem_t nativeio_pwmout_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_pwmout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_pwmout___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_pwmout___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_pwmout_deinit_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_duty_cycle), MP_ROM_PTR(&nativeio_pwmout_duty_cycle_obj) },

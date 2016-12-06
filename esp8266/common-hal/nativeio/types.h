@@ -64,6 +64,7 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     int channel;
+    const mcu_pin_obj_t* pin;
 } nativeio_pwmout_obj_t;
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__

@@ -163,10 +163,22 @@ void reset_samd21(void) {
                 continue;
             }
         #endif
+        #ifdef MICROPY_HW_APA102_SERCOM
+            if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
+                continue;
+            }
+        #endif
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
 
-    // TODO(tannewt): Reset all of the pins too.
+    struct system_pinmux_config config;
+    system_pinmux_get_config_defaults(&config);
+    config.powersave = true;
+
+    uint32_t pin_mask[2] = PORT_OUT_IMPLEMENTED;
+
+    system_pinmux_group_set_config(&(PORT->Group[0]), pin_mask[0] & ~MICROPY_PORT_A, &config);
+    system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
 }
 
 bool maybe_run(const char* filename, int* ret) {

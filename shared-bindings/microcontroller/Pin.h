@@ -27,11 +27,15 @@
 #ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
 #define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
 
+#include "common-hal/microcontroller/types.h"
 #include "py/obj.h"
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t mcu_pin_type;
 
 void assert_pin(mp_obj_t obj, bool none_ok);
+void assert_pin_free(const mcu_pin_obj_t* pin);
+
+bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin);
 
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__

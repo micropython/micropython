@@ -32,6 +32,10 @@
 #include "py/runtime.h"
 #include "shared-bindings/nativeio/PWMOut.h"
 
+#include "eagle_soc.h"
+#include "c_types.h"
+#include "gpio.h"
+
 // Shared with pybpwm
 extern bool pwm_inited;
 
@@ -45,6 +49,7 @@ void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu
     self->channel = pwm_add(pin->gpio_number,
                             pin->peripheral,
                             pin->gpio_function);
+    self->pin = pin;
     if (self->channel == -1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             "PWM not supported on pin %d", pin->gpio_number));
@@ -54,6 +59,12 @@ void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu
 extern void common_hal_nativeio_pwmout_deinit(nativeio_pwmout_obj_t* self) {
     pwm_delete(self->channel);
     pwm_start();
+    if (self->pin->gpio_number < 16) {
+        uint32_t pin_mask = 1 << self->pin->gpio_number;
+        gpio_output_set(0x0, 0x0, 0x0, pin_mask);
+        PIN_FUNC_SELECT(self->pin->peripheral, 0);
+        PIN_PULLUP_DIS(self->pin->peripheral);
+    }
 }
 
 extern void common_hal_nativeio_pwmout_set_duty_cycle(nativeio_pwmout_obj_t* self, uint16_t duty) {

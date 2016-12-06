@@ -33,6 +33,7 @@
 extern const mp_obj_type_t nativeio_analogin_type;
 
 void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self, const mcu_pin_obj_t *pin);
+void common_hal_nativeio_analogin_deinit(nativeio_analogin_obj_t* self);
 uint16_t common_hal_nativeio_analogin_get_value(nativeio_analogin_obj_t *self);
 
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_ANALOGIN_H__

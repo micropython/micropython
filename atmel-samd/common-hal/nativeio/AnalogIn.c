@@ -33,6 +33,7 @@
 #include "shared-bindings/nativeio/AnalogIn.h"
 
 #include "asf/sam0/drivers/adc/adc.h"
+#include "samd21_pins.h"
 
 void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
@@ -53,6 +54,13 @@ void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
     config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
 
     adc_init(&self->adc_instance, ADC, &config_adc);
+}
+
+void common_hal_nativeio_analogin_deinit(nativeio_analogin_obj_t *self) {
+    // TODO(tannewt): Count how many pins are in use and only reset the ADC when
+    // none are used.
+    adc_reset(&self->adc_instance);
+    reset_pin(self->pin->pin);
 }
 
 // TODO(tannewt): Don't turn it all on just for one read. This simplifies

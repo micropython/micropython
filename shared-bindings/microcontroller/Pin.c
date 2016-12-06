@@ -53,3 +53,9 @@ void assert_pin(mp_obj_t obj, bool none_ok) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Expected a Pin"));
     }
 }
+
+void assert_pin_free(const mcu_pin_obj_t* pin) {
+    if (pin != NULL && !common_hal_mcu_pin_is_free(pin)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin %q in use", pin->name));
+    }
+}

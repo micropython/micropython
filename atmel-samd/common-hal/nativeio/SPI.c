@@ -124,11 +124,16 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
                              &config_spi_master.pinmux_pad2,
                              &config_spi_master.pinmux_pad3};
     *pinmuxes[clock_pad] = clock_pinmux;
+    self->clock_pin = clock->pin;
+    self->MOSI_pin = 0;
     if (!mosi_none) {
         *pinmuxes[mosi_pad] = mosi_pinmux;
+        self->MOSI_pin = mosi->pin;
     }
+    self->MISO_pin = 0;
     if (!miso_none) {
         *pinmuxes[miso_pad] = miso_pinmux;
+        self->MISO_pin = miso->pin;
     }
 
     spi_init(&self->spi_master_instance, sercom, &config_spi_master);
@@ -138,6 +143,9 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
 
 void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self) {
     spi_disable(&self->spi_master_instance);
+    reset_pin(self->clock_pin);
+    reset_pin(self->MOSI_pin);
+    reset_pin(self->MISO_pin);
 }
 
 bool common_hal_nativeio_spi_configure(nativeio_spi_obj_t *self,

@@ -77,6 +77,9 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
     config_i2c_master.pinmux_pad1 = scl_pinmux; // SCL
     config_i2c_master.buffer_timeout = 10000;
 
+    self->sda_pin = sda->pin;
+    self->scl_pin = scl->pin;
+
     enum status_code status = i2c_master_init(&self->i2c_master_instance,
         sercom, &config_i2c_master);
     if (status != STATUS_OK) {
@@ -88,6 +91,8 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
 
 void common_hal_nativeio_i2c_deinit(nativeio_i2c_obj_t *self) {
     i2c_master_disable(&self->i2c_master_instance);
+    reset_pin(self->sda_pin);
+    reset_pin(self->scl_pin);
 }
 
 bool common_hal_nativeio_i2c_probe(nativeio_i2c_obj_t *self, uint8_t addr) {

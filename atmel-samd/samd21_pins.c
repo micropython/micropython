@@ -44,6 +44,13 @@ const mcu_pin_obj_t pin_## p_name = { \
 
 #define NO_ADC_INPUT (0)
 
+void reset_pin(uint8_t pin) {
+    struct system_pinmux_config config;
+    system_pinmux_get_config_defaults(&config);
+    config.powersave = true;
+    system_pinmux_pin_set_config(pin, &config);
+}
+
 // Pins in datasheet order.
 #ifdef PIN_PA00
 PIN(PA00, false, NO_ADC_INPUT, \
