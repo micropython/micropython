@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_pcd_ex.c
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   PCD HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the USB Peripheral Controller:
@@ -12,7 +12,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -103,7 +103,7 @@ HAL_StatusTypeDef HAL_PCDEx_SetTxFiFo(PCD_HandleTypeDef *hpcd, uint8_t fifo, uin
 
   if(fifo == 0)
   {
-    hpcd->Instance->DIEPTXF0_HNPTXFSIZ = (size << 16) | Tx_Offset;
+    hpcd->Instance->DIEPTXF0_HNPTXFSIZ = (uint32_t)(((uint32_t)size << 16) | Tx_Offset);
   }
   else
   {
@@ -114,8 +114,7 @@ HAL_StatusTypeDef HAL_PCDEx_SetTxFiFo(PCD_HandleTypeDef *hpcd, uint8_t fifo, uin
     }
 
     /* Multiply Tx_Size by 2 to get higher performance */
-    hpcd->Instance->DIEPTXF[fifo - 1] = (size << 16) | Tx_Offset;
-
+    hpcd->Instance->DIEPTXF[fifo - 1] = (uint32_t)(((uint32_t)size << 16) | Tx_Offset);
   }
 
   return HAL_OK;
@@ -135,7 +134,7 @@ HAL_StatusTypeDef HAL_PCDEx_SetRxFiFo(PCD_HandleTypeDef *hpcd, uint16_t size)
 }
 
 /**
-  * @brief  HAL_PCDEx_ActivateLPM : active LPM Feature
+  * @brief  Activate LPM Feature
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
@@ -152,7 +151,7 @@ HAL_StatusTypeDef HAL_PCDEx_ActivateLPM(PCD_HandleTypeDef *hpcd)
 }
 
 /**
-  * @brief  HAL_PCDEx_DeActivateLPM : de-active LPM feature
+  * @brief  DeActivate LPM feature.
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
@@ -168,13 +167,20 @@ HAL_StatusTypeDef HAL_PCDEx_DeActivateLPM(PCD_HandleTypeDef *hpcd)
 }
 
 /**
-  * @brief  HAL_PCDEx_LPM_Callback : Send LPM message to user layer
+  * @brief  Send LPM message to user layer callback.
   * @param  hpcd: PCD handle
   * @param  msg: LPM message
   * @retval HAL status
   */
 __weak void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(hpcd);
+  UNUSED(msg);
+
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_PCDEx_LPM_Callback could be implemented in the user file
+   */
 }
 
 /**
