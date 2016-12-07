@@ -61,9 +61,11 @@ typedef struct {
     uint8_t pin;
     bool has_adc:1;
     enum adc_positive_input adc_input:7;
-    pin_timer_t primary_timer; // Mux E
-    pin_timer_t secondary_timer; // Mux F
-    pin_sercom_t sercom[NUM_SERCOMS_PER_PIN]; // Mux C and D
+    bool has_touch:1;
+    uint8_t touch_y_line:7; // 0 - 15. Assumed to be Y channel.
+    pin_timer_t primary_timer;
+    pin_timer_t secondary_timer;
+    pin_sercom_t sercom[NUM_SERCOMS_PER_PIN];
 } mcu_pin_obj_t;
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_TYPES_H__

@@ -44,6 +44,10 @@
 #include "asf/sam0/drivers/sercom/spi/spi.h"
 #include "asf/sam0/drivers/tc/tc.h"
 #include "asf/sam0/drivers/tcc/tcc.h"
+// Only support TouchIn when external SPI flash is used.
+#ifdef SPI_FLASH_SECTOR_SIZE
+#include "QTouch/touch_api_ptc.h"
+#endif
 
 #include "py/obj.h"
 
@@ -89,5 +93,14 @@ typedef struct {
     struct tc_module tc_instance;
     struct tcc_module tcc_instance;
 } nativeio_pwmout_obj_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    // Only support TouchIn when external SPI flash is used.
+    #ifdef SPI_FLASH_SECTOR_SIZE
+    const mcu_pin_obj_t * pin;
+    sensor_id_t sensor_id;
+    #endif
+} nativeio_touchin_obj_t;
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__

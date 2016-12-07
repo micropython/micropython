@@ -22,6 +22,10 @@
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
+#ifdef SPI_FLASH_SECTOR_SIZE
+#include "QTouch/touch_api_ptc.h"
+#endif
+
 #include "autoreset.h"
 #include "mpconfigboard.h"
 #include "rgb_led_status.h"
@@ -155,6 +159,7 @@ void reset_mp(void) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 }
 
+extern bool ptc_initialized;
 void reset_samd21(void) {
     // Reset all SERCOMs except the one being used by the SPI flash.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
@@ -171,6 +176,11 @@ void reset_samd21(void) {
         #endif
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
+
+#ifdef SPI_FLASH_SECTOR_SIZE
+    touch_selfcap_sensors_deinit();
+    ptc_initialized = false;
+#endif
 
     struct system_pinmux_config config;
     system_pinmux_get_config_defaults(&config);

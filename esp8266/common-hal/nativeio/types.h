@@ -67,4 +67,8 @@ typedef struct {
     const mcu_pin_obj_t* pin;
 } nativeio_pwmout_obj_t;
 
+typedef struct {
+    mp_obj_base_t base;
+} nativeio_touchin_obj_t;
+
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__

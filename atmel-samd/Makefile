@@ -141,8 +141,8 @@ endif
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
-LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -L $(dir $(LIBGCC_FILE_NAME)) -L $(dir $(LIBM_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
-LIBS = -larm_cortexM0l_math -lm -lgcc -lc
+LDFLAGS = -L asf/thirdparty/CMSIS/Lib/GCC/ -L QTouch/ -L $(dir $(LIBGCC_FILE_NAME)) -L $(dir $(LIBM_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
+LIBS = -larm_cortexM0l_math -lsamd21_qtouch_gcc -lm -lgcc -lc
 
 
 SRC_ASF = $(addprefix asf/sam0/,\
@@ -223,6 +223,16 @@ SRC_BINDINGS = \
 
 SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
                         $(addprefix common-hal/, $(SRC_BINDINGS))
+
+# Handle touch support on its own since it only fits in the image when external
+# flash is used to store the file system.
+SRC_BINDINGS_EXPANDED += shared-bindings/nativeio/TouchIn.c
+
+ifeq ($(FLASH_IMPL),internal_flash.c)
+SRC_BINDINGS_EXPANDED += common-hal/nativeio/TouchInStub.c
+else
+SRC_BINDINGS_EXPANDED += common-hal/nativeio/TouchIn.c
+endif
 
 SRC_SHARED_MODULE = \
 	bitbangio/__init__.c \
