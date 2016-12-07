@@ -69,6 +69,21 @@ typedef enum {
 
 #endif
 
+#if MICROPY_EMIT_NATIVE
+// define a macro to access external native emitter
+#if MICROPY_EMIT_X64
+#define NATIVE_EMITTER(f) emit_native_x64_##f
+#elif MICROPY_EMIT_X86
+#define NATIVE_EMITTER(f) emit_native_x86_##f
+#elif MICROPY_EMIT_THUMB
+#define NATIVE_EMITTER(f) emit_native_thumb_##f
+#elif MICROPY_EMIT_ARM
+#define NATIVE_EMITTER(f) emit_native_arm_##f
+#else
+#error "unknown native emitter"
+#endif
+#endif
+
 #define EMIT_INLINE_ASM(fun) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm))
 #define EMIT_INLINE_ASM_ARG(fun, ...) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm, __VA_ARGS__))
 
@@ -3397,27 +3412,10 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 #if MICROPY_EMIT_NATIVE
                 case MP_EMIT_OPT_NATIVE_PYTHON:
                 case MP_EMIT_OPT_VIPER:
-#if MICROPY_EMIT_X64
                     if (emit_native == NULL) {
-                        emit_native = emit_native_x64_new(&comp->compile_error, max_num_labels);
+                        emit_native = NATIVE_EMITTER(new)(&comp->compile_error, max_num_labels);
                     }
-                    comp->emit_method_table = &emit_native_x64_method_table;
-#elif MICROPY_EMIT_X86
-                    if (emit_native == NULL) {
-                        emit_native = emit_native_x86_new(&comp->compile_error, max_num_labels);
-                    }
-                    comp->emit_method_table = &emit_native_x86_method_table;
-#elif MICROPY_EMIT_THUMB
-                    if (emit_native == NULL) {
-                        emit_native = emit_native_thumb_new(&comp->compile_error, max_num_labels);
-                    }
-                    comp->emit_method_table = &emit_native_thumb_method_table;
-#elif MICROPY_EMIT_ARM
-                    if (emit_native == NULL) {
-                        emit_native = emit_native_arm_new(&comp->compile_error, max_num_labels);
-                    }
-                    comp->emit_method_table = &emit_native_arm_method_table;
-#endif
+                    comp->emit_method_table = &NATIVE_EMITTER(method_table);
                     comp->emit = emit_native;
                     EMIT_ARG(set_native_type, MP_EMIT_NATIVE_TYPE_ENABLE, s->emit_options == MP_EMIT_OPT_VIPER, 0);
                     break;
@@ -3460,15 +3458,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     emit_bc_free(emit_bc);
 #if MICROPY_EMIT_NATIVE
     if (emit_native != NULL) {
-#if MICROPY_EMIT_X64
-        emit_native_x64_free(emit_native);
-#elif MICROPY_EMIT_X86
-        emit_native_x86_free(emit_native);
-#elif MICROPY_EMIT_THUMB
-        emit_native_thumb_free(emit_native);
-#elif MICROPY_EMIT_ARM
-        emit_native_arm_free(emit_native);
-#endif
+        NATIVE_EMITTER(free)(emit_native);
     }
 #endif
 #if MICROPY_EMIT_INLINE_THUMB
