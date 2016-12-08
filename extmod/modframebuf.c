@@ -159,6 +159,15 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     return MP_OBJ_FROM_PTR(o);
 }
 
+STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    (void)flags;
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    bufinfo->buf = self->buf;
+    bufinfo->len = self->stride * self->height * (self->format == FRAMEBUF_RGB565 ? 2 : 1);
+    bufinfo->typecode = 'B'; // view framebuf as bytes
+    return 0;
+}
+
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t col = mp_obj_get_int(col_in);
@@ -441,6 +450,7 @@ STATIC const mp_obj_type_t mp_type_framebuf = {
     { &mp_type_type },
     .name = MP_QSTR_FrameBuffer,
     .make_new = framebuf_make_new,
+    .buffer_p = { .get_buffer = framebuf_get_buffer },
     .locals_dict = (mp_obj_t)&framebuf_locals_dict,
 };
 

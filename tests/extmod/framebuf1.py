@@ -10,6 +10,9 @@ h = 16
 buf = bytearray(w * h // 8)
 fbuf = framebuf.FrameBuffer(buf, w, h, framebuf.MVLSB)
 
+# access as buffer
+print(memoryview(fbuf)[0])
+
 # fill
 fbuf.fill(1)
 print(buf)
