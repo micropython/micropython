@@ -113,4 +113,87 @@ void asm_x86_mov_r32_to_local(asm_x86_t* as, int src_r32, int dest_local_num);
 void asm_x86_mov_local_addr_to_r32(asm_x86_t* as, int local_num, int dest_r32);
 void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
 
+#if GENERIC_ASM_API
+
+// The following macros provide a (mostly) arch-independent API to
+// generate native code, and are used by the native emitter.
+
+#define ASM_WORD_SIZE (4)
+
+#define REG_RET ASM_X86_REG_EAX
+#define REG_ARG_1 ASM_X86_REG_ARG_1
+#define REG_ARG_2 ASM_X86_REG_ARG_2
+#define REG_ARG_3 ASM_X86_REG_ARG_3
+#define REG_ARG_4 ASM_X86_REG_ARG_4
+#define REG_ARG_5 ASM_X86_REG_ARG_5
+
+// caller-save, so can be used as temporaries
+#define REG_TEMP0 ASM_X86_REG_EAX
+#define REG_TEMP1 ASM_X86_REG_ECX
+#define REG_TEMP2 ASM_X86_REG_EDX
+
+// callee-save, so can be used as locals
+#define REG_LOCAL_1 ASM_X86_REG_EBX
+#define REG_LOCAL_2 ASM_X86_REG_ESI
+#define REG_LOCAL_3 ASM_X86_REG_EDI
+#define REG_LOCAL_NUM (3)
+
+#define ASM_T               asm_x86_t
+#define ASM_END_PASS        asm_x86_end_pass
+#define ASM_ENTRY           asm_x86_entry
+#define ASM_EXIT            asm_x86_exit
+
+#define ASM_JUMP            asm_x86_jmp_label
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+    do { \
+        asm_x86_test_r8_with_r8(as, reg, reg); \
+        asm_x86_jcc_label(as, ASM_X86_CC_JZ, label); \
+    } while (0)
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+    do { \
+        asm_x86_test_r8_with_r8(as, reg, reg); \
+        asm_x86_jcc_label(as, ASM_X86_CC_JNZ, label); \
+    } while (0)
+#define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
+    do { \
+        asm_x86_cmp_r32_with_r32(as, reg1, reg2); \
+        asm_x86_jcc_label(as, ASM_X86_CC_JE, label); \
+    } while (0)
+#define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, ptr, mp_f_n_args[idx], ASM_X86_REG_EAX)
+
+#define ASM_MOV_REG_TO_LOCAL        asm_x86_mov_r32_to_local
+#define ASM_MOV_IMM_TO_REG          asm_x86_mov_i32_to_r32
+#define ASM_MOV_ALIGNED_IMM_TO_REG  asm_x86_mov_i32_to_r32_aligned
+#define ASM_MOV_IMM_TO_LOCAL_USING(as, imm, local_num, reg_temp) \
+    do { \
+        asm_x86_mov_i32_to_r32(as, (imm), (reg_temp)); \
+        asm_x86_mov_r32_to_local(as, (reg_temp), (local_num)); \
+    } while (false)
+#define ASM_MOV_LOCAL_TO_REG        asm_x86_mov_local_to_r32
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x86_mov_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_MOV_LOCAL_ADDR_TO_REG   asm_x86_mov_local_addr_to_r32
+
+#define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
+#define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_x86_or_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_x86_xor_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_x86_and_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x86_add_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x86_sub_r32_r32((as), (reg_dest), (reg_src))
+#define ASM_MUL_REG_REG(as, reg_dest, reg_src) asm_x86_mul_r32_r32((as), (reg_dest), (reg_src))
+
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem32_to_r32((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x86_mov_mem32_to_r32((as), (reg_base), 4 * (word_offset), (reg_dest))
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem8_to_r32zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem16_to_r32zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_x86_mov_mem32_to_r32((as), (reg_base), 0, (reg_dest))
+
+#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
+#define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 4 * (word_offset))
+#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x86_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
+#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x86_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_x86_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
+
+#endif // GENERIC_ASM_API
+
 #endif // __MICROPY_INCLUDED_PY_ASMX86_H__
