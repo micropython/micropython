@@ -82,7 +82,6 @@ SRC_C = \
 	machine_adc.c \
 	machine_uart.c \
 	machine_wdt.c \
-	machine_spi.c \
 	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
