@@ -699,7 +699,7 @@ STATIC mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 
-#if MICROPY_EMIT_XTENSA
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
 
 // We provide here a way of committing executable data to a region from
 // which it can be executed by the CPU.  There are 2 such writable regions:
@@ -822,7 +822,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_malloc), (mp_obj_t)&esp_malloc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_free), (mp_obj_t)&esp_free_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_esf_free_bufs), (mp_obj_t)&esp_esf_free_bufs_obj },
-    #if MICROPY_EMIT_XTENSA
+    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_native_code_location), (mp_obj_t)&esp_set_native_code_location_obj },
     #endif
 

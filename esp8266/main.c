@@ -58,7 +58,7 @@ STATIC void mp_reset(void) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     MP_STATE_PORT(dupterm_arr_obj) = MP_OBJ_NULL;
-    #if MICROPY_EMIT_XTENSA
+    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     extern void esp_native_code_init(void);
     esp_native_code_init();
     #endif
