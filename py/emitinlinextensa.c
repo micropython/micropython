@@ -38,7 +38,6 @@
 struct _emit_inline_asm_t {
     asm_xtensa_t as;
     uint16_t pass;
-    scope_t *scope;
     mp_obj_t *error_slot;
     mp_uint_t max_num_labels;
     qstr *label_lookup;
@@ -67,9 +66,8 @@ void emit_inline_xtensa_free(emit_inline_asm_t *emit) {
     m_del_obj(emit_inline_asm_t, emit);
 }
 
-STATIC void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope, mp_obj_t *error_slot) {
+STATIC void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
     emit->pass = pass;
-    emit->scope = scope;
     emit->error_slot = error_slot;
     if (emit->pass == MP_PASS_CODE_SIZE) {
         memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
@@ -81,12 +79,6 @@ STATIC void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t p
 STATIC void emit_inline_xtensa_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
     asm_xtensa_exit(&emit->as);
     asm_xtensa_end_pass(&emit->as);
-
-    if (emit->pass == MP_PASS_EMIT) {
-        void *f = mp_asm_base_get_code(&emit->as.base);
-        mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f,
-            mp_asm_base_get_code_size(&emit->as.base), NULL, emit->scope->num_pos_args, 0, type_sig);
-    }
 }
 
 STATIC mp_uint_t emit_inline_xtensa_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {

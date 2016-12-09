@@ -3127,7 +3127,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        EMIT_INLINE_ASM_ARG(start_pass, comp->pass, comp->scope_cur, &comp->compile_error);
+        EMIT_INLINE_ASM_ARG(start_pass, comp->pass, &comp->compile_error);
     }
 
     // get the function definition parse node
@@ -3258,6 +3258,13 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 
     if (comp->pass > MP_PASS_SCOPE) {
         EMIT_INLINE_ASM_ARG(end_pass, type_sig);
+
+        if (comp->pass == MP_PASS_EMIT) {
+            void *f = mp_asm_base_get_code((mp_asm_base_t*)comp->emit_inline_asm);
+            mp_emit_glue_assign_native(comp->scope_cur->raw_code, MP_CODE_NATIVE_ASM,
+                f, mp_asm_base_get_code_size((mp_asm_base_t*)comp->emit_inline_asm),
+                NULL, comp->scope_cur->num_pos_args, 0, type_sig);
+        }
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {

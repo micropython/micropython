@@ -262,7 +262,7 @@ void mp_emit_bc_end_except_handler(emit_t *emit);
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 
 typedef struct _emit_inline_asm_method_table_t {
-    void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope, mp_obj_t *error_slot);
+    void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot);
     void (*end_pass)(emit_inline_asm_t *emit, mp_uint_t type_sig);
     mp_uint_t (*count_params)(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params);
     bool (*label)(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id);
