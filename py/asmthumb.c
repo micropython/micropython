@@ -162,18 +162,22 @@ STATIC mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
 
 void asm_thumb_op16(asm_thumb_t *as, uint op) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 2);
-    // little endian
-    c[0] = op;
-    c[1] = op >> 8;
+    if (c != NULL) {
+        // little endian
+        c[0] = op;
+        c[1] = op >> 8;
+    }
 }
 
 void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 4);
-    // little endian, op1 then op2
-    c[0] = op1;
-    c[1] = op1 >> 8;
-    c[2] = op2;
-    c[3] = op2 >> 8;
+    if (c != NULL) {
+        // little endian, op1 then op2
+        c[0] = op1;
+        c[1] = op1 >> 8;
+        c[2] = op2;
+        c[3] = op2 >> 8;
+    }
 }
 
 #define OP_FORMAT_4(op, rlo_dest, rlo_src) ((op) | ((rlo_src) << 3) | (rlo_dest))

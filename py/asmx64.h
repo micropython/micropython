@@ -72,7 +72,6 @@
 
 typedef struct _asm_x64_t {
     mp_asm_base_t base;
-    byte dummy_data[4]; // in addition to dummy_data in base
     int num_locals;
 } asm_x64_t;
 

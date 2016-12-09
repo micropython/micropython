@@ -59,17 +59,16 @@ void mp_asm_base_start_pass(mp_asm_base_t *as, int pass) {
 }
 
 // all functions must go through this one to emit bytes
-// if as->pass < MP_ASM_PASS_EMIT, then this function returns dummy_data
+// if as->pass < MP_ASM_PASS_EMIT, then this function just counts the number
+// of bytes needed and returns NULL, and callers should not store any data
 uint8_t *mp_asm_base_get_cur_to_write_bytes(mp_asm_base_t *as, size_t num_bytes_to_write) {
-    if (as->pass < MP_ASM_PASS_EMIT) {
-        as->code_offset += num_bytes_to_write;
-        return as->dummy_data;
-    } else {
+    uint8_t *c = NULL;
+    if (as->pass == MP_ASM_PASS_EMIT) {
         assert(as->code_offset + num_bytes_to_write <= as->code_size);
-        uint8_t *c = as->code_base + as->code_offset;
-        as->code_offset += num_bytes_to_write;
-        return c;
+        c = as->code_base + as->code_offset;
     }
+    as->code_offset += num_bytes_to_write;
+    return c;
 }
 
 void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
@@ -92,8 +91,7 @@ void mp_asm_base_align(mp_asm_base_t* as, unsigned int align) {
 // this function assumes a little endian machine
 void mp_asm_base_data(mp_asm_base_t* as, unsigned int bytesize, uintptr_t val) {
     uint8_t *c = mp_asm_base_get_cur_to_write_bytes(as, bytesize);
-    // only write to the buffer in the emit pass (otherwise we may overflow dummy_data)
-    if (as->pass == MP_ASM_PASS_EMIT) {
+    if (c != NULL) {
         for (unsigned int i = 0; i < bytesize; i++) {
             *c++ = val;
             val >>= 8;

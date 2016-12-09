@@ -55,7 +55,10 @@ void asm_arm_end_pass(asm_arm_t *as) {
 
 // Insert word into instruction flow
 STATIC void emit(asm_arm_t *as, uint op) {
-    *(uint*)asm_arm_get_cur_to_write_bytes(as, 4) = op;
+    uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
+    if (c != NULL) {
+        *(uint32_t*)c = op;
+    }
 }
 
 // Insert word into instruction flow, add "ALWAYS" condition code

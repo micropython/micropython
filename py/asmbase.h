@@ -40,9 +40,6 @@ typedef struct _mp_asm_base_t {
 
     size_t max_num_labels;
     size_t *label_offsets;
-
-    // must be last in struct
-    uint8_t dummy_data[4];
 } mp_asm_base_t;
 
 void mp_asm_base_init(mp_asm_base_t *as, size_t max_num_labels);

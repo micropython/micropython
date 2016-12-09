@@ -122,40 +122,50 @@ static inline byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int n) {
 
 STATIC void asm_x64_write_byte_1(asm_x64_t *as, byte b1) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 1);
-    c[0] = b1;
+    if (c != NULL) {
+        c[0] = b1;
+    }
 }
 
 STATIC void asm_x64_write_byte_2(asm_x64_t *as, byte b1, byte b2) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 2);
-    c[0] = b1;
-    c[1] = b2;
+    if (c != NULL) {
+        c[0] = b1;
+        c[1] = b2;
+    }
 }
 
 STATIC void asm_x64_write_byte_3(asm_x64_t *as, byte b1, byte b2, byte b3) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 3);
-    c[0] = b1;
-    c[1] = b2;
-    c[2] = b3;
+    if (c != NULL) {
+        c[0] = b1;
+        c[1] = b2;
+        c[2] = b3;
+    }
 }
 
 STATIC void asm_x64_write_word32(asm_x64_t *as, int w32) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 4);
-    c[0] = IMM32_L0(w32);
-    c[1] = IMM32_L1(w32);
-    c[2] = IMM32_L2(w32);
-    c[3] = IMM32_L3(w32);
+    if (c != NULL) {
+        c[0] = IMM32_L0(w32);
+        c[1] = IMM32_L1(w32);
+        c[2] = IMM32_L2(w32);
+        c[3] = IMM32_L3(w32);
+    }
 }
 
 STATIC void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 8);
-    c[0] = IMM32_L0(w64);
-    c[1] = IMM32_L1(w64);
-    c[2] = IMM32_L2(w64);
-    c[3] = IMM32_L3(w64);
-    c[4] = IMM64_L4(w64);
-    c[5] = IMM64_L5(w64);
-    c[6] = IMM64_L6(w64);
-    c[7] = IMM64_L7(w64);
+    if (c != NULL) {
+        c[0] = IMM32_L0(w64);
+        c[1] = IMM32_L1(w64);
+        c[2] = IMM32_L2(w64);
+        c[3] = IMM32_L3(w64);
+        c[4] = IMM64_L4(w64);
+        c[5] = IMM64_L5(w64);
+        c[6] = IMM64_L6(w64);
+        c[7] = IMM64_L7(w64);
+    }
 }
 
 /* unused

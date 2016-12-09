@@ -97,15 +97,19 @@ STATIC uint32_t get_label_dest(asm_xtensa_t *as, uint label) {
 
 void asm_xtensa_op16(asm_xtensa_t *as, uint16_t op) {
     uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
-    c[0] = op;
-    c[1] = op >> 8;
+    if (c != NULL) {
+        c[0] = op;
+        c[1] = op >> 8;
+    }
 }
 
 void asm_xtensa_op24(asm_xtensa_t *as, uint32_t op) {
     uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
-    c[0] = op;
-    c[1] = op >> 8;
-    c[2] = op >> 16;
+    if (c != NULL) {
+        c[0] = op;
+        c[1] = op >> 8;
+        c[2] = op >> 16;
+    }
 }
 
 void asm_xtensa_j_label(asm_xtensa_t *as, uint label) {
@@ -147,7 +151,7 @@ void asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
         // load the constant
         asm_xtensa_op_l32r(as, reg_dest, as->base.code_offset, 4 + as->cur_const * WORD_SIZE);
         // store the constant in the table
-        if (as->base.pass == MP_ASM_PASS_EMIT) {
+        if (as->const_table != NULL) {
             as->const_table[as->cur_const] = i32;
         }
         ++as->cur_const;

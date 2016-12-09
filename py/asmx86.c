@@ -101,29 +101,37 @@
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 
 STATIC void asm_x86_write_byte_1(asm_x86_t *as, byte b1) {
-    byte* c = asm_x86_get_cur_to_write_bytes(as, 1);
-    c[0] = b1;
+    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
+    if (c != NULL) {
+        c[0] = b1;
+    }
 }
 
 STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
-    byte* c = asm_x86_get_cur_to_write_bytes(as, 2);
-    c[0] = b1;
-    c[1] = b2;
+    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
+    if (c != NULL) {
+        c[0] = b1;
+        c[1] = b2;
+    }
 }
 
 STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
-    byte* c = asm_x86_get_cur_to_write_bytes(as, 3);
-    c[0] = b1;
-    c[1] = b2;
-    c[2] = b3;
+    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
+    if (c != NULL) {
+        c[0] = b1;
+        c[1] = b2;
+        c[2] = b3;
+    }
 }
 
 STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
-    byte* c = asm_x86_get_cur_to_write_bytes(as, 4);
-    c[0] = IMM32_L0(w32);
-    c[1] = IMM32_L1(w32);
-    c[2] = IMM32_L2(w32);
-    c[3] = IMM32_L3(w32);
+    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
+    if (c != NULL) {
+        c[0] = IMM32_L0(w32);
+        c[1] = IMM32_L1(w32);
+        c[2] = IMM32_L2(w32);
+        c[3] = IMM32_L3(w32);
+    }
 }
 
 STATIC void asm_x86_write_r32_disp(asm_x86_t *as, int r32, int disp_r32, int disp_offset) {
