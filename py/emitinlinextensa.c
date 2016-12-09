@@ -36,12 +36,12 @@
 #if MICROPY_EMIT_INLINE_XTENSA
 
 struct _emit_inline_asm_t {
+    asm_xtensa_t as;
     uint16_t pass;
     scope_t *scope;
     mp_obj_t *error_slot;
     mp_uint_t max_num_labels;
     qstr *label_lookup;
-    asm_xtensa_t *as;
 };
 
 STATIC void emit_inline_xtensa_error_msg(emit_inline_asm_t *emit, const char *msg) {
@@ -54,17 +54,16 @@ STATIC void emit_inline_xtensa_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) 
 
 emit_inline_asm_t *emit_inline_xtensa_new(mp_uint_t max_num_labels) {
     emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
+    memset(&emit->as, 0, sizeof(emit->as));
+    mp_asm_base_init(&emit->as.base, max_num_labels);
     emit->max_num_labels = max_num_labels;
     emit->label_lookup = m_new(qstr, max_num_labels);
-    emit->as = m_new0(asm_xtensa_t, 1);
-    mp_asm_base_init(&emit->as->base, max_num_labels);
     return emit;
 }
 
 void emit_inline_xtensa_free(emit_inline_asm_t *emit) {
     m_del(qstr, emit->label_lookup, emit->max_num_labels);
-    mp_asm_base_deinit(&emit->as->base, false);
-    m_del_obj(asm_xtensa_t, emit->as);
+    mp_asm_base_deinit(&emit->as.base, false);
     m_del_obj(emit_inline_asm_t, emit);
 }
 
@@ -75,18 +74,18 @@ STATIC void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t p
     if (emit->pass == MP_PASS_CODE_SIZE) {
         memset(emit->label_lookup, 0, emit->max_num_labels * sizeof(qstr));
     }
-    mp_asm_base_start_pass(&emit->as->base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
-    asm_xtensa_entry(emit->as, 0);
+    mp_asm_base_start_pass(&emit->as.base, pass == MP_PASS_EMIT ? MP_ASM_PASS_EMIT : MP_ASM_PASS_COMPUTE);
+    asm_xtensa_entry(&emit->as, 0);
 }
 
 STATIC void emit_inline_xtensa_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
-    asm_xtensa_exit(emit->as);
-    asm_xtensa_end_pass(emit->as);
+    asm_xtensa_exit(&emit->as);
+    asm_xtensa_end_pass(&emit->as);
 
     if (emit->pass == MP_PASS_EMIT) {
-        void *f = mp_asm_base_get_code(&emit->as->base);
+        void *f = mp_asm_base_get_code(&emit->as.base);
         mp_emit_glue_assign_native(emit->scope->raw_code, MP_CODE_NATIVE_ASM, f,
-            mp_asm_base_get_code_size(&emit->as->base), NULL, emit->scope->num_pos_args, 0, type_sig);
+            mp_asm_base_get_code_size(&emit->as.base), NULL, emit->scope->num_pos_args, 0, type_sig);
     }
 }
 
@@ -120,16 +119,16 @@ STATIC bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_nu
         }
     }
     emit->label_lookup[label_num] = label_id;
-    mp_asm_base_label_assign(&emit->as->base, label_num);
+    mp_asm_base_label_assign(&emit->as.base, label_num);
     return true;
 }
 
 STATIC void emit_inline_xtensa_align(emit_inline_asm_t *emit, mp_uint_t align) {
-    mp_asm_base_align(&emit->as->base, align);
+    mp_asm_base_align(&emit->as.base, align);
 }
 
 STATIC void emit_inline_xtensa_data(emit_inline_asm_t *emit, mp_uint_t bytesize, mp_uint_t val) {
-    mp_asm_base_data(&emit->as->base, bytesize, val);
+    mp_asm_base_data(&emit->as.base, bytesize, val);
 }
 
 typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;
@@ -263,7 +262,7 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
 
     if (n_args == 0) {
         if (op == MP_QSTR_ret_n) {
-            asm_xtensa_op_ret_n(emit->as);
+            asm_xtensa_op_ret_n(&emit->as);
         } else {
             goto unknown_op;
         }
@@ -271,13 +270,13 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
     } else if (n_args == 1) {
         if (op == MP_QSTR_callx0) {
             uint r0 = get_arg_reg(emit, op_str, pn_args[0]);
-            asm_xtensa_op_callx0(emit->as, r0);
+            asm_xtensa_op_callx0(&emit->as, r0);
         } else if (op == MP_QSTR_j) {
             int label = get_arg_label(emit, op_str, pn_args[0]);
-            asm_xtensa_j_label(emit->as, label);
+            asm_xtensa_j_label(&emit->as, label);
         } else if (op == MP_QSTR_jx) {
             uint r0 = get_arg_reg(emit, op_str, pn_args[0]);
-            asm_xtensa_op_jx(emit->as, r0);
+            asm_xtensa_op_jx(&emit->as, r0);
         } else {
             goto unknown_op;
         }
@@ -286,18 +285,18 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
         uint r0 = get_arg_reg(emit, op_str, pn_args[0]);
         if (op == MP_QSTR_beqz) {
             int label = get_arg_label(emit, op_str, pn_args[1]);
-            asm_xtensa_bccz_reg_label(emit->as, ASM_XTENSA_CCZ_EQ, r0, label);
+            asm_xtensa_bccz_reg_label(&emit->as, ASM_XTENSA_CCZ_EQ, r0, label);
         } else if (op == MP_QSTR_bnez) {
             int label = get_arg_label(emit, op_str, pn_args[1]);
-            asm_xtensa_bccz_reg_label(emit->as, ASM_XTENSA_CCZ_NE, r0, label);
+            asm_xtensa_bccz_reg_label(&emit->as, ASM_XTENSA_CCZ_NE, r0, label);
         } else if (op == MP_QSTR_mov || op == MP_QSTR_mov_n) {
             // we emit mov.n for both "mov" and "mov_n" opcodes
             uint r1 = get_arg_reg(emit, op_str, pn_args[1]);
-            asm_xtensa_op_mov_n(emit->as, r0, r1);
+            asm_xtensa_op_mov_n(&emit->as, r0, r1);
         } else if (op == MP_QSTR_movi) {
             // for convenience we emit l32r if the integer doesn't fit in movi
             uint32_t imm = get_arg_i(emit, op_str, pn_args[1], 0, 0);
-            asm_xtensa_mov_reg_i32(emit->as, r0, imm);
+            asm_xtensa_mov_reg_i32(&emit->as, r0, imm);
         } else {
             goto unknown_op;
         }
@@ -311,10 +310,10 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
                 uint r1 = get_arg_reg(emit, op_str, pn_args[1]);
                 if (o->type == RRR) {
                     uint r2 = get_arg_reg(emit, op_str, pn_args[2]);
-                    asm_xtensa_op24(emit->as, ASM_XTENSA_ENCODE_RRR(0, o->a0, o->a1, r0, r1, r2));
+                    asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRR(0, o->a0, o->a1, r0, r1, r2));
                 } else if (o->type == RRI8_B) {
                     int label = get_arg_label(emit, op_str, pn_args[2]);
-                    asm_xtensa_bcc_reg_reg_label(emit->as, o->a0, r0, r1, label);
+                    asm_xtensa_bcc_reg_reg_label(&emit->as, o->a0, r0, r1, label);
                 } else {
                     int shift, min, max;
                     if ((o->type & 0xf0) == 0) {
@@ -327,7 +326,7 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
                         max = 0xff << shift;
                     }
                     uint32_t imm = get_arg_i(emit, op_str, pn_args[2], min, max);
-                    asm_xtensa_op24(emit->as, ASM_XTENSA_ENCODE_RRI8(o->a0, o->a1, r1, r0, (imm >> shift) & 0xff));
+                    asm_xtensa_op24(&emit->as, ASM_XTENSA_ENCODE_RRI8(o->a0, o->a1, r1, r0, (imm >> shift) & 0xff));
                 }
                 return;
             }
