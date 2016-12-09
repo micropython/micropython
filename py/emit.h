@@ -272,9 +272,13 @@ typedef struct _emit_inline_asm_method_table_t {
 } emit_inline_asm_method_table_t;
 
 extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;
+extern const emit_inline_asm_method_table_t emit_inline_xtensa_method_table;
 
 emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels);
+emit_inline_asm_t *emit_inline_xtensa_new(mp_uint_t max_num_labels);
+
 void emit_inline_thumb_free(emit_inline_asm_t *emit);
+void emit_inline_xtensa_free(emit_inline_asm_t *emit);
 
 #if MICROPY_WARNINGS
 void mp_emitter_warning(pass_kind_t pass, const char *msg);

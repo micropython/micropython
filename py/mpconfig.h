@@ -293,11 +293,16 @@
 #define MICROPY_EMIT_XTENSA (0)
 #endif
 
+// Whether to enable the Xtensa inline assembler
+#ifndef MICROPY_EMIT_INLINE_XTENSA
+#define MICROPY_EMIT_INLINE_XTENSA (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
 #define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA)
 
 // Convenience definition for whether any inline assembler emitter is enabled
-#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB)
+#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */

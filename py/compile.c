@@ -91,6 +91,9 @@ typedef enum {
 #if MICROPY_EMIT_INLINE_THUMB
 #define ASM_DECORATOR_QSTR MP_QSTR_asm_thumb
 #define ASM_EMITTER(f) emit_inline_thumb_##f
+#elif MICROPY_EMIT_INLINE_XTENSA
+#define ASM_DECORATOR_QSTR MP_QSTR_asm_xtensa
+#define ASM_EMITTER(f) emit_inline_xtensa_##f
 #else
 #error "unknown asm emitter"
 #endif

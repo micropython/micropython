@@ -30,7 +30,7 @@
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
-#if MICROPY_EMIT_XTENSA
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
 
 #include "py/asmxtensa.h"
 
@@ -167,4 +167,4 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
     asm_xtensa_op_addi(as, reg_dest, reg_dest, (4 + local_num) * WORD_SIZE);
 }
 
-#endif // MICROPY_EMIT_XTENSA
+#endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA

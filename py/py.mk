@@ -132,6 +132,7 @@ PY_O_BASENAME = \
 	emitnarm.o \
 	asmxtensa.o \
 	emitnxtensa.o \
+	emitinlinextensa.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
