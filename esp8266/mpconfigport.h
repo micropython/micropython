@@ -10,9 +10,7 @@
 #define MICROPY_ALLOC_PARSE_RESULT_INC  (8)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT  (64)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
-#define MICROPY_EMIT_X64            (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_EMIT_XTENSA         (1)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
@@ -131,6 +129,8 @@ typedef uint32_t sys_prot_t; // for modlwip
 #include <sys/types.h>
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+void *esp_native_code_commit(void*, size_t);
+#define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
