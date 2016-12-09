@@ -34,6 +34,7 @@
 #include "py/emit.h"
 #include "py/compile.h"
 #include "py/runtime.h"
+#include "py/asmbase.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -3224,7 +3225,8 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
-                EMIT_INLINE_ASM_ARG(align, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]));
+                mp_asm_base_align((mp_asm_base_t*)comp->emit_inline_asm,
+                    MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]));
             }
         } else if (op == MP_QSTR_data) {
             if (!(n_args >= 2 && MP_PARSE_NODE_IS_SMALL_INT(pn_arg[0]))) {
@@ -3238,7 +3240,8 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                         compile_syntax_error(comp, nodes[i], "'data' requires integer arguments");
                         return;
                     }
-                    EMIT_INLINE_ASM_ARG(data, bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
+                    mp_asm_base_data((mp_asm_base_t*)comp->emit_inline_asm,
+                        bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
                 }
             }
         } else {

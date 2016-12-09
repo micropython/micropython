@@ -123,14 +123,6 @@ STATIC bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_nu
     return true;
 }
 
-STATIC void emit_inline_xtensa_align(emit_inline_asm_t *emit, mp_uint_t align) {
-    mp_asm_base_align(&emit->as.base, align);
-}
-
-STATIC void emit_inline_xtensa_data(emit_inline_asm_t *emit, mp_uint_t bytesize, mp_uint_t val) {
-    mp_asm_base_data(&emit->as.base, bytesize, val);
-}
-
 typedef struct _reg_name_t { byte reg; byte name[3]; } reg_name_t;
 STATIC const reg_name_t reg_name_table[] = {
     {0, "a0\0"},
@@ -355,8 +347,6 @@ const emit_inline_asm_method_table_t emit_inline_xtensa_method_table = {
     emit_inline_xtensa_end_pass,
     emit_inline_xtensa_count_params,
     emit_inline_xtensa_label,
-    emit_inline_xtensa_align,
-    emit_inline_xtensa_data,
     emit_inline_xtensa_op,
 };
 
