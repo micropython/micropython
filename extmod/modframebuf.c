@@ -37,6 +37,7 @@
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;
+    mp_obj_t buf_obj; // need to store this to prevent GC from reclaiming buf
     void *buf;
     uint16_t width, height, stride;
     uint8_t format;
@@ -133,6 +134,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
 
     mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
     o->base.type = type;
+    o->buf_obj = args[0];
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
