@@ -82,7 +82,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t
 #endif
 }
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_THUMB
+#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len, const mp_uint_t *const_table, mp_uint_t n_pos_args, mp_uint_t scope_flags, mp_uint_t type_sig) {
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
     rc->kind = kind;
@@ -138,7 +138,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             fun = mp_obj_new_fun_viper(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
             break;
         #endif
-        #if MICROPY_EMIT_INLINE_THUMB
+        #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
             fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->data.u_native.fun_data, rc->data.u_native.type_sig);
             break;

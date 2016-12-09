@@ -64,7 +64,7 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_THUMB
+#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
 
 // convert a native value to a Micro Python object based on type
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
