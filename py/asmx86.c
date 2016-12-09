@@ -232,7 +232,7 @@ void asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32) {
 // src_i32 is stored as a full word in the code, and aligned to machine-word boundary
 void asm_x86_mov_i32_to_r32_aligned(asm_x86_t *as, int32_t src_i32, int dest_r32) {
     // mov instruction uses 1 byte for the instruction, before the i32
-    while (((as->code_offset + 1) & (WORD_SIZE - 1)) != 0) {
+    while (((as->base.code_offset + 1) & (WORD_SIZE - 1)) != 0) {
         asm_x86_nop(as);
     }
     asm_x86_mov_i32_to_r32(as, src_i32, dest_r32);
@@ -339,13 +339,13 @@ void asm_x86_setcc_r8(asm_x86_t *as, mp_uint_t jcc_type, int dest_r8) {
 }
 
 STATIC mp_uint_t get_label_dest(asm_x86_t *as, mp_uint_t label) {
-    assert(label < as->max_num_labels);
-    return as->label_offsets[label];
+    assert(label < as->base.max_num_labels);
+    return as->base.label_offsets[label];
 }
 
 void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     if (dest != (mp_uint_t)-1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
@@ -367,7 +367,7 @@ void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
 
 void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     if (dest != (mp_uint_t)-1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
@@ -499,7 +499,7 @@ void asm_x86_call_ind(asm_x86_t *as, void *ptr, mp_uint_t n_args, int temp_r32) 
     // this reduces code size by 2 bytes per call, but doesn't seem to speed it up at all
     /*
     asm_x86_write_byte_1(as, OPCODE_CALL_REL32);
-    asm_x86_write_word32(as, ptr - (void*)(as->code_base + as->code_offset + 4));
+    asm_x86_write_word32(as, ptr - (void*)(as->code_base + as->base.code_offset + 4));
     */
 
     // the caller must clean up the stack
