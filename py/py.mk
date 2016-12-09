@@ -130,6 +130,8 @@ PY_O_BASENAME = \
 	emitinlinethumb.o \
 	asmarm.o \
 	emitnarm.o \
+	asmxtensa.o \
+	emitnxtensa.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
@@ -250,7 +252,7 @@ PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
-SRC_QSTR_IGNORE = nlr% emitnx% emitnthumb% emitnarm%
+SRC_QSTR_IGNORE = nlr% emitnx86% emitnx64% emitnthumb% emitnarm% emitnxtensa%
 SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)
 
 # Anything that depends on FORCE will be considered out-of-date
@@ -290,6 +292,10 @@ $(PY_BUILD)/emitnthumb.o: py/emitnative.c
 
 $(PY_BUILD)/emitnarm.o: CFLAGS += -DN_ARM
 $(PY_BUILD)/emitnarm.o: py/emitnative.c
+	$(call compile_c)
+
+$(PY_BUILD)/emitnxtensa.o: CFLAGS += -DN_XTENSA
+$(PY_BUILD)/emitnxtensa.o: py/emitnative.c
 	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2

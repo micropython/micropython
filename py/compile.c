@@ -79,6 +79,8 @@ typedef enum {
 #define NATIVE_EMITTER(f) emit_native_thumb_##f
 #elif MICROPY_EMIT_ARM
 #define NATIVE_EMITTER(f) emit_native_arm_##f
+#elif MICROPY_EMIT_XTENSA
+#define NATIVE_EMITTER(f) emit_native_xtensa_##f
 #else
 #error "unknown native emitter"
 #endif

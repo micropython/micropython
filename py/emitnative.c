@@ -61,7 +61,8 @@
 #if (MICROPY_EMIT_X64 && N_X64) \
     || (MICROPY_EMIT_X86 && N_X86) \
     || (MICROPY_EMIT_THUMB && N_THUMB) \
-    || (MICROPY_EMIT_ARM && N_ARM)
+    || (MICROPY_EMIT_ARM && N_ARM) \
+    || (MICROPY_EMIT_XTENSA && N_XTENSA) \
 
 // this is defined so that the assembler exports generic assembler API macros
 #define GENERIC_ASM_API (1)
@@ -138,6 +139,12 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
 // ARM specific stuff
 #include "py/asmarm.h"
 #define EXPORT_FUN(name) emit_native_arm_##name
+
+#elif N_XTENSA
+
+// Xtensa specific stuff
+#include "py/asmxtensa.h"
+#define EXPORT_FUN(name) emit_native_xtensa_##name
 
 #else
 
@@ -1965,6 +1972,21 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_ARM_CC_NE,
             };
             asm_arm_setcc_reg(emit->as, REG_RET, ccs[op - MP_BINARY_OP_LESS]);
+            #elif N_XTENSA
+            static uint8_t ccs[6] = {
+                ASM_XTENSA_CC_LT,
+                0x80 | ASM_XTENSA_CC_LT, // for GT we'll swap args
+                ASM_XTENSA_CC_EQ,
+                0x80 | ASM_XTENSA_CC_GE, // for LE we'll swap args
+                ASM_XTENSA_CC_GE,
+                ASM_XTENSA_CC_NE,
+            };
+            uint8_t cc = ccs[op - MP_BINARY_OP_LESS];
+            if ((cc & 0x80) == 0) {
+                asm_xtensa_setcc_reg_reg_reg(emit->as, cc, REG_RET, REG_ARG_2, reg_rhs);
+            } else {
+                asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
+            }
             #else
                 #error not implemented
             #endif
