@@ -536,6 +536,12 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op16(emit->as, ASM_THUMB_OP_NOP);
         } else if (op == MP_QSTR_wfi) {
             asm_thumb_op16(emit->as, ASM_THUMB_OP_WFI);
+        } else if (strcmp(op_str, "dsb") == 0) {
+            asm_thumb_op32(emit->as, 0xf3bf, 0x8f4f);
+        } else if (strcmp(op_str, "dmb") == 0) {
+            asm_thumb_op32(emit->as, 0xf3bf, 0x8f5f);
+        } else if (strcmp(op_str, "isb") == 0) {
+            asm_thumb_op32(emit->as, 0xf3bf, 0x8f6f);
         } else {
             goto unknown_op;
         }
