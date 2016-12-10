@@ -175,7 +175,7 @@ soft_reset:
 
     if (!safeboot) {
         // run boot.py
-        int ret = pyexec_file("boot.py");
+        int ret = pyexec_file("boot.py", NULL);
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
@@ -200,7 +200,7 @@ soft_reset:
             } else {
                 main_py = mp_obj_str_get_str(MP_STATE_PORT(machine_config_main));
             }
-            int ret = pyexec_file(main_py);
+            int ret = pyexec_file(main_py, NULL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
             }
@@ -374,4 +374,3 @@ STATIC void mptask_create_main_py (void) {
     f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
     f_close(&fp);
 }
-
