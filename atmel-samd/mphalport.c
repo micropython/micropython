@@ -30,9 +30,9 @@ static volatile uint8_t usb_rx_buf_head;
 static volatile uint8_t usb_rx_buf_tail;
 
 // Number of bytes in receive buffer
-static volatile uint8_t usb_rx_count;
+volatile uint8_t usb_rx_count;
 
-static volatile bool mp_cdc_enabled = false;
+volatile bool mp_cdc_enabled = false;
 
 void mp_keyboard_interrupt(void);
 int interrupt_char;

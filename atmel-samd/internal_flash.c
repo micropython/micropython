@@ -37,7 +37,7 @@
 #include "asf/sam0/drivers/nvm/nvm.h"
 #include "asf/sam0/drivers/port/port.h"
 
-#include "neopixel_status.h"
+#include "rgb_led_status.h"
 
 #define TOTAL_INTERNAL_FLASH_SIZE 0x010000
 
@@ -174,9 +174,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
         #ifdef MICROPY_HW_LED_MSC
             port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
         #endif
-        #ifdef MICROPY_HW_NEOPIXEL
-            temp_status_color(0x8f, 0x00, 0x00);
-        #endif
+        temp_status_color(ACTIVE_WRITE);
         // non-MBR block, copy to cache
         int32_t dest = convert_block_to_flash_addr(block);
         if (dest == -1) {
@@ -214,9 +212,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
               return false;
           }
         }
-        #ifdef MICROPY_HW_NEOPIXEL
-            clear_temp_status();
-        #endif
+        clear_temp_status();
         #ifdef MICROPY_HW_LED_MSC
             port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
         #endif

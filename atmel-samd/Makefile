@@ -178,7 +178,7 @@ SRC_C = \
 	moduos.c \
 	mphalport.c \
 	samd21_pins.c \
-	neopixel_status.c \
+	rgb_led_status.c \
 	tick.c \
 	$(FLASH_IMPL) \
 	asf/common/services/sleepmgr/samd/sleepmgr.c \

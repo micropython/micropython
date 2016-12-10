@@ -38,7 +38,7 @@
 
 void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso, uint32_t baudrate) {
+        const mcu_pin_obj_t * miso) {
     digitalinout_result_t result = common_hal_nativeio_digitalinout_construct(&self->clock, clock);
     if (result != DIGITALINOUT_OK) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
@@ -81,7 +81,7 @@ void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self) {
 }
 
 void shared_module_bitbangio_spi_configure(bitbangio_spi_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase) {
+        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     self->delay_half = 500000 / baudrate;
     // round delay_half up so that: actual_baudrate <= requested_baudrate
     if (500000 % baudrate != 0) {
@@ -148,14 +148,11 @@ bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t 
             if (self->phase == 0) {
                 common_hal_mcu_delay_us(delay_half);
                 common_hal_nativeio_digitalinout_set_value(&self->clock, 1 - self->polarity);
-            } else {
-                common_hal_nativeio_digitalinout_set_value(&self->clock, 1 - self->polarity);
-                common_hal_mcu_delay_us(delay_half);
-            }
-            if (self->phase == 0) {
                 common_hal_mcu_delay_us(delay_half);
                 common_hal_nativeio_digitalinout_set_value(&self->clock, self->polarity);
             } else {
+                common_hal_nativeio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+                common_hal_mcu_delay_us(delay_half);
                 common_hal_nativeio_digitalinout_set_value(&self->clock, self->polarity);
                 common_hal_mcu_delay_us(delay_half);
             }

@@ -58,7 +58,7 @@ STATIC bool repl_display_debugging_info = 0;
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
-STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
+STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind, int exec_flags, pyexec_result_t *result) {
     int ret = 0;
     uint32_t start = 0;
 
@@ -88,7 +88,7 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
         nlr_pop();
-        ret = 1;
+        ret = 0;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
         }
@@ -108,7 +108,21 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
             ret = PYEXEC_FORCED_EXIT;
         } else {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-            ret = 0;
+            ret = PYEXEC_EXCEPTION;
+        }
+    }
+    if (result != NULL) {
+        result->return_code = ret;
+        if (ret != 0) {
+            mp_obj_t return_value = (mp_obj_t)nlr.ret_val;
+            result->exception_type = mp_obj_get_type(return_value);
+            result->exception_line = -1;
+
+            if (mp_obj_is_exception_instance(return_value)) {
+                size_t n, *values;
+                mp_obj_exception_get_traceback(return_value, &n, &values);
+                result->exception_line = values[n - 2];
+            }
         }
     }
 
@@ -203,7 +217,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
     if (lex == NULL) {
         mp_hal_stdout_tx_str("\x04MemoryError\r\n\x04");
     } else {
-        int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF);
+        int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF, NULL);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -285,7 +299,7 @@ exec: ;
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
+            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -361,7 +375,7 @@ raw_repl_reset:
         if (lex == NULL) {
             printf("\x04MemoryError\n\x04");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF);
+            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF, NULL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -380,7 +394,7 @@ int pyexec_friendly_repl(void) {
 #endif
 
 friendly_repl_reset:
-    mp_hal_stdout_tx_str("Adafruit MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    mp_hal_stdout_tx_str("\r\nAdafruit MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
     // mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
 
     // to test ctrl-C
@@ -487,7 +501,7 @@ friendly_repl_reset:
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            ret = parse_compile_execute(lex, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
+            ret = parse_compile_execute(lex, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -497,7 +511,7 @@ friendly_repl_reset:
 
 #endif // MICROPY_REPL_EVENT_DRIVEN
 
-int pyexec_file(const char *filename) {
+int pyexec_file(const char *filename, pyexec_result_t *exec_result) {
     mp_lexer_t *lex = mp_lexer_new_from_file(filename);
 
     if (lex == NULL) {
@@ -505,7 +519,7 @@ int pyexec_file(const char *filename) {
         return false;
     }
 
-    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0);
+    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0, exec_result);
 }
 
 #if MICROPY_MODULE_FROZEN
@@ -516,12 +530,12 @@ int pyexec_frozen_module(const char *name) {
     switch (frozen_type) {
         #if MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0, NULL);
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE);
+            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE, NULL);
         #endif
 
         default:

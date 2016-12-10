@@ -37,6 +37,11 @@ extern volatile uint64_t ticks_ms;
 static inline mp_uint_t mp_hal_ticks_ms(void) {
   return ticks_ms;
 }
+// Number of bytes in receive buffer
+volatile uint8_t usb_rx_count;
+volatile bool mp_cdc_enabled;
+
+int receive_usb(void);
 
 void mp_hal_set_interrupt_char(int c);
 

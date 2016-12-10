@@ -3,7 +3,6 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Trinket M0 (Experimental)"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-#define MICROPY_HW_APA102_SERCOM SERCOM0
 #define MICROPY_HW_APA102_MOSI   &pin_PA04
 #define MICROPY_HW_APA102_SCK    &pin_PA05
 

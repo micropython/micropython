@@ -10,6 +10,7 @@
 
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
+#include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "extmod/fsusermount.h"
 
@@ -23,7 +24,7 @@
 
 #include "autoreset.h"
 #include "mpconfigboard.h"
-#include "neopixel_status.h"
+#include "rgb_led_status.h"
 #include "tick.h"
 
 fs_user_mount_t fs_user_mount_flash;
@@ -131,7 +132,7 @@ static char *stack_top;
 static char heap[16384];
 
 void reset_mp(void) {
-    new_status_color(0x8f, 0x00, 0x8f);
+    new_status_color(0x8f008f);
     autoreset_stop();
     autoreset_enable();
 
@@ -181,7 +182,7 @@ void reset_samd21(void) {
     system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
 }
 
-bool maybe_run(const char* filename, int* ret) {
+bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
     FILINFO fno;
 #if _USE_LFN
     fno.lfname = NULL;
@@ -193,32 +194,171 @@ bool maybe_run(const char* filename, int* ret) {
     }
     mp_hal_stdout_tx_str(filename);
     mp_hal_stdout_tx_str(" output:\r\n");
-    *ret = pyexec_file(filename);
+    pyexec_file(filename, exec_result);
     return true;
 }
 
-void start_mp(void) {
+bool start_mp(void) {
+    bool cdc_enabled_at_start = mp_cdc_enabled;
     #ifdef AUTORESET_DELAY_MS
+    if (cdc_enabled_at_start) {
         mp_hal_stdout_tx_str("\r\n");
         mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
-        mp_hal_stdout_tx_str("Type anything into the REPL to disable and manually reset (CTRL-D) to re-enable.\r\n");
+    }
     #endif
 
-    new_status_color(0x00, 0x00, 0x8f);
-    int ret = 0;
-    bool found_boot = maybe_run("settings.txt", &ret) ||
-                      maybe_run("settings.py", &ret) ||
-                      maybe_run("boot.py", &ret) ||
-                      maybe_run("boot.txt", &ret);
-    if (found_boot && ret & PYEXEC_FORCED_EXIT) {
-        return;
+    new_status_color(BOOT_RUNNING);
+    pyexec_result_t result;
+    bool found_boot = maybe_run("settings.txt", &result) ||
+                      maybe_run("settings.py", &result) ||
+                      maybe_run("boot.py", &result) ||
+                      maybe_run("boot.txt", &result);
+    bool found_main = false;
+    if (!found_boot || !(result.return_code & PYEXEC_FORCED_EXIT)) {
+        new_status_color(MAIN_RUNNING);
+        found_main = maybe_run("code.txt", &result) ||
+                     maybe_run("code.py", &result) ||
+                     maybe_run("main.py", &result) ||
+                     maybe_run("main.txt", &result);
     }
 
-    new_status_color(0x00, 0x8f, 0x00);
-    maybe_run("code.txt", &ret) ||
-        maybe_run("code.py", &ret) ||
-        maybe_run("main.py", &ret) ||
-        maybe_run("main.txt", &ret);
+    if (result.return_code & PYEXEC_FORCED_EXIT) {
+        return reset_next_character;
+    }
+
+    // If not is USB mode then do not skip the repl.
+    #ifndef USB_REPL
+    return false;
+    #endif
+
+    // Wait for connection or character.
+    new_status_color(ALL_DONE);
+    bool cdc_enabled_before = false;
+    uint32_t pattern_start = ticks_ms;
+
+    printf("result code %d %d.\r\n", result.return_code, result.exception_line);
+    uint32_t total_exception_cycle = 0;
+    uint8_t ones = result.exception_line % 10;
+    ones += ones > 0 ? 1 : 0;
+    uint8_t tens = (result.exception_line / 10) % 10;
+    tens += tens > 0 ? 1 : 0;
+    uint8_t hundreds = (result.exception_line / 100) % 10;
+    hundreds += hundreds > 0 ? 1 : 0;
+    uint8_t thousands = (result.exception_line / 1000) % 10;
+    thousands += thousands > 0 ? 1 : 0;
+    uint8_t digit_sum = ones + tens + hundreds + thousands;
+    uint8_t num_places = 0;
+    uint16_t line = result.exception_line;
+    for (int i = 0; i < 4; i++) {
+        if ((line % 10) > 0) {
+            num_places++;
+        }
+        line /= 10;
+    }
+    if (result.return_code == PYEXEC_EXCEPTION) {
+        total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
+    }
+    while (true) {
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+        if (reset_next_character) {
+            return true;
+        }
+        if (usb_rx_count > 0) {
+            // Skip REPL if reset was requested.
+            return receive_usb() == CHAR_CTRL_D;
+        }
+
+        if (!cdc_enabled_before && mp_cdc_enabled) {
+            if (cdc_enabled_at_start) {
+                mp_hal_stdout_tx_str("\r\n\r\n");
+            } else {
+                printf("result code %d %d.\r\n", result.return_code, result.exception_line);
+                mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
+            }
+            mp_hal_stdout_tx_str("Press any key to enter the REPL and disable auto-reset. Use CTRL-D to soft reset.\r\n");
+        }
+        if (cdc_enabled_before && !mp_cdc_enabled) {
+            cdc_enabled_at_start = false;
+        }
+        cdc_enabled_before = mp_cdc_enabled;
+
+        uint32_t tick_diff = ticks_ms - pattern_start;
+        if (result.return_code != PYEXEC_EXCEPTION) {
+            // All is good. Ramp ALL_DONE up and down.
+            if (tick_diff > ALL_GOOD_CYCLE_MS) {
+                pattern_start = ticks_ms;
+                tick_diff = 0;
+            }
+
+            uint16_t brightness = tick_diff * 255 / (ALL_GOOD_CYCLE_MS / 2);
+            if (brightness > 255) {
+                brightness = 511 - brightness;
+            }
+            new_status_color(color_brightness(ALL_DONE, brightness));
+        } else {
+            if (tick_diff > total_exception_cycle) {
+                pattern_start = ticks_ms;
+                tick_diff = 0;
+            }
+            // First flash the file color.
+            if (tick_diff < EXCEPTION_TYPE_LENGTH_MS) {
+                if (found_main) {
+                    new_status_color(MAIN_RUNNING);
+                } else {
+                    new_status_color(BOOT_RUNNING);
+                }
+            // Next flash the exception color.
+            } else if (tick_diff < EXCEPTION_TYPE_LENGTH_MS * 2) {
+                if (mp_obj_is_subclass_fast(result.exception_type, &mp_type_IndentationError)) {
+                    new_status_color(INDENTATION_ERROR);
+                } else if (mp_obj_is_subclass_fast(result.exception_type, &mp_type_SyntaxError)) {
+                    new_status_color(SYNTAX_ERROR);
+                } else if (mp_obj_is_subclass_fast(result.exception_type, &mp_type_NameError)) {
+                    new_status_color(NAME_ERROR);
+                } else if (mp_obj_is_subclass_fast(result.exception_type, &mp_type_OSError)) {
+                    new_status_color(OS_ERROR);
+                } else {
+                    new_status_color(OTHER_ERROR);
+                }
+            // Finally flash the line number digits from highest to lowest.
+            // Zeroes will not produce a flash but can be read by the absence of
+            // a color from the sequence.
+            } else if (tick_diff < (EXCEPTION_TYPE_LENGTH_MS * 2 + LINE_NUMBER_TOGGLE_LENGTH * digit_sum)) {
+                uint32_t digit_diff = tick_diff - EXCEPTION_TYPE_LENGTH_MS * 2;
+                if ((digit_diff % LINE_NUMBER_TOGGLE_LENGTH) < (LINE_NUMBER_TOGGLE_LENGTH / 2)) {
+                    new_status_color(BLACK);
+                } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * thousands) {
+                    if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH) {
+                        new_status_color(BLACK);
+                    } else {
+                        new_status_color(THOUSANDS);
+                    }
+                } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds)) {
+                    if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + 1)) {
+                        new_status_color(BLACK);
+                    } else {
+                        new_status_color(HUNDREDS);
+                    }
+                } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds + tens)) {
+                    if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds + 1)) {
+                        new_status_color(BLACK);
+                    } else {
+                        new_status_color(TENS);
+                    }
+                } else {
+                    if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds + tens + 1)) {
+                        new_status_color(BLACK);
+                    } else {
+                        new_status_color(ONES);
+                    }
+                }
+            } else {
+                new_status_color(BLACK);
+            }
+        }
+    }
 }
 
 #ifdef UART_REPL
@@ -283,7 +423,7 @@ void samd21_init(void) {
     // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
     // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
-    neopixel_status_init();
+    rgb_led_status_init();
 }
 
 int main(int argc, char **argv) {
@@ -307,24 +447,29 @@ int main(int argc, char **argv) {
         udc_start();
     #endif
 
-    // Run boot and main.
-    start_mp();
-
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
-    int exit_code = 0;
+    int exit_code = PYEXEC_FORCED_EXIT;
+    bool skip_repl = true;
+    bool first_run = true;
     for (;;) {
-        new_status_color(0x3f, 0x3f, 0x3f);
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            exit_code = pyexec_raw_repl();
-        } else {
-            exit_code = pyexec_friendly_repl();
+        if (!skip_repl) {
+            autoreset_disable();
+            new_status_color(REPL_RUNNING);
+            if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+                exit_code = pyexec_raw_repl();
+            } else {
+                exit_code = pyexec_friendly_repl();
+            }
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
-            mp_hal_stdout_tx_str("soft reboot\r\n");
-            reset_samd21();
-            reset_mp();
-            start_mp();
+            if (!first_run) {
+                mp_hal_stdout_tx_str("soft reboot\r\n");
+                reset_samd21();
+                reset_mp();
+            }
+            first_run = false;
+            skip_repl = start_mp();
         } else if (exit_code != 0) {
             break;
         }
