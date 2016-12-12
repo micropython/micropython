@@ -66,3 +66,22 @@ assert bytes(data) == b"21"
 S.bf3 = 5
 print(data)
 assert bytes(data) == b"2Q"
+
+desc2 = {
+    "bf8": uctypes.BFUINT8 | 0 | 0 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
+    "bf32": uctypes.BFUINT32 | 0 | 20 << uctypes.BF_POS | 4 << uctypes.BF_LEN
+}
+
+data2 = bytearray(b"0123")
+
+S2 = uctypes.struct(uctypes.addressof(data2), desc2, uctypes.LITTLE_ENDIAN)
+
+# bitfield using uint8 as base type
+S2.bf8 = 5
+print(data2)
+assert bytes(data2) == b"5123"
+
+# bitfield using uint32 as base type
+S2.bf32 = 5
+print(data2)
+assert bytes(data2) == b"51R3"
