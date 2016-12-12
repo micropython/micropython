@@ -15,9 +15,17 @@ desc = {
     # aligned
     "arr5": (uctypes.ARRAY | 0, uctypes.UINT32 | 1),
     "arr7": (uctypes.ARRAY | 0, 1, {"l": uctypes.UINT32 | 0}),
+
+    "arr9": (uctypes.ARRAY | 0, uctypes.INT8 | 1),
+    "arr10": (uctypes.ARRAY | 0, uctypes.INT64 | 1),
+    "arr11": (uctypes.ARRAY | 0, uctypes.UINT32 | 1),
+    "arr12": (uctypes.ARRAY | 0, uctypes.INT16 | 1),
+    "arr13": (uctypes.ARRAY | 0, uctypes.INT32 | 1),
+    "arr14": (uctypes.ARRAY | 0, uctypes.UINT64| 1),
+    "arr15": (uctypes.ARRAY | 1, 1, {"l": {}})
 }
 
-data = bytearray(5)
+data = bytearray(8)
 
 S = uctypes.struct(uctypes.addressof(data), desc)
 
@@ -44,3 +52,50 @@ assert hex(S.arr5[0]) == "0x66778899"
 print(S.arr5[0] == S.arr7[0].l)
 assert S.arr5[0] == S.arr7[0].l
 
+# lines 368, 326
+S.arr9[0] = 0x11
+print(hex(S.arr9[0]))
+assert hex(S.arr9[0]) == "0x11"
+
+# lines 338, 380, 385
+S.arr10[0] = 0x11
+print(hex(S.arr10[0]))
+assert hex(S.arr10[0]) == "0x11"
+
+# lines 376
+S.arr11[0] = 0x11
+print(hex(S.arr11[0]))
+assert hex(S.arr11[0]) == "0x11"
+
+# lines 372, 330
+S.arr12[0] = 0x11
+print(hex(S.arr12[0]))
+assert hex(S.arr12[0]) == "0x11"
+
+# lines 330
+S.arr13[0] = 0x11
+print(hex(S.arr13[0]))
+assert hex(S.arr13[0]) == "0x11"
+
+# lines 336
+S.arr14[0] = 0x11
+print(hex(S.arr14[0]))
+assert hex(S.arr14[0]) == "0x11"
+
+#lines 543
+try:
+    print(S.arr9[None])
+except IndexError:
+    print("IndexError")
+
+# lines 120, 245
+try:
+    S.arr15[0].l = 0x11
+except TypeError:
+    print("TypeError")
+
+# lines 574
+try:
+    S.arr15[0] = 0x11
+except TypeError:
+    print("TypeError")
