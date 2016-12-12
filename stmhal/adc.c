@@ -92,7 +92,8 @@
 #define VBAT_DIV (2)
 #elif defined(STM32F427xx) || defined(STM32F429xx) || \
       defined(STM32F437xx) || defined(STM32F439xx) || \
-      defined(STM32F746xx) || defined(STM32F767xx)
+      defined(STM32F746xx) || defined(STM32F767xx) || \
+      defined(STM32F769xx)
 #define VBAT_DIV (4)
 #elif defined(STM32L476xx)
 #define VBAT_DIV (3)
