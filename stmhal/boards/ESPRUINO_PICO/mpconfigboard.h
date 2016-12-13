@@ -1,6 +1,5 @@
 #define MICROPY_HW_BOARD_NAME       "Espruino Pico"
 #define MICROPY_HW_MCU_NAME         "STM32F401CD"
-#define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)

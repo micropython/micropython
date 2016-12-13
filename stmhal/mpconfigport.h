@@ -83,6 +83,9 @@
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_STDIO_BUFFER (1)
+#ifndef MICROPY_PY_SYS_PLATFORM     // let boards override it if they want
+#define MICROPY_PY_SYS_PLATFORM     "pyboard"
+#endif
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #define MICROPY_PY_CMATH            (1)
