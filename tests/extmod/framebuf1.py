@@ -48,9 +48,19 @@ fbuf.fill(0)
 fbuf.rect(1, 1, 3, 3, 1)
 print('rect', buf)
 
+#fill rect
+fbuf.fill(0)
+fbuf.fill_rect(1, 1, 3, 3, 1)
+print('fill_rect', buf)
+
 # line
 fbuf.fill(0)
 fbuf.line(1, 1, 3, 3, 1)
+print('line', buf)
+
+# line steep negative gradient
+fbuf.fill(0)
+fbuf.line(3, 3, 2, 1, 1)
 print('line', buf)
 
 # scroll
@@ -77,6 +87,12 @@ print(buf)
 # char out of font range set to chr(127)
 fbuf.text(str(chr(31)), 0, 0)
 print(buf)
+
+# test invalid constructor
+try:
+    fbuf = framebuf.FrameBuffer(buf, w, h, 2, framebuf.MVLSB)
+except ValueError:
+	print("ValueError")
 
 # test legacy constructor
 fbuf = framebuf.FrameBuffer1(buf, w, h)
