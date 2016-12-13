@@ -27,10 +27,9 @@
 #ifndef __NRF52_HAL
 #define __NRF52_HAL
 
-#include <stdbool.h>
-
 #include "py/mpconfig.h"
-#include "nrf.h"
+#include NRF5_HAL_H
+#include "pin.h"
 
 typedef enum
 {
@@ -46,6 +45,27 @@ typedef enum
 #else
 #define GPIO_BASE ((NRF_GPIO_Type *)NRF_P0_BASE)
 #endif
+
+/**
+  * @brief   GPIO Init structure definition
+  */
+typedef struct
+{
+  uint32_t Pin;       /*!< Specifies the GPIO pins to be configured.
+                           This parameter can be any value of @ref GPIO_pins_define */
+
+  uint32_t Mode;      /*!< Specifies the operating mode for the selected pins.
+                           This parameter can be a value of @ref GPIO_mode_define */
+
+  uint32_t Pull;      /*!< Specifies the Pull-up or Pull-Down activation for the selected pins.
+                           This parameter can be a value of @ref GPIO_pull_define */
+
+  uint32_t Speed;     /*!< Specifies the speed for the selected pins.
+                           This parameter can be a value of @ref GPIO_speed_define */
+
+  uint32_t Alternate;  /*!< Peripheral to be connected to the selected pins.
+                            This parameter can be a value of @ref GPIO_Alternat_function_selection */
+} GPIO_InitTypeDef;
 
 typedef enum {
 	HAL_GPIO_PULL_DISABLED = (GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos),
@@ -105,6 +125,17 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
+
+#define mp_hal_pin_obj_t const pin_obj_t*
+#define mp_hal_pin_high(p) (((NRF_GPIO_Type *)((p)->gpio))->OUTSET = (p)->pin_mask)
+#define mp_hal_pin_low(p)  (((NRF_GPIO_Type *)((p)->gpio))->OUTCLR = (p)->pin_mask)
+#define mp_hal_pin_read(p) (((NRF_GPIO_Type *)((p)->gpio))->OUT >> ((p)->pin) & 1)
+#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+
+// TODO: empty implementation for now. Used by machine_spi.c:69
+#define mp_hal_delay_us_fast(p)
+#define mp_hal_ticks_us() (0)
+#define mp_hal_ticks_cpu() (0)
 
 #endif
 

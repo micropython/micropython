@@ -40,13 +40,13 @@ SECTIONS
     */
         
     /* used by the startup to initialize data */
-    _sidata = LOADADDR(.data);
+    _sidata = .;
         
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
-    .data :
+    .data : AT (_sidata)
     {
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
@@ -56,7 +56,7 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >RAM AT> FLASH_TEXT
+    } >RAM 
             
     /* Uninitialized data section */
     .bss :

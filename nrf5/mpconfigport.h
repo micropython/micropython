@@ -27,7 +27,7 @@
 #ifndef NRF5_MPCONFIGPORT_H__
 #define NRF5_MPCONFIGPORT_H__
 
-#include <stdint.h>
+#include <mpconfigboard.h>
 
 // options to control how Micro Python is built
 // options to control how Micro Python is built
@@ -45,20 +45,20 @@
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_OPT_MPZ_BITWISE     (0)
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN       (0)
+#define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_FATFS_USE_LABEL        (0)
-#define MICROPY_FATFS_RPATH            (0)
-#define MICROPY_FATFS_VOLUMES          (0)
-#define MICROPY_FATFS_MULTI_PARTITION  (0)
-#define MICROPY_FSUSERMOUNT            (0)
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_VOLUMES          (4)
+#define MICROPY_FATFS_MULTI_PARTITION  (1)
+#define MICROPY_FSUSERMOUNT            (1)
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
@@ -69,8 +69,8 @@
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
 #define MICROPY_PY_BUILTINS_STR_PARTITION (0)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES (0)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
-#define MICROPY_PY_BUILTINS_FROZENSET (0)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
+#define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_EXECFILE (0)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
@@ -96,24 +96,33 @@
 #define MICROPY_PY_URE              (0)
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UHASHLIB         (0)
-#define MICROPY_PY_UTIME_MP_HAL     (0)
-#define MICROPY_PY_MACHINE          (0)
+#define MICROPY_PY_UTIME_MP_HAL     (1)
+#define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_PY_MACHINE_I2C      (0)
-#define MICROPY_PY_MACHINE_SPI      (0)
+
+#ifndef MICROPY_PY_MACHINE_SPI
+#define MICROPY_PY_MACHINE_SPI      (1)
+#endif
+
 #define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
 #define MICROPY_PY_FRAMEBUF         (0)
 
 #ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_USOCKET          (1)
 #endif
 
 #ifndef MICROPY_PY_NETWORK
-#define MICROPY_PY_NETWORK          (0)
+#define MICROPY_PY_NETWORK          (1)
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
+
+// if sdk is in use, import configuration
+#if BLUETOOTH_SD
+#include "nrf5_sdk_conf.h"
+#endif
 
 // type definitions for the specific machine
 
@@ -131,33 +140,68 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
-// board specific definitions
-#include "mpconfigboard.h"
-
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t mp_module_utime;
+extern const struct _mp_obj_module_t mp_module_uos;
+extern const struct _mp_obj_module_t mp_module_usocket;
+extern const struct _mp_obj_module_t mp_module_network;
+
+#if MICROPY_PY_USOCKET
+#define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket },
+#else
+#define SOCKET_BUILTIN_MODULE
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS
+#endif
+
+#if MICROPY_PY_NETWORK
+#define NETWORK_BUILTIN_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },
+#else
+#define NETWORK_BUILTIN_MODULE
+#endif
+
 
 #if BLUETOOTH_SD
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ble), (mp_obj_t)&ble_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
+    SOCKET_BUILTIN_MODULE \
+    NETWORK_BUILTIN_MODULE \
+
 
 #else
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
+
 
 #endif // BLUETOOTH_SD
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
+    SOCKET_BUILTIN_MODULE_WEAK_LINKS \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ble), (mp_obj_t)&ble_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -174,12 +218,15 @@ extern const struct _mp_obj_module_t ble_module;
     \
     /* pointers to all UART objects (if they have been created) */ \
     struct _pyb_uart_obj_t *pyb_uart_obj_all[1]; \
+    \
+    /* list of registered NICs */ \
+    mp_obj_list_t mod_network_nic_list; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#include "mpconfigboard.h"
+#define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
 
 #endif

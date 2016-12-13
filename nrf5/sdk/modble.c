@@ -28,6 +28,8 @@
 #include <stdint.h>
 #include "py/runtime.h"
 
+#if MICROPY_PY_BLE
+
 #include "led.h"
 #include "mpconfigboard.h"
 #include "softdevice.h"
@@ -36,7 +38,7 @@
 /// Enable BLE softdevice.
 mp_obj_t ble_obj_enable(void) {
     printf("SoftDevice enabled\n");
-    uint32_t err_code = softdevice_enable();
+    uint32_t err_code = sd_enable();
     if (err_code < 0) {
         // TODO: raise exception.
     }
@@ -46,14 +48,14 @@ mp_obj_t ble_obj_enable(void) {
 /// \method disable()
 /// Disable BLE softdevice.
 mp_obj_t ble_obj_disable(void) {
-    softdevice_disable();
+    sd_disable();
     return mp_const_none;
 }
 
 /// \method enabled()
 /// Get state of whether the softdevice is enabled or not.
 mp_obj_t ble_obj_enabled(void) {
-    uint8_t is_enabled = softdevice_enabled();
+    uint8_t is_enabled = sd_enabled();
     mp_int_t enabled = is_enabled;
     return MP_OBJ_NEW_SMALL_INT(enabled);
 }
@@ -61,14 +63,14 @@ mp_obj_t ble_obj_enabled(void) {
 /// \method address_print()
 /// Print device address.
 mp_obj_t ble_obj_address_print(void) {
-    softdevice_address_get();
+    sd_address_get();
     return mp_const_none;
 }
 
 /// \method advertise()
 /// Bluetooth Low Energy advertise.
 mp_obj_t ble_obj_advertise(void) {
-    softdevice_advertise();
+    sd_advertise();
     return mp_const_none;
 }
 
@@ -94,3 +96,5 @@ const mp_obj_module_t ble_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&ble_module_globals,
 };
+
+#endif // MICROPY_PY_BLE

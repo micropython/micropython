@@ -26,13 +26,13 @@
 
 #include <stdint.h>
 
-uint32_t softdevice_enable(void);
+uint32_t sd_enable(void);
 
-void softdevice_disable(void);
+void sd_disable(void);
 
-uint8_t softdevice_enabled(void);
+uint8_t sd_enabled(void);
 
-void softdevice_address_get(void);
+void sd_address_get(void);
 
-void softdevice_advertise(void);
+void sd_advertise(void);
 

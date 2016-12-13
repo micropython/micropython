@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdarg.h>

@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

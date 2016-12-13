@@ -30,6 +30,9 @@
 #define MICROPY_HW_MCU_NAME         "NRF51822"
 #define MICROPY_PY_SYS_PLATFORM     "nrf51-DK"
 
+#define MICROPY_PY_USOCKET          (0)
+#define MICROPY_PY_NETWORK          (0)
+
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
 #define MICROPY_HW_HAS_SDCARD       (0)
@@ -56,5 +59,12 @@
 #define MICROPY_HW_UART1_CTS        (10)
 #define MICROPY_HW_UART1_RTS        (8)
 #define MICROPY_HW_UART1_HWFC       (0)
+
+// SPI0 config
+#define MICROPY_HW_SPI0_NAME        "SPI0"
+#define MICROPY_HW_SPI0_SCK         (1) // A3
+#define MICROPY_HW_SPI0_MOSI        (2) // A2
+#define MICROPY_HW_SPI0_MISO        (3) // A1
+#define MICROPY_HW_SPI0_NSS         (4) // A4
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"

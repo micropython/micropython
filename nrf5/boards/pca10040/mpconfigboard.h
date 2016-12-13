@@ -57,4 +57,12 @@
 #define MICROPY_HW_UART1_RTS        (5)
 #define MICROPY_HW_UART1_HWFC       (1)
 
+// SPI0 config
+#define MICROPY_HW_SPI0_NAME        "SPI0"
+#define MICROPY_HW_SPI0_SCK         (25) // A25 (Arduino D13)
+#define MICROPY_HW_SPI0_MOSI        (23) // A23 (Arduino D11)
+#define MICROPY_HW_SPI0_MISO        (24) // A24 (Arduino D12)
+#define MICROPY_HW_SPI0_NSS         (22) // A22 (Arduino D10)
+
+
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"

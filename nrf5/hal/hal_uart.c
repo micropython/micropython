@@ -30,6 +30,8 @@
 #include "mphalport.h"
 #include "hal_uart.h"
 
+#ifdef HAL_UART_MODULE_ENABLED
+
 #ifdef NRF51
 #include "nrf51.h"
 #include "nrf51_bitfields.h"
@@ -123,3 +125,5 @@ void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
     UART_BASE->TASKS_STARTTX = 1;
     UART_BASE->TASKS_STARTRX = 1;
 }
+
+#endif // HAL_UART_MODULE_ENABLED

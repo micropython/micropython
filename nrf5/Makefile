@@ -5,66 +5,89 @@ ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
 
+check_defined = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error Undefined $1$(if $2, ($2))))
+
 # If SoftDevice is selected, try to use that one.
-SD ?= none
+SD ?=
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
 
 
-ifeq ($(SD), none)
+ifeq ($(SD), )
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)
 	include ../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
 else
+        $(call check_defined, SDK_ROOT, path to SDK containing softdevice)
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
 	include ../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
+
+	include sdk/sdk_common.mk
 endif
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+
+FROZEN_MPY_DIR = modules
 
 # include py core make definitions
 include ../py/py.mk
 
+
+FATFS_DIR = lib/fatfs
+MPY_CROSS = ../mpy-cross/mpy-cross
+MPY_TOOL = ../tools/mpy-tool.py
+
 CROSS_COMPILE = arm-none-eabi-
 
-MCU_VARIANT_LOWER = $(shell echo $(MCU_VARIANT) | tr '[:upper:]' '[:lower:]')
+MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
 
-INC =  -I.
+INC += -I.
 INC += -I..
 INC += -I$(BUILD)
 INC += -I./device
 INC += -I./../lib/cmsis/inc
 INC += -I./device
-INC += -I./device/$(MCU_VARIANT_LOWER)
+INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
-INC += -I./hal/$(MCU_VARIANT_LOWER)
+INC += -I./hal/$(MCU_VARIANT)
 INC += -I./drivers
 INC += -I../lib/mp-readline
 
-NRF_DEFINES = -D$(MCU_VARIANT)
+NRF_DEFINES = -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
 
-CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -ffunction-sections -fdata-sections
 
 CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) --short-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft -fno-builtin
 
+
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES)) 
 CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES)
+CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
+CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
-LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE)
+LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE) -L boards/
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
+#ASMFLAGS += -g -gtabs+
 CFLAGS += -O0 -ggdb
 LDFLAGS += -O0
 else
@@ -72,46 +95,132 @@ CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif
 
-LIBS =  
+LIBS += \
 
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
-        utils/pyhelp.c \
+	utils/pyhelp.c \
+	timeutils/timeutils.c \
+	fatfs/ff.c \
+	fatfs/option/ccsbcs.c \
+	netutils/netutils.c \
+	)
+
+SRC_HAL = $(addprefix hal/,\
+	hal_uart.c \
+	hal_uarte.c \
+	hal_spi.c \
+	hal_spie.c \
+	hal_time.c \
 	)
 
 SRC_C += \
 	main.c \
-	device/$(MCU_VARIANT_LOWER)/system_$(MCU_VARIANT_LOWER).c \
 	modpyb.c \
 	led.c \
 	mphalport.c \
 	uart.c \
+	spi.c \
 	help.c \
 	gccollect.c \
+	pin_named_pins.c \
+	modmachine.c \
+	pin.c \
+	modutime.c \
+	moduos.c \
+	fatfs_port.c \
+	builtin_open.c \
+	lexerfatfs.c \
+	modusocket.c \
+	modnetwork.c \
+
+#ifeq ($(SD), )
+
+SRC_C += \
+	device/$(MCU_VARIANT)/system_$(MCU_VARIANT).c \
 
 SRC_S = \
-	device/$(MCU_VARIANT_LOWER)/startup_$(MCU_VARIANT_LOWER).s \
+	device/$(MCU_VARIANT)/startup_$(MCU_VARIANT).s \
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
+#endif
+
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
+FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
+
+OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
+OBJ += $(BUILD)/pins_gen.o
+OBJ += $(BUILD)/$(BUILD)/frozen_mpy.o
 
 
-.phony: all flash
+$(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
+$(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
+
+.phony: all flash sd
 
 all: $(BUILD)/firmware.elf binary hex
 
 flash: $(BUILD)/firmware.elf
-	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT_LOWER)
-	nrfjprog --pinreset -f $(MCU_VARIANT_LOWER)
+	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
+	nrfjprog --pinreset -f $(MCU_VARIANT)
+
+sd:
+	nrfjprog --eraseall -f $(MCU_VARIANT)
+	nrfjprog --program $(SOFTDEV_HEX) -f $(MCU_VARIANT)
+	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
+	nrfjprog --pinreset -f $(MCU_VARIANT)
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
+# List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
+
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
+
+# Making OBJ use an order-only depenedency on the generated pins.h file
+# has the side effect of making the pins.h file before we actually compile
+# any of the objects. The normal dependency generation will deal with the
+# case when pins.h is modified. But when it doesn't exist, we don't know
+# which source files might need it.
+$(OBJ): | $(HEADER_BUILD)/pins.h
+
+# Use a pattern rule here so that make will only call make-pins.py once to make
+# both pins_$(BOARD).c and pins.h
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+
+$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+	$(call compile_c)
+
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = boards/$(BOARD)/pins.csv
+AF_FILE = $(MCU_VARIANT)_af.csv
+PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_gen.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
+# to build .mpy files from .py files
+$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
+	@$(ECHO) "MPY $<"
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $^
+
+# to build frozen_mpy.c from all .mpy files
+$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl mpz $(FROZEN_MPY_MPY_FILES) > $@
 
 include ../py/mkrules.mk
 include mkrules.mk

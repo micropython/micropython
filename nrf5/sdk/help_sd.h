@@ -27,6 +27,10 @@
 #ifndef HELP_SD_H__
 #define HELP_SD_H__
 
+#include "nrf5_sdk_conf.h"
+
+#if MICROPY_PY_BLE
+
 #define HELP_TEXT_SD \
 "If compiled with SD=<softdevice> the additional commands are\n" \
 "available:\n" \
@@ -35,4 +39,8 @@
 "  ble.advertise() -- Start advertising Eddystone beacon\n" \
 "\n"
  
+#else
+#define HELP_TEXT_SD
+#endif // MICROPY_PY_BLE
+
 #endif

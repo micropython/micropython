@@ -52,7 +52,7 @@ void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     printf("ERROR: SoftDevice assert!!!");
 }
 #endif
-uint32_t softdevice_enable(void) {
+uint32_t sd_enable(void) {
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
     memset(&nrf_nvic_state, 0, sizeof(nrf_nvic_state_t));
 #endif
@@ -108,11 +108,11 @@ uint32_t softdevice_enable(void) {
     return err_code;
 }
 
-void softdevice_disable(void) {
+void sd_disable(void) {
     sd_softdevice_disable();
 }
 
-uint8_t softdevice_enabled(void) {
+uint8_t sd_enabled(void) {
     uint8_t is_enabled;
     uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
 
@@ -123,7 +123,7 @@ uint8_t softdevice_enabled(void) {
     return is_enabled;
 }
 
-void softdevice_address_get(void) {
+void sd_address_get(void) {
     ble_gap_addr_t local_ble_addr;
 #if (BLUETOOTH_SD != 132)
     uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
@@ -157,7 +157,7 @@ void softdevice_address_get(void) {
 #define APP_CFG_NON_CONN_ADV_TIMEOUT 0 // Disable timeout.
 #define NON_CONNECTABLE_ADV_INTERVAL MSEC_TO_UNITS(100, UNIT_0_625_MS)
 
-void softdevice_advertise(void) {
+void sd_advertise(void) {
     ble_uuid_t adv_uuids[] = {{.uuid = EDDYSTONE_UUID, .type = BLE_UUID_TYPE_BLE}};
     uint8_t encoded_size;
     uint8_t uuid_encoded[2];

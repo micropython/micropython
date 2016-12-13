@@ -52,20 +52,36 @@ Reset_Handler:
 
     ldr    r1, =_sidata
     ldr    r2, =_sdata
-    ldr    r3, =_edata
+    ldr    r3, =_sbss
 
     subs   r3, r2
-    ble    LC0
+    ble    CopyDone
+    b      CopyData
 
-LC1:
-    subs   r3, 4
+CopyData:
+    subs   r3, #4
     ldr    r0, [r1,r3]
     str    r0, [r2,r3]
-    bgt    LC1
+    bgt    CopyData
 
-LC0:
+CopyDone:
+    ldr r1, =_sbss
+    ldr r2, =_ebss
+
+    movs r0, 0
+
+    subs r2, r1
+    ble ZeroDone
+
+ZeroLoop:
+    subs r2, #4
+    str r0, [r1, r2]
+    bgt ZeroLoop
+
+ZeroDone:
+
     bl     SystemInit
-    bl     main
+    bl     _start
     bx     lr
 
     .pool

@@ -8,10 +8,10 @@ MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x040000 /* entire flash, 256 KiB */
     FLASH_ISR (rx)  : ORIGIN = 0x00018000, LENGTH = 0x000400 /* sector 0, 1 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x00018400, LENGTH = 0x027c00 /* 175 KiB */
-    RAM (xrw)       : ORIGIN = 0x20002000, LENGTH = 0x002000 /* 9.89 KiB */
+    FLASH_TEXT (rx) : ORIGIN = 0x00018400, LENGTH = 0x027c00 /* 159 KiB */
+    RAM (xrw)       : ORIGIN = 0x20002000, LENGTH = 0x002000 /* 8 KiB */
 }
- 
+
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
 _minimum_heap_size = 4K;

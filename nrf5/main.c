@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,9 +40,17 @@
 #include "lib/utils/pyexec.h"
 #include "readline.h"
 #include "gccollect.h"
+#include "modmachine.h"
+#include "modnetwork.h"
 #include "led.h"
 #include "uart.h"
 #include "nrf.h"
+#include "pin.h"
+#include "spi.h"
+
+#if (BLUETOOTH_SD == 132)
+#include "nrf52_ble.h"
+#endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -69,11 +79,17 @@ int main(int argc, char **argv) {
     
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
+    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 400);
 
     led_init();
+    machine_init();
 
     gc_init(&_heap_start, &_heap_end);
+
+#if (BLUETOOTH_SD == 132)
+    nrf52_ble_init();
+#endif
+
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
@@ -81,6 +97,17 @@ int main(int argc, char **argv) {
 
     readline_init0();
 
+    pin_init0();
+#if MICROPY_PY_MACHINE_SPI
+    spi_init0();
+#endif
+
+    /*
+    extint_init0();
+    timer_init0();
+    */
+
+#if (BLUETOOTH_SD != 132)
     uart_init0();
     {
         mp_obj_t args[2] = {
@@ -89,6 +116,44 @@ int main(int argc, char **argv) {
         };
         MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
+#endif
+
+#if MICROPY_HW_HAS_SDCARD
+    // if an SD card is present then mount it on /sd/
+    if (sdcard_is_present()) {
+        // create vfs object
+        fs_user_mount_t *vfs = m_new_obj_maybe(fs_user_mount_t);
+        if (vfs == NULL) {
+            goto no_mem_for_sd;
+        }
+        vfs->str = "/sd";
+        vfs->len = 3;
+        vfs->flags = FSUSER_FREE_OBJ;
+        sdcard_init_vfs(vfs);
+
+        // put the sd device in slot 1 (it will be unused at this point)
+        MP_STATE_PORT(fs_user_mount)[1] = vfs;
+
+        FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+        if (res != FR_OK) {
+            printf("PYB: can't mount SD card\n");
+            MP_STATE_PORT(fs_user_mount)[1] = NULL;
+            m_del_obj(fs_user_mount_t, vfs);
+        } else {
+            // TODO these should go before the /flash entries in the path
+            mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+            mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
+
+			// use SD card as current directory
+			f_chdrive("/sd");
+        }
+        no_mem_for_sd:;
+    }
+#endif
+
+#if MICROPY_PY_NETWORK
+    mod_network_init();
+#endif
 
 #if MICROPY_HW_LED_TRICOLOR
     do_str("import pyb\r\n" \
@@ -133,18 +198,9 @@ void HardFault_Handler(void)
 #endif
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
-}
-
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
-
-mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void nlr_jump_fail(void *val) {
 }

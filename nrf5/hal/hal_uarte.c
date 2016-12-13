@@ -29,11 +29,20 @@
 #include "mphalport.h"
 
 #include "hal_uart.h"
+
+#ifdef HAL_UARTE_MODULE_ENABLED
+
 #include "nrf52.h"
 #include "nrf52_bitfields.h"
 
+#if NRF52
+
 #define UARTE_BASE   ((NRF_UARTE_Type *) NRF_UARTE0_BASE)
 #define UART_IRQ_NUM UARTE0_UART0_IRQn
+
+#else
+#error "Device not supported."
+#endif
 
 #define TX_BUF_SIZE 1
 #define RX_BUF_SIZE 1
@@ -41,7 +50,7 @@
 static uart_complete_cb dma_read_cb  = NULL;
 static uart_complete_cb dma_write_cb = NULL;
 
-uint32_t hal_uart_baudrate_lookup[] = {
+static const uint32_t hal_uart_baudrate_lookup[] = {
     UARTE_BAUDRATE_BAUDRATE_Baud1200,   ///< 1200 baud.
     UARTE_BAUDRATE_BAUDRATE_Baud2400,   ///< 2400 baud.
     UARTE_BAUDRATE_BAUDRATE_Baud4800,   ///< 4800 baud.
@@ -208,13 +217,18 @@ static void dma_write_complete(void) {
 }
 
 void UARTE0_UART0_IRQHandler(void) {
-    if ((UARTE_BASE->EVENTS_ENDRX) &&
-        (UARTE_BASE->INTEN & UARTE_INTENSET_ENDRX_Msk)) {
+    if ((UARTE_BASE->EVENTS_ENDRX) 
+        && (UARTE_BASE->INTEN & UARTE_INTENSET_ENDRX_Msk)) {
+        
         UARTE_BASE->EVENTS_ENDRX = 0;
         dma_read_complete();
-    } else if ((UARTE_BASE->EVENTS_ENDTX) &&
-             (UARTE_BASE->INTEN & UARTE_INTENSET_ENDTX_Msk)) {
+
+    } else if ((UARTE_BASE->EVENTS_ENDTX) 
+        && (UARTE_BASE->INTEN & UARTE_INTENSET_ENDTX_Msk)) {
+
         UARTE_BASE->EVENTS_ENDTX = 0;
         dma_write_complete();
     }
 }
+
+#endif // HAL_UARTE_MODULE_ENABLED
