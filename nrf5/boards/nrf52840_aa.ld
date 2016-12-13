@@ -1,5 +1,5 @@
 /*
-    GNU linker script for NRF52 blank w/ no SoftDevice
+    GNU linker script for NRF52840 blank w/ no SoftDevice
 */
 
 /* Specify the memory areas */
