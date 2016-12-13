@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Daniel Campora
+ * Copyrigth (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@
 #define __MICROPY_INCLUDED_LIB_NETUTILS_H__
 
 #define NETUTILS_IPV4ADDR_BUFSIZE    4
+#define NETUTILS_IPV6ADDR_BUFSIZE    16
 
 typedef enum _netutils_endian_t {
     NETUTILS_LITTLE,
@@ -46,5 +48,18 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
 // Takes an address of the form ('192.168.0.1', 8080), returns the port and
 // puts IP in out_ip (which must take at least IPADDR_BUF_SIZE bytes).
 mp_uint_t netutils_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian);
+
+// Takes an array with a raw IPv6 address and returns something like '2001:db8::abcd:ef01:2345'.
+mp_obj_t netutils_format_ipv6_addr(uint8_t *ip, netutils_endian_t endian);
+
+// Takes an array with a raw IP address, and a port, and returns a net-address
+// tuple such as ('2001:db8::abcd:ef01:2345', 8080).
+mp_obj_t netutils_format_inet6_addr(uint8_t *ip, mp_uint_t port, netutils_endian_t endian);
+
+void netutils_parse_ipv6_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian);
+
+// Takes an address of the form ('2001:db8::abcd:ef01:2345', 8080), returns the port and
+// puts IP in out_ip (which must take at least IPADDR_BUF_SIZE bytes).
+mp_uint_t netutils_parse_inet6_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian);
 
 #endif // __MICROPY_INCLUDED_LIB_NETUTILS_H__
