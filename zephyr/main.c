@@ -67,6 +67,7 @@ int real_main(void) {
     // Should be set to stack size in prj.mdef minus fuzz factor
     mp_stack_set_limit(3584);
 
+soft_reset:
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
@@ -89,7 +90,9 @@ int real_main(void) {
         }
     }
 
-    mp_deinit();
+    printf("soft reboot\n");
+    goto soft_reset;
+
     return 0;
 }
 
