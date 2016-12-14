@@ -246,7 +246,6 @@ bool start_mp(void) {
     bool cdc_enabled_before = false;
     uint32_t pattern_start = ticks_ms;
 
-    printf("result code %d %d.\r\n", result.return_code, result.exception_line);
     uint32_t total_exception_cycle = 0;
     uint8_t ones = result.exception_line % 10;
     ones += ones > 0 ? 1 : 0;
@@ -284,7 +283,6 @@ bool start_mp(void) {
             if (cdc_enabled_at_start) {
                 mp_hal_stdout_tx_str("\r\n\r\n");
             } else {
-                printf("result code %d %d.\r\n", result.return_code, result.exception_line);
                 mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
             }
             mp_hal_stdout_tx_str("Press any key to enter the REPL and disable auto-reset. Use CTRL-D to soft reset.\r\n");
