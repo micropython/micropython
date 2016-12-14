@@ -87,8 +87,8 @@ Methods
          - ``stop`` is the number of stop bits, 1 or 2.
          - ``flow`` sets the flow control type. Can be 0, ``UART.RTS``, ``UART.CTS``
            or ``UART.RTS | UART.CTS``.
-         - ``timeout`` is the timeout in milliseconds to wait for the first character.
-         - ``timeout_char`` is the timeout in milliseconds to wait between characters.
+         - ``timeout`` is the timeout in milliseconds to wait for writing/reading the first character.
+         - ``timeout_char`` is the timeout in milliseconds to wait between characters while writing or reading.
          - ``read_buf_len`` is the character length of the read buffer (0 to disable).
     
        This method will raise an exception if the baudrate could not be set within
