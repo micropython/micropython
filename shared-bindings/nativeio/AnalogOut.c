@@ -113,7 +113,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_analogout___exit___obj, 4, 4
 //|
 STATIC mp_obj_t nativeio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
    nativeio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   common_hal_nativeio_analogout_set_value(self, mp_obj_get_int(value));
+   uint32_t v = mp_obj_get_int(value);
+   if (v >= (1 << 16)) {
+       nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+           "AnalogOut is only 16 bits. Value must be less than 65536."));
+   }
+   common_hal_nativeio_analogout_set_value(self, v);
    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_analogout_set_value_obj, nativeio_analogout_obj_set_value);

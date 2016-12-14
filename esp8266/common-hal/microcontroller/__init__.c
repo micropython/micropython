@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/microcontroller/types.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
@@ -60,9 +61,6 @@ const mcu_pin_obj_t pin_## p_name = { \
     .gpio_function = p_gpio_function, \
     .peripheral = p_peripheral, \
 }
-
-#define NO_GPIO 0xff
-#define SPECIAL_CASE 0xfe
 
 // Using microcontroller names from the datasheet.
 // https://cdn-shop.adafruit.com/datasheets/ESP8266_Specifications_English.pdf

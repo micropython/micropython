@@ -47,10 +47,10 @@ void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
     struct adc_config config_adc;
     adc_get_config_defaults(&config_adc);
 
+    config_adc.reference = ADC_REFERENCE_INTVCC1;
+    config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
     config_adc.positive_input = self->pin->adc_input;
-    config_adc.resolution = ADC_RESOLUTION_CUSTOM;
-    config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_16;
-    config_adc.divide_result = ADC_DIVIDE_RESULT_16;
+    config_adc.resolution = ADC_RESOLUTION_16BIT;
     config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
 
     adc_init(&self->adc_instance, ADC, &config_adc);
@@ -81,4 +81,8 @@ uint16_t common_hal_nativeio_analogin_get_value(nativeio_analogin_obj_t *self) {
 
     adc_disable(&self->adc_instance);
     return data;
+}
+
+float common_hal_nativeio_analogin_get_reference_voltage(nativeio_analogin_obj_t *self) {
+    return 3.3f;
 }

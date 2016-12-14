@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/microcontroller/__init__.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "eagle_soc.h"
@@ -32,11 +33,16 @@
 extern volatile bool adc_in_use;
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
-    return (pin == &pin_TOUT && adc_in_use) ||
-            ((READ_PERI_REG(pin->peripheral) &
+    if (pin == &pin_TOUT) {
+        return !adc_in_use;
+    }
+    if (pin->gpio_number == NO_GPIO || pin->gpio_number == SPECIAL_CASE) {
+        return false;
+    }
+    return (READ_PERI_REG(pin->peripheral) &
                 (PERIPHS_IO_MUX_FUNC<<PERIPHS_IO_MUX_FUNC_S)) == 0 &&
              (GPIO_REG_READ(GPIO_ENABLE_ADDRESS) & (1 << pin->gpio_number)) == 0 &&
-             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0 );
+             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0;
 }
 
 void reset_pins(void) {

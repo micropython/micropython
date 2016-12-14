@@ -67,5 +67,6 @@ void common_hal_nativeio_analogout_deinit(nativeio_analogout_obj_t *self) {
 
 void common_hal_nativeio_analogout_set_value(nativeio_analogout_obj_t *self,
         uint16_t value) {
-    dac_chan_write(&self->dac_instance, DAC_CHANNEL_0, value);
+    // Input is 16 bit but we only support 10 bit so we shift the input.
+    dac_chan_write(&self->dac_instance, DAC_CHANNEL_0, value >> 6);
 }

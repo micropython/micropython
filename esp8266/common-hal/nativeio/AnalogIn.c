@@ -36,7 +36,7 @@
 
 #include "user_interface.h"
 
-volatile bool adc_in_use = false;
+volatile bool adc_in_use __attribute__((aligned(4))) = false;
 
 void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
@@ -53,4 +53,8 @@ void common_hal_nativeio_analogin_deinit(nativeio_analogin_obj_t* self) {
 uint16_t common_hal_nativeio_analogin_get_value(nativeio_analogin_obj_t *self) {
     // ADC is 10 bit so shift by 6 to make it 16-bit.
     return system_adc_read() << 6;
+}
+
+float common_hal_nativeio_analogin_get_reference_voltage(nativeio_analogin_obj_t *self) {
+    return 1.0f;
 }

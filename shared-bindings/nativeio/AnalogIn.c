@@ -50,7 +50,8 @@
 
 //| .. class:: AnalogIn(pin)
 //|
-//|   Use the AnalogIn on the given pin.
+//|   Use the AnalogIn on the given pin. The reference voltage varies by
+//|   platform so use ``reference_voltage`` to read the configured setting.
 //|
 //|   :param ~microcontroller.Pin pin: the pin to read from
 //|
@@ -126,11 +127,33 @@ mp_obj_property_t nativeio_analogin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: reference_voltage
+//|
+//|     The maximum voltage measurable. Also known as the reference voltage.
+//|
+//|     :return: the reference voltage
+//|     :rtype: float
+//|
+STATIC mp_obj_t nativeio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
+   nativeio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+   return mp_obj_new_float(common_hal_nativeio_analogin_get_reference_voltage(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin_get_reference_voltage_obj,
+                          nativeio_analogin_obj_get_reference_voltage);
+
+mp_obj_property_t nativeio_analogin_reference_voltage_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&nativeio_analogin_get_reference_voltage_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t nativeio_analogin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                 MP_ROM_PTR(&nativeio_analogin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&nativeio_analogin___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),               MP_ROM_PTR(&nativeio_analogin___exit___obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value), MP_ROM_PTR(&nativeio_analogin_value_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_value),              MP_ROM_PTR(&nativeio_analogin_value_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reference_voltage),  MP_ROM_PTR(&nativeio_analogin_reference_voltage_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(nativeio_analogin_locals_dict, nativeio_analogin_locals_dict_table);
