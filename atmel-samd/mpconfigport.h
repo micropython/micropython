@@ -123,6 +123,7 @@ extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t uheap_module;
+extern const struct _mp_obj_module_t samd_module;
 
 #if BOARD_FLASH_SIZE > 192000
     #define EXTRA_BUILTIN_MODULES \
@@ -138,6 +139,7 @@ extern const struct _mp_obj_module_t uheap_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module }, \
     EXTRA_BUILTIN_MODULES
 
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
