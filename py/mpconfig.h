@@ -867,7 +867,7 @@ typedef double mp_float_t;
 
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
-#define MICROPY_PY_SYS_EXIT (0)
+#define MICROPY_PY_SYS_EXIT (1)
 #endif
 
 // Whether to provide sys.{stdin,stdout,stderr} objects
