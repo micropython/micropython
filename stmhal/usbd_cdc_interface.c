@@ -353,7 +353,7 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
             if (*src == user_interrupt_char) {
                 char_found = true;
                 // raise exception when interrupts are finished
-                pendsv_nlr_jump(MP_STATE_PORT(mp_kbd_exception));
+                pendsv_nlr_jump(&MP_STATE_VM(mp_kbd_exception));
             } else {
                 if (char_found) {
                     *dest = *src;

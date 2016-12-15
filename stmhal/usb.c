@@ -144,7 +144,7 @@ bool usb_vcp_is_enabled(void) {
 void usb_vcp_set_interrupt_char(int c) {
     if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
         if (c != -1) {
-            mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
+            mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         }
         USBD_CDC_SetInterrupt(c);
     }
