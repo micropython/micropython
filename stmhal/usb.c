@@ -96,7 +96,7 @@ const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 };
 
 void pyb_usb_init0(void) {
-    USBD_CDC_SetInterrupt(-1, MP_STATE_PORT(mp_kbd_exception));
+    USBD_CDC_SetInterrupt(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 
@@ -146,7 +146,7 @@ void usb_vcp_set_interrupt_char(int c) {
         if (c != -1) {
             mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
         }
-        USBD_CDC_SetInterrupt(c, MP_STATE_PORT(mp_kbd_exception));
+        USBD_CDC_SetInterrupt(c);
     }
 }
 
