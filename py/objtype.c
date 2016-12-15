@@ -534,11 +534,13 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
 
+        #if MICROPY_PY_ATTRS_METHODS
         // if __getattr__ was called with attr == __setattr__  return MP_OBJ_NULL for indicate success
-        if (attr == MP_QSTR___setattr__) {
+        if (attr == MP_QSTR___setattr__ || attr == MP_QSTR___delattr__) {
             dest[0] = MP_OBJ_NULL;
             return;
         }
+        #endif
 
         mp_obj_t dest2[3];
         mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
