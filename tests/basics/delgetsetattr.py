@@ -20,9 +20,6 @@ a = A({'a':1, 'b':2})
 print(a.a, a.b)
 try:
     del a.a
-except AttributeError:
-    print("AttributeError")
-try:
     print(a.a)
 except AttributeError:
     print("AttributeError")
