@@ -61,25 +61,41 @@ STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(object___new___obj, MP_ROM_PTR(&object__
 
 #if MICROPY_PY_ATTRS_METHODS
 STATIC mp_obj_t object___setattr__(mp_obj_t self_in, mp_obj_t attr_in, mp_obj_t value) {
-    mp_map_lookup(mp_obj_dict_get_map(self_in), MP_OBJ_NEW_QSTR(mp_obj_str_get_qstr(attr_in)), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
-    return value;
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    if (type->locals_dict != NULL) {
+        mp_map_t *locals_map = &type->locals_dict->map;
+        mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(mp_obj_str_get_qstr(attr_in)), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
+        return value;
+    } else {
+        return mp_const_none;
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_3(object___setattr___obj, object___setattr__);
 
 STATIC mp_obj_t object___getattr__(mp_obj_t self_in, mp_obj_t attr_in) {
-    qstr attr = mp_obj_str_get_qstr(attr_in);
-    mp_map_elem_t *elem = mp_map_lookup(mp_obj_dict_get_map(self_in), MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-    if (elem == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            "'%s' object has no attribute '%q'",
-            mp_obj_get_type_str(self_in), attr));
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    if (type->locals_dict != NULL) {
+        mp_map_t *locals_map = &type->locals_dict->map;
+        qstr attr = mp_obj_str_get_qstr(attr_in);
+        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+        if (elem == NULL) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+                "'%s' object has no attribute '%q'",
+                mp_obj_get_type_str(self_in), attr));
+        }
+        return elem->value;
+    } else {
+        return mp_const_none;
     }
-    return elem->value;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(object___getattr___obj, object___getattr__);
 
 STATIC mp_obj_t object___delattr__(mp_obj_t self_in, mp_obj_t attr_in) {
-    mp_map_lookup(mp_obj_dict_get_map(self_in), MP_OBJ_NEW_QSTR(mp_obj_str_get_qstr(attr_in)), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    if (type->locals_dict != NULL) {
+        mp_map_t *locals_map = &type->locals_dict->map;
+        mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(mp_obj_str_get_qstr(attr_in)), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(object___delattr___obj, object___delattr__);
