@@ -446,6 +446,11 @@
 #   endif
 #endif
 
+// Whether to provide the mp_kbd_exception object
+#ifndef MICROPY_KBD_EXCEPTION
+#define MICROPY_KBD_EXCEPTION (0)
+#endif
+
 // Prefer to raise KeyboardInterrupt asynchronously (from signal or interrupt
 // handler) - if supported by a particular port.
 #ifndef MICROPY_ASYNC_KBD_INTR
