@@ -626,10 +626,39 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
 
     if (value == MP_OBJ_NULL) {
         // delete attribute
+        #if MICROPY_PY_ATTRS_METHODS
+        // try __delattr__ first
+        if (attr != MP_QSTR___delattr__) {
+            mp_obj_t attr_delattr_method[3];
+            mp_load_method_maybe(self_in, MP_QSTR___delattr__, attr_delattr_method);
+            if (attr_delattr_method[0] != MP_OBJ_NULL) {
+                // __delattr__ exists, call it and return its result
+                attr_delattr_method[2] = MP_OBJ_NEW_QSTR(attr);
+                mp_call_method_n_kw(1, 0, attr_delattr_method);
+                return true;
+            }
+        }
+        #endif
+
         mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
         return elem != NULL;
     } else {
         // store attribute
+        #if MICROPY_PY_ATTRS_METHODS
+        // try __setattr__ first
+        if (attr != MP_QSTR___setattr__) {
+            mp_obj_t attr_setattr_method[4];
+            mp_load_method_maybe(self_in, MP_QSTR___setattr__, attr_setattr_method);
+            if (attr_setattr_method[0] != MP_OBJ_NULL) {
+                // __setattr__ exists, call it and return its result
+                attr_setattr_method[2] = MP_OBJ_NEW_QSTR(attr);
+                attr_setattr_method[3] = value;
+                mp_call_method_n_kw(2, 0, attr_setattr_method);
+                return true;
+            }
+        }
+        #endif
+
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
         return true;
     }
