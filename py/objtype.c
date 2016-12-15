@@ -533,6 +533,17 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
+
+        mp_obj_type_t *type = mp_obj_get_type(self_in);
+        if (type->locals_dict != NULL) {
+            mp_map_t *locals_map = &type->locals_dict->map;
+            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            if (elem == NULL && attr == MP_QSTR___setattr__) {
+                dest[0] = MP_OBJ_NULL;
+                return;
+            }
+        }
+
         mp_obj_t dest2[3];
         mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
         if (dest2[0] != MP_OBJ_NULL) {
