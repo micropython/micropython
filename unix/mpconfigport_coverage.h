@@ -36,3 +36,4 @@
 #define MICROPY_FSUSERMOUNT            (1)
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_PY_FRAMEBUF            (1)
+#define MICROPY_PY_ATTRS_METHODS       (1)
