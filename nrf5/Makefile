@@ -114,6 +114,7 @@ SRC_HAL = $(addprefix hal/,\
 	hal_spi.c \
 	hal_spie.c \
 	hal_time.c \
+	hal_pwm.c \
 	)
 
 SRC_C += \
@@ -123,6 +124,7 @@ SRC_C += \
 	mphalport.c \
 	uart.c \
 	spi.c \
+	pwm.c \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
