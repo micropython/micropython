@@ -192,6 +192,8 @@ void HardFault_Handler(void) {
   * @retval None
   */
 void NMI_Handler(void) {
+	/* Handle CSS interrupt */
+	HAL_RCC_NMI_IRQHandler();
 }
 
 /**

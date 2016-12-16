@@ -320,6 +320,9 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
 
+  /* Protect against HSE malfunction */
+  HAL_RCC_EnableCSS();
+
     #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
   /* Enable Power Control clock */
   __PWR_CLK_ENABLE();
@@ -483,6 +486,10 @@ void SystemClock_Config(void)
 
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
 #endif
+}
+
+void HAL_RCC_CSSCallback(void) {
+	NVIC_SystemReset();
 }
 
 void HAL_MspInit(void) {
