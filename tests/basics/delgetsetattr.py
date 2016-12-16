@@ -1,8 +1,11 @@
-# test __delattr__ ,__getattr__ and __setattr__
+# test __delattr__ , __getattribute__, __getattr__ and __setattr__
 
 class A:
     def __init__(self, d):
         self.d = d
+
+    def __getattribute__(self, attr):
+        return super(A, self).__getattribute__(attr)
 
     def __getattr__(self, attr):
         if  attr in self.d:

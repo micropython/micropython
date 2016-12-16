@@ -72,23 +72,34 @@ STATIC mp_obj_t object___setattr__(mp_obj_t self_in, mp_obj_t attr_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_3(object___setattr___obj, object___setattr__);
 
-STATIC mp_obj_t object___getattr__(mp_obj_t self_in, mp_obj_t attr_in) {
+STATIC mp_obj_t object___getattribute__(mp_obj_t self_in, mp_obj_t attr_in) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     if (type->locals_dict != NULL) {
         mp_map_t *locals_map = &type->locals_dict->map;
         qstr attr = mp_obj_str_get_qstr(attr_in);
+        // check if exists into locals_dict and return its value
+        // if this fails to load the requested attr, we try if __getattr__ exists
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-                "'%s' object has no attribute '%q'",
-                mp_obj_get_type_str(self_in), attr));
+            mp_obj_t dest2[3];
+            mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
+            if (dest2[0] != MP_OBJ_NULL) {
+                // __getattr__ exists, call it and return its result
+                // if this fails to load the requested attr, we raise attribute error
+                dest2[2] = MP_OBJ_NEW_QSTR(attr);
+                return mp_call_method_n_kw(1, 0, dest2);
+            } else {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+                    "'%s' object has no attribute '%q'",
+                    mp_obj_get_type_str(self_in), attr));
+            }
         }
         return elem->value;
     } else {
         return mp_const_none;
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_2(object___getattr___obj, object___getattr__);
+MP_DEFINE_CONST_FUN_OBJ_2(object___getattribute___obj, object___getattribute__);
 
 STATIC mp_obj_t object___delattr__(mp_obj_t self_in, mp_obj_t attr_in) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
@@ -112,7 +123,7 @@ STATIC const mp_rom_map_elem_t object_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___delattr__), MP_ROM_PTR(&object___delattr___obj) },
     #endif
     #if (MICROPY_CPYTHON_COMPAT && MICROPY_PY_ATTRS_METHODS)
-    { MP_ROM_QSTR(MP_QSTR___getattr__), MP_ROM_PTR(&object___getattr___obj) },
+    { MP_ROM_QSTR(MP_QSTR___getattribute__), MP_ROM_PTR(&object___getattribute___obj) },
     #endif
     #if (MICROPY_CPYTHON_COMPAT && MICROPY_PY_ATTRS_METHODS)
     { MP_ROM_QSTR(MP_QSTR___setattr__), MP_ROM_PTR(&object___setattr___obj) },
