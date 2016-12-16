@@ -24,6 +24,4 @@
  * THE SOFTWARE.
  */
 
-#include "hal_pwm.h"
-
 extern const mp_obj_type_t machine_hard_pwm_type;
