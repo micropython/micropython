@@ -59,4 +59,11 @@
 #define MICROPY_HW_UART1_RTS        (5)
 #define MICROPY_HW_UART1_HWFC       (1)
 
+#define MICROPY_HW_PWM0_NAME        "PWM0"
+#define MICROPY_HW_PWM1_NAME        "PWM1"
+#define MICROPY_HW_PWM2_NAME        "PWM2"
+#if 0
+#define MICROPY_HW_PWM3_NAME        "PWM3"
+#endif
+
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"

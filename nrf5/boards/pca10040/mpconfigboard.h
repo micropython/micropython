@@ -64,5 +64,8 @@
 #define MICROPY_HW_SPI0_MISO        (24) // A24 (Arduino D12)
 #define MICROPY_HW_SPI0_NSS         (22) // A22 (Arduino D10)
 
+#define MICROPY_HW_PWM0_NAME        "PWM0"
+#define MICROPY_HW_PWM1_NAME        "PWM1"
+#define MICROPY_HW_PWM2_NAME        "PWM2"
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"
