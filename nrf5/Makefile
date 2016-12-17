@@ -114,8 +114,13 @@ SRC_HAL = $(addprefix hal/,\
 	hal_spi.c \
 	hal_spie.c \
 	hal_time.c \
+	)
+
+ifeq ($(MCU_VARIANT), nrf52)
+SRC_HAL += $(addprefix hal/,\
 	hal_pwm.c \
 	)
+endif
 
 SRC_C += \
 	main.c \
