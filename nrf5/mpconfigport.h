@@ -101,12 +101,17 @@
 #define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_PY_MACHINE_I2C      (0)
 
+#define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
+#define MICROPY_PY_FRAMEBUF         (0)
+
+
 #ifndef MICROPY_PY_MACHINE_SPI
 #define MICROPY_PY_MACHINE_SPI      (1)
 #endif
 
-#define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
-#define MICROPY_PY_FRAMEBUF         (0)
+#ifndef MICROPY_PY_MACHINE_PWM
+#define MICROPY_PY_MACHINE_PWM      (1)
+#endif
 
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET          (1)
