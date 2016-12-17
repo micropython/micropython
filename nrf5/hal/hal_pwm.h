@@ -31,11 +31,9 @@
 
 #include "nrf.h"
 
-#if NRF51
+// TODO: nrf51 series need Soft PWM. Not part of HAL.
 
-// TODO: create software PWM.
-
-#elif NRF52
+#if NRF52
 
 #define PWM0  ((NRF_PWM_Type *)NRF_PWM0_BASE)
 #define PWM0_IRQ_NUM PWM1_IRQn
@@ -57,5 +55,18 @@
 typedef struct {
     uint8_t pwm_pin;
 } hal_pwm_init_t;
+
+/**
+  * @brief  PWM handle Structure definition
+  */
+typedef struct __PWM_HandleTypeDef
+{
+    NRF_PWM_Type               *instance;    /* PWM registers base address */
+    hal_pwm_init_t             init;         /* PWM initialization parameters */
+} PWM_HandleTypeDef;
+
+
+void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init);
+
 
 #endif // HAL_PWM_H__
