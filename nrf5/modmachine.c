@@ -39,6 +39,7 @@
 #include "gccollect.h"
 #include "pin.h"
 #include "spi.h"
+#include "pwm.h"
 
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
@@ -163,6 +164,10 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
 #if MICROPY_PY_MACHINE_SPI
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&machine_hard_spi_type },
+#endif
+
+#if MICROPY_PY_MACHINE_PWM
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                 (mp_obj_t)&machine_hard_pwm_type },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_RESET_HARD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_WDT) },
