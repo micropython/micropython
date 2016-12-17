@@ -30,24 +30,29 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_MACHINE_PWM
+
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "pwm.h"
-#include "hal_pwm.h"
 
-#if MICROPY_PY_MACHINE_PWM
+#if NRF52
+// Use PWM hardware.
+#include "hal_pwm.h"
+#endif
 
 typedef struct _pyb_pwm_obj_t {
     mp_obj_base_t base;
     PWM_HandleTypeDef *pwm;
 } pyb_pwm_obj_t;
 
-#if MICROPY_HW_PWM0
+#ifdef MICROPY_HW_PWM0_NAME
 PWM_HandleTypeDef PWMHandle0 = {.instance = NULL};
 #endif
 
 STATIC const pyb_pwm_obj_t machine_pwm_obj[] = {
-    #if MICROPY_HW_PWM0
+    #ifdef MICROPY_HW_PWM0_NAME
     {{&machine_hard_pwm_type}, &PWMHandle0},
     #else
     {{&machine_hard_pwm_type}, NULL},
@@ -56,7 +61,7 @@ STATIC const pyb_pwm_obj_t machine_pwm_obj[] = {
 
 void pwm_init0(void) {
     // reset the PWM handles
-    #if MICROPY_HW_PWM0
+    #ifdef MICROPY_HW_PWM0_NAME
     memset(&PWMHandle0, 0, sizeof(PWM_HandleTypeDef));
     PWMHandle0.instance = PWM0;
     #endif
@@ -165,13 +170,22 @@ STATIC mp_obj_t machine_pwm_deinit(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pwm_deinit_obj, machine_pwm_deinit);
 
+STATIC mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *args) {
+	return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_pwm_freq_obj, 1, 2, machine_pwm_freq);
+
+STATIC mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_pwm_duty_obj, 1, 2, machine_pwm_duty);
+
 STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pwm_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_pwm_deinit_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&mp_machine_pwm_start_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&mp_machine_pwm_stop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&mp_machine_pwm_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&mp_machine_pwm_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&mp_machine_pwm_duty_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
