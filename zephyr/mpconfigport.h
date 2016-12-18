@@ -48,7 +48,6 @@
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (0)
 #define MICROPY_PY_BUILTINS_REVERSED (0)
 #define MICROPY_PY_BUILTINS_SET     (0)
-#define MICROPY_PY_BUILTINS_SLICE   (0)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_CMATH            (0)
