@@ -53,17 +53,6 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
-// TODO(tannewt): Remove these default files in favor a very simple README with
-// a url to all of the files that ship on boards.
-
-static const char fresh_code_txt[] =
-"# code.txt -- put your code here!\r\n"
-;
-
-static const char fresh_readme_txt[] =
-"https://learn.adafruit.com/category/micropython\r\n"
-;
-
 extern void flash_init_vfs(fs_user_mount_t *vfs);
 
 // we don't make this function static because it needs a lot of stack and we
@@ -91,10 +80,7 @@ void init_flash_fs(void) {
         vfs->flags &= ~FSUSER_USB_WRITEABLE;
 
         res = f_mkfs("/flash", 0, 0);
-        if (res == FR_OK) {
-            // success creating fresh LFS
-        } else {
-            printf("PYB: can't create flash filesystem\n");
+        if (res != FR_OK) {
             MP_STATE_PORT(fs_user_mount)[0] = NULL;
             return;
         }
@@ -102,27 +88,10 @@ void init_flash_fs(void) {
         // set label
         f_setlabel("MICROPYTHON");
 
-        // create empty code.txt
-        FIL fp;
-        f_open(&fp, "/flash/code.txt", FA_WRITE | FA_CREATE_ALWAYS);
-        UINT n;
-        f_write(&fp, fresh_code_txt, sizeof(fresh_code_txt) - 1 /* don't count null terminator */, &n);
-        f_close(&fp);
-
-        // TODO(tannewt): Create an .inf driver file for Windows.
-
-        // create readme file
-        f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
-        f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
-        f_close(&fp);
-
         if (usb_writeable) {
             vfs->flags |= FSUSER_USB_WRITEABLE;
         }
-    } else if (res == FR_OK) {
-        // mount successful
-    } else {
-        printf("PYB: can't mount flash\n");
+    } else if (res != FR_OK) {
         MP_STATE_PORT(fs_user_mount)[0] = NULL;
         return;
     }
@@ -242,8 +211,9 @@ bool start_mp(void) {
     #endif
 
     // Wait for connection or character.
-    new_status_color(ALL_DONE);
     bool cdc_enabled_before = false;
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    new_status_color(ALL_DONE);
     uint32_t pattern_start = ticks_ms;
 
     uint32_t total_exception_cycle = 0;
@@ -267,6 +237,7 @@ bool start_mp(void) {
     if (result.return_code == PYEXEC_EXCEPTION) {
         total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
     }
+    #endif
     while (true) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
@@ -292,6 +263,7 @@ bool start_mp(void) {
         }
         cdc_enabled_before = mp_cdc_enabled;
 
+        #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
         uint32_t tick_diff = ticks_ms - pattern_start;
         if (result.return_code != PYEXEC_EXCEPTION) {
             // All is good. Ramp ALL_DONE up and down.
@@ -366,6 +338,9 @@ bool start_mp(void) {
                 new_status_color(BLACK);
             }
         }
+        #else
+        (void) found_main; // Pretend to use found_main so the compiler doesn't complain.
+        #endif
     }
 }
 

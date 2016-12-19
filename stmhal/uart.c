@@ -28,13 +28,13 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "py/ioctl.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "uart.h"
-#include "pybioctl.h"
 #include "irq.h"
 
 //TODO: Add UART7/8 support for MCU_SERIES_F7
@@ -563,7 +563,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         self->read_buf_len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
         self->read_buf = m_new(byte, self->read_buf_len << self->char_width);
         __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
-        HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_UART, IRQ_SUBPRI_UART); 
+        HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_UART, IRQ_SUBPRI_UART);
         HAL_NVIC_EnableIRQ(self->irqn);
     }
 

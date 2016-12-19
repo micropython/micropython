@@ -125,12 +125,12 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
                              &config_spi_master.pinmux_pad3};
     *pinmuxes[clock_pad] = clock_pinmux;
     self->clock_pin = clock->pin;
-    self->MOSI_pin = 0;
+    self->MOSI_pin = NO_PIN;
     if (!mosi_none) {
         *pinmuxes[mosi_pad] = mosi_pinmux;
         self->MOSI_pin = mosi->pin;
     }
-    self->MISO_pin = 0;
+    self->MISO_pin = NO_PIN;
     if (!miso_none) {
         *pinmuxes[miso_pad] = miso_pinmux;
         self->MISO_pin = miso->pin;

@@ -26,12 +26,12 @@
 
 #include <stdio.h>
 
+#include "py/ioctl.h"
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "pybioctl.h"
 
 // Flags for poll()
 #define FLAG_ONESHOT (1)

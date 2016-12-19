@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "py/ioctl.h"
 #include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
@@ -36,7 +37,6 @@
 #include "py/mphal.h"
 #include "bufhelper.h"
 #include "can.h"
-#include "pybioctl.h"
 #include "irq.h"
 
 #if MICROPY_HW_ENABLE_CAN

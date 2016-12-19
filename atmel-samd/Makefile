@@ -106,7 +106,7 @@ CFLAGS_CORTEX_M0 = \
 	-DSYSTICK_MODE \
 	-DEXTINT_CALLBACK_MODE=true \
 	-DUDD_ENABLE \
-	-DUSART_CALLBACK_MODE=true \
+	-DUSART_CALLBACK_MODE=false \
 	-DSPI_CALLBACK_MODE=false \
 	-DI2C_MASTER_CALLBACK_MODE=false \
 	-DDAC_CALLBACK_MODE=false \
@@ -155,7 +155,6 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/sercom/sercom_interrupt.c \
 	drivers/sercom/spi/spi.c \
 	drivers/sercom/usart/usart.c \
-	drivers/sercom/usart/usart_interrupt.c \
 	drivers/system/clock/clock_samd21_r21_da/clock.c \
 	drivers/system/clock/clock_samd21_r21_da/gclk.c \
 	drivers/system/interrupt/system_interrupt.c   \
@@ -219,6 +218,7 @@ SRC_BINDINGS = \
 	nativeio/I2C.c \
 	nativeio/PWMOut.c \
 	nativeio/SPI.c \
+	nativeio/UART.c \
 	neopixel_write/__init__.c \
 	time/__init__.c
 

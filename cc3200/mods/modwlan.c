@@ -29,6 +29,7 @@
 #include "std.h"
 
 #include "simplelink.h"
+#include "py/ioctl.h"
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/objstr.h"
@@ -45,7 +46,6 @@
 #include "modnetwork.h"
 #include "modusocket.h"
 #include "modwlan.h"
-#include "pybioctl.h"
 #include "pybrtc.h"
 #include "debug.h"
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
@@ -1511,4 +1511,3 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
     }
     return ret;
 }
-
