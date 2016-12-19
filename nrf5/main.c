@@ -47,6 +47,7 @@
 #include "nrf.h"
 #include "pin.h"
 #include "spi.h"
+#include "pwm.h"
 
 #if (BLUETOOTH_SD == 132)
 #include "nrf52_ble.h"
@@ -98,8 +99,13 @@ int main(int argc, char **argv) {
     readline_init0();
 
     pin_init0();
+
 #if MICROPY_PY_MACHINE_SPI
     spi_init0();
+#endif
+
+#if MICROPY_PY_MACHINE_PWM
+    pwm_init0();
 #endif
 
     /*
