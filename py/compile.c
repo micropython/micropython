@@ -3419,6 +3419,12 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
             comp->emit = NULL;
             comp->emit_inline_asm_method_table = &ASM_EMITTER(method_table);
             compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
+            #if MICROPY_EMIT_INLINE_XTENSA
+            // Xtensa requires an extra pass to compute size of l32r const table
+            // TODO this can be improved by calculating it during SCOPE pass
+            // but that requires some other structural changes to the asm emitters
+            compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
+            #endif
             if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope_inline_asm(comp, s, MP_PASS_EMIT);
             }
