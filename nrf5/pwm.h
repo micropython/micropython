@@ -24,4 +24,6 @@
  * THE SOFTWARE.
  */
 
+void pwm_init0(void);
+
 extern const mp_obj_type_t machine_hard_pwm_type;
