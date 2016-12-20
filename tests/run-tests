@@ -99,6 +99,7 @@ def run_micropython(pyb, args, test_file):
                                              stderr=subprocess.STDOUT, bufsize=0)
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
+                        send_get(b'\x04') # exit the REPL, so coverage info is saved
                         p.kill()
                         os.close(master)
                         os.close(slave)
