@@ -629,7 +629,13 @@ STATIC mp_obj_t esp_flash_size(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
 STATIC mp_obj_t esp_flash_user_start(void) {
-    return MP_OBJ_NEW_SMALL_INT(0x90000);
+    if ((*(uint32_t*)0x40200000 & 0xff00) == 0x100) {
+        // If there's just 1 loadable segment at the start of flash,
+        // we assume there's a yaota8266 bootloader.
+        return MP_OBJ_NEW_SMALL_INT(0x3c000 + 0x90000);
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(0x90000);
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
