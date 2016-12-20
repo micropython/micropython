@@ -17,3 +17,16 @@ try:
 except TypeError:
     print("got TypeError from downstream!")
 
+def gen3():
+    try:
+        yield 123
+    except GeneratorExit:
+        print('got GeneratorExit from upstream!')
+    yield 456
+        
+g3 = gen3()
+print(next(g3))
+try:
+    g3.throw(StopIteration)
+except StopIteration:
+    print('got StopIteration from downstream!')
