@@ -20,3 +20,5 @@ for val in f(3):
 #print(gen.__next__())
 #print(gen.__next__())
 #print(gen.__next__())
+
+print(repr(f(0))[0:17])

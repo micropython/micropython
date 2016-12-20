@@ -85,3 +85,17 @@ try:
     print(next(g))
 except StopIteration:
     print("StopIteration")
+
+# yield on close
+def gen7():
+    try:
+        yield 123
+    except GeneratorExit:
+        yield 456
+
+g = gen7()
+print(next(g))
+try:
+    g.close()
+except RuntimeError:
+    print('RuntimeError')
