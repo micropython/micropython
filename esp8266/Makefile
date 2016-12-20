@@ -117,6 +117,7 @@ SRC_COMMON_HAL = \
 	nativeio/PWMOut.c \
 	nativeio/SPI.c \
 	nativeio/TouchIn.c \
+	nativeio/UART.c \
 	neopixel_write/__init__.c \
 	time/__init__.c \
 	board/__init__.c
