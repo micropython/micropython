@@ -27,6 +27,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/nativeio/UART.h"
 
+#include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
@@ -275,6 +276,9 @@ size_t common_hal_nativeio_uart_read(nativeio_uart_obj_t *self, uint8_t *data, s
             total_read++;
             start_ticks = ticks_ms;
         }
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
     }
     if (total_read == 0) {
         *errcode = MP_EAGAIN;
@@ -312,6 +316,9 @@ size_t common_hal_nativeio_uart_write(nativeio_uart_obj_t *self, const uint8_t *
                 ok = true;
                 break;
             }
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
         }
 
         if (!ok) {
@@ -343,6 +350,9 @@ size_t common_hal_nativeio_uart_write(nativeio_uart_obj_t *self, const uint8_t *
                 ok = true;
                 break;
             }
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
         }
     }
 
