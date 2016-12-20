@@ -197,8 +197,9 @@ SRC_C = \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
-	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
+	lib/utils/pyhelp.c \
+	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c
 
@@ -236,6 +237,7 @@ SRC_BINDINGS_EXPANDED += common-hal/nativeio/TouchIn.c
 endif
 
 SRC_SHARED_MODULE = \
+	help.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/SPI.c \

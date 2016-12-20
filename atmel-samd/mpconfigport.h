@@ -5,6 +5,8 @@
 
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 
+#define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
+
 // options to control how Micro Python is built
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
@@ -77,14 +79,13 @@
 
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
-#define MICROPY_MODULE_WEAK_LINKS   (1)
+#define MICROPY_MODULE_WEAK_LINKS   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_USE_INTERNAL_PRINTF (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_IO_FILEIO        (1)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
@@ -109,6 +110,7 @@ typedef long mp_off_t;
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // board specific definitions
@@ -125,10 +127,13 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t uheap_module;
 extern const struct _mp_obj_module_t samd_module;
 
+// Internal flash size dependent settings.
 #if BOARD_FLASH_SIZE > 192000
+    #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
 #else
+    #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
     #define EXTRA_BUILTIN_MODULES
 #endif
 

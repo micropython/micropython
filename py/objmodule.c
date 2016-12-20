@@ -225,7 +225,7 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #endif
 };
 
-STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
+MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
 void mp_module_init(void) {
     mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
