@@ -201,6 +201,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(MAKE) LDSCRIPT=esp8266_512k.ld CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_512k.h>"' MICROPY_FATFS=0 MICROPY_PY_BTREE=0
 
 ota:
+	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
 	$(MAKE) LDSCRIPT=esp8266_ota.ld
 
 #MAKE_PINS = boards/make-pins.py
