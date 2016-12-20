@@ -51,9 +51,25 @@
 #error "Device not supported."
 #endif
 
+/**
+  * @brief  PWM frequency type definition
+  */
+typedef enum {
+    HAL_PWM_FREQ_16Mhz = 0,
+    HAL_PWM_FREQ_8Mhz,
+    HAL_PWM_FREQ_4Mhz,
+    HAL_PWM_FREQ_2Mhz,
+    HAL_PWM_FREQ_1Mhz,
+    HAL_PWM_FREQ_500khz,
+    HAL_PWM_FREQ_250khz,
+    HAL_PWM_FREQ_125khz
+} hal_pwm_freq_t;
 
 typedef struct {
     uint8_t pwm_pin;
+    hal_pwm_freq_t freq;
+    uint8_t duty;
+    uint16_t period;
 } hal_pwm_init_t;
 
 /**
@@ -68,5 +84,10 @@ typedef struct __PWM_HandleTypeDef
 
 void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init);
 
+void hal_pwm_freq_set(NRF_PWM_Type * p_instance, uint16_t freq);
+
+void hal_pwm_period_set(NRF_PWM_Type * p_instance, uint16_t period);
+
+void hal_pwm_duty_set(NRF_PWM_Type * p_instance, uint8_t duty);
 
 #endif // HAL_PWM_H__

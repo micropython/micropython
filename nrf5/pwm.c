@@ -108,7 +108,10 @@ STATIC void pwm_print(const mp_print_t *print, PWM_HandleTypeDef *pwm, bool lega
 // for make_new
 enum {
     ARG_NEW_id,
-    ARG_NEW_pin
+    ARG_NEW_pin,
+    ARG_NEW_freq,
+    ARG_NEW_period,
+    ARG_NEW_duty,
 };
 
 // for init
@@ -116,16 +119,25 @@ enum {
     ARG_INIT_pin
 };
 
+// for freq
+enum {
+    ARG_FREQ_freq
+};
+
 STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args);
 STATIC void machine_hard_pwm_init(mp_obj_t self, mp_arg_val_t *args);
 STATIC void machine_hard_pwm_deinit(mp_obj_t self);
+STATIC mp_obj_t machine_hard_pwm_freq(mp_obj_t self, mp_arg_val_t *args);
 
 /* common code for both soft and hard implementations *************************/
 
 STATIC mp_obj_t machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
-        { MP_QSTR_pin,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} }
+        { MP_QSTR_pin,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_period,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_duty,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
@@ -170,10 +182,29 @@ STATIC mp_obj_t machine_pwm_deinit(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pwm_deinit_obj, machine_pwm_deinit);
 
-STATIC mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *args) {
-	return mp_const_none;
+STATIC mp_obj_t machine_pwm_freq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_freq, MP_ARG_INT, {.u_int = -1} },
+    };
+
+    mp_obj_t self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (mp_obj_get_type(self) == &machine_hard_pwm_type) {
+        machine_hard_pwm_freq(self, args);
+    } else {
+        // soft pwm
+    }
+
+    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_pwm_freq_obj, 1, 2, machine_pwm_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mp_machine_pwm_freq_obj, 1, machine_pwm_freq);
+
+STATIC mp_obj_t machine_pwm_period(size_t n_args, const mp_obj_t *args) {
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_pwm_period_obj, 1, 2, machine_pwm_period);
 
 STATIC mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
@@ -185,7 +216,16 @@ STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_pwm_deinit_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&mp_machine_pwm_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&mp_machine_pwm_period_obj) },
     { MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&mp_machine_pwm_duty_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_16MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_16Mhz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_8MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_8Mhz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_4MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_4Mhz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_2MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_2Mhz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_1MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_1Mhz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_500KHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_500khz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_250KHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_250khz) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_125KHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_125khz) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
@@ -211,16 +251,33 @@ STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args) {
     int pwm_id = pwm_find(args[ARG_NEW_id].u_obj);
     const machine_hard_pwm_obj_t *self = &machine_hard_pwm_obj[pwm_id];
 
-    hal_pwm_init_t pwm_init_conf;
-
-    // here we would check the sck/mosi/miso pins and configure them
+    // check if PWM pin is set
     if (args[ARG_NEW_pin].u_obj != MP_OBJ_NULL) {
-        pwm_init_conf.pwm_pin = mp_obj_get_int(args[ARG_NEW_pin].u_obj);
+        self->pyb->pwm->init.pwm_pin = mp_obj_get_int(args[ARG_NEW_pin].u_obj);
     } else {
         // TODO: raise exception.
     }
-    
-    hal_pwm_init(self->pyb->pwm->instance, &pwm_init_conf);
+
+    if (args[ARG_NEW_freq].u_obj != MP_OBJ_NULL) {
+        self->pyb->pwm->init.freq = mp_obj_get_int(args[ARG_NEW_freq].u_obj);
+    } else {
+        self->pyb->pwm->init.freq = 50; // 50 Hz by default.
+    }
+
+    if (args[ARG_NEW_period].u_obj != MP_OBJ_NULL) {
+        self->pyb->pwm->init.period = mp_obj_get_int(args[ARG_NEW_period].u_obj);
+    } else {
+	    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                  "PWM period has to be within 16000 frequence cycles", self->pyb->pwm->init.period));
+    }
+
+    if (args[ARG_NEW_duty].u_obj != MP_OBJ_NULL) {
+        self->pyb->pwm->init.duty = mp_obj_get_int(args[ARG_NEW_duty].u_obj);
+    } else {
+        self->pyb->pwm->init.duty = 50; // 50% by default.
+    }
+
+    hal_pwm_init(self->pyb->pwm->instance, &self->pyb->pwm->init);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -232,6 +289,20 @@ STATIC void machine_hard_pwm_deinit(mp_obj_t self_in) {
     machine_hard_pwm_obj_t *self = self_in;
     pwm_deinit(self->pyb->pwm);
 }
+
+STATIC mp_obj_t machine_hard_pwm_freq(mp_obj_t self_in, mp_arg_val_t *args) {
+    machine_hard_pwm_obj_t *self = self_in;
+
+    if (args[ARG_FREQ_freq].u_int != -1) {
+	    self->pyb->pwm->init.freq = args[ARG_FREQ_freq].u_int;
+        hal_pwm_init(self->pyb->pwm->instance, &self->pyb->pwm->init);
+	} else {
+        return MP_OBJ_NEW_SMALL_INT(self->pyb->pwm->init.freq);
+    }
+
+    return mp_const_none;
+}
+
 
 const mp_obj_type_t machine_hard_pwm_type = {
     { &mp_type_type },

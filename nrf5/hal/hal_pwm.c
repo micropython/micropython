@@ -35,10 +35,22 @@
 #define PWM_COUNTER_TOP 16000 // 16MHz divided by 16000-> 1ms
 
 volatile uint16_t g_pwm_seq[4];
+volatile uint16_t g_pwm_period;
+
+static const uint32_t hal_pwm_frequency_lookup[] = {
+    PWM_PRESCALER_PRESCALER_DIV_1, // 16MHz
+    PWM_PRESCALER_PRESCALER_DIV_2, // 8MHz
+    PWM_PRESCALER_PRESCALER_DIV_4, // 4MHz
+    PWM_PRESCALER_PRESCALER_DIV_8, // 2MHz
+    PWM_PRESCALER_PRESCALER_DIV_16, // 1MHz
+    PWM_PRESCALER_PRESCALER_DIV_32, // 500kHz
+    PWM_PRESCALER_PRESCALER_DIV_64, // 250kHz
+    PWM_PRESCALER_PRESCALER_DIV_128 // 125kHz
+};
 
 void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init) {
-
-    uint16_t duty_cycle = ((PWM_COUNTER_TOP*50)/100);
+    g_pwm_period = p_pwm_init->period;
+    uint16_t duty_cycle = ((g_pwm_period * p_pwm_init->duty)/100);
 
     g_pwm_seq[0] = duty_cycle;
     g_pwm_seq[1] = duty_cycle;
@@ -50,8 +62,8 @@ void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init) 
 
     p_instance->ENABLE      = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
     p_instance->MODE        = (PWM_MODE_UPDOWN_Up << PWM_MODE_UPDOWN_Pos);
-    p_instance->PRESCALER   = (PWM_PRESCALER_PRESCALER_DIV_1 << PWM_PRESCALER_PRESCALER_Pos);
-    p_instance->COUNTERTOP  = (PWM_COUNTER_TOP << PWM_COUNTERTOP_COUNTERTOP_Pos); //1 msec
+    p_instance->PRESCALER   = (hal_pwm_frequency_lookup[p_pwm_init->freq] << PWM_PRESCALER_PRESCALER_Pos);
+    p_instance->COUNTERTOP  = (p_pwm_init->period << PWM_COUNTERTOP_COUNTERTOP_Pos);
     p_instance->LOOP        = (PWM_LOOP_CNT_Disabled << PWM_LOOP_CNT_Pos);
     p_instance->DECODER     = (PWM_DECODER_LOAD_Individual << PWM_DECODER_LOAD_Pos)
                             | (PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
@@ -61,6 +73,36 @@ void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init) 
     p_instance->SEQ[0].REFRESH    = 0;
     p_instance->SEQ[0].ENDDELAY   = 0;
     p_instance->TASKS_SEQSTART[0] = 1;
+}
+
+void hal_pwm_start(NRF_PWM_Type * p_instance) {
+    // p_instance->TASKS_SEQSTART[0] = 1;
+}
+
+void hal_pwm_stop(NRF_PWM_Type * p_instance) {
+    // p_instance->TASKS_STOP = 1;
+}
+
+void hal_pwm_freq_set(NRF_PWM_Type * p_instance, uint16_t freq) {
+#if 0
+    p_instance->PRESCALER = (hal_pwm_frequency_lookup[freq] << PWM_PRESCALER_PRESCALER_Pos);
+#endif
+}
+
+void hal_pwm_period_set(NRF_PWM_Type * p_instance, uint16_t period) {
+#if 0
+    g_pwm_period = period;
+    p_instance->COUNTERTOP = (g_pwm_period << PWM_COUNTERTOP_COUNTERTOP_Pos);
+#endif
+}
+
+void hal_pwm_duty_set(NRF_PWM_Type * p_instance, uint8_t duty) {
+#if 0
+    uint16_t duty_cycle = ((g_pwm_period * duty)/100);
+
+    g_pwm_seq[0] = duty_cycle;
+    g_pwm_seq[1] = duty_cycle;
+#endif
 }
 
 #endif // HAL_PWM_MODULE_ENABLED
