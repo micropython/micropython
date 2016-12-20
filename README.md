@@ -1,6 +1,6 @@
-# Adafruit MicroPython
+# Adafruit CircuitPython
 
-[![Build Status](https://travis-ci.org/adafruit/micropython.svg?branch=master)](https://travis-ci.org/adafruit/micropython)
+[![Build Status](https://travis-ci.org/adafruit/circuitpython.svg?branch=master)](https://travis-ci.org/adafruit/circuitpython)
 
 This is an open source derivative of [MicroPython](http://www.micropython.org)
 for use on educational development boards designed and sold by Adafruit
@@ -11,19 +11,19 @@ As a MicroPython derivative, this implements Python 3.x on microcontrollers such
 as the SAMD21 and ESP8266.
 
 ## Project Status
-This project is in beta and the APIs will change in the near future.
+This project is in beta. Most APIs should be stable going forward.
 
 ## Documentation
 
-Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [MicroPython category](https://learn.adafruit.com/category/micropython). An API reference is also available on [Read the Docs](http://adafruit-micropython.readthedocs.io/en/latest/?).
+Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython). An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io/en/latest/?).
 
 ## Contributing
-See [CONTRIBUTING.md](https://github.com/adafruit/micropython/blob/master/CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md)
 for full guidelines but please be aware that by contributing to this project you
 are agreeing to the
-[Code of Conduct](https://github.com/adafruit/micropython/blob/master/CODE_OF_CONDUCT.md).
+[Code of Conduct](https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md).
 Contributors who follow the
-[Code of Conduct](https://github.com/adafruit/micropython/blob/master/CODE_OF_CONDUCT.md)
+[Code of Conduct](https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md)
 are welcome to submit pull requests and they will be promptly reviewed by
 project admins.
 
@@ -31,7 +31,7 @@ project admins.
 Here is an overview of the top-level directories.
 
 ### Core
-The core of MicroPython is code shared amongst ports.
+The core code of MicroPython is shared amongst ports including CircuitPython:
 - `docs` High level user documentation in Sphinx reStructuredText format.
 - `drivers` External device drivers written in Python.
 - `examples` A few example Python scripts.
@@ -63,4 +63,4 @@ based on the board.
 - `windows` Support for [Windows](https://www.microsoft.com/en-us/windows/).
 - `zephyr` Support for [Zephyr](https://www.zephyrproject.org/), a real-time operating system by the Linux Foundation.
 
-This derivative only maintains the `atmel-samd` and `esp8266` ports. The rest are here to maintain compatibility with the [MicroPython](https://github.com/micropython/micropython) parent project.
+CircuitPython only maintains the `atmel-samd` and `esp8266` ports. The rest are here to maintain compatibility with the [MicroPython](https://github.com/micropython/micropython) parent project.

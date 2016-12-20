@@ -32,9 +32,9 @@ extern const mp_map_t mp_builtin_module_map;
 
 void shared_module_help(void) {
     mp_printf(&mp_plat_print,
-        "Welcome to Adafruit MicroPython " MICROPY_GIT_TAG "!\r\n"
+        "Welcome to Adafruit CircuitPython " MICROPY_GIT_TAG "!\r\n"
         "\r\n"
-        "Please visit learn.adafruit.com/category/micropython for project guides.\r\n"
+        "Please visit learn.adafruit.com/category/circuitpython for project guides.\r\n"
         "\r\n"
         "Built in modules:\r\n");
     for (int i = 0; i < mp_builtin_module_map.used; i++) {

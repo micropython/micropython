@@ -1,7 +1,7 @@
-Adafruit MicroPython API Reference
+Adafruit CircuitPython API Reference
 ========================================
 
-Welcome! This is the documentation for Adafruit MicroPython. It is an open
+Welcome! This is the documentation for Adafruit CircuitPython. It is an open
 source derivative of `MicroPython <https://micropython.org>`_ for use on
 educational development boards designed and sold by `Adafruit
 <https://adafruit.com>`_ including the `Arduino Zero
@@ -10,10 +10,8 @@ educational development boards designed and sold by `Adafruit
 <https://www.adafruit.com/products/2821>`_ and `Adafruit Feather M0 Bluefruit LE
 <https://www.adafruit.com/products/2995>`_.
 
-Adafruit's MicroPython port features a unified Python APIs available under
-`!shared-bindings` and a growing list of drivers that work with it. Currently
-only the Atmel SAMD21 port is supported but ESP8266 support will be added in the
-near future.
+Adafruit CircuitPython features unified Python hardware APIs available under
+`!shared-bindings` and a growing list of drivers that work with it.
 
 `Adafruit <https://adafruit.com>`_ has many excellent tutorials available
 through the `Adafruit Learning System <https://learn.adafruit.com/>`_. These
