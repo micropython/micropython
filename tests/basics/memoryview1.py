@@ -6,6 +6,7 @@ m = memoryview(b)
 print(len(m))
 print(m[0], m[1], m[-1])
 print(list(m))
+print(list(memoryview(m))) # get buffer from read only memoryview
 
 # test writing to bytes
 try:
@@ -78,3 +79,8 @@ try:
     m4[1:3] = m2[1:3]
 except ValueError:
     print("ValueError")
+
+try:
+    memoryview(array.array('i'))[0:2] = b'1234' # invalid assignment on RHS
+except ValueError:
+    print('ValueError')
