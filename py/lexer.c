@@ -792,7 +792,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     mp_lexer_next_token_into(lex, false);
 }
 
-#if MICROPY_DEBUG_PRINTERS
+#if 0
+// This function is used to print the current token and should only be
+// needed to debug the lexer, so it's not available via a config option.
 void mp_lexer_show_token(const mp_lexer_t *lex) {
     printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:%zu", lex->tok_line, lex->tok_column, lex->tok_kind, lex->vstr.buf, lex->vstr.len);
     if (lex->vstr.len > 0) {
