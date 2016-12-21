@@ -132,6 +132,7 @@ extern const struct _mp_obj_module_t samd_module;
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
+    #define EXPRESS_BOARD
 #else
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
     #define EXTRA_BUILTIN_MODULES

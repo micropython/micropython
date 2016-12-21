@@ -126,6 +126,7 @@ mp_obj_property_t nativeio_touchin_value_obj = {
 STATIC const mp_rom_map_elem_t nativeio_touchin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_touchin___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_touchin___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&nativeio_touchin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_touchin_deinit_obj) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), MP_ROM_PTR(&nativeio_touchin_value_obj)},

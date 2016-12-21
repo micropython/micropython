@@ -89,9 +89,9 @@ freq_hop_sel_t selfcap_freq_hops[3u] = {DEF_SELFCAP_HOP_FREQS};
  * the elements of this structure.  DO NOT modify any of the input values
  * directly in this structure.
  */
-static touch_selfcap_config_t selfcap_config = {
-    DEF_SELFCAP_NUM_CHANNELS,           /* Self Cap number of channels. */
-    DEF_SELFCAP_NUM_SENSORS,            /* Self Cap number of sensors. */
+touch_selfcap_config_t selfcap_config = {
+    0,           /* Self Cap number of channels. */
+    0,                                  /* Self Cap number of sensors. */
     DEF_SELFCAP_NUM_ROTORS_SLIDERS,     /* Self Cap number of rotors and
                                          * sliders. */
 
@@ -181,7 +181,8 @@ touch_config_t touch_config = {
     DEF_TOUCH_PTC_ISR_LVL,          /* PTC interrupt level. */
 };
 
-bool ptc_initialized = false;
+nativeio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
+
 void common_hal_nativeio_touchin_construct(nativeio_touchin_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (!pin->has_touch) {
@@ -189,50 +190,78 @@ void common_hal_nativeio_touchin_construct(nativeio_touchin_obj_t* self,
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have touch capabilities", pin->name));
     }
 
-    touch_ret_t status;
-    if (!ptc_initialized) {
-        /* Setup and enable generic clock source for PTC module. */
-        struct system_gclk_chan_config gclk_chan_conf;
-        system_gclk_chan_get_config_defaults(&gclk_chan_conf);
-        gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
-        system_gclk_chan_set_config(PTC_GCLK_ID, &gclk_chan_conf);
-        system_gclk_chan_enable(PTC_GCLK_ID);
-        system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_PTC);
+    if (selfcap_config.num_channels > 0) {
+        // Deinit the touch sensor, we're going to reinitialize it.
+        touch_selfcap_sensors_deinit();
 
-        /* Initialize touch library for Self Cap operation. */
-        status = touch_selfcap_sensors_init_with_rs_table(&touch_config,
-                PRIV_SELFCAP_RS_TABLE_INIT, PRIV_NM_TABLE_INIT,
-                PRIV_FREQ_AUTO_TUNE_CHK, PRIV_MOIS_TOLERANCE_CHK);
-        if (status != TOUCH_SUCCESS) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch init failed (%d)", status));
+        // Remove holes in the active list from sensors that may have been
+        // disabled.
+        int first_hole = -1;
+        for (int i = 0; i < selfcap_config.num_channels; i++) {
+            if (active_touchin_obj[i] == NULL && first_hole == -1) {
+                first_hole = i;
+            } else if (active_touchin_obj[i] != NULL && first_hole != -1) {
+                active_touchin_obj[first_hole] = active_touchin_obj[i];
+                first_hole = i;
+            }
         }
-        ptc_initialized = true;
-    }
-    // Map Y line to channel. Boards can switch the order.
-    int channel;
-    for (channel = 0; channel < DEF_SELFCAP_NUM_CHANNELS; channel++) {
-        if (selfcap_y_nodes[channel] == Y(pin->touch_y_line)) {
-            break;
+        if (first_hole > -1) {
+            selfcap_config.num_channels = first_hole;
+            selfcap_config.num_sensors = first_hole;
         }
     }
-    if (channel == DEF_SELFCAP_NUM_CHANNELS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin %q on this board does not have touch capabilities", pin->name));
-    }
-    status = touch_selfcap_sensor_config(SENSOR_TYPE_KEY, channel, channel,
-            NO_AKS_GROUP, 10u, HYST_25, RES_8_BIT, &self->sensor_id);
+
+    // Add our sensor to the end of the list.
+    self->pin = pin;
+    selfcap_y_nodes[selfcap_config.num_channels++] = Y(pin->touch_y_line);
+    active_touchin_obj[selfcap_config.num_sensors++] = self;
+
+    /* Setup and enable generic clock source for PTC module. */
+    struct system_gclk_chan_config gclk_chan_conf;
+    system_gclk_chan_get_config_defaults(&gclk_chan_conf);
+    gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
+    system_gclk_chan_set_config(PTC_GCLK_ID, &gclk_chan_conf);
+    system_gclk_chan_enable(PTC_GCLK_ID);
+    system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_PTC);
+
+    touch_ret_t status;
+    /* Initialize touch library for Self Cap operation. */
+    status = touch_selfcap_sensors_init_with_rs_table(&touch_config,
+            PRIV_SELFCAP_RS_TABLE_INIT, PRIV_NM_TABLE_INIT,
+            PRIV_FREQ_AUTO_TUNE_CHK, PRIV_MOIS_TOLERANCE_CHK);
     if (status != TOUCH_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch pad config failed (%d)", status));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch init failed (%d)", status));
+    }
+    for (int i = 0; i < selfcap_config.num_channels; i++) {
+        status = touch_selfcap_sensor_config(SENSOR_TYPE_KEY, i, i,
+            NO_AKS_GROUP, 10u, HYST_25, RES_8_BIT, &active_touchin_obj[i]->sensor_id);
+        if (status != TOUCH_SUCCESS) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch pad config failed (%d)", status));
+        }
     }
     status = touch_selfcap_sensors_calibrate(AUTO_TUNE_RSEL);
     if (status != TOUCH_SUCCESS) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch pad calibration failed (%d)", status));
     }
 
-    self->pin = pin;
+    // Run a measurement to get calibrated.
+    common_hal_nativeio_touchin_get_value(self);
 }
 
+// This may get called twice, once on exit or deinit and once from the finaliser
+// (__del__). We need the finaliser to reduce the chance of us writing to memory
+// we no longer own because we keep track of Python pointers in active_touchin_obj.
 void common_hal_nativeio_touchin_deinit(nativeio_touchin_obj_t* self) {
     touch_selfcap_sensor_disable(self->sensor_id);
+    // Remove ourselves from the list of active objects. We don't change the
+    // selfcap settings at all because we don't want to reinit now. Instead,
+    // we'll collect blank spots later on reinit.
+    for (int i = 0; i < DEF_SELFCAP_NUM_CHANNELS; i++) {
+        if (active_touchin_obj[i] == self) {
+            active_touchin_obj[i] = NULL;
+            break;
+        }
+    }
 }
 
 volatile bool touch_read_ready = false;
@@ -263,6 +292,9 @@ bool common_hal_nativeio_touchin_get_value(nativeio_touchin_obj_t *self) {
 
         while(!touch_read_ready && ticks_ms - start_ticks < 1000) {
             // wait
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
         }
     }
 
@@ -270,5 +302,5 @@ bool common_hal_nativeio_touchin_get_value(nativeio_touchin_obj_t *self) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Touch read failed"));
     }
 
-    return (p_selfcap_measure_data->p_sensor_states[self->sensor_id / 8] & (1 << (self->sensor_id % 8))) == 1;
+    return (p_selfcap_measure_data->p_sensor_states[self->sensor_id / 8] & (1 << (self->sensor_id % 8))) != 0;
 }

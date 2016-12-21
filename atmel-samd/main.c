@@ -22,7 +22,8 @@
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
-#ifdef SPI_FLASH_SECTOR_SIZE
+#ifdef EXPRESS_BOARD
+#include "common-hal/nativeio/types.h"
 #include "QTouch/touch_api_ptc.h"
 #endif
 
@@ -128,7 +129,10 @@ void reset_mp(void) {
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 }
 
-extern bool ptc_initialized;
+#ifdef EXPRESS_BOARD
+extern nativeio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
+extern touch_selfcap_config_t selfcap_config;
+#endif
 void reset_samd21(void) {
     // Reset all SERCOMs except the one being used by the SPI flash.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
@@ -146,9 +150,13 @@ void reset_samd21(void) {
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
 
-#ifdef SPI_FLASH_SECTOR_SIZE
+#ifdef EXPRESS_BOARD
     touch_selfcap_sensors_deinit();
-    ptc_initialized = false;
+    for (int i = 0; i < selfcap_config.num_channels; i++) {
+        active_touchin_obj[i] = NULL;
+    }
+    selfcap_config.num_channels = 0;
+    selfcap_config.num_sensors = 0;
 #endif
 
     struct system_pinmux_config config;
