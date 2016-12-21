@@ -114,6 +114,7 @@
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
+#define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
