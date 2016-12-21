@@ -1,9 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
  * Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +25,43 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
 
-#if MICROPY_PY_UHEAPQ
+#if MICROPY_PY_UTIMEQ
 
 #define MODULO MICROPY_PY_UTIME_TICKS_PERIOD
 
+#define DEBUG 0
+
 // the algorithm here is modelled on CPython's heapq.py
 
-STATIC mp_obj_list_t *get_heap(mp_obj_t heap_in) {
-    if (!MP_OBJ_IS_TYPE(heap_in, &mp_type_list)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "heap must be a list"));
-    }
+struct qentry {
+    mp_uint_t time;
+    mp_obj_t callback;
+    mp_obj_t args;
+};
+
+typedef struct _mp_obj_utimeq_t {
+    mp_obj_base_t base;
+    mp_uint_t alloc;
+    mp_uint_t len;
+    struct qentry items[];
+} mp_obj_utimeq_t;
+
+
+STATIC mp_obj_utimeq_t *get_heap(mp_obj_t heap_in) {
     return MP_OBJ_TO_PTR(heap_in);
 }
 
-STATIC bool time_less_than(mp_obj_t item, mp_obj_t parent) {
-    if (!MP_OBJ_IS_TYPE(item, &mp_type_tuple) || !MP_OBJ_IS_TYPE(parent, &mp_type_tuple)) {
-        mp_raise_TypeError("");
-    }
-    mp_obj_tuple_t *item_p = MP_OBJ_TO_PTR(item);
-    mp_obj_tuple_t *parent_p = MP_OBJ_TO_PTR(parent);
-    mp_uint_t item_tm = MP_OBJ_SMALL_INT_VALUE(item_p->items[0]);
-    mp_uint_t parent_tm = MP_OBJ_SMALL_INT_VALUE(parent_p->items[0]);
+STATIC bool time_less_than(struct qentry *item, struct qentry *parent) {
+    mp_uint_t item_tm = item->time;
+    mp_uint_t parent_tm = parent->time;
     mp_uint_t res = parent_tm - item_tm;
     if ((mp_int_t)res < 0) {
         res += MODULO;
@@ -58,19 +69,25 @@ STATIC bool time_less_than(mp_obj_t item, mp_obj_t parent) {
     return res < (MODULO / 2);
 }
 
-STATIC void heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uint_t pos, bool timecmp) {
-    mp_obj_t item = heap->items[pos];
+STATIC mp_obj_t utimeq_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_uint_t alloc = mp_obj_get_int(args[0]);
+    mp_obj_utimeq_t *o = m_new_obj_var(mp_obj_utimeq_t, struct qentry, alloc);
+    o->base.type = type;
+    memset(o->items, 0, sizeof(*o->items) * alloc);
+    o->alloc = alloc;
+    o->len = 0;
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC void heap_siftdown(mp_obj_utimeq_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
+    struct qentry item = heap->items[pos];
     while (pos > start_pos) {
         mp_uint_t parent_pos = (pos - 1) >> 1;
-        mp_obj_t parent = heap->items[parent_pos];
-        bool lessthan;
-        if (MP_UNLIKELY(timecmp)) {
-            lessthan = time_less_than(item, parent);
-        } else {
-            lessthan = (mp_binary_op(MP_BINARY_OP_LESS, item, parent) == mp_const_true);
-        }
+        struct qentry *parent = &heap->items[parent_pos];
+        bool lessthan = time_less_than(&item, parent);
         if (lessthan) {
-            heap->items[pos] = parent;
+            heap->items[pos] = *parent;
             pos = parent_pos;
         } else {
             break;
@@ -79,19 +96,14 @@ STATIC void heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uint_t po
     heap->items[pos] = item;
 }
 
-STATIC void heap_siftup(mp_obj_list_t *heap, mp_uint_t pos, bool timecmp) {
+STATIC void heap_siftup(mp_obj_utimeq_t *heap, mp_uint_t pos) {
     mp_uint_t start_pos = pos;
     mp_uint_t end_pos = heap->len;
-    mp_obj_t item = heap->items[pos];
+    struct qentry item = heap->items[pos];
     for (mp_uint_t child_pos = 2 * pos + 1; child_pos < end_pos; child_pos = 2 * pos + 1) {
         // choose right child if it's <= left child
         if (child_pos + 1 < end_pos) {
-            bool lessthan;
-            if (MP_UNLIKELY(timecmp)) {
-                lessthan = time_less_than(heap->items[child_pos], heap->items[child_pos + 1]);
-            } else {
-                lessthan = (mp_binary_op(MP_BINARY_OP_LESS, heap->items[child_pos], heap->items[child_pos + 1]) == mp_const_true);
-            }
+            bool lessthan = time_less_than(&heap->items[child_pos], &heap->items[child_pos + 1]);
             if (!lessthan) {
                 child_pos += 1;
             }
@@ -101,51 +113,92 @@ STATIC void heap_siftup(mp_obj_list_t *heap, mp_uint_t pos, bool timecmp) {
         pos = child_pos;
     }
     heap->items[pos] = item;
-    heap_siftdown(heap, start_pos, pos, timecmp);
+    heap_siftdown(heap, start_pos, pos);
 }
 
 STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     mp_obj_t heap_in = args[0];
-    mp_obj_list_t *heap = get_heap(heap_in);
-    mp_obj_list_append(heap_in, args[1]);
-    bool is_timeq = (n_args > 2 && args[2] == mp_const_true);
-    heap_siftdown(heap, 0, heap->len - 1, is_timeq);
+    mp_obj_utimeq_t *heap = get_heap(heap_in);
+    if (heap->len == heap->alloc) {
+        mp_raise_msg(&mp_type_IndexError, "queue overflow");
+    }
+    mp_uint_t l = heap->len;
+    heap->items[l].time = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    heap->items[l].callback = args[2];
+    heap->items[l].args = args[3];
+    heap_siftdown(heap, 0, heap->len);
+    heap->len++;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 2, 3, mod_utimeq_heappush);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 4, 4, mod_utimeq_heappush);
 
-STATIC mp_obj_t mod_utimeq_heappop(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t heap_in = args[0];
-    mp_obj_list_t *heap = get_heap(heap_in);
+STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
+    mp_obj_utimeq_t *heap = get_heap(heap_in);
     if (heap->len == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
     }
-    mp_obj_t item = heap->items[0];
+    mp_obj_list_t *ret = MP_OBJ_TO_PTR(list_ref);
+    if (!MP_OBJ_IS_TYPE(list_ref, &mp_type_list) || ret->len < 3) {
+        mp_raise_TypeError("");
+    }
+
+    struct qentry *item = &heap->items[0];
+    ret->items[0] = MP_OBJ_NEW_SMALL_INT(item->time);
+    ret->items[1] = item->callback;
+    ret->items[2] = item->args;
     heap->len -= 1;
     heap->items[0] = heap->items[heap->len];
-    heap->items[heap->len] = MP_OBJ_NULL; // so we don't retain a pointer
+    heap->items[heap->len].callback = MP_OBJ_NULL; // so we don't retain a pointer
+    heap->items[heap->len].args = MP_OBJ_NULL;
     if (heap->len) {
-        bool is_timeq = (n_args > 1 && args[1] == mp_const_true);
-        heap_siftup(heap, 0, is_timeq);
-    }
-    return item;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappop_obj, 1, 2, mod_utimeq_heappop);
-
-STATIC mp_obj_t mod_utimeq_heapify(mp_obj_t heap_in) {
-    mp_obj_list_t *heap = get_heap(heap_in);
-    for (mp_uint_t i = heap->len / 2; i > 0;) {
-        heap_siftup(heap, --i, false);
+        heap_siftup(heap, 0);
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_heapify_obj, mod_utimeq_heapify);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
+
+#if DEBUG
+STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
+    mp_obj_utimeq_t *heap = get_heap(heap_in);
+    for (int i = 0; i < heap->len; i++) {
+        printf(UINT_FMT "\t%p\t%p(%p)\n", heap->items[i].time,
+            MP_OBJ_TO_PTR(heap->items[i].callback), MP_OBJ_TO_PTR(heap->items[i].args));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_dump_obj, mod_utimeq_dump);
+#endif
+
+STATIC mp_obj_t utimeq_unary_op(mp_uint_t op, mp_obj_t self_in) {
+    mp_obj_utimeq_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (op) {
+        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
+        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
+        default: return MP_OBJ_NULL; // op not supported
+    }
+}
+
+STATIC const mp_rom_map_elem_t utimeq_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&mod_utimeq_heappush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&mod_utimeq_heappop_obj) },
+    #if DEBUG
+    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_utimeq_dump_obj) },
+    #endif
+};
+
+STATIC MP_DEFINE_CONST_DICT(utimeq_locals_dict, utimeq_locals_dict_table);
+
+STATIC const mp_obj_type_t utimeq_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_utimeq,
+    .make_new = utimeq_make_new,
+    .unary_op = utimeq_unary_op,
+    .locals_dict = (void*)&utimeq_locals_dict,
+};
 
 STATIC const mp_rom_map_elem_t mp_module_utimeq_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utimeq) },
-    { MP_ROM_QSTR(MP_QSTR_heappush), MP_ROM_PTR(&mod_utimeq_heappush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_heappop), MP_ROM_PTR(&mod_utimeq_heappop_obj) },
-    { MP_ROM_QSTR(MP_QSTR_heapify), MP_ROM_PTR(&mod_utimeq_heapify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&utimeq_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_utimeq_globals, mp_module_utimeq_globals_table);
@@ -155,4 +208,4 @@ const mp_obj_module_t mp_module_utimeq = {
     .globals = (mp_obj_dict_t*)&mp_module_utimeq_globals,
 };
 
-#endif //MICROPY_PY_UHEAPQ
+#endif //MICROPY_PY_UTIMEQ
