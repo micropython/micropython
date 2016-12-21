@@ -87,6 +87,12 @@ try:
 except TypeError:
     print("TypeError")
 
+# small int on LHS, float on RHS, unsupported op
+try:
+    print(1 | 1.0)
+except TypeError:
+    print('TypeError')
+
 # can't convert list to float
 try:
     float([])

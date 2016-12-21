@@ -75,6 +75,12 @@ try:
 except TypeError:
     print("TypeError")
 
+#small int on LHS, complex on RHS, unsupported op
+try:
+    print(1 | 1j)
+except TypeError:
+    print('TypeError')
+
 # zero division
 try:
     1j / 0
