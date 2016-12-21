@@ -430,7 +430,8 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                         vstr_add_char(&lex->vstr, '\\');
                     } else {
                         switch (c) {
-                            case MP_LEXER_EOF: break; // TODO a proper error message?
+                            // note: "c" can never be MP_LEXER_EOF because next_char
+                            // always inserts a newline at the end of the input stream
                             case '\n': c = MP_LEXER_EOF; break; // backslash escape the newline, just ignore it
                             case '\\': break;
                             case '\'': break;
