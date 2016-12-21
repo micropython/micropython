@@ -126,10 +126,6 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
     // make the function, depending on the raw code kind
     mp_obj_t fun;
     switch (rc->kind) {
-        case MP_CODE_BYTECODE:
-        no_other_choice:
-            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.bytecode, rc->data.u_byte.const_table);
-            break;
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
             fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->data.u_native.fun_data, rc->data.u_native.const_table);
@@ -144,9 +140,10 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             break;
         #endif
         default:
-            // raw code was never set (this should not happen)
-            assert(0);
-            goto no_other_choice; // to help flow control analysis
+            // rc->kind should always be set and BYTECODE is the only remaining case
+            assert(rc->kind == MP_CODE_BYTECODE);
+            fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->data.u_byte.bytecode, rc->data.u_byte.const_table);
+            break;
     }
 
     // check for generator functions and if so wrap in generator object
