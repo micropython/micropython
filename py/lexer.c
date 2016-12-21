@@ -128,10 +128,6 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
 }
 
 STATIC void next_char(mp_lexer_t *lex) {
-    if (lex->chr0 == MP_LEXER_EOF) {
-        return;
-    }
-
     if (lex->chr0 == '\n') {
         // a new line
         ++lex->line;
