@@ -99,3 +99,28 @@ try:
     g.close()
 except RuntimeError:
     print('RuntimeError')
+
+class Iter:
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return 1
+
+    def close(self):
+        print('close')
+
+def gen8():
+    g = reversed([2,1])
+    yield from g
+
+def gen9():
+    yield from Iter()
+
+g = gen8()
+print(next(g))
+g.close() # throw GeneratorExit to yield from iterator
+
+g = gen9()
+print(next(g))
+g.close() # throw GeneratorExit to yield from iterator with close method
