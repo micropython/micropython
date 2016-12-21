@@ -117,6 +117,7 @@ STATIC void heap_siftup(mp_obj_utimeq_t *heap, mp_uint_t pos) {
 }
 
 STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
     mp_obj_t heap_in = args[0];
     mp_obj_utimeq_t *heap = get_heap(heap_in);
     if (heap->len == heap->alloc) {
