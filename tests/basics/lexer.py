@@ -19,6 +19,10 @@ print(eval("1\r"))
 print(eval("12\r"))
 print(eval("123\r"))
 
+# backslash used to escape a line-break in a string
+print('a\
+b')
+
 # lots of indentation
 def a(x):
  if x:

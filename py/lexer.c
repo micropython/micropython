@@ -431,7 +431,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                     } else {
                         switch (c) {
                             case MP_LEXER_EOF: break; // TODO a proper error message?
-                            case '\n': c = MP_LEXER_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                            case '\n': c = MP_LEXER_EOF; break; // backslash escape the newline, just ignore it
                             case '\\': break;
                             case '\'': break;
                             case '"': break;
