@@ -54,13 +54,7 @@
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
-    mp_hal_gpio_clock_enable(MICROPY_HW_USRSW_PIN.gpio);
-    GPIO_InitTypeDef init;
-    init.Pin = MICROPY_HW_USRSW_PIN.pin_mask;
-    init.Mode = GPIO_MODE_INPUT;
-    init.Pull = MICROPY_HW_USRSW_PULL;
-    init.Speed = GPIO_SPEED_FAST;
-    HAL_GPIO_Init(MICROPY_HW_USRSW_PIN.gpio, &init);
+    mp_hal_pin_config(&MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
 }
 
 int switch_get(void) {
