@@ -133,13 +133,7 @@ STATIC void led_pwm_init(int led) {
     const led_pwm_config_t *pwm_cfg = &led_pwm_config[led - 1];
 
     // GPIO configuration
-    GPIO_InitTypeDef gpio_init;
-    gpio_init.Pin = led_pin->pin_mask;
-    gpio_init.Mode = GPIO_MODE_AF_PP;
-    gpio_init.Speed = GPIO_SPEED_FAST;
-    gpio_init.Pull = GPIO_NOPULL;
-    gpio_init.Alternate = pwm_cfg->alt_func;
-    HAL_GPIO_Init(led_pin->gpio, &gpio_init);
+    mp_hal_pin_config(led_pin, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, pwm_cfg->alt_func);
 
     // TIM configuration
     switch (pwm_cfg->tim_id) {
