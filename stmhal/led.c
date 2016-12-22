@@ -148,7 +148,7 @@ STATIC void led_pwm_init(int led) {
         case 3: __TIM3_CLK_ENABLE(); break;
         default: assert(0);
     }
-    TIM_HandleTypeDef tim;
+    TIM_HandleTypeDef tim = {0};
     tim.Instance = pwm_cfg->tim;
     tim.Init.Period = LED_PWM_TIM_PERIOD - 1;
     tim.Init.Prescaler = timer_get_source_freq(pwm_cfg->tim_id) / 1000000 - 1; // TIM runs at 1MHz
