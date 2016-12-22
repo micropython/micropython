@@ -81,30 +81,25 @@ static SD_HandleTypeDef sd_handle;
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
 
 void sdcard_init(void) {
-    GPIO_InitTypeDef GPIO_Init_Structure;
-
     // invalidate the sd_handle
     sd_handle.Instance = NULL;
 
     // configure SD GPIO
     // we do this here an not in HAL_SD_MspInit because it apparently
     // makes it more robust to have the pins always pulled high
-    GPIO_Init_Structure.Mode = GPIO_MODE_AF_PP;
-    GPIO_Init_Structure.Pull = GPIO_PULLUP;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Alternate = GPIO_AF12_SDIO;
-    GPIO_Init_Structure.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
-    HAL_GPIO_Init(GPIOC, &GPIO_Init_Structure);
-    GPIO_Init_Structure.Pin = GPIO_PIN_2;
-    HAL_GPIO_Init(GPIOD, &GPIO_Init_Structure);
+    // Note: the mp_hal_pin_config function will configure the GPIO in
+    // fast mode which can do up to 50MHz.  This should be plenty for SDIO
+    // which clocks up to 25MHz maximum.
+    mp_hal_pin_config(&pin_C8, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C9, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C10, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
 
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
-    GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
-    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Pin = MICROPY_HW_SDCARD_DETECT_PIN.pin_mask;
-    HAL_GPIO_Init(MICROPY_HW_SDCARD_DETECT_PIN.gpio, &GPIO_Init_Structure);
+    mp_hal_pin_config(&MICROPY_HW_SDCARD_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_SDCARD_DETECT_PULL, 0);
 }
 
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
