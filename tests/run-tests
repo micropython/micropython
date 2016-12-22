@@ -208,6 +208,7 @@ def run_tests(pyb, tests, args):
 
     upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
     has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
+    has_coverage = run_micropython(pyb, args, 'feature_check/coverage.py') == b'coverage\n'
     cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
 
@@ -224,6 +225,9 @@ def run_tests(pyb, tests, args):
         skip_tests.add('float/int_big_float.py')
         skip_tests.add('float/true_value.py')
         skip_tests.add('float/types.py')
+
+    if not has_coverage:
+        skip_tests.add('cmdline/cmd_parsetree.py')
 
     # Some tests shouldn't be run on a PC
     if pyb is None:
