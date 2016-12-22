@@ -55,9 +55,9 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define MP_HAL_PIN_MODE_ANALOG          (3)
 #define MP_HAL_PIN_MODE_OPEN_DRAIN      (5)
 #define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN  (6)
-#define MP_HAL_PIN_PULL_NONE            (0)
-#define MP_HAL_PIN_PULL_UP              (1)
-#define MP_HAL_PIN_PULL_DOWN            (2)
+#define MP_HAL_PIN_PULL_NONE            (GPIO_NOPULL)
+#define MP_HAL_PIN_PULL_UP              (GPIO_PULLUP)
+#define MP_HAL_PIN_PULL_DOWN            (GPIO_PULLDOWN)
 
 #define mp_hal_pin_obj_t const pin_obj_t*
 #define mp_hal_get_pin_obj(o)   pin_find(o)
