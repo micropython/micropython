@@ -102,6 +102,7 @@
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
+#define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
