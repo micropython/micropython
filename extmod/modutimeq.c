@@ -66,7 +66,7 @@ STATIC bool time_less_than(struct qentry *item, struct qentry *parent) {
     if ((mp_int_t)res < 0) {
         res += MODULO;
     }
-    return res < (MODULO / 2);
+    return res && res < (MODULO / 2);
 }
 
 STATIC mp_obj_t utimeq_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
