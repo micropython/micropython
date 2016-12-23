@@ -162,7 +162,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
 STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
     mp_obj_utimeq_t *heap = get_heap(heap_in);
     for (int i = 0; i < heap->len; i++) {
-        printf(UINT_FMT "\t%p\t%p(%p)\n", heap->items[i].time,
+        printf(UINT_FMT "\t%p\t%p\n", heap->items[i].time,
             MP_OBJ_TO_PTR(heap->items[i].callback), MP_OBJ_TO_PTR(heap->items[i].args));
     }
     return mp_const_none;
