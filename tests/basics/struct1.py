@@ -1,7 +1,13 @@
 try:
     import ustruct as struct
 except:
-    import struct
+    try:
+        import struct
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
+
 print(struct.calcsize("<bI"))
 print(struct.unpack("<bI", b"\x80\0\0\x01\0"))
 print(struct.calcsize(">bI"))

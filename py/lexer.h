@@ -172,7 +172,6 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t 
 
 void mp_lexer_free(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);
-void mp_lexer_show_token(const mp_lexer_t *lex);
 
 /******************************************************************/
 // platform specific import function; must be implemented for a specific port

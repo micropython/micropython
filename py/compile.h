@@ -36,7 +36,7 @@ enum {
     MP_EMIT_OPT_BYTECODE,
     MP_EMIT_OPT_NATIVE_PYTHON,
     MP_EMIT_OPT_VIPER,
-    MP_EMIT_OPT_ASM_THUMB,
+    MP_EMIT_OPT_ASM,
 };
 
 // the compiler will raise an exception if an error occurred

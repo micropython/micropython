@@ -1,7 +1,12 @@
-# Test adhoc extension to uheapq to support wraparound
-# time (utime.ticks_ms() style) task queue.
-from utime import ticks_add, ticks_diff
-import uheapq as heapq
+# Test for utimeq module which implements task queue with support for
+# wraparound time (utime.ticks_ms() style).
+try:
+    from utime import ticks_add, ticks_diff
+    from utimeq import utimeq
+except ImportError:
+    print("SKIP")
+    import sys
+    sys.exit()
 
 DEBUG = 0
 
@@ -16,33 +21,37 @@ else:
         pass
 
 # Try not to crash on invalid data
-h = []
-heapq.heappush(h, 1)
+h = utimeq(10)
 try:
-    heapq.heappush(h, 2, True)
+    h.push(1)
     assert False
 except TypeError:
     pass
 
-heapq.heappush(h, 2)
 try:
-    heapq.heappop(h, True)
+    h.pop(1)
     assert False
-except TypeError:
+except IndexError:
     pass
 
 
 def pop_all(h):
     l = []
     while h:
-        l.append(heapq.heappop(h, True))
+        item = [0, 0, 0]
+        h.pop(item)
+        #print("!", item)
+        l.append(tuple(item))
     dprint(l)
     return l
 
 def add(h, v):
-    heapq.heappush(h, (v, None), True)
+    h.push(v, 0, 0)
+    dprint("-----")
+    #h.dump()
+    dprint("-----")
 
-h = []
+h = utimeq(10)
 add(h, 0)
 add(h, MAX)
 add(h, MAX - 1)
@@ -56,7 +65,7 @@ for i in range(len(l) - 1):
     assert diff > 0
 
 def edge_case(edge, offset):
-    h = []
+    h = utimeq(10)
     add(h, ticks_add(0, offset))
     add(h, ticks_add(edge, offset))
     dprint(h)

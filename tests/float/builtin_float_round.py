@@ -13,5 +13,5 @@ for i in range(11):
     print(round((i - 5) / 2))
 
 # test second arg
-# TODO uPy currently only supports second arg being 0
-print(round(1.4, 0))
+for i in range(-1, 3):
+    print(round(1.47, i))

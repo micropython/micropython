@@ -183,6 +183,14 @@ STATIC mp_obj_t os_rename(mp_obj_t path_in, mp_obj_t path_out) {
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
     FRESULT res = f_rename(old_path, new_path);
+    if (res == FR_EXIST) {
+        // if new_path exists then try removing it
+        res = f_unlink(new_path);
+        if (res == FR_OK) {
+            // try to rename again
+            res = f_rename(old_path, new_path);
+        }
+    }
     switch (res) {
         case FR_OK:
             return mp_const_none;

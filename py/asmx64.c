@@ -116,132 +116,55 @@
 #define UNSIGNED_FIT32(x) (((x) & 0xffffffff00000000) == 0)
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 
-struct _asm_x64_t {
-    uint pass;
-    mp_uint_t code_offset;
-    mp_uint_t code_size;
-    byte *code_base;
-    byte dummy_data[8];
-
-    mp_uint_t max_num_labels;
-    mp_uint_t *label_offsets;
-    int num_locals;
-};
-
-asm_x64_t *asm_x64_new(mp_uint_t max_num_labels) {
-    asm_x64_t *as;
-
-    as = m_new0(asm_x64_t, 1);
-    as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(mp_uint_t, max_num_labels);
-
-    return as;
-}
-
-void asm_x64_free(asm_x64_t *as, bool free_code) {
-    if (free_code) {
-        MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
-    }
-    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
-    m_del_obj(asm_x64_t, as);
-}
-
-void asm_x64_start_pass(asm_x64_t *as, uint pass) {
-    if (pass == ASM_X64_PASS_COMPUTE) {
-        // reset all labels
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
-    } if (pass == ASM_X64_PASS_EMIT) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
-        if (as->code_base == NULL) {
-            assert(0);
-        }
-        //printf("code_size: %u\n", as->code_size);
-    }
-    as->pass = pass;
-    as->code_offset = 0;
-}
-
-void asm_x64_end_pass(asm_x64_t *as) {
-    // could check labels are resolved...
-    (void)as;
-}
-
-// all functions must go through this one to emit bytes
-STATIC byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int num_bytes_to_write) {
-    //printf("emit %d\n", num_bytes_to_write);
-    if (as->pass < ASM_X64_PASS_EMIT) {
-        as->code_offset += num_bytes_to_write;
-        return as->dummy_data;
-    } else {
-        assert(as->code_offset + num_bytes_to_write <= as->code_size);
-        byte *c = as->code_base + as->code_offset;
-        as->code_offset += num_bytes_to_write;
-        return c;
-    }
-}
-
-mp_uint_t asm_x64_get_code_pos(asm_x64_t *as) {
-    return as->code_offset;
-}
-
-mp_uint_t asm_x64_get_code_size(asm_x64_t *as) {
-    return as->code_size;
-}
-
-void *asm_x64_get_code(asm_x64_t *as) {
-    return as->code_base;
+static inline byte *asm_x64_get_cur_to_write_bytes(asm_x64_t *as, int n) {
+    return mp_asm_base_get_cur_to_write_bytes(&as->base, n);
 }
 
 STATIC void asm_x64_write_byte_1(asm_x64_t *as, byte b1) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 1);
-    c[0] = b1;
+    if (c != NULL) {
+        c[0] = b1;
+    }
 }
 
 STATIC void asm_x64_write_byte_2(asm_x64_t *as, byte b1, byte b2) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 2);
-    c[0] = b1;
-    c[1] = b2;
+    if (c != NULL) {
+        c[0] = b1;
+        c[1] = b2;
+    }
 }
 
 STATIC void asm_x64_write_byte_3(asm_x64_t *as, byte b1, byte b2, byte b3) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 3);
-    c[0] = b1;
-    c[1] = b2;
-    c[2] = b3;
+    if (c != NULL) {
+        c[0] = b1;
+        c[1] = b2;
+        c[2] = b3;
+    }
 }
 
 STATIC void asm_x64_write_word32(asm_x64_t *as, int w32) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 4);
-    c[0] = IMM32_L0(w32);
-    c[1] = IMM32_L1(w32);
-    c[2] = IMM32_L2(w32);
-    c[3] = IMM32_L3(w32);
+    if (c != NULL) {
+        c[0] = IMM32_L0(w32);
+        c[1] = IMM32_L1(w32);
+        c[2] = IMM32_L2(w32);
+        c[3] = IMM32_L3(w32);
+    }
 }
 
 STATIC void asm_x64_write_word64(asm_x64_t *as, int64_t w64) {
     byte* c = asm_x64_get_cur_to_write_bytes(as, 8);
-    c[0] = IMM32_L0(w64);
-    c[1] = IMM32_L1(w64);
-    c[2] = IMM32_L2(w64);
-    c[3] = IMM32_L3(w64);
-    c[4] = IMM64_L4(w64);
-    c[5] = IMM64_L5(w64);
-    c[6] = IMM64_L6(w64);
-    c[7] = IMM64_L7(w64);
-}
-
-// align must be a multiple of 2
-void asm_x64_align(asm_x64_t* as, mp_uint_t align) {
-    // TODO fill unused data with NOPs?
-    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
-}
-
-void asm_x64_data(asm_x64_t* as, mp_uint_t bytesize, mp_uint_t val) {
-    byte *c = asm_x64_get_cur_to_write_bytes(as, bytesize);
-    // machine is little endian
-    for (uint i = 0; i < bytesize; i++) {
-        *c++ = val;
-        val >>= 8;
+    if (c != NULL) {
+        c[0] = IMM32_L0(w64);
+        c[1] = IMM32_L1(w64);
+        c[2] = IMM32_L2(w64);
+        c[3] = IMM32_L3(w64);
+        c[4] = IMM64_L4(w64);
+        c[5] = IMM64_L5(w64);
+        c[6] = IMM64_L6(w64);
+        c[7] = IMM64_L7(w64);
     }
 }
 
@@ -440,7 +363,7 @@ void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r
 // src_i64 is stored as a full word in the code, and aligned to machine-word boundary
 void asm_x64_mov_i64_to_r64_aligned(asm_x64_t *as, int64_t src_i64, int dest_r64) {
     // mov instruction uses 2 bytes for the instruction, before the i64
-    while (((as->code_offset + 2) & (WORD_SIZE - 1)) != 0) {
+    while (((as->base.code_offset + 2) & (WORD_SIZE - 1)) != 0) {
         asm_x64_nop(as);
     }
     asm_x64_mov_i64_to_r64(as, src_i64, dest_r64);
@@ -552,27 +475,14 @@ void asm_x64_setcc_r8(asm_x64_t *as, int jcc_type, int dest_r8) {
     asm_x64_write_byte_3(as, OPCODE_SETCC_RM8_A, OPCODE_SETCC_RM8_B | jcc_type, MODRM_R64(0) | MODRM_RM_REG | MODRM_RM_R64(dest_r8));
 }
 
-void asm_x64_label_assign(asm_x64_t *as, mp_uint_t label) {
-    assert(label < as->max_num_labels);
-    if (as->pass < ASM_X64_PASS_EMIT) {
-        // assign label offset
-        assert(as->label_offsets[label] == (mp_uint_t)-1);
-        as->label_offsets[label] = as->code_offset;
-    } else {
-        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
-        //printf("l%d: (at %ld=%ld)\n", label, as->label_offsets[label], as->code_offset);
-        assert(as->label_offsets[label] == as->code_offset);
-    }
-}
-
 STATIC mp_uint_t get_label_dest(asm_x64_t *as, mp_uint_t label) {
-    assert(label < as->max_num_labels);
-    return as->label_offsets[label];
+    assert(label < as->base.max_num_labels);
+    return as->base.label_offsets[label];
 }
 
 void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     if (dest != (mp_uint_t)-1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump
@@ -594,7 +504,7 @@ void asm_x64_jmp_label(asm_x64_t *as, mp_uint_t label) {
 
 void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     if (dest != (mp_uint_t)-1 && rel < 0) {
         // is a backwards jump, so we know the size of the jump on the first pass
         // calculate rel assuming 8 bit relative jump

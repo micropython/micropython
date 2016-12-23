@@ -121,6 +121,12 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
     FRESULT res = f_rename(old_path, new_path);
+    if (res == FR_EXIST) {
+        // if new_path exists then try removing it (but only if it's a file)
+        fat_vfs_remove_internal(path_out, 0); // 0 == file attribute
+        // try to rename again
+        res = f_rename(old_path, new_path);
+    }
     if (res == FR_OK) {
         return mp_const_none;
     } else {

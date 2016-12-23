@@ -27,33 +27,29 @@
 // A9 is used for USB VBUS detect, and A10 is used for USB_FS_ID.
 // UART1 is also on PB6/7 but PB6 is tied to the Audio SCL line.
 // Without board modifications, this makes UART1 unusable on this board.
-#define MICROPY_HW_UART1_PORT (GPIOA)
-#define MICROPY_HW_UART1_PINS (GPIO_PIN_9 | GPIO_PIN_10)
+#define MICROPY_HW_UART1_TX     (pin_A9)
+#define MICROPY_HW_UART1_RX     (pin_A10)
 #endif
-
-#define MICROPY_HW_UART2_PORT (GPIOA)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
-#define MICROPY_HW_UART2_RTS  (GPIO_PIN_1)
-#define MICROPY_HW_UART2_CTS  (GPIO_PIN_0)
-
-#define MICROPY_HW_UART3_PORT (GPIOD)
-#define MICROPY_HW_UART3_PINS (GPIO_PIN_8 | GPIO_PIN_9)
-#define MICROPY_HW_UART3_RTS  (GPIO_PIN_12)
-#define MICROPY_HW_UART3_CTS  (GPIO_PIN_11)
-
+#define MICROPY_HW_UART2_TX     (pin_A2)
+#define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART2_RTS    (pin_A1)
+#define MICROPY_HW_UART2_CTS    (pin_A0)
+#define MICROPY_HW_UART3_TX     (pin_D8)
+#define MICROPY_HW_UART3_RX     (pin_D9)
+#define MICROPY_HW_UART3_RTS    (pin_D12)
+#define MICROPY_HW_UART3_CTS    (pin_D11)
 #if MICROPY_HW_HAS_SWITCH == 0
 // NOTE: A0 also connects to the user switch. To use UART4 you should 
 //       set MICROPY_HW_HAS_SWITCH to 0, and also remove SB20 (on the back
 //       of the board near the USER switch).
-#define MICROPY_HW_UART4_PORT (GPIOA)
-#define MICROPY_HW_UART4_PINS (GPIO_PIN_0 | GPIO_PIN_1)
+#define MICROPY_HW_UART4_TX     (pin_A0)
+#define MICROPY_HW_UART4_RX     (pin_A1)
 #endif
-
 // NOTE: PC7 is connected to MCLK on the Audio chip. This is an input signal
 //       so I think as long as you're not using the audio chip then it should
 //       be fine to use as a UART pin.
-#define MICROPY_HW_UART6_PORT (GPIOC)
-#define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
+#define MICROPY_HW_UART6_TX     (pin_C6)
+#define MICROPY_HW_UART6_RX     (pin_C7)
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)

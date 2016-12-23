@@ -677,6 +677,22 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
+#if defined(MICROPY_HW_UART7_TX)
+void UART7_IRQHandler(void) {
+    IRQ_ENTER(UART7_IRQn);
+    uart_irq_handler(7);
+    IRQ_EXIT(UART7_IRQn);
+}
+#endif
+
+#if defined(MICROPY_HW_UART8_TX)
+void UART8_IRQHandler(void) {
+    IRQ_ENTER(UART8_IRQn);
+    uart_irq_handler(8);
+    IRQ_EXIT(UART8_IRQn);
+}
+#endif
+
 #if MICROPY_HW_ENABLE_CAN
 void CAN1_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX0_IRQn);

@@ -1,6 +1,5 @@
 #define MICROPY_HW_BOARD_NAME       "Espruino Pico"
 #define MICROPY_HW_MCU_NAME         "STM32F401CD"
-#define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
@@ -28,14 +27,14 @@
 #define MICROPY_HW_RTC_USE_LSE      (0)
 
 // UART config
-#define MICROPY_HW_UART1_PORT (GPIOB)
-#define MICROPY_HW_UART1_PINS (GPIO_PIN_6 | GPIO_PIN_7)
-#define MICROPY_HW_UART2_PORT (GPIOA)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
-#define MICROPY_HW_UART2_RTS  (GPIO_PIN_1)
-#define MICROPY_HW_UART2_CTS  (GPIO_PIN_0)
-#define MICROPY_HW_UART6_PORT (GPIOA)
-#define MICROPY_HW_UART6_PINS (GPIO_PIN_11 | GPIO_PIN_12)
+#define MICROPY_HW_UART1_TX     (pin_B6)
+#define MICROPY_HW_UART1_RX     (pin_B7)
+#define MICROPY_HW_UART2_TX     (pin_A2)
+#define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART2_RTS    (pin_A1)
+#define MICROPY_HW_UART2_CTS    (pin_A0)
+#define MICROPY_HW_UART6_TX     (pin_A11)
+#define MICROPY_HW_UART6_RX     (pin_A12)
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)

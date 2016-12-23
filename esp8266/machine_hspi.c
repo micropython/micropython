@@ -36,21 +36,17 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
-
+#include "modmachine.h"
 #include "hspi.h"
 
-mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args,
-                          size_t n_kw, const mp_obj_t *args);
-
-typedef struct _pyb_hspi_obj_t {
+typedef struct _machine_hspi_obj_t {
     mp_obj_base_t base;
     uint32_t baudrate;
     uint8_t polarity;
     uint8_t phase;
-} pyb_hspi_obj_t;
+} machine_hspi_obj_t;
 
-
-STATIC void hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     (void)self_in;
 
     if (dest == NULL) {
@@ -93,16 +89,17 @@ STATIC void hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src
 /******************************************************************************/
 // MicroPython bindings for HSPI
 
-STATIC void pyb_hspi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_hspi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC void machine_hspi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_hspi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "HSPI(id=1, baudrate=%u, polarity=%u, phase=%u)",
         self->baudrate, self->polarity, self->phase);
 }
 
-STATIC void pyb_hspi_init_helper(pyb_hspi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase };
+STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    machine_hspi_obj_t *self = (machine_hspi_obj_t*)self_in;
+
+    enum { ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase, MP_ARG_INT, {.u_int = -1} },
@@ -150,63 +147,35 @@ STATIC void pyb_hspi_init_helper(pyb_hspi_obj_t *self, size_t n_args, const mp_o
     spi_mode(HSPI, self->phase, self->polarity);
 }
 
-mp_obj_t pyb_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, true);
-    mp_int_t id = -1;
-    if (n_args > 0) {
-        id = mp_obj_get_int(args[0]);
-    }
-
-    if (id == -1) {
-        // Multiplex to bitbanging SPI
-        if (n_args > 0) {
-            args++;
-        }
-        return pyb_spi_make_new(type, 0, n_kw, args);
-    }
-
-    if (id != 1) {
+mp_obj_t machine_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // args[0] holds the id of the peripheral
+    if (args[0] != MP_OBJ_NEW_SMALL_INT(1)) {
         // FlashROM is on SPI0, so far we don't support its usage
         mp_raise_ValueError("");
     }
 
-    pyb_hspi_obj_t *self = m_new_obj(pyb_hspi_obj_t);
-    self->base.type = &pyb_hspi_type;
+    machine_hspi_obj_t *self = m_new_obj(machine_hspi_obj_t);
+    self->base.type = &machine_hspi_type;
     // set defaults
     self->baudrate = 80000000L;
     self->polarity = 0;
     self->phase = 0;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    pyb_hspi_init_helper(self, n_args, args, &kw_args);
+    machine_hspi_init((mp_obj_base_t*)self, n_args - 1, args + 1, &kw_args);
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t pyb_hspi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    pyb_hspi_init_helper(args[0], n_args - 1, args + 1, kw_args);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(pyb_hspi_init_obj, 1, pyb_hspi_init);
-
-STATIC const mp_rom_map_elem_t pyb_hspi_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_hspi_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_machine_spi_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_machine_spi_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_machine_spi_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&mp_machine_spi_write_readinto_obj) },
+STATIC const mp_machine_spi_p_t machine_hspi_p = {
+    .init = machine_hspi_init,
+    .transfer = machine_hspi_transfer,
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_hspi_locals_dict, pyb_hspi_locals_dict_table);
-
-STATIC const mp_machine_spi_p_t pyb_hspi_p = {
-    .transfer = hspi_transfer,
-};
-
-const mp_obj_type_t pyb_hspi_type = {
+const mp_obj_type_t machine_hspi_type = {
     { &mp_type_type },
     .name = MP_QSTR_HSPI,
-    .print = pyb_hspi_print,
-    .make_new = pyb_hspi_make_new,
-    .protocol = &pyb_hspi_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_hspi_locals_dict,
+    .print = machine_hspi_print,
+    .make_new = mp_machine_spi_make_new, // delegate to master constructor
+    .protocol = &machine_hspi_p,
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
 };

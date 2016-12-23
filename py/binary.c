@@ -294,9 +294,10 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
             #endif
             {
                 val = mp_obj_get_int(val_in);
-                // sign extend if needed
-                if (BYTES_PER_WORD < 8 && size > sizeof(val) && is_signed(val_type) && (mp_int_t)val < 0) {
-                    memset(p + sizeof(val), 0xff, size - sizeof(val));
+                // zero/sign extend if needed
+                if (BYTES_PER_WORD < 8 && size > sizeof(val)) {
+                    int c = (is_signed(val_type) && (mp_int_t)val < 0) ? 0xff : 0x00;
+                    memset(p + sizeof(val), c, size - sizeof(val));
                 }
             }
     }

@@ -36,7 +36,7 @@
 // PENDSV call that actually raises the exception.  It must be non-static
 // otherwise gcc-5 optimises it away.  It can point to the heap but is not
 // traced by GC.  This is okay because we only ever set it to
-// mp_const_vcp_interrupt which is in the root-pointer set.
+// mp_kbd_exception which is in the root-pointer set.
 void *pendsv_object;
 
 void pendsv_init(void) {

@@ -128,10 +128,6 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
 }
 
 STATIC void next_char(mp_lexer_t *lex) {
-    if (lex->chr0 == MP_LEXER_EOF) {
-        return;
-    }
-
     if (lex->chr0 == '\n') {
         // a new line
         ++lex->line;
@@ -430,8 +426,9 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                         vstr_add_char(&lex->vstr, '\\');
                     } else {
                         switch (c) {
-                            case MP_LEXER_EOF: break; // TODO a proper error message?
-                            case '\n': c = MP_LEXER_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                            // note: "c" can never be MP_LEXER_EOF because next_char
+                            // always inserts a newline at the end of the input stream
+                            case '\n': c = MP_LEXER_EOF; break; // backslash escape the newline, just ignore it
                             case '\\': break;
                             case '\'': break;
                             case '"': break;
@@ -795,7 +792,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     mp_lexer_next_token_into(lex, false);
 }
 
-#if MICROPY_DEBUG_PRINTERS
+#if 0
+// This function is used to print the current token and should only be
+// needed to debug the lexer, so it's not available via a config option.
 void mp_lexer_show_token(const mp_lexer_t *lex) {
     printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:%zu", lex->tok_line, lex->tok_column, lex->tok_kind, lex->vstr.buf, lex->vstr.len);
     if (lex->vstr.len > 0) {

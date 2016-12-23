@@ -4,6 +4,18 @@ should be separate from any other changes and should be listed here, most
 recent commit at the top of the list.  This makes it easier to upgrade to
 a new HAL version.
 
+44cb2ff7ab99edf91c95b9ef3d9fe3e119d71cf8
+stmhal: Port of f4 hal commit 1d7fb82 to updated f7 hal.
+
+821863751f942f54c140f80d5a92ad7046112331
+stmhal: Port of f4 hal commit 09de030 to updated f7 hal.
+
+e1c6ed634f4387a6c9d7e132ed7d0bb245a9618a
+stmhal: Port of f4 hal commit c568a2b to updated f7 hal.
+
+b9741cd8f84a2f49e3ea00382bfa71d994bc83ff
+stmhal/hal: Update ST32CubeF7 HAL files to V1.1.2.
+
 13400e13758f7e23fc17bae753030723046ba3aa
 stmhal/hal: do not include <stdio.h> in HAL headers
 

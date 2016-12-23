@@ -2,6 +2,7 @@
 
 import micropython
 import sys
+import uio
 
 # preallocate exception instance with some room for a traceback
 global_exc = StopIteration()
@@ -15,10 +16,21 @@ def test():
     global_exc.__traceback__ = None
     try:
         raise global_exc
-    except StopIteration as e:
-        sys.print_exception(e)
+    except StopIteration:
+        print('StopIteration')
 
 # call test() with heap allocation disabled
 micropython.heap_lock()
 test()
 micropython.heap_unlock()
+
+# print the exception that was raised
+buf = uio.StringIO()
+sys.print_exception(global_exc, buf)
+for l in buf.getvalue().split("\n"):
+    # uPy on pyboard prints <stdin> as file, so remove filename.
+    if l.startswith("  File "):
+        l = l.split('"')
+        print(l[0], l[2])
+    else:
+        print(l)

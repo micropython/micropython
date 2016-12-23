@@ -99,6 +99,7 @@ def run_micropython(pyb, args, test_file):
                                              stderr=subprocess.STDOUT, bufsize=0)
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
+                        send_get(b'\x04') # exit the REPL, so coverage info is saved
                         p.kill()
                         os.close(master)
                         os.close(slave)
@@ -207,6 +208,7 @@ def run_tests(pyb, tests, args):
 
     upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
     has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
+    has_coverage = run_micropython(pyb, args, 'feature_check/coverage.py') == b'coverage\n'
     cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
 
@@ -223,6 +225,9 @@ def run_tests(pyb, tests, args):
         skip_tests.add('float/int_big_float.py')
         skip_tests.add('float/true_value.py')
         skip_tests.add('float/types.py')
+
+    if not has_coverage:
+        skip_tests.add('cmdline/cmd_parsetree.py')
 
     # Some tests shouldn't be run on a PC
     if pyb is None:
@@ -270,7 +275,7 @@ def run_tests(pyb, tests, args):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
         skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs

@@ -68,6 +68,15 @@ void mp_init(void) {
     mp_init_emergency_exception_buf();
 #endif
 
+    #if MICROPY_KBD_EXCEPTION
+    // initialise the exception object for raising KeyboardInterrupt
+    MP_STATE_VM(mp_kbd_exception).base.type = &mp_type_KeyboardInterrupt;
+    MP_STATE_VM(mp_kbd_exception).traceback_alloc = 0;
+    MP_STATE_VM(mp_kbd_exception).traceback_len = 0;
+    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+    MP_STATE_VM(mp_kbd_exception).args = mp_const_empty_tuple;
+    #endif
+
     // call port specific initialization if any
 #ifdef MICROPY_PORT_INIT_FUNC
     MICROPY_PORT_INIT_FUNC;
@@ -89,6 +98,11 @@ void mp_init(void) {
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
+    #endif
+
+    #if MICROPY_FSUSERMOUNT
+    // zero out the pointers to the user-mounted devices
+    memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
     #endif
 
     #if MICROPY_PY_THREAD_GIL

@@ -194,6 +194,7 @@ typedef long            mp_off_t;
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)           enable_irq(state)
+#define MICROPY_EVENT_POLL_HOOK                     __WFI();
 
 // assembly functions to handle critical sections, interrupt
 // disabling/enabling and sleep mode enter/exit
