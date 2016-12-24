@@ -134,7 +134,7 @@ STATIC mp_obj_t machine_hard_pwm_freq(mp_obj_t self, mp_arg_val_t *args);
 STATIC mp_obj_t machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
-        { MP_QSTR_pin,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_pin,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_period,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_duty,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -253,7 +253,8 @@ STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args) {
 
     // check if PWM pin is set
     if (args[ARG_NEW_pin].u_obj != MP_OBJ_NULL) {
-        self->pyb->pwm->init.pwm_pin = mp_obj_get_int(args[ARG_NEW_pin].u_obj);
+        pin_obj_t *pin_obj = args[ARG_NEW_pin].u_obj;
+        self->pyb->pwm->init.pwm_pin = pin_obj->pin;
     } else {
         // TODO: raise exception.
     }
