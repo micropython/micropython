@@ -114,6 +114,8 @@ SRC_HAL = $(addprefix hal/,\
 	hal_spi.c \
 	hal_spie.c \
 	hal_time.c \
+	hal_rtc.c \
+	hal_timer.c \
 	)
 
 ifeq ($(MCU_VARIANT), nrf52)
