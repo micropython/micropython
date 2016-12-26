@@ -40,10 +40,10 @@ typedef struct _pyb_rtc_obj_t {
 
 #define MEM_MAGIC           0x75507921
 #define MEM_RTC_BASE        64
-#define MEM_DELTA_ADDR      (MEM_RTC_BASE    + 0)
-#define MEM_CLKOFS_ADDR     (MEM_DELTA_ADDR  + 2)
-#define MEM_CAL_ADDR        (MEM_CLKOFS_ADDR + 2)
-#define MEM_CLKREF_ADDR     (MEM_CAL_ADDR    + 1)
+#define MEM_RTCOFS_ADDR     (MEM_RTC_BASE    + 0)
+#define MEM_CLKOFS_ADDR     (MEM_RTCOFS_ADDR + 2)
+#define MEM_RTCREF_ADDR     (MEM_CLKOFS_ADDR + 2)
+#define MEM_CLKREF_ADDR     (MEM_RTCREF_ADDR + 1)
 #define MEM_USER_MAGIC_ADDR (MEM_CLKREF_ADDR + 1)
 #define MEM_USER_LEN_ADDR   (MEM_USER_MAGIC_ADDR + 1)
 #define MEM_USER_DATA_ADDR  (MEM_USER_LEN_ADDR + 1)
@@ -58,6 +58,7 @@ uint64_t pyb_rtc_alarm0_expiry; // in microseconds
 
 // RTC overflow checking
 STATIC uint32_t rtc_last_ticks;
+STATIC uint32_t rtc_last_cal;
 // Clock overflow checking
 STATIC uint32_t clk_last_ticks;
 
@@ -90,37 +91,35 @@ uint64_t esp_clk_get_us_since_2000() {
 };
 
 void pyb_rtc_set_us_since_2000(uint64_t nowus) {
-    uint32_t cal = system_rtc_clock_cali_proc();
-    // Save RTC ticks for overflow detection.
+    // Get the current clock tick
     rtc_last_ticks = system_get_rtc_time();
-    int64_t delta = nowus - (((uint64_t)rtc_last_ticks * cal) >> 12);
-
-    // As the calibration value jitters quite a bit, to make the
-    // clock at least somewhat practially usable, we need to store it
-    system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
-    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+    // Set current time as base for future calculations
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &nowus, sizeof(nowus));
+    system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
 };
 
 uint64_t pyb_rtc_get_us_since_2000() {
-    uint32_t cal;
-    int64_t delta;
+    uint64_t offset;
     uint32_t rtc_ticks;
 
-    system_rtc_mem_read(MEM_CAL_ADDR, &cal, sizeof(cal));
-    system_rtc_mem_read(MEM_DELTA_ADDR, &delta, sizeof(delta));
-
-    // ESP-SDK system_get_rtc_time() only returns uint32 and therefore
-    // overflow about every 7:45h.  Thus, we have to check for
-    // overflow and handle it.
+    system_rtc_mem_read(MEM_RTCOFS_ADDR, &offset, sizeof(offset));
     rtc_ticks = system_get_rtc_time();
-    if (rtc_ticks < rtc_last_ticks) {
-        // Adjust delta because of RTC overflow.
-        delta += (uint64_t)cal << 20;
-        system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
-    }
-    rtc_last_ticks = rtc_ticks;
+    rtc_last_cal = system_rtc_clock_cali_proc();
 
-    return (((uint64_t)rtc_ticks * cal) >> 12) + delta;
+    int64_t newoffset = offset;
+    int64_t newdelta = rtc_ticks;
+    if (rtc_ticks >= rtc_last_ticks) {
+      newdelta-= rtc_last_ticks;
+    } else {
+      // If overflow happened, assume 1 wrap-around and persist info for the new cycle
+      newdelta+= ~rtc_last_ticks+1;
+      system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+    }
+    // Since RTC unit is volatile, we have to rebase every time 
+    newoffset+= (newdelta*rtc_last_cal)>>12;
+    rtc_last_ticks = rtc_ticks;
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &newoffset, sizeof(newoffset));
+    return newoffset; 
 };
 
 void mp_hal_rtc_init(void) {
@@ -155,9 +154,10 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
 void rtc_prepare_deepsleep(uint64_t sleep_us) {
     // RTC time will reset at wake up. Let's be preared for this.
-    // RTC time will reset at wake up. Let's be preared for this.
-    int64_t delta = pyb_rtc_get_us_since_2000() + sleep_us;
-    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+    int64_t newoffset = pyb_rtc_get_us_since_2000() + sleep_us;
+    rtc_last_ticks+= (sleep_us<<12)/rtc_last_cal;
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &newoffset, sizeof(newoffset));
+    system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
 }
 
 STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
