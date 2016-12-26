@@ -113,6 +113,10 @@
 #define MICROPY_PY_MACHINE_PWM      (1)
 #endif
 
+#ifndef MICROPY_PY_MACHINE_TIMER
+#define MICROPY_PY_MACHINE_TIMER    (0)
+#endif
+
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET          (1)
 #endif
