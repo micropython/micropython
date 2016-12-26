@@ -117,6 +117,10 @@
 #define MICROPY_PY_MACHINE_TIMER    (0)
 #endif
 
+#ifndef MICROPY_PY_MACHINE_RTC
+#define MICROPY_PY_MACHINE_RTC      (0)
+#endif
+
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET          (1)
 #endif
