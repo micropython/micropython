@@ -31,6 +31,7 @@
 #define MICROPY_PY_SYS_PLATFORM     "nrf51-DK"
 
 #define MICROPY_PY_MACHINE_PWM      (0)
+#define MICROPY_PY_MACHINE_TIMER    (1)
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
