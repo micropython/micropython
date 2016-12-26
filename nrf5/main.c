@@ -48,6 +48,7 @@
 #include "pin.h"
 #include "spi.h"
 #include "pwm.h"
+#include "timer.h"
 
 #if (BLUETOOTH_SD == 132)
 #include "nrf52_ble.h"
@@ -106,6 +107,10 @@ int main(int argc, char **argv) {
 
 #if MICROPY_PY_MACHINE_PWM
     pwm_init0();
+#endif
+
+#if MICROPY_PY_MACHINE_TIMER
+    timer_init0();
 #endif
 
     /*
