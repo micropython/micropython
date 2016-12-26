@@ -29,4 +29,7 @@
 
 #ifdef HAL_TIMER_MODULE_ENABLED
 
+void hal_timer_init(NRF_TIMER_Type * p_instance, hal_timer_init_t const * p_timer_init) {
+}
+
 #endif // HAL_TIMER_MODULE_ENABLED
