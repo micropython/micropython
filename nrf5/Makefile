@@ -145,6 +145,7 @@ SRC_C += \
 	modusocket.c \
 	modnetwork.c \
 	timer.c \
+	rtc.c \
 
 #ifeq ($(SD), )
 
