@@ -144,6 +144,7 @@ SRC_C += \
 	lexerfatfs.c \
 	modusocket.c \
 	modnetwork.c \
+	timer.c \
 
 #ifeq ($(SD), )
 
