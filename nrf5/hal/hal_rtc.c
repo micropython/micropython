@@ -29,5 +29,8 @@
 
 #ifdef HAL_RTC_MODULE_ENABLED
 
+void hal_rtc_init(NRF_RTC_Type * p_instance, hal_rtc_init_t const * p_rtc_init) {
+}
+
 #endif // HAL_RTC_MODULE_ENABLED
 
