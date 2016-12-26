@@ -55,4 +55,22 @@
 #error "Device not supported."
 #endif
 
+/**
+  * @brief  Timer Configuration Structure definition
+  */
+typedef struct {
+} hal_timer_init_t;
+
+/**
+  * @brief  Timer handle Structure definition
+  */
+typedef struct __Timer_HandleTypeDef
+{
+    NRF_TIMER_Type             *instance;    /* Timer registers base address */
+    hal_timer_init_t           init;         /* Timer initialization parameters */
+    uint8_t                    id;           /* Timer instance id */
+} Timer_HandleTypeDef;
+
+void hal_timer_init(NRF_TIMER_Type * p_instance, hal_timer_init_t const * p_timer_init);
+
 #endif // HAL_TIMER_H__
