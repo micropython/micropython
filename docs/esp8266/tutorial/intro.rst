@@ -35,11 +35,30 @@ If your board has a USB connector on it then most likely it is powered through
 this when connected to your PC.  Otherwise you will need to power it directly.
 Please refer to the documentation for your board for further details.
 
+Getting the firmware
+--------------------
+
+The first thing you need to do is download the most recent MicroPython firmware 
+.bin file to load onto your ESP8266 device. You can download it from the  
+`MicroPython downloads page <http://micropython.org/download#esp8266>`_.
+From here, you have 3 main choices
+
+* Stable firmware builds for 1024kb modules and above.
+* Daily firmware builds for 1024kb modules and above.
+* Daily firmware builds for 512kb modules.
+
+The best bet is nearly always to go for the Stable firmware builds.
+An exception to this though is if you have an ESP8266 module with only 512kb
+of onboard storage. You can easily tell by trying to load a Stable firmware 
+build and if you get the error below, then you may have to use the Daily 
+firmware builds for 512kb modules.
+    WARNING: Unlikely to work as data goes beyond end of flash.
+
 Deploying the firmware
 ----------------------
 
-The very first thing you need to do is put the MicroPython firmware (compiled
-code) on your ESP8266 device.  There are two main steps to do this: first you
+Once you have the MicroPython firmware (compiled code), you need to load it onto 
+your ESP8266 device.  There are two main steps to do this: first you
 need to put your device in boot-loader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the
 particular board and you will need to refer to its documentation for details.
