@@ -3,6 +3,12 @@
 
 import time
 from machine import SPI, Pin
+import os
+from sdcard import SDCard
+
+def mount_tf(self, mount_point="/"):
+    sd = SDCard(SPI(0), Pin("A15", mode=Pin.OUT))
+    os.mount(sd, mount_point)
 
 class ILI9341:
     def __init__(self, width, height):
