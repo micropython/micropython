@@ -1,9 +1,8 @@
 import os
-from machine import SPI
-from pyb import Pin
+from machine import SPI, Pin
 from sdcard import SDCard
 
 def mount_sd():
-    sd = SDCard(SPI(0), Pin("A22"))
+    sd = SDCard(SPI(0), Pin("A22", mode=Pin.OUT))
     os.mount(sd, '/')
 
