@@ -99,6 +99,7 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
     struct station_config config = {{0}};
     mp_uint_t len;
     const char *p;
+    const char *bssid;
 
     if (n_args > 1) {
         p = mp_obj_str_get_data(args[1], &len);
@@ -109,6 +110,13 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
             p = "";
         }
         memcpy(config.password, p, len);
+        if (n_args > 3) {
+            bssid = mp_obj_str_get_data(args[3], &len);
+            config.bssid_set = 1;
+        } else {
+            bssid = "";
+        }
+        memcpy(config.bssid, bssid, len);
 
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
@@ -174,15 +182,19 @@ STATIC void esp_scan_cb(void *result, STATUS status) {
     esp_scan_list = NULL;
 }
 
-STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
-    require_if(self_in, STATION_IF);
+STATIC mp_obj_t esp_scan(size_t n_args, const mp_obj_t *args) {
+    require_if(args[0], STATION_IF);
     if ((wifi_get_opmode() & STATION_MODE) == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
             "STA must be active"));
     }
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_scan_list = &list;
-    wifi_station_scan(NULL, (scan_done_cb_t)esp_scan_cb);
+    struct scan_config config = {0};
+    if (n_args > 1) {
+        config.show_hidden = mp_obj_get_int(args[1]) != 0;
+    }
+    wifi_station_scan(&config, (scan_done_cb_t)esp_scan_cb);
     while (esp_scan_list != NULL) {
         // our esp_scan_cb is called via ets_loop_iter so it's safe to set the
         // esp_scan_list variable to NULL without disabling interrupts
@@ -199,7 +211,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     }
     return list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_scan_obj, 1, 2, esp_scan);
 
 /// \method isconnected()
 /// Return True if connected to an AP and an IP address has been assigned,

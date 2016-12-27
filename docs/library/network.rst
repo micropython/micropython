@@ -276,17 +276,29 @@ For example::
         argument is passed. Otherwise, query current state if no argument is
         provided. Most other methods require active interface.
 
-    .. method:: wlan.connect(ssid, password)
+    .. method:: wlan.connect(ssid, password, [bssid])
 
         Connect to the specified wireless network, using the specified password.
+
+        The `bssid` argument, if specified, restricts connection to an AP with
+        given hardware address.
+        The format of this argument should match the `bssid` field returned from
+        the scan() method (binary form). 
+
+        Usually the `bssid` argument is not needed.
+        Useful scenarios are:
+            * Connecting to a hidden network
+            * Connecting to specific AP that shares the same SSID with other APs
 
     .. method:: wlan.disconnect()
 
         Disconnect from the currently connected wireless network.
 
-    .. method:: wlan.scan()
+    .. method:: wlan.scan([show_hidden])
 
         Scan for the available wireless networks.
+
+        The `show_hidden` argument determines whether hidden network should be reported.
 
         Scanning is only possible on STA interface. Returns list of tuples with
         the information about WiFi access points:
