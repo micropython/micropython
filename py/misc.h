@@ -46,7 +46,11 @@ typedef unsigned int uint;
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #endif
 
-/** memomry allocation ******************************************/
+// Classical double-indirection stringification of preprocessor macro's value
+#define _MP_STRINGIFY(x) #x
+#define MP_STRINGIFY(x) _MP_STRINGIFY(x)
+
+/** memory allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
