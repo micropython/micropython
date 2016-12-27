@@ -131,8 +131,18 @@ void mp_hal_rtc_init(void) {
         uint32_t len = 0;
         system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
     } else {
-        // Load back the RTC cycle base
-        system_rtc_mem_read(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+        // Check reset cause to determine what to do with stored RTC ticks
+        struct rst_info *rtc_info = system_get_rst_info();
+        if (rtc_info->reason == REASON_EXT_SYS_RST) {
+          // External reset, RTC ticks reset to zero
+          // Note: PowerOn and ChipEn also cause ticks to reset but since they also randomize entire RTC memory,
+          //   it is assumed the control flow never reach here for those two cases
+          rtc_last_ticks = 0;
+          system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+        } else {
+          // Load back the RTC cycle base
+          system_rtc_mem_read(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+        }
         // Use rtc clock's data to reinitialize system clock
         esp_clk_set_us_since_2000(pyb_rtc_get_us_since_2000());
     }
