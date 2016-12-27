@@ -21,8 +21,8 @@ Example usage on ESP8266:
 
 Example usage on NRF52832:
 
-    import machine, pyb, os
-    sd = sdcard.SDCard(machine.SPI(0), machine.PIN("A22"))
+    import os, machine, sdcard
+    sd = sdcard.SDCard(machine.SPI(0), machine.PIN("A22", mode=machine.Pin.OUT))
     os.mount(sd, "")
     os.listdir()
 
