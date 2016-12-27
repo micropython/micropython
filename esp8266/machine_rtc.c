@@ -41,10 +41,8 @@ typedef struct _pyb_rtc_obj_t {
 #define MEM_MAGIC           0x75507921
 #define MEM_RTC_BASE        64
 #define MEM_RTCOFS_ADDR     (MEM_RTC_BASE    + 0)
-#define MEM_CLKOFS_ADDR     (MEM_RTCOFS_ADDR + 2)
-#define MEM_RTCREF_ADDR     (MEM_CLKOFS_ADDR + 2)
-#define MEM_CLKREF_ADDR     (MEM_RTCREF_ADDR + 1)
-#define MEM_USER_MAGIC_ADDR (MEM_CLKREF_ADDR + 1)
+#define MEM_RTCREF_ADDR     (MEM_RTCOFS_ADDR + 2)
+#define MEM_USER_MAGIC_ADDR (MEM_RTCREF_ADDR + 1)
 #define MEM_USER_LEN_ADDR   (MEM_USER_MAGIC_ADDR + 1)
 #define MEM_USER_DATA_ADDR  (MEM_USER_LEN_ADDR + 1)
 #define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_RTC_BASE) * 4)
@@ -61,33 +59,31 @@ STATIC uint32_t rtc_last_ticks;
 STATIC uint32_t rtc_last_cal;
 // Clock overflow checking
 STATIC uint32_t clk_last_ticks;
+STATIC uint64_t clk_offset;
 
 void esp_clk_set_us_since_2000(uint64_t nowus) {
     // Get the current clock tick
     clk_last_ticks = system_get_time();
     // Set current time as base for future calculations
-    system_rtc_mem_write(MEM_CLKOFS_ADDR, &nowus, sizeof(nowus));
-    system_rtc_mem_write(MEM_CLKREF_ADDR, &clk_last_ticks, sizeof(clk_last_ticks));
+    clk_offset = nowus;
 };
 
 uint64_t esp_clk_get_us_since_2000() {
     uint64_t offset;
     uint32_t clk_ticks;
 
-    system_rtc_mem_read(MEM_CLKOFS_ADDR, &offset, sizeof(offset));
+    offset = clk_offset;
     clk_ticks = system_get_time();
 
-    int64_t newoffset = offset;
     if (clk_ticks >= clk_last_ticks) {
-      newoffset+= clk_ticks-clk_last_ticks;
+      offset+= clk_ticks-clk_last_ticks;
     } else {
       // If overflow happened, assume 1 wrap-around and persist info for the new cycle
-      newoffset+= clk_ticks+~clk_last_ticks+1;
+      offset+= clk_ticks+~clk_last_ticks+1;
       clk_last_ticks = clk_ticks;
-      system_rtc_mem_write(MEM_CLKOFS_ADDR, &newoffset, sizeof(newoffset));
-      system_rtc_mem_write(MEM_CLKREF_ADDR, &clk_last_ticks, sizeof(clk_last_ticks));
+      clk_offset = offset;
     }
-    return newoffset; 
+    return offset; 
 };
 
 void pyb_rtc_set_us_since_2000(uint64_t nowus) {
@@ -106,20 +102,20 @@ uint64_t pyb_rtc_get_us_since_2000() {
     rtc_ticks = system_get_rtc_time();
     rtc_last_cal = system_rtc_clock_cali_proc();
 
-    int64_t newoffset = offset;
-    int64_t newdelta = rtc_ticks;
+    int64_t delta = rtc_ticks;
     if (rtc_ticks >= rtc_last_ticks) {
-      newdelta-= rtc_last_ticks;
+      delta-= rtc_last_ticks;
     } else {
       // If overflow happened, assume 1 wrap-around and persist info for the new cycle
-      newdelta+= ~rtc_last_ticks+1;
-      system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+      delta+= ~rtc_last_ticks+1;
     }
-    // Since RTC unit is volatile, we have to rebase every time 
-    newoffset+= (newdelta*rtc_last_cal)>>12;
+    offset+= (delta*rtc_last_cal)>>12;
+    // Since RTC cal is volatile, we have to rebase every time 
     rtc_last_ticks = rtc_ticks;
-    system_rtc_mem_write(MEM_RTCOFS_ADDR, &newoffset, sizeof(newoffset));
-    return newoffset; 
+    // Since RTC enjoys persistence across (some) reboots, we persist the rebase to enjoy the benefit 
+    system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &offset, sizeof(offset));
+    return offset; 
 };
 
 void mp_hal_rtc_init(void) {
@@ -135,6 +131,8 @@ void mp_hal_rtc_init(void) {
         uint32_t len = 0;
         system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
     } else {
+        // Load back the RTC cycle base
+        system_rtc_mem_read(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
         // Use rtc clock's data to reinitialize system clock
         esp_clk_set_us_since_2000(pyb_rtc_get_us_since_2000());
     }
