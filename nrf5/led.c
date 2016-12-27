@@ -63,7 +63,7 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
 void led_init(void) {
     for (uint8_t i = 0; i < NUM_LEDS; i++) {
         LED_OFF(pyb_led_obj[i].hw_pin);
-        hal_gpio_cfg_pin_output(pyb_led_obj[i].hw_pin);
+        hal_gpio_cfg_pin(pyb_led_obj[i].hw_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     }
 }
 

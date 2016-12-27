@@ -48,10 +48,10 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
     hal_gpio_pin_set(p_spi_init->enable_pin);
     m_ss_pin = p_spi_init->enable_pin;
 
-    hal_gpio_cfg_pin_output(p_spi_init->clk_pin);
-    hal_gpio_cfg_pin_output(p_spi_init->mosi_pin);
-    hal_gpio_cfg_pin_input(p_spi_init->miso_pin, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin_output(p_spi_init->enable_pin);
+    hal_gpio_cfg_pin(p_spi_init->clk_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->mosi_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->miso_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->enable_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
 
 #if NRF51
     p_instance->PSELSCK  = p_spi_init->clk_pin;

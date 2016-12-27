@@ -73,22 +73,18 @@ typedef enum {
 	HAL_GPIO_PULL_UP = (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
 } hal_gpio_pull_t;
 
-static inline void hal_gpio_cfg_pin_output(uint32_t pin_number) {
+typedef enum {
+	HAL_GPIO_MODE_OUTPUT = (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos),
+	HAL_GPIO_MODE_INPUT = (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos),
+} hal_gpio_mode_t;
+
+static inline void hal_gpio_cfg_pin(uint32_t pin_number, hal_gpio_mode_t mode, hal_gpio_pull_t pull) {
     GPIO_BASE->PIN_CNF[pin_number] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
                                    | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                                   | (GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos)
+                                   | pull
                                    | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                                   | (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos);
+                                   | mode;
 }
-
-static inline void hal_gpio_cfg_pin_input(uint32_t pin_number, hal_gpio_pull_t pull) {
-    GPIO_BASE->PIN_CNF[pin_number] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-                                   | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-								   | pull
-                                   | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-								   | (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos);
-}
-
 
 static inline void hal_gpio_out_set(uint32_t pin_mask) {
 	GPIO_BASE->OUTSET = pin_mask;

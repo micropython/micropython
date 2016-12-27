@@ -84,9 +84,9 @@ void nrf_sendchar(int ch) {
 }
 
 void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
-    hal_gpio_cfg_pin_output(p_uart_init->tx_pin);
+    hal_gpio_cfg_pin(p_uart_init->tx_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_pin_set(p_uart_init->tx_pin);
-    hal_gpio_cfg_pin_input(p_uart_init->rx_pin, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->rx_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
     UARTE_BASE->BAUDRATE = (hal_uart_baudrate_lookup[p_uart_init->baud_rate]);
 
@@ -104,8 +104,8 @@ void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
     UARTE_BASE->PSEL.TXD = p_uart_init->tx_pin;
 
     if (hwfc) {
-        hal_gpio_cfg_pin_input(p_uart_init->cts_pin, HAL_GPIO_PULL_DISABLED);
-        hal_gpio_cfg_pin_output(p_uart_init->rts_pin);
+        hal_gpio_cfg_pin(p_uart_init->cts_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_cfg_pin(p_uart_init->rts_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
         hal_gpio_pin_set(p_uart_init->rts_pin);
 
         UARTE_BASE->PSEL.RTS = p_uart_init->rts_pin;

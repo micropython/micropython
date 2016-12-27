@@ -59,6 +59,7 @@ typedef struct {
   uint32_t pin_mask;
   pin_gpio_t *gpio;
   const pin_af_obj_t *af;
+  uint32_t pull;
 } pin_obj_t;
 
 extern const mp_obj_type_t pin_type;

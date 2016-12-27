@@ -103,15 +103,15 @@ void nrf_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_comple
 }
 
 void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
-    hal_gpio_cfg_pin_output(p_uart_init->tx_pin);
-    hal_gpio_cfg_pin_input(p_uart_init->rx_pin, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->tx_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->rx_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
     UART_BASE->PSELTXD = p_uart_init->tx_pin;
     UART_BASE->PSELRXD = p_uart_init->rx_pin;
 
     if (p_uart_init->flow_control) {
-        hal_gpio_cfg_pin_output(p_uart_init->rts_pin);
-        hal_gpio_cfg_pin_input(p_uart_init->cts_pin, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_cfg_pin(p_uart_init->rts_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_cfg_pin(p_uart_init->cts_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 	
         UART_BASE->PSELCTS = p_uart_init->cts_pin;
         UART_BASE->PSELRTS = p_uart_init->rts_pin;
