@@ -39,6 +39,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <readline/tilde.h>
+#else
+#undef MICROPY_USE_READLINE_HISTORY
+#define MICROPY_USE_READLINE_HISTORY (0)
 #endif
 
 char *prompt(char *p) {
