@@ -623,8 +623,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
+    // minimum value is 2ms because sys-tick has a resolution of only 1ms
     self->timeout_char = args.timeout_char.u_int;
-    uint32_t min_timeout_char = 13000 / init->BaudRate + 1;
+    uint32_t min_timeout_char = 13000 / init->BaudRate + 2;
     if (self->timeout_char < min_timeout_char) {
         self->timeout_char = min_timeout_char;
     }
