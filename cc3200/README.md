@@ -40,15 +40,6 @@ there. Make sure to use a **v4.1 (or higer) LAUNCHXL board** when trying this po
 - Flash the latest service pack (servicepack_1.0.0.10.0.bin) using the "Service Pack Update" button.
 - Close CCS_Uniflash, remove the SOP2 jumper and reset the board.
 
-## Updating the board to with new software version
-- Make sure the board is running and connected to the same network as the computer.
-
-```bash
-make BTARGET=application BTYPE=release BOARD=LAUNCHXL WIPY_IP=192.168.1.1 WIPY_USER=micro WIPY_PWD=python deploy
-```
-
-If `WIPY_IP`, `WIPY_USER` or `WIPY_PWD` are omitted the default values (the ones shown above) will be used.
-
 ## Playing with MicroPython and the CC3200:
 
 Once the software is running, you have two options to access the MicroPython REPL:
@@ -96,6 +87,16 @@ Now, reset the MCU by pressing the switch on the board, or by typing:
 import machine
 machine.reset()
 ```
+
+There's a script which automates this process from the host side:
+
+- Make sure the board is running and connected to the same network as the computer.
+
+```bash
+make BTARGET=application BTYPE=release BOARD=LAUNCHXL WIPY_IP=192.168.1.1 WIPY_USER=micro WIPY_PWD=python deploy-ota
+```
+
+If `WIPY_IP`, `WIPY_USER` or `WIPY_PWD` are omitted the default values (the ones shown above) will be used.
 
 ### Note regarding FileZilla:
 
