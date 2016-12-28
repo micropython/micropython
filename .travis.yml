@@ -17,6 +17,8 @@ before_script:
   - sudo apt-get update -qq || true
   - sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system gcc-mingw-w64
   - sudo apt-get install -y --force-yes gcc-arm-none-eabi
+  # For testing osx-32bit stuff
+  - sudo apt-get install -y clang-3.6
   # For teensy build
   - sudo apt-get install realpath
   # For coverage testing
@@ -57,6 +59,12 @@ script:
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests -d thread)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --via-mpy -d basics float)
+
+  # LLVM 32-bit Clang build to test osx-32bit fix
+  - make -C unix clean
+  - make -C unix CC=clang-3.6 MICROPY_FORCE_32BIT=1 deplibs
+  - make -C unix CC=clang-3.6 MICROPY_FORCE_32BIT=1
+  - make -C unix CC=clang-3.6 MICROPY_FORCE_32BIT=1 test
 
 after_success:
   - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
