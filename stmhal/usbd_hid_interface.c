@@ -93,6 +93,11 @@ static int8_t HID_Itf_Receive(uint8_t* Buf, uint32_t Len) {
     return USBD_OK;
 }
 
+// Returns number of ready rx buffers.
+int USBD_HID_RxNum(void) {
+    return (current_read_buffer != current_write_buffer);
+}
+
 // timout in milliseconds.
 // Returns number of bytes read from the device.
 int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {

@@ -636,6 +636,9 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && USBD_HID_RxNum() > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
         if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {
             ret |= MP_STREAM_POLL_WR;
         }
