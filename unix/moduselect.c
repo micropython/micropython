@@ -47,6 +47,9 @@ extern const mp_obj_type_t mp_type_socket;
 // Flags for poll()
 #define FLAG_ONESHOT (1)
 
+// Flags for poll()
+#define FLAG_ONESHOT (1)
+
 /// \class Poll - poll class
 
 typedef struct _mp_obj_poll_t {
