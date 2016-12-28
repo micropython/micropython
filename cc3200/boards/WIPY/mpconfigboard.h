@@ -32,6 +32,9 @@
 
 #define MICROPY_HW_ANTENNA_DIVERSITY                (1)
 
+#define MICROPY_STDIO_UART                          1
+#define MICROPY_STDIO_UART_BAUD                     115200
+
 #define MICROPY_SYS_LED_PRCM                        PRCM_GPIOA3
 #define MICROPY_SAFE_BOOT_PRCM                      PRCM_GPIOA3
 #define MICROPY_SYS_LED_PORT                        GPIOA3_BASE

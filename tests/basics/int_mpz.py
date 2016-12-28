@@ -68,6 +68,7 @@ print(int("123456789012345678901234567890"))
 print(int("-123456789012345678901234567890"))
 print(int("123456789012345678901234567890abcdef", 16))
 print(int("123456789012345678901234567890ABCDEF", 16))
+print(int("1234567890abcdefghijklmnopqrstuvwxyz", 36))
 
 # invalid characters in string
 try:

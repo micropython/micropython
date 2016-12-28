@@ -379,27 +379,89 @@ STATIC bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
     }
 }
 
-STATIC HAL_StatusTypeDef uart_tx_data(pyb_uart_obj_t *self, uint8_t *data, uint16_t len) {
+// Waits at most timeout milliseconds for UART flag to be set.
+// Returns true if flag is/was set, false on timeout.
+STATIC bool uart_wait_flag_set(pyb_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
+    // Note: we don't use WFI to idle in this loop because UART tx doesn't generate
+    // an interrupt and the flag can be set quickly if the baudrate is large.
+    uint32_t start = HAL_GetTick();
+    for (;;) {
+        if (__HAL_UART_GET_FLAG(&self->uart, flag)) {
+            return true;
+        }
+        if (timeout == 0 || HAL_GetTick() - start >= timeout) {
+            return false; // timeout
+        }
+    }
+}
+
+// src - a pointer to the data to send (16-bit aligned for 9-bit chars)
+// num_chars - number of characters to send (9-bit chars count for 2 bytes from src)
+// *errcode - returns 0 for success, MP_Exxx on error
+// returns the number of characters sent (valid even if there was an error)
+STATIC size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode) {
+    if (num_chars == 0) {
+        *errcode = 0;
+        return 0;
+    }
+
+    uint32_t timeout;
     if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
         // CTS can hold off transmission for an arbitrarily long time. Apply
         // the overall timeout rather than the character timeout.
-        return HAL_UART_Transmit(&self->uart, data, len, self->timeout);
+        timeout = self->timeout;
+    } else {
+        // The timeout specified here is for waiting for the TX data register to
+        // become empty (ie between chars), as well as for the final char to be
+        // completely transferred.  The default value for timeout_char is long
+        // enough for 1 char, but we need to double it to wait for the last char
+        // to be transferred to the data register, and then to be transmitted.
+        timeout = 2 * self->timeout_char;
     }
-    // The timeout specified here is for waiting for the TX data register to
-    // become empty (ie between chars), as well as for the final char to be
-    // completely transferred.  The default value for timeout_char is long
-    // enough for 1 char, but we need to double it to wait for the last char
-    // to be transferred to the data register, and then to be transmitted.
-    return HAL_UART_Transmit(&self->uart, data, len, 2 * self->timeout_char);
+
+    const uint8_t *src = (const uint8_t*)src_in;
+    size_t num_tx = 0;
+    USART_TypeDef *uart = self->uart.Instance;
+
+    while (num_tx < num_chars) {
+        if (!uart_wait_flag_set(self, UART_FLAG_TXE, timeout)) {
+            *errcode = MP_ETIMEDOUT;
+            return num_tx;
+        }
+        uint32_t data;
+        if (self->char_width == CHAR_WIDTH_9BIT) {
+            data = *((uint16_t*)src) & 0x1ff;
+            src += 2;
+        } else {
+            data = *src++;
+        }
+        #if defined(MCU_SERIES_F4)
+        uart->DR = data;
+        #else
+        uart->TDR = data;
+        #endif
+        ++num_tx;
+    }
+
+    // wait for the UART frame to complete
+    if (!uart_wait_flag_set(self, UART_FLAG_TC, timeout)) {
+        *errcode = MP_ETIMEDOUT;
+        return num_tx;
+    }
+
+    *errcode = 0;
+    return num_tx;
 }
 
 STATIC void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
-    uint8_t ch = c;
-    uart_tx_data(uart_obj, &ch, 1);
+    uint16_t ch = c;
+    int errcode;
+    uart_tx_data(uart_obj, &ch, 1, &errcode);
 }
 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
-    uart_tx_data(uart_obj, (uint8_t*)str, len);
+    int errcode;
+    uart_tx_data(uart_obj, str, len, &errcode);
 }
 
 void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
@@ -561,8 +623,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
+    // minimum value is 2ms because sys-tick has a resolution of only 1ms
     self->timeout_char = args.timeout_char.u_int;
-    uint32_t min_timeout_char = 13000 / init->BaudRate + 1;
+    uint32_t min_timeout_char = 13000 / init->BaudRate + 2;
     if (self->timeout_char < min_timeout_char) {
         self->timeout_char = min_timeout_char;
     }
@@ -806,15 +869,15 @@ STATIC mp_obj_t pyb_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
     uint16_t data = mp_obj_get_int(char_in);
 
     // write the character
-    HAL_StatusTypeDef status;
+    int errcode;
     if (uart_tx_wait(self, self->timeout)) {
-        status = uart_tx_data(self, (uint8_t*)&data, 1);
+        uart_tx_data(self, &data, 1, &errcode);
     } else {
-        status = HAL_TIMEOUT;
+        errcode = MP_ETIMEDOUT;
     }
 
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
+    if (errcode != 0) {
+        mp_raise_OSError(errcode);
     }
 
     return mp_const_none;
@@ -933,24 +996,12 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
     }
 
     // write the data
-    HAL_StatusTypeDef status = uart_tx_data(self, (uint8_t*)buf, size >> self->char_width);
+    size_t num_tx = uart_tx_data(self, buf, size >> self->char_width, errcode);
 
-    if (status == HAL_OK) {
-        // return number of bytes written
-        return size;
-    } else if (status == HAL_TIMEOUT) { // UART_WaitOnFlagUntilTimeout() disables RXNE interrupt on timeout
-        if (self->read_buf_len > 0) {
-            __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE); // re-enable RXNE
-        }
-        // return number of bytes written
-        if (self->char_width == CHAR_WIDTH_8BIT) {
-            return size - self->uart.TxXferCount - 1;
-        } else {
-            int written = self->uart.TxXferCount * 2;
-            return size - written - 2;
-        }
+    if (*errcode == 0 || *errcode == MP_ETIMEDOUT) {
+        // return number of bytes written, even if there was a timeout
+        return num_tx << self->char_width;
     } else {
-        *errcode = mp_hal_status_to_errno_table[status];
         return MP_STREAM_ERROR;
     }
 }

@@ -61,6 +61,10 @@ print(struct.unpack(">q", b"\xf2\x34\x56\x78\x90\x12\x34\x56"))
 print(struct.unpack("<I", b"\xff\xff\xff\xff"))
 print(struct.unpack("<Q", b"\xff\xff\xff\xff\xff\xff\xff\xff"))
 
+# check small int overflow
+print(struct.unpack("<i", b'\xff\xff\xff\x7f'))
+print(struct.unpack("<q", b'\xff\xff\xff\xff\xff\xff\xff\x7f'))
+
 # network byte order
 print(struct.pack('!i', 123))
 
