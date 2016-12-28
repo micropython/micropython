@@ -92,7 +92,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
                 break;
             }
         }
-        if (dig >= base) {
+        if (dig >= (mp_uint_t)base) {
             break;
         }
 
