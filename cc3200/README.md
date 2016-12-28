@@ -60,6 +60,19 @@ Once the software is running, you have two options to access the MicroPython REP
   * Use your favourite telnet client with the following settings: **host = 192.168.1.1, port = 23.**
   * Log in with **user = "micro" and password = "python"**
 
+- Thru UART (serial).
+  * This is enabled by default in the standard configuration, for UART0 (speed 115200).
+  * For CC3200-LAUNCHXL, you will need to configure Linux `ftdi_sio` driver as described
+    in the [blog post](http://www.achanceofbrainshowers.com/blog/tech/2014/8/19/cc3200-development-under-linux/).
+    After that, connecting a board will create two `/dev/ttyUSB*` devices, a serial
+    console is available on the 2nd one (usually `/dev/ttyUSB1`).
+  * WiPy doesn't have onboard USB-UART converter, so you will need an external one,
+    connected to GPIO01 (Tx) and GPIO02 (Rx).
+  * Usage of UART port for REPL is controlled by MICROPY_STDIO_UART setting (and
+    is done at the high level, using a suitable call to `os.dupterm()` function
+    in boot.py, so you can override it at runtime regardless of MICROPY_STDIO_UART
+    setting).
+
 The board has a small file system of 192K (WiPy) or 64K (Launchpad) located in the serial flash connected to the CC3200. 
 SD cards are also supported, you can connect any SD card and configure the pinout using the SD class API.
 
