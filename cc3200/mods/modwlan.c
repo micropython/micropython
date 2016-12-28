@@ -1249,6 +1249,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 //}
 //STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
 
+STATIC mp_obj_t wlan_print_ver(void) {
+    SlVersionFull ver;
+    byte config_opt = SL_DEVICE_GENERAL_VERSION;
+    byte config_len = sizeof(ver);
+    sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &config_opt, &config_len, (byte*)&ver);
+    printf("NWP: %d.%d.%d.%d\n", ver.NwpVersion[0], ver.NwpVersion[1], ver.NwpVersion[2], ver.NwpVersion[3]);
+    printf("MAC: %d.%d.%d.%d\n", ver.ChipFwAndPhyVersion.FwVersion[0], ver.ChipFwAndPhyVersion.FwVersion[1],
+                                 ver.ChipFwAndPhyVersion.FwVersion[2], ver.ChipFwAndPhyVersion.FwVersion[3]);
+    printf("PHY: %d.%d.%d.%d\n", ver.ChipFwAndPhyVersion.PhyVersion[0], ver.ChipFwAndPhyVersion.PhyVersion[1],
+                                 ver.ChipFwAndPhyVersion.PhyVersion[2], ver.ChipFwAndPhyVersion.PhyVersion[3]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(wlan_print_ver_fun_obj, wlan_print_ver);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(wlan_print_ver_obj, MP_ROM_PTR(&wlan_print_ver_fun_obj));
+
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&wlan_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
@@ -1265,6 +1280,7 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                 (mp_obj_t)&wlan_irq_obj },
     // { MP_OBJ_NEW_QSTR(MP_QSTR_connections),         (mp_obj_t)&wlan_connections_obj },
     // { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_print_ver),           (mp_obj_t)&wlan_print_ver_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_STA),                 MP_OBJ_NEW_SMALL_INT(ROLE_STA) },
