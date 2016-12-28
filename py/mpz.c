@@ -874,7 +874,7 @@ typedef uint32_t mp_float_int_t;
 
 // returns number of bytes from str that were processed
 mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
-    assert(base < 36);
+    assert(base <= 36);
 
     const char *cur = str;
     const char *top = str + len;
