@@ -181,13 +181,14 @@ STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 8, &items);
 
-        uint64_t arg_us = ((uint64_t)timeutils_seconds_since_2000(
-                               mp_obj_get_int(items[0]),
-                               mp_obj_get_int(items[1]),
-                               mp_obj_get_int(items[2]),
-                               mp_obj_get_int(items[4]),
-                               mp_obj_get_int(items[5]),
-                               mp_obj_get_int(items[6])) * 1000 + mp_obj_get_int(items[7])) * 1000;
+        uint64_t arg_us = (
+            ((uint64_t)timeutils_seconds_since_2000(
+                mp_obj_get_int(items[0]),
+                mp_obj_get_int(items[1]),
+                mp_obj_get_int(items[2]),
+                mp_obj_get_int(items[4]),
+                mp_obj_get_int(items[5]),
+                mp_obj_get_int(items[6])) * 1000 + mp_obj_get_int(items[7])) * 1000);
         pyb_rtc_set_us_since_2000(arg_us);
         esp_clk_set_us_since_2000(arg_us);
 
