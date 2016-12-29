@@ -1,9 +1,28 @@
-# MicroPython Seeedstudio TFT Shield V2 driver, SPI interfaces, Analog GPIO
-# Contains SD-card reader, LCD and Touch sensor
+"""
+MicroPython Seeedstudio TFT Shield V2 driver, SPI interfaces, Analog GPIO
+Contains SD-card reader, LCD and Touch sensor
 
-import time
-from machine import SPI, Pin
+Example usage of LCD:
+
+    from seeedstudio_tft_shield_v2 import ILI9341
+
+    lcd = ILI9341(240, 320)
+    lcd.text("Hello World!, 32, 32)
+    lcd.show()
+
+Example usage of SD card reader:
+
+    import os
+    from seeedstudio_tft_shield_v2 import mount_tf
+
+    tf = mount_tf()
+    os.listdir()
+"""
 import os
+import time
+import framebuf
+
+from machine import SPI, Pin
 from sdcard import SDCard
 
 def mount_tf(self, mount_point="/"):
@@ -14,6 +33,10 @@ class ILI9341:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.pages = self.height // 8
+        self.buffer = bytearray(self.pages * self.width)
+        self.framebuf = framebuf.FrameBuffer1(self.buffer, self.width, self.height)
+
         self.spi = SPI(0)
         # chip select
         self.cs = Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP)
@@ -24,7 +47,7 @@ class ILI9341:
         self.cs.high()
         self.dc.high()
 
-        self.spi.init(baudrate=1000000, phase=0, polarity=0)
+        self.spi.init(baudrate=8000000, phase=0, polarity=0)
 
         self.init_display()
         
@@ -110,37 +133,42 @@ class ILI9341:
         self.write_cmd(0x29)
         time.sleep_ms(500)
         self.fill(0)
-    
-    def fill(self, col):
-        
+
+    def show(self):
         # set col
         self.write_cmd(0x2A)
-        self.write_data(bytearray([0x00, 0x00]));
-        self.write_data(bytearray([0x00, 0xef]));
+        self.write_data(bytearray([0x00, 0x00]))
+        self.write_data(bytearray([0x00, 0xef]))
         
         # set page 
         self.write_cmd(0x2B)
-        self.write_data(bytearray([0x00, 0x00]));
-        self.write_data(bytearray([0x01, 0x3f]));
-        
+        self.write_data(bytearray([0x00, 0x00]))
+        self.write_data(bytearray([0x01, 0x3f]))
+
         self.write_cmd(0x2c);
-        
-        self.dc.high()
-        self.cs.low()
-        for i in range(0, self.width):
-            for j in range(0, self.height):
-                a = bytearray([col, col])
-                self.spi.write(a)
-        self.cs.high()
+
+        num_of_pixels = self.height * self.width
+
+        for row in range(0, self.pages):
+            for pixel_pos in range(0, 8):
+                for col in range(0, self.width):
+                    compressed_pixel = self.buffer[row * 240 + col]
+                    if ((compressed_pixel >> pixel_pos) & 0x1) == 0:
+                        self.write_data(bytearray([0x00, 0x00]))
+                    else:
+                        self.write_data(bytearray([0xFF, 0xFF]))
+
+    def fill(self, col):
+        self.framebuf.fill(col)
 
     def pixel(self, x, y, col):
-        pass
+        self.framebuf.pixel(x, y, col)
 
     def scroll(self, dx, dy):
-        pass
+        self.framebuf.scroll(dx, dy)
 
     def text(self, string, x, y, col=1):
-        pass
+        self.framebuf.text(string, x, y, col)
 
     def write_cmd(self, cmd):
         self.dc.low()
