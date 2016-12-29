@@ -31,24 +31,22 @@ extern const mp_obj_module_t mp_module_lcd_mono_fb;
 
 #include <stdint.h>
 
-typedef struct
-{
-	uint8_t bit0 : 1;
-	uint8_t bit1 : 1;
-	uint8_t bit2 : 1;
-	uint8_t bit3 : 1;
-	uint8_t bit4 : 1;
-	uint8_t bit5 : 1;
-	uint8_t bit6 : 1;
-	uint8_t bit7 : 1;
-
+typedef struct {
+    uint8_t bit0 : 1;
+    uint8_t bit1 : 1;
+    uint8_t bit2 : 1;
+    uint8_t bit3 : 1;
+    uint8_t bit4 : 1;
+    uint8_t bit5 : 1;
+    uint8_t bit6 : 1;
+    uint8_t bit7 : 1;
 } bits_t;
 
 typedef struct {
-	union {
-		uint8_t byte;
-		bits_t  bits;
-	};
+    union {
+        uint8_t byte;
+        bits_t  bits;
+    };
 } fb_byte_t;
 
 #endif
