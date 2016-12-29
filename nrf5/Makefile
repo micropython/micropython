@@ -146,6 +146,7 @@ SRC_C += \
 	modnetwork.c \
 	timer.c \
 	rtc.c \
+	lcd_mono_fb.c \
 
 #ifeq ($(SD), )
 

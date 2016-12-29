@@ -129,6 +129,8 @@
 #define MICROPY_PY_NETWORK          (1)
 #endif
 
+#define MICROPY_PY_LCD_MONO_FB      (0)
+
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
@@ -160,6 +162,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
+extern const struct _mp_obj_module_t mp_module_lcd_mono_fb;
 
 #if MICROPY_PY_USOCKET
 #define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
@@ -175,6 +178,11 @@ extern const struct _mp_obj_module_t mp_module_network;
 #define NETWORK_BUILTIN_MODULE
 #endif
 
+#if MICROPY_PY_LCD_MONO_FB
+#define LCD_MONO_FB_MODULE                  { MP_OBJ_NEW_QSTR(MP_QSTR_lcd_mono_fb), (mp_obj_t)&mp_module_lcd_mono_fb },
+#else
+#define LCD_MONO_FB_MODULE
+#endif
 
 #if BLUETOOTH_SD
 extern const struct _mp_obj_module_t ble_module;
@@ -187,6 +195,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
+    LCD_MONO_FB_MODULE \
 
 
 #else
@@ -196,7 +205,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
-
+    LCD_MONO_FB_MODULE \
 
 #endif // BLUETOOTH_SD
 

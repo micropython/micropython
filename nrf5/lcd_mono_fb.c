@@ -34,6 +34,8 @@
 #include "lcd_mono_fb.h"
 #include "font_petme128_8x8.h"
 
+#if MICROPY_PY_LCD_MONO_FB
+
 #define LCD_BLACK 0
 #define LCD_WHITE 1
 
@@ -312,3 +314,5 @@ const mp_obj_module_t mp_module_lcd_mono_fb = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&lcd_mono_fb_module_globals,
 };
+
+#endif // MICROPY_PY_LCD_MONO_FB
