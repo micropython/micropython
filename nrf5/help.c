@@ -45,6 +45,10 @@ STATIC const char help_text[] =
 #if BLUETOOTH_SD
 HELP_TEXT_SD
 #endif
+"Control commands:\n"
+"  CTRL-D        -- on a blank line, do a soft reset of the board\n"
+"  CTRL-E        -- on a blank line, enter paste mode\n"
+"\n"
 "For further help on a specific object, type help(obj)\n"
 ;
 
