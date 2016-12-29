@@ -9,4 +9,4 @@ CFLAGS += -DBLUETOOTH_SD=100
 CFLAGS += -DBLUETOOTH_SD_DEBUG=1
 
 # softdevice .hex file
-SOFTDEV_HEX ?= $(lastword $(wildcard $(SDK_ROOT)/components/softdevice/s1xx_iot/hex/s1xx*softdevice.hex))
+SOFTDEV_HEX ?= $(lastword $(wildcard $(SDK_ROOT)/components/softdevice/s1xx_iot/s1xx*softdevice.hex))
