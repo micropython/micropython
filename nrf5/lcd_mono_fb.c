@@ -52,8 +52,7 @@ static uint8_t       m_bg_color;
 static uint8_t       m_fg_color;
 static uint8_t       m_font_size;
 
-STATIC void lcd_enable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y)
-{
+STATIC void lcd_enable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y) {
 	uint16_t column = (x / 8);
 	uint16_t line   = y;
 	uint8_t  bit_pos = x % 8;
@@ -62,8 +61,7 @@ STATIC void lcd_enable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint
 	p_framebuffer->fb_dirty[y / 8].byte |= (uint8_t)(0x1 << y % 8);
 }
 
-STATIC void lcd_disable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y)
-{
+STATIC void lcd_disable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y) {
     uint16_t column = (x / 8);
     uint16_t line   = y;
     uint8_t  bit_pos = x % 8;
@@ -72,8 +70,7 @@ STATIC void lcd_disable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uin
     p_framebuffer->fb_dirty[y/8].byte |= (uint8_t)(0x1 << y % 8);
 }
 
-STATIC void lcd_init(mp_obj_framebuf_t * p_framebuffer)
-{
+STATIC void lcd_init(mp_obj_framebuf_t * p_framebuffer) {
 	m_fg_color = LCD_BLACK;
 	m_bg_color = LCD_WHITE;
 
@@ -81,32 +78,27 @@ STATIC void lcd_init(mp_obj_framebuf_t * p_framebuffer)
 	memset(p_framebuffer->fb_dirty, 0x00, p_framebuffer->dirty_stride);
 }
 
-STATIC void lcd_fg_color_set(mp_obj_framebuf_t * p_framebuffer, uint16_t color)
-{
+STATIC void lcd_fg_color_set(mp_obj_framebuf_t * p_framebuffer, uint16_t color) {
 	m_fg_color = (color == 0) ? LCD_BLACK : LCD_WHITE;
 }
 
 #if 0
-STATIC uint16_t lcd_fg_color_get(mp_obj_framebuf_t * p_framebuffer)
-{
+STATIC uint16_t lcd_fg_color_get(mp_obj_framebuf_t * p_framebuffer) {
 	return m_fg_color;
 }
 #endif
 
-STATIC void lcd_bg_color_set(mp_obj_framebuf_t * p_framebuffer, uint16_t color)
-{
+STATIC void lcd_bg_color_set(mp_obj_framebuf_t * p_framebuffer, uint16_t color) {
 	m_bg_color = (color == 0) ? LCD_BLACK : LCD_WHITE;
 }
 
 #if 0
-STATIC uint16_t lcd_bg_color_get(mp_obj_framebuf_t * p_framebuffer)
-{
+STATIC uint16_t lcd_bg_color_get(mp_obj_framebuf_t * p_framebuffer) {
 	return m_bg_color;
 }
 #endif
 
-STATIC void lcd_clear_screen(mp_obj_framebuf_t * p_framebuffer)
-{
+STATIC void lcd_clear_screen(mp_obj_framebuf_t * p_framebuffer) {
 	if (m_bg_color == LCD_BLACK) {
 		memset(p_framebuffer->fb_bytes, 0x00, p_framebuffer->bytes_stride * p_framebuffer->height);
 	} else {
@@ -115,45 +107,33 @@ STATIC void lcd_clear_screen(mp_obj_framebuf_t * p_framebuffer)
 	memset(p_framebuffer->fb_dirty, 0xFF, p_framebuffer->dirty_stride);
 }
 
-STATIC void lcd_print_char(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, char ch)
-{
-
-	//int column = (x / 8);
+STATIC void lcd_print_char(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, char ch) {
 	uint16_t line   = y;
-	for (uint8_t i = 0; i < 8; i++)
-	{
+	for (uint8_t i = 0; i < 8; i++) {
+
 		uint16_t current_line = line + (i * m_font_size);
-		for (uint8_t x_pos = 0; x_pos < 8; x_pos++)
-		{
-			if (((uint8_t)font_8x8[ch - 32][i] >> x_pos) & 0x01)
-			{
-				for (uint8_t s_w = 0; s_w < m_font_size; s_w++)
-				{
-					for (uint8_t s_h = 0; s_h < m_font_size; s_h++)
-					{
-						if (m_fg_color < LCD_WHITE)
-						{
-							lcd_disable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
-						}
-						else
-						{
-							lcd_enable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+
+		for (uint8_t x_pos = 0; x_pos < 8; x_pos++) {
+			if (((uint8_t)font_8x8[ch - 32][i] >> x_pos) & 0x01) {
+				for (uint8_t s_w = 0; s_w < m_font_size; s_w++) {
+					for (uint8_t s_h = 0; s_h < m_font_size; s_h++) {
+						if (m_fg_color < LCD_WHITE) {
+							lcd_disable_pixel(p_framebuffer,
+									          x + (x_pos * m_font_size) + s_w,
+											  current_line + s_h);
+						} else {
+							lcd_enable_pixel(p_framebuffer,
+									         x + (x_pos * m_font_size) + s_w,
+											 current_line + s_h);
 						}
 					}
 				}
-			}
-			else
-			{
-				for (uint8_t s_w = 0; s_w < m_font_size; s_w++)
-				{
-					for (uint8_t s_h = 0; s_h < m_font_size; s_h++)
-					{
-						if (m_bg_color < LCD_WHITE)
-						{
+			} else {
+				for (uint8_t s_w = 0; s_w < m_font_size; s_w++) {
+					for (uint8_t s_h = 0; s_h < m_font_size; s_h++) {
+						if (m_bg_color < LCD_WHITE) {
 							lcd_disable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
-						}
-						else
-						{
+						} else {
 							lcd_enable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
 						}
 					}
@@ -164,47 +144,35 @@ STATIC void lcd_print_char(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16
 }
 
 #if 0
-STATIC void lcd_font_size_set(mp_obj_framebuf_t * p_framebuffer, uint8_t size)
-{
+STATIC void lcd_font_size_set(mp_obj_framebuf_t * p_framebuffer, uint8_t size) {
 	m_font_size = size;
 }
 
-STATIC uint8_t lcd_font_size_get(mp_obj_framebuf_t * p_framebuffer)
-{
+STATIC uint8_t lcd_font_size_get(mp_obj_framebuf_t * p_framebuffer) {
 	return m_font_size;
 }
 #endif
 
-STATIC void lcd_print_string(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, const char * p_str)
-{
+STATIC void lcd_print_string(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, const char * p_str) {
 	uint16_t str_len = strlen(p_str);
-	for (uint16_t i = 0; i < str_len; i++)
-	{
+	for (uint16_t i = 0; i < str_len; i++) {
 		lcd_print_char(p_framebuffer, x + (i * 8 * m_font_size), y, p_str[i]);
 	}
 }
 
-STATIC void lcd_pixel_draw(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, uint16_t color)
-{
-	if (color < LCD_WHITE)
-	{
+STATIC void lcd_pixel_draw(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, uint16_t color) {
+	if (color < LCD_WHITE) {
 		lcd_disable_pixel(p_framebuffer, x, y);
-	}
-	else
-	{
+	} else {
 		lcd_enable_pixel(p_framebuffer, x, y);
 	}
 }
 
 STATIC void lcd_update(mp_obj_framebuf_t * p_framebuffer) {
-	for (uint16_t i = 0; i < p_framebuffer->dirty_stride; i++)
-	{
-		if (p_framebuffer->fb_dirty[i].byte != 0)
-		{
-			for (uint16_t b = 0; b < 8; b++)
-			{
-				if (((p_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1)
-				{
+	for (uint16_t i = 0; i < p_framebuffer->dirty_stride; i++) {
+		if (p_framebuffer->fb_dirty[i].byte != 0) {
+			for (uint16_t b = 0; b < 8; b++) {
+				if (((p_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1) {
 					uint16_t line_num = (i * 8) + b;
 				    mp_obj_t args[3];
 				    args[0] = p_framebuffer;
@@ -214,6 +182,7 @@ STATIC void lcd_update(mp_obj_framebuf_t * p_framebuffer) {
 				    mp_call_function_n_kw(p_framebuffer->line_update_cb, 3, 0, args);
 				}
 			}
+
 			p_framebuffer->fb_dirty[i].byte = 0x00;
 		}
 	}
