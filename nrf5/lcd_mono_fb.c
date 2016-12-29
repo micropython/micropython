@@ -43,6 +43,8 @@ typedef struct {
 	fb_byte_t * fb_dirty;
 	uint16_t height;
 	uint16_t width;
+	mp_uint_t bytes_stride;
+	mp_uint_t dirty_stride;
 	mp_obj_t line_update_cb;
 } mp_obj_framebuf_t;
 
@@ -56,7 +58,7 @@ STATIC void lcd_enable_pixel(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint
 	uint16_t line   = y;
 	uint8_t  bit_pos = x % 8;
 
-	m_framebuffer->fb_bytes[line* (m_framebuffer->width / 8) + column].byte |= (1 << bit_pos);
+	m_framebuffer->fb_bytes[line * (m_framebuffer->bytes_stride) + column].byte |= (1 << bit_pos);
 	m_framebuffer->fb_dirty[y / 8].byte |= (uint8_t)(0x1 << y % 8);
 }
 
@@ -66,7 +68,7 @@ STATIC void lcd_disable_pixel(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uin
     uint16_t line   = y;
     uint8_t  bit_pos = x % 8;
 
-    m_framebuffer->fb_bytes[line * (m_framebuffer->width / 8) + column].byte &= ~(1 << bit_pos);
+    m_framebuffer->fb_bytes[line * (m_framebuffer->bytes_stride) + column].byte &= ~(1 << bit_pos);
     m_framebuffer->fb_dirty[y/8].byte |= (uint8_t)(0x1 << y % 8);
 }
 
@@ -75,8 +77,8 @@ STATIC void lcd_init(mp_obj_framebuf_t * m_framebuffer)
 	m_fg_color = LCD_BLACK;
 	m_bg_color = LCD_WHITE;
 
-	memset(m_framebuffer->fb_bytes, 0x00, m_framebuffer->width * m_framebuffer->height / 8);
-	memset(m_framebuffer->fb_dirty, 0x00, m_framebuffer->height / 8);
+	memset(m_framebuffer->fb_bytes, 0x00, m_framebuffer->bytes_stride * m_framebuffer->height);
+	memset(m_framebuffer->fb_dirty, 0x00, m_framebuffer->dirty_stride);
 }
 
 STATIC void lcd_fg_color_set(mp_obj_framebuf_t * m_framebuffer, uint16_t color)
@@ -106,11 +108,11 @@ STATIC uint16_t lcd_bg_color_get(mp_obj_framebuf_t * m_framebuffer)
 STATIC void lcd_clear_screen(mp_obj_framebuf_t * m_framebuffer)
 {
 	if (m_bg_color == LCD_BLACK) {
-		memset(m_framebuffer->fb_bytes, 0x00, m_framebuffer->width * m_framebuffer->height / 8);
+		memset(m_framebuffer->fb_bytes, 0x00, m_framebuffer->bytes_stride * m_framebuffer->height);
 	} else {
-		memset(m_framebuffer->fb_bytes, 0xFF, m_framebuffer->width * m_framebuffer->height / 8);
+		memset(m_framebuffer->fb_bytes, 0xFF, m_framebuffer->bytes_stride * m_framebuffer->height);
 	}
-	memset(m_framebuffer->fb_dirty, 0xFF, m_framebuffer->height / 8);
+	memset(m_framebuffer->fb_dirty, 0xFF, m_framebuffer->dirty_stride);
 }
 
 STATIC void lcd_print_char(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y, char ch)
@@ -182,16 +184,20 @@ STATIC void lcd_print_string(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint
 	}
 }
 
-STATIC void lcd_pixel_draw(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y)
+STATIC void lcd_pixel_draw(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y, uint16_t color)
 {
-
+	if (color < LCD_WHITE)
+	{
+		lcd_disable_pixel(m_framebuffer, x, y);
+	}
+	else
+	{
+		lcd_enable_pixel(m_framebuffer, x, y);
+	}
 }
 
-#include "py/objarray.h"
-
-STATIC void lcd_update(mp_obj_framebuf_t * m_framebuffer)
-{
-	for (uint16_t i = 0; i < m_framebuffer->height / 8; i++)
+STATIC void lcd_update(mp_obj_framebuf_t * m_framebuffer) {
+	for (uint16_t i = 0; i < m_framebuffer->dirty_stride; i++)
 	{
 		if (m_framebuffer->fb_dirty[i].byte != 0)
 		{
@@ -203,10 +209,8 @@ STATIC void lcd_update(mp_obj_framebuf_t * m_framebuffer)
 				    mp_obj_t args[3];
 				    args[0] = m_framebuffer;
 				    args[1] = MP_OBJ_NEW_SMALL_INT(line_num);
-				    args[2] = mp_obj_new_bytearray_by_ref(m_framebuffer->width / 8, (uint8_t *)&m_framebuffer->fb_bytes[line_num * m_framebuffer->width / 8]);
-
-				    mp_obj_array_t *o = MP_OBJ_TO_PTR(args[2]);
-				    (void)o;
+				    args[2] = mp_obj_new_bytearray_by_ref(m_framebuffer->bytes_stride,
+				                                          &m_framebuffer->fb_bytes[line_num * m_framebuffer->bytes_stride]);
 				    mp_call_function_n_kw(m_framebuffer->line_update_cb, 3, 0, args);
 				}
 			}
@@ -221,14 +225,16 @@ STATIC mp_obj_t lcd_mono_fb_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
     o->base.type = type;
 
-
     o->line_update_cb = args[0];
 
     o->width = mp_obj_get_int(args[1]);
     o->height = mp_obj_get_int(args[2]);
 
-    o->fb_bytes = m_new(fb_byte_t, (o->width / 8) * o->height);
-    o->fb_dirty = m_new(fb_byte_t, o->height / 8);
+    o->bytes_stride = o->width / 8;
+    o->dirty_stride = o->height / 8;
+
+    o->fb_bytes = m_new(fb_byte_t, (o->bytes_stride) * o->height);
+    o->fb_dirty = m_new(fb_byte_t, o->dirty_stride);
 
     m_font_size = 1;
 
@@ -255,8 +261,9 @@ STATIC mp_obj_t lcd_mono_fb_pixel(size_t n_args, const mp_obj_t *args) {
 	mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
+    mp_int_t color = mp_obj_get_int(args[3]);
 
-    lcd_pixel_draw(self, x, y);
+    lcd_pixel_draw(self, x, y, color);
 
     return mp_const_none;
 }
