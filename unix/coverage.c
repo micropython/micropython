@@ -5,6 +5,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/mpz.h"
+#include "py/builtin.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -112,6 +113,21 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_set_from_int(&mpz, 1);
         mpz_shl_inpl(&mpz, &mpz, 70);
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
+    }
+
+    // runtime utils
+    {
+        mp_printf(&mp_plat_print, "# runtime utils\n");
+
+        // call mp_call_function_1_protected
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
+        // call mp_call_function_1_protected with invalid args
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3, false));
+
+        // call mp_call_function_2_protected
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
+        // call mp_call_function_2_protected with invalid args
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3, false), mp_obj_new_str("abc", 3, false));
     }
 
     // return a tuple of data for testing on the Python side
