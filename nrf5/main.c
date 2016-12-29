@@ -180,13 +180,20 @@ int main(int argc, char **argv) {
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
+    int ret_code = 0;
+
     for (;;) {
-        if (pyexec_friendly_repl() != 0) {
+        ret_code = pyexec_friendly_repl();
+        if (ret_code != 0) {
             break;
         }
     }
 
     mp_deinit();
+
+    if (ret_code == PYEXEC_FORCED_EXIT) {
+        NVIC_SystemReset();
+    }
 
     return 0;
 }
