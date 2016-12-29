@@ -294,11 +294,11 @@ For example::
 
         Disconnect from the currently connected wireless network.
 
-    .. method:: wlan.scan([show_hidden])
+    .. method:: wlan.scan(show_hidden=False)
 
         Scan for the available wireless networks.
 
-        The `show_hidden` argument determines whether hidden network should be reported.
+        The `show_hidden` argument determines whether hidden networks should be reported.
 
         Scanning is only possible on STA interface. Returns list of tuples with
         the information about WiFi access points:
