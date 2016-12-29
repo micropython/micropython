@@ -52,70 +52,70 @@ static uint8_t       m_bg_color;
 static uint8_t       m_fg_color;
 static uint8_t       m_font_size;
 
-STATIC void lcd_enable_pixel(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y)
+STATIC void lcd_enable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y)
 {
 	uint16_t column = (x / 8);
 	uint16_t line   = y;
 	uint8_t  bit_pos = x % 8;
 
-	m_framebuffer->fb_bytes[line * (m_framebuffer->bytes_stride) + column].byte |= (1 << bit_pos);
-	m_framebuffer->fb_dirty[y / 8].byte |= (uint8_t)(0x1 << y % 8);
+	p_framebuffer->fb_bytes[line * (p_framebuffer->bytes_stride) + column].byte |= (1 << bit_pos);
+	p_framebuffer->fb_dirty[y / 8].byte |= (uint8_t)(0x1 << y % 8);
 }
 
-STATIC void lcd_disable_pixel(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y)
+STATIC void lcd_disable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y)
 {
     uint16_t column = (x / 8);
     uint16_t line   = y;
     uint8_t  bit_pos = x % 8;
 
-    m_framebuffer->fb_bytes[line * (m_framebuffer->bytes_stride) + column].byte &= ~(1 << bit_pos);
-    m_framebuffer->fb_dirty[y/8].byte |= (uint8_t)(0x1 << y % 8);
+    p_framebuffer->fb_bytes[line * (p_framebuffer->bytes_stride) + column].byte &= ~(1 << bit_pos);
+    p_framebuffer->fb_dirty[y/8].byte |= (uint8_t)(0x1 << y % 8);
 }
 
-STATIC void lcd_init(mp_obj_framebuf_t * m_framebuffer)
+STATIC void lcd_init(mp_obj_framebuf_t * p_framebuffer)
 {
 	m_fg_color = LCD_BLACK;
 	m_bg_color = LCD_WHITE;
 
-	memset(m_framebuffer->fb_bytes, 0x00, m_framebuffer->bytes_stride * m_framebuffer->height);
-	memset(m_framebuffer->fb_dirty, 0x00, m_framebuffer->dirty_stride);
+	memset(p_framebuffer->fb_bytes, 0x00, p_framebuffer->bytes_stride * p_framebuffer->height);
+	memset(p_framebuffer->fb_dirty, 0x00, p_framebuffer->dirty_stride);
 }
 
-STATIC void lcd_fg_color_set(mp_obj_framebuf_t * m_framebuffer, uint16_t color)
+STATIC void lcd_fg_color_set(mp_obj_framebuf_t * p_framebuffer, uint16_t color)
 {
 	m_fg_color = (color == 0) ? LCD_BLACK : LCD_WHITE;
 }
 
 #if 0
-STATIC uint16_t lcd_fg_color_get(mp_obj_framebuf_t * m_framebuffer)
+STATIC uint16_t lcd_fg_color_get(mp_obj_framebuf_t * p_framebuffer)
 {
 	return m_fg_color;
 }
 #endif
 
-STATIC void lcd_bg_color_set(mp_obj_framebuf_t * m_framebuffer, uint16_t color)
+STATIC void lcd_bg_color_set(mp_obj_framebuf_t * p_framebuffer, uint16_t color)
 {
 	m_bg_color = (color == 0) ? LCD_BLACK : LCD_WHITE;
 }
 
 #if 0
-STATIC uint16_t lcd_bg_color_get(mp_obj_framebuf_t * m_framebuffer)
+STATIC uint16_t lcd_bg_color_get(mp_obj_framebuf_t * p_framebuffer)
 {
 	return m_bg_color;
 }
 #endif
 
-STATIC void lcd_clear_screen(mp_obj_framebuf_t * m_framebuffer)
+STATIC void lcd_clear_screen(mp_obj_framebuf_t * p_framebuffer)
 {
 	if (m_bg_color == LCD_BLACK) {
-		memset(m_framebuffer->fb_bytes, 0x00, m_framebuffer->bytes_stride * m_framebuffer->height);
+		memset(p_framebuffer->fb_bytes, 0x00, p_framebuffer->bytes_stride * p_framebuffer->height);
 	} else {
-		memset(m_framebuffer->fb_bytes, 0xFF, m_framebuffer->bytes_stride * m_framebuffer->height);
+		memset(p_framebuffer->fb_bytes, 0xFF, p_framebuffer->bytes_stride * p_framebuffer->height);
 	}
-	memset(m_framebuffer->fb_dirty, 0xFF, m_framebuffer->dirty_stride);
+	memset(p_framebuffer->fb_dirty, 0xFF, p_framebuffer->dirty_stride);
 }
 
-STATIC void lcd_print_char(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y, char ch)
+STATIC void lcd_print_char(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, char ch)
 {
 
 	//int column = (x / 8);
@@ -133,11 +133,11 @@ STATIC void lcd_print_char(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16
 					{
 						if (m_fg_color < LCD_WHITE)
 						{
-							lcd_disable_pixel(m_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+							lcd_disable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
 						}
 						else
 						{
-							lcd_enable_pixel(m_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+							lcd_enable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
 						}
 					}
 				}
@@ -150,11 +150,11 @@ STATIC void lcd_print_char(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16
 					{
 						if (m_bg_color < LCD_WHITE)
 						{
-							lcd_disable_pixel(m_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+							lcd_disable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
 						}
 						else
 						{
-							lcd_enable_pixel(m_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+							lcd_enable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
 						}
 					}
 				}
@@ -164,57 +164,57 @@ STATIC void lcd_print_char(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16
 }
 
 #if 0
-STATIC void lcd_font_size_set(mp_obj_framebuf_t * m_framebuffer, uint8_t size)
+STATIC void lcd_font_size_set(mp_obj_framebuf_t * p_framebuffer, uint8_t size)
 {
 	m_font_size = size;
 }
 
-STATIC uint8_t lcd_font_size_get(mp_obj_framebuf_t * m_framebuffer)
+STATIC uint8_t lcd_font_size_get(mp_obj_framebuf_t * p_framebuffer)
 {
 	return m_font_size;
 }
 #endif
 
-STATIC void lcd_print_string(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y, const char * p_str)
+STATIC void lcd_print_string(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, const char * p_str)
 {
 	uint16_t str_len = strlen(p_str);
 	for (uint16_t i = 0; i < str_len; i++)
 	{
-		lcd_print_char(m_framebuffer, x + (i * 8 * m_font_size), y, p_str[i]);
+		lcd_print_char(p_framebuffer, x + (i * 8 * m_font_size), y, p_str[i]);
 	}
 }
 
-STATIC void lcd_pixel_draw(mp_obj_framebuf_t * m_framebuffer, uint16_t x, uint16_t y, uint16_t color)
+STATIC void lcd_pixel_draw(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, uint16_t color)
 {
 	if (color < LCD_WHITE)
 	{
-		lcd_disable_pixel(m_framebuffer, x, y);
+		lcd_disable_pixel(p_framebuffer, x, y);
 	}
 	else
 	{
-		lcd_enable_pixel(m_framebuffer, x, y);
+		lcd_enable_pixel(p_framebuffer, x, y);
 	}
 }
 
-STATIC void lcd_update(mp_obj_framebuf_t * m_framebuffer) {
-	for (uint16_t i = 0; i < m_framebuffer->dirty_stride; i++)
+STATIC void lcd_update(mp_obj_framebuf_t * p_framebuffer) {
+	for (uint16_t i = 0; i < p_framebuffer->dirty_stride; i++)
 	{
-		if (m_framebuffer->fb_dirty[i].byte != 0)
+		if (p_framebuffer->fb_dirty[i].byte != 0)
 		{
 			for (uint16_t b = 0; b < 8; b++)
 			{
-				if (((m_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1)
+				if (((p_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1)
 				{
 					uint16_t line_num = (i * 8) + b;
 				    mp_obj_t args[3];
-				    args[0] = m_framebuffer;
+				    args[0] = p_framebuffer;
 				    args[1] = MP_OBJ_NEW_SMALL_INT(line_num);
-				    args[2] = mp_obj_new_bytearray_by_ref(m_framebuffer->bytes_stride,
-				                                          &m_framebuffer->fb_bytes[line_num * m_framebuffer->bytes_stride]);
-				    mp_call_function_n_kw(m_framebuffer->line_update_cb, 3, 0, args);
+				    args[2] = mp_obj_new_bytearray_by_ref(p_framebuffer->bytes_stride,
+				                                          &p_framebuffer->fb_bytes[line_num * p_framebuffer->bytes_stride]);
+				    mp_call_function_n_kw(p_framebuffer->line_update_cb, 3, 0, args);
 				}
 			}
-			m_framebuffer->fb_dirty[i].byte = 0x00;
+			p_framebuffer->fb_dirty[i].byte = 0x00;
 		}
 	}
 }
