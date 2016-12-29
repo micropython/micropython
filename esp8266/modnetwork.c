@@ -192,7 +192,7 @@ STATIC mp_obj_t esp_scan(size_t n_args, const mp_obj_t *args) {
     esp_scan_list = &list;
     struct scan_config config = {0};
     if (n_args > 1) {
-        config.show_hidden = mp_obj_get_int(args[1]) != 0;
+        config.show_hidden = mp_obj_is_true(args[1]);
     }
     wifi_station_scan(&config, (scan_done_cb_t)esp_scan_cb);
     while (esp_scan_list != NULL) {
