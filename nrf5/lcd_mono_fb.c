@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 
 #include "lcd_mono_fb.h"
-#include "font.h"
+#include "font_petme128_8x8.h"
 
 #define LCD_BLACK 0
 #define LCD_WHITE 1
@@ -108,23 +108,23 @@ STATIC void lcd_clear_screen(mp_obj_framebuf_t * p_framebuffer) {
 }
 
 STATIC void lcd_print_char(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, char ch) {
-	uint16_t line   = y;
+	uint16_t col = x;
 	for (uint8_t i = 0; i < 8; i++) {
 
-		uint16_t current_line = line + (i * m_font_size);
+		uint16_t current_col = col + (i * m_font_size);
 
-		for (uint8_t x_pos = 0; x_pos < 8; x_pos++) {
-			if (((uint8_t)font_8x8[ch - 32][i] >> x_pos) & 0x01) {
+		for (uint8_t y_pos = 0; y_pos < 8; y_pos++) {
+			if ((((uint8_t)font_petme128_8x8[((ch - 32) * 8) + i]) >> y_pos) & 0x01) {
 				for (uint8_t s_w = 0; s_w < m_font_size; s_w++) {
 					for (uint8_t s_h = 0; s_h < m_font_size; s_h++) {
 						if (m_fg_color < LCD_WHITE) {
 							lcd_disable_pixel(p_framebuffer,
-									          x + (x_pos * m_font_size) + s_w,
-											  current_line + s_h);
+							                  current_col + s_w,
+											  y + (y_pos * m_font_size) + s_h);
 						} else {
 							lcd_enable_pixel(p_framebuffer,
-									         x + (x_pos * m_font_size) + s_w,
-											 current_line + s_h);
+									         current_col + s_w,
+											 y + (y_pos * m_font_size) + s_h);
 						}
 					}
 				}
@@ -132,9 +132,13 @@ STATIC void lcd_print_char(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16
 				for (uint8_t s_w = 0; s_w < m_font_size; s_w++) {
 					for (uint8_t s_h = 0; s_h < m_font_size; s_h++) {
 						if (m_bg_color < LCD_WHITE) {
-							lcd_disable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+							lcd_disable_pixel(p_framebuffer,
+									          current_col + s_w,
+											  y + (y_pos * m_font_size) + s_h);
 						} else {
-							lcd_enable_pixel(p_framebuffer, x + (x_pos * m_font_size) + s_w, current_line + s_h);
+							lcd_enable_pixel(p_framebuffer,
+									         current_col + s_w,
+											 y + (y_pos * m_font_size) + s_h);
 						}
 					}
 				}
