@@ -12,8 +12,8 @@ MEMORY
 }
  
 /* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 16K;
-_minimum_heap_size = 20K;
+_minimum_stack_size = 8K;
+_minimum_heap_size = 28K;
  
 /* top end of the stack */
 
@@ -22,6 +22,6 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_end = 0x20008800; /* tunable */
+_heap_end = 0x2000a800; /* tunable */
 
 INCLUDE "boards/common.ld"
