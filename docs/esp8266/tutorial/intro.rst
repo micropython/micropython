@@ -57,8 +57,8 @@ firmware builds for 512kb modules.
 Deploying the firmware
 ----------------------
 
-The very first thing you need to do is put the MicroPython firmware (compiled
-code) on your ESP8266 device.  There are two main steps to do this: first you
+Once you have the MicroPython firmware (compiled code), you need to load it onto 
+your ESP8266 device.  There are two main steps to do this: first you
 need to put your device in boot-loader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the
 particular board and you will need to refer to its documentation for details.
