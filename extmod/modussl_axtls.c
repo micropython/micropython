@@ -126,6 +126,12 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
     mp_int_t r = ssl_write(o->ssl_sock, buf, size);
     if (r < 0) {
+        if (mp_is_nonblocking_error(mp_stream_errno) && o->timeout != -1) {
+            // non-blocking socket
+            *errcode = mp_stream_errno;
+            return 0;
+        }
+
         *errcode = r;
         return MP_STREAM_ERROR;
     }
