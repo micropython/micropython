@@ -49,12 +49,23 @@ Constructors
        Construct an I2C object on the given bus.  `bus` can only be 0.
        If the bus is not given, the default one will be selected (0).
 
-.. only:: port_esp8266
+.. only:: not port_wipy
 
-    .. class:: I2C(scl, sda, \*, freq=400000)
+    .. class:: I2C(id=-1, \*, scl, sda, freq=400000)
 
-       Construct and return a new I2C object.
-       See the init method below for a description of the arguments.
+       Construct and return a new I2C object using the following parameters:
+
+          - `id` identifies the particular I2C peripheral.  The default
+            value of -1 selects a software implementation of I2C which can
+            work (in most cases) with arbitrary pins for SCL and SDA.
+            If `id` is -1 then `scl` and `sda` must be specified.  Other
+            allowed values for `id` depend on the particular port/board,
+            and specifying `scl` and `sda` may or may not be required or
+            allowed in this case.
+          - `scl` should be a pin object specifying the pin to use for SCL.
+          - `sda` should be a pin object specifying the pin to use for SDA.
+          - `freq` should be an integer which sets the maximum frequency
+            for SCL.
 
 General Methods
 ---------------
