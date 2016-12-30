@@ -1,0 +1,5 @@
+Unhandled exception in thread started by <function thread_entry at 0x\[0-9a-f\]\+>
+Traceback (most recent call last):
+  File "thread/thread_exc2.py", line 6, in thread_entry
+ValueError: 
+done

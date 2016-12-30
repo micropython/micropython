@@ -35,6 +35,9 @@ ementation
 12345678
 0
 0
+# runtime utils
+TypeError: can't convert str to int
+TypeError: unsupported types for : 'str', 'str'
 ('0123456789', b'0123456789')
 7300
 7300
