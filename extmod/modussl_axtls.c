@@ -54,7 +54,8 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
     o->buf = NULL;
     o->bytes_left = 0;
     o->sock = sock;
-    o->timeout = -1;
+    o->timeout = -1;    // FIXME: sock->timeout may not always be -1, 
+                        // how to read it out and init o->timeout
 
     uint32_t options = SSL_SERVER_VERIFY_LATER;
     if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
@@ -81,7 +82,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
 STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<_SSLSocket %p>", self->ssl_sock);
+    mp_printf(print, "<_SSLSocket %p, timeout=%d>", self->ssl_sock, self->timeout);
 }
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
@@ -92,13 +93,13 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         if (r == SSL_OK) {
             // SSL_OK from ssl_read() means "everything is ok, but there's
             // not user data yet. 
-            if (mp_is_nonblocking_error(mp_stream_errno)) {
+            if (mp_is_nonblocking_error(mp_stream_errno) && o->timeout != -1) {
                 // return if non-blocking socket
                 *errcode = mp_stream_errno;
                 return 0;
             }
 
-            // So, we just keep reading for blocking socket.
+            // So, we just keep reading.
             continue;
         }
         if (r < 0) {
