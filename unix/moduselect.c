@@ -134,7 +134,7 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
         if (entries->fd == fd) {
             entries->fd = -1;
             if (self->obj_map) {
-                self->obj_map[entries - self->entries] = NULL;
+                self->obj_map[entries - self->entries] = MP_OBJ_NULL;
             }
             break;
         }
@@ -197,7 +197,7 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
         if (entries->revents != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
             // If there's an object stored, return it, otherwise raw fd
-            if (self->obj_map && self->obj_map[i] != NULL) {
+            if (self->obj_map && self->obj_map[i] != MP_OBJ_NULL) {
                 t->items[0] = self->obj_map[i];
             } else {
                 t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
