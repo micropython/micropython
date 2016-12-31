@@ -90,4 +90,8 @@ void hal_pwm_period_set(NRF_PWM_Type * p_instance, uint16_t period);
 
 void hal_pwm_duty_set(NRF_PWM_Type * p_instance, uint8_t duty);
 
+void hal_pwm_start(NRF_PWM_Type * p_instance);
+
+void hal_pwm_stop(NRF_PWM_Type * p_instance);
+
 #endif // HAL_PWM_H__
