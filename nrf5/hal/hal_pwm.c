@@ -79,7 +79,8 @@ void hal_pwm_start(NRF_PWM_Type * p_instance) {
 }
 
 void hal_pwm_stop(NRF_PWM_Type * p_instance) {
-    p_instance->TASKS_STOP = 1;
+    p_instance->TASKS_SEQSTART[0] = 0;
+    p_instance->ENABLE            = (PWM_ENABLE_ENABLE_Disabled << PWM_ENABLE_ENABLE_Pos);
 }
 
 void hal_pwm_freq_set(NRF_PWM_Type * p_instance, uint16_t freq) {
