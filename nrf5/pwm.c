@@ -92,9 +92,13 @@ STATIC int pwm_find(mp_obj_t id) {
 }
 
 void pwm_init(PWM_HandleTypeDef *pwm) {
+	// start pwm
+	hal_pwm_start(pwm->instance);
 }
 
 void pwm_deinit(PWM_HandleTypeDef *pwm) {
+	// stop pwm
+	hal_pwm_stop(pwm->instance);
 }
 
 STATIC void pwm_print(const mp_print_t *print, PWM_HandleTypeDef *pwm, bool legacy) {
@@ -284,6 +288,8 @@ STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args) {
 }
 
 STATIC void machine_hard_pwm_init(mp_obj_t self_in, mp_arg_val_t *args) {
+	machine_hard_pwm_obj_t *self = self_in;
+	pwm_init(self->pyb->pwm);
 }
 
 STATIC void machine_hard_pwm_deinit(mp_obj_t self_in) {
