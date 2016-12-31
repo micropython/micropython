@@ -72,15 +72,14 @@ void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init) 
 
     p_instance->SEQ[0].REFRESH    = 0;
     p_instance->SEQ[0].ENDDELAY   = 0;
-    p_instance->TASKS_SEQSTART[0] = 1;
 }
 
 void hal_pwm_start(NRF_PWM_Type * p_instance) {
-    // p_instance->TASKS_SEQSTART[0] = 1;
+    p_instance->TASKS_SEQSTART[0] = 1;
 }
 
 void hal_pwm_stop(NRF_PWM_Type * p_instance) {
-    // p_instance->TASKS_STOP = 1;
+    p_instance->TASKS_STOP = 1;
 }
 
 void hal_pwm_freq_set(NRF_PWM_Type * p_instance, uint16_t freq) {
