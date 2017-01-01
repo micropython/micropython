@@ -97,13 +97,66 @@ STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, i
     }
 }
 
+// Functions for GS4_HMSB format
+
+STATIC void gs4_hmsb_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
+    uint8_t *pixel = &((uint8_t*)fb->buf)[(x + y * fb->stride) >> 1];
+
+    if (x % 2) {
+        *pixel = ((uint8_t)col & 0x0f) | (*pixel & 0xf0);
+    } else {
+        *pixel = ((uint8_t)col << 4) | (*pixel & 0x0f);
+    }
+}
+
+STATIC uint32_t gs4_hmsb_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
+    if (x % 2) {
+        return ((uint8_t*)fb->buf)[(x + y * fb->stride) >> 1] & 0x0f;
+    }
+
+    return ((uint8_t*)fb->buf)[(x + y * fb->stride) >> 1] >> 4;
+}
+
+STATIC void gs4_hmsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+    col &= 0x0f;
+    uint8_t *pixel_pair = &((uint8_t*)fb->buf)[(x + y * fb->stride) >> 1];
+    uint8_t col_shifted_left = col << 4;
+    uint8_t colored_pixel_pair = col_shifted_left | col;
+    int pixel_count_till_next_line = (fb->stride - w) >> 1;
+    bool odd_x = (x % 2 == 1);
+
+    while (h--) {
+        int ww = w;
+
+        if (odd_x && ww > 0) {
+            *pixel_pair = (*pixel_pair & 0xf0) | col;
+            pixel_pair++;
+            ww--;
+        }
+
+        memset(pixel_pair, colored_pixel_pair, ww >> 1);
+        pixel_pair += ww >> 1;
+
+        if (ww % 2) {
+            *pixel_pair = col_shifted_left | (*pixel_pair & 0x0f);
+            if (!odd_x) {
+                pixel_pair++;
+            }
+        }
+
+        pixel_pair += pixel_count_till_next_line;
+    }
+}
+
 // constants for formats
-#define FRAMEBUF_MVLSB  (0)
-#define FRAMEBUF_RGB565 (1)
+#define FRAMEBUF_MVLSB    (0)
+#define FRAMEBUF_RGB565   (1)
+#define FRAMEBUF_GS4_HMSB (2)
 
 STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
     [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
+    [FRAMEBUF_GS4_HMSB] = {gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
 };
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
@@ -152,6 +205,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     switch (o->format) {
         case FRAMEBUF_MVLSB:
         case FRAMEBUF_RGB565:
+        case FRAMEBUF_GS4_HMSB:
             break;
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -490,6 +544,7 @@ STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer1), MP_ROM_PTR(&legacy_framebuffer1_obj) },
     { MP_ROM_QSTR(MP_QSTR_MVLSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_RGB565), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565) },
+    { MP_ROM_QSTR(MP_QSTR_GS4_HMSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS4_HMSB) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(framebuf_module_globals, framebuf_module_globals_table);
