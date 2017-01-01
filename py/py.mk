@@ -222,6 +222,7 @@ PY_O_BASENAME = \
 	../extmod/virtpin.o \
 	../extmod/machine_mem.o \
 	../extmod/machine_pinbase.o \
+	../extmod/machine_signal.o \
 	../extmod/machine_pulse.o \
 	../extmod/machine_i2c.o \
 	../extmod/machine_spi.o \
