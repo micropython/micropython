@@ -91,7 +91,7 @@ print(buf)
 
 # test invalid constructor
 try:
-    fbuf = framebuf.FrameBuffer(buf, w, h, 2, framebuf.MVLSB)
+    fbuf = framebuf.FrameBuffer(buf, w, h, 3, framebuf.MVLSB)
 except ValueError:
 	print("ValueError")
 
