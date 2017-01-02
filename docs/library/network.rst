@@ -367,7 +367,14 @@ For example::
        password   Access password (string)
        =========  ===========
 
+       Setting interface parameters does store them to a conifiguration area on
+       flash. When booting these parameters are used to automatically connect to
+       the last configured wireless network.
 
+       .. warning::
+
+          Writing the interface parameters to flash may wear out your flash  if
+          used too often and might destroy it!
 
 .. only:: port_wipy
 

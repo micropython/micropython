@@ -81,7 +81,7 @@ STATIC mp_obj_t esp_active(mp_uint_t n_args, const mp_obj_t *args) {
         } else {
             mode &= ~mask;
         }
-        error_check(wifi_set_opmode(mode), "Cannot update i/f status");
+        error_check(wifi_set_opmode_current(mode), "Cannot update i/f status");
         return mp_const_none;
     }
 
@@ -110,7 +110,7 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
         }
         memcpy(config.password, p, len);
 
-        error_check(wifi_station_set_config(&config), "Cannot set STA config");
+        error_check(wifi_station_set_config_current(&config), "Cannot set STA config");
     }
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
