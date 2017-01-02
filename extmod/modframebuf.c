@@ -55,22 +55,22 @@ typedef struct _mp_framebuf_p_t {
 
 // Functions for MVLSB format
 
-STATIC void mvlsb_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
+STATIC void mvlsb_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t c) {
     size_t index = (y >> 3) * fb->stride + x;
     uint8_t offset = y & 0x07;
-    ((uint8_t*)fb->buf)[index] = (((uint8_t*)fb->buf)[index] & ~(0x01 << offset)) | ((color != 0) << offset);
+    ((uint8_t*)fb->buf)[index] = (((uint8_t*)fb->buf)[index] & ~(0x01 << offset)) | ((c != 0) << offset);
 }
 
 STATIC uint32_t mvlsb_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return (((uint8_t*)fb->buf)[(y >> 3) * fb->stride + x] >> (y & 0x07)) & 0x01;
 }
 
-STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t c) {
     while (h--) {
         uint8_t *b = &((uint8_t*)fb->buf)[(y >> 3) * fb->stride + x];
         uint8_t offset = y & 0x07;
         for (int ww = w; ww; --ww) {
-            *b = (*b & ~(0x01 << offset)) | ((col != 0) << offset);
+            *b = (*b & ~(0x01 << offset)) | ((c != 0) << offset);
             ++b;
         }
         ++y;
@@ -79,19 +79,19 @@ STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, in
 
 // Functions for RGB565 format
 
-STATIC void rgb565_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
-    ((uint16_t*)fb->buf)[x + y * fb->stride] = color;
+STATIC void rgb565_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t c) {
+    ((uint16_t*)fb->buf)[x + y * fb->stride] = c;
 }
 
 STATIC uint32_t rgb565_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return ((uint16_t*)fb->buf)[x + y * fb->stride];
 }
 
-STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t colour) {
+STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t c) {
     uint16_t *b = &((uint16_t*)fb->buf)[x + y * fb->stride];
     while (h--) {
         for (int ww = w; ww; --ww) {
-            *b++ = colour;
+            *b++ = c;
         }
         b += fb->stride - w;
     }
@@ -106,15 +106,15 @@ STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
 };
 
-static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
-    formats[fb->format].setpixel(fb, x, y, color);
+static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t c) {
+    formats[fb->format].setpixel(fb, x, y, c);
 }
 
 static inline uint32_t getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     return formats[fb->format].getpixel(fb, x, y);
 }
 
-STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t c) {
     if (x + w <= 0 || y + h <= 0 || y >= fb->height || x >= fb->width) {
         // No operation needed.
         return;
@@ -126,7 +126,7 @@ STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, u
     x = MAX(x, 0);
     y = MAX(y, 0);
 
-    formats[fb->format].fill_rect(fb, x, y, xend - x, yend - y, col);
+    formats[fb->format].fill_rect(fb, x, y, xend - x, yend - y, c);
 }
 
 STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -170,10 +170,10 @@ STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     return 0;
 }
 
-STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
+STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t c_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t col = mp_obj_get_int(col_in);
-    formats[self->format].fill_rect(self, 0, 0, self->width, self->height, col);
+    mp_int_t c = mp_obj_get_int(c_in);
+    formats[self->format].fill_rect(self, 0, 0, self->width, self->height, c);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(framebuf_fill_obj, framebuf_fill);
@@ -186,9 +186,9 @@ STATIC mp_obj_t framebuf_fill_rect(size_t n_args, const mp_obj_t *args) {
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t width = mp_obj_get_int(args[3]);
     mp_int_t height = mp_obj_get_int(args[4]);
-    mp_int_t color = mp_obj_get_int(args[5]);
+    mp_int_t c = mp_obj_get_int(args[5]);
 
-    fill_rect(self, x, y, width, height, color);
+    fill_rect(self, x, y, width, height, c);
 
     return mp_const_none;
 }
@@ -218,9 +218,9 @@ STATIC mp_obj_t framebuf_hline(size_t n_args, const mp_obj_t *args) {
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t w = mp_obj_get_int(args[3]);
-    mp_int_t col = mp_obj_get_int(args[4]);
+    mp_int_t c = mp_obj_get_int(args[4]);
 
-    fill_rect(self, x, y, w, 1, col);
+    fill_rect(self, x, y, w, 1, c);
 
     return mp_const_none;
 }
@@ -233,9 +233,9 @@ STATIC mp_obj_t framebuf_vline(size_t n_args, const mp_obj_t *args) {
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t h = mp_obj_get_int(args[3]);
-    mp_int_t col = mp_obj_get_int(args[4]);
+    mp_int_t c = mp_obj_get_int(args[4]);
 
-    fill_rect(self, x, y, 1, h, col);
+    fill_rect(self, x, y, 1, h, c);
 
     return mp_const_none;
 }
@@ -249,12 +249,12 @@ STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args) {
     mp_int_t y = mp_obj_get_int(args[2]);
     mp_int_t w = mp_obj_get_int(args[3]);
     mp_int_t h = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
+    mp_int_t c = mp_obj_get_int(args[5]);
 
-    fill_rect(self, x, y, w, 1, col);
-    fill_rect(self, x, y + h- 1, w, 1, col);
-    fill_rect(self, x, y, 1, h, col);
-    fill_rect(self, x + w- 1, y, 1, h, col);
+    fill_rect(self, x, y, w, 1, c);
+    fill_rect(self, x, y + h- 1, w, 1, c);
+    fill_rect(self, x, y, 1, h, c);
+    fill_rect(self, x + w- 1, y, 1, h, c);
 
     return mp_const_none;
 }
@@ -268,7 +268,7 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t y1 = mp_obj_get_int(args[2]);
     mp_int_t x2 = mp_obj_get_int(args[3]);
     mp_int_t y2 = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
+    mp_int_t c = mp_obj_get_int(args[5]);
 
     mp_int_t dx = x2 - x1;
     mp_int_t sx;
@@ -302,9 +302,9 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t e = 2 * dy - dx;
     for (mp_int_t i = 0; i < dx; ++i) {
         if (steep) {
-            setpixel(self, y1, x1, col);
+            setpixel(self, y1, x1, c);
         } else {
-            setpixel(self, x1, y1, col);
+            setpixel(self, x1, y1, c);
         }
         while (e >= 0) {
             y1 += sy;
@@ -314,7 +314,7 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
         e += 2 * dy;
     }
 
-    setpixel(self, x2, y2, col);
+    setpixel(self, x2, y2, c);
 
     return mp_const_none;
 }
@@ -347,14 +347,14 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     int y1 = MAX(0, -y);
     int x0end = MIN(self->width, x + source->width);
     int y0end = MIN(self->height, y + source->height);
-    uint32_t color;
+    uint32_t c;
 
     for (; y0 < y0end; ++y0) {
         int cx1 = x1;
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
-            color = getpixel(source, cx1, y1);
-            if (color != key) {
-                setpixel(self, cx0, y0, color);
+            c = getpixel(source, cx1, y1);
+            if (c != key) {
+                setpixel(self, cx0, y0, c);
             }
             ++cx1;
         }
@@ -402,9 +402,9 @@ STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args) {
     const char *str = mp_obj_str_get_str(args[1]);
     mp_int_t x0 = mp_obj_get_int(args[2]);
     mp_int_t y0 = mp_obj_get_int(args[3]);
-    mp_int_t col = 1;
+    mp_int_t c = 1;
     if (n_args >= 5) {
-        col = mp_obj_get_int(args[4]);
+        c = mp_obj_get_int(args[4]);
     }
 
     // loop over chars
@@ -423,7 +423,7 @@ STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args) {
                 for (int y = y0; vline_data; vline_data >>= 1, y++) { // scan over vertical column
                     if (vline_data & 1) { // only draw if pixel set
                         if (0 <= y && y < self->height) { // clip y
-                            setpixel(self, x0, y, col);
+                            setpixel(self, x0, y, c);
                         }
                     }
                 }
