@@ -32,8 +32,6 @@
 
 #ifdef HAL_SPI_MODULE_ENABLED
 
-static uint32_t m_ss_pin;
-
 static const uint32_t hal_spi_frequency_lookup[] = {
     SPI_FREQUENCY_FREQUENCY_K125, // 125 kbps
     SPI_FREQUENCY_FREQUENCY_K250, // 250 kbps
@@ -45,13 +43,9 @@ static const uint32_t hal_spi_frequency_lookup[] = {
 };
 
 void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi_init) {
-    hal_gpio_pin_set(p_spi_init->enable_pin);
-    m_ss_pin = p_spi_init->enable_pin;
-
     hal_gpio_cfg_pin(p_spi_init->clk_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_cfg_pin(p_spi_init->mosi_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_cfg_pin(p_spi_init->miso_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_spi_init->enable_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
 
 #if NRF51
     p_instance->PSELSCK  = p_spi_init->clk_pin;
@@ -100,8 +94,6 @@ void hal_spi_master_tx_rx(NRF_SPI_Type * p_instance, uint16_t transfer_size, con
 
     p_instance->EVENTS_READY = 0;
 
-    hal_gpio_pin_clear(m_ss_pin);
-
     while (number_of_txd_bytes < transfer_size) {
         p_instance->TXD = (uint32_t)(tx_data[number_of_txd_bytes]);
 
@@ -114,9 +106,6 @@ void hal_spi_master_tx_rx(NRF_SPI_Type * p_instance, uint16_t transfer_size, con
         rx_data[number_of_txd_bytes] = (uint8_t)p_instance->RXD;
         number_of_txd_bytes++;
     };
-
-    hal_gpio_pin_set(m_ss_pin);
-
 }
 
 #endif // HAL_SPI_MODULE_ENABLED

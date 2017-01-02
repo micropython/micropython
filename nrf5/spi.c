@@ -263,12 +263,10 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
         spi_init_conf.clk_pin = mp_obj_get_int(args[ARG_NEW_sck].u_obj);
         spi_init_conf.mosi_pin = mp_obj_get_int(args[ARG_NEW_mosi].u_obj);
         spi_init_conf.miso_pin = mp_obj_get_int(args[ARG_NEW_miso].u_obj);
-        spi_init_conf.enable_pin = MICROPY_HW_SPI0_NSS;
     } else {
         spi_init_conf.clk_pin = MICROPY_HW_SPI0_SCK;
         spi_init_conf.mosi_pin = MICROPY_HW_SPI0_MOSI;
         spi_init_conf.miso_pin = MICROPY_HW_SPI0_MISO;
-        spi_init_conf.enable_pin = MICROPY_HW_SPI0_NSS;
     }
 
     int baudrate = args[ARG_NEW_baudrate].u_int;
