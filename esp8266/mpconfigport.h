@@ -37,6 +37,7 @@
 #define MICROPY_PY_BUILTINS_SLICE   (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
+#define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
