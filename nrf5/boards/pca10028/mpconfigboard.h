@@ -60,8 +60,6 @@
 // UART config
 #define MICROPY_HW_UART1_RX         (11)
 #define MICROPY_HW_UART1_TX         (9)
-#define MICROPY_HW_UART1_CTS        (10)
-#define MICROPY_HW_UART1_RTS        (8)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
