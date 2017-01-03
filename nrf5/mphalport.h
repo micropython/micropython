@@ -125,7 +125,7 @@ void mp_hal_stdout_tx_str(const char *str);
 #define mp_hal_pin_obj_t const pin_obj_t*
 #define mp_hal_pin_high(p) (((NRF_GPIO_Type *)((p)->gpio))->OUTSET = (p)->pin_mask)
 #define mp_hal_pin_low(p)  (((NRF_GPIO_Type *)((p)->gpio))->OUTCLR = (p)->pin_mask)
-#define mp_hal_pin_read(p) (((NRF_GPIO_Type *)((p)->gpio))->OUT >> ((p)->pin) & 1)
+#define mp_hal_pin_read(p) (((NRF_GPIO_Type *)((p)->gpio))->IN >> ((p)->pin) & 1)
 #define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
 
 // TODO: empty implementation for now. Used by machine_spi.c:69
