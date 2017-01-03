@@ -204,8 +204,11 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     hal_uart_init_t uart_init = {
         .rx_pin       = MICROPY_HW_UART1_RX,
         .tx_pin       = MICROPY_HW_UART1_TX,
+#if MICROPY_HW_UART1_HWFC
         .rts_pin      = MICROPY_HW_UART1_RTS,
         .cts_pin      = MICROPY_HW_UART1_CTS,
+#endif
+
 #if MICROPY_HW_UART1_HWFC
         .flow_control = true,
 #else
