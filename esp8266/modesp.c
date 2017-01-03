@@ -652,7 +652,7 @@ STATIC mp_obj_t esp_check_fw(void) {
     uint32_t size = *(uint32_t*)(fw_start + 0x8ffc);
     printf("size: %d\n", size);
     if (size > 1024 * 1024) {
-        print("Invalid size\n");
+        printf("Invalid size\n");
         return mp_const_false;
     }
     MD5Init(&ctx);
