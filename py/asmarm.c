@@ -39,7 +39,7 @@
 #define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
 
 void asm_arm_end_pass(asm_arm_t *as) {
-    if (as->base.pass == ASM_ARM_PASS_EMIT) {
+    if (as->base.pass == MP_ASM_PASS_EMIT) {
 #ifdef __arm__
         // flush I- and D-cache
         asm volatile(
