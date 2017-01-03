@@ -175,6 +175,10 @@ $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 all: $(BUILD)/firmware.elf binary hex
 
+FLASHER ?=
+
+ifeq ($(FLASHER),)
+
 flash: $(BUILD)/firmware.elf
 	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --pinreset -f $(MCU_VARIANT)
@@ -184,6 +188,13 @@ sd:
 	nrfjprog --program $(SOFTDEV_HEX) -f $(MCU_VARIANT)
 	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --pinreset -f $(MCU_VARIANT)
+
+else ifeq ($(FLASHER), pyocd)
+
+flash: $(BUILD)/firmware.elf
+	pyocd-flashtool -t $(MCU_VARIANT) $(BUILD)/firmware.hex
+
+endif
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
