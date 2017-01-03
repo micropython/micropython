@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 
 """
-E-paper SLD00200.
+E-paper EM027AS011.
 
 Pin layout on pca10040 (nrf52):
 
