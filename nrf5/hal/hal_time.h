@@ -29,4 +29,6 @@
 
 void mp_hal_delay_ms(mp_uint_t ms);
 
+void mp_hal_delay_us(mp_uint_t us);
+
 #endif // HAL_TIME_H__
