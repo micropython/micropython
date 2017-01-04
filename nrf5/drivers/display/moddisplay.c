@@ -28,20 +28,19 @@
 
 #if MICROPY_PY_DISPLAY
 
-#include "epaper/moddisplay_epaper.h"
-#include "lcd/moddisplay_lcd.h"
-#include "oled/moddisplay_oled.h"
+#include "epaper_sld00200p_obj.h"
 
 STATIC const mp_map_elem_t mp_module_display_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_display) },
-#if MICROPY_PY_DISPLAY_EPAPER
-    { MP_OBJ_NEW_QSTR(MP_QSTR_epaper), (mp_obj_t)&display_epaper_module },
+#if MICROPY_PY_DISPLAY_EPAPER_SLD00200P
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_SLD00200P), (mp_obj_t)&epaper_sld00200p_type },
 #endif
-#if MICROPY_PY_DISPLAY_LCD
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lcd), (mp_obj_t)&display_lcd_module},
-#endif
-#if MICROPY_PY_DISPLAY_OLED
-    { MP_OBJ_NEW_QSTR(MP_QSTR_oled), (mp_obj_t)&display_oled_module },
+#if 0
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SLD10261P), (mp_obj_t)&lcd_sld10261p_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1289), (mp_obj_t)&lcd_ssd1289_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LS027b7DH01), (mp_obj_t)&lcd_ls027b7dh01_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1305), (mp_obj_t)&oled_ssd1305_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1306), (mp_obj_t)&oled_ssd1306_type },
 #endif
 };
 

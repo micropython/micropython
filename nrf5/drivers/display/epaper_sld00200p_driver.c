@@ -24,9 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MODDISPLAY_EPAPER_H__
-#define MODDISPLAY_EPAPER_H__
+#include "epaper_sld00200p_driver.h"
 
-extern const mp_obj_module_t display_epaper_module;
+#if MICROPY_PY_DISPLAY_EPAPER_SLD00200P
 
-#endif // MODDISPLAY_EPAPER_H__
+
+
+#endif
