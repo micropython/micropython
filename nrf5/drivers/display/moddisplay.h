@@ -27,6 +27,4 @@
 #ifndef MODDISPLAY_H__
 #define MODDISPLAY_H__
 
-extern const mp_obj_module_t display_module;
-
 #endif // MODDISPLAY_H__
