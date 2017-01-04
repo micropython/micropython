@@ -27,10 +27,11 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+// For now PWM is only enabled for nrf52 targets.
+#if MICROPY_PY_DISPLAY_EPAPER_SLD00200P && NRF52
+
 #include "hal_spi.h"
 #include "hal_pwm.h"
-
-#if MICROPY_PY_DISPLAY_EPAPER_SLD00200P
 
 typedef struct _epaper_sld00200p_obj_t {
     mp_obj_base_t base;
