@@ -6,6 +6,7 @@
 #include "py/repl.h"
 #include "py/mpz.h"
 #include "py/builtin.h"
+#include "py/emit.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -128,6 +129,13 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3, false), mp_obj_new_str("abc", 3, false));
+    }
+
+    // warning
+    {
+        pass_kind_t pass = MP_PASS_CODE_SIZE;
+        char *msg = "test";
+        mp_emitter_warning(pass, msg);
     }
 
     // return a tuple of data for testing on the Python side
