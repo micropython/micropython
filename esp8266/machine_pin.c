@@ -276,7 +276,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
 }
 
 // constructor(id, ...)
-STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted pin object
@@ -300,7 +300,7 @@ STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     pyb_pin_obj_t *self = self_in;
     if (n_args == 0) {

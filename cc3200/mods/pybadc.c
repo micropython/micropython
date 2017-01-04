@@ -140,7 +140,7 @@ STATIC const mp_arg_t pyb_adc_init_args[] = {
     { MP_QSTR_id,                          MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_bits,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 12} },
 };
-STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -289,7 +289,7 @@ STATIC mp_obj_t adc_channel_value(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_channel_value_obj, adc_channel_value);
 
-STATIC mp_obj_t adc_channel_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t adc_channel_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     return adc_channel_value (self_in);
 }

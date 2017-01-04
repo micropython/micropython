@@ -77,7 +77,7 @@ void pyb_switch_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 
 /// \classmethod \constructor()
 /// Create and return a switch object.
-STATIC mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -91,7 +91,7 @@ STATIC mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
 
 /// \method \call()
 /// Return the switch state: `True` if pressed down, `False` otherwise.
-mp_obj_t pyb_switch_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t pyb_switch_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // get switch state
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     return switch_get() ? mp_const_true : mp_const_false;
