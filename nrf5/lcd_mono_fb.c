@@ -37,9 +37,6 @@
 
 #if MICROPY_PY_LCD_MONO_FB
 
-#define LCD_BLACK 0
-#define LCD_WHITE 1
-
 typedef struct {
     mp_obj_base_t base;
     fb_byte_t * fb_bytes;

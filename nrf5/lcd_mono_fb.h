@@ -31,6 +31,9 @@ extern const mp_obj_module_t mp_module_lcd_mono_fb;
 
 #include <stdint.h>
 
+#define LCD_BLACK 0
+#define LCD_WHITE 1
+
 typedef struct {
     uint8_t bit0 : 1;
     uint8_t bit1 : 1;
