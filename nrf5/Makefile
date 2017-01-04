@@ -60,7 +60,7 @@ INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
-INC += -I./drivers
+INC += -I./drivers/display
 INC += -I../lib/mp-readline
 
 NRF_DEFINES = -D$(MCU_VARIANT_UPPER)
@@ -148,6 +148,15 @@ SRC_C += \
 	rtc.c \
 	lcd_mono_fb.c \
 
+DRIVERS_SRC_C += $(addprefix drivers/,\
+	display/moddisplay.c \
+	display/epaper/moddisplay_epaper.c \
+	display/lcd/moddisplay_lcd.c \
+	display/oled/moddisplay_oled.c \
+	display/epaper/epaper_sld00200p.c \
+	display/epaper/epaper_sld00200p_driver.c \
+	)
+
 #ifeq ($(SD), )
 
 SRC_C += \
@@ -164,6 +173,7 @@ FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 OBJ += $(BUILD)/$(BUILD)/frozen_mpy.o
 
@@ -202,7 +212,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
+SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(DRIVERS_SRC_C)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
