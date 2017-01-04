@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 
+#if MICROPY_PY_DISPLAY_EPAPER
 STATIC const mp_map_elem_t epaper_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_epaper) },
 #if 0
@@ -39,3 +40,5 @@ const mp_obj_module_t display_epaper_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&epaper_module_globals,
 };
+
+#endif // MICROPY_PY_DISPLAY_EPAPER

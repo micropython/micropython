@@ -26,6 +26,8 @@
 
 #include "py/obj.h"
 
+#if MICROPY_PY_DISPLAY_OLED
+
 STATIC const mp_map_elem_t oled_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_oled) },
 #if 0
@@ -40,3 +42,5 @@ const mp_obj_module_t display_oled_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&oled_module_globals,
 };
+
+#endif // MICROPY_PY_DISPLAY_OLED
