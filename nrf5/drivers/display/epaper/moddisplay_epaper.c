@@ -24,12 +24,14 @@
  * THE SOFTWARE.
  */
 
+#include "epaper_sld00200p_obj.h"
 #include "py/obj.h"
+
 
 #if MICROPY_PY_DISPLAY_EPAPER
 STATIC const mp_map_elem_t epaper_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_epaper) },
-#if 0
+#if MICROPY_PY_DISPLAY_EPAPER_SLD00200P
     { MP_OBJ_NEW_QSTR(MP_QSTR_sld00200p), (mp_obj_t)&epaper_sld00200p_type },
 #endif
 };
