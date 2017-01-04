@@ -508,20 +508,21 @@ soft_reset:
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
 
             if (first_soft_reset) {
-                // use SD card as medium for the USB MSD
-#if defined(USE_DEVICE_MODE)
-                pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
-#endif
+                #if defined(USE_DEVICE_MODE)
+                    #if !defined(MICROPY_AVOID_USB_SD) // prevent exposing SD on USB
+                        // use SD card as medium for the USB MSD
+                        pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
+                    #endif
+                #endif
             }
 
             #if defined(USE_DEVICE_MODE)
-            // only use SD card as current directory if that's what the USB medium is
-            if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
-            #endif
-            {
+                #if !defined(MICROPY_BOOT_DIRECTORY)
+                    #define MICROPY_BOOT_DIRECTORY "/sd"
+                #endif
                 // use SD card as current directory
-                f_chdrive("/sd");
-            }
+                f_chdrive(MICROPY_BOOT_DIRECTORY);
+            #endif
         }
         no_mem_for_sd:;
     }

@@ -14,6 +14,9 @@
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
 
+//#define MICROPY_AVOID_USB_SD
+//#define MICROPY_BOOT_DIRECTORY "/flash"
+
 // SD card detect switch
 #if MICROPY_HW_HAS_SDCARD
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_A8)
