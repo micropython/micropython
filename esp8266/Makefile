@@ -203,7 +203,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 ota:
 	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
-	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=firmware-ota.bin
+	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
 #MAKE_PINS = boards/make-pins.py
 #BOARD_PINS = boards/$(BOARD)/pins.csv
