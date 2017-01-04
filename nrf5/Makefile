@@ -153,7 +153,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	display/epaper/moddisplay_epaper.c \
 	display/lcd/moddisplay_lcd.c \
 	display/oled/moddisplay_oled.c \
-	display/epaper/epaper_sld00200p.c \
+	display/epaper/epaper_sld00200p_obj.c \
 	display/epaper/epaper_sld00200p_driver.c \
 	)
 
