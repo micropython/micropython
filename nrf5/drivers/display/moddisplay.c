@@ -26,21 +26,31 @@
 
 #include "py/obj.h"
 
+#if MICROPY_PY_DISPLAY
+
 #include "epaper/moddisplay_epaper.h"
 #include "lcd/moddisplay_lcd.h"
 #include "oled/moddisplay_oled.h"
 
-STATIC const mp_map_elem_t display_module_globals_table[] = {
+STATIC const mp_map_elem_t mp_module_display_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_display) },
+#if MICROPY_PY_DISPLAY_EPAPER
     { MP_OBJ_NEW_QSTR(MP_QSTR_epaper), (mp_obj_t)&display_epaper_module },
+#endif
+#if MICROPY_PY_DISPLAY_LCD
     { MP_OBJ_NEW_QSTR(MP_QSTR_lcd), (mp_obj_t)&display_lcd_module},
+#endif
+#if MICROPY_PY_DISPLAY_OLED
     { MP_OBJ_NEW_QSTR(MP_QSTR_oled), (mp_obj_t)&display_oled_module },
+#endif
 };
 
 
-STATIC MP_DEFINE_CONST_DICT(display_module_globals, display_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_display_globals, mp_module_display_globals_table);
 
-const mp_obj_module_t display_module = {
+const mp_obj_module_t mp_module_display = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&display_module_globals,
+    .globals = (mp_obj_dict_t*)&mp_module_display_globals,
 };
+
+#endif // MICROPY_PY_DISPLAY
