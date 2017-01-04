@@ -33,6 +33,10 @@
 #define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_PY_MACHINE_RTC      (1)
 
+#define MICROPY_PY_DISPLAY                 (1)
+#define MICROPY_PY_DISPLAY_EPAPER_SLD0020P (1)
+#define MICROPY_PY_DISPLAY_LCD_SLD10261P   (1)
+
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
 #define MICROPY_HW_HAS_SDCARD       (0)
