@@ -14,6 +14,7 @@ FROZEN_MPY_DIR = modules
 # include py core make definitions
 include ../py/py.mk
 
+FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
@@ -159,7 +160,7 @@ SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/libaxtls.a $(BUILD)/firmware-combined.bin
+all: $(BUILD)/libaxtls.a $(FWBIN)
 
 CONFVARS_FILE = $(BUILD)/confvars
 
@@ -187,7 +188,7 @@ erase:
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
-$(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
+$(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)esptool.py elf2image $^
 	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
@@ -202,7 +203,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 ota:
 	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
-	$(MAKE) LDSCRIPT=esp8266_ota.ld
+	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
 #MAKE_PINS = boards/make-pins.py
 #BOARD_PINS = boards/$(BOARD)/pins.csv

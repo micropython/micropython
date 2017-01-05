@@ -60,7 +60,7 @@ class OneWire:
 
         # cache a bunch of methods and attributes.  This is necessary in _write_bit and 
         # _read_bit to achieve the timing required by the OneWire protocol.
-        self.cache = (pin.init, pin.value, pin.OUT_PP, pin.IN, pin.PULL_NONE)
+        self.cache = (pin.init, pin.value, pin.OUT_PP, pin.IN, pin.PULL_UP)
 
         pin.init(pin.IN, pin.PULL_UP)
 
