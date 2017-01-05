@@ -28,21 +28,12 @@
 #include <string.h>
 
 #include "py/nlr.h"
+#include "py/objnamedtuple.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 
 #if MICROPY_PY_COLLECTIONS
-
-typedef struct _mp_obj_namedtuple_type_t {
-    mp_obj_type_t base;
-    mp_uint_t n_fields;
-    qstr fields[];
-} mp_obj_namedtuple_type_t;
-
-typedef struct _mp_obj_namedtuple_t {
-    mp_obj_tuple_t tuple;
-} mp_obj_namedtuple_t;
 
 STATIC mp_uint_t namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name) {
     for (mp_uint_t i = 0; i < type->n_fields; i++) {
@@ -53,7 +44,7 @@ STATIC mp_uint_t namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qst
     return -1;
 }
 
-STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_namedtuple_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "%q", o->tuple.base.type->name);
@@ -61,7 +52,7 @@ STATIC void namedtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
     mp_obj_attrtuple_print_helper(print, fields, &o->tuple);
 }
 
-STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
@@ -77,7 +68,7 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)type_in;
     size_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
@@ -134,7 +125,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-STATIC const mp_rom_obj_tuple_t namedtuple_base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_tuple)}};
+const mp_rom_obj_tuple_t namedtuple_base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_tuple)}};
 
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = m_new_obj_var(mp_obj_namedtuple_type_t, qstr, n_fields);

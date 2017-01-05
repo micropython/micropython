@@ -28,12 +28,8 @@
 
 #include <string.h>
 
-//#include "py/nlr.h"
 #include "py/obj.h"
-//#include "py/gc.h"
-//#include "py/runtime.h"
-//#include "py/mphal.h"
-//#include "py/smallint.h"
+#include "py/objnamedtuple.h"
 #include "shared-bindings/time/__init__.h"
 
 //| :mod:`time` --- time and timing related functions
@@ -76,11 +72,71 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
+#if MICROPY_PY_COLLECTIONS
+mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    if (n_args != 1) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "time.struct_time() takes exactly 1 argument"));
+    }
+    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "time.struct_time() takes a 9-sequence"));
+    }
+
+    mp_obj_tuple_t* tuple = MP_OBJ_TO_PTR(args[0]);
+    return namedtuple_make_new(type, 9, 0, tuple->items);
+}
+
+//| .. class:: struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst))
+//|
+//|   Structure used to capture a date and time. Note that it takes a tuple!
+//|
+//|   :param int tm_year: the year, 2017 for example
+//|   :param int tm_mon: the month, range [1, 12]
+//|   :param int tm_mday: the day of the month, range [1, 31]
+//|   :param int tm_hour: the hour, range [0, 23]
+//|   :param int tm_min: the minute, range [0, 59]
+//|   :param int tm_sec: the second, range [0, 61]
+//|   :param int tm_wday: the day of the week, range [0, 6], Monday is 0
+//|   :param int tm_yday: the day of the year, range [1, 366], -1 indicates not known
+//|   :param int tm_isdst: 1 when in daylight savings, 0 when not, -1 if unknown.
+//|
+mp_obj_namedtuple_type_t struct_time_type_obj = {
+    .base = {
+        .base = {
+            .type = &mp_type_type
+        },
+        .name = MP_QSTR_struct_time,
+        .print = namedtuple_print,
+        .make_new = struct_time_make_new,
+        .unary_op = mp_obj_tuple_unary_op,
+        .binary_op = mp_obj_tuple_binary_op,
+        .attr = namedtuple_attr,
+        .subscr = mp_obj_tuple_subscr,
+        .getiter = mp_obj_tuple_getiter,
+        .bases_tuple = (mp_obj_tuple_t*)(mp_rom_obj_tuple_t*)&namedtuple_base_tuple,
+    },
+    .n_fields = 9,
+    .fields = {
+        MP_QSTR_tm_year,
+        MP_QSTR_tm_mon,
+        MP_QSTR_tm_mday,
+        MP_QSTR_tm_hour,
+        MP_QSTR_tm_min,
+        MP_QSTR_tm_sec,
+        MP_QSTR_tm_wday,
+        MP_QSTR_tm_yday,
+        MP_QSTR_tm_isdst
+    },
+};
+#endif
+
 STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_time) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_monotonic), (mp_obj_t)&time_monotonic_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&time_sleep_obj },
+    #if MICROPY_PY_COLLECTIONS
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct_time), (mp_obj_t)&struct_time_type_obj },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);

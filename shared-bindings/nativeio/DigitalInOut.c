@@ -198,7 +198,7 @@ mp_obj_property_t nativeio_digitalinout_direction_obj = {
 
 //|   .. attribute:: value
 //|
-//|       Get or set the digital logic level of the pin.
+//|       The digital logic level of the pin.
 //|
 STATIC mp_obj_t nativeio_digitalinout_obj_get_value(mp_obj_t self_in) {
     nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
