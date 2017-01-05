@@ -101,9 +101,15 @@ void hal_spi_master_tx_rx(NRF_SPI_Type * p_instance, uint16_t transfer_size, con
         while (p_instance->EVENTS_READY == 0) {
             ;
         }
+
         p_instance->EVENTS_READY = 0;
 
-        rx_data[number_of_txd_bytes] = (uint8_t)p_instance->RXD;
+        uint8_t in_byte = (uint8_t)p_instance->RXD;
+
+        if (rx_data != NULL) {
+            rx_data[number_of_txd_bytes] = in_byte;
+        }
+
         number_of_txd_bytes++;
     };
 }
