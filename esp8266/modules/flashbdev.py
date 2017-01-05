@@ -46,21 +46,6 @@ def set_bl_flash_size(real_size):
     esp.flash_erase(0)
     esp.flash_write(0, buf)
 
-# If bootloader size ID doesn't correspond to real Flash size,
-# fix bootloader value and reboot.
-size = esp.flash_id() >> 16
-# Check that it looks like realistic power of 2 for flash sizes
-# commonly used with esp8266
-if 22 >= size >= 18:
-    size = 1 << size
-    if size != esp.flash_size():
-        import machine
-        import time
-        print("Bootloader Flash size appear to have been set incorrectly, trying to fix")
-        set_bl_flash_size(size)
-        machine.reset()
-        while 1: time.sleep(1)
-
 size = esp.flash_size()
 if size < 1024*1024:
     bdev = None
