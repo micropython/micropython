@@ -27,4 +27,10 @@
 #ifndef LCD_ILI9341_DRIVER_H__
 #define LCD_ILI9341_DRIVER_H__
 
+#include "hal_spi.h"
+
+void driver_ili9341_init(NRF_SPI_Type * p_instance, pin_obj_t * cs_pin, pin_obj_t * dc_pin);
+
+void driver_ili9341_clear(uint16_t color);
+
 #endif // LCD_ILI9341_DRIVER_H__

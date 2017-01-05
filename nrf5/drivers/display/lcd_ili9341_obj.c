@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "genhdr/pins.h"
 
+#include "lcd_ili9341_driver.h"
 // For now PWM is only enabled for nrf52 targets.
 #if MICROPY_PY_DISPLAY_LCD_ILI9341
 
@@ -157,6 +158,8 @@ STATIC mp_obj_t lcd_ili9341_fill(mp_obj_t self_in, mp_obj_t color) {
     lcd_ili9341_obj_t *self = MP_OBJ_TO_PTR(self_in);
     (void)self;
 
+    driver_ili9341_clear(mp_obj_get_int(color));
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lcd_ili9341_fill_obj, lcd_ili9341_fill);
@@ -176,6 +179,8 @@ STATIC mp_obj_t lcd_ili9341_show(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         num_of_refresh = mp_obj_get_int(args[1]);
     }
+
+    driver_ili9341_init(self->spi->pyb->spi->instance, self->pin_cs, self->pin_dc);
 
     (void)num_of_refresh;
     (void)self;
