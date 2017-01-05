@@ -635,10 +635,15 @@ typedef double mp_float_t;
 #define MICROPY_PY_DESCRIPTORS (0)
 #endif
 
-// Whether to support object (__delattr__ and __setattr__)
+// Whether to support (__delattr__ and __setattr__)
 // This costs some code size and makes all load attrs and store attrs slow
 #ifndef MICROPY_PY_METHODS_DELATTRS_SETATTRS
 #define MICROPY_PY_METHODS_DELATTRS_SETATTRS (0)
+#endif
+
+// Whether to support object (__delattr__, __getattribute__ and __setattr__)
+#ifndef MICROPY_PY_OBJECT_METHODS_DELATTRS_SETATTRS
+#define MICROPY_PY_OBJECT_METHODS_DELATTRS_SETATTRS (0)
 #endif
 
 // Support for async/await/async for/async with
