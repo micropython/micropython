@@ -37,21 +37,6 @@
 
 #if MICROPY_PY_LCD_MONO_FB
 
-typedef struct {
-    mp_obj_base_t base;
-    fb_byte_t * fb_bytes;
-    fb_byte_t * fb_old;
-    fb_byte_t * fb_dirty;
-    uint16_t  height;
-    uint16_t  width;
-    mp_uint_t bytes_stride;
-    mp_uint_t dirty_stride;
-    mp_obj_t  line_update_cb;
-    mp_uint_t bg_color;
-    mp_uint_t fg_color;
-    mp_uint_t font_size;
-} mp_obj_framebuf_t;
-
 STATIC void lcd_enable_pixel(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y) {
     uint16_t column  = (x / 8);
     uint16_t line    = y;
@@ -212,6 +197,34 @@ STATIC void lcd_update(mp_obj_framebuf_t * p_framebuffer, bool refresh) {
             }
         }
     }
+}
+
+mp_obj_t lcd_mono_fb_helper_make_new(mp_int_t width, mp_int_t height, mp_int_t vertical) {
+
+    mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
+    o->base.type = &mp_type_object;
+
+    o->width = width;
+    o->height = height;
+
+    o->bytes_stride = o->width / 8;
+    o->dirty_stride = o->height / 8;
+
+    o->fb_bytes = m_new(fb_byte_t, (o->bytes_stride) * o->height);
+    o->fb_dirty = m_new(fb_byte_t, o->dirty_stride);
+
+    // default to not use double buffer
+    o->fb_old = NULL;
+
+    o->font_size = 1;
+
+    if (vertical) {
+        o->fb_old = m_new(fb_byte_t, (o->bytes_stride) * o->height);
+    }
+
+    lcd_init(o);
+
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_obj_t lcd_mono_fb_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

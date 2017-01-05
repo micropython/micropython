@@ -52,4 +52,23 @@ typedef struct {
     };
 } fb_byte_t;
 
+typedef struct {
+    mp_obj_base_t base;
+    fb_byte_t * fb_bytes;
+    fb_byte_t * fb_old;
+    fb_byte_t * fb_dirty;
+    uint16_t  height;
+    uint16_t  width;
+    mp_uint_t bytes_stride;
+    mp_uint_t dirty_stride;
+    mp_obj_t  line_update_cb;
+    mp_uint_t bg_color;
+    mp_uint_t fg_color;
+    mp_uint_t font_size;
+} mp_obj_framebuf_t;
+
+// Functions for other drivers to use to create framebuffer instances using c.
+
+mp_obj_t lcd_mono_fb_helper_make_new(mp_int_t width, mp_int_t height, mp_int_t direction);
+
 #endif
