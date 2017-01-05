@@ -245,6 +245,7 @@ coverage:
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
+	    FROZEN_DIR=coverage-frzstr FROZEN_MPY_DIR=coverage-frzmpy \
 	    BUILD=build-coverage PROG=micropython_coverage
 
 coverage_test: coverage
