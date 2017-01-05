@@ -177,8 +177,8 @@ ifneq ($(FROZEN_MPY_DIR),)
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE=0 # not supported
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
+MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
 
