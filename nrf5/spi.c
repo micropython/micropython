@@ -63,11 +63,6 @@
 ///     spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
 ///     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
 
-typedef struct _pyb_spi_obj_t {
-    mp_obj_base_t base;
-    SPI_HandleTypeDef *spi;
-} pyb_spi_obj_t;
-
 #if defined(MICROPY_HW_SPI0_SCK)
 SPI_HandleTypeDef SPIHandle0 = {.instance = NULL};
 #endif
@@ -234,11 +229,6 @@ STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_tab
 
 /* code for hard implementation ***********************************************/
 
-typedef struct _machine_hard_spi_obj_t {
-    mp_obj_base_t base;
-    const pyb_spi_obj_t *pyb;
-} machine_hard_spi_obj_t;
-
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_hard_spi_type}, &machine_spi_obj[0]},
 };
@@ -253,44 +243,42 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
     int spi_id = spi_find(args[ARG_NEW_id].u_obj);
     const machine_hard_spi_obj_t *self = &machine_hard_spi_obj[spi_id];
 
-    hal_spi_init_t spi_init_conf;
-
     // here we would check the sck/mosi/miso pins and configure them
     if (args[ARG_NEW_sck].u_obj != MP_OBJ_NULL
         && args[ARG_NEW_mosi].u_obj != MP_OBJ_NULL
         && args[ARG_NEW_miso].u_obj != MP_OBJ_NULL) {
 
-        spi_init_conf.clk_pin = mp_obj_get_int(args[ARG_NEW_sck].u_obj);
-        spi_init_conf.mosi_pin = mp_obj_get_int(args[ARG_NEW_mosi].u_obj);
-        spi_init_conf.miso_pin = mp_obj_get_int(args[ARG_NEW_miso].u_obj);
+        self->pyb->spi->init.clk_pin = mp_obj_get_int(args[ARG_NEW_sck].u_obj);
+        self->pyb->spi->init.mosi_pin = mp_obj_get_int(args[ARG_NEW_mosi].u_obj);
+        self->pyb->spi->init.miso_pin = mp_obj_get_int(args[ARG_NEW_miso].u_obj);
     } else {
-        spi_init_conf.clk_pin = MICROPY_HW_SPI0_SCK;
-        spi_init_conf.mosi_pin = MICROPY_HW_SPI0_MOSI;
-        spi_init_conf.miso_pin = MICROPY_HW_SPI0_MISO;
+        self->pyb->spi->init.clk_pin = MICROPY_HW_SPI0_SCK;
+        self->pyb->spi->init.mosi_pin = MICROPY_HW_SPI0_MOSI;
+        self->pyb->spi->init.miso_pin = MICROPY_HW_SPI0_MISO;
     }
 
     int baudrate = args[ARG_NEW_baudrate].u_int;
 
     if (baudrate <= 125000) {
-        spi_init_conf.freq = HAL_FREQ_125_Kbps;
+        self->pyb->spi->init.freq = HAL_FREQ_125_Kbps;
     } else if (baudrate <= 250000) {
-        spi_init_conf.freq = HAL_FREQ_250_Kbps;
+        self->pyb->spi->init.freq = HAL_FREQ_250_Kbps;
     } else if (baudrate <= 500000) {
-        spi_init_conf.freq = HAL_FREQ_500_Kbps;
+        self->pyb->spi->init.freq = HAL_FREQ_500_Kbps;
     } else if (baudrate <= 1000000) {
-        spi_init_conf.freq = HAL_FREQ_1_Mbps;
+        self->pyb->spi->init.freq = HAL_FREQ_1_Mbps;
     } else if (baudrate <= 2000000) {
-        spi_init_conf.freq = HAL_FREQ_2_Mbps;
+        self->pyb->spi->init.freq = HAL_FREQ_2_Mbps;
     } else if (baudrate <= 4000000) {
-        spi_init_conf.freq = HAL_FREQ_4_Mbps;
+        self->pyb->spi->init.freq = HAL_FREQ_4_Mbps;
     } else {
-        spi_init_conf.freq = HAL_FREQ_8_Mbps;
+        self->pyb->spi->init.freq = HAL_FREQ_8_Mbps;
     }
 
-    spi_init_conf.irq_priority = 4;
-    spi_init_conf.mode = HAL_SPI_MODE_CPOL0_CPHA0;
-    spi_init_conf.lsb_first = false;
-    hal_spi_master_init(self->pyb->spi->instance, &spi_init_conf);
+    self->pyb->spi->init.irq_priority = 4;
+    self->pyb->spi->init.mode = HAL_SPI_MODE_CPOL0_CPHA0;
+    self->pyb->spi->init.lsb_first = false;
+    hal_spi_master_init(self->pyb->spi->instance, &self->pyb->spi->init);
 
     return MP_OBJ_FROM_PTR(self);
 }
