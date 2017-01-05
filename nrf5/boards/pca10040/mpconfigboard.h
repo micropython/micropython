@@ -35,7 +35,7 @@
 
 #define MICROPY_PY_DISPLAY                  (1)
 #define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (1)
-#define MICROPY_PY_DISPLAY_LCD_SLD10261P    (1)
+#define MICROPY_PY_DISPLAY_LCD_ILI9341      (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
