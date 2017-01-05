@@ -42,3 +42,5 @@ print(('%.40g' % 1e-1)[:2])
 print(('%.40g' % 1e-2)[:2])
 print(('%.40g' % 1e-3)[:2])
 print(('%.40g' % 1e-4)[:2])
+
+print("%.0g" % 1) # 0 precision 'g'
