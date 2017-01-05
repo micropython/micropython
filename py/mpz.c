@@ -909,6 +909,37 @@ mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, m
     return cur - str;
 }
 
+void mpz_set_from_bytes(mpz_t *z, bool big_endian, mp_uint_t len, const byte *buf) {
+    int delta = 1;
+    if (big_endian) {
+        buf += len - 1;
+        delta = -1;
+    }
+
+    mpz_need_dig(z, (len * 8 + DIG_SIZE - 1) / DIG_SIZE);
+
+    mpz_dig_t d = 0;
+    int num_bits = 0;
+    z->neg = 0;
+    z->len = 0;
+    while (len) {
+        while (len && num_bits < DIG_SIZE) {
+            d |= *buf << num_bits;
+            num_bits += 8;
+            buf += delta;
+            len--;
+        }
+        z->dig[z->len++] = d & DIG_MASK;
+        // Need this #if because it's C undefined behavior to do: uint32_t >> 32
+        #if DIG_SIZE != 8 && DIG_SIZE != 16 && DIG_SIZE != 32
+        d >>= DIG_SIZE;
+        #else
+        d = 0;
+        #endif
+        num_bits -= DIG_SIZE;
+    }
+}
+
 bool mpz_is_zero(const mpz_t *z) {
     return z->len == 0;
 }
