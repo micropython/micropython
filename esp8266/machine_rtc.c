@@ -33,6 +33,7 @@
 #include "timeutils.h"
 #include "user_interface.h"
 #include "modmachine.h"
+#include "ets_alt_task.h"
 
 typedef struct _pyb_rtc_obj_t {
     mp_obj_base_t base;
@@ -58,32 +59,19 @@ uint64_t pyb_rtc_alarm0_expiry; // in microseconds
 STATIC uint32_t rtc_last_ticks;
 STATIC uint32_t rtc_last_cal;
 // Clock overflow checking
-STATIC uint32_t clk_last_ticks;
 STATIC uint64_t clk_offset;
 
+uint64_t esp_clk_get_us_since_boot() {
+    return ((uint64_t)system_time_high_word << 32) | (uint64_t)system_get_time();
+}
+
 void esp_clk_set_us_since_2000(uint64_t nowus) {
-    // Get the current clock tick
-    clk_last_ticks = system_get_time();
     // Set current time as base for future calculations
-    clk_offset = nowus;
+    clk_offset = nowus - esp_clk_get_us_since_boot();
 };
 
 uint64_t esp_clk_get_us_since_2000() {
-    uint64_t offset;
-    uint32_t clk_ticks;
-
-    offset = clk_offset;
-    clk_ticks = system_get_time();
-
-    if (clk_ticks >= clk_last_ticks) {
-      offset+= clk_ticks-clk_last_ticks;
-    } else {
-      // If overflow happened, assume 1 wrap-around and persist info for the new cycle
-      offset+= clk_ticks+~clk_last_ticks+1;
-      clk_last_ticks = clk_ticks;
-      clk_offset = offset;
-    }
-    return offset; 
+    return clk_offset + esp_clk_get_us_since_boot(); 
 };
 
 void pyb_rtc_set_us_since_2000(uint64_t nowus) {
