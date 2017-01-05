@@ -152,6 +152,8 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	display/moddisplay.c \
 	display/epaper_sld00200p_obj.c \
 	display/epaper_sld00200p_driver.c \
+	display/lcd_ili9341_obj.c \
+	display/lcd_ili9341_driver.c \
 	)
 
 #ifeq ($(SD), )
