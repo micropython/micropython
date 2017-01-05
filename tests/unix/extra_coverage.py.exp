@@ -39,6 +39,10 @@ ementation
 TypeError: can't convert str to int
 TypeError: unsupported types for : 'str', 'str'
 Warning: test
+# format float
+?
++1e+00
++1e+00
 ('0123456789', b'0123456789')
 7300
 7300
