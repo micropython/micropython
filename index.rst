@@ -1,6 +1,18 @@
 Adafruit CircuitPython API Reference
 ========================================
 
+.. image:: https://travis-ci.org/adafruit/circuitpython.svg?branch=master
+    :target: https://travis-ci.org/adafruit/circuitpython
+    :alt: Build Status
+
+.. image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
+    :target: http://circuitpython.readthedocs.io/
+    :alt: Doc Status
+
+.. image:: https://badges.gitter.im/adafruit/circuitpython.svg
+    :target: https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+    :alt: Gitter
+
 Welcome! This is the documentation for Adafruit CircuitPython. It is an open
 source derivative of `MicroPython <https://micropython.org>`_ for use on
 educational development boards designed and sold by `Adafruit
