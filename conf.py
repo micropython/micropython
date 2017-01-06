@@ -319,4 +319,6 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {'http://docs.python.org/': None,
+                       'https://circuitpython.readthedocs.io/projects/bus_device/en/latest/': None,
+                       'https://circuitpython.readthedocs.io/projects/register/en/latest/': None}

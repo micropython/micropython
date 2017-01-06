@@ -7,6 +7,7 @@ with CircuitPython and may or may not work with `MicroPython <https://micropytho
 .. toctree::
 
     Register Library <https://circuitpython.readthedocs.io/projects/register/en/latest/>
+    BusDevice Library <https://circuitpython.readthedocs.io/projects/bus_device/en/latest/>
     RGB Displays <http://micropython-rgb.readthedocs.io/>
     Analog-to-digital converters: ADS1015 and ADS1115 <http://micropython-ads1015.readthedocs.io/>
     DS3231 Real-time Clock (Precision RTC) <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>

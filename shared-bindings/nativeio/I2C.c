@@ -42,6 +42,14 @@
 //|   physical level it consists of 2 wires: SCL and SDA, the clock and data
 //|   lines respectively.
 //|
+//|   .. seealso:: Using this class directly requires careful lock management.
+//|       Instead, use :class:`~adafruit_bus_device.i2c_device.I2CDevice` to
+//|       manage locks.
+//|
+//|   .. seealso:: Using this class to directly read registers requires manual
+//|       bit unpacking. Instead, use an existing driver or make one with
+//|       :ref:`Register <register-module-reference>` data descriptors.
+//|
 //|   :param ~microcontroller.Pin scl: The clock pin
 //|   :param ~microcontroller.Pin sda: The data pin
 //|   :param int frequency: The clock frequency

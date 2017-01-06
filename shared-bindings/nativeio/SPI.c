@@ -52,6 +52,14 @@
 //|
 //|    Construct an SPI object on the given pins.
 //|
+//|   .. seealso:: Using this class directly requires careful lock management.
+//|       Instead, use :class:`~adafruit_bus_device.spi_device.SPIDevice` to
+//|       manage locks.
+//|
+//|   .. seealso:: Using this class to directly read registers requires manual
+//|       bit unpacking. Instead, use an existing driver or make one with
+//|       :ref:`Register <register-module-reference>` data descriptors.
+//|
 //|   :param ~microcontroller.Pin clock: the pin to use for the clock.
 //|   :param ~microcontroller.Pin MOSI: the Master Out Slave In pin.
 //|   :param ~microcontroller.Pin MISO: the Master In Slave Out pin.
