@@ -24,6 +24,7 @@
 # Build directory
 ######################
 build/
+bin/
 
 # Test failure outputs
 ######################
