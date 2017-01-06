@@ -1,7 +1,8 @@
-Adafruit MicroPython drivers
+Adafruit CircuitPython drivers
 ========================================
 
-These are drivers available in separate GitHub repos.
+These are drivers available in separate GitHub repos. They are designed for use
+with CircuitPython and may or may not work with `MicroPython <https://micropython.org>`_.
 
 .. toctree::
 

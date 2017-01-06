@@ -2,7 +2,7 @@ MicroPython libraries
 =====================
 
 This chapter describes modules (function and class libraries) which are built
-into MicroPython. There are a few categories of modules:
+into MicroPython and CircuitPython. There are a few categories of modules:
 
 * Modules which implement a subset of standard Python functionality and are not
   intended to be extended by the user.
