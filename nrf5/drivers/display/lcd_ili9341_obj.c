@@ -76,7 +76,7 @@ STATIC void lcd_ili9341_print(const mp_print_t *print, mp_obj_t o, mp_print_kind
                      self->pin_dc->port,
                      self->pin_dc->pin);
 
-    mp_printf(print, "        FB(width=%u, height=%u, dir=%u\n",
+    mp_printf(print, "        FB(width=%u, height=%u, dir=%u))\n",
                      self->framebuffer->width,
                      self->framebuffer->height);
 }
