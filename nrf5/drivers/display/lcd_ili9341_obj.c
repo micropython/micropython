@@ -50,6 +50,16 @@ typedef struct _lcd_ili9341_obj_t {
     mp_obj_framebuf_t * framebuffer;
 } lcd_ili9341_obj_t;
 
+static void dirty_line_update_cb(mp_obj_framebuf_t * p_framebuffer,
+                                 uint16_t            line,
+                                 fb_byte_t *         p_new,
+                                 fb_byte_t *         p_old) {
+    // the lcd does not have double buffer needs, skip it.
+    (void)p_old;
+
+    driver_ili9341_update_line(line, p_new, p_framebuffer->bytes_stride, true);
+}
+
 /// \method __str__()
 /// Return a string describing the ILI9341 object.
 STATIC void lcd_ili9341_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -85,8 +95,10 @@ from machine import Pin, SPI
 from display import ILI9341
 cs = Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP)
 dc = Pin("A17", mode=Pin.OUT, pull=Pin.PULL_UP)
-spi = SPI(0)
-d = ILI9341(320, 240, spi, cs, dc)
+spi = SPI(0, baudrate=8000000)
+d = ILI9341(240, 320, spi, cs, dc)
+d.text("Hello World!", 32, 32)
+d.show()
 */
 STATIC mp_obj_t lcd_ili9341_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
@@ -144,9 +156,14 @@ STATIC mp_obj_t lcd_ili9341_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     // direction arg not yet configurable
     mp_int_t vertical = true;
-    printf("Initializing framebuffer\n");
     s->framebuffer = lcd_mono_fb_helper_make_new(width, height, vertical);
-    printf("DONE: Initializing framebuffer\n");
+
+    driver_ili9341_init(s->spi->pyb->spi->instance, s->pin_cs, s->pin_dc);
+    // Default to white background
+    driver_ili9341_clear(0xFFFF);
+
+    display_clear_screen(s->framebuffer, 0x1);
+
     return MP_OBJ_FROM_PTR(s);
 }
 
@@ -156,34 +173,19 @@ STATIC mp_obj_t lcd_ili9341_make_new(const mp_obj_type_t *type, size_t n_args, s
 /// Fill framebuffer with the color defined as argument.
 STATIC mp_obj_t lcd_ili9341_fill(mp_obj_t self_in, mp_obj_t color) {
     lcd_ili9341_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
 
-    driver_ili9341_clear(mp_obj_get_int(color));
+    display_clear_screen(self->framebuffer, (uint8_t)mp_obj_get_int(color));
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lcd_ili9341_fill_obj, lcd_ili9341_fill);
 
-/// \method show([num_of_refresh])
+/// \method show()
 /// Display content in framebuffer.
-///
-///   - With no argument, no refresh is done.
-///   - With `num_of_refresh` given, the lines touched by previous update
-///   will be refreshed the given number of times. If no lines have been
-///   touched, no update will be performed. To force a refresh, call the
-///   refresh() method explicitly.
 STATIC mp_obj_t lcd_ili9341_show(size_t n_args, const mp_obj_t *args) {
     lcd_ili9341_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t num_of_refresh = 0;
 
-    if (n_args > 1) {
-        num_of_refresh = mp_obj_get_int(args[1]);
-    }
-
-    driver_ili9341_init(self->spi->pyb->spi->instance, self->pin_cs, self->pin_dc);
-
-    (void)num_of_refresh;
-    (void)self;
+    display_update(self->framebuffer, false, dirty_line_update_cb);
 
     return mp_const_none;
 }
@@ -240,10 +242,9 @@ STATIC mp_obj_t lcd_ili9341_text(size_t n_args, const mp_obj_t *args) {
     if (n_args >= 4) {
         color = mp_obj_get_int(args[3]);
     }
-    (void)self;
-    (void)str;
-    (void)x;
-    (void)y;
+
+    display_print_string(self->framebuffer, x, y, str);
+
     (void)color;
 
     return mp_const_none;
