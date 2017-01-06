@@ -10,3 +10,4 @@ follow.
     :maxdepth: 3
 
     */__init__
+    help

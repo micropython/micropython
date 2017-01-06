@@ -24,7 +24,6 @@ docs are low-level API docs and may link out to separate getting started guides.
     docs/common_hal
     docs/drivers.rst
     docs/supported_ports.rst
-    docs/unsupported_ports.rst
     docs/library/index.rst
     README
     CONTRIBUTING

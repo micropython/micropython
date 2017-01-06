@@ -43,7 +43,7 @@
 //|
 //| .. module:: microcontroller
 //|   :synopsis: Pin references and core functionality
-//|   :platform: SAMD21
+//|   :platform: SAMD21, ESP8266
 //|
 //| The `microcontroller` module defines the pins from the perspective of the
 //| microcontroller. See `board` for board-specific pin mappings.
@@ -56,10 +56,10 @@
 //|     Pin
 //|
 
-//|   .. method:: delay_us(delay)
+//| .. method:: delay_us(delay)
 //|
-//|     Dedicated delay method used for very short delays. DO NOT do long delays
-//|     because it will stall any concurrent code.
+//|   Dedicated delay method used for very short delays. DO NOT do long delays
+//|   because it will stall any concurrent code.
 //|
 STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
     uint32_t delay = mp_obj_get_int(delay_obj);
@@ -70,9 +70,9 @@ STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 
-//|   .. method:: disable_interrupts()
+//| .. method:: disable_interrupts()
 //|
-//|     Disable all interrupts. Be very careful, this can stall everything.
+//|   Disable all interrupts. Be very careful, this can stall everything.
 //|
 STATIC mp_obj_t mcu_disable_interrupts(void) {
     common_hal_mcu_disable_interrupts();
@@ -80,9 +80,9 @@ STATIC mp_obj_t mcu_disable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
 
-//|   .. method:: enable_interrupts()
+//| .. method:: enable_interrupts()
 //|
-//|     Enable the interrupts that were enabled at the last disable.
+//|   Enable the interrupts that were enabled at the last disable.
 //|
 STATIC mp_obj_t mcu_enable_interrupts(void) {
     common_hal_mcu_enable_interrupts();

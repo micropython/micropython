@@ -76,6 +76,8 @@
 //|     I2C
 //|     PWMOut
 //|     SPI
+//|     TouchIn
+//|     UART
 //|
 //| All libraries change hardware state and should be deinitialized when they
 //| are no longer needed. To do so, either call :py:meth:`!deinit` or use a

@@ -27,10 +27,13 @@
 #include "lib/utils/pyhelp.h"
 #include "shared-bindings/help.h"
 
-//|   .. method:: help(object=None)
+//| :func:`help` - Built-in method to provide helpful information
+//| ========================================================
 //|
-//|     Prints a help method about the given object. When ``object`` is none,
-//|     prints general port information.
+//| .. method:: help(object=None)
+//|
+//|   Prints a help method about the given object. When ``object`` is none,
+//|   prints general port information.
 //|
 STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
     if (n_args == 0) {

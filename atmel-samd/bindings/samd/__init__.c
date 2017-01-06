@@ -35,9 +35,9 @@
 //|   :platform: SAMD21
 //|
 
-//|   .. method:: enable_autoreset()
+//| .. method:: enable_autoreset()
 //|
-//|     Enable autoreset based on USB file write activity.
+//|   Enable autoreset based on USB file write activity.
 //|
 STATIC mp_obj_t samd_enable_autoreset(void) {
     autoreset_enable();
@@ -45,10 +45,10 @@ STATIC mp_obj_t samd_enable_autoreset(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(samd_enable_autoreset_obj, samd_enable_autoreset);
 
-//|   .. method:: disable_autoreset()
+//| .. method:: disable_autoreset()
 //|
-//|     Disable autoreset based on USB file write activity until the next reset
-//|     or until `enable_autoreset` is called.
+//|   Disable autoreset based on USB file write activity until the next reset
+//|   or until `enable_autoreset` is called.
 //|
 STATIC mp_obj_t samd_disable_autoreset(void) {
     autoreset_disable();

@@ -1,9 +1,9 @@
 # Adafruit CircuitPython
 
-[![Build Status](https://travis-ci.org/adafruit/circuitpython.svg?branch=master)](https://travis-ci.org/adafruit/circuitpython)
+[![Build Status](https://travis-ci.org/adafruit/circuitpython.svg?branch=master)](https://travis-ci.org/adafruit/circuitpython) [![Doc Status](https://readthedocs.org/projects/circuitpython/badge/?version=latest)](http://circuitpython.readthedocs.io/)
 
 This is an open source derivative of [MicroPython](http://www.micropython.org)
-for use on educational development boards designed and sold by Adafruit
+for use on educational development boards designed and sold by [Adafruit](https://www.adafruit.com)
 including the [Arduino Zero](https://www.arduino.cc/en/Main/ArduinoBoardZero), [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772), [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821) and
 [Adafruit Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995).
 
@@ -15,7 +15,7 @@ This project is in beta. Most APIs should be stable going forward.
 
 ## Documentation
 
-Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython). An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io/en/latest/?).
+Guides and videos are available through the [Adafruit Learning System](https://learn.adafruit.com/) under the [CircuitPython category](https://learn.adafruit.com/category/circuitpython) and [MicroPython category](https://learn.adafruit.com/category/micropython). An API reference is also available on [Read the Docs](http://circuitpython.readthedocs.io/en/latest/?).
 
 ## Contributing
 See [CONTRIBUTING.md](https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md)
@@ -26,6 +26,24 @@ Contributors who follow the
 [Code of Conduct](https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md)
 are welcome to submit pull requests and they will be promptly reviewed by
 project admins.
+
+## Differences from [MicroPython](https://github.com/micropython/micropython)
+
+* Port for Atmel SAMD21 (Commonly known as M0 in product names.)
+* No `machine` API on Atmel SAMD21 port.
+* Only supports Atmel SAMD21 and ESP8266 ports.
+* Unified hardware API: [`nativeio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/nativeio/__init__.html), [`microcontroller`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html), [`board`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html), [`bitbangio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html) (Only available on atmel-samd21 and ESP8266 currently.)
+* Tracks MicroPython's releases (not master).
+* No module aliasing. (`uos` and `utime` are not available as `os` and `time` respectively.)
+* Modules with a CPython counterpart, such as `time`, are strict [subsets](https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html) of their [CPython version](https://docs.python.org/3.4/library/time.html?highlight=time#module-time). Therefore, code from CircuitPython is runnable on CPython but not necessarily the reverse.
+* tick count is available as [`time.monotonic()`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic)
+* `os` only available as `uos`
+* atmel-samd21 features
+    * RGB status LED
+    * Auto-reset after file write over mass storage. (Disable with `samd.disable_autoreset()`)
+    * Wait state after boot and main run, before REPL.
+    * Main is one of these: code.txt, code.py, main.py, main.txt
+    * Boot is one of these: settings.txt, settings.py, boot.py, boot.txt
 
 ## Project Structure
 Here is an overview of the top-level directories.

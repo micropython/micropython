@@ -5,7 +5,7 @@ These are drivers available in separate GitHub repos.
 
 .. toctree::
 
-    Register Library <http://adafruit-micropython-register.readthedocs.io/en/latest/>
+    Register Library <https://circuitpython.readthedocs.io/projects/register/en/latest/>
     RGB Displays <http://micropython-rgb.readthedocs.io/>
     Analog-to-digital converters: ADS1015 and ADS1115 <http://micropython-ads1015.readthedocs.io/>
     DS3231 Real-time Clock (Precision RTC) <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>
