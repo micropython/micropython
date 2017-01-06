@@ -27,25 +27,6 @@ class FlashBdev:
         if op == 5:  # BP_IOCTL_SEC_SIZE
             return self.SEC_SIZE
 
-def set_bl_flash_size(real_size):
-    if real_size == 256*1024:
-        code = 1
-    elif real_size == 512*1024:
-        code = 0
-    elif real_size == 1024*1024:
-        code = 2
-    elif real_size == 2048*1024:
-        code = 3
-    elif real_size == 4096*1024:
-        code = 4
-    else:
-        code = 2
-    buf = bytearray(4096)
-    esp.flash_read(0, buf)
-    buf[3] = (buf[3] & 0xf) | (code << 4)
-    esp.flash_erase(0)
-    esp.flash_write(0, buf)
-
 size = esp.flash_size()
 if size < 1024*1024:
     bdev = None
