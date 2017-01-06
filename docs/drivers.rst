@@ -4,10 +4,34 @@ Adafruit CircuitPython drivers
 These are drivers available in separate GitHub repos. They are designed for use
 with CircuitPython and may or may not work with `MicroPython <https://micropython.org>`_.
 
+Bundle
+------
+
+We provide a bundle of all our libraries to ease installation of drivers and
+their dependencies. Its easiest to copy them all onto the filesystem. However,
+if you don't have enough space simply copy things over as they are needed.
+
+The bundles are available `on GitHub <https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases>`_.
+
+Foundational Libraries
+----------------------
+
+These libraries provide critical functionality to many of the drivers below. It
+is recommended to always have them installed onto the CircuitPython file system in
+the ``lib/`` directory. Some drivers may not work without them.
+
 .. toctree::
 
     Register Library <https://circuitpython.readthedocs.io/projects/register/en/latest/>
     BusDevice Library <https://circuitpython.readthedocs.io/projects/bus_device/en/latest/>
+
+Drivers
+-------
+
+Drivers provide easy access to sensors and other chips without requiring a
+knowledge of the interface details of the chip itself.
+
+.. toctree::
     RGB Displays <http://micropython-rgb.readthedocs.io/>
     Analog-to-digital converters: ADS1015 and ADS1115 <http://micropython-ads1015.readthedocs.io/>
     DS3231 Real-time Clock (Precision RTC) <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>
