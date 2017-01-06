@@ -83,7 +83,11 @@ STATIC uint16_t lcd_bg_color_get(mp_obj_framebuf_t * p_framebuffer) {
 }
 #endif
 
-STATIC void lcd_clear_screen(mp_obj_framebuf_t * p_framebuffer) {
+void display_clear_screen(mp_obj_framebuf_t * p_framebuffer, uint8_t color) {
+
+    lcd_bg_color_set(p_framebuffer, color);
+    lcd_fg_color_set(p_framebuffer, !color);
+
     if (p_framebuffer->bg_color == LCD_BLACK) {
         memset(p_framebuffer->fb_bytes, 0x00, p_framebuffer->bytes_stride * p_framebuffer->height);
     } else {
@@ -142,7 +146,7 @@ STATIC uint8_t lcd_font_size_get(mp_obj_framebuf_t * p_framebuffer) {
 }
 #endif
 
-STATIC void lcd_print_string(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, const char * p_str) {
+void display_print_string(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16_t y, const char * p_str) {
     uint16_t str_len = strlen(p_str);
     for (uint16_t i = 0; i < str_len; i++) {
         lcd_print_char(p_framebuffer, x + (i * 8 * p_framebuffer->font_size), y, p_str[i]);
@@ -157,31 +161,42 @@ STATIC void lcd_pixel_draw(mp_obj_framebuf_t * p_framebuffer, uint16_t x, uint16
     }
 }
 
-STATIC void lcd_update(mp_obj_framebuf_t * p_framebuffer, bool refresh) {
+void display_update(mp_obj_framebuf_t * p_framebuffer, bool refresh, lcd_update_line_callback_t c_callback) {
     for (uint16_t i = 0; i < p_framebuffer->dirty_stride; i++) {
         if (p_framebuffer->fb_dirty[i].byte != 0 || refresh) {
             for (uint16_t b = 0; b < 8; b++) {
                 if ((((p_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1) || refresh) {
                     uint16_t line_num = (i * 8) + b;
-                    mp_obj_t args[4];
-                    mp_uint_t num_of_args = 3;
-                    args[0] = p_framebuffer;
-                    args[1] = MP_OBJ_NEW_SMALL_INT(line_num);
 
-                    if (refresh == false) {
-                        args[2] = mp_obj_new_bytearray_by_ref(p_framebuffer->bytes_stride,
-                                                              &p_framebuffer->fb_bytes[line_num * p_framebuffer->bytes_stride]);
+                    if (c_callback != NULL)
+                    {
+                        if (p_framebuffer->fb_old == NULL) {
+                            c_callback(p_framebuffer,
+                                       line_num,
+                                       &p_framebuffer->fb_bytes[line_num * p_framebuffer->bytes_stride],
+                                       NULL);
+                        }
                     } else {
-                        args[2] = mp_const_none;
-                    }
+                        mp_obj_t args[4];
+                        mp_uint_t num_of_args = 3;
+                        args[0] = p_framebuffer;
+                        args[1] = MP_OBJ_NEW_SMALL_INT(line_num);
 
-                    if (p_framebuffer->fb_old != NULL) {
-                        args[3] = mp_obj_new_bytearray_by_ref(p_framebuffer->bytes_stride,
-                                                              &p_framebuffer->fb_bytes[line_num * p_framebuffer->bytes_stride]);
-                        num_of_args = 4;
-                    }
+                        if (refresh == false) {
+                            args[2] = mp_obj_new_bytearray_by_ref(p_framebuffer->bytes_stride,
+                                                                  &p_framebuffer->fb_bytes[line_num * p_framebuffer->bytes_stride]);
+                        } else {
+                            args[2] = mp_const_none;
+                        }
 
-                    mp_call_function_n_kw(p_framebuffer->line_update_cb, num_of_args, 0, args);
+                        if (p_framebuffer->fb_old != NULL) {
+                            args[3] = mp_obj_new_bytearray_by_ref(p_framebuffer->bytes_stride,
+                                                                  &p_framebuffer->fb_bytes[line_num * p_framebuffer->bytes_stride]);
+                            num_of_args = 4;
+                        }
+
+                        mp_call_function_n_kw(p_framebuffer->line_update_cb, num_of_args, 0, args);
+                    }
 
                     // update old buffer
                     if (p_framebuffer->fb_old != NULL) {
@@ -217,10 +232,6 @@ mp_obj_t lcd_mono_fb_helper_make_new(mp_int_t width, mp_int_t height, mp_int_t v
     o->fb_old = NULL;
 
     o->font_size = 1;
-
-    if (vertical) {
-        o->fb_old = m_new(fb_byte_t, (o->bytes_stride) * o->height);
-    }
 
     lcd_init(o);
 
@@ -264,10 +275,7 @@ STATIC mp_obj_t lcd_mono_fb_fill(mp_obj_t self_in, mp_obj_t col_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t col = mp_obj_get_int(col_in);
 
-    lcd_bg_color_set(self, col);
-    lcd_fg_color_set(self, !col);
-
-    lcd_clear_screen(self);
+    display_clear_screen(self, col);
 
     return mp_const_none;
 }
@@ -302,7 +310,7 @@ STATIC mp_obj_t lcd_mono_fb_text(size_t n_args, const mp_obj_t *args) {
     mp_int_t x0 = mp_obj_get_int(args[2]);
     mp_int_t y0 = mp_obj_get_int(args[3]);
 
-    lcd_print_string(self, x0, y0, str);
+    display_print_string(self, x0, y0, str);
 
     return mp_const_none;
 }
@@ -312,7 +320,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lcd_mono_fb_text_obj, 4, 5, lcd_mono_
 STATIC mp_obj_t lcd_mono_fb_show(mp_obj_t self_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
 
-    lcd_update(self, false);
+    display_update(self, false, NULL);
 
     return mp_const_none;
 }
@@ -321,7 +329,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(lcd_mono_fb_show_obj, lcd_mono_fb_show);
 STATIC mp_obj_t lcd_mono_fb_refresh(mp_obj_t self_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
 
-    lcd_update(self, true);
+    display_update(self, true, NULL);
 
     return mp_const_none;
 }

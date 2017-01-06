@@ -67,8 +67,25 @@ typedef struct {
     mp_uint_t font_size;
 } mp_obj_framebuf_t;
 
+
+typedef void (*lcd_update_line_callback_t)(mp_obj_framebuf_t * p_framebuffer,
+                                           uint16_t            line,
+                                           fb_byte_t *         p_new,
+                                           fb_byte_t *         p_old);
+
 // Functions for other drivers to use to create framebuffer instances using c.
 
 mp_obj_t lcd_mono_fb_helper_make_new(mp_int_t width, mp_int_t height, mp_int_t direction);
+
+void display_clear_screen(mp_obj_framebuf_t * p_framebuffer, uint8_t color);
+
+void display_update(mp_obj_framebuf_t *        p_framebuffer,
+                    bool                       refresh,
+                    lcd_update_line_callback_t c_callback);
+
+void display_print_string(mp_obj_framebuf_t * p_framebuffer,
+                          uint16_t            x,
+                          uint16_t            y,
+                          const char * p_str);
 
 #endif
