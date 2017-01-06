@@ -27,6 +27,12 @@
 #ifndef EPAPER_SLD00200P_DRIVER_H__
 #define EPAPER_SLD00200P_DRIVER_H__
 
+#include "py/mphal.h"
+
+#include "hal_spi.h"
+#include "hal_pwm.h"
+#include "lcd_mono_fb.h"
+
 typedef enum
 {
 	EPD_COMP,
@@ -34,5 +40,22 @@ typedef enum
 	EPD_INV,
 	EPD_NORM
 } epd_stage_t;
+
+void driver_sld00200p_init(NRF_SPI_Type * p_spi_instance,
+                           NRF_PWM_Type * p_pwm_instance,
+                           pin_obj_t * p_pin_cs,
+                           pin_obj_t * p_pin_panel_on,
+                           pin_obj_t * p_pin_border,
+                           pin_obj_t * p_pin_busy,
+                           pin_obj_t * p_pin_reset,
+                           pin_obj_t * p_pin_discharge);
+
+void driver_sld00200p_reinit(void);
+
+void driver_sld00200p_deinit(void);
+
+void driver_sld00200p_clear(uint16_t color);
+
+void driver_sld00200p_update_line(uint16_t line, fb_byte_t * p_bytes, fb_byte_t * p_old, uint16_t len, bool compressed);
 
 #endif // EPAPER_SLD00200P_DRIVER_H__
