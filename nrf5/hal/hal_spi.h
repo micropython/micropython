@@ -27,6 +27,7 @@
 #ifndef HAL_SPI_H__
 #define HAL_SPI_H__
 
+#include <stdbool.h>
 #include "nrf.h"
 
 #if NRF51
