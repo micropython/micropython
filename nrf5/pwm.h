@@ -24,6 +24,18 @@
  * THE SOFTWARE.
  */
 
+#include "hal_pwm.h"
+
+typedef struct _pyb_pwm_obj_t {
+    mp_obj_base_t base;
+    PWM_HandleTypeDef *pwm;
+} pyb_pwm_obj_t;
+
+typedef struct _machine_hard_pwm_obj_t {
+    mp_obj_base_t base;
+    const pyb_pwm_obj_t *pyb;
+} machine_hard_pwm_obj_t;
+
 void pwm_init0(void);
 
 extern const mp_obj_type_t machine_hard_pwm_type;

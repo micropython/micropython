@@ -42,11 +42,6 @@
 #include "hal_pwm.h"
 #endif
 
-typedef struct _pyb_pwm_obj_t {
-    mp_obj_base_t base;
-    PWM_HandleTypeDef *pwm;
-} pyb_pwm_obj_t;
-
 #ifdef MICROPY_HW_PWM0_NAME
 PWM_HandleTypeDef PWMHandle0 = {.instance = NULL};
 #endif
@@ -235,11 +230,6 @@ STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
 
 /* code for hard implementation ***********************************************/
-
-typedef struct _machine_hard_pwm_obj_t {
-    mp_obj_base_t base;
-    const pyb_pwm_obj_t *pyb;
-} machine_hard_pwm_obj_t;
 
 STATIC const machine_hard_pwm_obj_t machine_hard_pwm_obj[] = {
     {{&machine_hard_pwm_type}, &machine_pwm_obj[0]},
