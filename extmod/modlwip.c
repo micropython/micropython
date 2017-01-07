@@ -96,13 +96,13 @@ sio_fd_t sio_open(u8_t dvnum) {
 void sio_send(u8_t c, sio_fd_t fd) {
     mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
     int error;
-    type->stream_p->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
+    ((mp_stream_p_t*)(type->protocol))->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
 }
 
 u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
     mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
     int error;
-    mp_uint_t out_sz = type->stream_p->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
+    mp_uint_t out_sz = ((mp_stream_p_t*)(type->protocol))->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(error)) {
             return 0;
@@ -114,7 +114,7 @@ u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
 }
 
 // constructor lwip.slip(device=integer, iplocal=string, ipremote=string)
-STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t lwip_slip_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
     lwip_slip_obj.base.type = &lwip_slip_type;
