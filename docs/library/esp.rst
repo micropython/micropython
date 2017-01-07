@@ -71,15 +71,11 @@ Functions
     flash that is not otherwise used, for example by the firmware or the
     filesystem.
 
-    With the default boot/filesystem configuration there is one sector of flash
-    reserved for general use and one can use the following call to use it for
-    native code generation::
-
-        esp.set_native_code_location(esp.flash_user_start(), 4096)
-
     When using the flash to store native code `start+length` must be less
     than or equal to 1MByte.  Note that the flash can be worn out if repeated
     erasures (and writes) are made so use this feature sparingly.
+    In particular, native code needs to be recompiled and rewritten to flash
+    on each boot (including wake from deepsleep).
 
     In both cases above, using iRAM1 or flash, if there is no more room left
     in the specified region then the use of a native decorator on a function

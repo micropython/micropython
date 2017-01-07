@@ -1,6 +1,11 @@
 # test array('q') and array('Q')
 
-from array import array
+try:
+    from array import array
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 print(array('q'))
 print(array('Q'))
