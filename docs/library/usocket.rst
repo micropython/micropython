@@ -149,9 +149,17 @@ Methods
 
        Set a timeout on blocking socket operations. The value argument can be a nonnegative floating
        point number expressing seconds, or None. If a non-zero value is given, subsequent socket operations
-       will raise a timeout exception if the timeout period value has elapsed before the operation has
+       will raise an ``OSError`` exception if the timeout period value has elapsed before the operation has
        completed. If zero is given, the socket is put in non-blocking mode. If None is given, the socket
        is put in blocking mode.
+
+       .. admonition:: Difference to CPython
+          :class: attention
+
+          CPython raises a ``socket.timeout`` exception in case of timeout,
+          which is an ``OSError`` subclass. MicroPython raises an OSError directly
+          instead. If you use ``except OSError:`` to catch the exception,
+          your code will work both in MicroPython and CPython.
 
     .. method:: socket.setblocking(flag)
 
