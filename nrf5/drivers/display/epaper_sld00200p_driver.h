@@ -27,6 +27,8 @@
 #ifndef EPAPER_SLD00200P_DRIVER_H__
 #define EPAPER_SLD00200P_DRIVER_H__
 
+#if NRF52 // TODO: For now only supported by NRF52 targets, as PWM soft-pwm is not present for nrf51 yet.
+
 #include "py/mphal.h"
 
 #include "hal_spi.h"
@@ -57,5 +59,7 @@ void driver_sld00200p_deinit(void);
 void driver_sld00200p_clear(uint16_t color);
 
 void driver_sld00200p_update_line(uint16_t line, fb_byte_t * p_bytes, fb_byte_t * p_old, uint16_t len, bool compressed);
+
+#endif // NRF52
 
 #endif // EPAPER_SLD00200P_DRIVER_H__
