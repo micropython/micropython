@@ -41,15 +41,15 @@ EPAPER_CLK         25 (Arduino D13)
 
 Example usage on pca10040:
     
-    from epaper import Epaper
+from epaper import Epaper
     
-    epd = Epaper()
-    epd.fill(0)
-    epd.text("Hello World!", 50, 50)
-    epd.show()
+epd = Epaper()
+epd.fill(0)
+epd.text("Hello World!", 50, 50)
+epd.show()
     
-    epd.refresh()
-    epd.refresh()
+epd.refresh()
+epd.refresh()
 """
 
 import os
