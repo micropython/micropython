@@ -31,7 +31,11 @@
 #define MICROPY_PY_SYS_PLATFORM     "nrf52840-PDK"
 
 #define MICROPY_PY_MACHINE_PWM      (0)
-#define MICROPY_PY_MACHINE_SPI      (0)
+#define MICROPY_PY_MACHINE_SPI      (1)
+
+#define MICROPY_PY_DISPLAY                  (1)
+#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (0)
+#define MICROPY_PY_DISPLAY_LCD_ILI9341      (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
@@ -65,6 +69,16 @@
 #define MICROPY_HW_UART1_RTS_PORT   (0)
 
 #define MICROPY_HW_UART1_HWFC       (1)
+
+// SPI0 config
+#define MICROPY_HW_SPI0_NAME        "SPI0"
+#define MICROPY_HW_SPI0_SCK         (15) // B15 (Arduino D13)
+#define MICROPY_HW_SPI0_MOSI        (13) // B13 (Arduino D11)
+#define MICROPY_HW_SPI0_MISO        (14) // B14 (Arduino D12)
+#define MICROPY_HW_SPI0_SCK_PORT    (1)
+#define MICROPY_HW_SPI0_MOSI_PORT   (1)
+#define MICROPY_HW_SPI0_MISO_PORT   (1)
+
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
