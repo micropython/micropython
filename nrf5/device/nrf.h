@@ -33,30 +33,48 @@
 
 /* MDK version */
 #define MDK_MAJOR_VERSION   8
-#define MDK_MINOR_VERSION   9
-#define MDK_MICRO_VERSION   0
+#define MDK_MINOR_VERSION   11
+#define MDK_MICRO_VERSION   1
+
+/* Redefine "old" too-generic name NRF52 to NRF52832_XXAA to keep backwards compatibility. */
+#if defined (NRF52)
+    #ifndef NRF52832_XXAA
+        #define NRF52832_XXAA
+    #endif
+#endif
+
+/* Define NRF52_SERIES for common use in nRF52 series devices. */
+#if defined (NRF52832_XXAA) || defined (NRF52840_XXAA)
+    #define NRF52_SERIES
+#endif
+
 
 #if defined(_WIN32)
-    /* Do not include nrf51 specific files when building for PC host */
+    /* Do not include nrf specific files when building for PC host */
 #elif defined(__unix)
-    /* Do not include nrf51 specific files when building for PC host */
+    /* Do not include nrf specific files when building for PC host */
 #elif defined(__APPLE__)
-    /* Do not include nrf51 specific files when building for PC host */
+    /* Do not include nrf specific files when building for PC host */
 #else
 
-    /* Family selection for family includes. */
+    /* Device selection for device includes. */
     #if defined (NRF51)
         #include "nrf51.h"
         #include "nrf51_bitfields.h"
         #include "nrf51_deprecated.h"
-    #elif defined (NRF52)
+    #elif defined (NRF52840_XXAA)
+        #include "nrf52840.h"
+        #include "nrf52840_bitfields.h"
+        #include "nrf51_to_nrf52840.h"
+        #include "nrf52_to_nrf52840.h"
+    #elif defined (NRF52832_XXAA)
         #include "nrf52.h"
         #include "nrf52_bitfields.h"
         #include "nrf51_to_nrf52.h"
         #include "nrf52_name_change.h"
     #else
-        #error "Device family must be defined. See nrf.h."
-    #endif /* NRF51, NRF52 */
+        #error "Device must be defined. See nrf.h."
+    #endif /* NRF51, NRF52832_XXAA, NRF52840_XXAA */
 
     #include "compiler_abstraction.h"
 

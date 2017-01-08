@@ -28,15 +28,32 @@
  *
  */
  
-#ifndef NRF52_NAME_CHANGE_H
-#define NRF52_NAME_CHANGE_H
+#ifndef NRF52_TO_NRF52840_H
+#define NRF52_TO_NRF52840_H
 
 /*lint ++flb "Enter library region */
 
-/* This file is given to prevent your SW from not compiling with the updates made to nrf52.h and 
- * nrf52_bitfields.h. The macros defined in this file were available previously. Do not use these
- * macros on purpose. Use the ones defined in nrf52.h and nrf52_bitfields.h instead.
- */
+/* This file is given to prevent your SW from not compiling with the name changes between nRF51 or nRF52832 and nRF52840 devices.
+ * It redefines the old nRF51 or nRF52832 names into the new ones as long as the functionality is still supported. If the
+ * functionality is gone, there old names are not defined, so compilation will fail. Note that also includes macros
+ * from the nrf52_namechange.h file. */
+ 
+/* Differences between latest nRF52 headers and nRF52840 headers. */
+
+/* UART */
+/* The registers PSELRTS, PSELTXD, PSELCTS, PSELRXD were restructured into a struct. */
+#define PSELRTS       PSEL.RTS
+#define PSELTXD       PSEL.TXD
+#define PSELCTS       PSEL.CTS
+#define PSELRXD       PSEL.RXD
+
+/* TWI */
+/* The registers PSELSCL, PSELSDA were restructured into a struct. */
+#define PSELSCL       PSEL.SCL
+#define PSELSDA       PSEL.SDA
+
+
+/* From nrf52_name_change.h. Several macros changed in different versions of nRF52 headers. By defining the following, any code written for any version of nRF52 headers will still compile. */
 
 /* I2S */
 /* Several enumerations changed case. Adding old macros to keep compilation compatibility. */
@@ -64,7 +81,8 @@
 /* Corrected typo in RESULT register. */
 #define LPCOMP_RESULT_RESULT_Bellow         LPCOMP_RESULT_RESULT_Below
 
+
 /*lint --flb "Leave library region" */
 
-#endif /* NRF52_NAME_CHANGE_H */
+#endif /* NRF51_TO_NRF52840_H */
 
