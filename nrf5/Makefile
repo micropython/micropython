@@ -63,7 +63,7 @@ INC += -I./hal/$(MCU_VARIANT)
 INC += -I./drivers/display
 INC += -I../lib/mp-readline
 
-NRF_DEFINES = -D$(MCU_VARIANT_UPPER)
+NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
@@ -159,7 +159,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 #ifeq ($(SD), )
 
 SRC_C += \
-	device/$(MCU_VARIANT)/system_$(MCU_VARIANT).c \
+	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
 
 SRC_S = \
 	device/$(MCU_VARIANT)/startup_$(MCU_VARIANT).s \
