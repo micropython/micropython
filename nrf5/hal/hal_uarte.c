@@ -32,8 +32,7 @@
 
 #ifdef HAL_UARTE_MODULE_ENABLED
 
-#include "nrf52.h"
-#include "nrf52_bitfields.h"
+#include "nrf.h"
 
 #if NRF52
 
