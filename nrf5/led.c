@@ -31,13 +31,14 @@
 #include "led.h"
 #include "mpconfigboard.h"
 
-#define LED_OFF(led) {(MICROPY_HW_LED_PULLUP) ? hal_gpio_pin_set(led) : hal_gpio_pin_clear(led); }
-#define LED_ON(led) {(MICROPY_HW_LED_PULLUP) ? hal_gpio_pin_clear(led) : hal_gpio_pin_set(led); }
+#define LED_OFF(led) {(MICROPY_HW_LED_PULLUP) ? hal_gpio_pin_set(0, led) : hal_gpio_pin_clear(0, led); }
+#define LED_ON(led) {(MICROPY_HW_LED_PULLUP) ? hal_gpio_pin_clear(0, led) : hal_gpio_pin_set(0, led); }
 
 typedef struct _pyb_led_obj_t {
     mp_obj_base_t base;
     mp_uint_t led_id;
     mp_uint_t hw_pin;
+    uint8_t hw_pin_port;
 } pyb_led_obj_t;
 
 STATIC const pyb_led_obj_t pyb_led_obj[] = {
@@ -63,7 +64,7 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
 void led_init(void) {
     for (uint8_t i = 0; i < NUM_LEDS; i++) {
         LED_OFF(pyb_led_obj[i].hw_pin);
-        hal_gpio_cfg_pin(pyb_led_obj[i].hw_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_cfg_pin(0, pyb_led_obj[i].hw_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     }
 }
 
@@ -76,7 +77,7 @@ void led_state(pyb_led_obj_t * led_obj, int state) {
 }
 
 void led_toggle(pyb_led_obj_t * led_obj) {
-    hal_gpio_pin_toggle(led_obj->hw_pin);
+    hal_gpio_pin_toggle(0, led_obj->hw_pin);
 }
 
 
