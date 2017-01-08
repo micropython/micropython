@@ -182,7 +182,7 @@ void driver_sld00200p_reinit(void) {
     mp_hal_delay_us(30);
 
     // stop the pwm
-    hal_pwm_start(mp_pwm_instance);
+    hal_pwm_stop(mp_pwm_instance);
 
     // charge pump negative voltage on
     mp_hal_delay_us(10);
@@ -205,89 +205,6 @@ void driver_sld00200p_reinit(void) {
     DATA_WRITE(0x70, 0x02);
     mp_hal_delay_us(10);
     DATA_WRITE(0x72, 0x24);
-}
-
-void driver_sld00200p_deinit(void) {
-    epaper_sld00200p_line(0x7fffu, 0, 0x55, EPD_NORM);
-    mp_hal_delay_ms(25);
-    mp_hal_pin_low(mp_pin_border);
-    mp_hal_delay_ms(250);
-    mp_hal_pin_high(mp_pin_border);
-
-    // latch reset turn on
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x03);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x01);
-
-    // output enable off
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x02);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x05);
-
-    // Vcom power off
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x05);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x0e);
-
-    // power off negative charge pump
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x05);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x02);
-
-    // discharge
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x04);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x0c);
-    mp_hal_delay_us(120);
-
-    // all charge pumps off
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x05);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x00);
-
-    // turn of osc
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x07);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x0d);
-
-    // discharge internal - 1
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x04);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x50);
-    mp_hal_delay_us(40);
-
-    // discharge internal - 2
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x04);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0xA0);
-    mp_hal_delay_us(40);
-
-    // discharge internal - 3
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x70, 0x04);
-    mp_hal_delay_us(10);
-    DATA_WRITE(0x72, 0x00);
-
-    // turn of power and all signals
-    mp_hal_delay_ms(10);
-    mp_hal_pin_low(mp_pin_reset);
-    mp_hal_pin_low(mp_pin_panel_on);
-    mp_hal_pin_low(mp_pin_border);
-
-    // discharge pulse
-    mp_hal_pin_high(mp_pin_discharge);
-    mp_hal_delay_us(250);
-    mp_hal_pin_low(mp_pin_discharge);
-    mp_hal_pin_high(mp_pin_cs);
 }
 
 static void epaper_sld00200p_line(uint16_t line, const uint8_t * data, uint8_t fixed_value, epd_stage_t stage)
@@ -412,6 +329,89 @@ static void epaper_sld00200p_line(uint16_t line, const uint8_t * data, uint8_t f
     wait_for_busy_release();
 
     DATA_WRITE(0x72, 0x2f);
+}
+
+void driver_sld00200p_deinit(void) {
+    epaper_sld00200p_line(0x7fffu, 0, 0x55, EPD_NORM);
+    mp_hal_delay_ms(25);
+    mp_hal_pin_low(mp_pin_border);
+    mp_hal_delay_ms(250);
+    mp_hal_pin_high(mp_pin_border);
+
+    // latch reset turn on
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x03);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x01);
+
+    // output enable off
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x02);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x05);
+
+    // Vcom power off
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x05);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x0e);
+
+    // power off negative charge pump
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x05);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x02);
+
+    // discharge
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x04);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x0c);
+    mp_hal_delay_us(120);
+
+    // all charge pumps off
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x05);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x00);
+
+    // turn of osc
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x07);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x0d);
+
+    // discharge internal - 1
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x04);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x50);
+    mp_hal_delay_us(40);
+
+    // discharge internal - 2
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x04);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0xA0);
+    mp_hal_delay_us(40);
+
+    // discharge internal - 3
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x70, 0x04);
+    mp_hal_delay_us(10);
+    DATA_WRITE(0x72, 0x00);
+
+    // turn of power and all signals
+    mp_hal_delay_ms(10);
+    mp_hal_pin_low(mp_pin_reset);
+    mp_hal_pin_low(mp_pin_panel_on);
+    mp_hal_pin_low(mp_pin_border);
+
+    // discharge pulse
+    mp_hal_pin_high(mp_pin_discharge);
+    mp_hal_delay_us(250);
+    mp_hal_pin_low(mp_pin_discharge);
+    mp_hal_pin_high(mp_pin_cs);
 }
 
 void driver_sld00200p_clear(uint16_t color) {
