@@ -41,13 +41,17 @@ typedef enum
 
 
 #if NRF51
-#define POINTERS (const uint32_t[]){NRF_GPIO_BASE}
-#elif NRF52
-#ifdef NRF52832_XXAA
-#define POINTERS (const uint32_t[]){NRF_P0_BASE}
-#elif NRF52840_XXAA
-#define POINTERS (const uint32_t[]){NRF_P0_BASE, NRF_P1_BASE}
+  #define POINTERS (const uint32_t[]){NRF_GPIO_BASE}
 #endif
+
+#if NRF52
+  #ifdef NRF52832_XXAA
+    #define POINTERS (const uint32_t[]){NRF_P0_BASE}
+  #endif
+
+  #ifdef NRF52840_XXAA
+    #define POINTERS (const uint32_t[]){NRF_P0_BASE, NRF_P1_BASE}
+  #endif
 #endif
 
 #define GPIO_BASE(x) ((NRF_GPIO_Type *)POINTERS[x])
