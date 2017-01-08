@@ -25,7 +25,6 @@
     .pin = (p_pin), \
     .num_af = (sizeof(p_af) / sizeof(pin_af_obj_t)), \
     .pin_mask = (1 << p_pin), \
-    .gpio = GPIO_BASE, \
     .af = p_af, \
     .adc_num = p_adc_num, \
     .adc_channel = p_adc_channel, \

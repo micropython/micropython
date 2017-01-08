@@ -40,11 +40,17 @@ typedef enum
 } HAL_StatusTypeDef;
 
 
-#ifdef NRF51
-#define GPIO_BASE ((NRF_GPIO_Type *)NRF_GPIO_BASE)
-#else
-#define GPIO_BASE ((NRF_GPIO_Type *)NRF_P0_BASE)
+#if NRF51
+#define POINTERS (const uint32_t[]){NRF_GPIO_BASE}
+#elif NRF52
+#ifdef NRF52832_XXAA
+#define POINTERS (const uint32_t[]){NRF_P0_BASE}
+#elif NRF52840_XXAA
+#define POINTERS (const uint32_t[]){NRF_P0_BASE, NRF_P1_BASE}
 #endif
+#endif
+
+#define GPIO_BASE(x) ((NRF_GPIO_Type *)POINTERS[x])
 
 /**
   * @brief   GPIO Init structure definition
@@ -78,33 +84,33 @@ typedef enum {
 	HAL_GPIO_MODE_INPUT = (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos),
 } hal_gpio_mode_t;
 
-static inline void hal_gpio_cfg_pin(uint32_t pin_number, hal_gpio_mode_t mode, hal_gpio_pull_t pull) {
-    GPIO_BASE->PIN_CNF[pin_number] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-                                   | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                                   | pull
-                                   | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                                   | mode;
+static inline void hal_gpio_cfg_pin(uint8_t port, uint32_t pin_number, hal_gpio_mode_t mode, hal_gpio_pull_t pull) {
+    GPIO_BASE(port)->PIN_CNF[pin_number] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
+                                         | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
+                                         | pull
+                                         | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
+                                         | mode;
 }
 
-static inline void hal_gpio_out_set(uint32_t pin_mask) {
-	GPIO_BASE->OUTSET = pin_mask;
+static inline void hal_gpio_out_set(uint8_t port, uint32_t pin_mask) {
+	GPIO_BASE(port)->OUTSET = pin_mask;
 }
 
-static inline void hal_gpio_pin_set(uint32_t pin) {
-	GPIO_BASE->OUTSET = (1 << pin);
+static inline void hal_gpio_pin_set(uint8_t port, uint32_t pin) {
+	GPIO_BASE(port)->OUTSET = (1 << pin);
 }
 
-static inline void hal_gpio_pin_clear(uint32_t pin) {
-	GPIO_BASE->OUTCLR = (1 << pin);
+static inline void hal_gpio_pin_clear(uint8_t port, uint32_t pin) {
+	GPIO_BASE(port)->OUTCLR = (1 << pin);
 }
 
-static inline void hal_gpio_pin_toggle(uint32_t pin) {
+static inline void hal_gpio_pin_toggle(uint8_t port, uint32_t pin) {
 	uint32_t pin_mask = (1 << pin);
 
-	if (GPIO_BASE->OUT ^ pin_mask) {
-		GPIO_BASE->OUTSET = pin_mask;
+	if (GPIO_BASE(port)->OUT ^ pin_mask) {
+		GPIO_BASE(port)->OUTSET = pin_mask;
 	} else {
-		GPIO_BASE->OUTCLR = pin_mask;
+		GPIO_BASE(port)->OUTCLR = pin_mask;
 	}
 }
 
@@ -123,9 +129,9 @@ int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 
 #define mp_hal_pin_obj_t const pin_obj_t*
-#define mp_hal_pin_high(p) (((NRF_GPIO_Type *)((p)->gpio))->OUTSET = (p)->pin_mask)
-#define mp_hal_pin_low(p)  (((NRF_GPIO_Type *)((p)->gpio))->OUTCLR = (p)->pin_mask)
-#define mp_hal_pin_read(p) (((NRF_GPIO_Type *)((p)->gpio))->IN >> ((p)->pin) & 1)
+#define mp_hal_pin_high(p) (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTSET = (p)->pin_mask)
+#define mp_hal_pin_low(p)  (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTCLR = (p)->pin_mask)
+#define mp_hal_pin_read(p) (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->IN >> ((p)->pin) & 1)
 #define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
 
 // TODO: empty implementation for now. Used by machine_spi.c:69

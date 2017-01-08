@@ -17,8 +17,8 @@ def parse_port_pin(name_str):
         raise ValueError("Expecting pin name to be at least 4 charcters.")
     if name_str[0] != 'P':
         raise ValueError("Expecting pin name to start with P")
-    if name_str[1] not in ('A'):
-        raise ValueError("Expecting pin port to be in A")
+    if name_str[1] not in ('A', 'B'):
+        raise ValueError("Expecting pin port to be in A or B")
     port = ord(name_str[1]) - ord('A')
     pin_str = name_str[2:].split('/')[0]
     if not pin_str.isdigit():

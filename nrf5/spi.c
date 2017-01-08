@@ -255,6 +255,9 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
         self->pyb->spi->init.clk_pin = MICROPY_HW_SPI0_SCK;
         self->pyb->spi->init.mosi_pin = MICROPY_HW_SPI0_MOSI;
         self->pyb->spi->init.miso_pin = MICROPY_HW_SPI0_MISO;
+        self->pyb->spi->init.clk_pin_port = MICROPY_HW_SPI0_SCK_PORT;
+        self->pyb->spi->init.mosi_pin_port = MICROPY_HW_SPI0_MOSI_PORT;
+        self->pyb->spi->init.miso_pin_port = MICROPY_HW_SPI0_MISO_PORT;
     }
 
     int baudrate = args[ARG_NEW_baudrate].u_int;

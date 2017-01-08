@@ -27,19 +27,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "nrf.h"
 #include "mphalport.h"
 #include "hal_uart.h"
 
 #ifdef HAL_UART_MODULE_ENABLED
 
 #ifdef NRF51
-#include "nrf51.h"
-#include "nrf51_bitfields.h"
 #define UART_BASE   ((NRF_UART_Type *) NRF_UART0_BASE)
 #define UART_IRQ_NUM UART0_IRQn
 #else
-#include "nrf52.h"
-#include "nrf52_bitfields.h"
 #define UART_BASE   ((NRF_UART_Type *) NRF_UART0_BASE)
 #define UART_IRQ_NUM UARTE0_UART0_IRQn
 #endif
@@ -103,18 +100,34 @@ void nrf_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_comple
 }
 
 void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
-    hal_gpio_cfg_pin(p_uart_init->tx_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_uart_init->rx_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->tx_pin_port, p_uart_init->tx_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->tx_pin_port, p_uart_init->rx_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+
+    hal_gpio_pin_clear(p_uart_init->tx_pin_port, p_uart_init->tx_pin);
 
     UART_BASE->PSELTXD = p_uart_init->tx_pin;
+#if NRF52840_XXAA
+    UART_BASE->PSELTXD |= (p_uart_init->tx_pin_port << UARTE_PSEL_TXD_PORT_Pos);
+#endif
     UART_BASE->PSELRXD = p_uart_init->rx_pin;
-
+#if NRF52840_XXAA
+    UART_BASE->PSELRXD |= (p_uart_init->rx_pin_port << UARTE_PSEL_RXD_PORT_Pos);
+#endif
     if (p_uart_init->flow_control) {
-        hal_gpio_cfg_pin(p_uart_init->rts_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-        hal_gpio_cfg_pin(p_uart_init->cts_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
-	
+#if MICROPY_HW_UART1_HWFC
+        hal_gpio_cfg_pin(p_uart_init->rts_pin_port, p_uart_init->rts_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_cfg_pin(p_uart_init->cts_pin_port, p_uart_init->cts_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+
         UART_BASE->PSELCTS = p_uart_init->cts_pin;
+#if NRF52840_XXAA
+        UART_BASE->PSELCTS |= (p_uart_init->cts_pin_port << UARTE_PSEL_CTS_PORT_Pos);
+#endif
         UART_BASE->PSELRTS = p_uart_init->rts_pin;
+#if NRF52840_XXAA
+        UART_BASE->PSELRTS |= (p_uart_init->rts_pin_port << UARTE_PSEL_RTS_PORT_Pos);
+#endif
+#endif
+
         UART_BASE->CONFIG  = (UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos);
     }
 

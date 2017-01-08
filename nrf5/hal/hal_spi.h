@@ -80,6 +80,9 @@ typedef struct {
     uint8_t mosi_pin;
     uint8_t miso_pin;
     uint8_t clk_pin;
+    uint8_t mosi_pin_port;
+    uint8_t miso_pin_port;
+    uint8_t clk_pin_port;
     bool lsb_first;
     hal_spi_mode_t mode;
     uint32_t irq_priority;
