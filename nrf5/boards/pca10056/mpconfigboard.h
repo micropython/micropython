@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "NRF52840"
 #define MICROPY_PY_SYS_PLATFORM     "nrf52840-PDK"
 
+#define MICROPY_PY_MACHINE_PWM      (0)
 #define MICROPY_PY_MACHINE_SPI      (0)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
@@ -57,6 +58,12 @@
 #define MICROPY_HW_UART1_TX         (6)
 #define MICROPY_HW_UART1_CTS        (7)
 #define MICROPY_HW_UART1_RTS        (5)
+
+#define MICROPY_HW_UART1_RX_PORT    (0)
+#define MICROPY_HW_UART1_TX_PORT    (0)
+#define MICROPY_HW_UART1_CTS_PORT   (0)
+#define MICROPY_HW_UART1_RTS_PORT   (0)
+
 #define MICROPY_HW_UART1_HWFC       (1)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"

@@ -60,6 +60,8 @@
 // UART config
 #define MICROPY_HW_UART1_RX         (11)
 #define MICROPY_HW_UART1_TX         (9)
+#define MICROPY_HW_UART1_RX_PORT    (0)
+#define MICROPY_HW_UART1_TX_PORT    (0)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
@@ -67,6 +69,8 @@
 #define MICROPY_HW_SPI0_SCK         (1) // A3
 #define MICROPY_HW_SPI0_MOSI        (2) // A2
 #define MICROPY_HW_SPI0_MISO        (3) // A1
-#define MICROPY_HW_SPI0_NSS         (4) // A4
+#define MICROPY_HW_SPI0_SCK_PORT    (0)
+#define MICROPY_HW_SPI0_MISO_PORT   (0)
+#define MICROPY_HW_SPI0_MOSI_PORT   (0)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"

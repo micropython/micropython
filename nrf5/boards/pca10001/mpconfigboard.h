@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "NRF51822"
 #define MICROPY_PY_SYS_PLATFORM     "nrf51-DK"
 
+#define MICROPY_PY_MACHINE_SPI      (0)
 #define MICROPY_PY_MACHINE_PWM      (0)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
@@ -56,6 +57,10 @@
 #define MICROPY_HW_UART1_TX         (9)
 #define MICROPY_HW_UART1_CTS        (10)
 #define MICROPY_HW_UART1_RTS        (8)
+#define MICROPY_HW_UART1_RX_PORT    (0)
+#define MICROPY_HW_UART1_TX_PORT    (0)
+#define MICROPY_HW_UART1_RTS_PORT   (0)
+#define MICROPY_HW_UART1_CTS_PORT   (0)
 #define MICROPY_HW_UART1_HWFC       (1)
 
 #define HELP_TEXT_BOARD_LED         "1,2"

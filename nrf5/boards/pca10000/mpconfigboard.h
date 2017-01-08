@@ -56,8 +56,8 @@
 // UART config
 #define MICROPY_HW_UART1_RX         (11)
 #define MICROPY_HW_UART1_TX         (9)
-#define MICROPY_HW_UART1_CTS        (10)
-#define MICROPY_HW_UART1_RTS        (8)
+#define MICROPY_HW_UART1_RX_PORT    (0)
+#define MICROPY_HW_UART1_TX_PORT    (0)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3"

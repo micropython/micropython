@@ -30,12 +30,14 @@
 #define MICROPY_HW_MCU_NAME         "NRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nrf52-DK"
 
-#define MICROPY_PY_MACHINE_TIMER    (1)
-#define MICROPY_PY_MACHINE_RTC      (1)
+#define MICROPY_PY_MACHINE_PWM      (0)
+#define MICROPY_PY_MACHINE_SPI      (0)
+#define MICROPY_PY_MACHINE_TIMER    (0)
+#define MICROPY_PY_MACHINE_RTC      (0)
 
-#define MICROPY_PY_DISPLAY                  (1)
-#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (1)
-#define MICROPY_PY_DISPLAY_LCD_ILI9341      (1)
+#define MICROPY_PY_DISPLAY                  (0)
+#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (0)
+#define MICROPY_PY_DISPLAY_LCD_ILI9341      (0)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
@@ -62,6 +64,12 @@
 #define MICROPY_HW_UART1_TX         (6)
 #define MICROPY_HW_UART1_CTS        (7)
 #define MICROPY_HW_UART1_RTS        (5)
+
+#define MICROPY_HW_UART1_RX_PORT    (0)
+#define MICROPY_HW_UART1_TX_PORT    (0)
+#define MICROPY_HW_UART1_CTS_PORT   (0)
+#define MICROPY_HW_UART1_RTS_PORT   (0)
+
 #define MICROPY_HW_UART1_HWFC       (1)
 
 // SPI0 config

@@ -30,9 +30,10 @@
 #define MICROPY_HW_MCU_NAME         "NRF51822"
 #define MICROPY_PY_SYS_PLATFORM     "nrf51"
 
+#define MICROPY_PY_MACHINE_SPI      (0)
 #define MICROPY_PY_MACHINE_PWM      (0)
-#define MICROPY_PY_MACHINE_TIMER    (1)
-#define MICROPY_PY_MACHINE_RTC      (1)
+#define MICROPY_PY_MACHINE_TIMER    (0)
+#define MICROPY_PY_MACHINE_RTC      (0)
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
@@ -60,13 +61,8 @@
 // UART config
 #define MICROPY_HW_UART1_RX         (25)
 #define MICROPY_HW_UART1_TX         (24)
+#define MICROPY_HW_UART1_RX_PORT    (0)
+#define MICROPY_HW_UART1_TX_PORT    (0)
 #define MICROPY_HW_UART1_HWFC       (0)
-
-// SPI0 config
-#define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (1) // A3
-#define MICROPY_HW_SPI0_MOSI        (2) // A2
-#define MICROPY_HW_SPI0_MISO        (3) // A1
-#define MICROPY_HW_SPI0_NSS         (4) // A4
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"
