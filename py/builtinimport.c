@@ -466,15 +466,15 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     // https://docs.python.org/3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
                     mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
+                    size_t orig_path_len = path.len;
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
                     if (stat_file_py_or_mpy(&path) != MP_IMPORT_STAT_FILE) {
-                        vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                         //mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {
                         do_load(module_obj, &path);
-                        vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                     }
+                    path.len = orig_path_len;
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
                     // TODO: We cannot just break here, at the very least, we must execute
