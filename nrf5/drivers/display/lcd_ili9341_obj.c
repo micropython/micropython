@@ -91,6 +91,8 @@ enum {
 };
 
 /*
+Example for nrf52832 / pca10040:
+
 from machine import Pin, SPI
 from display import ILI9341
 cs = Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP)
@@ -99,6 +101,18 @@ spi = SPI(0, baudrate=8000000)
 d = ILI9341(240, 320, spi, cs, dc)
 d.text("Hello World!", 32, 32)
 d.show()
+
+Example for nrf52840 / pca10056:
+
+from machine import Pin, SPI
+from display import ILI9341
+cs = Pin("B6", mode=Pin.OUT, pull=Pin.PULL_UP)
+dc = Pin("B7", mode=Pin.OUT, pull=Pin.PULL_UP)
+spi = SPI(0, baudrate=8000000)
+d = ILI9341(240, 320, spi, cs, dc)
+d.text("Hello World!", 32, 32)
+d.show()
+
 */
 STATIC mp_obj_t lcd_ili9341_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
