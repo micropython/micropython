@@ -39,7 +39,9 @@
 #include "gccollect.h"
 #include "pin.h"
 #include "spi.h"
+#if MICROPY_PY_MACHINE_PWM
 #include "pwm.h"
+#endif
 
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
