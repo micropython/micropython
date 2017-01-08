@@ -13,7 +13,7 @@ MEMORY
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
-_minimum_heap_size = 16K;
+_minimum_heap_size = 32K;
  
 /* top end of the stack */
 
@@ -22,6 +22,6 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_end = 0x20005000; /* tunable */
+_heap_end = 0x20008000; /* tunable */
 
 INCLUDE "boards/common.ld"
