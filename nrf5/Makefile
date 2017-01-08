@@ -190,13 +190,13 @@ ifeq ($(FLASHER),)
 
 flash: $(BUILD)/firmware.elf
 	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
-	nrfjprog --pinreset -f $(MCU_VARIANT)
+	nrfjprog --reset -f $(MCU_VARIANT)
 
 sd:
 	nrfjprog --eraseall -f $(MCU_VARIANT)
 	nrfjprog --program $(SOFTDEV_HEX) -f $(MCU_VARIANT)
 	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
-	nrfjprog --pinreset -f $(MCU_VARIANT)
+	nrfjprog --reset -f $(MCU_VARIANT)
 
 else ifeq ($(FLASHER), pyocd)
 
