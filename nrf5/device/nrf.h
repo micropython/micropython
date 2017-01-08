@@ -36,13 +36,6 @@
 #define MDK_MINOR_VERSION   11
 #define MDK_MICRO_VERSION   1
 
-/* Redefine "old" too-generic name NRF52 to NRF52832_XXAA to keep backwards compatibility. */
-#if defined (NRF52)
-    #ifndef NRF52832_XXAA
-        #define NRF52832_XXAA
-    #endif
-#endif
-
 /* Define NRF52_SERIES for common use in nRF52 series devices. */
 #if defined (NRF52832_XXAA) || defined (NRF52840_XXAA)
     #define NRF52_SERIES
