@@ -74,10 +74,14 @@ static void dirty_line_update_cb(mp_obj_framebuf_t * p_framebuffer,
 STATIC void epaper_sld00200_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     epaper_sld00200p_obj_t *self = o;
 
-    mp_printf(print, "ILI9341(SPI(mosi=%u, miso=%u, clk=%u),\n",
+    mp_printf(print, "SLD00200(SPI(mosi=(port=%u, pin=%u), miso=(port=%u, pin=%u), clk=(port=%u, pin=%u)),\n",
+                     self->spi->pyb->spi->init.mosi_pin_port,
                      self->spi->pyb->spi->init.mosi_pin,
+                     self->spi->pyb->spi->init.miso_pin_port,
                      self->spi->pyb->spi->init.miso_pin,
-                     self->spi->pyb->spi->init.clk_pin);
+                     self->spi->pyb->spi->init.clk_pin_port,
+                     self->spi->pyb->spi->init.clk_pin
+					 );
     mp_printf(print, "        PWM(pwm_pin=%u),\n",
                      self->pwm->pyb->pwm->init.pwm_pin);
 
@@ -123,7 +127,6 @@ enum {
 /*
 from machine import Pin, SPI, PWM
 from display import SLD00200P
-cs = Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP)
 reset = Pin("A17", mode=Pin.OUT, pull=Pin.PULL_UP)
 panel_on = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
 discharge = Pin("A19", mode=Pin.OUT, pull=Pin.PULL_UP)
@@ -131,7 +134,7 @@ border = Pin("A14", mode=Pin.OUT, pull=Pin.PULL_UP)
 busy = Pin("A18", mode=Pin.IN,  pull=Pin.PULL_DISABLED)
 cs = Pin("A22", mode=Pin.OUT, pull=Pin.PULL_UP)
 spi = SPI(0, baudrate=8000000)
-pwm = PWM(0, Pin("A16", mode=Pin.OUT), freq=PWM.FREQ_250KHZ, duty=50, period=2)
+pwm = PWM(0, Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP), freq=PWM.FREQ_250KHZ, duty=50, period=2)
 d = SLD00200P(264, 176, spi, pwm, cs, panel_on, border, busy, reset, discharge)
 d.text("Hello World!", 32, 32)
 d.show()
