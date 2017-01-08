@@ -30,6 +30,7 @@
 
 enum {
   PORT_A,
+  PORT_B,
 };
 
 enum {
