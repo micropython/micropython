@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <nrf52.h>
-#include <nrf52_bitfields.h>
+#include <nrf.h>
 
 // include config from board
 #include "nrf52_hal_conf.h"
