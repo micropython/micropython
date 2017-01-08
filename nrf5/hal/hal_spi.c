@@ -57,9 +57,9 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
     p_instance->PSEL.MISO = p_spi_init->miso_pin;
 
 #if NRF52840_XXAA
-    p_instance->PSEL.SCK  |= (p_spi_init->clk_pin_port << SPIE_PSEL_CLK_PORT_Pos);
-    p_instance->PSEL.MOSI |= (p_spi_init->mosi_pin_port << SPIE_PSEL_MOSI_PORT_Pos);
-    p_instance->PSEL.MISO |= (p_spi_init->miso_pin_port << SPIE_PSEL_MISO_PORT_Pos);
+    p_instance->PSEL.SCK  |= (p_spi_init->clk_pin_port << SPI_PSEL_SCK_PORT_Pos);
+    p_instance->PSEL.MOSI |= (p_spi_init->mosi_pin_port << SPI_PSEL_MOSI_PORT_Pos);
+    p_instance->PSEL.MISO |= (p_spi_init->miso_pin_port << SPI_PSEL_MISO_PORT_Pos);
 #endif
 
 #endif
