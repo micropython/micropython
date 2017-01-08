@@ -30,14 +30,14 @@
 #define MICROPY_HW_MCU_NAME         "NRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nrf52-DK"
 
-#define MICROPY_PY_MACHINE_PWM      (0)
-#define MICROPY_PY_MACHINE_SPI      (0)
-#define MICROPY_PY_MACHINE_TIMER    (0)
-#define MICROPY_PY_MACHINE_RTC      (0)
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_TIMER    (1)
+#define MICROPY_PY_MACHINE_RTC      (1)
 
-#define MICROPY_PY_DISPLAY                  (0)
-#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (0)
-#define MICROPY_PY_DISPLAY_LCD_ILI9341      (0)
+#define MICROPY_PY_DISPLAY                  (1)
+#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (1)
+#define MICROPY_PY_DISPLAY_LCD_ILI9341      (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
@@ -77,7 +77,9 @@
 #define MICROPY_HW_SPI0_SCK         (25) // A25 (Arduino D13)
 #define MICROPY_HW_SPI0_MOSI        (23) // A23 (Arduino D11)
 #define MICROPY_HW_SPI0_MISO        (24) // A24 (Arduino D12)
-#define MICROPY_HW_SPI0_NSS         (22) // A22 (Arduino D10)
+#define MICROPY_HW_SPI0_SCK_PORT    (0)
+#define MICROPY_HW_SPI0_MOSI_PORT   (0)
+#define MICROPY_HW_SPI0_MISO_PORT   (0)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
