@@ -1,7 +1,7 @@
 rm -rf atmel-samd/build*
 rm -rf esp8266/build*
 
-ATMEL_BOARDS="cplay_m0_flash feather_m0_basic feather_m0_adalogger feather_m0_flash metro_m0_flash trinket_m0 gemma_m0"
+ATMEL_BOARDS="arduino_zero cplay_m0_flash feather_m0_basic feather_m0_adalogger feather_m0_flash metro_m0_flash trinket_m0 gemma_m0"
 
 for board in $ATMEL_BOARDS; do
     make -C atmel-samd BOARD=$board
@@ -14,6 +14,6 @@ if [ $? -ne 0 ]; then
 fi
 
 for board in $ATMEL_BOARDS; do
-    cp atmel-samd/build-$board/firmware.bin bin/adafruit-micropython-$board-$version.bin
+    cp atmel-samd/build-$board/firmware.bin bin/adafruit-circuitpython-$board-$version.bin
 done
-cp esp8266/build/firmware-combined.bin bin/adafruit-micropython-feather_huzzah-$version.bin
+cp esp8266/build/firmware-combined.bin bin/adafruit-circuitpython-feather_huzzah-$version.bin
