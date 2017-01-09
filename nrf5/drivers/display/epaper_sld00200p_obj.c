@@ -138,6 +138,23 @@ pwm = PWM(0, Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP), freq=PWM.FREQ_250KHZ, d
 d = SLD00200P(264, 176, spi, pwm, cs, panel_on, border, busy, reset, discharge)
 d.text("Hello World!", 32, 32)
 d.show()
+
+Example for nrf52840 / pca10056:
+
+from machine import Pin, SPI, PWM
+from display import SLD00200P
+reset = Pin("B7", mode=Pin.OUT, pull=Pin.PULL_UP)
+panel_on = Pin("B3", mode=Pin.OUT, pull=Pin.PULL_UP)
+discharge = Pin("B9", mode=Pin.OUT, pull=Pin.PULL_UP)
+border = Pin("B4", mode=Pin.OUT, pull=Pin.PULL_UP)
+busy = Pin("B8", mode=Pin.IN,  pull=Pin.PULL_DISABLED)
+cs = Pin("B12", mode=Pin.OUT, pull=Pin.PULL_UP)
+spi = SPI(0, baudrate=8000000)
+pwm = PWM(0, Pin("B6", mode=Pin.OUT, pull=Pin.PULL_UP), freq=PWM.FREQ_250KHZ, duty=50, period=2)
+d = SLD00200P(264, 176, spi, pwm, cs, panel_on, border, busy, reset, discharge)
+d.text("Hello World!", 32, 32)
+d.show()
+
 */
 STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
