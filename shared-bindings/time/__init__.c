@@ -52,7 +52,7 @@
 //|   :rtype: float
 //|
 STATIC mp_obj_t time_monotonic(void) {
-    return mp_obj_new_float(common_hal_time_monotonic() / 100.0);
+    return mp_obj_new_float(common_hal_time_monotonic() / 1000.0);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
