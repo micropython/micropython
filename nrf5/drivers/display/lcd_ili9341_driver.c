@@ -49,7 +49,7 @@ static void cmd_write(uint8_t value)
 
     hal_spi_master_tx_rx(mp_instance, 1, &value, NULL);
 
-    mp_hal_pin_low(mp_cs_pin);
+    mp_hal_pin_high(mp_cs_pin);
 }
 
 static void data_write(uint8_t value)
@@ -59,7 +59,7 @@ static void data_write(uint8_t value)
 
     hal_spi_master_tx_rx(mp_instance, 1, &value, NULL);
 
-    mp_hal_pin_low(mp_cs_pin);
+    mp_hal_pin_high(mp_cs_pin);
 }
 
 void driver_ili9341_init(NRF_SPI_Type * p_instance, pin_obj_t * p_cs_pin, pin_obj_t * p_dc_pin)
