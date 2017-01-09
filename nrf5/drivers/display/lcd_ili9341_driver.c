@@ -77,11 +77,11 @@ void driver_ili9341_init(NRF_SPI_Type * p_instance, pin_obj_t * p_cs_pin, pin_ob
 
     // Read driver id
 
-    mp_hal_delay_ms(500);
+    mp_hal_delay_ms(1000);
 
     cmd_write(0x01);
 
-    mp_hal_delay_ms(200);
+    mp_hal_delay_ms(500);
 
     cmd_write(0xCF);
     data_write(0x00);
