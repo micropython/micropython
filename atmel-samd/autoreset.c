@@ -27,23 +27,22 @@
 #include "autoreset.h"
 
 #include "asf/sam0/drivers/tc/tc_interrupt.h"
+#include "lib/utils/interrupt_char.h"
 #include "py/mphal.h"
-
-void mp_keyboard_interrupt(void);
 
 volatile uint32_t autoreset_delay_ms = 0;
 bool autoreset_enabled = false;
 volatile bool reset_next_character = false;
 
 inline void autoreset_tick() {
-  if (autoreset_delay_ms == 0) {
-      return;
-  }
-  if (autoreset_delay_ms == 1 && autoreset_enabled && !reset_next_character) {
-      mp_keyboard_interrupt();
-      reset_next_character = true;
-  }
-  autoreset_delay_ms--;
+    if (autoreset_delay_ms == 0) {
+        return;
+    }
+    if (autoreset_delay_ms == 1 && autoreset_enabled && !reset_next_character) {
+        mp_keyboard_interrupt();
+        reset_next_character = true;
+    }
+    autoreset_delay_ms--;
 }
 
 void autoreset_enable() {

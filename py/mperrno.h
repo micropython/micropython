@@ -28,6 +28,7 @@
 #define __MICROPY_INCLUDED_PY_MPERRNO_H__
 
 #include "py/mpconfig.h"
+#include "py/obj.h"
 
 #if MICROPY_USE_INTERNAL_ERRNO
 

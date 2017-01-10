@@ -86,8 +86,11 @@
 #define MICROPY_USE_INTERNAL_PRINTF (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_IO_FILEIO        (1)
+#define MICROPY_READER_FATFS        (1)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
+
+#define MICROPY_KBD_EXCEPTION       (1)
 
 // type definitions for the specific machine
 
@@ -172,7 +175,6 @@ extern const struct _mp_obj_module_t samd_module;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
-    mp_obj_t mp_kbd_exception; \
     FLASH_ROOT_POINTERS \
 
 bool udi_msc_process_trans(void);

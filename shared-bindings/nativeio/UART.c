@@ -148,16 +148,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_uart___exit___obj, 4, 4, nat
 //
 //|   .. method:: read([nbytes])
 //|
-//|     Read characters.  If ``nbytes`` is specified then read at most that many bytes.
+//|     Read characters.  If ``nbytes`` is specified then read at most that many
+//|     bytes. Otherwise, read everything that has been buffered.
 //|
 //|     :return: Data read
-//|     :rtype: bytes or None
-//|
-//|   .. method:: readall()
-//|
-//|     Reads much has been buffered.
-//|
-//|     :return: Data buffered so far
 //|     :rtype: bytes or None
 //|
 //|   .. method:: readinto(buf[, nbytes])
@@ -263,7 +257,6 @@ STATIC const mp_rom_map_elem_t nativeio_uart_locals_dict_table[] = {
 
     // Standard stream methods.
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),     MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readall),  MP_ROM_PTR(&mp_stream_readall_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },

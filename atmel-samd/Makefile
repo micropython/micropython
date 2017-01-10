@@ -197,6 +197,7 @@ SRC_C = \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
+	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
 	lib/utils/pyhelp.c \
 	lib/utils/stdout_helpers.c \

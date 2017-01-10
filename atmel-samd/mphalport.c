@@ -8,6 +8,7 @@
 #include "asf/sam0/drivers/port/port.h"
 #include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "lib/mp-readline/readline.h"
+#include "lib/utils/interrupt_char.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/smallint.h"
@@ -33,9 +34,6 @@ static volatile uint8_t usb_rx_buf_tail;
 volatile uint8_t usb_rx_count;
 
 volatile bool mp_cdc_enabled = false;
-
-void mp_keyboard_interrupt(void);
-int interrupt_char;
 
 extern struct usart_module usart_instance;
 
@@ -106,7 +104,7 @@ void usb_rx_notify(void)
             // character!
             c = udi_cdc_getc();
 
-            if (c == interrupt_char) {
+            if (c == mp_interrupt_char) {
                 // We consumed a character rather than adding it to the rx
                 // buffer so undo the modifications we made to count and the
                 // tail.
@@ -219,14 +217,6 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     #endif
 }
 
-extern int interrupt_char;
-void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
-    }
-    interrupt_char = c;
-}
-
 void mp_hal_delay_ms(mp_uint_t delay) {
     // If mass storage is enabled measure the time ourselves and run any mass
     // storage transactions in the meantime.
@@ -239,7 +229,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
                 MICROPY_VM_HOOK_LOOP
             #endif
             // Check to see if we've been CTRL-Ced by autoreset or the user.
-            if(MP_STATE_VM(mp_pending_exception) == MP_STATE_PORT(mp_kbd_exception)) {
+            if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
                 break;
             }
             duration = (common_hal_time_monotonic() - start_tick);
