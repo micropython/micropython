@@ -115,7 +115,7 @@ static inline uint32_t getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
 }
 
 STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
-    if (x + w <= 0 || y + h <= 0 || y >= fb->height || x >= fb->width) {
+    if (h < 1 || w < 1 || x + w <= 0 || y + h <= 0 || y >= fb->height || x >= fb->width) {
         // No operation needed.
         return;
     }

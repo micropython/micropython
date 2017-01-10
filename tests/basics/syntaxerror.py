@@ -46,9 +46,6 @@ test_syntax("f**2 = 1")
 # can't assign to power of composite
 test_syntax("f[0]**2 = 1")
 
-# can't assign to empty tuple
-test_syntax("() = 1")
-
 # can't have *x on RHS
 test_syntax("x = *x")
 
@@ -66,7 +63,6 @@ test_syntax("[a, b] += c")
 test_syntax("def f(a=1, b): pass")
 
 # can't delete these things
-test_syntax("del ()")
 test_syntax("del f()")
 test_syntax("del f[0]**2")
 test_syntax("del (a for a in a)")
