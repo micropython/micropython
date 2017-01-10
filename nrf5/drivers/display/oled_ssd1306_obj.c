@@ -95,7 +95,7 @@ enum {
     ARG_NEW_SPI,
     ARG_NEW_CS,
     ARG_NEW_DC,
-	ARG_NEW_RESET
+    ARG_NEW_RESET
 };
 
 /*
@@ -132,7 +132,7 @@ STATIC mp_obj_t oled_ssd1306_make_new(const mp_obj_type_t *type, size_t n_args, 
         { ARG_NEW_SPI,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { ARG_NEW_CS,     MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { ARG_NEW_DC,     MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-		{ ARG_NEW_RESET,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_RESET,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
