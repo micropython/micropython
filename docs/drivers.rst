@@ -35,6 +35,7 @@ knowledge of the interface details of the chip itself.
     RGB Displays <http://micropython-rgb.readthedocs.io/>
     Analog-to-digital converters: ADS1015 and ADS1115 <http://micropython-ads1015.readthedocs.io/>
     DS3231 Real-time Clock (Precision RTC) <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>
+    DS1307 Real-time Clock (5V RTC Breakout) <https://circuitpython.readthedocs.io/projects/ds1307/en/latest/>
     PCF8523 Real-time Clock (Adalogger RTC) <https://circuitpython.readthedocs.io/projects/pcf8523/en/latest/>
     TCS34725 Color Sensor <http://micropython-tcs34725.readthedocs.io/>
     TSL2561 Light Sensor <http://micropython-tsl2561.readthedocs.io/>
