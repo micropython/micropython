@@ -24,38 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
+#ifndef OLED_SSD1306_H__
+#define OLED_SSD1306_H__
 
-#if MICROPY_PY_DISPLAY
+#include <py/obj.h>
 
-#include "epaper_sld00200p_obj.h"
-#include "lcd_ili9341_obj.h"
-#include "oled_ssd1306_obj.h"
+extern const mp_obj_type_t oled_ssd1306_type;
 
-STATIC const mp_map_elem_t mp_module_display_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_display) },
-#if MICROPY_PY_DISPLAY_EPAPER_SLD00200P
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SLD00200P), (mp_obj_t)&epaper_sld00200p_type },
-#endif
-#if MICROPY_PY_DISPLAY_LCD_ILI9341
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341), (mp_obj_t)&lcd_ili9341_type },
-#endif
-#if MICROPY_PY_DISPLAY_OLED_SSD1306
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1306), (mp_obj_t)&oled_ssd1306_type },
-#endif
-#if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1289), (mp_obj_t)&lcd_ssd1289_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LS027b7DH01), (mp_obj_t)&lcd_ls027b7dh01_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SSD1305), (mp_obj_t)&oled_ssd1305_type },
-#endif
-};
+#endif // OLED_SSD1306_H__
 
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_display_globals, mp_module_display_globals_table);
-
-const mp_obj_module_t mp_module_display = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_display_globals,
-};
-
-#endif // MICROPY_PY_DISPLAY
