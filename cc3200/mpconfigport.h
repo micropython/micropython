@@ -55,6 +55,7 @@
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
+#define MICROPY_READER_FATFS                        (1)
 #ifndef DEBUG // we need ram on the launchxl while debugging
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #else
@@ -112,6 +113,7 @@
 #define MICROPY_PY_URE                              (1)
 #define MICROPY_PY_UHEAPQ                           (0)
 #define MICROPY_PY_UHASHLIB                         (0)
+#define MICROPY_PY_USELECT                          (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
@@ -192,6 +194,7 @@ typedef long            mp_off_t;
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)           enable_irq(state)
+#define MICROPY_EVENT_POLL_HOOK                     __WFI();
 
 // assembly functions to handle critical sections, interrupt
 // disabling/enabling and sleep mode enter/exit

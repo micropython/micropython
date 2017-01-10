@@ -162,8 +162,6 @@ APP_STM_SRC_C = $(addprefix stmhal/,\
 	import.c \
 	input.c \
 	irq.c \
-	lexerfatfs.c \
-	moduselect.c \
 	pybstdio.c \
 	)
 
@@ -208,9 +206,9 @@ WIPY_PWD ?= 'python'
 
 all: $(BUILD)/mcuimg.bin
 
-.PHONY: deploy
+.PHONY: deploy-ota
 
-deploy: $(BUILD)/mcuimg.bin
+deploy-ota: $(BUILD)/mcuimg.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(UPDATE_WIPY) --verify --ip $(WIPY_IP) --user $(WIPY_USER) --password $(WIPY_PWD) --file $<
 

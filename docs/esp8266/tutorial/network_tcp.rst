@@ -72,6 +72,7 @@ Let's define a function that can download and print a URL::
                 print(str(data, 'utf8'), end='')
             else:
                 break
+        s.close()
 
 Make sure that you import the socket module before running this function.  Then
 you can try::

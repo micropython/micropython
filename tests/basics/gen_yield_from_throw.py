@@ -17,3 +17,14 @@ try:
 except TypeError:
     print("got TypeError from downstream!")
 
+# case where generator doesn't intercept the thrown/injected exception
+def gen3():
+    yield 123
+    yield 456
+        
+g3 = gen3()
+print(next(g3))
+try:
+    g3.throw(StopIteration)
+except StopIteration:
+    print('got StopIteration from downstream!')

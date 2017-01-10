@@ -114,6 +114,11 @@ void __fatal_error(const char *msg);
 #define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x24003010)
 
+#if defined(MCU_SERIES_F7)
+const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
+#endif
+
 #elif defined(MCU_SERIES_L4)
 
 #define CONFIG_RCC_CR_1ST (RCC_CR_MSION)

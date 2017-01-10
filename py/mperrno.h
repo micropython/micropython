@@ -27,6 +27,8 @@
 #ifndef __MICROPY_INCLUDED_PY_MPERRNO_H__
 #define __MICROPY_INCLUDED_PY_MPERRNO_H__
 
+#include "py/mpconfig.h"
+
 #if MICROPY_USE_INTERNAL_ERRNO
 
 // MP_Exxx errno's are defined directly as numeric values

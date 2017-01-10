@@ -24,11 +24,12 @@ def fs_corrupted():
     import time
     while 1:
         print("""\
-FAT filesystem appears to be corrupted. If you had important data there, you
-may want to make a flash snapshot to try to recover it. Otherwise, perform
-factory reprogramming of MicroPython firmware (completely erase flash, followed
-by firmware programming).
-""")
+The FAT filesystem starting at sector %d with size %d sectors appears to
+be corrupted. If you had important data there, you may want to make a flash
+snapshot to try to recover it. Otherwise, perform factory reprogramming
+of MicroPython firmware (completely erase flash, followed by firmware
+programming).
+""" % (bdev.START_SEC, bdev.blocks))
         time.sleep(3)
 
 def setup():

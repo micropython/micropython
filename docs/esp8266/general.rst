@@ -58,6 +58,17 @@ For your convenience, some of technical specifications are provided below:
   and always-available BootROM bootloader, ESP8266 is not brickable.
 
 
+Scarcity of runtime resources
+-----------------------------
+
+ESP8266 has very modest resources (first of all, RAM memory). So, please
+avoid allocating too big container objects (lists, dictionaries) and
+buffers. There is also no full-fledged OS to keep track of resources
+and automatically clean them up, so that's the task of a user/user
+application: please be sure to close open files, sockets, etc. as soon
+as possible after use.
+
+
 Boot process
 ------------
 

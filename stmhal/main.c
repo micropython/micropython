@@ -372,9 +372,9 @@ int main(void) {
         // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
         // which behaves more or less like normal SRAM.
         __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #else
+        #elif defined(CCMDATARAM_BASE)
         // enable the CCM RAM
-        __CCMDATARAMEN_CLK_ENABLE();
+        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
         #endif
     #endif
 
@@ -438,9 +438,6 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     mp_obj_list_init(mp_sys_argv, 0);
-
-    // zero out the pointers to the mounted devices
-    memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
 
     // Initialise low-level sub-systems.  Here we need to very basic things like
     // zeroing out memory and resetting any of the sub-systems.  Following this

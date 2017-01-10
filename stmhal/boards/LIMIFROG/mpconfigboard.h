@@ -29,8 +29,8 @@ void LIMIFROG_board_early_init(void);
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // USART config
-#define MICROPY_HW_UART3_PORT (GPIOC)
-#define MICROPY_HW_UART3_PINS (GPIO_PIN_10 | GPIO_PIN_11)
+#define MICROPY_HW_UART3_TX (pin_C10)
+#define MICROPY_HW_UART3_RX (pin_C11)
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B8)

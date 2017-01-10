@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_PY_READER_H
+#define MICROPY_INCLUDED_PY_READER_H
 
-#include "py/lexer.h"
+#include "py/obj.h"
 
-mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
+// the readbyte function must return the next byte in the input stream
+// it must return MP_READER_EOF if end of stream
+// it can be called again after returning MP_READER_EOF, and in that case must return MP_READER_EOF
+#define MP_READER_EOF ((mp_uint_t)(-1))
 
-// TODO: Instead of such shims, probably better to let port #define
-// mp_lexer_new_from_file to a function it wants to use.
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return fat_vfs_lexer_new_from_file(filename);
-}
+typedef struct _mp_reader_t {
+    void *data;
+    mp_uint_t (*readbyte)(void *data);
+    void (*close)(void *data);
+} mp_reader_t;
+
+bool mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);
+int mp_reader_new_file(mp_reader_t *reader, const char *filename);
+int mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd);
+
+#endif // MICROPY_INCLUDED_PY_READER_H

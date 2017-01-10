@@ -425,7 +425,7 @@ STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
 /// \classmethod \constructor()
 /// Create an RTC object.
-STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 

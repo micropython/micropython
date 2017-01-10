@@ -147,7 +147,7 @@ STATIC void esp_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_printf(print, "Timer(%p)", &self->timer);
 }
 
-STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     esp_timer_obj_t *tim = m_new_obj(esp_timer_obj_t);
     tim->base.type = &esp_timer_type;
@@ -255,7 +255,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
-    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_hspi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_hspi_type) },
 
     // wake abilities
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },

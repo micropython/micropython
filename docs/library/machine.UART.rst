@@ -31,7 +31,7 @@ A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
 
     uart.read(10)       # read 10 characters, returns a bytes object
-    uart.readall()      # read all available characters
+    uart.read()         # read all available characters
     uart.readline()     # read a line
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
@@ -95,16 +95,11 @@ Methods
 
 .. method:: UART.read([nbytes])
 
-   Read characters.  If ``nbytes`` is specified then read at most that many bytes.
+   Read characters.  If ``nbytes`` is specified then read at most that many bytes,
+   otherwise read as much data as possible.
 
    Return value: a bytes object containing the bytes read in.  Returns ``None``
    on timeout.
-
-.. method:: UART.readall()
-
-   Read as much data as possible.
-
-   Return value: a bytes object or ``None`` on timeout.
 
 .. method:: UART.readinto(buf[, nbytes])
 

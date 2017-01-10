@@ -151,23 +151,21 @@ typedef mp_int_t fmt_int_t;
 #endif
 
 STATIC const uint8_t log_base2_floor[] = {
-    0,
     0, 1, 1, 2,
     2, 2, 2, 3,
     3, 3, 3, 3,
     3, 3, 3, 4,
+    /* if needed, these are the values for higher bases
     4, 4, 4, 4,
     4, 4, 4, 4,
     4, 4, 4, 4,
     4, 4, 4, 5
+    */
 };
 
 size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma) {
-    if (base < 2 || base > 32) {
-        return 0;
-    }
-
-    size_t num_digits = num_bits / log_base2_floor[base] + 1;
+    assert(2 <= base && base <= 16);
+    size_t num_digits = num_bits / log_base2_floor[base - 1] + 1;
     size_t num_commas = comma ? num_digits / 3 : 0;
     size_t prefix_len = prefix ? strlen(prefix) : 0;
     return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
@@ -354,12 +352,6 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
-#if MICROPY_PY_BUILTINS_FLOAT
-mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
-    return MP_OBJ_SMALL_INT_VALUE(self_in);
-}
-#endif
-
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 // This dispatcher function is expected to be independent of the implementation of long int
@@ -383,9 +375,13 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support long ints
-    // TODO: Support byteorder param (assumes 'little' at the moment)
+    // TODO: Support byteorder param
     // TODO: Support signed param (assumes signed=False at the moment)
     (void)n_args;
+
+    if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+        mp_not_implemented("");
+    }
 
     // get the buffer info
     mp_buffer_info_t bufinfo;
@@ -400,13 +396,17 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_int_from_uint(value);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 2, 3, int_from_bytes);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_from_bytes);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
-    // TODO: Support byteorder param (assumes 'little')
+    // TODO: Support byteorder param
     // TODO: Support signed param (assumes signed=False)
     (void)n_args;
+
+    if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+        mp_not_implemented("");
+    }
 
     mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);
 
@@ -427,7 +427,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 2, 4, int_to_bytes);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
 
 STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },

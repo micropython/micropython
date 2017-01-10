@@ -21,10 +21,8 @@ CONDITIONAL_VAR = {
     'I2C'   : 'MICROPY_HW_I2C{num}_SCL',
     'I2S'   : 'MICROPY_HW_ENABLE_I2S{num}',
     'SPI'   : 'MICROPY_HW_SPI{num}_SCK',
-    'UART'  : 'MICROPY_HW_UART{num}_PORT',
-    'UART5' : 'MICROPY_HW_UART5_TX_PORT',
-    'USART' : 'MICROPY_HW_UART{num}_PORT',
-    'USART1': 'MICROPY_HW_UART1_TX_PORT',
+    'UART'  : 'MICROPY_HW_UART{num}_TX',
+    'USART' : 'MICROPY_HW_UART{num}_TX',
 }
 
 def parse_port_pin(name_str):

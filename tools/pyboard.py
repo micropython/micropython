@@ -285,43 +285,66 @@ def main():
     cmd_parser.add_argument('files', nargs='*', help='input files')
     args = cmd_parser.parse_args()
 
-    def execbuffer(buf):
+    # open the connection to the pyboard
+    try:
+        pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
+    except PyboardError as er:
+        print(er)
+        sys.exit(1)
+
+    # run any command or file(s)
+    if args.command is not None or len(args.files):
+        # we must enter raw-REPL mode to execute commands
+        # this will do a soft-reset of the board
         try:
-            pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
             pyb.enter_raw_repl()
-            ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
-            pyb.exit_raw_repl()
-            pyb.close()
         except PyboardError as er:
             print(er)
             sys.exit(1)
-        except KeyboardInterrupt:
-            sys.exit(1)
-        if ret_err:
-            stdout_write_bytes(ret_err)
-            sys.exit(1)
 
-    if args.command is not None:
-        execbuffer(args.command.encode('utf-8'))
+        def execbuffer(buf):
+            try:
+                ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
+            except PyboardError as er:
+                print(er)
+                sys.exit(1)
+            except KeyboardInterrupt:
+                sys.exit(1)
+            if ret_err:
+                pyb.exit_raw_repl()
+                pyb.close()
+                stdout_write_bytes(ret_err)
+                sys.exit(1)
 
-    for filename in args.files:
-        with open(filename, 'rb') as f:
-            pyfile = f.read()
-            execbuffer(pyfile)
+        # run the command, if given
+        if args.command is not None:
+            execbuffer(args.command.encode('utf-8'))
 
+        # run any files
+        for filename in args.files:
+            with open(filename, 'rb') as f:
+                pyfile = f.read()
+                execbuffer(pyfile)
+
+        # exiting raw-REPL just drops to friendly-REPL mode
+        pyb.exit_raw_repl()
+
+    # if asked explicitly, or no files given, then follow the output
     if args.follow or (args.command is None and len(args.files) == 0):
         try:
-            pyb = Pyboard(args.device, args.baudrate, args.user, args.password, args.wait)
             ret, ret_err = pyb.follow(timeout=None, data_consumer=stdout_write_bytes)
-            pyb.close()
         except PyboardError as er:
             print(er)
             sys.exit(1)
         except KeyboardInterrupt:
             sys.exit(1)
         if ret_err:
+            pyb.close()
             stdout_write_bytes(ret_err)
             sys.exit(1)
+
+    # close the connection to the pyboard
+    pyb.close()
 
 if __name__ == "__main__":
     main()

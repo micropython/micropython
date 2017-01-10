@@ -30,6 +30,7 @@
 
 #include "py/mpconfig.h"
 #include "py/qstr.h"
+#include "py/reader.h"
 
 /* lexer.h -- simple tokeniser for Micro Python
  *
@@ -142,21 +143,11 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_MINUS_MORE,
 } mp_token_kind_t;
 
-// the next-byte function must return the next byte in the stream
-// it must return MP_LEXER_EOF if end of stream
-// it can be called again after returning MP_LEXER_EOF, and in that case must return MP_LEXER_EOF
-#define MP_LEXER_EOF ((unichar)(-1))
-
-typedef mp_uint_t (*mp_lexer_stream_next_byte_t)(void*);
-typedef void (*mp_lexer_stream_close_t)(void*);
-
 // this data structure is exposed for efficiency
 // public members are: source_name, tok_line, tok_column, tok_kind, vstr
 typedef struct _mp_lexer_t {
     qstr source_name;           // name of source
-    void *stream_data;          // data for stream
-    mp_lexer_stream_next_byte_t stream_next_byte;   // stream callback to get next byte
-    mp_lexer_stream_close_t stream_close;           // stream callback to free
+    mp_reader_t reader;         // stream source
 
     unichar chr0, chr1, chr2;   // current cached characters from source
 
@@ -176,12 +167,11 @@ typedef struct _mp_lexer_t {
     vstr_t vstr;                // token data
 } mp_lexer_t;
 
-mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_byte_t stream_next_byte, mp_lexer_stream_close_t stream_close);
+mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader);
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);
-void mp_lexer_show_token(const mp_lexer_t *lex);
 
 /******************************************************************/
 // platform specific import function; must be implemented for a specific port

@@ -50,7 +50,7 @@ test_dirs = ('basics', 'micropython', 'float', 'extmod', 'inlineasm') # 'import'
 exclude_tests = (
     'float/float2int_doubleprec.py', # requires double precision floating point to work
     'inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py', 'inlineasm/asmfpmuldiv.py', 'inlineasm/asmfpsqrt.py',
-    'extmod/ticks_diff.py', 'extmod/time_ms_us.py',
+    'extmod/ticks_diff.py', 'extmod/time_ms_us.py', 'extmod/uheapq_timeq.py',
     'extmod/machine_pinbase.py', 'extmod/machine_pulse.py',
     'extmod/vfs_fat_ramdisk.py', 'extmod/vfs_fat_fileio.py', 'extmod/vfs_fat_fsusermount.py', 'extmod/vfs_fat_oldproto.py',
 )

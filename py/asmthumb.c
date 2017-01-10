@@ -42,49 +42,8 @@
 #define SIGNED_FIT12(x) (((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800)
 #define SIGNED_FIT23(x) (((x) & 0xffc00000) == 0) || (((x) & 0xffc00000) == 0xffc00000)
 
-struct _asm_thumb_t {
-    mp_uint_t pass;
-    mp_uint_t code_offset;
-    mp_uint_t code_size;
-    byte *code_base;
-    byte dummy_data[4];
-
-    mp_uint_t max_num_labels;
-    mp_uint_t *label_offsets;
-    mp_uint_t push_reglist;
-    mp_uint_t stack_adjust;
-};
-
-asm_thumb_t *asm_thumb_new(uint max_num_labels) {
-    asm_thumb_t *as;
-
-    as = m_new0(asm_thumb_t, 1);
-    as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(mp_uint_t, max_num_labels);
-
-    return as;
-}
-
-void asm_thumb_free(asm_thumb_t *as, bool free_code) {
-    if (free_code) {
-        MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
-    }
-    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
-    m_del_obj(asm_thumb_t, as);
-}
-
-void asm_thumb_start_pass(asm_thumb_t *as, uint pass) {
-    if (pass == ASM_THUMB_PASS_COMPUTE) {
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
-    } else if (pass == ASM_THUMB_PASS_EMIT) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
-        if (as->code_base == NULL) {
-            assert(0);
-        }
-        //printf("code_size: %u\n", as->code_size);
-    }
-    as->pass = pass;
-    as->code_offset = 0;
+static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
+    return mp_asm_base_get_cur_to_write_bytes(&as->base, n);
 }
 
 void asm_thumb_end_pass(asm_thumb_t *as) {
@@ -92,40 +51,13 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
     // could check labels are resolved...
 
     #if defined(MCU_SERIES_F7)
-    if (as->pass == ASM_THUMB_PASS_EMIT) {
+    if (as->base.pass == MP_ASM_PASS_EMIT) {
         // flush D-cache, so the code emited is stored in memory
-        SCB_CleanDCache_by_Addr((uint32_t*)as->code_base, as->code_size);
+        SCB_CleanDCache_by_Addr((uint32_t*)as->base.code_base, as->base.code_size);
         // invalidate I-cache
         SCB_InvalidateICache();
     }
     #endif
-}
-
-// all functions must go through this one to emit bytes
-// if as->pass < ASM_THUMB_PASS_EMIT, then this function only returns a buffer of 4 bytes length
-STATIC byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int num_bytes_to_write) {
-    //printf("emit %d\n", num_bytes_to_write);
-    if (as->pass < ASM_THUMB_PASS_EMIT) {
-        as->code_offset += num_bytes_to_write;
-        return as->dummy_data;
-    } else {
-        assert(as->code_offset + num_bytes_to_write <= as->code_size);
-        byte *c = as->code_base + as->code_offset;
-        as->code_offset += num_bytes_to_write;
-        return c;
-    }
-}
-
-uint asm_thumb_get_code_pos(asm_thumb_t *as) {
-    return as->code_offset;
-}
-
-uint asm_thumb_get_code_size(asm_thumb_t *as) {
-    return as->code_size;
-}
-
-void *asm_thumb_get_code(asm_thumb_t *as) {
-    return as->code_base;
 }
 
 /*
@@ -223,55 +155,29 @@ void asm_thumb_exit(asm_thumb_t *as) {
     asm_thumb_op16(as, OP_POP_RLIST_PC(as->push_reglist));
 }
 
-void asm_thumb_label_assign(asm_thumb_t *as, uint label) {
-    assert(label < as->max_num_labels);
-    if (as->pass < ASM_THUMB_PASS_EMIT) {
-        // assign label offset
-        assert(as->label_offsets[label] == -1);
-        as->label_offsets[label] = as->code_offset;
-    } else {
-        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
-        //printf("l%d: (at %d=%ld)\n", label, as->label_offsets[label], as->code_offset);
-        assert(as->label_offsets[label] == as->code_offset);
-    }
-}
-
-void asm_thumb_align(asm_thumb_t* as, uint align) {
-    // TODO fill unused data with NOPs?
-    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
-}
-
-void asm_thumb_data(asm_thumb_t* as, uint bytesize, uint val) {
-    byte *c = asm_thumb_get_cur_to_write_bytes(as, bytesize);
-    // only write to the buffer in the emit pass (otherwise we overflow dummy_data)
-    if (as->pass == ASM_THUMB_PASS_EMIT) {
-        // little endian
-        for (uint i = 0; i < bytesize; i++) {
-            *c++ = val;
-            val >>= 8;
-        }
-    }
-}
-
 STATIC mp_uint_t get_label_dest(asm_thumb_t *as, uint label) {
-    assert(label < as->max_num_labels);
-    return as->label_offsets[label];
+    assert(label < as->base.max_num_labels);
+    return as->base.label_offsets[label];
 }
 
 void asm_thumb_op16(asm_thumb_t *as, uint op) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 2);
-    // little endian
-    c[0] = op;
-    c[1] = op >> 8;
+    if (c != NULL) {
+        // little endian
+        c[0] = op;
+        c[1] = op >> 8;
+    }
 }
 
 void asm_thumb_op32(asm_thumb_t *as, uint op1, uint op2) {
     byte *c = asm_thumb_get_cur_to_write_bytes(as, 4);
-    // little endian, op1 then op2
-    c[0] = op1;
-    c[1] = op1 >> 8;
-    c[2] = op2;
-    c[3] = op2 >> 8;
+    if (c != NULL) {
+        // little endian, op1 then op2
+        c[0] = op1;
+        c[1] = op1 >> 8;
+        c[2] = op2;
+        c[3] = op2 >> 8;
+    }
 }
 
 #define OP_FORMAT_4(op, rlo_dest, rlo_src) ((op) | ((rlo_src) << 3) | (rlo_dest))
@@ -309,10 +215,10 @@ void asm_thumb_mov_reg_i16(asm_thumb_t *as, uint mov_op, uint reg_dest, int i16_
 
 bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     asm_thumb_op16(as, OP_B_N(rel));
-    return as->pass != ASM_THUMB_PASS_EMIT || SIGNED_FIT12(rel);
+    return as->base.pass != MP_ASM_PASS_EMIT || SIGNED_FIT12(rel);
 }
 
 #define OP_BCC_N(cond, byte_offset) (0xd000 | ((cond) << 8) | (((byte_offset) >> 1) & 0x00ff))
@@ -323,11 +229,11 @@ bool asm_thumb_b_n_label(asm_thumb_t *as, uint label) {
 
 bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (!wide) {
         asm_thumb_op16(as, OP_BCC_N(cond, rel));
-        return as->pass != ASM_THUMB_PASS_EMIT || SIGNED_FIT9(rel);
+        return as->base.pass != MP_ASM_PASS_EMIT || SIGNED_FIT9(rel);
     } else {
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
         return true;
@@ -339,10 +245,10 @@ bool asm_thumb_bcc_nw_label(asm_thumb_t *as, int cond, uint label, bool wide) {
 
 bool asm_thumb_bl_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     asm_thumb_op32(as, OP_BL_HI(rel), OP_BL_LO(rel));
-    return as->pass != ASM_THUMB_PASS_EMIT || SIGNED_FIT23(rel);
+    return as->base.pass != MP_ASM_PASS_EMIT || SIGNED_FIT23(rel);
 }
 
 void asm_thumb_mov_reg_i32(asm_thumb_t *as, uint reg_dest, mp_uint_t i32) {
@@ -367,13 +273,13 @@ void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
 // TODO this is very inefficient, improve it!
 void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
     // align on machine-word + 2
-    if ((as->code_offset & 3) == 0) {
+    if ((as->base.code_offset & 3) == 0) {
         asm_thumb_op16(as, ASM_THUMB_OP_NOP);
     }
     // jump over the i32 value (instruction prefetch adds 2 to PC)
     asm_thumb_op16(as, OP_B_N(2));
     // store i32 on machine-word aligned boundary
-    asm_thumb_data(as, 4, i32);
+    mp_asm_base_data(&as->base, 4, i32);
     // do the actual load of the i32 value
     asm_thumb_mov_reg_i32_optimised(as, reg_dest, i32);
 }
@@ -384,14 +290,14 @@ void asm_thumb_mov_reg_i32_aligned(asm_thumb_t *as, uint reg_dest, int i32) {
 void asm_thumb_mov_local_reg(asm_thumb_t *as, int local_num, uint rlo_src) {
     assert(rlo_src < ASM_THUMB_REG_R8);
     int word_offset = local_num;
-    assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
+    assert(as->base.pass < MP_ASM_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_STR_TO_SP_OFFSET(rlo_src, word_offset));
 }
 
 void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < ASM_THUMB_REG_R8);
     int word_offset = local_num;
-    assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
+    assert(as->base.pass < MP_ASM_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_LDR_FROM_SP_OFFSET(rlo_dest, word_offset));
 }
 
@@ -400,7 +306,7 @@ void asm_thumb_mov_reg_local(asm_thumb_t *as, uint rlo_dest, int local_num) {
 void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num) {
     assert(rlo_dest < ASM_THUMB_REG_R8);
     int word_offset = local_num;
-    assert(as->pass < ASM_THUMB_PASS_EMIT || word_offset >= 0);
+    assert(as->base.pass < MP_ASM_PASS_EMIT || word_offset >= 0);
     asm_thumb_op16(as, OP_ADD_REG_SP_OFFSET(rlo_dest, word_offset));
 }
 
@@ -410,7 +316,7 @@ void asm_thumb_mov_reg_local_addr(asm_thumb_t *as, uint rlo_dest, int local_num)
 
 void asm_thumb_b_label(asm_thumb_t *as, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (dest != (mp_uint_t)-1 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass
@@ -429,7 +335,7 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
 
 void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     mp_uint_t dest = get_label_dest(as, label);
-    mp_int_t rel = dest - as->code_offset;
+    mp_int_t rel = dest - as->base.code_offset;
     rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
     if (dest != (mp_uint_t)-1 && rel <= -4) {
         // is a backwards jump, so we know the size of the jump on the first pass

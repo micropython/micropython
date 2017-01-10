@@ -43,7 +43,7 @@
 STATIC const mp_obj_type_t socket_type;
 
 // constructor socket(family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None)
-STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     // create socket object (not bound to any NIC yet)

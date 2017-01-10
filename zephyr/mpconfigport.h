@@ -37,6 +37,7 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_ATTRTUPLE        (0)
@@ -47,7 +48,6 @@
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (0)
 #define MICROPY_PY_BUILTINS_REVERSED (0)
 #define MICROPY_PY_BUILTINS_SET     (0)
-#define MICROPY_PY_BUILTINS_SLICE   (0)
 #define MICROPY_PY_ARRAY            (0)
 #define MICROPY_PY_COLLECTIONS      (0)
 #define MICROPY_PY_CMATH            (0)
@@ -94,7 +94,6 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t mp_kbd_exception; \
     const char *readline_hist[8];
 
 extern const struct _mp_obj_module_t mp_module_machine;

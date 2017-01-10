@@ -244,7 +244,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, cons
 /// \classmethod \constructor(id, ...)
 /// Create a new Pin object associated with the id.  If additional arguments are given,
 /// they are used to initialise the pin.  See `init`.
-STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
@@ -261,7 +261,7 @@ STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     pin_obj_t *self = self_in;
     if (n_args == 0) {

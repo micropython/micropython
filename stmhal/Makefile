@@ -145,16 +145,15 @@ SRC_C = \
 	pybstdio.c \
 	help.c \
 	input.c \
+	machine_i2c.c \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
 	moduos.c \
 	modutime.c \
-	moduselect.c \
 	modusocket.c \
 	modnetwork.c \
 	import.c \
-	lexerfatfs.c \
 	extint.c \
 	usrsw.c \
 	rng.c \
@@ -297,23 +296,24 @@ else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
 
+FLASH_ADDR ?= 0x08000000
 TEXT_ADDR ?= 0x08020000
 
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
+	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin $(FLASH_ADDR)
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT_ADDR)
 
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
-	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin"
+	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(FLASH_ADDR) $(BUILD)/firmware1.bin $(TEXT_ADDR)"
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
+	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
