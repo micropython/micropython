@@ -51,7 +51,7 @@
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
-#define MICROPY_PY_FRAMEBUF         (1)
+#define MICROPY_PY_FRAMEBUF         (0)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
