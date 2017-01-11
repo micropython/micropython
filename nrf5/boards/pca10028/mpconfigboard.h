@@ -33,6 +33,7 @@
 #define MICROPY_PY_MACHINE_PWM      (0)
 #define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_PY_MACHINE_RTC      (1)
+#define MICROPY_PY_MACHINE_HW_I2C   (1)
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
