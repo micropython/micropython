@@ -27,7 +27,7 @@
 #include "mphalport.h"
 #include "hal_adc.h"
 
-#ifdef HAL_ADCE_MODULE_ENABLED && NRF52
+#ifdef HAL_ADCE_MODULE_ENABLED
 
 void hal_adc_init(HAL_ADC_Type * p_instance, hal_adc_init_t const * p_adc_init) {
 }
