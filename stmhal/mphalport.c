@@ -110,6 +110,12 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #endif
     #if defined(GPIOG) && defined(__GPIOG_CLK_ENABLE)
     } else if (gpio == GPIOG) {
+        #if defined(STM32L476xx) || defined(STM32L486xx)
+        // According to AN4555 (Getting started with STM32L4 series hardware
+        // development, Port G pins 2 thru 15 are powered using VddIO2 for the
+        // STM32L4x6 MCUs.
+        HAL_PWREx_EnableVddIO2();
+        #endif
         __GPIOG_CLK_ENABLE();
     #endif
     #ifdef __GPIOH_CLK_ENABLE
