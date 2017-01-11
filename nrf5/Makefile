@@ -151,6 +151,7 @@ SRC_C += \
 	modnetwork.c \
 	timer.c \
 	rtc.c \
+	adc.c \
 	lcd_mono_fb.c \
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
