@@ -115,8 +115,7 @@ class Pin(object):
             return
         (adc,channel) = adc_str.split('_')
         for idx in range(3, len(adc)):
-            adc_num = int(adc[idx]) # 1, 2, or 3
-            self.adc_num |= (1 << (adc_num - 1))
+            self.adc_num = int(adc[idx])
         self.adc_channel = int(channel[2:])
 
     def parse_af(self, af_idx, af_strs_in):
@@ -204,7 +203,7 @@ class Pins(object):
             if pin.port == port_num and pin.pin == pin_num:
                 return pin
 
-    def parse_af_file(self, filename, pinname_col, af_col):
+    def parse_af_file(self, filename, pinname_col, af_col, af_col_end):
         with open(filename, 'r') as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
@@ -214,8 +213,10 @@ class Pins(object):
                     continue
                 pin = Pin(port_num, pin_num)
                 for af_idx in range(af_col, len(row)):
-                    if af_idx >= af_col:
+                    if af_idx < af_col_end:
                         pin.parse_af(af_idx - af_col, row[af_idx])
+                    elif af_idx == af_col_end:
+                        pin.parse_adc(row[af_idx])
                 self.cpu_pins.append(NamedPin(pin.cpu_pin_name(), pin))
 
     def parse_board_file(self, filename):
@@ -376,7 +377,7 @@ def main():
     print('//')
     if args.af_filename:
         print('// --af {:s}'.format(args.af_filename))
-        pins.parse_af_file(args.af_filename, 1, 2)
+        pins.parse_af_file(args.af_filename, 1, 2, 2)
 
     if args.board_filename:
         print('// --board {:s}'.format(args.board_filename))
