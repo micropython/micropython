@@ -116,6 +116,8 @@ SRC_HAL = $(addprefix hal/,\
 	hal_time.c \
 	hal_rtc.c \
 	hal_timer.c \
+	hal_twi.c \
+	hal_twie.c \
 	)
 
 ifeq ($(MCU_VARIANT), nrf52)
@@ -132,6 +134,7 @@ SRC_C += \
 	uart.c \
 	spi.c \
 	pwm.c \
+	i2c.c \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
