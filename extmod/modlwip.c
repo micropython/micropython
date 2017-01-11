@@ -113,12 +113,15 @@ u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
     return out_sz;
 }
 
-// constructor lwip.slip(device=integer, iplocal=string, ipremote=string)
+// constructor lwip.slip(device=stream, iplocal=string, ipremote=string)
 STATIC mp_obj_t lwip_slip_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
     lwip_slip_obj.base.type = &lwip_slip_type;
 
+    if (! mp_obj_get_type(args[0])->protocol) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "argument 1 must be a stream compatible object"));
+    }
     MP_STATE_VM(lwip_slip_stream) = args[0];
 
     ip_addr_t iplocal, ipremote;
