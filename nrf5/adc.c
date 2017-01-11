@@ -44,15 +44,15 @@ typedef struct _machine_adc_obj_t {
 /* MicroPython bindings for machine API                                       */
 
 STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    return MP_OBJ_FROM_PTR(self);
+    return mp_const_none;
 }
 
 const mp_obj_type_t machine_adc_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADC,
+    .make_new = machine_adc_make_new,
 #if 0
     .print = adc_print,
-    .make_new = machine_adc_make_new,
     .locals_dict = (mp_obj_t)&machine_adc_locals_dict
 #endif
 };
