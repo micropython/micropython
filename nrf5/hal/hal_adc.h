@@ -39,7 +39,7 @@
 
 #define ADC_IRQ_NUM SAADC_IRQn
 #define ADC_BASE(x) ((NRF_SAADC_Type *)NRF_SAADC_BASE)
-#define HAL_ADC_Type NRF_ADC_Type
+#define HAL_ADC_Type NRF_SAADC_Type
 
 #endif
 
