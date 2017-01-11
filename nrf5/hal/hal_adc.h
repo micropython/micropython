@@ -27,26 +27,38 @@
 #ifndef HAL_ADC_H__
 #define HAL_ADC_H__
 
+#include <stdint.h>
+
 #include "nrf.h"
 
 #if NRF51
 
 #define ADC_IRQ_NUM ADC_IRQn
-#define ADC_BASE(x) ((NRF_ADC_Type *)NRF_ADC_BASE)
+#define ADC_BASE ((NRF_ADC_Type *)NRF_ADC_BASE)
 #define HAL_ADC_Type NRF_ADC_Type
 
 #else
 
 #define ADC_IRQ_NUM SAADC_IRQn
-#define ADC_BASE(x) ((NRF_SAADC_Type *)NRF_SAADC_BASE)
+#define ADC_BASE ((NRF_SAADC_Type *)NRF_SAADC_BASE)
 #define HAL_ADC_Type NRF_SAADC_Type
 
 #endif
+
+typedef enum {
+    HAL_ADC_CHANNEL_2 = 2,
+    HAL_ADC_CHANNEL_3,
+    HAL_ADC_CHANNEL_4,
+    HAL_ADC_CHANNEL_5,
+    HAL_ADC_CHANNEL_6,
+    HAL_ADC_CHANNEL_7,
+} hal_adc_channel_t;
 
 /**
   * @brief  ADC Configuration Structure definition
   */
 typedef struct {
+    hal_adc_channel_t channel;
 } hal_adc_init_t;
 
 /**
@@ -59,5 +71,13 @@ typedef struct __ADC_HandleTypeDef
 } ADC_HandleTypeDef;
 
 void hal_adc_init(HAL_ADC_Type * p_instance, hal_adc_init_t const * p_adc_init);
+
+void hal_adc_start(HAL_ADC_Type * p_instance);
+
+void hal_adc_stop(HAL_ADC_Type * p_instance);
+
+uint8_t hal_adc_value(HAL_ADC_Type * p_instance);
+
+uint8_t hal_adc_battery_level(HAL_ADC_Type * p_instance);
 
 #endif // HAL_ADC_H__
