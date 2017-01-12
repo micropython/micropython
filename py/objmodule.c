@@ -223,6 +223,10 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     { MP_ROM_QSTR(MP_QSTR_btree), MP_ROM_PTR(&mp_module_btree) },
 #endif
 
+#if MICROPY_PY_NRF24L01
+    { MP_ROM_QSTR(MP_QSTR_nrf24l01), MP_ROM_PTR(&mp_module_nrf24l01) },
+#endif
+
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
 };
