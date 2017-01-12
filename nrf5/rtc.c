@@ -53,7 +53,7 @@ void rtc_init0(void) {
     memset(&RTCHandle0, 0, sizeof(RTC_HandleTypeDef));
     RTCHandle0.instance = RTC0;
     memset(&RTCHandle1, 0, sizeof(RTC_HandleTypeDef));
-    RTCHandle0.instance = RTC1;
+    RTCHandle1.instance = RTC1;
 }
 
 STATIC int rtc_find(mp_obj_t id) {
