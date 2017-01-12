@@ -103,7 +103,8 @@ void mp_init(void) {
 
     #if MICROPY_FSUSERMOUNT
     // zero out the pointers to the user-mounted devices
-    memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
+    memset(MP_STATE_VM(fs_user_mount) + MICROPY_FATFS_NUM_PERSISTENT, 0,
+           sizeof(MP_STATE_VM(fs_user_mount)) - MICROPY_FATFS_NUM_PERSISTENT);
     #endif
 
     #if MICROPY_PY_THREAD_GIL

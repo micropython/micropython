@@ -70,6 +70,7 @@
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_VOLUMES          (4)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
+#define MICROPY_FATFS_NUM_PERSISTENT   (1)
 #define MICROPY_FSUSERMOUNT            (1)
 // Only enable this if you really need it. It allocates a byte cache of this
 // size.

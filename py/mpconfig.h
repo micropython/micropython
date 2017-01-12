@@ -403,6 +403,11 @@
 #define MICROPY_READER_FATFS (0)
 #endif
 
+// Number of VFS mounts to persist across soft-reset.
+#ifndef MICROPY_FATFS_NUM_PERSISTENT
+#define MICROPY_FATFS_NUM_PERSISTENT (0)
+#endif
+
 // Hook for the VM at the start of the opcode loop (can contain variable
 // definitions usable by the other hook functions)
 #ifndef MICROPY_VM_HOOK_INIT
