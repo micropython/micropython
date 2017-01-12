@@ -119,9 +119,8 @@ STATIC mp_obj_t lwip_slip_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     lwip_slip_obj.base.type = &lwip_slip_type;
 
-    if (! mp_obj_get_type(args[0])->protocol) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "argument 1 must be a stream compatible object"));
-    }
+    // ensure args[0] implements stream protocol (read, write)
+    mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
     MP_STATE_VM(lwip_slip_stream) = args[0];
 
     ip_addr_t iplocal, ipremote;
