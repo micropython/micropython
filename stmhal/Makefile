@@ -61,7 +61,7 @@ CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
 LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
-LIBS =
+LIBS = $(LDFLAGS_MOD)
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -248,6 +248,14 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	inet_pton.c \
 	patch.c \
 	patch_prog.c \
+	)
+endif
+
+ifeq ($(MICROPY_PY_NRF24L01),1)
+NRF24L01_DIR=drivers/nrf24l01
+CFLAGS_MOD += -DMICROPY_PY_NRF24L01=1
+SRC_MOD += $(addprefix $(NRF24L01_DIR)/,\
+	modnrf24l01.c \
 	)
 endif
 
