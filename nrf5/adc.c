@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,37 @@ typedef struct _machine_adc_obj_t {
     ADC_HandleTypeDef *adc;
 } machine_adc_obj_t;
 
+ADC_HandleTypeDef ADCHandle0 = {.config.channel = 2};
+ADC_HandleTypeDef ADCHandle1 = {.config.channel = 3};
+ADC_HandleTypeDef ADCHandle2 = {.config.channel = 4};
+ADC_HandleTypeDef ADCHandle3 = {.config.channel = 5};
+ADC_HandleTypeDef ADCHandle4 = {.config.channel = 6};
+ADC_HandleTypeDef ADCHandle5 = {.config.channel = 7};
+
+STATIC const machine_adc_obj_t machine_adc_obj[] = {
+    {{&machine_adc_type}, &ADCHandle0},
+    {{&machine_adc_type}, &ADCHandle1},
+    {{&machine_adc_type}, &ADCHandle2},
+    {{&machine_adc_type}, &ADCHandle3},
+    {{&machine_adc_type}, &ADCHandle4},
+    {{&machine_adc_type}, &ADCHandle5},
+};
+
+STATIC int adc_find(mp_obj_t id) {
+    // given an integer id
+    int adc_id = mp_obj_get_int(id);
+
+    int adc_idx = adc_id - 2;
+
+    if (adc_idx >= 0 && adc_idx <= MP_ARRAY_SIZE(machine_adc_obj)
+        && machine_adc_obj[adc_idx].adc != NULL) {
+        return adc_idx;
+    }
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+        "ADC(%d) does not exist", adc_id));
+}
+
+
 /// \method __str__()
 /// Return a string describing the ADC object.
 STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -60,64 +91,36 @@ enum {
 
 STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_PIN,  MP_ARG_REQUIRED | MP_ARG_INT },
+        { ARG_NEW_PIN,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1) } },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_adc_obj_t *s = m_new_obj(machine_adc_obj_t);
-    s->base.type = type;
+    int adc_id = adc_find(args[ARG_NEW_PIN].u_obj);
+    const machine_adc_obj_t *self = &machine_adc_obj[adc_id];
 
-    mp_int_t channel_num;
-
-    if (args[ARG_NEW_PIN].u_int > 0) {
-        channel_num = args[ARG_NEW_PIN].u_int;
-    } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                                "Channel number not set"));
-    }
-
-    s->adc->init.channel = channel_num;
-
-    hal_adc_init(ADC_BASE, &s->adc->init);
-
-    return MP_OBJ_FROM_PTR(s);
+    return MP_OBJ_FROM_PTR(self);
 }
-
-/// \method init()
-mp_obj_t machine_adc_init(mp_obj_t self_in) {
-    hal_adc_start(ADC_BASE);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_init_obj, machine_adc_init);
-
-/// \method deinit()
-mp_obj_t machine_adc_deinit(mp_obj_t self_in) {
-    hal_adc_stop(ADC_BASE);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_deinit_obj, machine_adc_deinit);
 
 /// \method value()
 /// Read adc level.
 mp_obj_t machine_adc_value(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(hal_adc_value(ADC_BASE));
+    machine_adc_obj_t *self = self_in;
+    return MP_OBJ_NEW_SMALL_INT(hal_adc_channel_value(&self->adc->config));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_value_obj, machine_adc_value);
 
 /// \method battery_level()
 /// Get battery level in percentage.
 mp_obj_t machine_adc_battery_level(void) {
-    return MP_OBJ_NEW_SMALL_INT(hal_adc_battery_level(ADC_BASE));
+    return MP_OBJ_NEW_SMALL_INT(hal_adc_battery_level());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_battery_level);
 
 STATIC const mp_map_elem_t machine_adc_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&mp_machine_adc_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&mp_machine_adc_deinit_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&mp_machine_adc_value_obj },
 
     // class methods

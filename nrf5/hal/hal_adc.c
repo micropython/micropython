@@ -70,75 +70,60 @@ static uint8_t battery_level_in_percent(const uint16_t mvolts)
     return battery_level;
 }
 
-
-void hal_adc_init(HAL_ADC_Type * p_instance, hal_adc_init_t const * p_adc_init) {
-
-    while (p_instance->ENABLE && p_instance->BUSY)
-    {
-        // spin loop if another user is in progress of sampling
-    }
-
-    p_instance->INTENSET   = ADC_INTENSET_END_Msk;
-    p_instance->CONFIG     = (ADC_CONFIG_RES_8bit << ADC_CONFIG_RES_Pos)
+uint16_t hal_adc_channel_value(hal_adc_config_t const * p_adc_conf) {
+    ADC_BASE->INTENSET   = ADC_INTENSET_END_Msk;
+    ADC_BASE->CONFIG     = (ADC_CONFIG_RES_8bit                        << ADC_CONFIG_RES_Pos)
                            | (ADC_CONFIG_INPSEL_AnalogInputTwoThirdsPrescaling << ADC_CONFIG_INPSEL_Pos)
-                           | (ADC_CONFIG_REFSEL_VBG << ADC_CONFIG_REFSEL_Pos)
-                           | (hal_adc_input_lookup[p_adc_init->channel])
-                           | (ADC_CONFIG_EXTREFSEL_None << ADC_CONFIG_EXTREFSEL_Pos);
-}
+                           | (ADC_CONFIG_REFSEL_VBG                      << ADC_CONFIG_REFSEL_Pos)
+                           | (hal_adc_input_lookup[p_adc_conf->channel])
+                           | (ADC_CONFIG_EXTREFSEL_None                  << ADC_CONFIG_EXTREFSEL_Pos);
 
-void hal_adc_start(HAL_ADC_Type * p_instance) {
-    p_instance->ENABLE = ADC_ENABLE_ENABLE_Enabled;
-}
+    ADC_BASE->EVENTS_END  = 0;
+    ADC_BASE->ENABLE      = ADC_ENABLE_ENABLE_Enabled;
 
-void hal_adc_stop(HAL_ADC_Type * p_instance) {
-    p_instance->ENABLE = ADC_ENABLE_ENABLE_Disabled;
-}
+    ADC_BASE->EVENTS_END  = 0;
+    ADC_BASE->TASKS_START = 1;
 
-uint8_t hal_adc_value(HAL_ADC_Type * p_instance) {
-
-    p_instance->EVENTS_END = 0;
-    p_instance->TASKS_START = 1;
-
-    while (!p_instance->EVENTS_END) {
+    while (!ADC_BASE->EVENTS_END) {
         ;
     }
 
-    uint8_t adc_result = p_instance->RESULT;
+    uint8_t  adc_result;
 
-    p_instance->EVENTS_END = 0;
-    p_instance->TASKS_STOP = 1;
+    ADC_BASE->EVENTS_END = 0;
+    adc_result             = ADC_BASE->RESULT;
+    ADC_BASE->TASKS_STOP = 1;
 
     return adc_result;
 }
 
-uint8_t hal_adc_battery_level(HAL_ADC_Type * p_instance) {
-    p_instance->INTENSET   = ADC_INTENSET_END_Msk;
-    p_instance->CONFIG     = (ADC_CONFIG_RES_8bit                        << ADC_CONFIG_RES_Pos)
+uint16_t hal_adc_battery_level(void) {
+    ADC_BASE->INTENSET   = ADC_INTENSET_END_Msk;
+    ADC_BASE->CONFIG     = (ADC_CONFIG_RES_8bit                        << ADC_CONFIG_RES_Pos)
                            | (ADC_CONFIG_INPSEL_SupplyOneThirdPrescaling << ADC_CONFIG_INPSEL_Pos)
                            | (ADC_CONFIG_REFSEL_VBG                      << ADC_CONFIG_REFSEL_Pos)
                            | (ADC_CONFIG_PSEL_Disabled                   << ADC_CONFIG_PSEL_Pos)
                            | (ADC_CONFIG_EXTREFSEL_None                  << ADC_CONFIG_EXTREFSEL_Pos);
 
-    p_instance->EVENTS_END  = 0;
-    p_instance->ENABLE      = ADC_ENABLE_ENABLE_Enabled;
+    ADC_BASE->EVENTS_END  = 0;
+    ADC_BASE->ENABLE      = ADC_ENABLE_ENABLE_Enabled;
 
-    p_instance->EVENTS_END  = 0;
-    p_instance->TASKS_START = 1;
+    ADC_BASE->EVENTS_END  = 0;
+    ADC_BASE->TASKS_START = 1;
 
-    while (!p_instance->EVENTS_END) {
+    while (!ADC_BASE->EVENTS_END) {
         ;
     }
 
     uint8_t  adc_result;
     uint16_t batt_lvl_in_milli_volts;
 
-    p_instance->EVENTS_END = 0;
-    adc_result             = p_instance->RESULT;
-    p_instance->TASKS_STOP = 1;
+    ADC_BASE->EVENTS_END = 0;
+    adc_result           = ADC_BASE->RESULT;
+    ADC_BASE->TASKS_STOP = 1;
 
     batt_lvl_in_milli_volts = ADC_RESULT_IN_MILLI_VOLTS(adc_result) + DIODE_FWD_VOLT_DROP_MILLIVOLTS;
     return battery_level_in_percent(batt_lvl_in_milli_volts);
-
 }
 
 #endif // HAL_ADC_MODULE_ENABLED

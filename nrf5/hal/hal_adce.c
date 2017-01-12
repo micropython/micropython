@@ -29,20 +29,11 @@
 
 #ifdef HAL_ADCE_MODULE_ENABLED
 
-void hal_adc_init(HAL_ADC_Type * p_instance, hal_adc_init_t const * p_adc_init) {
-}
-
-void hal_adc_start(HAL_ADC_Type * p_instance) {
-}
-
-void hal_adc_stop(HAL_ADC_Type * p_instance) {
-}
-
-uint8_t hal_adc_value(HAL_ADC_Type * p_instance) {
+uint16_t hal_adc_channel_value(hal_adc_config_t const * p_adc_conf) {
     return 0;
 }
 
-uint8_t hal_adc_battery_level(HAL_ADC_Type * p_instance) {
+uint16_t hal_adc_battery_level(void) {
     return 0;
 }
 
