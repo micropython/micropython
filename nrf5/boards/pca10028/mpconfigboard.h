@@ -30,6 +30,10 @@
 #define MICROPY_HW_MCU_NAME         "NRF51822"
 #define MICROPY_PY_SYS_PLATFORM     "nrf51-DK"
 
+#define MICROPY_PY_DISPLAY                  (0)
+#define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
+
+#define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_PWM      (0)
 #define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_PY_MACHINE_RTC      (1)
@@ -62,15 +66,19 @@
 // UART config
 #define MICROPY_HW_UART1_RX         (11)
 #define MICROPY_HW_UART1_TX         (9)
+#define MICROPY_HW_UART1_CTS        (10)
+#define MICROPY_HW_UART1_RTS        (8)
 #define MICROPY_HW_UART1_RX_PORT    (0)
 #define MICROPY_HW_UART1_TX_PORT    (0)
-#define MICROPY_HW_UART1_HWFC       (0)
+#define MICROPY_HW_UART1_CTS_PORT   (0)
+#define MICROPY_HW_UART1_RTS_PORT   (0)
+#define MICROPY_HW_UART1_HWFC       (1)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (1) // A3
-#define MICROPY_HW_SPI0_MOSI        (2) // A2
-#define MICROPY_HW_SPI0_MISO        (3) // A1
+#define MICROPY_HW_SPI0_SCK         (29)
+#define MICROPY_HW_SPI0_MOSI        (25)
+#define MICROPY_HW_SPI0_MISO        (28)
 #define MICROPY_HW_SPI0_SCK_PORT    (0)
 #define MICROPY_HW_SPI0_MISO_PORT   (0)
 #define MICROPY_HW_SPI0_MOSI_PORT   (0)
