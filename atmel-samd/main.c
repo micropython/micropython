@@ -305,6 +305,8 @@ bool start_mp(void) {
                     new_status_color(NAME_ERROR);
                 } else if (mp_obj_is_subclass_fast(result.exception_type, &mp_type_OSError)) {
                     new_status_color(OS_ERROR);
+                } else if (mp_obj_is_subclass_fast(result.exception_type, &mp_type_ValueError)) {
+                    new_status_color(VALUE_ERROR);
                 } else {
                     new_status_color(OTHER_ERROR);
                 }
@@ -424,7 +426,6 @@ int main(int argc, char **argv) {
     // stack so the GC can account for objects that may be referenced by the
     // stack between here and where gc_collect is called.
     stack_top = (char*)&stack_dummy;
-    reset_mp();
 
     // Initialise the local flash filesystem after the gc in case we need to
     // grab memory from it. Create it if needed, mount in on /flash, and set it
@@ -454,9 +455,9 @@ int main(int argc, char **argv) {
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
                 mp_hal_stdout_tx_str("soft reboot\r\n");
-                reset_samd21();
-                reset_mp();
             }
+            reset_samd21();
+            reset_mp();
             first_run = false;
             skip_repl = start_mp();
         } else if (exit_code != 0) {

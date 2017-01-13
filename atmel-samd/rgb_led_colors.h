@@ -29,4 +29,5 @@
 #define SYNTAX_ERROR      CYAN
 #define NAME_ERROR        WHITE
 #define OS_ERROR          ORANGE
+#define VALUE_ERROR       PURPLE
 #define OTHER_ERROR       YELLOW
