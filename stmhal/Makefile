@@ -76,7 +76,7 @@ COPT += -Os -DNDEBUG
 endif
 
 # uncomment this if you want libgcc
-#LIBS += $(shell $(CC) -print-libgcc-file-name)
+#LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
