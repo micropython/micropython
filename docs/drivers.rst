@@ -4,14 +4,23 @@ Adafruit CircuitPython drivers
 These are drivers available in separate GitHub repos. They are designed for use
 with CircuitPython and may or may not work with `MicroPython <https://micropython.org>`_.
 
+.. _bundle_installation:
+
 Bundle
 ------
 
 We provide a bundle of all our libraries to ease installation of drivers and
-their dependencies. Its easiest to copy them all onto the filesystem. However,
-if you don't have enough space simply copy things over as they are needed.
+their dependencies. he bundle is primarily geared to the Adafruit Express line
+of boards which will feature a relatively large external flash. With Express
+boards, its easy to copy them all onto the filesystem. However, if you don't
+have enough space simply copy things over as they are needed.
 
 The bundles are available `on GitHub <https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases>`_.
+
+To install them:
+
+#. `Download <https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases>`_ and unzip the latest zip thats not a source zip.
+#. Copy the ``lib`` folder to the ``CIRCUIPY`` or ``MICROPYTHON``.
 
 Foundational Libraries
 ----------------------
