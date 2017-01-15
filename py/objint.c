@@ -374,26 +374,27 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_
 
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
-    // TODO: Support long ints
-    // TODO: Support byteorder param
+    // TODO: Better support byteorder param
     // TODO: Support signed param (assumes signed=False at the moment)
     (void)n_args;
-
-    if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_not_implemented("");
-    }
 
     // get the buffer info
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
-    // convert the bytes to an integer
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+    return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
+    #else
+    if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+        mp_not_implemented("");
+    }
+
     mp_uint_t value = 0;
     for (const byte* buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
         value = (value << 8) | *buf;
     }
-
     return mp_obj_new_int_from_uint(value);
+    #endif
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_from_bytes);

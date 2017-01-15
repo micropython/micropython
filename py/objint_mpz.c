@@ -107,6 +107,12 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     return str;
 }
 
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_bytes(&o->mpz, big_endian, len, buf);
+    return MP_OBJ_FROM_PTR(o);
+}
+
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
