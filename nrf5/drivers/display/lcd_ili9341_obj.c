@@ -95,6 +95,18 @@ enum {
 };
 
 /*
+
+Example for nrf51822 / pca10028:
+
+from machine import Pin, SPI
+from display import ILI9341
+cs = Pin("A17", mode=Pin.OUT, pull=Pin.PULL_UP)
+dc = Pin("A18", mode=Pin.OUT, pull=Pin.PULL_UP)
+spi = SPI(0, baudrate=8000000)
+d = ILI9341(240, 320, spi, cs, dc)
+d.text("Hello World!", 32, 32)
+d.show()
+
 Example for nrf52832 / pca10040:
 
 from machine import Pin, SPI
