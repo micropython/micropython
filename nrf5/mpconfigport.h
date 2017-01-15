@@ -145,6 +145,8 @@
 #define MICROPY_PY_DISPLAY_LCD_ILI9341      (0)
 #define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
 #define MICROPY_PY_DISPLAY_OLED_SSD1305     (0)
+#define MICROPY_PY_LCD_MONO_FB              (0)
+#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (0)
 
 #elif MICROPY_PY_DISPLAY
 
@@ -168,6 +170,11 @@
 
 #ifndef MICROPY_PY_DISPLAY_OLED_SSD1306
 #define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
+#endif
+
+#if MICROPY_PY_DISPLAY_OLED_SSD1306
+#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (1)
+#define MICROPY_PY_DISPLAY_GRAPHICS         (1)
 #endif
 
 #endif // MICROPY_PY_DISPLAY
@@ -205,6 +212,7 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_lcd_mono_fb;
 extern const struct _mp_obj_module_t mp_module_display;
+extern const struct _mp_obj_module_t graphics_module;
 
 #if MICROPY_PY_USOCKET
 #define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
@@ -232,6 +240,13 @@ extern const struct _mp_obj_module_t mp_module_display;
 #define DISPLAY_MODULE
 #endif
 
+#if MICROPY_PY_DISPLAY_GRAPHICS
+#define GRAPHICS_MODULE                         { MP_OBJ_NEW_QSTR(MP_QSTR_draw), (mp_obj_t)&graphics_module },
+#else
+#define GRAPHICS_MODULE
+#endif
+
+
 #if BLUETOOTH_SD
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -245,6 +260,7 @@ extern const struct _mp_obj_module_t ble_module;
     NETWORK_BUILTIN_MODULE \
     LCD_MONO_FB_MODULE \
     DISPLAY_MODULE \
+    GRAPHICS_MODULE \
 
 
 #else
@@ -256,6 +272,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
     LCD_MONO_FB_MODULE \
     DISPLAY_MODULE \
+    GRAPHICS_MODULE \
 
 #endif // BLUETOOTH_SD
 
