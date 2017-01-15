@@ -226,7 +226,7 @@ void driver_ili9341_clear(uint16_t color)
     mp_hal_pin_high(mp_cs_pin);
 }
 
-void driver_ili9341_update_line(uint16_t line, fb_byte_t * p_bytes, uint16_t len, bool compressed) {
+void driver_ili9341_update_line(uint16_t line, framebuffer_byte_t * p_bytes, uint16_t len) {
     set_col(0, 239);
     set_page(line, line);
 
@@ -235,17 +235,15 @@ void driver_ili9341_update_line(uint16_t line, fb_byte_t * p_bytes, uint16_t len
     mp_hal_pin_high(mp_dc_pin);
     mp_hal_pin_low(mp_cs_pin);
 
-    if (compressed == true) {
-        for (uint16_t i = 0; i < len; i++) {
-            for (uint8_t pixel_pos = 0; pixel_pos < 8; pixel_pos++) {
-                uint8_t byte = (uint8_t)((uint8_t * )p_bytes)[i];
-                if (((byte >> pixel_pos) & 0x1) == 0x0) {
-                    data_write(0x00);
-                    data_write(0x00);
-                } else {
-                    data_write(0xFF);
-                    data_write(0xFF);
-                }
+    for (uint16_t i = 0; i < len; i++) {
+        for (uint8_t pixel_pos = 0; pixel_pos < 8; pixel_pos++) {
+            uint8_t byte = (uint8_t)((uint8_t * )p_bytes)[i];
+            if (((byte >> pixel_pos) & 0x1) == 0x0) {
+                data_write(0x00);
+                data_write(0x00);
+            } else {
+                data_write(0xFF);
+                data_write(0xFF);
             }
         }
     }
