@@ -40,12 +40,14 @@ typedef struct _machine_adc_obj_t {
     ADC_HandleTypeDef *adc;
 } machine_adc_obj_t;
 
-ADC_HandleTypeDef ADCHandle0 = {.config.channel = 2};
-ADC_HandleTypeDef ADCHandle1 = {.config.channel = 3};
-ADC_HandleTypeDef ADCHandle2 = {.config.channel = 4};
-ADC_HandleTypeDef ADCHandle3 = {.config.channel = 5};
-ADC_HandleTypeDef ADCHandle4 = {.config.channel = 6};
-ADC_HandleTypeDef ADCHandle5 = {.config.channel = 7};
+ADC_HandleTypeDef ADCHandle0 = {.config.channel = 0};
+ADC_HandleTypeDef ADCHandle1 = {.config.channel = 1};
+ADC_HandleTypeDef ADCHandle2 = {.config.channel = 2};
+ADC_HandleTypeDef ADCHandle3 = {.config.channel = 3};
+ADC_HandleTypeDef ADCHandle4 = {.config.channel = 4};
+ADC_HandleTypeDef ADCHandle5 = {.config.channel = 5};
+ADC_HandleTypeDef ADCHandle6 = {.config.channel = 6};
+ADC_HandleTypeDef ADCHandle7 = {.config.channel = 7};
 
 STATIC const machine_adc_obj_t machine_adc_obj[] = {
     {{&machine_adc_type}, &ADCHandle0},
@@ -54,13 +56,15 @@ STATIC const machine_adc_obj_t machine_adc_obj[] = {
     {{&machine_adc_type}, &ADCHandle3},
     {{&machine_adc_type}, &ADCHandle4},
     {{&machine_adc_type}, &ADCHandle5},
+    {{&machine_adc_type}, &ADCHandle6},
+    {{&machine_adc_type}, &ADCHandle7},
 };
 
 STATIC int adc_find(mp_obj_t id) {
     // given an integer id
     int adc_id = mp_obj_get_int(id);
 
-    int adc_idx = adc_id - 2;
+    int adc_idx = adc_id;
 
     if (adc_idx >= 0 && adc_idx <= MP_ARRAY_SIZE(machine_adc_obj)
         && machine_adc_obj[adc_idx].adc != NULL) {
