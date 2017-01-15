@@ -162,6 +162,8 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	display/lcd_ili9341_driver.c \
 	display/oled_ssd1306_obj.c \
 	display/oled_ssd1306_driver.c \
+	display/framebuffer.c \
+	graphic/draw.c \
 	)
 
 #ifeq ($(SD), )
