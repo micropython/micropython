@@ -33,6 +33,8 @@
 #include "moddisplay.h"
 #include "font_petme128_8x8.h"
 
+#if MICROPY_PY_DISPLAY_GRAPHICS
+
 /// \method circle(display, radius, x, y, color, [fill])
 /// Draw a circle in the display framebuffer.
 STATIC mp_obj_t draw_circle(mp_uint_t n_args, const mp_obj_t *args) {
@@ -183,3 +185,5 @@ const mp_obj_module_t graphics_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&graphics_globals_dict,
 };
+
+#endif // MICROPY_PY_DISPLAY_GRAPHICS
