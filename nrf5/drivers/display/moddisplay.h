@@ -27,4 +27,20 @@
 #ifndef MODDISPLAY_H__
 #define MODDISPLAY_H__
 
+typedef struct _display_t display_t;
+
+typedef void (*pixel_set_callback_t)(void *   p_display,
+                                     uint16_t x,
+                                     uint16_t y,
+                                     uint16_t color);
+
+typedef struct _display_draw_callbacks_t {
+    pixel_set_callback_t pixel_set;
+} display_draw_callbacks_t;
+
+typedef struct _display_t {
+    mp_obj_base_t base;
+    display_draw_callbacks_t draw_callbacks;
+} display_t;
+
 #endif // MODDISPLAY_H__
