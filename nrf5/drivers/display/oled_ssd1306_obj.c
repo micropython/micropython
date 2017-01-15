@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -38,27 +36,35 @@
 /// \moduleref display
 /// \class SSD1306 - SSD1306 TFT LCD display driver.
 
+#include "moddisplay.h"
+#include "framebuffer.h"
 #include "pin.h"
 #include "spi.h"
-#include "lcd_mono_fb.h"
 
 typedef struct _oled_ssd1306_obj_t {
     mp_obj_base_t base;
+    display_draw_callbacks_t draw_callbacks;
+    framebuffer_t * framebuffer;
     machine_hard_spi_obj_t *spi;
     pin_obj_t * pin_cs;
     pin_obj_t * pin_dc;
     pin_obj_t * pin_reset;
-    mp_obj_framebuf_t * framebuffer;
 } oled_ssd1306_obj_t;
 
-static void dirty_line_update_cb(mp_obj_framebuf_t * p_framebuffer,
-                                 uint16_t            line,
-                                 fb_byte_t *         p_new,
-                                 fb_byte_t *         p_old) {
-    // the lcd does not have double buffer needs, skip it.
-    (void)p_old;
+#define OLED_SSD1306_COLOR_BLACK 0
+#define OLED_SSD1306_COLOR_WHITE 1
 
-    driver_ssd1306_update_line(line, p_new, p_framebuffer->bytes_stride, true);
+static void set_pixel(void * p_display,
+                      uint16_t    x,
+                      uint16_t    y,
+                      uint16_t    color) {
+    oled_ssd1306_obj_t *self = (oled_ssd1306_obj_t *)p_display;
+
+    if (color == OLED_SSD1306_COLOR_BLACK) {
+        framebuffer_pixel_clear(self->framebuffer, x, y);
+    } else {
+        framebuffer_pixel_set(self->framebuffer, x, y);
+    }
 }
 
 /// \method __str__()
@@ -83,9 +89,12 @@ STATIC void oled_ssd1306_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
                      self->pin_reset->port,
                      self->pin_reset->pin);
 
-    mp_printf(print, "        FB(width=%u, height=%u, dir=%u))\n",
-                     self->framebuffer->width,
-                     self->framebuffer->height);
+    mp_printf(print, "        FB(width=%u, height=%u, dir=%u, fb_stride=%u, fb_dirty_stride=%u))\n",
+                     self->framebuffer->screen_width,
+                     self->framebuffer->screen_height,
+                     self->framebuffer->line_orientation,
+                     self->framebuffer->fb_stride,
+                     self->framebuffer->fb_dirty_stride);
 }
 
 // for make_new
@@ -100,6 +109,18 @@ enum {
 
 /*
 
+Example for nrf51822 / pca10028:
+
+from machine import Pin, SPI
+from display import SSD1306
+cs = Pin("A14", mode=Pin.OUT, pull=Pin.PULL_UP)
+reset = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
+dc = Pin("A12", mode=Pin.OUT, pull=Pin.PULL_UP)
+spi = SPI(0, baudrate=8000000)
+d = SSD1306(128, 64, spi, cs, dc, reset)
+d.text("Hello World!", 32, 32)
+d.show()
+
 Example for nrf52832 / pca10040:
 
 from machine import Pin, SPI
@@ -107,7 +128,7 @@ from display import SSD1306
 cs = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
 reset = Pin("A12", mode=Pin.OUT, pull=Pin.PULL_UP)
 dc = Pin("A11", mode=Pin.OUT, pull=Pin.PULL_UP)
-spi = SPI(0, baudrate=4000000)
+spi = SPI(0, baudrate=8000000)
 d = SSD1306(128, 64, spi, cs, dc, reset)
 d.text("Hello World!", 32, 32)
 d.show()
@@ -141,6 +162,7 @@ STATIC mp_obj_t oled_ssd1306_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     oled_ssd1306_obj_t *s = m_new_obj_with_finaliser(oled_ssd1306_obj_t);
     s->base.type = type;
+    s->draw_callbacks.pixel_set = set_pixel;
 
     mp_int_t width;
     mp_int_t height;
@@ -187,15 +209,22 @@ STATIC mp_obj_t oled_ssd1306_make_new(const mp_obj_type_t *type, size_t n_args, 
                   "Display Reset Pin not set"));
     }
 
-    // direction arg not yet configurable
-    mp_int_t vertical = true;
-    s->framebuffer = lcd_mono_fb_helper_make_new(width, height, vertical);
+    framebuffer_init_t init_conf = {
+        .width = width,
+        .height = height,
+        .line_orientation = FRAMEBUFFER_LINE_DIR_VERTICAL,
+        .double_buffer = false
+    };
+
+    s->framebuffer = m_new(framebuffer_t, sizeof(framebuffer_t));
+
+    framebuffer_init(s->framebuffer, &init_conf);
 
     driver_ssd1306_init(s->spi->pyb->spi->instance, s->pin_cs, s->pin_dc, s->pin_reset);
     // Default to black background
     driver_ssd1306_clear(0);
 
-    // display_clear_screen(s->framebuffer, 0x0);
+    framebuffer_clear(s->framebuffer);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -207,20 +236,40 @@ STATIC mp_obj_t oled_ssd1306_make_new(const mp_obj_type_t *type, size_t n_args, 
 STATIC mp_obj_t oled_ssd1306_fill(mp_obj_t self_in, mp_obj_t color) {
     oled_ssd1306_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    driver_ssd1306_clear((uint8_t)mp_obj_get_int(color));
-
-    display_clear_screen(self->framebuffer, (uint8_t)mp_obj_get_int(color));
+    if (color == MP_OBJ_NEW_SMALL_INT(OLED_SSD1306_COLOR_BLACK)) {
+        framebuffer_clear(self->framebuffer);
+    } else {
+        framebuffer_fill(self->framebuffer);
+    }
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(oled_ssd1306_fill_obj, oled_ssd1306_fill);
+
+static void render(framebuffer_t * p_framebuffer) {
+    for (uint16_t i = 0; i < p_framebuffer->fb_dirty_stride; i++) {
+        if (p_framebuffer->fb_dirty[i].byte != 0) {
+            for (uint16_t b = 0; b < 8; b++) {
+                if ((((p_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1)) {
+                    uint16_t line_num = (i * 8) + b;
+                    driver_ssd1306_update_line(line_num,
+                        &p_framebuffer->fb_new[line_num * p_framebuffer->fb_stride],
+						p_framebuffer->fb_stride);
+                }
+            }
+
+            p_framebuffer->fb_dirty[i].byte = 0x00;
+        }
+    }
+}
 
 /// \method show()
 /// Display content in framebuffer.
 STATIC mp_obj_t oled_ssd1306_show(size_t n_args, const mp_obj_t *args) {
     oled_ssd1306_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    display_update(self->framebuffer, false, dirty_line_update_cb);
+    render(self->framebuffer);
+    framebuffer_flip(self->framebuffer);
 
     return mp_const_none;
 }
@@ -250,18 +299,13 @@ STATIC mp_obj_t oled_ssd1306_pixel(size_t n_args, const mp_obj_t *args) {
     oled_ssd1306_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t color;
-    if (n_args >= 3) {
-        color = mp_obj_get_int(args[3]);
-    }
-    (void)self;
-    (void)x;
-    (void)y;
-    (void)color;
+    mp_int_t color = mp_obj_get_int(args[3]);
+
+    set_pixel(self, x, y, color);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(oled_ssd1306_pixel_obj, 3, 4, oled_ssd1306_pixel);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(oled_ssd1306_pixel_obj, 4, 4, oled_ssd1306_pixel);
 
 /// \method pixel(text, x, y, [color])
 /// Write one pixel in framebuffer.
@@ -278,8 +322,12 @@ STATIC mp_obj_t oled_ssd1306_text(size_t n_args, const mp_obj_t *args) {
         color = mp_obj_get_int(args[3]);
     }
 
-    display_print_string(self->framebuffer, x, y, str);
+    //display_print_string(self->framebuffer, x, y, str);
 
+    (void)x;
+    (void)y;
+    (void)self;
+    (void)str;
     (void)color;
 
     return mp_const_none;
@@ -304,8 +352,8 @@ STATIC const mp_map_elem_t oled_ssd1306_locals_dict_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_bitmap), (mp_obj_t)(&oled_ssd1306_bitmap_obj) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_BLACK), MP_OBJ_NEW_SMALL_INT(LCD_BLACK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_WHITE), MP_OBJ_NEW_SMALL_INT(LCD_WHITE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_BLACK), MP_OBJ_NEW_SMALL_INT(OLED_SSD1306_COLOR_BLACK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_WHITE), MP_OBJ_NEW_SMALL_INT(OLED_SSD1306_COLOR_WHITE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_VERTICAL), MP_OBJ_NEW_SMALL_INT(0) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HORIZONTAL), MP_OBJ_NEW_SMALL_INT(1) },
 };

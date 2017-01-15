@@ -32,6 +32,8 @@
 #include "hal_spi.h"
 #include "hal_time.h"
 
+#include "framebuffer.h"
+
 #if MICROPY_PY_DISPLAY_OLED_SSD1306
 
 static pin_obj_t    * mp_cs_pin;
@@ -146,14 +148,14 @@ void driver_ssd1306_init(NRF_SPI_Type * p_instance, pin_obj_t * p_cs_pin, pin_ob
 
 static void set_col(uint16_t start_col, uint16_t end_col)
 {
-    cmd_write(SET_COL_ADDR); /* Column Command address */
+    cmd_write(SET_COL_ADDR); // column command address
     cmd_write(start_col & 0xFF );
     cmd_write(end_col & 0xFF);
 }
 
 static void set_page(uint16_t start_page, uint16_t end_page)
 {
-    cmd_write(SET_PAGE_ADDR); /* Column Command address */
+    cmd_write(SET_PAGE_ADDR); // page command address
     cmd_write(start_page & 0xFF);
     cmd_write(end_page & 0xFF);
 }
@@ -188,8 +190,19 @@ void driver_ssd1306_clear(uint16_t color)
     mp_hal_pin_high(mp_cs_pin);
 }
 
-void driver_ssd1306_update_line(uint16_t line, fb_byte_t * p_bytes, uint16_t len, bool compressed) {
+void driver_ssd1306_update_line(uint16_t line, framebuffer_byte_t * p_bytes, uint16_t len) {
+    set_col(line, line);
+    set_page(0, 63);
 
+    mp_hal_pin_high(mp_dc_pin);
+    mp_hal_pin_low(mp_cs_pin);
+
+    for (uint8_t i = 0; i < len; i++) {
+        uint8_t byte = (uint8_t)((uint8_t *)p_bytes)[i];
+        raw_write(byte);
+    }
+
+    mp_hal_pin_high(mp_cs_pin);
 }
 
 #endif
