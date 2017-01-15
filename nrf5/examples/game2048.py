@@ -87,6 +87,10 @@ font_2048 = [
     "xxx  x    x  x"
 ]
 
+font_4096 = [
+    "x"
+]
+
 DIR_UP     = const(0x1)
 DIR_DOWN   = const(0x2)
 DIR_LEFT   = const(0x3)
