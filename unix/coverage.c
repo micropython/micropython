@@ -11,6 +11,8 @@
 #include "py/formatfloat.h"
 #include "py/stream.h"
 
+#if defined(MICROPY_UNIX_COVERAGE)
+
 // stream testing object
 typedef struct _mp_obj_streamtest_t {
     mp_obj_base_t base;
@@ -129,9 +131,6 @@ STATIC const mp_obj_type_t mp_type_stest_textio2 = {
     .protocol = &textio_stream_p2,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict2,
 };
-
-
-#if defined(MICROPY_UNIX_COVERAGE)
 
 // str/bytes objects without a valid hash
 STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte*)"0123456789"};
