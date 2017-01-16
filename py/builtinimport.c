@@ -476,10 +476,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     path.len = orig_path_len;
                 } else { // MP_IMPORT_STAT_FILE
                     do_load(module_obj, &path);
-                    // TODO: We cannot just break here, at the very least, we must execute
-                    // trailer code below. But otherwise if there're remaining components,
-                    // that would be (??) object path within module, not modules path within FS.
-                    // break;
+                    // This should be the last component in the import path.  If there are
+                    // remaining components then it's an ImportError because the current path
+                    // (the module that was just loaded) is not a package.  This will be caught
+                    // on the next iteration because the file will not exist.
                 }
             }
             if (outer_module_obj != MP_OBJ_NULL) {
@@ -492,12 +492,6 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             }
             last = i + 1;
         }
-    }
-
-    if (i < mod_len) {
-        // we loaded a package, now need to load objects from within that package
-        // TODO
-        assert(0);
     }
 
     // If fromlist is not empty, return leaf module
