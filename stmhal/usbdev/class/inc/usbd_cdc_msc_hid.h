@@ -48,6 +48,7 @@ typedef struct {
 } USBD_CDC_HandleTypeDef;
 
 typedef struct _USBD_HID_Itf {
+  int8_t (* Init)   (void);
   int8_t (* Receive)(uint8_t *, uint32_t);
 } USBD_HID_ItfTypeDef;
 
