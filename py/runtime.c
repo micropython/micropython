@@ -1234,7 +1234,8 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         return MP_VM_RETURN_YIELD;
     }
 
-    if (throw_value != MP_OBJ_NULL) {
+    assert(throw_value != MP_OBJ_NULL);
+    {
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
             mp_load_method_maybe(self_in, MP_QSTR_close, dest);
             if (dest[0] != MP_OBJ_NULL) {
@@ -1260,9 +1261,6 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         *ret_val = throw_value;
         return MP_VM_RETURN_EXCEPTION;
     }
-
-    assert(0);
-    return MP_VM_RETURN_NORMAL; // Should be unreachable
 }
 
 mp_obj_t mp_make_raise_obj(mp_obj_t o) {
