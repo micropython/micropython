@@ -60,3 +60,9 @@ from frzstr_pkg2.mod import Foo
 print(Foo.x)
 from frzmpy_pkg2.mod import Foo
 print(Foo.x)
+
+# test raising exception in frozen script
+try:
+    import frzmpy2
+except ZeroDivisionError:
+    print('ZeroDivisionError')
