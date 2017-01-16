@@ -156,9 +156,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             }
 
         case MP_VM_RETURN_YIELD:
-            if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
-                mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
-            }
             return ret;
 
         case MP_VM_RETURN_EXCEPTION:
