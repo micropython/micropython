@@ -1245,13 +1245,15 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
                 // We assume one can't "yield" from close()
                 return MP_VM_RETURN_NORMAL;
             }
-        }
-        mp_load_method_maybe(self_in, MP_QSTR_throw, dest);
-        if (dest[0] != MP_OBJ_NULL) {
-            *ret_val = mp_call_method_n_kw(1, 0, &throw_value);
-            // If .throw() method returned, we assume it's value to yield
-            // - any exception would be thrown with nlr_raise().
-            return MP_VM_RETURN_YIELD;
+        } else {
+            mp_load_method_maybe(self_in, MP_QSTR_throw, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                dest[2] = throw_value;
+                *ret_val = mp_call_method_n_kw(1, 0, dest);
+                // If .throw() method returned, we assume it's value to yield
+                // - any exception would be thrown with nlr_raise().
+                return MP_VM_RETURN_YIELD;
+            }
         }
         // If there's nowhere to throw exception into, then we assume that object
         // is just incapable to handle it, so any exception thrown into it
