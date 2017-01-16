@@ -7,5 +7,5 @@ print(bar)
 # whereas CPython raises a ValueError
 try:
     from .... import mod1
-except (ImportError, ValueError):
-    print('Error')
+except ValueError:
+    print('ValueError')
