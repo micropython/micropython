@@ -724,6 +724,8 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        USBD_EP_TYPE_INTR,
                        mps_out);
 
+        HID_fops->Init();
+
         // Prepare Out endpoint to receive next packet
         USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
 
