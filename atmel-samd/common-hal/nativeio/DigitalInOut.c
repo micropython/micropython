@@ -175,7 +175,7 @@ enum digitalinout_pull_t common_hal_nativeio_digitalinout_get_pull(
             "Cannot get pull while in output mode."));
         return PULL_NONE;
     } else {
-        if (port_base->PINCFG[pin % 32].bit.PULLEN != 0) {
+        if (port_base->PINCFG[pin % 32].bit.PULLEN == 0) {
             return PULL_NONE;
         } if ((port_base->OUT.reg & pin_mask) > 0) {
             return PULL_UP;

@@ -302,14 +302,20 @@ STATIC mp_obj_t nativeio_digitalinout_obj_get_pull(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout_get_pull_obj, nativeio_digitalinout_obj_get_pull);
 
-STATIC mp_obj_t nativeio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t pull) {
+STATIC mp_obj_t nativeio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t pull_obj) {
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    if (common_hal_nativeio_digitalinout_get_direction(self) == DIRECTION_OUT) {
        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
            "Pull not used when direction is output."));
        return mp_const_none;
    }
-   common_hal_nativeio_digitalinout_set_pull(self, (enum digitalinout_pull_t) MP_OBJ_SMALL_INT_VALUE(pull));
+   enum digitalinout_pull_t pull = PULL_NONE;
+   if (pull_obj == &nativeio_digitalinout_pull_up_obj) {
+       pull = PULL_UP;
+   } else if (pull_obj == &nativeio_digitalinout_pull_down_obj) {
+       pull = PULL_DOWN;
+   }
+   common_hal_nativeio_digitalinout_set_pull(self, pull);
    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_digitalinout_set_pull_obj, nativeio_digitalinout_obj_set_pull);
