@@ -383,10 +383,8 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         o->traceback_data = NULL;
         o->args = MP_OBJ_TO_PTR(mp_obj_new_tuple(1, NULL));
 
-        if (fmt == NULL) {
-            // no message
-            assert(0);
-        } else {
+        assert(fmt != NULL);
+        {
             if (strchr(fmt, '%') == NULL) {
                 // no formatting substitutions, avoid allocating vstr.
                 o->args->items[0] = mp_obj_new_str(fmt, strlen(fmt), false);
