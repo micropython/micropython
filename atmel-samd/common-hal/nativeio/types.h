@@ -55,7 +55,7 @@
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t * pin;
-    struct adc_module adc_instance;
+    struct adc_module * adc_instance;
 } nativeio_analogin_obj_t;
 
 typedef struct {

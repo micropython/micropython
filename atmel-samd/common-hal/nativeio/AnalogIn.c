@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "py/gc.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
@@ -34,6 +35,10 @@
 
 #include "asf/sam0/drivers/adc/adc.h"
 #include "samd21_pins.h"
+
+// Number of active ADC channels.
+volatile uint8_t active_channel_count;
+struct adc_module *adc_instance = NULL;
 
 void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
@@ -44,42 +49,55 @@ void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
 
     self->pin = pin;
 
-    struct adc_config config_adc;
-    adc_get_config_defaults(&config_adc);
+    if (adc_instance == NULL) {
+        struct adc_config config_adc;
+        adc_get_config_defaults(&config_adc);
 
-    config_adc.reference = ADC_REFERENCE_INTVCC1;
-    config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
-    config_adc.positive_input = self->pin->adc_input;
-    config_adc.resolution = ADC_RESOLUTION_16BIT;
-    config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
+        config_adc.reference = ADC_REFERENCE_INTVCC1;
+        config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
+        config_adc.positive_input = self->pin->adc_input;
+        config_adc.resolution = ADC_RESOLUTION_16BIT;
+        config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
 
-    adc_init(&self->adc_instance, ADC, &config_adc);
+        // Allocate the instance on the heap so we only use the memory when we
+        // need it.
+        adc_instance = gc_alloc(sizeof(struct adc_module), false);
+
+        adc_init(adc_instance, ADC, &config_adc);
+    }
+
+    self->adc_instance = adc_instance;
+    active_channel_count++;
 }
 
 void common_hal_nativeio_analogin_deinit(nativeio_analogin_obj_t *self) {
-    // TODO(tannewt): Count how many pins are in use and only reset the ADC when
-    // none are used.
-    adc_reset(&self->adc_instance);
+    active_channel_count--;
+    if (active_channel_count == 0) {
+        adc_reset(adc_instance);
+        gc_free(adc_instance);
+        // Set our reference to NULL so the GC doesn't mistakenly see the
+        // pointer in memory.
+        adc_instance = NULL;
+    }
     reset_pin(self->pin->pin);
 }
 
-// TODO(tannewt): Don't turn it all on just for one read. This simplifies
-// handling of reading multiple inputs and surviving sleep though so for now its
-// ok.
 uint16_t common_hal_nativeio_analogin_get_value(nativeio_analogin_obj_t *self) {
-    adc_enable(&self->adc_instance);
-    adc_start_conversion(&self->adc_instance);
+    adc_set_positive_input(adc_instance, self->pin->adc_input);
+
+    adc_enable(adc_instance);
+    adc_start_conversion(adc_instance);
 
     uint16_t data;
-    enum status_code status = adc_read(&self->adc_instance, &data);
+    enum status_code status = adc_read(adc_instance, &data);
     while (status == STATUS_BUSY) {
-      status = adc_read(&self->adc_instance, &data);
+      status = adc_read(adc_instance, &data);
     }
     if (status == STATUS_ERR_OVERFLOW) {
       // TODO(tannewt): Throw an error.
     }
 
-    adc_disable(&self->adc_instance);
+    adc_disable(adc_instance);
     return data;
 }
 
