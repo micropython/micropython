@@ -1484,7 +1484,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(jump, continue_label);
     }
     EMIT_ARG(label_assign, pop_label);
-    EMIT_ARG(for_iter_end, true);
+    EMIT(for_iter_end);
 
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
@@ -2906,7 +2906,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
 
     EMIT_ARG(jump, l_top);
     EMIT_ARG(label_assign, l_end);
-    EMIT_ARG(for_iter_end, true);
+    EMIT(for_iter_end);
 }
 
 STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {

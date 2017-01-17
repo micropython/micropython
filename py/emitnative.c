@@ -1827,10 +1827,10 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_for_iter_end(emit_t *emit, bool use_stack) {
+STATIC void emit_native_for_iter_end(emit_t *emit) {
     // adjust stack counter (we get here from for_iter ending, which popped the value for us)
     emit_native_pre(emit);
-    adjust_stack(emit, -(use_stack ? sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t) : 1));
+    adjust_stack(emit, -(sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t)));
     emit_post(emit);
 }
 

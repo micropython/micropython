@@ -787,8 +787,8 @@ void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label) {
     emit_write_bytecode_byte_unsigned_label(emit, MP_BC_FOR_ITER, label);
 }
 
-void mp_emit_bc_for_iter_end(emit_t *emit, bool use_stack) {
-    emit_bc_pre(emit, -(use_stack ? sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t) : 1));
+void mp_emit_bc_for_iter_end(emit_t *emit) {
+    emit_bc_pre(emit, -(sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t)));
 }
 
 void mp_emit_bc_pop_block(emit_t *emit) {
