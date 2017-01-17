@@ -4,7 +4,9 @@ except ImportError:
     import re
 
 r = re.compile(".+")
+str(r)
 m = r.match("abc")
+str(m)
 print(m.group(0))
 try:
     m.group(1)
