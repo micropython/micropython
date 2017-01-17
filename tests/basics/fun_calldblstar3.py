@@ -5,7 +5,7 @@ def foo(**kw):
 
 class Mapping:
     def keys(self):
-        return ['a', 'b', 'c']
+        return ['a', 'b', 'c', 'abcdefghijk'] # long string internalised
 
     def __getitem__(self, key):
         if key == 'a':

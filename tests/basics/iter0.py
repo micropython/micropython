@@ -4,3 +4,6 @@ try:
         pass
 except TypeError:
     print('TypeError')
+
+#builtin type that is iterable
+print(iter(range(4)).__next__())
