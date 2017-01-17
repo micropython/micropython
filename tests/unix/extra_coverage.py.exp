@@ -61,6 +61,7 @@ OSError
 0
 OSError
 None
+None
 frzstr1
 frzmpy1
 frzstr_pkg1.__init__
