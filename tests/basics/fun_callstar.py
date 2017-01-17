@@ -34,3 +34,8 @@ a.foo(1, 2, *[100])
 
 # Iterator
 a.foo(*range(3))
+
+def foo(*rest):
+    print(rest)
+
+foo(*range(5)) # doubles memory allocation for arguments starting after 4
