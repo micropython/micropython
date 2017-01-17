@@ -1103,6 +1103,13 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
 
 mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(o_in);
+    mp_obj_type_t *type = mp_obj_get_type(o_in);
+
+    // Check for native getiter which is the identity.  We handle this case explicitly
+    // so we don't unnecessarily allocate any RAM for the iter_buf, which won't be used.
+    if (type->getiter == mp_identity_getiter) {
+        return o_in;
+    }
 
     // if caller did not provide a buffer then allocate one on the heap
     if (iter_buf == NULL) {
@@ -1110,7 +1117,6 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     }
 
     // check for native getiter (corresponds to __iter__)
-    mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->getiter != NULL) {
         mp_obj_t iter = type->getiter(o_in, iter_buf);
         if (iter != MP_OBJ_NULL) {
