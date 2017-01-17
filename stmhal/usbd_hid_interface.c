@@ -89,7 +89,8 @@ static int8_t HID_Itf_Receive(uint8_t* Buf, uint32_t Len) {
     // initiate next USB packet transfer, to append to existing data in buffer
     USBD_HID_SetRxBuffer(&hUSBDDevice, buffer[current_write_buffer]);
     USBD_HID_ReceivePacket(&hUSBDDevice);
-
+    // Set NAK to indicate we need to process read buffer
+    USBD_HID_SetNAK(&hUSBDDevice);
     return USBD_OK;
 }
 
@@ -124,6 +125,9 @@ int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     // Copy bytes from device to user buffer
     memcpy(buf, buffer[current_read_buffer], last_read_len);
     current_read_buffer = !current_read_buffer;
+
+    // Clear NAK to indicate we are ready to read more data
+    USBD_HID_ClearNAK(&hUSBDDevice);
 
     // Success, return number of bytes read
     return last_read_len;

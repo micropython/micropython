@@ -116,5 +116,7 @@ uint8_t USBD_HID_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff);
 uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev);
 int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev);
 uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
+uint8_t USBD_HID_SetNAK(USBD_HandleTypeDef *pdev);
+uint8_t USBD_HID_ClearNAK(USBD_HandleTypeDef *pdev);
 
 #endif // _USB_CDC_MSC_CORE_H_
