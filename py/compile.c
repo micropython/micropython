@@ -2887,7 +2887,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
             EMIT(yield_value);
             EMIT(pop_top);
         } else {
-            EMIT_ARG(store_comp, comp->scope_cur->kind, 5 * for_depth + 6);
+            EMIT_ARG(store_comp, comp->scope_cur->kind, 4 * for_depth + 5);
         }
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_if)) {
         // if condition
@@ -3070,13 +3070,13 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         #endif
         }
 
-        // dummy 4 objects
+        // There are 4 slots on the stack for the iterator, and the first one is
+        // NULL to indicate that the second one points to the iterator object.
         EMIT(load_null);
-        EMIT(load_null);
+        compile_load_id(comp, qstr_arg);
         EMIT(load_null);
         EMIT(load_null);
 
-        compile_load_id(comp, qstr_arg);
         compile_scope_comp_iter(comp, pns_comp_for, pns->nodes[0], 0);
 
         if (scope->kind == SCOPE_GEN_EXPR) {

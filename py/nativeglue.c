@@ -98,6 +98,32 @@ void mp_native_raise(mp_obj_t o) {
     }
 }
 
+// wrapper that handles iterator buffer
+STATIC mp_obj_t mp_native_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter) {
+    if (iter == NULL) {
+        return mp_getiter(obj, NULL);
+    } else {
+        obj = mp_getiter(obj, iter);
+        if (obj != MP_OBJ_FROM_PTR(iter)) {
+            // Iterator didn't use the stack so indicate that with MP_OBJ_NULL.
+            iter->base.type = MP_OBJ_NULL;
+            iter->buf[0] = obj;
+        }
+        return NULL;
+    }
+}
+
+// wrapper that handles iterator buffer
+STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
+    mp_obj_t obj;
+    if (iter->base.type == MP_OBJ_NULL) {
+        obj = iter->buf[0];
+    } else {
+        obj = MP_OBJ_FROM_PTR(iter);
+    }
+    return mp_iternext(obj);
+}
+
 // these must correspond to the respective enum in runtime0.h
 void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_convert_obj_to_native,
@@ -127,8 +153,8 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_native_call_function_n_kw,
     mp_call_method_n_kw,
     mp_call_method_n_kw_var,
-    mp_getiter,
-    mp_iternext,
+    mp_native_getiter,
+    mp_native_iternext,
     nlr_push,
     nlr_pop,
     mp_native_raise,

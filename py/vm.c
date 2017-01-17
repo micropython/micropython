@@ -728,12 +728,20 @@ unwind_jump:;
                     SET_TOP(mp_getiter(TOP(), NULL));
                     DISPATCH();
 
+                // An iterator for a for-loop takes 4 slots on the stack.  They are either
+                // used to store the iterator object itself, or the first slot is NULL and
+                // the second slot holds a reference to the iterator object.
                 ENTRY(MP_BC_GET_ITER_STACK): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = TOP();
                     mp_obj_iter_buf_t *iter_buf = (mp_obj_iter_buf_t*)sp;
-                    sp += sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t);
-                    SET_TOP(mp_getiter(obj, iter_buf));
+                    sp += sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t) - 1;
+                    obj = mp_getiter(obj, iter_buf);
+                    if (obj != MP_OBJ_FROM_PTR(iter_buf)) {
+                        // Iterator didn't use the stack so indicate that with MP_OBJ_NULL.
+                        sp[-3] = MP_OBJ_NULL;
+                        sp[-2] = obj;
+                    }
                     DISPATCH();
                 }
 
@@ -741,10 +749,15 @@ unwind_jump:;
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     code_state->sp = sp;
-                    assert(TOP());
-                    mp_obj_t value = mp_iternext_allow_raise(TOP());
+                    mp_obj_t obj;
+                    if (sp[-3] == MP_OBJ_NULL) {
+                        obj = sp[-2];
+                    } else {
+                        obj = MP_OBJ_FROM_PTR(&sp[-3]);
+                    }
+                    mp_obj_t value = mp_iternext_allow_raise(obj);
                     if (value == MP_OBJ_STOP_ITERATION) {
-                        sp -= 5; // pop the exhausted iterator
+                        sp -= 4; // pop the exhausted iterator
                         ip += ulab; // jump to after for-block
                     } else {
                         PUSH(value); // push the next iteration value
@@ -1294,7 +1307,7 @@ exception_handler:
                         const byte *ip = code_state->ip + 1;
                         DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                         code_state->ip = ip + ulab; // jump to after for-block
-                        code_state->sp -= 5; // pop the exhausted iterator
+                        code_state->sp -= 4; // pop the exhausted iterator
                         goto outer_dispatch_loop; // continue with dispatch loop
                     } else if (*code_state->ip == MP_BC_YIELD_FROM) {
                         // StopIteration inside yield from call means return a value of
