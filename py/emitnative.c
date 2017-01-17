@@ -389,7 +389,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
                 ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
             } else {
                 // TODO not implemented
-                assert(0);
+                mp_not_implemented("more than 4 viper args");
             }
         }
         #endif
@@ -977,9 +977,9 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
             case MP_TOKEN_KW_NONE: vtype = VTYPE_PTR_NONE; val = 0; break;
             case MP_TOKEN_KW_FALSE: vtype = VTYPE_BOOL; val = 0; break;
             case MP_TOKEN_KW_TRUE: vtype = VTYPE_BOOL; val = 1; break;
-            no_other_choice1:
-            case MP_TOKEN_ELLIPSIS: vtype = VTYPE_PYOBJ; val = (mp_uint_t)&mp_const_ellipsis_obj; break;
-            default: assert(0); goto no_other_choice1; // to help flow control analysis
+            default:
+                assert(tok == MP_TOKEN_ELLIPSIS);
+                vtype = VTYPE_PYOBJ; val = (mp_uint_t)&mp_const_ellipsis_obj; break;
         }
     } else {
         vtype = VTYPE_PYOBJ;
@@ -987,9 +987,9 @@ STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
             case MP_TOKEN_KW_NONE: val = (mp_uint_t)mp_const_none; break;
             case MP_TOKEN_KW_FALSE: val = (mp_uint_t)mp_const_false; break;
             case MP_TOKEN_KW_TRUE: val = (mp_uint_t)mp_const_true; break;
-            no_other_choice2:
-            case MP_TOKEN_ELLIPSIS: val = (mp_uint_t)&mp_const_ellipsis_obj; break;
-            default: assert(0); goto no_other_choice2; // to help flow control analysis
+            default:
+                assert(tok == MP_TOKEN_ELLIPSIS);
+                val = (mp_uint_t)&mp_const_ellipsis_obj; break;
         }
     }
     emit_post_push_imm(emit, vtype, val);
@@ -2271,12 +2271,12 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 STATIC void emit_native_yield_value(emit_t *emit) {
     // not supported (for now)
     (void)emit;
-    assert(0);
+    mp_not_implemented("native yield");
 }
 STATIC void emit_native_yield_from(emit_t *emit) {
     // not supported (for now)
     (void)emit;
-    assert(0);
+    mp_not_implemented("native yield from");
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {
