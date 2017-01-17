@@ -2887,7 +2887,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
             EMIT(yield_value);
             EMIT(pop_top);
         } else {
-            EMIT_ARG(store_comp, comp->scope_cur->kind, for_depth + 2);
+            EMIT_ARG(store_comp, comp->scope_cur->kind, 5 * for_depth + 6);
         }
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_if)) {
         // if condition
@@ -2900,13 +2900,13 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
         // for loop
         mp_parse_node_struct_t *pns_comp_for2 = (mp_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);
-        EMIT_ARG(get_iter, false);
+        EMIT_ARG(get_iter, true);
         compile_scope_comp_iter(comp, pns_comp_for2, pn_inner_expr, for_depth + 1);
     }
 
     EMIT_ARG(jump, l_top);
     EMIT_ARG(label_assign, l_end);
-    EMIT_ARG(for_iter_end, false);
+    EMIT_ARG(for_iter_end, true);
 }
 
 STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
@@ -3069,6 +3069,12 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             EMIT_ARG(build_set, 0);
         #endif
         }
+
+        // dummy 4 objects
+        EMIT(load_null);
+        EMIT(load_null);
+        EMIT(load_null);
+        EMIT(load_null);
 
         compile_load_id(comp, qstr_arg);
         compile_scope_comp_iter(comp, pns_comp_for, pns->nodes[0], 0);

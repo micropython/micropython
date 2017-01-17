@@ -788,12 +788,7 @@ void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label) {
 }
 
 void mp_emit_bc_for_iter_end(emit_t *emit, bool use_stack) {
-    emit_bc_pre(emit, -1);
-    if (use_stack) {
-        for (size_t i = 0; i < sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t); ++i) {
-            mp_emit_bc_pop_top(emit);
-        }
-    }
+    emit_bc_pre(emit, use_stack ? -1 - sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t) : -1);
 }
 
 void mp_emit_bc_pop_block(emit_t *emit) {
