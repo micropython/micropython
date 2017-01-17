@@ -6,6 +6,7 @@ except NameError:
     sys.exit()
 
 import uerrno
+import uio
 
 data = extra_coverage()
 
@@ -44,6 +45,11 @@ try:
 except OSError:
     print('OSError')
 print(stream2.read(1)) # read 1 byte encounters non-blocking error with textio stream
+
+# test BufferedWriter with stream errors
+stream.set_error(uerrno.EAGAIN)
+buf = uio.BufferedWriter(stream, 8)
+print(buf.write(bytearray(16)))
 
 # test basic import of frozen scripts
 import frzstr1
