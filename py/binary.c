@@ -33,6 +33,7 @@
 #include "py/binary.h"
 #include "py/smallint.h"
 #include "py/objint.h"
+#include "py/runtime.h"
 
 // Helpers to work with binary-encoded data
 
@@ -100,6 +101,11 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
             }
         }
     }
+
+    if (size == 0) {
+        mp_raise_ValueError("bad typecode");
+    }
+
     if (palign != NULL) {
         *palign = align;
     }
