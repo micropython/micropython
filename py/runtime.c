@@ -220,11 +220,9 @@ mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
                 } else {
                     return MP_OBJ_NEW_SMALL_INT(-val);
                 }
-            case MP_UNARY_OP_INVERT:
-                return MP_OBJ_NEW_SMALL_INT(~val);
             default:
-                assert(0);
-                return arg;
+                assert(op == MP_UNARY_OP_INVERT);
+                return MP_OBJ_NEW_SMALL_INT(~val);
         }
     } else if (op == MP_UNARY_OP_HASH && MP_OBJ_IS_STR_OR_BYTES(arg)) {
         // fast path for hashing str/bytes
