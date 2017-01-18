@@ -75,7 +75,7 @@ static void set_pixel(void     * p_display,
 STATIC void lcd_ls0xxb7dxxx_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     lcd_ls0xxb7dxxx_obj_t *self = o;
 
-    mp_printf(print, "LS0XXB7DXXX(SPI(mosi=(port=%u, pin=%u), miso=(port=%u, pin=%u), clk=(port=%u, pin=%u)),\n",
+    mp_printf(print, "LS0XXB7DXXX(SPI(mosi=(port=%u, pin=%u), clk=(port=%u, pin=%u)),\n",
                      self->spi->pyb->spi->init.mosi_pin_port,
                      self->spi->pyb->spi->init.mosi_pin,
                      self->spi->pyb->spi->init.clk_pin_port,
@@ -226,7 +226,7 @@ STATIC mp_obj_t lcd_ls0xxb7dxxx_make_new(const mp_obj_type_t *type, size_t n_arg
     framebuffer_init_t init_conf = {
         .width = width,
         .height = height,
-        .line_orientation = FRAMEBUFFER_LINE_DIR_VERTICAL,
+        .line_orientation = FRAMEBUFFER_LINE_DIR_HORIZONTAL,
         .double_buffer = false
     };
 
@@ -243,7 +243,7 @@ STATIC mp_obj_t lcd_ls0xxb7dxxx_make_new(const mp_obj_type_t *type, size_t n_arg
                             s->pin_power_charge);
 
     // Default to black background
-    driver_ls0xxb7dxxx_clear(0);
+    driver_ls0xxb7dxxx_clear(0x00);
 
     framebuffer_clear(s->framebuffer);
 
@@ -258,9 +258,9 @@ STATIC mp_obj_t lcd_ls0xxb7dxxx_fill(mp_obj_t self_in, mp_obj_t color) {
     lcd_ls0xxb7dxxx_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (color == MP_OBJ_NEW_SMALL_INT(LCD_LS0XXB7DXXX_COLOR_BLACK)) {
-        framebuffer_clear(self->framebuffer);
-    } else {
         framebuffer_fill(self->framebuffer);
+    } else {
+        framebuffer_clear(self->framebuffer);
     }
 
     return mp_const_none;
