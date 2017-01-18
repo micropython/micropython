@@ -248,13 +248,13 @@ void mp_hal_delay_us(mp_uint_t delay) {
 static irqflags_t irq_flags;
 
 void mp_hal_disable_all_interrupts(void) {
-  // Disable all interrupt sources for timing critical sections.
-  // Disable ASF-based interrupts.
-  irq_flags = cpu_irq_save();
+    // Disable all interrupt sources for timing critical sections.
+    // Disable ASF-based interrupts.
+    irq_flags = cpu_irq_save();
 }
 
 void mp_hal_enable_all_interrupts(void) {
-  // Enable all interrupt sources after timing critical sections.
-  // Restore ASF-based interrupts.
-  cpu_irq_restore(irq_flags);
+    // Enable all interrupt sources after timing critical sections.
+    // Restore ASF-based interrupts.
+    cpu_irq_restore(irq_flags);
 }
