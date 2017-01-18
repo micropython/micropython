@@ -40,6 +40,9 @@ void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, 
     // Turn off interrupts of any kind during timing-sensitive code.
     mp_hal_disable_all_interrupts();
 
+    // Make sure the NVM cache is consistently timed.
+    NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_DETERMINISTIC_Val;
+
     uint32_t pin = digitalinout->pin->pin;
     port    =  port_get_group_from_gpio_pin(pin);
     pinMask =  (1UL << (pin % 32));  // From port_pin_set_output_level ASF code.
@@ -56,17 +59,14 @@ void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, 
             *set = pinMask;
             asm("nop; nop;");
             if(p & bitMask) {
-                asm("nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop; nop; nop;");
+                asm("nop; nop; nop; nop; nop; nop; nop;");
                 *clr = pinMask;
             } else {
                 *clr = pinMask;
-                asm("nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop;");
+                asm("nop; nop;");
             }
             if((bitMask >>= 1) != 0) {
-                asm("nop; nop; nop; nop; nop; nop; nop; nop; nop;");
+                asm("nop; nop; nop; nop; nop;");
             } else {
                 if(ptr >= end) break;
                 p       = *ptr++;
@@ -76,12 +76,10 @@ void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, 
     } else { // 400 KHz bitstream
         for(;;) {
             *set = pinMask;
-            // 11 cycles high regardless
-            asm("nop; nop; nop; nop; nop; nop; nop; nop; nop; nop; nop;");
+
+            asm("nop; nop; nop; nop; nop; nop; nop;");
             if(p & bitMask) {
-                // 27 cycles high
                 asm("nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop; nop; nop; nop; nop; nop;"
                     "nop; nop; nop; nop; nop; nop; nop; nop;"
                     "nop; nop; nop;");
                 *clr = pinMask;
@@ -105,6 +103,9 @@ void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, 
             }
         }
     }
+
+    // Speed up! (But inconsistent timing.)
+    NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY_Val;
 
     // Turn on interrupts after timing-sensitive code.
     mp_hal_enable_all_interrupts();
