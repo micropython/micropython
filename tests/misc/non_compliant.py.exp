@@ -19,3 +19,4 @@ NotImplementedError
 b'\x01\x02'
 b'\x01\x00'
 NotImplementedError
+AttributeError

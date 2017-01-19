@@ -124,3 +124,11 @@ try:
     bytearray(4)[0:1] = [1, 2]
 except NotImplementedError:
     print('NotImplementedError')
+
+# can't assign attributes to a function
+def f():
+    pass
+try:
+    f.x = 1
+except AttributeError:
+    print('AttributeError')
