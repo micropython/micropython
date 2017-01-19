@@ -124,15 +124,16 @@ Example for nrf52840 / pca10056:
 
 from machine import Pin, SPI
 from display import LS0XXB7DXXX
+import draw
 cs = Pin("B3", mode=Pin.OUT, pull=Pin.PULL_UP)
 disp = Pin("B4", mode=Pin.OUT, pull=Pin.PULL_UP)
 extcomin = Pin("A28", mode=Pin.OUT, pull=Pin.PULL_UP)
 extmode = Pin("B5", mode=Pin.OUT, pull=Pin.PULL_UP)
 power_control = Pin("A29", mode=Pin.OUT, pull=Pin.PULL_UP)
 power_charge = Pin("A30", mode=Pin.OUT, pull=Pin.PULL_UP)
-spi = SPI(0, baudrate=8000000)
+spi = SPI(0, baudrate=2000000, firstbit=SPI.LSB)
 d = LS0XXB7DXXX(400, 240, spi, cs, disp, extcomin, extmode, power_control, power_charge)
-d.text("Hello World!", 32, 32)
+draw.text(d, "Hello World!", 32, 32)
 d.show()
 
 */
