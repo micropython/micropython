@@ -152,7 +152,6 @@ SRC_C += \
 	timer.c \
 	rtc.c \
 	adc.c \
-	lcd_mono_fb.c \
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	display/moddisplay.c \
