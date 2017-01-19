@@ -374,7 +374,6 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_
 
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
-    // TODO: Better support byteorder param
     // TODO: Support signed param (assumes signed=False at the moment)
     (void)n_args;
 
@@ -385,12 +384,15 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
     #else
-    if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_not_implemented("");
+    const byte* buf = (const byte*)bufinfo.buf;
+    int delta = 1;
+    if (args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+        buf += bufinfo.len - 1;
+        delta = -1;
     }
 
     mp_uint_t value = 0;
-    for (const byte* buf = (const byte*)bufinfo.buf + bufinfo.len - 1; buf >= (byte*)bufinfo.buf; buf--) {
+    for (; bufinfo.len--; buf += delta) {
         value = (value << 8) | *buf;
     }
     return mp_obj_new_int_from_uint(value);
