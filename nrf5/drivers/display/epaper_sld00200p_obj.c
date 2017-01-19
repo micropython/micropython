@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -227,7 +225,6 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
 
     if (args[ARG_NEW_BORDER].u_obj != MP_OBJ_NULL) {
         s->pin_border = args[ARG_NEW_BORDER].u_obj;
-        printf("BORDER PIN %u\n", s->pin_border->pin);
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Display Border Pin not set"));
@@ -235,7 +232,6 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
 
     if (args[ARG_NEW_BUSY].u_obj != MP_OBJ_NULL) {
         s->pin_busy = args[ARG_NEW_BUSY].u_obj;
-        printf("BUSY PIN %u\n", s->pin_busy->pin);
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Display Busy Pin not set"));
@@ -243,7 +239,6 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
 
     if (args[ARG_NEW_RESET].u_obj != MP_OBJ_NULL) {
         s->pin_reset = args[ARG_NEW_RESET].u_obj;
-        printf("RESET PIN %u\n", s->pin_reset->pin);
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Display Reset Pin not set"));
