@@ -161,6 +161,10 @@ void reset_samd21(void) {
 
     analogin_reset();
 
+    // Wait for the DAC to sync.
+    while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
+    DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
+
     struct system_pinmux_config config;
     system_pinmux_get_config_defaults(&config);
     config.powersave = true;
