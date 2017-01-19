@@ -74,7 +74,7 @@ void init_flash_fs(void) {
     // try to mount the flash
     FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
 
-    if (true || res == FR_NO_FILESYSTEM) {
+    if (res == FR_NO_FILESYSTEM) {
         // no filesystem, or asked to reset it, so create a fresh one
 
         // We are before USB initializes so temporarily undo the USB_WRITEABLE
