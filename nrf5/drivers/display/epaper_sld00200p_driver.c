@@ -437,7 +437,7 @@ void driver_sld00200p_clear(uint16_t color) {
     mp_hal_delay_ms(100);
 }
 
-void driver_sld00200p_update_line(uint16_t line, fb_byte_t * p_bytes, fb_byte_t * p_old, uint16_t len, bool compressed) {
+void driver_sld00200p_update_line(uint16_t line, framebuffer_byte_t * p_bytes, framebuffer_byte_t * p_old, uint16_t len) {
     epaper_sld00200p_line(line, (uint8_t *)p_old, 0x00, EPD_COMP);
     epaper_sld00200p_line(line, (uint8_t *)p_old, 0xAA, EPD_WHITE);
     epaper_sld00200p_line(line, (uint8_t *)p_bytes, 0xAA, EPD_INV);

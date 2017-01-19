@@ -42,10 +42,13 @@
 #include "pwm.h"
 #include "hal_spi.h"
 #include "hal_pwm.h"
-#include "lcd_mono_fb.h"
+#include "moddisplay.h"
+#include "framebuffer.h"
 
 typedef struct _epaper_sld00200p_obj_t {
     mp_obj_base_t base;
+    display_draw_callbacks_t draw_callbacks;
+    framebuffer_t * framebuffer;
     machine_hard_spi_obj_t *spi;
     machine_hard_pwm_obj_t *pwm;
     pin_obj_t * pin_cs;
@@ -57,14 +60,22 @@ typedef struct _epaper_sld00200p_obj_t {
 #if 0
     pin_obj_t * pin_temp_sensor;
 #endif
-    mp_obj_framebuf_t * framebuffer;
 } epaper_sld00200p_obj_t;
 
-static void dirty_line_update_cb(mp_obj_framebuf_t * p_framebuffer,
-                                 uint16_t            line,
-                                 fb_byte_t *         p_new,
-                                 fb_byte_t *         p_old) {
-    driver_sld00200p_update_line(line, p_new, p_old, p_framebuffer->bytes_stride, true);
+#define EPAPER_SLD00200P_COLOR_BLACK 0
+#define EPAPER_SLD00200P_COLOR_WHITE 1
+
+static void set_pixel(void * p_display,
+                      uint16_t    x,
+                      uint16_t    y,
+                      uint16_t    color) {
+    epaper_sld00200p_obj_t *self = (epaper_sld00200p_obj_t *)p_display;
+
+    if (color == EPAPER_SLD00200P_COLOR_BLACK) {
+        framebuffer_pixel_clear(self->framebuffer, x, y);
+    } else {
+        framebuffer_pixel_set(self->framebuffer, x, y);
+    }
 }
 
 /// \method __str__()
@@ -101,10 +112,12 @@ STATIC void epaper_sld00200_print(const mp_print_t *print, mp_obj_t o, mp_print_
                      self->pin_discharge->port,
                      self->pin_discharge->pin);
 
-    mp_printf(print, "        FB(width=%u, height=%u, dir=%u))\n",
-                     self->framebuffer->width,
-                     self->framebuffer->height);
-
+    mp_printf(print, "        FB(width=%u, height=%u, dir=%u, fb_stride=%u, fb_dirty_stride=%u))\n",
+                     self->framebuffer->screen_width,
+                     self->framebuffer->screen_height,
+                     self->framebuffer->line_orientation,
+                     self->framebuffer->fb_stride,
+                     self->framebuffer->fb_dirty_stride);
 }
 
 // for make_new
@@ -125,6 +138,7 @@ enum {
 /*
 from machine import Pin, SPI, PWM
 from display import SLD00200P
+import draw
 reset = Pin("A17", mode=Pin.OUT, pull=Pin.PULL_UP)
 panel_on = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
 discharge = Pin("A19", mode=Pin.OUT, pull=Pin.PULL_UP)
@@ -134,13 +148,14 @@ cs = Pin("A22", mode=Pin.OUT, pull=Pin.PULL_UP)
 spi = SPI(0, baudrate=8000000)
 pwm = PWM(0, Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP), freq=PWM.FREQ_250KHZ, duty=50, period=2)
 d = SLD00200P(264, 176, spi, pwm, cs, panel_on, border, busy, reset, discharge)
-d.text("Hello World!", 32, 32)
+draw.text(d, "Hello World!", 32, 32)
 d.show()
 
 Example for nrf52840 / pca10056:
 
 from machine import Pin, SPI, PWM
 from display import SLD00200P
+import draw
 reset = Pin("B7", mode=Pin.OUT, pull=Pin.PULL_UP)
 panel_on = Pin("B3", mode=Pin.OUT, pull=Pin.PULL_UP)
 discharge = Pin("B9", mode=Pin.OUT, pull=Pin.PULL_UP)
@@ -150,7 +165,7 @@ cs = Pin("B12", mode=Pin.OUT, pull=Pin.PULL_UP)
 spi = SPI(0, baudrate=8000000)
 pwm = PWM(0, Pin("B6", mode=Pin.OUT, pull=Pin.PULL_UP), freq=PWM.FREQ_250KHZ, duty=50, period=2)
 d = SLD00200P(264, 176, spi, pwm, cs, panel_on, border, busy, reset, discharge)
-d.text("Hello World!", 32, 32)
+draw.text(d, "Hello World!", 32, 32)
 d.show()
 
 */
@@ -177,6 +192,7 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
 
     epaper_sld00200p_obj_t *s = m_new_obj_with_finaliser(epaper_sld00200p_obj_t);
     s->base.type = type;
+    s->draw_callbacks.pixel_set = set_pixel;
 
     mp_int_t width;
     mp_int_t height;
@@ -260,9 +276,16 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
     }
 #endif
 
-    // direction arg not yet configurable
-    mp_int_t vertical = false;
-    s->framebuffer = lcd_mono_fb_helper_make_new(width, height, vertical);
+    framebuffer_init_t init_conf = {
+        .width = width,
+        .height = height,
+        .line_orientation = FRAMEBUFFER_LINE_DIR_HORIZONTAL,
+        .double_buffer = false
+    };
+
+    s->framebuffer = m_new(framebuffer_t, sizeof(framebuffer_t));
+
+    framebuffer_init(s->framebuffer, &init_conf);
 
     driver_sld00200p_init(s->spi->pyb->spi->instance,
                           s->pwm->pyb->pwm->instance,
@@ -276,7 +299,7 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
     // Default to white background
     driver_sld00200p_clear(0x00);
 
-    display_clear_screen(s->framebuffer, 0x0);
+    framebuffer_clear(s->framebuffer);
 
     driver_sld00200p_deinit();
 
@@ -289,11 +312,36 @@ STATIC mp_obj_t epaper_sld00200p_make_new(const mp_obj_type_t *type, size_t n_ar
 /// Fill framebuffer with the color defined as argument.
 STATIC mp_obj_t epaper_sld00200p_fill(mp_obj_t self_in, mp_obj_t color) {
     epaper_sld00200p_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
+
+    if (color == MP_OBJ_NEW_SMALL_INT(EPAPER_SLD00200P_COLOR_BLACK)) {
+        framebuffer_clear(self->framebuffer);
+    } else {
+        framebuffer_fill(self->framebuffer);
+    }
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(epaper_sld00200p_fill_obj, epaper_sld00200p_fill);
+
+static void render(framebuffer_t * p_framebuffer, bool refresh) {
+    for (uint16_t i = 0; i < p_framebuffer->fb_dirty_stride; i++) {
+        if (p_framebuffer->fb_dirty[i].byte != 0 || refresh) {
+            for (uint16_t b = 0; b < 8; b++) {
+                if ((((p_framebuffer->fb_dirty[i].byte >> b) & 0x01) == 1) || refresh) {
+                    uint16_t line_num = (i * 8) + b;
+                    driver_sld00200p_update_line(line_num,
+                        &p_framebuffer->fb_new[line_num * p_framebuffer->fb_stride],
+						&p_framebuffer->fb_old[line_num * p_framebuffer->fb_stride],
+						p_framebuffer->fb_stride);
+                }
+            }
+
+            if (refresh == false) {
+                p_framebuffer->fb_dirty[i].byte = 0x00;
+            }
+        }
+    }
+}
 
 /// \method show([num_of_refresh])
 /// Display content in framebuffer.
@@ -313,11 +361,12 @@ STATIC mp_obj_t epaper_sld00200p_show(size_t n_args, const mp_obj_t *args) {
     }
     driver_sld00200p_reinit();
 
-    display_update(self->framebuffer, false, dirty_line_update_cb);
+    render(self->framebuffer, false);
+    framebuffer_flip(self->framebuffer);
 
     if (num_of_refresh > 0) {
         while (num_of_refresh > 0) {
-            display_update(self->framebuffer, true, dirty_line_update_cb);
+            render(self->framebuffer, true);
             num_of_refresh--;
         }
     }
@@ -347,12 +396,12 @@ STATIC mp_obj_t epaper_sld00200p_refresh(size_t n_args, const mp_obj_t *args) {
 
     if (num_of_refresh > 0) {
         while (num_of_refresh > 0) {
-            display_update(self->framebuffer, true, dirty_line_update_cb);
+            render(self->framebuffer, true);
             num_of_refresh--;
         }
     } else {
         // default to one refresh
-        display_update(self->framebuffer, true, dirty_line_update_cb);
+        render(self->framebuffer, true);
     }
 
     driver_sld00200p_deinit();
@@ -370,14 +419,9 @@ STATIC mp_obj_t epaper_sld00200p_pixel(size_t n_args, const mp_obj_t *args) {
     epaper_sld00200p_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
-    mp_int_t color;
-    if (n_args >= 3) {
-        color = mp_obj_get_int(args[3]);
-    }
-    (void)self;
-    (void)x;
-    (void)y;
-    (void)color;
+    mp_int_t color = mp_obj_get_int(args[3]);
+
+    set_pixel(self, x, y, color);
 
     return mp_const_none;
 }
@@ -398,9 +442,13 @@ STATIC mp_obj_t epaper_sld00200p_text(size_t n_args, const mp_obj_t *args) {
         color = mp_obj_get_int(args[3]);
     }
 
-    (void)color;
+//    display_print_string(self->framebuffer, x, y, str);
 
-    display_print_string(self->framebuffer, x, y, str);
+    (void)x;
+    (void)y;
+    (void)self;
+    (void)str;
+    (void)color;
 
     return mp_const_none;
 }
@@ -426,8 +474,8 @@ STATIC const mp_rom_map_elem_t epaper_sld00200p_locals_dict_table[] = {
 #if 0
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&epaper_sld00200p_bitmap_obj) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_BLACK), MP_OBJ_NEW_SMALL_INT(LCD_BLACK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_WHITE), MP_OBJ_NEW_SMALL_INT(LCD_WHITE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_BLACK), MP_OBJ_NEW_SMALL_INT(EPAPER_SLD00200P_COLOR_BLACK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_COLOR_WHITE), MP_OBJ_NEW_SMALL_INT(EPAPER_SLD00200P_COLOR_WHITE) },
 
 };
 
