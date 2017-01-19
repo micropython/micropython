@@ -286,7 +286,8 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
-            case MP_BINARY_OP_DIVMOD: {
+            default: {
+                assert(op == MP_BINARY_OP_DIVMOD);
                 if (mpz_is_zero(zrhs)) {
                     goto zero_division_error;
                 }
@@ -295,9 +296,6 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
-
-            default:
-                return MP_OBJ_NULL; // op not supported
         }
 
         return MP_OBJ_FROM_PTR(res);
