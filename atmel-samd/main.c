@@ -22,6 +22,8 @@
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
+#include "common-hal/nativeio/AnalogIn.h"
+
 #ifdef EXPRESS_BOARD
 #include "common-hal/nativeio/types.h"
 #include "QTouch/touch_api_ptc.h"
@@ -156,6 +158,8 @@ void reset_samd21(void) {
     selfcap_config.num_channels = 0;
     selfcap_config.num_sensors = 0;
 #endif
+
+    analogin_reset();
 
     struct system_pinmux_config config;
     system_pinmux_get_config_defaults(&config);

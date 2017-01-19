@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/nativeio/AnalogIn.h"
+
 #include <string.h>
 
 #include "py/gc.h"
@@ -80,6 +82,14 @@ void common_hal_nativeio_analogin_deinit(nativeio_analogin_obj_t *self) {
         adc_instance = NULL;
     }
     reset_pin(self->pin->pin);
+}
+
+void analogin_reset() {
+    if (adc_instance != NULL) {
+        adc_reset(adc_instance);
+        adc_instance = NULL;
+    }
+    active_channel_count = 0;
 }
 
 uint16_t common_hal_nativeio_analogin_get_value(nativeio_analogin_obj_t *self) {
