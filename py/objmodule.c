@@ -227,7 +227,15 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     MICROPY_PORT_BUILTIN_MODULES
 };
 
-STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
+MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
+
+#if MICROPY_MODULE_WEAK_LINKS
+STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+};
+
+MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
+#endif
 
 void mp_module_init(void) {
     mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
