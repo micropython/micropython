@@ -92,12 +92,17 @@ void driver_ls0xxb7dxxx_clear(uint16_t color)
 }
 
 void driver_ls0xxb7dxxx_update_line(uint16_t line, framebuffer_byte_t * p_bytes, uint16_t len) {
+    // update single line - 0x01 <line_num> <50bytes data> 0x00 0x00
+    // update multi line  - 0x01 <line_num> <50bytes data> 0x00 [<line_num> <50bytes data> 0x00] 0x00
 
     mp_hal_pin_high(mp_cs_pin);
+
+    mp_hal_delay_us(3);
+
     raw_write(0x01);
 
     raw_write(line);
-    for (uint8_t i = 0; i < len; i++)
+    for (uint8_t i = 0; i < 50; i++)
     {
         uint8_t byte = (uint8_t)((uint8_t *)p_bytes)[i];
         raw_write(~byte);
@@ -105,6 +110,9 @@ void driver_ls0xxb7dxxx_update_line(uint16_t line, framebuffer_byte_t * p_bytes,
     raw_write(0x00);
 
     raw_write(0x00);
+
+    mp_hal_delay_us(1);
+
     mp_hal_pin_low(mp_cs_pin);
 }
 

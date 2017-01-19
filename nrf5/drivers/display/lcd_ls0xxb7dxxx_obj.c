@@ -54,8 +54,8 @@ typedef struct _lcd_ls0xxb7dxxx_obj_t {
     pin_obj_t * pin_power_charge;
 } lcd_ls0xxb7dxxx_obj_t;
 
-#define LCD_LS0XXB7DXXX_COLOR_WHITE 0
-#define LCD_LS0XXB7DXXX_COLOR_BLACK 1
+#define LCD_LS0XXB7DXXX_COLOR_BLACK 0
+#define LCD_LS0XXB7DXXX_COLOR_WHITE 1
 
 static void set_pixel(void     * p_display,
                       uint16_t   x,
@@ -64,9 +64,9 @@ static void set_pixel(void     * p_display,
     lcd_ls0xxb7dxxx_obj_t *self = (lcd_ls0xxb7dxxx_obj_t *)p_display;
 
     if (color == LCD_LS0XXB7DXXX_COLOR_BLACK) {
-        framebuffer_pixel_clear(self->framebuffer, x, y);
-    } else {
         framebuffer_pixel_set(self->framebuffer, x, y);
+    } else {
+        framebuffer_pixel_clear(self->framebuffer, x, y);
     }
 }
 
