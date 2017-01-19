@@ -146,15 +146,21 @@
 #define MICROPY_PY_DISPLAY_LCD_LS0XXB7DXXX  (0)
 #define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
 #define MICROPY_PY_DISPLAY_OLED_SSD1305     (0)
-#define MICROPY_PY_LCD_MONO_FB              (0)
 #define MICROPY_PY_DISPLAY_FRAMEBUFFER      (0)
+#define MICROPY_PY_DISPLAY_GRAPHICS         (0)
 
 #elif MICROPY_PY_DISPLAY
 
 // Default to include Monochrome Framebuffer
 // if display module is selected.
-#ifndef MICROPY_PY_LCD_MONO_FB
-#define MICROPY_PY_LCD_MONO_FB              (1)
+#ifndef MICROPY_PY_DISPLAY_FRAMEBUFFER
+#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (1)
+#endif
+
+// Default to include graphics library if
+// display modue is selected.
+#ifndef MICROPY_PY_DISPLAY_GRAPHICS
+#define MICROPY_PY_DISPLAY_GRAPHICS         (1)
 #endif
 
 #ifndef MICROPY_PY_DISPLAY_EPAPER_SLD00200P
@@ -169,27 +175,12 @@
 #define MICROPY_PY_DISPLAY_LCD_LS0XXB7DXXX  (0)
 #endif
 
-#if MICROPY_PY_DISPLAY_LCD_LS0XXB7DXXX
-#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (1)
-#define MICROPY_PY_DISPLAY_GRAPHICS         (1)
-#endif
-
 #ifndef MICROPY_PY_DISPLAY_OLED_SSD1305
 #define MICROPY_PY_DISPLAY_OLED_SSD1305     (0)
 #endif
 
-#if MICROPY_PY_DISPLAY_OLED_SSD1305
-#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (1)
-#define MICROPY_PY_DISPLAY_GRAPHICS         (1)
-#endif
-
 #ifndef MICROPY_PY_DISPLAY_OLED_SSD1306
 #define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
-#endif
-
-#if MICROPY_PY_DISPLAY_OLED_SSD1306
-#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (1)
-#define MICROPY_PY_DISPLAY_GRAPHICS         (1)
 #endif
 
 #endif // MICROPY_PY_DISPLAY
