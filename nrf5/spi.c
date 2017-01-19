@@ -221,8 +221,8 @@ STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_machine_spi_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&mp_machine_spi_write_readinto_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(0) }, // SPI_FIRSTBIT_MSB
-    { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(1) }, // SPI_FIRSTBIT_LSB
+    { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(HAL_SPI_MSB_FIRST) }, // SPI_FIRSTBIT_MSB
+    { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(HAL_SPI_LSB_FIRST) }, // SPI_FIRSTBIT_LSB
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_table);
@@ -280,7 +280,7 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
 
     self->pyb->spi->init.irq_priority = 4;
     self->pyb->spi->init.mode = HAL_SPI_MODE_CPOL0_CPHA0;
-    self->pyb->spi->init.lsb_first = false;
+    self->pyb->spi->init.firstbit = (args[ARG_NEW_firstbit].u_int == 0) ? HAL_SPI_MSB_FIRST : HAL_SPI_LSB_FIRST;;
     hal_spi_master_init(self->pyb->spi->instance, &self->pyb->spi->init);
 
     return MP_OBJ_FROM_PTR(self);

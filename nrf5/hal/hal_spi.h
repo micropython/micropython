@@ -74,6 +74,14 @@ typedef enum {
 } hal_spi_mode_t;
 
 /**
+ * @brief  SPI firstbit mode definition
+ */
+typedef enum {
+    HAL_SPI_MSB_FIRST = 0,
+    HAL_SPI_LSB_FIRST
+} hal_spi_firstbit_t;
+
+/**
   * @brief  SPI Configuration Structure definition
   */
 typedef struct {
@@ -83,7 +91,7 @@ typedef struct {
     uint8_t mosi_pin_port;
     uint8_t miso_pin_port;
     uint8_t clk_pin_port;
-    bool lsb_first;
+    hal_spi_firstbit_t firstbit;
     hal_spi_mode_t mode;
     uint32_t irq_priority;
     hal_spi_clk_freq_t freq;
@@ -94,15 +102,15 @@ typedef struct {
   */
 typedef struct __SPI_HandleTypeDef
 {
-    NRF_SPI_Type               *instance;    /* SPI registers base address */
-    hal_spi_init_t             init;         /* SPI initialization parameters */
+    NRF_SPI_Type      *instance;    /* SPI registers base address */
+    hal_spi_init_t    init;         /* SPI initialization parameters */
 } SPI_HandleTypeDef;
 
 void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi_init);
 
-void hal_spi_master_tx_rx(NRF_SPI_Type * p_instance,
-		                  uint16_t transfer_size,
-		                  const uint8_t * tx_data,
-					      uint8_t * rx_data);
+void hal_spi_master_tx_rx(NRF_SPI_Type  * p_instance,
+                          uint16_t        transfer_size,
+                          const uint8_t * tx_data,
+                          uint8_t       * rx_data);
 
 #endif // HAL_SPI_H__

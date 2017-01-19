@@ -85,7 +85,7 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
             break;
     }
 
-    if (p_spi_init->lsb_first) {
+    if (p_spi_init->firstbit == HAL_SPI_LSB_FIRST) {
         p_instance->CONFIG = (mode | (SPI_CONFIG_ORDER_LsbFirst << SPI_CONFIG_ORDER_Pos));
     } else {
         p_instance->CONFIG = (mode | (SPI_CONFIG_ORDER_MsbFirst << SPI_CONFIG_ORDER_Pos));
