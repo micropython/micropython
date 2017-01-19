@@ -74,7 +74,7 @@ void init_flash_fs(void) {
     // try to mount the flash
     FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
 
-    if (res == FR_NO_FILESYSTEM) {
+    if (true || res == FR_NO_FILESYSTEM) {
         // no filesystem, or asked to reset it, so create a fresh one
 
         // We are before USB initializes so temporarily undo the USB_WRITEABLE
@@ -89,7 +89,7 @@ void init_flash_fs(void) {
         }
 
         // set label
-        f_setlabel("MICROPYTHON");
+        f_setlabel("CIRCUITPY");
 
         if (usb_writeable) {
             vfs->flags |= FSUSER_USB_WRITEABLE;
