@@ -28,6 +28,6 @@
 #define RGB16_H__
 
 #define RGB16(rrrrr32, gggggg64, bbbbb32) \
-(((rrrrr32 & 248) | gggggg64 >> 5) << 8) + ((gggggg64 & 28)<< 3 | bbbbb32 >> 3)
+(((rrrrr32 & 248) | gggggg64 >> 5) << 8) + ((gggggg64 & 28) << 3 | bbbbb32 >> 3)
 
 #endif // RGB16_H__
