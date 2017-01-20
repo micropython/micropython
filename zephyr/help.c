@@ -41,7 +41,7 @@ STATIC const char *help_text =
 "For further help on a specific object, type help(obj)\n"
 ;
 
-STATIC mp_obj_t builtin_help(uint n_args, const mp_obj_t *args) {
+STATIC mp_obj_t builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message
         printf("%s", help_text);
