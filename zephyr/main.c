@@ -64,8 +64,8 @@ int real_main(void) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
     mp_stack_set_top(stack_top);
-    // Should be set to stack size in prj.mdef minus fuzz factor
-    mp_stack_set_limit(3584);
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
 
 soft_reset:
     #if MICROPY_ENABLE_GC
