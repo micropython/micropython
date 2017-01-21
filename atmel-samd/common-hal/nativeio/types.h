@@ -85,6 +85,7 @@ typedef struct {
     uint8_t clock_pin;
     uint8_t MOSI_pin;
     uint8_t MISO_pin;
+    uint32_t current_baudrate;
 } nativeio_spi_obj_t;
 
 typedef struct {

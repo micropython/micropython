@@ -189,39 +189,92 @@ STATIC mp_obj_t nativeio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_spi_unlock_obj, nativeio_spi_obj_unlock);
 
-//|   .. method:: SPI.write(buf)
+//|   .. method:: SPI.write(buffer, \*, start=0, end=len(buffer))
 //|
 //|     Write the data contained in ``buf``. Requires the SPI being locked.
 //|
-STATIC mp_obj_t nativeio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
-    mp_buffer_info_t src;
-    mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    nativeio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+//|     :param bytearray buffer: buffer containing the bytes to write
+//|     :param int start: Index to start writing from
+//|     :param int end: Index to read up to but not include
+//|
+STATIC mp_obj_t nativeio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer, ARG_start, ARG_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    nativeio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_lock(self);
-    bool ok = common_hal_nativeio_spi_write(self, src.buf, src.len);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    int32_t end = args[ARG_end].u_int;
+    if (end < 0) {
+        end += bufinfo.len;
+    }
+    uint32_t start = args[ARG_start].u_int;
+    uint32_t len = end - start;
+    if ((uint32_t) end < start) {
+        len = 0;
+    } else if (len > bufinfo.len) {
+        len = bufinfo.len;
+    }
+
+    bool ok = common_hal_nativeio_spi_write(self, ((uint8_t*)bufinfo.buf) + start, len);
     if (!ok) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(nativeio_spi_write_obj, nativeio_spi_write);
+MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_spi_write_obj, 2, nativeio_spi_write);
 
 
-//|   .. method:: SPI.readinto(buf)
+//|   .. method:: SPI.readinto(buffer, \*, start=0, end=len(buffer), write_value=0)
 //|
 //|     Read into the buffer specified by ``buf`` while writing zeroes. Requires the SPI being locked.
 //|
-STATIC mp_obj_t nativeio_spi_readinto(size_t n_args, const mp_obj_t *args) {
+//|     :param bytearray buffer: buffer to write into
+//|     :param int start: Index to start writing at
+//|     :param int end: Index to write up to but not include
+//|     :param int write_value: Value to write reading. (Usually ignored.)
+//|
+STATIC mp_obj_t nativeio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer, ARG_start, ARG_end, ARG_write_value };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+    nativeio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_lock(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    check_lock(args[0]);
-    bool ok = common_hal_nativeio_spi_read(args[0], bufinfo.buf, bufinfo.len);
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+    int32_t end = args[ARG_end].u_int;
+    if (end < 0) {
+        end += bufinfo.len;
+    }
+    uint32_t start = args[ARG_start].u_int;
+    uint32_t len = end - start;
+    if ((uint32_t) end < start) {
+        len = 0;
+    } else if (len > bufinfo.len) {
+        len = bufinfo.len;
+    }
+
+    bool ok = common_hal_nativeio_spi_read(self, ((uint8_t*)bufinfo.buf) + start, len, args[ARG_write_value].u_int);
     if (!ok) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_spi_readinto_obj, 2, 2, nativeio_spi_readinto);
+MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_spi_readinto_obj, 2, nativeio_spi_readinto);
 
 STATIC const mp_rom_map_elem_t nativeio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_spi_deinit_obj) },

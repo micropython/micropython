@@ -126,20 +126,24 @@ bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self,
 }
 
 bool common_hal_nativeio_spi_read(nativeio_spi_obj_t *self,
-        uint8_t * data, size_t len) {
+        uint8_t * data, size_t len, uint8_t write_value) {
     // Process data in chunks, let the pending tasks run in between
     size_t chunk_size = 1024; // TODO this should depend on baudrate
     size_t count = len / chunk_size;
     size_t i = 0;
+    uint32_t long_write_value = ((uint32_t) write_value) << 24 |
+                                write_value << 16 |
+                                write_value << 8 |
+                                write_value;
     for (size_t j = 0; j < count; ++j) {
         for (size_t k = 0; k < chunk_size; ++k) {
-            data[i] = spi_rx8(HSPI);
+            data[i] = spi_transaction(HSPI, 0, 0, 0, 0, 0, 0, 8, long_write_value);
             ++i;
         }
         ets_loop_iter();
     }
     while (i < len) {
-        data[i] = spi_rx8(HSPI);
+        data[i] = spi_transaction(HSPI, 0, 0, 0, 0, 0, 0, 8, long_write_value);
         ++i;
     }
     return true;

@@ -6,7 +6,7 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_A2), (mp_obj_t)&pin_PB09 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_A3), (mp_obj_t)&pin_PA04 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_A4), (mp_obj_t)&pin_PA05 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_SD), (mp_obj_t)&pin_PA08 },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS), (mp_obj_t)&pin_PA08 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_A5), (mp_obj_t)&pin_PB02 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_SCK), (mp_obj_t)&pin_PB11 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PB10 },

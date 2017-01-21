@@ -135,6 +135,11 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         self->MISO_pin = miso->pin;
     }
 
+    // Always start at 250khz which is what SD cards need. They are sensitive to
+    // SPI bus noise before they are put into SPI mode.
+    self->current_baudrate = 250000;
+    config_spi_master.mode_specific.master.baudrate = self->current_baudrate;
+
     spi_init(&self->spi_master_instance, sercom, &config_spi_master);
 
     spi_enable(&self->spi_master_instance);
@@ -150,9 +155,11 @@ void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self) {
 bool common_hal_nativeio_spi_configure(nativeio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
     // TODO(tannewt): Check baudrate first before changing it.
-    enum status_code status = spi_set_baudrate(&self->spi_master_instance, baudrate);
-    if (status != STATUS_OK) {
-        return false;
+    if (baudrate != self->current_baudrate) {
+        enum status_code status = spi_set_baudrate(&self->spi_master_instance, baudrate);
+        if (status != STATUS_OK) {
+            return false;
+        }
     }
 
     SercomSpi *const spi_module = &(self->spi_master_instance.hw->SPI);
@@ -213,7 +220,7 @@ bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self,
 }
 
 bool common_hal_nativeio_spi_read(nativeio_spi_obj_t *self,
-        uint8_t *data, size_t len) {
+        uint8_t *data, size_t len, uint8_t write_value) {
     if (len == 0) {
         return true;
     }
@@ -221,6 +228,6 @@ bool common_hal_nativeio_spi_read(nativeio_spi_obj_t *self,
         &self->spi_master_instance,
         data,
         len,
-        0);
+        write_value);
     return status == STATUS_OK;
 }

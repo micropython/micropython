@@ -52,6 +52,6 @@ extern void common_hal_nativeio_spi_unlock(nativeio_spi_obj_t *self);
 extern bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self, const uint8_t *data, size_t len);
 
 // Reads in len bytes while outputting zeroes.
-extern bool common_hal_nativeio_spi_read(nativeio_spi_obj_t *self, uint8_t *data, size_t len);
+extern bool common_hal_nativeio_spi_read(nativeio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value);
 
 #endif // __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_SPI_H__
