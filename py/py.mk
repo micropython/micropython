@@ -189,6 +189,7 @@ PY_O_BASENAME = \
 	binary.o \
 	builtinimport.o \
 	builtinevex.o \
+	builtinhelp.o \
 	modarray.o \
 	modbuiltins.o \
 	modcollections.o \
