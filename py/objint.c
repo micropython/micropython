@@ -382,21 +382,25 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
-    #else
-    const byte* buf = (const byte*)bufinfo.buf;
-    int delta = 1;
-    if (args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        buf += bufinfo.len - 1;
-        delta = -1;
-    }
-
-    mp_uint_t value = 0;
-    for (; bufinfo.len--; buf += delta) {
-        value = (value << 8) | *buf;
-    }
-    return mp_obj_new_int_from_uint(value);
+    // If result guaranteedly fits in small int, use that
+    if (!MP_SMALL_INT_FITS(1 << (bufinfo.len * 8 - 1))) {
+        return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
+    } else
     #endif
+    {
+        const byte* buf = (const byte*)bufinfo.buf;
+        int delta = 1;
+        if (args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+            buf += bufinfo.len - 1;
+            delta = -1;
+        }
+
+        mp_uint_t value = 0;
+        for (; bufinfo.len--; buf += delta) {
+            value = (value << 8) | *buf;
+        }
+        return mp_obj_new_int_from_uint(value);
+    }
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_from_bytes);
