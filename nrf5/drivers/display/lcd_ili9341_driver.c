@@ -236,8 +236,8 @@ void driver_ili9341_update_line(uint16_t line, framebuffer_byte_t * p_bytes, uin
     mp_hal_pin_low(mp_cs_pin);
 
     for (uint16_t i = 0; i < len; i++) {
+        uint8_t byte = (uint8_t)((uint8_t *)p_bytes)[i];
         for (uint8_t pixel_pos = 0; pixel_pos < 8; pixel_pos++) {
-            uint8_t byte = (uint8_t)((uint8_t * )p_bytes)[i];
             if (((byte >> pixel_pos) & 0x1) == 0x0) {
                 data_write(0x00);
                 data_write(0x00);
