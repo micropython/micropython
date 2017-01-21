@@ -44,7 +44,6 @@ SRC_C = main.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/interrupt_char.c \
-	lib/utils/pyhelp.c \
 	lib/mp-readline/readline.c \
 	$(SRC_MOD)
 
