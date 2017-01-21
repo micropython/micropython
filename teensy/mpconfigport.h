@@ -14,6 +14,9 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 
+#define MICROPY_PY_BUILTINS_HELP    (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT teensy_help_text
+
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_FROZENSET        (1)
 #define MICROPY_PY_SYS_EXIT         (1)
@@ -28,7 +31,6 @@
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
 
 // extra built in modules to add to the list of known ones
