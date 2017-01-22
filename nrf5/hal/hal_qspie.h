@@ -35,4 +35,24 @@
 #error "Device not supported."
 #endif
 
+/**
+  * @brief  Quad SPI clock frequency type definition
+  */
+typedef enum {
+    HAL_FREQ_2_Mbps,
+    HAL_FREQ_4_Mbps,
+    HAL_FREQ_8_Mbps,
+    HAL_FREQ_16_Mbps,
+    HAL_FREQ_32_Mbps
+} hal_qspi_clk_freq_t;
+
+/**
+  * @brief  Quad SPI mode configuration type definition
+  */
+typedef enum {
+    HAL_QSPI_MODE_SINGLE_LINE,
+    HAL_QSPI_MODE_DUAL_LINE,
+    HAL_QSPI_MODE_QUAL_LINE
+} hal_qspi_mode_t;
+
 #endif // HAL_QSPIE_H__
