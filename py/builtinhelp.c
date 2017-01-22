@@ -25,8 +25,10 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/builtin.h"
+#include "py/objmodule.h"
 
 #if MICROPY_PY_BUILTINS_HELP
 
@@ -53,7 +55,87 @@ STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
     mp_print_str(MP_PYTHON_PRINTER, "\n");
 }
 
+#if MICROPY_PY_BUILTINS_HELP_MODULES
+STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
+    for (size_t i = 0; i < map->alloc; i++) {
+        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+            mp_obj_list_append(list, map->table[i].key);
+        }
+    }
+}
+
+#if MICROPY_MODULE_FROZEN
+STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
+    while (*name) {
+        size_t l = strlen(name);
+        // name should end in '.py' and we strip it off
+        mp_obj_list_append(list, mp_obj_new_str(name, l - 3, false));
+        name += l + 1;
+    }
+}
+#endif
+
+STATIC void mp_help_print_modules(void) {
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+
+    mp_help_add_from_map(list, &mp_builtin_module_map);
+
+    #if MICROPY_MODULE_WEAK_LINKS
+    mp_help_add_from_map(list, &mp_builtin_module_weak_links_map);
+    #endif
+
+    #if MICROPY_MODULE_FROZEN_STR
+    extern const char mp_frozen_str_names[];
+    mp_help_add_from_names(list, mp_frozen_str_names);
+    #endif
+
+    #if MICROPY_MODULE_FROZEN_MPY
+    extern const char mp_frozen_mpy_names[];
+    mp_help_add_from_names(list, mp_frozen_mpy_names);
+    #endif
+
+    // sort the list so it's printed in alphabetical order
+    mp_obj_list_sort(1, &list, (mp_map_t*)&mp_const_empty_map);
+
+    // print the list of modules in a column-first order
+    #define NUM_COLUMNS (4)
+    #define COLUMN_WIDTH (18)
+    mp_uint_t len;
+    mp_obj_t *items;
+    mp_obj_list_get(list, &len, &items);
+    unsigned int num_rows = (len + NUM_COLUMNS - 1) / NUM_COLUMNS;
+    for (unsigned int i = 0; i < num_rows; ++i) {
+        unsigned int j = i;
+        for (;;) {
+            int l = mp_print_str(MP_PYTHON_PRINTER, mp_obj_str_get_str(items[j]));
+            j += num_rows;
+            if (j >= len) {
+                break;
+            }
+            int gap = COLUMN_WIDTH - l;
+            while (gap < 1) {
+                gap += COLUMN_WIDTH;
+            }
+            while (gap--) {
+                mp_print_str(MP_PYTHON_PRINTER, " ");
+            }
+        }
+        mp_print_str(MP_PYTHON_PRINTER, "\n");
+    }
+
+    // let the user know there may be other modules available from the filesystem
+    mp_print_str(MP_PYTHON_PRINTER, "Plus any modules on the filesystem\n");
+}
+#endif
+
 STATIC void mp_help_print_obj(const mp_obj_t obj) {
+    #if MICROPY_PY_BUILTINS_HELP_MODULES
+    if (obj == MP_OBJ_NEW_QSTR(MP_QSTR_modules)) {
+        mp_help_print_modules();
+        return;
+    }
+    #endif
+
     // try to print something sensible about the given object
     mp_print_str(MP_PYTHON_PRINTER, "object ");
     mp_obj_print(obj, PRINT_STR);

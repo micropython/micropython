@@ -770,6 +770,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_HELP_TEXT mp_help_default_text
 #endif
 
+// Add the ability to list the available modules when executing help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_MODULES
+#define MICROPY_PY_BUILTINS_HELP_MODULES (0)
+#endif
+
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
 #define MICROPY_PY___FILE__ (1)
