@@ -31,7 +31,7 @@
 #define MICROPY_PY_SYS_PLATFORM     "nrf52840-PDK"
 
 #define MICROPY_PY_MACHINE_PWM      (1)
-#define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_HW_SPI   (1)
 #define MICROPY_PY_MACHINE_HW_I2C   (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 

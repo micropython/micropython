@@ -25,16 +25,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include "lib/utils/pyhelp.h"
-#include "mpconfigboard.h"
+#include "py/builtin.h"
 
 #if BLUETOOTH_SD
 #include "help_sd.h"
 #endif
 
-STATIC const char help_text[] =
+const char * nrf5_help_text =
 "Welcome to MicroPython!\n"
 "\n"
 "For online help please visit http://micropython.org/help/.\n"
@@ -51,17 +48,3 @@ HELP_TEXT_SD
 "\n"
 "For further help on a specific object, type help(obj)\n"
 ;
-
-STATIC mp_obj_t pyb_help(uint n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        // print a general help message
-        printf("%s", help_text);
-
-    } else {
-        // try to print something sensible about the given object
-        pyhelp_print_obj(args[0]);
-    }
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj, 0, 1, pyb_help);

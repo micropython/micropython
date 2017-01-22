@@ -37,7 +37,7 @@ endif
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
-FROZEN_MPY_DIR = modules
+FROZEN_DIR = modules
 
 # include py core make definitions
 include ../py/py.mk
@@ -78,8 +78,6 @@ CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
@@ -101,7 +99,6 @@ SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
 	timeutils/timeutils.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
@@ -146,7 +143,6 @@ SRC_C += \
 	moduos.c \
 	fatfs_port.c \
 	builtin_open.c \
-	lexerfatfs.c \
 	modusocket.c \
 	modnetwork.c \
 	timer.c \
@@ -187,8 +183,6 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
-OBJ += $(BUILD)/$(BUILD)/frozen_mpy.o
-
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
@@ -256,16 +250,18 @@ GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
-# to build .mpy files from .py files
-$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
-	@$(ECHO) "MPY $<"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $^
+ifneq ($(FROZEN_DIR),)
+# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
+# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
 
-# to build frozen_mpy.c from all .mpy files
-$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl mpz $(FROZEN_MPY_MPY_FILES) > $@
+ifneq ($(FROZEN_MPY_DIR),)
+# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
+# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+endif
 
 include ../py/mkrules.mk
 include mkrules.mk
