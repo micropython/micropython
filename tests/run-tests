@@ -51,7 +51,7 @@ def convert_regex_escapes(line):
 
 
 def run_micropython(pyb, args, test_file):
-    special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'thread/thread_exc2.py')
+    special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'basics/builtin_help.py', 'thread/thread_exc2.py')
     is_special = False
     if pyb is None:
         # run on PC
