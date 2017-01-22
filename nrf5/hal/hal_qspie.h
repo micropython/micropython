@@ -74,11 +74,14 @@ typedef struct {
     uint8_t d2_pin;
     uint8_t d3_pin;
     uint8_t clk_pin;
+    uint8_t csn_pin;
     uint8_t d0_mosi_pin_port;
     uint8_t d1_miso_pin_port;
     uint8_t d2_pin_port;
     uint8_t d3_pin_port;
     uint8_t clk_pin_port;
+    uint8_t csn_pin_port;
+    bool use_csn;
     hal_qspi_mode_t mode;
     hal_qspi_data_line_t data_line;
     hal_qspi_clk_freq_t freq;
