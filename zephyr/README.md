@@ -74,3 +74,22 @@ starts from 0). You will need to adjust it for another board (using board's
 reference materials). To execute the above sample, copy it to clipboard, in
 MicroPython REPL enter "paste mode" using Ctrl+E, paste clipboard, press
 Ctrl+D to finish paste mode and start execution.
+
+
+Minimal build
+-------------
+
+MicroPython is committed to maintain minimal binary size for Zephyr port
+below 128KB, as long as Zephyr project is committed to maintain stable
+minimal size of their kernel (which they appear to be). Note that at such
+size, there is no support for any Zephyr features beyond REPL over UART,
+and only very minimal set of builtin Python modules. Thus, this build
+is more suitable for code size control and quick demonstrations even on
+smaller systems. It's also suitable for careful enabling of features one
+by one to achieve needed functionality and code size. This is in contrast
+to the "default" build, which may get more and more features enabled by
+default over time.
+
+To make a minimal build:
+
+    make BOARD=<board> minimal

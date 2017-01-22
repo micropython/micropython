@@ -28,6 +28,7 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
+#include "py/asmbase.h"
 
 // AMD64 calling convention is:
 //  - args pass in: RDI, RSI, RDX, RCX, R08, R09
@@ -40,9 +41,6 @@
 // the destination is the first argument.
 // NOTE: this is a change from the old convention used in this file and
 // some functions still use the old (reverse) convention.
-
-#define ASM_X64_PASS_COMPUTE (1)
-#define ASM_X64_PASS_EMIT    (2)
 
 #define ASM_X64_REG_RAX (0)
 #define ASM_X64_REG_RCX (1)
@@ -72,18 +70,14 @@
 #define ASM_X64_CC_JLE (0xe) // less or equal, signed
 #define ASM_X64_CC_JG  (0xf) // greater, signed
 
-typedef struct _asm_x64_t asm_x64_t;
+typedef struct _asm_x64_t {
+    mp_asm_base_t base;
+    int num_locals;
+} asm_x64_t;
 
-asm_x64_t* asm_x64_new(mp_uint_t max_num_labels);
-void asm_x64_free(asm_x64_t* as, bool free_code);
-void asm_x64_start_pass(asm_x64_t *as, uint pass);
-void asm_x64_end_pass(asm_x64_t *as);
-mp_uint_t asm_x64_get_code_pos(asm_x64_t *as);
-mp_uint_t asm_x64_get_code_size(asm_x64_t* as);
-void* asm_x64_get_code(asm_x64_t* as);
-
-void asm_x64_align(asm_x64_t *as, mp_uint_t align);
-void asm_x64_data(asm_x64_t *as, mp_uint_t bytesize, mp_uint_t val);
+static inline void asm_x64_end_pass(asm_x64_t *as) {
+    (void)as;
+}
 
 void asm_x64_nop(asm_x64_t* as);
 void asm_x64_push_r64(asm_x64_t* as, int src_r64);
@@ -111,7 +105,6 @@ void asm_x64_mul_r64_r64(asm_x64_t* as, int dest_r64, int src_r64);
 void asm_x64_cmp_r64_with_r64(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_test_r8_with_r8(asm_x64_t* as, int src_r64_a, int src_r64_b);
 void asm_x64_setcc_r8(asm_x64_t* as, int jcc_type, int dest_r8);
-void asm_x64_label_assign(asm_x64_t* as, mp_uint_t label);
 void asm_x64_jmp_label(asm_x64_t* as, mp_uint_t label);
 void asm_x64_jcc_label(asm_x64_t* as, int jcc_type, mp_uint_t label);
 void asm_x64_entry(asm_x64_t* as, int num_locals);
@@ -120,5 +113,88 @@ void asm_x64_mov_local_to_r64(asm_x64_t* as, int src_local_num, int dest_r64);
 void asm_x64_mov_r64_to_local(asm_x64_t* as, int src_r64, int dest_local_num);
 void asm_x64_mov_local_addr_to_r64(asm_x64_t* as, int local_num, int dest_r64);
 void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
+
+#if GENERIC_ASM_API
+
+// The following macros provide a (mostly) arch-independent API to
+// generate native code, and are used by the native emitter.
+
+#define ASM_WORD_SIZE (8)
+
+#define REG_RET ASM_X64_REG_RAX
+#define REG_ARG_1 ASM_X64_REG_RDI
+#define REG_ARG_2 ASM_X64_REG_RSI
+#define REG_ARG_3 ASM_X64_REG_RDX
+#define REG_ARG_4 ASM_X64_REG_RCX
+#define REG_ARG_5 ASM_X64_REG_R08
+
+// caller-save
+#define REG_TEMP0 ASM_X64_REG_RAX
+#define REG_TEMP1 ASM_X64_REG_RDI
+#define REG_TEMP2 ASM_X64_REG_RSI
+
+// callee-save
+#define REG_LOCAL_1 ASM_X64_REG_RBX
+#define REG_LOCAL_2 ASM_X64_REG_R12
+#define REG_LOCAL_3 ASM_X64_REG_R13
+#define REG_LOCAL_NUM (3)
+
+#define ASM_T               asm_x64_t
+#define ASM_END_PASS        asm_x64_end_pass
+#define ASM_ENTRY           asm_x64_entry
+#define ASM_EXIT            asm_x64_exit
+
+#define ASM_JUMP            asm_x64_jmp_label
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+    do { \
+        asm_x64_test_r8_with_r8(as, reg, reg); \
+        asm_x64_jcc_label(as, ASM_X64_CC_JZ, label); \
+    } while (0)
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+    do { \
+        asm_x64_test_r8_with_r8(as, reg, reg); \
+        asm_x64_jcc_label(as, ASM_X64_CC_JNZ, label); \
+    } while (0)
+#define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
+    do { \
+        asm_x64_cmp_r64_with_r64(as, reg1, reg2); \
+        asm_x64_jcc_label(as, ASM_X64_CC_JE, label); \
+    } while (0)
+#define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, ptr, ASM_X64_REG_RAX)
+
+#define ASM_MOV_REG_TO_LOCAL        asm_x64_mov_r64_to_local
+#define ASM_MOV_IMM_TO_REG          asm_x64_mov_i64_to_r64_optimised
+#define ASM_MOV_ALIGNED_IMM_TO_REG  asm_x64_mov_i64_to_r64_aligned
+#define ASM_MOV_IMM_TO_LOCAL_USING(as, imm, local_num, reg_temp) \
+    do { \
+        asm_x64_mov_i64_to_r64_optimised(as, (imm), (reg_temp)); \
+        asm_x64_mov_r64_to_local(as, (reg_temp), (local_num)); \
+    } while (false)
+#define ASM_MOV_LOCAL_TO_REG        asm_x64_mov_local_to_r64
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x64_mov_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_MOV_LOCAL_ADDR_TO_REG   asm_x64_mov_local_addr_to_r64
+
+#define ASM_LSL_REG(as, reg) asm_x64_shl_r64_cl((as), (reg))
+#define ASM_ASR_REG(as, reg) asm_x64_sar_r64_cl((as), (reg))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_x64_or_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_x64_xor_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_x64_and_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_x64_add_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_x64_sub_r64_r64((as), (reg_dest), (reg_src))
+#define ASM_MUL_REG_REG(as, reg_dest, reg_src) asm_x64_mul_r64_r64((as), (reg_dest), (reg_src))
+
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem64_to_r64((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_x64_mov_mem64_to_r64((as), (reg_base), 8 * (word_offset), (reg_dest))
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem8_to_r64zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem16_to_r64zx((as), (reg_base), 0, (reg_dest))
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_x64_mov_mem32_to_r64zx((as), (reg_base), 0, (reg_dest))
+
+#define ASM_STORE_REG_REG(as, reg_src, reg_base) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 0)
+#define ASM_STORE_REG_REG_OFFSET(as, reg_src, reg_base, word_offset) asm_x64_mov_r64_to_mem64((as), (reg_src), (reg_base), 8 * (word_offset))
+#define ASM_STORE8_REG_REG(as, reg_src, reg_base) asm_x64_mov_r8_to_mem8((as), (reg_src), (reg_base), 0)
+#define ASM_STORE16_REG_REG(as, reg_src, reg_base) asm_x64_mov_r16_to_mem16((as), (reg_src), (reg_base), 0)
+#define ASM_STORE32_REG_REG(as, reg_src, reg_base) asm_x64_mov_r32_to_mem32((as), (reg_src), (reg_base), 0)
+
+#endif // GENERIC_ASM_API
 
 #endif // __MICROPY_INCLUDED_PY_ASMX64_H__

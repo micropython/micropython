@@ -85,5 +85,6 @@ try:
 except TypeError:
     print("TypeError")
 
+db.flush()
 db.close()
 f.close()

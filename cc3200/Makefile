@@ -8,6 +8,9 @@ endif
 # Make 'release' the default build type
 BTYPE ?= release
 
+# Port for flashing firmware
+PORT ?= /dev/ttyUSB1
+
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build/$(BOARD)/$(BTYPE)
 
@@ -22,6 +25,9 @@ CFLAGS += -g -ffunction-sections -fdata-sections -fno-common -fsigned-char -mno-
 CFLAGS += -Iboards/$(BOARD)
 
 LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
+
+FLASH_SIZE_WIPY = 2M
+FLASH_SIZE_LAUNCHXL = 1M
 
 ifeq ($(BTARGET), application)
 # qstr definitions (must come before including py.mk)
@@ -39,3 +45,18 @@ endif
 
 # always include MicroPython make rules
 include ../py/mkrules.mk
+
+erase:
+	cc3200tool -p $(PORT) format_flash --size $(FLASH_SIZE_$(BOARD))
+
+deploy:
+	cc3200tool -p $(PORT) \
+	    write_file bootmgr/build/$(BOARD)/$(BTYPE)/bootloader.bin /sys/mcuimg.bin \
+	    write_file build/$(BOARD)/$(BTYPE)/mcuimg.bin /sys/factimg.bin
+
+# Files *.ucf and *ucf.signed.bin come from CC3200SDK-SERVICEPACK
+# package from http://www.ti.com/tool/cc3200sdk
+servicepack:
+	cc3200tool -p $(PORT) \
+	write_file --file-size=0x20000 --signature ota_1.0.1.6-2.7.0.0.ucf.signed.bin \
+	    ota_1.0.1.6-2.7.0.0.ucf /sys/servicepack.ucf

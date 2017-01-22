@@ -12,6 +12,20 @@ from __future__ import print_function
 import argparse
 import re
 
+# Python 2/3 compatibility
+import platform
+if platform.python_version_tuple()[0] == '2':
+    def convert_bytes_to_str(b):
+        return b
+elif platform.python_version_tuple()[0] == '3':
+    def convert_bytes_to_str(b):
+        try:
+            return str(b, 'utf8')
+        except ValueError:
+            # some files have invalid utf8 bytes, so filter them out
+            return ''.join(chr(l) for l in b if l <= 126)
+# end compatibility code
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:
@@ -29,9 +43,9 @@ class Lexer:
     re_comment = r'(?P<comment>[A-Za-z0-9 \-/_()&]+)'
     re_addr_offset = r'Address offset: (?P<offset>0x[0-9A-Z]{2,3})'
     regexs = (
-        ('#define hex', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +\(\(uint32_t\)(?P<hex>0x[0-9A-F]+)\)($| +/\*)')),
+        ('#define hex', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +(?:\(\(uint32_t\))?(?P<hex>0x[0-9A-F]+)U?(?:\))?($| +/\*)')),
         ('#define X', re.compile(r'#define +(?P<id>[A-Z0-9_]+) +(?P<id2>[A-Z0-9_]+)($| +/\*)')),
-        ('#define X+hex', re.compile(r'#define +(?P<id>[A-Za-z0-9_]+) +\((?P<id2>[A-Z0-9_]+) \+ (?P<hex>0x[0-9A-F]+)\)($| +/\*)')),
+        ('#define X+hex', re.compile(r'#define +(?P<id>[A-Za-z0-9_]+) +\((?P<id2>[A-Z0-9_]+) \+ (?P<hex>0x[0-9A-F]+)U?\)($| +/\*)')),
         ('#define typedef', re.compile(r'#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)')),
         ('typedef struct', re.compile(r'typedef struct$')),
         ('{', re.compile(r'{$')),
@@ -42,12 +56,13 @@ class Lexer:
     )
 
     def __init__(self, filename):
-        self.file = open(filename, 'rt')
+        self.file = open(filename, 'rb')
         self.line_number = 0
 
     def next_match(self, strictly_next=False):
         while True:
             line = self.file.readline()
+            line = convert_bytes_to_str(line)
             self.line_number += 1
             if len(line) == 0:
                 return ('EOF', None)
@@ -177,6 +192,11 @@ def main():
     args = cmd_parser.parse_args()
 
     periphs, reg_defs = parse_file(args.file[0])
+
+    # add legacy GPIO constants that were removed when upgrading CMSIS
+    if 'GPIO' in reg_defs and 'stm32f4' in args.file[0]:
+        reg_defs['GPIO'].append(['BSRRL', 0x18, 16, 'legacy register'])
+        reg_defs['GPIO'].append(['BSRRH', 0x1a, 16, 'legacy register'])
 
     modules = []
     needed_qstrs = set()

@@ -81,20 +81,18 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     for (; str < top; str++) {
         // get next digit as a value
         mp_uint_t dig = *str;
-        if (unichar_isdigit(dig) && (int)dig - '0' < base) {
-            // 0-9 digit
-            dig = dig - '0';
-        } else if (base == 16) {
-            dig |= 0x20;
-            if ('a' <= dig && dig <= 'f') {
-                // a-f hex digit
-                dig = dig - 'a' + 10;
+        if ('0' <= dig && dig <= '9') {
+            dig -= '0';
+        } else {
+            dig |= 0x20; // make digit lower-case
+            if ('a' <= dig && dig <= 'z') {
+                dig -= 'a' - 10;
             } else {
                 // unknown character
                 break;
             }
-        } else {
-            // unknown character
+        }
+        if (dig >= (mp_uint_t)base) {
             break;
         }
 
@@ -227,7 +225,7 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
                 } else {
                     if (in == PARSE_DEC_IN_FRAC) {
                         dec_val += dig * frac_mult;
-                        frac_mult *= 0.1;
+                        frac_mult *= MICROPY_FLOAT_CONST(0.1);
                     } else {
                         dec_val = 10 * dec_val + dig;
                     }

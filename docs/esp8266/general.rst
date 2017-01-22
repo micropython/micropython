@@ -58,6 +58,17 @@ For your convenience, some of technical specifications are provided below:
   and always-available BootROM bootloader, ESP8266 is not brickable.
 
 
+Scarcity of runtime resources
+-----------------------------
+
+ESP8266 has very modest resources (first of all, RAM memory). So, please
+avoid allocating too big container objects (lists, dictionaries) and
+buffers. There is also no full-fledged OS to keep track of resources
+and automatically clean them up, so that's the task of a user/user
+application: please be sure to close open files, sockets, etc. as soon
+as possible after use.
+
+
 Boot process
 ------------
 
@@ -71,13 +82,16 @@ and developers, who can diagnose themselves any issues arising from
 modifying the standard process).
 
 Once the filesystem is mounted, ``boot.py`` is executed from it. The standard
-version of this file is created during first-time module set up and by
-default starts up a WebREPL daemon to handle incoming connections. This
-file is customizable by end users (for example, you may want to disable
-WebREPL for extra security, or add other services which should be run on
+version of this file is created during first-time module set up and has
+commands to start a WebREPL daemon (disabled by default, configurable
+with ``webrepl_setup`` module), etc. This
+file is customizable by end users (for example, you may want to set some
+parameters or add other services which should be run on
 a module start-up). But keep in mind that incorrect modifications to boot.py
 may still lead to boot loops or lock ups, requiring to reflash a module
-from scratch.
+from scratch. (In particular, it's recommended that you use either
+``webrepl_setup`` module or manual editing to configure WebREPL, but not
+both).
 
 As a final step of boot procedure, ``main.py`` is executed from filesystem,
 if exists. This file is a hook to start up a user application each time

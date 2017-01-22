@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_pwr_ex.c
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   Extended PWR HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of PWR extension peripheral:
@@ -12,7 +12,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -157,6 +157,10 @@ HAL_StatusTypeDef HAL_PWREx_EnableBkUpReg(void)
   /* Enable Backup regulator */
   PWR->CSR1 |= PWR_CSR1_BRE;
 
+  /* Workaround for the following hardware bug: */
+  /* Id 19: PWR : No STANDBY wake-up when Back-up RAM enabled (ref. Errata Sheet p23) */
+  PWR->CSR1 |= PWR_CSR1_EIWUP;
+
   /* Get tick */
   tickstart = HAL_GetTick();
 
@@ -181,6 +185,10 @@ HAL_StatusTypeDef HAL_PWREx_DisableBkUpReg(void)
 
   /* Disable Backup regulator */
   PWR->CSR1 &= (uint32_t)~((uint32_t)PWR_CSR1_BRE);
+
+  /* Workaround for the following hardware bug: */
+  /* Id 19: PWR : No STANDBY wake-up when Back-up RAM enabled (ref. Errata Sheet p23) */
+  PWR->CSR1 |= PWR_CSR1_EIWUP;
 
   /* Get tick */
   tickstart = HAL_GetTick();

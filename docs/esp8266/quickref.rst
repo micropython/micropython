@@ -83,7 +83,7 @@ Use the :mod:`time <utime>` module::
     time.sleep_ms(500)      # sleep for 500 milliseconds
     time.sleep_us(10)       # sleep for 10 microseconds
     start = time.ticks_ms() # get millisecond counter
-    delta = time.ticks_diff(start, time.ticks_ms()) # compute time difference
+    delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
 Timers
 ------
@@ -336,16 +336,16 @@ WebREPL (web browser interactive prompt)
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
 experimental feature available in ESP8266 port. Download web client
 from https://github.com/micropython/webrepl (hosted version available
-at http://micropython.org/webrepl), and start the daemon on a device
-using::
+at http://micropython.org/webrepl), and configure it by executing::
+
+    import webrepl_setup
+
+and following on-screen instructions. After reboot, it will be available
+for connection. If you disabled automatic start-up on boot, you may
+run configured daemon on demand using::
 
     import webrepl
     webrepl.start()
-
-(Release versions have it started on boot by default.)
-
-On a first connection, you will be prompted to set password for future
-sessions to use.
 
 The supported way to use WebREPL is by connecting to ESP8266 access point,
 but the daemon is also started on STA interface if it is active, so if your
@@ -353,12 +353,10 @@ router is set up and works correctly, you may also use WebREPL while connected
 to your normal Internet access point (use the ESP8266 AP connection method
 if you face any issues).
 
-WebREPL is an experimental feature and a work in progress, and has known
-issues.
+Besides terminal/command prompt access, WebREPL also has provision for file
+transfer (both upload and download). Web client has buttons for the
+corresponding functions, or you can use command-line client ``webrepl_cli.py``
+from the repository above.
 
-There's also provision to transfer (both upload and download)
-files over WebREPL connection, but it has even more experimental status
-than the WebREPL terminal mode. It is still a practical way to
-get script files onto ESP8266, so give it a try using ``webrepl_cli.py``
-from the repository above. See the MicroPython forum for other
-community-supported alternatives to transfer files to ESP8266.
+See the MicroPython forum for other community-supported alternatives
+to transfer files to ESP8266.

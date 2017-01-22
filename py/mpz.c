@@ -308,9 +308,13 @@ STATIC mp_uint_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jl
         carryi >>= DIG_SIZE;
     }
 
-    if (0 != carryi) {
-        *idig++ = carryi;
-    }
+    // At least one of j,k must be negative so the above for-loop runs at least
+    // once.  For carryi to be non-zero here it must be equal to 1 at the end of
+    // each iteration of the loop.  So the accumulation of carryi must overflow
+    // each time, ie carryi += 0xff..ff.  So carryj|carryk must be 0 in the
+    // DIG_MASK bits on each iteration.  But considering all cases of signs of
+    // j,k one sees that this is not possible.
+    assert(carryi == 0);
 
     return mpn_remove_trailing_zeros(oidig, idig);
 }
@@ -334,9 +338,8 @@ STATIC mp_uint_t mpn_or_neg(mpz_dig_t *idig, const mpz_dig_t *jdig, mp_uint_t jl
         carryi >>= DIG_SIZE;
     }
 
-    if (0 != carryi) {
-        *idig++ = carryi;
-    }
+    // See comment in above mpn_or_neg for why carryi must be 0.
+    assert(carryi == 0);
 
     return mpn_remove_trailing_zeros(oidig, idig);
 }
@@ -871,7 +874,7 @@ typedef uint32_t mp_float_int_t;
 
 // returns number of bytes from str that were processed
 mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base) {
-    assert(base < 36);
+    assert(base <= 36);
 
     const char *cur = str;
     const char *top = str + len;
@@ -904,6 +907,37 @@ mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, m
     }
 
     return cur - str;
+}
+
+void mpz_set_from_bytes(mpz_t *z, bool big_endian, mp_uint_t len, const byte *buf) {
+    int delta = 1;
+    if (big_endian) {
+        buf += len - 1;
+        delta = -1;
+    }
+
+    mpz_need_dig(z, (len * 8 + DIG_SIZE - 1) / DIG_SIZE);
+
+    mpz_dig_t d = 0;
+    int num_bits = 0;
+    z->neg = 0;
+    z->len = 0;
+    while (len) {
+        while (len && num_bits < DIG_SIZE) {
+            d |= *buf << num_bits;
+            num_bits += 8;
+            buf += delta;
+            len--;
+        }
+        z->dig[z->len++] = d & DIG_MASK;
+        // Need this #if because it's C undefined behavior to do: uint32_t >> 32
+        #if DIG_SIZE != 8 && DIG_SIZE != 16 && DIG_SIZE != 32
+        d >>= DIG_SIZE;
+        #else
+        d = 0;
+        #endif
+        num_bits -= DIG_SIZE;
+    }
 }
 
 bool mpz_is_zero(const mpz_t *z) {

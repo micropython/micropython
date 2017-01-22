@@ -118,3 +118,17 @@ print(ustruct.pack('bb', 1, 2, 3))
 
 # struct pack with too few args, not checked by uPy
 print(ustruct.pack('bb', 1))
+
+# array slice assignment with unsupported RHS
+try:
+    bytearray(4)[0:1] = [1, 2]
+except NotImplementedError:
+    print('NotImplementedError')
+
+# can't assign attributes to a function
+def f():
+    pass
+try:
+    f.x = 1
+except AttributeError:
+    print('AttributeError')

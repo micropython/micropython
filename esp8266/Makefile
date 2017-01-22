@@ -14,9 +14,7 @@ FROZEN_MPY_DIR = modules
 # include py core make definitions
 include ../py/py.mk
 
-MPY_CROSS = ../mpy-cross/mpy-cross
-MPY_TOOL = ../tools/mpy-tool.py
-
+FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
@@ -78,19 +76,18 @@ SRC_C = \
 	espapa102.c \
 	intr.c \
 	modpyb.c \
-	modpybpin.c \
-	modpybpwm.c \
-	modpybrtc.c \
-	modpybadc.c \
-	modpybuart.c \
-	modmachinewdt.c \
-	modpybspi.c \
-	modpybhspi.c \
+	modmachine.c \
+	machine_pin.c \
+	machine_pwm.c \
+	machine_rtc.c \
+	machine_adc.c \
+	machine_uart.c \
+	machine_wdt.c \
+	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
-	modmachine.c \
 	modonewire.c \
 	ets_alt_task.c \
 	fatfs_port.c \
@@ -131,7 +128,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
 	utils/interrupt_char.c \
 	)
 
@@ -148,9 +144,6 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -159,9 +152,6 @@ OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
-ifneq ($(FROZEN_MPY_DIR),)
-OBJ += $(BUILD)/$(BUILD)/frozen_mpy.o
-endif
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 # List of sources for qstr extraction
@@ -169,7 +159,7 @@ SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/libaxtls.a $(BUILD)/firmware-combined.bin
+all: $(BUILD)/libaxtls.a $(FWBIN)
 
 CONFVARS_FILE = $(BUILD)/confvars
 
@@ -184,30 +174,23 @@ $(BUILD)/uart.o: $(CONFVARS_FILE)
 
 FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
-# to build .mpy files from .py files
-$(BUILD)/$(FROZEN_MPY_DIR)/%.mpy: $(FROZEN_MPY_DIR)/%.py
-	@$(ECHO) "MPY $<"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $^
-
-# to build frozen_mpy.c from all .mpy files
-$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
-
 .PHONY: deploy
 
 deploy: $(BUILD)/firmware-combined.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
+erase:
+	$(ECHO) "Erase flash"
+	$(Q)esptool.py --port $(PORT) --baud $(BAUD) erase_flash
+
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
-$(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
+$(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)esptool.py elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x0[1-f]000.bin $@
+	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
@@ -216,6 +199,10 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 512k:
 	$(MAKE) LDSCRIPT=esp8266_512k.ld CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_512k.h>"' MICROPY_FATFS=0 MICROPY_PY_BTREE=0
+
+ota:
+	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
+	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
 #MAKE_PINS = boards/make-pins.py
 #BOARD_PINS = boards/$(BOARD)/pins.csv

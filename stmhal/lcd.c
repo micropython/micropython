@@ -194,7 +194,7 @@ STATIC void lcd_write_strn(pyb_lcd_obj_t *lcd, const char *str, unsigned int len
 ///
 /// Construct an LCD object in the given skin position.  `skin_position` can be 'X' or 'Y', and
 /// should match the position where the LCD pyskin is plugged in.
-STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

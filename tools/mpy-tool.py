@@ -258,7 +258,10 @@ class RawCode:
         # generate bytecode data
         print()
         print('// frozen bytecode for file %s, scope %s%s' % (self.source_file.str, parent_name, self.simple_name.str))
-        print('STATIC const byte bytecode_data_%s[%u] = {' % (self.escaped_name, len(self.bytecode)))
+        print('STATIC ', end='')
+        if not config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
+            print('const ', end='')
+        print('byte bytecode_data_%s[%u] = {' % (self.escaped_name, len(self.bytecode)))
         print('   ', end='')
         for i in range(self.ip2):
             print(' 0x%02x,' % self.bytecode[i], end='')
@@ -463,8 +466,8 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#include "py/emitglue.h"')
     print()
 
-    print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE')
-    print('#error "MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE not supported with frozen mpy files"')
+    print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE != %u' % config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
+    print('#error "incompatible MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE"')
     print('#endif')
     print()
 

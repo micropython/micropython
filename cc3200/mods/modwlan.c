@@ -45,7 +45,6 @@
 #include "modnetwork.h"
 #include "modusocket.h"
 #include "modwlan.h"
-#include "pybioctl.h"
 #include "pybrtc.h"
 #include "debug.h"
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
@@ -830,7 +829,7 @@ STATIC const mp_arg_t wlan_init_args[] = {
     { MP_QSTR_channel,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1} },
     { MP_QSTR_antenna,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = ANTENNA_TYPE_INTERNAL} },
 };
-STATIC mp_obj_t wlan_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -1250,6 +1249,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 //}
 //STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wlan_urn_obj, 1, 2, wlan_urn);
 
+STATIC mp_obj_t wlan_print_ver(void) {
+    SlVersionFull ver;
+    byte config_opt = SL_DEVICE_GENERAL_VERSION;
+    byte config_len = sizeof(ver);
+    sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &config_opt, &config_len, (byte*)&ver);
+    printf("NWP: %d.%d.%d.%d\n", ver.NwpVersion[0], ver.NwpVersion[1], ver.NwpVersion[2], ver.NwpVersion[3]);
+    printf("MAC: %d.%d.%d.%d\n", ver.ChipFwAndPhyVersion.FwVersion[0], ver.ChipFwAndPhyVersion.FwVersion[1],
+                                 ver.ChipFwAndPhyVersion.FwVersion[2], ver.ChipFwAndPhyVersion.FwVersion[3]);
+    printf("PHY: %d.%d.%d.%d\n", ver.ChipFwAndPhyVersion.PhyVersion[0], ver.ChipFwAndPhyVersion.PhyVersion[1],
+                                 ver.ChipFwAndPhyVersion.PhyVersion[2], ver.ChipFwAndPhyVersion.PhyVersion[3]);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(wlan_print_ver_fun_obj, wlan_print_ver);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(wlan_print_ver_obj, MP_ROM_PTR(&wlan_print_ver_fun_obj));
+
 STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&wlan_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
@@ -1266,6 +1280,7 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                 (mp_obj_t)&wlan_irq_obj },
     // { MP_OBJ_NEW_QSTR(MP_QSTR_connections),         (mp_obj_t)&wlan_connections_obj },
     // { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_print_ver),           (mp_obj_t)&wlan_print_ver_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_STA),                 MP_OBJ_NEW_SMALL_INT(ROLE_STA) },
@@ -1461,7 +1476,7 @@ int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int
 
 int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t arg, int *_errno) {
     mp_int_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
         int32_t sd = s->sock_base.sd;
@@ -1473,13 +1488,13 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
         FD_ZERO(&xfds);
 
         // set fds if needed
-        if (flags & MP_IOCTL_POLL_RD) {
+        if (flags & MP_STREAM_POLL_RD) {
             FD_SET(sd, &rfds);
         }
-        if (flags & MP_IOCTL_POLL_WR) {
+        if (flags & MP_STREAM_POLL_WR) {
             FD_SET(sd, &wfds);
         }
-        if (flags & MP_IOCTL_POLL_HUP) {
+        if (flags & MP_STREAM_POLL_HUP) {
             FD_SET(sd, &xfds);
         }
 
@@ -1497,13 +1512,13 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
 
         // check return of select
         if (FD_ISSET(sd, &rfds)) {
-            ret |= MP_IOCTL_POLL_RD;
+            ret |= MP_STREAM_POLL_RD;
         }
         if (FD_ISSET(sd, &wfds)) {
-            ret |= MP_IOCTL_POLL_WR;
+            ret |= MP_STREAM_POLL_WR;
         }
         if (FD_ISSET(sd, &xfds)) {
-            ret |= MP_IOCTL_POLL_HUP;
+            ret |= MP_STREAM_POLL_HUP;
         }
     } else {
         *_errno = EINVAL;

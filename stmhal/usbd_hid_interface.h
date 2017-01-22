@@ -6,4 +6,5 @@
 
 extern const USBD_HID_ItfTypeDef USBD_HID_fops;
 
+int USBD_HID_RxNum(void);
 int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout);

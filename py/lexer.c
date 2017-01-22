@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "py/mpstate.h"
+#include "py/reader.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
 
@@ -51,6 +52,7 @@ STATIC bool str_strn_equal(const char *str, const char *strn, mp_uint_t len) {
     return i == len && *str == 0;
 }
 
+#define MP_LEXER_EOF ((unichar)MP_READER_EOF)
 #define CUR_CHAR(lex) ((lex)->chr0)
 
 STATIC bool is_end(mp_lexer_t *lex) {
@@ -126,10 +128,6 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
 }
 
 STATIC void next_char(mp_lexer_t *lex) {
-    if (lex->chr0 == MP_LEXER_EOF) {
-        return;
-    }
-
     if (lex->chr0 == '\n') {
         // a new line
         ++lex->line;
@@ -144,7 +142,7 @@ STATIC void next_char(mp_lexer_t *lex) {
 
     lex->chr0 = lex->chr1;
     lex->chr1 = lex->chr2;
-    lex->chr2 = lex->stream_next_byte(lex->stream_data);
+    lex->chr2 = lex->reader.readbyte(lex->reader.data);
 
     if (lex->chr0 == '\r') {
         // CR is a new line, converted to LF
@@ -152,7 +150,7 @@ STATIC void next_char(mp_lexer_t *lex) {
         if (lex->chr1 == '\n') {
             // CR LF is a single new line
             lex->chr1 = lex->chr2;
-            lex->chr2 = lex->stream_next_byte(lex->stream_data);
+            lex->chr2 = lex->reader.readbyte(lex->reader.data);
         }
     }
 
@@ -428,8 +426,9 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                         vstr_add_char(&lex->vstr, '\\');
                     } else {
                         switch (c) {
-                            case MP_LEXER_EOF: break; // TODO a proper error message?
-                            case '\n': c = MP_LEXER_EOF; break; // TODO check this works correctly (we are supposed to ignore it
+                            // note: "c" can never be MP_LEXER_EOF because next_char
+                            // always inserts a newline at the end of the input stream
+                            case '\n': c = MP_LEXER_EOF; break; // backslash escape the newline, just ignore it
                             case '\\': break;
                             case '\'': break;
                             case '"': break;
@@ -688,21 +687,17 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
     }
 }
 
-mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_byte_t stream_next_byte, mp_lexer_stream_close_t stream_close) {
+mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     mp_lexer_t *lex = m_new_obj_maybe(mp_lexer_t);
 
     // check for memory allocation error
     if (lex == NULL) {
-        if (stream_close) {
-            stream_close(stream_data);
-        }
+        reader.close(reader.data);
         return NULL;
     }
 
     lex->source_name = src_name;
-    lex->stream_data = stream_data;
-    lex->stream_next_byte = stream_next_byte;
-    lex->stream_close = stream_close;
+    lex->reader = reader;
     lex->line = 1;
     lex->column = 1;
     lex->emit_dent = 0;
@@ -723,9 +718,9 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     lex->indent_level[0] = 0;
 
     // preload characters
-    lex->chr0 = stream_next_byte(stream_data);
-    lex->chr1 = stream_next_byte(stream_data);
-    lex->chr2 = stream_next_byte(stream_data);
+    lex->chr0 = reader.readbyte(reader.data);
+    lex->chr1 = reader.readbyte(reader.data);
+    lex->chr2 = reader.readbyte(reader.data);
 
     // if input stream is 0, 1 or 2 characters long and doesn't end in a newline, then insert a newline at the end
     if (lex->chr0 == MP_LEXER_EOF) {
@@ -750,11 +745,43 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     return lex;
 }
 
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
+    mp_reader_t reader;
+    if (!mp_reader_new_mem(&reader, (const byte*)str, len, free_len)) {
+        return NULL;
+    }
+    return mp_lexer_new(src_name, reader);
+}
+
+#if MICROPY_READER_POSIX || MICROPY_READER_FATFS
+
+mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+    mp_reader_t reader;
+    int ret = mp_reader_new_file(&reader, filename);
+    if (ret != 0) {
+        return NULL;
+    }
+    return mp_lexer_new(qstr_from_str(filename), reader);
+}
+
+#if MICROPY_HELPER_LEXER_UNIX
+
+mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd) {
+    mp_reader_t reader;
+    int ret = mp_reader_new_file_from_fd(&reader, fd, close_fd);
+    if (ret != 0) {
+        return NULL;
+    }
+    return mp_lexer_new(filename, reader);
+}
+
+#endif
+
+#endif
+
 void mp_lexer_free(mp_lexer_t *lex) {
     if (lex) {
-        if (lex->stream_close) {
-            lex->stream_close(lex->stream_data);
-        }
+        lex->reader.close(lex->reader.data);
         vstr_clear(&lex->vstr);
         m_del(uint16_t, lex->indent_level, lex->alloc_indent_level);
         m_del_obj(mp_lexer_t, lex);
@@ -765,7 +792,9 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     mp_lexer_next_token_into(lex, false);
 }
 
-#if MICROPY_DEBUG_PRINTERS
+#if 0
+// This function is used to print the current token and should only be
+// needed to debug the lexer, so it's not available via a config option.
 void mp_lexer_show_token(const mp_lexer_t *lex) {
     printf("(" UINT_FMT ":" UINT_FMT ") kind:%u str:%p len:%zu", lex->tok_line, lex->tok_column, lex->tok_kind, lex->vstr.buf, lex->vstr.len);
     if (lex->vstr.len > 0) {

@@ -33,7 +33,7 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
 #ifdef NEO_KHZ400
   if(is800KHz) {
 #endif
-    time0  = fcpu / 2500000; // 0.4us
+    time0  = fcpu / 2857143; // 0.35us
     time1  = fcpu / 1250000; // 0.8us
     period = fcpu /  800000; // 1.25us per bit
 #ifdef NEO_KHZ400

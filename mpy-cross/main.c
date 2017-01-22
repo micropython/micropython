@@ -32,6 +32,7 @@
 
 #include "py/mpstate.h"
 #include "py/compile.h"
+#include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"

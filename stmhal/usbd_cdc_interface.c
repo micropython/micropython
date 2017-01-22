@@ -41,6 +41,7 @@
 #include "usbd_cdc_interface.h"
 #include "pendsv.h"
 
+#include "py/mpstate.h"
 #include "py/obj.h"
 #include "irq.h"
 #include "timer.h"
@@ -79,7 +80,6 @@ static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting
 static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
 static int user_interrupt_char = -1;
-static void *user_interrupt_data = NULL;
 
 /* Private function prototypes -----------------------------------------------*/
 static int8_t CDC_Itf_Init     (void);
@@ -152,7 +152,6 @@ static int8_t CDC_Itf_Init(void)
      * This can happen if the USB enumeration occurs after the call to
      * USBD_CDC_SetInterrupt.
     user_interrupt_char = -1;
-    user_interrupt_data = NULL;
     */
 
     return (USBD_OK);
@@ -354,7 +353,7 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
             if (*src == user_interrupt_char) {
                 char_found = true;
                 // raise exception when interrupts are finished
-                pendsv_nlr_jump(user_interrupt_data);
+                pendsv_nlr_jump(&MP_STATE_VM(mp_kbd_exception));
             } else {
                 if (char_found) {
                     *dest = *src;
@@ -386,9 +385,8 @@ int USBD_CDC_IsConnected(void) {
     return dev_is_connected;
 }
 
-void USBD_CDC_SetInterrupt(int chr, void *data) {
+void USBD_CDC_SetInterrupt(int chr) {
     user_interrupt_char = chr;
-    user_interrupt_data = data;
 }
 
 int USBD_CDC_TxHalfEmpty(void) {

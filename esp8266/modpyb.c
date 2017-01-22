@@ -28,12 +28,12 @@
 
 #include "py/gc.h"
 #include "gccollect.h"
-#include "modpyb.h"
+#include "modmachine.h"
 
 // The pyb module no longer exists since all functionality now appears
 // elsewhere, in more standard places (eg time, machine modules).  The
 // only remaining function is pyb.info() which has been moved to the
-// esp module, pending deletion/renaming/moving elsewher.
+// esp module, pending deletion/renaming/moving elsewhere.
 
 STATIC mp_obj_t pyb_info(mp_uint_t n_args, const mp_obj_t *args) {
     // print info about memory

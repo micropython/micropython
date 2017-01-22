@@ -98,7 +98,12 @@ static FATFS *sflash_fatfs;
 
 static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
 static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
-                                    "# can run arbitrary Python, but best to keep it minimal\r\n";
+                                    "# can run arbitrary Python, but best to keep it minimal\r\n"
+                                    #if MICROPY_STDIO_UART
+                                    "import os, machine\r\n"
+                                    "os.dupterm(machine.UART(0, " MP_STRINGIFY(MICROPY_STDIO_UART_BAUD) "))\r\n"
+                                    #endif
+                                    ;
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
