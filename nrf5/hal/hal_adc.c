@@ -91,7 +91,7 @@ uint16_t hal_adc_channel_value(hal_adc_config_t const * p_adc_conf) {
     uint8_t  adc_result;
 
     ADC_BASE->EVENTS_END = 0;
-    adc_result             = ADC_BASE->RESULT;
+    adc_result           = ADC_BASE->RESULT;
     ADC_BASE->TASKS_STOP = 1;
 
     return adc_result;
