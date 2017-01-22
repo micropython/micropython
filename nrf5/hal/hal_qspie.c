@@ -34,55 +34,55 @@
 
 // frequency, 32 MHz / (SCKFREQ + 1)
 static const uint32_t hal_qspi_frequency_lookup[] = {
-    QSPI_FREQUENCY_FREQUENCY_M2  = (15 << QSPI_IFCONFIG1_SCKFREQ_Pos), // 2 Mbps
-    QSPI_FREQUENCY_FREQUENCY_M4  = (7  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 4 Mbps
-    QSPI_FREQUENCY_FREQUENCY_M8  = (3  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 8 Mbps
-    QSPI_FREQUENCY_FREQUENCY_M16 = (1  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 16 Mbps
-    QSPI_FREQUENCY_FREQUENCY_M32 = (0  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 32 Mbps
+    (15 << QSPI_IFCONFIG1_SCKFREQ_Pos), // 2 Mbps
+    (7  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 4 Mbps
+    (3  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 8 Mbps
+    (1  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 16 Mbps
+    (0  << QSPI_IFCONFIG1_SCKFREQ_Pos), // 32 Mbps
 };
 
 void hal_qspi_master_init(NRF_QSPI_Type * p_instance, hal_qspi_init_t const * p_qspi_init)
 {
 	// configure SCK
-    QSPI_BASE->PSEL.SCK = (p_qspi_init->clk_pin << QSPI_PSEL_SCK_PIN_Pos)
-                        | (p_qspi_init->clk_pin_port << QSPI_PSEL_SCK_PORT_Pos)
-                        | (QSPI_PSEL_SCK_CONNECT_Connected << QSPI_PSEL_SCK_CONNECT_Pos);
+    p_instance->PSEL.SCK = (p_qspi_init->clk_pin << QSPI_PSEL_SCK_PIN_Pos)
+                         | (p_qspi_init->clk_pin_port << QSPI_PSEL_SCK_PORT_Pos)
+                         | (QSPI_PSEL_SCK_CONNECT_Connected << QSPI_PSEL_SCK_CONNECT_Pos);
 
     // configure CS
     if (p_qspi_init->use_csn) {
-        QSPI_BASE->PSEL.CSN = (p_qspi_init->clk_pin << QSPI_PSEL_CSN_PIN_Pos)
-                            | (p_qspi_init->clk_pin_port << QSPI_PSEL_CSN_PORT_Pos)
-                            | (QSPI_PSEL_CSN_CONNECT_Connected << QSPI_PSEL_CSN_CONNECT_Pos);
+        p_instance->PSEL.CSN = (p_qspi_init->clk_pin << QSPI_PSEL_CSN_PIN_Pos)
+                             | (p_qspi_init->clk_pin_port << QSPI_PSEL_CSN_PORT_Pos)
+                             | (QSPI_PSEL_CSN_CONNECT_Connected << QSPI_PSEL_CSN_CONNECT_Pos);
     } else {
-        QSPI_BASE->PSEL.CSN = (QSPI_PSEL_CSN_CONNECT_Disconnected << QSPI_PSEL_CSN_CONNECT_Pos);
+        p_instance->PSEL.CSN = (QSPI_PSEL_CSN_CONNECT_Disconnected << QSPI_PSEL_CSN_CONNECT_Pos);
     }
 
     // configure MOSI/IO0, valid for all configurations
-    QSPI_BASE->PSEL.IO0 = (p_qspi_init->d0_mosi_pin << QSPI_PSEL_IO0_PIN_Pos)
+    p_instance->PSEL.IO0 = (p_qspi_init->d0_mosi_pin << QSPI_PSEL_IO0_PIN_Pos)
                         | (p_qspi_init->d0_mosi_pin_port << QSPI_PSEL_IO0_PORT_Pos)
                         | (QSPI_PSEL_IO0_CONNECT_Connected << QSPI_PSEL_IO0_CONNECT_Pos);
 
     if (p_qspi_init->data_line != HAL_QSPI_DATA_LINE_SINGLE) {
         // configure MISO/IO1
-        QSPI_BASE->PSEL.IO1 = (p_qspi_init->d1_miso_pin << QSPI_PSEL_IO1_PIN_Pos)
+        p_instance->PSEL.IO1 = (p_qspi_init->d1_miso_pin << QSPI_PSEL_IO1_PIN_Pos)
                             | (p_qspi_init->d1_miso_pin_port << QSPI_PSEL_IO1_PORT_Pos)
                             | (QSPI_PSEL_IO1_CONNECT_Connected << QSPI_PSEL_IO1_CONNECT_Pos);
 
-        if (p_qspi_init->data_line == HAL_QSPI_DATA_LINE_QUAD)
+        if (p_qspi_init->data_line == HAL_QSPI_DATA_LINE_QUAD) {
             // configure IO2
-            QSPI_BASE->PSEL.IO2 = (p_qspi_init->d2_pin << QSPI_PSEL_IO2_PIN_Pos)
+            p_instance->PSEL.IO2 = (p_qspi_init->d2_pin << QSPI_PSEL_IO2_PIN_Pos)
                                 | (p_qspi_init->d2_pin_port << QSPI_PSEL_IO2_PORT_Pos)
                                 | (QSPI_PSEL_IO2_CONNECT_Connected << QSPI_PSEL_IO2_CONNECT_Pos);
 
             // configure IO3
-            QSPI_BASE->PSEL.IO3 = (p_qspi_init->d3_pin << QSPI_PSEL_IO3_PIN_Pos)
+            p_instance->PSEL.IO3 = (p_qspi_init->d3_pin << QSPI_PSEL_IO3_PIN_Pos)
                                 | (p_qspi_init->d3_pin_port << QSPI_PSEL_IO3_PORT_Pos)
                                 | (QSPI_PSEL_IO3_CONNECT_Connected << QSPI_PSEL_IO3_CONNECT_Pos);
         }
     }
 
     uint32_t mode;
-    switch (p_spi_init->mode) {
+    switch (p_qspi_init->mode) {
         case HAL_SPI_MODE_CPOL0_CPHA0:
             mode = (QSPI_IFCONFIG1_SPIMODE_MODE0 << QSPI_IFCONFIG1_SPIMODE_Pos);
             break;
@@ -95,11 +95,11 @@ void hal_qspi_master_init(NRF_QSPI_Type * p_instance, hal_qspi_init_t const * p_
     }
 
     // interface config1
-    QSPI_BASE->IFCONFIG1 = hal_qspi_frequency_lookup[p_qspi_init->freq]
-                         | mode
-                         | (1 << QSPI_IFCONFIG1_SCKDELAY_Pos); // number of 16 MHz periods (62.5 ns)
+    p_instance->IFCONFIG1 = hal_qspi_frequency_lookup[p_qspi_init->freq]
+                          | mode
+                          | (1 << QSPI_IFCONFIG1_SCKDELAY_Pos); // number of 16 MHz periods (62.5 ns)
 
-    QSPI_BASE->ENABLE = 1;
+    p_instance->ENABLE = 1;
 }
 
 void hal_qspi_master_tx_rx(NRF_QSPI_Type  * p_instance,
@@ -107,7 +107,16 @@ void hal_qspi_master_tx_rx(NRF_QSPI_Type  * p_instance,
                            const uint8_t  * tx_data,
                            uint8_t        * rx_data)
 {
+	p_instance->READ.DST = (uint32_t)rx_data;
+	p_instance->READ.CNT = transfer_size;
+	p_instance->READ.SRC = (uint32_t)tx_data;
+	p_instance->READ.CNT = transfer_size;
+	p_instance->TASKS_ACTIVATE = 1;
+	while (p_instance->EVENTS_READY == 0) {
+		;
+	}
 
+	p_instance->TASKS_ACTIVATE = 0;
 }
 
 #endif // HAL_QSPIE_MODULE_ENABLED
