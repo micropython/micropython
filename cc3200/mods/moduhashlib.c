@@ -121,7 +121,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
 
 /// \classmethod \constructor([data[, block_size]])
 /// initial data must be given if block_size wants to be passed
-STATIC mp_obj_t hash_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t hash_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
     mp_obj_hash_t *self = m_new0(mp_obj_hash_t, 1);
     self->base.type = type_in;

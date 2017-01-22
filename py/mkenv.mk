@@ -59,6 +59,8 @@ LD += -m32
 endif
 
 MAKE_FROZEN = ../tools/make-frozen.py
+MPY_CROSS = ../mpy-cross/mpy-cross
+MPY_TOOL = ../tools/mpy-tool.py
 
 all:
 .PHONY: all

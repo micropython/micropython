@@ -47,11 +47,8 @@ STATIC void bound_meth_print(const mp_print_t *print, mp_obj_t o_in, mp_print_ki
 }
 #endif
 
-STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_bound_meth_t *self = MP_OBJ_TO_PTR(self_in);
-
-    // need to insert self->self before all other args and then call self->meth
-
+mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    // need to insert self before all other args and then call meth
     size_t n_total = n_args + 2 * n_kw;
     mp_obj_t *args2 = NULL;
     mp_obj_t *free_args2 = NULL;
@@ -64,13 +61,18 @@ STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
         // (fallback to) use stack to allocate temporary args array
         args2 = alloca(sizeof(mp_obj_t) * (1 + n_total));
     }
-    args2[0] = self->self;
+    args2[0] = self;
     memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
-    mp_obj_t res = mp_call_function_n_kw(self->meth, n_args + 1, n_kw, &args2[0]);
+    mp_obj_t res = mp_call_function_n_kw(meth, n_args + 1, n_kw, args2);
     if (free_args2 != NULL) {
         m_del(mp_obj_t, free_args2, 1 + n_total);
     }
     return res;
+}
+
+STATIC mp_obj_t bound_meth_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_obj_bound_meth_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_call_method_self_n_kw(self->meth, self->self, n_args, n_kw, args);
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS

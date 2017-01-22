@@ -46,7 +46,6 @@
 #include "uart.h"
 #include "pybuart.h"
 #include "mpirq.h"
-#include "pybioctl.h"
 #include "pybsleep.h"
 #include "mpexception.h"
 #include "py/mpstate.h"
@@ -443,7 +442,7 @@ STATIC const mp_arg_t pyb_uart_init_args[] = {
     { MP_QSTR_stop,                           MP_ARG_INT,  {.u_int = 1} },
     { MP_QSTR_pins,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -570,8 +569,6 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),        (mp_obj_t)&mp_stream_read_obj },
-    /// \method readall()
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readall),     (mp_obj_t)&mp_stream_readall_obj },
     /// \method readline()
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline),    (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     /// \method readinto(buf[, nbytes])
@@ -632,14 +629,14 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
     mp_uint_t ret;
     uart_check_init(self);
 
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_IOCTL_POLL_RD) && uart_rx_any(self)) {
-            ret |= MP_IOCTL_POLL_RD;
+        if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self)) {
+            ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_IOCTL_POLL_WR) && MAP_UARTSpaceAvail(self->reg)) {
-            ret |= MP_IOCTL_POLL_WR;
+        if ((flags & MP_STREAM_POLL_WR) && MAP_UARTSpaceAvail(self->reg)) {
+            ret |= MP_STREAM_POLL_WR;
         }
     } else {
         *errcode = EINVAL;

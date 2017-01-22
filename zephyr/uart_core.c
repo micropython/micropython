@@ -26,9 +26,8 @@
 #include <unistd.h>
 #include "py/mpconfig.h"
 #include "src/zephyr_getchar.h"
-
-// Stopgap
-extern void printk(const char*, ...);
+// Zephyr headers
+#include <uart.h>
 
 /*
  * Core UART functions to implement for a port
@@ -41,7 +40,12 @@ int mp_hal_stdin_rx_chr(void) {
 
 // Send string of given length
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    static struct device *uart_console_dev;
+    if (uart_console_dev == NULL) {
+        uart_console_dev = device_get_binding(CONFIG_UART_CONSOLE_ON_DEV_NAME);
+    }
+
     while (len--) {
-        printk("%c", *str++);
+        uart_poll_out(uart_console_dev, *str++);
     }
 }

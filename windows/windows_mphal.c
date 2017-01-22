@@ -28,9 +28,9 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 
+#include <sys/time.h>
 #include <windows.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;
@@ -216,4 +216,14 @@ mp_uint_t mp_hal_ticks_us(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000 + tv.tv_usec;
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+    LARGE_INTEGER value;
+    QueryPerformanceCounter(&value);
+#ifdef _WIN64
+    return value.QuadPart;
+#else
+    return value.LowPart;
+#endif
 }

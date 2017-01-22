@@ -36,15 +36,20 @@ Python standard libraries and micro-libraries
 The following standard Python libraries have been "micro-ified" to fit in with
 the philosophy of MicroPython.  They provide the core functionality of that
 module and are intended to be a drop-in replacement for the standard Python
-library.
+library.  Some modules below use a standard Python name, but prefixed with "u",
+e.g. ``ujson`` instead of ``json``. This is to signify that such a module is
+micro-library, i.e. implements only a subset of CPython module functionality.
+By naming them differently, a user has a choice to write a Python-level module
+to extend functionality for better compatibility with CPython (indeed, this is
+what done by micropython-lib project mentioned above).
 
-.. only:: not port_unix
-
-    The modules are available by their u-name, and also by their non-u-name.  The
-    non-u-name can be overridden by a file of that name in your package path.
-    For example, ``import json`` will first search for a file ``json.py`` or
-    directory ``json`` and load that package if it is found.  If nothing is found,
-    it will fallback to loading the built-in ``ujson`` module.
+On some embedded platforms, where it may be cumbersome to add Python-level
+wrapper modules to achieve naming compatibility with CPython, micro-modules
+are available both by their u-name, and also by their non-u-name.  The
+non-u-name can be overridden by a file of that name in your package path.
+For example, ``import json`` will first search for a file ``json.py`` or
+directory ``json`` and load that package if it is found.  If nothing is found,
+it will fallback to loading the built-in ``ujson`` module.
 
 .. only:: port_unix
 

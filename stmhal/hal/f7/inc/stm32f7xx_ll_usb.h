@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    stm32f7xx_ll_usb.h
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   Header file of USB Core HAL module.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -61,9 +61,9 @@
   */
 typedef enum
 {
-   USB_OTG_DEVICE_MODE  = 0,
-   USB_OTG_HOST_MODE    = 1,
-   USB_OTG_DRD_MODE     = 2
+   USB_OTG_DEVICE_MODE  = 0U,
+   USB_OTG_HOST_MODE    = 1U,
+   USB_OTG_DRD_MODE     = 2U
 
 }USB_OTG_ModeTypeDef;
 
@@ -71,7 +71,7 @@ typedef enum
   * @brief  URB States definition
   */
 typedef enum {
-  URB_IDLE = 0,
+  URB_IDLE = 0U,
   URB_DONE,
   URB_NOTREADY,
   URB_NYET,
@@ -84,7 +84,7 @@ typedef enum {
   * @brief  Host channel States  definition
   */
 typedef enum {
-  HC_IDLE = 0,
+  HC_IDLE = 0U,
   HC_XFRC,
   HC_HALTED,
   HC_NAK,
@@ -233,9 +233,9 @@ typedef struct
 /** @defgroup USB_Core_Mode_ USB Core Mode
   * @{
   */
-#define USB_OTG_MODE_DEVICE                    0
-#define USB_OTG_MODE_HOST                      1
-#define USB_OTG_MODE_DRD                       2
+#define USB_OTG_MODE_DEVICE                    0U
+#define USB_OTG_MODE_HOST                      1U
+#define USB_OTG_MODE_DRD                       2U
 /**
   * @}
   */
@@ -243,10 +243,10 @@ typedef struct
 /** @defgroup USB_Core_Speed_   USB Core Speed
   * @{
   */
-#define USB_OTG_SPEED_HIGH                     0
-#define USB_OTG_SPEED_HIGH_IN_FULL             1
-#define USB_OTG_SPEED_LOW                      2
-#define USB_OTG_SPEED_FULL                     3
+#define USB_OTG_SPEED_HIGH                     0U
+#define USB_OTG_SPEED_HIGH_IN_FULL             1U
+#define USB_OTG_SPEED_LOW                      2U
+#define USB_OTG_SPEED_FULL                     3U
 /**
   * @}
   */
@@ -254,8 +254,8 @@ typedef struct
 /** @defgroup USB_Core_PHY_   USB Core PHY
   * @{
   */
-#define USB_OTG_ULPI_PHY                       1
-#define USB_OTG_EMBEDDED_PHY                   2
+#define USB_OTG_ULPI_PHY                       1U
+#define USB_OTG_EMBEDDED_PHY                   2U
 /**
   * @}
   */
@@ -263,9 +263,9 @@ typedef struct
 /** @defgroup USB_Core_MPS_   USB Core MPS
   * @{
   */
-#define USB_OTG_HS_MAX_PACKET_SIZE           512
-#define USB_OTG_FS_MAX_PACKET_SIZE           64
-#define USB_OTG_MAX_EP0_SIZE                 64
+#define USB_OTG_HS_MAX_PACKET_SIZE           512U
+#define USB_OTG_FS_MAX_PACKET_SIZE           64U
+#define USB_OTG_MAX_EP0_SIZE                 64U
 /**
   * @}
   */
@@ -284,10 +284,10 @@ typedef struct
 /** @defgroup USB_CORE_Frame_Interval_   USB CORE Frame Interval
   * @{
   */
-#define DCFG_FRAME_INTERVAL_80                 0
-#define DCFG_FRAME_INTERVAL_85                 1
-#define DCFG_FRAME_INTERVAL_90                 2
-#define DCFG_FRAME_INTERVAL_95                 3
+#define DCFG_FRAME_INTERVAL_80                 0U
+#define DCFG_FRAME_INTERVAL_85                 1U
+#define DCFG_FRAME_INTERVAL_90                 2U
+#define DCFG_FRAME_INTERVAL_95                 3U
 /**
   * @}
   */
@@ -295,10 +295,10 @@ typedef struct
 /** @defgroup USB_EP0_MPS_  USB EP0 MPS
   * @{
   */
-#define DEP0CTL_MPS_64                         0
-#define DEP0CTL_MPS_32                         1
-#define DEP0CTL_MPS_16                         2
-#define DEP0CTL_MPS_8                          3
+#define DEP0CTL_MPS_64                         0U
+#define DEP0CTL_MPS_32                         1U
+#define DEP0CTL_MPS_16                         2U
+#define DEP0CTL_MPS_8                          3U
 /**
   * @}
   */
@@ -306,9 +306,9 @@ typedef struct
 /** @defgroup USB_EP_Speed_  USB EP Speed
   * @{
   */
-#define EP_SPEED_LOW                           0
-#define EP_SPEED_FULL                          1
-#define EP_SPEED_HIGH                          2
+#define EP_SPEED_LOW                           0U
+#define EP_SPEED_FULL                          1U
+#define EP_SPEED_HIGH                          2U
 /**
   * @}
   */
@@ -316,11 +316,11 @@ typedef struct
 /** @defgroup USB_EP_Type_  USB EP Type
   * @{
   */
-#define EP_TYPE_CTRL                           0
-#define EP_TYPE_ISOC                           1
-#define EP_TYPE_BULK                           2
-#define EP_TYPE_INTR                           3
-#define EP_TYPE_MSK                            3
+#define EP_TYPE_CTRL                           0U
+#define EP_TYPE_ISOC                           1U
+#define EP_TYPE_BULK                           2U
+#define EP_TYPE_INTR                           3U
+#define EP_TYPE_MSK                            3U
 /**
   * @}
   */
@@ -328,11 +328,11 @@ typedef struct
 /** @defgroup USB_STS_Defines_   USB STS Defines
   * @{
   */
-#define STS_GOUT_NAK                           1
-#define STS_DATA_UPDT                          2
-#define STS_XFER_COMP                          3
-#define STS_SETUP_COMP                         4
-#define STS_SETUP_UPDT                         6
+#define STS_GOUT_NAK                           1U
+#define STS_DATA_UPDT                          2U
+#define STS_XFER_COMP                          3U
+#define STS_SETUP_COMP                         4U
+#define STS_SETUP_UPDT                         6U
 /**
   * @}
   */
@@ -340,9 +340,9 @@ typedef struct
 /** @defgroup HCFG_SPEED_Defines_   HCFG SPEED Defines
   * @{
   */
-#define HCFG_30_60_MHZ                         0
-#define HCFG_48_MHZ                            1
-#define HCFG_6_MHZ                             2
+#define HCFG_30_60_MHZ                         0U
+#define HCFG_48_MHZ                            1U
+#define HCFG_6_MHZ                             2U
 /**
   * @}
   */
@@ -350,27 +350,27 @@ typedef struct
 /** @defgroup HPRT0_PRTSPD_SPEED_Defines_  HPRT0 PRTSPD SPEED Defines
   * @{
   */
-#define HPRT0_PRTSPD_HIGH_SPEED                0
-#define HPRT0_PRTSPD_FULL_SPEED                1
-#define HPRT0_PRTSPD_LOW_SPEED                 2
+#define HPRT0_PRTSPD_HIGH_SPEED                0U
+#define HPRT0_PRTSPD_FULL_SPEED                1U
+#define HPRT0_PRTSPD_LOW_SPEED                 2U
 /**
   * @}
   */
 
-#define HCCHAR_CTRL                            0
-#define HCCHAR_ISOC                            1
-#define HCCHAR_BULK                            2
-#define HCCHAR_INTR                            3
+#define HCCHAR_CTRL                            0U
+#define HCCHAR_ISOC                            1U
+#define HCCHAR_BULK                            2U
+#define HCCHAR_INTR                            3U
 
-#define HC_PID_DATA0                           0
-#define HC_PID_DATA2                           1
-#define HC_PID_DATA1                           2
-#define HC_PID_SETUP                           3
+#define HC_PID_DATA0                           0U
+#define HC_PID_DATA2                           1U
+#define HC_PID_DATA1                           2U
+#define HC_PID_SETUP                           3U
 
-#define GRXSTS_PKTSTS_IN                       2
-#define GRXSTS_PKTSTS_IN_XFER_COMP             3
-#define GRXSTS_PKTSTS_DATA_TOGGLE_ERR          5
-#define GRXSTS_PKTSTS_CH_HALTED                7
+#define GRXSTS_PKTSTS_IN                       2U
+#define GRXSTS_PKTSTS_IN_XFER_COMP             3U
+#define GRXSTS_PKTSTS_DATA_TOGGLE_ERR          5U
+#define GRXSTS_PKTSTS_CH_HALTED                7U
 
 #define USBx_PCGCCTL    *(__IO uint32_t *)((uint32_t)USBx + USB_OTG_PCGCCTL_BASE)
 #define USBx_HPRT0      *(__IO uint32_t *)((uint32_t)USBx + USB_OTG_HOST_PORT_BASE)

@@ -102,7 +102,7 @@ See :ref:`machine.SPI <machine.SPI>`. ::
     spi.write('hello')
     spi.read(5) # receive 5 bytes on the bus
     rbuf = bytearray(5)
-    spi.write_readinto('hello', rbuf) # send a receive 5 bytes
+    spi.write_readinto('hello', rbuf) # send and receive 5 bytes
 
 I2C bus
 -------

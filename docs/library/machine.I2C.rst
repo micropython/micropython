@@ -49,12 +49,23 @@ Constructors
        Construct an I2C object on the given bus.  `bus` can only be 0.
        If the bus is not given, the default one will be selected (0).
 
-.. only:: port_esp8266
+.. only:: not port_wipy
 
-    .. class:: I2C(scl, sda, \*, freq=400000)
+    .. class:: I2C(id=-1, \*, scl, sda, freq=400000)
 
-       Construct and return a new I2C object.
-       See the init method below for a description of the arguments.
+       Construct and return a new I2C object using the following parameters:
+
+          - `id` identifies the particular I2C peripheral.  The default
+            value of -1 selects a software implementation of I2C which can
+            work (in most cases) with arbitrary pins for SCL and SDA.
+            If `id` is -1 then `scl` and `sda` must be specified.  Other
+            allowed values for `id` depend on the particular port/board,
+            and specifying `scl` and `sda` may or may not be required or
+            allowed in this case.
+          - `scl` should be a pin object specifying the pin to use for SCL.
+          - `sda` should be a pin object specifying the pin to use for SDA.
+          - `freq` should be an integer which sets the maximum frequency
+            for SCL.
 
 General Methods
 ---------------
@@ -102,29 +113,31 @@ control over the bus, otherwise the standard methods (see below) can be used.
 
 .. method:: I2C.start()
 
-   Send a start bit on the bus (SDA transitions to low while SCL is high).
+   Generate a START condition on the bus (SDA transitions to low while SCL is high).
 
    Availability: ESP8266.
 
 .. method:: I2C.stop()
 
-   Send a stop bit on the bus (SDA transitions to high while SCL is high).
+   Generate a STOP condition on the bus (SDA transitions to high while SCL is high).
 
    Availability: ESP8266.
 
-.. method:: I2C.readinto(buf)
+.. method:: I2C.readinto(buf, nack=True)
 
    Reads bytes from the bus and stores them into `buf`.  The number of bytes
    read is the length of `buf`.  An ACK will be sent on the bus after
-   receiving all but the last byte, and a NACK will be sent following the last
-   byte.
+   receiving all but the last byte.  After the last byte is received, if `nack`
+   is true then a NACK will be sent, otherwise an ACK will be sent (and in this
+   case the slave assumes more bytes are going to be read in a later call).
 
    Availability: ESP8266.
 
 .. method:: I2C.write(buf)
 
-   Write all the bytes from `buf` to the bus.  Checks that an ACK is received
-   after each byte and raises an OSError if not.
+   Write the bytes from `buf` to the bus.  Checks that an ACK is received
+   after each byte and stops transmitting the remaining bytes if a NACK is
+   received.  The function returns the number of ACKs that were received.
 
    Availability: ESP8266.
 
@@ -134,29 +147,27 @@ Standard bus operations
 The following methods implement the standard I2C master read and write
 operations that target a given slave device.
 
-.. method:: I2C.readfrom(addr, nbytes)
+.. method:: I2C.readfrom(addr, nbytes, stop=True)
 
    Read `nbytes` from the slave specified by `addr`.
+   If `stop` is true then a STOP condition is generated at the end of the transfer.
    Returns a `bytes` object with the data read.
 
-.. method:: I2C.readfrom_into(addr, buf)
+.. method:: I2C.readfrom_into(addr, buf, stop=True)
 
    Read into `buf` from the slave specified by `addr`.
    The number of bytes read will be the length of `buf`.
+   If `stop` is true then a STOP condition is generated at the end of the transfer.
 
-   On WiPy the return value is the number of bytes read.  Otherwise the
-   return value is `None`.
+   The method returns `None`.
 
-.. method:: I2C.writeto(addr, buf, \*, stop=True)
+.. method:: I2C.writeto(addr, buf, stop=True)
 
-   Write the bytes from `buf` to the slave specified by `addr`.
-
-   The `stop` argument (only available on WiPy) tells if a stop bit should be
-   sent at the end of the transfer.  If `False` the transfer should be
-   continued later on.
-
-   On WiPy the return value is the number of bytes written.  Otherwise the
-   return value is `None`.
+   Write the bytes from `buf` to the slave specified by `addr`.  If a
+   NACK is received following the write of a byte from `buf` then the
+   remaining bytes are not sent.  If `stop` is true then a STOP condition is
+   generated at the end of the transfer, even if a NACK is received.
+   The function returns the number of ACKs that were received.
 
 Memory operations
 -----------------

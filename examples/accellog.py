@@ -5,7 +5,7 @@ import pyb
 accel = pyb.Accel()                                 # create object of accelerometer
 blue = pyb.LED(4)                                   # create object of blue LED
 
-log = open('1:/log.csv', 'w')                       # open file to write data - 1:/ ist the SD-card, 0:/ the internal memory
+log = open('/sd/log.csv', 'w')                      # open file to write data - /sd/ is the SD-card, /flash/ the internal memory
 blue.on()                                           # turn on blue LED
 
 for i in range(100):                                # do 100 times (if the board is connected via USB, you can't write longer because the PC tries to open the filesystem which messes up your file.)

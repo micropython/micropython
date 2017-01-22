@@ -149,9 +149,17 @@ Methods
 
        Set a timeout on blocking socket operations. The value argument can be a nonnegative floating
        point number expressing seconds, or None. If a non-zero value is given, subsequent socket operations
-       will raise a timeout exception if the timeout period value has elapsed before the operation has
+       will raise an ``OSError`` exception if the timeout period value has elapsed before the operation has
        completed. If zero is given, the socket is put in non-blocking mode. If None is given, the socket
        is put in blocking mode.
+
+       .. admonition:: Difference to CPython
+          :class: attention
+
+          CPython raises a ``socket.timeout`` exception in case of timeout,
+          which is an ``OSError`` subclass. MicroPython raises an OSError directly
+          instead. If you use ``except OSError:`` to catch the exception,
+          your code will work both in MicroPython and CPython.
 
     .. method:: socket.setblocking(flag)
 
@@ -178,14 +186,10 @@ Methods
           Closing the file object returned by makefile() WILL close the
           original socket as well.
 
-    .. method:: socket.read(size)
+    .. method:: socket.read([size])
 
        Read up to size bytes from the socket. Return a bytes object. If ``size`` is not given, it
-       behaves just like ``socket.readall()``, see below.
-
-    .. method:: socket.readall()
-
-       Read all data available from the socket until ``EOF``. This function will not return until
+       reads all data available from the socket until ``EOF``; as such the method will not return until
        the socket is closed.
 
     .. method:: socket.readinto(buf[, nbytes])

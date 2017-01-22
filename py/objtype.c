@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -687,9 +687,8 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
 }
 
-STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in) {
+STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in, mp_obj_t *member) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___call__,
@@ -702,11 +701,13 @@ STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in) {
 }
 
 bool mp_obj_instance_is_callable(mp_obj_t self_in) {
-    return mp_obj_instance_get_call(self_in) != MP_OBJ_NULL;
+    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+    return mp_obj_instance_get_call(self_in, member) != MP_OBJ_NULL;
 }
 
 mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_t call = mp_obj_instance_get_call(self_in);
+    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+    mp_obj_t call = mp_obj_instance_get_call(self_in, member);
     if (call == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_msg(&mp_type_TypeError, "object not callable");
@@ -719,8 +720,8 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     if (call == MP_OBJ_SENTINEL) {
         return mp_call_function_n_kw(self->subobj[0], n_args, n_kw, args);
     }
-    mp_obj_t meth = mp_obj_new_bound_meth(call, self_in);
-    return mp_call_function_n_kw(meth, n_args, n_kw, args);
+
+    return mp_call_method_self_n_kw(member[0], member[1], n_args, n_kw, args);
 }
 
 STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {

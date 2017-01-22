@@ -92,7 +92,7 @@ STATIC const mp_arg_t pyb_wdt_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     { MP_QSTR_timeout,                        MP_ARG_INT,  {.u_int = 5000} },   // 5 s
 };
-STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // check the arguments
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);

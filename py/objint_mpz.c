@@ -107,6 +107,12 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     return str;
 }
 
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_bytes(&o->mpz, big_endian, len, buf);
+    return MP_OBJ_FROM_PTR(o);
+}
+
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
@@ -286,7 +292,8 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
-            case MP_BINARY_OP_DIVMOD: {
+            default: {
+                assert(op == MP_BINARY_OP_DIVMOD);
                 if (mpz_is_zero(zrhs)) {
                     goto zero_division_error;
                 }
@@ -295,9 +302,6 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
-
-            default:
-                return MP_OBJ_NULL; // op not supported
         }
 
         return MP_OBJ_FROM_PTR(res);
@@ -403,13 +407,10 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        return MP_OBJ_SMALL_INT_VALUE(self_in);
-    } else {
-        mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
-        return mpz_as_float(&self->mpz);
-    }
+mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+    return mpz_as_float(&self->mpz);
 }
 #endif
 

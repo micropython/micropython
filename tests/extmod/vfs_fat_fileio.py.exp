@@ -9,6 +9,7 @@ h
 e
 True
 d
+hello!world!
 True
 True
 True
@@ -18,5 +19,7 @@ b'data in file'
 True
 ['sub_file.txt', 'file.txt']
 ['foo_file.txt', 'foo_dir', 'moved-to-root.txt']
+['foo_file.txt', 'foo_dir', 'moved-to-root.txt']
+new text
 ['moved-to-root.txt']
 ENOSPC: True

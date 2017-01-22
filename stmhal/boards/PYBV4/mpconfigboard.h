@@ -1,6 +1,5 @@
 #define MICROPY_HW_BOARD_NAME       "PYBv4"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
-#define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)

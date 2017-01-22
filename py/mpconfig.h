@@ -110,10 +110,11 @@
 // Be conservative and always clear to zero newly (re)allocated memory in the GC.
 // This helps eliminate stray pointers that hold on to memory that's no longer
 // used.  It decreases performance due to unnecessary memory clearing.
+// A memory manager which always clears memory can set this to 0.
 // TODO Do analysis to understand why some memory is not properly cleared and
 // find a more efficient way to clear it.
 #ifndef MICROPY_GC_CONSERVATIVE_CLEAR
-#define MICROPY_GC_CONSERVATIVE_CLEAR (1)
+#define MICROPY_GC_CONSERVATIVE_CLEAR (MICROPY_ENABLE_GC)
 #endif
 
 // Support automatic GC when reaching allocation threshold,
@@ -287,8 +288,21 @@
 #define MICROPY_EMIT_ARM (0)
 #endif
 
+// Whether to emit Xtensa native code
+#ifndef MICROPY_EMIT_XTENSA
+#define MICROPY_EMIT_XTENSA (0)
+#endif
+
+// Whether to enable the Xtensa inline assembler
+#ifndef MICROPY_EMIT_INLINE_XTENSA
+#define MICROPY_EMIT_INLINE_XTENSA (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
-#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM)
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA)
+
+// Convenience definition for whether any inline assembler emitter is enabled
+#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */
@@ -348,7 +362,6 @@
 #endif
 
 // Whether to build functions that print debugging info:
-//   mp_lexer_show_token
 //   mp_bytecode_print
 //   mp_parse_node_print
 #ifndef MICROPY_DEBUG_PRINTERS
@@ -379,6 +392,16 @@
 
 /*****************************************************************************/
 /* Python internal features                                                  */
+
+// Whether to use the POSIX reader for importing files
+#ifndef MICROPY_READER_POSIX
+#define MICROPY_READER_POSIX (0)
+#endif
+
+// Whether to use the FatFS reader for importing files
+#ifndef MICROPY_READER_FATFS
+#define MICROPY_READER_FATFS (0)
+#endif
 
 // Hook for the VM at the start of the opcode loop (can contain variable
 // definitions usable by the other hook functions)
@@ -420,6 +443,11 @@
 #   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
 #   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
 #   endif
+#endif
+
+// Whether to provide the mp_kbd_exception object
+#ifndef MICROPY_KBD_EXCEPTION
+#define MICROPY_KBD_EXCEPTION (0)
 #endif
 
 // Prefer to raise KeyboardInterrupt asynchronously (from signal or interrupt
@@ -504,10 +532,12 @@ typedef long long mp_longint_impl_t;
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MICROPY_PY_BUILTINS_FLOAT (1)
+#define MICROPY_FLOAT_CONST(x) x##F
 #define MICROPY_FLOAT_C_FUN(fun) fun##f
 typedef float mp_float_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MICROPY_PY_BUILTINS_FLOAT (1)
+#define MICROPY_FLOAT_CONST(x) x
 #define MICROPY_FLOAT_C_FUN(fun) fun
 typedef double mp_float_t;
 #else
@@ -729,6 +759,22 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_MIN_MAX (1)
 #endif
 
+// Whether to provide the help function
+#ifndef MICROPY_PY_BUILTINS_HELP
+#define MICROPY_PY_BUILTINS_HELP (0)
+#endif
+
+// Use this to configure the help text shown for help().  It should be a
+// variable with the type "const char*".  A sensible default is provided.
+#ifndef MICROPY_PY_BUILTINS_HELP_TEXT
+#define MICROPY_PY_BUILTINS_HELP_TEXT mp_help_default_text
+#endif
+
+// Add the ability to list the available modules when executing help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_MODULES
+#define MICROPY_PY_BUILTINS_HELP_MODULES (0)
+#endif
+
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
 #define MICROPY_PY___FILE__ (1)
@@ -841,7 +887,7 @@ typedef double mp_float_t;
 
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
-#define MICROPY_PY_SYS_EXIT (0)
+#define MICROPY_PY_SYS_EXIT (1)
 #endif
 
 // Whether to provide sys.{stdin,stdout,stderr} objects
@@ -858,6 +904,11 @@ typedef double mp_float_t;
 // Whether to provide "uerrno" module
 #ifndef MICROPY_PY_UERRNO
 #define MICROPY_PY_UERRNO (0)
+#endif
+
+// Whether to provide "uselect" module (baremetal implementation)
+#ifndef MICROPY_PY_USELECT
+#define MICROPY_PY_USELECT (0)
 #endif
 
 // Whether to provide "utime" module functions implementation
@@ -907,6 +958,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UHEAPQ
 #define MICROPY_PY_UHEAPQ (0)
+#endif
+
+// Optimized heap queue for relative timestamps
+#ifndef MICROPY_PY_UTIMEQ
+#define MICROPY_PY_UTIMEQ (0)
 #endif
 
 #ifndef MICROPY_PY_UHASHLIB

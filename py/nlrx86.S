@@ -37,9 +37,18 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define NLR_OS_WINDOWS
+#endif
+
+#if defined(__APPLE__) && defined(__MACH__)
+#define NLR_OS_MAC
+#endif
+
+#if defined(NLR_OS_WINDOWS) || defined(NLR_OS_MAC)
 #define NLR_TOP (_mp_state_ctx + NLR_TOP_OFFSET)
+#define MP_THREAD_GET_STATE _mp_thread_get_state
 #else
 #define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
+#define MP_THREAD_GET_STATE mp_thread_get_state
 #endif
 
 // offset of nlr_top within mp_state_thread_t structure
@@ -54,6 +63,9 @@
 #if defined(NLR_OS_WINDOWS)
     .globl  _nlr_push
     .def    _nlr_push; .scl 2; .type 32; .endef
+_nlr_push:
+#elif defined(NLR_OS_MAC)
+    .globl  _nlr_push
 _nlr_push:
 #else
     .globl  nlr_push
@@ -75,7 +87,7 @@ nlr_push:
     mov     %edx, NLR_TOP           # stor new nlr_buf (to make linked list)
 #else
     // to check: stack is aligned to 16-byte boundary before this call
-    call    mp_thread_get_state     # get mp_state_thread ptr into eax
+    call    MP_THREAD_GET_STATE     # get mp_state_thread ptr into eax
     mov     4(%esp), %edx           # load nlr_buf argument into edx (edx clobbered by call)
     mov     NLR_TOP_TH_OFF(%eax), %ecx # get thread.nlr_top (last nlr_buf)
     mov     %ecx, (%edx)            # store it
@@ -84,7 +96,7 @@ nlr_push:
 
     xor     %eax, %eax              # return 0, normal return
     ret                             # return
-#if !defined(NLR_OS_WINDOWS)
+#if !defined(NLR_OS_WINDOWS) && !defined(NLR_OS_MAC)
     .size   nlr_push, .-nlr_push
 #endif
 
@@ -94,6 +106,9 @@ nlr_push:
 #if defined(NLR_OS_WINDOWS)
     .globl  _nlr_pop
     .def    _nlr_pop; .scl 2; .type 32; .endef
+_nlr_pop:
+#elif defined(NLR_OS_MAC)
+    .globl  _nlr_pop
 _nlr_pop:
 #else
     .globl  nlr_pop
@@ -106,14 +121,14 @@ nlr_pop:
     mov     (%eax), %eax            # load prev nlr_buf
     mov     %eax, NLR_TOP           # store nlr_top (to unlink list)
 #else
-    call    mp_thread_get_state     # get mp_state_thread ptr into eax
+    call    MP_THREAD_GET_STATE     # get mp_state_thread ptr into eax
     mov     NLR_TOP_TH_OFF(%eax), %ecx # get thread.nlr_top (last nlr_buf)
     mov     (%ecx), %ecx            # load prev nlr_buf
     mov     %ecx, NLR_TOP_TH_OFF(%eax) # store prev nlr_buf (to unlink list)
 #endif
 
     ret                             # return
-#if !defined(NLR_OS_WINDOWS)
+#if !defined(NLR_OS_WINDOWS) && !defined(NLR_OS_MAC)
     .size   nlr_pop, .-nlr_pop
 #endif
 
@@ -124,6 +139,9 @@ nlr_pop:
     .globl  _nlr_jump
     .def    _nlr_jump; .scl 2; .type 32; .endef
 _nlr_jump:
+#elif defined(NLR_OS_MAC)
+    .globl  _nlr_jump
+_nlr_jump:
 #else
     .globl  nlr_jump
     .type   nlr_jump, @function
@@ -133,7 +151,7 @@ nlr_jump:
 #if !MICROPY_PY_THREAD
     mov     NLR_TOP, %edx           # load nlr_top
     test    %edx, %edx              # check for nlr_top being NULL
-#if defined(NLR_OS_WINDOWS)
+#if defined(NLR_OS_WINDOWS) || defined(NLR_OS_MAC)
     je      _nlr_jump_fail           # fail if nlr_top is NULL
 #else
     je      nlr_jump_fail           # fail if nlr_top is NULL
@@ -143,10 +161,10 @@ nlr_jump:
     mov     (%edx), %eax            # load prev nlr_top
     mov     %eax, NLR_TOP           # store nlr_top (to unlink list)
 #else
-    call    mp_thread_get_state     # get mp_state_thread ptr into eax
+    call    MP_THREAD_GET_STATE     # get mp_state_thread ptr into eax
     mov     NLR_TOP_TH_OFF(%eax), %edx # get thread.nlr_top (last nlr_buf)
     test    %edx, %edx              # check for nlr_top being NULL
-#if defined(NLR_OS_WINDOWS)
+#if defined(NLR_OS_WINDOWS) || defined(NLR_OS_MAC)
     je      _nlr_jump_fail          # fail if nlr_top is NULL
 #else
     je      nlr_jump_fail           # fail if nlr_top is NULL
@@ -167,7 +185,7 @@ nlr_jump:
     xor     %eax, %eax              # clear return register
     inc     %al                     # increase to make 1, non-local return
     ret                             # return
-#if !defined(NLR_OS_WINDOWS)
+#if !defined(NLR_OS_WINDOWS) && !defined(NLR_OS_MAC)
     .size   nlr_jump, .-nlr_jump
 #endif
 

@@ -1,7 +1,13 @@
 try:
     import ustruct as struct
 except:
-    import struct
+    try:
+        import struct
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
+
 print(struct.calcsize("<bI"))
 print(struct.unpack("<bI", b"\x80\0\0\x01\0"))
 print(struct.calcsize(">bI"))
@@ -54,6 +60,10 @@ print(struct.unpack(">q", b"\xf2\x34\x56\x78\x90\x12\x34\x56"))
 # check maximum unpack
 print(struct.unpack("<I", b"\xff\xff\xff\xff"))
 print(struct.unpack("<Q", b"\xff\xff\xff\xff\xff\xff\xff\xff"))
+
+# check small int overflow
+print(struct.unpack("<i", b'\xff\xff\xff\x7f'))
+print(struct.unpack("<q", b'\xff\xff\xff\xff\xff\xff\xff\x7f'))
 
 # network byte order
 print(struct.pack('!i', 123))

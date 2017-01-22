@@ -6,7 +6,7 @@ class SPI -- a Serial Peripheral Interface bus protocol (master side)
 SPI is a synchronous serial protocol that is driven by a master. At the
 physical level, a bus consists of 3 lines: SCK, MOSI, MISO. Multiple devices
 can share the same bus. Each device should have a separate, 4th signal,
-SS (Slave Select), to select a particualr device on a bus with which
+SS (Slave Select), to select a particular device on a bus with which
 communication takes place. Management of an SS signal should happen in
 user code (via machine.Pin class).
 
@@ -51,12 +51,12 @@ Methods
      - ``bits`` is the width in bits of each transfer. Only 8 is guaranteed to be supported by all hardware.
      - ``firstbit`` can be ``SPI.MSB`` or ``SPI.LSB``.
      - ``sck``, ``mosi``, ``miso`` are pins (machine.Pin) objects to use for bus signals. For most
-       hardware SPI blocks (as selected by ``id`` parameter to the constructore), pins are fixed
+       hardware SPI blocks (as selected by ``id`` parameter to the constructor), pins are fixed
        and cannot be changed. In some cases, hardware blocks allow 2-3 alternative pin sets for
        a hardware SPI block. Arbitrary pin assignments are possible only for a bitbanging SPI driver
        (``id`` = -1).
      - ``pins`` - WiPy port doesn't ``sck``, ``mosi``, ``miso`` arguments, and instead allows to
-     specify them as a tuple of ``pins`` paramter.
+     specify them as a tuple of ``pins`` parameter.
 
 .. method:: SPI.deinit()
 

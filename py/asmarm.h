@@ -28,9 +28,7 @@
 #define __MICROPY_INCLUDED_PY_ASMARM_H__
 
 #include "py/misc.h"
-
-#define ASM_ARM_PASS_COMPUTE (1)
-#define ASM_ARM_PASS_EMIT    (2)
+#include "py/asmbase.h"
 
 #define ASM_ARM_REG_R0  (0)
 #define ASM_ARM_REG_R1  (1)
@@ -68,22 +66,16 @@
 #define ASM_ARM_CC_LE (0xd << 28)
 #define ASM_ARM_CC_AL (0xe << 28)
 
-typedef struct _asm_arm_t asm_arm_t;
+typedef struct _asm_arm_t {
+    mp_asm_base_t base;
+    uint push_reglist;
+    uint stack_adjust;
+} asm_arm_t;
 
-asm_arm_t *asm_arm_new(uint max_num_labels);
-void asm_arm_free(asm_arm_t *as, bool free_code);
-void asm_arm_start_pass(asm_arm_t *as, uint pass);
 void asm_arm_end_pass(asm_arm_t *as);
-uint asm_arm_get_code_pos(asm_arm_t *as);
-uint asm_arm_get_code_size(asm_arm_t *as);
-void *asm_arm_get_code(asm_arm_t *as);
 
 void asm_arm_entry(asm_arm_t *as, int num_locals);
 void asm_arm_exit(asm_arm_t *as);
-void asm_arm_label_assign(asm_arm_t *as, uint label);
-
-void asm_arm_align(asm_arm_t* as, uint align);
-void asm_arm_data(asm_arm_t* as, uint bytesize, uint val);
 
 void asm_arm_bkpt(asm_arm_t *as);
 
@@ -129,5 +121,85 @@ void asm_arm_pop(asm_arm_t *as, uint reglist);
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label);
 void asm_arm_b_label(asm_arm_t *as, uint label);
 void asm_arm_bl_ind(asm_arm_t *as, void *fun_ptr, uint fun_id, uint reg_temp);
+
+#if GENERIC_ASM_API
+
+// The following macros provide a (mostly) arch-independent API to
+// generate native code, and are used by the native emitter.
+
+#define ASM_WORD_SIZE (4)
+
+#define REG_RET ASM_ARM_REG_R0
+#define REG_ARG_1 ASM_ARM_REG_R0
+#define REG_ARG_2 ASM_ARM_REG_R1
+#define REG_ARG_3 ASM_ARM_REG_R2
+#define REG_ARG_4 ASM_ARM_REG_R3
+
+#define REG_TEMP0 ASM_ARM_REG_R0
+#define REG_TEMP1 ASM_ARM_REG_R1
+#define REG_TEMP2 ASM_ARM_REG_R2
+
+#define REG_LOCAL_1 ASM_ARM_REG_R4
+#define REG_LOCAL_2 ASM_ARM_REG_R5
+#define REG_LOCAL_3 ASM_ARM_REG_R6
+#define REG_LOCAL_NUM (3)
+
+#define ASM_T               asm_arm_t
+#define ASM_END_PASS        asm_arm_end_pass
+#define ASM_ENTRY           asm_arm_entry
+#define ASM_EXIT            asm_arm_exit
+
+#define ASM_JUMP            asm_arm_b_label
+#define ASM_JUMP_IF_REG_ZERO(as, reg, label) \
+    do { \
+        asm_arm_cmp_reg_i8(as, reg, 0); \
+        asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
+    } while (0)
+#define ASM_JUMP_IF_REG_NONZERO(as, reg, label) \
+    do { \
+        asm_arm_cmp_reg_i8(as, reg, 0); \
+        asm_arm_bcc_label(as, ASM_ARM_CC_NE, label); \
+    } while (0)
+#define ASM_JUMP_IF_REG_EQ(as, reg1, reg2, label) \
+    do { \
+        asm_arm_cmp_reg_reg(as, reg1, reg2); \
+        asm_arm_bcc_label(as, ASM_ARM_CC_EQ, label); \
+    } while (0)
+#define ASM_CALL_IND(as, ptr, idx) asm_arm_bl_ind(as, ptr, idx, ASM_ARM_REG_R3)
+
+#define ASM_MOV_REG_TO_LOCAL(as, reg, local_num) asm_arm_mov_local_reg(as, (local_num), (reg))
+#define ASM_MOV_IMM_TO_REG(as, imm, reg) asm_arm_mov_reg_i32(as, (reg), (imm))
+#define ASM_MOV_ALIGNED_IMM_TO_REG(as, imm, reg) asm_arm_mov_reg_i32(as, (reg), (imm))
+#define ASM_MOV_IMM_TO_LOCAL_USING(as, imm, local_num, reg_temp) \
+    do { \
+        asm_arm_mov_reg_i32(as, (reg_temp), (imm)); \
+        asm_arm_mov_local_reg(as, (local_num), (reg_temp)); \
+    } while (false)
+#define ASM_MOV_LOCAL_TO_REG(as, local_num, reg) asm_arm_mov_reg_local(as, (reg), (local_num))
+#define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_arm_mov_reg_reg((as), (reg_dest), (reg_src))
+#define ASM_MOV_LOCAL_ADDR_TO_REG(as, local_num, reg) asm_arm_mov_reg_local_addr(as, (reg), (local_num))
+
+#define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_arm_lsl_reg_reg((as), (reg_dest), (reg_shift))
+#define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_arm_asr_reg_reg((as), (reg_dest), (reg_shift))
+#define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_arm_orr_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_arm_eor_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_AND_REG_REG(as, reg_dest, reg_src) asm_arm_and_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_ADD_REG_REG(as, reg_dest, reg_src) asm_arm_add_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_SUB_REG_REG(as, reg_dest, reg_src) asm_arm_sub_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+#define ASM_MUL_REG_REG(as, reg_dest, reg_src) asm_arm_mul_reg_reg_reg((as), (reg_dest), (reg_dest), (reg_src))
+
+#define ASM_LOAD_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 0)
+#define ASM_LOAD_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
+#define ASM_LOAD8_REG_REG(as, reg_dest, reg_base) asm_arm_ldrb_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD16_REG_REG(as, reg_dest, reg_base) asm_arm_ldrh_reg_reg((as), (reg_dest), (reg_base))
+#define ASM_LOAD32_REG_REG(as, reg_dest, reg_base) asm_arm_ldr_reg_reg((as), (reg_dest), (reg_base), 0)
+
+#define ASM_STORE_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
+#define ASM_STORE_REG_REG_OFFSET(as, reg_dest, reg_base, word_offset) asm_arm_str_reg_reg((as), (reg_dest), (reg_base), 4 * (word_offset))
+#define ASM_STORE8_REG_REG(as, reg_value, reg_base) asm_arm_strb_reg_reg((as), (reg_value), (reg_base))
+#define ASM_STORE16_REG_REG(as, reg_value, reg_base) asm_arm_strh_reg_reg((as), (reg_value), (reg_base))
+#define ASM_STORE32_REG_REG(as, reg_value, reg_base) asm_arm_str_reg_reg((as), (reg_value), (reg_base), 0)
+
+#endif // GENERIC_ASM_API
 
 #endif // __MICROPY_INCLUDED_PY_ASMARM_H__

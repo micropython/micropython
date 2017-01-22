@@ -53,6 +53,7 @@ MP_DECLARE_CONST_FUN_OBJ_3(mp_builtin_setattr_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(mp_builtin_globals_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_hash_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_hex_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_id_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj);
@@ -72,7 +73,6 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
 // Defined by a port, but declared here for simplicity
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
@@ -108,12 +108,16 @@ extern const mp_obj_module_t mp_module_uheapq;
 extern const mp_obj_module_t mp_module_uhashlib;
 extern const mp_obj_module_t mp_module_ubinascii;
 extern const mp_obj_module_t mp_module_urandom;
+extern const mp_obj_module_t mp_module_uselect;
 extern const mp_obj_module_t mp_module_ussl;
+extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
 extern const mp_obj_module_t mp_module_lwip;
 extern const mp_obj_module_t mp_module_websocket;
 extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
+
+extern const char *MICROPY_PY_BUILTINS_HELP_TEXT;
 
 #endif // __MICROPY_INCLUDED_PY_BUILTIN_H__

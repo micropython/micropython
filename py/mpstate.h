@@ -118,6 +118,11 @@ typedef struct _mp_state_vm_t {
     #endif
     #endif
 
+    #if MICROPY_KBD_EXCEPTION
+    // exception object of type KeyboardInterrupt
+    mp_obj_exception_t mp_kbd_exception;
+    #endif
+
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
 

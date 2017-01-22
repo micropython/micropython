@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
-#include "modpyb.h"
+#include "modmachine.h"
 #include "esponewire.h"
 
 STATIC mp_obj_t onewire_timings(mp_obj_t timings_in) {

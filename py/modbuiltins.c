@@ -475,9 +475,6 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     } else if (val - rounded == -0.5) {
         r &= ~1;
     }
-    if (n_args > 1) {
-        return mp_obj_new_float(r);
-    }
 #else
     mp_int_t r = mp_obj_get_int(o_in);
 #endif
@@ -669,6 +666,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_globals), MP_ROM_PTR(&mp_builtin_globals_obj) },
     { MP_ROM_QSTR(MP_QSTR_hasattr), MP_ROM_PTR(&mp_builtin_hasattr_obj) },
     { MP_ROM_QSTR(MP_QSTR_hash), MP_ROM_PTR(&mp_builtin_hash_obj) },
+    #if MICROPY_PY_BUILTINS_HELP
+    { MP_ROM_QSTR(MP_QSTR_help), MP_ROM_PTR(&mp_builtin_help_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&mp_builtin_hex_obj) },
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&mp_builtin_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_isinstance), MP_ROM_PTR(&mp_builtin_isinstance_obj) },

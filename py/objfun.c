@@ -471,7 +471,7 @@ mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_s
 /******************************************************************************/
 /* inline assembler functions                                                 */
 
-#if MICROPY_EMIT_INLINE_THUMB
+#if MICROPY_EMIT_INLINE_ASM
 
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
@@ -582,4 +582,4 @@ mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig
     return o;
 }
 
-#endif // MICROPY_EMIT_INLINE_THUMB
+#endif // MICROPY_EMIT_INLINE_ASM

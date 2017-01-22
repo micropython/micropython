@@ -1,5 +1,10 @@
 # test array + array
-import array
+try:
+    import array
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 a1 = array.array('I', [1])
 a2 = array.array('I', [2])

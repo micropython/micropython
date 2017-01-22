@@ -1,6 +1,5 @@
 #define MICROPY_HW_BOARD_NAME       "F411DISC"
 #define MICROPY_HW_MCU_NAME         "STM32F411"
-#define MICROPY_PY_SYS_PLATFORM     "pyboard"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
@@ -25,14 +24,14 @@
 #define MICROPY_HW_RTC_USE_LSE      (0)
 
 // UART config
-#define MICROPY_HW_UART1_PORT (GPIOA)
-#define MICROPY_HW_UART1_PINS (GPIO_PIN_9 | GPIO_PIN_10)
-#define MICROPY_HW_UART2_PORT (GPIOA)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
-#define MICROPY_HW_UART2_RTS  (GPIO_PIN_1)
-#define MICROPY_HW_UART2_CTS  (GPIO_PIN_0)
-#define MICROPY_HW_UART6_PORT (GPIOC)
-#define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
+#define MICROPY_HW_UART1_TX     (pin_A9)
+#define MICROPY_HW_UART1_RX     (pin_A10)
+#define MICROPY_HW_UART2_TX     (pin_A2)
+#define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART2_RTS    (pin_A1)
+#define MICROPY_HW_UART2_CTS    (pin_A0)
+#define MICROPY_HW_UART6_TX     (pin_C6)
+#define MICROPY_HW_UART6_RX     (pin_C7)
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B6)

@@ -53,6 +53,10 @@
 const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+    mp_not_implemented("");
+}
+
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
@@ -295,13 +299,10 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-mp_float_t mp_obj_int_as_float(mp_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
-        return MP_OBJ_SMALL_INT_VALUE(self_in);
-    } else {
-        mp_obj_int_t *self = self_in;
-        return self->val;
-    }
+mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = self_in;
+    return self->val;
 }
 #endif
 

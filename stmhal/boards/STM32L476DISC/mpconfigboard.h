@@ -26,9 +26,8 @@
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // USART config
-#define MICROPY_HW_UART2_PORT (GPIOD)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_5 | GPIO_PIN_6)
-
+#define MICROPY_HW_UART2_TX     (pin_D5)
+#define MICROPY_HW_UART2_RX     (pin_D6)
 // USART 2 is connected to the virtual com port on the ST-LINK
 #define MICROPY_HW_UART_REPL        PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD   115200
