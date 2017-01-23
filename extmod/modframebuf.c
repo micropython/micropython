@@ -302,9 +302,13 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t e = 2 * dy - dx;
     for (mp_int_t i = 0; i < dx; ++i) {
         if (steep) {
-            setpixel(self, y1, x1, col);
+            if (0 <= y1 && y1 < self->width && 0 <= x1 && x1 < self->height) {
+                setpixel(self, y1, x1, col);
+            }
         } else {
-            setpixel(self, x1, y1, col);
+            if (0 <= x1 && x1 < self->width && 0 <= y1 && y1 < self->height) {
+                setpixel(self, x1, y1, col);
+            }
         }
         while (e >= 0) {
             y1 += sy;
@@ -314,7 +318,9 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
         e += 2 * dy;
     }
 
-    setpixel(self, x2, y2, col);
+    if (0 <= x2 && x2 < self->width && 0 <= y2 && y2 < self->height) {
+        setpixel(self, x2, y2, col);
+    }
 
     return mp_const_none;
 }
