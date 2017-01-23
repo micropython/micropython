@@ -145,6 +145,10 @@ def run_micropython(pyb, args, test_file):
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
+    # don't try to convert the output if we should skip this test
+    if output_mupy == b'SKIP\n':
+        return output_mupy
+
     if is_special or test_file in special_tests:
         # convert parts of the output that are not stable across runs
         with open(test_file + '.exp', 'rb') as f:
