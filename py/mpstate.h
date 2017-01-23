@@ -128,6 +128,7 @@ typedef struct _mp_state_vm_t {
 
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
+    volatile byte mp_pending_ex_flags;
 
     // current exception being handled, for sys.exc_info()
     #if MICROPY_PY_SYS_EXC_INFO
@@ -234,5 +235,10 @@ extern mp_state_thread_t *mp_thread_get_state(void);
 #else
 #define MP_STATE_THREAD(x) (mp_state_ctx.thread.x)
 #endif
+
+#define PENDING_EX_NONE      (0)
+#define PENDING_EX_EXCEPTION (1)
+#define PENDING_EX_SOFT_INT  (2)
+
 
 #endif // __MICROPY_INCLUDED_PY_MPSTATE_H__

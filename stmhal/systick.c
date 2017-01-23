@@ -29,6 +29,8 @@
 #include "py/obj.h"
 #include "irq.h"
 #include "systick.h"
+#include "py/mpstate.h"
+#include "py/runtime.h"
 
 // We provide our own version of HAL_Delay that calls __WFI while waiting, in
 // order to reduce power consumption.
@@ -41,6 +43,12 @@ void HAL_Delay(uint32_t Delay) {
         while (uwTick - start < Delay) {
             // Enter sleep mode, waiting for (at least) the SysTick interrupt.
             __WFI();
+            #if MICROPY_PY_SOFTIRQ
+            while ((MP_STATE_VM(mp_pending_ex_flags) & PENDING_EX_SOFT_INT) != 0) {
+                mp_exec_softirq();
+            }
+            #endif
+
         }
     } else {
         // IRQs disabled, so need to use a busy loop for the delay.

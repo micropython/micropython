@@ -504,6 +504,14 @@ STATIC mp_obj_t machine_reset_cause(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
+#if MICROPY_PY_SOFTIRQ
+STATIC mp_obj_t machine_setsoftirq(mp_obj_t function, mp_obj_t obj, mp_obj_t arg) {
+
+    return mp_add_softint(function, obj, arg);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(machine_setsoftirq_obj, machine_setsoftirq);
+#endif
+
 STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_umachine) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
@@ -522,7 +530,9 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_wake_reason),         (mp_obj_t)&machine_wake_reason_obj },
 #endif
-
+#if MICROPY_PY_SOFTIRQ
+    { MP_ROM_QSTR(MP_QSTR_setsoftirq),              (mp_obj_t)&machine_setsoftirq_obj },
+#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
 
