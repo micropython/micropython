@@ -109,7 +109,7 @@ Setup commands
 
 .. method:: LCD160CR.set_brightness(value)
 
-    Set the brightness of the display, between 0 and 255.
+    Set the brightness of the display, between 0 and 31.
 
 .. method:: LCD160CR.set_i2c_addr(addr)
 
