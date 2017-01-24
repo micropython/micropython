@@ -34,7 +34,7 @@ class RAMFS:
 
 
 try:
-    bdev = RAMFS(48)
+    bdev = RAMFS(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
@@ -75,6 +75,7 @@ uos.vfs_mount(bdev, "/ramdisk")
 uos.vfs_umount("/ramdisk")
 
 # readonly mount
+# note: this test doesn't work correctly with new OO FatFs
 uos.vfs_mount(bdev, "/ramdisk", readonly=True)
 vfs = uos.VfsFat(bdev, "/ramdisk")
 try:
@@ -89,7 +90,7 @@ uos.vfs_mount(None, "/ramdisk")
 dev = []
 try:
     for i in range(0,4):
-        dev.append(RAMFS(48))
+        dev.append(RAMFS(50))
         uos.vfs_mkfs(dev[i], "/ramdisk" + str(i))
         uos.vfs_mount(dev[i], "/ramdisk" + str(i))
 except OSError as e:

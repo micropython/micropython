@@ -34,7 +34,7 @@ class RAMFS_OLD:
 
 
 try:
-    bdev = RAMFS_OLD(48)
+    bdev = RAMFS_OLD(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
@@ -57,7 +57,3 @@ print(vfs.listdir())
 
 # umount by device
 uos.vfs_umount(bdev)
-try:
-    vfs.listdir()
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)

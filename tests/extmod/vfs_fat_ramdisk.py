@@ -34,7 +34,7 @@ class RAMFS:
 
 
 try:
-    bdev = RAMFS(48)
+    bdev = RAMFS(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
@@ -45,11 +45,6 @@ print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
-
-try:
-    vfs.statvfs("/null")
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
 
 print("statvfs:", vfs.statvfs("/ramdisk"))
 print("getcwd:", vfs.getcwd())
@@ -87,15 +82,6 @@ vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
 
 vfs.umount()
-try:
-    vfs.listdir()
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
-
-try:
-    vfs.getcwd()
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
 print(vfs.listdir(b""))

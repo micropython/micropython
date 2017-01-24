@@ -34,7 +34,7 @@ class RAMFS:
 
 
 try:
-    bdev = RAMFS(48)
+    bdev = RAMFS(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
@@ -91,7 +91,7 @@ with vfs.open("foo_file.txt") as f2:
 
 # using constructor of FileIO type to open a file
 FileIO = type(f)
-with FileIO("foo_file.txt") as f:
+with FileIO("/ramdisk/foo_file.txt") as f:
     print(f.read())
 
 # dirs
@@ -118,9 +118,9 @@ except OSError as e:
     print(e.args[0] == uerrno.ENOENT)
 
 try:
-    vfs.rename("foo_dir", "/null")
+    vfs.rename("foo_dir", "/null/file")
 except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
+    print(e.args[0] == uerrno.ENOENT)
 
 # file in dir
 with vfs.open("foo_dir/file-in-dir.txt", "w+t") as f:
@@ -139,7 +139,7 @@ except OSError as e:
     print(e.args[0] == uerrno.EACCES)
 
 # trim full path
-vfs.rename("foo_dir/file-in-dir.txt", "/ramdisk/foo_dir/file.txt")
+vfs.rename("foo_dir/file-in-dir.txt", "foo_dir/file.txt")
 print(vfs.listdir("foo_dir"))
 
 vfs.rename("foo_dir/file.txt", "moved-to-root.txt")

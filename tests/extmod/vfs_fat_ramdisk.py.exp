@@ -1,7 +1,6 @@
 True
 True
-True
-statvfs: (512, 512, 14, 14, 14, 0, 0, 0, 0, 255)
+statvfs: (512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
 getcwd: /ramdisk
 True
 ['foo_file.txt']
@@ -14,6 +13,4 @@ getcwd: /ramdisk/foo_dir
 []
 True
 getcwd: /ramdisk
-True
-True
 [b'foo_file.txt', b'foo_dir']
