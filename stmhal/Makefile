@@ -117,6 +117,10 @@ SRC_LIB = $(addprefix lib/,\
 	utils/pyexec.c \
 	)
 
+DRIVERS_SRC_C = $(addprefix drivers/,\
+	memory/spiflash.c \
+	)
+
 SRC_C = \
 	main.c \
 	system_stm32.c \
@@ -256,6 +260,7 @@ endif
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
