@@ -19,6 +19,9 @@ CSUPEROPT = -O3
 INC += -I../lib
 INC += -I../lib/netutils
 
+# this sets the config file for FatFs
+CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
+
 ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
