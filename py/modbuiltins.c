@@ -400,7 +400,7 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 	      mpz_t l_temp, r_temp, m_temp;
               mpz_t *lhs, *rhs, *mod;
               mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
-              mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_FROM_PTR(result);
+              mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
 
 	      lhs = mp_mpz_for_int(args[0], &l_temp);
 	      rhs = mp_mpz_for_int(args[1], &r_temp);
