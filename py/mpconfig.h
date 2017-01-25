@@ -759,6 +759,22 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_MIN_MAX (1)
 #endif
 
+// Whether to provide the help function
+#ifndef MICROPY_PY_BUILTINS_HELP
+#define MICROPY_PY_BUILTINS_HELP (0)
+#endif
+
+// Use this to configure the help text shown for help().  It should be a
+// variable with the type "const char*".  A sensible default is provided.
+#ifndef MICROPY_PY_BUILTINS_HELP_TEXT
+#define MICROPY_PY_BUILTINS_HELP_TEXT mp_help_default_text
+#endif
+
+// Add the ability to list the available modules when executing help('modules')
+#ifndef MICROPY_PY_BUILTINS_HELP_MODULES
+#define MICROPY_PY_BUILTINS_HELP_MODULES (0)
+#endif
+
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
 #define MICROPY_PY___FILE__ (1)

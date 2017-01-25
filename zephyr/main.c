@@ -28,6 +28,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <zephyr.h>
+#ifdef CONFIG_NETWORKING
+#include <net/net_context.h>
+#include <net/nbuf.h>
+#endif
+
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -60,12 +66,22 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 
+void init_zephyr(void) {
+    #ifdef CONFIG_NET_IPV4
+    // TODO: Make address configurable
+    static struct in_addr in4addr_my = { { { 192, 0, 2, 1 } } };
+    net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);
+    #endif
+}
+
 int real_main(void) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
     mp_stack_set_top(stack_top);
-    // Should be set to stack size in prj.mdef minus fuzz factor
-    mp_stack_set_limit(3584);
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
+
+    init_zephyr();
 
 soft_reset:
     #if MICROPY_ENABLE_GC

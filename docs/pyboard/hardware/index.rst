@@ -13,6 +13,7 @@ For the official skin modules:
 
 * `LCD32MKv1.0 schematics <http://micropython.org/resources/LCD32MKv10-schematics.pdf>`_ (194KiB PDF)
 * `AMPv1.0 schematics <http://micropython.org/resources/AMPv10-schematics.pdf>`_ (209KiB PDF)
+* LCD160CRv1.0: see :mod:`lcd160cr`
 
 Datasheets for the components on the pyboard
 ============================================

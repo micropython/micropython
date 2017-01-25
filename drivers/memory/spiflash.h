@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_LIB_UTILS_PYHELP_H__
-#define __MICROPY_INCLUDED_LIB_UTILS_PYHELP_H__
 
-#include "py/obj.h"
+#ifndef MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H
+#define MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H
 
-void pyhelp_print_obj(const mp_obj_t obj);
+#include "extmod/machine_spi.h"
 
-#endif // __MICROPY_INCLUDED_LIB_UTILS_PYHELP_H__
+typedef struct _mp_spiflash_t {
+    mp_hal_pin_obj_t cs;
+    // TODO replace with generic SPI object
+    mp_machine_soft_spi_obj_t spi;
+} mp_spiflash_t;
+
+void mp_spiflash_init(mp_spiflash_t *self);
+void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);
+int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src);
+
+#endif // MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H

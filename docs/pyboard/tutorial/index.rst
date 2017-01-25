@@ -35,6 +35,7 @@ Tutorials requiring extra components
    fading_led.rst
    lcd_skin.rst
    amp_skin.rst
+   lcd160cr_skin.rst
 
 Tips, tricks and useful things to know
 --------------------------------------

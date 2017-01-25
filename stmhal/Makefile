@@ -15,6 +15,9 @@ include boards/$(BOARD)/mpconfigboard.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
+# directory containing scripts to be frozen as bytecode
+FROZEN_MPY_DIR ?= modules
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -112,7 +115,10 @@ SRC_LIB = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
+	)
+
+DRIVERS_SRC_C = $(addprefix drivers/,\
+	memory/spiflash.c \
 	)
 
 SRC_C = \
@@ -262,6 +268,7 @@ endif
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))

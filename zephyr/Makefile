@@ -44,7 +44,6 @@ SRC_C = main.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/interrupt_char.c \
-	lib/utils/pyhelp.c \
 	lib/mp-readline/readline.c \
 	$(SRC_MOD)
 
@@ -84,7 +83,7 @@ $(Z_SYSGEN_H):
 	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
 
 minimal:
-	$(MAKE) BOARD=$(BOARD) CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
+	$(MAKE) BOARD=$(BOARD) CONF_FILE=prj_minimal.conf CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
 
 # Clean Zephyr things too
 clean: z_clean
