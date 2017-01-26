@@ -27,6 +27,8 @@
 #ifndef HAL_QSPIE_H__
 #define HAL_QSPIE_H__
 
+#ifdef HAL_QSPIE_MODULE_ENABLED
+
 #if NRF52840_XXAA
 
 #include <nrf.h>
@@ -60,7 +62,7 @@ typedef enum {
 typedef enum {
     HAL_QSPI_DATA_LINE_SINGLE,
     HAL_QSPI_DATA_LINE_DUAL,
-    HAL_QSPI_DATA_LINE_QUAL
+    HAL_QSPI_DATA_LINE_QUAD
 } hal_qspi_data_line_t;
 
 
@@ -102,5 +104,7 @@ void hal_qspi_master_tx_rx(NRF_QSPI_Type  * p_instance,
                            uint16_t         transfer_size,
                            const uint8_t  * tx_data,
                            uint8_t        * rx_data);
+
+#endif // HAL_QSPIE_MODULE_ENABLED
 
 #endif // HAL_QSPIE_H__
