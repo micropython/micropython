@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
 
     pin_init0();
 
-#if MICROPY_PY_MACHINE_SPI
+#if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
 #endif
 
