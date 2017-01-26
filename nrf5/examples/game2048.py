@@ -33,7 +33,7 @@ g.start()
 
 from machine import ADC
 from machine import Pin, SPI
-from display import SSD1306
+from display import SSD1305
 import draw
 import time
 
@@ -77,20 +77,6 @@ font_1024 = [
     "  x  x  xxx   x"
 ]
 
-font_2048 = [ 
-    " x   x  x x  x",
-    "x x x x x x x x", 
-    "  x x x x x x x",
-    " x  x x xxx  x",
-    "x   x x   x x x",
-    "x   x x   x x x",
-    "xxx  x    x  x"
-]
-
-font_4096 = [
-    "x"
-]
-
 DIR_UP     = const(0x1)
 DIR_DOWN   = const(0x2)
 DIR_LEFT   = const(0x3)
@@ -105,7 +91,7 @@ class Game:
 #         reset = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
 #         dc = Pin("A12", mode=Pin.OUT, pull=Pin.PULL_UP)
 #         spi = SPI(0, baudrate=8000000)
-#         self.screen = SSD1306(128, 64, spi, cs, dc, reset)
+#         self.screen = SSD1305(128, 64, spi, cs, dc, reset)
 #         self.x_adc = ADC(2)
 #         self.y_adc = ADC(3)
 #         self.adc_threshold = 205
@@ -115,7 +101,7 @@ class Game:
         reset = Pin("B2", mode=Pin.OUT, pull=Pin.PULL_UP)
         dc = Pin("B1", mode=Pin.OUT, pull=Pin.PULL_UP)
         spi = SPI(0, baudrate=8000000)
-        self.screen = SSD1306(128, 64, spi, cs, dc, reset)
+        self.screen = SSD1305(128, 64, spi, cs, dc, reset)
         self.x_adc = ADC(1)
         self.y_adc = ADC(2)
         self.adc_threshold = 130
