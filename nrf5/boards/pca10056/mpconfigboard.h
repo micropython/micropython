@@ -62,27 +62,18 @@
 #define MICROPY_HW_LED4             (16) // LED4
 
 // UART config
-#define MICROPY_HW_UART1_RX         (8)
-#define MICROPY_HW_UART1_TX         (6)
-#define MICROPY_HW_UART1_CTS        (7)
-#define MICROPY_HW_UART1_RTS        (5)
-
-#define MICROPY_HW_UART1_RX_PORT    (0)
-#define MICROPY_HW_UART1_TX_PORT    (0)
-#define MICROPY_HW_UART1_CTS_PORT   (0)
-#define MICROPY_HW_UART1_RTS_PORT   (0)
-
+#define MICROPY_HW_UART1_RX         (pin_A8)
+#define MICROPY_HW_UART1_TX         (pin_A6)
+#define MICROPY_HW_UART1_CTS        (pin_A7)
+#define MICROPY_HW_UART1_RTS        (pin_A5)
 #define MICROPY_HW_UART1_HWFC       (1)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (15) // B15 (Arduino D13)
-#define MICROPY_HW_SPI0_MOSI        (13) // B13 (Arduino D11)
-#define MICROPY_HW_SPI0_MISO        (14) // B14 (Arduino D12)
-#define MICROPY_HW_SPI0_SCK_PORT    (1)
-#define MICROPY_HW_SPI0_MOSI_PORT   (1)
-#define MICROPY_HW_SPI0_MISO_PORT   (1)
 
+#define MICROPY_HW_SPI0_SCK         (pin_B15)
+#define MICROPY_HW_SPI0_MOSI        (pin_B13)
+#define MICROPY_HW_SPI0_MISO        (pin_B14)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
