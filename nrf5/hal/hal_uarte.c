@@ -83,9 +83,9 @@ void nrf_sendchar(int ch) {
 }
 
 void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
-    hal_gpio_cfg_pin(p_uart_init->tx_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_pin_set(p_uart_init->tx_pin);
-    hal_gpio_cfg_pin(p_uart_init->rx_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_pin_set(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin);
+    hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
     UARTE_BASE->BAUDRATE = (hal_uart_baudrate_lookup[p_uart_init->baud_rate]);
 
@@ -99,16 +99,26 @@ void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
 
     UARTE_BASE->CONFIG = (uint32_t)hwfc | (uint32_t)parity;
 
-    UARTE_BASE->PSEL.RXD = p_uart_init->rx_pin;
-    UARTE_BASE->PSEL.TXD = p_uart_init->tx_pin;
+    UARTE_BASE->PSEL.RXD = p_uart_init->rx_pin->pin;
+    UARTE_BASE->PSEL.TXD = p_uart_init->tx_pin->pin;
+
+#if NRF52840_XXAA
+    UARTE_BASE->PSEL.RXD |= (p_uart_init->rx_pin->port << UARTE_PSEL_RXD_PORT_Pos);
+    UARTE_BASE->PSEL.TXD |= (p_uart_init->tx_pin->port << UARTE_PSEL_TXD_PORT_Pos);
+#endif
 
     if (hwfc) {
-        hal_gpio_cfg_pin(p_uart_init->cts_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
-        hal_gpio_cfg_pin(p_uart_init->rts_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-        hal_gpio_pin_set(p_uart_init->rts_pin);
+        hal_gpio_cfg_pin(p_uart_init->cts_pin->port, p_uart_init->cts_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_cfg_pin(p_uart_init->rts_pin->port, p_uart_init->rts_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+        hal_gpio_pin_set(p_uart_init->rts_pin->port, p_uart_init->rts_pin->pin);
 
-        UARTE_BASE->PSEL.RTS = p_uart_init->rts_pin;
-        UARTE_BASE->PSEL.CTS = p_uart_init->cts_pin;
+        UARTE_BASE->PSEL.RTS = p_uart_init->rts_pin->pin;
+        UARTE_BASE->PSEL.CTS = p_uart_init->cts_pin->pin;
+
+#if NRF52840_XXAA
+        UARTE_BASE->PSEL.RTS |= (p_uart_init->rx_pin->port << UARTE_PSEL_RTS_PORT_Pos);
+        UARTE_BASE->PSEL.CTS |= (p_uart_init->rx_pin->port << UARTE_PSEL_CTS_PORT_Pos);
+#endif
     }
 
     nrf_uart_irq_enable(p_uart_init->irq_priority);

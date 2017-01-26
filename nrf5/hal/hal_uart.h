@@ -109,18 +109,14 @@ typedef struct
 } UART_HandleTypeDef;
 
 typedef struct {
-    uint8_t  rx_pin;       /**< RX pin number. */
-    uint8_t  tx_pin;       /**< TX pin number. */
-    uint8_t  rts_pin;      /**< RTS pin number, only used if flow control is enabled. */
-    uint8_t  cts_pin;      /**< CTS pin number, only used if flow control is enabled. */
-    uint8_t  rx_pin_port;  /**< RX port number. */
-    uint8_t  tx_pin_port;  /**< TX port number. */
-    uint8_t  rts_pin_port; /**< RTS port number, only used if flow control is enabled. */
-    uint8_t  cts_pin_port; /**< CTS port number, only used if flow control is enabled. */
-    bool     flow_control; /**< Flow control setting, if flow control is used, the system will use low power UART mode, based on CTS signal. */
-    bool     use_parity;   /**< Even parity if TRUE, no parity if FALSE. */
-    uint32_t baud_rate;    /**< Baud rate configuration. */
-    uint32_t irq_priority; /**< UARTE IRQ priority. */
+    const pin_obj_t * rx_pin;       /**< RX pin. */
+    const pin_obj_t * tx_pin;       /**< TX pin. */
+    const pin_obj_t * rts_pin;      /**< RTS pin, only used if flow control is enabled. */
+    const pin_obj_t * cts_pin;      /**< CTS pin, only used if flow control is enabled. */
+    bool              flow_control; /**< Flow control setting, if flow control is used, the system will use low power UART mode, based on CTS signal. */
+    bool              use_parity;   /**< Even parity if TRUE, no parity if FALSE. */
+    uint32_t          baud_rate;    /**< Baud rate configuration. */
+    uint32_t          irq_priority; /**< UARTE IRQ priority. */
 } hal_uart_init_t;
 
 
