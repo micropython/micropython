@@ -33,7 +33,8 @@
 #define MICROPY_PY_DISPLAY                  (1)
 #define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (0)
 #define MICROPY_PY_DISPLAY_LCD_ILI9341      (0)
-#define MICROPY_PY_DISPLAY_OLED_SSD1305     (1)
+#define MICROPY_PY_DISPLAY_LCD_SSD1289      (1)
+#define MICROPY_PY_DISPLAY_OLED_SSD1305     (0)
 #define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
 
 #define MICROPY_PY_MACHINE_HW_SPI   (1)
@@ -67,23 +68,16 @@
 #define MICROPY_HW_LED4             (24) // LED4
 
 // UART config
-#define MICROPY_HW_UART1_RX         (11)
-#define MICROPY_HW_UART1_TX         (9)
-#define MICROPY_HW_UART1_CTS        (10)
-#define MICROPY_HW_UART1_RTS        (8)
-#define MICROPY_HW_UART1_RX_PORT    (0)
-#define MICROPY_HW_UART1_TX_PORT    (0)
-#define MICROPY_HW_UART1_CTS_PORT   (0)
-#define MICROPY_HW_UART1_RTS_PORT   (0)
+#define MICROPY_HW_UART1_RX         (pin_A11)
+#define MICROPY_HW_UART1_TX         (pin_A9)
+#define MICROPY_HW_UART1_CTS        (pin_A10)
+#define MICROPY_HW_UART1_RTS        (pin_A8)
 #define MICROPY_HW_UART1_HWFC       (1)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (29)
-#define MICROPY_HW_SPI0_MOSI        (25)
-#define MICROPY_HW_SPI0_MISO        (28)
-#define MICROPY_HW_SPI0_SCK_PORT    (0)
-#define MICROPY_HW_SPI0_MISO_PORT   (0)
-#define MICROPY_HW_SPI0_MOSI_PORT   (0)
+#define MICROPY_HW_SPI0_SCK         (pin_A29)
+#define MICROPY_HW_SPI0_MOSI        (pin_A25)
+#define MICROPY_HW_SPI0_MISO        (pin_A28)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"

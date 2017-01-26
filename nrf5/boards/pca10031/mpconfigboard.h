@@ -53,23 +53,16 @@
 #define MICROPY_HW_LED_BLUE         (23) // BLUE
 
 // UART config
-#define MICROPY_HW_UART1_RX         (11)
-#define MICROPY_HW_UART1_TX         (9)
-#define MICROPY_HW_UART1_CTS        (10)
-#define MICROPY_HW_UART1_RTS        (8)
-#define MICROPY_HW_UART1_RX_PORT    (0)
-#define MICROPY_HW_UART1_TX_PORT    (0)
-#define MICROPY_HW_UART1_CTS_PORT   (0)
-#define MICROPY_HW_UART1_RTS_PORT   (0)
+#define MICROPY_HW_UART1_RX         (pin_A11)
+#define MICROPY_HW_UART1_TX         (pin_A9)
+#define MICROPY_HW_UART1_CTS        (pin_A10)
+#define MICROPY_HW_UART1_RTS        (pin_A8)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (15) // A15
-#define MICROPY_HW_SPI0_MOSI        (16) // A16
-#define MICROPY_HW_SPI0_MISO        (17) // A17
-#define MICROPY_HW_SPI0_SCK_PORT    (0)
-#define MICROPY_HW_SPI0_MISO_PORT   (0)
-#define MICROPY_HW_SPI0_MOSI_PORT   (0)
+#define MICROPY_HW_SPI0_SCK         (pin_A15)
+#define MICROPY_HW_SPI0_MOSI        (pin_A16)
+#define MICROPY_HW_SPI0_MISO        (pin_A17)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3"

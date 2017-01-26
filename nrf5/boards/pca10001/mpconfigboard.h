@@ -53,14 +53,10 @@
 #define MICROPY_HW_LED2             (19) // LED2
 
 // UART config
-#define MICROPY_HW_UART1_RX         (11)
-#define MICROPY_HW_UART1_TX         (9)
-#define MICROPY_HW_UART1_CTS        (10)
-#define MICROPY_HW_UART1_RTS        (8)
-#define MICROPY_HW_UART1_RX_PORT    (0)
-#define MICROPY_HW_UART1_TX_PORT    (0)
-#define MICROPY_HW_UART1_RTS_PORT   (0)
-#define MICROPY_HW_UART1_CTS_PORT   (0)
+#define MICROPY_HW_UART1_RX         (pin_A11)
+#define MICROPY_HW_UART1_TX         (pin_A9)
+#define MICROPY_HW_UART1_CTS        (pin_A10)
+#define MICROPY_HW_UART1_RTS        (pin_A8)
 #define MICROPY_HW_UART1_HWFC       (1)
 
 #define HELP_TEXT_BOARD_LED         "1,2"
