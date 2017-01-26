@@ -377,7 +377,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
 STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
-  if (MP_OBJ_IS_SMALL_INT(arg)) {
+    if (MP_OBJ_IS_SMALL_INT(arg)) {
         mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
         return temp;
     } else {
@@ -394,25 +394,24 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
         default: return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
 #else
         default:
-	  if (!MP_OBJ_IS_INT(args[0]) || !MP_OBJ_IS_INT(args[1]) || !MP_OBJ_IS_INT(args[2])) {
-	      nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "pow() with 3 arguments requires integers"));
-	  } else {
-	      mpz_t l_temp, r_temp, m_temp;
-              mpz_t *lhs, *rhs, *mod;
-              mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
-              mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
+	    if (!MP_OBJ_IS_INT(args[0]) || !MP_OBJ_IS_INT(args[1]) || !MP_OBJ_IS_INT(args[2])) {
+	        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "pow() with 3 arguments requires integers"));
+	    } else {
+                mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
+                mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
 
-	      lhs = mp_mpz_for_int(args[0], &l_temp);
-	      rhs = mp_mpz_for_int(args[1], &r_temp);
-	      mod = mp_mpz_for_int(args[2], &m_temp);
+	        mpz_t l_temp, r_temp, m_temp;
+	        mpz_t *lhs = mp_mpz_for_int(args[0], &l_temp);
+                mpz_t *rhs = mp_mpz_for_int(args[1], &r_temp);
+                mpz_t *mod = mp_mpz_for_int(args[2], &m_temp);
 
-	      mpz_pow3_inpl(&(res_p->mpz), lhs, rhs, mod);
+                mpz_pow3_inpl(&(res_p->mpz), lhs, rhs, mod);
 
-	      if (lhs == &l_temp) mpz_deinit(lhs);
-	      if (rhs == &r_temp) mpz_deinit(rhs);
-	      if (mod == &m_temp) mpz_deinit(mod);
-	      return result;
-	  }
+                if (lhs == &l_temp) { mpz_deinit(lhs); }
+                if (rhs == &r_temp) { mpz_deinit(rhs); }
+                if (mod == &m_temp) { mpz_deinit(mod); }
+                return result;
+            }
 #endif
     }
 }
