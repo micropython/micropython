@@ -32,51 +32,36 @@
 
 #ifdef HAL_SPIE_MODULE_ENABLED
 
-#if NRF52
-
-#define SPIM0 ((NRF_SPI_Type *) NRF_SPIM0_BASE)
-#define SPIM0_IRQ_NUM SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn
-#define SPIM1 ((NRF_SPI_Type *) NRF_SPIM1_BASE)
-#define SPIM1_IRQ_NUM SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn
-#define SPIM2 ((NRF_SPI_Type *) NRF_SPIM2_BASE)
-#define SPIM2_IRQ_NUM SPIM2_SPIS2_SPI2_IRQn
-
-#else
-#error "Device not supported."
-#endif
-
-static uint32_t m_ss_pin;
-
 static const uint32_t hal_spi_frequency_lookup[] = {
-    SPI_FREQUENCY_FREQUENCY_K125, // 125 kbps
-    SPI_FREQUENCY_FREQUENCY_K250, // 250 kbps
-    SPI_FREQUENCY_FREQUENCY_K500, // 500 kbps
-    SPI_FREQUENCY_FREQUENCY_M1, // 1 Mbps
-    SPI_FREQUENCY_FREQUENCY_M2, // 2 Mbps
-    SPI_FREQUENCY_FREQUENCY_M4, // 4 Mbps
-    SPI_FREQUENCY_FREQUENCY_M8 // 8 Mbps
+    SPIM_FREQUENCY_FREQUENCY_K125, // 125 kbps
+    SPIM_FREQUENCY_FREQUENCY_K250, // 250 kbps
+    SPIM_FREQUENCY_FREQUENCY_K500, // 500 kbps
+    SPIM_FREQUENCY_FREQUENCY_M1, // 1 Mbps
+    SPIM_FREQUENCY_FREQUENCY_M2, // 2 Mbps
+    SPIM_FREQUENCY_FREQUENCY_M4, // 4 Mbps
+    SPIM_FREQUENCY_FREQUENCY_M8, // 8 Mbps
+#if NRF52840_XXAA
+    SPIM_FREQUENCY_FREQUENCY_M16, // 16 Mbps
+    SPIM_FREQUENCY_FREQUENCY_M32, // 32 Mbps
+#endif
 };
 
 void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi_init) {
-	// cast to master type
-	NRF_SPIM_Type * spim_instance = (NRF_SPIM_Type *)p_instance;
+    // cast to master type
+    NRF_SPIM_Type * spim_instance = (NRF_SPIM_Type *)p_instance;
 
-    hal_gpio_pin_set(p_spi_init->enable_pin);
-    m_ss_pin = p_spi_init->enable_pin;
+    hal_gpio_cfg_pin(p_spi_init->clk_pin->port, p_spi_init->clk_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->mosi_pin->port, p_spi_init->mosi_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->miso_pin->port, p_spi_init->miso_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
-    hal_gpio_cfg_pin(p_spi_init->clk_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_spi_init->mosi_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_spi_init->miso_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_spi_init->enable_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    spim_instance->PSEL.SCK  = p_spi_init->clk_pin->pin;
+    spim_instance->PSEL.MOSI = p_spi_init->mosi_pin->pin;
+    spim_instance->PSEL.MISO = p_spi_init->miso_pin->pin;
 
-#if NRF51
-    spim_instance->PSELSCK  = p_spi_init->clk_pin;
-    spim_instance->PSELMOSI = p_spi_init->mosi_pin;
-    spim_instance->PSELMISO = p_spi_init->miso_pin;
-#else
-    spim_instance->PSEL.SCK  = p_spi_init->clk_pin;
-    spim_instance->PSEL.MOSI = p_spi_init->mosi_pin;
-    spim_instance->PSEL.MISO = p_spi_init->miso_pin;
+#if NRF52840_XXAA
+    spim_instance->PSEL.SCK  |= (p_spi_init->clk_pin->port << SPIM_PSEL_SCK_PORT_Pos);
+    spim_instance->PSEL.MOSI |= (p_spi_init->mosi_pin->port << SPIM_PSEL_MOSI_PORT_Pos);
+    spim_instance->PSEL.MISO |= (p_spi_init->miso_pin->port << SPIM_PSEL_MISO_PORT_Pos);
 #endif
 
     spim_instance->FREQUENCY = hal_spi_frequency_lookup[p_spi_init->freq];
@@ -100,7 +85,7 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
             break;
     }
 
-    if (p_spi_init->lsb_first) {
+    if (p_spi_init->firstbit == HAL_SPI_LSB_FIRST) {
     	spim_instance->CONFIG = (mode | (SPIM_CONFIG_ORDER_LsbFirst << SPIM_CONFIG_ORDER_Pos));
     } else {
     	spim_instance->CONFIG = (mode | (SPIM_CONFIG_ORDER_MsbFirst << SPIM_CONFIG_ORDER_Pos));
@@ -112,24 +97,27 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
 
 void hal_spi_master_tx_rx(NRF_SPI_Type * p_instance, uint16_t transfer_size, const uint8_t * tx_data, uint8_t * rx_data) {
 
-	// cast to master type
-	NRF_SPIM_Type * spim_instance = (NRF_SPIM_Type *)p_instance;
+    // cast to master type
+    NRF_SPIM_Type * spim_instance = (NRF_SPIM_Type *)p_instance;
 
-    hal_gpio_pin_clear(m_ss_pin);
+    if (tx_data != NULL) {
+        spim_instance->TXD.PTR = (uint32_t)(tx_data);
+        spim_instance->TXD.MAXCNT = transfer_size;
+    }
 
-    spim_instance->TXD.PTR = (uint32_t)(tx_data);
-    spim_instance->TXD.MAXCNT = transfer_size;
-    spim_instance->RXD.PTR = (uint32_t)(rx_data);
-    spim_instance->RXD.MAXCNT = transfer_size;
+    if (rx_data != NULL) {
+        spim_instance->RXD.PTR = (uint32_t)(rx_data);
+        spim_instance->RXD.MAXCNT = transfer_size;
+    }
 
     spim_instance->TASKS_START = 1;
 
-	while((0 == spim_instance->EVENTS_END));
+    while(spim_instance->EVENTS_END != 1) {
+        ;
+    }
 
-	spim_instance->EVENTS_END  = 0;
-	spim_instance->TASKS_STOP  = 1;
-
-    hal_gpio_pin_set(m_ss_pin);
+    spim_instance->EVENTS_END = 0;
+    spim_instance->TASKS_STOP  = 1;
 }
 
 #endif // HAL_SPIE_MODULE_ENABLED
