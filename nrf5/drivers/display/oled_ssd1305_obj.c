@@ -117,31 +117,33 @@ reset = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
 dc = Pin("A12", mode=Pin.OUT, pull=Pin.PULL_UP)
 spi = SPI(0, baudrate=8000000)
 d = SSD1305(128, 64, spi, cs, dc, reset)
-d.text("Hello World!", 32, 32)
+draw.text(d, "Hello World!", 32, 32)
 d.show()
 
 Example for nrf52832 / pca10040:
 
 from machine import Pin, SPI
 from display import SSD1305
+import draw
 cs = Pin("A13", mode=Pin.OUT, pull=Pin.PULL_UP)
 reset = Pin("A12", mode=Pin.OUT, pull=Pin.PULL_UP)
 dc = Pin("A11", mode=Pin.OUT, pull=Pin.PULL_UP)
 spi = SPI(0, baudrate=8000000)
 d = SSD1305(128, 64, spi, cs, dc, reset)
-d.text("Hello World!", 32, 32)
+draw.text(d, "Hello World!", 32, 32)
 d.show()
 
 Example for nrf52840 / pca10056:
 
 from machine import Pin, SPI
 from display import SSD1305
+import draw
 cs = Pin("B3", mode=Pin.OUT, pull=Pin.PULL_UP)
 reset = Pin("B2", mode=Pin.OUT, pull=Pin.PULL_UP)
 dc = Pin("B1", mode=Pin.OUT, pull=Pin.PULL_UP)
 spi = SPI(0, baudrate=8000000)
 d = SSD1305(128, 64, spi, cs, dc, reset)
-d.text("Hello World!", 32, 32)
+draw.text(d, "Hello World!", 32, 32)
 d.show()
 
 */
