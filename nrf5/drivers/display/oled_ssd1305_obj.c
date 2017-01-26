@@ -73,13 +73,12 @@ STATIC void oled_ssd1305_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
     oled_ssd1305_obj_t *self = o;
 
     mp_printf(print, "SSD1305(SPI(mosi=(port=%u, pin=%u), miso=(port=%u, pin=%u), clk=(port=%u, pin=%u)),\n",
-                     self->spi->pyb->spi->init.mosi_pin_port,
-                     self->spi->pyb->spi->init.mosi_pin,
-                     self->spi->pyb->spi->init.miso_pin_port,
-                     self->spi->pyb->spi->init.miso_pin,
-                     self->spi->pyb->spi->init.clk_pin_port,
-                     self->spi->pyb->spi->init.clk_pin
-                     );
+                     self->spi->pyb->spi->init.mosi_pin->port,
+                     self->spi->pyb->spi->init.mosi_pin->pin,
+                     self->spi->pyb->spi->init.miso_pin->port,
+                     self->spi->pyb->spi->init.miso_pin->pin,
+                     self->spi->pyb->spi->init.clk_pin->port,
+                     self->spi->pyb->spi->init.clk_pin->pin);
 
     mp_printf(print, "        cs=(port=%u, pin=%u), dc=(port=%u, pin=%u), reset=(port=%u, pin=%u),\n",
                      self->pin_cs->port,

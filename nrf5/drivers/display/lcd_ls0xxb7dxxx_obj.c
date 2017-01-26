@@ -76,11 +76,10 @@ STATIC void lcd_ls0xxb7dxxx_print(const mp_print_t *print, mp_obj_t o, mp_print_
     lcd_ls0xxb7dxxx_obj_t *self = o;
 
     mp_printf(print, "LS0XXB7DXXX(SPI(mosi=(port=%u, pin=%u), clk=(port=%u, pin=%u)),\n",
-                     self->spi->pyb->spi->init.mosi_pin_port,
-                     self->spi->pyb->spi->init.mosi_pin,
-                     self->spi->pyb->spi->init.clk_pin_port,
-                     self->spi->pyb->spi->init.clk_pin
-                     );
+                     self->spi->pyb->spi->init.mosi_pin->port,
+                     self->spi->pyb->spi->init.mosi_pin->pin,
+                     self->spi->pyb->spi->init.clk_pin->port,
+                     self->spi->pyb->spi->init.clk_pin->pin);
 
     mp_printf(print, "        cs=(port=%u, pin=%u), disp=(port=%u, pin=%u), extcomin=(port=%u, pin=%u),\n",
                      self->pin_cs->port,
