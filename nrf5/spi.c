@@ -63,24 +63,41 @@
 ///     spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
 ///     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
 
-#if defined(MICROPY_HW_SPI0_SCK)
 SPI_HandleTypeDef SPIHandle0 = {.instance = NULL};
-#endif
+SPI_HandleTypeDef SPIHandle1 = {.instance = NULL};
+#if NRF52
+SPI_HandleTypeDef SPIHandle2 = {.instance = NULL};
+#if NRF52840_XXAA
+SPI_HandleTypeDef SPIHandle3 = {.instance = NULL}; // 32 Mbs master only
+#endif // NRF52840_XXAA
+#endif // NRF52
 
 STATIC const pyb_spi_obj_t machine_spi_obj[] = {
-    #if defined(MICROPY_HW_SPI0_SCK)
     {{&machine_hard_spi_type}, &SPIHandle0},
-    #else
-    {{&machine_hard_spi_type}, NULL},
-    #endif
+    {{&machine_hard_spi_type}, &SPIHandle1},
+#if NRF52
+    {{&machine_hard_spi_type}, &SPIHandle2},
+#if NRF52840_XXAA
+    {{&machine_hard_spi_type}, &SPIHandle3},
+#endif // NRF52840_XXAA
+#endif // NRF52
+
 };
 
 void spi_init0(void) {
     // reset the SPI handles
-    #if defined(MICROPY_HW_SPI0_SCK)
     memset(&SPIHandle0, 0, sizeof(SPI_HandleTypeDef));
-    SPIHandle0.instance = SPI0;
-    #endif
+    SPIHandle0.instance = SPI_BASE(0);
+    memset(&SPIHandle1, 0, sizeof(SPI_HandleTypeDef));
+    SPIHandle1.instance = SPI_BASE(1);
+#if NRF52
+    memset(&SPIHandle2, 0, sizeof(SPI_HandleTypeDef));
+    SPIHandle2.instance = SPI_BASE(2);
+#if NRF52840_XXAA
+    memset(&SPIHandle3, 0, sizeof(SPI_HandleTypeDef));
+    SPIHandle3.instance = SPI_BASE(3);
+#endif // NRF52840_XXAA
+#endif // NRF52
 }
 
 STATIC int spi_find(mp_obj_t id) {
@@ -114,7 +131,7 @@ void spi_deinit(SPI_HandleTypeDef *spi) {
 }
 
 STATIC void spi_transfer(const pyb_spi_obj_t * self, size_t len, const void * src, void * dest) {
-	hal_spi_master_tx_rx(self->spi->instance, len, src, dest);
+    hal_spi_master_tx_rx(self->spi->instance, len, src, dest);
 }
 
 STATIC void spi_print(const mp_print_t *print, SPI_HandleTypeDef *spi, bool legacy) {
@@ -231,6 +248,13 @@ STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_tab
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_hard_spi_type}, &machine_spi_obj[0]},
+    {{&machine_hard_spi_type}, &machine_spi_obj[1]},
+#if NRF52
+    {{&machine_hard_spi_type}, &machine_spi_obj[2]},
+#if NRF52840_XXAA
+    {{&machine_hard_spi_type}, &machine_spi_obj[3]},
+#endif
+#endif
 };
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -248,34 +272,39 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
         && args[ARG_NEW_mosi].u_obj != MP_OBJ_NULL
         && args[ARG_NEW_miso].u_obj != MP_OBJ_NULL) {
 
-        self->pyb->spi->init.clk_pin = mp_obj_get_int(args[ARG_NEW_sck].u_obj);
-        self->pyb->spi->init.mosi_pin = mp_obj_get_int(args[ARG_NEW_mosi].u_obj);
-        self->pyb->spi->init.miso_pin = mp_obj_get_int(args[ARG_NEW_miso].u_obj);
+        self->pyb->spi->init.clk_pin = args[ARG_NEW_sck].u_obj;
+        self->pyb->spi->init.mosi_pin = args[ARG_NEW_mosi].u_obj;
+        self->pyb->spi->init.miso_pin = args[ARG_NEW_miso].u_obj;
     } else {
-        self->pyb->spi->init.clk_pin = MICROPY_HW_SPI0_SCK;
-        self->pyb->spi->init.mosi_pin = MICROPY_HW_SPI0_MOSI;
-        self->pyb->spi->init.miso_pin = MICROPY_HW_SPI0_MISO;
-        self->pyb->spi->init.clk_pin_port = MICROPY_HW_SPI0_SCK_PORT;
-        self->pyb->spi->init.mosi_pin_port = MICROPY_HW_SPI0_MOSI_PORT;
-        self->pyb->spi->init.miso_pin_port = MICROPY_HW_SPI0_MISO_PORT;
+        self->pyb->spi->init.clk_pin = &MICROPY_HW_SPI0_SCK;
+        self->pyb->spi->init.mosi_pin = &MICROPY_HW_SPI0_MOSI;
+        self->pyb->spi->init.miso_pin = &MICROPY_HW_SPI0_MISO;
     }
 
     int baudrate = args[ARG_NEW_baudrate].u_int;
 
     if (baudrate <= 125000) {
-        self->pyb->spi->init.freq = HAL_FREQ_125_Kbps;
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_125_Kbps;
     } else if (baudrate <= 250000) {
-        self->pyb->spi->init.freq = HAL_FREQ_250_Kbps;
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_250_Kbps;
     } else if (baudrate <= 500000) {
-        self->pyb->spi->init.freq = HAL_FREQ_500_Kbps;
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_500_Kbps;
     } else if (baudrate <= 1000000) {
-        self->pyb->spi->init.freq = HAL_FREQ_1_Mbps;
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
     } else if (baudrate <= 2000000) {
-        self->pyb->spi->init.freq = HAL_FREQ_2_Mbps;
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_2_Mbps;
     } else if (baudrate <= 4000000) {
-        self->pyb->spi->init.freq = HAL_FREQ_4_Mbps;
-    } else {
-        self->pyb->spi->init.freq = HAL_FREQ_8_Mbps;
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_4_Mbps;
+    } else if (baudrate <= 8000000) {
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_8_Mbps;
+#if NRF52840_XXAA
+    } else if (baudrate <= 16000000) {
+    	self->pyb->spi->init.freq = HAL_SPI_FREQ_16_Mbps;
+    } else if (baudrate <= 32000000) {
+    	self->pyb->spi->init.freq = HAL_SPI_FREQ_32_Mbps;
+#endif
+    } else { // Default
+        self->pyb->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
     }
 
     self->pyb->spi->init.irq_priority = 4;
