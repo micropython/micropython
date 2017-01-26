@@ -358,6 +358,13 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: {
+            if (lhs_len == 0) {
+                return rhs_in;
+            }
+            if (rhs_len == 0) {
+                return lhs_in;
+            }
+
             vstr_t vstr;
             vstr_init_len(&vstr, lhs_len + rhs_len);
             memcpy(vstr.buf, lhs_data, lhs_len);
