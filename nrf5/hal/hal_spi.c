@@ -48,9 +48,9 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
     hal_gpio_cfg_pin(p_spi_init->miso_pin->port, p_spi_init->miso_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
 #if NRF51
-    p_instance->PSELSCK  = p_spi_init->clk_pin;
-    p_instance->PSELMOSI = p_spi_init->mosi_pin;
-    p_instance->PSELMISO = p_spi_init->miso_pin;
+    p_instance->PSELSCK  = p_spi_init->clk_pin->pin;
+    p_instance->PSELMOSI = p_spi_init->mosi_pin->pin;
+    p_instance->PSELMISO = p_spi_init->miso_pin->pin;
 #else
     p_instance->PSEL.SCK  = p_spi_init->clk_pin->pin;
     p_instance->PSEL.MOSI = p_spi_init->mosi_pin->pin;
