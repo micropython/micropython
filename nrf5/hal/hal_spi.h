@@ -31,36 +31,50 @@
 #include "nrf.h"
 
 #if NRF51
-
-#define SPI0 ((NRF_SPI_Type *) NRF_SPI0)
-#define SPI0_IRQ_NUM SPI0_TWI0_IRQn
-#define SPI1 ((NRF_SPI_Type *) NRF_SPI1)
-#define SPI1_IRQ_NUM SPI1_TWI1_IRQn
-
-#elif NRF52
-
-#define SPI0 ((NRF_SPI_Type *) NRF_SPI0_BASE)
-#define SPI0_IRQ_NUM SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn
-#define SPI1 ((NRF_SPI_Type *) NRF_SPI1_BASE)
-#define SPI1_IRQ_NUM SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn
-#define SPI2 ((NRF_SPI_Type *) NRF_SPI2_BASE)
-#define SPI2_IRQ_NUM SPIM2_SPIS2_SPI2_IRQn
-
-#else
-#error "Device not supported."
+  #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, NRF_SPI1_BASE}
+  #define SPI_IRQ_VALUES (const uint32_t[]){SPI0_TWI0_IRQn, SPI1_TWI1_IRQn}
 #endif
+
+#if NRF52
+  #ifdef NRF52832_XXAA
+    #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, \
+                                                 NRF_SPI1_BASE, \
+                                                 NRF_SPI2_BASE}
+    #define SPI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
+                                              SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, \
+                                              SPIM2_SPIS2_SPI2_IRQn}
+  #endif
+
+  #ifdef NRF52840_XXAA
+    #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, \
+                                                 NRF_SPI1_BASE, \
+                                                 NRF_SPI2_BASE, \
+                                                 NRF_SPIM3_BASE}
+    #define SPI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
+                                              SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, \
+                                              SPIM2_SPIS2_SPI2_IRQn, \
+                                              SPIM3_IRQn}
+  #endif
+#endif
+
+#define SPI_BASE(x) ((NRF_SPI_Type *)SPI_BASE_POINTERS[x])
+#define SPI_IRQ_NUM(x) (SPI_IRQ_VALUES[x])
 
 /**
   * @brief  SPI clock frequency type definition
   */
 typedef enum {
-    HAL_FREQ_125_Kbps = 0,
-    HAL_FREQ_250_Kbps,
-    HAL_FREQ_500_Kbps,
-    HAL_FREQ_1_Mbps,
-    HAL_FREQ_2_Mbps,
-    HAL_FREQ_4_Mbps,
-    HAL_FREQ_8_Mbps
+    HAL_SPI_FREQ_125_Kbps = 0,
+    HAL_SPI_FREQ_250_Kbps,
+    HAL_SPI_FREQ_500_Kbps,
+    HAL_SPI_FREQ_1_Mbps,
+    HAL_SPI_FREQ_2_Mbps,
+    HAL_SPI_FREQ_4_Mbps,
+    HAL_SPI_FREQ_8_Mbps,
+#if NRF52840_XXAA
+    HAL_SPI_FREQ_16_Mbps,
+    HAL_SPI_FREQ_32_Mbps
+#endif
 } hal_spi_clk_freq_t;
 
 /**
@@ -85,12 +99,9 @@ typedef enum {
   * @brief  SPI Configuration Structure definition
   */
 typedef struct {
-    uint8_t mosi_pin;
-    uint8_t miso_pin;
-    uint8_t clk_pin;
-    uint8_t mosi_pin_port;
-    uint8_t miso_pin_port;
-    uint8_t clk_pin_port;
+    const pin_obj_t * mosi_pin;
+    const pin_obj_t * miso_pin;
+    const pin_obj_t * clk_pin;
     hal_spi_firstbit_t firstbit;
     hal_spi_mode_t mode;
     uint32_t irq_priority;

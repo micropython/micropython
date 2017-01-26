@@ -43,23 +43,23 @@ static const uint32_t hal_spi_frequency_lookup[] = {
 };
 
 void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi_init) {
-    hal_gpio_cfg_pin(p_spi_init->clk_pin_port, p_spi_init->clk_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_spi_init->mosi_pin_port, p_spi_init->mosi_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_spi_init->miso_pin_port, p_spi_init->miso_pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->clk_pin->port, p_spi_init->clk_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->mosi_pin->port, p_spi_init->mosi_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_spi_init->miso_pin->port, p_spi_init->miso_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
 #if NRF51
     p_instance->PSELSCK  = p_spi_init->clk_pin;
     p_instance->PSELMOSI = p_spi_init->mosi_pin;
     p_instance->PSELMISO = p_spi_init->miso_pin;
 #else
-    p_instance->PSEL.SCK  = p_spi_init->clk_pin;
-    p_instance->PSEL.MOSI = p_spi_init->mosi_pin;
-    p_instance->PSEL.MISO = p_spi_init->miso_pin;
+    p_instance->PSEL.SCK  = p_spi_init->clk_pin->pin;
+    p_instance->PSEL.MOSI = p_spi_init->mosi_pin->pin;
+    p_instance->PSEL.MISO = p_spi_init->miso_pin->pin;
 
 #if NRF52840_XXAA
-    p_instance->PSEL.SCK  |= (p_spi_init->clk_pin_port << SPI_PSEL_SCK_PORT_Pos);
-    p_instance->PSEL.MOSI |= (p_spi_init->mosi_pin_port << SPI_PSEL_MOSI_PORT_Pos);
-    p_instance->PSEL.MISO |= (p_spi_init->miso_pin_port << SPI_PSEL_MISO_PORT_Pos);
+    p_instance->PSEL.SCK  |= (p_spi_init->clk_pin->port << SPI_PSEL_SCK_PORT_Pos);
+    p_instance->PSEL.MOSI |= (p_spi_init->mosi_pin->port << SPI_PSEL_MOSI_PORT_Pos);
+    p_instance->PSEL.MISO |= (p_spi_init->miso_pin->port << SPI_PSEL_MISO_PORT_Pos);
 #endif
 
 #endif
