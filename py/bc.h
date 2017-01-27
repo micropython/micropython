@@ -94,9 +94,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, s
 struct _mp_obj_fun_bc_t;
 void mp_setup_code_state(mp_code_state_t *code_state, struct _mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_bytecode_print(const void *descr, const byte *code, mp_uint_t len, const mp_uint_t *const_table);
-void mp_bytecode_print2(const byte *code, mp_uint_t len);
+void mp_bytecode_print2(const byte *code, size_t len, const mp_uint_t *const_table);
 const byte *mp_bytecode_print_str(const byte *ip);
-#define mp_bytecode_print_inst(code) mp_bytecode_print2(code, 1)
+#define mp_bytecode_print_inst(code, const_table) mp_bytecode_print2(code, 1, const_table)
 
 // Helper macros to access pointer with least significant bits holding flags
 #define MP_TAGPTR_PTR(x) ((void*)((uintptr_t)(x) & ~((uintptr_t)3)))
