@@ -90,9 +90,12 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
-    bool using_primary_timer;
-    struct tc_module tc_instance;
-    struct tcc_module tcc_instance;
+    const pin_timer_t* timer;
+    bool variable_frequency;
+    union {
+        struct tc_module tc_instance;
+        struct tcc_module tcc_instance;
+    };
 } nativeio_pwmout_obj_t;
 
 typedef struct {

@@ -39,6 +39,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/nativeio/PWMOut.h"
 
 STATIC char heap[36 * 1024];
 
@@ -63,6 +64,7 @@ STATIC void mp_reset(void) {
     pin_init0();
     readline_init0();
     dupterm_task_init();
+    pwmout_reset();
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py", NULL);

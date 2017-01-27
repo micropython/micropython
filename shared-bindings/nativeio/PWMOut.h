@@ -32,9 +32,14 @@
 
 extern const mp_obj_type_t nativeio_pwmout_type;
 
-extern void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu_pin_obj_t* pin, uint16_t duty);
+extern void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self,
+    const mcu_pin_obj_t* pin, uint16_t duty, uint32_t frequency,
+    bool variable_frequency);
 extern void common_hal_nativeio_pwmout_deinit(nativeio_pwmout_obj_t* self);
 extern void common_hal_nativeio_pwmout_set_duty_cycle(nativeio_pwmout_obj_t* self, uint16_t duty);
 extern uint16_t common_hal_nativeio_pwmout_get_duty_cycle(nativeio_pwmout_obj_t* self);
+extern void common_hal_nativeio_pwmout_set_frequency(nativeio_pwmout_obj_t* self, uint32_t frequency);
+extern uint32_t common_hal_nativeio_pwmout_get_frequency(nativeio_pwmout_obj_t* self);
+extern bool common_hal_nativeio_pwmout_get_variable_frequency(nativeio_pwmout_obj_t* self);
 
 #endif // __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_PWMOUT_H__

@@ -92,8 +92,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "No hardware support available with those pins."));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins."));
     }
 
     // Depends on where MOSI and CLK are.

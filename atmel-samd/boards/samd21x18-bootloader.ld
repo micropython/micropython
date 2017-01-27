@@ -5,7 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000+0x2000, LENGTH = 0x00040000 - 0x2000 - 0x010000 /* Leave 8KiB for the bootloader and 64k for the flash file system. */
+    /* Leave 8KiB for the bootloader, 256b for persistant config (clock), and 64k for the flash file system. */
+    FLASH (rx) : ORIGIN = 0x00000000+0x2000, LENGTH = 0x00040000 - 0x2000 - 0x100 - 0x010000
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 
@@ -28,9 +29,14 @@ SECTIONS
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
-        _sidata = _etext;  /* This is used by the startup in order to initialize the .data secion */
     } >FLASH
 
+    .ARM.exidx :
+    {
+        *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+        _sidata = .;  /* This is used by the startup in order to initialize the .data section */
+    } > FLASH
 
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
@@ -39,14 +45,14 @@ SECTIONS
     .data : AT ( _sidata )
     {
         . = ALIGN(4);
-        _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
+        _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialize the .data section in RAM */
         *(.ramfunc)
         *(.ramfunc*)
         *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
         . = ALIGN(4);
-        _erelocate = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
+        _erelocate = .;        /* define a global symbol at data end; used by startup code in order to initialize the .data section in RAM */
     } >RAM
 
     /* Uninitialized data section */

@@ -23,9 +23,11 @@ void tick_init() {
     struct tc_config config_tc;
     tc_get_config_defaults(&config_tc);
     config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
+    config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_FREQ;
     config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
-    tc_set_top_value(&ms_timer, system_cpu_clock_get_hz() / 1000);
     tc_init(&ms_timer, TC5, &config_tc);
+
+    tc_set_top_value(&ms_timer, system_cpu_clock_get_hz() / 1000 - 1);
     tc_enable(&ms_timer);
     tc_register_callback(&ms_timer, ms_tick, TC_CALLBACK_OVERFLOW);
     tc_enable_callback(&ms_timer, TC_CALLBACK_OVERFLOW);

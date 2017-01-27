@@ -69,6 +69,8 @@ void reset_pin(uint8_t pin) {
 }
 
 // Pins in datasheet order.
+// NOTE(tannewt): TC wave out 0 is commented out because the first channel is
+// used to vary the 16 bit timer's frequency.
 #ifdef PIN_PA00
 PIN(PA00, NO_ADC, NO_TOUCH,
     TCC(TCC2, 0, 0),
@@ -127,7 +129,7 @@ PIN(PB07, TOUCH(ADC_POSITIVE_INPUT_PIN15), TOUCH(13),
 #endif
 #ifdef PIN_PB08
 PIN(PB08, ADC_INPUT(ADC_POSITIVE_INPUT_PIN2), TOUCH(14),
-    TC(TC4, 0, 0),
+    NO_TIMER, // TC(TC4, 0, 0),
     NO_TIMER,
     NO_SERCOM,
     SERCOM(SERCOM4, 0));
@@ -197,7 +199,7 @@ PIN(PA11, ADC_INPUT(ADC_POSITIVE_INPUT_PIN19), NO_TOUCH,
 #endif
 #ifdef PIN_PB10
 PIN(PB10, NO_ADC, NO_TOUCH,
-    TC(TC5, 0, 0),
+    NO_TIMER, // TC(TC5, 0, 0),
     TCC(TCC0, 0, 4),
     NO_SERCOM,
     SERCOM(SERCOM4, 2));
@@ -211,7 +213,7 @@ PIN(PB11, NO_ADC, NO_TOUCH,
 #endif
 #ifdef PIN_PB12
 PIN(PB12, NO_ADC, NO_TOUCH,
-    TC(TC4, 0, 0),
+    NO_TIMER, // TC(TC4, 0, 0),
     TCC(TCC0, 2, 6),
     SERCOM(SERCOM4, 0),
     NO_SERCOM);
@@ -225,7 +227,7 @@ PIN(PB13, NO_ADC, NO_TOUCH,
 #endif
 #ifdef PIN_PB14
 PIN(PB14, NO_ADC, NO_TOUCH,
-    TC(TC5, 0, 0),
+    NO_TIMER, // TC(TC5, 0, 0),
     NO_TIMER,
     SERCOM(SERCOM4, 2),
     NO_SERCOM);
@@ -255,7 +257,7 @@ PIN(PA13, NO_ADC, NO_TOUCH,
 #endif
 #ifdef PIN_PA14
 PIN(PA14, NO_ADC, NO_TOUCH,
-    TC(TC3, 0, 0),
+    NO_TIMER, // TC(TC3, 0, 0),
     TCC(TCC0, 0, 4),
     SERCOM(SERCOM2, 2),
     #ifdef SERCOM4
@@ -286,29 +288,29 @@ PIN(PA16, NO_ADC, NO_TOUCH,
 #endif
 #ifdef PIN_PA17
 PIN(PA17, NO_ADC, NO_TOUCH,
-  TCC(TCC2, 1, 1),
-  TCC(TCC0, 3, 7),
-  SERCOM(SERCOM1, 1),
-  SERCOM(SERCOM3, 1));
+    TCC(TCC2, 1, 1),
+    TCC(TCC0, 3, 7),
+    SERCOM(SERCOM1, 1),
+    SERCOM(SERCOM3, 1));
 #endif
 #ifdef PIN_PA18
 PIN(PA18, NO_ADC, NO_TOUCH,
-  TC(TC3, 0, 0),
-  TCC(TCC0, 2, 2),
-  SERCOM(SERCOM1, 2),
-  SERCOM(SERCOM3, 2));
+    NO_TIMER, // TC(TC3, 0, 0),
+    TCC(TCC0, 2, 2),
+    SERCOM(SERCOM1, 2),
+    SERCOM(SERCOM3, 2));
 #endif
 #ifdef PIN_PA19
 PIN(PA19, NO_ADC, NO_TOUCH,
-  TC(TC3, 1, 1),
-  TCC(TCC0, 3, 3),
-  SERCOM(SERCOM1, 3),
-  SERCOM(SERCOM3, 3));
+    TC(TC3, 1, 1),
+    TCC(TCC0, 3, 3),
+    SERCOM(SERCOM1, 3),
+    SERCOM(SERCOM3, 3));
 #endif
 #ifdef PIN_PB16
 PIN(PB16, NO_ADC, NO_TOUCH,
     #ifdef _SAMD21_TC6_INSTANCE_
-    TC(TC6, 0, 0),
+    NO_TIMER, // TC(TC6, 0, 0),
     #else
     NO_TIMER,
     #endif
@@ -319,7 +321,7 @@ PIN(PB16, NO_ADC, NO_TOUCH,
 #ifdef PIN_PB17
 PIN(PB17, NO_ADC, NO_TOUCH,
     #ifdef _SAMD21_TC6_INSTANCE_
-    TC(TC6, 0, 0),
+    TC(TC6, 1, 1),
     #else
     NO_TIMER,
     #endif
@@ -330,7 +332,7 @@ PIN(PB17, NO_ADC, NO_TOUCH,
 #ifdef PIN_PA20
 PIN(PA20, NO_ADC, NO_TOUCH,
     #ifdef _SAMD21_TC7_INSTANCE_
-    TC(TC7, 0, 0),
+    NO_TIMER, // TC(TC7, 0, 0),
     #else
     NO_TIMER,
     #endif
@@ -351,7 +353,7 @@ PIN(PA21, NO_ADC, NO_TOUCH,
 #endif
 #ifdef PIN_PA22
 PIN(PA22, NO_ADC, NO_TOUCH,
-    TC(TC4, 0, 0),
+    NO_TIMER, // TC(TC4, 0, 0),
     TCC(TCC0, 0, 4),
     SERCOM(SERCOM3, 0),
     #ifdef SERCOM5
@@ -375,7 +377,7 @@ PIN(PA23, NO_ADC, NO_TOUCH,
 #endif
 #ifdef PIN_PA24
 PIN(PA24, NO_ADC, NO_TOUCH,
-    TC(TC5, 0, 0),
+    NO_TIMER, // TC(TC5, 0, 0),
     TCC(TCC0, 2, 2),
     SERCOM(SERCOM3, 2),
     #ifdef SERCOM5
@@ -400,7 +402,7 @@ PIN(PA25, NO_ADC, NO_TOUCH,
 #ifdef PIN_PB22
 PIN(PB22, NO_ADC, NO_TOUCH,
     #ifdef _SAMD21_TC7_INSTANCE_
-    TC(TC7, 1, 1),
+    NO_TIMER, // TC(TC7, 0, 0),
     #else
     NO_TIMER,
     #endif
@@ -464,7 +466,7 @@ PIN(PB31, NO_ADC, NO_TOUCH,
 #ifdef PIN_PB00
 PIN(PB00, ADC_INPUT(ADC_POSITIVE_INPUT_PIN8), TOUCH(6),
     #ifdef _SAMD21_TC7_INSTANCE_
-    TC(TC7, 0, 0),
+    NO_TIMER, // TC(TC7, 0, 0),
     #else
     NO_TIMER,
     #endif
@@ -486,7 +488,7 @@ PIN(PB01, ADC_INPUT(ADC_POSITIVE_INPUT_PIN9), TOUCH(7),
 #ifdef PIN_PB02
 PIN(PB02, ADC_INPUT(ADC_POSITIVE_INPUT_PIN10), TOUCH(8),
     #ifdef _SAMD21_TC6_INSTANCE_
-    TC(TC6, 0, 0),
+    NO_TIMER, // TC(TC6, 0, 0),
     #else
     NO_TIMER,
     #endif

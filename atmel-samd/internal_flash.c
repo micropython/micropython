@@ -45,26 +45,16 @@
 #define INTERNAL_FLASH_PART1_START_BLOCK (0x1)
 #define INTERNAL_FLASH_PART1_NUM_BLOCKS (TOTAL_INTERNAL_FLASH_SIZE / INTERNAL_FLASH_BLOCK_SIZE)
 
-static bool internal_flash_is_initialised = false;
-
 void internal_flash_init(void) {
-    if (!internal_flash_is_initialised) {
-        struct nvm_config config_nvm;
-        nvm_get_config_defaults(&config_nvm);
-        config_nvm.manual_page_write = false;
-        nvm_set_config(&config_nvm);
-        internal_flash_is_initialised = true;
+    // Activity LED for flash writes.
+    #ifdef MICROPY_HW_LED_MSC
+        struct port_config pin_conf;
+        port_get_config_defaults(&pin_conf);
 
-        // Activity LED for flash writes.
-        #ifdef MICROPY_HW_LED_MSC
-            struct port_config pin_conf;
-            port_get_config_defaults(&pin_conf);
-
-            pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-            port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
-            port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
-        #endif
-    }
+        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+        port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
+        port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
+    #endif
 }
 
 uint32_t internal_flash_get_block_size(void) {

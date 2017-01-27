@@ -1262,7 +1262,7 @@ void system_clock_source_dpll_set_config(
  * @{
  */
 
-void system_clock_init(void);
+void system_clock_init(uint16_t dfll_fine_calibration);
 
 /**
  * @}

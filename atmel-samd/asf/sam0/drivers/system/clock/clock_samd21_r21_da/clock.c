@@ -772,7 +772,9 @@ static void _switch_peripheral_gclk(void)
  * the OSC8M default enable can be disabled after system_clock_init. Make sure the
  * clock switch successfully before disabling OSC8M.
  */
-void system_clock_init(void)
+// Added dfll_fine_calibration as a parameter so that the user program can save
+// and restore it.
+void system_clock_init(uint16_t dfll_fine_calibration)
 {
 	/* Various bits in the INTFLAG register can be set to one at startup.
 	   This will ensure that these bits are cleared */
@@ -904,7 +906,7 @@ void system_clock_init(void)
 
 	if (CONF_CLOCK_DFLL_LOOP_MODE == SYSTEM_CLOCK_DFLL_LOOP_MODE_USB_RECOVERY) {
 		dfll_conf.fine_max_step   = 10;
-		dfll_conf.fine_value   = 0x1ff;
+		dfll_conf.fine_value   = dfll_fine_calibration;
 		dfll_conf.quick_lock = SYSTEM_CLOCK_DFLL_QUICK_LOCK_ENABLE;
 		dfll_conf.stable_tracking = SYSTEM_CLOCK_DFLL_STABLE_TRACKING_TRACK_AFTER_LOCK;
 		dfll_conf.wakeup_lock = SYSTEM_CLOCK_DFLL_WAKEUP_LOCK_KEEP;

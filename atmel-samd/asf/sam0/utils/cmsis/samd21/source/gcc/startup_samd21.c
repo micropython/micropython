@@ -49,6 +49,7 @@
 extern uint32_t _sfixed;
 extern uint32_t _efixed;
 extern uint32_t _etext;
+extern uint32_t _sidata;
 extern uint32_t _srelocate;
 extern uint32_t _erelocate;
 extern uint32_t _szero;
@@ -233,7 +234,7 @@ void Reset_Handler(void)
         uint32_t *pSrc, *pDest;
 
         /* Initialize the relocate segment */
-        pSrc = &_etext;
+        pSrc = &_sidata;
         pDest = &_srelocate;
 
         if (pSrc != pDest) {

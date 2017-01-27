@@ -324,12 +324,12 @@ static inline void _tcc_build_ctrlb(
 {
 	uint8_t ctrlb = 0;
 
-	if (config->counter.oneshot) {
-		ctrlb |= TCC_CTRLBSET_ONESHOT;
-	}
-	if (config->counter.direction == TCC_COUNT_DIRECTION_DOWN) {
-		ctrlb |= TCC_CTRLBSET_DIR;
-	}
+	// if (config->counter.oneshot) {
+	// 	ctrlb |= TCC_CTRLBSET_ONESHOT;
+	// }
+	// if (config->counter.direction == TCC_COUNT_DIRECTION_DOWN) {
+	// 	ctrlb |= TCC_CTRLBSET_DIR;
+	// }
 
 	*value_buffer = ctrlb;
 }
@@ -606,18 +606,18 @@ enum status_code tcc_init(
 	system_gclk_chan_enable(_tcc_gclk_ids[module_index]);
 
 	/* Initialize pins */
-	struct system_pinmux_config pin_config;
-	for (i = 0; i <  _tcc_ow_nums[module_index]; i ++) {
-		if (!config->pins.enable_wave_out_pin[i]) {
-			continue;
-		}
-
-		system_pinmux_get_config_defaults(&pin_config);
-		pin_config.mux_position = config->pins.wave_out_pin_mux[i];
-		pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
-		system_pinmux_pin_set_config(
-				config->pins.wave_out_pin[i], &pin_config);
-	}
+	// struct system_pinmux_config pin_config;
+	// for (i = 0; i <  _tcc_ow_nums[module_index]; i ++) {
+	// 	if (!config->pins.enable_wave_out_pin[i]) {
+	// 		continue;
+	// 	}
+    //
+	// 	system_pinmux_get_config_defaults(&pin_config);
+	// 	pin_config.mux_position = config->pins.wave_out_pin_mux[i];
+	// 	pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
+	// 	system_pinmux_pin_set_config(
+	// 			config->pins.wave_out_pin[i], &pin_config);
+	// }
 
 	/* Write to registers */
 

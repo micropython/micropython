@@ -37,7 +37,8 @@ volatile bool mp_cdc_enabled = false;
 
 extern struct usart_module usart_instance;
 
-static volatile bool mp_msc_enabled = false;
+// Read by main to know when USB is connected.
+volatile bool mp_msc_enabled = false;
 bool mp_msc_enable()
 {
 	mp_msc_enabled = true;
@@ -220,9 +221,8 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 void mp_hal_delay_ms(mp_uint_t delay) {
     // If mass storage is enabled measure the time ourselves and run any mass
     // storage transactions in the meantime.
-    // TODO(tannewt): Break out of this delay on KeyboardInterrupt too.
     if (mp_msc_enabled) {
-        uint64_t start_tick = common_hal_time_monotonic();
+        uint64_t start_tick = ticks_ms;
         uint64_t duration = 0;
         while (duration < delay) {
             #ifdef MICROPY_VM_HOOK_LOOP
@@ -232,7 +232,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
             if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
                 break;
             }
-            duration = (common_hal_time_monotonic() - start_tick);
+            duration = (ticks_ms - start_tick);
         }
     } else {
         delay_ms(delay);

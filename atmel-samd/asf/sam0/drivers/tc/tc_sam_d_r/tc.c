@@ -140,7 +140,7 @@ enum status_code tc_init(
 	/* Array of PM APBC mask bit position for different TC instances */
 	uint16_t inst_pm_apbmask[] = TC_INST_PM_APBCMASK;
 
-	struct system_pinmux_config pin_config;
+	//struct system_pinmux_config pin_config;
 	struct system_gclk_chan_config gclk_chan_config;
 
 #if TC_ASYNC == true
@@ -169,15 +169,15 @@ enum status_code tc_init(
 		return STATUS_ERR_INVALID_ARG;
 	}
 #else
-	/* Check if odd numbered TC modules are being configured in 32-bit
-	 * counter size. Only even numbered counters are allowed to be
-	 * configured in 32-bit counter size.
-	 */
-	if ((config->counter_size == TC_COUNTER_SIZE_32BIT) &&
-			((instance + TC_INSTANCE_OFFSET) & 0x01)) {
-		Assert(false);
-		return STATUS_ERR_INVALID_ARG;
-	}
+	// /* Check if odd numbered TC modules are being configured in 32-bit
+	//  * counter size. Only even numbered counters are allowed to be
+	//  * configured in 32-bit counter size.
+	//  */
+	// if ((config->counter_size == TC_COUNTER_SIZE_32BIT) &&
+	// 		((instance + TC_INSTANCE_OFFSET) & 0x01)) {
+	// 	Assert(false);
+	// 	return STATUS_ERR_INVALID_ARG;
+	// }
 #endif
 
 	/* Make the counter size variable in the module_inst struct reflect
@@ -200,35 +200,35 @@ enum status_code tc_init(
 		return STATUS_ERR_DENIED;
 	}
 
-	/* Set up the TC PWM out pin for channel 0 */
-	if (config->pwm_channel[0].enabled) {
-		system_pinmux_get_config_defaults(&pin_config);
-		pin_config.mux_position = config->pwm_channel[0].pin_mux;
-		pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
-		system_pinmux_pin_set_config(
-				config->pwm_channel[0].pin_out, &pin_config);
-	}
-
-	/* Set up the TC PWM out pin for channel 1 */
-	if (config->pwm_channel[1].enabled) {
-		system_pinmux_get_config_defaults(&pin_config);
-		pin_config.mux_position = config->pwm_channel[1].pin_mux;
-		pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
-		system_pinmux_pin_set_config(
-				config->pwm_channel[1].pin_out, &pin_config);
-	}
+	// /* Set up the TC PWM out pin for channel 0 */
+	// if (config->pwm_channel[0].enabled) {
+	// 	system_pinmux_get_config_defaults(&pin_config);
+	// 	pin_config.mux_position = config->pwm_channel[0].pin_mux;
+	// 	pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
+	// 	system_pinmux_pin_set_config(
+	// 			config->pwm_channel[0].pin_out, &pin_config);
+	// }
+    //
+	// /* Set up the TC PWM out pin for channel 1 */
+	// if (config->pwm_channel[1].enabled) {
+	// 	system_pinmux_get_config_defaults(&pin_config);
+	// 	pin_config.mux_position = config->pwm_channel[1].pin_mux;
+	// 	pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
+	// 	system_pinmux_pin_set_config(
+	// 			config->pwm_channel[1].pin_out, &pin_config);
+	// }
 
 	/* Enable the user interface clock in the PM */
 	system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC,
 			inst_pm_apbmask[instance]);
 
-	/* Enable the slave counter if counter_size is 32-bit */
-	if ((config->counter_size == TC_COUNTER_SIZE_32BIT))
-	{
-		/* Enable the user interface clock in the PM */
-		system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC,
-				inst_pm_apbmask[instance + 1]);
-	}
+	// /* Enable the slave counter if counter_size is 32-bit */
+	// if ((config->counter_size == TC_COUNTER_SIZE_32BIT))
+	// {
+	// 	/* Enable the user interface clock in the PM */
+	// 	system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC,
+	// 			inst_pm_apbmask[instance + 1]);
+	// }
 
 	/* Setup clock for module */
 	system_gclk_chan_get_config_defaults(&gclk_chan_config);
@@ -299,34 +299,34 @@ enum status_code tc_init(
 	/* Switch for TC counter size  */
 	switch (module_inst->counter_size) {
 		case TC_COUNTER_SIZE_8BIT:
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT8.COUNT.reg =
-					config->counter_8_bit.value;
-
-
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT8.PER.reg =
-					config->counter_8_bit.period;
-
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT8.CC[0].reg =
-					config->counter_8_bit.compare_capture_channel[0];
-
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT8.CC[1].reg =
-					config->counter_8_bit.compare_capture_channel[1];
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT8.COUNT.reg =
+			// 		config->counter_8_bit.value;
+            //
+            //
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT8.PER.reg =
+			// 		config->counter_8_bit.period;
+            //
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT8.CC[0].reg =
+			// 		config->counter_8_bit.compare_capture_channel[0];
+            //
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT8.CC[1].reg =
+			// 		config->counter_8_bit.compare_capture_channel[1];
 
 			return STATUS_OK;
 
@@ -355,26 +355,26 @@ enum status_code tc_init(
 			return STATUS_OK;
 
 		case TC_COUNTER_SIZE_32BIT:
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT32.COUNT.reg
-				= config->counter_32_bit.value;
-
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT32.CC[0].reg =
-					config->counter_32_bit.compare_capture_channel[0];
-
-			while (tc_is_syncing(module_inst)) {
-				/* Wait for sync */
-			}
-
-			hw->COUNT32.CC[1].reg =
-					config->counter_32_bit.compare_capture_channel[1];
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT32.COUNT.reg
+			// 	= config->counter_32_bit.value;
+            //
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT32.CC[0].reg =
+			// 		config->counter_32_bit.compare_capture_channel[0];
+            //
+			// while (tc_is_syncing(module_inst)) {
+			// 	/* Wait for sync */
+			// }
+            //
+			// hw->COUNT32.CC[1].reg =
+			// 		config->counter_32_bit.compare_capture_channel[1];
 
 			return STATUS_OK;
 	}

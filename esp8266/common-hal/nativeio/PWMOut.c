@@ -36,14 +36,35 @@
 #include "c_types.h"
 #include "gpio.h"
 
+#define PWM_FREQ_MAX 1000
+
 // Shared with pybpwm
 extern bool pwm_inited;
+bool first_channel_variable;
 
-void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu_pin_obj_t* pin, uint16_t duty) {
+void pwmout_reset(void) {
+    first_channel_variable = false;
+}
+
+void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self, const mcu_pin_obj_t* pin, uint16_t duty, uint32_t frequency,
+        bool variable_frequency) {
+    if (frequency > PWM_FREQ_MAX) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Maximum PWM frequency is %dhz.", PWM_FREQ_MAX));
+    } else if (frequency < 1) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "Minimum PWM frequency is 1hz."));
+    }
+
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
         pwm_init();
         pwm_inited = true;
+        pwm_set_freq(frequency, 0);
+        first_channel_variable = variable_frequency;
+    } else if (first_channel_variable || pwm_get_freq(0) != frequency) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Multiple PWM frequencies not supported. PWM already set to %dhz.", pwm_get_freq(0)));
     }
 
     self->channel = pwm_add(pin->gpio_number,
@@ -75,4 +96,23 @@ extern void common_hal_nativeio_pwmout_set_duty_cycle(nativeio_pwmout_obj_t* sel
 
 uint16_t common_hal_nativeio_pwmout_get_duty_cycle(nativeio_pwmout_obj_t* self) {
     return pwm_get_duty(self->channel) << 6;
+}
+
+void common_hal_nativeio_pwmout_set_frequency(nativeio_pwmout_obj_t* self, uint32_t frequency) {
+    if (frequency > PWM_FREQ_MAX) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Maximum PWM frequency is %dhz.", PWM_FREQ_MAX));
+    } else if (frequency < 1) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "Minimum PWM frequency is 1hz."));
+    }
+    pwm_set_freq(frequency, 0);
+}
+
+uint32_t common_hal_nativeio_pwmout_get_frequency(nativeio_pwmout_obj_t* self) {
+    return pwm_get_freq(0);
+}
+
+bool common_hal_nativeio_pwmout_get_variable_frequency(nativeio_pwmout_obj_t* self) {
+    return first_channel_variable;
 }

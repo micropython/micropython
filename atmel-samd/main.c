@@ -17,22 +17,28 @@
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/udc/udc.h"
 #include "asf/common2/services/delay/delay.h"
+#include "asf/sam0/drivers/nvm/nvm.h"
 #include "asf/sam0/drivers/port/port.h"
 #include "asf/sam0/drivers/sercom/usart/usart.h"
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
 #include "common-hal/nativeio/AnalogIn.h"
+#include "common-hal/nativeio/PWMOut.h"
 
 #ifdef EXPRESS_BOARD
 #include "common-hal/nativeio/types.h"
 #include "QTouch/touch_api_ptc.h"
+#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100)
+#else
+#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100)
 #endif
 
 #include "autoreset.h"
 #include "mpconfigboard.h"
 #include "rgb_led_status.h"
 #include "tick.h"
+
 
 fs_user_mount_t fs_user_mount_flash;
 
@@ -133,6 +139,8 @@ void reset_mp(void) {
 extern nativeio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
 extern touch_selfcap_config_t selfcap_config;
 #endif
+extern volatile bool mp_msc_enabled;
+
 void reset_samd21(void) {
     // Reset all SERCOMs except the one being used by the SPI flash.
     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
@@ -173,6 +181,53 @@ void reset_samd21(void) {
 
     system_pinmux_group_set_config(&(PORT->Group[0]), pin_mask[0] & ~MICROPY_PORT_A, &config);
     system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
+
+    pwmout_reset();
+
+    // If we are on USB lets double check our fine calibration for the clock and
+    // save the new value if its different enough.
+    if (mp_msc_enabled) {
+        SYSCTRL->DFLLSYNC.bit.READREQ = 1;
+        uint16_t saved_calibration = 0x1ff;
+        if (strcmp((char*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+            saved_calibration = ((uint16_t *) INTERNAL_CIRCUITPY_CONFIG_START_ADDR)[8];
+        }
+        while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
+            // TODO(tannewt): Run the mass storage stuff if this takes a while.
+        }
+        int16_t current_calibration = SYSCTRL->DFLLVAL.bit.FINE;
+        if (abs(current_calibration - saved_calibration) > 10) {
+            enum status_code error_code;
+            uint8_t page_buffer[NVMCTRL_ROW_SIZE];
+            for (int i = 0; i < NVMCTRL_ROW_PAGES; i++) {
+                do
+                {
+                    error_code = nvm_read_buffer(INTERNAL_CIRCUITPY_CONFIG_START_ADDR + i * NVMCTRL_PAGE_SIZE,
+                                                 page_buffer + i * NVMCTRL_PAGE_SIZE,
+                                                 NVMCTRL_PAGE_SIZE);
+                } while (error_code == STATUS_BUSY);
+            }
+            // If this is the first write, include the header.
+            if (strcmp((char*) page_buffer, "CIRCUITPYTHON1") != 0) {
+                memcpy(page_buffer, "CIRCUITPYTHON1", 15);
+            }
+            // First 16 bytes (0-15) are ID. Little endian!
+            page_buffer[16] = current_calibration & 0xff;
+            page_buffer[17] = current_calibration >> 8;
+            do
+            {
+                error_code = nvm_erase_row(INTERNAL_CIRCUITPY_CONFIG_START_ADDR);
+            } while (error_code == STATUS_BUSY);
+            for (int i = 0; i < NVMCTRL_ROW_PAGES; i++) {
+                do
+                {
+                    error_code = nvm_write_buffer(INTERNAL_CIRCUITPY_CONFIG_START_ADDR + i * NVMCTRL_PAGE_SIZE,
+                                                  page_buffer + i * NVMCTRL_PAGE_SIZE,
+                                                  NVMCTRL_PAGE_SIZE);
+                } while (error_code == STATUS_BUSY);
+            }
+        }
+    }
 }
 
 bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
@@ -405,7 +460,17 @@ void samd21_init(void) {
     // Initialize the sleep manager
     sleepmgr_init();
 
-    system_init();
+    uint16_t dfll_fine_calibration = 0x1ff;
+    // This is stored in an NVM page after the text and data storage but before
+    // the optional file system. The first 16 bytes are the identifier for the
+    // section.
+    if (strcmp((char*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        dfll_fine_calibration = ((uint16_t *) INTERNAL_CIRCUITPY_CONFIG_START_ADDR)[8];
+    }
+
+    // We pass in the DFLL fine calibration because we can't change it once the
+    // clock is going.
+    system_init(dfll_fine_calibration);
 
     delay_init();
 
@@ -423,6 +488,12 @@ void samd21_init(void) {
     // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
     rgb_led_status_init();
+
+    // Init the nvm controller.
+    struct nvm_config config_nvm;
+    nvm_get_config_defaults(&config_nvm);
+    config_nvm.manual_page_write = false;
+    nvm_set_config(&config_nvm);
 }
 
 int main(int argc, char **argv) {

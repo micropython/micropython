@@ -59,13 +59,13 @@ void _system_dummy_init(void)
 
 #if !defined(__DOXYGEN__)
 #  if defined(__GNUC__)
-void system_clock_init(void) WEAK __attribute__((alias("_system_dummy_init")));
+void system_clock_init(uint16_t dfll_fine_calibration) WEAK __attribute__((alias("_system_dummy_init")));
 void system_board_init(void) WEAK __attribute__((alias("_system_dummy_init")));
 void _system_events_init(void) WEAK __attribute__((alias("_system_dummy_init")));
 void _system_extint_init(void) WEAK __attribute__((alias("_system_dummy_init")));
 void _system_divas_init(void) WEAK __attribute__((alias("_system_dummy_init")));
 #  elif defined(__ICCARM__)
-void system_clock_init(void);
+void system_clock_init(uint16_t dfll_fine_calibration);
 void system_board_init(void);
 void _system_events_init(void);
 void _system_extint_init(void);
@@ -91,10 +91,10 @@ void _system_divas_init(void);
  *  - Event system driver initialization (via the EVSYS module)
  *  - External Interrupt driver initialization (via the EXTINT module)
  */
-void system_init(void)
+void system_init(uint16_t dfll_fine_calibration)
 {
 	/* Configure GCLK and clock sources according to conf_clocks.h */
-	system_clock_init();
+	system_clock_init(dfll_fine_calibration);
 
 	/* Initialize board hardware */
 	system_board_init();
@@ -104,8 +104,7 @@ void system_init(void)
 
 	/* Initialize External hardware */
 	_system_extint_init();
-	
+
 	/* Initialize DIVAS hardware */
 	_system_divas_init();
 }
-

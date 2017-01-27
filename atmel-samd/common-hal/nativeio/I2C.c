@@ -69,8 +69,7 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "No hardware support available with those pins."));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins."));
     }
 
     config_i2c_master.pinmux_pad0 = sda_pinmux; // SDA

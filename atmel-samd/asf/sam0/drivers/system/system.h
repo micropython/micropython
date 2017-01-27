@@ -555,7 +555,7 @@ static inline uint32_t system_get_device_id(void)
  * @{
  */
 
-void system_init(void);
+void system_init(uint16_t dfll_fine_calibration);
 
 /**
  * @}
@@ -725,4 +725,3 @@ void system_init(void);
 #endif
 
 #endif /* SYSTEM_H_INCLUDED */
-
