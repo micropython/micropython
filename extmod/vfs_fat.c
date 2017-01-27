@@ -45,6 +45,12 @@
 #include "extmod/fsusermount.h"
 #include "timeutils.h"
 
+#if _MAX_SS == _MIN_SS
+#define SECSIZE(fs) (_MIN_SS)
+#else
+#define SECSIZE(fs) ((fs)->ssize)
+#endif
+
 #define mp_obj_fat_vfs_t fs_user_mount_t
 
 STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -267,7 +273,7 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
 
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * fatfs->ssize); // f_bsize
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * SECSIZE(fatfs)); // f_bsize
     t->items[1] = t->items[0]; // f_frsize
     t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2) * fatfs->csize); // f_blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst); // f_bfree
