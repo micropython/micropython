@@ -7,7 +7,12 @@
 #
 
 BOARD ?= qemu_x86
+ifeq ($(MAKECMDGOALS), minimal)
+# For minimal, CONF_FILE must be overriden early due to $(Z_EXPORTS) target
+CONF_FILE = prj_minimal.conf
+else
 CONF_FILE = prj.conf
+endif
 # Zephyr 1.5.0
 #OUTDIR_PREFIX =
 # Zephyr 1.6.0
