@@ -105,6 +105,12 @@ void mp_init(void) {
     memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
     #endif
 
+    #if MICROPY_VFS
+    // initialise the VFS sub-system
+    MP_STATE_VM(vfs_cur) = NULL;
+    MP_STATE_VM(vfs_mount_table) = NULL;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif

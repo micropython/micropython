@@ -233,6 +233,8 @@ PY_O_BASENAME = \
 	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
 	../extmod/fsusermount.o \
+	../extmod/vfs.o \
+	../extmod/vfs_reader.o \
 	../extmod/vfs_fat.o \
 	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \

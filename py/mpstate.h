@@ -165,6 +165,11 @@ typedef struct _mp_state_vm_t {
     struct _fs_user_mount_t *fs_user_mount[MICROPY_FATFS_VOLUMES];
     #endif
 
+    #if MICROPY_VFS
+    struct _vfs_mount_t *vfs_cur;
+    struct _vfs_mount_t *vfs_mount_table;
+    #endif
+
     //
     // END ROOT POINTER SECTION
     ////////////////////////////////////////////////////////////
