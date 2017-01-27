@@ -4803,7 +4803,7 @@ FRESULT f_setlabel (
     dj.obj.fs = fs;
 
     /* Get length of given volume label */
-    for (slen = 0; (UINT)label[slen] >= ' '; slen++) ;  /* Get name length */
+    for (slen = 0; (UINT)label[slen] >= ' '; slen++) { } /* Get name length */
 
 #if _FS_EXFAT
     if (fs->fs_type == FS_EXFAT) {  /* On the exFAT volume */
