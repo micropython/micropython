@@ -31,6 +31,7 @@
 #include "py/objstr.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 
 #if MICROPY_VFS
 
@@ -114,6 +115,12 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     if (vfs == VFS_NONE || vfs == VFS_ROOT) {
         return MP_IMPORT_STAT_NO_EXIST;
     }
+    #if MICROPY_VFS_FAT
+    // fast paths for known VFS types
+    if (mp_obj_get_type(vfs->obj) == &mp_fat_vfs_type) {
+        return fat_vfs_import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
+    }
+    #endif
     // TODO delegate to vfs.stat() method
     return MP_IMPORT_STAT_NO_EXIST;
 }

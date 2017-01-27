@@ -28,9 +28,8 @@
 
 #include "py/lexer.h"
 #include "lib/fatfs/ff.h"
-
-mp_import_stat_t fat_vfs_import_stat(const char *path);
+#include "extmod/vfs_fat.h"
 
 mp_import_stat_t mp_import_stat(const char *path) {
-    return fat_vfs_import_stat(path);
+    return fat_vfs_import_stat(NULL, path);
 }

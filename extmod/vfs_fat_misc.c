@@ -108,21 +108,17 @@ mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_ty
     return dir_list;
 }
 
-mp_import_stat_t fat_vfs_import_stat(const char *path);
-
-mp_import_stat_t fat_vfs_import_stat(const char *path) {
+mp_import_stat_t fat_vfs_import_stat(fs_user_mount_t *vfs, const char *path) {
     FILINFO fno;
 #if !MICROPY_FATFS_OO && _USE_LFN
     fno.lfname = NULL;
     fno.lfsize = 0;
 #endif
     #if MICROPY_FATFS_OO
-    fs_user_mount_t *vfs = ff_get_vfs(&path);
-    if (vfs == NULL) {
-        return MP_IMPORT_STAT_NO_EXIST;
-    }
+    assert(vfs != NULL);
     FRESULT res = f_stat(&vfs->fatfs, path, &fno);
     #else
+    (void)vfs;
     FRESULT res = f_stat(path, &fno);
     #endif
     if (res == FR_OK) {
