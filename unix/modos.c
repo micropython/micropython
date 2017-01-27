@@ -39,6 +39,7 @@
 #include "py/objtuple.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
+#include "extmod/vfs_fat.h"
 
 // Can't include this, as FATFS structure definition is required,
 // and FatFs header defining it conflicts with POSIX.
@@ -46,7 +47,6 @@
 MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(fsuser_umount_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj);
-extern const mp_obj_type_t mp_fat_vfs_type;
 
 #ifdef __ANDROID__
 #define USE_STATFS 1

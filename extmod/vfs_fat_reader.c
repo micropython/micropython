@@ -38,7 +38,7 @@
 #include "lib/fatfs/ff.h"
 #endif
 #include "extmod/fsusermount.h"
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 
 typedef struct _mp_reader_fatfs_t {
     FIL fp;

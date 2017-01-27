@@ -36,7 +36,7 @@
 #include "lib/fatfs/ff.h"
 #endif
 #include "extmod/fsusermount.h"
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 
 STATIC bool check_path(const TCHAR **path, const char *mount_point_str, mp_uint_t mount_point_len) {
     if (strncmp(*path, mount_point_str, mount_point_len) == 0) {

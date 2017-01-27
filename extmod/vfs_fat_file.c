@@ -42,7 +42,7 @@
 #include "lib/fatfs/ff.h"
 #endif
 #include "extmod/fsusermount.h"
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 
 #if MICROPY_VFS_FAT
 #define mp_type_fileio fatfs_type_fileio

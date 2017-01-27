@@ -34,11 +34,10 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "extmod/misc.h"
+#include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
-
-extern const mp_obj_type_t mp_fat_vfs_type;
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,

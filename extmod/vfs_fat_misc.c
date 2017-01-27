@@ -37,7 +37,7 @@
 #else
 #include "lib/fatfs/ff.h"
 #endif
-#include "extmod/vfs_fat_file.h"
+#include "extmod/vfs_fat.h"
 #include "extmod/fsusermount.h"
 #include "py/lexer.h"
 

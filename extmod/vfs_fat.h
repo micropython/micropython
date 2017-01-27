@@ -27,6 +27,7 @@
 struct _fs_user_mount_t;
 
 extern const byte fresult_to_errno_table[20];
+extern const mp_obj_type_t mp_fat_vfs_type;
 
 struct _fs_user_mount_t *ff_get_vfs(const char **path);
 
