@@ -49,7 +49,6 @@ testgroup_member = (
 test_dirs = ('basics', 'micropython', 'float', 'extmod', 'inlineasm') # 'import', 'io', 'misc')
 exclude_tests = (
     'float/float2int_doubleprec.py', # requires double precision floating point to work
-    'micropython/heapalloc_str.py',  # unknown
     'inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py', 'inlineasm/asmfpmuldiv.py', 'inlineasm/asmfpsqrt.py',
     'extmod/ticks_diff.py', 'extmod/time_ms_us.py', 'extmod/uheapq_timeq.py',
     'extmod/machine_pinbase.py', 'extmod/machine_pulse.py',
