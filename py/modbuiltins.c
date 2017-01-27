@@ -375,14 +375,14 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+#if (MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ) && MICROPY_MPZ_POW3
 STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
     if (MP_OBJ_IS_SMALL_INT(arg)) {
         mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
         return temp;
     } else {
         mp_obj_int_t *arp_p = MP_OBJ_TO_PTR(arg);
-	return &(arp_p->mpz);
+        return &(arp_p->mpz);
     }
 }
 #endif
@@ -390,13 +390,16 @@ STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 2: return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
-#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
-        default: return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
-#else
         default:
-	    if (!MP_OBJ_IS_INT(args[0]) || !MP_OBJ_IS_INT(args[1]) || !MP_OBJ_IS_INT(args[2])) {
-	        mp_raise_TypeError("pow() with 3 arguments requires integers");
-	    } else {
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
+            return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
+#else
+#if !MICROPY_MPZ_POW3
+            mp_raise_msg(&mp_type_NotImplementedError, "3-arg pow() not supported");
+#else
+            if (!MP_OBJ_IS_INT(args[0]) || !MP_OBJ_IS_INT(args[1]) || !MP_OBJ_IS_INT(args[2])) {
+	            mp_raise_TypeError("pow() with 3 arguments requires integers");
+	        } else {
                 mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
                 mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
 
@@ -412,7 +415,8 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
                 if (mod == &m_temp) { mpz_deinit(mod); }
                 return result;
             }
-#endif
+#endif // !MICROPY_MPZ_POW3
+#endif // MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);

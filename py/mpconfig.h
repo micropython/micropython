@@ -490,6 +490,10 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
 #endif
 
+#ifndef MICROPY_MPZ_POW3
+#define MICROPY_MPZ_POW3 (1)
+#endif
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 typedef long long mp_longint_impl_t;
 #endif
