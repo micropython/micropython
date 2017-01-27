@@ -62,7 +62,7 @@ CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 
 include ../py/mkrules.mk
 
-$(Z_EXPORTS):
+$(Z_EXPORTS): $(CONF_FILE)
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports
 
 GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
@@ -95,3 +95,8 @@ clean: z_clean
 
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
+
+.PHONY: prj.conf
+prj.conf: prj_base.conf
+	cat $< >$@
+	if [ -f prj_$(BOARD).conf ]; then cat prj_$(BOARD).conf >>$@; fi
