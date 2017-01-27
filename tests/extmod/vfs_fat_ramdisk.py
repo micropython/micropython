@@ -63,7 +63,7 @@ with vfs.open("foo_file.txt", "w") as f:
 print(vfs.listdir())
 
 print("stat root:", vfs.stat("/"))
-print("stat file:", vfs.stat("foo_file.txt"))
+print("stat file:", vfs.stat("foo_file.txt")[:-3]) # timestamps differ across runs
 
 print(b"FOO_FILETXT" in bdev.data)
 print(b"hello!" in bdev.data)
