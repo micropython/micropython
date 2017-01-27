@@ -395,13 +395,13 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 #else
         default:
 	    if (!MP_OBJ_IS_INT(args[0]) || !MP_OBJ_IS_INT(args[1]) || !MP_OBJ_IS_INT(args[2])) {
-	        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "pow() with 3 arguments requires integers"));
+	        mp_raise_TypeError("pow() with 3 arguments requires integers");
 	    } else {
                 mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
                 mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
 
-	        mpz_t l_temp, r_temp, m_temp;
-	        mpz_t *lhs = mp_mpz_for_int(args[0], &l_temp);
+                mpz_t l_temp, r_temp, m_temp;
+                mpz_t *lhs = mp_mpz_for_int(args[0], &l_temp);
                 mpz_t *rhs = mp_mpz_for_int(args[1], &r_temp);
                 mpz_t *mod = mp_mpz_for_int(args[2], &m_temp);
 
