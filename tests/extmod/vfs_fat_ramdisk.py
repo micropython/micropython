@@ -1,6 +1,9 @@
 import sys
-import uos
 import uerrno
+try:
+    import uos_vfs as uos
+except ImportError:
+    import uos
 try:
     uos.VfsFat
 except AttributeError:
@@ -44,7 +47,8 @@ uos.VfsFat.mkfs(bdev)
 print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
 
-vfs = uos.VfsFat(bdev, "/ramdisk")
+vfs = uos.VfsFat(bdev)
+uos.mount(vfs, "/ramdisk")
 
 print("statvfs:", vfs.statvfs("/ramdisk"))
 print("getcwd:", vfs.getcwd())
@@ -59,7 +63,6 @@ with vfs.open("foo_file.txt", "w") as f:
 print(vfs.listdir())
 
 print("stat root:", vfs.stat("/"))
-print("stat disk:", vfs.stat("/ramdisk/"))
 print("stat file:", vfs.stat("foo_file.txt"))
 
 print(b"FOO_FILETXT" in bdev.data)
@@ -81,7 +84,7 @@ except OSError as e:
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
 
-vfs.umount()
+uos.umount(vfs)
 
-vfs = uos.VfsFat(bdev, "/ramdisk")
+vfs = uos.VfsFat(bdev)
 print(vfs.listdir(b""))

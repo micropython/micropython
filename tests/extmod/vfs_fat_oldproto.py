@@ -1,10 +1,11 @@
 import sys
-import uos
 import uerrno
 try:
+    import uos_vfs as uos
+except ImportError:
+    import uos
+try:
     uos.VfsFat
-    uos.vfs_mkfs
-    uos.vfs_mount
 except AttributeError:
     print("SKIP")
     sys.exit()
@@ -39,11 +40,11 @@ except MemoryError:
     print("SKIP")
     sys.exit()
 
-uos.vfs_mkfs(bdev, "/ramdisk")
-uos.vfs_mount(bdev, "/ramdisk")
+uos.VfsFat.mkfs(bdev)
+vfs = uos.VfsFat(bdev)
+uos.mount(vfs, "/ramdisk")
 
 # file io
-vfs = uos.VfsFat(bdev, "/ramdisk")
 with vfs.open("file.txt", "w") as f:
     f.write("hello!")
 
@@ -54,6 +55,3 @@ with vfs.open("file.txt", "r") as f:
 
 vfs.remove("file.txt")
 print(vfs.listdir())
-
-# umount by device
-uos.vfs_umount(bdev)
