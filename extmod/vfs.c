@@ -36,21 +36,14 @@
 #if MICROPY_VFS
 
 // ROOT is 0 so that the default current directory is the root directory
-#define VFS_NONE ((vfs_mount_t*)1)
-#define VFS_ROOT ((vfs_mount_t*)0)
-
-typedef struct _vfs_mount_t {
-    const char *str; // mount point with leading /
-    size_t len;
-    mp_obj_t obj;
-    struct _vfs_mount_t *next;
-} vfs_mount_t;
+#define VFS_NONE ((mp_vfs_mount_t*)1)
+#define VFS_ROOT ((mp_vfs_mount_t*)0)
 
 // path is the path to lookup and *path_out holds the path within the VFS
 // object (starts with / if an absolute path).
 // Returns VFS_ROOT for root dir (and then path_out is undefined) and VFS_NONE
 // for path not found.
-STATIC vfs_mount_t *lookup_path_raw(const char *path, const char **path_out) {
+STATIC mp_vfs_mount_t *lookup_path_raw(const char *path, const char **path_out) {
     if (path[0] == '/' && path[1] == 0) {
         return VFS_ROOT;
     } else if (MP_STATE_VM(vfs_cur) == VFS_ROOT) {
@@ -64,7 +57,7 @@ STATIC vfs_mount_t *lookup_path_raw(const char *path, const char **path_out) {
         return MP_STATE_VM(vfs_cur);
     }
 
-    for (vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+    for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         if (strncmp(path, vfs->str, vfs->len) == 0) {
             if (path[vfs->len] == '/') {
                 *path_out = path + vfs->len;
@@ -81,10 +74,10 @@ STATIC vfs_mount_t *lookup_path_raw(const char *path, const char **path_out) {
 }
 
 // Version of lookup_path_raw that takes and returns uPy string objects.
-STATIC vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
+STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     const char *path = mp_obj_str_get_str(path_in);
     const char *p_out;
-    vfs_mount_t *vfs = lookup_path_raw(path, &p_out);
+    mp_vfs_mount_t *vfs = lookup_path_raw(path, &p_out);
     if (vfs != VFS_NONE && vfs != VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
             (const byte*)p_out, strlen(p_out));
@@ -92,7 +85,7 @@ STATIC vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     return vfs;
 }
 
-STATIC mp_obj_t mp_vfs_proxy_call(vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
@@ -111,7 +104,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(vfs_mount_t *vfs, qstr meth_name, size_t n_arg
 
 mp_import_stat_t mp_vfs_import_stat(const char *path) {
     const char *path_out;
-    vfs_mount_t *vfs = lookup_path_raw(path, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path_raw(path, &path_out);
     if (vfs == VFS_NONE || vfs == VFS_ROOT) {
         return MP_IMPORT_STAT_NO_EXIST;
     }
@@ -141,7 +134,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     const char *mnt_str = mp_obj_str_get_data(pos_args[1], &mnt_len);
 
     // create new object
-    vfs_mount_t *vfs = m_new_obj(vfs_mount_t);
+    mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
     vfs->str = mnt_str;
     vfs->len = mnt_len;
     vfs->obj = pos_args[0];
@@ -157,7 +150,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     }
 
     // insert the vfs into the mount table
-    vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table);
+    mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table);
     while (*vfsp != NULL) {
         vfsp = &(*vfsp)->next;
     }
@@ -169,13 +162,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 2, mp_vfs_mount);
 
 mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     // remove vfs from the mount table
-    vfs_mount_t *vfs = NULL;
+    mp_vfs_mount_t *vfs = NULL;
     mp_uint_t mnt_len;
     const char *mnt_str = NULL;
     if (MP_OBJ_IS_STR(mnt_in)) {
         mnt_str = mp_obj_str_get_data(mnt_in, &mnt_len);
     }
-    for (vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
+    for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
         if ((mnt_str != NULL && !memcmp(mnt_str, (*vfsp)->str, mnt_len + 1)) || (*vfsp)->obj == mnt_in) {
             vfs = *vfsp;
             *vfsp = (*vfsp)->next;
@@ -210,14 +203,14 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    vfs_mount_t *vfs = lookup_path((mp_obj_t)args[ARG_file].u_rom_obj, &args[ARG_file].u_obj);
+    mp_vfs_mount_t *vfs = lookup_path((mp_obj_t)args[ARG_file].u_rom_obj, &args[ARG_file].u_obj);
     return mp_vfs_proxy_call(vfs, MP_QSTR_open, 2, (mp_obj_t*)&args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_open_obj, 0, mp_vfs_open);
 
 mp_obj_t mp_vfs_chdir(mp_obj_t path_in) {
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs != VFS_ROOT) {
         mp_vfs_proxy_call(vfs, MP_QSTR_chdir, 1, &path_out);
     }
@@ -251,7 +244,7 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
 
     if (vfs == VFS_ROOT) {
         // list the root directory
@@ -269,22 +262,22 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     return mp_vfs_proxy_call(vfs, MP_QSTR_mkdir, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_mkdir_obj, mp_vfs_mkdir);
 
 mp_obj_t mp_vfs_remove(mp_obj_t path_in) {
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     return mp_vfs_proxy_call(vfs, MP_QSTR_remove, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_remove_obj, mp_vfs_remove);
 
 mp_obj_t mp_vfs_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
     mp_obj_t args[2];
-    vfs_mount_t *old_vfs = lookup_path(old_path_in, &args[0]);
-    vfs_mount_t *new_vfs = lookup_path(new_path_in, &args[1]);
+    mp_vfs_mount_t *old_vfs = lookup_path(old_path_in, &args[0]);
+    mp_vfs_mount_t *new_vfs = lookup_path(new_path_in, &args[1]);
     if (old_vfs != new_vfs) {
         // can't rename across filesystems
         mp_raise_OSError(MP_EPERM);
@@ -295,21 +288,21 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_vfs_rename_obj, mp_vfs_rename);
 
 mp_obj_t mp_vfs_rmdir(mp_obj_t path_in) {
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     return mp_vfs_proxy_call(vfs, MP_QSTR_rmdir, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj, mp_vfs_rmdir);
 
 mp_obj_t mp_vfs_stat(mp_obj_t path_in) {
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     return mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_stat_obj, mp_vfs_stat);
 
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in) {
     mp_obj_t path_out;
-    vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     return mp_vfs_proxy_call(vfs, MP_QSTR_statvfs, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj, mp_vfs_statvfs);

@@ -30,6 +30,13 @@
 #include "py/lexer.h"
 #include "py/obj.h"
 
+typedef struct _mp_vfs_mount_t {
+    const char *str; // mount point with leading /
+    size_t len;
+    mp_obj_t obj;
+    struct _mp_vfs_mount_t *next;
+} mp_vfs_mount_t;
+
 mp_import_stat_t mp_vfs_import_stat(const char *path);
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 mp_obj_t mp_vfs_umount(mp_obj_t mnt_in);

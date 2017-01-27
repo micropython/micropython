@@ -166,8 +166,8 @@ typedef struct _mp_state_vm_t {
     #endif
 
     #if MICROPY_VFS
-    struct _vfs_mount_t *vfs_cur;
-    struct _vfs_mount_t *vfs_mount_table;
+    struct _mp_vfs_mount_t *vfs_cur;
+    struct _mp_vfs_mount_t *vfs_mount_table;
     #endif
 
     //
