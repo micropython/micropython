@@ -37,7 +37,8 @@
 #include "py/mphal.h"
 
 #include "lib/utils/pyexec.h"
-#include "lib/fatfs/ff.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs.h"
 #include "extmod/fsusermount.h"
 
 #include "systick.h"
@@ -67,6 +68,7 @@
 void SystemClock_Config(void);
 
 fs_user_mount_t fs_user_mount_flash;
+mp_vfs_mount_t mp_vfs_mount_flash;
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -168,17 +170,14 @@ static const char fresh_readme_txt[] =
 // avoid inlining to avoid stack usage within main()
 MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
     // init the vfs object
-    fs_user_mount_t *vfs = &fs_user_mount_flash;
-    vfs->str = "/flash";
-    vfs->len = 6;
-    vfs->flags = 0;
-    pyb_flash_init_vfs(vfs);
-
-    // put the flash device in slot 0 (it will be unused at this point)
-    MP_STATE_PORT(fs_user_mount)[0] = vfs;
+    fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
+    vfs_fat->str = NULL;
+    vfs_fat->len = 0;
+    vfs_fat->flags = 0;
+    pyb_flash_init_vfs(vfs_fat);
 
     // try to mount the flash
-    FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+    FRESULT res = f_mount(&vfs_fat->fatfs);
 
     if (reset_mode == 3 || res == FR_NO_FILESYSTEM) {
         // no filesystem, or asked to reset it, so create a fresh one
@@ -187,33 +186,33 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
         led_state(PYB_LED_R2, 1);
         uint32_t start_tick = HAL_GetTick();
 
-        res = f_mkfs("/flash", 0, 0);
+        uint8_t working_buf[_MAX_SS];
+        res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
         if (res == FR_OK) {
             // success creating fresh LFS
         } else {
             printf("PYB: can't create flash filesystem\n");
-            MP_STATE_PORT(fs_user_mount)[0] = NULL;
             return;
         }
 
         // set label
-        f_setlabel("/flash/pybflash");
+        f_setlabel(&vfs_fat->fatfs, "pybflash");
 
         // create empty main.py
         FIL fp;
-        f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/main.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
         f_close(&fp);
 
         // create .inf driver file
-        f_open(&fp, "/flash/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/pybcdc.inf", FA_WRITE | FA_CREATE_ALWAYS);
         f_write(&fp, fresh_pybcdc_inf, sizeof(fresh_pybcdc_inf) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
         // create readme file
-        f_open(&fp, "/flash/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/README.txt", FA_WRITE | FA_CREATE_ALWAYS);
         f_write(&fp, fresh_readme_txt, sizeof(fresh_readme_txt) - 1 /* don't count null terminator */, &n);
         f_close(&fp);
 
@@ -224,30 +223,25 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
         // mount sucessful
     } else {
         printf("PYB: can't mount flash\n");
-        MP_STATE_PORT(fs_user_mount)[0] = NULL;
         return;
     }
 
+    // mount the flash device (there should be no other devices mounted at this point)
+    mp_vfs_mount_t *vfs = &mp_vfs_mount_flash;
+    vfs->str = "/flash";
+    vfs->len = 6;
+    vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+    vfs->next = NULL;
+    MP_STATE_VM(vfs_mount_table) = vfs;
+
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
-    f_chdrive("/flash");
+    MP_STATE_PORT(vfs_cur) = vfs;
 
     // Make sure we have a /flash/boot.py.  Create it if needed.
     FILINFO fno;
-#if _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
-    res = f_stat("/flash/boot.py", &fno);
-    if (res == FR_OK) {
-        if (fno.fattrib & AM_DIR) {
-            // exists as a directory
-            // TODO handle this case
-            // see http://elm-chan.org/fsw/ff/img/app2.c for a "rm -rf" implementation
-        } else {
-            // exists as a file, good!
-        }
-    } else {
+    res = f_stat(&vfs_fat->fatfs, "/boot.py", &fno);
+    if (res != FR_OK) {
         // doesn't exist, create fresh file
 
         // LED on to indicate creation of boot.py
@@ -255,7 +249,7 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
         uint32_t start_tick = HAL_GetTick();
 
         FIL fp;
-        f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
@@ -485,24 +479,29 @@ soft_reset:
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // create vfs object
-        fs_user_mount_t *vfs = m_new_obj_maybe(fs_user_mount_t);
-        if (vfs == NULL) {
+        fs_user_mount_t *vfs_fat = m_new_obj_maybe(fs_user_mount_t);
+        mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+        if (vfs == NULL || vfs_fat == NULL) {
             goto no_mem_for_sd;
         }
-        vfs->str = "/sd";
-        vfs->len = 3;
-        vfs->flags = FSUSER_FREE_OBJ;
-        sdcard_init_vfs(vfs);
+        vfs_fat->str = NULL;
+        vfs_fat->len = 0;
+        vfs_fat->flags = FSUSER_FREE_OBJ;
+        sdcard_init_vfs(vfs_fat);
 
-        // put the sd device in slot 1 (it will be unused at this point)
-        MP_STATE_PORT(fs_user_mount)[1] = vfs;
-
-        FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+        FRESULT res = f_mount(&vfs_fat->fatfs);
         if (res != FR_OK) {
             printf("PYB: can't mount SD card\n");
-            MP_STATE_PORT(fs_user_mount)[1] = NULL;
-            m_del_obj(fs_user_mount_t, vfs);
+            m_del_obj(fs_user_mount_t, vfs_fat);
+            m_del_obj(mp_vfs_mount_t, vfs);
         } else {
+            // mount the sd device after the internal flash
+            vfs->str = "/sd";
+            vfs->len = 3;
+            vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+            vfs->next = NULL;
+            MP_STATE_VM(vfs_mount_table)->next = vfs;
+
             // TODO these should go before the /flash entries in the path
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
             mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
@@ -520,7 +519,7 @@ soft_reset:
             #endif
             {
                 // use SD card as current directory
-                f_chdrive("/sd");
+                MP_STATE_PORT(vfs_cur) = vfs;
             }
         }
         no_mem_for_sd:;
@@ -534,8 +533,8 @@ soft_reset:
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
     if (reset_mode == 1 || reset_mode == 3) {
         const char *boot_py = "boot.py";
-        FRESULT res = f_stat(boot_py, NULL);
-        if (res == FR_OK) {
+        mp_import_stat_t stat = mp_import_stat(boot_py);
+        if (stat == MP_IMPORT_STAT_FILE) {
             int ret = pyexec_file(boot_py);
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
@@ -597,8 +596,8 @@ soft_reset:
         } else {
             main_py = mp_obj_str_get_str(MP_STATE_PORT(pyb_config_main));
         }
-        FRESULT res = f_stat(main_py, NULL);
-        if (res == FR_OK) {
+        mp_import_stat_t stat = mp_import_stat(main_py);
+        if (stat == MP_IMPORT_STAT_FILE) {
             int ret = pyexec_file(main_py);
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;

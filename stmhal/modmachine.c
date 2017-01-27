@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "modmachine.h"
 #include "py/gc.h"
@@ -34,8 +35,9 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "lib/utils/pyexec.h"
-#include "lib/fatfs/ff.h"
-#include "lib/fatfs/diskio.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs.h"
+#include "extmod/fsusermount.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "rng.h"
@@ -144,10 +146,16 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
 
     // free space on flash
     {
-        DWORD nclst;
-        FATFS *fatfs;
-        f_getfree("/flash", &nclst, &fatfs);
-        printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
+        for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+            if (strncmp("/flash", vfs->str, vfs->len) == 0) {
+                // assumes that it's a FatFs filesystem
+                fs_user_mount_t *vfs_fat = MP_OBJ_TO_PTR(vfs->obj);
+                DWORD nclst;
+                f_getfree(&vfs_fat->fatfs, &nclst);
+                printf("LFS free: %u bytes\n", (uint)(nclst * vfs_fat->fatfs.csize * 512));
+                break;
+            }
+        }
     }
 
     if (n_args == 1) {

@@ -29,7 +29,8 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs_fat.h"
 #include "extmod/fsusermount.h"
 
 #include "systick.h"
@@ -504,7 +505,9 @@ const mp_obj_type_t pyb_flash_type = {
 };
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
+    vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
     vfs->readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&pyb_flash_obj;
     vfs->readblocks[2] = (mp_obj_t)storage_read_blocks; // native version
