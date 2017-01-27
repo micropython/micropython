@@ -28,7 +28,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_FSUSERMOUNT
+#if MICROPY_VFS || MICROPY_FSUSERMOUNT
 
 #include <stdint.h>
 #include <stdio.h>
@@ -305,4 +305,4 @@ DRESULT disk_ioctl (
 }
 #endif
 
-#endif // MICROPY_FSUSERMOUNT
+#endif // MICROPY_VFS || MICROPY_FSUSERMOUNT

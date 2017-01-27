@@ -27,7 +27,7 @@
 #include "py/mpconfig.h"
 // *_ADHOC part is for cc3200 port which doesn't use general uPy
 // infrastructure and instead duplicates code. TODO: Resolve.
-#if MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
+#if MICROPY_VFS || MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
 
 #include <stdio.h>
 #include <errno.h>
@@ -224,13 +224,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
     #if MICROPY_FATFS_OO
-    if (vfs == NULL) {
-        vfs = ff_get_vfs(&fname);
-        if (vfs == NULL) {
-            m_del_obj(pyb_file_obj_t, o);
-            mp_raise_OSError(MP_ENOENT);
-        }
-    }
+    assert(vfs != NULL);
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     #else
     (void)vfs;
@@ -320,12 +314,14 @@ mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw
 }
 
 // Factory function for I/O stream classes
-mp_obj_t fatfs_builtin_open_self(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
     // TODO: analyze buffering args and instantiate appropriate type
-    fs_user_mount_t *self = MP_OBJ_TO_PTR(args[0]);
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, args + 1, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    arg_vals[0].u_obj = path;
+    arg_vals[1].u_obj = mode;
+    arg_vals[2].u_obj = mp_const_none;
     return file_open(self, &mp_type_textio, arg_vals);
 }
 
-#endif // MICROPY_FSUSERMOUNT
+#endif // MICROPY_VFS || MICROPY_FSUSERMOUNT

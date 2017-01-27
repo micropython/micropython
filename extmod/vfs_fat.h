@@ -32,7 +32,7 @@ extern const mp_obj_type_t mp_fat_vfs_type;
 struct _fs_user_mount_t *ff_get_vfs(const char **path);
 
 mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-mp_obj_t fatfs_builtin_open_self(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
 mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type);
