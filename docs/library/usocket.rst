@@ -74,21 +74,33 @@ Constants
 ---------
 
 .. data:: socket.AF_INET
+          socket.AF_INET6
 
-   family types
+   Address family types. Availability depends on a particular board.
 
 .. data:: socket.SOCK_STREAM
-.. data:: socket.SOCK_DGRAM
+          socket.SOCK_DGRAM
 
-   socket types
+   Socket types.
 
 .. data:: socket.IPPROTO_UDP
-.. data:: socket.IPPROTO_TCP
-.. only:: port_wipy
+          socket.IPPROTO_TCP
 
-   .. data:: socket.IPPROTO_SEC
+   IP protocol numbers.
 
-      protocol numbers
+.. data:: socket.SOL_*
+
+   Socket option levels (an argument to ``setsockopt()``). The exact inventory depends on a board.
+
+.. data:: socket.SO_*
+
+   Socket options (an argument to ``setsockopt()``). The exact inventory depends on a board.
+
+Constants specific to WiPy:
+
+.. data:: socket.IPPROTO_SEC
+
+    Special protocol value to create SSL-compatible socket.
 
 class socket
 ============
