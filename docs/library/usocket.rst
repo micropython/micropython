@@ -10,6 +10,12 @@ This module provides access to the BSD socket interface.
 See corresponding `CPython module <https://docs.python.org/3/library/socket.html>`_ for
 comparison.
 
+.. admonition:: Difference to CPython
+   :class: attention
+
+   CPython used to have a ``socket.error`` exception which is now deprecated,
+   and is an alias of OSError. In MicroPython, use OSError directly.
+
 Socket address format(s)
 ------------------------
 
@@ -51,13 +57,18 @@ Functions
       s = socket.socket()
       s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][-1])
 
-.. only:: port_wipy
+   .. admonition:: Difference to CPython
+      :class: attention
 
-    Exceptions
-    ----------
-
-    .. data:: socket.error
-    .. data:: socket.timeout
+      CPython raises a ``socket.gaierror`` exception (OSError subclass) in case
+      of error in this function. MicroPython doesn't have ``socket.gaierror``
+      and raises OSError directly. Note that error numbers of ``getaddrinfo()``
+      form a separate namespace and may not match error numbers from
+      ``uerrno`` module. To distinguish ``getaddrinfo()`` errors, they are
+      represented by negative numbers, whereas standard system errors are
+      positive numbers (error numbers are accessible using ``e.args[0]`` property
+      from an exception object). The use of negative values is a provisional
+      detail which may change in the future.
 
 Constants
 ---------
