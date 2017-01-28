@@ -39,7 +39,26 @@ static const uint32_t hal_twi_frequency_lookup[] = {
     TWIM_FREQUENCY_FREQUENCY_K400, // 400 kbps
 };
 
-void hal_twi_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
+void hal_twi_master_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
+    // cast to master type
+    NRF_TWIM_Type * twim_instance = (NRF_TWIM_Type *)p_instance;
+
+    twim_instance->PSEL.SCL  = p_twi_init->scl_pin->pin;
+    twim_instance->PSEL.SDA  = p_twi_init->sda_pin->pin;
+
+#if NRF52840_XXAA
+    twim_instance->PSEL.SCL |= (p_twi_init->scl_pin->port << TWIM_PSEL_SCL_PORT_Pos);
+    twim_instance->PSEL.SDA |= (p_twi_init->sda_pin->port << TWIM_PSEL_SDA_PORT_Pos);
+#endif
+    twim_instance->ADDRESS   = p_twi_init->dev_addr;
+    twim_instance->FREQUENCY = hal_twi_frequency_lookup[p_twi_init->freq];
+
+}
+
+void hal_twi_slave_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
+    // cast to slave type
+    NRF_TWIS_Type * twis_instance = (NRF_TWIS_Type *)p_instance;
+    (void)twis_instance;
 }
 
 #endif // HAL_TWIE_MODULE_ENABLED

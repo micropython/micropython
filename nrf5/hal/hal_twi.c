@@ -35,7 +35,10 @@ static const uint32_t hal_twi_frequency_lookup[] = {
     TWI_FREQUENCY_FREQUENCY_K400, // 400 kbps
 };
 
-void hal_twi_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
+void hal_twi_master_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
+}
+
+void hal_twi_slave_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
 }
 
 #endif // HAL_TWI_MODULE_ENABLED

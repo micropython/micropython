@@ -81,8 +81,11 @@ typedef enum {
   */
 typedef struct {
     uint8_t             id;           /* TWI instance id */
+    const pin_obj_t *   scl_pin;      /* TWI SCL pin */
+    const pin_obj_t *   sda_pin;      /* TWI SDA pin */
     hal_twi_role_t      role;         /* TWI master/slave */
     hal_twi_clk_freq_t  freq;         /* TWI frequency */
+    uint32_t            dev_addr;     /* TWI master device address */
 } hal_twi_init_t;
 
 /**
@@ -94,6 +97,9 @@ typedef struct __TWI_HandleTypeDef
     hal_twi_init_t      init;         /* TWI initialization parameters */
 } TWI_HandleTypeDef;
 
-void hal_twi_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init);
+void hal_twi_master_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init);
+
+void hal_twi_slave_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init);
+
 
 #endif // HAL_TWI_H__
