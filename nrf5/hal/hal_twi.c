@@ -29,6 +29,12 @@
 
 #ifdef HAL_TWI_MODULE_ENABLED
 
+static const uint32_t hal_twi_frequency_lookup[] = {
+    TWI_FREQUENCY_FREQUENCY_K100, // 100 kbps
+    TWI_FREQUENCY_FREQUENCY_K250, // 250 kbps
+    TWI_FREQUENCY_FREQUENCY_K400, // 400 kbps
+};
+
 void hal_twi_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
 }
 

@@ -60,25 +60,38 @@ typedef struct {
 #endif
 
 /**
-  * @brief  TWI Configuration Structure definition
+  * @brief  TWI clock frequency type definition
   */
-typedef struct {
-} hal_twi_init_t;
+typedef enum {
+    HAL_TWI_FREQ_100_Kbps = 0,
+    HAL_TWI_FREQ_250_Kbps,
+    HAL_TWI_FREQ_400_Kbps
+} hal_twi_clk_freq_t;
 
+/**
+  * @brief  TWI role type definition
+  */
 typedef enum {
     HAL_TWI_MASTER,
     HAL_TWI_SLAVE
-} hal_twi_mode_t;
+} hal_twi_role_t;
+
+/**
+  * @brief  TWI Configuration Structure definition
+  */
+typedef struct {
+    uint8_t             id;           /* TWI instance id */
+    hal_twi_role_t      role;         /* TWI master/slave */
+    hal_twi_clk_freq_t  freq;         /* TWI frequency */
+} hal_twi_init_t;
 
 /**
   * @brief  TWI handle Structure definition
   */
 typedef struct __TWI_HandleTypeDef
 {
-    NRF_TWI_Type               *instance;    /* TWI register base address */
-    hal_twi_init_t             init;         /* TWI initialization parameters */
-    uint8_t                    id;           /* TWI instance id */
-    hal_twi_mode_t             mode;         /* TWI master/slave */
+    NRF_TWI_Type        *instance;    /* TWI register base address */
+    hal_twi_init_t      init;         /* TWI initialization parameters */
 } TWI_HandleTypeDef;
 
 void hal_twi_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init);
