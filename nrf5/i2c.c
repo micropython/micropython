@@ -40,8 +40,8 @@ typedef struct _machine_i2c_obj_t {
     TWI_HandleTypeDef *i2c;
 } machine_i2c_obj_t;
 
-TWI_HandleTypeDef I2CHandle0 = {.instance = NULL, .id = 0};
-TWI_HandleTypeDef I2CHandle1 = {.instance = NULL, .id = 1};
+TWI_HandleTypeDef I2CHandle0 = {.instance = NULL, .init.id = 0};
+TWI_HandleTypeDef I2CHandle1 = {.instance = NULL, .init.id = 1};
 
 STATIC const machine_i2c_obj_t machine_i2c_obj[] = {
     {{&machine_i2c_type}, &I2CHandle0},
@@ -69,7 +69,7 @@ STATIC int i2c_find(mp_obj_t id) {
 
 STATIC void i2c_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = o;
-    mp_printf(print, "I2C(%u)", self->i2c->id);
+    mp_printf(print, "I2C(%u)", self->i2c->init.id);
 }
 
 /******************************************************************************/
