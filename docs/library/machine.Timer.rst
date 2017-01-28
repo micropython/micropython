@@ -10,6 +10,9 @@ defines a baseline operation of executing a callback with a given period
 (or once after some delay), and allow specific boards to define more
 non-standard behavior (which thus won't be portable to other boards).
 
+See discussion of :ref:`important constraints <machine_callbacks>` on
+Timer callbacks.
+
 .. note::
 
     Memory can't be allocated inside irq handlers (an interrupt) and so

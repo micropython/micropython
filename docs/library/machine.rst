@@ -1,10 +1,23 @@
-:mod:`machine` --- functions related to the board
-=================================================
+:mod:`machine` --- functions related to the hardware
+====================================================
 
 .. module:: machine
-   :synopsis: functions related to the board
+   :synopsis: functions related to the hardware
 
-The ``machine`` module contains specific functions related to the board.
+The ``machine`` module contains specific functions related to the hardware
+on a particular board. Most functions in this module allow to achieve direct
+and unrestricted access to and control of hardware blocks on a system
+(like CPU, timers, buses, etc.). Used incorrectly, this can lead to
+malfunction, lockups, crashes of your board, and in extreme cases, hardware
+damage.
+
+.. _machine_callbacks:
+
+A note of callbacks used by functions and class methods of ``machine`` module:
+all these callbacks should be considered as executing in an interrupt context.
+This is true for both physical devices with IDs >= 0 and "virtual" devices
+with negative IDs like -1 (these "virtual" devices are still thin shims on
+top of real hardware and real hardware intrerrupts). See :ref:`isr_rules`.
 
 Reset related functions
 -----------------------
