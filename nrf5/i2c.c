@@ -99,7 +99,7 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     int i2c_id = i2c_find(args[ARG_NEW_id].u_obj);
     const machine_i2c_obj_t *self = &machine_i2c_obj[i2c_id];
 
-    hal_twi_init(self->i2c->instance, &self->i2c->init);
+    hal_twi_master_init(self->i2c->instance, &self->i2c->init);
 
     return MP_OBJ_FROM_PTR(self);
 }
