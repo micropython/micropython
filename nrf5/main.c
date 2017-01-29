@@ -47,6 +47,7 @@
 #include "nrf.h"
 #include "pin.h"
 #include "spi.h"
+#include "i2c.h"
 #if MICROPY_PY_MACHINE_PWM
 #include "pwm.h"
 #endif
@@ -105,6 +106,10 @@ int main(int argc, char **argv) {
 
 #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
+#endif
+
+#if MICROPY_PY_MACHINE_HW_I2C
+    i2c_init0();
 #endif
 
 #if MICROPY_PY_MACHINE_PWM
