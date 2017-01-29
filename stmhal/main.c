@@ -249,7 +249,7 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
         uint32_t start_tick = HAL_GetTick();
 
         FIL fp;
-        f_open(&vfs_fat->fatfs, &fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
