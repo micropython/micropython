@@ -69,7 +69,12 @@ STATIC int i2c_find(mp_obj_t id) {
 
 STATIC void i2c_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = o;
-    mp_printf(print, "I2C(%u)", self->i2c->init.id);
+    mp_printf(print, "I2C(%u, scl=(port=%u, pin=%u), sda=(port=%u, pin=%u))",
+              self->i2c->init.id,
+              self->i2c->init.scl_pin->port,
+              self->i2c->init.scl_pin->pin,
+              self->i2c->init.sda_pin->port,
+              self->i2c->init.sda_pin->pin);
 }
 
 /******************************************************************************/
@@ -77,27 +82,39 @@ STATIC void i2c_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind)
 
 // for make_new
 enum {
-    ARG_NEW_id,
+    ARG_NEW_ID,
+    ARG_NEW_SCL,
+    ARG_NEW_SDA,
 };
 
 STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
+        { MP_QSTR_ID,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
+        { ARG_NEW_SCL,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_SDA,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_NEW_id].u_obj == MP_OBJ_NEW_SMALL_INT(-1)) {
-        // index -1 does not exist
-        return mp_const_none;
-        // TODO: raise exception
+    // get static peripheral object
+    int i2c_id = i2c_find(args[ARG_NEW_ID].u_obj);
+    const machine_i2c_obj_t *self = &machine_i2c_obj[i2c_id];
+
+    if (args[ARG_NEW_SCL].u_obj != MP_OBJ_NULL) {
+        self->i2c->init.scl_pin = args[ARG_NEW_SCL].u_obj;
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                  "I2C SCL Pin not set"));
     }
 
-    // get static peripheral object
-    int i2c_id = i2c_find(args[ARG_NEW_id].u_obj);
-    const machine_i2c_obj_t *self = &machine_i2c_obj[i2c_id];
+    if (args[ARG_NEW_SDA].u_obj != MP_OBJ_NULL) {
+        self->i2c->init.sda_pin = args[ARG_NEW_SDA].u_obj;
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                  "I2C SDA Pin not set"));
+    }
 
     hal_twi_master_init(self->i2c->instance, &self->i2c->init);
 
