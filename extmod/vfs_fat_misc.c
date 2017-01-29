@@ -30,18 +30,10 @@
 #include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
-#if MICROPY_FATFS_OO
 #include "lib/oofatfs/ff.h"
-#else
-#include "lib/fatfs/ff.h"
-#endif
 #include "extmod/vfs_fat.h"
 #include "extmod/fsusermount.h"
 #include "py/lexer.h"
-
-#if !MICROPY_FATFS_OO && _USE_LFN
-STATIC char lfn[_MAX_LFN + 1];   /* Buffer to store the LFN */
-#endif
 
 // TODO: actually, the core function should be ilistdir()
 
@@ -53,16 +45,8 @@ mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_ty
     FRESULT res;
     FILINFO fno;
     FF_DIR dir;
-#if !MICROPY_FATFS_OO && _USE_LFN
-    fno.lfname = lfn;
-    fno.lfsize = sizeof lfn;
-#endif
 
-    #if MICROPY_FATFS_OO
     res = f_opendir(&vfs->fatfs, &dir, path);
-    #else
-    res = f_opendir(&dir, path);                       /* Open the directory */
-    #endif
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -75,11 +59,7 @@ mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_ty
         if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;             /* Ignore . entry */
         if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
 
-#if !MICROPY_FATFS_OO && _USE_LFN
-        char *fn = *fno.lfname ? fno.lfname : fno.fname;
-#else
         char *fn = fno.fname;
-#endif
 
         /*
         if (fno.fattrib & AM_DIR) {
@@ -108,17 +88,8 @@ mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_ty
 
 mp_import_stat_t fat_vfs_import_stat(fs_user_mount_t *vfs, const char *path) {
     FILINFO fno;
-#if !MICROPY_FATFS_OO && _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
-    #if MICROPY_FATFS_OO
     assert(vfs != NULL);
     FRESULT res = f_stat(&vfs->fatfs, path, &fno);
-    #else
-    (void)vfs;
-    FRESULT res = f_stat(path, &fno);
-    #endif
     if (res == FR_OK) {
         if ((fno.fattrib & AM_DIR) != 0) {
             return MP_IMPORT_STAT_DIR;

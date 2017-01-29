@@ -32,10 +32,6 @@
 #error "with MICROPY_VFS_FAT enabled, must also enable MICROPY_VFS"
 #endif
 
-#if !MICROPY_FATFS_OO
-#error "with MICROPY_VFS_FAT enabled, must also enable MICROPY_FATFS_OO"
-#endif
-
 #include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"

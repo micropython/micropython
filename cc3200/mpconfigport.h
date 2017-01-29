@@ -64,7 +64,6 @@
 #define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_OO                            (1)
 #define MICROPY_FATFS_ENABLE_LFN                    (2)
 #define MICROPY_FATFS_MAX_LFN                       (MICROPY_ALLOC_PATH_MAX)
 #define MICROPY_FATFS_LFN_CODE_PAGE                 (437) // 1=SFN/ANSI 437=LFN/U.S.(OEM)
