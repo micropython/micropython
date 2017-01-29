@@ -27,6 +27,8 @@
 #include "ff.h"         /* Declarations of FatFs API */
 #include "diskio.h"     /* Declarations of device I/O functions */
 
+// DIR has been renamed FF_DIR in the public API so it doesn't clash with POSIX
+#define DIR FF_DIR
 
 /*--------------------------------------------------------------------------
 
@@ -3104,7 +3106,7 @@ FRESULT f_mount (
 
     fs->fs_type = 0;                    /* Clear new fs object */
 #if _FS_REENTRANT                       /* Create sync object for the new volume */
-    if (!ff_cre_syncobj((BYTE)vol, &fs->sobj)) return FR_INT_ERR;
+    if (!ff_cre_syncobj(fs, &fs->sobj)) return FR_INT_ERR;
 #endif
 
     res = find_volume(fs, 0);           /* Force mounted the volume */
@@ -3562,7 +3564,9 @@ FRESULT f_sync (
     FATFS *fs;
     DWORD tm;
     BYTE *dir;
+#if _FS_EXFAT
     DEF_NAMBUF
+#endif
 
 
     res = validate(&fp->obj, &fs);  /* Check validity of the file object */
