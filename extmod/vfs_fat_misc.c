@@ -54,7 +54,7 @@ mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
 mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_type) {
     FRESULT res;
     FILINFO fno;
-    DIR dir;
+    FF_DIR dir;
 #if !MICROPY_FATFS_OO && _USE_LFN
     fno.lfname = lfn;
     fno.lfsize = sizeof lfn;
