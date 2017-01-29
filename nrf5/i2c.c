@@ -30,22 +30,25 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/machine_i2c.h"
 #include "i2c.h"
 #include "hal_twi.h"
 
-#if MICROPY_PY_MACHINE_HW_I2C
+#if MICROPY_PY_MACHINE_I2C
 
-typedef struct _machine_i2c_obj_t {
+STATIC const mp_obj_type_t machine_hard_i2c_type;
+
+typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
     TWI_HandleTypeDef *i2c;
-} machine_i2c_obj_t;
+} machine_hard_i2c_obj_t;
 
 TWI_HandleTypeDef I2CHandle0 = {.instance = NULL, .init.id = 0};
 TWI_HandleTypeDef I2CHandle1 = {.instance = NULL, .init.id = 1};
 
-STATIC const machine_i2c_obj_t machine_i2c_obj[] = {
-    {{&machine_i2c_type}, &I2CHandle0},
-    {{&machine_i2c_type}, &I2CHandle1},
+STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
+    {{&machine_hard_i2c_type}, &I2CHandle0},
+    {{&machine_hard_i2c_type}, &I2CHandle1},
 };
 
 void i2c_init0(void) {
@@ -59,16 +62,16 @@ void i2c_init0(void) {
 STATIC int i2c_find(mp_obj_t id) {
     // given an integer id
     int i2c_id = mp_obj_get_int(id);
-    if (i2c_id >= 0 && i2c_id <= MP_ARRAY_SIZE(machine_i2c_obj)
-        && machine_i2c_obj[i2c_id].i2c != NULL) {
+    if (i2c_id >= 0 && i2c_id <= MP_ARRAY_SIZE(machine_hard_i2c_obj)
+        && machine_hard_i2c_obj[i2c_id].i2c != NULL) {
         return i2c_id;
     }
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
         "I2C(%d) does not exist", i2c_id));
 }
 
-STATIC void i2c_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
-    machine_i2c_obj_t *self = o;
+STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+    machine_hard_i2c_obj_t *self = o;
     mp_printf(print, "I2C(%u, scl=(port=%u, pin=%u), sda=(port=%u, pin=%u))",
               self->i2c->init.id,
               self->i2c->init.scl_pin->port,
@@ -82,16 +85,18 @@ STATIC void i2c_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind)
 
 // for make_new
 enum {
-    ARG_NEW_ID,
-    ARG_NEW_SCL,
-    ARG_NEW_SDA,
+    ARG_NEW_id,
+    ARG_NEW_scl,
+    ARG_NEW_sda,
+    ARG_NEW_freq,
+    ARG_NEW_timeout,
 };
 
-STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ID,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
-        { ARG_NEW_SCL,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { ARG_NEW_SDA,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { ARG_NEW_scl,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_sda,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args
@@ -99,18 +104,18 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get static peripheral object
-    int i2c_id = i2c_find(args[ARG_NEW_ID].u_obj);
-    const machine_i2c_obj_t *self = &machine_i2c_obj[i2c_id];
+    int i2c_id = i2c_find(args[ARG_NEW_id].u_obj);
+    const machine_hard_i2c_obj_t *self = &machine_hard_i2c_obj[i2c_id];
 
-    if (args[ARG_NEW_SCL].u_obj != MP_OBJ_NULL) {
-        self->i2c->init.scl_pin = args[ARG_NEW_SCL].u_obj;
+    if (args[ARG_NEW_scl].u_obj != MP_OBJ_NULL) {
+        self->i2c->init.scl_pin = args[ARG_NEW_scl].u_obj;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "I2C SCL Pin not set"));
     }
 
-    if (args[ARG_NEW_SDA].u_obj != MP_OBJ_NULL) {
-        self->i2c->init.sda_pin = args[ARG_NEW_SDA].u_obj;
+    if (args[ARG_NEW_sda].u_obj != MP_OBJ_NULL) {
+        self->i2c->init.sda_pin = args[ARG_NEW_sda].u_obj;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "I2C SDA Pin not set"));
@@ -121,29 +126,30 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
-    // instance methods
-#if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan),              (mp_obj_t)&machine_i2c_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom),          (mp_obj_t)&machine_i2c_readfrom_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_into),     (mp_obj_t)&machine_i2c_readfrom_into_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto),           (mp_obj_t)&machine_i2c_writeto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem),      (mp_obj_t)&machine_i2c_readfrom_mem_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem_into), (mp_obj_t)&machine_i2c_readfrom_mem_into_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto_mem),       (mp_obj_t)&machine_i2c_writeto_mem_obj },
-#endif
+#include <stdio.h>
+
+int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+    printf("machine_hard_i2c_readfrom called\n");
+    return 0;
+}
+
+int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+    printf("machine_hard_i2c_writeto called\n");
+    return 0;
+}
+
+STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
+    .readfrom = machine_hard_i2c_readfrom,
+    .writeto = machine_hard_i2c_writeto,
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
-
-const mp_obj_type_t machine_i2c_type = {
+STATIC const mp_obj_type_t machine_hard_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
-    .print = i2c_print,
-    .make_new = machine_i2c_make_new,
-#if 0
-    .locals_dict = (mp_obj_t)&machine_i2c_locals_dict
-#endif
+    .print = machine_hard_i2c_print,
+    .make_new = machine_hard_i2c_make_new,
+    .protocol = &machine_hard_i2c_p,
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
 };
 
-#endif // MICROPY_PY_MACHINE_HW_I2C
+#endif // MICROPY_PY_MACHINE_I2C

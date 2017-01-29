@@ -172,7 +172,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_PY_MACHINE_HW_SPI
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&machine_hard_spi_type },
 #endif
-#if MICROPY_PY_MACHINE_HW_I2C
+#if MICROPY_PY_MACHINE_I2C
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&machine_i2c_type },
 #endif
 #if MICROPY_PY_MACHINE_ADC
