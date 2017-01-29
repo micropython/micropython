@@ -133,10 +133,15 @@ int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 
 #define mp_hal_pin_obj_t const pin_obj_t*
-#define mp_hal_pin_high(p) (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTSET = (p)->pin_mask)
-#define mp_hal_pin_low(p)  (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTCLR = (p)->pin_mask)
-#define mp_hal_pin_read(p) (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->IN >> ((p)->pin) & 1)
-#define mp_hal_pin_write(p, v)  do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_get_pin_obj(o)    pin_find(o)
+#define mp_hal_pin_high(p)       (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTSET = (p)->pin_mask)
+#define mp_hal_pin_low(p)        (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTCLR = (p)->pin_mask)
+#define mp_hal_pin_read(p)       (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->IN >> ((p)->pin) & 1)
+#define mp_hal_pin_write(p, v)   do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
+#define mp_hal_pin_od_low(p)     mp_hal_pin_low(p)
+#define mp_hal_pin_od_high(p)    mp_hal_pin_high(p)
+#define mp_hal_pin_open_drain(p) hal_gpio_cfg_pin(p->port, p->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED)
+
 
 // TODO: empty implementation for now. Used by machine_spi.c:69
 #define mp_hal_delay_us_fast(p)
