@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
-#include "extmod/fsusermount.h"
 #include "mphalport.h"
 
 #include "sdcard.h"

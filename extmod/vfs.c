@@ -31,9 +31,12 @@
 #include "py/objstr.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
 
 #if MICROPY_VFS
+
+#if MICROPY_VFS_FAT
+#include "extmod/vfs_fat.h"
+#endif
 
 // path is the path to lookup and *path_out holds the path within the VFS
 // object (starts with / if an absolute path).

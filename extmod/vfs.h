@@ -35,6 +35,13 @@
 #define MP_VFS_NONE ((mp_vfs_mount_t*)1)
 #define MP_VFS_ROOT ((mp_vfs_mount_t*)0)
 
+// constants for block protocol ioctl
+#define BP_IOCTL_INIT           (1)
+#define BP_IOCTL_DEINIT         (2)
+#define BP_IOCTL_SYNC           (3)
+#define BP_IOCTL_SEC_COUNT      (4)
+#define BP_IOCTL_SEC_SIZE       (5)
+
 typedef struct _mp_vfs_mount_t {
     const char *str; // mount point with leading /
     size_t len;

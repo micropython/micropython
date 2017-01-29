@@ -36,7 +36,7 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs.h"
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"

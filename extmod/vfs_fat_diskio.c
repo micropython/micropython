@@ -38,7 +38,7 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 
 #if _MAX_SS == _MIN_SS
 #define SECSIZE(fs) (_MIN_SS)

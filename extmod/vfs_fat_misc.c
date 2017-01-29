@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
-#include "extmod/fsusermount.h"
 #include "py/lexer.h"
 
 // TODO: actually, the core function should be ilistdir()

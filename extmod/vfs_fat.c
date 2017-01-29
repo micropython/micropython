@@ -38,7 +38,6 @@
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
-#include "extmod/fsusermount.h"
 #include "timeutils.h"
 
 #if _MAX_SS == _MIN_SS

@@ -35,7 +35,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
-#include "extmod/fsusermount.h"
 #include "extmod/vfs_fat.h"
 
 #if MICROPY_VFS_FAT

@@ -37,7 +37,7 @@
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "rng.h"

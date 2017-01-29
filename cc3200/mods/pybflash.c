@@ -31,7 +31,6 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs_fat.h"
-#include "extmod/fsusermount.h"
 
 #include "fatfs/src/drivers/sflash_diskio.h"
 #include "mods/pybflash.h"

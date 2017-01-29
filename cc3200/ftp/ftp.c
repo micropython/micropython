@@ -32,7 +32,7 @@
 #include "py/obj.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
