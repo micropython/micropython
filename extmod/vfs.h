@@ -30,6 +30,11 @@
 #include "py/lexer.h"
 #include "py/obj.h"
 
+// return values of mp_vfs_lookup_path
+// ROOT is 0 so that the default current directory is the root directory
+#define MP_VFS_NONE ((mp_vfs_mount_t*)1)
+#define MP_VFS_ROOT ((mp_vfs_mount_t*)0)
+
 typedef struct _mp_vfs_mount_t {
     const char *str; // mount point with leading /
     size_t len;
@@ -37,6 +42,7 @@ typedef struct _mp_vfs_mount_t {
     struct _mp_vfs_mount_t *next;
 } mp_vfs_mount_t;
 
+mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out);
 mp_import_stat_t mp_vfs_import_stat(const char *path);
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 mp_obj_t mp_vfs_umount(mp_obj_t mnt_in);

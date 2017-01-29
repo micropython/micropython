@@ -35,21 +35,17 @@
 
 #if MICROPY_VFS
 
-// ROOT is 0 so that the default current directory is the root directory
-#define VFS_NONE ((mp_vfs_mount_t*)1)
-#define VFS_ROOT ((mp_vfs_mount_t*)0)
-
 // path is the path to lookup and *path_out holds the path within the VFS
 // object (starts with / if an absolute path).
-// Returns VFS_ROOT for root dir (and then path_out is undefined) and VFS_NONE
-// for path not found.
-STATIC mp_vfs_mount_t *lookup_path_raw(const char *path, const char **path_out) {
+// Returns MP_VFS_ROOT for root dir (and then path_out is undefined) and
+// MP_VFS_NONE for path not found.
+mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out) {
     if (path[0] == '/' && path[1] == 0) {
-        return VFS_ROOT;
-    } else if (MP_STATE_VM(vfs_cur) == VFS_ROOT) {
+        return MP_VFS_ROOT;
+    } else if (MP_STATE_VM(vfs_cur) == MP_VFS_ROOT) {
         // in root dir
         if (path[0] == 0) {
-            return VFS_ROOT;
+            return MP_VFS_ROOT;
         }
     } else if (*path != '/') {
         // a relative path within a mounted device
@@ -70,15 +66,15 @@ STATIC mp_vfs_mount_t *lookup_path_raw(const char *path, const char **path_out) 
     }
 
     // mount point not found
-    return VFS_NONE;
+    return MP_VFS_NONE;
 }
 
-// Version of lookup_path_raw that takes and returns uPy string objects.
+// Version of mp_vfs_lookup_path that takes and returns uPy string objects.
 STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     const char *path = mp_obj_str_get_str(path_in);
     const char *p_out;
-    mp_vfs_mount_t *vfs = lookup_path_raw(path, &p_out);
-    if (vfs != VFS_NONE && vfs != VFS_ROOT) {
+    mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
+    if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
             (const byte*)p_out, strlen(p_out));
     }
@@ -86,11 +82,11 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
 }
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
-    if (vfs == VFS_NONE) {
+    if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
     }
-    if (vfs == VFS_ROOT) {
+    if (vfs == MP_VFS_ROOT) {
         // can't do operation on root dir
         mp_raise_OSError(MP_EPERM);
     }
@@ -104,8 +100,8 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
 
 mp_import_stat_t mp_vfs_import_stat(const char *path) {
     const char *path_out;
-    mp_vfs_mount_t *vfs = lookup_path_raw(path, &path_out);
-    if (vfs == VFS_NONE || vfs == VFS_ROOT) {
+    mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &path_out);
+    if (vfs == MP_VFS_NONE || vfs == MP_VFS_ROOT) {
         return MP_IMPORT_STAT_NO_EXIST;
     }
     #if MICROPY_VFS_FAT
@@ -145,7 +141,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
 
     // check that the destination mount point is unused
     const char *path_out;
-    if (lookup_path_raw(mp_obj_str_get_str(pos_args[1]), &path_out) != VFS_NONE) {
+    if (mp_vfs_lookup_path(mp_obj_str_get_str(pos_args[1]), &path_out) != MP_VFS_NONE) {
         mp_raise_OSError(MP_EPERM);
     }
 
@@ -182,7 +178,7 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
 
     // if we unmounted the current device then set current to root
     if (MP_STATE_VM(vfs_cur) == vfs) {
-        MP_STATE_VM(vfs_cur) = VFS_ROOT;
+        MP_STATE_VM(vfs_cur) = MP_VFS_ROOT;
     }
 
     // call the underlying object to do any unmounting operation
@@ -211,7 +207,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_open_obj, 0, mp_vfs_open);
 mp_obj_t mp_vfs_chdir(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
-    if (vfs != VFS_ROOT) {
+    if (vfs != MP_VFS_ROOT) {
         mp_vfs_proxy_call(vfs, MP_QSTR_chdir, 1, &path_out);
     }
     MP_STATE_VM(vfs_cur) = vfs;
@@ -220,7 +216,7 @@ mp_obj_t mp_vfs_chdir(mp_obj_t path_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_chdir_obj, mp_vfs_chdir);
 
 mp_obj_t mp_vfs_getcwd(void) {
-    if (MP_STATE_VM(vfs_cur) == VFS_ROOT) {
+    if (MP_STATE_VM(vfs_cur) == MP_VFS_ROOT) {
         return MP_OBJ_NEW_QSTR(MP_QSTR__slash_);
     }
     mp_obj_t cwd_o = mp_vfs_proxy_call(MP_STATE_VM(vfs_cur), MP_QSTR_getcwd, 0, NULL);
@@ -246,7 +242,7 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
 
-    if (vfs == VFS_ROOT) {
+    if (vfs == MP_VFS_ROOT) {
         // list the root directory
         mp_obj_t dir_list = mp_obj_new_list(0, NULL);
         for (vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
