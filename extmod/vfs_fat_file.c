@@ -25,9 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-// *_ADHOC part is for cc3200 port which doesn't use general uPy
-// infrastructure and instead duplicates code. TODO: Resolve.
-#if MICROPY_VFS || MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
+#if MICROPY_VFS || MICROPY_FSUSERMOUNT
 
 #include <stdio.h>
 #include <errno.h>
