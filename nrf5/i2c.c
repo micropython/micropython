@@ -124,20 +124,14 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
 STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
 #if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&machine_i2c_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&machine_i2c_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready), (mp_obj_t)&machine_i2c_is_ready_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&machine_i2c_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&machine_i2c_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&machine_i2c_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read), (mp_obj_t)&machine_i2c_mem_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write), (mp_obj_t)&machine_i2c_mem_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_scan),              (mp_obj_t)&machine_i2c_scan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom),          (mp_obj_t)&machine_i2c_readfrom_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_into),     (mp_obj_t)&machine_i2c_readfrom_into_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto),           (mp_obj_t)&machine_i2c_writeto_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem),      (mp_obj_t)&machine_i2c_readfrom_mem_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem_into), (mp_obj_t)&machine_i2c_readfrom_mem_into_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto_mem),       (mp_obj_t)&machine_i2c_writeto_mem_obj },
 #endif
-    // class constants
-    /// \constant MASTER - for initialising the bus to master mode
-    /// \constant SLAVE - for initialising the bus to slave mode
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER),       MP_OBJ_NEW_SMALL_INT(HAL_TWI_MASTER) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SLAVE),        MP_OBJ_NEW_SMALL_INT(HAL_TWI_SLAVE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
