@@ -1,10 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Daniel Campora
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MODUOS_H_
-#define MODUOS_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBFLASH_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBFLASH_H
 
 #include "py/obj.h"
 
-/******************************************************************************
- DEFINE PUBLIC TYPES
- ******************************************************************************/
+extern const mp_obj_type_t pyb_flash_type;
 
-typedef struct _os_term_dup_obj_t {
-    mp_obj_t stream_o;
-    mp_obj_t read[3];
-    mp_obj_t write[3];
-} os_term_dup_obj_t;
+void pyb_flash_init_vfs(fs_user_mount_t *vfs);
 
-/******************************************************************************
- DECLARE PUBLIC FUNCTIONS
- ******************************************************************************/
-void osmount_unmount_all (void);
-
-#endif // MODUOS_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBFLASH_H

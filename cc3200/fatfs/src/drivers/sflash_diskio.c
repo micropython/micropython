@@ -4,8 +4,9 @@
 
 #include "py/mpconfig.h"
 #include "py/obj.h"
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
 #include "simplelink.h"
-#include "diskio.h"
 #include "sflash_diskio.h"
 #include "debug.h"
 #include "modnetwork.h"
