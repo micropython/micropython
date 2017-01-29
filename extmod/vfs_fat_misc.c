@@ -36,10 +36,6 @@
 
 // TODO: actually, the core function should be ilistdir()
 
-mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type) {
-    return fat_vfs_listdir2(NULL, path, is_str_type);
-}
-
 mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_type) {
     FRESULT res;
     FILINFO fno;
