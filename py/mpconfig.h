@@ -403,11 +403,6 @@
 #define MICROPY_READER_VFS (0)
 #endif
 
-// Whether to use the FatFS reader for importing files
-#ifndef MICROPY_READER_FATFS
-#define MICROPY_READER_FATFS (0)
-#endif
-
 // Hook for the VM at the start of the opcode loop (can contain variable
 // definitions usable by the other hook functions)
 #ifndef MICROPY_VM_HOOK_INIT
