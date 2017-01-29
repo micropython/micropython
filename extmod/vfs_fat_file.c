@@ -290,14 +290,6 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    // TODO: analyze buffering args and instantiate appropriate type
-    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open(NULL, &mp_type_textio, arg_vals);
-}
-
-// Factory function for I/O stream classes
 mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
     // TODO: analyze buffering args and instantiate appropriate type
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
