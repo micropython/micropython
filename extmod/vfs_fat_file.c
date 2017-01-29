@@ -25,7 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_VFS || MICROPY_FSUSERMOUNT
+#if MICROPY_VFS
 
 #include <stdio.h>
 #include <errno.h>
@@ -322,4 +322,4 @@ mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode)
     return file_open(self, &mp_type_textio, arg_vals);
 }
 
-#endif // MICROPY_VFS || MICROPY_FSUSERMOUNT
+#endif // MICROPY_VFS

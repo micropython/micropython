@@ -616,11 +616,6 @@ typedef double mp_float_t;
 #define MICROPY_USE_INTERNAL_PRINTF (1)
 #endif
 
-// Support for user-space VFS mount (selected ports)
-#ifndef MICROPY_FSUSERMOUNT
-#define MICROPY_FSUSERMOUNT (0)
-#endif
-
 // Support for generic VFS sub-system
 #ifndef MICROPY_VFS
 #define MICROPY_VFS (0)

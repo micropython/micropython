@@ -25,7 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_VFS_FAT || MICROPY_FSUSERMOUNT
+#if MICROPY_VFS_FAT
 
 #include <string.h>
 #include "py/nlr.h"
