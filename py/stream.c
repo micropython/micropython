@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include "py/nlr.h"
+#include "py/objtype.h"
 #include "py/objstr.h"
 #include "py/stream.h"
 #include "py/runtime.h"
@@ -55,10 +56,9 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 // be equal to input size).
 mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode, byte flags) {
     byte *buf = buf_;
-    mp_obj_base_t* s = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
     typedef mp_uint_t (*io_func_t)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     io_func_t io_func;
-    const mp_stream_p_t *stream_p = s->type->protocol;
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, flags & MP_STREAM_RW_WRITE ? MP_STREAM_OP_WRITE : MP_STREAM_OP_READ);
     if (flags & MP_STREAM_RW_WRITE) {
         io_func = (io_func_t)stream_p->write;
     } else {
@@ -93,6 +93,52 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
     return done;
 }
 
+STATIC mp_uint_t user_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
+    mp_obj_t dest[3];
+    mp_load_method(obj, MP_QSTR_read, dest);
+    dest[2] = mp_obj_new_bytearray_by_ref(size, buf);
+    mp_int_t ret = mp_obj_get_int(mp_call_method_n_kw(1, 0, dest));
+    if (ret >= 0) {
+        return ret;
+    } else {
+        *errcode = -ret;
+        return MP_STREAM_ERROR;
+    }
+}
+
+STATIC mp_uint_t user_write(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode) {
+    mp_obj_t dest[3];
+    mp_load_method(obj, MP_QSTR_write, dest);
+    dest[2] = mp_obj_new_bytearray_by_ref(size, (void*)buf);
+    mp_int_t ret = mp_obj_get_int(mp_call_method_n_kw(1, 0, dest));
+    if (ret >= 0) {
+        return ret;
+    } else {
+        *errcode = -ret;
+        return MP_STREAM_ERROR;
+    }
+}
+
+STATIC mp_uint_t user_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_t dest[4];
+    mp_load_method(obj, MP_QSTR_ioctl, dest);
+    dest[2] = mp_obj_new_int(request);
+    dest[3] = mp_obj_new_int_from_uint(arg);
+    mp_int_t ret = mp_obj_get_int(mp_call_method_n_kw(2, 0, dest));
+    if (ret >= 0) {
+        return ret;
+    } else {
+        *errcode = -ret;
+        return MP_STREAM_ERROR;
+    }
+}
+
+STATIC mp_stream_p_t user_stream_p = {
+    user_read,
+    user_write,
+    user_ioctl,
+};
+
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     mp_obj_type_t *type = mp_obj_get_type(self_in);
     const mp_stream_p_t *stream_p = type->protocol;
@@ -100,6 +146,10 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
         || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
         || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
         || ((flags & MP_STREAM_OP_IOCTL) && stream_p->ioctl == NULL)) {
+        // if the object is a user instance then return a protocol adaptor
+        if (mp_obj_is_instance_type(type)) {
+            return &user_stream_p;
+        }
         // CPython: io.UnsupportedOperation, OSError subclass
         mp_raise_msg(&mp_type_OSError, "stream operation not supported");
     }
@@ -245,8 +295,6 @@ STATIC mp_obj_t stream_read1(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj, 1, 2, stream_read1);
 
 mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte flags) {
-    mp_get_stream_raise(self_in, MP_STREAM_OP_WRITE);
-
     int error;
     mp_uint_t out_sz = mp_stream_rw(self_in, (void*)buf, len, &error, flags);
     if (error != 0) {
