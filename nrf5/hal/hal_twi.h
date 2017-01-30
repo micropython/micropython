@@ -85,7 +85,6 @@ typedef struct {
     const pin_obj_t *   sda_pin;      /* TWI SDA pin */
     hal_twi_role_t      role;         /* TWI master/slave */
     hal_twi_clk_freq_t  freq;         /* TWI frequency */
-    uint32_t            dev_addr;     /* TWI master device address */
 } hal_twi_init_t;
 
 /**
@@ -98,6 +97,17 @@ typedef struct __TWI_HandleTypeDef
 } TWI_HandleTypeDef;
 
 void hal_twi_master_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init);
+
+void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
+                       uint8_t         addr,
+                       uint16_t        transfer_size,
+                       const uint8_t * tx_data);
+
+void hal_twi_master_rx(NRF_TWI_Type  * p_instance,
+                       uint8_t         addr,
+                       uint16_t        transfer_size,
+                       const uint8_t * rx_data);
+
 
 void hal_twi_slave_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init);
 
