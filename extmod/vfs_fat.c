@@ -38,7 +38,7 @@
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
 
 #if _MAX_SS == _MIN_SS
 #define SECSIZE(fs) (_MIN_SS)
