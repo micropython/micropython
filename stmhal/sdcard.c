@@ -447,6 +447,7 @@ void sdcard_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
+    vfs->fatfs.part = 0; // autodetect partition
     vfs->readblocks[0] = (mp_obj_t)&pyb_sdcard_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
     vfs->readblocks[2] = (mp_obj_t)sdcard_read_blocks; // native version
