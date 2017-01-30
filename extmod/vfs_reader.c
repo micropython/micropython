@@ -81,6 +81,7 @@ int mp_reader_new_file(mp_reader_t *reader, const char *filename) {
         rf->file = mp_vfs_open(1, &arg, (mp_map_t*)&mp_const_empty_map);
         int errcode;
         rf->len = mp_stream_rw(rf->file, rf->buf, sizeof(rf->buf), &errcode, MP_STREAM_RW_READ | MP_STREAM_RW_ONCE);
+        nlr_pop();
         if (errcode != 0) {
             return errcode;
         }
