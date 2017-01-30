@@ -95,7 +95,7 @@ the screen to see the result.
 
 To get the location of the touch you can use the method::
 
-    >>> lcd.get_touched()
+    >>> lcd.get_touch()
 
 This will return a 3-tuple, with the first entry being 0 or 1 depending on whether
 there is currently anything touching the screen (1 if there is), and the second and
