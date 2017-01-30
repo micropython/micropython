@@ -149,7 +149,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_cache_sector_size = flash_sector_size;
     }
     flash_flags |= FLASH_FLAG_DIRTY;
-    led_state(PYB_LED_R1, 1); // indicate a dirty cache with LED on
+    led_state(PYB_LED_RED, 1); // indicate a dirty cache with LED on
     flash_tick_counter_last_write = HAL_GetTick();
     return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
 }
@@ -261,7 +261,7 @@ void storage_irq_handler(void) {
         // clear the flash flags now that we have a clean cache
         flash_flags = 0;
         // indicate a clean cache with LED off
-        led_state(PYB_LED_R1, 0);
+        led_state(PYB_LED_RED, 0);
     }
 
     #endif
