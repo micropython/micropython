@@ -43,6 +43,7 @@
 
 #include "systick.h"
 #include "pendsv.h"
+#include "pybthread.h"
 #include "gccollect.h"
 #include "readline.h"
 #include "modmachine.h"
@@ -67,6 +68,7 @@
 
 void SystemClock_Config(void);
 
+pyb_thread_t pyb_thread_main;
 fs_user_mount_t fs_user_mount_flash;
 mp_vfs_mount_t mp_vfs_mount_flash;
 
@@ -419,11 +421,6 @@ STATIC uint update_reset_mode(uint reset_mode) {
 int main(void) {
     // TODO disable JTAG
 
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_ctrl_init();
-    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
-
     /* STM32F4xx HAL library initialization:
          - Configure the Flash prefetch, instruction and Data caches
          - Configure the Systick to generate an interrupt each 1 msec
@@ -457,6 +454,7 @@ int main(void) {
     #endif
 
     // basic sub-system init
+    pyb_thread_init(&pyb_thread_main);
     pendsv_init();
     led_init();
 #if MICROPY_HW_HAS_SWITCH
@@ -501,6 +499,17 @@ soft_reset:
     if (first_soft_reset) {
         storage_init();
     }
+
+    // Python threading init
+    #if MICROPY_PY_THREAD
+    mp_thread_init();
+    #endif
+
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    // Note: stack control relies on main thread being initialised above
+    mp_stack_ctrl_init();
+    mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 1024);
 
     // GC init
     gc_init(&_heap_start, &_heap_end);
