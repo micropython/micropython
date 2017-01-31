@@ -356,16 +356,37 @@ For example::
        Following are commonly supported parameters (availability of a specific parameter
        depends on network technology type, driver, and MicroPython port).
 
-       =========  ===========
-       Parameter  Description
-       =========  ===========
-       mac        MAC address (bytes)
-       essid      WiFi access point name (string)
-       channel    WiFi channel (integer)
-       hidden     Whether ESSID is hidden (boolean)
-       authmode   Authentication mode supported (enumeration, see module constants)
-       password   Access password (string)
-       =========  ===========
+       The parameters available for interfaces in AP mode are:
+
+       =============  ===========
+       Parameter      Description
+       =============  ===========
+       mac            MAC address (bytes)
+       essid          WiFi access point name (string)
+       channel        WiFi channel (integer)
+       hidden         Whether ESSID is hidden (boolean)
+       authmode       Authentication mode supported (enumeration, see module constants)
+       password       Access password (string, read-only)
+       =============  ===========
+
+       All interfaces in STA mode do only support the following smaller subset 
+       of parameters:
+
+       =============  ===========
+       Parameter      Description
+       =============  ===========
+       mac            MAC address (bytes)
+       dhcp_hostname  Hostname reported in DHCP client request (string)
+       =============  ===========
+
+       .. note::
+          
+          The parameter ``mac`` can be set for interfaces in STA and AP mode.
+          They must be different!
+
+       .. note::
+          
+          The first bit in the first byte of the MAC address can not be 1!
 
 
 
