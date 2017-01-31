@@ -263,6 +263,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     return true;
 }
 
+#if MICROPY_HW_HAS_SDCARD
 STATIC bool init_sdcard_fs(bool first_soft_reset) {
     bool first_part = true;
     for (int part_num = 1; part_num <= 4; ++part_num) {
@@ -338,6 +339,7 @@ STATIC bool init_sdcard_fs(bool first_soft_reset) {
         return true;
     }
 }
+#endif
 
 STATIC uint update_reset_mode(uint reset_mode) {
 #if MICROPY_HW_HAS_SWITCH
