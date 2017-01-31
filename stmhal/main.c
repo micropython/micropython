@@ -168,7 +168,7 @@ static const char fresh_readme_txt[] =
 ;
 
 // avoid inlining to avoid stack usage within main()
-MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
+MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
     vfs_fat->str = NULL;
@@ -192,7 +192,7 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
             // success creating fresh LFS
         } else {
             printf("PYB: can't create flash filesystem\n");
-            return;
+            return false;
         }
 
         // set label
@@ -223,7 +223,7 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
         // mount sucessful
     } else {
         printf("PYB: can't mount flash\n");
-        return;
+        return false;
     }
 
     // mount the flash device (there should be no other devices mounted at this point)
@@ -259,9 +259,11 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
         sys_tick_wait_at_least(start_tick, 200);
         led_state(PYB_LED_GREEN, 0);
     }
+
+    return true;
 }
 
-STATIC void init_sdcard_fs(bool first_soft_reset) {
+STATIC bool init_sdcard_fs(bool first_soft_reset) {
     bool first_part = true;
     for (int part_num = 1; part_num <= 4; ++part_num) {
         // create vfs object
@@ -308,12 +310,6 @@ STATIC void init_sdcard_fs(bool first_soft_reset) {
                 }
             }
 
-            if (first_part) {
-                // TODO these should go before the /flash entries in the path
-                mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
-                mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
-            }
-
             if (first_soft_reset) {
                 // use SD card as medium for the USB MSD
                 #if defined(USE_DEVICE_MODE)
@@ -337,6 +333,9 @@ STATIC void init_sdcard_fs(bool first_soft_reset) {
 
     if (first_part) {
         printf("PYB: can't mount SD card\n");
+        return false;
+    } else {
+        return true;
     }
 }
 
@@ -508,8 +507,6 @@ soft_reset:
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     mp_obj_list_init(mp_sys_argv, 0);
 
     // Initialise low-level sub-systems.  Here we need to very basic things like
@@ -552,14 +549,25 @@ soft_reset:
 
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
-    init_flash_fs(reset_mode);
+    bool mounted_flash = init_flash_fs(reset_mode);
 
+    bool mounted_sdcard = false;
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
-        init_sdcard_fs(first_soft_reset);
+        mounted_sdcard = init_sdcard_fs(first_soft_reset);
     }
 #endif
+
+    // set sys.path based on mounted filesystems (/sd is first so it can override /flash)
+    if (mounted_sdcard) {
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
+    }
+    if (mounted_flash) {
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
+    }
 
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
