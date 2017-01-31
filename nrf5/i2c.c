@@ -121,6 +121,8 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
                   "I2C SDA Pin not set"));
     }
 
+    self->i2c->init.freq = HAL_TWI_FREQ_100_Kbps;
+
     hal_twi_master_init(self->i2c->instance, &self->i2c->init);
 
     return MP_OBJ_FROM_PTR(self);
@@ -134,7 +136,10 @@ int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *de
 }
 
 int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
-    printf("machine_hard_i2c_writeto called\n");
+    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)self_in;
+
+    hal_twi_master_tx(self->i2c->instance, addr, len, src, stop);
+
     return 0;
 }
 
