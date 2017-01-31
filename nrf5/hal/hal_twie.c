@@ -50,8 +50,58 @@ void hal_twi_master_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi
     twim_instance->PSEL.SCL |= (p_twi_init->scl_pin->port << TWIM_PSEL_SCL_PORT_Pos);
     twim_instance->PSEL.SDA |= (p_twi_init->sda_pin->port << TWIM_PSEL_SDA_PORT_Pos);
 #endif
-    twim_instance->ADDRESS   = p_twi_init->dev_addr;
     twim_instance->FREQUENCY = hal_twi_frequency_lookup[p_twi_init->freq];
+    twim_instance->ENABLE    = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
+}
+
+#include <stdio.h>
+
+void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
+                       uint8_t         addr,
+                       uint16_t        transfer_size,
+                       const uint8_t * tx_data,
+                       bool            stop) {
+    // cast to master type
+    NRF_TWIM_Type * twim_instance = (NRF_TWIM_Type *)p_instance;
+
+    twim_instance->ADDRESS = addr;
+
+    printf("Hal I2C transfer size: %u, addr: %x, stop: %u\n", transfer_size, addr, stop);
+    twim_instance->TXD.MAXCNT     = transfer_size;
+    twim_instance->TXD.PTR        = (uint32_t)tx_data;
+
+    if (stop) {
+        twim_instance->SHORTS = TWIM_SHORTS_LASTTX_STOP_Msk;
+    } else {
+        twim_instance->SHORTS = TWIM_SHORTS_LASTTX_SUSPEND_Msk;
+    }
+
+    if (twim_instance->EVENTS_SUSPENDED == 1) {
+        printf("Resuming\n");
+        twim_instance->EVENTS_SUSPENDED = 0;
+        twim_instance->EVENTS_STOPPED   = 0;
+        twim_instance->TASKS_RESUME     = 1; // in case of resume
+    } else {
+        printf("Starting\n");
+        twim_instance->EVENTS_SUSPENDED = 0;
+        twim_instance->EVENTS_STOPPED   = 0;
+        twim_instance->TASKS_STARTTX    = 1;
+    }
+
+    printf("Going into loop\n");
+    while (twim_instance->EVENTS_STOPPED == 0 && twim_instance->EVENTS_SUSPENDED == 0) {
+        ;
+    }
+}
+
+void hal_twi_master_rx(NRF_TWI_Type  * p_instance,
+                       uint8_t         addr,
+                       uint16_t        transfer_size,
+                       const uint8_t * rx_data) {
+    // cast to master type
+    NRF_TWIM_Type * twim_instance = (NRF_TWIM_Type *)p_instance;
+
+    twim_instance->ADDRESS = addr;
 
 }
 
