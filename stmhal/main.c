@@ -454,7 +454,9 @@ int main(void) {
     #endif
 
     // basic sub-system init
+    #if MICROPY_PY_THREAD
     pyb_thread_init(&pyb_thread_main);
+    #endif
     pendsv_init();
     led_init();
 #if MICROPY_HW_HAS_SWITCH

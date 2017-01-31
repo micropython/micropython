@@ -289,10 +289,12 @@ void SysTick_Handler(void) {
         dma_idle_handler(uwTick);
     }
 
+    #if MICROPY_PY_THREAD
     // signal a thread switch at 4ms=250Hz
     if (pyb_thread_enabled && (uwTick & 0x03) == 0x03) {
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }
+    #endif
 }
 
 /******************************************************************************/
