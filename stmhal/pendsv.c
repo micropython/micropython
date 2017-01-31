@@ -70,21 +70,21 @@ void pendsv_isr_handler(void) {
     // on entry to this (naked) function, stack has the following layout:
     //
     // stack layout with DEBUG disabled:
-    //   sp[6]: pc
-    //   sp[5]: ?
-    //   sp[4]: ?
-    //   sp[3]: ?
-    //   sp[2]: ?
-    //   sp[1]: ?
+    //   sp[6]: pc=r15
+    //   sp[5]: lr=r14
+    //   sp[4]: r12
+    //   sp[3]: r3
+    //   sp[2]: r2
+    //   sp[1]: r1
     //   sp[0]: r0
     //
     // stack layout with DEBUG enabled:
-    //   sp[8]: pc
-    //   sp[7]: lr
-    //   sp[6]: ?
-    //   sp[5]: ?
-    //   sp[4]: ?
-    //   sp[3]: ?
+    //   sp[8]: pc=r15
+    //   sp[7]: lr=r14
+    //   sp[6]: r12
+    //   sp[5]: r3
+    //   sp[4]: r2
+    //   sp[3]: r1
     //   sp[2]: r0
     //   sp[1]: 0xfffffff9
     //   sp[0]: ?
