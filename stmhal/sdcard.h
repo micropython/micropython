@@ -41,4 +41,4 @@ extern const struct _mp_obj_type_t pyb_sdcard_type;
 extern const struct _mp_obj_base_t pyb_sdcard_obj;
 
 struct _fs_user_mount_t;
-void sdcard_init_vfs(struct _fs_user_mount_t *vfs);
+void sdcard_init_vfs(struct _fs_user_mount_t *vfs, int part);

@@ -261,6 +261,85 @@ MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
     }
 }
 
+STATIC void init_sdcard_fs(bool first_soft_reset) {
+    bool first_part = true;
+    for (int part_num = 1; part_num <= 4; ++part_num) {
+        // create vfs object
+        fs_user_mount_t *vfs_fat = m_new_obj_maybe(fs_user_mount_t);
+        mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+        if (vfs == NULL || vfs_fat == NULL) {
+            break;
+        }
+        vfs_fat->str = NULL;
+        vfs_fat->len = 0;
+        vfs_fat->flags = FSUSER_FREE_OBJ;
+        sdcard_init_vfs(vfs_fat, part_num);
+
+        // try to mount the partition
+        FRESULT res = f_mount(&vfs_fat->fatfs);
+
+        if (res != FR_OK) {
+            // couldn't mount
+            m_del_obj(fs_user_mount_t, vfs_fat);
+            m_del_obj(mp_vfs_mount_t, vfs);
+        } else {
+            // mounted via FatFs, now mount the SD partition in the VFS
+            if (first_part) {
+                // the first available partition is traditionally called "sd" for simplicity
+                vfs->str = "/sd";
+                vfs->len = 3;
+            } else {
+                // subsequent partitions are numbered by their index in the partition table
+                if (part_num == 2) {
+                    vfs->str = "/sd2";
+                } else if (part_num == 2) {
+                    vfs->str = "/sd3";
+                } else {
+                    vfs->str = "/sd4";
+                }
+                vfs->len = 4;
+            }
+            vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+            vfs->next = NULL;
+            for (mp_vfs_mount_t **m = &MP_STATE_VM(vfs_mount_table);; m = &(*m)->next) {
+                if (*m == NULL) {
+                    *m = vfs;
+                    break;
+                }
+            }
+
+            if (first_part) {
+                // TODO these should go before the /flash entries in the path
+                mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
+                mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
+            }
+
+            if (first_soft_reset) {
+                // use SD card as medium for the USB MSD
+                #if defined(USE_DEVICE_MODE)
+                pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
+                #endif
+            }
+
+            #if defined(USE_DEVICE_MODE)
+            // only use SD card as current directory if that's what the USB medium is
+            if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
+            #endif
+            {
+                if (first_part) {
+                    // use SD card as current directory
+                    MP_STATE_PORT(vfs_cur) = vfs;
+                }
+            }
+            first_part = false;
+        }
+    }
+
+    if (first_part) {
+        printf("PYB: can't mount SD card\n");
+    }
+}
+
 STATIC uint update_reset_mode(uint reset_mode) {
 #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
@@ -478,51 +557,7 @@ soft_reset:
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
-        // create vfs object
-        fs_user_mount_t *vfs_fat = m_new_obj_maybe(fs_user_mount_t);
-        mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
-        if (vfs == NULL || vfs_fat == NULL) {
-            goto no_mem_for_sd;
-        }
-        vfs_fat->str = NULL;
-        vfs_fat->len = 0;
-        vfs_fat->flags = FSUSER_FREE_OBJ;
-        sdcard_init_vfs(vfs_fat);
-
-        FRESULT res = f_mount(&vfs_fat->fatfs);
-        if (res != FR_OK) {
-            printf("PYB: can't mount SD card\n");
-            m_del_obj(fs_user_mount_t, vfs_fat);
-            m_del_obj(mp_vfs_mount_t, vfs);
-        } else {
-            // mount the sd device after the internal flash
-            vfs->str = "/sd";
-            vfs->len = 3;
-            vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
-            vfs->next = NULL;
-            MP_STATE_VM(vfs_mount_table)->next = vfs;
-
-            // TODO these should go before the /flash entries in the path
-            mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd));
-            mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_sd_slash_lib));
-
-            if (first_soft_reset) {
-                // use SD card as medium for the USB MSD
-#if defined(USE_DEVICE_MODE)
-                pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
-#endif
-            }
-
-            #if defined(USE_DEVICE_MODE)
-            // only use SD card as current directory if that's what the USB medium is
-            if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
-            #endif
-            {
-                // use SD card as current directory
-                MP_STATE_PORT(vfs_cur) = vfs;
-            }
-        }
-        no_mem_for_sd:;
+        init_sdcard_fs(first_soft_reset);
     }
 #endif
 
