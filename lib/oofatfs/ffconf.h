@@ -278,7 +278,11 @@
 /  Note that enabling exFAT discards C89 compatibility. */
 
 
+#ifdef MICROPY_FATFS_NORTC
+#define _FS_NORTC   (MICROPY_FATFS_NORTC)
+#else
 #define _FS_NORTC   0
+#endif
 #define _NORTC_MON  1
 #define _NORTC_MDAY 1
 #define _NORTC_YEAR 2016
