@@ -276,9 +276,18 @@ For example::
         argument is passed. Otherwise, query current state if no argument is
         provided. Most other methods require active interface.
 
-    .. method:: wlan.connect(ssid, password)
+    .. method:: wlan.connect([ssid, [password]])
 
         Connect to the specified wireless network, using the specified password.
+
+        If no password is provided the ESP8266 tries to connect with the last 
+        known credentials for the specified SSID.
+
+        Both arguments can be skipped to let the ESP8266 try to establish a 
+        connection to the last used wireless network.
+
+        Up to 5 different SSIDs and passwords are cached by the ESP8266 and
+        stored in a dedicated segment of flash memory.
 
     .. method:: wlan.disconnect()
 
