@@ -375,10 +375,31 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
+#if (MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ) && MICROPY_MPZ_POW3
+STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
+    if (MP_OBJ_IS_SMALL_INT(arg)) {
+        mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
+        return temp;
+    } else {
+        mp_obj_int_t *arp_p = MP_OBJ_TO_PTR(arg);
+        return &(arp_p->mpz);
+    }
+}
+#endif
+
 STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 2: return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
-        default: return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]); // TODO optimise...
+        default:
+#if !MICROPY_INT_POW3
+            mp_raise_msg(&mp_type_NotImplementedError, "3-arg pow() not supported");
+#else
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
+            return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
+#else
+            return mp_obj_int_pow3(args[0], args[1], args[2]);
+#endif // MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
+#endif // !MICROPY_INT_POW3
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
