@@ -90,6 +90,9 @@ $(Z_SYSGEN_H):
 minimal:
 	$(MAKE) BOARD=$(BOARD) CONF_FILE=prj_minimal.conf CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
 
+qemu-minimal:
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=prj_minimal.conf QEMU_NET=0 run
+
 # Clean Zephyr things too
 clean: z_clean
 
