@@ -38,24 +38,48 @@
 //|
 //| PWMOut can be used to output a PWM signal on a given pin.
 //|
-//| .. class:: PWMOut(pin, duty=0, frequency=500, variable_frequency=False)
+//| .. class:: PWMOut(pin, duty_cycle=0, frequency=500, variable_frequency=False)
 //|
 //|   Create a PWM object associated with the given pin. This allows you to
 //|   write PWM signals out on the given pin. Frequency is fixed after init
 //|   unless `variable_frequency` is True.
+//|
+//|   .. note:: When ``variable_frequency`` is True, further PWM outputs may be
+//|     limited because it may take more internal resources to be flexible. So,
+//|     when outputting both fixed and flexible frequency signals construct the
+//|     fixed outputs first.
 //|
 //|   :param ~microcontroller.Pin pin: The pin to output to
 //|   :param int duty: The fraction of each pulse which is high. 16-bit
 //|   :param int frequency: The target frequency in Hertz (32-bit)
 //|   :param bool variable_frequency: True if the frequency will change over time
 //|
-//|   Example usage::
+//|   Simple LED fade::
 //|
 //|     import nativeio
 //|     import board
 //|
 //|     with nativeio.PWMOut(board.D13) as pwm:     # output on D13
-//|       pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16)
+//|       pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
+//|
+//|   PWM at specific frequency (servos and motors)::
+//|
+//|     import nativeio
+//|     import board
+//|
+//|     with nativeio.PWMOut(board.D13, frequency=50) as pwm:
+//|       pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
+//|
+//|   Variable frequency (usually tones)::
+//|
+//|     import nativeio
+//|     import board
+//|     import time
+//|
+//|     with nativeio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True) as pwm:
+//|       time.sleep(0.2)
+//|       pwm.frequency = 880
+//|       time.sleep(0.1)
 //|
 STATIC mp_obj_t nativeio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -72,7 +96,7 @@ STATIC mp_obj_t nativeio_pwmout_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     enum { ARG_duty, ARG_frequency, ARG_variable_frequency };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_duty, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500} },
         { MP_QSTR_variable_frequency, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
