@@ -489,13 +489,16 @@ STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_SUBTRACT:
             return set_diff(2, args);
         case MP_BINARY_OP_INPLACE_OR:
-            return set_union(lhs, rhs);
+            set_update(2, args);
+            return lhs;
         case MP_BINARY_OP_INPLACE_XOR:
-            return set_symmetric_difference(lhs, rhs);
+            set_symmetric_difference_update(lhs, rhs);
+            return lhs;
         case MP_BINARY_OP_INPLACE_AND:
-            return set_intersect(lhs, rhs);
+            set_intersect_int(lhs, rhs, true);
+            return lhs;
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            return set_diff(2, args);
+            return set_diff_int(2, args, true);
         case MP_BINARY_OP_LESS:
             return set_issubset_proper(lhs, rhs);
         case MP_BINARY_OP_MORE:
