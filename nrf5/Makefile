@@ -114,7 +114,6 @@ SRC_HAL = $(addprefix hal/,\
 	hal_rtc.c \
 	hal_timer.c \
 	hal_twi.c \
-	hal_twie.c \
 	hal_adc.c \
 	hal_adce.c \
 	)
