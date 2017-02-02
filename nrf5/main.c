@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
     spi_init0();
 #endif
 
-#if MICROPY_PY_MACHINE_HW_I2C
+#if MICROPY_PY_MACHINE_I2C
     i2c_init0();
 #endif
 
