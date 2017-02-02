@@ -235,7 +235,10 @@ freedos:
 	PROG=micropython_freedos \
 	MICROPY_PY_SOCKET=0 \
 	MICROPY_PY_FFI=0 \
-	MICROPY_PY_JNI=0
+	MICROPY_PY_JNI=0 \
+	MICROPY_PY_BTREE=0 \
+	MICROPY_PY_THREAD=0 \
+	MICROPY_PY_USSL=0
 
 # build an interpreter for coverage testing and do the testing
 coverage:
