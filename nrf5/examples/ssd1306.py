@@ -1,5 +1,14 @@
 # MicroPython SSD1306 OLED driver, I2C and SPI interfaces
 
+# Example usage for I2C on pca10040 / pca10056
+#
+# from machine import Pin, I2C
+# from ssd1306 import SSD1306_I2C
+# self.scl = Pin("A3", mode=Pin.OUT, pull=Pin.PULL_UP)
+# self.sda = Pin("A4", mode=Pin.OUT, pull=Pin.PULL_UP)
+# self.i2c = I2C(0, self.scl, self.sda)
+# self.ssd = SSD1306_I2C(128, 64, self.i2c)
+
 import time
 import framebuf
 from machine import SPI, Pin
