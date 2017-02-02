@@ -50,7 +50,7 @@ void hal_twi_master_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi
     p_instance->FREQUENCY = hal_twi_frequency_lookup[p_twi_init->freq];
     p_instance->ENABLE    = (TWI_ENABLE_ENABLE_Enabled << TWI_ENABLE_ENABLE_Pos);
 }
-
+#include <stdio.h>
 void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
                        uint8_t         addr,
                        uint16_t        transfer_size,
@@ -62,15 +62,25 @@ void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
     p_instance->ADDRESS = addr;
 
     while (number_of_txd_bytes < transfer_size) {
-        p_instance->TXD            = (uint32_t)(tx_data[number_of_txd_bytes]);
         p_instance->EVENTS_TXDSENT = 0;
+        p_instance->TXD            = tx_data[number_of_txd_bytes];
         p_instance->TASKS_STARTTX  = 1;
 
         // wait for the transaction complete
         while (p_instance->EVENTS_TXDSENT == 0) {
             ;
         }
+
         number_of_txd_bytes++;
+    }
+
+    if (stop) {
+        p_instance->EVENTS_STOPPED   = 0;
+        p_instance->TASKS_STOP       = 1;
+
+        while (p_instance->EVENTS_STOPPED == 0) {
+            ;
+        }
     }
 }
 
