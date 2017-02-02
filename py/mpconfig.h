@@ -490,6 +490,11 @@
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
 #endif
 
+// Support for calls to buildin.pow() with 3 integer arguments
+#ifndef MICROPY_INT_POW3
+#define MICROPY_INT_POW3 (1)
+#endif
+
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 typedef long long mp_longint_impl_t;
 #endif

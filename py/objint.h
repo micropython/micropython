@@ -67,4 +67,8 @@ mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in);
 mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 
+#if (MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ) && MICROPY_INT_POW3
+mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus);
+#endif
+
 #endif // __MICROPY_INCLUDED_PY_OBJINT_H__
