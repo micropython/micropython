@@ -56,7 +56,22 @@ void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
                        uint16_t        transfer_size,
                        const uint8_t * tx_data,
                        bool            stop) {
+
+    uint16_t number_of_txd_bytes = 0;
+
     p_instance->ADDRESS = addr;
+
+    while (number_of_txd_bytes < transfer_size) {
+        p_instance->TXD            = (uint32_t)(tx_data[number_of_txd_bytes]);
+        p_instance->EVENTS_TXDSENT = 0;
+        p_instance->TASKS_STARTTX  = 1;
+
+        // wait for the transaction complete
+        while (p_instance->EVENTS_TXDSENT == 0) {
+            ;
+        }
+        number_of_txd_bytes++;
+    }
 }
 
 void hal_twi_master_rx(NRF_TWI_Type  * p_instance,
