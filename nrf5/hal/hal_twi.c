@@ -61,18 +61,24 @@ void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
 
     p_instance->ADDRESS = addr;
 
-    while (number_of_txd_bytes < transfer_size) {
-        p_instance->EVENTS_TXDSENT = 0;
-        p_instance->TXD            = tx_data[number_of_txd_bytes];
-        p_instance->TASKS_STARTTX  = 1;
+    p_instance->EVENTS_TXDSENT = 0;
 
+    p_instance->TXD            = tx_data[number_of_txd_bytes];
+    p_instance->TASKS_STARTTX  = 1;
+
+    while (number_of_txd_bytes < transfer_size) {
         // wait for the transaction complete
         while (p_instance->EVENTS_TXDSENT == 0) {
             ;
         }
 
         number_of_txd_bytes++;
+
+        // TODO: This could go one byte out of bound.
+        p_instance->TXD            = tx_data[number_of_txd_bytes];
+        p_instance->EVENTS_TXDSENT = 0;
     }
+
 
     if (stop) {
         p_instance->EVENTS_STOPPED   = 0;
