@@ -95,7 +95,10 @@ void hal_spi_master_init(NRF_SPI_Type * p_instance, hal_spi_init_t const * p_spi
     p_instance->ENABLE = (SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
 }
 
-void hal_spi_master_tx_rx(NRF_SPI_Type * p_instance, uint16_t transfer_size, const uint8_t * tx_data, uint8_t * rx_data) {
+void hal_spi_master_tx_rx(NRF_SPI_Type  * p_instance,
+                          uint16_t        transfer_size,
+                          const uint8_t * tx_data,
+                          uint8_t       * rx_data) {
 
     uint16_t number_of_txd_bytes = 0;
 
