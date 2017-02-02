@@ -34,6 +34,7 @@ docs are low-level API docs and may link out to separate getting started guides.
 
     shared-bindings/index.rst
     docs/common_hal
+    docs/design_guide
     docs/drivers.rst
     docs/supported_ports.rst
     docs/library/index.rst
