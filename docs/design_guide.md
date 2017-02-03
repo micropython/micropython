@@ -38,16 +38,27 @@ provide `__enter__` and `__exit__` to create a context manager usable with `with
 
 ## Verify your device
 
-Make sure device you are talking to is the device you expect. If not, raise a
-ValueError. Beware that I2C addresses can be identical on different devices so
-read registers you know to make sure they match your expectation. Validating
-this upfront will help catch mistakes.
+Whenever possible, make sure device you are talking to is the device you expect.
+If not, raise a ValueError. Beware that I2C addresses can be identical on
+different devices so read registers you know to make sure they match your
+expectation. Validating this upfront will help catch mistakes.
 
 ## Getters/Setters
 
 When designing a driver for a device, use properties for device state and use
-methods for actions that the device performs. Doing this well helps beginners
-understand when to use what. It is also consistent with
+methods for sequences of abstract actions that the device performs. State is a
+property of the device as a whole that exists regardless of what the code is
+doing. This includes things like temperature, time, sound, light and the state
+of a switch. For a more complete list see the sensor properties bullet below.
+
+Another way to separate state from actions is that state is usually something
+the user can sense themselves by sight or feel for example. Actions are
+something the user can watch. The device does this and then this.
+
+Making this separation clear to the user will help beginners understand when to
+use what.
+
+Here is more info on properties from
 [Python](https://docs.python.org/3/library/functions.html#property).
 
 ## Design for compatibility with CPython
@@ -61,6 +72,15 @@ modules to add extra functionality. By distinguishing API boundaries at modules
 you increase the likelihood that incorrect expectations are found on import and
 not randomly during runtime.
 
+### Example
+When adding extra functionality to CircuitPython to mimic what a normal
+operating system would do, either copy an existing CPython API (for example file
+writing) or create a separate module to achieve what you want. For example,
+mounting and unmount drives is not a part of CPython so it should be done in a
+module, such as a new `filesystem`, that is only available in CircuitPython.
+That way when someone moves the code to CPython they know what parts need to be
+adapted.
+
 ## Document inline
 
 Whenever possible, document your code right next to the code that implements it.
@@ -68,7 +88,11 @@ This makes it more likely to stay up to date with the implementation itself. Use
 Sphinx's automodule to format these all nicely in ReadTheDocs. The cookiecutter
 helps set these up.
 
-Use [rST](http://docutils.sourceforge.net/docs/user/rst/quickref.html) for markup.
+Use [Sphinx flavor rST](http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html) for markup.
+
+Lots of documentation is a good thing but it can take a lot of space. To
+minimize the space used on disk and on load, distribute the library as both .py
+and .mpy, MicroPython and CircuitPython's bytecode format that omits comments.
 
 ### Module description
 
@@ -147,6 +171,9 @@ bytearray buffers that are created in `__init__` and used throughout the
 object with methods that read or write into the buffer instead of creating new
 objects. `nativeio` classes are design to read and write to subsections of
 buffers.
+
+Its ok to allocate an object to return to the user. Just beware of causing more
+than one allocation per call due to internal logic.
 
 **However**, this is a memory tradeoff so do not do it for large or rarely used
 buffers.
