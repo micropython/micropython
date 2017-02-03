@@ -263,7 +263,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
         if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self->uart_id)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && uart_tx_any(self->uart_id)) {
+        if ((flags & MP_STREAM_POLL_WR) && uart_tx_any_room(self->uart_id)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {

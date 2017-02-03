@@ -101,6 +101,6 @@ void uart_os_config(int uart);
 void uart_setup(uint8 uart);
 // check status of rx/tx
 int uart_rx_any(uint8 uart);
-int uart_tx_any(uint8 uart);
+int uart_tx_any_room(uint8 uart);
 
 #endif // _INCLUDED_UART_H_
