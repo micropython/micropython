@@ -282,19 +282,14 @@ const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *need
 mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // check for modulo
     if (op == MP_BINARY_OP_MODULO) {
-        mp_obj_t *args;
-        mp_uint_t n_args;
+        mp_obj_t *args = &rhs_in;
+        mp_uint_t n_args = 1;
         mp_obj_t dict = MP_OBJ_NULL;
         if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple)) {
             // TODO: Support tuple subclasses?
             mp_obj_tuple_get(rhs_in, &n_args, &args);
         } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
-            args = NULL;
-            n_args = 0;
             dict = rhs_in;
-        } else {
-            args = &rhs_in;
-            n_args = 1;
         }
         return str_modulo_format(lhs_in, n_args, args, dict);
     }
@@ -1376,6 +1371,10 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
 
         // Dictionary value lookup
         if (*str == '(') {
+            if (dict == MP_OBJ_NULL) {
+                mp_raise_TypeError("format requires a dict");
+            }
+            arg_i = 1; // we used up the single dict argument
             const byte *key = ++str;
             while (*str != ')') {
                 if (str >= top) {
