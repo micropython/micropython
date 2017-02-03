@@ -38,6 +38,10 @@ INC += -Iasf/common/services/storage/ctrl_access/
 INC += -Iasf/common/services/usb/
 INC += -Iasf/common/services/usb/class/cdc/
 INC += -Iasf/common/services/usb/class/cdc/device/
+INC += -Iasf/common/services/usb/class/hid/
+INC += -Iasf/common/services/usb/class/hid/device/
+INC += -Iasf/common/services/usb/class/hid/device/kbd/
+INC += -Iasf/common/services/usb/class/hid/device/mouse/
 INC += -Iasf/common/services/usb/class/msc/
 INC += -Iasf/common/services/usb/class/msc/device/
 INC += -Iasf/common/services/usb/udc/
@@ -183,6 +187,9 @@ SRC_C = \
 	asf/common/services/storage/ctrl_access/ctrl_access.c  \
 	asf/common/services/usb/class/cdc/device/udi_cdc.c \
 	asf/common/services/usb/class/composite/device/udi_composite_desc.c \
+	asf/common/services/usb/class/hid/device/udi_hid.c \
+	asf/common/services/usb/class/hid/device/mouse/udi_hid_mouse.c \
+	asf/common/services/usb/class/hid/device/kbd/udi_hid_kbd.c \
 	asf/common/services/usb/class/msc/device/udi_msc.c     \
 	asf/common/services/usb/udc/udc.c \
 	asf/common/utils/interrupt/interrupt_sam_nvic.c \
@@ -221,7 +228,9 @@ SRC_BINDINGS = \
 	nativeio/SPI.c \
 	nativeio/UART.c \
 	neopixel_write/__init__.c \
-	time/__init__.c
+	time/__init__.c \
+	usb_hid/__init__.c \
+	usb_hid/Device.c
 
 SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
                         $(addprefix common-hal/, $(SRC_BINDINGS))

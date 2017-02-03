@@ -29,15 +29,17 @@ extern char serial_number[USB_DEVICE_GET_SERIAL_NAME_LENGTH];
 //! Control endpoint size
 #define  USB_DEVICE_EP_CTRL_SIZE       64
 
-//! Two interfaces for this device (CDC COM + CDC DATA + MSC)
-#define  USB_DEVICE_NB_INTERFACE       3
+//! Interfaces for this device (CDC COM + CDC DATA + MSC + HID mouse + HID kbd)
+#define  USB_DEVICE_NB_INTERFACE       5
 
 // (3 | USB_EP_DIR_IN)  // CDC Notify endpoint
 // (4 | USB_EP_DIR_IN)  // CDC TX
 // (5 | USB_EP_DIR_OUT) // CDC RX
 // (1 | USB_EP_DIR_IN)  // MSC IN
 // (2 | USB_EP_DIR_OUT) // MSC OUT
-#define  USB_DEVICE_MAX_EP           5
+// (6 | USB_EP_DIR_IN)  // HID mouse report
+// (7 | USB_EP_DIR_IN)  // HID keyboard report
+#define  USB_DEVICE_MAX_EP           7
 
 #define UDI_CDC_PORT_NB 1
 #define UDI_CDC_ENABLE_EXT(port) mp_cdc_enable(port)
@@ -106,6 +108,59 @@ extern void mp_msc_disable(void);
 
 //! Interface number
 #define  UDI_MSC_IFACE_NUMBER          2
+/**
+ * Configuration of HID Mouse interface
+ * @{
+ */
+//! Interface callback definition
+#define  UDI_HID_MOUSE_ENABLE_EXT()       mp_mouse_enable()
+extern bool mp_mouse_enable(void);
+#define  UDI_HID_MOUSE_DISABLE_EXT()      mp_mouse_disable()
+extern void mp_mouse_disable(void);
+
+//! Enable id string of interface to add an extra USB string
+#define  UDI_HID_MOUSE_STRING_ID          6
+
+/**
+ * USB HID Mouse low level configuration
+ * In standalone these configurations are defined by the HID Mouse module.
+ * For composite device, these configuration must be defined here
+ * @{
+ */
+//! Endpoint numbers definition
+#define  UDI_HID_MOUSE_EP_IN           (6 | USB_EP_DIR_IN)
+
+//! Interface number
+#define  UDI_HID_MOUSE_IFACE_NUMBER    3
+//@}
+//@}
+
+/**
+ * Configuration of HID Keyboard interface
+ * @{
+ */
+//! Interface callback definition
+#define  UDI_HID_KBD_ENABLE_EXT()       mp_keyboard_enable()
+extern bool mp_keyboard_enable(void);
+#define  UDI_HID_KBD_DISABLE_EXT()      mp_keyboard_disable()
+extern void mp_keyboard_disable(void);
+#define  UDI_HID_KBD_CHANGE_LED(value)  mp_keyboard_led(value)
+extern void mp_keyboard_led(uint8_t);
+
+//! Enable id string of interface to add an extra USB string
+#define  UDI_HID_KBD_STRING_ID            7
+
+/**
+ * USB HID Keyboard low level configuration
+ * In standalone these configurations are defined by the HID Keyboard module.
+ * For composite device, these configuration must be defined here
+ * @{
+ */
+//! Endpoint numbers definition
+#define  UDI_HID_KBD_EP_IN           (7 | USB_EP_DIR_IN)
+
+//! Interface number
+#define  UDI_HID_KBD_IFACE_NUMBER    4
 
 /**
  * Description of Composite Device
@@ -116,27 +171,35 @@ extern void mp_msc_disable(void);
 	usb_iad_desc_t       udi_cdc_iad; \
 	udi_cdc_comm_desc_t  udi_cdc_comm; \
 	udi_cdc_data_desc_t  udi_cdc_data; \
-	udi_msc_desc_t       udi_msc
+	udi_msc_desc_t       udi_msc; \
+	udi_hid_mouse_desc_t udi_hid_mouse; \
+	udi_hid_kbd_desc_t   udi_hid_kbd
 
 //! USB Interfaces descriptor value for Full Speed
 #define UDI_COMPOSITE_DESC_FS \
 	.udi_cdc_iad   = UDI_CDC_IAD_DESC_0, \
 	.udi_cdc_comm  = UDI_CDC_COMM_DESC_0, \
 	.udi_cdc_data  = UDI_CDC_DATA_DESC_0_FS, \
-	.udi_msc       = UDI_MSC_DESC_FS
+	.udi_msc       = UDI_MSC_DESC_FS, \
+	.udi_hid_mouse = UDI_HID_MOUSE_DESC, \
+	.udi_hid_kbd   = UDI_HID_KBD_DESC
 
 //! USB Interfaces descriptor value for High Speed
 #define UDI_COMPOSITE_DESC_HS \
 	.udi_cdc_iad   = UDI_CDC_IAD_DESC_0, \
 	.udi_cdc_comm  = UDI_CDC_COMM_DESC_0, \
 	.udi_cdc_data  = UDI_CDC_DATA_DESC_0_HS, \
-	.udi_msc       = UDI_MSC_DESC_HS
+	.udi_msc       = UDI_MSC_DESC_HS, \
+	.udi_hid_mouse = UDI_HID_MOUSE_DESC, \
+	.udi_hid_kbd   = UDI_HID_KBD_DESC
 
 //! USB Interface APIs
 #define UDI_COMPOSITE_API \
 	&udi_api_cdc_comm, \
 	&udi_api_cdc_data, \
-	&udi_api_msc
+	&udi_api_msc, \
+	&udi_api_hid_mouse, \
+	&udi_api_hid_kbd
 //@}
 
 /**
@@ -148,5 +211,7 @@ extern void mp_msc_disable(void);
 //! The includes of classes and other headers must be done at the end of this file to avoid compile error
 #include "udi_cdc.h"
 #include "udi_msc.h"
+#include "udi_hid_mouse.h"
+#include "udi_hid_kbd.h"
 
 #endif

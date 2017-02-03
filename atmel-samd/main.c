@@ -25,6 +25,7 @@
 
 #include "common-hal/nativeio/AnalogIn.h"
 #include "common-hal/nativeio/PWMOut.h"
+#include "common-hal/usb_hid/__init__.h"
 
 #ifdef EXPRESS_BOARD
 #include "common-hal/nativeio/types.h"
@@ -182,6 +183,8 @@ void reset_samd21(void) {
     system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
 
     pwmout_reset();
+
+    usb_hid_reset();
 
 #ifdef CALIBRATE_CRYSTALLESS
     // If we are on USB lets double check our fine calibration for the clock and
@@ -515,10 +518,13 @@ int main(void) {
     // as current dir.
     init_flash_fs();
 
+    usb_hid_init();
+
     // Start USB after getting everything going.
     #ifdef USB_REPL
         udc_start();
     #endif
+
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
