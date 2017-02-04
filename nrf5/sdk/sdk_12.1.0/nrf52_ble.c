@@ -1,3 +1,7 @@
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_BLE_NUS
+
 #include "nrf52_ble.h"
 #include "nrf52_board.h"
 
@@ -485,3 +489,5 @@ mp_hal_stdin_rx_chr()
         power_manage();
     }
 }
+
+#endif // MICROPY_PY_BLE_NUS
