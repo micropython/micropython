@@ -60,7 +60,7 @@ INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
-INC += -I./drivers/display
+INC += -I./modules/display
 INC += -I../lib/mp-readline
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
@@ -148,7 +148,7 @@ SRC_C += \
 	rtc.c \
 	adc.c \
 
-DRIVERS_SRC_C += $(addprefix drivers/,\
+DRIVERS_SRC_C += $(addprefix modules/,\
 	display/moddisplay.c \
 	display/epaper_sld00200p_obj.c \
 	display/epaper_sld00200p_driver.c \
