@@ -61,6 +61,7 @@ INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/display
+INC += -I./modules/machine
 INC += -I../lib/mp-readline
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
@@ -136,7 +137,6 @@ SRC_C += \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
-	modmachine.c \
 	pin.c \
 	modutime.c \
 	moduos.c \
@@ -164,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	display/oled_ssd1306_driver.c \
 	display/framebuffer.c \
 	graphic/draw.c \
+	machine/modmachine.c \
 	)
 
 #ifeq ($(SD), )
