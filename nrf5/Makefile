@@ -131,7 +131,6 @@ SRC_C += \
 	led.c \
 	mphalport.c \
 	pwm.c \
-	i2c.c \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
 	machine/uart.c \
 	machine/spi.c \
+	machine/i2c.c \
 	)
 
 #ifeq ($(SD), )
