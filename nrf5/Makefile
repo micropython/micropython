@@ -130,7 +130,6 @@ SRC_C += \
 	modpyb.c \
 	led.c \
 	mphalport.c \
-	uart.c \
 	spi.c \
 	pwm.c \
 	i2c.c \
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	display/framebuffer.c \
 	graphic/draw.c \
 	machine/modmachine.c \
+	machine/uart.c \
 	)
 
 #ifeq ($(SD), )
