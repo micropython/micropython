@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 
     gc_init(&_heap_start, &_heap_end);
 
-#if (BLUETOOTH_SD == 132)
+#if MICROPY_PY_BLE_NUS
     nrf52_ble_init();
 #endif
 
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
     timer_init0();
     */
 
-#if (BLUETOOTH_SD != 132)
+#if (MICROPY_PY_BLE_NUS == 0)
     uart_init0();
     {
         mp_obj_t args[2] = {
