@@ -936,7 +936,11 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     mp_obj_checked_fun_t *self = MP_OBJ_TO_PTR(self_in);
     if (n_args > 0) {
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);
-        if (arg0_type != self->type) {
+        if (arg0_type != self->type
+            #if MICROPY_PY_OBJECT_METHODS_DELATTRS_SETATTRS
+            && !MP_OBJ_IS_TYPE(arg0_type, &mp_type_type)
+            #endif
+            ) {
             if (MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_DETAILED) {
                 mp_raise_msg(&mp_type_TypeError, "argument has wrong type");
             } else {
