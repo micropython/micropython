@@ -58,6 +58,30 @@ void mp_hal_delay_us(uint32_t us) {
     }
 }
 
+extern UartDevice UartDev;
+
+void uart_std_putc(uint8 c)
+{
+  if (UartDev.stdio_disable) {
+    return;
+  }
+  uart_tx_one_char(UART0, c);
+}
+
+// Returns char from the input buffer, else -1 if buffer is empty.
+int uart_std_getc(void) {
+  // DBE - Disconnect REPL
+  if (UartDev.stdio_disable) {
+    return -1;
+  }
+  return ringbuf_get(&input_buf);
+}
+
+void
+uart_os_nostdio(int dis) {
+  UartDev.stdio_disable = dis;
+}
+
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         //int c = ringbuf_get(&input_buf);

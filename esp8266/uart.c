@@ -29,7 +29,6 @@ extern UartDevice UartDev;
 
 // the uart to which OS messages go; -1 to disable
 static int uart_os = UART_OS;
-static int uart_stdio_disable = 0;
 
 #if MICROPY_REPL_EVENT_DRIVEN
 static os_event_t uart_evt_queue[16];
@@ -142,10 +141,6 @@ uart_os_config(int uart) {
     uart_os = uart;
 }
 
-void
-uart_os_nostdio(int dis) {
-  uart_stdio_disable = dis;
-}
 
 /******************************************************************************
  * FunctionName : uart0_rx_intr_handler
@@ -176,7 +171,7 @@ static void uart0_rx_intr_handler(void *para) {
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == mp_interrupt_char && !uart_stdio_disable) {
+            if (RcvChar == mp_interrupt_char && !UartDev.stdio_disable) {
                 mp_keyboard_interrupt();
             } else {
                 ringbuf_put(&input_buf, RcvChar);
@@ -206,22 +201,6 @@ bool uart_rx_wait(uint32_t timeout_us) {
     }
 }
 
-void uart_std_putc(uint8 c)
-{
-  if (uart_stdio_disable) {
-    return;
-  }
-  uart_tx_one_char(UART0, c);
-}
-
-// Returns char from the input buffer, else -1 if buffer is empty.
-int uart_std_getc(void) {
-  // DBE - Disconnect REPL
-  if (uart_stdio_disable) {
-    return -1;
-  }
-  return ringbuf_get(&input_buf);
-}
 
 
 // Returns char from the input buffer, else -1 if buffer is empty.

@@ -89,6 +89,7 @@ typedef struct {
     RcvMsgState       rcv_state;
     int               received;
     int               buff_uart_no;  //indicate which uart use tx/rx buffer
+    int               stdio_disable;
 } UartDevice;
 
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
@@ -99,8 +100,5 @@ void uart_tx_one_char(uint8 uart, uint8 TxChar);
 void uart_flush(uint8 uart);
 void uart_os_config(int uart);
 void uart_setup(uint8 uart);
-// UART functions used by STDIO (REPL)
-int uart_std_getc(void);
-void uart_std_putc(uint8 c);
 
 #endif // _INCLUDED_UART_H_
