@@ -136,7 +136,6 @@ SRC_C += \
 	moduos.c \
 	fatfs_port.c \
 	builtin_open.c \
-	modusocket.c \
 	modnetwork.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/rtc.c \
 	machine/pwm.c \
 	machine/led.c \
+	usocket/modusocket.c \
 	)
 
 #ifeq ($(SD), )
