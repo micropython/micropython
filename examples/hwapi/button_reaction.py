@@ -11,9 +11,9 @@ Ready? Cliiiiick!
 """)
 
 while 1:
-    try:
-        delay = machine.time_pulse_us(BUTTON, 1, 10*1000*1000)
-        print("You are as slow as %d microseconds!" % delay)
-    except OSError:
+    delay = machine.time_pulse_us(BUTTON, 1, 10*1000*1000)
+    if delay < 0:
         print("Well, you're *really* slow")
+    else:
+        print("You are as slow as %d microseconds!" % delay)
     utime.sleep_ms(10)
