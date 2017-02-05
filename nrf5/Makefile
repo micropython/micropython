@@ -134,7 +134,6 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	modutime.c \
-	moduos.c \
 	fatfs_port.c \
 	builtin_open.c \
 
@@ -166,6 +165,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/led.c \
 	usocket/modusocket.c \
 	network/modnetwork.c \
+	uos/moduos.c \
 	)
 
 #ifeq ($(SD), )
