@@ -62,6 +62,7 @@ INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/display
 INC += -I./modules/machine
+INC += -I./modules/network
 INC += -I../lib/mp-readline
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
@@ -136,7 +137,6 @@ SRC_C += \
 	moduos.c \
 	fatfs_port.c \
 	builtin_open.c \
-	modnetwork.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	display/moddisplay.c \
@@ -165,6 +165,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/pwm.c \
 	machine/led.c \
 	usocket/modusocket.c \
+	network/modnetwork.c \
 	)
 
 #ifeq ($(SD), )
