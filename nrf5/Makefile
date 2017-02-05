@@ -130,7 +130,6 @@ SRC_C += \
 	modpyb.c \
 	led.c \
 	mphalport.c \
-	pwm.c \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtc.c \
+	machine/pwm.c \
 	)
 
 #ifeq ($(SD), )
