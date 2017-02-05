@@ -25,9 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-// *_ADHOC part is for cc3200 port which doesn't use general uPy
-// infrastructure and instead duplicates code. TODO: Resolve.
-#if MICROPY_VFS || MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
+#if MICROPY_VFS
 
 #include <stdio.h>
 #include <errno.h>
@@ -36,12 +34,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#if MICROPY_FATFS_OO
 #include "lib/oofatfs/ff.h"
-#else
-#include "lib/fatfs/ff.h"
-#endif
-#include "extmod/fsusermount.h"
 #include "extmod/vfs_fat.h"
 
 #if MICROPY_VFS_FAT
@@ -117,11 +110,7 @@ STATIC mp_uint_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t siz
 STATIC mp_obj_t file_obj_close(mp_obj_t self_in) {
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // if fs==NULL then the file is closed and in that case this method is a no-op
-    #if MICROPY_FATFS_OO
     if (self->fp.obj.fs != NULL) {
-    #else
-    if (self->fp.fs != NULL) {
-    #endif
         FRESULT res = f_close(&self->fp);
         if (res != FR_OK) {
             mp_raise_OSError(fresult_to_errno_table[res]);
@@ -223,13 +212,8 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     o->base.type = type;
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
-    #if MICROPY_FATFS_OO
     assert(vfs != NULL);
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
-    #else
-    (void)vfs;
-    FRESULT res = f_open(&o->fp, fname, mode);
-    #endif
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
         mp_raise_OSError(fresult_to_errno_table[res]);
@@ -306,14 +290,6 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    // TODO: analyze buffering args and instantiate appropriate type
-    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open(NULL, &mp_type_textio, arg_vals);
-}
-
-// Factory function for I/O stream classes
 mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
     // TODO: analyze buffering args and instantiate appropriate type
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
@@ -324,4 +300,4 @@ mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode)
     return file_open(self, &mp_type_textio, arg_vals);
 }
 
-#endif // MICROPY_VFS || MICROPY_FSUSERMOUNT
+#endif // MICROPY_VFS

@@ -479,6 +479,11 @@ STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
 
 STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
+    #if MICROPY_PY_BUILTINS_FROZENSET
+    bool update = MP_OBJ_IS_TYPE(lhs, &mp_type_set);
+    #else
+    bool update = true;
+    #endif
     switch (op) {
         case MP_BINARY_OP_OR:
             return set_union(lhs, rhs);
@@ -489,13 +494,28 @@ STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_SUBTRACT:
             return set_diff(2, args);
         case MP_BINARY_OP_INPLACE_OR:
-            return set_union(lhs, rhs);
+            if (update) {
+                set_update(2, args);
+                return lhs;
+            } else {
+                return set_union(lhs, rhs);
+            }
         case MP_BINARY_OP_INPLACE_XOR:
-            return set_symmetric_difference(lhs, rhs);
+            if (update) {
+                set_symmetric_difference_update(lhs, rhs);
+                return lhs;
+            } else {
+                return set_symmetric_difference(lhs, rhs);
+            }
         case MP_BINARY_OP_INPLACE_AND:
-            return set_intersect(lhs, rhs);
+            rhs = set_intersect_int(lhs, rhs, update);
+            if (update) {
+                return lhs;
+            } else {
+                return rhs;
+            }
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            return set_diff(2, args);
+            return set_diff_int(2, args, update);
         case MP_BINARY_OP_LESS:
             return set_issubset_proper(lhs, rhs);
         case MP_BINARY_OP_MORE:

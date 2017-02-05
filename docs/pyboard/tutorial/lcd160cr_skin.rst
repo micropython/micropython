@@ -3,9 +3,9 @@ The LCD160CR skin
 
 This tutorial shows how to get started using the LCD160CR skin.
 
-.. image:: http://micropython.org/resources/LCD160CRv10-persp.jpg
+.. image:: http://micropython.org/resources/LCD160CRv10-positions.jpg
     :alt: LCD160CRv1.0 picture
-    :width: 640px
+    :width: 800px
 
 For detailed documentation of the driver for the display see the
 :mod:`lcd160cr` module.
@@ -16,6 +16,8 @@ Plugging in the display
 The display can be plugged directly into a pyboard (all pyboard versions
 are supported).  You plug the display onto the top of the pyboard either
 in the X or Y positions.  The display should cover half of the pyboard.
+See the picture above for how to achieve this; the left half of the picture
+shows the X position, and the right half shows the Y position.
 
 Getting the driver
 ------------------
@@ -95,7 +97,7 @@ the screen to see the result.
 
 To get the location of the touch you can use the method::
 
-    >>> lcd.get_touched()
+    >>> lcd.get_touch()
 
 This will return a 3-tuple, with the first entry being 0 or 1 depending on whether
 there is currently anything touching the screen (1 if there is), and the second and

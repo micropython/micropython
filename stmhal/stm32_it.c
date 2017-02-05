@@ -73,6 +73,7 @@
 #include "py/obj.h"
 #include "pendsv.h"
 #include "irq.h"
+#include "pybthread.h"
 #include "extint.h"
 #include "timer.h"
 #include "uart.h"
@@ -287,6 +288,13 @@ void SysTick_Handler(void) {
     if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
         dma_idle_handler(uwTick);
     }
+
+    #if MICROPY_PY_THREAD
+    // signal a thread switch at 4ms=250Hz
+    if (pyb_thread_enabled && (uwTick & 0x03) == 0x03) {
+        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    }
+    #endif
 }
 
 /******************************************************************************/

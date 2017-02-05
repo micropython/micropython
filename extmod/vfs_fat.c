@@ -32,18 +32,13 @@
 #error "with MICROPY_VFS_FAT enabled, must also enable MICROPY_VFS"
 #endif
 
-#if !MICROPY_FATFS_OO
-#error "with MICROPY_VFS_FAT enabled, must also enable MICROPY_FATFS_OO"
-#endif
-
 #include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
-#include "extmod/fsusermount.h"
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
 
 #if _MAX_SS == _MIN_SS
 #define SECSIZE(fs) (_MIN_SS)

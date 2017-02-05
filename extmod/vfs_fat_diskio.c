@@ -28,7 +28,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_VFS || MICROPY_FSUSERMOUNT
+#if MICROPY_VFS
 
 #include <stdint.h>
 #include <stdio.h>
@@ -36,14 +36,9 @@
 #include "py/mphal.h"
 
 #include "py/runtime.h"
-#if MICROPY_FATFS_OO
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
-#else
-#include "lib/fatfs/ff.h"        /* FatFs lower layer API */
-#include "lib/fatfs/diskio.h"    /* FatFs lower layer API */
-#endif
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 
 #if _MAX_SS == _MIN_SS
 #define SECSIZE(fs) (_MIN_SS)
@@ -51,29 +46,16 @@
 #define SECSIZE(fs) ((fs)->ssize)
 #endif
 
-#if MICROPY_FATFS_OO
 typedef void *bdev_t;
 STATIC fs_user_mount_t *disk_get_device(void *bdev) {
     return (fs_user_mount_t*)bdev;
 }
-#else
-typedef BYTE bdev_t;
-STATIC fs_user_mount_t *disk_get_device(uint id) {
-    if (id < MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
-        return MP_STATE_PORT(fs_user_mount)[id];
-    } else {
-        return NULL;
-    }
-}
-#endif
 
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/
 
-#if MICROPY_FATFS_OO
 STATIC
-#endif
 DSTATUS disk_initialize (
     bdev_t pdrv              /* Physical drive nmuber (0..) */
 )
@@ -105,9 +87,7 @@ DSTATUS disk_initialize (
 /* Get Disk Status                                                       */
 /*-----------------------------------------------------------------------*/
 
-#if MICROPY_FATFS_OO
 STATIC
-#endif
 DSTATUS disk_status (
     bdev_t pdrv      /* Physical drive nmuber (0..) */
 )
@@ -159,7 +139,6 @@ DRESULT disk_read (
 /* Write Sector(s)                                                       */
 /*-----------------------------------------------------------------------*/
 
-#if MICROPY_FATFS_OO || _USE_WRITE
 DRESULT disk_write (
     bdev_t pdrv,          /* Physical drive nmuber (0..) */
     const BYTE *buff,    /* Data to be written */
@@ -191,14 +170,12 @@ DRESULT disk_write (
 
     return RES_OK;
 }
-#endif
 
 
 /*-----------------------------------------------------------------------*/
 /* Miscellaneous Functions                                               */
 /*-----------------------------------------------------------------------*/
 
-#if MICROPY_FATFS_OO || _USE_IOCTL
 DRESULT disk_ioctl (
     bdev_t pdrv,      /* Physical drive nmuber (0..) */
     BYTE cmd,        /* Control code */
@@ -237,7 +214,7 @@ DRESULT disk_ioctl (
                 } else {
                     *((WORD*)buff) = mp_obj_get_int(ret);
                 }
-                #if MICROPY_FATFS_OO && _MAX_SS != _MIN_SS
+                #if _MAX_SS != _MIN_SS
                 // need to store ssize because we use it in disk_read/disk_write
                 vfs->fatfs.ssize = *((WORD*)buff);
                 #endif
@@ -248,7 +225,6 @@ DRESULT disk_ioctl (
                 *((DWORD*)buff) = 1; // erase block size in units of sector size
                 return RES_OK;
 
-            #if MICROPY_FATFS_OO
             case IOCTL_INIT:
                 *((DSTATUS*)buff) = disk_initialize(pdrv);
                 return RES_OK;
@@ -256,7 +232,6 @@ DRESULT disk_ioctl (
             case IOCTL_STATUS:
                 *((DSTATUS*)buff) = disk_status(pdrv);
                 return RES_OK;
-            #endif
 
             default:
                 return RES_PARERR;
@@ -278,7 +253,7 @@ DRESULT disk_ioctl (
 
             case GET_SECTOR_SIZE:
                 *((WORD*)buff) = 512; // old protocol had fixed sector size
-                #if MICROPY_FATFS_OO && _MAX_SS != _MIN_SS
+                #if _MAX_SS != _MIN_SS
                 // need to store ssize because we use it in disk_read/disk_write
                 vfs->fatfs.ssize = 512;
                 #endif
@@ -288,7 +263,6 @@ DRESULT disk_ioctl (
                 *((DWORD*)buff) = 1; // erase block size in units of sector size
                 return RES_OK;
 
-            #if MICROPY_FATFS_OO
             case IOCTL_INIT:
                 *((DSTATUS*)buff) = disk_initialize(pdrv);
                 return RES_OK;
@@ -296,13 +270,11 @@ DRESULT disk_ioctl (
             case IOCTL_STATUS:
                 *((DSTATUS*)buff) = disk_status(pdrv);
                 return RES_OK;
-            #endif
 
             default:
                 return RES_PARERR;
         }
     }
 }
-#endif
 
-#endif // MICROPY_VFS || MICROPY_FSUSERMOUNT
+#endif // MICROPY_VFS

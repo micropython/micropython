@@ -222,6 +222,7 @@ PY_O_BASENAME = \
 	../extmod/virtpin.o \
 	../extmod/machine_mem.o \
 	../extmod/machine_pinbase.o \
+	../extmod/machine_signal.o \
 	../extmod/machine_pulse.o \
 	../extmod/machine_i2c.o \
 	../extmod/machine_spi.o \
@@ -232,14 +233,11 @@ PY_O_BASENAME = \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
-	../extmod/fsusermount.o \
 	../extmod/vfs.o \
 	../extmod/vfs_reader.o \
 	../extmod/vfs_fat.o \
-	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
 	../extmod/uos_dupterm.o \

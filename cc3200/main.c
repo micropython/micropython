@@ -113,14 +113,3 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
-
-// the following is temporay, until cc3200 converts to oofatfs
-
-#include "py/lexer.h"
-#include "extmod/vfs_fat.h"
-
-mp_import_stat_t mp_import_stat(const char *path) {
-    return fat_vfs_import_stat(NULL, path);
-}
-
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, fatfs_builtin_open);

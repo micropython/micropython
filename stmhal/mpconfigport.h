@@ -84,6 +84,7 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_BUILTINS_EXECFILE (1)
+#define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT stmhal_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
@@ -102,6 +103,8 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
 #define MICROPY_PY_UERRNO           (1)
+#define MICROPY_PY_THREAD           (0)
+#define MICROPY_PY_THREAD_GIL       (0)
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
@@ -135,7 +138,6 @@
 #endif
 
 // fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_OO               (1)
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)

@@ -268,13 +268,21 @@
 /  buffer in the file system object (FATFS) is used for the file data transfer. */
 
 
+#ifdef MICROPY_FATFS_EXFAT
+#define _FS_EXFAT   (MICROPY_FATFS_EXFAT)
+#else
 #define _FS_EXFAT   0
+#endif
 /* This option switches support of exFAT file system. (0:Disable or 1:Enable)
 /  When enable exFAT, also LFN needs to be enabled. (_USE_LFN >= 1)
 /  Note that enabling exFAT discards C89 compatibility. */
 
 
+#ifdef MICROPY_FATFS_NORTC
+#define _FS_NORTC   (MICROPY_FATFS_NORTC)
+#else
 #define _FS_NORTC   0
+#endif
 #define _NORTC_MON  1
 #define _NORTC_MDAY 1
 #define _NORTC_YEAR 2016

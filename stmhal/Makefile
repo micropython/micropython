@@ -131,9 +131,11 @@ SRC_C = \
 	usbd_hid_interface.c \
 	usbd_msc_storage.c \
 	mphalport.c \
+	mpthreadport.c \
 	irq.c \
 	pendsv.c \
 	systick.c  \
+	pybthread.c \
 	timer.c \
 	led.c \
 	pin.c \

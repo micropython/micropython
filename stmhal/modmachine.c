@@ -32,12 +32,13 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "rng.h"
@@ -541,6 +542,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem32),                   (mp_obj_t)&machine_mem32_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Signal),              (mp_obj_t)&machine_signal_type },
 
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
