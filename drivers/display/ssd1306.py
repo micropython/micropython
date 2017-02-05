@@ -124,7 +124,7 @@ class SSD1306_I2C(SSD1306):
         self.i2c.stop()
 
     def poweron(self):
-        pass
+        self.write_cmd(SET_DISP | 0x01)
 
 
 class SSD1306_SPI(SSD1306):
