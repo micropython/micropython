@@ -128,7 +128,6 @@ endif
 SRC_C += \
 	main.c \
 	modpyb.c \
-	led.c \
 	mphalport.c \
 	help.c \
 	gccollect.c \
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/timer.c \
 	machine/rtc.c \
 	machine/pwm.c \
+	machine/led.c \
 	)
 
 #ifeq ($(SD), )
