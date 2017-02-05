@@ -134,7 +134,6 @@ SRC_C += \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
-	pin.c \
 	modutime.c \
 	moduos.c \
 	fatfs_port.c \
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/spi.c \
 	machine/i2c.c \
 	machine/adc.c \
+	machine/pin.c \
 	)
 
 #ifeq ($(SD), )
