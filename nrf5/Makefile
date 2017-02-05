@@ -143,7 +143,6 @@ SRC_C += \
 	modnetwork.c \
 	timer.c \
 	rtc.c \
-	adc.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	display/moddisplay.c \
@@ -165,6 +164,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/uart.c \
 	machine/spi.c \
 	machine/i2c.c \
+	machine/adc.c \
 	)
 
 #ifeq ($(SD), )
