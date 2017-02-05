@@ -949,6 +949,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_THREAD_GIL (MICROPY_PY_THREAD)
 #endif
 
+// Number of VM jump-loops to do before releasing the GIL.
+// Set this to 0 to disable the divisor.
+#ifndef MICROPY_PY_THREAD_GIL_VM_DIVISOR
+#define MICROPY_PY_THREAD_GIL_VM_DIVISOR (32)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_UCTYPES

@@ -169,6 +169,12 @@ run_code_state: ;
     volatile bool currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
     mp_exc_stack_t *volatile exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
 
+    #if MICROPY_PY_THREAD_GIL && MICROPY_PY_THREAD_GIL_VM_DIVISOR
+    // This needs to be volatile and outside the VM loop so it persists across handling
+    // of any exceptions.  Otherwise it's possible that the VM never gives up the GIL.
+    volatile int gil_divisor = MICROPY_PY_THREAD_GIL_VM_DIVISOR;
+    #endif
+
     // outer exception handling loop
     for (;;) {
         nlr_buf_t nlr;
@@ -1243,9 +1249,17 @@ pending_exception_check:
                     RAISE(obj);
                 }
 
-                // TODO make GIL release more efficient
-                MP_THREAD_GIL_EXIT();
-                MP_THREAD_GIL_ENTER();
+                #if MICROPY_PY_THREAD_GIL
+                #if MICROPY_PY_THREAD_GIL_VM_DIVISOR
+                if (--gil_divisor == 0) {
+                    gil_divisor = MICROPY_PY_THREAD_GIL_VM_DIVISOR;
+                #else
+                {
+                #endif
+                    MP_THREAD_GIL_EXIT();
+                    MP_THREAD_GIL_ENTER();
+                }
+                #endif
 
             } // for loop
 
