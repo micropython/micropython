@@ -71,6 +71,7 @@
 #include STM32_HAL_H
 
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "pendsv.h"
 #include "irq.h"
 #include "pybthread.h"
@@ -95,11 +96,6 @@ extern PCD_HandleTypeDef pcd_hs_handle;
 // Set the following to 1 to get some more information on the Hard Fault
 // More information about decoding the fault registers can be found here:
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0646a/Cihdjcfc.html
-#define REPORT_HARD_FAULT_REGS  0
-
-#if REPORT_HARD_FAULT_REGS
-
-#include "py/mphal.h"
 
 STATIC char *fmt_hex(uint32_t val, char *buf) {
     const char *hexDig = "0123456789abcdef";
@@ -142,7 +138,13 @@ typedef struct {
     uint32_t    r0, r1, r2, r3, r12, lr, pc, xpsr;
 } ExceptionRegisters_t;
 
+int pyb_hard_fault_debug = 0;
+
 void HardFault_C_Handler(ExceptionRegisters_t *regs) {
+    if (!pyb_hard_fault_debug) {
+        NVIC_SystemReset();
+    }
+
     // We need to disable the USB so it doesn't try to write data out on
     // the VCP and then block indefinitely waiting for the buffer to drain.
     pyb_usb_flags = 0;
@@ -209,14 +211,6 @@ void HardFault_Handler(void) {
     " b HardFault_C_Handler \n" // Off to C land
     );
 }
-#else
-void HardFault_Handler(void) {
-    /* Go to infinite loop when Hard Fault exception occurs */
-    while (1) {
-        __fatal_error("HardFault");
-    }
-}
-#endif // REPORT_HARD_FAULT_REGS
 
 /**
   * @brief   This function handles NMI exception.

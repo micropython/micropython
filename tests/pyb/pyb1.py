@@ -40,3 +40,6 @@ pyb.sync()
 print(len(pyb.unique_id()))
 
 pyb.wfi()
+
+pyb.fault_debug(True)
+pyb.fault_debug(False)
