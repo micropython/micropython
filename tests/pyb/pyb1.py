@@ -27,13 +27,9 @@ print((pyb.millis() - start) // 5) # should print 3
 pyb.disable_irq()
 pyb.enable_irq()
 
-print(pyb.freq())
-
 print(pyb.have_cdc())
 
 pyb.hid((0, 0, 0, 0)) # won't do anything
-
-pyb.rng()
 
 pyb.sync()
 
