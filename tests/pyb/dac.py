@@ -1,5 +1,10 @@
 import pyb
 
+if not hasattr(pyb, 'DAC'):
+    print('SKIP')
+    import sys
+    sys.exit()
+
 dac = pyb.DAC(1)
 print(dac)
 dac.noise(100)

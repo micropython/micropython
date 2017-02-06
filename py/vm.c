@@ -38,8 +38,7 @@
 #include "py/bc.h"
 
 #if 0
-//#define TRACE(ip) printf("sp=" INT_FMT " ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
-#define TRACE(ip) printf("sp=%d ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
+#define TRACE(ip) printf("sp=%d ", (int)(sp - code_state->sp)); mp_bytecode_print2(ip, 1, code_state->const_table);
 #else
 #define TRACE(ip)
 #endif

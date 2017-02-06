@@ -52,7 +52,7 @@
 #define MICROPY_OPT_MPZ_BITWISE     (1)
 
 // Python internal features
-#define MICROPY_READER_FATFS        (1)
+#define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -69,6 +69,8 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
+#define MICROPY_VFS                 (1)
+#define MICROPY_VFS_FAT             (1)
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
@@ -82,6 +84,7 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_BUILTINS_EXECFILE (1)
+#define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT stmhal_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
@@ -100,6 +103,8 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
 #define MICROPY_PY_UERRNO           (1)
+#define MICROPY_PY_THREAD           (0)
+#define MICROPY_PY_THREAD_GIL       (0)
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
@@ -137,9 +142,16 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
-#define MICROPY_FATFS_VOLUMES          (4)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
-#define MICROPY_FSUSERMOUNT            (1)
+
+// TODO these should be generic, not bound to fatfs
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

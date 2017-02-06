@@ -29,8 +29,8 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/fsusermount.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs_fat.h"
 
 #include "systick.h"
 #include "led.h"
@@ -149,7 +149,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_cache_sector_size = flash_sector_size;
     }
     flash_flags |= FLASH_FLAG_DIRTY;
-    led_state(PYB_LED_R1, 1); // indicate a dirty cache with LED on
+    led_state(PYB_LED_RED, 1); // indicate a dirty cache with LED on
     flash_tick_counter_last_write = HAL_GetTick();
     return (uint8_t*)CACHE_MEM_START_ADDR + flash_addr - flash_sector_start;
 }
@@ -261,7 +261,7 @@ void storage_irq_handler(void) {
         // clear the flash flags now that we have a clean cache
         flash_flags = 0;
         // indicate a clean cache with LED off
-        led_state(PYB_LED_R1, 0);
+        led_state(PYB_LED_RED, 0);
     }
 
     #endif
@@ -504,7 +504,10 @@ const mp_obj_type_t pyb_flash_type = {
 };
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
+    vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
+    vfs->fatfs.part = 1; // flash filesystem lives on first partition
     vfs->readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&pyb_flash_obj;
     vfs->readblocks[2] = (mp_obj_t)storage_read_blocks; // native version

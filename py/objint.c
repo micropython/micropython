@@ -383,7 +383,7 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     // If result guaranteedly fits in small int, use that
-    if (!MP_SMALL_INT_FITS(1 << (bufinfo.len * 8 - 1))) {
+    if (bufinfo.len >= sizeof(mp_uint_t) || !MP_SMALL_INT_FITS(1 << (bufinfo.len * 8 - 1))) {
         return mp_obj_int_from_bytes_impl(args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
     } else
     #endif

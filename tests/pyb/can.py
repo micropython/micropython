@@ -1,4 +1,10 @@
-from pyb import CAN
+try:
+    from pyb import CAN
+except ImportError:
+    print('SKIP')
+    import sys
+    sys.exit()
+
 import pyb
 
 # test we can correctly create by id or name

@@ -85,8 +85,8 @@ void mp_init(void) {
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
 
-    // init global module stuff
-    mp_module_init();
+    // init global module dict
+    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
 
     // initialise the __main__ module
     mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
@@ -105,6 +105,12 @@ void mp_init(void) {
     memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
     #endif
 
+    #if MICROPY_VFS
+    // initialise the VFS sub-system
+    MP_STATE_VM(vfs_cur) = NULL;
+    MP_STATE_VM(vfs_mount_table) = NULL;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
@@ -114,7 +120,7 @@ void mp_init(void) {
 
 void mp_deinit(void) {
     //mp_obj_dict_free(&dict_main);
-    mp_module_deinit();
+    //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
 
     // call port specific deinitialization if any 
 #ifdef MICROPY_PORT_INIT_FUNC

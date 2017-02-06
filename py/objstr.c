@@ -36,7 +36,7 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict);
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
 
 STATIC mp_obj_t mp_obj_new_bytes_iterator(mp_obj_t str);
 STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in);
@@ -282,19 +282,14 @@ const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *need
 mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // check for modulo
     if (op == MP_BINARY_OP_MODULO) {
-        mp_obj_t *args;
-        mp_uint_t n_args;
+        mp_obj_t *args = &rhs_in;
+        mp_uint_t n_args = 1;
         mp_obj_t dict = MP_OBJ_NULL;
         if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple)) {
             // TODO: Support tuple subclasses?
             mp_obj_tuple_get(rhs_in, &n_args, &args);
         } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {
-            args = NULL;
-            n_args = 0;
             dict = rhs_in;
-        } else {
-            args = &rhs_in;
-            n_args = 1;
         }
         return str_modulo_format(lhs_in, n_args, args, dict);
     }
@@ -358,6 +353,13 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: {
+            if (lhs_len == 0) {
+                return rhs_in;
+            }
+            if (rhs_len == 0) {
+                return lhs_in;
+            }
+
             vstr_t vstr;
             vstr_init_len(&vstr, lhs_len + rhs_len);
             memcpy(vstr.buf, lhs_data, lhs_len);
@@ -652,7 +654,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     return MP_OBJ_FROM_PTR(res);
 }
 
-STATIC mp_obj_t str_finder(mp_uint_t n_args, const mp_obj_t *args, mp_int_t direction, bool is_index) {
+STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, mp_int_t direction, bool is_index) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     mp_check_self(MP_OBJ_IS_STR_OR_BYTES(args[0]));
 
@@ -738,7 +740,7 @@ STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
 
 enum { LSTRIP, RSTRIP, STRIP };
 
-STATIC mp_obj_t str_uni_strip(int type, mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
     mp_check_self(MP_OBJ_IS_STR_OR_BYTES(args[0]));
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
 
@@ -890,7 +892,7 @@ STATIC NORETURN void terse_str_format_value_error(void) {
 #define terse_str_format_value_error()
 #endif
 
-STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *arg_i, size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 16, &print);
@@ -1342,13 +1344,13 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 
-STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_obj_t *args, mp_obj_t dict) {
+STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict) {
     mp_check_self(MP_OBJ_IS_STR_OR_BYTES(pattern));
 
     GET_STR_DATA_LEN(pattern, str, len);
     const byte *start_str = str;
     bool is_bytes = MP_OBJ_IS_TYPE(pattern, &mp_type_bytes);
-    int arg_i = 0;
+    size_t arg_i = 0;
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 16, &print);
@@ -1369,6 +1371,10 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
 
         // Dictionary value lookup
         if (*str == '(') {
+            if (dict == MP_OBJ_NULL) {
+                mp_raise_TypeError("format requires a dict");
+            }
+            arg_i = 1; // we used up the single dict argument
             const byte *key = ++str;
             while (*str != ')') {
                 if (str >= top) {
@@ -1403,7 +1409,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
         int width = 0;
         if (str < top) {
             if (*str == '*') {
-                if ((uint)arg_i >= n_args) {
+                if (arg_i >= n_args) {
                     goto not_enough_args;
                 }
                 width = mp_obj_get_int(args[arg_i++]);
@@ -1416,7 +1422,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, mp_uint_t n_args, const mp_o
         if (str < top && *str == '.') {
             if (++str < top) {
                 if (*str == '*') {
-                    if ((uint)arg_i >= n_args) {
+                    if (arg_i >= n_args) {
                         goto not_enough_args;
                     }
                     prec = mp_obj_get_int(args[arg_i++]);
@@ -1439,7 +1445,7 @@ incomplete_format:
 
         // Tuple value lookup
         if (arg == MP_OBJ_NULL) {
-            if ((uint)arg_i >= n_args) {
+            if (arg_i >= n_args) {
 not_enough_args:
                 mp_raise_TypeError("not enough arguments for format string");
             }
@@ -1527,7 +1533,7 @@ not_enough_args:
         }
     }
 
-    if ((uint)arg_i != n_args) {
+    if (arg_i != n_args) {
         mp_raise_TypeError("not all arguments converted during string formatting");
     }
 

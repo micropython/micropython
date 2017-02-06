@@ -29,6 +29,25 @@ for s in sets:
 
 print(set('abc') == 1)
 
+# make sure inplace operators modify the set
+
+s1 = s2 = set('abc')
+s1 |= set('ad')
+print(s1 is s2, len(s1))
+
+s1 = s2 = set('abc')
+s1 ^= set('ad')
+print(s1 is s2, len(s1))
+
+s1 = s2 = set('abc')
+s1 &= set('ad')
+print(s1 is s2, len(s1))
+
+s1 = s2 = set('abc')
+s1 -= set('ad')
+print(s1 is s2, len(s1))
+
+# unsupported operator
 try:
     set('abc') * 2
 except TypeError:

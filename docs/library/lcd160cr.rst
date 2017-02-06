@@ -69,6 +69,9 @@ Constructors
         - "YX" is for the left-side and uses:
           ``pwr=Pin("Y4")``, ``i2c=I2C("X")``, ``spi=SPI("Y")``
 
+    See `this image <http://micropython.org/resources/LCD160CRv10-positions.jpg>`_
+    for how the display can be connected to the pyboard.
+
 Static methods
 --------------
 

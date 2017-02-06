@@ -5,5 +5,5 @@ value: 1
 value: 0
 value: 1
 <class 'int'>
-OSError
-OSError
+-2
+-1
