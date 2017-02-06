@@ -108,6 +108,19 @@ mp_uint_t mp_hal_ticks_ms(void) {
     return HAL_tickCount;
 }
 
+// The SysTick timer counts down at HAL_FCPU_HZ, so we can use that knowledge
+// to grab a microsecond counter.
+mp_uint_t mp_hal_ticks_us(void) {
+    mp_uint_t irq_state = disable_irq();
+    uint32_t counter = SysTickValueGet();
+    uint32_t milliseconds = mp_hal_ticks_ms();
+    enable_irq(irq_state);
+
+    uint32_t load = SysTickPeriodGet();
+    counter = load - counter; // Convert from decrementing to incrementing
+    return (milliseconds * 1000) + ((counter * 1000) / load);
+}
+
 void mp_hal_delay_ms(mp_uint_t delay) {
     // only if we are not within interrupt context and interrupts are enabled
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
@@ -211,4 +224,3 @@ static void hal_TickInit (void) {
     MAP_SysTickEnable();
 }
 #endif
-
