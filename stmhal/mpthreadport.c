@@ -44,14 +44,12 @@ void mp_thread_init(void) {
 
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
-    gc_collect_root((void**)&pyb_thread_cur, 1);
-    for (pyb_thread_t *th = pyb_thread_cur;; th = th->next) {
+    for (pyb_thread_t *th = pyb_thread_all; th != NULL; th = th->all_next) {
+        gc_collect_root((void**)&th, 1);
         gc_collect_root(&th->arg, 1);
+        gc_collect_root(&th->stack, 1);
         if (th != pyb_thread_cur) {
             gc_collect_root(th->stack, th->stack_len);
-        }
-        if (th->next == pyb_thread_cur) {
-            break;
         }
     }
     mp_thread_mutex_unlock(&thread_mutex);
@@ -91,33 +89,6 @@ void mp_thread_start(void) {
 }
 
 void mp_thread_finish(void) {
-}
-
-void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
-    *mutex = 0;
-}
-
-int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    uint32_t irq_state = disable_irq();
-    if (*mutex) {
-        // mutex is locked
-        if (!wait) {
-            enable_irq(irq_state);
-            return 0; // failed to lock mutex
-        }
-        while (*mutex) {
-            enable_irq(irq_state);
-            pyb_thread_yield();
-            irq_state = disable_irq();
-        }
-    }
-    *mutex = 1;
-    enable_irq(irq_state);
-    return 1; // have mutex
-}
-
-void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
-    *mutex = 0;
 }
 
 #endif // MICROPY_PY_THREAD

@@ -695,6 +695,10 @@ soft_reset_exit:
     can_deinit();
 #endif
 
+    #if MICROPY_PY_THREAD
+    pyb_thread_deinit();
+    #endif
+
     first_soft_reset = false;
     goto soft_reset;
 }
