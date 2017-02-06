@@ -32,6 +32,10 @@ STATIC const mp_map_elem_t ubluepy_service_locals_dict_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristic), (mp_obj_t)(&ubluepy_service_get_char_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setCharacteristic), (mp_obj_t)(&ubluepy_service_set_char_obj) },
+    // Properties
+    { MP_OBJ_NEW_QSTR(MP_QSTR_peripheral), (mp_obj_t)(&ubluepy_service_get_peripheral_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),       (mp_obj_t)(&ubluepy_service_get_uuid_obj) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_service_locals_dict, ubluepy_service_locals_dict_table);
