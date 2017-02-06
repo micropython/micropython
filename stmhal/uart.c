@@ -334,7 +334,7 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
@@ -375,7 +375,7 @@ STATIC bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
