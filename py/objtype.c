@@ -828,6 +828,17 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_NEW_QSTR(self->name);
             return;
         }
+        if (attr == MP_QSTR___dict__) {
+            mp_map_t *map = mp_obj_dict_get_map(self->locals_dict);
+            mp_obj_t attr_dict = mp_obj_new_dict(0);
+            for (mp_uint_t i = 0; i < map->alloc; ++i) {
+                if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+                    mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
+                }
+            }
+            dest[0] = attr_dict;
+            return;
+        }
         #endif
         struct class_lookup_data lookup = {
             .obj = (mp_obj_instance_t*)self,
