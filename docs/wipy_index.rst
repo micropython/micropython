@@ -7,6 +7,7 @@ MicroPython documentation and references
     wipy/general.rst
     wipy/tutorial/index.rst
     library/index.rst
+    differences/index.rst
     license.rst
     wipy_contents.rst
 

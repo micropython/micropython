@@ -5,4 +5,5 @@ MicroPython documentation contents
 
     library/index.rst
     reference/index.rst
+    differences/index.rst
     license.rst

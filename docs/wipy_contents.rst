@@ -8,4 +8,5 @@ MicroPython documentation contents
     wipy/tutorial/index.rst
     library/index.rst
     reference/index.rst
+    differences/index.rst
     license.rst
