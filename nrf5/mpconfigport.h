@@ -235,6 +235,7 @@ extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_lcd_mono_fb;
 extern const struct _mp_obj_module_t mp_module_display;
 extern const struct _mp_obj_module_t graphics_module;
+extern const struct _mp_obj_module_t mp_module_ubluepy;
 
 #if MICROPY_PY_USOCKET
 #define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
@@ -263,9 +264,15 @@ extern const struct _mp_obj_module_t graphics_module;
 #endif
 
 #if MICROPY_PY_DISPLAY_GRAPHICS
-#define GRAPHICS_MODULE                         { MP_OBJ_NEW_QSTR(MP_QSTR_draw), (mp_obj_t)&graphics_module },
+#define GRAPHICS_MODULE                     { MP_OBJ_NEW_QSTR(MP_QSTR_draw), (mp_obj_t)&graphics_module },
 #else
 #define GRAPHICS_MODULE
+#endif
+
+#if MICROPY_PY_UBLUEPY
+#define UBLUEPY_MODULE                      { MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy), (mp_obj_t)&mp_module_ubluepy },
+#else
+#define UBLUEPY_MODULE
 #endif
 
 
@@ -283,6 +290,7 @@ extern const struct _mp_obj_module_t ble_module;
     LCD_MONO_FB_MODULE \
     DISPLAY_MODULE \
     GRAPHICS_MODULE \
+    UBLUEPY_MODULE \
 
 
 #else
