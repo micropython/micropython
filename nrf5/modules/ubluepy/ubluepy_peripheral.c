@@ -26,7 +26,42 @@
 
 #include "py/obj.h"
 
+
+
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
+
+typedef struct _ubluepy_peripheral_obj_t {
+    mp_obj_base_t base;
+    // services
+} ubluepy_peripheral_obj_t;
+
+STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+    ubluepy_peripheral_obj_t * self = o;
+    mp_printf(print, "Peripheral");
+}
+
+// for make_new
+enum {
+    ARG_NEW_DEVICE_ADDR,
+    ARG_NEW_ADDR_TYPE
+};
+
+STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    static const mp_arg_t allowed_args[] = {
+        { ARG_NEW_DEVICE_ADDR, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_ADDR_TYPE,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    ubluepy_peripheral_obj_t *s = m_new_obj(ubluepy_peripheral_obj_t);
+    s->base.type = type;
+
+    return MP_OBJ_FROM_PTR(s);
+}
+
 
 STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
 #if 0
@@ -60,11 +95,9 @@ STATIC MP_DEFINE_CONST_DICT(ubluepy_peripheral_locals_dict, ubluepy_peripheral_l
 const mp_obj_type_t ubluepy_peripheral_type = {
     { &mp_type_type },
     .name = MP_QSTR_Peripheral,
-#if 0
     .print = ubluepy_peripheral_print,
     .make_new = ubluepy_peripheral_make_new,
     .locals_dict = (mp_obj_t)&ubluepy_peripheral_locals_dict
-#endif
 };
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL
