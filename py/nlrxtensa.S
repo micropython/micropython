@@ -115,5 +115,5 @@ nlr_jump:
 
 #endif // defined(__xtensa__)
 #if defined(linux)
-    .section    .note.GNU-stack,"",@progbits
+    .section    .note.GNU-stack,"",%progbits
 #endif

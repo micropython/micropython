@@ -191,5 +191,5 @@ nlr_jump:
 
 #endif // defined(__i386__) && !MICROPY_NLR_SETJMP
 #if defined(linux)
-    .section    .note.GNU-stack,"",@progbits
+    .section    .note.GNU-stack,"",%progbits
 #endif
