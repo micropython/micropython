@@ -143,6 +143,7 @@ SRC_C = \
 	file.c \
 	modmachine.c \
 	modos.c \
+	moduos_vfs.c \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
@@ -157,8 +158,8 @@ LIB_SRC_C = $(addprefix lib/,\
 
 # FatFS VFS support
 LIB_SRC_C += $(addprefix lib/,\
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	)
 
 OBJ = $(PY_O)
@@ -234,7 +235,10 @@ freedos:
 	PROG=micropython_freedos \
 	MICROPY_PY_SOCKET=0 \
 	MICROPY_PY_FFI=0 \
-	MICROPY_PY_JNI=0
+	MICROPY_PY_JNI=0 \
+	MICROPY_PY_BTREE=0 \
+	MICROPY_PY_THREAD=0 \
+	MICROPY_PY_USSL=0
 
 # build an interpreter for coverage testing and do the testing
 coverage:

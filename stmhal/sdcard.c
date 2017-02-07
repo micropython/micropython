@@ -28,8 +28,8 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/fsusermount.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs_fat.h"
 #include "mphalport.h"
 
 #include "sdcard.h"
@@ -443,8 +443,11 @@ const mp_obj_type_t pyb_sdcard_type = {
     .locals_dict = (mp_obj_t)&pyb_sdcard_locals_dict,
 };
 
-void sdcard_init_vfs(fs_user_mount_t *vfs) {
+void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
+    vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
+    vfs->fatfs.part = part;
     vfs->readblocks[0] = (mp_obj_t)&pyb_sdcard_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
     vfs->readblocks[2] = (mp_obj_t)sdcard_read_blocks; // native version

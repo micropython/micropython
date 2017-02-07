@@ -66,6 +66,11 @@ print(">%-08.4d<" % -12)
 print(">%-+08.4d<" % -12)
 print(">%-+08.4d<" %  12)
 
+# Should be able to print dicts; in this case they aren't used
+# to lookup keywords in formats like %(foo)s
+print('%s' % {})
+print('%s' % ({},))
+
 # Cases when "*" used and there's not enough values total
 try:
     print("%*s" % 5)
@@ -77,6 +82,7 @@ except TypeError:
     print("TypeError")
 
 print("%(foo)s" % {"foo": "bar", "baz": False})
+print("%s %(foo)s %(foo)s" % {"foo": 1})
 try:
     print("%(foo)s" % {})
 except KeyError:
@@ -86,6 +92,16 @@ try:
     print("%(foo)*s" % {"foo": "bar"})
 except TypeError:
     print("TypeError")
+
+# When using %(foo)s format the single argument must be a dict
+try:
+    '%(foo)s' % 1
+except TypeError:
+    print('TypeError')
+try:
+    '%(foo)s' % ({},)
+except TypeError:
+    print('TypeError')
 
 try:
     '%(a' % {'a':1}

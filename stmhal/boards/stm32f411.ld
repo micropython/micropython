@@ -16,10 +16,10 @@ MEMORY
 _minimum_stack_size = 2K;
 _minimum_heap_size = 16K;
  
-/* top end of the stack */
-
-/*_stack_end = ORIGIN(RAM) + LENGTH(RAM);*/
-_estack = ORIGIN(RAM) + LENGTH(RAM) - 1;
+/* Define tho top end of the stack.  The stack is full descending so begins just
+   above last byte of RAM.  Note that EABI requires the stack to be 8-byte
+   aligned for a call. */
+_estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* define common sections and symbols */
 INCLUDE common.ld

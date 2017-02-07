@@ -44,7 +44,8 @@ See :ref:`machine.Pin <machine.Pin>`. ::
 Timers
 ------
 
-See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. ::
+See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`.
+Timer ``id``'s take values from 0 to 3.::
 
     from machine import Timer
     from machine import Pin

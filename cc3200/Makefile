@@ -23,6 +23,7 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -march=armv7e-m -mabi=aapcs -mcpu=co
 CFLAGS = -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) -Os
 CFLAGS += -g -ffunction-sections -fdata-sections -fno-common -fsigned-char -mno-unaligned-access
 CFLAGS += -Iboards/$(BOARD)
+CFLAGS += $(CFLAGS_MOD)
 
 LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
 

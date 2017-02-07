@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/virtpin.h"
 #include "pin.h"
 
 /// \moduleref pyb
@@ -542,12 +543,33 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
+STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)errcode;
+    pin_obj_t *self = self_in;
+
+    switch (request) {
+        case MP_PIN_READ: {
+            return mp_hal_pin_read(self);
+        }
+        case MP_PIN_WRITE: {
+            mp_hal_pin_write(self, arg);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+STATIC const mp_pin_p_t pin_pin_p = {
+    .ioctl = pin_ioctl,
+};
+
 const mp_obj_type_t pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
     .print = pin_print,
     .make_new = pin_make_new,
     .call = pin_call,
+    .protocol = &pin_pin_p,
     .locals_dict = (mp_obj_t)&pin_locals_dict,
 };
 

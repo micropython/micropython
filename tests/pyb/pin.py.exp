@@ -1,10 +1,10 @@
-Pin(Pin.cpu.A0, mode=Pin.IN)
-A0
-0
-0
-Pin(Pin.cpu.A0, mode=Pin.IN, pull=Pin.PULL_UP)
+Pin(Pin.cpu.C6, mode=Pin.IN)
+C6
+6
+2
+Pin(Pin.cpu.C6, mode=Pin.IN, pull=Pin.PULL_UP)
 1
-Pin(Pin.cpu.A0, mode=Pin.IN, pull=Pin.PULL_DOWN)
+Pin(Pin.cpu.C6, mode=Pin.IN, pull=Pin.PULL_DOWN)
 0
 0
 1
