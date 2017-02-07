@@ -1,0 +1,9 @@
+Core,Functions
+-----
+Assign instance variable to function
+-----
+def f():
+    pass
+
+f.x = 0
+print(f.x)

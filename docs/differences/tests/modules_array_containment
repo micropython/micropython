@@ -1,0 +1,6 @@
+Modules,array
+-----
+Looking for integer not implemented
+-----
+import array
+print(1 in array.array('B', b'12'))

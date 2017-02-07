@@ -1,0 +1,5 @@
+Types,bytes
+-----
+Bytes subscr with step != 1 not implemented
+-----
+print(b'123'[0:3:2])

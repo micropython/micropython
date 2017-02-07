@@ -1,0 +1,5 @@
+Types,str
+-----
+Attributes/subscr not implemented
+-----
+print('{a[0]}'.format(a=[1, 2]))

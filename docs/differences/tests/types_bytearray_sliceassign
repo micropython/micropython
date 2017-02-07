@@ -1,0 +1,7 @@
+Types,bytearray
+-----
+Array slice assignment with unsupported RHS
+-----
+b = bytearray(4)
+b[0:1] = [1, 2]
+print(b)

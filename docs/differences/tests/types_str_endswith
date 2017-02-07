@@ -1,0 +1,5 @@
+Types,str
+-----
+Start/end indices such as str.endswith(s, start) not implemented
+-----
+print('abc'.endswith('c', 1))

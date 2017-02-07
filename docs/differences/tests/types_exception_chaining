@@ -1,0 +1,8 @@
+Types,Exception
+-----
+Exception chaining not implemented
+-----
+try:
+    raise TypeError
+except TypeError:
+    raise ValueError

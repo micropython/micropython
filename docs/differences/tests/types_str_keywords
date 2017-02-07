@@ -1,0 +1,5 @@
+Types,str
+-----
+str(...) with keywords not implemented
+-----
+print(str(b'abc', encoding='utf8'))

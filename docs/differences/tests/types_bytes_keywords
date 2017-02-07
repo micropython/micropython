@@ -1,0 +1,5 @@
+Types,bytes
+-----
+bytes(...) with keywords not implemented
+-----
+print(bytes('abc', encoding='utf8'))

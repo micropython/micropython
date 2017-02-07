@@ -1,0 +1,5 @@
+Syntax,Unicode
+-----
+Unicode name escapes are not implemented
+-----
+print("\N{LATIN SMALL LETTER A}")
