@@ -43,7 +43,7 @@ FROZEN_DIR = freeze
 include ../py/py.mk
 
 
-FATFS_DIR = lib/fatfs
+FATFS_DIR = lib/oofatfs
 MPY_CROSS = ../mpy-cross/mpy-cross
 MPY_TOOL = ../tools/mpy-tool.py
 
@@ -76,7 +76,7 @@ CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) --short-enums -mtune=cortex-m0 -mcpu=cortex-m
 
 
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES)) 
-CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES)
+CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
@@ -102,8 +102,8 @@ SRC_LIB = $(addprefix lib/,\
 	mp-readline/readline.c \
 	utils/pyexec.c \
 	timeutils/timeutils.c \
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	netutils/netutils.c \
 	)
 
@@ -133,7 +133,6 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
-	builtin_open.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	display/moddisplay.c \
