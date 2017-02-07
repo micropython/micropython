@@ -37,8 +37,7 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "function does not take keyword arguments"));
+            mp_raise_msg(&mp_type_TypeError, "function does not take keyword arguments");
         }
     }
 
@@ -105,10 +104,9 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             out_vals[i].u_bool = mp_obj_is_true(given_arg);
         } else if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_INT) {
             out_vals[i].u_int = mp_obj_get_int(given_arg);
-        } else if ((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_OBJ) {
-            out_vals[i].u_obj = given_arg;
         } else {
-            assert(0);
+            assert((allowed[i].flags & MP_ARG_KIND_MASK) == MP_ARG_OBJ);
+            out_vals[i].u_obj = given_arg;
         }
     }
     if (pos_found < n_pos) {
@@ -117,8 +115,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_arg_error_terse_mismatch();
         } else {
             // TODO better error message
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "extra positional arguments given"));
+            mp_raise_msg(&mp_type_TypeError, "extra positional arguments given");
         }
     }
     if (kws_found < kws->used) {
@@ -126,8 +123,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_arg_error_terse_mismatch();
         } else {
             // TODO better error message
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "extra keyword arguments given"));
+            mp_raise_msg(&mp_type_TypeError, "extra keyword arguments given");
         }
     }
 }
@@ -140,7 +136,7 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE || _MSC_VER
 NORETURN void mp_arg_error_terse_mismatch(void) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "argument num/types mismatch"));
+    mp_raise_msg(&mp_type_TypeError, "argument num/types mismatch");
 }
 #endif
 

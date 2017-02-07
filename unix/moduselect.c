@@ -27,17 +27,22 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_PY_USELECT
+#if MICROPY_PY_USELECT_POSIX
 
 #include <stdio.h>
 #include <errno.h>
 #include <poll.h>
 
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
+#include "fdfile.h"
+
+#if MICROPY_PY_SOCKET
+extern const mp_obj_type_t mp_type_socket;
+#endif
 
 // Flags for poll()
 #define FLAG_ONESHOT (1)
@@ -49,12 +54,31 @@ typedef struct _mp_obj_poll_t {
     unsigned short alloc;
     unsigned short len;
     struct pollfd *entries;
+    mp_obj_t *obj_map;
 } mp_obj_poll_t;
+
+STATIC int get_fd(mp_obj_t fdlike) {
+    int fd;
+    // Shortcut for fdfile compatible types
+    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio)
+        #if MICROPY_PY_SOCKET
+        || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)
+        #endif
+        ) {
+        mp_obj_fdfile_t *fdfile = MP_OBJ_TO_PTR(fdlike);
+        fd = fdfile->fd;
+    } else {
+        fd = mp_obj_get_int(fdlike);
+    }
+    return fd;
+}
 
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
-    int fd = mp_obj_get_int(args[1]);
+    bool is_fd = MP_OBJ_IS_INT(args[1]);
+    int fd = get_fd(args[1]);
+
     mp_uint_t flags;
     if (n_args == 3) {
         flags = mp_obj_get_int(args[2]);
@@ -79,9 +103,19 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     if (free_slot == NULL) {
         if (self->len >= self->alloc) {
             self->entries = m_renew(struct pollfd, self->entries, self->alloc, self->alloc + 4);
+            if (self->obj_map) {
+                self->obj_map = m_renew(mp_obj_t, self->obj_map, self->alloc, self->alloc + 4);
+            }
             self->alloc += 4;
         }
         free_slot = &self->entries[self->len++];
+    }
+
+    if (!is_fd) {
+        if (self->obj_map == NULL) {
+            self->obj_map = m_new0(mp_obj_t, self->alloc);
+        }
+        self->obj_map[free_slot - self->entries] = args[1];
     }
 
     free_slot->fd = fd;
@@ -95,10 +129,13 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     struct pollfd *entries = self->entries;
-    int fd = mp_obj_get_int(obj_in);
+    int fd = get_fd(obj_in);
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->fd = -1;
+            if (self->obj_map) {
+                self->obj_map[entries - self->entries] = MP_OBJ_NULL;
+            }
             break;
         }
         entries++;
@@ -113,7 +150,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     struct pollfd *entries = self->entries;
-    int fd = mp_obj_get_int(obj_in);
+    int fd = get_fd(obj_in);
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->events = mp_obj_get_int(eventmask_in);
@@ -159,7 +196,12 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     for (int i = 0; i < self->len; i++, entries++) {
         if (entries->revents != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-            t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            // If there's an object stored, return it, otherwise raw fd
+            if (self->obj_map && self->obj_map[i] != MP_OBJ_NULL) {
+                t->items[0] = self->obj_map[i];
+            } else {
+                t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            }
             t->items[1] = MP_OBJ_NEW_SMALL_INT(entries->revents);
             ret_list->items[ret_i++] = MP_OBJ_FROM_PTR(t);
             if (flags & FLAG_ONESHOT) {
@@ -196,6 +238,7 @@ STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     poll->entries = m_new(struct pollfd, alloc);
     poll->alloc = alloc;
     poll->len = 0;
+    poll->obj_map = NULL;
     return MP_OBJ_FROM_PTR(poll);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_poll_obj, 0, 1, select_poll);
@@ -213,8 +256,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_t
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uselect,
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 
-#endif // MICROPY_PY_USELECT
+#endif // MICROPY_PY_USELECT_POSIX

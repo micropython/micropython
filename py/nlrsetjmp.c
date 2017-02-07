@@ -29,8 +29,8 @@
 #if MICROPY_NLR_SETJMP
 
 void nlr_setjmp_jump(void *val) {
-    nlr_buf_t *buf = MP_STATE_VM(nlr_top);
-    MP_STATE_VM(nlr_top) = buf->prev;
+    nlr_buf_t *buf = MP_STATE_THREAD(nlr_top);
+    MP_STATE_THREAD(nlr_top) = buf->prev;
     buf->ret_val = val;
     longjmp(buf->jmpbuf, 1);
 }

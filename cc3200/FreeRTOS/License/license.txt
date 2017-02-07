@@ -1,54 +1,59 @@
-The FreeRTOS source code is licensed by a *modified* GNU General Public
-License (GPL).  The modification is provided in the form of an exception.
-
-NOTE: The modification to the GPL is included to allow you to distribute a
-combined work that includes FreeRTOS without being obliged to provide the source
-code for proprietary components outside of the FreeRTOS kernel.
-
-
+The FreeRTOS open source license covers the FreeRTOS source files,
+which are located in the /FreeRTOS/Source directory of the official FreeRTOS
+download.  It also covers most of the source files in the demo application
+projects, which are located in the /FreeRTOS/Demo directory of the official
+FreeRTOS download.  The demo projects may also include third party software that
+is not part of FreeRTOS and is licensed separately to FreeRTOS.  Examples of
+third party software includes header files provided by chip or tools vendors,
+linker scripts, peripheral drivers, etc.  All the software in subdirectories of
+the /FreeRTOS directory is either open source or distributed with permission,
+and is free for use.  For the avoidance of doubt, refer to the comments at the
+top of each source file.
 
 ----------------------------------------------------------------------------
 
-The FreeRTOS GPL Exception Text:
+NOTE: The modification to the GPL is included to allow you to distribute a
+combined work that includes FreeRTOS without being obliged to provide the source
+code for proprietary components.
 
-Any FreeRTOS source code, whether modified or in it's original release form,
+----------------------------------------------------------------------------
+
+Applying to FreeRTOS V8.2.3 up to the latest version, the FreeRTOS GPL Exception
+Text follows:
+
+Any FreeRTOS *source code*, whether modified or in it's original release form,
 or whether in whole or in part, can only be distributed by you under the terms
-of the GNU General Public License plus this exception. An independent module is
+of the GNU General Public License plus this exception.  An independent module is
 a module which is not derived from or based on FreeRTOS.
 
 Clause 1:
 
-Linking FreeRTOS statically or dynamically with other modules is making a
-combined work based on FreeRTOS. Thus, the terms and conditions of the GNU
-General Public License cover the whole combination.
+Linking FreeRTOS with other modules is making a combined work based on FreeRTOS.
+Thus, the terms and conditions of the GNU General Public License V2 cover the
+whole combination.
 
-As a special exception, the copyright holder of FreeRTOS gives you permission
-to link FreeRTOS with independent modules that communicate with FreeRTOS
-solely through the FreeRTOS API interface, regardless of the license terms of
-these independent modules, and to copy and distribute the resulting combined
-work under terms of your choice, provided that
-
-  + Every copy of the combined work is accompanied by a written statement that
-  details to the recipient the version of FreeRTOS used and an offer by yourself
-  to provide the FreeRTOS source code (including any modifications you may have
-  made) should the recipient request it.
-
-  + The combined work is not itself an RTOS, scheduler, kernel or related product.
-
-  + The independent modules add significant and primary functionality to FreeRTOS
-  and do not merely extend the existing functionality already present in FreeRTOS.
+As a special exception, the copyright holders of FreeRTOS give you permission to
+link FreeRTOS with independent modules to produce a statically linked
+executable, regardless of the license terms of these independent modules, and to
+copy and distribute the resulting executable under terms of your choice,
+provided that you also meet, for each linked independent module, the terms and
+conditions of the license of that module.  An independent module is a module
+which is not derived from or based on FreeRTOS.
 
 Clause 2:
 
-FreeRTOS may not be used for any competitive or comparative purpose, including the
-publication of any form of run time or compile time metric, without the express
-permission of Real Time Engineers Ltd. (this is the norm within the industry and
-is intended to ensure information accuracy).
+FreeRTOS may not be used for any competitive or comparative purpose, including
+the publication of any form of run time or compile time metric, without the
+express permission of Real Time Engineers Ltd. (this is the norm within the
+industry and is intended to ensure information accuracy).
+
 
 
 --------------------------------------------------------------------
 
-The standard GPL exception text:
+
+
+The standard GPL V2 text:
 
 
 		    GNU GENERAL PUBLIC LICENSE

@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_pwr_ex.h
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   Header file of PWR HAL Extension module.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -99,7 +99,7 @@
   */
 #define PWR_FLAG_ODRDY                  PWR_CSR1_ODRDY
 #define PWR_FLAG_ODSWRDY                PWR_CSR1_ODSWRDY
-#define PWR_FLAG_UDRDY                  PWR_CSR1_UDSWRDY
+#define PWR_FLAG_UDRDY                  PWR_CSR1_UDRDY
 /**
   * @}
   */

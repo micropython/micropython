@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.ADC:
 
 class ADC -- analog to digital conversion
@@ -12,7 +13,7 @@ class ADC -- analog to digital conversion
         adc = pyb.ADC(pin)              # create an analog object from a pin
         val = adc.read()                # read an analog value
     
-        adc = pyb.ADCAll(resolution)    # creale an ADCAll object
+        adc = pyb.ADCAll(resolution)    # create an ADCAll object
         val = adc.read_channel(channel) # read the given channel
         val = adc.read_core_temp()      # read MCU temperature
         val = adc.read_core_vbat()      # read MCU VBAT
@@ -35,12 +36,12 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: adc.read()
+    .. method:: ADC.read()
 
        Read the value on the analog pin and return it.  The returned value
        will be between 0 and 4095.
 
-    .. method:: adc.read_timed(buf, timer)
+    .. method:: ADC.read_timed(buf, timer)
     
        Read analog values into ``buf`` at a rate set by the ``timer`` object.
 

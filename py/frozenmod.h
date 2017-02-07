@@ -31,3 +31,4 @@ enum {
 };
 
 int mp_find_frozen_module(const char *str, size_t len, void **data);
+mp_import_stat_t mp_frozen_stat(const char *str);

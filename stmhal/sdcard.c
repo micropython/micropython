@@ -24,10 +24,13 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/fsusermount.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs_fat.h"
+#include "mphalport.h"
 
 #include "sdcard.h"
 #include "pin.h"
@@ -38,9 +41,9 @@
 
 #if MICROPY_HW_HAS_SDCARD
 
-#if defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
 
-// The F7 series calls the peripheral SDMMC rather than SDIO, so provide some
+// The F7 & L4 series calls the peripheral SDMMC rather than SDIO, so provide some
 // #defines for backwards compatability.
 
 #define SDIO    SDMMC1
@@ -77,47 +80,26 @@
 static SD_HandleTypeDef sd_handle;
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
 
-// Parameters to dma_init() for SDIO tx and rx.
-static const DMA_InitTypeDef dma_init_struct_sdio = {
-    .Channel             = 0,
-    .Direction           = 0,
-    .PeriphInc           = DMA_PINC_DISABLE,
-    .MemInc              = DMA_MINC_ENABLE,
-    .PeriphDataAlignment = DMA_PDATAALIGN_WORD,
-    .MemDataAlignment    = DMA_MDATAALIGN_WORD,
-    .Mode                = DMA_PFCTRL,
-    .Priority            = DMA_PRIORITY_VERY_HIGH,
-    .FIFOMode            = DMA_FIFOMODE_ENABLE,
-    .FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL,
-    .MemBurst            = DMA_MBURST_INC4,
-    .PeriphBurst         = DMA_PBURST_INC4,
-};
-
 void sdcard_init(void) {
-    GPIO_InitTypeDef GPIO_Init_Structure;
-
     // invalidate the sd_handle
     sd_handle.Instance = NULL;
 
     // configure SD GPIO
     // we do this here an not in HAL_SD_MspInit because it apparently
     // makes it more robust to have the pins always pulled high
-    GPIO_Init_Structure.Mode = GPIO_MODE_AF_PP;
-    GPIO_Init_Structure.Pull = GPIO_PULLUP;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Alternate = GPIO_AF12_SDIO;
-    GPIO_Init_Structure.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
-    HAL_GPIO_Init(GPIOC, &GPIO_Init_Structure);
-    GPIO_Init_Structure.Pin = GPIO_PIN_2;
-    HAL_GPIO_Init(GPIOD, &GPIO_Init_Structure);
+    // Note: the mp_hal_pin_config function will configure the GPIO in
+    // fast mode which can do up to 50MHz.  This should be plenty for SDIO
+    // which clocks up to 25MHz maximum.
+    mp_hal_pin_config(&pin_C8, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C9, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C10, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
 
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
-    GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
-    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Pin = MICROPY_HW_SDCARD_DETECT_PIN.pin_mask;
-    HAL_GPIO_Init(MICROPY_HW_SDCARD_DETECT_PIN.gpio, &GPIO_Init_Structure);
+    mp_hal_pin_config(&MICROPY_HW_SDCARD_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_SDCARD_DETECT_PULL, 0);
 }
 
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
@@ -152,7 +134,7 @@ bool sdcard_power_on(void) {
     sd_handle.Instance = SDIO;
     sd_handle.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
     sd_handle.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
-    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_DISABLE;
+    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_ENABLE;
     sd_handle.Init.BusWide             = SDIO_BUS_WIDE_1B;
     sd_handle.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     sd_handle.Init.ClockDiv            = SDIO_TRANSFER_CLK_DIV;
@@ -203,11 +185,6 @@ void SDIO_IRQHandler(void) {
 }
 
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
-    // check that dest pointer is aligned on a 4-byte boundary
-    if (((uint32_t)dest & 3) != 0) {
-        return SD_ERROR;
-    }
-
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
         return SD_ERROR;
@@ -215,13 +192,34 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 
     HAL_SD_ErrorTypedef err = SD_OK;
 
+    // check that dest pointer is aligned on a 4-byte boundary
+    uint8_t *orig_dest = NULL;
+    uint32_t saved_word;
+    if (((uint32_t)dest & 3) != 0) {
+        // Pointer is not aligned so it needs fixing.
+        // We could allocate a temporary block of RAM (as sdcard_write_blocks
+        // does) but instead we are going to use the dest buffer inplace.  We
+        // are going to align the pointer, save the initial word at the aligned
+        // location, read into the aligned memory, move the memory back to the
+        // unaligned location, then restore the initial bytes at the aligned
+        // location.  We should have no trouble doing this as those initial
+        // bytes at the aligned location should be able to be changed for the
+        // duration of this function call.
+        orig_dest = dest;
+        dest = (uint8_t*)((uint32_t)dest & ~3);
+        saved_word = *(uint32_t*)dest;
+    }
+
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
-        dma_init(&sd_rx_dma, DMA_STREAM_SDIO_RX, &dma_init_struct_sdio,
-            DMA_CHANNEL_SDIO_RX, DMA_PERIPH_TO_MEMORY, &sd_handle);
+        dma_init(&sd_rx_dma, &dma_SDIO_0_RX, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
+
+        // make sure cache is flushed and invalidated so when DMA updates the RAM
+        // from reading the peripheral the CPU then reads the new data
+        MP_HAL_CLEANINVALIDATE_DCACHE(dest, num_blocks * SDCARD_BLOCK_SIZE);
 
         err = HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
         if (err == SD_OK) {
@@ -229,7 +227,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
             err = HAL_SD_CheckReadOperation(&sd_handle, 100000000);
         }
 
-        dma_deinit(sd_handle.hdmarx);
+        dma_deinit(&dma_SDIO_0_RX);
         sd_handle.hdmarx = NULL;
 
         restore_irq_pri(basepri);
@@ -237,15 +235,16 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         err = HAL_SD_ReadBlocks_BlockNumber(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
     }
 
+    if (orig_dest != NULL) {
+        // move the read data to the non-aligned position, and restore the initial bytes
+        memmove(orig_dest, dest, num_blocks * SDCARD_BLOCK_SIZE);
+        memcpy(dest, &saved_word, orig_dest - dest);
+    }
+
     return err;
 }
 
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
-    // check that src pointer is aligned on a 4-byte boundary
-    if (((uint32_t)src & 3) != 0) {
-        return SD_ERROR;
-    }
-
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
         return SD_ERROR;
@@ -253,20 +252,40 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
 
     HAL_SD_ErrorTypedef err = SD_OK;
 
+    // check that src pointer is aligned on a 4-byte boundary
+    if (((uint32_t)src & 3) != 0) {
+        // pointer is not aligned, so allocate a temporary block to do the write
+        uint8_t *src_aligned = m_new_maybe(uint8_t, SDCARD_BLOCK_SIZE);
+        if (src_aligned == NULL) {
+            return SD_ERROR;
+        }
+        for (size_t i = 0; i < num_blocks; ++i) {
+            memcpy(src_aligned, src + i * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE);
+            err = sdcard_write_blocks(src_aligned, block_num + i, 1);
+            if (err != SD_OK) {
+                break;
+            }
+        }
+        m_del(uint8_t, src_aligned, SDCARD_BLOCK_SIZE);
+        return err;
+    }
+
     if (query_irq() == IRQ_STATE_ENABLED) {
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
-        dma_init(&sd_tx_dma, DMA_STREAM_SDIO_TX, &dma_init_struct_sdio,
-            DMA_CHANNEL_SDIO_TX, DMA_MEMORY_TO_PERIPH, &sd_handle);
+        dma_init(&sd_tx_dma, &dma_SDIO_0_TX, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
+
+        // make sure cache is flushed to RAM so the DMA can read the correct data
+        MP_HAL_CLEAN_DCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
 
         err = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
         if (err == SD_OK) {
             // wait for DMA transfer to finish, with a large timeout
             err = HAL_SD_CheckWriteOperation(&sd_handle, 100000000);
         }
-        dma_deinit(sd_handle.hdmatx);
+        dma_deinit(&dma_SDIO_0_TX);
         sd_handle.hdmatx = NULL;
 
         restore_irq_pri(basepri);
@@ -424,8 +443,11 @@ const mp_obj_type_t pyb_sdcard_type = {
     .locals_dict = (mp_obj_t)&pyb_sdcard_locals_dict,
 };
 
-void sdcard_init_vfs(fs_user_mount_t *vfs) {
+void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
+    vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
+    vfs->fatfs.part = part;
     vfs->readblocks[0] = (mp_obj_t)&pyb_sdcard_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
     vfs->readblocks[2] = (mp_obj_t)sdcard_read_blocks; // native version

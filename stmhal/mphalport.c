@@ -1,21 +1,24 @@
-#include <errno.h>
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
 
+bool mp_hal_ticks_cpu_enabled = false;
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
-    [HAL_ERROR] = EIO,
-    [HAL_BUSY] = EBUSY,
-    [HAL_TIMEOUT] = ETIMEDOUT,
+    [HAL_ERROR] = MP_EIO,
+    [HAL_BUSY] = MP_EBUSY,
+    [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(mp_hal_status_to_errno_table[status])));
+    mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
 void mp_hal_set_interrupt_char(int c) {
@@ -40,7 +43,7 @@ int mp_hal_stdin_rx_chr(void) {
         } else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
@@ -70,6 +73,15 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
 }
 
+void mp_hal_ticks_cpu_enable(void) {
+    if (!mp_hal_ticks_cpu_enabled) {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        DWT->CYCCNT = 0;
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        mp_hal_ticks_cpu_enabled = true;
+    }
+}
+
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     if (0) {
     #ifdef __GPIOA_CLK_ENABLE
@@ -92,12 +104,16 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     } else if (gpio == GPIOE) {
         __GPIOE_CLK_ENABLE();
     #endif
-    #ifdef __GPIOF_CLK_ENABLE
+    #if defined(GPIOF) && defined(__GPIOF_CLK_ENABLE)
     } else if (gpio == GPIOF) {
         __GPIOF_CLK_ENABLE();
     #endif
-    #ifdef __GPIOG_CLK_ENABLE
+    #if defined(GPIOG) && defined(__GPIOG_CLK_ENABLE)
     } else if (gpio == GPIOG) {
+        #if defined(STM32L476xx) || defined(STM32L486xx)
+        // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
+        HAL_PWREx_EnableVddIO2();
+        #endif
         __GPIOG_CLK_ENABLE();
     #endif
     #ifdef __GPIOH_CLK_ENABLE
@@ -119,7 +135,9 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     }
 }
 
-void mp_hal_gpio_config(GPIO_TypeDef *gpio, uint32_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
+void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
+    GPIO_TypeDef *gpio = pin_obj->gpio;
+    uint32_t pin = pin_obj->pin;
     mp_hal_gpio_clock_enable(gpio);
     gpio->MODER = (gpio->MODER & ~(3 << (2 * pin))) | ((mode & 3) << (2 * pin));
     gpio->OTYPER = (gpio->OTYPER & ~(1 << pin)) | ((mode >> 2) << pin);
@@ -128,16 +146,11 @@ void mp_hal_gpio_config(GPIO_TypeDef *gpio, uint32_t pin, uint32_t mode, uint32_
     gpio->AFR[pin >> 3] = (gpio->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
 }
 
-bool mp_hal_gpio_set_af(const pin_obj_t *pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit) {
-    mp_hal_gpio_clock_enable(pin->gpio);
-
+bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit) {
     const pin_af_obj_t *af = pin_find_af(pin, fn, unit);
     if (af == NULL) {
         return false;
     }
-    init->Pin = pin->pin_mask;
-    init->Alternate = af->idx;
-    HAL_GPIO_Init(pin->gpio, init);
-
+    mp_hal_pin_config(pin, mode, pull, af->idx);
     return true;
 }

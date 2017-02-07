@@ -2,11 +2,12 @@ import pyb, stm
 from pyb import RTC
 
 rtc = RTC()
+rtc.init()
 print(rtc)
 
 # make sure that 1 second passes correctly
 rtc.datetime((2014, 1, 1, 1, 0, 0, 0, 0))
-pyb.delay(1001)
+pyb.delay(1002)
 print(rtc.datetime()[:7])
 
 def set_and_print(datetime):

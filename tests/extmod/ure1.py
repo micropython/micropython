@@ -11,6 +11,10 @@ try:
 except IndexError:
     print("IndexError")
 
+# conversion of re and match to string
+str(r)
+str(m)
+
 r = re.compile("(.+)1")
 m = r.match("xyz781")
 print(m.group(0))

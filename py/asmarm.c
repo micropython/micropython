@@ -38,52 +38,8 @@
 
 #define SIGNED_FIT24(x) (((x) & 0xff800000) == 0) || (((x) & 0xff000000) == 0xff000000)
 
-struct _asm_arm_t {
-    uint pass;
-    mp_uint_t code_offset;
-    mp_uint_t code_size;
-    byte *code_base;
-    byte dummy_data[4];
-
-    mp_uint_t max_num_labels;
-    mp_uint_t *label_offsets;
-    uint push_reglist;
-    uint stack_adjust;
-};
-
-asm_arm_t *asm_arm_new(uint max_num_labels) {
-    asm_arm_t *as;
-
-    as = m_new0(asm_arm_t, 1);
-    as->max_num_labels = max_num_labels;
-    as->label_offsets = m_new(mp_uint_t, max_num_labels);
-
-    return as;
-}
-
-void asm_arm_free(asm_arm_t *as, bool free_code) {
-    if (free_code) {
-        MP_PLAT_FREE_EXEC(as->code_base, as->code_size);
-    }
-    m_del(mp_uint_t, as->label_offsets, as->max_num_labels);
-    m_del_obj(asm_arm_t, as);
-}
-
-void asm_arm_start_pass(asm_arm_t *as, uint pass) {
-    if (pass == ASM_ARM_PASS_COMPUTE) {
-        memset(as->label_offsets, -1, as->max_num_labels * sizeof(mp_uint_t));
-    } else if (pass == ASM_ARM_PASS_EMIT) {
-        MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
-        if (as->code_base == NULL) {
-            assert(0);
-        }
-    }
-    as->pass = pass;
-    as->code_offset = 0;
-}
-
 void asm_arm_end_pass(asm_arm_t *as) {
-    if (as->pass == ASM_ARM_PASS_EMIT) {
+    if (as->base.pass == MP_ASM_PASS_EMIT) {
 #ifdef __arm__
         // flush I- and D-cache
         asm volatile(
@@ -97,35 +53,12 @@ void asm_arm_end_pass(asm_arm_t *as) {
     }
 }
 
-// all functions must go through this one to emit bytes
-// if as->pass < ASM_ARM_PASS_EMIT, then this function only returns a buffer of 4 bytes length
-STATIC byte *asm_arm_get_cur_to_write_bytes(asm_arm_t *as, int num_bytes_to_write) {
-    if (as->pass < ASM_ARM_PASS_EMIT) {
-        as->code_offset += num_bytes_to_write;
-        return as->dummy_data;
-    } else {
-        assert(as->code_offset + num_bytes_to_write <= as->code_size);
-        byte *c = as->code_base + as->code_offset;
-        as->code_offset += num_bytes_to_write;
-        return c;
-    }
-}
-
-uint asm_arm_get_code_pos(asm_arm_t *as) {
-    return as->code_offset;
-}
-
-uint asm_arm_get_code_size(asm_arm_t *as) {
-    return as->code_size;
-}
-
-void *asm_arm_get_code(asm_arm_t *as) {
-    return as->code_base;
-}
-
 // Insert word into instruction flow
 STATIC void emit(asm_arm_t *as, uint op) {
-    *(uint*)asm_arm_get_cur_to_write_bytes(as, 4) = op;
+    uint8_t *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
+    if (c != NULL) {
+        *(uint32_t*)c = op;
+    }
 }
 
 // Insert word into instruction flow, add "ALWAYS" condition code
@@ -261,35 +194,6 @@ void asm_arm_push(asm_arm_t *as, uint reglist) {
 
 void asm_arm_pop(asm_arm_t *as, uint reglist) {
     emit_al(as, asm_arm_op_pop(reglist));
-}
-
-void asm_arm_label_assign(asm_arm_t *as, uint label) {
-    assert(label < as->max_num_labels);
-    if (as->pass < ASM_ARM_PASS_EMIT) {
-        // assign label offset
-        assert(as->label_offsets[label] == -1);
-        as->label_offsets[label] = as->code_offset;
-    } else {
-        // ensure label offset has not changed from PASS_COMPUTE to PASS_EMIT
-        assert(as->label_offsets[label] == as->code_offset);
-    }
-}
-
-void asm_arm_align(asm_arm_t* as, uint align) {
-    // TODO fill unused data with NOPs?
-    as->code_offset = (as->code_offset + align - 1) & (~(align - 1));
-}
-
-void asm_arm_data(asm_arm_t* as, uint bytesize, uint val) {
-    byte *c = asm_arm_get_cur_to_write_bytes(as, bytesize);
-    // only write to the buffer in the emit pass (otherwise we overflow dummy_data)
-    if (as->pass == ASM_ARM_PASS_EMIT) {
-        // little endian
-        for (uint i = 0; i < bytesize; i++) {
-            *c++ = val;
-            val >>= 8;
-        }
-    }
 }
 
 void asm_arm_mov_reg_reg(asm_arm_t *as, uint reg_dest, uint reg_src) {
@@ -429,9 +333,9 @@ void asm_arm_strb_reg_reg_reg(asm_arm_t *as, uint rd, uint rm, uint rn) {
 }
 
 void asm_arm_bcc_label(asm_arm_t *as, int cond, uint label) {
-    assert(label < as->max_num_labels);
-    mp_uint_t dest = as->label_offsets[label];
-    mp_int_t rel = dest - as->code_offset;
+    assert(label < as->base.max_num_labels);
+    mp_uint_t dest = as->base.label_offsets[label];
+    mp_int_t rel = dest - as->base.code_offset;
     rel -= 8; // account for instruction prefetch, PC is 8 bytes ahead of this instruction
     rel >>= 2; // in ARM mode the branch target is 32-bit aligned, so the 2 LSB are omitted
 

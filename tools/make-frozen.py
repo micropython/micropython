@@ -23,7 +23,7 @@ import os
 
 
 def module_name(f):
-    return f[:-len(".py")]
+    return f
 
 modules = []
 
@@ -53,11 +53,31 @@ print("};")
 print("const char mp_frozen_str_content[] = {")
 for f, st in modules:
     data = open(sys.argv[1] + "/" + f, "rb").read()
-    # Python2 vs Python3 tricks
-    data = repr(data)
-    if data[0] == "b":
-        data = data[1:]
-    data = data[1:-1]
-    data = data.replace('"', '\\"')
-    print('"%s\\0"' % data)
+
+    # We need to properly escape the script data to create a C string.
+    # When C parses hex characters of the form \x00 it keeps parsing the hex
+    # data until it encounters a non-hex character.  Thus one must create
+    # strings of the form "data\x01" "abc" to properly encode this kind of
+    # data.  We could just encode all characters as hex digits but it's nice
+    # to be able to read the resulting C code as ASCII when possible.
+
+    data = bytearray(data) # so Python2 extracts each byte as an integer
+    esc_dict = {ord('\n'): '\\n', ord('\r'): '\\r', ord('"'): '\\"', ord('\\'): '\\\\'}
+    chrs = ['"']
+    break_str = False
+    for c in data:
+        try:
+            chrs.append(esc_dict[c])
+        except KeyError:
+            if 32 <= c <= 126:
+                if break_str:
+                    chrs.append('" "')
+                    break_str = False
+                chrs.append(chr(c))
+            else:
+                chrs.append('\\x%02x' % c)
+                break_str = True
+    chrs.append('\\0"')
+    print(''.join(chrs))
+
 print("};")

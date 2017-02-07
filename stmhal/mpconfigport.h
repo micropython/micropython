@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,81 +24,137 @@
  * THE SOFTWARE.
  */
 
+// Options to control how MicroPython is built for this port,
+// overriding defaults in py/mpconfig.h.
+
 #pragma once
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-// options to control how Micro Python is built
+// board specific definitions
+#include "mpconfigboard.h"
 
+// memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX      (128)
+
+// emitters
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
+
+// compiler configuration
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-#define MICROPY_ENABLE_GC           (1)
-#define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_STACK_CHECK         (1)
-#define MICROPY_HELPER_REPL         (1)
-#define MICROPY_REPL_EMACS_KEYS     (1)
-#define MICROPY_REPL_AUTO_INDENT    (1)
-#define MICROPY_ENABLE_SOURCE_LINE  (1)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+
+// optimisations
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_OPT_MPZ_BITWISE     (1)
 
-// fatfs configuration used in ffconf.h
-#define MICROPY_FATFS_ENABLE_LFN       (1)
-#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_FATFS_USE_LABEL        (1)
-#define MICROPY_FATFS_RPATH            (2)
-#define MICROPY_FATFS_VOLUMES          (4)
-#define MICROPY_FATFS_MULTI_PARTITION  (1)
-#define MICROPY_FSUSERMOUNT            (1)
-
+// Python internal features
+#define MICROPY_READER_VFS          (1)
+#define MICROPY_ENABLE_GC           (1)
+#define MICROPY_ENABLE_FINALISER    (1)
+#define MICROPY_STACK_CHECK         (1)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
+#define MICROPY_KBD_EXCEPTION       (1)
+#define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_EMACS_KEYS     (1)
+#define MICROPY_REPL_AUTO_INDENT    (1)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#define MICROPY_ENABLE_SOURCE_LINE  (1)
+#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_USE_INTERNAL_ERRNO  (1)
+#define MICROPY_VFS                 (1)
+#define MICROPY_VFS_FAT             (1)
+
+// control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
+#define MICROPY_PY_BUILTINS_STR_CENTER (1)
+#define MICROPY_PY_BUILTINS_STR_PARTITION (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
-#define MICROPY_PY_BUILTINS_EXECFILE (1)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
+#define MICROPY_PY_BUILTINS_COMPILE (1)
+#define MICROPY_PY_BUILTINS_EXECFILE (1)
+#define MICROPY_PY_BUILTINS_POW3    (1)
+#define MICROPY_PY_BUILTINS_HELP    (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT stmhal_help_text
+#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
-#define MICROPY_PY_SYS_EXIT         (1)
-#define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (1)
-#define MICROPY_PY_SYS_STDIO_BUFFER (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_FILEIO        (1)
-#define MICROPY_PY_UBINASCII        (1)
-#define MICROPY_PY_URANDOM          (1)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_SYS_MAXSIZE      (1)
+#define MICROPY_PY_SYS_EXIT         (1)
+#define MICROPY_PY_SYS_STDFILES     (1)
+#define MICROPY_PY_SYS_STDIO_BUFFER (1)
+#ifndef MICROPY_PY_SYS_PLATFORM     // let boards override it if they want
+#define MICROPY_PY_SYS_PLATFORM     "pyboard"
+#endif
+#define MICROPY_PY_UERRNO           (1)
+#define MICROPY_PY_THREAD           (0)
+#define MICROPY_PY_THREAD_GIL       (0)
+
+// extended modules
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_UBINASCII        (1)
+#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_USELECT          (1)
+#define MICROPY_PY_UTIMEQ           (1)
+#define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
+#define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
+#define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
+#define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hard_spi_make_new
+#define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
+#define MICROPY_PY_MACHINE_SPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_FRAMEBUF         (1)
+#ifndef MICROPY_PY_USOCKET
+#define MICROPY_PY_USOCKET          (1)
+#endif
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK          (1)
+#endif
 
-#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
-#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN       (1)
+#define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FATFS_RPATH            (2)
+#define MICROPY_FATFS_MULTI_PARTITION  (1)
+
+// TODO these should be generic, not bound to fatfs
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
@@ -114,9 +170,22 @@ extern const struct _mp_obj_module_t mp_module_uheapq;
 extern const struct _mp_obj_module_t mp_module_uhashlib;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
+
+#if MICROPY_PY_USOCKET
+#define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket },
+#else
+#define SOCKET_BUILTIN_MODULE
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS
+#endif
+
+#if MICROPY_PY_NETWORK
+#define NETWORK_BUILTIN_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },
+#else
+#define NETWORK_BUILTIN_MODULE
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module }, \
@@ -124,34 +193,40 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uselect), (mp_obj_t)&mp_module_uselect }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
+    SOCKET_BUILTIN_MODULE \
+    NETWORK_BUILTIN_MODULE \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_collections), (mp_obj_t)&mp_module_collections }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re), (mp_obj_t)&mp_module_ure }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_zlib), (mp_obj_t)&mp_module_uzlib }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_heapq), (mp_obj_t)&mp_module_uheapq }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_hashlib), (mp_obj_t)&mp_module_uhashlib }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_io), (mp_obj_t)&mp_module_io }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&mp_module_urandom }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_uselect }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket }, \
+    SOCKET_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&mp_module_ustruct }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_umachine), (mp_obj_t)&machine_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_stm), (mp_obj_t)&stm_module }, \
 
 #if defined(MCU_SERIES_F7)
 #define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_UART (8)
 #else
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_UART (6)
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -159,7 +234,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     \
-    mp_obj_t mp_const_vcp_interrupt; \
     mp_obj_t pyb_hid_report_desc; \
     \
     mp_obj_t pyb_config_main; \
@@ -178,7 +252,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     struct _pyb_uart_obj_t *pyb_stdio_uart; \
     \
     /* pointers to all UART objects (if they have been created) */ \
-    struct _pyb_uart_obj_t *pyb_uart_obj_all[6]; \
+    struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_MAX_UART]; \
     \
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[2]; \
@@ -199,8 +273,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
@@ -227,22 +299,20 @@ static inline mp_uint_t disable_irq(void) {
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+#define MICROPY_EVENT_POLL_HOOK            __WFI();
 
 // There is no classical C heap in bare-metal ports, only Python
 // garbage-collected heap. For completeness, emulate C heap via
 // GC heap. Note that MicroPython core never uses malloc() and friends,
 // so these defines are mostly to help extension module writers.
-#define malloc gc_alloc
-#define free gc_free
-#define realloc gc_realloc
+#define malloc(n) m_malloc(n)
+#define free(p) m_free(p)
+#define realloc(p, n) m_realloc(p, n)
 
 // see stm32f4XX_hal_conf.h USE_USB_FS & USE_USB_HS
 // at the moment only USB_FS is supported
 #define USE_DEVICE_MODE
 //#define USE_HOST_MODE
-
-// board specific definitions
-#include "mpconfigboard.h"
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

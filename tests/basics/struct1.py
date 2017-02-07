@@ -1,7 +1,13 @@
 try:
     import ustruct as struct
 except:
-    import struct
+    try:
+        import struct
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
+
 print(struct.calcsize("<bI"))
 print(struct.unpack("<bI", b"\x80\0\0\x01\0"))
 print(struct.calcsize(">bI"))
@@ -10,6 +16,8 @@ print(struct.unpack(">bI", b"\x80\0\0\x01\0"))
 # 32-bit little-endian specific
 #print(struct.unpack("bI", b"\x80\xaa\x55\xaa\0\0\x01\0"))
 
+print(struct.pack("<l", 1))
+print(struct.pack(">l", 1))
 print(struct.pack("<i", 1))
 print(struct.pack(">i", 1))
 print(struct.pack("<h", 1))
@@ -53,6 +61,10 @@ print(struct.unpack(">q", b"\xf2\x34\x56\x78\x90\x12\x34\x56"))
 print(struct.unpack("<I", b"\xff\xff\xff\xff"))
 print(struct.unpack("<Q", b"\xff\xff\xff\xff\xff\xff\xff\xff"))
 
+# check small int overflow
+print(struct.unpack("<i", b'\xff\xff\xff\x7f'))
+print(struct.unpack("<q", b'\xff\xff\xff\xff\xff\xff\xff\x7f'))
+
 # network byte order
 print(struct.pack('!i', 123))
 
@@ -61,6 +73,12 @@ try:
     struct.pack(1, 2)
 except TypeError:
     print('TypeError')
+
+# make sure that unknown types are detected
+try:
+    struct.pack("z", 1)
+except:
+    print("Unknown type")
 
 # Initially repitition counters were supported only for strings,
 # but later were implemented for all.
@@ -95,15 +113,3 @@ try:
     print(struct.unpack_from('<b', buf, -11))
 except:
     print('struct.error')
-
-# pack with too many args, not checked by uPy
-#try:
-#    print(struct.pack('ii', 1, 2, 3))
-#except:
-#    print('struct.error')
-
-# pack with too few args, not checked by uPy
-#try:
-#    print(struct.pack('ii', 1))
-#except:
-#    print('struct.error')

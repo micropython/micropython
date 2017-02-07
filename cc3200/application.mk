@@ -18,7 +18,6 @@ APP_INC += -Iutil
 APP_INC += -Ibootmgr
 APP_INC += -I$(BUILD)
 APP_INC += -I$(BUILD)/genhdr
-APP_INC += -I../lib/fatfs
 APP_INC += -I../lib/mp-readline
 APP_INC += -I../lib/netutils
 APP_INC += -I../lib/timeutils
@@ -29,9 +28,6 @@ APP_CPPDEFINES = -Dgcc -DTARGET_IS_CC3200 -DSL_FULL -DUSE_FREERTOS
 APP_FATFS_SRC_C = $(addprefix fatfs/src/,\
 	drivers/sflash_diskio.c \
 	drivers/sd_diskio.c \
-	option/syscall.c \
-	diskio.c \
-	ffconf.c \
 	)
 
 APP_RTOS_SRC_C = $(addprefix FreeRTOS/Source/,\
@@ -81,7 +77,6 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	mpirq.c \
 	mperror.c \
 	mpexception.c \
-	mpsystick.c \
 	)
 
 APP_MODS_SRC_C = $(addprefix mods/,\
@@ -98,6 +93,7 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybpin.c \
 	pybi2c.c \
 	pybrtc.c \
+	pybflash.c \
 	pybsd.c \
 	pybsleep.c \
 	pybspi.c \
@@ -142,28 +138,24 @@ APP_UTIL_SRC_S = $(addprefix util/,\
 APP_MAIN_SRC_C = \
 	main.c \
 	mptask.c \
-	serverstask.c
+	mpthreadport.c \
+	serverstask.c \
+	fatfs_port.c \
 	
 APP_LIB_SRC_C = $(addprefix lib/,\
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	libc/string0.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
-	utils/printf.c \
 	)
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\
 	bufhelper.c \
-	builtin_open.c \
-	import.c \
 	input.c \
 	irq.c \
-	lexerfatfs.c \
-	moduselect.c \
 	pybstdio.c \
 	)
 
@@ -208,9 +200,9 @@ WIPY_PWD ?= 'python'
 
 all: $(BUILD)/mcuimg.bin
 
-.PHONY: deploy
+.PHONY: deploy-ota
 
-deploy: $(BUILD)/mcuimg.bin
+deploy-ota: $(BUILD)/mcuimg.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(UPDATE_WIPY) --verify --ip $(WIPY_IP) --user $(WIPY_USER) --password $(WIPY_PWD) --file $<
 

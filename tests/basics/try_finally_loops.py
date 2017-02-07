@@ -33,3 +33,11 @@ for i in range(4):
         print('here')
     finally:
         print('finnaly 3')
+
+# break from within try-finally, within for-loop
+for i in [1]:
+    try:
+        print(i)
+        break
+    finally:
+        print('finally 4')

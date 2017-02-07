@@ -43,9 +43,6 @@ void *calloc(size_t nmemb, size_t size) {
 void *realloc(void *ptr, size_t size) {
     return gc_realloc(ptr, size, true);
 }
-void abort_(void) {
-    printf("Aborted\n");
-}
 
 #define PLATFORM_HTONL(_n) ((uint32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
 #undef htonl

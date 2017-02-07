@@ -1,4 +1,4 @@
-.. _machine.ADC:
+.. currentmodule:: machine
 
 class ADC -- analog to digital conversion
 =========================================
@@ -14,7 +14,7 @@ Usage::
 Constructors
 ------------
 
-.. class:: machine.ADC(id=0, \*, bits=12)
+.. class:: ADC(id=0, \*, bits=12)
 
    Create an ADC object associated with the given pin.
    This allows you to then read analog values on that pin.
@@ -31,7 +31,7 @@ Constructors
 Methods
 -------
 
-.. method:: adc.channel(id, \*, pin)
+.. method:: ADC.channel(id, \*, pin)
 
    Create an analog pin. If only channel ID is given, the correct pin will
    be selected. Alternatively, only the pin can be passed and the correct
@@ -42,11 +42,11 @@ Methods
       apin = adc.channel(pin='GP3')
       apin = adc.channel(id=1, pin='GP3')
 
-.. method:: adc.init()
+.. method:: ADC.init()
 
    Enable the ADC block.
 
-.. method:: adc.deinit()
+.. method:: ADC.deinit()
 
    Disable the ADC block.
 

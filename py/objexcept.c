@@ -36,6 +36,7 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 
 // Instance of MemoryError exception - needed by mp_malloc_fail
 const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
@@ -107,6 +108,16 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
             mp_print_str(print, "");
             return;
         } else if (o->args->len == 1) {
+            #if MICROPY_PY_UERRNO
+            // try to provide a nice OSError error message
+            if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
+                qstr qst = mp_errno_to_str(o->args->items[0]);
+                if (qst != MP_QSTR_NULL) {
+                    mp_printf(print, "[Errno %d] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                    return;
+                }
+            }
+            #endif
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
@@ -141,11 +152,21 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
 }
 
 STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
-        // not load attribute
+        // store/delete attribute
+        if (attr == MP_QSTR___traceback__ && dest[1] == mp_const_none) {
+            // We allow 'exc.__traceback__ = None' assignment as low-level
+            // optimization of pre-allocating exception instance and raising
+            // it repeatedly - this avoids memory allocation during raise.
+            // However, uPy will keep adding traceback entries to such
+            // exception instance, so before throwing it, traceback should
+            // be cleared like above.
+            self->traceback_len = 0;
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
         return;
     }
-    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (attr == MP_QSTR_args) {
         dest[0] = MP_OBJ_FROM_PTR(self->args);
     } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
@@ -362,10 +383,8 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
         o->traceback_data = NULL;
         o->args = MP_OBJ_TO_PTR(mp_obj_new_tuple(1, NULL));
 
-        if (fmt == NULL) {
-            // no message
-            assert(0);
-        } else {
+        assert(fmt != NULL);
+        {
             if (strchr(fmt, '%') == NULL) {
                 // no formatting substitutions, avoid allocating vstr.
                 o->args->items[0] = mp_obj_new_str(fmt, strlen(fmt), false);

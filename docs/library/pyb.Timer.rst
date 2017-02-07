@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.Timer:
 
 class Timer -- control internal timers
@@ -67,7 +68,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.init(\*, freq, prescaler, period)
+    .. method:: Timer.init(\*, freq, prescaler, period)
     
        Initialise the timer.  Initialisation must be either by frequency (in Hz)
        or by prescaler and period::
@@ -77,7 +78,7 @@ Methods
        
        Keyword arguments:
        
-         - ``freq`` --- specifies the periodic frequency of the timer. You migh also
+         - ``freq`` --- specifies the periodic frequency of the timer. You might also
            view this as the frequency with which the timer goes through one complete cycle.
        
          - ``prescaler`` [0-0xffff] - specifies the value to be loaded into the
@@ -96,7 +97,7 @@ Methods
     
            - ``Timer.UP`` - configures the timer to count from 0 to ARR (default)
            - ``Timer.DOWN`` - configures the timer to count from ARR down to 0.
-           - ``Timer.CENTER`` - confgures the timer to count from 0 to ARR and
+           - ``Timer.CENTER`` - configures the timer to count from 0 to ARR and
              then back down to 0.
        
          - ``div`` can be one of 1, 2, or 4. Divides the timer clock to determine
@@ -108,13 +109,13 @@ Methods
            transitions on complimentary channels (both channels will be inactive)
            for this time). ``deadtime`` may be an integer between 0 and 1008, with
            the following restrictions: 0-128 in steps of 1. 128-256 in steps of
-           2, 256-512 in steps of 8, and 512-1008 in steps of 16. ``deadime``
+           2, 256-512 in steps of 8, and 512-1008 in steps of 16. ``deadtime``
            measures ticks of ``source_freq`` divided by ``div`` clock ticks.
            ``deadtime`` is only available on timers 1 and 8.
        
         You must either specify freq or both of period and prescaler.
 
-.. method:: timer.deinit()
+.. method:: Timer.deinit()
 
    Deinitialises the timer.
    
@@ -127,7 +128,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.callback(fun)
+    .. method:: Timer.callback(fun)
     
        Set the function to be called when the timer triggers.
        ``fun`` is passed 1 argument, the timer object.
@@ -135,12 +136,12 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.channel(channel, mode, ...)
+    .. method:: Timer.channel(channel, mode, ...)
     
        If only a channel number is passed, then a previously initialized channel
        object is returned (or ``None`` if there is no previous channel).
        
-       Othwerwise, a TimerChannel object is initialized and returned.
+       Otherwise, a TimerChannel object is initialized and returned.
        
        Each channel can be configured to perform pwm, output compare, or
        input capture. All channels share the same underlying timer, which means
@@ -182,7 +183,7 @@ Methods
          - ``polarity`` can be one of:
     
            - ``Timer.HIGH`` - output is active high
-           - ``Timer.LOW`` - output is acive low
+           - ``Timer.LOW`` - output is active low
        
        Optional keyword arguments for Timer.IC modes:
        
@@ -211,27 +212,27 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.counter([value])
+    .. method:: Timer.counter([value])
 
        Get or set the timer counter.
 
 .. only:: port_pyboard
 
-    .. method:: timer.freq([value])
+    .. method:: Timer.freq([value])
     
        Get or set the frequency for the timer (changes prescaler and period if set).
 
 .. only:: port_pyboard
 
-    .. method:: timer.period([value])
+    .. method:: Timer.period([value])
     
        Get or set the period of the timer.
     
-    .. method:: timer.prescaler([value])
+    .. method:: Timer.prescaler([value])
     
        Get or set the prescaler for the timer.
     
-    .. method:: timer.source_freq()
+    .. method:: Timer.source_freq()
     
        Get the frequency of the source of the timer.
 

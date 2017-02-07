@@ -103,29 +103,21 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     char fmt_type = get_fmt_type(&fmt);
     mp_uint_t size;
     for (size = 0; *fmt; fmt++) {
-        mp_uint_t align = 1;
         mp_uint_t cnt = 1;
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
 
-        mp_uint_t sz = 0;
         if (*fmt == 's') {
-            sz = cnt;
-            cnt = 1;
-        }
-
-        while (cnt--) {
-            // If we already have size for 's' case, don't set it again
-            if (sz == 0) {
-                sz = (mp_uint_t)mp_binary_get_size(fmt_type, *fmt, &align);
+            size += cnt;
+        } else {
+            mp_uint_t align;
+            size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
+            while (cnt--) {
+                // Apply alignment
+                size = (size + align - 1) & ~(align - 1);
+                size += sz;
             }
-            // TODO
-            assert(sz != (mp_uint_t)-1);
-            // Apply alignment
-            size = (size + align - 1) & ~(align - 1);
-            size += sz;
-            sz = 0;
         }
     }
     return MP_OBJ_NEW_SMALL_INT(size);
@@ -154,22 +146,19 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             // negative offsets are relative to the end of the buffer
             offset = bufinfo.len + offset;
             if (offset < 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+                mp_raise_ValueError("buffer too small");
             }
         }
         p += offset;
     }
 
     for (uint i = 0; i < num_items;) {
-        if (*fmt == '\0') {
-            break;
-        }
         mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
         }
         if (p + sz > end_p) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+            mp_raise_ValueError("buffer too small");
         }
         mp_obj_t item;
         if (*fmt == 's') {
@@ -196,13 +185,14 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, siz
     for (i = 0; i < n_args;) {
         mp_uint_t sz = 1;
         if (*fmt == '\0') {
+            // more arguments given than used by format string; CPython raises struct.error here
             break;
         }
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
         }
         if (p + sz > end_p) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+            mp_raise_ValueError("buffer too small");
         }
 
         if (*fmt == 's') {
@@ -245,7 +235,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         // negative offsets are relative to the end of the buffer
         offset = (mp_int_t)bufinfo.len + offset;
         if (offset < 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+            mp_raise_ValueError("buffer too small");
         }
     }
     byte *p = (byte *)bufinfo.buf;
@@ -270,7 +260,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_t
 
 const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_ustruct,
     .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
 };
 

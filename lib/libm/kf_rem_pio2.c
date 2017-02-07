@@ -86,7 +86,8 @@ twon8  =  3.9062500000e-03; /* 0x3b800000 */
 
     /* compute q[0],q[1],...q[jk] */
 	for (i=0;i<=jk;i++) {
-	    for(j=0,fw=0.0;j<=jx;j++) fw += x[j]*f[jx+i-j]; q[i] = fw;
+	    for(j=0,fw=0.0;j<=jx;j++) fw += x[j]*f[jx+i-j];
+	    q[i] = fw;
 	}
 
 	jz = jk;

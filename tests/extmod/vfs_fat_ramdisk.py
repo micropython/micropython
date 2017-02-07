@@ -1,5 +1,9 @@
 import sys
-import uos
+import uerrno
+try:
+    import uos_vfs as uos
+except ImportError:
+    import uos
 try:
     uos.VfsFat
 except AttributeError:
@@ -33,41 +37,54 @@ class RAMFS:
 
 
 try:
-    bdev = RAMFS(48)
+    bdev = RAMFS(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
 
 uos.VfsFat.mkfs(bdev)
 
-assert b"FOO_FILETXT" not in bdev.data
-assert b"hello!" not in bdev.data
+print(b"FOO_FILETXT" not in bdev.data)
+print(b"hello!" not in bdev.data)
 
-vfs = uos.VfsFat(bdev, "/ramdisk")
+vfs = uos.VfsFat(bdev)
+uos.mount(vfs, "/ramdisk")
 
-f = vfs.open("foo_file.txt", "w")
-f.write("hello!")
-f.close()
+print("statvfs:", vfs.statvfs("/ramdisk"))
+print("getcwd:", vfs.getcwd())
 
-f2 = vfs.open("foo_file.txt")
-print(f2.read())
-f2.close()
+try:
+    vfs.stat("no_file.txt")
+except OSError as e:
+    print(e.args[0] == uerrno.ENOENT)
 
-assert b"FOO_FILETXT" in bdev.data
-assert b"hello!" in bdev.data
+with vfs.open("foo_file.txt", "w") as f:
+    f.write("hello!")
+print(vfs.listdir())
 
-assert vfs.listdir() == ['foo_file.txt']
+print("stat root:", vfs.stat("/"))
+print("stat file:", vfs.stat("foo_file.txt")[:-3]) # timestamps differ across runs
 
-vfs.remove('foo_file.txt')
-assert vfs.listdir() == []
+print(b"FOO_FILETXT" in bdev.data)
+print(b"hello!" in bdev.data)
 
 vfs.mkdir("foo_dir")
-assert vfs.listdir() == ['foo_dir']
-f = vfs.open("foo_dir/file-in-dir.txt", "w")
-f.write("data in file")
-f.close()
+vfs.chdir("foo_dir")
+print("getcwd:", vfs.getcwd())
+print(vfs.listdir())
 
-assert vfs.listdir("foo_dir") == ['file-in-dir.txt']
+with vfs.open("sub_file.txt", "w") as f:
+    f.write("subdir file")
 
-vfs.rename("foo_dir/file-in-dir.txt", "moved-to-root.txt")
-assert vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
+try:
+    vfs.chdir("sub_file.txt")
+except OSError as e:
+    print(e.args[0] == uerrno.ENOENT)
+
+vfs.chdir("..")
+print("getcwd:", vfs.getcwd())
+
+uos.umount(vfs)
+
+vfs = uos.VfsFat(bdev)
+print(vfs.listdir(b""))

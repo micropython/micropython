@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+#if MICROPY_PY_UTIME
+
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -34,6 +37,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/mphal.h"
+#include "extmod/utime_mphal.h"
 
 #ifdef _WIN32
 static inline int msec_sleep_tv(struct timeval *tv) {
@@ -73,29 +77,6 @@ STATIC mp_obj_t mod_time_time(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
-STATIC mp_obj_t mod_time_ticks_us(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    mp_uint_t us = tv.tv_sec * 1000000 + tv.tv_usec;
-    return MP_OBJ_NEW_SMALL_INT(us & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_ticks_us_obj, mod_time_ticks_us);
-
-STATIC mp_obj_t mod_time_ticks_ms(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    mp_uint_t ms = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-    return MP_OBJ_NEW_SMALL_INT(ms & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_ticks_ms_obj, mod_time_ticks_ms);
-
-STATIC mp_obj_t mod_time_ticks_diff(mp_obj_t oldval, mp_obj_t newval) {
-    mp_uint_t old = MP_OBJ_SMALL_INT_VALUE(oldval);
-    mp_uint_t new = MP_OBJ_SMALL_INT_VALUE(newval);
-    return MP_OBJ_NEW_SMALL_INT((new - old) & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_time_ticks_diff_obj, mod_time_ticks_diff);
-
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock(void) {
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -118,7 +99,9 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     tv.tv_sec = ipart;
     int res;
     while (1) {
+        MP_THREAD_GIL_EXIT();
         res = sleep_select(0, NULL, NULL, NULL, &tv);
+        MP_THREAD_GIL_ENTER();
         #if MICROPY_SELECT_REMAINING_TIME
         // TODO: This assumes Linux behavior of modifying tv to the remaining
         // time.
@@ -136,23 +119,13 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     RAISE_ERRNO(res, errno);
 #else
     // TODO: Handle EINTR
+    MP_THREAD_GIL_EXIT();
     sleep(mp_obj_get_int(arg));
+    MP_THREAD_GIL_ENTER();
 #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
-
-STATIC mp_obj_t mod_time_sleep_ms(mp_obj_t arg) {
-    usleep(mp_obj_get_int(arg) * 1000);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_ms_obj, mod_time_sleep_ms);
-
-STATIC mp_obj_t mod_time_sleep_us(mp_obj_t arg) {
-    usleep(mp_obj_get_int(arg));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_us_obj, mod_time_sleep_us);
 
 STATIC mp_obj_t mod_time_strftime(size_t n_args, const mp_obj_t *args) {
     time_t t;
@@ -174,12 +147,14 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
     { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mod_time_sleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mod_time_sleep_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mod_time_sleep_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mod_time_time_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mod_time_ticks_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mod_time_ticks_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mod_time_ticks_diff_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
     { MP_ROM_QSTR(MP_QSTR_strftime), MP_ROM_PTR(&mod_time_strftime_obj) },
 };
 
@@ -187,6 +162,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table
 
 const mp_obj_module_t mp_module_time = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_utime,
     .globals = (mp_obj_dict_t*)&mp_module_time_globals,
 };
+
+#endif // MICROPY_PY_UTIME

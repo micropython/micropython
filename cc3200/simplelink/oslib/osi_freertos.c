@@ -61,6 +61,10 @@ TaskHandle_t xSimpleLinkSpawnTaskHndl = NULL;
 #define slQUEUE_SIZE				( 3 )
 #define SL_SPAWN_MAX_WAIT_MS        ( 200 )
 
+// This is the static memory (TCB and stack) for the SL spawn task
+static StaticTask_t spawnTaskTCB __attribute__ ((section (".rtos_heap")));
+static portSTACK_TYPE spawnTaskStack[896 / sizeof(portSTACK_TYPE)] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
+
 /*!
 	\brief 	This function registers an interrupt in NVIC table
 
@@ -273,7 +277,6 @@ OsiReturnVal_e osi_LockObjCreate(OsiLockObj_t* pLockObj)
 	\note
 	\warning
 */
-__attribute__ ((section (".boot")))
 OsiReturnVal_e osi_TaskCreate(P_OSI_TASK_ENTRY pEntry,const signed char * const pcName,
                               unsigned short usStackDepth, void *pvParameters,
                               unsigned long uxPriority,OsiTaskHandle* pTaskHandle)
@@ -454,8 +457,19 @@ OsiReturnVal_e VStartSimpleLinkSpawnTask(unsigned portBASE_TYPE uxPriority)
     xSimpleLinkSpawnQueue = xQueueCreate( slQUEUE_SIZE, sizeof( tSimpleLinkSpawnMsg ) );
     ASSERT (xSimpleLinkSpawnQueue != NULL);
 
+    /*
+    // This is the original code to create a task dynamically
     ASSERT (pdPASS == xTaskCreate( vSimpleLinkSpawnTask, ( portCHAR * ) "SLSPAWN",\
                                    896 / sizeof(portSTACK_TYPE), NULL, uxPriority, &xSimpleLinkSpawnTaskHndl ));
+    */
+
+    // This code creates the task using static memory for the TCB and stack
+    xSimpleLinkSpawnTaskHndl = xTaskCreateStatic(
+        vSimpleLinkSpawnTask, ( portCHAR * ) "SLSPAWN",
+        896 / sizeof(portSTACK_TYPE), NULL, uxPriority,
+        spawnTaskStack, &spawnTaskTCB);
+
+    ASSERT(xSimpleLinkSpawnTaskHndl != NULL);
 
     return OSI_OK;
 }

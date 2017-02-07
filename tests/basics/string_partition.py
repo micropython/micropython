@@ -1,3 +1,10 @@
+try:
+    str.partition
+except AttributeError:
+    print("SKIP")
+    import sys
+    sys.exit()
+
 print("asdf".partition('g'))
 print("asdf".partition('a'))
 print("asdf".partition('s'))

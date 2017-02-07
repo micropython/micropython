@@ -37,7 +37,6 @@
 #include "usbd_msc_storage.h"
 
 #include "py/misc.h"
-#include "lib/fatfs/diskio.h"
 #include "storage.h"
 #include "sdcard.h"
 
@@ -121,7 +120,7 @@ int8_t FLASH_STORAGE_StartStopUnit(uint8_t lun, uint8_t started) {
 
 int8_t FLASH_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
     // sync the flash so that the cache is cleared and the device can be unplugged/turned off
-    disk_ioctl(0, CTRL_SYNC, NULL);
+    storage_flush();
     return 0;
 }
 
@@ -134,7 +133,7 @@ int8_t FLASH_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
   * @retval Status
   */
 int8_t FLASH_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
-    disk_read(0, buf, blk_addr, blk_len);
+    storage_read_blocks(buf, blk_addr, blk_len);
     /*
     for (int i = 0; i < blk_len; i++) {
         if (!storage_read_block(buf + i * FLASH_BLOCK_SIZE, blk_addr + i)) {
@@ -154,7 +153,7 @@ int8_t FLASH_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t
   * @retval Status
   */
 int8_t FLASH_STORAGE_Write (uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
-    disk_write(0, buf, blk_addr, blk_len);
+    storage_write_blocks(buf, blk_addr, blk_len);
     /*
     for (int i = 0; i < blk_len; i++) {
         if (!storage_write_block(buf + i * FLASH_BLOCK_SIZE, blk_addr + i)) {

@@ -14,7 +14,7 @@ desc = {
 bytes = b"01"
 
 addr = uctypes.addressof(bytes)
-buf = addr.to_bytes(uctypes.sizeof(desc))
+buf = addr.to_bytes(uctypes.sizeof(desc), "little")
 
 S = uctypes.struct(uctypes.addressof(buf), desc, uctypes.LITTLE_ENDIAN)
 

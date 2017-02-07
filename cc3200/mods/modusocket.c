@@ -127,7 +127,7 @@ void modusocket_close_all_user_sockets (void) {
 // socket class
 
 // constructor socket(family=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP, fileno=None)
-STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     // create socket object
@@ -156,7 +156,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_
     // create the socket
     int _errno;
     if (wlan_socket_socket(s, &_errno) != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     // add the socket to the list
     modusocket_socket_add(s->sock_base.sd, true);
@@ -182,7 +182,7 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     // call the NIC to bind the socket
     int _errno;
     if (wlan_socket_bind(self, ip, port, &_errno) != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_const_none;
 }
@@ -200,7 +200,7 @@ STATIC mp_obj_t socket_listen(mp_uint_t n_args, const mp_obj_t *args) {
 
     int _errno;
     if (wlan_socket_listen(self, backlog, &_errno) != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_const_none;
 }
@@ -220,7 +220,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mp_uint_t port;
     int _errno;
     if (wlan_socket_accept(self, socket2, ip, &port, &_errno) != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
 
     // add the socket to the list
@@ -248,7 +248,7 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         if (!self->sock_base.cert_req && _errno == SL_ESECSNOVERIFY) {
             return mp_const_none;
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_const_none;
 }
@@ -262,7 +262,7 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     int _errno;
     mp_int_t ret = wlan_socket_send(self, bufinfo.buf, bufinfo.len, &_errno);
     if (ret < 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_obj_new_int_from_uint(ret);
 }
@@ -278,9 +278,9 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t ret = wlan_socket_recv(self, (byte*)vstr.buf, len, &_errno);
     if (ret < 0) {
         if (_errno == EAGAIN && self->sock_base.has_timeout) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TimeoutError, "timed out"));
+            mp_raise_msg(&mp_type_TimeoutError, "timed out");
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     if (ret == 0) {
         return mp_const_empty_bytes;
@@ -307,7 +307,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
     int _errno;
     mp_int_t ret = wlan_socket_sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
     if (ret < 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_obj_new_int(ret);
 }
@@ -324,9 +324,9 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t ret = wlan_socket_recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret < 0) {
         if (_errno == EAGAIN && self->sock_base.has_timeout) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TimeoutError, "timed out"));
+            mp_raise_msg(&mp_type_TimeoutError, "timed out");
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     mp_obj_t tuple[2];
     if (ret == 0) {
@@ -364,7 +364,7 @@ STATIC mp_obj_t socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
     int _errno;
     if (wlan_socket_setsockopt(self, level, opt, optval, optlen, &_errno) != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_const_none;
 }
@@ -384,7 +384,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     }
     int _errno;
     if (wlan_socket_settimeout(self, timeout, &_errno) != 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-_errno)));
+        mp_raise_OSError(-_errno);
     }
     return mp_const_none;
 }
@@ -408,7 +408,7 @@ STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         const char *mode = mp_obj_str_get_str(args[1]);
         if (strcmp(mode, "rb") && strcmp(mode, "wb")) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
     }
     return self;
@@ -434,7 +434,6 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
 
     // stream methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readall),         (mp_obj_t)&mp_stream_readall_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),        (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline),        (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),           (mp_obj_t)&mp_stream_write_obj },
@@ -446,7 +445,7 @@ STATIC mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *e
     mod_network_socket_obj_t *self = self_in;
     mp_int_t ret = wlan_socket_recv(self, buf, size, errcode);
     if (ret < 0) {
-        // we need to ignore the socket closed error here because a readall() or read() without params
+        // we need to ignore the socket closed error here because a read() without params
         // only returns when the socket is closed by the other end
         if (*errcode != SL_ESECCLOSED) {
             ret = MP_STREAM_ERROR;
@@ -486,7 +485,7 @@ STATIC const mp_obj_type_t socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
     .make_new = socket_make_new,
-    .stream_p = &socket_stream_p,
+    .protocol = &socket_stream_p,
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
 
@@ -504,7 +503,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     uint8_t out_ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
     int32_t result = wlan_gethostbyname(host, hlen, out_ip, AF_INET);
     if (result < 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(-result)));
+        mp_raise_OSError(-result);
     }
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET);
@@ -523,7 +522,6 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo),     (mp_obj_t)&mod_usocket_getaddrinfo_obj },
 
     // class exceptions
-    { MP_OBJ_NEW_QSTR(MP_QSTR_error),           (mp_obj_t)&mp_type_OSError },
     { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),         (mp_obj_t)&mp_type_TimeoutError },
 
     // class constants
@@ -541,6 +539,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals
 
 const mp_obj_module_t mp_module_usocket = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_usocket,
     .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
 };

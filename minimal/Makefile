@@ -45,8 +45,7 @@ LIBS =
 SRC_C = \
 	main.c \
 	uart_core.c \
-	uart_extra.c \
-	lib/utils/printf.c \
+	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
@@ -69,9 +68,11 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
 
 deploy: $(BUILD)/firmware.dfu

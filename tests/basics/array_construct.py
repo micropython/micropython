@@ -1,6 +1,11 @@
 # test construction of array.array from different objects
 
-from array import array
+try:
+    from array import array
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # tuple, list
 print(array('b', (1, 2)))

@@ -26,8 +26,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include STM32_HAL_H
 
+#include "py/mphal.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 
@@ -113,14 +113,16 @@ STATIC void lcd_delay(void) {
 
 STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
     lcd_delay();
-    lcd->pin_cs1->gpio->BSRRH = lcd->pin_cs1->pin_mask; // CS=0; enable
+    mp_hal_pin_low(lcd->pin_cs1); // CS=0; enable
     if (instr_data == LCD_INSTR) {
-        lcd->pin_a0->gpio->BSRRH = lcd->pin_a0->pin_mask; // A0=0; select instr reg
+        mp_hal_pin_low(lcd->pin_a0); // A0=0; select instr reg
     } else {
-        lcd->pin_a0->gpio->BSRRL = lcd->pin_a0->pin_mask; // A0=1; select data reg
+        mp_hal_pin_high(lcd->pin_a0); // A0=1; select data reg
     }
     lcd_delay();
     HAL_SPI_Transmit(lcd->spi, &i, 1, 1000);
+    lcd_delay();
+    mp_hal_pin_high(lcd->pin_cs1); // CS=1; disable
 }
 
 // write a string to the LCD at the current cursor location
@@ -192,7 +194,7 @@ STATIC void lcd_write_strn(pyb_lcd_obj_t *lcd, const char *str, unsigned int len
 ///
 /// Construct an LCD object in the given skin position.  `skin_position` can be 'X' or 'Y', and
 /// should match the position where the LCD pyskin is plugged in.
-STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -260,34 +262,22 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
     spi_init(lcd->spi, false);
 
     // set the pins to default values
-    lcd->pin_cs1->gpio->BSRRL = lcd->pin_cs1->pin_mask;
-    lcd->pin_rst->gpio->BSRRL = lcd->pin_rst->pin_mask;
-    lcd->pin_a0->gpio->BSRRL = lcd->pin_a0->pin_mask;
-    lcd->pin_bl->gpio->BSRRH = lcd->pin_bl->pin_mask;
+    mp_hal_pin_high(lcd->pin_cs1);
+    mp_hal_pin_high(lcd->pin_rst);
+    mp_hal_pin_high(lcd->pin_a0);
+    mp_hal_pin_low(lcd->pin_bl);
 
     // init the pins to be push/pull outputs
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-
-    GPIO_InitStructure.Pin = lcd->pin_cs1->pin_mask;
-    HAL_GPIO_Init(lcd->pin_cs1->gpio, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin = lcd->pin_rst->pin_mask;
-    HAL_GPIO_Init(lcd->pin_rst->gpio, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin = lcd->pin_a0->pin_mask;
-    HAL_GPIO_Init(lcd->pin_a0->gpio, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin = lcd->pin_bl->pin_mask;
-    HAL_GPIO_Init(lcd->pin_bl->gpio, &GPIO_InitStructure);
+    mp_hal_pin_output(lcd->pin_cs1);
+    mp_hal_pin_output(lcd->pin_rst);
+    mp_hal_pin_output(lcd->pin_a0);
+    mp_hal_pin_output(lcd->pin_bl);
 
     // init the LCD
     HAL_Delay(1); // wait a bit
-    lcd->pin_rst->gpio->BSRRH = lcd->pin_rst->pin_mask; // RST=0; reset
+    mp_hal_pin_low(lcd->pin_rst); // RST=0; reset
     HAL_Delay(1); // wait for reset; 2us min
-    lcd->pin_rst->gpio->BSRRL = lcd->pin_rst->pin_mask; // RST=1; enable
+    mp_hal_pin_high(lcd->pin_rst); // RST=1; enable
     HAL_Delay(1); // wait for reset; 2us min
     lcd_out(lcd, LCD_INSTR, 0xa0); // ADC select, normal
     lcd_out(lcd, LCD_INSTR, 0xc0); // common output mode select, normal (this flips the display)
@@ -370,9 +360,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_contrast_obj, pyb_lcd_contrast);
 STATIC mp_obj_t pyb_lcd_light(mp_obj_t self_in, mp_obj_t value) {
     pyb_lcd_obj_t *self = self_in;
     if (mp_obj_is_true(value)) {
-        self->pin_bl->gpio->BSRRL = self->pin_bl->pin_mask; // set pin high to turn backlight on
+        mp_hal_pin_high(self->pin_bl); // set pin high to turn backlight on
     } else {
-        self->pin_bl->gpio->BSRRH = self->pin_bl->pin_mask; // set pin low to turn backlight off
+        mp_hal_pin_low(self->pin_bl); // set pin low to turn backlight off
     }
     return mp_const_none;
 }

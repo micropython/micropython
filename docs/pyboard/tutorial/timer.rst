@@ -95,7 +95,7 @@ We set up timer 2 as follows::
 
 The prescaler is set at 83, which makes this timer count at 1 MHz.
 This is because the CPU clock, running at 168 MHz, is divided by
-2 and then by prescaler+1, giving a freqency of 168 MHz/2/(83+1)=1 MHz
+2 and then by prescaler+1, giving a frequency of 168 MHz/2/(83+1)=1 MHz
 for timer 2.  The period is set to a large number so that the timer
 can count up to a large number before wrapping back around to zero.
 In this case it will take about 17 minutes before it cycles back to

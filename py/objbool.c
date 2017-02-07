@@ -56,26 +56,19 @@ STATIC mp_obj_t bool_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    switch (n_args) {
-        case 0:
-            return mp_const_false;
-        case 1:
-        default: // must be 0 or 1
-            if (mp_obj_is_true(args[0])) { return mp_const_true; } else { return mp_const_false; }
+    if (n_args == 0) {
+        return mp_const_false;
+    } else {
+        return mp_obj_new_bool(mp_obj_is_true(args[0]));
     }
 }
 
 STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
-    mp_int_t value = ((mp_obj_bool_t*)MP_OBJ_TO_PTR(o_in))->value;
-    switch (op) {
-        case MP_UNARY_OP_BOOL: return o_in;
-        // needs to hash to the same value as if converting to an integer
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(value);
-        case MP_UNARY_OP_POSITIVE: return MP_OBJ_NEW_SMALL_INT(value);
-        case MP_UNARY_OP_NEGATIVE: return MP_OBJ_NEW_SMALL_INT(-value);
-        case MP_UNARY_OP_INVERT: return MP_OBJ_NEW_SMALL_INT(~value);
-        default: return MP_OBJ_NULL; // op not supported
+    if (op == MP_UNARY_OP_LEN) {
+        return MP_OBJ_NULL;
     }
+    mp_obj_bool_t *self = MP_OBJ_TO_PTR(o_in);
+    return mp_unary_op(op, MP_OBJ_NEW_SMALL_INT(self->value));
 }
 
 STATIC mp_obj_t bool_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

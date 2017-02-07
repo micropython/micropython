@@ -36,17 +36,13 @@
 #include "py/stream.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
+#include "fdfile.h"
 
 #if MICROPY_PY_IO
 
 #ifdef _WIN32
 #define fsync _commit
 #endif
-
-typedef struct _mp_obj_fdfile_t {
-    mp_obj_base_t base;
-    int fd;
-} mp_obj_fdfile_t;
 
 #ifdef MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_fdfile_t *o) {
@@ -88,6 +84,14 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     }
     #endif
     mp_int_t r = write(o->fd, buf, size);
+    while (r == -1 && errno == EINTR) {
+        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(obj);
+        }
+        r = write(o->fd, buf, size);
+    }
     if (r == -1) {
         *errcode = errno;
         return MP_STREAM_ERROR;
@@ -97,28 +101,29 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 
 STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
-    if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
-        off_t off = lseek(o->fd, s->offset, s->whence);
-        if (off == (off_t)-1) {
-            *errcode = errno;
-            return MP_STREAM_ERROR;
+    check_fd_is_open(o);
+    switch (request) {
+        case MP_STREAM_SEEK: {
+            struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+            off_t off = lseek(o->fd, s->offset, s->whence);
+            if (off == (off_t)-1) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            s->offset = off;
+            return 0;
         }
-        s->offset = off;
-        return 0;
-    } else {
-        *errcode = EINVAL;
-        return MP_STREAM_ERROR;
+        case MP_STREAM_FLUSH:
+            if (fsync(o->fd) < 0) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            return 0;
+        default:
+            *errcode = EINVAL;
+            return MP_STREAM_ERROR;
     }
 }
-
-STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
-    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
-    check_fd_is_open(self);
-    fsync(self->fd);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_flush_obj, fdfile_flush);
 
 STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
@@ -198,7 +203,7 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     const char *fname = mp_obj_str_get_str(fid);
     int fd = open(fname, mode_x | mode_rw, 0644);
     if (fd == -1) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+        mp_raise_OSError(errno);
     }
     o->fd = fd;
     return MP_OBJ_FROM_PTR(o);
@@ -213,14 +218,13 @@ STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fileno), MP_ROM_PTR(&fdfile_fileno_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readall), MP_ROM_PTR(&mp_stream_readall_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&fdfile_flush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&fdfile_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&fdfile___exit___obj) },
@@ -242,7 +246,7 @@ const mp_obj_type_t mp_type_fileio = {
     .make_new = fdfile_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &fileio_stream_p,
+    .protocol = &fileio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 #endif
@@ -261,7 +265,7 @@ const mp_obj_type_t mp_type_textio = {
     .make_new = fdfile_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &textio_stream_p,
+    .protocol = &textio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 

@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.LED:
 
 class LED -- LED object
@@ -19,7 +20,7 @@ Constructors
 Methods
 -------
 
-.. method:: led.intensity([value])
+.. method:: LED.intensity([value])
 
    Get or set the LED intensity.  Intensity ranges between 0 (off) and 255 (full on).
    If no argument is given, return the LED intensity.
@@ -31,15 +32,15 @@ Methods
    relevant LED is set to a value between 1 and 254.  Otherwise the timers are
    free for general purpose use.
 
-.. method:: led.off()
+.. method:: LED.off()
 
    Turn the LED off.
 
-.. method:: led.on()
+.. method:: LED.on()
 
    Turn the LED on, to maximum intensity.
 
-.. method:: led.toggle()
+.. method:: LED.toggle()
 
    Toggle the LED between on (maximum intensity) and off.  If the LED is at
    non-zero intensity then it is considered "on" and toggle will turn it off.

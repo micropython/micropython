@@ -1,3 +1,5 @@
+.. currentmodule:: pyb
+
 class Accel -- accelerometer control
 ====================================
 
@@ -20,7 +22,7 @@ Constructors
 Methods
 -------
 
-.. method:: accel.filtered_xyz()
+.. method:: Accel.filtered_xyz()
 
    Get a 3-tuple of filtered x, y and z values.
 
@@ -29,18 +31,26 @@ Methods
    with the sample from the current call.  Returned values are therefore 4
    times the size of what they would be from the raw x(), y() and z() calls.
 
-.. method:: accel.tilt()
+.. method:: Accel.tilt()
 
    Get the tilt register.
 
-.. method:: accel.x()
+.. method:: Accel.x()
 
    Get the x-axis value.
 
-.. method:: accel.y()
+.. method:: Accel.y()
 
    Get the y-axis value.
 
-.. method:: accel.z()
+.. method:: Accel.z()
 
    Get the z-axis value.
+
+Hardware Note
+-------------
+
+The accelerometer uses I2C bus 1 to communicate with the processor. Consequently
+when readings are being taken pins X9 and X10 should be unused (other than for
+I2C). Other devices using those pins, and which therefore cannot be used
+concurrently, are UART 1 and Timer 4 channels 1 and 2.

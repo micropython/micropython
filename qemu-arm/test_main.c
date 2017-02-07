@@ -32,7 +32,7 @@ inline void do_str(const char *src) {
     if (nlr_push(&nlr) == 0) {
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, false);
         mp_call_function_0(module_fun);
         nlr_pop();
     } else {
@@ -73,7 +73,7 @@ void gc_collect(void) {
     void *sp = (void*)&dummy;
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_VM(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
 
     gc_collect_end();
 }

@@ -78,10 +78,13 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         memcpy(self->buf + self->len, buf, rem);
         buf = (byte*)buf + rem;
         size -= rem;
-        mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->alloc, errcode);
-        if (out_sz == MP_STREAM_ERROR) {
+        mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->alloc, errcode);
+        if (*errcode != 0) {
             return MP_STREAM_ERROR;
         }
+        // TODO: try to recover from a case of non-blocking stream, e.g. move
+        // remaining chunk to the beginning of buffer.
+        assert(out_sz == self->alloc);
         self->len = 0;
     }
 
@@ -93,10 +96,13 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
 
     if (self->len != 0) {
         int err;
-        mp_uint_t out_sz = mp_stream_writeall(self->stream, self->buf, self->len, &err);
+        mp_uint_t out_sz = mp_stream_write_exactly(self->stream, self->buf, self->len, &err);
+        // TODO: try to recover from a case of non-blocking stream, e.g. move
+        // remaining chunk to the beginning of buffer.
+        assert(out_sz == self->len);
         self->len = 0;
-        if (out_sz == MP_STREAM_ERROR) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+        if (err != 0) {
+            mp_raise_OSError(err);
         }
     }
 
@@ -118,13 +124,13 @@ STATIC const mp_obj_type_t bufwriter_type = {
     { &mp_type_type },
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
-    .stream_p = &bufwriter_stream_p,
+    .protocol = &bufwriter_stream_p,
     .locals_dict = (mp_obj_t)&bufwriter_locals_dict,
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__io) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uio) },
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
@@ -147,7 +153,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_io_globals, mp_module_io_globals_table);
 
 const mp_obj_module_t mp_module_io = {
     .base = { &mp_type_module },
-    .name = MP_QSTR__io,
     .globals = (mp_obj_dict_t*)&mp_module_io_globals,
 };
 

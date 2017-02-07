@@ -52,8 +52,8 @@ typedef union _mp_arg_val_t {
 } mp_arg_val_t;
 
 typedef struct _mp_arg_t {
-    qstr qst;
-    mp_uint_t flags;
+    uint16_t qst;
+    uint16_t flags;
     mp_arg_val_t defval;
 } mp_arg_t;
 
@@ -95,6 +95,7 @@ mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
 mp_obj_t mp_call_function_n_kw(mp_obj_t fun, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args);
+mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, size_t n_kw, const mp_obj_t *args);
 // Call function and catch/dump exception - for Python callbacks from C code
 void mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg);
 void mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
@@ -133,9 +134,23 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
-// Raise NotImplementedError with given message
-NORETURN void mp_not_implemented(const char *msg);
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
+//NORETURN void nlr_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...);
+NORETURN void mp_raise_ValueError(const char *msg);
+NORETURN void mp_raise_TypeError(const char *msg);
+NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_not_implemented(const char *msg); // Raise NotImplementedError with given message
 NORETURN void mp_exc_recursion_depth(void);
+
+#if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
+#undef mp_check_self
+#define mp_check_self(pred)
+#else
+// A port may define to raise TypeError for example
+#ifndef mp_check_self
+#define mp_check_self(pred) assert(pred)
+#endif
+#endif
 
 // helper functions for native/viper code
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);

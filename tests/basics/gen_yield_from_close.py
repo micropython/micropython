@@ -85,3 +85,39 @@ try:
     print(next(g))
 except StopIteration:
     print("StopIteration")
+
+# case where generator ignores the close request and yields instead
+def gen7():
+    try:
+        yield 123
+    except GeneratorExit:
+        yield 456
+
+g = gen7()
+print(next(g))
+try:
+    g.close()
+except RuntimeError:
+    print('RuntimeError')
+
+# case where close is propagated up to a built-in iterator
+def gen8():
+    g = reversed([2, 1])
+    yield from g
+g = gen8()
+print(next(g))
+g.close()
+
+# case with a user-defined close method
+class Iter:
+    def __iter__(self):
+        return self
+    def __next__(self):
+        return 1
+    def close(self):
+        print('close')
+def gen9():
+    yield from Iter()
+g = gen9()
+print(next(g))
+g.close()

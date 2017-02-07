@@ -36,17 +36,13 @@
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
 
-extern void ets_wdt_disable(void);
-extern void wdt_feed(void);
-extern void ets_delay_us();
-
 STATIC byte input_buf_array[256];
 ringbuf_t input_buf = {input_buf_array, sizeof(input_buf_array)};
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
 const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 
 void mp_hal_init(void) {
-    ets_wdt_disable(); // it's a pain while developing
+    //ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
 }
@@ -64,7 +60,14 @@ int mp_hal_stdin_rx_chr(void) {
         if (c != -1) {
             return c;
         }
+        #if 0
+        // Idles CPU but need more testing before enabling
+        if (!ets_loop_iter()) {
+            asm("waiti 0");
+        }
+        #else
         mp_hal_delay_us(1);
+        #endif
     }
 }
 
@@ -114,7 +117,7 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
 }
 
 uint32_t mp_hal_ticks_ms(void) {
-    return system_get_time() / 1000;
+    return ((uint64_t)system_time_high_word << 32 | (uint64_t)system_get_time()) / 1000;
 }
 
 uint32_t mp_hal_ticks_us(void) {
@@ -123,14 +126,6 @@ uint32_t mp_hal_ticks_us(void) {
 
 void mp_hal_delay_ms(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
-}
-
-void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
-    }
-    extern int interrupt_char;
-    interrupt_char = c;
 }
 
 void ets_event_poll(void) {
@@ -161,26 +156,29 @@ static int call_dupterm_read(void) {
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t read_m[3];
-        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_read, read_m);
-        read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
-        mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
+        mp_obj_t readinto_m[3];
+        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_readinto, readinto_m);
+        readinto_m[2] = MP_STATE_PORT(dupterm_arr_obj);
+        mp_obj_t res = mp_call_method_n_kw(1, 0, readinto_m);
         if (res == mp_const_none) {
+            nlr_pop();
             return -2;
         }
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
-        if (bufinfo.len == 0) {
-            MP_STATE_PORT(term_obj) = NULL;
-            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
+        if (res == MP_OBJ_NEW_SMALL_INT(0)) {
+            mp_uos_deactivate("dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
+            nlr_pop();
             return -1;
         }
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(MP_STATE_PORT(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
         nlr_pop();
+        if (*(byte*)bufinfo.buf == mp_interrupt_char) {
+            mp_keyboard_interrupt();
+            return -2;
+        }
         return *(byte*)bufinfo.buf;
     } else {
-        MP_STATE_PORT(term_obj) = NULL;
-        mp_printf(&mp_plat_print, "dupterm: Exception in read() method, deactivating: ");
-        mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
+        mp_uos_deactivate("dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
     }
 
     return -1;
@@ -213,7 +211,7 @@ void mp_hal_signal_dupterm_input(void) {
     system_os_post(DUPTERM_TASK_ID, 0, 0);
 }
 
-void mp_hal_pin_config_od(mp_hal_pin_obj_t pin_id) {
+void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
     const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
 
     if (pin->phys_port == 16) {
@@ -233,4 +231,31 @@ void mp_hal_pin_config_od(mp_hal_pin_obj_t pin_id) {
     GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
         GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
     ETS_GPIO_INTR_ENABLE();
+}
+
+// Get pointer to esf_buf bookkeeping structure
+void *ets_get_esf_buf_ctlblk(void) {
+    // Get literal ptr before start of esf_rx_buf_alloc func
+    extern void *esf_rx_buf_alloc();
+    return ((void**)esf_rx_buf_alloc)[-1];
+}
+
+// Get number of esf_buf free buffers of given type, as encoded by index
+// idx 0 corresponds to buf types 1, 2; 1 - 4; 2 - 5; 3 - 7; 4 - 8
+// Only following buf types appear to be used:
+// 1 - tx buffer, 5 - management frame tx buffer; 8 - rx buffer
+int ets_esf_free_bufs(int idx) {
+    uint32_t *p = ets_get_esf_buf_ctlblk();
+    uint32_t *b = (uint32_t*)p[idx];
+    int cnt = 0;
+    while (b) {
+        b = (uint32_t*)b[0x20 / 4];
+        cnt++;
+    }
+    return cnt;
+}
+
+extern int mp_stream_errno;
+int *__errno() {
+    return &mp_stream_errno;
 }

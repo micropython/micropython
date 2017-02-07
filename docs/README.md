@@ -26,3 +26,15 @@ In `micropython/docs`, build the docs:
 Where `<port_name>` can be `unix`, `pyboard`, `wipy` or `esp8266`.
 
 You'll find the index page at `micropython/docs/build/<port_name>/html/index.html`.
+
+PDF manual generation
+---------------------
+
+This can be achieved with:
+
+    make MICROPY_PORT=<port_name> latexpdf
+
+but require rather complete install of LaTeX with various extensions. On
+Debian/Ubuntu, try (500MB+ download):
+
+    apt-get install texlive-latex-recommended texlive-latex-extra

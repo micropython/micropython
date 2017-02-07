@@ -22,7 +22,7 @@ def run_tests(pyb, test_dict):
     test_count = 0
     testcase_count = 0
 
-    for base_test, tests in test_dict.items():
+    for base_test, tests in sorted(test_dict.items()):
         print(base_test + ":")
         for test_file in tests:
 

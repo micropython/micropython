@@ -26,7 +26,6 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
@@ -36,12 +35,12 @@
 #include "py/objlist.h"
 #include "py/stream.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
-#include "pybioctl.h"
 
 #include "hci.h"
 #include "socket.h"
@@ -126,7 +125,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
 
     if (ip == 0) {
         // unknown host
-        return ENOENT;
+        return MP_ENOENT;
     }
 
     out_ip[0] = ip >> 24;
@@ -139,7 +138,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
 
 STATIC int cc3k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     if (socket->u_param.domain != MOD_NETWORK_AF_INET) {
-        *_errno = EAFNOSUPPORT;
+        *_errno = MP_EAFNOSUPPORT;
         return -1;
     }
 
@@ -148,7 +147,7 @@ STATIC int cc3k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
         case MOD_NETWORK_SOCK_STREAM: type = SOCK_STREAM; break;
         case MOD_NETWORK_SOCK_DGRAM: type = SOCK_DGRAM; break;
         case MOD_NETWORK_SOCK_RAW: type = SOCK_RAW; break;
-        default: *_errno = EINVAL; return -1;
+        default: *_errno = MP_EINVAL; return -1;
     }
 
     // open socket
@@ -202,7 +201,7 @@ STATIC int cc3k_socket_accept(mod_network_socket_obj_t *socket, mod_network_sock
     socklen_t addr_len = sizeof(addr);
     if ((fd = CC3000_EXPORT(accept)(socket->u_state, &addr, &addr_len)) < 0) {
         if (fd == SOC_IN_PROGRESS) {
-            *_errno = EAGAIN;
+            *_errno = MP_EAGAIN;
         } else {
             *_errno = -fd;
         }
@@ -240,7 +239,7 @@ STATIC int cc3k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_ui
 STATIC mp_uint_t cc3k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     if (cc3k_get_fd_closed_state(socket->u_state)) {
         CC3000_EXPORT(closesocket)(socket->u_state);
-        *_errno = EPIPE;
+        *_errno = MP_EPIPE;
         return -1;
     }
 
@@ -267,7 +266,7 @@ STATIC mp_uint_t cc3k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, m
         fd_set rfds;
         FD_ZERO(&rfds);
         FD_SET(socket->u_state, &rfds);
-        timeval tv;
+        cc3000_timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
         int nfds = CC3000_EXPORT(select)(socket->u_state + 1, &rfds, NULL, NULL, &tv);
@@ -354,7 +353,7 @@ STATIC int cc3k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t ti
 
 STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
         int fd = socket->u_state;
@@ -366,24 +365,24 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
         FD_ZERO(&xfds);
 
         // set fds if needed
-        if (flags & MP_IOCTL_POLL_RD) {
+        if (flags & MP_STREAM_POLL_RD) {
             FD_SET(fd, &rfds);
 
             // A socked that just closed is available for reading.  A call to
             // recv() returns 0 which is consistent with BSD.
             if (cc3k_get_fd_closed_state(fd)) {
-                ret |= MP_IOCTL_POLL_RD;
+                ret |= MP_STREAM_POLL_RD;
             }
         }
-        if (flags & MP_IOCTL_POLL_WR) {
+        if (flags & MP_STREAM_POLL_WR) {
             FD_SET(fd, &wfds);
         }
-        if (flags & MP_IOCTL_POLL_HUP) {
+        if (flags & MP_STREAM_POLL_HUP) {
             FD_SET(fd, &xfds);
         }
 
         // call cc3000 select with minimum timeout
-        timeval tv;
+        cc3000_timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
         int nfds = CC3000_EXPORT(select)(fd + 1, &rfds, &wfds, &xfds, &tv);
@@ -396,16 +395,16 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
 
         // check return of select
         if (FD_ISSET(fd, &rfds)) {
-            ret |= MP_IOCTL_POLL_RD;
+            ret |= MP_STREAM_POLL_RD;
         }
         if (FD_ISSET(fd, &wfds)) {
-            ret |= MP_IOCTL_POLL_WR;
+            ret |= MP_STREAM_POLL_WR;
         }
         if (FD_ISSET(fd, &xfds)) {
-            ret |= MP_IOCTL_POLL_HUP;
+            ret |= MP_STREAM_POLL_HUP;
         }
     } else {
-        *_errno = EINVAL;
+        *_errno = MP_EINVAL;
         ret = -1;
     }
     return ret;
@@ -428,7 +427,7 @@ STATIC const cc3k_obj_t cc3k_obj = {{(mp_obj_type_t*)&mod_network_nic_type_cc3k}
 //        [SPI on Y position; Y6=B13=SCK, Y7=B14=MISO, Y8=B15=MOSI]
 //
 //      STM32F4DISC: init(pyb.SPI(2), pyb.Pin.cpu.A15, pyb.Pin.cpu.B10, pyb.Pin.cpu.B11)
-STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 4, 4, false);
 

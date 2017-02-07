@@ -29,7 +29,7 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "serverstask.h"
 #include "simplelink.h"
@@ -67,6 +67,11 @@ static volatile bool sleep_sockets = false;
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
+
+// This is the static memory (TCB and stack) for the servers task
+StaticTask_t svTaskTCB __attribute__ ((section (".rtos_heap")));
+StackType_t svTaskStack[SERVERS_STACK_LEN] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
+
 char servers_user[SERVERS_USER_PASS_LEN_MAX + 1];
 char servers_pass[SERVERS_USER_PASS_LEN_MAX + 1];
 
@@ -182,7 +187,7 @@ void servers_close_socket (int16_t *sd) {
 
 void servers_set_login (char *user, char *pass) {
     if (strlen(user) > SERVERS_USER_PASS_LEN_MAX || strlen(pass) > SERVERS_USER_PASS_LEN_MAX) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     memcpy(servers_user, user, SERVERS_USER_PASS_LEN_MAX);
     memcpy(servers_pass, pass, SERVERS_USER_PASS_LEN_MAX);
@@ -191,7 +196,7 @@ void servers_set_login (char *user, char *pass) {
 void servers_set_timeout (uint32_t timeout) {
     if (timeout < SERVERS_MIN_TIMEOUT_MS) {
         // timeout is too low
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     servers_data.timeout = timeout;
 }

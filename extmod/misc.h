@@ -30,10 +30,11 @@
 #include <stddef.h>
 #include "py/runtime.h"
 
-MP_DECLARE_CONST_FUN_OBJ(mp_uos_dupterm_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_dupterm_obj);
 
 #if MICROPY_PY_OS_DUPTERM
 void mp_uos_dupterm_tx_strn(const char *str, size_t len);
+void mp_uos_deactivate(const char *msg, mp_obj_t exc);
 #else
 #define mp_uos_dupterm_tx_strn(s, l)
 #endif

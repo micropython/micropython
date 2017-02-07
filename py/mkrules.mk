@@ -49,7 +49,7 @@ $(BUILD)/%.o: %.c
 # List all native flags since the current build system doesn't have
 # the micropython configuration available. However, these flags are
 # needed to extract all qstrings
-QSTR_GEN_EXTRA_CFLAGS += -D__QSTR_EXTRACT -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
+QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM -DN_XTENSA
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
 vpath %.c . $(TOP)
@@ -100,6 +100,29 @@ $(OBJ_DIRS):
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
+ifneq ($(FROZEN_DIR),)
+$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
+	$(ECHO) "Generating $@"
+	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+# make a list of all the .py files that need compiling and freezing
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
+FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
+
+# to build .mpy files from .py files
+$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
+	@$(ECHO) "MPY $<"
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $^
+
+# to build frozen_mpy.c from all .mpy files
+$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
+endif
+
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
@@ -115,9 +138,6 @@ ifndef DEBUG
 endif
 	$(Q)$(SIZE) $(PROG)
 
-lib: $(OBJ)
-	$(AR) rcs libmicropython.a $^
-
 clean: clean-prog
 clean-prog:
 	$(RM) -f $(PROG)
@@ -126,8 +146,12 @@ clean-prog:
 .PHONY: clean-prog
 endif
 
+LIBMICROPYTHON = libmicropython.a
+lib $(LIBMICROPYTHON): $(OBJ)
+	$(AR) rcs $(LIBMICROPYTHON) $^
+
 clean:
-	$(RM) -rf $(BUILD)
+	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
 print-cfg:

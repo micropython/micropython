@@ -5,7 +5,7 @@
 try:
     from collections import namedtuple
 except ImportError:
-    from _collections import namedtuple
+    from ucollections import namedtuple
 
 _DefragResultBase = namedtuple('DefragResult', [ 'foo', 'bar' ])
 

@@ -40,11 +40,12 @@
 #include "irq.h"
 #include "usb.h"
 #endif
-#include "readline.h"
+#include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+int pyexec_system_exit = 0;
 STATIC bool repl_display_debugging_info = 0;
 
 #define EXEC_FLAG_PRINT_EOF (1)
@@ -60,6 +61,9 @@ STATIC bool repl_display_debugging_info = 0;
 STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
     int ret = 0;
     uint32_t start = 0;
+
+    // by default a SystemExit exception returns 0
+    pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -99,7 +103,7 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         // check for SystemExit
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
             // at the moment, the value of SystemExit is unused
-            ret = PYEXEC_FORCED_EXIT;
+            ret = pyexec_system_exit;
         } else {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
             ret = 0;
@@ -112,9 +116,11 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         printf("took " UINT_FMT " ms\n", ticks);
         // qstr info
         {
-            mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+            size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
             qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
-            printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
+            printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  "
+                   "n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n",
+                   (unsigned)n_pool, (unsigned)n_qstr, (unsigned)n_str_data_bytes, (unsigned)n_total_bytes);
         }
 
         #if MICROPY_ENABLE_GC
@@ -148,7 +154,7 @@ STATIC int pyexec_raw_repl_process_char(int c);
 STATIC int pyexec_friendly_repl_process_char(int c);
 
 void pyexec_event_repl_init(void) {
-    MP_STATE_VM(repl_line) = vstr_new_size(32);
+    MP_STATE_VM(repl_line) = vstr_new(32);
     repl.cont_line = false;
     readline_init(MP_STATE_VM(repl_line), ">>> ");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -223,7 +229,9 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
             mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+            #if MICROPY_PY_BUILTINS_HELP
             mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+            #endif
             goto input_restart;
         } else if (ret == CHAR_CTRL_C) {
             // break
@@ -372,7 +380,9 @@ int pyexec_friendly_repl(void) {
 
 friendly_repl_reset:
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    #if MICROPY_PY_BUILTINS_HELP
     mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+    #endif
 
     // to test ctrl-C
     /*

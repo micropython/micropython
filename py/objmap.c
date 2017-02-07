@@ -49,7 +49,7 @@ STATIC mp_obj_t map_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 }
 
 STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_map));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_map));
     mp_obj_map_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t *nextses = m_new(mp_obj_t, self->n_iters);
 

@@ -302,7 +302,7 @@ soft_reset:
 #endif
 
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("boot");
+    pyexec_frozen_module("boot.py");
 #else
     if (!pyexec_file("/boot.py")) {
         flash_error(4);
@@ -314,10 +314,10 @@ soft_reset:
 
     // run main script
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("main");
+    pyexec_frozen_module("main.py");
 #else
     {
-        vstr_t *vstr = vstr_new();
+        vstr_t *vstr = vstr_new(16);
         vstr_add_str(vstr, "/");
         if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");

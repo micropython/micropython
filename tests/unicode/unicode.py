@@ -18,8 +18,9 @@ enc = s.encode()
 print(enc, enc.decode() == s)
 
 # printing of unicode chars using repr
-# TODO we don't do this correctly
-#print(repr(s))
+# NOTE: for some characters (eg \u10ff) we differ to CPython
+print(repr('a\uffff'))
+print(repr('a\U0001ffff'))
 
 # test invalid escape code
 try:

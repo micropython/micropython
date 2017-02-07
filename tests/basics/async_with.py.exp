@@ -1,4 +1,8 @@
 enter
 body
-exit
+exit None None
 finished
+enter
+1
+exit <class 'ValueError'> error
+ValueError

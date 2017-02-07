@@ -29,6 +29,29 @@
 
 #include "py/obj.h"
 
+// I2C protocol
+// the first 4 methods can be NULL, meaning operation is not supported
+typedef struct _mp_machine_i2c_p_t {
+    int (*start)(mp_obj_base_t *obj);
+    int (*stop)(mp_obj_base_t *obj);
+    int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
+    int (*write)(mp_obj_base_t *obj, const uint8_t *src, size_t len);
+    int (*readfrom)(mp_obj_base_t *obj, uint16_t addr, uint8_t *dest, size_t len, bool stop);
+    int (*writeto)(mp_obj_base_t *obj, uint16_t addr, const uint8_t *src, size_t len, bool stop);
+} mp_machine_i2c_p_t;
+
+typedef struct _mp_machine_soft_i2c_obj_t {
+    mp_obj_base_t base;
+    uint32_t us_delay;
+    uint32_t us_timeout;
+    mp_hal_pin_obj_t scl;
+    mp_hal_pin_obj_t sda;
+} mp_machine_soft_i2c_obj_t;
+
 extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_dict_t mp_machine_soft_i2c_locals_dict;
+
+int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop);
+int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop);
 
 #endif // __MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H__

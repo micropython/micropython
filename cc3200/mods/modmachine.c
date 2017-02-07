@@ -130,7 +130,7 @@ STATIC mp_obj_t machine_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
         MP_STATE_PORT(machine_config_main) = main;
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     return mp_const_none;
 }
@@ -198,7 +198,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_IDLE),                MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_ACTIVE) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP),               MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_LPDS) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP),           MP_OBJ_NEW_SMALL_INT(PYB_PWR_MODE_HIBERNATE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_POWER_ON),            MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) }, // legacy constant
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PWRON_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_SLP_PWRON_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_SLP_HARD_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),           MP_OBJ_NEW_SMALL_INT(PYB_SLP_WDT_RESET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_OBJ_NEW_SMALL_INT(PYB_SLP_HIB_RESET) },
@@ -212,6 +213,5 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_umachine,
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };

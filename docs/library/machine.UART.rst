@@ -1,4 +1,4 @@
-.. _machine.UART:
+.. currentmodule:: machine
 
 class UART -- duplex serial communication bus
 =============================================
@@ -31,12 +31,12 @@ A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
 
     uart.read(10)       # read 10 characters, returns a bytes object
-    uart.readall()      # read all available characters
+    uart.read()         # read all available characters
     uart.readline()     # read a line
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
 
-.. only:: port_machineoard
+.. only:: port_pyboard
 
     Individual characters can be read/written using::
 
@@ -46,9 +46,6 @@ using the standard stream methods::
     To check if there is anything to be read, use::
 
         uart.any()               # returns True if any characters waiting
-
-    *Note:* The stream functions ``read``, ``write``, etc. are new in MicroPython v1.3.4.
-    Earlier versions use ``uart.send`` and ``uart.recv``.
 
 .. only:: port_wipy
 
@@ -61,7 +58,7 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: machine.UART(bus, ...)
+    .. class:: UART(bus, ...)
     
        Construct a UART object on the given bus.  ``bus`` can be 0 or 1.
        If the bus is not given, the default one will be selected (0) or the selection
@@ -72,7 +69,7 @@ Methods
 
 .. only:: port_wipy
 
-    .. method:: uart.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
+    .. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, \*, pins=(TX, RX, RTS, CTS))
     
        Initialise the UART bus with the given parameters:
     
@@ -86,28 +83,25 @@ Methods
            When no pins are given, then the default set of TX and RX pins is taken, and hardware 
            flow control will be disabled. If pins=None, no pin assignment will be made.
 
-.. method:: uart.deinit()
+.. only:: not port_esp8266
 
-   Turn off the UART bus.
+    .. method:: UART.deinit()
 
-.. method:: uart.any()
+       Turn off the UART bus.
 
-   Return the number of characters available for reading.
+    .. method:: UART.any()
 
-.. method:: uart.read([nbytes])
+       Return the number of characters available for reading.
 
-   Read characters.  If ``nbytes`` is specified then read at most that many bytes.
+.. method:: UART.read([nbytes])
+
+   Read characters.  If ``nbytes`` is specified then read at most that many bytes,
+   otherwise read as much data as possible.
 
    Return value: a bytes object containing the bytes read in.  Returns ``None``
    on timeout.
 
-.. method:: uart.readall()
-
-   Read as much data as possible.
-
-   Return value: a bytes object or ``None`` on timeout.
-
-.. method:: uart.readinto(buf[, nbytes])
+.. method:: UART.readinto(buf[, nbytes])
 
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
    that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
@@ -115,27 +109,29 @@ Methods
    Return value: number of bytes read and stored into ``buf`` or ``None`` on
    timeout.
 
-.. method:: uart.readline()
+.. method:: UART.readline()
 
    Read a line, ending in a newline character.
 
    Return value: the line read or ``None`` on timeout.
 
-.. method:: uart.write(buf)
+.. method:: UART.write(buf)
 
    Write the buffer of bytes to the bus.
 
    Return value: number of bytes written or ``None`` on timeout.
 
-.. method:: uart.sendbreak()
+.. only:: not port_esp8266
 
-   Send a break condition on the bus.  This drives the bus low for a duration
-   of 13 bits.
-   Return value: ``None``.
+    .. method:: UART.sendbreak()
+
+       Send a break condition on the bus.  This drives the bus low for a duration
+       of 13 bits.
+       Return value: ``None``.
 
 .. only:: port_wipy
 
-    .. method:: uart.irq(trigger, priority=1, handler=None, wake=machine.IDLE)
+    .. method:: UART.irq(trigger, priority=1, handler=None, wake=machine.IDLE)
 
        Create a callback to be triggered when data is received on the UART.
 
@@ -158,14 +154,16 @@ Methods
 
        Returns an irq object.
 
-Constants
----------
+.. only:: not port_esp8266
 
-.. data:: UART.EVEN
-.. data:: UART.ODD
+    Constants
+    ---------
 
-    parity types (anlong with ``None``)
+    .. data:: UART.EVEN
+    .. data:: UART.ODD
 
-.. data:: UART.RX_ANY
+        parity types (along with ``None``)
 
-    IRQ trigger sources
+    .. data:: UART.RX_ANY
+
+        IRQ trigger sources

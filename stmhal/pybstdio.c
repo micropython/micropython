@@ -26,10 +26,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
 #include "py/obj.h"
 #include "py/stream.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 
 // TODO make stdin, stdout and stderr writable objects so they can
@@ -69,7 +69,7 @@ STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *er
         }
         return size;
     } else {
-        *errcode = EPERM;
+        *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
 }
@@ -80,12 +80,12 @@ STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, 
         mp_hal_stdout_tx_strn_cooked(buf, size);
         return size;
     } else {
-        *errcode = EPERM;
+        *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
 }
 
-STATIC mp_obj_t stdio_obj___exit__(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t stdio_obj___exit__(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_obj___exit__);
@@ -97,7 +97,6 @@ STATIC const mp_map_elem_t stdio_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_buffer), (mp_obj_t)&stdio_buffer_obj },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readall), (mp_obj_t)&mp_stream_readall_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_readlines), (mp_obj_t)&mp_stream_unbuffered_readlines_obj},
@@ -123,7 +122,7 @@ STATIC const mp_obj_type_t stdio_obj_type = {
     .print = stdio_obj_print,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &stdio_obj_stream_p,
+    .protocol = &stdio_obj_stream_p,
     .locals_dict = (mp_obj_t)&stdio_locals_dict,
 };
 
@@ -156,7 +155,7 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     .print = stdio_obj_print,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &stdio_buffer_obj_stream_p,
+    .protocol = &stdio_buffer_obj_stream_p,
     .locals_dict = (mp_obj_t)&stdio_locals_dict,
 };
 

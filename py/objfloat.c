@@ -41,6 +41,14 @@
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
+// M_E and M_PI are not part of the math.h standard and may not be defined
+#ifndef M_E
+#define M_E (2.7182818284590452354)
+#endif
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 typedef struct _mp_obj_float_t {
     mp_obj_base_t base;
     mp_float_t value;
@@ -190,7 +198,7 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
                 zero_division_error:
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
+                mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must
             // call divmod to compute the correct floor division, which
@@ -220,7 +228,12 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             }
             break;
         case MP_BINARY_OP_POWER:
-        case MP_BINARY_OP_INPLACE_POWER: lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val); break;
+        case MP_BINARY_OP_INPLACE_POWER:
+            if (lhs_val == 0 && rhs_val < 0) {
+                goto zero_division_error;
+            }
+            lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
+            break;
         case MP_BINARY_OP_DIVMOD: {
             if (rhs_val == 0) {
                 goto zero_division_error;

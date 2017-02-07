@@ -37,9 +37,14 @@
 
 #if defined(__APPLE__) && defined(__MACH__)
 #define NLR_TOP (_mp_state_ctx + NLR_TOP_OFFSET)
+#define MP_THREAD_GET_STATE _mp_thread_get_state
 #else
 #define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
+#define MP_THREAD_GET_STATE mp_thread_get_state
 #endif
+
+// offset of nlr_top within mp_state_thread_t structure
+#define NLR_TOP_TH_OFF (0)
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define NLR_OS_WINDOWS
@@ -77,9 +82,20 @@ _nlr_push:
     movq    %r13, 56(%rdi)          # store %r13 into nlr_buf
     movq    %r14, 64(%rdi)          # store %r14 into nlr_buf
     movq    %r15, 72(%rdi)          # store %r15 into nlr_buf
+
+#if !MICROPY_PY_THREAD
     movq    NLR_TOP(%rip), %rax     # get last nlr_buf
     movq    %rax, (%rdi)            # store it
     movq    %rdi, NLR_TOP(%rip)     # stor new nlr_buf (to make linked list)
+#else
+    movq    %rdi, %rbp              # since we make a call, must save rdi in rbp
+    callq   MP_THREAD_GET_STATE     # get mp_state_thread ptr into rax
+    movq    NLR_TOP_TH_OFF(%rax), %rsi # get thread.nlr_top (last nlr_buf)
+    movq    %rsi, (%rbp)            # store it
+    movq    %rbp, NLR_TOP_TH_OFF(%rax) # store new nlr_buf (to make linked list)
+    movq    24(%rbp), %rbp          # restore rbp
+#endif
+
     xorq    %rax, %rax              # return 0, normal return
     ret                             # return
 #if !(defined(__APPLE__) && defined(__MACH__))
@@ -97,9 +113,18 @@ nlr_pop:
     .globl  _nlr_pop
 _nlr_pop:
 #endif
+
+#if !MICROPY_PY_THREAD
     movq    NLR_TOP(%rip), %rax     # get nlr_top into %rax
     movq    (%rax), %rax            # load prev nlr_buf
     movq    %rax, NLR_TOP(%rip)     # store prev nlr_buf (to unlink list)
+#else
+    callq   MP_THREAD_GET_STATE     # get mp_state_thread ptr into rax
+    movq    NLR_TOP_TH_OFF(%rax), %rdi # get thread.nlr_top (last nlr_buf)
+    movq    (%rdi), %rdi            # load prev nlr_buf
+    movq    %rdi, NLR_TOP_TH_OFF(%rax) # store prev nlr_buf (to unlink list)
+#endif
+
     ret                             # return
 #if !(defined(__APPLE__) && defined(__MACH__))
     .size   nlr_pop, .-nlr_pop
@@ -116,6 +141,8 @@ nlr_jump:
     .globl  _nlr_jump
     _nlr_jump:
 #endif
+
+#if !MICROPY_PY_THREAD
     movq    %rdi, %rax              # put return value in %rax
     movq    NLR_TOP(%rip), %rdi     # get nlr_top into %rdi
     test    %rdi, %rdi              # check for nlr_top being NULL
@@ -123,6 +150,19 @@ nlr_jump:
     movq    %rax, 8(%rdi)           # store return value
     movq    (%rdi), %rax            # load prev nlr_buf
     movq    %rax, NLR_TOP(%rip)     # store prev nlr_buf (to unlink list)
+#else
+    movq    %rdi, %rbp              # put return value in rbp
+    callq   MP_THREAD_GET_STATE     # get thread ptr in rax
+    movq    %rax, %rsi              # put thread ptr in rsi
+    movq    %rbp, %rax              # put return value to rax (for je .fail)
+    movq    NLR_TOP_TH_OFF(%rsi), %rdi # get thread.nlr_top in rdi
+    test    %rdi, %rdi              # check for nlr_top being NULL
+    je      .fail                   # fail if nlr_top is NULL
+    movq    %rax, 8(%rdi)           # store return value
+    movq    (%rdi), %rax            # load prev nlr_buf
+    movq    %rax, NLR_TOP_TH_OFF(%rsi) # store prev nlr_buf (to unlink list)
+#endif
+
     movq    72(%rdi), %r15          # load saved %r15
     movq    64(%rdi), %r14          # load saved %r14
     movq    56(%rdi), %r13          # load saved %r13
@@ -217,3 +257,6 @@ nlr_jump:
 #endif // !defined(NLR_OS_WINDOWS)
 
 #endif // defined(__x86_64__) && !MICROPY_NLR_SETJMP
+#if defined(linux)
+    .section    .note.GNU-stack,"",@progbits
+#endif

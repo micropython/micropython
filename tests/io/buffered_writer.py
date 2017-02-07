@@ -1,4 +1,4 @@
-import _io as io
+import uio as io
 
 try:
     io.BytesIO
@@ -19,4 +19,10 @@ print(bts.getvalue())
 buf.flush()
 print(bts.getvalue())
 buf.flush()
+print(bts.getvalue())
+
+# special case when alloc is a factor of total buffer length
+bts = io.BytesIO()
+buf = io.BufferedWriter(bts, 1)
+buf.write(b"foo")
 print(bts.getvalue())

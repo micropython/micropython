@@ -2,14 +2,14 @@
   ******************************************************************************
   * @file    stm32f7xx_hal.h
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   This file contains all the functions prototypes for the HAL
   *          module driver.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -57,6 +57,23 @@
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
+/** @defgroup SYSCFG_Exported_Constants SYSCFG Exported Constants
+  * @{
+  */
+
+/** @defgroup SYSCFG_BootMode Boot Mode
+  * @{
+  */
+#define SYSCFG_MEM_BOOT_ADD0          ((uint32_t)0x00000000U)
+#define SYSCFG_MEM_BOOT_ADD1          SYSCFG_MEMRMP_MEM_BOOT
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
 /* Exported macro ------------------------------------------------------------*/
 /** @defgroup HAL_Exported_Macros HAL Exported Macros
   * @{
@@ -126,6 +143,29 @@
                                           SYSCFG->MEMRMP |= (SYSCFG_MEMRMP_SWP_FMC_0);\
                                          }while(0);
 /**
+  * @brief  Return the memory boot mapping as configured by user.
+  * @retval The boot mode as configured by user. The returned value can be one
+  *         of the following values:
+  *           @arg @ref SYSCFG_MEM_BOOT_ADD0
+  *           @arg @ref SYSCFG_MEM_BOOT_ADD1
+  */
+#define __HAL_SYSCFG_GET_BOOT_MODE()           READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_MEM_BOOT)
+
+#if defined (STM32F765xx) || defined (STM32F767xx) || defined (STM32F769xx) || defined (STM32F777xx) || defined (STM32F779xx)
+/** @brief  SYSCFG Break Cortex-M7 Lockup lock.
+  *         Enable and lock the connection of Cortex-M7 LOCKUP (Hardfault) output to TIM1/8 Break input.
+  * @note   The selected configuration is locked and can be unlocked only by system reset.
+  */
+#define __HAL_SYSCFG_BREAK_LOCKUP_LOCK()     SET_BIT(SYSCFG->CBR, SYSCFG_CBR_CLL)
+
+/** @brief  SYSCFG Break PVD lock.
+  *         Enable and lock the PVD connection to Timer1/8 Break input, as well as the PVDE and PLS[2:0] in the PWR_CR1 register.
+  * @note   The selected configuration is locked and can be unlocked only by system reset.
+  */
+#define __HAL_SYSCFG_BREAK_PVD_LOCK()        SET_BIT(SYSCFG->CBR, SYSCFG_CBR_PVDL)
+#endif /* STM32F765xx || STM32F767xx || STM32F769xx || STM32F777xx || STM32F779xx */
+
+/**
   * @}
   */
 
@@ -168,6 +208,10 @@ void HAL_EnableCompensationCell(void);
 void HAL_DisableCompensationCell(void);
 void HAL_EnableFMCMemorySwapping(void);
 void HAL_DisableFMCMemorySwapping(void);
+#if defined (STM32F765xx) || defined (STM32F767xx) || defined (STM32F769xx) || defined (STM32F777xx) || defined (STM32F779xx)
+void HAL_EnableMemorySwappingBank(void);
+void HAL_DisableMemorySwappingBank(void);
+#endif /* STM32F765xx || STM32F767xx || STM32F769xx || STM32F777xx || STM32F779xx */
 /**
   * @}
   */

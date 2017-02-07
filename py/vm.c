@@ -38,8 +38,7 @@
 #include "py/bc.h"
 
 #if 0
-//#define TRACE(ip) printf("sp=" INT_FMT " ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
-#define TRACE(ip) printf("sp=%d ", sp - code_state->sp); mp_bytecode_print2(ip, 1);
+#define TRACE(ip) printf("sp=%d ", (int)(sp - code_state->sp)); mp_bytecode_print2(ip, 1, code_state->const_table);
 #else
 #define TRACE(ip)
 #endif
@@ -127,7 +126,7 @@ typedef enum {
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in fastn[0]
-mp_vm_return_kind_t mp_execute_bytecode(mp_code_state *code_state, volatile mp_obj_t inject_exc) {
+mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
 #define SELECTIVE_EXC_IP (0)
 #if SELECTIVE_EXC_IP
 #define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; } /* stores ip 1 byte past last opcode */
@@ -587,6 +586,8 @@ dispatch_loop:
                     // and __exit__ method (with self) underneath it. Bytecode calls __exit__,
                     // and "deletes" it off stack, shifting "exception control block"
                     // to its place.
+                    // The bytecode emitter ensures that there is enough space on the Python
+                    // value stack to hold the __exit__ method plus an additional 4 entries.
                     if (TOP() == mp_const_none) {
                         // stack: (..., __exit__, ctx_mgr, None)
                         sp[1] = mp_const_none;
@@ -620,31 +621,26 @@ dispatch_loop:
                         }
                         sp -= 2; // we removed (__exit__, ctx_mgr)
                     } else {
-                        assert(mp_obj_is_exception_type(TOP()));
-                        // stack: (..., __exit__, ctx_mgr, traceback, exc_val, exc_type)
-                        // Need to pass (sp[0], sp[-1], sp[-2]) as arguments so must reverse the
-                        // order of these on the value stack (don't want to create a temporary
-                        // array because it increases stack footprint of the VM).
-                        mp_obj_t obj = sp[-2];
-                        sp[-2] = sp[0];
-                        sp[0] = obj;
-                        mp_obj_t ret_value = mp_call_method_n_kw(3, 0, sp - 4);
+                        assert(mp_obj_is_exception_instance(TOP()));
+                        // stack: (..., __exit__, ctx_mgr, exc_instance)
+                        // Need to pass (exc_type, exc_instance, None) as arguments to __exit__.
+                        sp[1] = sp[0];
+                        sp[0] = MP_OBJ_FROM_PTR(mp_obj_get_type(sp[0]));
+                        sp[2] = mp_const_none;
+                        sp -= 2;
+                        mp_obj_t ret_value = mp_call_method_n_kw(3, 0, sp);
                         if (mp_obj_is_true(ret_value)) {
                             // We need to silence/swallow the exception.  This is done
                             // by popping the exception and the __exit__ handler and
                             // replacing it with None, which signals END_FINALLY to just
                             // execute the finally handler normally.
-                            sp -= 4;
                             SET_TOP(mp_const_none);
                             assert(exc_sp >= exc_stack);
                             POP_EXC_BLOCK();
                         } else {
                             // We need to re-raise the exception.  We pop __exit__ handler
-                            // and copy the 3 exception values down (remembering that they
-                            // are reversed due to above code).
-                            sp[-4] = sp[0];
-                            sp[-3] = sp[-1];
-                            sp -= 2;
+                            // by copying the exception instance down to the new top-of-stack.
+                            sp[0] = sp[3];
                         }
                     }
                     DISPATCH();
@@ -698,18 +694,12 @@ unwind_jump:;
 
                 ENTRY(MP_BC_END_FINALLY):
                     MARK_EXC_IP_SELECTIVE();
-                    // not fully implemented
-                    // if TOS is an exception, reraises the exception (3 values on TOS)
                     // if TOS is None, just pops it and continues
-                    // if TOS is an integer, does something else
-                    // else error
-                    if (mp_obj_is_exception_type(TOP())) {
-                        RAISE(sp[-1]);
-                    }
+                    // if TOS is an integer, finishes coroutine and returns control to caller
+                    // if TOS is an exception, reraises the exception
                     if (TOP() == mp_const_none) {
                         sp--;
-                    } else {
-                        assert(MP_OBJ_IS_SMALL_INT(TOP()));
+                    } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
                         // We finished "finally" coroutine and now dispatch back
                         // to our caller, based on TOS value
                         mp_unwind_reason_t reason = MP_OBJ_SMALL_INT_VALUE(POP());
@@ -719,6 +709,9 @@ unwind_jump:;
                             assert(reason == UNWIND_JUMP);
                             goto unwind_jump;
                         }
+                    } else {
+                        assert(mp_obj_is_exception_instance(TOP()));
+                        RAISE(TOP());
                     }
                     DISPATCH();
 
@@ -751,14 +744,9 @@ unwind_jump:;
 
                 // matched against: SETUP_EXCEPT
                 ENTRY(MP_BC_POP_EXCEPT):
-                    // TODO need to work out how blocks work etc
-                    // pops block, checks it's an exception block, and restores the stack, saving the 3 exception values to local threadstate
                     assert(exc_sp >= exc_stack);
                     assert(currently_in_except_block);
-                    //sp = (mp_obj_t*)(*exc_sp--);
-                    //exc_sp--; // discard ip
                     POP_EXC_BLOCK();
-                    //sp -= 3; // pop 3 exception values
                     DISPATCH();
 
                 ENTRY(MP_BC_BUILD_TUPLE): {
@@ -777,15 +765,6 @@ unwind_jump:;
                     DISPATCH();
                 }
 
-                ENTRY(MP_BC_LIST_APPEND): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    // I think it's guaranteed by the compiler that sp[unum] is a list
-                    mp_obj_list_append(sp[-unum], sp[0]);
-                    sp--;
-                    DISPATCH();
-                }
-
                 ENTRY(MP_BC_BUILD_MAP): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
@@ -799,30 +778,12 @@ unwind_jump:;
                     mp_obj_dict_store(sp[0], sp[2], sp[1]);
                     DISPATCH();
 
-                ENTRY(MP_BC_MAP_ADD): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    // I think it's guaranteed by the compiler that sp[-unum - 1] is a map
-                    mp_obj_dict_store(sp[-unum - 1], sp[0], sp[-1]);
-                    sp -= 2;
-                    DISPATCH();
-                }
-
 #if MICROPY_PY_BUILTINS_SET
                 ENTRY(MP_BC_BUILD_SET): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
                     sp -= unum - 1;
                     SET_TOP(mp_obj_new_set(unum, sp));
-                    DISPATCH();
-                }
-
-                ENTRY(MP_BC_SET_ADD): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_UINT;
-                    // I think it's guaranteed by the compiler that sp[-unum] is a set
-                    mp_obj_set_store(sp[-unum], sp[0]);
-                    sp--;
                     DISPATCH();
                 }
 #endif
@@ -844,6 +805,25 @@ unwind_jump:;
                     DISPATCH();
                 }
 #endif
+
+                ENTRY(MP_BC_STORE_COMP): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_UINT;
+                    mp_obj_t obj = sp[-(unum >> 2)];
+                    if ((unum & 3) == 0) {
+                        mp_obj_list_append(obj, sp[0]);
+                        sp--;
+                    } else if (!MICROPY_PY_BUILTINS_SET || (unum & 3) == 1) {
+                        mp_obj_dict_store(obj, sp[0], sp[-1]);
+                        sp -= 2;
+                    #if MICROPY_PY_BUILTINS_SET
+                    } else {
+                        mp_obj_set_store(obj, sp[0]);
+                        sp--;
+                    #endif
+                    }
+                    DISPATCH();
+                }
 
                 ENTRY(MP_BC_UNPACK_SEQUENCE): {
                     MARK_EXC_IP_SELECTIVE();
@@ -904,7 +884,7 @@ unwind_jump:;
                         code_state->ip = ip;
                         code_state->sp = sp;
                         code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
-                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1);
+                        mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(*sp, unum & 0xff, (unum >> 8) & 0xff, sp + 1);
                         if (new_state) {
                             new_state->prev = code_state;
                             code_state = new_state;
@@ -940,7 +920,7 @@ unwind_jump:;
                         mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(false, unum, sp, &out_args);
 
-                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
+                        mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
                             out_args.n_args, out_args.n_kw, out_args.args);
                         m_del(mp_obj_t, out_args.args, out_args.n_alloc);
                         if (new_state) {
@@ -976,7 +956,7 @@ unwind_jump:;
                         mp_uint_t n_kw = (unum >> 8) & 0xff;
                         int adjust = (sp[1] == MP_OBJ_NULL) ? 0 : 1;
 
-                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(*sp, n_args + adjust, n_kw, sp + 2 - adjust);
+                        mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(*sp, n_args + adjust, n_kw, sp + 2 - adjust);
                         if (new_state) {
                             new_state->prev = code_state;
                             code_state = new_state;
@@ -1011,7 +991,7 @@ unwind_jump:;
                         mp_call_args_t out_args;
                         mp_call_prepare_args_n_kw_var(true, unum, sp, &out_args);
 
-                        mp_code_state *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
+                        mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
                             out_args.n_args, out_args.n_kw, out_args.args);
                         m_del(mp_obj_t, out_args.args, out_args.n_alloc);
                         if (new_state) {
@@ -1263,6 +1243,10 @@ pending_exception_check:
                     RAISE(obj);
                 }
 
+                // TODO make GIL release more efficient
+                MP_THREAD_GIL_EXIT();
+                MP_THREAD_GIL_ENTER();
+
             } // for loop
 
         } else {
@@ -1363,10 +1347,8 @@ unwind_loop:
                 mp_obj_t *sp = MP_TAGPTR_PTR(exc_sp->val_sp);
                 // save this exception in the stack so it can be used in a reraise, if needed
                 exc_sp->prev_exc = nlr.ret_val;
-                // push(traceback, exc-val, exc-type)
-                PUSH(mp_const_none);
+                // push exception object so it can be handled by bytecode
                 PUSH(MP_OBJ_FROM_PTR(nlr.ret_val));
-                PUSH(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type));
                 code_state->sp = sp;
 
             #if MICROPY_STACKLESS

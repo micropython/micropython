@@ -73,11 +73,11 @@ STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (n_args > 1 && args[1] == mp_const_true) {
         o->opts |= BLOCKING_WRITE;
     }
-    return o;
+    return  MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_websocket_t *self = self_in;
+    mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *stream_p = mp_get_stream_raise(self->sock, MP_STREAM_OP_READ);
     while (1) {
         if (self->to_recv != 0) {
@@ -219,7 +219,7 @@ no_payload:
 }
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_websocket_t *self = self_in;
+    mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
     assert(size < 0x10000);
     byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
     int hdr_sz;
@@ -240,9 +240,9 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         mp_call_method_n_kw(1, 0, dest);
     }
 
-    mp_uint_t out_sz = mp_stream_writeall(self->sock, header, hdr_sz, errcode);
-    if (out_sz != MP_STREAM_ERROR) {
-        out_sz = mp_stream_writeall(self->sock, buf, size, errcode);
+    mp_uint_t out_sz = mp_stream_write_exactly(self->sock, header, hdr_sz, errcode);
+    if (*errcode == 0) {
+        out_sz = mp_stream_write_exactly(self->sock, buf, size, errcode);
     }
 
     if (self->opts & BLOCKING_WRITE) {
@@ -250,6 +250,9 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         mp_call_method_n_kw(1, 0, dest);
     }
 
+    if (*errcode != 0) {
+        return MP_STREAM_ERROR;
+    }
     return out_sz;
 }
 
@@ -269,10 +272,21 @@ STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t 
     }
 }
 
-STATIC const mp_map_elem_t websocket_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ioctl), (mp_obj_t)&mp_stream_ioctl_obj },
+STATIC mp_obj_t websocket_close(mp_obj_t self_in) {
+    mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
+    // TODO: Send close signaling to the other side, otherwise it's
+    // abrupt close (connection abort).
+    return mp_stream_close(self->sock);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(websocket_close_obj, websocket_close);
+
+STATIC const mp_rom_map_elem_t websocket_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&websocket_close_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
 
@@ -286,20 +300,19 @@ STATIC const mp_obj_type_t websocket_type = {
     { &mp_type_type },
     .name = MP_QSTR_websocket,
     .make_new = websocket_make_new,
-    .stream_p = &websocket_stream_p,
-    .locals_dict = (mp_obj_t)&websocket_locals_dict,
+    .protocol = &websocket_stream_p,
+    .locals_dict = (void*)&websocket_locals_dict,
 };
 
-STATIC const mp_map_elem_t websocket_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_websocket) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_websocket), (mp_obj_t)&websocket_type },
+STATIC const mp_rom_map_elem_t websocket_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_websocket) },
+    { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&websocket_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(websocket_module_globals, websocket_module_globals_table);
 
 const mp_obj_module_t mp_module_websocket = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_websocket,
     .globals = (mp_obj_dict_t*)&websocket_module_globals,
 };
 

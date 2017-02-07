@@ -1,7 +1,7 @@
 try:
     from collections import namedtuple
 except ImportError:
-    from _collections import namedtuple
+    from ucollections import namedtuple
 
 T = namedtuple("Tup", ["foo", "bar"])
 # CPython prints fully qualified name, what we don't bother to do so far
@@ -64,6 +64,11 @@ except TypeError:
 # Try single string
 T3 = namedtuple("TupComma", "foo bar")
 t = T3(1, 2)
+print(t.foo, t.bar)
+
+# Try tuple
+T4 = namedtuple("TupTuple", ("foo", "bar"))
+t = T4(1, 2)
 print(t.foo, t.bar)
 
 # Try single string with comma field seperator

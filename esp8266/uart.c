@@ -19,6 +19,9 @@
 #include "user_interface.h"
 #include "esp_mphal.h"
 
+// seems that this is missing in the Espressif SDK
+#define FUNC_U0RXD 0
+
 #define UART_REPL UART0
 
 // UartDev is defined and initialized in rom code.
@@ -36,8 +39,6 @@ static void uart0_rx_intr_handler(void *para);
 void soft_reset(void);
 void mp_keyboard_interrupt(void);
 
-int interrupt_char;
-
 /******************************************************************************
  * FunctionName : uart_config
  * Description  : Internal used function
@@ -53,7 +54,7 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
         ETS_UART_INTR_ATTACH(uart0_rx_intr_handler, NULL);
         PIN_PULLUP_DIS(PERIPHS_IO_MUX_U0TXD_U);
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_U0TXD_U, FUNC_U0TXD);
-        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, FUNC_U0RTS);
+        PIN_FUNC_SELECT(PERIPHS_IO_MUX_U0RXD_U, FUNC_U0RXD);
     }
 
     uart_div_modify(uart_no, UART_CLK_FREQ / (UartDev.baut_rate));
@@ -169,7 +170,7 @@ static void uart0_rx_intr_handler(void *para) {
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == interrupt_char) {
+            if (RcvChar == mp_interrupt_char) {
                 mp_keyboard_interrupt();
             } else {
                 ringbuf_put(&input_buf, RcvChar);
@@ -197,6 +198,21 @@ bool uart_rx_wait(uint32_t timeout_us) {
         }
         ets_event_poll();
     }
+}
+
+int uart_rx_any(uint8 uart) {
+    if (input_buf.iget != input_buf.iput) {
+        return true; // have at least 1 char ready for reading
+    }
+    return false;
+}
+
+int uart_tx_any_room(uint8 uart) {
+    uint32_t fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
+    if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) >= 126) {
+        return false;
+    }
+    return true;
 }
 
 // Returns char from the input buffer, else -1 if buffer is empty.
@@ -232,6 +248,12 @@ void ICACHE_FLASH_ATTR uart_init(UartBautRate uart0_br, UartBautRate uart1_br) {
 
 void ICACHE_FLASH_ATTR uart_reattach() {
     uart_init(UART_BIT_RATE_74880, UART_BIT_RATE_74880);
+}
+
+void ICACHE_FLASH_ATTR uart_setup(uint8 uart) {
+    ETS_UART_INTR_DISABLE();
+    uart_config(uart);
+    ETS_UART_INTR_ENABLE();
 }
 
 // Task-based UART interface

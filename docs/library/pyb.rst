@@ -46,7 +46,7 @@ Time related functions
    Returns the number of milliseconds which have elapsed since ``start``.
    
    This function takes care of counter wrap, and always returns a positive
-   number. This means it can be used to measure periods upto about 12.4 days.
+   number. This means it can be used to measure periods up to about 12.4 days.
    
    Example::
 
@@ -59,7 +59,7 @@ Time related functions
    Returns the number of microseconds which have elapsed since ``start``.
    
    This function takes care of counter wrap, and always returns a positive
-   number. This means it can be used to measure periods upto about 17.8 minutes.
+   number. This means it can be used to measure periods up to about 17.8 minutes.
    
    Example::
 
@@ -79,6 +79,19 @@ Reset related functions
 .. function:: bootloader()
 
    Activate the bootloader without BOOT\* pins.
+
+.. function:: fault_debug(value)
+
+   Enable or disable hard-fault debugging.  A hard-fault is when there is a fatal
+   error in the underlying system, like an invalid memory access.
+
+   If the `value` argument is `False` then the board will automatically reset if
+   there is a hard fault.
+
+   If `value` is `True` then, when the board has a hard fault, it will print the
+   registers and the stack trace, and then cycle the LEDs indefinitely.
+
+   The default value is disabled, i.e. to automatically reset.
 
 Interrupt related functions
 ---------------------------
@@ -188,7 +201,7 @@ Miscellaneous functions
        Takes a 4-tuple (or list) and sends it to the USB host (the PC) to
        signal a HID mouse-motion event.
     
-       .. note:: This function is deprecated.  Use pyb.USB_HID().send(...) instead.
+       .. note:: This function is deprecated.  Use :meth:`pyb.USB_HID.send()` instead.
     
     .. function:: info([dump_alloc_table])
     
@@ -254,6 +267,33 @@ Miscellaneous functions
     
        Returns a string of 12 bytes (96 bits), which is the unique ID of the MCU.
 
+.. function:: usb_mode([modestr], vid=0xf055, pid=0x9801, hid=pyb.hid_mouse)
+
+   If called with no arguments, return the current USB mode as a string.
+
+   If called with ``modestr`` provided, attempts to set USB mode.
+   This can only be done when called from ``boot.py`` before
+   :meth:`pyb.main()` has been called.  The following values of
+   ``modestr`` are understood:
+
+   - ``None``: disables USB
+   - ``'VCP'``: enable with VCP (Virtual COM Port) interface
+   - ``'VCP+MSC'``: enable with VCP and MSC (mass storage device class)
+   - ``'VCP+HID'``: enable with VCP and HID (human interface device)
+
+   For backwards compatibility, ``'CDC'`` is understood to mean
+   ``'VCP'`` (and similarly for ``'CDC+MSC'`` and ``'CDC+HID'``).
+
+   The ``vid`` and ``pid`` parameters allow you to specify the VID
+   (vendor id) and PID (product id).
+
+   If enabling HID mode, you may also specify the HID details by
+   passing the ``hid`` keyword parameter.  It takes a tuple of
+   (subclass, protocol, max packet length, polling interval, report
+   descriptor).  By default it will set appropriate values for a USB
+   mouse.  There is also a ``pyb.hid_keyboard`` constant, which is an
+   appropriate tuple for a USB keyboard.
+
 Classes
 -------
 
@@ -277,4 +317,5 @@ Classes
        pyb.Switch.rst
        pyb.Timer.rst
        pyb.UART.rst
+       pyb.USB_HID.rst
        pyb.USB_VCP.rst

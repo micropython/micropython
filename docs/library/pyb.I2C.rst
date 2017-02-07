@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.I2C:
 
 class I2C -- a two-wire serial protocol
@@ -38,7 +39,7 @@ Printing the i2c object gives you information about its configuration.
 
     You can specify a timeout (in ms)::
 
-        i2c.send(b'123', timeout=2000)   # timout after 2 seconds
+        i2c.send(b'123', timeout=2000)   # timeout after 2 seconds
 
     A master must specify the recipient's address::
 
@@ -85,13 +86,13 @@ Constructors
 Methods
 -------
 
-.. method:: i2c.deinit()
+.. method:: I2C.deinit()
 
    Turn off the I2C bus.
 
 .. only:: port_pyboard
 
-    .. method:: i2c.init(mode, \*, addr=0x12, baudrate=400000, gencall=False)
+    .. method:: I2C.init(mode, \*, addr=0x12, baudrate=400000, gencall=False, dma=False)
 
       Initialise the I2C bus with the given parameters:
 
@@ -99,12 +100,15 @@ Methods
          - ``addr`` is the 7-bit address (only sensible for a slave)
          - ``baudrate`` is the SCL clock rate (only sensible for a master)
          - ``gencall`` is whether to support general call mode
+         - ``dma`` is whether to allow the use of DMA for the I2C transfers (note
+           that DMA transfers have more precise timing but currently do not handle bus
+           errors properly)
 
-    .. method:: i2c.is_ready(addr)
+    .. method:: I2C.is_ready(addr)
 
        Check if an I2C device responds to the given address.  Only valid when in master mode.
 
-    .. method:: i2c.mem_read(data, addr, memaddr, \*, timeout=5000, addr_size=8)
+    .. method:: I2C.mem_read(data, addr, memaddr, \*, timeout=5000, addr_size=8)
 
        Read from the memory of an I2C device:
 
@@ -117,7 +121,7 @@ Methods
        Returns the read data.
        This is only valid in master mode.
 
-    .. method:: i2c.mem_write(data, addr, memaddr, \*, timeout=5000, addr_size=8)
+    .. method:: I2C.mem_write(data, addr, memaddr, \*, timeout=5000, addr_size=8)
 
        Write to the memory of an I2C device:
 
@@ -130,7 +134,7 @@ Methods
        Returns ``None``.
        This is only valid in master mode.
 
-    .. method:: i2c.recv(recv, addr=0x00, \*, timeout=5000)
+    .. method:: I2C.recv(recv, addr=0x00, \*, timeout=5000)
 
        Receive data on the bus:
 
@@ -142,7 +146,7 @@ Methods
        Return value: if ``recv`` is an integer then a new buffer of the bytes received,
        otherwise the same buffer that was passed in to ``recv``.
 
-    .. method:: i2c.send(send, addr=0x00, \*, timeout=5000)
+    .. method:: I2C.send(send, addr=0x00, \*, timeout=5000)
 
        Send data on the bus:
 
@@ -152,7 +156,7 @@ Methods
 
        Return value: ``None``.
 
-.. method:: i2c.scan()
+.. method:: I2C.scan()
 
    Scan all I2C addresses from 0x01 to 0x7f and return a list of those that respond.
    Only valid when in master mode.

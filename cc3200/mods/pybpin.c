@@ -145,7 +145,7 @@ pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 void pin_config (pin_obj_t *self, int af, uint mode, uint pull, int value, uint strength) {
@@ -185,7 +185,7 @@ uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type) 
             return pin_o->af_list[i].unit;
         }
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit) {
@@ -195,13 +195,13 @@ uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit) 
             return pin_o->af_list[i].type;
         }
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
     int8_t af = pin_obj_find_af(pin, fn, unit, type);
     if (af < 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     return af;
 }
@@ -426,18 +426,18 @@ STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t prio
 STATIC void pin_validate_mode (uint mode) {
     if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT && mode != PIN_TYPE_OD &&
         mode != GPIO_DIR_MODE_ALT && mode != GPIO_DIR_MODE_ALT_OD) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 STATIC void pin_validate_pull (uint pull) {
     if (pull != PIN_TYPE_STD && pull != PIN_TYPE_STD_PU && pull != PIN_TYPE_STD_PD) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 
 STATIC void pin_validate_drive(uint strength) {
     if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 }
 
@@ -450,7 +450,7 @@ STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8
             return;
         }
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 STATIC uint8_t pin_get_value (const pin_obj_t* self) {
@@ -591,7 +591,7 @@ STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_
     return mp_const_none;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -647,7 +647,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     mp_printf(print, ", alt=%d)", alt);
 }
 
-STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
@@ -747,7 +747,7 @@ STATIC mp_obj_t pin_drive(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_drive_obj, 1, 2, pin_drive);
 
-STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_t _args[2] = {self_in, *args};
     return pin_value (n_args + 1, _args);
@@ -905,7 +905,7 @@ STATIC mp_obj_t pin_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     return _irq;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 

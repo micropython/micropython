@@ -38,6 +38,7 @@
 // options to control how Micro Python is built
 
 #define MICROPY_ALLOC_PATH_MAX                      (128)
+#define MICROPY_PERSISTENT_CODE_LOAD                (1)
 #define MICROPY_EMIT_THUMB                          (0)
 #define MICROPY_EMIT_INLINE_THUMB                   (0)
 #define MICROPY_COMP_MODULE_CONST                   (1)
@@ -54,6 +55,7 @@
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
+#define MICROPY_READER_VFS                          (1)
 #ifndef DEBUG // we need ram on the launchxl while debugging
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #else
@@ -66,18 +68,20 @@
 #define MICROPY_FATFS_MAX_LFN                       (MICROPY_ALLOC_PATH_MAX)
 #define MICROPY_FATFS_LFN_CODE_PAGE                 (437) // 1=SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_FATFS_RPATH                         (2)
-#define MICROPY_FATFS_VOLUMES                       (2)
 #define MICROPY_FATFS_REENTRANT                     (1)
 #define MICROPY_FATFS_TIMEOUT                       (2500)
 #define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
-#define MICROPY_FSUSERMOUNT_ADHOC                   (1)
 
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
+#define MICROPY_VFS                                 (1)
+#define MICROPY_VFS_FAT                             (1)
 #define MICROPY_PY_ASYNC_AWAIT (0)
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR            (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS              (1)
+#define MICROPY_PY_BUILTINS_HELP                    (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT               cc3200_help_text
 #ifndef DEBUG
 #define MICROPY_PY_BUILTINS_STR_UNICODE             (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES          (1)
@@ -102,6 +106,8 @@
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
+#define MICROPY_PY_THREAD                           (1)
+#define MICROPY_PY_THREAD_GIL                       (1)
 #define MICROPY_PY_UBINASCII                        (0)
 #define MICROPY_PY_UCTYPES                          (0)
 #define MICROPY_PY_UZLIB                            (0)
@@ -109,13 +115,23 @@
 #define MICROPY_PY_URE                              (1)
 #define MICROPY_PY_UHEAPQ                           (0)
 #define MICROPY_PY_UHASHLIB                         (0)
+#define MICROPY_PY_USELECT                          (1)
+#define MICROPY_PY_UTIME_MP_HAL                     (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
 
+// TODO these should be generic, not bound to fatfs
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
+
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_help),  (mp_obj_t)&mp_builtin_help_obj },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj },  \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open),  (mp_obj_t)&mp_builtin_open_obj },   \
 
@@ -168,7 +184,6 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     mp_obj_list_t pyb_sleep_obj_list;                                     \
     mp_obj_list_t mp_irq_obj_list;                                        \
     mp_obj_list_t pyb_timer_channel_obj_list;                             \
-    mp_obj_list_t mount_obj_list;                                         \
     struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
     struct _os_term_dup_obj_t *os_term_dup_obj;                           \
 
@@ -183,26 +198,17 @@ extern const struct _mp_obj_module_t mp_module_ussl;
 
 typedef int32_t         mp_int_t;                   // must be pointer size
 typedef unsigned int    mp_uint_t;                  // must be pointer size
-typedef void            *machine_ptr_t;             // must be of pointer size
-typedef const void      *machine_const_ptr_t;       // must be of pointer size
 typedef long            mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)           enable_irq(state)
+#define MICROPY_EVENT_POLL_HOOK                     __WFI();
 
 // assembly functions to handle critical sections, interrupt
 // disabling/enabling and sleep mode enter/exit
 #include "cc3200_asm.h"
-
-// There is no classical C heap in bare-metal ports, only Python
-// garbage-collected heap. For completeness, emulate C heap via
-// GC heap. Note that MicroPython core never uses malloc() and friends,
-// so these defines are mostly to help extension module writers.
-#define malloc                                      gc_alloc
-#define free                                        gc_free
-#define realloc                                     gc_realloc
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

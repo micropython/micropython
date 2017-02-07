@@ -20,24 +20,27 @@
 void STM32F7DISC_board_early_init(void);
 
 // HSE is 25MHz
+// VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
+// SYSCLK = VCOClock / PLLP = 432 MHz / 2 = 216 MHz
+// USB/SDMMC/RNG Clock = VCOClock / PLLQ = 432 MHz / 9 = 48 MHz
 #define MICROPY_HW_CLK_PLLM (25)
-#define MICROPY_HW_CLK_PLLN (336)
+#define MICROPY_HW_CLK_PLLN (432)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
-#define MICROPY_HW_CLK_PLLQ (7)
+#define MICROPY_HW_CLK_PLLQ (9)
 
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_6
+// From the reference manual, for 2.7V to 3.6V
+// 151-180 MHz => 5 wait states
+// 181-210 MHz => 6 wait states
+// 211-216 MHz => 7 wait states
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
 
 // UART config
-#define MICROPY_HW_UART1_TX_PORT    (GPIOA)
-#define MICROPY_HW_UART1_TX_PIN     (GPIO_PIN_9)
-#define MICROPY_HW_UART1_RX_PORT    (GPIOB)
-#define MICROPY_HW_UART1_RX_PIN     (GPIO_PIN_7)
-
-#define MICROPY_HW_UART6_PORT       (GPIOC)
-#define MICROPY_HW_UART6_PINS       (GPIO_PIN_6 | GPIO_PIN_7)
-#define MICROPY_HW_UART7_PORT       (GPIOF)
-#define MICROPY_HW_UART7_PINS       (GPIO_PIN_6 | GPIO_PIN_7)
-
+#define MICROPY_HW_UART1_TX         (pin_A9)
+#define MICROPY_HW_UART1_RX         (pin_B7)
+#define MICROPY_HW_UART6_TX         (pin_C6)
+#define MICROPY_HW_UART6_RX         (pin_C7)
+#define MICROPY_HW_UART7_TX         (pin_F6)
+#define MICROPY_HW_UART7_RX         (pin_F7)
 #define MICROPY_HW_UART_REPL        PYB_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
@@ -72,9 +75,8 @@ void STM32F7DISC_board_early_init(void);
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_I1) // green
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRR = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRR = (pin->pin_mask << 16))
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // SD card detect switch
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C13)

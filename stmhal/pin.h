@@ -86,7 +86,7 @@ extern const mp_obj_type_t pin_cpu_pins_obj_type;
 extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
 extern const mp_obj_dict_t pin_board_pins_locals_dict;
 
-MP_DECLARE_CONST_FUN_OBJ(pin_init_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(pin_init_obj);
 
 void pin_init0(void);
 uint32_t pin_get_mode(const pin_obj_t *pin);

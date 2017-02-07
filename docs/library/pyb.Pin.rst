@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.Pin:
 
 class Pin -- control I/O pins
@@ -84,20 +85,16 @@ Constructors
 
     Class methods
     -------------
-    
-    .. method:: Pin.af_list()
-    
-       Returns an array of alternate functions available for this pin.
-    
-    .. method:: Pin.debug([state])
+
+    .. classmethod:: Pin.debug([state])
     
        Get or set the debugging state (``True`` or ``False`` for on or off).
     
-    .. method:: Pin.dict([dict])
+    .. classmethod:: Pin.dict([dict])
     
        Get or set the pin mapper dictionary.
     
-    .. method:: Pin.mapper([fun])
+    .. classmethod:: Pin.mapper([fun])
     
        Get or set the pin mapper function.
 
@@ -107,7 +104,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: pin.init(mode, pull=Pin.PULL_NONE, af=-1)
+    .. method:: Pin.init(mode, pull=Pin.PULL_NONE, af=-1)
     
        Initialise the pin:
        
@@ -131,7 +128,7 @@ Methods
        
        Returns: ``None``.
 
-.. method:: pin.value([value])
+.. method:: Pin.value([value])
 
    Get or set the digital logic level of the pin:
 
@@ -142,43 +139,47 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: pin.__str__()
+    .. method:: Pin.__str__()
     
        Return a string describing the pin object.
     
-    .. method:: pin.af()
+    .. method:: Pin.af()
     
        Returns the currently configured alternate-function of the pin. The
        integer returned will match one of the allowed constants for the af
        argument to the init function.
+
+    .. method:: Pin.af_list()
+
+       Returns an array of alternate functions available for this pin.
     
-    .. method:: pin.gpio()
+    .. method:: Pin.gpio()
     
        Returns the base address of the GPIO block associated with this pin.
     
-    .. method:: pin.mode()
+    .. method:: Pin.mode()
     
        Returns the currently configured mode of the pin. The integer returned
        will match one of the allowed constants for the mode argument to the init
        function.
     
-    .. method:: pin.name()
+    .. method:: Pin.name()
 
        Get the pin name.
 
-    .. method:: pin.names()
+    .. method:: Pin.names()
     
        Returns the cpu and board names for this pin.
     
-    .. method:: pin.pin()
+    .. method:: Pin.pin()
     
        Get the pin number.
     
-    .. method:: pin.port()
+    .. method:: Pin.port()
     
        Get the pin port.
-    
-.. method:: pin.pull()
+
+.. method:: Pin.pull()
 
     Returns the currently configured pull of the pin. The integer returned
     will match one of the allowed constants for the pull argument to the init
@@ -230,7 +231,7 @@ Constants
     class PinAF -- Pin Alternate Functions
     ======================================
     
-    A Pin represents a physical pin on the microcprocessor. Each pin
+    A Pin represents a physical pin on the microprocessor. Each pin
     can have a variety of functions (GPIO, I2C SDA, etc). Each PinAF
     object represents a particular function for a pin.
     
@@ -239,7 +240,7 @@ Constants
         x3 = pyb.Pin.board.X3
         x3_af = x3.af_list()
     
-    x3_af will now contain an array of PinAF objects which are availble on
+    x3_af will now contain an array of PinAF objects which are available on
     pin X3.
     
     For the pyboard, x3_af would contain:

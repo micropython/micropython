@@ -1,60 +1,64 @@
 /*
-    FreeRTOS V8.1.2 - Copyright (C) 2014 Real Time Engineers Ltd.
+    FreeRTOS V9.0.0 - Copyright (C) 2016 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
-
-    ***************************************************************************
-     *                                                                       *
-     *    FreeRTOS provides completely free yet professionally developed,    *
-     *    robust, strictly quality controlled, supported, and cross          *
-     *    platform software that has become a de facto standard.             *
-     *                                                                       *
-     *    Help yourself get started quickly and support the FreeRTOS         *
-     *    project by purchasing a FreeRTOS tutorial book, reference          *
-     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
-     *                                                                       *
-     *    Thank you!                                                         *
-     *                                                                       *
-    ***************************************************************************
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+    Free Software Foundation >>>> AND MODIFIED BY <<<< the FreeRTOS exception.
 
+    ***************************************************************************
     >>!   NOTE: The modification to the GPL is included to allow you to     !<<
     >>!   distribute a combined work that includes FreeRTOS without being   !<<
     >>!   obliged to provide the source code for proprietary components     !<<
     >>!   outside of the FreeRTOS kernel.                                   !<<
+    ***************************************************************************
 
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    FOR A PARTICULAR PURPOSE.  Full license text is available on the following
     link: http://www.freertos.org/a00114.html
 
-    1 tab == 4 spaces!
-
     ***************************************************************************
      *                                                                       *
-     *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?"                                     *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that is more than just the market leader, it     *
+     *    is the industry's de facto standard.                               *
      *                                                                       *
-     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *    Help yourself get started quickly while simultaneously helping     *
+     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
+     *    tutorial book, reference manual, or both:                          *
+     *    http://www.FreeRTOS.org/Documentation                              *
      *                                                                       *
     ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
-    license and Real Time Engineers Ltd. contact details.
+    http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
+    the FAQ page "My application does not run, what could be wrong?".  Have you
+    defined configASSERT()?
+
+    http://www.FreeRTOS.org/support - In return for receiving this top quality
+    embedded software for free we request you assist our global community by
+    participating in the support forum.
+
+    http://www.FreeRTOS.org/training - Investing in training allows your team to
+    be as productive as possible as early as possible.  Now you can receive
+    FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
+    Ltd, and the world's leading authority on the world's leading RTOS.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool, a DOS
     compatible FAT file system, and our tiny thread aware UDP/IP stack.
 
-    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
-    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
-    licenses offer ticketed support, indemnification and middleware.
+    http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
+    Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
+    Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and commercial middleware.
 
     http://www.SafeRTOS.com - High Integrity Systems also provide a safety
     engineered and independently SIL3 certified version for use in safety and
@@ -99,6 +103,15 @@ extern "C" {
 /* Definitions specific to the port being used. */
 #include "portable.h"
 
+/* Must be defaulted before configUSE_NEWLIB_REENTRANT is used below. */
+#ifndef configUSE_NEWLIB_REENTRANT
+	#define configUSE_NEWLIB_REENTRANT 0
+#endif
+
+/* Required if struct _reent is used. */
+#if ( configUSE_NEWLIB_REENTRANT == 1 )
+	#include <reent.h>
+#endif
 /*
  * Check all the required application specific macros have been defined.
  * These macros are application specific and (as downloaded) are defined
@@ -125,54 +138,48 @@ extern "C" {
 	#error Missing definition:  configUSE_TICK_HOOK must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
 #endif
 
-#ifndef configUSE_CO_ROUTINES
-	#error  Missing definition:  configUSE_CO_ROUTINES must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef INCLUDE_vTaskPrioritySet
-	#error Missing definition:  INCLUDE_vTaskPrioritySet must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef INCLUDE_uxTaskPriorityGet
-	#error Missing definition:  INCLUDE_uxTaskPriorityGet must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef INCLUDE_vTaskDelete
-	#error Missing definition:  INCLUDE_vTaskDelete must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef INCLUDE_vTaskSuspend
-	#error Missing definition:  INCLUDE_vTaskSuspend must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef INCLUDE_vTaskDelayUntil
-	#error Missing definition:  INCLUDE_vTaskDelayUntil must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#ifndef INCLUDE_vTaskDelay
-	#error Missing definition:  INCLUDE_vTaskDelay must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
 #ifndef configUSE_16_BIT_TICKS
 	#error Missing definition:  configUSE_16_BIT_TICKS must be defined in FreeRTOSConfig.h as either 1 or 0.  See the Configuration section of the FreeRTOS API documentation for details.
-#endif
-
-#if configUSE_CO_ROUTINES != 0
-	#ifndef configMAX_CO_ROUTINE_PRIORITIES
-		#error configMAX_CO_ROUTINE_PRIORITIES must be greater than or equal to 1.
-	#endif
 #endif
 
 #ifndef configMAX_PRIORITIES
 	#error configMAX_PRIORITIES must be defined to be greater than or equal to 1.
 #endif
 
+#ifndef configUSE_CO_ROUTINES
+	#define configUSE_CO_ROUTINES 0
+#endif
+
+#ifndef INCLUDE_vTaskPrioritySet
+	#define INCLUDE_vTaskPrioritySet 0
+#endif
+
+#ifndef INCLUDE_uxTaskPriorityGet
+	#define INCLUDE_uxTaskPriorityGet 0
+#endif
+
+#ifndef INCLUDE_vTaskDelete
+	#define INCLUDE_vTaskDelete 0
+#endif
+
+#ifndef INCLUDE_vTaskSuspend
+	#define INCLUDE_vTaskSuspend 0
+#endif
+
+#ifndef INCLUDE_vTaskDelayUntil
+	#define INCLUDE_vTaskDelayUntil 0
+#endif
+
+#ifndef INCLUDE_vTaskDelay
+	#define INCLUDE_vTaskDelay 0
+#endif
+
 #ifndef INCLUDE_xTaskGetIdleTaskHandle
 	#define INCLUDE_xTaskGetIdleTaskHandle 0
 #endif
 
-#ifndef INCLUDE_xTimerGetTimerDaemonTaskHandle
-	#define INCLUDE_xTimerGetTimerDaemonTaskHandle 0
+#ifndef INCLUDE_xTaskAbortDelay
+	#define INCLUDE_xTaskAbortDelay 0
 #endif
 
 #ifndef INCLUDE_xQueueGetMutexHolder
@@ -183,12 +190,8 @@ extern "C" {
 	#define INCLUDE_xSemaphoreGetMutexHolder INCLUDE_xQueueGetMutexHolder
 #endif
 
-#ifndef INCLUDE_pcTaskGetTaskName
-	#define INCLUDE_pcTaskGetTaskName 0
-#endif
-
-#ifndef configUSE_APPLICATION_TASK_TAG
-	#define configUSE_APPLICATION_TASK_TAG 0
+#ifndef INCLUDE_xTaskGetHandle
+	#define INCLUDE_xTaskGetHandle 0
 #endif
 
 #ifndef INCLUDE_uxTaskGetStackHighWaterMark
@@ -197,6 +200,40 @@ extern "C" {
 
 #ifndef INCLUDE_eTaskGetState
 	#define INCLUDE_eTaskGetState 0
+#endif
+
+#ifndef INCLUDE_xTaskResumeFromISR
+	#define INCLUDE_xTaskResumeFromISR 1
+#endif
+
+#ifndef INCLUDE_xTimerPendFunctionCall
+	#define INCLUDE_xTimerPendFunctionCall 0
+#endif
+
+#ifndef INCLUDE_xTaskGetSchedulerState
+	#define INCLUDE_xTaskGetSchedulerState 0
+#endif
+
+#ifndef INCLUDE_xTaskGetCurrentTaskHandle
+	#define INCLUDE_xTaskGetCurrentTaskHandle 0
+#endif
+
+#if configUSE_CO_ROUTINES != 0
+	#ifndef configMAX_CO_ROUTINE_PRIORITIES
+		#error configMAX_CO_ROUTINE_PRIORITIES must be greater than or equal to 1.
+	#endif
+#endif
+
+#ifndef configUSE_DAEMON_TASK_STARTUP_HOOK
+	#define configUSE_DAEMON_TASK_STARTUP_HOOK 0
+#endif
+
+#ifndef configUSE_APPLICATION_TASK_TAG
+	#define configUSE_APPLICATION_TASK_TAG 0
+#endif
+
+#ifndef configNUM_THREAD_LOCAL_STORAGE_POINTERS
+	#define configNUM_THREAD_LOCAL_STORAGE_POINTERS 0
 #endif
 
 #ifndef configUSE_RECURSIVE_MUTEXES
@@ -235,18 +272,6 @@ extern "C" {
 	#error configMAX_TASK_NAME_LEN must be set to a minimum of 1 in FreeRTOSConfig.h
 #endif
 
-#ifndef INCLUDE_xTaskResumeFromISR
-	#define INCLUDE_xTaskResumeFromISR 1
-#endif
-
-#ifndef INCLUDE_xEventGroupSetBitFromISR
-	#define INCLUDE_xEventGroupSetBitFromISR 0
-#endif
-
-#ifndef INCLUDE_xTimerPendFunctionCall
-	#define INCLUDE_xTimerPendFunctionCall 0
-#endif
-
 #ifndef configASSERT
 	#define configASSERT( x )
 	#define configASSERT_DEFINED 0
@@ -270,15 +295,6 @@ extern "C" {
 	#endif /* configTIMER_TASK_STACK_DEPTH */
 
 #endif /* configUSE_TIMERS */
-
-#ifndef INCLUDE_xTaskGetSchedulerState
-	#define INCLUDE_xTaskGetSchedulerState 0
-#endif
-
-#ifndef INCLUDE_xTaskGetCurrentTaskHandle
-	#define INCLUDE_xTaskGetCurrentTaskHandle 0
-#endif
-
 
 #ifndef portSET_INTERRUPT_MASK_FROM_ISR
 	#define portSET_INTERRUPT_MASK_FROM_ISR() 0
@@ -307,6 +323,7 @@ extern "C" {
 #if ( configQUEUE_REGISTRY_SIZE < 1 )
 	#define vQueueAddToRegistry( xQueue, pcName )
 	#define vQueueUnregisterQueue( xQueue )
+	#define pcQueueGetName( xQueue )
 #endif
 
 #ifndef portPOINTER_SIZE_TYPE
@@ -395,6 +412,10 @@ extern "C" {
 
 #ifndef traceMOVED_TASK_TO_READY_STATE
 	#define traceMOVED_TASK_TO_READY_STATE( pxTCB )
+#endif
+
+#ifndef tracePOST_MOVED_TASK_TO_READY_STATE
+	#define tracePOST_MOVED_TASK_TO_READY_STATE( pxTCB )
 #endif
 
 #ifndef traceQUEUE_CREATE
@@ -498,7 +519,7 @@ extern "C" {
 #endif
 
 #ifndef traceTASK_DELAY_UNTIL
-	#define traceTASK_DELAY_UNTIL()
+	#define traceTASK_DELAY_UNTIL( x )
 #endif
 
 #ifndef traceTASK_DELAY
@@ -609,6 +630,34 @@ extern "C" {
 	#define traceQUEUE_REGISTRY_ADD(xQueue, pcQueueName)
 #endif
 
+#ifndef traceTASK_NOTIFY_TAKE_BLOCK
+	#define traceTASK_NOTIFY_TAKE_BLOCK()
+#endif
+
+#ifndef traceTASK_NOTIFY_TAKE
+	#define traceTASK_NOTIFY_TAKE()
+#endif
+
+#ifndef traceTASK_NOTIFY_WAIT_BLOCK
+	#define traceTASK_NOTIFY_WAIT_BLOCK()
+#endif
+
+#ifndef traceTASK_NOTIFY_WAIT
+	#define traceTASK_NOTIFY_WAIT()
+#endif
+
+#ifndef traceTASK_NOTIFY
+	#define traceTASK_NOTIFY()
+#endif
+
+#ifndef traceTASK_NOTIFY_FROM_ISR
+	#define traceTASK_NOTIFY_FROM_ISR()
+#endif
+
+#ifndef traceTASK_NOTIFY_GIVE_FROM_ISR
+	#define traceTASK_NOTIFY_GIVE_FROM_ISR()
+#endif
+
 #ifndef configGENERATE_RUN_TIME_STATS
 	#define configGENERATE_RUN_TIME_STATS 0
 #endif
@@ -641,14 +690,6 @@ extern "C" {
 
 #ifndef portYIELD_WITHIN_API
 	#define portYIELD_WITHIN_API portYIELD
-#endif
-
-#ifndef pvPortMallocAligned
-	#define pvPortMallocAligned( x, puxStackBuffer ) ( ( ( puxStackBuffer ) == NULL ) ? ( pvPortMalloc( ( x ) ) ) : ( puxStackBuffer ) )
-#endif
-
-#ifndef vPortFreeAligned
-	#define vPortFreeAligned( pvBlockToFree ) vPortFree( pvBlockToFree )
 #endif
 
 #ifndef portSUPPRESS_TICKS_AND_SLEEP
@@ -691,10 +732,6 @@ extern "C" {
 	#define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS 0
 #endif
 
-#ifndef configUSE_NEWLIB_REENTRANT
-	#define configUSE_NEWLIB_REENTRANT 0
-#endif
-
 #ifndef configUSE_STATS_FORMATTING_FUNCTIONS
 	#define configUSE_STATS_FORMATTING_FUNCTIONS 0
 #endif
@@ -711,12 +748,70 @@ extern "C" {
 	#define mtCOVERAGE_TEST_MARKER()
 #endif
 
+#ifndef mtCOVERAGE_TEST_DELAY
+	#define mtCOVERAGE_TEST_DELAY()
+#endif
+
 #ifndef portASSERT_IF_IN_ISR
 	#define portASSERT_IF_IN_ISR()
 #endif
 
 #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
+#endif
+
+#ifndef configAPPLICATION_ALLOCATED_HEAP
+	#define configAPPLICATION_ALLOCATED_HEAP 0
+#endif
+
+#ifndef configUSE_TASK_NOTIFICATIONS
+	#define configUSE_TASK_NOTIFICATIONS 1
+#endif
+
+#ifndef portTICK_TYPE_IS_ATOMIC
+	#define portTICK_TYPE_IS_ATOMIC 0
+#endif
+
+#ifndef configSUPPORT_STATIC_ALLOCATION
+	/* Defaults to 0 for backward compatibility. */
+	#define configSUPPORT_STATIC_ALLOCATION 0
+#endif
+
+#ifndef configSUPPORT_DYNAMIC_ALLOCATION
+	/* Defaults to 1 for backward compatibility. */
+	#define configSUPPORT_DYNAMIC_ALLOCATION 1
+#endif
+
+/* Sanity check the configuration. */
+#if( configUSE_TICKLESS_IDLE != 0 )
+	#if( INCLUDE_vTaskSuspend != 1 )
+		#error INCLUDE_vTaskSuspend must be set to 1 if configUSE_TICKLESS_IDLE is not set to 0
+	#endif /* INCLUDE_vTaskSuspend */
+#endif /* configUSE_TICKLESS_IDLE */
+
+#if( ( configSUPPORT_STATIC_ALLOCATION == 0 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 0 ) )
+	#error configSUPPORT_STATIC_ALLOCATION and configSUPPORT_DYNAMIC_ALLOCATION cannot both be 0, but can both be 1.
+#endif
+
+#if( ( configUSE_RECURSIVE_MUTEXES == 1 ) && ( configUSE_MUTEXES != 1 ) )
+	#error configUSE_MUTEXES must be set to 1 to use recursive mutexes
+#endif
+
+#if( portTICK_TYPE_IS_ATOMIC == 0 )
+	/* Either variables of tick type cannot be read atomically, or
+	portTICK_TYPE_IS_ATOMIC was not set - map the critical sections used when
+	the tick count is returned to the standard critical section macros. */
+	#define portTICK_TYPE_ENTER_CRITICAL() portENTER_CRITICAL()
+	#define portTICK_TYPE_EXIT_CRITICAL() portEXIT_CRITICAL()
+	#define portTICK_TYPE_SET_INTERRUPT_MASK_FROM_ISR() portSET_INTERRUPT_MASK_FROM_ISR()
+	#define portTICK_TYPE_CLEAR_INTERRUPT_MASK_FROM_ISR( x ) portCLEAR_INTERRUPT_MASK_FROM_ISR( ( x ) )
+#else
+	/* The tick type can be read atomically, so critical sections used when the
+	tick count is returned can be defined away. */
+	#define portTICK_TYPE_ENTER_CRITICAL()
+	#define portTICK_TYPE_EXIT_CRITICAL()
+	#define portTICK_TYPE_SET_INTERRUPT_MASK_FROM_ISR() 0
+	#define portTICK_TYPE_CLEAR_INTERRUPT_MASK_FROM_ISR( x ) ( void ) x
 #endif
 
 /* Definitions to allow backward compatibility with FreeRTOS versions prior to
@@ -741,6 +836,10 @@ V8 if desired. */
 	#define xCoRoutineHandle CoRoutineHandle_t
 	#define pdTASK_HOOK_CODE TaskHookFunction_t
 	#define portTICK_RATE_MS portTICK_PERIOD_MS
+	#define pcTaskGetTaskName pcTaskGetName
+	#define pcTimerGetTimerName pcTimerGetName
+	#define pcQueueGetQueueName pcQueueGetName
+	#define vTaskGetTaskInfo vTaskGetInfo
 
 	/* Backward compatibility within the scheduler code only - these definitions
 	are not really required but are included for completeness. */
@@ -749,6 +848,212 @@ V8 if desired. */
 	#define xListItem ListItem_t
 	#define xList List_t
 #endif /* configENABLE_BACKWARD_COMPATIBILITY */
+
+#if( configUSE_ALTERNATIVE_API != 0 )
+	#error The alternative API was deprecated some time ago, and was removed in FreeRTOS V9.0 0
+#endif
+
+/* Set configUSE_TASK_FPU_SUPPORT to 0 to omit floating point support even
+if floating point hardware is otherwise supported by the FreeRTOS port in use.
+This constant is not supported by all FreeRTOS ports that include floating
+point support. */
+#ifndef configUSE_TASK_FPU_SUPPORT
+	#define configUSE_TASK_FPU_SUPPORT 1
+#endif
+
+/*
+ * In line with software engineering best practice, FreeRTOS implements a strict
+ * data hiding policy, so the real structures used by FreeRTOS to maintain the
+ * state of tasks, queues, semaphores, etc. are not accessible to the application
+ * code.  However, if the application writer wants to statically allocate such
+ * an object then the size of the object needs to be know.  Dummy structures
+ * that are guaranteed to have the same size and alignment requirements of the
+ * real objects are used for this purpose.  The dummy list and list item
+ * structures below are used for inclusion in such a dummy structure.
+ */
+struct xSTATIC_LIST_ITEM
+{
+	TickType_t xDummy1;
+	void *pvDummy2[ 4 ];
+};
+typedef struct xSTATIC_LIST_ITEM StaticListItem_t;
+
+/* See the comments above the struct xSTATIC_LIST_ITEM definition. */
+struct xSTATIC_MINI_LIST_ITEM
+{
+	TickType_t xDummy1;
+	void *pvDummy2[ 2 ];
+};
+typedef struct xSTATIC_MINI_LIST_ITEM StaticMiniListItem_t;
+
+/* See the comments above the struct xSTATIC_LIST_ITEM definition. */
+typedef struct xSTATIC_LIST
+{
+	UBaseType_t uxDummy1;
+	void *pvDummy2;
+	StaticMiniListItem_t xDummy3;
+} StaticList_t;
+
+/*
+ * In line with software engineering best practice, especially when supplying a
+ * library that is likely to change in future versions, FreeRTOS implements a
+ * strict data hiding policy.  This means the Task structure used internally by
+ * FreeRTOS is not accessible to application code.  However, if the application
+ * writer wants to statically allocate the memory required to create a task then
+ * the size of the task object needs to be know.  The StaticTask_t structure
+ * below is provided for this purpose.  Its sizes and alignment requirements are
+ * guaranteed to match those of the genuine structure, no matter which
+ * architecture is being used, and no matter how the values in FreeRTOSConfig.h
+ * are set.  Its contents are somewhat obfuscated in the hope users will
+ * recognise that it would be unwise to make direct use of the structure members.
+ */
+typedef struct xSTATIC_TCB
+{
+	void				*pxDummy1;
+	#if ( portUSING_MPU_WRAPPERS == 1 )
+		xMPU_SETTINGS	xDummy2;
+	#endif
+	StaticListItem_t	xDummy3[ 2 ];
+	UBaseType_t			uxDummy5;
+	void				*pxDummy6;
+	uint8_t				ucDummy7[ configMAX_TASK_NAME_LEN ];
+	#if ( portSTACK_GROWTH > 0 )
+		void			*pxDummy8;
+	#endif
+	#if ( portCRITICAL_NESTING_IN_TCB == 1 )
+		UBaseType_t		uxDummy9;
+	#endif
+	#if ( configUSE_TRACE_FACILITY == 1 )
+		UBaseType_t		uxDummy10[ 2 ];
+	#endif
+	#if ( configUSE_MUTEXES == 1 )
+		UBaseType_t		uxDummy12[ 2 ];
+	#endif
+	#if ( configUSE_APPLICATION_TASK_TAG == 1 )
+		void			*pxDummy14;
+	#endif
+	#if( configNUM_THREAD_LOCAL_STORAGE_POINTERS > 0 )
+		void			*pvDummy15[ configNUM_THREAD_LOCAL_STORAGE_POINTERS ];
+	#endif
+	#if ( configGENERATE_RUN_TIME_STATS == 1 )
+		uint32_t		ulDummy16;
+	#endif
+	#if ( configUSE_NEWLIB_REENTRANT == 1 )
+		struct	_reent	xDummy17;
+	#endif
+	#if ( configUSE_TASK_NOTIFICATIONS == 1 )
+		uint32_t 		ulDummy18;
+		uint8_t 		ucDummy19;
+	#endif
+	#if( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
+		uint8_t			uxDummy20;
+	#endif
+
+} StaticTask_t;
+
+/*
+ * In line with software engineering best practice, especially when supplying a
+ * library that is likely to change in future versions, FreeRTOS implements a
+ * strict data hiding policy.  This means the Queue structure used internally by
+ * FreeRTOS is not accessible to application code.  However, if the application
+ * writer wants to statically allocate the memory required to create a queue
+ * then the size of the queue object needs to be know.  The StaticQueue_t
+ * structure below is provided for this purpose.  Its sizes and alignment
+ * requirements are guaranteed to match those of the genuine structure, no
+ * matter which architecture is being used, and no matter how the values in
+ * FreeRTOSConfig.h are set.  Its contents are somewhat obfuscated in the hope
+ * users will recognise that it would be unwise to make direct use of the
+ * structure members.
+ */
+typedef struct xSTATIC_QUEUE
+{
+	void *pvDummy1[ 3 ];
+
+	union
+	{
+		void *pvDummy2;
+		UBaseType_t uxDummy2;
+	} u;
+
+	StaticList_t xDummy3[ 2 ];
+	UBaseType_t uxDummy4[ 3 ];
+	uint8_t ucDummy5[ 2 ];
+
+	#if( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
+		uint8_t ucDummy6;
+	#endif
+
+	#if ( configUSE_QUEUE_SETS == 1 )
+		void *pvDummy7;
+	#endif
+
+	#if ( configUSE_TRACE_FACILITY == 1 )
+		UBaseType_t uxDummy8;
+		uint8_t ucDummy9;
+	#endif
+
+} StaticQueue_t;
+typedef StaticQueue_t StaticSemaphore_t;
+
+/*
+ * In line with software engineering best practice, especially when supplying a
+ * library that is likely to change in future versions, FreeRTOS implements a
+ * strict data hiding policy.  This means the event group structure used
+ * internally by FreeRTOS is not accessible to application code.  However, if
+ * the application writer wants to statically allocate the memory required to
+ * create an event group then the size of the event group object needs to be
+ * know.  The StaticEventGroup_t structure below is provided for this purpose.
+ * Its sizes and alignment requirements are guaranteed to match those of the
+ * genuine structure, no matter which architecture is being used, and no matter
+ * how the values in FreeRTOSConfig.h are set.  Its contents are somewhat
+ * obfuscated in the hope users will recognise that it would be unwise to make
+ * direct use of the structure members.
+ */
+typedef struct xSTATIC_EVENT_GROUP
+{
+	TickType_t xDummy1;
+	StaticList_t xDummy2;
+
+	#if( configUSE_TRACE_FACILITY == 1 )
+		UBaseType_t uxDummy3;
+	#endif
+
+	#if( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
+			uint8_t ucDummy4;
+	#endif
+
+} StaticEventGroup_t;
+
+/*
+ * In line with software engineering best practice, especially when supplying a
+ * library that is likely to change in future versions, FreeRTOS implements a
+ * strict data hiding policy.  This means the software timer structure used
+ * internally by FreeRTOS is not accessible to application code.  However, if
+ * the application writer wants to statically allocate the memory required to
+ * create a software timer then the size of the queue object needs to be know.
+ * The StaticTimer_t structure below is provided for this purpose.  Its sizes
+ * and alignment requirements are guaranteed to match those of the genuine
+ * structure, no matter which architecture is being used, and no matter how the
+ * values in FreeRTOSConfig.h are set.  Its contents are somewhat obfuscated in
+ * the hope users will recognise that it would be unwise to make direct use of
+ * the structure members.
+ */
+typedef struct xSTATIC_TIMER
+{
+	void				*pvDummy1;
+	StaticListItem_t	xDummy2;
+	TickType_t			xDummy3;
+	UBaseType_t			uxDummy4;
+	void 				*pvDummy5[ 2 ];
+	#if( configUSE_TRACE_FACILITY == 1 )
+		UBaseType_t		uxDummy6;
+	#endif
+
+	#if( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
+		uint8_t 		ucDummy7;
+	#endif
+
+} StaticTimer_t;
 
 #ifdef __cplusplus
 }

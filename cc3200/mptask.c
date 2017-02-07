@@ -28,10 +28,15 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#include "py/stackctrl.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -55,13 +60,12 @@
 #include "serverstask.h"
 #include "telnet.h"
 #include "debug.h"
-#include "ff.h"
-#include "diskio.h"
 #include "sflash_diskio.h"
 #include "mpexception.h"
 #include "random.h"
 #include "pybi2c.h"
 #include "pins.h"
+#include "mods/pybflash.h"
 #include "pybsleep.h"
 #include "pybtimer.h"
 #include "cryptohash.h"
@@ -69,6 +73,7 @@
 #include "updater.h"
 #include "moduos.h"
 #include "antenna.h"
+#include "task.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -92,20 +97,25 @@ OsiTaskHandle   svTaskHandle;
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-static FATFS *sflash_fatfs;
+static fs_user_mount_t *sflash_vfs_fat;
+static mp_vfs_mount_t sflash_vfs_mount;
 
 static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
 static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
-                                    "# can run arbitrary Python, but best to keep it minimal\r\n";
+                                    "# can run arbitrary Python, but best to keep it minimal\r\n"
+                                    #if MICROPY_STDIO_UART
+                                    "import os, machine\r\n"
+                                    "os.dupterm(machine.UART(0, " MP_STRINGIFY(MICROPY_STDIO_UART_BAUD) "))\r\n"
+                                    #endif
+                                    ;
 
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 
 void TASK_Micropython (void *pvParameters) {
-    // initialize the garbage collector with the top of our stack
+    // get the top of the stack to initialize the garbage collector
     uint32_t sp = gc_helper_get_sp();
-    gc_collect_init (sp);
 
     bool safeboot = false;
     mptask_pre_init();
@@ -115,6 +125,14 @@ void TASK_Micropython (void *pvParameters) {
 #endif
 
 soft_reset:
+
+    // Thread init
+    #if MICROPY_PY_THREAD
+    mp_thread_init();
+    #endif
+
+    // initialise the stack pointer for the main thread (must be done after mp_thread_init)
+    mp_stack_set_top((void*)sp);
 
     // GC init
     gc_init(&_boot, &_eheap);
@@ -135,7 +153,6 @@ soft_reset:
     timer_init0();
     readline_init0();
     mod_network_init0();
-    moduos_init0();
     rng_init0();
 
     pybsleep_reset_cause_t rstcause = pyb_sleep_get_reset_cause();
@@ -256,7 +273,7 @@ STATIC void mptask_pre_init (void) {
     ASSERT (OSI_OK == VStartSimpleLinkSpawnTask(SIMPLELINK_SPAWN_TASK_PRIORITY));
 
     // Allocate memory for the flash file system
-    ASSERT ((sflash_fatfs = mem_Malloc(sizeof(FATFS))) != NULL);
+    ASSERT ((sflash_vfs_fat = mem_Malloc(sizeof(*sflash_vfs_fat))) != NULL);
 
     // this one allocates memory for the nvic vault
     pyb_sleep_pre_init();
@@ -272,30 +289,31 @@ STATIC void mptask_pre_init (void) {
 
     //CRYPTOHASH_Init();
 
-#ifdef DEBUG
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, &svTaskHandle));
-#else
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, NULL));
+#ifndef DEBUG
+    OsiTaskHandle svTaskHandle;
 #endif
+    svTaskHandle = xTaskCreateStatic(TASK_Servers, "Servers",
+        SERVERS_STACK_LEN, NULL, SERVERS_PRIORITY, svTaskStack, &svTaskTCB);
+    ASSERT(svTaskHandle != NULL);
 }
 
 STATIC void mptask_init_sflash_filesystem (void) {
     FILINFO fno;
-#if _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
 
     // Initialise the local flash filesystem.
+    // init the vfs object
+    fs_user_mount_t *vfs_fat = sflash_vfs_fat;
+    vfs_fat->str = NULL;
+    vfs_fat->len = 0;
+    vfs_fat->flags = 0;
+    pyb_flash_init_vfs(vfs_fat);
+
     // Create it if needed, and mount in on /flash.
-    FRESULT res = f_mount(sflash_fatfs, "/flash", 1);
+    FRESULT res = f_mount(&vfs_fat->fatfs);
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem, so create a fresh one
-        res = f_mkfs("/flash", 1, 0);
+        uint8_t working_buf[_MAX_SS];
+        res = f_mkfs(&vfs_fat->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
         if (res == FR_OK) {
             // success creating fresh LFS
         } else {
@@ -305,7 +323,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
         mptask_create_main_py();
     } else if (res == FR_OK) {
         // mount sucessful
-        if (FR_OK != f_stat("/flash/main.py", &fno)) {
+        if (FR_OK != f_stat(&vfs_fat->fatfs, "/main.py", &fno)) {
             // create empty main.py
             mptask_create_main_py();
         }
@@ -313,25 +331,33 @@ STATIC void mptask_init_sflash_filesystem (void) {
         __fatal_error("failed to create /flash");
     }
 
+    // mount the flash device (there should be no other devices mounted at this point)
+    mp_vfs_mount_t *vfs = &sflash_vfs_mount;
+    vfs->str = "/flash";
+    vfs->len = 6;
+    vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+    vfs->next = NULL;
+    MP_STATE_VM(vfs_mount_table) = vfs;
+
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
-    f_chdrive("/flash");
+    MP_STATE_PORT(vfs_cur) = vfs;
 
     // create /flash/sys, /flash/lib and /flash/cert if they don't exist
-    if (FR_OK != f_chdir ("/flash/sys")) {
-        f_mkdir("/flash/sys");
+    if (FR_OK != f_chdir(&vfs_fat->fatfs, "/sys")) {
+        f_mkdir(&vfs_fat->fatfs, "/sys");
     }
-    if (FR_OK != f_chdir ("/flash/lib")) {
-        f_mkdir("/flash/lib");
+    if (FR_OK != f_chdir(&vfs_fat->fatfs, "/lib")) {
+        f_mkdir(&vfs_fat->fatfs, "/lib");
     }
-    if (FR_OK != f_chdir ("/flash/cert")) {
-        f_mkdir("/flash/cert");
+    if (FR_OK != f_chdir(&vfs_fat->fatfs, "/cert")) {
+        f_mkdir(&vfs_fat->fatfs, "/cert");
     }
 
-    f_chdir ("/flash");
+    f_chdir(&vfs_fat->fatfs, "/");
 
     // make sure we have a /flash/boot.py.  Create it if needed.
-    res = f_stat("/flash/boot.py", &fno);
+    res = f_stat(&vfs_fat->fatfs, "/boot.py", &fno);
     if (res == FR_OK) {
         if (fno.fattrib & AM_DIR) {
             // exists as a directory
@@ -343,7 +369,7 @@ STATIC void mptask_init_sflash_filesystem (void) {
     } else {
         // doesn't exist, create fresh file
         FIL fp;
-        f_open(&fp, "/flash/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&vfs_fat->fatfs, &fp, "/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         UINT n;
         f_write(&fp, fresh_boot_py, sizeof(fresh_boot_py) - 1 /* don't count null terminator */, &n);
         // TODO check we could write n bytes
@@ -363,9 +389,8 @@ STATIC void mptask_enter_ap_mode (void) {
 STATIC void mptask_create_main_py (void) {
     // create empty main.py
     FIL fp;
-    f_open(&fp, "/flash/main.py", FA_WRITE | FA_CREATE_ALWAYS);
+    f_open(&sflash_vfs_fat->fatfs, &fp, "/main.py", FA_WRITE | FA_CREATE_ALWAYS);
     UINT n;
     f_write(&fp, fresh_main_py, sizeof(fresh_main_py) - 1 /* don't count null terminator */, &n);
     f_close(&fp);
 }
-

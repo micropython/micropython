@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.RTC:
 
 class RTC -- real time clock
@@ -24,7 +25,7 @@ Constructors
 Methods
 -------
 
-.. method:: rtc.datetime([datetimetuple])
+.. method:: RTC.datetime([datetimetuple])
 
    Get or set the date and time of the RTC.
    
@@ -44,7 +45,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: rtc.wakeup(timeout, callback=None)
+    .. method:: RTC.wakeup(timeout, callback=None)
     
        Set the RTC wakeup timer to trigger repeatedly at every ``timeout``
        milliseconds.  This trigger can wake the pyboard from both the sleep
@@ -55,7 +56,7 @@ Methods
        If ``callback`` is given then it is executed at every trigger of the
        wakeup timer.  ``callback`` must take exactly one argument.
     
-    .. method:: rtc.info()
+    .. method:: RTC.info()
     
        Get information about the startup time and reset source.
        
@@ -64,7 +65,7 @@ Methods
         - Bit 0x10000 is set if a power-on reset occurred.
         - Bit 0x20000 is set if an external reset occurred
     
-    .. method:: rtc.calibration(cal)
+    .. method:: RTC.calibration(cal)
     
        Get or set RTC calibration.
     
@@ -72,7 +73,7 @@ Methods
        value, which is an integer in the range [-511 : 512].  With one
        argument it sets the RTC calibration.
     
-       The RTC Smooth Calibration mechanism addjusts the RTC clock rate by
+       The RTC Smooth Calibration mechanism adjusts the RTC clock rate by
        adding or subtracting the given number of ticks from the 32768 Hz
        clock over a 32 second period (corresponding to 2^20 clock ticks.)
        Each tick added will speed up the clock by 1 part in 2^20, or 0.954

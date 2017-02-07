@@ -57,27 +57,21 @@ STATIC bool is_set_or_frozenset(mp_obj_t o) {
     ;
 }
 
-#if MICROPY_PY_BUILTINS_FROZENSET
-STATIC void check_set_or_frozenset(mp_obj_t o) {
-    if (!is_set_or_frozenset(o)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
-    }
-}
-#else
-#define check_set_or_frozenset(o) check_set(o)
-#endif
+// This macro is shorthand for mp_check_self to verify the argument is a
+// set or frozenset for methods that operate on both of these types.
+#define check_set_or_frozenset(o) mp_check_self(is_set_or_frozenset(o))
 
+// This function is used to verify the argument for methods that modify
+// the set object, and raises an exception if the arg is a frozenset.
 STATIC void check_set(mp_obj_t o) {
-    if (!MP_OBJ_IS_TYPE(o, &mp_type_set)) {
-        // Emulate CPython behavior
+    #if MICROPY_PY_BUILTINS_FROZENSET
+    if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
+        // Mutable method called on frozenset; emulate CPython behavior, eg:
         // AttributeError: 'frozenset' object has no attribute 'add'
-        #if MICROPY_PY_BUILTINS_FROZENSET
-        if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "'frozenset' has no such attribute"));
-        }
-        #endif
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
+        mp_raise_msg(&mp_type_AttributeError, "'frozenset' has no such attribute");
     }
+    #endif
+    mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set));
 }
 
 STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -224,8 +218,6 @@ STATIC mp_obj_t set_discard(mp_obj_t self_in, mp_obj_t item) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_discard_obj, set_discard);
 
 STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
-    assert(n_args > 0);
-
     mp_obj_t self;
     if (update) {
         check_set(args[0]);
@@ -397,7 +389,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
+        mp_raise_msg(&mp_type_KeyError, "pop from an empty set");
     }
     return obj;
 }
@@ -443,8 +435,7 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
 }
 
 STATIC mp_obj_t set_update(size_t n_args, const mp_obj_t *args) {
-    assert(n_args > 0);
-
+    check_set(args[0]);
     for (mp_uint_t i = 1; i < n_args; i++) {
         set_update_int(MP_OBJ_TO_PTR(args[0]), args[i]);
     }
@@ -488,6 +479,11 @@ STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
 
 STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
+    #if MICROPY_PY_BUILTINS_FROZENSET
+    bool update = MP_OBJ_IS_TYPE(lhs, &mp_type_set);
+    #else
+    bool update = true;
+    #endif
     switch (op) {
         case MP_BINARY_OP_OR:
             return set_union(lhs, rhs);
@@ -498,13 +494,28 @@ STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_SUBTRACT:
             return set_diff(2, args);
         case MP_BINARY_OP_INPLACE_OR:
-            return set_union(lhs, rhs);
+            if (update) {
+                set_update(2, args);
+                return lhs;
+            } else {
+                return set_union(lhs, rhs);
+            }
         case MP_BINARY_OP_INPLACE_XOR:
-            return set_symmetric_difference(lhs, rhs);
+            if (update) {
+                set_symmetric_difference_update(lhs, rhs);
+                return lhs;
+            } else {
+                return set_symmetric_difference(lhs, rhs);
+            }
         case MP_BINARY_OP_INPLACE_AND:
-            return set_intersect(lhs, rhs);
+            rhs = set_intersect_int(lhs, rhs, update);
+            if (update) {
+                return lhs;
+            } else {
+                return rhs;
+            }
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            return set_diff(2, args);
+            return set_diff_int(2, args, update);
         case MP_BINARY_OP_LESS:
             return set_issubset_proper(lhs, rhs);
         case MP_BINARY_OP_MORE:
@@ -587,7 +598,7 @@ mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items) {
 }
 
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }

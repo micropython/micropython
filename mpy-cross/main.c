@@ -32,9 +32,13 @@
 
 #include "py/mpstate.h"
 #include "py/compile.h"
+#include "py/persistentcode.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
+#ifdef _WIN32
+#include "windows/fmode.h"
+#endif
 
 // Command line options, with their defaults
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
@@ -52,7 +56,7 @@ STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
 
 STATIC const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
-STATIC int compile_and_save(const char *file, const char *output_file) {
+STATIC int compile_and_save(const char *file, const char *output_file, const char *source_file) {
     mp_lexer_t *lex = mp_lexer_new_from_file(file);
     if (lex == NULL) {
         printf("could not open file '%s' for reading\n", file);
@@ -61,7 +65,12 @@ STATIC int compile_and_save(const char *file, const char *output_file) {
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
+        qstr source_name;
+        if (source_file == NULL) {
+            source_name = lex->source_name;
+        } else {
+            source_name = qstr_from_str(source_file);
+        }
 
         #if MICROPY_PY___FILE__
         if (input_kind == MP_PARSE_FILE_INPUT) {
@@ -97,7 +106,8 @@ STATIC int usage(char **argv) {
     printf(
 "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
 "Options:\n"
-"-o : output file for compiled bytecode\n"
+"-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
+"-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
 "-v : verbose (trace various operations); can be multiple\n"
 "-O[N] : apply bytecode optimizations of level N\n"
 "\n"
@@ -179,6 +189,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 
     mp_init();
+#ifdef _WIN32
+    set_fmode_binary();
+#endif
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
 
@@ -189,6 +202,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     const char *input_file = NULL;
     const char *output_file = NULL;
+    const char *source_file = NULL;
 
     // parse main options
     for (int a = 1; a < argc; a++) {
@@ -210,6 +224,12 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 }
                 a += 1;
                 output_file = argv[a];
+            } else if (strcmp(argv[a], "-s") == 0) {
+                if (a + 1 >= argc) {
+                    exit(usage(argv));
+                }
+                a += 1;
+                source_file = argv[a];
             } else if (strncmp(argv[a], "-msmall-int-bits=", sizeof("-msmall-int-bits=") - 1) == 0) {
                 char *end;
                 mp_dynamic_compiler.small_int_bits =
@@ -243,7 +263,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         exit(1);
     }
 
-    int ret = compile_and_save(input_file, output_file);
+    int ret = compile_and_save(input_file, output_file, source_file);
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
     if (mp_verbose_flag) {

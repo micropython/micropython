@@ -43,7 +43,7 @@ def master():
                 timeout = True
 
         if timeout:
-            print('failed, respones timed out')
+            print('failed, response timed out')
             num_failures += 1
 
         else:
@@ -57,7 +57,7 @@ def master():
         # delay then loop
         pyb.delay(250)
 
-    print('master finished sending; succeses=%d, failures=%d' % (num_successes, num_failures))
+    print('master finished sending; successes=%d, failures=%d' % (num_successes, num_failures))
 
 def slave():
     nrf = NRF24L01(SPI(2), Pin('Y5'), Pin('Y4'), payload_size=8)

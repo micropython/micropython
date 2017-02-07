@@ -1,4 +1,4 @@
-.. _machine.WDT:
+.. currentmodule:: machine
 
 class WDT -- watchdog timer
 ===========================
@@ -14,10 +14,12 @@ Example usage::
     wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
     wdt.feed()
 
+Availability of this class: pyboard, WiPy.
+
 Constructors
 ------------
 
-.. class:: machine.WDT(id=0, timeout=5000)
+.. class:: WDT(id=0, timeout=5000)
 
    Create a WDT object and start it. The timeout must be given in seconds and
    the minimum value that is accepted is 1 second. Once it is running the timeout

@@ -37,8 +37,4 @@
 // djgpp dirent struct does not have d_ino field
 #undef _DIRENT_HAVE_D_INO
 
-// djgpp errno.h have no ENOTSUP
-#include <errno.h>
-#ifndef ENOTSUP
-#define ENOTSUP 88
-#endif
+#define MICROPY_USE_INTERNAL_ERRNO  (1)

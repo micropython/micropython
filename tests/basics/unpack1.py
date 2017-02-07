@@ -12,6 +12,7 @@ a, b, c = range(3); print(a, b, c)
 (a,) = range(1); print(a)
 (a, b) = range(2); print(a, b)
 (a, b, c) = range(3); print(a, b, c)
+(a, (b, c)) = [-1, range(2)]; print(a, b, c)
 
 # lists
 

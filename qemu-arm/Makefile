@@ -14,9 +14,9 @@ INC += -I..
 INC += -I$(BUILD)
 INC += -I../tools/tinytest/
 
-CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3
+CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
-	 -flto -ffunction-sections -fdata-sections
+	 -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -40,18 +40,50 @@ SRC_C = \
 SRC_TEST_C = \
 	test_main.c \
 
+LIB_SRC_C = $(addprefix lib/,\
+	libm/math.c \
+	libm/fmodf.c \
+	libm/roundf.c \
+	libm/ef_sqrt.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
+	libm/sf_frexp.c \
+	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/asinfacosf.c \
+	libm/atanf.c \
+	libm/atan2f.c \
+	)
+
+STM_SRC_C = $(addprefix stmhal/,\
+	pybstdio.c \
+	)
+
 SRC_S = \
 
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 
 OBJ_TEST =
 OBJ_TEST += $(PY_O)
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
+OBJ_TEST += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ_TEST += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ_TEST += $(BUILD)/tinytest.o
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(STM_SRC_C)
 
 all: run
 

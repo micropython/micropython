@@ -23,14 +23,14 @@
 #define MICROPY_HW_CLK_PLLQ (7)
 
 // UART config
-#define MICROPY_HW_UART1_PORT (GPIOA)
-#define MICROPY_HW_UART1_PINS (GPIO_PIN_9 | GPIO_PIN_10)
-#define MICROPY_HW_UART2_PORT (GPIOD)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_8 | GPIO_PIN_9)
+#define MICROPY_HW_UART1_TX     (pin_A9)
+#define MICROPY_HW_UART1_RX     (pin_A10)
+#define MICROPY_HW_UART2_TX     (pin_D8)
+#define MICROPY_HW_UART2_RX     (pin_D9)
 
 // I2C busses
-#define MICROPY_HW_I2C1_SCL (pin_A8)
-#define MICROPY_HW_I2C1_SDA (pin_C9)
+#define MICROPY_HW_I2C3_SCL (pin_A8)
+#define MICROPY_HW_I2C3_SDA (pin_C9)
 
 // SPI busses
 //#define MICROPY_HW_SPI1_NSS     (pin_A4)
@@ -67,9 +67,8 @@
 // LEDs
 #define MICROPY_HW_LED1             (pin_G14) // red
 #define MICROPY_HW_LED2             (pin_G13) // green
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_B13)

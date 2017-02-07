@@ -28,6 +28,7 @@ print(1j / 2)
 print((1j / 2j).real)
 print(1j / (1 + 2j))
 ans = 0j ** 0; print("%.5g %.5g" % (ans.real, ans.imag))
+ans = 0j ** 1; print("%.5g %.5g" % (ans.real, ans.imag))
 ans = 0j ** 0j; print("%.5g %.5g" % (ans.real, ans.imag))
 ans = 1j ** 2.5; print("%.5g %.5g" % (ans.real, ans.imag))
 ans = 1j ** 2.5j; print("%.5g %.5g" % (ans.real, ans.imag))
@@ -50,6 +51,12 @@ print(float('-inf') * (1 + 1j))
 
 # convert bignum to complex on rhs
 ans = 1j + (1 << 70); print("%.5g %.5g" % (ans.real, ans.imag))
+
+# can't assign to attributes
+try:
+    (1j).imag = 0
+except AttributeError:
+    print('AttributeError')
 
 # can't convert rhs to complex
 try:
@@ -75,6 +82,12 @@ try:
 except TypeError:
     print("TypeError")
 
+#small int on LHS, complex on RHS, unsupported op
+try:
+    print(1 | 1j)
+except TypeError:
+    print('TypeError')
+
 # zero division
 try:
     1j / 0
@@ -82,6 +95,10 @@ except ZeroDivisionError:
     print("ZeroDivisionError")
 
 # zero division via power
+try:
+    0j ** -1
+except ZeroDivisionError:
+    print("ZeroDivisionError")
 try:
     0j ** 1j
 except ZeroDivisionError:

@@ -9,3 +9,9 @@ except IndexError:
     print("IndexError raised")
 else:
     raise AssertionError("No IndexError raised")
+
+# popping such that list storage shrinks (tests implementation detail of uPy)
+l = list(range(20))
+for i in range(len(l)):
+    l.pop()
+print(l)

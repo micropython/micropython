@@ -6,6 +6,8 @@
  *
  * http://www.ibsensoftware.com/
  *
+ * Copyright (c) 2014-2016 by Paul Sokolovsky
+ *
  * This software is provided 'as-is', without any express
  * or implied warranty.  In no event will the authors be
  * held liable for any damages arising from the use of
@@ -33,35 +35,14 @@
 
 #include "tinf.h"
 
-int tinf_zlib_uncompress(void *dest, unsigned int *destLen,
-                         const void *source, unsigned int sourceLen)
+int uzlib_zlib_parse_header(TINF_DATA *d)
 {
-   TINF_DATA d;
-   int res;
-
-   /* initialise data */
-   d.source = (const unsigned char *)source;
-
-   d.destStart = (unsigned char *)dest;
-   d.destRemaining = *destLen;
-
-   res = tinf_zlib_uncompress_dyn(&d, sourceLen);
-
-   *destLen = d.dest - d.destStart;
-
-   return res;
-}
-
-int tinf_zlib_uncompress_dyn(TINF_DATA *d, unsigned int sourceLen)
-{
-   unsigned int a32;
-   int res;
    unsigned char cmf, flg;
 
    /* -- get header bytes -- */
 
-   cmf = d->source[0];
-   flg = d->source[1];
+   cmf = uzlib_get_byte(d);
+   flg = uzlib_get_byte(d);
 
    /* -- check format -- */
 
@@ -77,25 +58,9 @@ int tinf_zlib_uncompress_dyn(TINF_DATA *d, unsigned int sourceLen)
    /* check there is no preset dictionary */
    if (flg & 0x20) return TINF_DATA_ERROR;
 
-   /* -- get adler32 checksum -- */
+   /* initialize for adler32 checksum */
+   d->checksum_type = TINF_CHKSUM_ADLER;
+   d->checksum = 1;
 
-   a32 =           d->source[sourceLen - 4];
-   a32 = 256*a32 + d->source[sourceLen - 3];
-   a32 = 256*a32 + d->source[sourceLen - 2];
-   a32 = 256*a32 + d->source[sourceLen - 1];
-
-   d->source += 2;
-
-   /* -- inflate -- */
-
-   res = tinf_uncompress_dyn(d);
-
-   if (res != TINF_OK) return res;
-
-   /* -- check adler32 checksum -- */
-
-   if (a32 != tinf_adler32(d->destStart, d->dest - d->destStart)) return TINF_DATA_ERROR;
-
-   return TINF_OK;
+   return cmf >> 4;
 }
-

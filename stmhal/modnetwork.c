@@ -27,12 +27,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "modnetwork.h"
+
+#if MICROPY_PY_NETWORK
 
 /// \module network - network configuration
 ///
@@ -87,6 +88,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals
 
 const mp_obj_module_t mp_module_network = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_network,
     .globals = (mp_obj_dict_t*)&mp_module_network_globals,
 };
+
+#endif  // MICROPY_PY_NETWORK

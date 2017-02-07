@@ -1,5 +1,5 @@
 # This tests that printing recursive data structure doesn't lead to segfault.
-import _io as io
+import uio as io
 
 l = [1, 2, 3, None]
 l[-1] = l

@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/objstr.h"
+#include "py/objarray.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 
@@ -57,16 +58,6 @@
 #else
 #define TYPECODE_MASK (~(mp_uint_t)0)
 #endif
-
-typedef struct _mp_obj_array_t {
-    mp_obj_base_t base;
-    mp_uint_t typecode : 8;
-    // free is number of unused elements after len used elements
-    // alloc size = len + free
-    mp_uint_t free : (8 * sizeof(mp_uint_t) - 8);
-    mp_uint_t len; // in elements
-    void *items;
-} mp_obj_array_t;
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in);
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
@@ -103,9 +94,6 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
-    if (typecode_size == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
-    }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
     o->base.type = (typecode == BYTEARRAY_TYPECODE) ? &mp_type_bytearray : &mp_type_array;
@@ -404,7 +392,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "lhs and rhs should be compatible"));
+                        mp_raise_msg(&mp_type_ValueError, "lhs and rhs should be compatible");
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
