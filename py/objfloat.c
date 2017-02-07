@@ -228,7 +228,12 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
             }
             break;
         case MP_BINARY_OP_POWER:
-        case MP_BINARY_OP_INPLACE_POWER: lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val); break;
+        case MP_BINARY_OP_INPLACE_POWER:
+            if (lhs_val == 0 && rhs_val < 0) {
+                goto zero_division_error;
+            }
+            lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
+            break;
         case MP_BINARY_OP_DIVMOD: {
             if (rhs_val == 0) {
                 goto zero_division_error;

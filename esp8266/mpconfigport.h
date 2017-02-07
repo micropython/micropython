@@ -15,7 +15,7 @@
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
-#define MICROPY_READER_FATFS        (MICROPY_VFS_FAT)
+#define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
@@ -94,12 +94,11 @@
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 
+#define MICROPY_VFS                    (1)
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
-#define MICROPY_FATFS_VOLUMES          (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_FSUSERMOUNT            (1)
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_ESP8266_APA102         (1)
 #define MICROPY_ESP8266_NEOPIXEL       (1)
@@ -139,6 +138,11 @@ void *esp_native_code_commit(void*, size_t);
 
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

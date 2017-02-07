@@ -237,14 +237,6 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
 MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
 #endif
 
-void mp_module_init(void) {
-    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
-}
-
-void mp_module_deinit(void) {
-    //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
-}
-
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;

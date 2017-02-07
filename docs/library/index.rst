@@ -170,6 +170,7 @@ the following libraries.
       :maxdepth: 2
 
       pyb.rst
+      lcd160cr.rst
 
 .. only:: port_wipy
 

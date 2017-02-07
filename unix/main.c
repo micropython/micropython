@@ -428,6 +428,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
         #endif
     }
     mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
+    if (*path == ':') {
+        path_num++;
+    }
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
         path_num++;
         if (p != NULL) {

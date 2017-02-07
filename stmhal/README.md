@@ -17,6 +17,15 @@ to build each individual board.
 Build instructions
 ------------------
 
+Before building the firmware for a given board the MicroPython cross-compiler
+must be built; it will be used to pre-compile some of the built-in scripts to
+bytecode.  The cross-compiler is built and run on the host machine, using:
+```bash
+$ make -C mpy-cross
+```
+This command should be executed from the root directory of this repository.
+All other commands below should be executed from the stmhal/ directory.
+
 An ARM compiler is required for the build, along with the associated binary
 utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for
 Arch Linux via the package `arm-none-eabi-gcc`, for Ubuntu via instructions

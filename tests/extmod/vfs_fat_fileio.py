@@ -1,6 +1,10 @@
 import sys
-import uos
 import uerrno
+try:
+    import uos_vfs as uos
+    open = uos.vfs_open
+except ImportError:
+    import uos
 try:
     uos.VfsFat
 except AttributeError:
@@ -34,16 +38,18 @@ class RAMFS:
 
 
 try:
-    bdev = RAMFS(48)
+    bdev = RAMFS(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
 
 uos.VfsFat.mkfs(bdev)
-vfs = uos.VfsFat(bdev, "/ramdisk")
+vfs = uos.VfsFat(bdev)
+uos.mount(vfs, '/ramdisk')
+uos.chdir('/ramdisk')
 
 # file IO
-f = vfs.open("foo_file.txt", "w")
+f = open("foo_file.txt", "w")
 print(str(f)[:17], str(f)[-1:])
 f.write("hello!")
 f.flush()
@@ -65,14 +71,14 @@ except OSError as e:
     print(e.args[0] == uerrno.EINVAL)
 
 try:
-    vfs.open("foo_file.txt", "x")
+    open("foo_file.txt", "x")
 except OSError as e:
     print(e.args[0] == uerrno.EEXIST)
 
-with vfs.open("foo_file.txt", "a") as f:
+with open("foo_file.txt", "a") as f:
     f.write("world!")
 
-with vfs.open("foo_file.txt") as f2:
+with open("foo_file.txt") as f2:
     print(f2.read())
     print(f2.tell())
 
@@ -90,9 +96,10 @@ with vfs.open("foo_file.txt") as f2:
     print(f2.read(1))
 
 # using constructor of FileIO type to open a file
-FileIO = type(f)
-with FileIO("foo_file.txt") as f:
-    print(f.read())
+# no longer working with new VFS sub-system
+#FileIO = type(f)
+#with FileIO("/ramdisk/foo_file.txt") as f:
+#    print(f.read())
 
 # dirs
 vfs.mkdir("foo_dir")
@@ -118,18 +125,18 @@ except OSError as e:
     print(e.args[0] == uerrno.ENOENT)
 
 try:
-    vfs.rename("foo_dir", "/null")
+    vfs.rename("foo_dir", "/null/file")
 except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
+    print(e.args[0] == uerrno.ENOENT)
 
 # file in dir
-with vfs.open("foo_dir/file-in-dir.txt", "w+t") as f:
+with open("foo_dir/file-in-dir.txt", "w+t") as f:
     f.write("data in file")
 
-with vfs.open("foo_dir/file-in-dir.txt", "r+b") as f:
+with open("foo_dir/file-in-dir.txt", "r+b") as f:
     print(f.read())
 
-with vfs.open("foo_dir/sub_file.txt", "w") as f:
+with open("foo_dir/sub_file.txt", "w") as f:
     f.write("subdir file")
 
 # directory not empty
@@ -139,18 +146,18 @@ except OSError as e:
     print(e.args[0] == uerrno.EACCES)
 
 # trim full path
-vfs.rename("foo_dir/file-in-dir.txt", "/ramdisk/foo_dir/file.txt")
+vfs.rename("foo_dir/file-in-dir.txt", "foo_dir/file.txt")
 print(vfs.listdir("foo_dir"))
 
 vfs.rename("foo_dir/file.txt", "moved-to-root.txt")
 print(vfs.listdir())
 
 # check that renaming to existing file will overwrite it
-with vfs.open("temp", "w") as f:
+with open("temp", "w") as f:
     f.write("new text")
 vfs.rename("temp", "moved-to-root.txt")
 print(vfs.listdir())
-with vfs.open("moved-to-root.txt") as f:
+with open("moved-to-root.txt") as f:
     print(f.read())
 
 # valid removes
@@ -163,7 +170,7 @@ print(vfs.listdir())
 try:
     bsize = vfs.statvfs("/ramdisk")[0]
     free = vfs.statvfs("/ramdisk")[2] + 1
-    f = vfs.open("large_file.txt", "wb")
+    f = open("large_file.txt", "wb")
     f.write(bytearray(bsize * free))
 except OSError as e:
     print("ENOSPC:", e.args[0] == 28) # uerrno.ENOSPC

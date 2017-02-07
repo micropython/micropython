@@ -80,6 +80,19 @@ Reset related functions
 
    Activate the bootloader without BOOT\* pins.
 
+.. function:: fault_debug(value)
+
+   Enable or disable hard-fault debugging.  A hard-fault is when there is a fatal
+   error in the underlying system, like an invalid memory access.
+
+   If the `value` argument is `False` then the board will automatically reset if
+   there is a hard fault.
+
+   If `value` is `True` then, when the board has a hard fault, it will print the
+   registers and the stack trace, and then cycle the LEDs indefinitely.
+
+   The default value is disabled, i.e. to automatically reset.
+
 Interrupt related functions
 ---------------------------
 

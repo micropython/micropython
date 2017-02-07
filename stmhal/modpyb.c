@@ -35,9 +35,10 @@
 #include "py/gc.h"
 #include "py/builtin.h"
 #include "lib/utils/pyexec.h"
-#include "lib/fatfs/ff.h"
-#include "lib/fatfs/diskio.h"
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
 #include "gccollect.h"
+#include "stm32_it.h"
 #include "irq.h"
 #include "systick.h"
 #include "led.h"
@@ -61,8 +62,14 @@
 #include "usb.h"
 #include "portmodules.h"
 #include "modmachine.h"
-#include "extmod/fsusermount.h"
+#include "extmod/vfs.h"
 #include "extmod/utime_mphal.h"
+
+STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
+    pyb_hard_fault_debug = mp_obj_is_true(value);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_fault_debug_obj, pyb_fault_debug);
 
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
@@ -131,6 +138,8 @@ MP_DECLARE_CONST_FUN_OBJ_KW(pyb_main_obj); // defined in main.c
 STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_pyb) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_fault_debug), (mp_obj_t)&pyb_fault_debug_obj },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader), (mp_obj_t)&machine_bootloader_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hard_reset), (mp_obj_t)&machine_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&machine_info_obj },
@@ -166,7 +175,7 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&mp_utime_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&mp_utime_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&mod_os_sync_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&fsuser_mount_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&mp_vfs_mount_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Timer), (mp_obj_t)&pyb_timer_type },
 

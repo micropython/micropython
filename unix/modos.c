@@ -40,14 +40,6 @@
 #include "py/mphal.h"
 #include "extmod/misc.h"
 
-// Can't include this, as FATFS structure definition is required,
-// and FatFs header defining it conflicts with POSIX.
-//#include "extmod/fsusermount.h"
-MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mount_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(fsuser_umount_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj);
-extern const mp_obj_type_t mp_fat_vfs_type;
-
 #ifdef __ANDROID__
 #define USE_STATFS 1
 #endif
@@ -233,14 +225,6 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
-    #if MICROPY_FSUSERMOUNT
-    { MP_ROM_QSTR(MP_QSTR_vfs_mount), MP_ROM_PTR(&fsuser_mount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_vfs_umount), MP_ROM_PTR(&fsuser_umount_obj) },
-    { MP_ROM_QSTR(MP_QSTR_vfs_mkfs), MP_ROM_PTR(&fsuser_mkfs_obj) },
-    #endif
-    #if MICROPY_VFS_FAT
-    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
-    #endif
     #if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
     #endif

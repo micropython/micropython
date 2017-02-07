@@ -753,7 +753,7 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t 
     return mp_lexer_new(src_name, reader);
 }
 
-#if MICROPY_READER_POSIX || MICROPY_READER_FATFS
+#if MICROPY_READER_POSIX || MICROPY_READER_VFS
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     mp_reader_t reader;

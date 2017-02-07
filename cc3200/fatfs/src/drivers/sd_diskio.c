@@ -39,11 +39,12 @@
 
 #include "py/mpconfig.h"
 #include "py/mphal.h"
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
 #include "hw_types.h"
 #include "hw_memmap.h"
 #include "hw_ints.h"
 #include "rom_map.h"
-#include "diskio.h"
 #include "sd_diskio.h"
 #include "sdhost.h"
 #include "pin.h"
