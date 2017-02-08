@@ -533,7 +533,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
-        #if MICROPY_PY_METHODS_DELATTRS_SETATTRS
+        #if MICROPY_PY_DELATTR_SETATTR
         // if the requested attr is __setattr__ assign MP_OBJECT_NULL to dest[0] to indicate success
         if (attr == MP_QSTR___setattr__) {
             dest[0] = MP_OBJ_NULL;
@@ -634,7 +634,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
 
     if (value == MP_OBJ_NULL) {
         // delete attribute
-        #if MICROPY_PY_METHODS_DELATTRS_SETATTRS
+        #if MICROPY_PY_DELATTR_SETATTR
         // try __delattr__ first
         if (attr != MP_QSTR___delattr__) {
             mp_obj_t attr_delattr_method[3];
@@ -652,7 +652,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
         return elem != NULL;
     } else {
         // store attribute
-        #if MICROPY_PY_METHODS_DELATTRS_SETATTRS
+        #if MICROPY_PY_DELATTR_SETATTR
         // try __setattr__ first
         if (attr != MP_QSTR___setattr__) {
             mp_obj_t attr_setattr_method[4];
