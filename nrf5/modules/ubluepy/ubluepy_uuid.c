@@ -25,8 +25,44 @@
  */
 
 #include "py/obj.h"
+#include "py/runtime.h"
 
-#if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
+#if MICROPY_PY_UBLUEPY
+
+typedef struct _ubluepy_uuid_obj_t {
+    mp_obj_base_t base;
+    // UUID value
+} ubluepy_uuid_obj_t;
+
+STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+    ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
+    (void)self;
+    mp_printf(print, "UUID(value)");
+}
+
+STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+
+    enum { ARG_NEW_UUID };
+
+    static const mp_arg_t allowed_args[] = {
+        { ARG_NEW_UUID, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    ubluepy_uuid_obj_t *s = m_new_obj(ubluepy_uuid_obj_t);
+    s->base.type = type;
+
+    // Check if UUID is of one of the following types and convert it:
+    // int from 0 -> 0xFFFFFFFF
+    // str value
+    // another UUID
+    // any other value that can be converted to hex string.
+
+    return MP_OBJ_FROM_PTR(s);
+}
 
 STATIC const mp_map_elem_t ubluepy_uuid_locals_dict_table[] = {
 #if 0
@@ -41,11 +77,9 @@ STATIC MP_DEFINE_CONST_DICT(ubluepy_uuid_locals_dict, ubluepy_uuid_locals_dict_t
 const mp_obj_type_t ubluepy_uuid_type = {
     { &mp_type_type },
     .name = MP_QSTR_UUID,
-#if 0
     .print = ubluepy_uuid_print,
     .make_new = ubluepy_uuid_make_new,
     .locals_dict = (mp_obj_t)&ubluepy_uuid_locals_dict
-#endif
 };
 
-#endif // MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
+#endif // MICROPY_PY_UBLUEPY
