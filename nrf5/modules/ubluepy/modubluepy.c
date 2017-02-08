@@ -28,37 +28,35 @@
 
 #if MICROPY_PY_UBLUEPY
 
+extern const mp_obj_type_t ubluepy_peripheral_type;
+extern const mp_obj_type_t ubluepy_service_type;
+extern const mp_obj_type_t ubluepy_uuid_type;
+
 STATIC const mp_map_elem_t mp_module_ubluepy_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy) },
-#if 0
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy) },
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Peripheral), (mp_obj_t)&ubluepy_peripheral_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Peripheral),      (mp_obj_t)&ubluepy_peripheral_type },
 #endif
 #if MICROPY_PY_UBLUEPY_CENTRAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Central), (mp_obj_t)&ubluepy_central_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Central),         (mp_obj_t)&ubluepy_central_type },
 #endif
 #if MICROPY_PY_UBLUEPY_SCANNER
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Scanner), (mp_obj_t)&ubluepy_scanner_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Scanner),         (mp_obj_t)&ubluepy_scanner_type },
 #endif
 #if MICROPY_PY_UBLUEPY_CENTRAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ScanEntry), (mp_obj_t)&ubluepy_scan_entry_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ScanEntry),       (mp_obj_t)&ubluepy_scan_entry_type },
 #endif
 #if MICROPY_PY_UBLUEPY_DEFAULT_DELEGATE
     { MP_OBJ_NEW_QSTR(MP_QSTR_DefaultDelegate), (mp_obj_t)&ubluepy_default_delegate_type },
 #endif
-#if MICROPY_PY_UBLUEPY_UUID
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UUID), (mp_obj_t)&ubluepy_uuid_type },
-#endif
-#if MICROPY_PY_UBLUEPY_SERVICE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Service), (mp_obj_t)&ubluepy_service_type },
-#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_UUID),            (mp_obj_t)&ubluepy_uuid_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Service),         (mp_obj_t)&ubluepy_service_type },
 #if MICROPY_PY_UBLUEPY_CHARACTERISTIC
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Characteristic), (mp_obj_t)&ubluepy_characteristic_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Characteristic),  (mp_obj_t)&ubluepy_characteristic_type },
 #endif
 #if MICROPY_PY_UBLUEPY_DESCRIPTOR
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Descriptor), (mp_obj_t)&ubluepy_descriptor_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Descriptor),      (mp_obj_t)&ubluepy_descriptor_type },
 #endif
-#endif // 0
 };
 
 
