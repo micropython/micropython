@@ -114,6 +114,9 @@ nlr_jump:
     .size   nlr_jump, .-nlr_jump
 
 #endif // defined(__xtensa__)
-#if defined(linux)
+#if defined(linux) && !defined(__arm__)
     .section    .note.GNU-stack,"",@progbits
+#endif
+#if defined(linux) && defined(__arm__)
+    .section    .note.GNU-stack,"",%progbits
 #endif

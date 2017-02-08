@@ -257,6 +257,9 @@ nlr_jump:
 #endif // !defined(NLR_OS_WINDOWS)
 
 #endif // defined(__x86_64__) && !MICROPY_NLR_SETJMP
-#if defined(linux)
+#if defined(linux) && !defined(__arm__)
     .section    .note.GNU-stack,"",@progbits
+#endif
+#if defined(linux) && defined(__arm__)
+    .section    .note.GNU-stack,"",%progbits
 #endif
