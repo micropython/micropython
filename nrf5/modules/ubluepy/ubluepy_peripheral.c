@@ -25,10 +25,10 @@
  */
 
 #include "py/obj.h"
+#include "py/runtime.h"
 
 
-
-#if MICROPY_PY_UBLUEPY_PERIPHERAL
+#if MICROPY_PY_UBLUEPY
 
 typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_base_t base;
@@ -36,17 +36,17 @@ typedef struct _ubluepy_peripheral_obj_t {
 } ubluepy_peripheral_obj_t;
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
-    ubluepy_peripheral_obj_t * self = o;
+    ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
+    (void)self;
     mp_printf(print, "Peripheral");
 }
 
-// for make_new
-enum {
-    ARG_NEW_DEVICE_ADDR,
-    ARG_NEW_ADDR_TYPE
-};
-
 STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum {
+        ARG_NEW_DEVICE_ADDR,
+        ARG_NEW_ADDR_TYPE
+    };
+
     static const mp_arg_t allowed_args[] = {
         { ARG_NEW_DEVICE_ADDR, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { ARG_NEW_ADDR_TYPE,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -63,10 +63,46 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
 }
 
 
-STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
-#if 0
+/// \method advertise()
+/// Start advertising.
+///
+STATIC mp_obj_t peripheral_advertise(mp_obj_t self_in) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-// #if UBLUEPY_CENTRAL
+    (void)self;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_advertise_obj, peripheral_advertise);
+
+/// \method disconnect()
+/// disconnect connection.
+///
+STATIC mp_obj_t peripheral_disconnect(mp_obj_t self_in) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    (void)self;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_disconnect_obj, peripheral_disconnect);
+
+/// \method addService(Service)
+/// Add service to the Peripheral.
+///
+STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t uuid) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    (void)self;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_add_service);
+
+
+
+STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
+#if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),              (mp_obj_t)(&ubluepy_peripheral_connect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),           (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getServices),          (mp_obj_t)(&ubluepy_peripheral_get_services_obj) },
@@ -77,16 +113,23 @@ STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_waitForNotifications), (mp_obj_t)(&ubluepy_peripheral_wait_for_notif_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_writeCharacteristic),  (mp_obj_t)(&ubluepy_peripheral_write_char_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readCharacteristic),   (mp_obj_t)(&ubluepy_peripheral_read_char_obj) },
-// #if UBLUEPY_PERIPHERAL
+#endif
+#if MICROPY_PY_UBLUEPY_PERIPHERAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_advertise),            (mp_obj_t)(&ubluepy_peripheral_advertise_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),           (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setService),           (mp_obj_t)(&ubluepy_peripheral_set_service_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setCharacteristic),    (mp_obj_t)(&ubluepy_peripheral_set_char_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setDescriptor),        (mp_obj_t)(&ubluepy_peripheral_set_desc_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_addService),           (mp_obj_t)(&ubluepy_peripheral_add_service_obj) },
+#if 0
+    { MP_OBJ_NEW_QSTR(MP_QSTR_addCharacteristic),    (mp_obj_t)(&ubluepy_peripheral_add_char_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_addDescriptor),        (mp_obj_t)(&ubluepy_peripheral_add_desc_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_writeCharacteristic),  (mp_obj_t)(&ubluepy_peripheral_write_char_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readCharacteristic),   (mp_obj_t)(&ubluepy_peripheral_read_char_obj) },
-// #if UBLUEPY_BROADCASTER
+#endif
+#endif
+#if MICROPY_PY_UBLUEPY_BROADCASTER
     { MP_OBJ_NEW_QSTR(MP_QSTR_advertise),            (mp_obj_t)(&ubluepy_peripheral_advertise_obj) },
+#endif
+#if MICROPY_PY_UBLUEPY_OBSERVER
+	// Nothing yet.
 #endif
 };
 
@@ -100,4 +143,4 @@ const mp_obj_type_t ubluepy_peripheral_type = {
     .locals_dict = (mp_obj_t)&ubluepy_peripheral_locals_dict
 };
 
-#endif // MICROPY_PY_UBLUEPY_PERIPHERAL
+#endif // MICROPY_PY_UBLUEPY
