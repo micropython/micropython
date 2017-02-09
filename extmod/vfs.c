@@ -132,11 +132,24 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     mp_uint_t mnt_len;
     const char *mnt_str = mp_obj_str_get_data(pos_args[1], &mnt_len);
 
+    // see if we need to auto-detect and create the filesystem
+    mp_obj_t vfs_obj = pos_args[0];
+    mp_obj_t dest[2];
+    mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        // Input object has no mount method, assume it's a block device and try to
+        // auto-detect the filesystem and create the corresponding VFS entity.
+        // (At the moment we only support FAT filesystems.)
+        #if MICROPY_VFS_FAT
+        vfs_obj = mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &vfs_obj);
+        #endif
+    }
+
     // create new object
     mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
     vfs->str = mnt_str;
     vfs->len = mnt_len;
-    vfs->obj = pos_args[0];
+    vfs->obj = vfs_obj;
     vfs->next = NULL;
 
     // call the underlying object to do any mounting operation
