@@ -26,11 +26,18 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#include "py/runtime.h"
 #include "softdevice.h"
 #include "mpconfigport.h"
 #include "nrf_sdm.h"
 #include "ble_gap.h"
 #include "ble.h" // sd_ble_uuid_encode
+
+#define SD_TEST_OR_ENABLE() \
+if (sd_enabled() == 0) { \
+    (void)sd_enable(); \
+}
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -198,4 +205,15 @@ void sd_advertise(void) {
     err_code = sd_ble_gap_adv_start(&m_adv_params);
 
     printf("Advertisment start status: " UINT_FMT "\n", (uint16_t)err_code);
+}
+
+bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
+    SD_TEST_OR_ENABLE();
+
+    if (sd_ble_uuid_vs_add((ble_uuid128_t const *)p_uuid, idx) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not add Vendor Specific 128-bit UUID."));
+    }
+
+    return true;
 }

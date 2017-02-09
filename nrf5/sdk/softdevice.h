@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 uint32_t sd_enable(void);
 
@@ -36,3 +37,4 @@ void sd_address_get(void);
 
 void sd_advertise(void);
 
+bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
