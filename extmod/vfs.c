@@ -275,6 +275,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {
+        mp_raise_OSError(MP_EEXIST);
+    }
     return mp_vfs_proxy_call(vfs, MP_QSTR_mkdir, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_mkdir_obj, mp_vfs_mkdir);
