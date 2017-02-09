@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import Pin, Signal
 
 # 96Boards/Qualcomm DragonBoard 410c
 #
