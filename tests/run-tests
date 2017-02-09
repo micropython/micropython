@@ -238,6 +238,7 @@ def run_tests(pyb, tests, args):
 
     if not has_coverage:
         skip_tests.add('cmdline/cmd_parsetree.py')
+        skip_tests.add('basics/delsetattr.py')
 
     # Some tests shouldn't be run on a PC
     if pyb is None:
