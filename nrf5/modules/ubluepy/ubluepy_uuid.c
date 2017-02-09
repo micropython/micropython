@@ -29,6 +29,8 @@
 #include "py/objstr.h"
 #include "py/misc.h"
 
+#include "softdevice.h"
+
 #if MICROPY_PY_UBLUEPY
 
 // farward declare type
@@ -42,15 +44,18 @@ typedef enum {
 typedef struct _ubluepy_uuid_obj_t {
     mp_obj_base_t       base;
     ubluepy_uuid_type_t type;
-    uint8_t             value[16];
+    uint8_t             value[2];
+    uint8_t             uuid_vs_idx;
 } ubluepy_uuid_obj_t;
 
 STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
     if (self->type == UBLUEPY_UUID_16_BIT) {
-        mp_printf(print, "UUID(" HEX2_FMT HEX2_FMT ")", self->value[1], self->value[0]);
+        mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ")",
+                  self->value[1], self->value[0]);
     } else {
-
+        mp_printf(print, "UUID(uuid: 0x" HEX2_FMT HEX2_FMT ", VS idx: " HEX2_FMT ")",
+                  self->value[1], self->value[0], self->uuid_vs_idx);
     }
 }
 
@@ -83,12 +88,55 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
     } else if (MP_OBJ_IS_STR(uuid_obj)) {
         GET_STR_DATA_LEN(uuid_obj, str_data, str_len);
         if (str_len == 6) { // Assume hex digit prefixed with 0x
+            s->type = UBLUEPY_UUID_16_BIT;
             s->value[0]  = unichar_xdigit_value(str_data[5]);
             s->value[0] += unichar_xdigit_value(str_data[4]) << 4;
             s->value[1]  = unichar_xdigit_value(str_data[3]);
             s->value[1] += unichar_xdigit_value(str_data[2]) << 4;
         } else if (str_len == 36) {
+            s->type = UBLUEPY_UUID_128_BIT;
+            uint8_t buffer[16];
+            buffer[0]  = unichar_xdigit_value(str_data[35]);
+            buffer[0] += unichar_xdigit_value(str_data[34]) << 4;
+            buffer[1]  = unichar_xdigit_value(str_data[33]);
+            buffer[1] += unichar_xdigit_value(str_data[32]) << 4;
+            buffer[2]  = unichar_xdigit_value(str_data[31]);
+            buffer[2] += unichar_xdigit_value(str_data[30]) << 4;
+            buffer[3]  = unichar_xdigit_value(str_data[29]);
+            buffer[3] += unichar_xdigit_value(str_data[28]) << 4;
+            buffer[4]  = unichar_xdigit_value(str_data[27]);
+            buffer[4] += unichar_xdigit_value(str_data[26]) << 4;
+            buffer[5]  = unichar_xdigit_value(str_data[25]);
+            buffer[5] += unichar_xdigit_value(str_data[24]) << 4;
+            // 23 '-'
+            buffer[6]  = unichar_xdigit_value(str_data[22]);
+            buffer[6] += unichar_xdigit_value(str_data[21]) << 4;
+            buffer[7]  = unichar_xdigit_value(str_data[20]);
+            buffer[7] += unichar_xdigit_value(str_data[19]) << 4;
+            // 18 '-'
+            buffer[8]  = unichar_xdigit_value(str_data[17]);
+            buffer[8] += unichar_xdigit_value(str_data[16]) << 4;
+            buffer[9]  = unichar_xdigit_value(str_data[15]);
+            buffer[9] += unichar_xdigit_value(str_data[14]) << 4;
+            // 13 '-'
+            buffer[10]  = unichar_xdigit_value(str_data[12]);
+            buffer[10] += unichar_xdigit_value(str_data[11]) << 4;
+            buffer[11]  = unichar_xdigit_value(str_data[10]);
+            buffer[11] += unichar_xdigit_value(str_data[9]) << 4;
+            // 8 '-'
+            // 16-bit field
+            s->value[0]  = unichar_xdigit_value(str_data[7]);
+            s->value[0] += unichar_xdigit_value(str_data[6]) << 4;
+            s->value[1]  = unichar_xdigit_value(str_data[5]);
+            s->value[1] += unichar_xdigit_value(str_data[4]) << 4;
+
+            buffer[14]  = unichar_xdigit_value(str_data[3]);
+            buffer[14] += unichar_xdigit_value(str_data[2]) << 4;
+            buffer[15]  = unichar_xdigit_value(str_data[1]);
+            buffer[15] += unichar_xdigit_value(str_data[0]) << 4;
+
             printf("string length 36\n");
+            sd_uuid_add_vs(s->value, &s->uuid_vs_idx);
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                       "Invalid UUID string length"));
@@ -99,14 +147,6 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Invalid UUID parameter"));
     }
-
-    // "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
-
-    // Check if UUID is of one of the following types and convert it:
-    // int from 0 -> 0xFFFFFFFF
-    // str value
-    // another UUID
-    // any other value that can be converted to hex string.
 
     return MP_OBJ_FROM_PTR(s);
 }
