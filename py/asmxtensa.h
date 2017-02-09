@@ -73,11 +73,11 @@
 
 // macros for encoding instructions (little endian versions)
 #define ASM_XTENSA_ENCODE_RRR(op0, op1, op2, r, s, t) \
-    (((op2) << 20) | ((op1) << 16) | ((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
+    ((((uint32_t)op2) << 20) | (((uint32_t)op1) << 16) | ((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_RRI4(op0, op1, r, s, t, imm4) \
     (((imm4) << 20) | ((op1) << 16) | ((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_RRI8(op0, r, s, t, imm8) \
-    (((imm8) << 16) | ((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
+    ((((uint32_t)imm8) << 16) | ((r) << 12) | ((s) << 8) | ((t) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_RI16(op0, t, imm16) \
     (((imm16) << 8) | ((t) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_RSR(op0, op1, op2, rs, t) \
@@ -85,7 +85,7 @@
 #define ASM_XTENSA_ENCODE_CALL(op0, n, offset) \
     (((offset) << 6) | ((n) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_CALLX(op0, op1, op2, r, s, m, n) \
-    (((op2) << 20) | ((op1) << 16) | ((r) << 12) | ((s) << 8) | ((m) << 6) | ((n) << 4) | (op0))
+    ((((uint32_t)op2) << 20) | (((uint32_t)op1) << 16) | ((r) << 12) | ((s) << 8) | ((m) << 6) | ((n) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_BRI8(op0, r, s, m, n, imm8) \
     (((imm8) << 16) | ((r) << 12) | ((s) << 8) | ((m) << 6) | ((n) << 4) | (op0))
 #define ASM_XTENSA_ENCODE_BRI12(op0, s, m, n, imm12) \

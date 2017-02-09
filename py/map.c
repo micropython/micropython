@@ -56,7 +56,7 @@ STATIC const uint16_t hash_allocation_sizes[] = {
     3229, 4831, 7243, 10861, 16273, 24407, 36607, 54907, // *1.5
 };
 
-STATIC mp_uint_t get_hash_alloc_greater_or_equal_to(mp_uint_t x) {
+STATIC size_t get_hash_alloc_greater_or_equal_to(size_t x) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(hash_allocation_sizes); i++) {
         if (hash_allocation_sizes[i] >= x) {
             return hash_allocation_sizes[i];
@@ -70,7 +70,7 @@ STATIC mp_uint_t get_hash_alloc_greater_or_equal_to(mp_uint_t x) {
 /******************************************************************************/
 /* map                                                                        */
 
-void mp_map_init(mp_map_t *map, mp_uint_t n) {
+void mp_map_init(mp_map_t *map, size_t n) {
     if (n == 0) {
         map->alloc = 0;
         map->table = NULL;
@@ -84,7 +84,7 @@ void mp_map_init(mp_map_t *map, mp_uint_t n) {
     map->is_ordered = 0;
 }
 
-void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) {
+void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->alloc = n;
     map->used = n;
     map->all_keys_are_qstrs = 1;
@@ -93,7 +93,7 @@ void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table) 
     map->table = (mp_map_elem_t*)table;
 }
 
-mp_map_t *mp_map_new(mp_uint_t n) {
+mp_map_t *mp_map_new(size_t n) {
     mp_map_t *map = m_new(mp_map_t, 1);
     mp_map_init(map, n);
     return map;
@@ -124,8 +124,8 @@ void mp_map_clear(mp_map_t *map) {
 }
 
 STATIC void mp_map_rehash(mp_map_t *map) {
-    mp_uint_t old_alloc = map->alloc;
-    mp_uint_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
+    size_t old_alloc = map->alloc;
+    size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
     // If we reach this point, table resizing succeeded, now we can edit the old map.
@@ -133,7 +133,7 @@ STATIC void mp_map_rehash(mp_map_t *map) {
     map->used = 0;
     map->all_keys_are_qstrs = 1;
     map->table = new_table;
-    for (mp_uint_t i = 0; i < old_alloc; i++) {
+    for (size_t i = 0; i < old_alloc; i++) {
         if (old_table[i].key != MP_OBJ_NULL && old_table[i].key != MP_OBJ_SENTINEL) {
             mp_map_lookup(map, old_table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = old_table[i].value;
         }
@@ -220,8 +220,8 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
     }
 
-    mp_uint_t pos = hash % map->alloc;
-    mp_uint_t start_pos = pos;
+    size_t pos = hash % map->alloc;
+    size_t start_pos = pos;
     mp_map_elem_t *avail_slot = NULL;
     for (;;) {
         mp_map_elem_t *slot = &map->table[pos];
@@ -296,19 +296,19 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
 #if MICROPY_PY_BUILTINS_SET
 
-void mp_set_init(mp_set_t *set, mp_uint_t n) {
+void mp_set_init(mp_set_t *set, size_t n) {
     set->alloc = n;
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
 }
 
 STATIC void mp_set_rehash(mp_set_t *set) {
-    mp_uint_t old_alloc = set->alloc;
+    size_t old_alloc = set->alloc;
     mp_obj_t *old_table = set->table;
     set->alloc = get_hash_alloc_greater_or_equal_to(set->alloc + 1);
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
-    for (mp_uint_t i = 0; i < old_alloc; i++) {
+    for (size_t i = 0; i < old_alloc; i++) {
         if (old_table[i] != MP_OBJ_NULL && old_table[i] != MP_OBJ_SENTINEL) {
             mp_set_lookup(set, old_table[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         }
@@ -328,8 +328,8 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
         }
     }
     mp_uint_t hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
-    mp_uint_t pos = hash % set->alloc;
-    mp_uint_t start_pos = pos;
+    size_t pos = hash % set->alloc;
+    size_t start_pos = pos;
     mp_obj_t *avail_slot = NULL;
     for (;;) {
         mp_obj_t elem = set->table[pos];
@@ -390,7 +390,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
 }
 
 mp_obj_t mp_set_remove_first(mp_set_t *set) {
-    for (mp_uint_t pos = 0; pos < set->alloc; pos++) {
+    for (size_t pos = 0; pos < set->alloc; pos++) {
         if (MP_SET_SLOT_IS_FILLED(set, pos)) {
             mp_obj_t elem = set->table[pos];
             // delete element
@@ -418,7 +418,7 @@ void mp_set_clear(mp_set_t *set) {
 
 #if defined(DEBUG_PRINT) && DEBUG_PRINT
 void mp_map_dump(mp_map_t *map) {
-    for (mp_uint_t i = 0; i < map->alloc; i++) {
+    for (size_t i = 0; i < map->alloc; i++) {
         if (map->table[i].key != NULL) {
             mp_obj_print(map->table[i].key, PRINT_REPR);
         } else {

@@ -353,11 +353,11 @@ typedef struct _mp_rom_map_elem_t {
 // would also need a trucated dict structure
 
 typedef struct _mp_map_t {
-    mp_uint_t all_keys_are_qstrs : 1;
-    mp_uint_t is_fixed : 1;     // a fixed array that can't be modified; must also be ordered
-    mp_uint_t is_ordered : 1;   // an ordered array
-    mp_uint_t used : (8 * sizeof(mp_uint_t) - 3);
-    mp_uint_t alloc;
+    size_t all_keys_are_qstrs : 1;
+    size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
+    size_t is_ordered : 1;  // an ordered array
+    size_t used : (8 * sizeof(size_t) - 3);
+    size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
 
@@ -371,11 +371,11 @@ typedef enum _mp_map_lookup_kind_t {
 
 extern const mp_map_t mp_const_empty_map;
 
-static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, mp_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
+static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, size_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
 
-void mp_map_init(mp_map_t *map, mp_uint_t n);
-void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table);
-mp_map_t *mp_map_new(mp_uint_t n);
+void mp_map_init(mp_map_t *map, size_t n);
+void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
+mp_map_t *mp_map_new(size_t n);
 void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -385,14 +385,14 @@ void mp_map_dump(mp_map_t *map);
 // Underlying set implementation (not set object)
 
 typedef struct _mp_set_t {
-    mp_uint_t alloc;
-    mp_uint_t used;
+    size_t alloc;
+    size_t used;
     mp_obj_t *table;
 } mp_set_t;
 
-static inline bool MP_SET_SLOT_IS_FILLED(const mp_set_t *set, mp_uint_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
+static inline bool MP_SET_SLOT_IS_FILLED(const mp_set_t *set, size_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
 
-void mp_set_init(mp_set_t *set, mp_uint_t n);
+void mp_set_init(mp_set_t *set, size_t n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 mp_obj_t mp_set_remove_first(mp_set_t *set);
 void mp_set_clear(mp_set_t *set);
