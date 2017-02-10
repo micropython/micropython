@@ -312,6 +312,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
+        skip_tests.add('micropython/heapalloc_iter.py') # requires generators
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
