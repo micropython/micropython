@@ -219,7 +219,7 @@ void common_hal_nativeio_touchin_construct(nativeio_touchin_obj_t* self,
     /* Setup and enable generic clock source for PTC module. */
     struct system_gclk_chan_config gclk_chan_conf;
     system_gclk_chan_get_config_defaults(&gclk_chan_conf);
-    gclk_chan_conf.source_generator = GCLK_GENERATOR_1;
+    gclk_chan_conf.source_generator = GCLK_GENERATOR_3;
     system_gclk_chan_set_config(PTC_GCLK_ID, &gclk_chan_conf);
     system_gclk_chan_enable(PTC_GCLK_ID);
     system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, PM_APBCMASK_PTC);

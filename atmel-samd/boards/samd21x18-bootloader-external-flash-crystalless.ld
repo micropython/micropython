@@ -5,8 +5,7 @@
 /* Specify the memory areas */
 MEMORY
 {
-    /* Leave 8KiB for the bootloader and 64k for the flash file system. */
-    FLASH (rx) : ORIGIN = 0x00000000+0x2000, LENGTH = 0x00040000 - 0x2000 - 0x010000
+    FLASH (rx) : ORIGIN = 0x00000000 + 0x2000, LENGTH = 0x00040000 - 0x2000 - 0x100 /* Leave 8KiB for the bootloader and 256b for config. */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 
@@ -45,14 +44,14 @@ SECTIONS
     .data : AT ( _sidata )
     {
         . = ALIGN(4);
-        _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialize the .data section in RAM */
+        _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
         *(.ramfunc)
         *(.ramfunc*)
         *(.data)           /* .data sections */
         *(.data*)          /* .data* sections */
 
         . = ALIGN(4);
-        _erelocate = .;        /* define a global symbol at data end; used by startup code in order to initialize the .data section in RAM */
+        _erelocate = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
 
     /* Uninitialized data section */

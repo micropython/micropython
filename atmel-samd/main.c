@@ -39,7 +39,6 @@
 #include "rgb_led_status.h"
 #include "tick.h"
 
-
 fs_user_mount_t fs_user_mount_flash;
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -184,6 +183,7 @@ void reset_samd21(void) {
 
     pwmout_reset();
 
+#ifdef CRYSTALLESS
     // If we are on USB lets double check our fine calibration for the clock and
     // save the new value if its different enough.
     if (mp_msc_enabled) {
@@ -228,6 +228,7 @@ void reset_samd21(void) {
             }
         }
     }
+#endif
 }
 
 bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
@@ -460,13 +461,16 @@ void samd21_init(void) {
     // Initialize the sleep manager
     sleepmgr_init();
 
+
     uint16_t dfll_fine_calibration = 0x1ff;
+#ifdef CRYSTALLESS
     // This is stored in an NVM page after the text and data storage but before
     // the optional file system. The first 16 bytes are the identifier for the
     // section.
     if (strcmp((char*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
         dfll_fine_calibration = ((uint16_t *) INTERNAL_CIRCUITPY_CONFIG_START_ADDR)[8];
     }
+#endif
 
     // We pass in the DFLL fine calibration because we can't change it once the
     // clock is going.
