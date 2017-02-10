@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLUETOOTH_LE_DRIVER_H__
-#define BLUETOOTH_LE_DRIVER_H__
+#ifndef UBLUEPY_H__
+#define UBLUEPY_H__
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "py/obj.h"
 
-#include "modubluepy.h"
+extern const mp_obj_type_t ubluepy_uuid_type;
+extern const mp_obj_type_t ubluepy_service_type;
 
-uint32_t sd_enable(void);
+typedef enum {
+    UBLUEPY_UUID_16_BIT,
+    UBLUEPY_UUID_128_BIT
+} ubluepy_uuid_type_t;
 
-void sd_disable(void);
+typedef enum {
+    UBLUEPY_SERVICE_PRIMARY = 1,
+    UBLUEPY_SERVICE_SECONDARY = 2
+} ubluepy_service_type_t;
 
-uint8_t sd_enabled(void);
+typedef struct _ubluepy_uuid_obj_t {
+    mp_obj_base_t       base;
+    ubluepy_uuid_type_t type;
+    uint8_t             value[2];
+    uint8_t             uuid_vs_idx;
+} ubluepy_uuid_obj_t;
 
-void sd_address_get(void);
+typedef struct _ubluepy_service_obj_t {
+    mp_obj_base_t        base;
+    uint16_t             handle;
+    uint8_t              type;
+    ubluepy_uuid_obj_t * p_uuid;
+} ubluepy_service_obj_t;
 
-void sd_advertise(void);
-
-bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
-
-bool sd_service_add(ubluepy_service_obj_t * p_service_obj);
-
-#endif // BLUETOOTH_LE_DRIVER_H__
+#endif // UBLUEPY_H__

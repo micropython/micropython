@@ -217,3 +217,21 @@ bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
 
     return true;
 }
+
+bool sd_service_add(ubluepy_service_obj_t * p_service_obj) {
+    SD_TEST_OR_ENABLE();
+
+    ble_uuid_t uuid;
+    uuid.type = p_service_obj->p_uuid->type;
+    uuid.uuid = (uint16_t)(*(uint16_t *)&p_service_obj->p_uuid->value[0]);
+
+    if (sd_ble_gatts_service_add(p_service_obj->type,
+                                 &uuid,
+                                 &p_service_obj->handle) != 0)
+    {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not add Service."));
+    }
+
+    return true;
+}

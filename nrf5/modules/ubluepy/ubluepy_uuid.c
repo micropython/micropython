@@ -29,24 +29,10 @@
 #include "py/objstr.h"
 #include "py/misc.h"
 
+#include "modubluepy.h"
 #include "softdevice.h"
 
 #if MICROPY_PY_UBLUEPY
-
-// farward declare type
-const mp_obj_type_t ubluepy_uuid_type;
-
-typedef enum {
-    UBLUEPY_UUID_16_BIT,
-    UBLUEPY_UUID_128_BIT
-} ubluepy_uuid_type_t;
-
-typedef struct _ubluepy_uuid_obj_t {
-    mp_obj_base_t       base;
-    ubluepy_uuid_type_t type;
-    uint8_t             value[2];
-    uint8_t             uuid_vs_idx;
-} ubluepy_uuid_obj_t;
 
 STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
@@ -59,7 +45,6 @@ STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
     }
 }
 
-#include <stdio.h>
 STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     enum { ARG_NEW_UUID };
@@ -135,14 +120,17 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
             buffer[15]  = unichar_xdigit_value(str_data[1]);
             buffer[15] += unichar_xdigit_value(str_data[0]) << 4;
 
-            printf("string length 36\n");
             sd_uuid_add_vs(s->value, &s->uuid_vs_idx);
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                       "Invalid UUID string length"));
         }
     } else if (MP_OBJ_IS_TYPE(uuid_obj, &ubluepy_uuid_type)) {
-        printf("copy of UUID object\n");
+        // deep copy instance
+        ubluepy_uuid_obj_t * p_old = MP_OBJ_TO_PTR(uuid_obj);
+        s->type     = p_old->type;
+        s->value[0] = p_old->value[0];
+        s->value[1] = p_old->value[1];
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Invalid UUID parameter"));
