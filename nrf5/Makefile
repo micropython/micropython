@@ -63,6 +63,7 @@ INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/display
 INC += -I./modules/machine
 INC += -I./modules/network
+INC += -I./modules/ubluepy
 INC += -I../lib/mp-readline
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
