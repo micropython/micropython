@@ -103,58 +103,58 @@ char *readline_tty(char *input, int size, char *prompt)
             }
 
             if (ret > 3) {
-            	if ((got[0] == 0x1B) && (got[2] == 0x33) && (got[3] == 0x7E)) {
-                	if (pos < len) {
-	                    //write(STDOUT_FILENO, &del, 1);
-        	            //printf( " ");
-                	    //write(STDOUT_FILENO, &del, 1);
-                	    pos--;
-        	            len--;
-                	    if (pos < len) {
-                    	for ( i = pos+1; i < len; i++) {
-	                	input[i] = input[i+1];
-                        write(STDOUT_FILENO, &input[i], 1);
-                	}
-                    write(STDOUT_FILENO, &space, 1);
-	                i = len - pos;
-        	        while (i > 0) {
-                		write(STDOUT_FILENO, &del, 1);
-                    		i--;
-                    	}
+                if ((got[0] == 0x1B) && (got[2] == 0x33) && (got[3] == 0x7E)) {
+                    if (pos < len) {
+                        //write(STDOUT_FILENO, &del, 1);
+                        //printf( " ");
+                        //write(STDOUT_FILENO, &del, 1);
+                        pos--;
+                        len--;
+                        if (pos < len) {
+                            for ( i = pos+1; i < len; i++) {
+                                input[i] = input[i+1];
+                                write(STDOUT_FILENO, &input[i], 1);
+                            }
+                            write(STDOUT_FILENO, &space, 1);
+                            i = len - pos;
+                            while (i > 0) {
+                                write(STDOUT_FILENO, &del, 1);
+                                i--;
+                            }
 
-	                    } else {
-	                    input[pos] = 0x00;
-	                    pos--;
-	                    len--;
-	            }
+                        } else {
+                            input[pos] = 0x00;
+                            pos--;
+                            len--;
+                        }
 
-                    continue;
+                        continue;
+                    }
                 }
-            	}
                 continue;
             }
             if ((ret > 0) && (got[0] >= 0x20) && (got[0] <= 0x7e)) {
                 for (i = 0; i < ret; i++) {
                     /* Echo to terminal */
-                    if (got[i] >= 0x20 && got[i] <= 0x7e)
+                    if ((got[i] >= 0x20) && (got[i] <= 0x7e))
                         write(STDOUT_FILENO, &got[i], 1);
-                	if (pos < len) {
-                		for (j = len + 1; j > pos; j--) {
-                			input[j] = input[j-1];
-                		}
-                		input[pos] = got[i];
-                    	for ( j = pos + 1; j < len +1; j++) {
+                    if (pos < len) {
+                        for (j = len + 1; j > pos; j--) {
+                            input[j] = input[j-1];
+                        }
+                        input[pos] = got[i];
+                        for ( j = pos + 1; j < len +1; j++) {
                             write(STDOUT_FILENO, &input[j], 1);
-                    	}
+                        }
                         write(STDOUT_FILENO, &input[i], 1);
-                    	j = len - pos + 1;
-                    	while (j > 0) {
-                    		write(STDOUT_FILENO, &del, 1);
-                    		j--;
-                    	}
-                	} else {
-                		input[pos] = got[i];
-                	}
+                        j = len - pos + 1;
+                        while (j > 0) {
+                            write(STDOUT_FILENO, &del, 1);
+                            j--;
+                        }
+                    } else {
+                        input[pos] = got[i];
+                    }
 
                     len++;
                     pos++;
