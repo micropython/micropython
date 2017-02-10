@@ -34,6 +34,9 @@ STATIC const mp_rom_map_elem_t mp_module_collections_globals_table[] = {
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     { MP_ROM_QSTR(MP_QSTR_OrderedDict), MP_ROM_PTR(&mp_type_ordereddict) },
     #endif
+    #if MICROPY_PY_COLLECTIONS_DEQUE
+    { MP_ROM_QSTR(MP_QSTR_deque), MP_ROM_PTR(&mp_type_deque) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_collections_globals, mp_module_collections_globals_table);
