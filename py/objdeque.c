@@ -157,6 +157,7 @@ STATIC mp_obj_t mp_obj_deque_rotate(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none;
 }
 
+
 STATIC mp_obj_t mp_obj_deque_copy(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_deque));
     mp_obj_deque_t *self = MP_OBJ_TO_PTR(self_in);
