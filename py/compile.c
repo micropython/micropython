@@ -2372,7 +2372,9 @@ STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns,
     close_over_variables_etc(comp, this_scope, 0, 0);
 
     compile_node(comp, pns_comp_for->nodes[1]); // source of the iterator
-    EMIT_ARG(get_iter, false);
+    if (kind == SCOPE_GEN_EXPR) {
+        EMIT_ARG(get_iter, false);
+    }
     EMIT_ARG(call_function, 1, 0, 0);
 }
 
@@ -3072,10 +3074,15 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 
         // There are 4 slots on the stack for the iterator, and the first one is
         // NULL to indicate that the second one points to the iterator object.
-        EMIT(load_null);
-        compile_load_id(comp, qstr_arg);
-        EMIT(load_null);
-        EMIT(load_null);
+        if (scope->kind == SCOPE_GEN_EXPR) {
+            EMIT(load_null);
+            compile_load_id(comp, qstr_arg);
+            EMIT(load_null);
+            EMIT(load_null);
+        } else {
+            compile_load_id(comp, qstr_arg);
+            EMIT_ARG(get_iter, true);
+        }
 
         compile_scope_comp_iter(comp, pns_comp_for, pns->nodes[0], 0);
 
