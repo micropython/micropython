@@ -144,10 +144,15 @@ STATIC void emit_write_code_info_bytes_lines(emit_t *emit, mp_uint_t bytes_to_sk
     //printf("  %d %d\n", bytes_to_skip, lines_to_skip);
     while (bytes_to_skip > 0 || lines_to_skip > 0) {
         mp_uint_t b, l;
-        if (lines_to_skip <= 6) {
+        if (lines_to_skip <= 6 || bytes_to_skip > 0xf) {
             // use 0b0LLBBBBB encoding
             b = MIN(bytes_to_skip, 0x1f);
-            l = MIN(lines_to_skip, 0x3);
+            if (b < bytes_to_skip) {
+                // we can't skip any lines until we skip all the bytes
+                l = 0;
+            } else {
+                l = MIN(lines_to_skip, 0x3);
+            }
             *emit_get_cur_to_write_code_info(emit, 1) = b | (l << 5);
         } else {
             // use 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
