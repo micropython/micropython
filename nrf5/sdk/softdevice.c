@@ -235,3 +235,67 @@ bool sd_service_add(ubluepy_service_obj_t * p_service_obj) {
 
     return true;
 }
+
+bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          uuid;
+    ble_gatts_attr_md_t attr_md;
+
+    memset(&cccd_md, 0, sizeof(cccd_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+
+    cccd_md.vloc = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+
+    char_md.char_props.notify = 1;
+    char_md.p_char_user_desc  = NULL;
+    char_md.p_char_pf         = NULL;
+    char_md.p_user_desc_md    = NULL;
+    char_md.p_cccd_md         = &cccd_md;
+    char_md.p_sccd_md         = NULL;
+
+
+    uuid.type = p_char_obj->p_uuid->type;
+    uuid.uuid = (uint16_t)(*(uint16_t *)&p_char_obj->p_uuid->value[0]);
+
+    memset(&attr_md, 0, sizeof(attr_md));
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.write_perm);
+
+    attr_md.vloc    = BLE_GATTS_VLOC_STACK;
+    attr_md.rd_auth = 0;
+    attr_md.wr_auth = 0;
+    attr_md.vlen    = 1;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+
+    attr_char_value.p_uuid    = &uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = sizeof(uint8_t);
+    attr_char_value.init_offs = 0;
+    attr_char_value.max_len   = (GATT_MTU_SIZE_DEFAULT - 3);
+
+    ble_gatts_char_handles_t handles;
+
+    if (sd_ble_gatts_characteristic_add(p_char_obj->service_handle,
+                                        &char_md,
+                                        &attr_char_value,
+                                        &handles) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not add Characteristic."));
+    }
+
+    // apply handles to object instance
+    p_char_obj->handle           = handles.value_handle;
+    p_char_obj->user_desc_handle = handles.user_desc_handle;
+    p_char_obj->cccd_handle      = handles.cccd_handle;
+    p_char_obj->sccd_handle      = handles.sccd_handle;
+
+    return true;
+}
