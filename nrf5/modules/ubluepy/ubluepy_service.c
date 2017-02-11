@@ -25,9 +25,8 @@
  */
 
 #include "py/obj.h"
-#include "modubluepy.h"
 #include "py/runtime.h"
-
+#include "modubluepy.h"
 #include "softdevice.h"
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
