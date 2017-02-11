@@ -66,5 +66,9 @@ typedef struct _ubluepy_characteristic_obj_t {
     uint16_t             sccd_handle;
 } ubluepy_characteristic_obj_t;
 
+typedef struct _ubluepy_advertise_data_t {
+    uint8_t * p_device_name;
+    uint8_t   device_name_len;
+} ubluepy_advertise_data_t;
 
 #endif // UBLUEPY_H__
