@@ -31,6 +31,7 @@
 extern const mp_obj_type_t ubluepy_peripheral_type;
 extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_uuid_type;
+extern const mp_obj_type_t ubluepy_characteristic_type;
 
 STATIC const mp_map_elem_t mp_module_ubluepy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy) },
@@ -51,9 +52,7 @@ STATIC const mp_map_elem_t mp_module_ubluepy_globals_table[] = {
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_UUID),            (mp_obj_t)&ubluepy_uuid_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Service),         (mp_obj_t)&ubluepy_service_type },
-#if MICROPY_PY_UBLUEPY_CHARACTERISTIC
     { MP_OBJ_NEW_QSTR(MP_QSTR_Characteristic),  (mp_obj_t)&ubluepy_characteristic_type },
-#endif
 #if MICROPY_PY_UBLUEPY_DESCRIPTOR
     { MP_OBJ_NEW_QSTR(MP_QSTR_Descriptor),      (mp_obj_t)&ubluepy_descriptor_type },
 #endif
