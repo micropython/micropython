@@ -48,4 +48,5 @@ bool sd_service_add(ubluepy_service_obj_t * p_service_obj);
 
 bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
 
+bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params);
 #endif // BLUETOOTH_LE_DRIVER_H__

@@ -299,3 +299,57 @@ bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
 
     return true;
 }
+
+bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
+    SD_TEST_OR_ENABLE();
+
+    uint8_t byte_pos = 0;
+
+    uint8_t adv_data[BLE_GAP_ADV_MAX_SIZE];
+
+    if (p_adv_params->device_name_len > 0) {
+        ble_gap_conn_sec_mode_t sec_mode;
+
+        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+
+        if (sd_ble_gap_device_name_set(&sec_mode,
+                                       p_adv_params->p_device_name,
+                                       p_adv_params->device_name_len) != 0) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+	                  "Can not apply device name in the stack."));
+        }
+
+        adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + p_adv_params->device_name_len);
+        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+        adv_data[byte_pos] = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
+        // memcpy(&adv_data[byte_pos], p_adv_params->p_device_name, p_adv_params->device_name_len);
+        // increment position counter to see if it fits, and in case more content should
+        // follow in this adv packet.
+        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+        byte_pos += p_adv_params->device_name_len;
+    }
+
+    // scan response data not set
+    if (sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not apply advertisment data."));
+    }
+    printf("Set Adv data size: " UINT_FMT "\n", byte_pos);
+
+    ble_gap_adv_params_t m_adv_params;
+
+    // initialize advertising params
+    memset(&m_adv_params, 0, sizeof(m_adv_params));
+    m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
+    m_adv_params.p_peer_addr = NULL;                                // Undirected advertisement.
+    m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
+    m_adv_params.interval    = NON_CONNECTABLE_ADV_INTERVAL;
+    m_adv_params.timeout     = APP_CFG_NON_CONN_ADV_TIMEOUT;
+
+    if (sd_ble_gap_adv_start(&m_adv_params) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not start advertisment."));
+    }
+
+    return true;
+}
