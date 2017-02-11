@@ -60,6 +60,10 @@ typedef struct _ubluepy_characteristic_obj_t {
     mp_obj_base_t        base;
     uint16_t             handle;
     ubluepy_uuid_obj_t * p_uuid;
+    uint16_t             service_handle;
+    uint16_t             user_desc_handle;
+    uint16_t             cccd_handle;
+    uint16_t             sccd_handle;
 } ubluepy_characteristic_obj_t;
 
 
