@@ -80,12 +80,28 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(s);
 }
 
+/// \method addCharacteristic(Service)
+/// Add Characteristic to the Service.
+///
+STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteristic) {
+    ubluepy_service_obj_t        * self   = MP_OBJ_TO_PTR(self_in);
+    ubluepy_characteristic_obj_t * p_char = MP_OBJ_TO_PTR(characteristic);
+
+    p_char->service_handle = self->handle;
+
+    bool retval = sd_characteristic_add(p_char);
+
+    return mp_obj_new_bool(retval);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_add_char_obj, service_add_characteristic);
 
 STATIC const mp_map_elem_t ubluepy_service_locals_dict_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristic), (mp_obj_t)(&ubluepy_service_get_char_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setCharacteristic), (mp_obj_t)(&ubluepy_service_set_char_obj) },
-    // Properties
+#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_addCharacteristic), (mp_obj_t)(&ubluepy_service_add_char_obj) },
+#if 0
+	// Properties
     { MP_OBJ_NEW_QSTR(MP_QSTR_peripheral), (mp_obj_t)(&ubluepy_service_get_peripheral_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),       (mp_obj_t)(&ubluepy_service_get_uuid_obj) },
 #endif
