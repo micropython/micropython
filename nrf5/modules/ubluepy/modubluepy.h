@@ -27,6 +27,25 @@
 #ifndef UBLUEPY_H__
 #define UBLUEPY_H__
 
+/* Examples:
+
+Advertisment:
+
+from ubluepy import Peripheral
+p = Peripheral()
+p.advertise(device_name="MicroPython")
+
+DB setup:
+
+from ubluepy import Service, Characteristic, UUID
+u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
+s = Service(u0)
+u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
+c = Characteristic(u1)
+s.addCharacteristic(c)
+
+*/
+
 #include "py/obj.h"
 
 extern const mp_obj_type_t ubluepy_uuid_type;
