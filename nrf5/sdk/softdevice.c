@@ -319,15 +319,26 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 	                  "Can not apply device name in the stack."));
         }
 
+        printf("Device name applied\n");
+
         adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + p_adv_params->device_name_len);
         byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
         adv_data[byte_pos] = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
-        // memcpy(&adv_data[byte_pos], p_adv_params->p_device_name, p_adv_params->device_name_len);
+        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+        memcpy(&adv_data[byte_pos], p_adv_params->p_device_name, p_adv_params->device_name_len);
         // increment position counter to see if it fits, and in case more content should
         // follow in this adv packet.
-        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
         byte_pos += p_adv_params->device_name_len;
     }
+
+    // set flags, default to disc mode
+    adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + BLE_AD_TYPE_FLAGS_DATA_SIZE);
+    byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+    adv_data[byte_pos] = BLE_GAP_AD_TYPE_FLAGS;
+    byte_pos += BLE_AD_TYPE_FLAGS_DATA_SIZE;
+    adv_data[byte_pos] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+    byte_pos += 1;
+
 
     // scan response data not set
     if (sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0) != 0) {
