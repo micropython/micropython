@@ -26,9 +26,11 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-
+#include "py/objstr.h"
 
 #if MICROPY_PY_UBLUEPY
+
+#include "softdevice.h"
 
 typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_base_t base;
@@ -62,18 +64,47 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(s);
 }
 
-
-/// \method advertise()
+/// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray])
 /// Start advertising.
 ///
-STATIC mp_obj_t peripheral_advertise(mp_obj_t self_in) {
-    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_device_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_data,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
 
-    (void)self;
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_obj_t device_name_obj = args[0].u_obj;
+    mp_obj_t service_obj     = args[1].u_obj;
+    mp_obj_t data_obj        = args[2].u_obj;
+
+    ubluepy_advertise_data_t adv_data;
+
+    if (device_name_obj != MP_OBJ_NULL && MP_OBJ_IS_STR(device_name_obj)) {
+        GET_STR_DATA_LEN(device_name_obj, str_data, str_len);
+
+        adv_data.p_device_name = (uint8_t *)str_data;
+        adv_data.device_name_len = str_len;
+    }
+
+    if (service_obj != MP_OBJ_NULL) {
+
+    }
+
+    if (data_obj != MP_OBJ_NULL) {
+
+    }
+
+    (void)sd_advertise_data(&adv_data);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_advertise_obj, peripheral_advertise);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 1, peripheral_advertise);
 
 /// \method disconnect()
 /// disconnect connection.
