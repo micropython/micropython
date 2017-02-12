@@ -69,9 +69,9 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
 ///
 STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_device_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_data,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_device_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_data,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -85,18 +85,21 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     ubluepy_advertise_data_t adv_data;
 
-    if (device_name_obj != MP_OBJ_NULL && MP_OBJ_IS_STR(device_name_obj)) {
+    if (device_name_obj != mp_const_none && MP_OBJ_IS_STR(device_name_obj)) {
         GET_STR_DATA_LEN(device_name_obj, str_data, str_len);
 
         adv_data.p_device_name = (uint8_t *)str_data;
         adv_data.device_name_len = str_len;
     }
 
-    if (service_obj != MP_OBJ_NULL) {
-
+    if (service_obj != mp_const_none) {
+        mp_obj_t * services;
+        mp_uint_t  num_services;
+        mp_obj_get_array(service_obj, &num_services, &services);
+//        printf("Number of services passed to advertise(): %u\n", num_services);
     }
 
-    if (data_obj != MP_OBJ_NULL) {
+    if (data_obj != mp_const_none) {
 
     }
 
