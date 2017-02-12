@@ -342,6 +342,27 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     adv_data[byte_pos] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
     byte_pos += 1;
 
+    if (p_adv_params->num_of_services > 0) {
+        uint8_t encoded_size = 0;
+        for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
+            ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
+
+            ble_uuid_t uuid;
+            uuid.type = p_service->p_uuid->type;
+            uuid.uuid = (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]);
+
+            // calculate total size of uuids
+            if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                          "Can encode UUID to check length."));
+            }
+
+            printf("ADV: uuid size: %u, type: %u, uuid: %u\n", encoded_size, p_service->p_uuid->type, (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]));
+
+        }
+
+    }
+
 
     // scan response data not set
     if (sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0) != 0) {
