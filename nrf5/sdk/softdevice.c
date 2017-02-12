@@ -158,8 +158,8 @@ void sd_address_get(void) {
 // URL
 // URL suffix, 0x01 = ".com"
 #define EDDYSTONE_DATA 0x10, 0xEE, 0x00, 'm', 'i', 'c', 'r', 'o', 'p', 'y', 't', 'h', 'o', 'n', 0x01
-
-#define BLE_ADV_AD_TYPE_FIELD_SIZE 1
+#define BLE_ADV_LENGTH_FIELD_SIZE   1
+#define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
@@ -224,18 +224,33 @@ bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
 bool sd_service_add(ubluepy_service_obj_t * p_service_obj) {
     SD_TEST_OR_ENABLE();
 
-    ble_uuid_t uuid;
-    uuid.type = p_service_obj->p_uuid->type;
-    uuid.uuid = (uint16_t)(*(uint16_t *)&p_service_obj->p_uuid->value[0]);
+    if (p_service_obj->p_uuid->type > BLE_UUID_TYPE_BLE) {
 
-    if (sd_ble_gatts_service_add(p_service_obj->type,
-                                 &uuid,
-                                 &p_service_obj->handle) != 0)
-    {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not add Service."));
+        ble_uuid_t uuid;
+        uuid.type = p_service_obj->p_uuid->uuid_vs_idx;
+        uuid.uuid = (uint16_t)(*(uint16_t *)&p_service_obj->p_uuid->value[0]);
+
+        if (sd_ble_gatts_service_add(p_service_obj->type,
+                                     &uuid,
+                                     &p_service_obj->handle) != 0)
+        {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Can not add Service."));
+        }
+    } else if (p_service_obj->p_uuid->type == BLE_UUID_TYPE_BLE) {
+
+        ble_uuid_t uuid;
+        uuid.type = p_service_obj->p_uuid->type;
+        uuid.uuid = (uint16_t)(*(uint16_t *)&p_service_obj->p_uuid->value[0]);
+
+        if (sd_ble_gatts_service_add(p_service_obj->type,
+                                     &uuid,
+                                     &p_service_obj->handle) != 0)
+        {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Can not add Service."));
+        }
     }
-
     return true;
 }
 
@@ -325,7 +340,7 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         printf("Device name applied\n");
 
         adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + p_adv_params->device_name_len);
-        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+        byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
         adv_data[byte_pos] = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
         byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
         memcpy(&adv_data[byte_pos], p_adv_params->p_device_name, p_adv_params->device_name_len);
@@ -336,31 +351,59 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     // set flags, default to disc mode
     adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + BLE_AD_TYPE_FLAGS_DATA_SIZE);
-    byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+    byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
     adv_data[byte_pos] = BLE_GAP_AD_TYPE_FLAGS;
     byte_pos += BLE_AD_TYPE_FLAGS_DATA_SIZE;
     adv_data[byte_pos] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
     byte_pos += 1;
 
     if (p_adv_params->num_of_services > 0) {
-        uint8_t encoded_size = 0;
+
+        uint8_t size_byte_pos = byte_pos;
+
+        // skip length byte for now, apply total length post calculation
+        byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
+
+        adv_data[byte_pos] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
+        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+
+        uint8_t uuid_total_size = 0;
+        uint8_t encoded_size    = 0;
+
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
             ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
 
             ble_uuid_t uuid;
-            uuid.type = p_service->p_uuid->type;
+            uuid.type = p_service->p_uuid->uuid_vs_idx;
             uuid.uuid = (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]);
 
             // calculate total size of uuids
             if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                          "Can encode UUID to check length."));
+                          "Can not encode UUID, to check length."));
             }
 
-            printf("ADV: uuid size: %u, type: %u, uuid: %u\n", encoded_size, p_service->p_uuid->type, (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]));
+            // do encoding into the adv buffer
+            if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                          "Can encode UUID into the advertisment packet."));
+            }
 
+            printf("encoded uuid for service %u: ", 0);
+            for (uint8_t j = 0; j < encoded_size; j++) {
+                printf(HEX2_FMT " ", adv_data[byte_pos + j]);
+            }
+            printf("\n");
+
+            uuid_total_size += encoded_size; // size of entry
+            byte_pos        += encoded_size; // relative to adv data packet
+            printf("ADV: uuid size: %u, type: %u, uuid: %u, vs_idx: %u\n",
+                   encoded_size, p_service->p_uuid->type,
+                   (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]),
+                   p_service->p_uuid->uuid_vs_idx);
         }
 
+        adv_data[size_byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + uuid_total_size);
     }
 
 
