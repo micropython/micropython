@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
@@ -84,6 +85,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_obj_t data_obj        = args[2].u_obj;
 
     ubluepy_advertise_data_t adv_data;
+    memset(&adv_data, 0, sizeof(ubluepy_advertise_data_t));
 
     if (device_name_obj != mp_const_none && MP_OBJ_IS_STR(device_name_obj)) {
         GET_STR_DATA_LEN(device_name_obj, str_data, str_len);
@@ -93,10 +95,14 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     }
 
     if (service_obj != mp_const_none) {
-        mp_obj_t * services;
+        mp_obj_t * services = NULL;
         mp_uint_t  num_services;
         mp_obj_get_array(service_obj, &num_services, &services);
-//        printf("Number of services passed to advertise(): %u\n", num_services);
+
+        if (num_services > 0) {
+            adv_data.p_services      = services;
+            adv_data.num_of_services = num_services;
+        }
     }
 
     if (data_obj != mp_const_none) {
