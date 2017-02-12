@@ -37,13 +37,14 @@ p.advertise(device_name="MicroPython")
 
 DB setup:
 
-from ubluepy import Service, Characteristic, UUID
+from ubluepy import Service, Characteristic, UUID, Peripheral
 u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
 s = Service(u0)
 u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
 c = Characteristic(u1)
 s.addCharacteristic(c)
-
+p = Peripheral()
+p.advertise(device_name="MicroPython", services=[s])
 */
 
 #include "py/obj.h"
@@ -52,7 +53,7 @@ extern const mp_obj_type_t ubluepy_uuid_type;
 extern const mp_obj_type_t ubluepy_service_type;
 
 typedef enum {
-    UBLUEPY_UUID_16_BIT,
+    UBLUEPY_UUID_16_BIT = 1,
     UBLUEPY_UUID_128_BIT
 } ubluepy_uuid_type_t;
 
@@ -86,8 +87,11 @@ typedef struct _ubluepy_characteristic_obj_t {
 } ubluepy_characteristic_obj_t;
 
 typedef struct _ubluepy_advertise_data_t {
-    uint8_t * p_device_name;
-    uint8_t   device_name_len;
+    uint8_t *  p_device_name;
+    uint8_t    device_name_len;
+    mp_obj_t * p_services;
+    uint8_t    num_of_services;
+
 } ubluepy_advertise_data_t;
 
 #endif // UBLUEPY_H__
