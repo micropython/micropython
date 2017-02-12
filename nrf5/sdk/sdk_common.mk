@@ -12,6 +12,7 @@ else ifeq ($(SD), s130)
     SDK_MODULES = sdk_10.0.0
 else ifeq ($(SD), s132)
 	SDK_MODULES = sdk_12.1.0
+	SDK_COMPONENTS = 0
 else
 	$(error No SDK configured for this SD)
 endif

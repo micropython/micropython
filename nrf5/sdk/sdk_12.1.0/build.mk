@@ -27,6 +27,7 @@ DEFINES += NRF_SD_BLE_API_VERSION=3
 DEFINES += PEER_MANAGER_ENABLED=1
 DEFINES += FDS_ENABLED=1
 
+ifeq ($(SDK_COMPOENTS), 1)
 # nordic SDK C sources (relative path)
 SDK_SRC_C += \
 	components/ble/ble_advertising/ble_advertising.c \
@@ -58,6 +59,7 @@ SDK_SRC_C += \
 	components/libraries/util/app_error.c \
 	components/libraries/util/app_error_weak.c \
 	components/drivers_nrf/common/nrf_drv_common.c 
+endif
 
 # include source folders (sort removes duplicates)
 SDK_INC_DIRS += $(sort $(dir $(SDK_SRC_C)))
