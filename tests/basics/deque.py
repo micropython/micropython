@@ -41,14 +41,13 @@ d.extendleft('abc')                                  # extendleft() reverses the
 print(d, str(d) == "deque(['c', 'b', 'a'])")
 d.reverse()
 print(str(d) == "deque(['a', 'b', 'c'])")            # the contents of a deque in reverse
-if getattr(d, 'copy', None):
-    dc = d.copy()                                    # create a copy of deque
-    print(str(d) == str(dc))
 
 if sys.implementation.name == "micropython":
+    dc = d.copy()                                    # create a copy of deque
+    assert (str(d) == str(dc))
+
     dml = deque('ghi', 3)
     micropython.heap_lock()
     dml.append('j')
     dml.appendleft('f')
     micropython.heap_unlock()
-    print(dml)
