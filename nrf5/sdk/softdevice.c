@@ -35,6 +35,7 @@
 #include "ble_gap.h"
 #include "ble.h" // sd_ble_uuid_encode
 
+
 #define SD_TEST_OR_ENABLE() \
 if (sd_enabled() == 0) { \
     (void)sd_enable(); \
@@ -439,4 +440,47 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     m_adv_in_progress = true;
 
     return true;
+}
+
+static void ble_evt_handler(ble_evt_t * p_ble_evt) {
+    switch (p_ble_evt->header.evt_id) {
+        case BLE_GAP_EVT_CONNECTED:
+            printf(">>> GAP CONNECT\n");
+            break;
+
+        case BLE_GAP_EVT_DISCONNECTED:
+            printf(">>> GAP DISCONNECT\n");
+            break;
+
+        case BLE_GATTS_EVT_WRITE:
+            printf(">>> GATTS write\n");
+            break;
+
+        default:
+            printf(">>> unhandled evt: 0x" HEX2_FMT, p_ble_evt->header.evt_id);
+            break;
+    }
+}
+
+static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)] __attribute__ ((aligned (4)));
+
+#ifdef NRF51
+void SWI2_IRQHandler(void) {
+#else
+void SWI2_EGU2_IRQHandler(void) {
+#endif
+
+    printf("SWI2 IRQ\n");
+    uint32_t evt_id;
+    uint32_t err_code;
+    do {
+        err_code = sd_evt_get(&evt_id);
+        // TODO: handle non ble events
+    } while (err_code != NRF_ERROR_NOT_FOUND && err_code != NRF_SUCCESS);
+
+    uint16_t evt_len = sizeof(m_ble_evt_buf);
+    do {
+        err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
+        ble_evt_handler((ble_evt_t *)m_ble_evt_buf);
+    } while (err_code != NRF_ERROR_NOT_FOUND && err_code != NRF_SUCCESS);
 }
