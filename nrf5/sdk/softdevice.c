@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "py/runtime.h"
 #include "softdevice.h"
@@ -38,6 +39,8 @@
 if (sd_enabled() == 0) { \
     (void)sd_enable(); \
 }
+
+bool m_adv_in_progress = false;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -357,10 +360,19 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     m_adv_params.interval    = NON_CONNECTABLE_ADV_INTERVAL;
     m_adv_params.timeout     = APP_CFG_NON_CONN_ADV_TIMEOUT;
 
+    if (m_adv_in_progress && sd_ble_gap_adv_stop() != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not stop advertisment."));
+    }
+
+    m_adv_in_progress = false;
+
     if (sd_ble_gap_adv_start(&m_adv_params) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not start advertisment."));
     }
+
+    m_adv_in_progress = true;
 
     return true;
 }
