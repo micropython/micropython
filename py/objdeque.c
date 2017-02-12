@@ -103,7 +103,7 @@ STATIC void freeblock(block_t *b) {
 STATIC mp_obj_t deque_pop_internal(mp_obj_deque_t *deque) {
     block_t *prevblock;
     if (deque->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty deque"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from an empty deque"));
     }
     mp_obj_t item = deque->rightblock->data[deque->rightindex];
     deque->rightindex--;
@@ -131,7 +131,7 @@ STATIC mp_obj_t deque_pop_internal(mp_obj_deque_t *deque) {
 STATIC mp_obj_t deque_popleft_internal(mp_obj_deque_t *deque) {
     block_t *prevblock = NULL;
     if (deque->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from empty deque"));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from an empty deque"));
     }
     assert(deque->leftblock != NULL);
     mp_obj_t item = deque->leftblock->data[deque->leftindex];
