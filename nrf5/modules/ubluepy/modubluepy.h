@@ -44,7 +44,7 @@ u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
 c = Characteristic(u1)
 s.addCharacteristic(c)
 p = Peripheral()
-p.advertise(device_name="MicroPython", services=[s])
+p.advertise(device_name="micr", services=[s])
 */
 
 #include "py/obj.h"
