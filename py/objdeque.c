@@ -502,7 +502,6 @@ STATIC mp_obj_t deque_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t mp_obj_new_deque_iterator(mp_obj_t self_in) {
-    (void)index;
     mp_obj_deque_it_t *o = m_new_obj(mp_obj_deque_it_t);
     mp_obj_deque_t *deque = MP_OBJ_TO_PTR(self_in);
     o->base.type = &mp_type_polymorph_iter;
