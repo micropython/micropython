@@ -132,11 +132,24 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     mp_uint_t mnt_len;
     const char *mnt_str = mp_obj_str_get_data(pos_args[1], &mnt_len);
 
+    // see if we need to auto-detect and create the filesystem
+    mp_obj_t vfs_obj = pos_args[0];
+    mp_obj_t dest[2];
+    mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        // Input object has no mount method, assume it's a block device and try to
+        // auto-detect the filesystem and create the corresponding VFS entity.
+        // (At the moment we only support FAT filesystems.)
+        #if MICROPY_VFS_FAT
+        vfs_obj = mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &vfs_obj);
+        #endif
+    }
+
     // create new object
     mp_vfs_mount_t *vfs = m_new_obj(mp_vfs_mount_t);
     vfs->str = mnt_str;
     vfs->len = mnt_len;
-    vfs->obj = pos_args[0];
+    vfs->obj = vfs_obj;
     vfs->next = NULL;
 
     // call the underlying object to do any mounting operation
@@ -262,6 +275,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {
+        mp_raise_OSError(MP_EEXIST);
+    }
     return mp_vfs_proxy_call(vfs, MP_QSTR_mkdir, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_mkdir_obj, mp_vfs_mkdir);
