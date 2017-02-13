@@ -81,15 +81,21 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
 
     enum status_code status = i2c_master_init(&self->i2c_master_instance,
         sercom, &config_i2c_master);
+
     if (status != STATUS_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus init error"));
+        common_hal_nativeio_i2c_deinit(self);
+        if (status == STATUS_ERR_BAUDRATE_UNAVAILABLE) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Unsupported baudrate"));
+        } else {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus init error"));
+        }
     }
 
     i2c_master_enable(&self->i2c_master_instance);
 }
 
 void common_hal_nativeio_i2c_deinit(nativeio_i2c_obj_t *self) {
-    i2c_master_disable(&self->i2c_master_instance);
+    i2c_master_reset(&self->i2c_master_instance);
     reset_pin(self->sda_pin);
     reset_pin(self->scl_pin);
 }
