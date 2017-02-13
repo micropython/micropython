@@ -141,8 +141,7 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 
     mp_obj_array_t *array = array_new(typecode, len);
 
-    mp_obj_iter_buf_t iter_buf;
-    mp_obj_t iterable = mp_getiter(initializer, &iter_buf);
+    mp_obj_t iterable = mp_getiter(initializer, NULL);
     mp_obj_t item;
     size_t i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {

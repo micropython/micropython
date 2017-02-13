@@ -745,8 +745,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // get the keys iterable
         mp_obj_t dest[3];
         mp_load_method(kw_dict, MP_QSTR_keys, dest);
-        mp_obj_iter_buf_t iter_buf;
-        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), &iter_buf);
+        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), NULL);
 
         mp_obj_t key;
         while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -877,8 +876,7 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         // items destination array, then the rest to a dynamically created list.  Once the
         // iterable is exhausted, we take from this list for the right part of the items.
         // TODO Improve to waste less memory in the dynamically created list.
-        mp_obj_iter_buf_t iter_buf;
-        mp_obj_t iterable = mp_getiter(seq_in, &iter_buf);
+        mp_obj_t iterable = mp_getiter(seq_in, NULL);
         mp_obj_t item;
         for (seq_len = 0; seq_len < num_left; seq_len++) {
             item = mp_iternext(iterable);
