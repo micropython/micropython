@@ -34,20 +34,14 @@
 
 #if MICROPY_PY_COLLECTIONS
 
-#define BLOCKLEN 4
+#define BLOCKLEN 8
 #define CENTER ((BLOCKLEN - 1) / 2)
 
 #define NEEDS_TRIM(deque, maxlen) ((size_t)(maxlen) < (size_t)(deque->len))
 
-#ifndef NDEBUG
 #define MARK_END(link)  link = NULL;
-#define CHECK_END(link) assert(link == NULL);
-#define CHECK_NOT_END(link) assert(link != NULL);
-#else
-#define MARK_END(link)
-#define CHECK_END(link)
-#define CHECK_NOT_END(link)
-#endif
+#define CHECK_END(link) (link == NULL)
+#define CHECK_NOT_END(link) (link != NULL)
 
 #define MAXFREEBLOCKS (BLOCKLEN / 4)
 
@@ -79,12 +73,11 @@ STATIC size_t numfreeblocks = 0;
 STATIC block_t *freeblocks[MAXFREEBLOCKS];
 
 STATIC block_t *newblock(void) {
-    block_t *b = NULL;
     if (numfreeblocks) {
         numfreeblocks--;
         return freeblocks[numfreeblocks];
     }
-    b = m_new(block_t, 1);
+    block_t *b = m_new(block_t, 1);
     if (b == NULL) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
     } 
@@ -101,7 +94,6 @@ STATIC void freeblock(block_t *b) {
 }
 
 STATIC mp_obj_t deque_pop_internal(mp_obj_deque_t *deque) {
-    block_t *prevblock;
     if (deque->len == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from an empty deque"));
     }
@@ -110,16 +102,14 @@ STATIC mp_obj_t deque_pop_internal(mp_obj_deque_t *deque) {
     deque->len--;
     if (deque->rightindex < 0) {
         if (deque->len) {
-            prevblock = deque->rightblock->leftlink;
-            assert(deque->leftblock != deque->rightblock);
+            block_t *prevblock = deque->rightblock->leftlink;
             freeblock(deque->rightblock);
-            CHECK_NOT_END(prevblock);
-            MARK_END(prevblock->rightlink);
-            deque->rightblock = prevblock;
-            deque->rightindex = BLOCKLEN - 1;
+            if(CHECK_NOT_END(prevblock)) {
+                MARK_END(prevblock->rightlink);
+                deque->rightblock = prevblock;
+                deque->rightindex = BLOCKLEN - 1;
+            }
         } else {
-            assert(deque->leftblock == deque->rightblock);
-            assert(deque->leftindex == deque->rightindex+1);
             /* re-center instead of freeing a block */
             deque->leftindex = CENTER + 1;
             deque->rightindex = CENTER;
@@ -129,26 +119,22 @@ STATIC mp_obj_t deque_pop_internal(mp_obj_deque_t *deque) {
 }
 
 STATIC mp_obj_t deque_popleft_internal(mp_obj_deque_t *deque) {
-    block_t *prevblock = NULL;
     if (deque->len == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "pop from an empty deque"));
     }
-    assert(deque->leftblock != NULL);
     mp_obj_t item = deque->leftblock->data[deque->leftindex];
     deque->leftindex++;
     deque->len--;
     if (deque->leftindex == BLOCKLEN) {
         if (deque->len) {
-            assert(deque->leftblock != deque->rightblock);
-            prevblock = deque->leftblock->rightlink;
+            block_t *prevblock = deque->leftblock->rightlink;
             freeblock(deque->leftblock);
-            CHECK_NOT_END(prevblock);
-            MARK_END(prevblock->leftlink);
-            deque->leftblock = prevblock;
-            deque->leftindex = 0;
+            if (CHECK_NOT_END(prevblock)) {
+                MARK_END(prevblock->leftlink);
+                deque->leftblock = prevblock;
+                deque->leftindex = 0;
+            }
         } else {
-            assert(deque->leftblock == deque->rightblock);
-            assert(deque->leftindex == deque->rightindex+1);
             /* re-center instead of freeing a block */
             deque->leftindex = CENTER + 1;
             deque->rightindex = CENTER;
@@ -164,11 +150,12 @@ STATIC int deque_append_internal(mp_obj_deque_t *deque, mp_obj_t item, size_t ma
             return -1;
         }
         b->leftlink = deque->rightblock;
-        CHECK_END(deque->rightblock->rightlink);
-        deque->rightblock->rightlink = b;
-        deque->rightblock = b;
-        MARK_END(b->rightlink);
-        deque->rightindex = -1;
+        if (CHECK_END(deque->rightblock->rightlink)) {
+            deque->rightblock->rightlink = b;
+            deque->rightblock = b;
+            MARK_END(b->rightlink);
+            deque->rightindex = -1;
+        }
     }
     deque->len++;
     deque->rightindex++;
@@ -186,11 +173,12 @@ STATIC int deque_appendleft_internal(mp_obj_deque_t *deque, mp_obj_t item, size_
             return -1;
         }
         b->rightlink = deque->leftblock;
-        CHECK_END(deque->leftblock->leftlink);
-        deque->leftblock->leftlink = b;
-        deque->leftblock = b;
-        MARK_END(b->leftlink);
-        deque->leftindex = BLOCKLEN;
+        if (CHECK_END(deque->leftblock->leftlink)) {
+            deque->leftblock->leftlink = b;
+            deque->leftblock = b;
+            MARK_END(b->leftlink);
+            deque->leftindex = BLOCKLEN;
+        }
     }
     deque->len++;
     deque->leftindex--;
@@ -220,8 +208,6 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
             n += len;
         }
     }
-    assert(len > 1);
-    assert(-halflen <= n && n <= halflen);
     while (n > 0) {
         if (leftindex == 0) {
             if (b == NULL) {
@@ -231,14 +217,15 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
                 }
             }
             b->rightlink = leftblock;
-            CHECK_END(leftblock->leftlink);
-            leftblock->leftlink = b;
-            leftblock = b;
-            MARK_END(b->leftlink);
-            leftindex = BLOCKLEN;
-            b = NULL;
+            if (CHECK_END(leftblock->leftlink)) {
+                leftblock->leftlink = b;
+                leftblock = b;
+                MARK_END(b->leftlink);
+                leftindex = BLOCKLEN;
+                b = NULL;
+            }
         }
-        assert(leftindex > 0);
+
         {
             mp_obj_t *src, *dest;
             mp_int_t m = n;
@@ -248,7 +235,7 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
             if (m > leftindex) {
                 m = leftindex;
             }
-            assert (m > 0 && m <= len);
+
             rightindex -= m;
             leftindex -= m;
             src = &rightblock->data[rightindex + 1];
@@ -258,14 +245,14 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
                 *(dest++) = *(src++);
             } while (--m);
         }
+
         if (rightindex < 0) {
-            assert(leftblock != rightblock);
-            assert(b == NULL);
             b = rightblock;
-            CHECK_NOT_END(rightblock->leftlink);
-            rightblock = rightblock->leftlink;
-            MARK_END(rightblock->rightlink);
-            rightindex = BLOCKLEN - 1;
+            if (CHECK_NOT_END(rightblock->leftlink)) {
+                rightblock = rightblock->leftlink;
+                MARK_END(rightblock->rightlink);
+                rightindex = BLOCKLEN - 1;
+            }
         }
     }
     while (n < 0) {
@@ -277,14 +264,15 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
                 }
             }
             b->leftlink = rightblock;
-            CHECK_END(rightblock->rightlink);
-            rightblock->rightlink = b;
-            rightblock = b;
-            MARK_END(b->rightlink);
-            rightindex = -1;
-            b = NULL;
+            if (CHECK_END(rightblock->rightlink)) {
+                rightblock->rightlink = b;
+                rightblock = b;
+                MARK_END(b->rightlink);
+                rightindex = -1;
+                b = NULL;
+            }
         }
-        assert (rightindex < BLOCKLEN - 1);
+
         {
             mp_obj_t *src, *dest;
             mp_int_t m = -n;
@@ -294,7 +282,7 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
             if (m > BLOCKLEN - 1 - rightindex) {
                 m = BLOCKLEN - 1 - rightindex;
             }
-            assert (m > 0 && m <= len);
+
             src = &leftblock->data[leftindex];
             dest = &rightblock->data[rightindex + 1];
             leftindex += m;
@@ -304,14 +292,14 @@ STATIC int _deque_rotate(mp_obj_deque_t *deque, mp_int_t n) {
                 *(dest++) = *(src++);
             } while (--m);
         }
+
         if (leftindex == BLOCKLEN) {
-            assert(leftblock != rightblock);
-            assert(b == NULL);
             b = leftblock;
-            CHECK_NOT_END(leftblock->rightlink);
-            leftblock = leftblock->rightlink;
-            MARK_END(leftblock->leftlink);
-            leftindex = 0;
+            if (CHECK_NOT_END(leftblock->rightlink)) {
+                leftblock = leftblock->rightlink;
+                MARK_END(leftblock->leftlink);
+                leftindex = 0;
+            }
         }
     }
     rv = 0;
@@ -334,7 +322,6 @@ STATIC bool valid_index(mp_int_t i, mp_int_t limit) {
 
 STATIC int deque_del_item(mp_obj_deque_t *deque, mp_int_t i) {
     int rv;
-    assert (i >= 0 && i < deque->len);
     if (_deque_rotate(deque, -i)) {
         return -1;
     }
@@ -421,9 +408,9 @@ STATIC void deque_reverse_internal(mp_obj_deque_t *deque) {
     n++;
     while (--n) {
         /* Validate that pointers haven't met in the middle */
-        assert(leftblock != rightblock || leftindex < rightindex);
-        CHECK_NOT_END(leftblock);
-        CHECK_NOT_END(rightblock);
+        if (!CHECK_NOT_END(leftblock) || !CHECK_NOT_END(rightblock)) {
+            break;
+        }
         /* Swap */
         tmp = leftblock->data[leftindex];
         leftblock->data[leftindex] = rightblock->data[rightindex];
@@ -494,7 +481,6 @@ STATIC mp_obj_t deque_it_iternext(mp_obj_t self_in) {
     self->index++;
     self->counter--;
     if (self->index == BLOCKLEN && self->counter > 0) {
-        assert(self->b->rightlink != NULL);
         self->b = self->b->rightlink;
         self->index = 0;
     }
@@ -599,10 +585,10 @@ STATIC mp_obj_t deque_extendleft(mp_obj_t self_in, mp_obj_t arg_in) {
 }
 
 STATIC mp_obj_t deque_clear(mp_obj_t self_in) {
-    mp_obj_t iter = mp_getiter(self_in);
-    mp_obj_t item;
-    while ((item = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-        deque_del_item(MP_OBJ_TO_PTR(self_in), 0);
+    mp_obj_deque_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t len = self->len;
+    for (mp_int_t i = 0; i < len; i++) {
+        deque_del_item(self, 0);
     }
     return mp_const_none;
 }
@@ -684,30 +670,28 @@ STATIC void deque_attr(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         mp_map_t *locals_map = &type->locals_dict->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
-            mp_convert_member_lookup(obj, type, elem->value, dest);
-        } else {
             if(attr == MP_QSTR_maxlen) {
-                mp_obj_deque_t *self = MP_OBJ_TO_PTR(obj);
                 dest[0] = mp_const_none;
+                mp_obj_deque_t *self = MP_OBJ_TO_PTR(obj);
                 if(self->maxlen > 0) {
                     dest[0] = mp_obj_new_int_from_ll(self->maxlen);
                 }
                 return;
             }
+            mp_convert_member_lookup(obj, type, elem->value, dest);
         }
     }
 }
 
 STATIC mp_obj_t deque_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
-    //mp_obj_deque_t *o = MP_OBJ_TO_PTR(lhs);
     switch (op) {
         case MP_BINARY_OP_ADD: {
             if (!MP_OBJ_IS_TYPE(rhs, &mp_type_deque)) {
                 return MP_OBJ_NULL; // op not supported
             }
-            mp_obj_t l =  deque_new(mp_getiter(lhs), -1);
-            deque_extend(l, mp_getiter(rhs));
-            return l;
+            mp_obj_t o = deque_new(lhs, -1);
+            deque_extend(o, rhs);
+            return o;
         }
         case MP_BINARY_OP_INPLACE_ADD: {
             deque_extend(lhs, rhs);
@@ -779,6 +763,7 @@ STATIC const mp_rom_map_elem_t deque_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&deque_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_reverse), MP_ROM_PTR(&deque_reverse_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotate), MP_ROM_PTR(&deque_rotate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_maxlen), MP_ROM_INT(-1) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);

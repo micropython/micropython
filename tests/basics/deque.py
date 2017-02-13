@@ -21,7 +21,7 @@ print(d.pop() == 'j')                               # return and remove the righ
 print(d.popleft() == 'f')                           # return and remove the leftmost item
 print(str(list(d)) == "['g', 'h', 'i']")            # list the contents of the deque
 print(d[0] == 'g')                                  # peek at leftmost item
-print(d[-1] == 'i')                                  # peek at rightmost item
+print(d[-1] == 'i')                                 # peek at rightmost item
 print(str(list(reversed(d))) == "['i', 'h', 'g']")  # list the contents of a deque in reverse
 print('h' in d)                                     # search the deque
 d.extend('jkl')                                     # add multiple elements at once
@@ -38,7 +38,7 @@ try:
 except IndexError as ie:
     print(ie)
 d.extendleft('abc')                                  # extendleft() reverses the input order
-print(d, str(d) == "deque(['c', 'b', 'a'])")
+print(str(d) == "deque(['c', 'b', 'a'])")
 d.reverse()
 print(str(d) == "deque(['a', 'b', 'c'])")            # the contents of a deque in reverse
 
