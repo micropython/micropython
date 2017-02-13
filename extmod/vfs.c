@@ -311,6 +311,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_rmdir_obj, mp_vfs_rmdir);
 mp_obj_t mp_vfs_stat(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    if (vfs == MP_VFS_ROOT) {
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(0x4000); // st_mode = stat.S_IFDIR
+        for (int i = 1; i <= 9; ++i) {
+            t->items[i] = MP_OBJ_NEW_SMALL_INT(0); // dev, nlink, uid, gid, size, atime, mtime, ctime
+        }
+        return MP_OBJ_FROM_PTR(t);
+    }
     return mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_stat_obj, mp_vfs_stat);
