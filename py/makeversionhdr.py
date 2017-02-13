@@ -47,12 +47,7 @@ def get_version_info_from_git():
         return None
 
     # Try to extract MicroPython version from git tag
-    if git_tag.startswith("v"):
-        ver = git_tag[1:].split("-")[0].split(".")
-        if len(ver) == 2:
-            ver.append("0")
-    else:
-        ver = ["0", "0", "1"]
+    ver = git_tag.split("-")[0].split(".")
 
     return git_tag, git_hash, ver
 
