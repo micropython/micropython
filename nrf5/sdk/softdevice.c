@@ -97,7 +97,10 @@ uint32_t sd_enable(void) {
     ble_enable_params_t ble_enable_params;
     memset(&ble_enable_params, 0x00, sizeof(ble_enable_params));
     ble_enable_params.gatts_enable_params.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT;
-    ble_enable_params.gatts_enable_params.service_changed = 0;
+    ble_enable_params.gatts_enable_params.service_changed  = 0;
+    ble_enable_params.gap_enable_params.periph_conn_count  = 1;
+    ble_enable_params.gap_enable_params.central_conn_count = 1;
+
 
 
 #if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
@@ -415,15 +418,15 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     }
     printf("Set Adv data size: " UINT_FMT "\n", byte_pos);
 
-    ble_gap_adv_params_t m_adv_params;
+    static ble_gap_adv_params_t m_adv_params;
 
     // initialize advertising params
     memset(&m_adv_params, 0, sizeof(m_adv_params));
-    m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
-    m_adv_params.p_peer_addr = NULL;                                // Undirected advertisement.
+    m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
+    m_adv_params.p_peer_addr = NULL;                                // undirected advertisement
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
-    m_adv_params.interval    = NON_CONNECTABLE_ADV_INTERVAL;
-    m_adv_params.timeout     = APP_CFG_NON_CONN_ADV_TIMEOUT;
+    m_adv_params.interval    = MSEC_TO_UNITS(100, UNIT_0_625_MS);   // approx 8 ms
+    m_adv_params.timeout     = 0;                                   // infinite advertisment
 
     if (m_adv_in_progress && sd_ble_gap_adv_stop() != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -431,10 +434,10 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     }
 
     m_adv_in_progress = false;
-
-    if (sd_ble_gap_adv_start(&m_adv_params) != 0) {
+    uint32_t err_code = sd_ble_gap_adv_start(&m_adv_params);
+    if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not start advertisment."));
+                  "Can not start advertisment. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
 
     m_adv_in_progress = true;
