@@ -14,10 +14,10 @@ def pwm_cycle(led, duty, cycles):
     duty_off = 20 - duty
     for i in range(cycles):
         if duty:
-            led.value(1)
+            led.on()
             utime.sleep_ms(duty)
         if duty_off:
-            led.value(0)
+            led.off()
             utime.sleep_ms(duty_off)
 
 
