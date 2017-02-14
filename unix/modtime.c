@@ -60,7 +60,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #endif
 
 #if defined(MP_CLOCKS_PER_SEC)
-#define CLOCK_DIV (MP_CLOCKS_PER_SEC / 1000.0F)
+#define CLOCK_DIV (mp_float_t) (MP_CLOCKS_PER_SEC / 1000.0F)
 #else
 #error Unsupported clock() implementation
 #endif
@@ -83,7 +83,7 @@ STATIC mp_obj_t mod_time_clock(void) {
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
     // to preserve integer part resolution.
-    return mp_obj_new_float((float)(clock() / 1000) / CLOCK_DIV);
+    return mp_obj_new_float((mp_float_t)(clock() / 1000) / CLOCK_DIV);
 #else
     return mp_obj_new_int((mp_int_t)clock());
 #endif
