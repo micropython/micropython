@@ -1,8 +1,0 @@
-Modules,array
------
-Array deletion not implemented
------
-import array
-a = array.array('b', (1, 2, 3))
-del a[1]
-print(a)

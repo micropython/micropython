@@ -1,7 +1,0 @@
-Modules,deque
------
-Deque not implemented
------
-import collections
-D = collections.deque()
-print(D)

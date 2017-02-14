@@ -1,5 +1,0 @@
-Core,Functions
------
-Unpacking function arguments in non-last position gives incorrect result
------
-print(*(1, 2), 3)

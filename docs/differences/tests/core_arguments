@@ -1,8 +1,0 @@
-Core
------
-Error messages may display incorrect argument counts
------
-try:
-    [].append()
-except Exception as e:
-    print(e)

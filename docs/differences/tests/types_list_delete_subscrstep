@@ -1,7 +1,0 @@
-Types,list
------
-List delete with step != 1 not implemented
------
-l = [1, 2, 3, 4]
-del l[0:4:2]
-print(l)

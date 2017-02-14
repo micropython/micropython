@@ -1,5 +1,0 @@
-Types,str
------
-None as first argument for rsplit such as str.rsplit(None, n) not implemented
------
-print('a a a'.rsplit(None, 1))
