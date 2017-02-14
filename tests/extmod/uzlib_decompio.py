@@ -1,8 +1,10 @@
 try:
-    import zlib
-except ImportError:
     import uzlib as zlib
-import uio as io
+    import uio as io
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 
 # Raw DEFLATE bitstream

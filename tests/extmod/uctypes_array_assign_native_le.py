@@ -1,5 +1,9 @@
 import sys
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    sys.exit()
 
 if sys.byteorder != "little":
     print("SKIP")
