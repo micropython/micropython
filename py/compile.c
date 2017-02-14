@@ -41,13 +41,21 @@
 // TODO need to mangle __attr names
 
 typedef enum {
+// define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
-    PN_maximum_number_of,
+#undef DEF_RULE_NC
     PN_string, // special node for non-interned string
     PN_bytes, // special node for non-interned bytes
     PN_const_object, // special node for a constant, generic Python object
+// define rules without a compile function
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) PN_##rule,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
 } pn_kind_t;
 
 #define NEED_METHOD_TABLE MICROPY_EMIT_NATIVE
@@ -2680,14 +2688,14 @@ STATIC void compile_const_object(compiler_t *comp, mp_parse_node_struct_t *pns) 
 
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
 STATIC const compile_function_t compile_function[] = {
-#define nc NULL
+// only define rules with a compile function
 #define c(f) compile_##f
 #define DEF_RULE(rule, comp, kind, ...) comp,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
-#undef nc
 #undef c
 #undef DEF_RULE
-    NULL,
+#undef DEF_RULE_NC
     compile_string,
     compile_bytes,
     compile_const_object,
@@ -2743,8 +2751,8 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
     } else {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         EMIT_ARG(set_source_line, pns->source_line);
+        assert(MP_PARSE_NODE_STRUCT_KIND(pns) <= PN_const_object);
         compile_function_t f = compile_function[MP_PARSE_NODE_STRUCT_KIND(pns)];
-        assert(f != NULL);
         f(comp, pns);
     }
 }

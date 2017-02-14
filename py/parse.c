@@ -69,13 +69,22 @@ typedef struct _rule_t {
 } rule_t;
 
 enum {
+// define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
-    RULE_maximum_number_of,
+#undef DEF_RULE_NC
     RULE_string, // special node for non-interned string
     RULE_bytes, // special node for non-interned bytes
     RULE_const_object, // special node for a constant, generic Python object
+
+// define rules without a compile function
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) RULE_##rule,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
 };
 
 #define or(n)                   (RULE_ACT_OR | n)
@@ -90,8 +99,10 @@ enum {
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
 #ifdef USE_RULE_NAME
 #define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { __VA_ARGS__ } };
+#define DEF_RULE_NC(rule, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { __VA_ARGS__ } };
 #else
 #define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
+#define DEF_RULE_NC(rule, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
 #endif
 #include "py/grammar.h"
 #undef or
@@ -103,11 +114,25 @@ enum {
 #undef opt_rule
 #undef one_or_more
 #undef DEF_RULE
+#undef DEF_RULE_NC
 
 STATIC const rule_t *const rules[] = {
+// define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
+#undef DEF_RULE_NC
+    NULL, // RULE_string
+    NULL, // RULE_bytes
+    NULL, // RULE_const_object
+
+// define rules without a compile function
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) &rule_##rule,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
 };
 
 typedef struct _rule_stack_t {
@@ -215,7 +240,6 @@ STATIC void push_rule(parser_t *parser, size_t src_line, const rule_t *rule, siz
 STATIC void push_rule_from_arg(parser_t *parser, size_t arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
     size_t rule_id = arg & RULE_ARG_ARG_MASK;
-    assert(rule_id < RULE_maximum_number_of);
     push_rule(parser, parser->lexer->tok_line, rules[rule_id], 0);
 }
 
