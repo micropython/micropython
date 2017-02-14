@@ -86,12 +86,22 @@ typedef struct _ubluepy_characteristic_obj_t {
     uint16_t             sccd_handle;
 } ubluepy_characteristic_obj_t;
 
+typedef struct _ubluepy_delegate_obj_t {
+    mp_obj_base_t        base;
+} ubluepy_delegate_obj_t;
+
+typedef struct _ubluepy_peripheral_obj_t {
+    mp_obj_base_t base;
+    mp_obj_t      delegate;
+} ubluepy_peripheral_obj_t;
+
 typedef struct _ubluepy_advertise_data_t {
     uint8_t *  p_device_name;
     uint8_t    device_name_len;
     mp_obj_t * p_services;
     uint8_t    num_of_services;
-
 } ubluepy_advertise_data_t;
+
+
 
 #endif // UBLUEPY_H__
