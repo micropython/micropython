@@ -32,6 +32,7 @@ extern const mp_obj_type_t ubluepy_peripheral_type;
 extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_uuid_type;
 extern const mp_obj_type_t ubluepy_characteristic_type;
+extern const mp_obj_type_t ubluepy_delegate_type;
 
 STATIC const mp_map_elem_t mp_module_ubluepy_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy) },
@@ -47,9 +48,7 @@ STATIC const mp_map_elem_t mp_module_ubluepy_globals_table[] = {
 #if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_ScanEntry),       (mp_obj_t)&ubluepy_scan_entry_type },
 #endif
-#if MICROPY_PY_UBLUEPY_DEFAULT_DELEGATE
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DefaultDelegate), (mp_obj_t)&ubluepy_default_delegate_type },
-#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_DefaultDelegate), (mp_obj_t)&ubluepy_delegate_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_UUID),            (mp_obj_t)&ubluepy_uuid_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Service),         (mp_obj_t)&ubluepy_service_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_Characteristic),  (mp_obj_t)&ubluepy_characteristic_type },
