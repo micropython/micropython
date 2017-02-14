@@ -33,11 +33,6 @@
 
 #include "softdevice.h"
 
-typedef struct _ubluepy_peripheral_obj_t {
-    mp_obj_base_t base;
-    // services
-} ubluepy_peripheral_obj_t;
-
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
     (void)self;
@@ -64,6 +59,30 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
 
     return MP_OBJ_FROM_PTR(s);
 }
+
+#if 0
+static void peripheral_delegate(void) {
+    // delegate
+    mp_obj_t args[3];
+    mp_uint_t num_of_args = 3;
+    args[0] = type;
+    args[1] = MP_OBJ_NEW_SMALL_INT(size);
+    args[2] = mp_obj_new_bytearray_by_ref(size, evt_data);
+    mp_call_function_n_kw(delegate->handleConnection, num_of_args, 0, args);
+}
+#endif
+
+/// \method withDelegate(DefaultDelegate)
+/// Set delegate instance for handling Bluetooth LE events.
+///
+STATIC mp_obj_t peripheral_with_delegate(mp_obj_t self_in, mp_obj_t delegate) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    self->delegate = delegate;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_with_delegate_obj, peripheral_with_delegate);
 
 /// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray])
 /// Start advertising.
@@ -142,6 +161,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_
 
 
 STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_withDelegate),         (mp_obj_t)(&ubluepy_peripheral_with_delegate_obj) },
 #if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),              (mp_obj_t)(&ubluepy_peripheral_connect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),           (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
@@ -149,7 +169,6 @@ STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getServiceByUUID),     (mp_obj_t)(&ubluepy_peripheral_get_service_by_uuid_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristics),   (mp_obj_t)(&ubluepy_peripheral_get_chars_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getDescriptors),       (mp_obj_t)(&ubluepy_peripheral_get_descs_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_withDelegate),         (mp_obj_t)(&ubluepy_peripheral_with_delegate_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_waitForNotifications), (mp_obj_t)(&ubluepy_peripheral_wait_for_notif_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_writeCharacteristic),  (mp_obj_t)(&ubluepy_peripheral_write_char_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readCharacteristic),   (mp_obj_t)(&ubluepy_peripheral_read_char_obj) },
