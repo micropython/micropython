@@ -6,8 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build/$(MICROPY_PORT)
-UDIFFDIR      = differences
-UDIFF         = udiff.py
+CPYDIFFDIR    = ../tools
+CPYDIFF       = gen-cpydiff.py
 GENRSTDIR     = genrst
 # Run "make FORCE= ..." to avoid rebuilding from scratch (and risk
 # producing incorrect docs).
@@ -60,7 +60,7 @@ clean:
 udiff:
 	@echo "Generating Micropython Differences."
 	rm -f $(GENRSTDIR)/*
-	cd $(UDIFFDIR) && python $(UDIFF)
+	cd $(CPYDIFFDIR) && python $(CPYDIFF)
 
 html: udiff
 	$(SPHINXBUILD) $(FORCE) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
