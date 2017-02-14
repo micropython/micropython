@@ -284,7 +284,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     }
 
     // https://docs.python.org/3.4/reference/datamodel.html#object.__new__
-    // "If __new__() does not return an instance of cls, then the new instance’s __init__() method will not be invoked."
+    // "If __new__() does not return an instance of cls, then the new instance's __init__() method will not be invoked."
     if (mp_obj_get_type(new_ret) != self) {
         return new_ret;
     }
