@@ -446,17 +446,28 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 }
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
+// S132 event ranges.
+// Common 0x01 -> 0x0F
+// GAP    0x10 -> 0x2F
+// GATTC  0x30 -> 0x4F
+// GATTS  0x50 -> 0x6F
+// L2CAP  0x70 -> 0x8F
+
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
-            printf(">>> GAP CONNECT\n");
+            printf("GAP CONNECT\n");
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            printf(">>> GAP DISCONNECT\n");
+            printf("GAP DISCONNECT\n");
             break;
 
         case BLE_GATTS_EVT_WRITE:
-            printf(">>> GATTS write\n");
+            printf("GATTS write\n");
+            break;
+
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+            printf("GAP CONN PARAM UPDATE\n");
             break;
 
         default:
@@ -473,7 +484,6 @@ void SWI2_IRQHandler(void) {
 void SWI2_EGU2_IRQHandler(void) {
 #endif
 
-    printf("SWI2 IRQ\n");
     uint32_t evt_id;
     uint32_t err_code;
     do {
