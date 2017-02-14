@@ -171,6 +171,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_service.c \
 	ubluepy/ubluepy_characteristic.c \
 	ubluepy/ubluepy_uuid.c \
+	ubluepy/ubluepy_delegate.c \
 	)
 
 #ifeq ($(SD), )
