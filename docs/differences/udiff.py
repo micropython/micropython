@@ -34,7 +34,7 @@ from collections import namedtuple
 
 TESTPATH = 'tests/'
 UPYPATH = '../../unix/'
-DOCPATH = './'
+DOCPATH = '../genrst/'
 INDEXTEMPLATE = 'index_template.txt'
 INDEX = 'index.rst'
 

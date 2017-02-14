@@ -8,7 +8,7 @@ MicroPython documentation and references
     pyboard/tutorial/index.rst
     library/index.rst
     pyboard/hardware/index.rst
-    differences/index.rst
+    genrst/index.rst
     license.rst
     pyboard_contents.rst
 
