@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_UBLUEPY
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
@@ -31,8 +33,6 @@
 
 #include "modubluepy.h"
 #include "softdevice.h"
-
-#if MICROPY_PY_UBLUEPY
 
 STATIC void ubluepy_uuid_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_uuid_obj_t * self = (ubluepy_uuid_obj_t *)o;
