@@ -7,7 +7,7 @@ print(type(sys.path))
 print(type(sys.argv))
 print(sys.byteorder in ('little', 'big'))
 print(sys.maxsize > 100)
-print(sys.implementation.name in ('cpython', 'micropython'))
+print(sys.implementation.name in ('cpython', 'micropython', 'circuitpython'))
 
 try:
     sys.exit()
