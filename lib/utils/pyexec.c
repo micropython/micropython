@@ -104,11 +104,12 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
-        } else if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_KeyboardInterrupt)) {
-            ret = PYEXEC_FORCED_EXIT;
         } else {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
             ret = PYEXEC_EXCEPTION;
+            if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_KeyboardInterrupt)) {
+                ret = PYEXEC_FORCED_EXIT;
+            }
         }
     }
     if (result != NULL) {
@@ -217,10 +218,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
     if (lex == NULL) {
         mp_hal_stdout_tx_str("\x04MemoryError\r\n\x04");
     } else {
-        int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
-            return ret;
-        }
+        parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF, NULL);
     }
 
 reset:
@@ -299,10 +297,7 @@ exec: ;
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                return ret;
-            }
+            parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
         }
 
 input_restart:
@@ -375,10 +370,7 @@ raw_repl_reset:
         if (lex == NULL) {
             printf("\x04MemoryError\n\x04");
         } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF, NULL);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                return ret;
-            }
+            parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF, NULL);
         }
     }
 }
@@ -501,10 +493,7 @@ friendly_repl_reset:
         if (lex == NULL) {
             printf("MemoryError\n");
         } else {
-            ret = parse_compile_execute(lex, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                return ret;
-            }
+            parse_compile_execute(lex, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL, NULL);
         }
     }
 }
