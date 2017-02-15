@@ -36,6 +36,14 @@
 #include "ble.h" // sd_ble_uuid_encode
 
 
+#define BLE_DRIVER_VERBOSE 0
+#if BLE_DRIVER_VERBOSE
+#define BLE_DRIVER_LOG printf
+#else
+#define BLE_DRIVER_LOG(...)
+#endif
+
+
 #define SD_TEST_OR_ENABLE() \
 if (sd_enabled() == 0) { \
     (void)sd_enable(); \
@@ -59,11 +67,11 @@ nrf_nvic_state_t nrf_nvic_state;
 
 #if (BLUETOOTH_SD == 100 ) || (BLUETOOTH_SD == 110)
 void softdevice_assert_handler(uint32_t pc, uint16_t line_number, const uint8_t * p_file_name) {
-    printf("ERROR: SoftDevice assert!!!");
+    BLE_DRIVER_LOG("ERROR: SoftDevice assert!!!");
 }
 #else
 void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
-    printf("ERROR: SoftDevice assert!!!");
+    BLE_DRIVER_LOG("ERROR: SoftDevice assert!!!");
 }
 #endif
 uint32_t sd_enable(void) {
@@ -86,7 +94,7 @@ uint32_t sd_enable(void) {
                                              softdevice_assert_handler);
 #endif
 
-    printf("SoftDevice enable status: " UINT_FMT "\n", (uint16_t)err_code);
+    BLE_DRIVER_LOG("SoftDevice enable status: " UINT_FMT "\n", (uint16_t)err_code);
 
 #if NRF51
     err_code = sd_nvic_EnableIRQ(SWI2_IRQn);
@@ -94,7 +102,7 @@ uint32_t sd_enable(void) {
     err_code = sd_nvic_EnableIRQ(SWI2_EGU2_IRQn);
 #endif
 
-    printf("IRQ enable status: " UINT_FMT "\n", (uint16_t)err_code);
+    BLE_DRIVER_LOG("IRQ enable status: " UINT_FMT "\n", (uint16_t)err_code);
     
     // Enable BLE stack.
     ble_enable_params_t ble_enable_params;
@@ -113,14 +121,14 @@ uint32_t sd_enable(void) {
 #if (BLUETOOTH_SD == 132)
     uint32_t app_ram_start = 0x200039c0;
     err_code = sd_ble_enable(&ble_enable_params, &app_ram_start); // 8K SD headroom from linker script.
-    printf("BLE ram size: " UINT_FMT "\n", (uint16_t)app_ram_start);
+    BLE_DRIVER_LOG("BLE ram size: " UINT_FMT "\n", (uint16_t)app_ram_start);
 #else
     err_code = sd_ble_enable(&ble_enable_params, (uint32_t *)0x20001870);
 #endif
 
 #endif
 
-    printf("BLE enable status: " UINT_FMT "\n", (uint16_t)err_code);
+    BLE_DRIVER_LOG("BLE enable status: " UINT_FMT "\n", (uint16_t)err_code);
 
     return err_code;
 }
@@ -132,10 +140,9 @@ void sd_disable(void) {
 uint8_t sd_enabled(void) {
     uint8_t is_enabled;
     uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
+    (void)err_code;
 
-#if BLUETOOTH_SD_DEBUG
-    printf("Is enabled status: " UINT_FMT "\n", (uint16_t)err_code);
-#endif
+    BLE_DRIVER_LOG("Is enabled status: " UINT_FMT "\n", (uint16_t)err_code);
 
     return is_enabled;
 }
@@ -147,7 +154,7 @@ void sd_address_get(void) {
 #else
     uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
 #endif
-    printf("ble address, type: " HEX2_FMT ", " \
+    BLE_DRIVER_LOG("ble address, type: " HEX2_FMT ", " \
            "address: " HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT ":" \
                        HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT "\n", \
             local_ble_addr.addr_type, \
@@ -179,9 +186,10 @@ void sd_advertise(void) {
     uint8_t encoded_size;
     uint8_t uuid_encoded[2];
     uint32_t err_code = sd_ble_uuid_encode(&adv_uuids[0], &encoded_size, uuid_encoded);
+    (void)err_code;
 
-    printf("Encoded UUID size: " UINT_FMT ": result: " HEX2_FMT "\n", encoded_size, (uint16_t)err_code);
-    printf("Encoded UUID: " HEX2_FMT " " HEX2_FMT "\n", uuid_encoded[0], uuid_encoded[1]);
+    BLE_DRIVER_LOG("Encoded UUID size: " UINT_FMT ": result: " HEX2_FMT "\n", encoded_size, (uint16_t)err_code);
+    BLE_DRIVER_LOG("Encoded UUID: " HEX2_FMT " " HEX2_FMT "\n", uuid_encoded[0], uuid_encoded[1]);
 
     uint8_t eddystone_data[] = {EDDYSTONE_DATA}; // Temp buffer to calculate the size.
 
@@ -200,7 +208,7 @@ void sd_advertise(void) {
 
     // Scan response data not set.
     err_code = sd_ble_gap_adv_data_set(adv_data, sizeof(adv_data), NULL, 0);
-    printf("Set Adv data status: " UINT_FMT ", size: " UINT_FMT "\n", (uint16_t)err_code, sizeof(adv_data));
+    BLE_DRIVER_LOG("Set Adv data status: " UINT_FMT ", size: " UINT_FMT "\n", (uint16_t)err_code, sizeof(adv_data));
 
     ble_gap_adv_params_t m_adv_params;
 
@@ -214,7 +222,7 @@ void sd_advertise(void) {
 
     err_code = sd_ble_gap_adv_start(&m_adv_params);
 
-    printf("Advertisment start status: " UINT_FMT "\n", (uint16_t)err_code);
+    BLE_DRIVER_LOG("Advertisment start status: " UINT_FMT "\n", (uint16_t)err_code);
 }
 
 bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
@@ -344,7 +352,7 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 	                  "Can not apply device name in the stack."));
         }
 
-        printf("Device name applied\n");
+        BLE_DRIVER_LOG("Device name applied\n");
 
         adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + p_adv_params->device_name_len);
         byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
@@ -396,15 +404,15 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
                           "Can encode UUID into the advertisment packet."));
             }
 
-            printf("encoded uuid for service %u: ", 0);
+            BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
             for (uint8_t j = 0; j < encoded_size; j++) {
-                printf(HEX2_FMT " ", adv_data[byte_pos + j]);
+                BLE_DRIVER_LOG(HEX2_FMT " ", adv_data[byte_pos + j]);
             }
-            printf("\n");
+            BLE_DRIVER_LOG("\n");
 
             uuid_total_size += encoded_size; // size of entry
             byte_pos        += encoded_size; // relative to adv data packet
-            printf("ADV: uuid size: %u, type: %u, uuid: %u, vs_idx: %u\n",
+            BLE_DRIVER_LOG("ADV: uuid size: %u, type: %u, uuid: %u, vs_idx: %u\n",
                    encoded_size, p_service->p_uuid->type,
                    (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]),
                    p_service->p_uuid->uuid_vs_idx);
@@ -419,7 +427,7 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not apply advertisment data."));
     }
-    printf("Set Adv data size: " UINT_FMT "\n", byte_pos);
+    BLE_DRIVER_LOG("Set Adv data size: " UINT_FMT "\n", byte_pos);
 
     static ble_gap_adv_params_t m_adv_params;
 
@@ -461,26 +469,28 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // GATTS  0x50 -> 0x6F
 // L2CAP  0x70 -> 0x8F
 
+    ubluepy_event_handler(mp_observer, p_ble_evt->header.evt_id, p_ble_evt->header.evt_len - sizeof(uint16_t), NULL);
+
+
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
-            ubluepy_event_handler(mp_observer, BLE_GAP_EVT_CONNECTED, p_ble_evt->header.evt_len - sizeof(uint16_t), NULL);
-            printf("GAP CONNECT\n");
+            BLE_DRIVER_LOG("GAP CONNECT\n");
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
-            printf("GAP DISCONNECT\n");
+            BLE_DRIVER_LOG("GAP DISCONNECT\n");
             break;
 
         case BLE_GATTS_EVT_WRITE:
-            printf("GATTS write\n");
+            BLE_DRIVER_LOG("GATTS write\n");
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:
-            printf("GAP CONN PARAM UPDATE\n");
+            BLE_DRIVER_LOG("GAP CONN PARAM UPDATE\n");
             break;
 
         default:
-            printf(">>> unhandled evt: 0x" HEX2_FMT, p_ble_evt->header.evt_id);
+            BLE_DRIVER_LOG(">>> unhandled evt: 0x" HEX2_FMT, p_ble_evt->header.evt_id);
             break;
     }
 }
