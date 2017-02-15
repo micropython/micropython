@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-#if MICROPY_PY_UBLUEPY
-
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/misc.h"
+
+#if MICROPY_PY_UBLUEPY
 
 #include "modubluepy.h"
 #include "softdevice.h"

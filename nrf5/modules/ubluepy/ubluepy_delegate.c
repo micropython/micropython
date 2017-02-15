@@ -26,9 +26,10 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "modubluepy.h"
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
+
+#include "modubluepy.h"
 
 STATIC void ubluepy_delegate_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_delegate_obj_t * self = (ubluepy_delegate_obj_t *)o;
