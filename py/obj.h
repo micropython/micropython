@@ -523,6 +523,7 @@ extern const mp_obj_type_t mp_type_float;
 extern const mp_obj_type_t mp_type_complex;
 extern const mp_obj_type_t mp_type_tuple;
 extern const mp_obj_type_t mp_type_list;
+extern const mp_obj_type_t mp_type_deque;
 extern const mp_obj_type_t mp_type_map; // map (the python builtin, not the dict implementation detail)
 extern const mp_obj_type_t mp_type_enumerate;
 extern const mp_obj_type_t mp_type_filter;

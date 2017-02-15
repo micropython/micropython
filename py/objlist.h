@@ -35,4 +35,19 @@ typedef struct _mp_obj_list_t {
     mp_obj_t *items;
 } mp_obj_list_t;
 
+
+mp_obj_t list_getiter(mp_obj_t o_in);
+mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
+mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
+mp_obj_t list_unary_op(mp_uint_t op, mp_obj_t self_in);
+
+mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable);
+mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
+mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
+mp_obj_t list_clear(mp_obj_t self_in);
+mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value);
+mp_obj_t list_index(size_t n_args, const mp_obj_t *args);
+mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj);
+mp_obj_t list_reverse(mp_obj_t self_in);
+
 #endif // __MICROPY_INCLUDED_PY_OBJLIST_H__

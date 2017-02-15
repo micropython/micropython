@@ -156,6 +156,7 @@ PY_O_BASENAME = \
 	objcell.o \
 	objclosure.o \
 	objcomplex.o \
+	objdeque.o \
 	objdict.o \
 	objenumerate.o \
 	objexcept.o \
