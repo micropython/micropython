@@ -122,6 +122,7 @@ bool common_hal_nativeio_spi_write(nativeio_spi_obj_t *self,
         spi_tx8fast(HSPI, data[i]);
         ++i;
     }
+    while (spi_busy(HSPI)) {};  // Wait for SPI to finish the last byte.
     return true;
 }
 
