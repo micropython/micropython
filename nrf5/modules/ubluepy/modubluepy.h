@@ -37,10 +37,19 @@ p.advertise(device_name="MicroPython")
 
 DB setup:
 
+from ubluepy import Service, Characteristic, UUID, Peripheral
+from pyb import LED
+
 def event_handler(id, length, data):
     print("BLE event:", id, " length: ", length)
 
-from ubluepy import Service, Characteristic, UUID, Peripheral
+    if id == 16:
+        # connected
+        LED(2).on()
+    elif id == 17:
+        # disconnect
+        LED(2).off()
+
 u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
 s = Service(u0)
 u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
