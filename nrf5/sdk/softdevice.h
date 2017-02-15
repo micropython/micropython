@@ -49,4 +49,7 @@ bool sd_service_add(ubluepy_service_obj_t * p_service_obj);
 bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
 
 bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params);
+
+void sd_event_handler_set(mp_obj_t obs, ubluepy_evt_callback_t evt_handler);
+
 #endif // BLUETOOTH_LE_DRIVER_H__

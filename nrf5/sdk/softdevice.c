@@ -41,7 +41,10 @@ if (sd_enabled() == 0) { \
     (void)sd_enable(); \
 }
 
-bool m_adv_in_progress = false;
+static bool m_adv_in_progress = false;
+
+static ubluepy_evt_callback_t ubluepy_event_handler;
+static mp_obj_t               mp_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -445,6 +448,11 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     return true;
 }
 
+void sd_event_handler_set(mp_obj_t obj, ubluepy_evt_callback_t evt_handler) {
+    mp_observer = obj;
+    ubluepy_event_handler = evt_handler;
+}
+
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // S132 event ranges.
 // Common 0x01 -> 0x0F
@@ -455,6 +463,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
+            ubluepy_event_handler(mp_observer, BLE_GAP_EVT_CONNECTED, p_ble_evt->header.evt_len - sizeof(uint16_t), NULL);
             printf("GAP CONNECT\n");
             break;
 

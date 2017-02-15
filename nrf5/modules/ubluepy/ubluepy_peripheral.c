@@ -39,6 +39,25 @@ STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_pri
     mp_printf(print, "Peripheral");
 }
 
+STATIC void event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t length, uint8_t * data) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_obj_t args[3];
+    mp_uint_t num_of_args = 3;
+    args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
+    args[1] = MP_OBJ_NEW_SMALL_INT(length);
+    if (data != NULL) {
+        args[2] = mp_obj_new_bytearray_by_ref(length, data);
+    } else {
+        args[2] = mp_const_none;
+    }
+
+    // for now hard-code all events to conn_handler
+    mp_call_function_n_kw(self->conn_handler, num_of_args, 0, args);
+
+    (void)self;
+}
+
 STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
         ARG_NEW_DEVICE_ADDR,
@@ -46,8 +65,8 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     };
 
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_DEVICE_ADDR, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { ARG_NEW_ADDR_TYPE,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { ARG_NEW_DEVICE_ADDR, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { ARG_NEW_ADDR_TYPE,   MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -57,20 +76,10 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     ubluepy_peripheral_obj_t *s = m_new_obj(ubluepy_peripheral_obj_t);
     s->base.type = type;
 
+	sd_event_handler_set(MP_OBJ_FROM_PTR(s), event_handler);
+
     return MP_OBJ_FROM_PTR(s);
 }
-
-#if 0
-static void peripheral_delegate(void) {
-    // delegate
-    mp_obj_t args[3];
-    mp_uint_t num_of_args = 3;
-    args[0] = type;
-    args[1] = MP_OBJ_NEW_SMALL_INT(size);
-    args[2] = mp_obj_new_bytearray_by_ref(size, evt_data);
-    mp_call_function_n_kw(delegate->handleConnection, num_of_args, 0, args);
-}
-#endif
 
 /// \method withDelegate(DefaultDelegate)
 /// Set delegate instance for handling Bluetooth LE events.

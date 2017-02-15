@@ -37,6 +37,9 @@ p.advertise(device_name="MicroPython")
 
 DB setup:
 
+def event_handler(id, length, data):
+    print("BLE event:", id, " length: ", length)
+
 from ubluepy import Service, Characteristic, UUID, Peripheral
 u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
 s = Service(u0)
@@ -44,6 +47,7 @@ u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
 c = Characteristic(u1)
 s.addCharacteristic(c)
 p = Peripheral()
+p.setConnectionHandler(event_handler)
 p.advertise(device_name="micr", services=[s])
 */
 
@@ -104,6 +108,6 @@ typedef struct _ubluepy_advertise_data_t {
     uint8_t    num_of_services;
 } ubluepy_advertise_data_t;
 
-
+typedef void (*ubluepy_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t length, uint8_t * data);
 
 #endif // UBLUEPY_H__
