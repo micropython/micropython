@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="iso-8859-1"?> 
+
+<flash_board> 
+  <pass> 
+  	<range>CODE 0x10000bc0 0x10003FFF</range> 
+    <loader>$PROJ_DIR$\..\..\..\component\soc\realtek\8195a\misc\iar_utility\common\flashloader\FlashRTL8195aMP.flash</loader>    
+    <abs_offset>0x00000000</abs_offset>
+    <args>--head</args>
+  </pass> 
+  <pass> 
+  	<range>CODE 0x10004000 0x1006FFFF</range> 
+    <loader>$PROJ_DIR$\..\..\..\component\soc\realtek\8195a\misc\iar_utility\common\flashloader\FlashRTL8195aMP.flash</loader>  
+    <abs_offset>0x00000000</abs_offset> 
+    <args>--cascade</args>
+  </pass>  
+  <pass>
+    <range>CODE 0x30000000 0x301FFFFF</range> 
+    <loader>$PROJ_DIR$\..\..\..\component\soc\realtek\8195a\misc\iar_utility\common\flashloader\FlashRTL8195aMP.flash</loader>
+    <abs_offset>0x00000000</abs_offset>
+    <args>--cascade</args>
+  </pass>  
+  <ignore>CODE 0x00000000 0x000FFFFF</ignore> 
+  <ignore>CODE 0x10000000 0x10000bbf</ignore> 
+</flash_board> 

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<flash_device>
+  <exe>$PROJ_DIR$\..\..\..\component\soc\realtek\8195a\misc\iar_utility\common\flashloader\FlashRTL8195aMP.out</exe>
+  <flash_base>0x00000000</flash_base>
+  <page>8</page>
+  <block>256 0x1000</block>
+  <macro>$PROJ_DIR$\..\..\..\component\soc\realtek\8195a\misc\iar_utility\common\flashloader\FlashRTL8195aMP.mac</macro>
+  <aggregate>1</aggregate>
+</flash_device>
