@@ -93,6 +93,8 @@ typedef struct _ubluepy_delegate_obj_t {
 typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_base_t base;
     mp_obj_t      delegate;
+    mp_obj_t      notif_handler;
+    mp_obj_t      conn_handler;
 } ubluepy_peripheral_obj_t;
 
 typedef struct _ubluepy_advertise_data_t {
