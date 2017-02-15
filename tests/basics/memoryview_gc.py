@@ -1,4 +1,10 @@
 # test memoryview retains pointer to original object/buffer
+try:
+    memoryview
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 b = bytearray(10)
 m = memoryview(b)[1:]

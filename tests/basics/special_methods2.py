@@ -1,7 +1,8 @@
 class Cud():
 
     def __init__(self):
-        print("__init__ called")
+        #print("__init__ called")
+        pass
 
     def __repr__(self):
         print("__repr__ called")
@@ -96,13 +97,49 @@ class Cud():
 cud1 = Cud()
 cud2 = Cud()
 
-str(cud1)
-cud1 < cud2
-cud1 <= cud2
-cud1 == cud2
-cud1 >= cud2
-cud1 > cud2
-cud1 + cud2
-cud1 - cud2
+try:
+    +cud1
+except TypeError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
-# more in special_methods2.py
+# the following require MICROPY_PY_ALL_SPECIAL_METHODS
++cud1
+-cud1
+~cud1
+cud1 * cud2
+cud1 / cud2
+cud2 // cud1
+cud1 += cud2
+cud1 -= cud2
+
+# TODO: the following operations are not supported on every ports
+#
+# ne is not supported, !(eq) is called instead
+#cud1 != cud2
+#
+# binary and is not supported
+# cud1 & cud2
+#
+# binary lshift is not supported
+# cud1<<1
+#
+# modulus is not supported
+# cud1 % 2
+#
+# binary or is not supported
+# cud1 | cud2
+#
+# pow is not supported
+# cud1**2
+#
+# rshift is not suported
+# cud1>>1
+#
+# xor is not supported
+# cud1^cud2
+#
+# in the followin test, cpython still calls __eq__
+# cud3=cud1
+# cud3==cud1

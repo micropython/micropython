@@ -2,6 +2,14 @@
 # (non-initialized) instance of class.
 # See e.g. http://infohost.nmt.edu/tcc/help/pubs/python/web/new-new-method.html
 # TODO: Find reference in CPython docs
+try:
+    # If we don't expose object.__new__ (small ports), there's
+    # nothing to test.
+    object.__new__
+except AttributeError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 class Foo:
 
