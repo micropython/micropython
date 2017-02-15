@@ -209,6 +209,10 @@
 #include "nrf5_sdk_conf.h"
 #endif
 
+#ifndef MICROPY_PY_UBLUEPY
+#define MICROPY_PY_UBLUEPY                       (0)
+#endif
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)
