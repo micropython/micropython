@@ -100,6 +100,7 @@ void pin_init0(void) {
 }
 
 void pin_intr_handler(uint32_t status) {
+    mp_sched_lock();
     gc_lock();
     status &= 0xffff;
     for (int p = 0; status; ++p, status >>= 1) {
@@ -111,6 +112,7 @@ void pin_intr_handler(uint32_t status) {
         }
     }
     gc_unlock();
+    mp_sched_unlock();
 }
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {

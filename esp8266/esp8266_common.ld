@@ -100,6 +100,7 @@ SECTIONS
         *py/qstr.o*(.literal* .text*)
         *py/repl.o*(.literal* .text*)
         *py/runtime.o*(.literal* .text*)
+        *py/scheduler.o*(.literal* .text*)
         *py/scope.o*(.literal* .text*)
         *py/sequence.o*(.literal* .text*)
         *py/showbc.o*(.literal* .text*)
