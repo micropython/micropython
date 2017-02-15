@@ -112,6 +112,7 @@ SRC_LIB = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/interrupt_char.c \
 	)
 
 DRIVERS_SRC_C = $(addprefix drivers/,\

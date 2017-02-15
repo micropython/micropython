@@ -32,7 +32,6 @@
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
 int USBD_CDC_IsConnected(void);
-void USBD_CDC_SetInterrupt(int chr);
 
 int USBD_CDC_TxHalfEmpty(void);
 int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout);
