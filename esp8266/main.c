@@ -34,6 +34,7 @@
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+#include "lib/fatfs/ff.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "gccollect.h"
@@ -42,6 +43,54 @@
 #include "common-hal/nativeio/PWMOut.h"
 
 STATIC char heap[36 * 1024];
+
+bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
+    FILINFO fno;
+#if _USE_LFN
+    fno.lfname = NULL;
+    fno.lfsize = 0;
+#endif
+    FRESULT res = f_stat(filename, &fno);
+    if (res != FR_OK || fno.fattrib & AM_DIR) {
+        return false;
+    }
+    mp_hal_stdout_tx_str(filename);
+    mp_hal_stdout_tx_str(" output:\r\n");
+    pyexec_file(filename, exec_result);
+    return true;
+}
+
+bool serial_active = false;
+
+STATIC bool start_mp(void) {
+    pyexec_frozen_module("_boot.py");
+
+    pyexec_result_t result;
+    bool found_boot = maybe_run("settings.txt", &result) ||
+                      maybe_run("settings.py", &result) ||
+                      maybe_run("boot.py", &result) ||
+                      maybe_run("boot.txt", &result);
+
+    if (!found_boot || !(result.return_code & PYEXEC_FORCED_EXIT)) {
+        maybe_run("code.txt", &result) ||
+            maybe_run("code.py", &result) ||
+            maybe_run("main.py", &result) ||
+            maybe_run("main.txt", &result);
+    }
+
+    if (result.return_code & PYEXEC_FORCED_EXIT) {
+        return false;
+    }
+
+    // We can't detect connections so we wait for any character to mark the serial active.
+    if (!serial_active) {
+        mp_hal_stdin_rx_chr();
+        serial_active = true;
+    }
+    mp_hal_stdout_tx_str("\r\n\r\n");
+    mp_hal_stdout_tx_str("Press any key to enter the REPL. Use CTRL-D to soft reset.\r\n");
+    return mp_hal_stdin_rx_chr() == CHAR_CTRL_D;
+}
 
 STATIC void mp_reset(void) {
     mp_stack_set_top((void*)0x40000000);
@@ -65,48 +114,37 @@ STATIC void mp_reset(void) {
     readline_init0();
     dupterm_task_init();
     pwmout_reset();
-#if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("_boot.py");
-    pyexec_file("boot.py", NULL);
-    pyexec_file("main.py", NULL);
-#endif
 }
 
-void soft_reset(void) {
+bool soft_reset(void) {
     mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
-    #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_event_repl_init();
-    #endif
+    mp_hal_delay_us(1000); // Give the RTOS time to do housekeeping.
+    return start_mp();
 }
 
 void init_done(void) {
-    #if MICROPY_REPL_EVENT_DRIVEN
-    uart_task_init();
-    #endif
     mp_reset();
+    mp_hal_delay_us(1000); // Give the RTOS time to do housekeeping.
+    bool skip_repl = start_mp();
     mp_hal_stdout_tx_str("\r\n");
-    #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_event_repl_init();
-    #endif
 
-    #if !MICROPY_REPL_EVENT_DRIVEN
-soft_reset:
-    for (;;) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-            if (pyexec_raw_repl() != 0) {
-                break;
-            }
-        } else {
-            if (pyexec_friendly_repl() != 0) {
-                break;
+    int exit_code = PYEXEC_FORCED_EXIT;
+    while (true) {
+        if (!skip_repl) {
+            if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+                exit_code = pyexec_raw_repl();
+            } else {
+                exit_code = pyexec_friendly_repl();
             }
         }
+        if (exit_code == PYEXEC_FORCED_EXIT) {
+            skip_repl = soft_reset();
+        } else if (exit_code != 0) {
+            break;
+        }
     }
-    soft_reset();
-    goto soft_reset;
-    #endif
 }
 
 void user_init(void) {
