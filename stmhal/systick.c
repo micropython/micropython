@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "irq.h"
 #include "systick.h"
@@ -58,6 +59,7 @@ void mp_hal_delay_ms(mp_uint_t Delay) {
         // Wraparound of tick is taken care of by 2's complement arithmetic.
         while (uwTick - start < Delay) {
             // Enter sleep mode, waiting for (at least) the SysTick interrupt.
+            mp_handle_pending();
             #if MICROPY_PY_THREAD
             if (pyb_thread_enabled) {
                 pyb_thread_yield();

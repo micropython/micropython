@@ -69,6 +69,8 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 
@@ -303,6 +305,8 @@ static inline mp_uint_t disable_irq(void) {
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
+        extern void mp_handle_pending(void); \
+        mp_handle_pending(); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
@@ -312,7 +316,12 @@ static inline mp_uint_t disable_irq(void) {
         } \
     } while (0);
 #else
-#define MICROPY_EVENT_POLL_HOOK            __WFI();
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(void); \
+        mp_handle_pending(); \
+        __WFI(); \
+    } while (0);
 #endif
 
 // There is no classical C heap in bare-metal ports, only Python

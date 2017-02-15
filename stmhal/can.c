@@ -865,6 +865,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
     }
 
     if (callback != mp_const_none) {
+        mp_sched_lock();
         gc_lock();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
@@ -877,6 +878,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
         }
         gc_unlock();
+        mp_sched_unlock();
     }
 }
 
