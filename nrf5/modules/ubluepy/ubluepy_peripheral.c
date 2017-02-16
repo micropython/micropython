@@ -42,18 +42,20 @@ STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_pri
 STATIC void event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_obj_t args[3];
-    mp_uint_t num_of_args = 3;
-    args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
-    args[1] = MP_OBJ_NEW_SMALL_INT(length);
-    if (data != NULL) {
-        args[2] = mp_obj_new_bytearray_by_ref(length, data);
-    } else {
-        args[2] = mp_const_none;
-    }
+    if (self->conn_handler != mp_const_none) {
+        mp_obj_t args[3];
+        mp_uint_t num_of_args = 3;
+        args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
+        args[1] = MP_OBJ_NEW_SMALL_INT(length);
+        if (data != NULL) {
+            args[2] = mp_obj_new_bytearray_by_ref(length, data);
+        } else {
+            args[2] = mp_const_none;
+        }
 
-    // for now hard-code all events to conn_handler
-    mp_call_function_n_kw(self->conn_handler, num_of_args, 0, args);
+        // for now hard-code all events to conn_handler
+        mp_call_function_n_kw(self->conn_handler, num_of_args, 0, args);
+    }
 
     (void)self;
 }
@@ -77,6 +79,10 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     s->base.type = type;
 
 	sd_event_handler_set(MP_OBJ_FROM_PTR(s), event_handler);
+
+    s->delegate      = mp_const_none;
+    s->conn_handler  = mp_const_none;
+    s->notif_handler = mp_const_none;
 
     return MP_OBJ_FROM_PTR(s);
 }
