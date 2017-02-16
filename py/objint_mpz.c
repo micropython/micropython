@@ -407,9 +407,9 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
 }
 #endif
 
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mp_uint_t n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
+    size_t n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
     *str += n;
     return MP_OBJ_FROM_PTR(o);
 }
