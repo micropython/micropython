@@ -283,7 +283,7 @@ STATIC bool get_hex(mp_lexer_t *lex, mp_uint_t num_digits, mp_uint_t *result) {
     return true;
 }
 
-STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
+void mp_lexer_to_next(mp_lexer_t *lex) {
     // start new token text
     vstr_reset(&lex->vstr);
 
@@ -322,14 +322,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
     lex->tok_line = lex->line;
     lex->tok_column = lex->column;
 
-    if (first_token && lex->line == 1 && lex->column != 1) {
-        // check that the first token is in the first column
-        // if first token is not on first line, we get a physical newline and
-        // this check is done as part of normal indent/dedent checking below
-        // (done to get equivalence with CPython)
-        lex->tok_kind = MP_TOKEN_INDENT;
-
-    } else if (lex->emit_dent < 0) {
+    if (lex->emit_dent < 0) {
         lex->tok_kind = MP_TOKEN_DEDENT;
         lex->emit_dent += 1;
 
@@ -705,7 +698,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     vstr_init(&lex->vstr, 32);
 
     // check for memory allocation error
-    // note: vstr_init above may fail on malloc, but so may mp_lexer_next_token_into below
+    // note: vstr_init above may fail on malloc, but so may mp_lexer_to_next below
     if (lex->indent_level == NULL) {
         mp_lexer_free(lex);
         return NULL;
@@ -737,7 +730,13 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     }
 
     // preload first token
-    mp_lexer_next_token_into(lex, true);
+    mp_lexer_to_next(lex);
+
+    // Check that the first token is in the first column.  If it's not then we
+    // convert the token kind to INDENT so that the parser gives a syntax error.
+    if (lex->tok_column != 1) {
+        lex->tok_kind = MP_TOKEN_INDENT;
+    }
 
     return lex;
 }
@@ -783,10 +782,6 @@ void mp_lexer_free(mp_lexer_t *lex) {
         m_del(uint16_t, lex->indent_level, lex->alloc_indent_level);
         m_del_obj(mp_lexer_t, lex);
     }
-}
-
-void mp_lexer_to_next(mp_lexer_t *lex) {
-    mp_lexer_next_token_into(lex, false);
 }
 
 #if 0
