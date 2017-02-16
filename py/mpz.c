@@ -705,7 +705,7 @@ mpz_t *mpz_from_float(mp_float_t val) {
 }
 #endif
 
-mpz_t *mpz_from_str(const char *str, size_t len, bool neg, mp_uint_t base) {
+mpz_t *mpz_from_str(const char *str, size_t len, bool neg, unsigned int base) {
     mpz_t *z = mpz_zero();
     mpz_set_from_str(z, str, len, neg, base);
     return z;
@@ -873,7 +873,7 @@ typedef uint32_t mp_float_int_t;
 #endif
 
 // returns number of bytes from str that were processed
-size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, mp_uint_t base) {
+size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base) {
     assert(base <= 36);
 
     const char *cur = str;
@@ -1676,7 +1676,7 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 
 #if 0
 this function is unused
-char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
+char *mpz_as_str(const mpz_t *i, unsigned int base) {
     char *s = m_new(char, mp_int_format_size(mpz_max_num_bits(i), base, NULL, '\0'));
     mpz_as_str_inpl(i, base, NULL, 'a', '\0', s);
     return s;
@@ -1685,7 +1685,7 @@ char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
 
 // assumes enough space as calculated by mp_int_format_size
 // returns length of string, not including null byte
-size_t mpz_as_str_inpl(const mpz_t *i, mp_uint_t base, const char *prefix, char base_char, char comma, char *str) {
+size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, char base_char, char comma, char *str) {
     if (str == NULL) {
         return 0;
     }

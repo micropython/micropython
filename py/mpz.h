@@ -108,7 +108,7 @@ void mpz_set_from_ll(mpz_t *z, long long i, bool is_signed);
 #if MICROPY_PY_BUILTINS_FLOAT
 void mpz_set_from_float(mpz_t *z, mp_float_t src);
 #endif
-size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, mp_uint_t base);
+size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base);
 void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf);
 
 bool mpz_is_zero(const mpz_t *z);
@@ -137,6 +137,6 @@ void mpz_as_bytes(const mpz_t *z, bool big_endian, size_t len, byte *buf);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
-size_t mpz_as_str_inpl(const mpz_t *z, mp_uint_t base, const char *prefix, char base_char, char comma, char *str);
+size_t mpz_as_str_inpl(const mpz_t *z, unsigned int base, const char *prefix, char base_char, char comma, char *str);
 
 #endif // __MICROPY_INCLUDED_PY_MPZ_H__
