@@ -44,7 +44,7 @@ typedef struct _mp_obj_set_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_set_t *set;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_set_it_t;
 
 STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
@@ -96,7 +96,7 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
     #endif
     mp_print_str(print, "{");
-    for (mp_uint_t i = 0; i < self->set.alloc; i++) {
+    for (size_t i = 0; i < self->set.alloc; i++) {
         if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
             if (!first) {
                 mp_print_str(print, ", ");
@@ -143,10 +143,10 @@ STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
 STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     mp_obj_set_it_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t max = self->set->set.alloc;
+    size_t max = self->set->set.alloc;
     mp_set_t *set = &self->set->set;
 
-    for (mp_uint_t i = self->cur; i < max; i++) {
+    for (size_t i = self->cur; i < max; i++) {
         if (MP_SET_SLOT_IS_FILLED(set, i)) {
             self->cur = i + 1;
             return set->table[i];
@@ -228,7 +228,7 @@ STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
     }
 
 
-    for (mp_uint_t i = 1; i < n_args; i++) {
+    for (size_t i = 1; i < n_args; i++) {
         mp_obj_t other = args[i];
         if (self == other) {
             set_clear(self);
@@ -436,7 +436,7 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
 
 STATIC mp_obj_t set_update(size_t n_args, const mp_obj_t *args) {
     check_set(args[0]);
-    for (mp_uint_t i = 1; i < n_args; i++) {
+    for (size_t i = 1; i < n_args; i++) {
         set_update_int(MP_OBJ_TO_PTR(args[0]), args[i]);
     }
 
@@ -462,10 +462,10 @@ STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
             if (MP_OBJ_IS_TYPE(self_in, &mp_type_frozenset)) {
                 // start hash with unique value
                 mp_int_t hash = (mp_int_t)(uintptr_t)&mp_type_frozenset;
-                mp_uint_t max = self->set.alloc;
+                size_t max = self->set.alloc;
                 mp_set_t *set = &self->set;
 
-                for (mp_uint_t i = 0; i < max; i++) {
+                for (size_t i = 0; i < max; i++) {
                     if (MP_SET_SLOT_IS_FILLED(set, i)) {
                         hash += MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, set->table[i]));
                     }
@@ -587,11 +587,11 @@ const mp_obj_type_t mp_type_frozenset = {
 };
 #endif
 
-mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items) {
+mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
     mp_obj_set_t *o = m_new_obj(mp_obj_set_t);
     o->base.type = &mp_type_set;
     mp_set_init(&o->set, n_args);
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (size_t i = 0; i < n_args; i++) {
         mp_set_lookup(&o->set, items[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     }
     return MP_OBJ_FROM_PTR(o);
