@@ -63,8 +63,8 @@ typedef enum {
     do { \
         unum = (unum << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0)
-#define DECODE_ULABEL mp_uint_t ulab = (ip[0] | (ip[1] << 8)); ip += 2
-#define DECODE_SLABEL mp_uint_t slab = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2
+#define DECODE_ULABEL size_t ulab = (ip[0] | (ip[1] << 8)); ip += 2
+#define DECODE_SLABEL size_t slab = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2
 
 #if MICROPY_PERSISTENT_CODE
 
@@ -863,7 +863,7 @@ unwind_jump:;
 
                 ENTRY(MP_BC_MAKE_CLOSURE): {
                     DECODE_PTR;
-                    mp_uint_t n_closed_over = *ip++;
+                    size_t n_closed_over = *ip++;
                     // Stack layout: closed_overs <- TOS
                     sp -= n_closed_over - 1;
                     SET_TOP(mp_make_closure_from_raw_code(ptr, n_closed_over, sp));
@@ -872,7 +872,7 @@ unwind_jump:;
 
                 ENTRY(MP_BC_MAKE_CLOSURE_DEFARGS): {
                     DECODE_PTR;
-                    mp_uint_t n_closed_over = *ip++;
+                    size_t n_closed_over = *ip++;
                     // Stack layout: def_tuple def_dict closed_overs <- TOS
                     sp -= 2 + n_closed_over - 1;
                     SET_TOP(mp_make_closure_from_raw_code(ptr, 0x100 | n_closed_over, sp));
@@ -958,8 +958,8 @@ unwind_jump:;
                         code_state->sp = sp;
                         code_state->exc_sp = MP_TAGPTR_MAKE(exc_sp, currently_in_except_block);
 
-                        mp_uint_t n_args = unum & 0xff;
-                        mp_uint_t n_kw = (unum >> 8) & 0xff;
+                        size_t n_args = unum & 0xff;
+                        size_t n_kw = (unum >> 8) & 0xff;
                         int adjust = (sp[1] == MP_OBJ_NULL) ? 0 : 1;
 
                         mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(*sp, n_args + adjust, n_kw, sp + 2 - adjust);
@@ -1304,7 +1304,7 @@ unwind_loop:
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
                 const byte *ip = code_state->code_info;
-                mp_uint_t code_info_size = mp_decode_uint(&ip);
+                size_t code_info_size = mp_decode_uint(&ip);
                 #if MICROPY_PERSISTENT_CODE
                 qstr block_name = ip[0] | (ip[1] << 8);
                 qstr source_file = ip[2] | (ip[3] << 8);
@@ -1317,7 +1317,7 @@ unwind_loop:
                 size_t source_line = 1;
                 size_t c;
                 while ((c = *ip)) {
-                    mp_uint_t b, l;
+                    size_t b, l;
                     if ((c & 0x80) == 0) {
                         // 0b0LLBBBBB encoding
                         b = c & 0x1f;
