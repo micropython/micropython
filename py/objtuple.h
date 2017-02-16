@@ -30,13 +30,13 @@
 
 typedef struct _mp_obj_tuple_t {
     mp_obj_base_t base;
-    mp_uint_t len;
+    size_t len;
     mp_obj_t items[];
 } mp_obj_tuple_t;
 
 typedef struct _mp_rom_obj_tuple_t {
     mp_obj_base_t base;
-    mp_uint_t len;
+    size_t len;
     mp_rom_obj_t items[];
 } mp_rom_obj_tuple_t;
 
@@ -59,6 +59,6 @@ extern const mp_obj_type_t mp_type_attrtuple;
 void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, mp_obj_tuple_t *o);
 #endif
 
-mp_obj_t mp_obj_new_attrtuple(const qstr *fields, mp_uint_t n, const mp_obj_t *items);
+mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *items);
 
 #endif // __MICROPY_INCLUDED_PY_OBJTUPLE_H__

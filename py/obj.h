@@ -630,7 +630,7 @@ mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_s
 mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_uint_t n_closed, const mp_obj_t *closed);
-mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items);
+mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(mp_uint_t n_args);
 mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items);
