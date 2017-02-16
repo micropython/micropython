@@ -631,7 +631,7 @@ mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_uint_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
-mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items);
+mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(mp_uint_t n_args);
 mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
@@ -720,11 +720,11 @@ mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
 struct _mp_obj_list_t;
-void mp_obj_list_init(struct _mp_obj_list_t *o, mp_uint_t n);
+void mp_obj_list_init(struct _mp_obj_list_t *o, size_t n);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
-void mp_obj_list_set_len(mp_obj_t self_in, mp_uint_t len);
+void mp_obj_list_set_len(mp_obj_t self_in, size_t len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
