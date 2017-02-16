@@ -610,9 +610,9 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const char* data, mp_uint_t len, bool make_qstr_if_not_already);
+mp_obj_t mp_obj_new_str(const char* data, size_t len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
-mp_obj_t mp_obj_new_bytes(const byte* data, mp_uint_t len);
+mp_obj_t mp_obj_new_bytes(const byte* data, size_t len);
 mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items);
 mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -700,7 +700,7 @@ qstr mp_obj_str_get_qstr(mp_obj_t self_in); // use this if you will anyway conve
 const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need the string to be null terminated
 const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len);
 mp_obj_t mp_obj_str_intern(mp_obj_t str);
-void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, mp_uint_t str_len, bool is_bytes);
+void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t str_len, bool is_bytes);
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float

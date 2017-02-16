@@ -284,7 +284,7 @@ typedef struct _mp_obj_str_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_t str;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_str_it_t;
 
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
