@@ -574,12 +574,9 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
         // special handling for . and ... operators, because .. is not a valid operator
 
         // get first char
-        vstr_add_char(&lex->vstr, '.');
         next_char(lex);
 
         if (is_char_and(lex, '.', '.')) {
-            vstr_add_char(&lex->vstr, '.');
-            vstr_add_char(&lex->vstr, '.');
             next_char(lex);
             next_char(lex);
             lex->tok_kind = MP_TOKEN_ELLIPSIS;
