@@ -108,8 +108,8 @@ STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     }
 }
 
-STATIC mp_uint_t read_uint(mp_reader_t *reader) {
-    mp_uint_t unum = 0;
+STATIC size_t read_uint(mp_reader_t *reader) {
+    size_t unum = 0;
     for (;;) {
         byte b = reader->readbyte(reader->data);
         unum = (unum << 7) | (b & 0x7f);
@@ -121,7 +121,7 @@ STATIC mp_uint_t read_uint(mp_reader_t *reader) {
 }
 
 STATIC qstr load_qstr(mp_reader_t *reader) {
-    mp_uint_t len = read_uint(reader);
+    size_t len = read_uint(reader);
     char *str = m_new(char, len);
     read_bytes(reader, (byte*)str, len);
     qstr qst = qstr_from_strn(str, len);
@@ -164,7 +164,7 @@ STATIC void load_bytecode_qstrs(mp_reader_t *reader, byte *ip, byte *ip_top) {
 
 STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
     // load bytecode
-    mp_uint_t bc_len = read_uint(reader);
+    size_t bc_len = read_uint(reader);
     byte *bytecode = m_new(byte, bc_len);
     read_bytes(reader, bytecode, bc_len);
 
@@ -182,17 +182,17 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
     load_bytecode_qstrs(reader, (byte*)ip, bytecode + bc_len);
 
     // load constant table
-    mp_uint_t n_obj = read_uint(reader);
-    mp_uint_t n_raw_code = read_uint(reader);
+    size_t n_obj = read_uint(reader);
+    size_t n_raw_code = read_uint(reader);
     mp_uint_t *const_table = m_new(mp_uint_t, prelude.n_pos_args + prelude.n_kwonly_args + n_obj + n_raw_code);
     mp_uint_t *ct = const_table;
-    for (mp_uint_t i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
+    for (size_t i = 0; i < prelude.n_pos_args + prelude.n_kwonly_args; ++i) {
         *ct++ = (mp_uint_t)MP_OBJ_NEW_QSTR(load_qstr(reader));
     }
-    for (mp_uint_t i = 0; i < n_obj; ++i) {
+    for (size_t i = 0; i < n_obj; ++i) {
         *ct++ = (mp_uint_t)load_obj(reader);
     }
-    for (mp_uint_t i = 0; i < n_raw_code; ++i) {
+    for (size_t i = 0; i < n_raw_code; ++i) {
         *ct++ = (mp_uint_t)(uintptr_t)load_raw_code(reader);
     }
 
@@ -248,7 +248,7 @@ STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
 }
 
 #define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
-STATIC void mp_print_uint(mp_print_t *print, mp_uint_t n) {
+STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);
     *--p = n & 0x7f;
