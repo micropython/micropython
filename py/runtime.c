@@ -301,7 +301,7 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
             }
         } else if (MP_OBJ_IS_TYPE(rhs, &mp_type_tuple)) {
             mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(rhs);
-            for (mp_uint_t i = 0; i < tuple->len; i++) {
+            for (size_t i = 0; i < tuple->len; i++) {
                 rhs = tuple->items[i];
                 if (!mp_obj_is_exception_type(rhs)) {
                     goto unsupported_op;
@@ -580,7 +580,7 @@ mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2) {
 }
 
 // args contains, eg: arg0  arg1  key0  value0  key1  value1
-mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // TODO improve this: fun object can specify its type and we parse here the arguments,
     // passing to the function arrays of fixed and keyword arguments
 
@@ -604,7 +604,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args, mp_uint_t n_kw
 
 // args contains: fun  self/NULL  arg(0)  ...  arg(n_args-2)  arg(n_args-1)  kw_key(0)  kw_val(0)  ... kw_key(n_kw-1)  kw_val(n_kw-1)
 // if n_args==0 and n_kw==0 then there are only fun and self/NULL
-mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args) {
     DEBUG_OP_printf("call method (fun=%p, self=%p, n_args=" UINT_FMT ", n_kw=" UINT_FMT ", args=%p)\n", args[0], args[1], n_args, n_kw, args);
     int adjust = (args[1] == MP_OBJ_NULL) ? 0 : 1;
     return mp_call_function_n_kw(args[0], n_args + adjust, n_kw, args + 2 - adjust);
@@ -614,7 +614,7 @@ mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *a
 #if !MICROPY_STACKLESS
 STATIC
 #endif
-void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
+void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
     mp_obj_t fun = *args++;
     mp_obj_t self = MP_OBJ_NULL;
     if (have_self) {
@@ -724,7 +724,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const 
         // dictionary
         mp_map_t *map = mp_obj_dict_get_map(kw_dict);
         assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
-        for (mp_uint_t i = 0; i < map->alloc; i++) {
+        for (size_t i = 0; i < map->alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(map, i)) {
                 // the key must be a qstr, so intern it if it's a string
                 mp_obj_t key = map->table[i].key;
@@ -780,7 +780,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const 
     out_args->n_alloc = args2_alloc;
 }
 
-mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args) {
+mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args) {
     mp_call_args_t out_args;
     mp_call_prepare_args_n_kw_var(have_self, n_args_n_kw, args, &out_args);
 
@@ -791,7 +791,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void mp_unpack_sequence(mp_obj_t seq_in, mp_uint_t num, mp_obj_t *items) {
+void mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
@@ -805,7 +805,7 @@ void mp_unpack_sequence(mp_obj_t seq_in, mp_uint_t num, mp_obj_t *items) {
         } else if (seq_len > num) {
             goto too_long;
         }
-        for (mp_uint_t i = 0; i < num; i++) {
+        for (size_t i = 0; i < num; i++) {
             items[i] = seq_items[num - 1 - i];
         }
     } else {
@@ -841,9 +841,9 @@ too_long:
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
-    mp_uint_t num_left = num_in & 0xff;
-    mp_uint_t num_right = (num_in >> 8) & 0xff;
+void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
+    size_t num_left = num_in & 0xff;
+    size_t num_right = (num_in >> 8) & 0xff;
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
     mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
@@ -861,11 +861,11 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
         if (seq_len < num_left + num_right) {
             goto too_short;
         }
-        for (mp_uint_t i = 0; i < num_right; i++) {
+        for (size_t i = 0; i < num_right; i++) {
             items[i] = seq_items[seq_len - 1 - i];
         }
         items[num_right] = mp_obj_new_list(seq_len - num_left - num_right, seq_items + num_left);
-        for (mp_uint_t i = 0; i < num_left; i++) {
+        for (size_t i = 0; i < num_left; i++) {
             items[num_right + 1 + i] = seq_items[num_left - 1 - i];
         }
     } else {
@@ -890,7 +890,7 @@ void mp_unpack_ex(mp_obj_t seq_in, mp_uint_t num_in, mp_obj_t *items) {
             goto too_short;
         }
         items[num_right] = MP_OBJ_FROM_PTR(rest);
-        for (mp_uint_t i = 0; i < num_right; i++) {
+        for (size_t i = 0; i < num_right; i++) {
             items[num_right - 1 - i] = rest->items[rest->len - num_right + i];
         }
         mp_obj_list_set_len(MP_OBJ_FROM_PTR(rest), rest->len - num_right);
@@ -1350,7 +1350,7 @@ void mp_import_all(mp_obj_t module) {
 
     // TODO: Support __all__
     mp_map_t *map = mp_obj_dict_get_map(MP_OBJ_FROM_PTR(mp_obj_module_get_globals(module)));
-    for (mp_uint_t i = 0; i < map->alloc; i++) {
+    for (size_t i = 0; i < map->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
             if (*qstr_str(name) != '_') {
