@@ -1677,7 +1677,7 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 #if 0
 this function is unused
 char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
-    char *s = m_new(char, mpz_as_str_size(i, base, NULL, '\0'));
+    char *s = m_new(char, mp_int_format_size(mpz_max_num_bits(i), base, NULL, '\0'));
     mpz_as_str_inpl(i, base, NULL, 'a', '\0', s);
     return s;
 }

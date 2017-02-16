@@ -137,7 +137,6 @@ void mpz_as_bytes(const mpz_t *z, bool big_endian, size_t len, byte *buf);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
-size_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma);
 size_t mpz_as_str_inpl(const mpz_t *z, mp_uint_t base, const char *prefix, char base_char, char comma, char *str);
 
 #endif // __MICROPY_INCLUDED_PY_MPZ_H__
