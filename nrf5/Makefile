@@ -219,6 +219,11 @@ else ifeq ($(FLASHER), pyocd)
 flash: $(BUILD)/firmware.elf
 	pyocd-flashtool -t $(MCU_VARIANT) $(BUILD)/firmware.hex
 
+sd:
+	pyocd-flashtool -t $(MCU_VARIANT) --chip_erase
+	pyocd-flashtool -t $(MCU_VARIANT) $(SOFTDEV_HEX)
+	pyocd-flashtool -t $(MCU_VARIANT) $(BUILD)/firmware.hex
+
 endif
 
 $(BUILD)/firmware.elf: $(OBJ)
