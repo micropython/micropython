@@ -64,6 +64,16 @@ extern const qstr mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
+void mp_handle_pending(void);
+void mp_handle_pending_tail(mp_uint_t atomic_state);
+
+#if MICROPY_ENABLE_SCHEDULER
+void mp_sched_lock(void);
+void mp_sched_unlock(void);
+static inline unsigned int mp_sched_num_pending(void) { return MP_STATE_VM(sched_sp); }
+bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
+#endif
+
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 

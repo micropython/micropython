@@ -616,6 +616,16 @@ typedef double mp_float_t;
 #define MICROPY_USE_INTERNAL_PRINTF (1)
 #endif
 
+// Support for internal scheduler
+#ifndef MICROPY_ENABLE_SCHEDULER
+#define MICROPY_ENABLE_SCHEDULER (0)
+#endif
+
+// Maximum number of entries in the scheduler
+#ifndef MICROPY_SCHEDULER_DEPTH
+#define MICROPY_SCHEDULER_DEPTH (4)
+#endif
+
 // Support for generic VFS sub-system
 #ifndef MICROPY_VFS
 #define MICROPY_VFS (0)

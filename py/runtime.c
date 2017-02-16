@@ -63,6 +63,10 @@ void mp_init(void) {
 
     // no pending exceptions to start with
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+    #if MICROPY_ENABLE_SCHEDULER
+    MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+    MP_STATE_VM(sched_sp) = 0;
+    #endif
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     mp_init_emergency_exception_buf();

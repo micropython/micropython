@@ -46,4 +46,9 @@ void mp_keyboard_interrupt(void) {
     #else
     MP_STATE_VM(mp_pending_exception) = MP_STATE_PORT(mp_kbd_exception);
     #endif
+    #if MICROPY_ENABLE_SCHEDULER
+    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+    }
+    #endif
 }

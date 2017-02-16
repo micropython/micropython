@@ -143,6 +143,7 @@ PY_O_BASENAME = \
 	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
+	scheduler.o \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \
