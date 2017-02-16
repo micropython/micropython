@@ -527,6 +527,23 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             next_char(lex);
         }
 
+        // Check if the name is a keyword.
+        // We also check for __debug__ here and convert it to its value.  This is
+        // so the parser gives a syntax error on, eg, x.__debug__.  Otherwise, we
+        // need to check for this special token in many places in the compiler.
+        // TODO improve speed of these string comparisons
+        for (size_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
+            if (str_strn_equal(tok_kw[i], lex->vstr.buf, lex->vstr.len)) {
+                if (i == MP_ARRAY_SIZE(tok_kw) - 1) {
+                    // tok_kw[MP_ARRAY_SIZE(tok_kw) - 1] == "__debug__"
+                    lex->tok_kind = (MP_STATE_VM(mp_optimise_value) == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
+                } else {
+                    lex->tok_kind = MP_TOKEN_KW_FALSE + i;
+                }
+                break;
+            }
+        }
+
     } else if (is_digit(lex) || (is_char(lex, '.') && is_following_digit(lex))) {
         bool forced_integer = false;
         if (is_char(lex, '.')) {
@@ -652,26 +669,6 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 lex->nested_bracket_level += 1;
             } else if (lex->tok_kind == MP_TOKEN_DEL_PAREN_CLOSE || lex->tok_kind == MP_TOKEN_DEL_BRACKET_CLOSE || lex->tok_kind == MP_TOKEN_DEL_BRACE_CLOSE) {
                 lex->nested_bracket_level -= 1;
-            }
-        }
-    }
-
-    // check for keywords
-    if (lex->tok_kind == MP_TOKEN_NAME) {
-        // We check for __debug__ here and convert it to its value.  This is so
-        // the parser gives a syntax error on, eg, x.__debug__.  Otherwise, we
-        // need to check for this special token in many places in the compiler.
-        // TODO improve speed of these string comparisons
-        //for (mp_int_t i = 0; tok_kw[i] != NULL; i++) {
-        for (size_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
-            if (str_strn_equal(tok_kw[i], lex->vstr.buf, lex->vstr.len)) {
-                if (i == MP_ARRAY_SIZE(tok_kw) - 1) {
-                    // tok_kw[MP_ARRAY_SIZE(tok_kw) - 1] == "__debug__"
-                    lex->tok_kind = (MP_STATE_VM(mp_optimise_value) == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
-                } else {
-                    lex->tok_kind = MP_TOKEN_KW_FALSE + i;
-                }
-                break;
             }
         }
     }
