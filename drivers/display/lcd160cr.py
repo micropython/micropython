@@ -203,7 +203,7 @@ class LCD160CR:
     #### SETUP COMMANDS ####
 
     def set_power(self, on):
-        self.pwr(value)
+        self.pwr(on)
         sleep_ms(15)
 
     def set_orient(self, orient):
