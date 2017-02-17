@@ -27,15 +27,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
-#include "py/lexer.h"
-#include "py/parse.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
