@@ -375,53 +375,116 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     if (p_adv_params->num_of_services > 0) {
 
-        uint8_t size_byte_pos = byte_pos;
-
-        // skip length byte for now, apply total length post calculation
-        byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
-
-        adv_data[byte_pos] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
-        byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
-
-        uint8_t uuid_total_size = 0;
-        uint8_t encoded_size    = 0;
+        bool type_16bit_present  = false;
+        bool type_128bit_present = false;
 
         for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
             ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
-
-            ble_uuid_t uuid;
-            uuid.type = p_service->p_uuid->uuid_vs_idx;
-            uuid.uuid = (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]);
-
-            // calculate total size of uuids
-            if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                          "Can not encode UUID, to check length."));
+            if (p_service->p_uuid->type == UBLUEPY_UUID_16_BIT) {
+                type_16bit_present = true;
             }
 
-            // do encoding into the adv buffer
-            if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                          "Can encode UUID into the advertisment packet."));
+            if (p_service->p_uuid->type == UBLUEPY_UUID_128_BIT) {
+                type_128bit_present = true;
             }
-
-            BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
-            for (uint8_t j = 0; j < encoded_size; j++) {
-                BLE_DRIVER_LOG(HEX2_FMT " ", adv_data[byte_pos + j]);
-            }
-            BLE_DRIVER_LOG("\n");
-
-            uuid_total_size += encoded_size; // size of entry
-            byte_pos        += encoded_size; // relative to adv data packet
-            BLE_DRIVER_LOG("ADV: uuid size: %u, type: %u, uuid: %u, vs_idx: %u\n",
-                   encoded_size, p_service->p_uuid->type,
-                   (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]),
-                   p_service->p_uuid->uuid_vs_idx);
         }
 
-        adv_data[size_byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + uuid_total_size);
-    }
+        if (type_16bit_present) {
+            uint8_t size_byte_pos = byte_pos;
 
+            // skip length byte for now, apply total length post calculation
+            byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
+
+            adv_data[byte_pos] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE;
+            byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+
+            uint8_t uuid_total_size = 0;
+            uint8_t encoded_size    = 0;
+
+            for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
+                ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
+
+                ble_uuid_t uuid;
+                uuid.type = p_service->p_uuid->type;
+                uuid.uuid = (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]);
+
+                // calculate total size of uuids
+                if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                              "Can not encode UUID, to check length."));
+                }
+
+                // do encoding into the adv buffer
+                if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                              "Can encode UUID into the advertisment packet."));
+                }
+
+                BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
+                for (uint8_t j = 0; j < encoded_size; j++) {
+                    BLE_DRIVER_LOG(HEX2_FMT " ", adv_data[byte_pos + j]);
+                }
+                BLE_DRIVER_LOG("\n");
+
+                uuid_total_size += encoded_size; // size of entry
+                byte_pos        += encoded_size; // relative to adv data packet
+                BLE_DRIVER_LOG("ADV: uuid size: %u, type: %u, uuid: %u, vs_idx: %u\n",
+                       encoded_size, p_service->p_uuid->type,
+                       (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]),
+                       p_service->p_uuid->uuid_vs_idx);
+            }
+
+            adv_data[size_byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + uuid_total_size);
+        }
+
+        if (type_128bit_present) {
+            uint8_t size_byte_pos = byte_pos;
+
+            // skip length byte for now, apply total length post calculation
+            byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
+
+            adv_data[byte_pos] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
+            byte_pos += BLE_ADV_AD_TYPE_FIELD_SIZE;
+
+            uint8_t uuid_total_size = 0;
+            uint8_t encoded_size    = 0;
+
+            for (uint8_t i = 0; i < p_adv_params->num_of_services; i++) {
+                ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)p_adv_params->p_services[i];
+
+                ble_uuid_t uuid;
+                uuid.type = p_service->p_uuid->uuid_vs_idx;
+                uuid.uuid = (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]);
+
+                // calculate total size of uuids
+                if (sd_ble_uuid_encode(&uuid, &encoded_size, NULL) != 0) {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                              "Can not encode UUID, to check length."));
+                }
+
+                // do encoding into the adv buffer
+                if (sd_ble_uuid_encode(&uuid, &encoded_size, &adv_data[byte_pos]) != 0) {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                              "Can encode UUID into the advertisment packet."));
+                }
+
+                BLE_DRIVER_LOG("encoded uuid for service %u: ", 0);
+                for (uint8_t j = 0; j < encoded_size; j++) {
+                    BLE_DRIVER_LOG(HEX2_FMT " ", adv_data[byte_pos + j]);
+                }
+                BLE_DRIVER_LOG("\n");
+
+                uuid_total_size += encoded_size; // size of entry
+                byte_pos        += encoded_size; // relative to adv data packet
+                BLE_DRIVER_LOG("ADV: uuid size: %u, type: %u, uuid: %u, vs_idx: %u\n",
+                       encoded_size, p_service->p_uuid->type,
+                       (uint16_t)(*(uint16_t *)&p_service->p_uuid->value[0]),
+                       p_service->p_uuid->uuid_vs_idx);
+            }
+
+            adv_data[size_byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + uuid_total_size);
+        }
+    }
 
     // scan response data not set
     if (sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0) != 0) {
