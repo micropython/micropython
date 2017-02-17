@@ -61,6 +61,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_FALSE,              // 14
     MP_TOKEN_KW_NONE,
     MP_TOKEN_KW_TRUE,
+    MP_TOKEN_KW___DEBUG__,
     MP_TOKEN_KW_AND,
     MP_TOKEN_KW_AS,
     MP_TOKEN_KW_ASSERT,
@@ -71,7 +72,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_BREAK,
     MP_TOKEN_KW_CLASS,
     MP_TOKEN_KW_CONTINUE,
-    MP_TOKEN_KW_DEF,                // 23
+    MP_TOKEN_KW_DEF,
     MP_TOKEN_KW_DEL,
     MP_TOKEN_KW_ELIF,
     MP_TOKEN_KW_ELSE,
@@ -81,7 +82,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_FROM,
     MP_TOKEN_KW_GLOBAL,
     MP_TOKEN_KW_IF,
-    MP_TOKEN_KW_IMPORT,             // 33
+    MP_TOKEN_KW_IMPORT,
     MP_TOKEN_KW_IN,
     MP_TOKEN_KW_IS,
     MP_TOKEN_KW_LAMBDA,
@@ -91,12 +92,12 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_PASS,
     MP_TOKEN_KW_RAISE,
     MP_TOKEN_KW_RETURN,
-    MP_TOKEN_KW_TRY,                // 43
+    MP_TOKEN_KW_TRY,
     MP_TOKEN_KW_WHILE,
     MP_TOKEN_KW_WITH,
     MP_TOKEN_KW_YIELD,
 
-    MP_TOKEN_OP_PLUS,               // 47
+    MP_TOKEN_OP_PLUS,
     MP_TOKEN_OP_MINUS,
     MP_TOKEN_OP_STAR,
     MP_TOKEN_OP_DBL_STAR,
@@ -106,7 +107,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_LESS,
     MP_TOKEN_OP_DBL_LESS,
     MP_TOKEN_OP_MORE,
-    MP_TOKEN_OP_DBL_MORE,           // 57
+    MP_TOKEN_OP_DBL_MORE,
     MP_TOKEN_OP_AMPERSAND,
     MP_TOKEN_OP_PIPE,
     MP_TOKEN_OP_CARET,
@@ -116,7 +117,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_DBL_EQUAL,
     MP_TOKEN_OP_NOT_EQUAL,
 
-    MP_TOKEN_DEL_PAREN_OPEN,        // 66
+    MP_TOKEN_DEL_PAREN_OPEN,
     MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN,
     MP_TOKEN_DEL_BRACKET_CLOSE,
@@ -126,7 +127,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_COLON,
     MP_TOKEN_DEL_PERIOD,
     MP_TOKEN_DEL_SEMICOLON,
-    MP_TOKEN_DEL_AT,                // 76
+    MP_TOKEN_DEL_AT,
     MP_TOKEN_DEL_EQUAL,
     MP_TOKEN_DEL_PLUS_EQUAL,
     MP_TOKEN_DEL_MINUS_EQUAL,
@@ -136,7 +137,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_PERCENT_EQUAL,
     MP_TOKEN_DEL_AMPERSAND_EQUAL,
     MP_TOKEN_DEL_PIPE_EQUAL,
-    MP_TOKEN_DEL_CARET_EQUAL,       // 86
+    MP_TOKEN_DEL_CARET_EQUAL,
     MP_TOKEN_DEL_DBL_MORE_EQUAL,
     MP_TOKEN_DEL_DBL_LESS_EQUAL,
     MP_TOKEN_DEL_DBL_STAR_EQUAL,

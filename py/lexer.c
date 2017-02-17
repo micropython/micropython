@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 #include "py/mpstate.h"
@@ -38,19 +39,6 @@
 
 // TODO seems that CPython allows NULL byte in the input stream
 // don't know if that's intentional or not, but we don't allow it
-
-// TODO replace with a call to a standard function
-STATIC bool str_strn_equal(const char *str, const char *strn, mp_uint_t len) {
-    mp_uint_t i = 0;
-
-    while (i < len && *str == *strn) {
-        ++i;
-        ++str;
-        ++strn;
-    }
-
-    return i == len && *str == 0;
-}
 
 #define MP_LEXER_EOF ((unichar)MP_READER_EOF)
 #define CUR_CHAR(lex) ((lex)->chr0)
@@ -225,10 +213,12 @@ STATIC const uint8_t tok_enc_kind[] = {
 };
 
 // must have the same order as enum in lexer.h
+// must be sorted according to strcmp
 STATIC const char *const tok_kw[] = {
     "False",
     "None",
     "True",
+    "__debug__",
     "and",
     "as",
     "assert",
@@ -263,7 +253,6 @@ STATIC const char *const tok_kw[] = {
     "while",
     "with",
     "yield",
-    "__debug__",
 };
 
 // This is called with CUR_CHAR() before first hex digit, and should return with
@@ -531,15 +520,17 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         // We also check for __debug__ here and convert it to its value.  This is
         // so the parser gives a syntax error on, eg, x.__debug__.  Otherwise, we
         // need to check for this special token in many places in the compiler.
-        // TODO improve speed of these string comparisons
+        const char *s = vstr_null_terminated_str(&lex->vstr);
         for (size_t i = 0; i < MP_ARRAY_SIZE(tok_kw); i++) {
-            if (str_strn_equal(tok_kw[i], lex->vstr.buf, lex->vstr.len)) {
-                if (i == MP_ARRAY_SIZE(tok_kw) - 1) {
-                    // tok_kw[MP_ARRAY_SIZE(tok_kw) - 1] == "__debug__"
+            int cmp = strcmp(s, tok_kw[i]);
+            if (cmp == 0) {
+                lex->tok_kind = MP_TOKEN_KW_FALSE + i;
+                if (lex->tok_kind == MP_TOKEN_KW___DEBUG__) {
                     lex->tok_kind = (MP_STATE_VM(mp_optimise_value) == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
-                } else {
-                    lex->tok_kind = MP_TOKEN_KW_FALSE + i;
                 }
+                break;
+            } else if (cmp < 0) {
+                // Table is sorted and comparison was less-than, so stop searching
                 break;
             }
         }
