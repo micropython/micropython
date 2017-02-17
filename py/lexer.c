@@ -290,18 +290,10 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                 next_char(lex);
             }
             // had_physical_newline will be set on next loop
-        } else if (is_char(lex, '\\')) {
-            // backslash (outside string literals) must appear just before a physical newline
+        } else if (is_char_and(lex, '\\', '\n')) {
+            // line-continuation, so don't set had_physical_newline
             next_char(lex);
-            if (!is_physical_newline(lex)) {
-                // SyntaxError: unexpected character after line continuation character
-                lex->tok_line = lex->line;
-                lex->tok_column = lex->column;
-                lex->tok_kind = MP_TOKEN_BAD_LINE_CONTINUATION;
-                return;
-            } else {
-                next_char(lex);
-            }
+            next_char(lex);
         } else {
             break;
         }

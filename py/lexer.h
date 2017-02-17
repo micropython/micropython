@@ -39,18 +39,17 @@
  */
 
 typedef enum _mp_token_kind_t {
-    MP_TOKEN_END,                   // 0
+    MP_TOKEN_END,
 
     MP_TOKEN_INVALID,
     MP_TOKEN_DEDENT_MISMATCH,
     MP_TOKEN_LONELY_STRING_OPEN,
-    MP_TOKEN_BAD_LINE_CONTINUATION,
 
-    MP_TOKEN_NEWLINE,               // 5
-    MP_TOKEN_INDENT,                // 6
-    MP_TOKEN_DEDENT,                // 7
+    MP_TOKEN_NEWLINE,
+    MP_TOKEN_INDENT,
+    MP_TOKEN_DEDENT,
 
-    MP_TOKEN_NAME,                  // 8
+    MP_TOKEN_NAME,
     MP_TOKEN_INTEGER,
     MP_TOKEN_FLOAT_OR_IMAG,
     MP_TOKEN_STRING,
@@ -58,7 +57,7 @@ typedef enum _mp_token_kind_t {
 
     MP_TOKEN_ELLIPSIS,
 
-    MP_TOKEN_KW_FALSE,              // 14
+    MP_TOKEN_KW_FALSE,
     MP_TOKEN_KW_NONE,
     MP_TOKEN_KW_TRUE,
     MP_TOKEN_KW___DEBUG__,
