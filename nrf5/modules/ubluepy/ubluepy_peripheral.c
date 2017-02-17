@@ -39,18 +39,19 @@ STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_pri
     mp_printf(print, "Peripheral");
 }
 
-STATIC void event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t length, uint8_t * data) {
+STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->conn_handler != mp_const_none) {
-        mp_obj_t args[3];
-        mp_uint_t num_of_args = 3;
+        mp_obj_t args[4];
+        mp_uint_t num_of_args = 4;
         args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
-        args[1] = MP_OBJ_NEW_SMALL_INT(length);
+        args[1] = MP_OBJ_NEW_SMALL_INT(conn_handle);
+        args[2] = MP_OBJ_NEW_SMALL_INT(length);
         if (data != NULL) {
-            args[2] = mp_obj_new_bytearray_by_ref(length, data);
+            args[3] = mp_obj_new_bytearray_by_ref(length, data);
         } else {
-            args[2] = mp_const_none;
+            args[3] = mp_const_none;
         }
 
         // for now hard-code all events to conn_handler
@@ -78,11 +79,12 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     ubluepy_peripheral_obj_t *s = m_new_obj(ubluepy_peripheral_obj_t);
     s->base.type = type;
 
-	sd_event_handler_set(MP_OBJ_FROM_PTR(s), event_handler);
+	sd_gap_event_handler_set(MP_OBJ_FROM_PTR(s), gap_event_handler);
 
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
     s->notif_handler = mp_const_none;
+    s->conn_handle   = 0xFFFF;
 
     return MP_OBJ_FROM_PTR(s);
 }

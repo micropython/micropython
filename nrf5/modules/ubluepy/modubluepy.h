@@ -40,8 +40,8 @@ DB setup:
 from ubluepy import Service, Characteristic, UUID, Peripheral
 from pyb import LED
 
-def event_handler(id, length, data):
-    print("BLE event:", id, " length: ", length)
+def event_handler(id, conn_handle, length, data):
+    print("BLE event:", id, "conn_handle:", conn_handle, "length:", length)
 
     if id == 16:
         # connected
@@ -105,6 +105,7 @@ typedef struct _ubluepy_delegate_obj_t {
 
 typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_base_t base;
+    uint16_t      conn_handle;
     mp_obj_t      delegate;
     mp_obj_t      notif_handler;
     mp_obj_t      conn_handler;
@@ -117,6 +118,6 @@ typedef struct _ubluepy_advertise_data_t {
     uint8_t    num_of_services;
 } ubluepy_advertise_data_t;
 
-typedef void (*ubluepy_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t length, uint8_t * data);
+typedef void (*ubluepy_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 
 #endif // UBLUEPY_H__

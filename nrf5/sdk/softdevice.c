@@ -51,8 +51,8 @@ if (sd_enabled() == 0) { \
 
 static bool m_adv_in_progress = false;
 
-static ubluepy_evt_callback_t ubluepy_event_handler;
-static mp_obj_t               mp_observer;
+static ubluepy_gap_evt_callback_t ubluepy_gap_event_handler;
+static mp_obj_t                   mp_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -456,9 +456,9 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     return true;
 }
 
-void sd_event_handler_set(mp_obj_t obj, ubluepy_evt_callback_t evt_handler) {
+void sd_gap_event_handler_set(mp_obj_t obj, ubluepy_gap_evt_callback_t evt_handler) {
     mp_observer = obj;
-    ubluepy_event_handler = evt_handler;
+    ubluepy_gap_event_handler = evt_handler;
 }
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
@@ -468,17 +468,16 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // GATTC  0x30 -> 0x4F
 // GATTS  0x50 -> 0x6F
 // L2CAP  0x70 -> 0x8F
-
-    ubluepy_event_handler(mp_observer, p_ble_evt->header.evt_id, p_ble_evt->header.evt_len - sizeof(uint16_t), NULL);
-
-
     switch (p_ble_evt->header.evt_id) {
         case BLE_GAP_EVT_CONNECTED:
             BLE_DRIVER_LOG("GAP CONNECT\n");
+            m_adv_in_progress = false;
+            ubluepy_gap_event_handler(mp_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             BLE_DRIVER_LOG("GAP DISCONNECT\n");
+            ubluepy_gap_event_handler(mp_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GATTS_EVT_WRITE:
