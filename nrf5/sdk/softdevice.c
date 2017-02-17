@@ -45,8 +45,8 @@
 
 
 #define SD_TEST_OR_ENABLE() \
-if (sd_enabled() == 0) { \
-    (void)sd_enable(); \
+if (ble_drv_stack_enabled() == 0) { \
+    (void)ble_drv_stack_enable(); \
 }
 
 static bool m_adv_in_progress = false;
@@ -74,7 +74,7 @@ void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     BLE_DRIVER_LOG("ERROR: SoftDevice assert!!!");
 }
 #endif
-uint32_t sd_enable(void) {
+uint32_t ble_drv_stack_enable(void) {
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
     memset(&nrf_nvic_state, 0, sizeof(nrf_nvic_state_t));
 #endif
@@ -134,11 +134,11 @@ uint32_t sd_enable(void) {
     return err_code;
 }
 
-void sd_disable(void) {
+void ble_drv_stack_disable(void) {
     sd_softdevice_disable();
 }
 
-uint8_t sd_enabled(void) {
+uint8_t ble_drv_stack_enabled(void) {
     uint8_t is_enabled;
     uint32_t err_code = sd_softdevice_is_enabled(&is_enabled);
     (void)err_code;
@@ -148,7 +148,7 @@ uint8_t sd_enabled(void) {
     return is_enabled;
 }
 
-void sd_address_get(void) {
+void ble_drv_address_get(void) {
     ble_gap_addr_t local_ble_addr;
 #if (BLUETOOTH_SD != 132)
     uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
@@ -182,7 +182,7 @@ void sd_address_get(void) {
 #define APP_CFG_NON_CONN_ADV_TIMEOUT 0 // Disable timeout.
 #define NON_CONNECTABLE_ADV_INTERVAL MSEC_TO_UNITS(100, UNIT_0_625_MS)
 
-void sd_advertise(void) {
+void ble_drv_advertise(void) {
     ble_uuid_t adv_uuids[] = {{.uuid = EDDYSTONE_UUID, .type = BLE_UUID_TYPE_BLE}};
     uint8_t encoded_size;
     uint8_t uuid_encoded[2];
@@ -226,7 +226,7 @@ void sd_advertise(void) {
     BLE_DRIVER_LOG("Advertisment start status: " UINT_FMT "\n", (uint16_t)err_code);
 }
 
-bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
+bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
     SD_TEST_OR_ENABLE();
 
     if (sd_ble_uuid_vs_add((ble_uuid128_t const *)p_uuid, idx) != 0) {
@@ -237,7 +237,7 @@ bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
     return true;
 }
 
-bool sd_service_add(ubluepy_service_obj_t * p_service_obj) {
+bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
     SD_TEST_OR_ENABLE();
 
     if (p_service_obj->p_uuid->type > BLE_UUID_TYPE_BLE) {
@@ -270,7 +270,7 @@ bool sd_service_add(ubluepy_service_obj_t * p_service_obj) {
     return true;
 }
 
-bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
+bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
     ble_gatts_char_md_t char_md;
     ble_gatts_attr_md_t cccd_md;
     ble_gatts_attr_t    attr_char_value;
@@ -334,7 +334,7 @@ bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
     return true;
 }
 
-bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
+bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     SD_TEST_OR_ENABLE();
 
     uint8_t byte_pos = 0;
@@ -457,7 +457,7 @@ bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     return true;
 }
 
-void sd_gap_event_handler_set(mp_obj_t obj, ubluepy_gap_evt_callback_t evt_handler) {
+void ble_drv_gap_event_handler_set(mp_obj_t obj, ubluepy_gap_evt_callback_t evt_handler) {
     mp_observer = obj;
     ubluepy_gap_event_handler = evt_handler;
 }

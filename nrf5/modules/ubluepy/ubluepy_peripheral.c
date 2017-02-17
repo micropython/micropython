@@ -79,7 +79,7 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     ubluepy_peripheral_obj_t *s = m_new_obj(ubluepy_peripheral_obj_t);
     s->base.type = type;
 
-	sd_gap_event_handler_set(MP_OBJ_FROM_PTR(s), gap_event_handler);
+    ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(s), gap_event_handler);
 
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
@@ -169,7 +169,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     }
 
-    (void)sd_advertise_data(&adv_data);
+    (void)ble_drv_advertise_data(&adv_data);
 
     return mp_const_none;
 }

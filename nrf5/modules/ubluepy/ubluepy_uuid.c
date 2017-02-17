@@ -120,7 +120,7 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
             buffer[15]  = unichar_xdigit_value(str_data[1]);
             buffer[15] += unichar_xdigit_value(str_data[0]) << 4;
 
-            sd_uuid_add_vs(buffer, &s->uuid_vs_idx);
+            ble_drv_uuid_add_vs(buffer, &s->uuid_vs_idx);
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                       "Invalid UUID string length"));

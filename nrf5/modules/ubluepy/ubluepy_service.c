@@ -71,7 +71,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
                       "Invalid Service type"));
         }
 
-        (void)sd_service_add(s);
+        (void)ble_drv_service_add(s);
 
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -90,7 +90,7 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
 
     p_char->service_handle = self->handle;
 
-    bool retval = sd_characteristic_add(p_char);
+    bool retval = ble_drv_characteristic_add(p_char);
 
     return mp_obj_new_bool(retval);
 }

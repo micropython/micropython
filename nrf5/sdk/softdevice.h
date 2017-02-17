@@ -32,24 +32,24 @@
 
 #include "modubluepy.h"
 
-uint32_t sd_enable(void);
+uint32_t ble_drv_stack_enable(void);
 
-void sd_disable(void);
+void ble_drv_stack_disable(void);
 
-uint8_t sd_enabled(void);
+uint8_t ble_drv_stack_enabled(void);
 
-void sd_address_get(void);
+void ble_drv_address_get(void);
 
-void sd_advertise(void);
+void ble_drv_advertise(void);
 
-bool sd_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
+bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx);
 
-bool sd_service_add(ubluepy_service_obj_t * p_service_obj);
+bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj);
 
-bool sd_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
+bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
 
-bool sd_advertise_data(ubluepy_advertise_data_t * p_adv_params);
+bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params);
 
-void sd_gap_event_handler_set(mp_obj_t obs, ubluepy_gap_evt_callback_t evt_handler);
+void ble_drv_gap_event_handler_set(mp_obj_t obs, ubluepy_gap_evt_callback_t evt_handler);
 
 #endif // BLUETOOTH_LE_DRIVER_H__
