@@ -2301,65 +2301,6 @@ STATIC void compile_atom_expr_trailers(compiler_t *comp, mp_parse_node_struct_t 
     }
 }
 
-STATIC void compile_atom_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // a list of strings
-
-    // check type of list (string or bytes) and count total number of bytes
-    int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    size_t n_bytes = 0;
-    int string_kind = MP_PARSE_NODE_NULL;
-    for (int i = 0; i < n; i++) {
-        int pn_kind;
-        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
-            pn_kind = MP_PARSE_NODE_LEAF_KIND(pns->nodes[i]);
-            assert(pn_kind == MP_PARSE_NODE_STRING || pn_kind == MP_PARSE_NODE_BYTES);
-            n_bytes += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
-        } else {
-            assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[i]));
-            mp_parse_node_struct_t *pns_string = (mp_parse_node_struct_t*)pns->nodes[i];
-            if (MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_string) {
-                pn_kind = MP_PARSE_NODE_STRING;
-            } else {
-                assert(MP_PARSE_NODE_STRUCT_KIND(pns_string) == PN_bytes);
-                pn_kind = MP_PARSE_NODE_BYTES;
-            }
-            n_bytes += pns_string->nodes[1];
-        }
-        if (i == 0) {
-            string_kind = pn_kind;
-        } else if (pn_kind != string_kind) {
-            compile_syntax_error(comp, (mp_parse_node_t)pns, "cannot mix bytes and nonbytes literals");
-            return;
-        }
-    }
-
-    // if we are not in the last pass, just load a dummy object
-    if (comp->pass != MP_PASS_EMIT) {
-        EMIT_ARG(load_const_obj, mp_const_none);
-        return;
-    }
-
-    // concatenate string/bytes
-    vstr_t vstr;
-    vstr_init_len(&vstr, n_bytes);
-    byte *s_dest = (byte*)vstr.buf;
-    for (int i = 0; i < n; i++) {
-        if (MP_PARSE_NODE_IS_LEAF(pns->nodes[i])) {
-            size_t s_len;
-            const byte *s = qstr_data(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), &s_len);
-            memcpy(s_dest, s, s_len);
-            s_dest += s_len;
-        } else {
-            mp_parse_node_struct_t *pns_string = (mp_parse_node_struct_t*)pns->nodes[i];
-            memcpy(s_dest, (const char*)pns_string->nodes[0], pns_string->nodes[1]);
-            s_dest += pns_string->nodes[1];
-        }
-    }
-
-    // load the object
-    EMIT_ARG(load_const_obj, mp_obj_new_str_from_vstr(string_kind == MP_PARSE_NODE_STRING ? &mp_type_str : &mp_type_bytes, &vstr));
-}
-
 // pns needs to have 2 nodes, first is lhs of comprehension, second is PN_comp_for node
 STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns, scope_kind_t kind) {
     assert(MP_PARSE_NODE_STRUCT_NUM_NODES(pns) == 2);
