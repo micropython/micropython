@@ -109,9 +109,10 @@ uint32_t sd_enable(void) {
     memset(&ble_enable_params, 0x00, sizeof(ble_enable_params));
     ble_enable_params.gatts_enable_params.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT;
     ble_enable_params.gatts_enable_params.service_changed  = 0;
+#if (BLUETOOTH_SD == 132)
     ble_enable_params.gap_enable_params.periph_conn_count  = 1;
     ble_enable_params.gap_enable_params.central_conn_count = 1;
-
+#endif
 
 
 #if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
