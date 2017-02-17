@@ -1,15 +1,15 @@
 ----------------
 [   4] rule(1) (n=8)
-         tok(5)
+         tok(4)
 [   4]   rule(22) (n=4)
            id(i)
-[   4]     rule(46) (n=1)
+[   4]     rule(45) (n=1)
              NULL
 [   5]     rule(8) (n=0)
            NULL
 [   6]   rule(5) (n=2)
            id(a)
-           tok(15)
+           tok(14)
 [   7]   rule(5) (n=2)
            id(b)
            str(str)
