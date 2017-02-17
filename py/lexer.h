@@ -151,24 +151,24 @@ typedef struct _mp_lexer_t {
 
     unichar chr0, chr1, chr2;   // current cached characters from source
 
-    mp_uint_t line;             // current source line
-    mp_uint_t column;           // current source column
+    size_t line;                // current source line
+    size_t column;              // current source column
 
     mp_int_t emit_dent;             // non-zero when there are INDENT/DEDENT tokens to emit
     mp_int_t nested_bracket_level;  // >0 when there are nested brackets over multiple lines
 
-    mp_uint_t alloc_indent_level;
-    mp_uint_t num_indent_level;
+    size_t alloc_indent_level;
+    size_t num_indent_level;
     uint16_t *indent_level;
 
-    mp_uint_t tok_line;         // token source line
-    mp_uint_t tok_column;       // token source column
+    size_t tok_line;            // token source line
+    size_t tok_column;          // token source column
     mp_token_kind_t tok_kind;   // token kind
     vstr_t vstr;                // token data
 } mp_lexer_t;
 
 mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader);
-mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);

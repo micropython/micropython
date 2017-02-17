@@ -157,7 +157,7 @@ STATIC void next_char(mp_lexer_t *lex) {
     }
 }
 
-STATIC void indent_push(mp_lexer_t *lex, mp_uint_t indent) {
+STATIC void indent_push(mp_lexer_t *lex, size_t indent) {
     if (lex->num_indent_level >= lex->alloc_indent_level) {
         // TODO use m_renew_maybe and somehow indicate an error if it fails... probably by using MP_TOKEN_MEMORY_ERROR
         lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level + MICROPY_ALLOC_LEXEL_INDENT_INC);
@@ -166,7 +166,7 @@ STATIC void indent_push(mp_lexer_t *lex, mp_uint_t indent) {
     lex->indent_level[lex->num_indent_level++] = indent;
 }
 
-STATIC mp_uint_t indent_top(mp_lexer_t *lex) {
+STATIC size_t indent_top(mp_lexer_t *lex) {
     return lex->indent_level[lex->num_indent_level - 1];
 }
 
@@ -263,7 +263,7 @@ STATIC const char *const tok_kw[] = {
 // This is called with CUR_CHAR() before first hex digit, and should return with
 // it pointing to last hex digit
 // num_digits must be greater than zero
-STATIC bool get_hex(mp_lexer_t *lex, mp_uint_t num_digits, mp_uint_t *result) {
+STATIC bool get_hex(mp_lexer_t *lex, size_t num_digits, mp_uint_t *result) {
     mp_uint_t num = 0;
     while (num_digits-- != 0) {
         next_char(lex);
@@ -354,7 +354,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                         default:
                             if (c >= '0' && c <= '7') {
                                 // Octal sequence, 1-3 chars
-                                mp_uint_t digits = 3;
+                                size_t digits = 3;
                                 mp_uint_t num = c - '0';
                                 while (is_following_odigit(lex) && --digits != 0) {
                                     next_char(lex);
@@ -458,7 +458,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     } else if (had_physical_newline && lex->nested_bracket_level == 0) {
         lex->tok_kind = MP_TOKEN_NEWLINE;
 
-        mp_uint_t num_spaces = lex->column - 1;
+        size_t num_spaces = lex->column - 1;
         if (num_spaces == indent_top(lex)) {
         } else if (num_spaces > indent_top(lex)) {
             indent_push(lex, num_spaces);
@@ -622,7 +622,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         // search for encoded delimiter or operator
 
         const char *t = tok_enc;
-        mp_uint_t tok_enc_index = 0;
+        size_t tok_enc_index = 0;
         for (; *t != 0 && !is_char(lex, *t); t += 1) {
             if (*t == 'e' || *t == 'c') {
                 t += 1;
@@ -644,7 +644,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 
             // get the maximum characters for a valid token
             t += 1;
-            mp_uint_t t_index = tok_enc_index;
+            size_t t_index = tok_enc_index;
             for (;;) {
                 for (; *t == 'e'; t += 1) {
                     t += 1;
@@ -762,7 +762,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     return lex;
 }
 
-mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len) {
     mp_reader_t reader;
     if (!mp_reader_new_mem(&reader, (const byte*)str, len, free_len)) {
         return NULL;
