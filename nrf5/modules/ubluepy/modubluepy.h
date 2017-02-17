@@ -50,9 +50,12 @@ def event_handler(id, conn_handle, length, data):
         # disconnect
         LED(2).off()
 
+# u0 = UUID("0x180D") # HRM service
+# u1 = UUID("0x2A37") # HRM measurement
+
 u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
-s = Service(u0)
 u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
+s = Service(u0)
 c = Characteristic(u1)
 s.addCharacteristic(c)
 p = Peripheral()
