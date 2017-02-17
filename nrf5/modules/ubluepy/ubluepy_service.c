@@ -30,7 +30,7 @@
 #if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
 
 #include "modubluepy.h"
-#include "softdevice.h"
+#include "ble_drv.h"
 
 STATIC void ubluepy_service_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_service_obj_t * self = (ubluepy_service_obj_t *)o;

@@ -32,7 +32,7 @@
 
 #include "led.h"
 #include "mpconfigboard.h"
-#include "softdevice.h"
+#include "ble_drv.h"
 
 /// \method enable()
 /// Enable BLE softdevice.

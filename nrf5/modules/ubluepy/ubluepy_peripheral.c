@@ -31,7 +31,7 @@
 
 #if MICROPY_PY_UBLUEPY
 
-#include "softdevice.h"
+#include "ble_drv.h"
 
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;

@@ -29,7 +29,7 @@
 #include <stdbool.h>
 
 #include "py/runtime.h"
-#include "softdevice.h"
+#include "ble_drv.h"
 #include "mpconfigport.h"
 #include "nrf_sdm.h"
 #include "ble_gap.h"
