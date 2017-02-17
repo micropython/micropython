@@ -25,4 +25,4 @@ INC += -I./sdk
 
 SRC_C += \
         sdk/modble.c \
-        sdk/softdevice.c
+        sdk/ble_drv.c
