@@ -37,16 +37,16 @@ p.advertise(device_name="MicroPython")
 
 DB setup:
 
-from ubluepy import Service, Characteristic, UUID, Peripheral
+from ubluepy import Service, Characteristic, UUID, Peripheral, constants
 from pyb import LED
 
 def event_handler(id, conn_handle, length, data):
     print("BLE event:", id, "conn_handle:", conn_handle, "length:", length)
 
-    if id == 16:
+    if id == constants.EVT_GAP_CONNECTED:
         # connected
         LED(2).on()
-    elif id == 17:
+    elif id == constants.EVT_GAP_DISCONNECTED:
         # disconnect
         LED(2).off()
 
