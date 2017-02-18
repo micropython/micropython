@@ -34,7 +34,8 @@
 STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_characteristic_obj_t * self = (ubluepy_characteristic_obj_t *)o;
 
-    mp_printf(print, "Characteristic(handle: 0x" HEX2_FMT ")", self->handle);
+    mp_printf(print, "Characteristic(handle: 0x" HEX2_FMT ", conn_handle: " HEX2_FMT ")",
+              self->handle, self->p_service->p_periph->conn_handle);
 }
 
 STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -65,6 +66,9 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Invalid UUID parameter"));
     }
+
+    // clear pointer to service
+    s->p_service = NULL;
 
     return MP_OBJ_FROM_PTR(s);
 }
