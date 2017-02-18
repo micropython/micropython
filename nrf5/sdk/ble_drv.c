@@ -52,7 +52,10 @@ if (ble_drv_stack_enabled() == 0) { \
 static bool m_adv_in_progress = false;
 
 static ubluepy_gap_evt_callback_t ubluepy_gap_event_handler;
-static mp_obj_t                   mp_observer;
+static ubluepy_gatts_evt_callback_t ubluepy_gatts_event_handler;
+
+static mp_obj_t                   mp_gap_observer;
+static mp_obj_t                   mp_gatts_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -278,10 +281,8 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
     ble_gatts_attr_md_t attr_md;
 
     memset(&cccd_md, 0, sizeof(cccd_md));
-
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
-
     cccd_md.vloc = BLE_GATTS_VLOC_STACK;
 
     memset(&char_md, 0, sizeof(char_md));
@@ -574,8 +575,13 @@ void ble_drv_attr_notif(uint16_t conn_handle, uint16_t handle, uint16_t len, uin
 }
 
 void ble_drv_gap_event_handler_set(mp_obj_t obj, ubluepy_gap_evt_callback_t evt_handler) {
-    mp_observer = obj;
+    mp_gap_observer = obj;
     ubluepy_gap_event_handler = evt_handler;
+}
+
+void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t evt_handler) {
+    mp_gatts_observer = obj;
+    ubluepy_gatts_event_handler = evt_handler;
 }
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
@@ -589,16 +595,21 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_GAP_EVT_CONNECTED:
             BLE_DRIVER_LOG("GAP CONNECT\n");
             m_adv_in_progress = false;
-            ubluepy_gap_event_handler(mp_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            ubluepy_gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
             BLE_DRIVER_LOG("GAP DISCONNECT\n");
-            ubluepy_gap_event_handler(mp_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            ubluepy_gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            break;
+
+        case BLE_GATTS_EVT_HVC:
+            ubluepy_gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gatts_evt.params.hvc.handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GATTS_EVT_WRITE:
             BLE_DRIVER_LOG("GATTS write\n");
+            ubluepy_gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gatts_evt.params.write.handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:

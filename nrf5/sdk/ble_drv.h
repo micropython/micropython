@@ -52,6 +52,8 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params);
 
 void ble_drv_gap_event_handler_set(mp_obj_t obs, ubluepy_gap_evt_callback_t evt_handler);
 
+void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t evt_handler);
+
 void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
