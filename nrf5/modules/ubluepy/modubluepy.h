@@ -59,6 +59,7 @@ s = Service(u0)
 c = Characteristic(u1)
 s.addCharacteristic(c)
 p = Peripheral()
+p.addService(s)
 p.setConnectionHandler(event_handler)
 p.advertise(device_name="micr", services=[s])
 
