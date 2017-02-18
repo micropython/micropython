@@ -520,6 +520,59 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     return true;
 }
 
+void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+    ble_gatts_value_t gatts_value;
+    memset(&gatts_value, 0, sizeof(gatts_value));
+
+    gatts_value.len     = len;
+    gatts_value.offset  = 0;
+    gatts_value.p_value = p_data;
+
+    uint32_t err_code = sd_ble_gatts_value_get(conn_handle,
+                                               handle,
+                                               &gatts_value);
+    if (err_code != 0) {
+	    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+
+}
+void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+    ble_gatts_value_t gatts_value;
+    memset(&gatts_value, 0, sizeof(gatts_value));
+
+    gatts_value.len     = len;
+    gatts_value.offset  = 0;
+    gatts_value.p_value = p_data;
+
+    uint32_t err_code = sd_ble_gatts_value_set(conn_handle, handle, &gatts_value);
+
+    if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not write attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+}
+
+void ble_drv_attr_notif(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+    uint16_t               hvx_len = len;
+    ble_gatts_hvx_params_t hvx_params;
+
+    memset(&hvx_params, 0, sizeof(hvx_params));
+
+    hvx_params.handle = handle;
+    hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+    hvx_params.offset = 0;
+    hvx_params.p_len  = &hvx_len;
+    hvx_params.p_data = p_data;
+
+    uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
+
+    if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not notify attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+}
+
 void ble_drv_gap_event_handler_set(mp_obj_t obj, ubluepy_gap_evt_callback_t evt_handler) {
     mp_observer = obj;
     ubluepy_gap_event_handler = evt_handler;
