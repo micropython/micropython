@@ -134,5 +134,6 @@ typedef struct _ubluepy_advertise_data_t {
 } ubluepy_advertise_data_t;
 
 typedef void (*ubluepy_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
+typedef void (*ubluepy_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 
 #endif // UBLUEPY_H__
