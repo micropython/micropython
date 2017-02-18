@@ -67,6 +67,26 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
     (void)self;
 }
 
+STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->conn_handler != mp_const_none) {
+        mp_obj_t args[3];
+        mp_uint_t num_of_args = 3;
+        args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
+        args[1] = MP_OBJ_NEW_SMALL_INT(length);
+        if (data != NULL) {
+            args[2] = mp_obj_new_bytearray_by_ref(length, data);
+        } else {
+            args[2] = mp_const_none;
+        }
+
+        // for now hard-code all events to conn_handler
+        mp_call_function_n_kw(self->conn_handler, num_of_args, 0, args);
+    }
+
+}
+
 STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
         ARG_NEW_DEVICE_ADDR,
@@ -86,6 +106,7 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     s->base.type = type;
 
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(s), gap_event_handler);
+    ble_drv_gatts_event_handler_set(MP_OBJ_FROM_PTR(s), gatts_event_handler);
 
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
