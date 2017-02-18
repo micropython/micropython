@@ -196,7 +196,7 @@ STATIC mp_obj_t peripheral_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_disconnect_obj, peripheral_disconnect);
 
 /// \method addService(Service)
-/// Add service to the Peripheral.
+/// Get all service registered in the Peripheral.
 ///
 STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
@@ -210,7 +210,7 @@ STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_add_service);
 
-/// \method disconnect()
+/// \method getServices()
 /// disconnect connection.
 ///
 STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
