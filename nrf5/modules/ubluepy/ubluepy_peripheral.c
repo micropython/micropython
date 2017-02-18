@@ -28,6 +28,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
+#include "py/objlist.h"
 
 #if MICROPY_PY_UBLUEPY
 
@@ -90,6 +91,8 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     s->conn_handler  = mp_const_none;
     s->notif_handler = mp_const_none;
     s->conn_handle   = 0xFFFF;
+
+    s->service_list = mp_obj_new_list(0, NULL);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -201,20 +204,31 @@ STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
 
     p_service->p_periph = self;
 
+    mp_obj_list_append(self->service_list, service);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_add_service);
 
+/// \method disconnect()
+/// disconnect connection.
+///
+STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
+    ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    return self->service_list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral_get_services);
 
 
 STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_withDelegate),           (mp_obj_t)(&ubluepy_peripheral_with_delegate_obj) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_setNotificationHandler), (mp_obj_t)(&ubluepy_peripheral_set_notif_handler_obj) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_setConnectionHandler),   (mp_obj_t)(&ubluepy_peripheral_set_conn_handler_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getServices),            (mp_obj_t)(&ubluepy_peripheral_get_services_obj) },
 #if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),                (mp_obj_t)(&ubluepy_peripheral_connect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),             (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getServices),            (mp_obj_t)(&ubluepy_peripheral_get_services_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getServiceByUUID),       (mp_obj_t)(&ubluepy_peripheral_get_service_by_uuid_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristics),     (mp_obj_t)(&ubluepy_peripheral_get_chars_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getDescriptors),         (mp_obj_t)(&ubluepy_peripheral_get_descs_obj) },
