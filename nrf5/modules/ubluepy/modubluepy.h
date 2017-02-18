@@ -61,6 +61,7 @@ s.addCharacteristic(c)
 p = Peripheral()
 p.setConnectionHandler(event_handler)
 p.advertise(device_name="micr", services=[s])
+
 */
 
 #include "py/obj.h"
@@ -85,27 +86,6 @@ typedef struct _ubluepy_uuid_obj_t {
     uint8_t             uuid_vs_idx;
 } ubluepy_uuid_obj_t;
 
-typedef struct _ubluepy_service_obj_t {
-    mp_obj_base_t        base;
-    uint16_t             handle;
-    uint8_t              type;
-    ubluepy_uuid_obj_t * p_uuid;
-} ubluepy_service_obj_t;
-
-typedef struct _ubluepy_characteristic_obj_t {
-    mp_obj_base_t        base;
-    uint16_t             handle;
-    ubluepy_uuid_obj_t * p_uuid;
-    uint16_t             service_handle;
-    uint16_t             user_desc_handle;
-    uint16_t             cccd_handle;
-    uint16_t             sccd_handle;
-} ubluepy_characteristic_obj_t;
-
-typedef struct _ubluepy_delegate_obj_t {
-    mp_obj_base_t        base;
-} ubluepy_delegate_obj_t;
-
 typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_base_t base;
     uint16_t      conn_handle;
@@ -113,6 +93,29 @@ typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_t      notif_handler;
     mp_obj_t      conn_handler;
 } ubluepy_peripheral_obj_t;
+
+typedef struct _ubluepy_service_obj_t {
+    mp_obj_base_t              base;
+    uint16_t                   handle;
+    uint8_t                    type;
+    ubluepy_uuid_obj_t       * p_uuid;
+    ubluepy_peripheral_obj_t * p_periph;
+} ubluepy_service_obj_t;
+
+typedef struct _ubluepy_characteristic_obj_t {
+    mp_obj_base_t           base;
+    uint16_t                handle;
+    ubluepy_uuid_obj_t    * p_uuid;
+    uint16_t                service_handle;
+    uint16_t                user_desc_handle;
+    uint16_t                cccd_handle;
+    uint16_t                sccd_handle;
+    ubluepy_service_obj_t * p_service;
+} ubluepy_characteristic_obj_t;
+
+typedef struct _ubluepy_delegate_obj_t {
+    mp_obj_base_t        base;
+} ubluepy_delegate_obj_t;
 
 typedef struct _ubluepy_advertise_data_t {
     uint8_t *  p_device_name;
