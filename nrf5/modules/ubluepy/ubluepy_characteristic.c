@@ -69,10 +69,35 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
     return MP_OBJ_FROM_PTR(s);
 }
 
+/// \method read()
+/// Read Characteristic value.
+///
+STATIC mp_obj_t char_read(mp_obj_t self_in) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    (void)self;
+    // ble_drv_characteristic_read();
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
+
+/// \method write(data)
+/// Write Characteristic value.
+///
+STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    (void)self;
+    // ble_drv_characteristic_write();
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_characteristic_write_obj, char_write);
+
+
 STATIC const mp_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
-#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),               (mp_obj_t)(&ubluepy_characteristic_read_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),              (mp_obj_t)(&ubluepy_characteristic_write_obj) },
+#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_supportsRead),       (mp_obj_t)(&ubluepy_characteristic_supports_read_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_propertiesToString), (mp_obj_t)(&ubluepy_characteristic_properties_to_str_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getHandle),          (mp_obj_t)(&ubluepy_characteristic_get_handle_obj) },
