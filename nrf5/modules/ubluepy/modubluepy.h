@@ -93,6 +93,7 @@ typedef struct _ubluepy_peripheral_obj_t {
     mp_obj_t      delegate;
     mp_obj_t      notif_handler;
     mp_obj_t      conn_handler;
+    mp_obj_t      service_list;
 } ubluepy_peripheral_obj_t;
 
 typedef struct _ubluepy_service_obj_t {
@@ -101,6 +102,7 @@ typedef struct _ubluepy_service_obj_t {
     uint8_t                    type;
     ubluepy_uuid_obj_t       * p_uuid;
     ubluepy_peripheral_obj_t * p_periph;
+    mp_obj_t                   char_list;
 } ubluepy_service_obj_t;
 
 typedef struct _ubluepy_characteristic_obj_t {
