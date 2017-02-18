@@ -26,6 +26,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/objlist.h"
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
 
@@ -80,6 +81,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
 
     // clear reference to peripheral
     s->p_periph = NULL;
+    s->char_list = mp_obj_new_list(0, NULL);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -98,6 +100,8 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
     if (retval) {
         p_char->p_service = self;
     }
+
+    mp_obj_list_append(self->char_list, characteristic);
 
     // return mp_obj_new_bool(retval);
     return mp_const_none;
