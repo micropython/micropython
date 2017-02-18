@@ -42,6 +42,12 @@ STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_pri
 STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
+    if (event_id == 16) {                // connect event
+        self->conn_handle = conn_handle;
+    } else if (event_id == 17) {         // disconnect event
+        self->conn_handle = 0xFFFF;      // invalid connection handle
+    }
+
     if (self->conn_handler != mp_const_none) {
         mp_obj_t args[4];
         mp_uint_t num_of_args = 4;
@@ -190,10 +196,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_disconnect_obj, peripheral_d
 /// \method addService(Service)
 /// Add service to the Peripheral.
 ///
-STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t uuid) {
-    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
+    ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    ubluepy_service_obj_t    * p_service = MP_OBJ_TO_PTR(service);
 
-    (void)self;
+    p_service->p_periph = self;
 
     return mp_const_none;
 }
