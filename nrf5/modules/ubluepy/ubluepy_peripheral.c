@@ -223,8 +223,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral
 
 STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_withDelegate),           (mp_obj_t)(&ubluepy_peripheral_with_delegate_obj) },
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_setNotificationHandler), (mp_obj_t)(&ubluepy_peripheral_set_notif_handler_obj) },
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_setConnectionHandler),   (mp_obj_t)(&ubluepy_peripheral_set_conn_handler_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setNotificationHandler), (mp_obj_t)(&ubluepy_peripheral_set_notif_handler_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_setConnectionHandler),   (mp_obj_t)(&ubluepy_peripheral_set_conn_handler_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getServices),            (mp_obj_t)(&ubluepy_peripheral_get_services_obj) },
 #if MICROPY_PY_UBLUEPY_CENTRAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),                (mp_obj_t)(&ubluepy_peripheral_connect_obj) },
