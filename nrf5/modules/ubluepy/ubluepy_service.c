@@ -86,7 +86,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(s);
 }
 
-/// \method addCharacteristic(Service)
+/// \method addCharacteristic(Characteristic)
 /// Add Characteristic to the Service.
 ///
 STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteristic) {
