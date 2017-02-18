@@ -78,6 +78,9 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
                   "Invalid UUID parameter"));
     }
 
+    // clear reference to peripheral
+    s->p_periph = NULL;
+
     return MP_OBJ_FROM_PTR(s);
 }
 
@@ -91,6 +94,10 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
     p_char->service_handle = self->handle;
 
     bool retval = ble_drv_characteristic_add(p_char);
+
+    if (retval) {
+        p_char->p_service = self;
+    }
 
     return mp_obj_new_bool(retval);
 }
