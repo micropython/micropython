@@ -118,11 +118,41 @@ STATIC mp_obj_t service_get_chars(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_get_chars_obj, service_get_chars);
 
+/// \method getCharacteristic(UUID)
+/// Return Characteristic with the given UUID.
+///
+STATIC mp_obj_t service_get_characteristic(mp_obj_t self_in, mp_obj_t uuid) {
+    ubluepy_service_obj_t * self   = MP_OBJ_TO_PTR(self_in);
+    ubluepy_uuid_obj_t    * p_uuid = MP_OBJ_TO_PTR(uuid);
+
+    // validate that there is an UUID object passed in as parameter
+    if (!(MP_OBJ_IS_TYPE(uuid, &ubluepy_uuid_type))) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                  "Invalid UUID parameter"));
+    }
+
+    mp_obj_t * chars     = NULL;
+    mp_uint_t  num_chars = 0;
+    mp_obj_get_array(self->char_list, &num_chars, &chars);
+
+    for (uint8_t i = 0; i < num_chars; i++) {
+        ubluepy_characteristic_obj_t * p_char = (ubluepy_characteristic_obj_t *)chars[i];
+
+        bool type_match = p_char->p_uuid->type == p_uuid->type;
+        bool uuid_match = ((uint16_t)(*(uint16_t *)&p_char->p_uuid->value[0]) ==
+                           (uint16_t)(*(uint16_t *)&p_uuid->value[0]));
+
+        if (type_match && uuid_match) {
+            return MP_OBJ_FROM_PTR(p_char);
+        }
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_get_char_obj, service_get_characteristic);
 
 STATIC const mp_map_elem_t ubluepy_service_locals_dict_table[] = {
-#if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristic),  (mp_obj_t)(&ubluepy_service_get_char_obj) },
-#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_addCharacteristic),  (mp_obj_t)(&ubluepy_service_add_char_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristics), (mp_obj_t)(&ubluepy_service_get_chars_obj) },
 #if 0
