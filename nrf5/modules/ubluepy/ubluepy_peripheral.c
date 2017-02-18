@@ -49,15 +49,14 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
     }
 
     if (self->conn_handler != mp_const_none) {
-        mp_obj_t args[4];
-        mp_uint_t num_of_args = 4;
+        mp_obj_t args[3];
+        mp_uint_t num_of_args = 3;
         args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
-        args[1] = MP_OBJ_NEW_SMALL_INT(conn_handle);
-        args[2] = MP_OBJ_NEW_SMALL_INT(length);
+        args[1] = MP_OBJ_NEW_SMALL_INT(length);
         if (data != NULL) {
-            args[3] = mp_obj_new_bytearray_by_ref(length, data);
+            args[2] = mp_obj_new_bytearray_by_ref(length, data);
         } else {
-            args[3] = mp_const_none;
+            args[2] = mp_const_none;
         }
 
         // for now hard-code all events to conn_handler
