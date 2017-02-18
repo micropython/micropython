@@ -99,7 +99,8 @@ STATIC mp_obj_t service_add_characteristic(mp_obj_t self_in, mp_obj_t characteri
         p_char->p_service = self;
     }
 
-    return mp_obj_new_bool(retval);
+    // return mp_obj_new_bool(retval);
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_add_char_obj, service_add_characteristic);
 
