@@ -66,14 +66,13 @@
 //|
 
 // TODO(tannewt): Support LSB SPI.
-// TODO(tannewt): Support phase, polarity and bit order.
 STATIC mp_obj_t nativeio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
     nativeio_spi_obj_t *self = m_new_obj(nativeio_spi_obj_t);
     self->base.type = &nativeio_spi_type;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-    enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
+    enum { ARG_clock, ARG_MOSI, ARG_MISO };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
