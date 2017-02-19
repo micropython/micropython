@@ -162,7 +162,7 @@ void common_hal_nativeio_uart_construct(nativeio_uart_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins."));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins"));
     }
     if (tx == NULL) {
         tx_pad = 0;

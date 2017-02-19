@@ -46,7 +46,7 @@ void common_hal_nativeio_analogin_construct(nativeio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (!pin->has_adc) {
         // No ADC function on that pin
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have ADC capabilities", pin->name));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin does not have ADC capabilities"));
     }
 
     self->pin = pin;

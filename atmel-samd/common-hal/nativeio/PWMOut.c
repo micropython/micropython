@@ -80,12 +80,12 @@ void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self,
 
     if (pin->primary_timer.tc == 0 && pin->secondary_timer.tc == 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "Invalid pin."));
+            "Invalid pin"));
     }
 
     if (frequency == 0 || frequency > 6000000) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "Invalid PWM frequency."));
+            "Invalid PWM frequency"));
     }
 
     uint16_t primary_timer_index = 0xff;
@@ -136,7 +136,7 @@ void common_hal_nativeio_pwmout_construct(nativeio_pwmout_obj_t* self,
             index = primary_timer_index;
         }
         if (t == NULL) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "All timers in use."));
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "All timers in use"));
             return;
         }
         uint8_t resolution = 0;
@@ -266,7 +266,7 @@ void common_hal_nativeio_pwmout_set_frequency(nativeio_pwmout_obj_t* self,
                                               uint32_t frequency) {
     if (frequency == 0 || frequency > 6000000) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "Invalid PWM frequency."));
+            "Invalid PWM frequency"));
     }
     const pin_timer_t* t = self->timer;
     uint8_t resolution;

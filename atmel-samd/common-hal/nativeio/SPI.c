@@ -92,7 +92,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins."));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins"));
     }
 
     // Depends on where MOSI and CLK are.
@@ -111,7 +111,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         }
     }
     if (dopo == 8) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI MOSI and clock pins incompatible."));
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI MOSI and clock pins incompatible"));
     }
 
     config_spi_master.mux_setting = (dopo << SERCOM_SPI_CTRLA_DOPO_Pos) |
