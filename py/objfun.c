@@ -181,9 +181,9 @@ STATIC void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
 #endif
 
 #if DEBUG_PRINT
-STATIC void dump_args(const mp_obj_t *a, mp_uint_t sz) {
+STATIC void dump_args(const mp_obj_t *a, size_t sz) {
     DEBUG_printf("%p: ", a);
-    for (mp_uint_t i = 0; i < sz; i++) {
+    for (size_t i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
     }
     DEBUG_printf("\n");
@@ -247,15 +247,15 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     const byte *ip = self->bytecode;
 
     // bytecode prelude: state size and exception stack size
-    mp_uint_t n_state = mp_decode_uint(&ip);
-    mp_uint_t n_exc_stack = mp_decode_uint(&ip);
+    size_t n_state = mp_decode_uint(&ip);
+    size_t n_exc_stack = mp_decode_uint(&ip);
 
 #if VM_DETECT_STACK_OVERFLOW
     n_state += 1;
 #endif
 
     // allocate state for locals and stack
-    mp_uint_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
+    size_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state_t *code_state = NULL;
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
@@ -288,7 +288,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     if (!(vm_return_kind == MP_VM_RETURN_EXCEPTION && self->n_pos_args + self->n_kwonly_args == 0)) {
         // Just check to see that we have at least 1 null object left in the state.
         bool overflow = true;
-        for (mp_uint_t i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
+        for (size_t i = 0; i < n_state - self->n_pos_args - self->n_kwonly_args; i++) {
             if (code_state->state[i] == MP_OBJ_NULL) {
                 overflow = false;
                 break;
@@ -350,8 +350,8 @@ const mp_obj_type_t mp_type_fun_bc = {
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
-    mp_uint_t n_def_args = 0;
-    mp_uint_t n_extra_args = 0;
+    size_t n_def_args = 0;
+    size_t n_extra_args = 0;
     mp_obj_tuple_t *def_args = MP_OBJ_TO_PTR(def_args_in);
     if (def_args_in != MP_OBJ_NULL) {
         assert(MP_OBJ_IS_TYPE(def_args_in, &mp_type_tuple));
@@ -409,7 +409,7 @@ mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const
 
 typedef struct _mp_obj_fun_viper_t {
     mp_obj_base_t base;
-    mp_uint_t n_args;
+    size_t n_args;
     void *fun_data; // GC must be able to trace this pointer
     mp_uint_t type_sig;
 } mp_obj_fun_viper_t;
@@ -457,7 +457,7 @@ STATIC const mp_obj_type_t mp_type_fun_viper = {
     .unary_op = mp_generic_unary_op,
 };
 
-mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig) {
+mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig) {
     mp_obj_fun_viper_t *o = m_new_obj(mp_obj_fun_viper_t);
     o->base.type = &mp_type_fun_viper;
     o->n_args = n_args;
@@ -475,7 +475,7 @@ mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_s
 
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
-    mp_uint_t n_args;
+    size_t n_args;
     void *fun_data; // GC must be able to trace this pointer
     mp_uint_t type_sig;
 } mp_obj_fun_asm_t;
@@ -573,7 +573,7 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
     .unary_op = mp_generic_unary_op,
 };
 
-mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig) {
+mp_obj_t mp_obj_new_fun_asm(size_t n_args, void *fun_data, mp_uint_t type_sig) {
     mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
     o->base.type = &mp_type_fun_asm;
     o->n_args = n_args;

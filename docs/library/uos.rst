@@ -116,10 +116,3 @@ Functions
 
        Duplicate the terminal (the REPL) on the passed stream-like object.
        The given object must at least implement the ``.read()`` and ``.write()`` methods.
-
-Constants
----------
-
-.. data:: sep
-
-   separation character used in paths

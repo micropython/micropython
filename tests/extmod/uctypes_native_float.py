@@ -1,4 +1,9 @@
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 desc = {
     "f32": uctypes.FLOAT32 | 0,

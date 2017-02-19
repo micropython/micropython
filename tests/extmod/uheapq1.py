@@ -1,7 +1,12 @@
 try:
     import uheapq as heapq
 except:
-    import heapq
+    try:
+        import heapq
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 try:
     heapq.heappop([])

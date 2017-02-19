@@ -73,6 +73,7 @@ static const void *const entry_table[256] = {
     [MP_BC_SETUP_FINALLY] = &&entry_MP_BC_SETUP_FINALLY,
     [MP_BC_END_FINALLY] = &&entry_MP_BC_END_FINALLY,
     [MP_BC_GET_ITER] = &&entry_MP_BC_GET_ITER,
+    [MP_BC_GET_ITER_STACK] = &&entry_MP_BC_GET_ITER_STACK,
     [MP_BC_FOR_ITER] = &&entry_MP_BC_FOR_ITER,
     [MP_BC_POP_BLOCK] = &&entry_MP_BC_POP_BLOCK,
     [MP_BC_POP_EXCEPT] = &&entry_MP_BC_POP_EXCEPT,

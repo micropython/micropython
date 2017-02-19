@@ -1,4 +1,9 @@
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 desc = {
     # arr is array at offset 0, of UINT8 elements, array size is 2

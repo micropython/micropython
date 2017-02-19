@@ -1,7 +1,12 @@
 try:
     import ure as re
 except ImportError:
-    import re
+    try:
+        import re
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 r = re.compile(".+")
 m = r.match("abc")

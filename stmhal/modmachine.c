@@ -41,6 +41,7 @@
 #include "extmod/vfs_fat.h"
 #include "gccollect.h"
 #include "irq.h"
+#include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
 #include "pin.h"
@@ -158,6 +159,10 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
             }
         }
     }
+
+    #if MICROPY_PY_THREAD
+    pyb_thread_dump();
+    #endif
 
     if (n_args == 1) {
         // arg given means dump gc allocation table

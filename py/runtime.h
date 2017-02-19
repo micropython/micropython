@@ -92,9 +92,9 @@ mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);
 mp_obj_t mp_call_function_2(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
-mp_obj_t mp_call_function_n_kw(mp_obj_t fun, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
-mp_obj_t mp_call_method_n_kw(mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
-mp_obj_t mp_call_method_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args);
+mp_obj_t mp_call_function_n_kw(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, size_t n_kw, const mp_obj_t *args);
 // Call function and catch/dump exception - for Python callbacks from C code
 void mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg);
@@ -102,7 +102,7 @@ void mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
 
 typedef struct _mp_call_args_t {
     mp_obj_t fun;
-    mp_uint_t n_args, n_kw, n_alloc;
+    size_t n_args, n_kw, n_alloc;
     mp_obj_t *args;
 } mp_call_args_t;
 
@@ -111,11 +111,11 @@ typedef struct _mp_call_args_t {
 // prepares argument array suitable for passing to ->call() method of a
 // function object (and mp_call_function_n_kw()).
 // (Only needed in stackless mode.)
-void mp_call_prepare_args_n_kw_var(bool have_self, mp_uint_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
+void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args);
 #endif
 
-void mp_unpack_sequence(mp_obj_t seq, mp_uint_t num, mp_obj_t *items);
-void mp_unpack_ex(mp_obj_t seq, mp_uint_t num, mp_obj_t *items);
+void mp_unpack_sequence(mp_obj_t seq, size_t num, mp_obj_t *items);
+void mp_unpack_ex(mp_obj_t seq, size_t num, mp_obj_t *items);
 mp_obj_t mp_store_map(mp_obj_t map, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr);
 void mp_convert_member_lookup(mp_obj_t obj, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest);
@@ -123,7 +123,7 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_load_method_maybe(mp_obj_t base, qstr attr, mp_obj_t *dest);
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t val);
 
-mp_obj_t mp_getiter(mp_obj_t o);
+mp_obj_t mp_getiter(mp_obj_t o, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATION instead of raising StopIteration()
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
@@ -155,7 +155,7 @@ NORETURN void mp_exc_recursion_depth(void);
 // helper functions for native/viper code
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type);
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type);
-mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args_kw, const mp_obj_t *args);
+mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
 void mp_native_raise(mp_obj_t o);
 
 #define mp_sys_path (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_path_obj)))

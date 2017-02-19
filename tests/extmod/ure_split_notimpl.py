@@ -1,4 +1,9 @@
-import ure as re
+try:
+    import ure as re
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 r = re.compile('( )')
 try:
