@@ -50,10 +50,18 @@ typedef struct _pyb_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } pyb_uart_obj_t;
 
+pyb_uart_obj_t pyb_uart_objs[2];
+
 STATIC const char *_parity_name[] = {"None", "1", "0"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
+
+void uart_init0 (void) {
+    // save references of the UART objects, to prevent the read buffers from being trashed by the gc
+    MP_STATE_PORT(pyb_uart_objs)[0] = &pyb_uart_objs[0];
+    MP_STATE_PORT(pyb_uart_objs)[1] = &pyb_uart_objs[1];
+}
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -169,7 +177,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // create instance
-    pyb_uart_obj_t *self = m_new_obj(pyb_uart_obj_t);
+    pyb_uart_obj_t *self = &pyb_uart_objs[uart_id];
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
     self->baudrate = 115200;
