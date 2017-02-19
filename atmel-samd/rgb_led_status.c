@@ -51,7 +51,7 @@ void new_status_color(uint32_t rgb) {
         status_neopixel_color[0] = (rgb >> 8) & 0xff;
         status_neopixel_color[1] = (rgb >> 16) & 0xff;
         status_neopixel_color[2] = rgb & 0xff;
-        common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3, true);
+        common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
         status_apa102_color[5] = rgb & 0xff;
@@ -64,7 +64,7 @@ void new_status_color(uint32_t rgb) {
 void temp_status_color(uint32_t rgb) {
     #ifdef MICROPY_HW_NEOPIXEL
         uint8_t colors[3] = {(rgb >> 8) & 0xff, (rgb >> 16) & 0xff, rgb & 0xff};
-        common_hal_neopixel_write(&status_neopixel, colors, 3, true);
+        common_hal_neopixel_write(&status_neopixel, colors, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
         uint8_t colors[12] = {0, 0, 0, 0, 0xff, rgb & 0xff, (rgb >> 8) & 0xff, (rgb >> 16) & 0xff, 0x0, 0x0, 0x0, 0x0};
@@ -74,7 +74,7 @@ void temp_status_color(uint32_t rgb) {
 
 void clear_temp_status() {
     #ifdef MICROPY_HW_NEOPIXEL
-        common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3, true);
+        common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
         shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, 12);
