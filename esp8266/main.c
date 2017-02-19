@@ -40,6 +40,8 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
+void uart_init0 (void);
+
 STATIC char heap[36 * 1024];
 
 STATIC void mp_reset(void) {
@@ -60,6 +62,7 @@ STATIC void mp_reset(void) {
     esp_native_code_init();
     #endif
     pin_init0();
+    uart_init0();
     readline_init0();
     dupterm_task_init();
 #if MICROPY_MODULE_FROZEN
