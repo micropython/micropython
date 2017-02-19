@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include "lib/utils/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -126,10 +127,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(nativeio_pwmout_deinit_obj, nativeio_pwmout_dei
 //|
 //|      No-op used by Context Managers.
 //|
-STATIC mp_obj_t nativeio_pwmout_obj___enter__(mp_obj_t self_in) {
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(nativeio_pwmout___enter___obj, nativeio_pwmout_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: __exit__()
 //|
@@ -206,7 +204,7 @@ mp_obj_property_t nativeio_pwmout_frequency_obj = {
 STATIC const mp_rom_map_elem_t nativeio_pwmout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_pwmout_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_pwmout___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_pwmout___exit___obj) },
 
     // Properties

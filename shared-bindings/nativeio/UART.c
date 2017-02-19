@@ -28,6 +28,8 @@
 
 #include "shared-bindings/nativeio/UART.h"
 
+#include "lib/utils/context_manager_helpers.h"
+
 #include "py/ioctl.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -49,7 +51,7 @@
 //|   :param ~microcontroller.Pin rx: the pin to receive on
 //|   :param int baudrate: the transmit and receive speed
 ///   :param int bits:  the number of bits per byte, 7, 8 or 9.
-///   :param int parity:  the parity used for error checking, `None`, 0 (even) or 1 (odd).
+///   :param Parity parity:  the parity used for error checking
 ///   :param int stop:  the number of stop bits, 1 or 2.
 ///   :param int timeout:  the timeout in milliseconds to wait for the first character and between subsequent characters.
 ///   :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
@@ -95,9 +97,9 @@ STATIC mp_obj_t nativeio_uart_make_new(const mp_obj_type_t *type, size_t n_args,
    }
 
    uart_parity_t parity = PARITY_NONE;
-   if (args[ARG_baudrate].u_obj == &nativeio_uart_parity_even_obj) {
+   if (args[ARG_parity].u_obj == &nativeio_uart_parity_even_obj) {
        parity = PARITY_EVEN;
-   } else if (args[ARG_baudrate].u_obj == &nativeio_uart_parity_odd_obj) {
+   } else if (args[ARG_parity].u_obj == &nativeio_uart_parity_odd_obj) {
        parity = PARITY_ODD;
    }
 
@@ -128,10 +130,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(nativeio_uart_deinit_obj, nativeio_uart_obj_dei
 //|
 //|      No-op used by Context Managers.
 //|
-STATIC mp_obj_t nativeio_uart_obj___enter__(mp_obj_t self_in) {
-   return self_in;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(nativeio_uart___enter___obj, nativeio_uart_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: __exit__()
 //|
@@ -220,11 +219,11 @@ STATIC mp_uint_t nativeio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uin
 //|
 //|     Enum-like class to define the parity used to verify correct data transfer.
 //|
-//|     .. data:: odd
+//|     .. data:: ODD
 //|
 //|       Total number of ones should be odd.
 //|
-//|     .. data:: even
+//|     .. data:: EVEN
 //|
 //|       Total number of ones should be even.
 //|
@@ -239,20 +238,29 @@ const nativeio_uart_parity_obj_t nativeio_uart_parity_even_obj = {
 };
 
 STATIC const mp_rom_map_elem_t nativeio_uart_parity_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_odd),    MP_ROM_PTR(&nativeio_uart_parity_odd_obj) },
-    { MP_ROM_QSTR(MP_QSTR_even),   MP_ROM_PTR(&nativeio_uart_parity_even_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ODD),    MP_ROM_PTR(&nativeio_uart_parity_odd_obj) },
+    { MP_ROM_QSTR(MP_QSTR_EVEN),   MP_ROM_PTR(&nativeio_uart_parity_even_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(nativeio_uart_parity_locals_dict, nativeio_uart_parity_locals_dict_table);
+
+STATIC void nativeio_uart_parity_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    qstr parity = MP_QSTR_ODD;
+    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&nativeio_uart_parity_even_obj)) {
+        parity = MP_QSTR_EVEN;
+    }
+    mp_printf(print, "%q.%q.%q.%q", MP_QSTR_nativeio, MP_QSTR_UART, MP_QSTR_Parity, parity);
+}
 
 const mp_obj_type_t nativeio_uart_parity_type = {
     { &mp_type_type },
     .name = MP_QSTR_Parity,
+    .print = nativeio_uart_parity_print,
     .locals_dict = (mp_obj_t)&nativeio_uart_parity_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t nativeio_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&nativeio_uart_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&nativeio_uart___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&nativeio_uart___exit___obj) },
 
     // Standard stream methods.

@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
@@ -87,10 +88,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(nativeio_touchin_deinit_obj, nativeio_touchin_d
 //|
 //|      No-op used by Context Managers.
 //|
-STATIC mp_obj_t nativeio_touchin_obj___enter__(mp_obj_t self_in) {
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(nativeio_touchin___enter___obj, nativeio_touchin_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: __exit__()
 //|
@@ -124,9 +122,8 @@ mp_obj_property_t nativeio_touchin_value_obj = {
 };
 
 STATIC const mp_rom_map_elem_t nativeio_touchin_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_touchin___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_touchin___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&nativeio_touchin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_touchin_deinit_obj) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_value), MP_ROM_PTR(&nativeio_touchin_value_obj)},

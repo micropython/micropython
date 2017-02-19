@@ -27,6 +27,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "lib/utils/context_manager_helpers.h"
+
 #include "py/nlr.h"
 #include "py/objtype.h"
 #include "py/objproperty.h"
@@ -84,10 +86,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout_deinit_obj, nativeio_digitalinou
 //|
 //|      No-op used by Context Managers.
 //|
-STATIC mp_obj_t nativeio_digitalinout_obj___enter__(mp_obj_t self_in) {
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout___enter___obj, nativeio_digitalinout_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: __exit__()
 //|
@@ -101,12 +100,12 @@ STATIC mp_obj_t nativeio_digitalinout_obj___exit__(size_t n_args, const mp_obj_t
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_digitalinout_obj___exit___obj, 4, 4, nativeio_digitalinout_obj___exit__);
 
 //|
-//|   .. method:: switch_to_output(value=False, drive_mode=DriveMode.push_pull)
+//|   .. method:: switch_to_output(value=False, drive_mode=DriveMode.PUSH_PULL)
 //|
 //|       Switch to writing out digital values.
 //|
 //|       :param bool value: default value to set upon switching
-//|       :param DriveMode push_pull: drive mode for the output
+//|       :param DriveMode drive_mode: drive mode for the output
 //|
 typedef struct {
     mp_obj_base_t base;
@@ -146,9 +145,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_digitalinout_switch_to_output_obj, 1, native
 //|       import board
 //|
 //|       with nativeio.DigitalInOut(board.SLIDE_SWITCH) as switch:
-//|         switch.switch_to_input(pull=nativeio.DigitalInOut.Pull.up)
+//|         switch.switch_to_input(pull=nativeio.DigitalInOut.Pull.UP)
 //|         # Or, after switch_to_input
-//|         switch.pull = nativeio.DigitalInOut.Pull.up
+//|         switch.pull = nativeio.DigitalInOut.Pull.UP
 //|         print(switch.value)
 //|
 typedef struct {
@@ -332,11 +331,11 @@ mp_obj_property_t nativeio_digitalinout_pull_obj = {
 //|     Enum-like class to define which direction the digital values are
 //|     going.
 //|
-//|     .. data:: in
+//|     .. data:: IN
 //|
 //|       Read digital data in
 //|
-//|     .. data:: out
+//|     .. data:: OUT
 //|
 //|       Write digital data out
 //|
@@ -351,14 +350,23 @@ const nativeio_digitalinout_direction_obj_t nativeio_digitalinout_direction_out_
 };
 
 STATIC const mp_rom_map_elem_t nativeio_digitalinout_direction_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_in),    MP_ROM_PTR(&nativeio_digitalinout_direction_in_obj) },
-    { MP_ROM_QSTR(MP_QSTR_out),   MP_ROM_PTR(&nativeio_digitalinout_direction_out_obj) },
+    { MP_ROM_QSTR(MP_QSTR_IN),    MP_ROM_PTR(&nativeio_digitalinout_direction_in_obj) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),   MP_ROM_PTR(&nativeio_digitalinout_direction_out_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(nativeio_digitalinout_direction_locals_dict, nativeio_digitalinout_direction_locals_dict_table);
+
+STATIC void nativeio_digitalinout_direction_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    qstr direction = MP_QSTR_IN;
+    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&nativeio_digitalinout_direction_out_obj)) {
+        direction = MP_QSTR_OUT;
+    }
+    mp_printf(print, "%q.%q.%q.%q", MP_QSTR_nativeio, MP_QSTR_DigitalInOut, MP_QSTR_Direction, direction);
+}
 
 const mp_obj_type_t nativeio_digitalinout_direction_type = {
     { &mp_type_type },
     .name = MP_QSTR_Direction,
+    .print = nativeio_digitalinout_direction_print,
     .locals_dict = (mp_obj_t)&nativeio_digitalinout_direction_locals_dict,
 };
 
@@ -367,11 +375,11 @@ const mp_obj_type_t nativeio_digitalinout_direction_type = {
 //|     Enum-like class to define the drive mode used when outputting
 //|     digital values.
 //|
-//|     .. data:: push_pull
+//|     .. data:: PUSH_PULL
 //|
 //|       Output both high and low digital values
 //|
-//|     .. data:: open_drain
+//|     .. data:: OPEN_DRAIN
 //|
 //|       Output low digital values but go into high z for digital high. This is
 //|       useful for i2c and other protocols that share a digital line.
@@ -387,14 +395,23 @@ const nativeio_digitalinout_drive_mode_obj_t nativeio_digitalinout_drive_mode_op
 };
 
 STATIC const mp_rom_map_elem_t nativeio_digitalinout_drive_mode_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_push_pull),    MP_ROM_PTR(&nativeio_digitalinout_drive_mode_push_pull_obj) },
-    { MP_ROM_QSTR(MP_QSTR_open_drain),   MP_ROM_PTR(&nativeio_digitalinout_drive_mode_open_drain_obj) },
+    { MP_ROM_QSTR(MP_QSTR_PUSH_PULL),    MP_ROM_PTR(&nativeio_digitalinout_drive_mode_push_pull_obj) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),   MP_ROM_PTR(&nativeio_digitalinout_drive_mode_open_drain_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(nativeio_digitalinout_drive_mode_locals_dict, nativeio_digitalinout_drive_mode_locals_dict_table);
+
+STATIC void nativeio_digitalinout_drive_mode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    qstr drive_mode = MP_QSTR_PUSH_PULL;
+    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&nativeio_digitalinout_drive_mode_open_drain_obj)) {
+        drive_mode = MP_QSTR_OPEN_DRAIN;
+    }
+    mp_printf(print, "%q.%q.%q.%q", MP_QSTR_nativeio, MP_QSTR_DigitalInOut, MP_QSTR_DriveMode, drive_mode);
+}
 
 const mp_obj_type_t nativeio_digitalinout_drive_mode_type = {
     { &mp_type_type },
     .name = MP_QSTR_DriveMode,
+    .print = nativeio_digitalinout_drive_mode_print,
     .locals_dict = (mp_obj_t)&nativeio_digitalinout_drive_mode_locals_dict,
 };
 
@@ -403,12 +420,12 @@ const mp_obj_type_t nativeio_digitalinout_drive_mode_type = {
 //|     Enum-like class to define the pull value, if any, used while reading
 //|     digital values in.
 //|
-//|     .. data:: up
+//|     .. data:: UP
 //|
 //|       When the input line isn't being driven the pull up can pull the state
 //|       of the line high so it reads as true.
 //|
-//|     .. data:: down
+//|     .. data:: DOWN
 //|
 //|       When the input line isn't being driven the pull down can pull the
 //|       state of the line low so it reads as false.
@@ -424,21 +441,30 @@ const nativeio_digitalinout_pull_obj_t nativeio_digitalinout_pull_down_obj = {
 };
 
 STATIC const mp_rom_map_elem_t nativeio_digitalinout_pull_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_up),    MP_ROM_PTR(&nativeio_digitalinout_pull_up_obj) },
-    { MP_ROM_QSTR(MP_QSTR_down),  MP_ROM_PTR(&nativeio_digitalinout_pull_down_obj) },
+    { MP_ROM_QSTR(MP_QSTR_UP),    MP_ROM_PTR(&nativeio_digitalinout_pull_up_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DOWN),  MP_ROM_PTR(&nativeio_digitalinout_pull_down_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(nativeio_digitalinout_pull_locals_dict, nativeio_digitalinout_pull_locals_dict_table);
+
+STATIC void nativeio_digitalinout_pull_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    qstr pull = MP_QSTR_UP;
+    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&nativeio_digitalinout_pull_down_obj)) {
+        pull = MP_QSTR_DOWN;
+    }
+    mp_printf(print, "%q.%q.%q.%q", MP_QSTR_nativeio, MP_QSTR_DigitalInOut, MP_QSTR_Pull, pull);
+}
 
 const mp_obj_type_t nativeio_digitalinout_pull_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pull,
+    .print = nativeio_digitalinout_pull_print,
     .locals_dict = (mp_obj_t)&nativeio_digitalinout_pull_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t nativeio_digitalinout_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_deinit),                 MP_ROM_PTR(&nativeio_digitalinout_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&nativeio_digitalinout___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),               MP_ROM_PTR(&nativeio_digitalinout_obj___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_switch_to_output),   MP_ROM_PTR(&nativeio_digitalinout_switch_to_output_obj) },
     { MP_ROM_QSTR(MP_QSTR_switch_to_input),    MP_ROM_PTR(&nativeio_digitalinout_switch_to_input_obj) },

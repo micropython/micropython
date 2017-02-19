@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/SPI.h"
 
+#include "lib/utils/context_manager_helpers.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 
@@ -108,10 +109,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_spi_deinit_obj, nativeio_spi_obj_deinit);
 //|
 //|     No-op used by Context Managers.
 //|
-STATIC mp_obj_t nativeio_spi_obj___enter__(mp_obj_t self_in) {
-    return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(nativeio_spi___enter___obj, nativeio_spi_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: SPI.__exit__()
 //|
@@ -277,7 +275,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_spi_readinto_obj, 2, nativeio_spi_readinto);
 
 STATIC const mp_rom_map_elem_t nativeio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_spi_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_spi___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_spi_obj___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_configure), MP_ROM_PTR(&nativeio_spi_configure_obj) },

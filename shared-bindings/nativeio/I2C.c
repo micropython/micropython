@@ -30,6 +30,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/nativeio/I2C.h"
 
+#include "lib/utils/context_manager_helpers.h"
 #include "py/runtime.h"
 //| .. currentmodule:: nativeio
 //|
@@ -93,10 +94,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c_deinit_obj, nativeio_i2c_obj_deinit);
 //|
 //|     No-op used in Context Managers.
 //|
-STATIC mp_obj_t nativeio_i2c_obj___enter__(mp_obj_t self_in) {
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c___enter___obj, nativeio_i2c_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: I2C.__exit__()
 //|
@@ -261,7 +259,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_i2c_writeto_obj, 1, nativeio_i2c_writ
 
 STATIC const mp_rom_map_elem_t nativeio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&nativeio_i2c_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&nativeio_i2c___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&nativeio_i2c___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&nativeio_i2c_scan_obj) },
 

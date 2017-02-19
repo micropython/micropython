@@ -32,6 +32,7 @@
 #include "shared-bindings/bitbangio/SPI.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "lib/utils/context_manager_helpers.h"
 #include "py/runtime.h"
 
 //| .. currentmodule:: bitbangio
@@ -57,7 +58,6 @@
 //|
 
 // TODO(tannewt): Support LSB SPI.
-// TODO(tannewt): Support phase, polarity and bit order.
 STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
     bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
@@ -97,10 +97,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_deinit_obj, bitbangio_spi_obj_deinit);
 //|
 //|      No-op used by Context Managers.
 //|
-STATIC mp_obj_t bitbangio_spi_obj___enter__(mp_obj_t self_in) {
-    return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi___enter___obj, bitbangio_spi_obj___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: SPI.__exit__()
 //|
@@ -211,7 +208,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_
 
 STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&bitbangio_spi_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&bitbangio_spi___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&bitbangio_spi_obj___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_configure), MP_ROM_PTR(&bitbangio_spi_configure_obj) },

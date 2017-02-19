@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "lib/utils/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
@@ -88,10 +89,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin_deinit_obj, nativeio_analogin_deinit
 //|
 //|      No-op used by Context Managers.
 //|
-STATIC mp_obj_t nativeio_analogin___enter__(mp_obj_t self_in) {
-   return self_in;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin___enter___obj, nativeio_analogin___enter__);
+//  Provided by context manager helper.
 
 //|   .. method:: __exit__()
 //|
@@ -150,7 +148,7 @@ mp_obj_property_t nativeio_analogin_reference_voltage_obj = {
 
 STATIC const mp_rom_map_elem_t nativeio_analogin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                 MP_ROM_PTR(&nativeio_analogin_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&nativeio_analogin___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),               MP_ROM_PTR(&nativeio_analogin___exit___obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value),              MP_ROM_PTR(&nativeio_analogin_value_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_reference_voltage),  MP_ROM_PTR(&nativeio_analogin_reference_voltage_obj)},
