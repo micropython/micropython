@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/board/__init__.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "py/nlr.h"
@@ -43,9 +45,31 @@
 //|    `board` or `microcontroller.pin` to reference the desired pin.
 //|
 
+STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mcu_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // If the pin is in board, print its version there.
+    const mp_map_t* board_map = &board_module_globals.map;
+    for (uint8_t i = 0; i < board_map->alloc; i++) {
+        if (board_map->table[i].value == self) {
+            mp_printf(print, "%q.%q", MP_QSTR_board,
+                      MP_OBJ_QSTR_VALUE(board_map->table[i].key));
+            return;
+        }
+    }
+    const mp_map_t* mcu_map = &mcu_pin_globals.map;
+    for (uint8_t i = 0; i < mcu_map->alloc; i++) {
+        if (mcu_map->table[i].value == self) {
+            mp_printf(print, "%q.%q.%q", MP_QSTR_microcontroller, MP_QSTR_pin,
+                      MP_OBJ_QSTR_VALUE(mcu_map->table[i].key));
+            return;
+        }
+    }
+}
+
 const mp_obj_type_t mcu_pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
+    .print = mcu_pin_print
 };
 
 void assert_pin(mp_obj_t obj, bool none_ok) {
