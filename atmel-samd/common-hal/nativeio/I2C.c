@@ -28,6 +28,7 @@
  // module.
 
 #include "shared-bindings/nativeio/I2C.h"
+#include "py/mperrno.h"
 #include "py/nlr.h"
 
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
@@ -135,7 +136,7 @@ void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self) {
     i2c_master_unlock(&self->i2c_master_instance);
 }
 
-bool common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
+uint8_t common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
         const uint8_t *data, size_t len, bool transmit_stop_bit) {
     struct i2c_master_packet packet = {
         .address     = addr,
@@ -161,10 +162,15 @@ bool common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
             break;
         }
     }
-    return status == STATUS_OK;
+    if (status == STATUS_OK) {
+        return 0;
+    } else if (status == STATUS_ERR_BAD_ADDRESS) {
+        return MP_ENODEV;
+    }
+    return MP_EIO;
 }
 
-bool common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t addr,
+uint8_t common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
     struct i2c_master_packet packet = {
         .address     = addr,
@@ -185,5 +191,10 @@ bool common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t addr,
             break;
         }
     }
-    return status == STATUS_OK;
+    if (status == STATUS_OK) {
+        return 0;
+    } else if (status == STATUS_ERR_BAD_ADDRESS) {
+        return MP_ENODEV;
+    }
+    return MP_EIO;
 }

@@ -31,6 +31,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "lib/utils/context_manager_helpers.h"
+#include "py/mperrno.h"
 #include "py/runtime.h"
 //| .. currentmodule:: bitbangio
 //|
@@ -129,8 +130,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_scan_obj, bitbangio_i2c_scan);
 //|     Attempts to grab the I2C lock. Returns True on success.
 //|
 STATIC mp_obj_t bitbangio_i2c_obj_try_lock(mp_obj_t self_in) {
-    shared_module_bitbangio_i2c_try_lock(MP_OBJ_TO_PTR(self_in));
-    return self_in;
+    return mp_obj_new_bool(shared_module_bitbangio_i2c_try_lock(MP_OBJ_TO_PTR(self_in)));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_try_lock_obj, bitbangio_i2c_obj_try_lock);
 
@@ -183,7 +183,13 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
     } else if (len > bufinfo.len) {
         len = bufinfo.len;
     }
-    shared_module_bitbangio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, len);
+    uint8_t status = shared_module_bitbangio_i2c_read(self,
+                                                      args[ARG_address].u_int,
+                                                      ((uint8_t*)bufinfo.buf) + start,
+                                                      len);
+    if (status != 0) {
+        mp_raise_OSError(status);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_readfrom_into);
@@ -235,10 +241,10 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
     }
 
     // do the transfer
-    bool ok = shared_module_bitbangio_i2c_write(self, args[ARG_address].u_int,
+    uint8_t status = shared_module_bitbangio_i2c_write(self, args[ARG_address].u_int,
         ((uint8_t*) bufinfo.buf) + start, len, args[ARG_stop].u_bool);
-    if (!ok) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus error"));
+    if (status != 0) {
+        mp_raise_OSError(status);
     }
     return mp_const_none;
 }

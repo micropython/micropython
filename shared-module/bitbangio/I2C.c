@@ -26,6 +26,7 @@
 
 #include "shared-bindings/bitbangio/I2C.h"
 
+#include "py/mperrno.h"
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/types.h"
@@ -192,38 +193,48 @@ bool shared_module_bitbangio_i2c_probe(bitbangio_i2c_obj_t *self, uint8_t addr) 
     return ok;
 }
 
-bool shared_module_bitbangio_i2c_write(bitbangio_i2c_obj_t *self, uint16_t addr,
+uint8_t shared_module_bitbangio_i2c_write(bitbangio_i2c_obj_t *self, uint16_t addr,
                                        const uint8_t *data, size_t len, bool transmit_stop_bit) {
     // start the I2C transaction
     start(self);
-    bool ok = write_byte(self, addr << 1);
+    uint8_t status = 0;
+    if (!write_byte(self, addr << 1)) {
+        status = MP_ENODEV;
+    }
 
-    for (uint32_t i = 0; i < len; i++) {
-        ok = ok && write_byte(self, data[i]);
-        if (!ok) {
-            break;
+    if (status == 0) {
+        for (uint32_t i = 0; i < len; i++) {
+            if (!write_byte(self, data[i])) {
+                status = MP_EIO;
+                break;
+            }
         }
     }
 
     if (transmit_stop_bit) {
         stop(self);
     }
-    return ok;
+    return status;
 }
 
-bool shared_module_bitbangio_i2c_read(bitbangio_i2c_obj_t *self, uint16_t addr,
+uint8_t shared_module_bitbangio_i2c_read(bitbangio_i2c_obj_t *self, uint16_t addr,
                                       uint8_t * data, size_t len) {
     // start the I2C transaction
     start(self);
-    bool ok = write_byte(self, (addr << 1) | 1);
+    uint8_t status = 0;
+    if (!write_byte(self, (addr << 1) | 1)) {
+        status = MP_ENODEV;
+    }
 
-    for (uint32_t i = 0; i < len; i++) {
-        ok = ok && read_byte(self, data + i, i < len - 1);
-        if (!ok) {
-            break;
+    if (status == 0) {
+        for (uint32_t i = 0; i < len; i++) {
+            if (!read_byte(self, data + i, i < len - 1)) {
+                status = MP_EIO;
+                break;
+            }
         }
     }
 
     stop(self);
-    return ok;
+    return status;
 }

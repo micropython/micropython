@@ -57,12 +57,14 @@ extern void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self);
 // Probe the bus to see if a device acknowledges the given address.
 extern bool common_hal_nativeio_i2c_probe(nativeio_i2c_obj_t *self, uint8_t addr);
 
-extern bool common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t address,
-                                          const uint8_t * data, size_t len,
-                                          bool stop);
+// Write to the device and return 0 on success or an appropriate error code from mperrno.h
+extern uint8_t common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t address,
+                                             const uint8_t * data, size_t len,
+                                             bool stop);
 
-// Reads memory of the i2c device picking up where it left off.
-extern bool common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t address,
-                                         uint8_t * data, size_t len);
+// Reads memory of the i2c device picking up where it left off and return 0 on
+// success or an appropriate error code from mperrno.h
+extern uint8_t common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t address,
+                                            uint8_t * data, size_t len);
 
 #endif // __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_I2C_H__

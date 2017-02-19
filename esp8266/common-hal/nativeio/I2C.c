@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/nativeio/I2C.h"
+#include "py/mperrno.h"
 #include "py/nlr.h"
 
 void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
@@ -51,12 +52,12 @@ bool common_hal_nativeio_i2c_has_lock(nativeio_i2c_obj_t *self) {
 void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self) {
 }
 
-bool common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
+uint8_t common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
         const uint8_t * data, size_t len, bool transmit_stop_bit) {
-    return false;
+    return MP_EIO;
 }
 
-bool common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t addr,
+uint8_t common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t addr,
         uint8_t * data, size_t len) {
-    return false;
+    return MP_EIO;
 }
