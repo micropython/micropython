@@ -183,7 +183,7 @@ void reset_samd21(void) {
 
     pwmout_reset();
 
-#ifdef CRYSTALLESS
+#ifdef CALIBRATE_CRYSTALLESS
     // If we are on USB lets double check our fine calibration for the clock and
     // save the new value if its different enough.
     if (mp_msc_enabled) {
@@ -463,7 +463,7 @@ void samd21_init(void) {
 
 
     uint16_t dfll_fine_calibration = 0x1ff;
-#ifdef CRYSTALLESS
+#ifdef CALIBRATE_CRYSTALLESS
     // This is stored in an NVM page after the text and data storage but before
     // the optional file system. The first 16 bytes are the identifier for the
     // section.

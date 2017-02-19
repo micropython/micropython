@@ -14,5 +14,3 @@
 #include "internal_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
-
-#define CRYSTALLESS 1
