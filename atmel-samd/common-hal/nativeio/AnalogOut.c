@@ -38,7 +38,7 @@ void common_hal_nativeio_analogout_construct(nativeio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (pin->pin != PIN_PA02) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "AnalogOut only supported on pin PA02."));
+            "AnalogOut not supported on given pin."));
         return;
     }
     struct dac_config config_dac;
