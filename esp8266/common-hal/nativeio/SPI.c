@@ -41,11 +41,36 @@ extern const mcu_pin_obj_t pin_MTDI;
 void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
         const mcu_pin_obj_t * miso) {
-    if (clock != &pin_MTMS || mosi != &pin_MTCK || miso != &pin_MTDI) {
+    if (clock != &pin_MTMS || !((mosi == &pin_MTCK && miso ==  MP_OBJ_TO_PTR(mp_const_none)) ||
+                                (mosi == MP_OBJ_TO_PTR(mp_const_none) && miso == &pin_MTDI))) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             "Pins not valid for SPI"));
     }
-    spi_init(HSPI);
+
+    uint32_t clock_div_flag = 0;
+    if (SPI_CLK_USE_DIV) {
+        clock_div_flag = 0x0001;
+    }
+
+    // Set bit 9 if 80MHz sysclock required
+    WRITE_PERI_REG(PERIPHS_IO_MUX, 0x105 | (clock_div_flag<<9));
+    // GPIO12 is HSPI MISO pin (Master Data In)
+    if (miso == &pin_MTDI) {
+        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 2);
+    }
+    // GPIO13 is HSPI MOSI pin (Master Data Out)
+    if (mosi == &pin_MTCK) {
+        PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, 2);
+    }
+    // GPIO14 is HSPI CLK pin (Clock)
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 2);
+
+    spi_clock(HSPI, SPI_CLK_PREDIV, SPI_CLK_CNTDIV);
+    spi_tx_byte_order(HSPI, SPI_BYTE_ORDER_HIGH_TO_LOW);
+    spi_rx_byte_order(HSPI, SPI_BYTE_ORDER_HIGH_TO_LOW);
+
+    SET_PERI_REG_MASK(SPI_USER(HSPI), SPI_CS_SETUP|SPI_CS_HOLD);
+    CLEAR_PERI_REG_MASK(SPI_USER(HSPI), SPI_FLASH_MODE);
 }
 
 void common_hal_nativeio_spi_deinit(nativeio_spi_obj_t *self) {
