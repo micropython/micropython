@@ -30,7 +30,7 @@
 
 #include "asf/common2/services/delay/delay.h"
 
-void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes, bool is800KHz) {
+void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
     // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
     uint8_t  *ptr, *end, p, bitMask;
@@ -54,53 +54,22 @@ void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, 
     volatile uint32_t *set = &(port->OUTSET.reg),
                       *clr = &(port->OUTCLR.reg);
 
-    if(is800KHz) {
-        for(;;) {
-            *set = pinMask;
-            asm("nop; nop;");
-            if(p & bitMask) {
-                asm("nop; nop; nop; nop; nop; nop; nop;");
-                *clr = pinMask;
-            } else {
-                *clr = pinMask;
-                asm("nop; nop;");
-            }
-            if((bitMask >>= 1) != 0) {
-                asm("nop; nop; nop; nop; nop;");
-            } else {
-                if(ptr >= end) break;
-                p       = *ptr++;
-                bitMask = 0x80;
-            }
-        }
-    } else { // 400 KHz bitstream
-        for(;;) {
-            *set = pinMask;
-
+    for(;;) {
+        *set = pinMask;
+        asm("nop; nop;");
+        if(p & bitMask) {
             asm("nop; nop; nop; nop; nop; nop; nop;");
-            if(p & bitMask) {
-                asm("nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop;");
-                *clr = pinMask;
-            } else {
-                *clr = pinMask;
-                asm("nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop; nop; nop; nop; nop; nop;"
-                    "nop; nop; nop;");
-            }
-            asm("nop; nop; nop; nop; nop; nop; nop; nop;"
-                "nop; nop; nop; nop; nop; nop; nop; nop;"
-                "nop; nop; nop; nop; nop; nop; nop; nop;"
-                "nop; nop; nop; nop; nop; nop; nop; nop;");
-            if(bitMask >>= 1) {
-                asm("nop; nop; nop; nop; nop; nop; nop;");
-            } else {
-                if(ptr >= end) break;
-                p       = *ptr++;
-                bitMask = 0x80;
-            }
+            *clr = pinMask;
+        } else {
+            *clr = pinMask;
+            asm("nop; nop;");
+        }
+        if((bitMask >>= 1) != 0) {
+            asm("nop; nop; nop; nop; nop;");
+        } else {
+            if(ptr >= end) break;
+            p       = *ptr++;
+            bitMask = 0x80;
         }
     }
 

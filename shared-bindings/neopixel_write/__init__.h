@@ -32,6 +32,6 @@
 
 #include "common-hal/nativeio/types.h"
 
-extern void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* gpio, uint8_t *pixels, uint32_t numBytes, bool is800KHz);
+extern void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* gpio, uint8_t *pixels, uint32_t numBytes);
 
 #endif
