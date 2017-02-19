@@ -103,7 +103,8 @@ Setup commands
 
 .. method:: LCD160CR.set_power(on)
 
-    Turn the display on or off, depending on the given value.
+    Turn the display on or off, depending on the given value of `on`: 0 or `False`
+    will turn the display off, and 1 or `True` will turn it on.
 
 .. method:: LCD160CR.set_orient(orient)
 

@@ -5,6 +5,13 @@ class Base:
     def foo(cls):
         print(cls.__name__)
 
+try:
+    Base.__name__
+except AttributeError:
+    import sys
+    print("SKIP")
+    sys.exit()
+
 class Sub(Base):
     pass
 

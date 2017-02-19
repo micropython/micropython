@@ -20,7 +20,6 @@ test_exc("False in True", TypeError)
 test_exc("1 * {}", TypeError)
 test_exc("1 in 1", TypeError)
 test_exc("bytearray() // 2", TypeError)
-test_exc("m = memoryview(bytearray())\nm += bytearray()", TypeError)
 
 # object with buffer protocol needed on rhs
 test_exc("bytearray(1) + 1", TypeError)

@@ -79,6 +79,7 @@
 #define MP_BC_POP_BLOCK          (0x44)
 #define MP_BC_POP_EXCEPT         (0x45)
 #define MP_BC_UNWIND_JUMP        (0x46) // rel byte code offset, 16-bit signed, in excess; then a byte
+#define MP_BC_GET_ITER_STACK     (0x47)
 
 #define MP_BC_BUILD_TUPLE        (0x50) // uint
 #define MP_BC_BUILD_LIST         (0x51) // uint

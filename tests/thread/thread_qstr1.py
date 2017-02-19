@@ -2,6 +2,10 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
+try:
+    import utime as time
+except ImportError:
+    import time
 import _thread
 
 # function to check the interned string
@@ -28,8 +32,8 @@ n_qstr_per_thread = 100 # make 1000 for a more stressful test (uses more heap)
 for i in range(n_thread):
     _thread.start_new_thread(th, (i * n_qstr_per_thread, n_qstr_per_thread))
 
-# busy wait for threads to finish
+# wait for threads to finish
 while n_finished < n_thread:
-    pass
+    time.sleep(1)
 
 print('pass')

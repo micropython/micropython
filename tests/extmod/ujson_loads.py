@@ -1,7 +1,12 @@
 try:
     import ujson as json
-except:
-    import json
+except ImportError:
+    try:
+        import json
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 def my_print(o):
     if isinstance(o, dict):

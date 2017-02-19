@@ -29,6 +29,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
+#include "lib/utils/interrupt_char.h"
 #include "pendsv.h"
 #include "irq.h"
 
@@ -52,12 +53,12 @@ void pendsv_init(void) {
 // PENDSV feature.  This will wait until all interrupts are finished then raise
 // the given exception object using nlr_jump in the context of the top-level
 // thread.
-void pendsv_nlr_jump(void *o) {
+void pendsv_kbd_intr(void) {
     if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
-        MP_STATE_VM(mp_pending_exception) = o;
+        mp_keyboard_interrupt();
     } else {
         MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        pendsv_object = o;
+        pendsv_object = &MP_STATE_VM(mp_kbd_exception);
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }
 }

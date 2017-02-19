@@ -1,7 +1,12 @@
 try:
-    import ubinascii as binascii
+    try:
+        import ubinascii as binascii
+    except ImportError:
+        import binascii
 except ImportError:
-    import binascii
+    import sys
+    print("SKIP")
+    sys.exit()
 
 print(binascii.a2b_base64(b''))
 print(binascii.a2b_base64(b'Zg=='))

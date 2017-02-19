@@ -57,6 +57,7 @@ class FreezeError(Exception):
         return 'error while freezing %s: %s' % (self.rawcode.source_file, self.msg)
 
 class Config:
+    MPY_VERSION = 1
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
     MICROPY_LONGINT_IMPL_MPZ = 2
@@ -438,8 +439,8 @@ def read_mpy(filename):
         header = bytes_cons(f.read(4))
         if header[0] != ord('M'):
             raise Exception('not a valid .mpy file')
-        if header[1] != 0:
-            raise Exception('incompatible version')
+        if header[1] != config.MPY_VERSION:
+            raise Exception('incompatible .mpy version')
         feature_flags = header[2]
         config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE = (feature_flags & 1) != 0
         config.MICROPY_PY_BUILTINS_STR_UNICODE = (feature_flags & 2) != 0

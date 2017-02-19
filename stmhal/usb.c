@@ -38,6 +38,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "bufhelper.h"
 #include "usb.h"
 
@@ -96,7 +97,7 @@ const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 };
 
 void pyb_usb_init0(void) {
-    USBD_CDC_SetInterrupt(-1);
+    mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 
@@ -139,15 +140,6 @@ void pyb_usb_dev_deinit(void) {
 
 bool usb_vcp_is_enabled(void) {
     return (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) != 0;
-}
-
-void usb_vcp_set_interrupt_char(int c) {
-    if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
-        if (c != -1) {
-            mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        }
-        USBD_CDC_SetInterrupt(c);
-    }
 }
 
 int usb_vcp_recv_byte(uint8_t *c) {
@@ -364,7 +356,7 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) {
-    usb_vcp_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
@@ -526,7 +518,7 @@ const mp_obj_type_t pyb_usb_vcp_type = {
     .name = MP_QSTR_USB_VCP,
     .print = pyb_usb_vcp_print,
     .make_new = pyb_usb_vcp_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &pyb_usb_vcp_stream_p,
     .locals_dict = (mp_obj_t)&pyb_usb_vcp_locals_dict,

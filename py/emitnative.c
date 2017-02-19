@@ -105,8 +105,8 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_NATIVE_CALL_FUNCTION_N_KW] = 3,
     [MP_F_CALL_METHOD_N_KW] = 3,
     [MP_F_CALL_METHOD_N_KW_VAR] = 3,
-    [MP_F_GETITER] = 1,
-    [MP_F_ITERNEXT] = 1,
+    [MP_F_NATIVE_GETITER] = 2,
+    [MP_F_NATIVE_ITERNEXT] = 1,
     [MP_F_NLR_PUSH] = 1,
     [MP_F_NLR_POP] = 0,
     [MP_F_NATIVE_RAISE] = 1,
@@ -1799,23 +1799,29 @@ STATIC void emit_native_end_finally(emit_t *emit) {
     emit_post(emit);
 }
 
-STATIC void emit_native_get_iter(emit_t *emit) {
+STATIC void emit_native_get_iter(emit_t *emit, bool use_stack) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
 
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_GETITER);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    if (use_stack) {
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t));
+        emit_call(emit, MP_F_NATIVE_GETITER);
+    } else {
+        // mp_getiter will allocate the iter_buf on the heap
+        ASM_MOV_IMM_TO_REG(emit->as, 0, REG_ARG_2);
+        emit_call(emit, MP_F_NATIVE_GETITER);
+        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+    }
 }
 
 STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_native_pre(emit);
-    vtype_kind_t vtype;
-    emit_access_stack(emit, 1, &vtype, REG_ARG_1);
-    assert(vtype == VTYPE_PYOBJ);
-    emit_call(emit, MP_F_ITERNEXT);
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_1, sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t));
+    adjust_stack(emit, 4);
+    emit_call(emit, MP_F_NATIVE_ITERNEXT);
     ASM_MOV_IMM_TO_REG(emit->as, (mp_uint_t)MP_OBJ_STOP_ITERATION, REG_TEMP1);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_RET, REG_TEMP1, label);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
@@ -1824,7 +1830,7 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
 STATIC void emit_native_for_iter_end(emit_t *emit) {
     // adjust stack counter (we get here from for_iter ending, which popped the value for us)
     emit_native_pre(emit);
-    adjust_stack(emit, -1);
+    adjust_stack(emit, -(sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t)));
     emit_post(emit);
 }
 

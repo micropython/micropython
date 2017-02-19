@@ -34,11 +34,6 @@ print(range(1, 4)[1:])
 print(range(1, 4)[:-1])
 print(range(7, -2, -4)[:])
 
-# attrs
-print(range(1, 2, 3).start)
-print(range(1, 2, 3).stop)
-print(range(1, 2, 3).step)
-
 # bad unary op
 try:
     -range(1)
@@ -50,9 +45,3 @@ try:
     range(1)[0] = 1
 except TypeError:
     print("TypeError")
-
-# bad attr (can't store)
-try:
-    range(4).start = 0
-except AttributeError:
-    print('AttributeError')

@@ -21,10 +21,6 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    usb_vcp_set_interrupt_char(c);
-}
-
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
 #if 0

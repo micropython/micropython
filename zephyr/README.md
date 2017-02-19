@@ -59,10 +59,12 @@ it's a sign that you didn't followed instructions above. If you would like
 to just run it quickly without extra setup, see "minimal" build below.
 
 For deploying/flashing a firmware on a real board, follow Zephyr
-documentation for a given board (mind again that networking is enabled
-for the build, so you should be aware of known issues for a particular
-board; for example, frdm_k64f requires Ethernet cable connected to both
-board and host or it will hang/crash on startup).
+documentation for a given board, including known issues for that board
+(if any). (Mind again that networking is enabled for the default build,
+so you should know if there're any special requirements in that regard,
+cf. for example QEMU networking requirements above; real hardware boards
+generally should not have any special requirements, unless there're known
+issues).
 
 
 Quick example

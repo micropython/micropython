@@ -387,6 +387,10 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("GET_ITER");
             break;
 
+        case MP_BC_GET_ITER_STACK:
+            printf("GET_ITER_STACK");
+            break;
+
         case MP_BC_FOR_ITER:
             DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
             printf("FOR_ITER " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));

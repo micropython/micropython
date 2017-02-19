@@ -33,8 +33,8 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, mp_uint_t cur);
-STATIC mp_obj_list_t *list_new(mp_uint_t n);
+STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
+STATIC mp_obj_list_t *list_new(size_t n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
 STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 
@@ -50,7 +50,7 @@ STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
         kind = PRINT_REPR;
     }
     mp_print_str(print, "[");
-    for (mp_uint_t i = 0; i < o->len; i++) {
+    for (size_t i = 0; i < o->len; i++) {
         if (i > 0) {
             mp_print_str(print, ", ");
         }
@@ -60,7 +60,7 @@ STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
 }
 
 STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
-    mp_obj_t iter = mp_getiter(iterable);
+    mp_obj_t iter = mp_getiter(iterable, NULL);
     mp_obj_t item;
     while ((item = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
         mp_obj_list_append(list, item);
@@ -225,8 +225,8 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC mp_obj_t list_getiter(mp_obj_t o_in) {
-    return mp_obj_new_list_iterator(o_in, 0);
+STATIC mp_obj_t list_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+    return mp_obj_new_list_iterator(o_in, 0, iter_buf);
 }
 
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
@@ -374,7 +374,7 @@ STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     if (index < 0) {
          index = 0;
     }
-    if ((mp_uint_t)index > self->len) {
+    if ((size_t)index > self->len) {
          index = self->len;
     }
 
@@ -451,7 +451,7 @@ const mp_obj_type_t mp_type_list = {
     .locals_dict = (mp_obj_dict_t*)&list_locals_dict,
 };
 
-void mp_obj_list_init(mp_obj_list_t *o, mp_uint_t n) {
+void mp_obj_list_init(mp_obj_list_t *o, size_t n) {
     o->base.type = &mp_type_list;
     o->alloc = n < LIST_MIN_ALLOC ? LIST_MIN_ALLOC : n;
     o->len = n;
@@ -459,16 +459,16 @@ void mp_obj_list_init(mp_obj_list_t *o, mp_uint_t n) {
     mp_seq_clear(o->items, n, o->alloc, sizeof(*o->items));
 }
 
-STATIC mp_obj_list_t *list_new(mp_uint_t n) {
+STATIC mp_obj_list_t *list_new(size_t n) {
     mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
     mp_obj_list_init(o, n);
     return o;
 }
 
-mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items) {
+mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items) {
     mp_obj_list_t *o = list_new(n);
     if (items != NULL) {
-        for (mp_uint_t i = 0; i < n; i++) {
+        for (size_t i = 0; i < n; i++) {
             o->items[i] = items[i];
         }
     }
@@ -481,7 +481,7 @@ void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items) {
     *items = self->items;
 }
 
-void mp_obj_list_set_len(mp_obj_t self_in, mp_uint_t len) {
+void mp_obj_list_set_len(mp_obj_t self_in, size_t len) {
     // trust that the caller knows what it's doing
     // TODO realloc if len got much smaller than alloc
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
@@ -501,7 +501,7 @@ typedef struct _mp_obj_list_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_t list;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_list_it_t;
 
 STATIC mp_obj_t list_it_iternext(mp_obj_t self_in) {
@@ -516,8 +516,9 @@ STATIC mp_obj_t list_it_iternext(mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, mp_uint_t cur) {
-    mp_obj_list_it_t *o = m_new_obj(mp_obj_list_it_t);
+mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_list_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_list_it_t *o = (mp_obj_list_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = list_it_iternext;
     o->list = list;

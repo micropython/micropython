@@ -10,11 +10,11 @@
 *.png binary
 *.jpg binary
 *.dxf binary
+*.mpy binary
 
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text
 tests/basics/string_crlf_conversion.py -text
-stmhal/startup_stm32f40xx.s -text
 stmhal/pybcdc.inf_template -text
 stmhal/usbd_* -text
 stmhal/boards/*/stm32f4xx_hal_conf.h -text
@@ -28,4 +28,3 @@ cc3200/hal/des.c -text
 cc3200/hal/i2s.c -text
 cc3200/hal/i2s.h -text
 cc3200/version.h -text
-lib/fatfs/** -text

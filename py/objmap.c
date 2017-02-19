@@ -43,7 +43,7 @@ STATIC mp_obj_t map_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     o->n_iters = n_args - 1;
     o->fun = args[0];
     for (mp_uint_t i = 0; i < n_args - 1; i++) {
-        o->iters[i] = mp_getiter(args[i + 1]);
+        o->iters[i] = mp_getiter(args[i + 1], NULL);
     }
     return MP_OBJ_FROM_PTR(o);
 }
@@ -68,6 +68,6 @@ const mp_obj_type_t mp_type_map = {
     { &mp_type_type },
     .name = MP_QSTR_map,
     .make_new = map_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = map_iternext,
 };

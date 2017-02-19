@@ -32,11 +32,11 @@
 
 typedef struct _mp_obj_array_t {
     mp_obj_base_t base;
-    mp_uint_t typecode : 8;
+    size_t typecode : 8;
     // free is number of unused elements after len used elements
     // alloc size = len + free
-    mp_uint_t free : (8 * sizeof(mp_uint_t) - 8);
-    mp_uint_t len; // in elements
+    size_t free : (8 * sizeof(size_t) - 8);
+    size_t len; // in elements
     void *items;
 } mp_obj_array_t;
 

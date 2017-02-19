@@ -36,10 +36,21 @@
 #if MICROPY_EMIT_INLINE_THUMB
 
 typedef enum {
+// define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
-    PN_maximum_number_of,
+#undef DEF_RULE_NC
+    PN_string, // special node for non-interned string
+    PN_bytes, // special node for non-interned bytes
+    PN_const_object, // special node for a constant, generic Python object
+// define rules without a compile function
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) PN_##rule,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
 } pn_kind_t;
 
 struct _emit_inline_asm_t {
