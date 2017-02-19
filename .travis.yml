@@ -36,6 +36,9 @@ script:
   - make -C atmel-samd BOARD=feather_m0_basic
   - make -C atmel-samd BOARD=feather_m0_flash
   - make -C atmel-samd BOARD=metro_m0_flash
+  - make -C atmel-samd BOARD=cplay_m0_flash
+  - make -C atmel-samd BOARD=trinket_m0
+  - make -C atmel-samd BOARD=gemma_m0
   - make -C minimal CROSS=1 build/firmware.bin
   - ls -l minimal/build/firmware.bin
   - tools/check_code_size.sh
@@ -46,9 +49,6 @@ script:
   - make -C unix
   - make -C bare-arm
   - make -C qemu-arm test
-  - make -C stmhal
-  - make -C teensy
-  - make -C cc3200 BTARGET=application BTYPE=release
 
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
