@@ -552,6 +552,7 @@ void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint
     }
 
 }
+
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
     ble_gatts_value_t gatts_value;
     memset(&gatts_value, 0, sizeof(gatts_value));
@@ -568,7 +569,7 @@ void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uin
     }
 }
 
-void ble_drv_attr_notif(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
     uint16_t               hvx_len = len;
     ble_gatts_hvx_params_t hvx_params;
 

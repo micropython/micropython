@@ -58,6 +58,6 @@ void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint
 
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
-void ble_drv_attr_notif(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
+void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
 #endif // BLUETOOTH_LE_DRIVER_H__
