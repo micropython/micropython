@@ -280,20 +280,34 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
     ble_uuid_t          uuid;
     ble_gatts_attr_md_t attr_md;
 
-    memset(&cccd_md, 0, sizeof(cccd_md));
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
-    cccd_md.vloc = BLE_GATTS_VLOC_STACK;
-
     memset(&char_md, 0, sizeof(char_md));
 
-    char_md.char_props.notify = 1;
+    char_md.char_props.broadcast      = (p_char_obj->props & UBLUEPY_PROP_BROADCAST) ? 1 : 0;
+    char_md.char_props.read           = (p_char_obj->props & UBLUEPY_PROP_READ) ? 1 : 0;
+    char_md.char_props.write_wo_resp  = (p_char_obj->props & UBLUEPY_PROP_WRITE_WO_RESP) ? 1 : 0;
+    char_md.char_props.write          = (p_char_obj->props & UBLUEPY_PROP_WRITE) ? 1 : 0;
+    char_md.char_props.notify         = (p_char_obj->props & UBLUEPY_PROP_NOTIFY) ? 1 : 0;
+    char_md.char_props.indicate       = (p_char_obj->props & UBLUEPY_PROP_INDICATE) ? 1 : 0;
+#if 0
+    char_md.char_props.auth_signed_wr = (p_char_obj->props & UBLUEPY_PROP_NOTIFY) ? 1 : 0;
+#endif
+
+
     char_md.p_char_user_desc  = NULL;
     char_md.p_char_pf         = NULL;
     char_md.p_user_desc_md    = NULL;
-    char_md.p_cccd_md         = &cccd_md;
     char_md.p_sccd_md         = NULL;
 
+    // if cccd
+    if (p_char_obj->attrs & UBLUEPY_ATTR_CCCD) {
+        memset(&cccd_md, 0, sizeof(cccd_md));
+        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+        BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+        cccd_md.vloc = BLE_GATTS_VLOC_STACK;
+        char_md.p_cccd_md = &cccd_md;
+    } else {
+        char_md.p_cccd_md = NULL;
+    }
 
     uuid.type = p_char_obj->p_uuid->type;
     uuid.uuid = (uint16_t)(*(uint16_t *)&p_char_obj->p_uuid->value[0]);
