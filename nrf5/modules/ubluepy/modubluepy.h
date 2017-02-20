@@ -55,9 +55,12 @@ def event_handler(id, length, data):
 
 u0 = UUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
 u1 = UUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
+u2 = UUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e")
 s = Service(u0)
-c = Characteristic(u1)
-s.addCharacteristic(c)
+c0 = Characteristic(u1, props = Characteristic.PROP_BROADCAST, attrs = Characteristic.ATTR_CCCD)
+c1 = Characteristic(u2)
+s.addCharacteristic(c0)
+s.addCharacteristic(c1)
 p = Peripheral()
 p.addService(s)
 p.setConnectionHandler(event_handler)
@@ -113,6 +116,8 @@ typedef struct _ubluepy_characteristic_obj_t {
     uint16_t                user_desc_handle;
     uint16_t                cccd_handle;
     uint16_t                sccd_handle;
+    uint8_t                 props;
+    uint8_t                 attrs;
     ubluepy_service_obj_t * p_service;
 } ubluepy_characteristic_obj_t;
 
@@ -132,6 +137,21 @@ typedef struct _ubluepy_advertise_data_t {
     mp_obj_t * p_services;
     uint8_t    num_of_services;
 } ubluepy_advertise_data_t;
+
+typedef enum _ubluepy_prop_t {
+    UBLUEPY_PROP_BROADCAST      = 0x01,
+    UBLUEPY_PROP_READ           = 0x02,
+    UBLUEPY_PROP_WRITE_WO_RESP  = 0x04,
+    UBLUEPY_PROP_WRITE          = 0x08,
+    UBLUEPY_PROP_NOTIFY         = 0x10,
+    UBLUEPY_PROP_INDICATE       = 0x20,
+    UBLUEPY_PROP_AUTH_SIGNED_WR = 0x40,
+} ubluepy_prop_t;
+
+typedef enum _ubluepy_attr_t {
+    UBLUEPY_ATTR_CCCD           = 0x01,
+    UBLUEPY_ATTR_SCCD           = 0x02,
+} ubluepy_attr_t;
 
 typedef void (*ubluepy_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ubluepy_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
