@@ -39,11 +39,10 @@ STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp
 }
 
 STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-
-    enum { ARG_NEW_UUID };
-
     static const mp_arg_t allowed_args[] = {
-        { ARG_NEW_UUID, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_uuid,  MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_props, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PROP_READ | UBLUEPY_PROP_WRITE} },
+        { MP_QSTR_attrs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -53,9 +52,9 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
     ubluepy_characteristic_obj_t *s = m_new_obj(ubluepy_characteristic_obj_t);
     s->base.type = type;
 
-    mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
+    mp_obj_t uuid_obj = args[0].u_obj;
 
-    if (uuid_obj == MP_OBJ_NULL) {
+    if (uuid_obj == mp_const_none) {
         return MP_OBJ_FROM_PTR(s);
     }
 
@@ -65,6 +64,14 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                   "Invalid UUID parameter"));
+    }
+
+    if (args[1].u_int > 0) {
+        s->props = (uint8_t)args[1].u_int;
+    }
+
+    if (args[2].u_int > 0) {
+        s->attrs = (uint8_t)args[2].u_int;
     }
 
     // clear pointer to service
@@ -98,6 +105,15 @@ STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_characteristic_write_obj, char_write);
 
 
+/// \method properties()
+/// Read Characteristic value properties.
+///
+STATIC mp_obj_t char_properties(mp_obj_t self_in) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->props);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_properties_obj, char_properties);
+
 STATIC const mp_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),               (mp_obj_t)(&ubluepy_characteristic_read_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),              (mp_obj_t)(&ubluepy_characteristic_write_obj) },
@@ -109,7 +125,23 @@ STATIC const mp_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
     // Properties
     { MP_OBJ_NEW_QSTR(MP_QSTR_peripheral), (mp_obj_t)(&ubluepy_characteristic_get_peripheral_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),       (mp_obj_t)(&ubluepy_characteristic_get_uuid_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_properties), (mp_obj_t)(&ubluepy_characteristic_get_properties_obj) },
+#endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_properties),         (mp_obj_t)(&ubluepy_characteristic_get_properties_obj) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_BROADCAST),      MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_BROADCAST) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_READ),           MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_READ) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_WRITE_WO_RESP),  MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_WRITE_WO_RESP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_WRITE),          MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_WRITE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_NOTIFY),         MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_NOTIFY) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_INDICATE),       MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_INDICATE) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_AUTH_SIGNED_WR) },
+
+#if MICROPY_PY_UBLUEPY_PERIPHERAL
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ATTR_CCCD), MP_OBJ_NEW_SMALL_INT(UBLUEPY_ATTR_CCCD) },
+#endif
+
+#if MICROPY_PY_UBLUEPY_CENTRAL
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_OBJ_NEW_SMALL_INT(UBLUEPY_ATTR_SCCD) },
 #endif
 };
 
