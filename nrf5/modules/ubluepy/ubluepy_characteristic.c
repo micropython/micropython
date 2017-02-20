@@ -30,6 +30,7 @@
 #if MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL
 
 #include "modubluepy.h"
+#include "ble_drv.h"
 
 STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_characteristic_obj_t * self = (ubluepy_characteristic_obj_t *)o;
@@ -97,8 +98,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
 ///
 STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    // ble_drv_characteristic_write();
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+
+    if (self->props & UBLUEPY_PROP_NOTIFY) {
+        ble_drv_attr_notify(self->p_service->p_periph->conn_handle,
+                            self->handle,
+                            bufinfo.len,
+                            bufinfo.buf);
+    } else {
+        ble_drv_attr_write(self->p_service->p_periph->conn_handle,
+                           self->handle,
+                           bufinfo.len,
+                           bufinfo.buf);
+    }
 
     return mp_const_none;
 }
