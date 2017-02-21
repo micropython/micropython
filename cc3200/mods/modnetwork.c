@@ -25,8 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include <std.h>
-
 #include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/nlr.h"
