@@ -1264,9 +1264,9 @@ STATIC mp_obj_t wlan_print_ver(void) {
     byte config_opt = SL_DEVICE_GENERAL_VERSION;
     byte config_len = sizeof(ver);
     sl_DevGet(SL_DEVICE_GENERAL_CONFIGURATION, &config_opt, &config_len, (byte*)&ver);
-    printf("NWP: %d.%d.%d.%d\n", ver.NwpVersion[0], ver.NwpVersion[1], ver.NwpVersion[2], ver.NwpVersion[3]);
-    printf("MAC: %d.%d.%d.%d\n", ver.ChipFwAndPhyVersion.FwVersion[0], ver.ChipFwAndPhyVersion.FwVersion[1],
-                                 ver.ChipFwAndPhyVersion.FwVersion[2], ver.ChipFwAndPhyVersion.FwVersion[3]);
+    printf("NWP: %d.%d.%d.%d\n", (int)ver.NwpVersion[0], (int)ver.NwpVersion[1], (int)ver.NwpVersion[2], (int)ver.NwpVersion[3]);
+    printf("MAC: %d.%d.%d.%d\n", (int)ver.ChipFwAndPhyVersion.FwVersion[0], (int)ver.ChipFwAndPhyVersion.FwVersion[1],
+                                 (int)ver.ChipFwAndPhyVersion.FwVersion[2], (int)ver.ChipFwAndPhyVersion.FwVersion[3]);
     printf("PHY: %d.%d.%d.%d\n", ver.ChipFwAndPhyVersion.PhyVersion[0], ver.ChipFwAndPhyVersion.PhyVersion[1],
                                  ver.ChipFwAndPhyVersion.PhyVersion[2], ver.ChipFwAndPhyVersion.PhyVersion[3]);
     return mp_const_none;
