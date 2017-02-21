@@ -232,7 +232,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     }
 
     // wait for first char to become available
-    if (!uart_rx_wait(self->timeout * 1000)) {
+    if (!uart_rx_wait(self->uart_id, self->timeout * 1000)) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
@@ -241,7 +241,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     uint8_t *buf = buf_in;
     for (;;) {
         *buf++ = uart_rx_char();
-        if (--size == 0 || !uart_rx_wait(self->timeout_char * 1000)) {
+        if (--size == 0 || !uart_rx_wait(self->uart_id, self->timeout_char * 1000)) {
             // return number of bytes read
             return buf - (uint8_t*)buf_in;
         }

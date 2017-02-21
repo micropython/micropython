@@ -93,7 +93,7 @@ typedef struct {
 
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
 int uart0_rx(void);
-bool uart_rx_wait(uint32_t timeout_us);
+bool uart_rx_wait(uint8 uart, uint32_t timeout_us);
 int uart_rx_char(void);
 void uart_tx_one_char(uint8 uart, uint8 TxChar);
 void uart_flush(uint8 uart);
