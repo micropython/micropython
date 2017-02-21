@@ -57,7 +57,7 @@ static ubluepy_characteristic_obj_t ble_uart_char_tx = {
     .base.type = &ubluepy_characteristic_type,
     .p_uuid = &uuid_obj_char_tx,
     .props = UBLUEPY_PROP_WRITE | UBLUEPY_PROP_WRITE_WO_RESP,
-     .attrs = 0,
+    .attrs = 0,
 };
 
 static ubluepy_characteristic_obj_t ble_uart_char_rx = {
@@ -72,12 +72,33 @@ static ubluepy_peripheral_obj_t ble_uart_peripheral = {
     .conn_handle = 0xFFFF,
 };
 
+static bool cccd_enabled;
+
 int mp_hal_stdin_rx_chr(void) {
     return 0;
 }
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    uint8_t *buf = (uint8_t *)str;
+    size_t send_len;
 
+    while (len > 0) {
+        if (len >= 20) {
+            send_len = 20; // (GATT_MTU_SIZE_DEFAULT - 3)
+        } else {
+            send_len = len;
+        }
+
+        ubluepy_characteristic_obj_t * p_char = &ble_uart_char_rx;
+
+        ble_drv_attr_notify(p_char->p_service->p_periph->conn_handle,
+                            p_char->handle,
+                            send_len,
+                            buf);
+
+        len -= send_len;
+        buf += send_len;
+    }
 }
 
 STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
@@ -93,6 +114,12 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
 STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
     (void)self;
+
+    if (event_id == 80) { // gatts write
+    	if (ble_uart_char_rx.cccd_handle == attr_handle) {
+            cccd_enabled = true;
+    	}
+    }
 }
 
 void ble_uart_init0(void) {
@@ -128,6 +155,9 @@ void ble_uart_init0(void) {
 
     // setup the peripheral
     (void)ble_uart_peripheral;
+    ble_uart_peripheral.service_list = mp_obj_new_list(0, NULL);
+    mp_obj_list_append(ble_uart_peripheral.service_list, MP_OBJ_FROM_PTR(&ble_uart_service));
+    ble_uart_service.p_periph = &ble_uart_peripheral;
 
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(&ble_uart_peripheral), gap_event_handler);
     ble_drv_gatts_event_handler_set(MP_OBJ_FROM_PTR(&ble_uart_peripheral), gatts_event_handler);
@@ -153,7 +183,13 @@ void ble_uart_init0(void) {
     (void)device_name;
     (void)services;
 
+    cccd_enabled = false;
+
     (void)ble_drv_advertise_data(&adv_data);
+
+    while (cccd_enabled != true) {
+        ;
+    }
 }
 
 
