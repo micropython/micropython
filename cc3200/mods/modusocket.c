@@ -95,13 +95,13 @@ void modusocket_socket_delete (int16_t sd) {
 }
 
 void modusocket_enter_sleep (void) {
-    fd_set socketset;
+    SlFdSet_t socketset;
     int16_t maxfd = 0;
 
     for (int i = 0; i < MOD_NETWORK_MAX_SOCKETS; i++) {
         int16_t sd;
         if ((sd = modusocket_sockets[i].sd) >= 0) {
-            FD_SET(sd, &socketset);
+            SL_FD_SET(sd, &socketset);
             maxfd = (maxfd > sd) ? maxfd : sd;
         }
     }
@@ -133,9 +133,9 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     // create socket object
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     s->base.type = (mp_obj_t)&socket_type;
-    s->sock_base.u_param.domain = AF_INET;
-    s->sock_base.u_param.type = SOCK_STREAM;
-    s->sock_base.u_param.proto = IPPROTO_TCP;
+    s->sock_base.u_param.domain = SL_AF_INET;
+    s->sock_base.u_param.type = SL_SOCK_STREAM;
+    s->sock_base.u_param.proto = SL_IPPROTO_TCP;
     s->sock_base.u_param.fileno = -1;
     s->sock_base.has_timeout = false;
     s->sock_base.cert_req = false;
@@ -501,13 +501,13 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
 
     // ipv4 only
     uint8_t out_ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
-    int32_t result = wlan_gethostbyname(host, hlen, out_ip, AF_INET);
+    int32_t result = wlan_gethostbyname(host, hlen, out_ip, SL_AF_INET);
     if (result < 0) {
         mp_raise_OSError(-result);
     }
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
-    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET);
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SOCK_STREAM);
+    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(SL_AF_INET);
+    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SL_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_LITTLE);
@@ -525,14 +525,14 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),         (mp_obj_t)&mp_type_TimeoutError },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET),         MP_OBJ_NEW_SMALL_INT(AF_INET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET),         MP_OBJ_NEW_SMALL_INT(SL_AF_INET) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM),     MP_OBJ_NEW_SMALL_INT(SOCK_STREAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM),      MP_OBJ_NEW_SMALL_INT(SOCK_DGRAM) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM),     MP_OBJ_NEW_SMALL_INT(SL_SOCK_STREAM) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM),      MP_OBJ_NEW_SMALL_INT(SL_SOCK_DGRAM) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_SEC),     MP_OBJ_NEW_SMALL_INT(SL_SEC_SOCKET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP),     MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP),     MP_OBJ_NEW_SMALL_INT(IPPROTO_UDP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP),     MP_OBJ_NEW_SMALL_INT(SL_IPPROTO_TCP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP),     MP_OBJ_NEW_SMALL_INT(SL_IPPROTO_UDP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);

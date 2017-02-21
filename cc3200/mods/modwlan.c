@@ -122,8 +122,8 @@ typedef enum{
 #define WLAN_MAX_RX_SIZE                16000
 #define WLAN_MAX_TX_SIZE                1476
 
-#define MAKE_SOCKADDR(addr, ip, port)       sockaddr addr; \
-                                            addr.sa_family = AF_INET; \
+#define MAKE_SOCKADDR(addr, ip, port)       SlSockAddr_t addr; \
+                                            addr.sa_family = SL_AF_INET; \
                                             addr.sa_data[0] = port >> 8; \
                                             addr.sa_data[1] = port; \
                                             addr.sa_data[2] = ip[3]; \
@@ -1364,8 +1364,8 @@ int wlan_socket_listen(mod_network_socket_obj_t *s, mp_int_t backlog, int *_errn
 int wlan_socket_accept(mod_network_socket_obj_t *s, mod_network_socket_obj_t *s2, byte *ip, mp_uint_t *port, int *_errno) {
     // accept incoming connection
     int16_t sd;
-    sockaddr addr;
-    socklen_t addr_len = sizeof(addr);
+    SlSockAddr_t addr;
+    SlSocklen_t addr_len = sizeof(addr);
 
     sd = sl_Accept(s->sock_base.sd, &addr, &addr_len);
     // save the socket descriptor
@@ -1413,7 +1413,7 @@ int wlan_socket_recv(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, int 
 
 int wlan_socket_sendto( mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
-    int ret = sl_SendTo(s->sock_base.sd, (byte*)buf, len, 0, (sockaddr*)&addr, sizeof(addr));
+    int ret = sl_SendTo(s->sock_base.sd, (byte*)buf, len, 0, (SlSockAddr_t*)&addr, sizeof(addr));
     if (ret < 0) {
         *_errno = ret;
         return -1;
@@ -1422,8 +1422,8 @@ int wlan_socket_sendto( mod_network_socket_obj_t *s, const byte *buf, mp_uint_t 
 }
 
 int wlan_socket_recvfrom(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
-    sockaddr addr;
-    socklen_t addr_len = sizeof(addr);
+    SlSockAddr_t addr;
+    SlSocklen_t addr_len = sizeof(addr);
     mp_int_t ret = sl_RecvFrom(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0, &addr, &addr_len);
     if (ret < 0) {
         *_errno = ret;
@@ -1454,14 +1454,14 @@ int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int
             // set blocking mode
             option.NonblockingEnabled = 0;
         }
-        ret = sl_SetSockOpt(s->sock_base.sd, SOL_SOCKET, SO_NONBLOCKING, &option, sizeof(option));
+        ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &option, sizeof(option));
         has_timeout = false;
     } else {
         // set timeout
         struct SlTimeval_t timeVal;
         timeVal.tv_sec = timeout_s;       // seconds
         timeVal.tv_usec = 0;              // microseconds. 10000 microseconds resolution
-        ret = sl_SetSockOpt(s->sock_base.sd, SOL_SOCKET, SO_RCVTIMEO, &timeVal, sizeof(timeVal));
+        ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_RCVTIMEO, &timeVal, sizeof(timeVal));
         has_timeout = true;
     }
 
@@ -1482,20 +1482,20 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
         int32_t sd = s->sock_base.sd;
 
         // init fds
-        fd_set rfds, wfds, xfds;
-        FD_ZERO(&rfds);
-        FD_ZERO(&wfds);
-        FD_ZERO(&xfds);
+        SlFdSet_t rfds, wfds, xfds;
+        SL_FD_ZERO(&rfds);
+        SL_FD_ZERO(&wfds);
+        SL_FD_ZERO(&xfds);
 
         // set fds if needed
         if (flags & MP_STREAM_POLL_RD) {
-            FD_SET(sd, &rfds);
+            SL_FD_SET(sd, &rfds);
         }
         if (flags & MP_STREAM_POLL_WR) {
-            FD_SET(sd, &wfds);
+            SL_FD_SET(sd, &wfds);
         }
         if (flags & MP_STREAM_POLL_HUP) {
-            FD_SET(sd, &xfds);
+            SL_FD_SET(sd, &xfds);
         }
 
         // call simplelink's select with minimum timeout
@@ -1511,13 +1511,13 @@ int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t
         }
 
         // check return of select
-        if (FD_ISSET(sd, &rfds)) {
+        if (SL_FD_ISSET(sd, &rfds)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if (FD_ISSET(sd, &wfds)) {
+        if (SL_FD_ISSET(sd, &wfds)) {
             ret |= MP_STREAM_POLL_WR;
         }
-        if (FD_ISSET(sd, &xfds)) {
+        if (SL_FD_ISSET(sd, &xfds)) {
             ret |= MP_STREAM_POLL_HUP;
         }
     } else {
