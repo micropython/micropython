@@ -106,6 +106,7 @@ def main():
     print("Changes will be activated after reboot")
     resp = input_choice("Would you like to reboot now? (y/n) ", ("y", "n", ""))
     if resp == "y":
+        print("Rebooting. Please manually reset if it hangs.")
         machine.reset()
 
 main()
