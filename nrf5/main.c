@@ -53,8 +53,8 @@
 #endif
 #include "timer.h"
 
-#if (BLUETOOTH_SD == 132)
-#include "nrf52_ble.h"
+#if (MICROPY_PY_BLE_NUS)
+#include "ble_uart.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -91,10 +91,6 @@ int main(int argc, char **argv) {
 
     gc_init(&_heap_start, &_heap_end);
 
-#if MICROPY_PY_BLE_NUS
-    nrf52_ble_init();
-#endif
-
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
@@ -125,8 +121,9 @@ int main(int argc, char **argv) {
     timer_init0();
     */
 
-#if (MICROPY_PY_BLE_NUS == 0)
     uart_init0();
+
+#if (MICROPY_PY_BLE_NUS == 0)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(PYB_UART_1),
@@ -188,6 +185,10 @@ int main(int argc, char **argv) {
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
     int ret_code = 0;
+
+#if MICROPY_PY_BLE_NUS
+    ble_uart_init0();
+#endif
 
     for (;;) {
         ret_code = pyexec_friendly_repl();
