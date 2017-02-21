@@ -40,6 +40,10 @@ extern const struct _mp_print_t mp_debug_print;
 extern ringbuf_t input_buf;
 // Call this after putting data to input_buf
 void mp_hal_signal_input(void);
+// Call this to put characters into connected uart buffer if repl connected
+void mp_hal_uart_rx_intr(int uart_no);
+
+
 // Call this when data is available in dupterm object
 void mp_hal_signal_dupterm_input(void);
 
