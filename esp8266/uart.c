@@ -200,15 +200,15 @@ bool uart_rx_wait(uint32_t timeout_us) {
     }
 }
 
-int uart_rx_any(uint8 uart) {
-    if (input_buf.iget != input_buf.iput) {
+int uart_rx_any(uint8 uart_no) {
+    if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
         return true; // have at least 1 char ready for reading
     }
     return false;
 }
 
-int uart_tx_any_room(uint8 uart) {
-    uint32_t fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
+int uart_tx_any_room(uint8 uart_no) {
+    uint32_t fifo_cnt = READ_PERI_REG(UART_STATUS(uart_no)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
     if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) >= 126) {
         return false;
     }
