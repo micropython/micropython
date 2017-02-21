@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "std.h"
+#include <stdio.h>
 
 #include "simplelink.h"
 #include "py/mpconfig.h"

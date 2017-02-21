@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "std.h"
+#include <stdio.h>
 
 #include "py/mpconfig.h"
 #include "py/obj.h"

@@ -25,8 +25,7 @@
  */
 
 #include <stdint.h>
-#include <ctype.h>
-#include "std.h"
+#include <stdio.h>
 
 #include "py/mpstate.h"
 #include "py/obj.h"
