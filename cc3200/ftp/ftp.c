@@ -932,6 +932,13 @@ static void ftp_close_cmd_data (void) {
     ftp_close_filesystem_on_error ();
 }
 
+static void stoupper (char *str) {
+    while (str && *str != '\0') {
+        *str = (char)unichar_toupper((int)(*str));
+        str++;
+    }
+}
+
 static ftp_cmd_index_t ftp_pop_command (char **str) {
     char _cmd[FTP_CMD_SIZE_MAX];
     ftp_pop_param (str, _cmd);
