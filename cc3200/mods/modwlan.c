@@ -156,7 +156,9 @@ STATIC const mp_irq_methods_t wlan_irq_methods;
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
+#ifdef SL_PLATFORM_MULTI_THREADED
 OsiLockObj_t wlan_LockObj;
+#endif
 
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
@@ -391,14 +393,18 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock) {
 __attribute__ ((section (".boot")))
 void wlan_pre_init (void) {
     // create the wlan lock
+    #ifdef SL_PLATFORM_MULTI_THREADED
     ASSERT(OSI_OK == sl_LockObjCreate(&wlan_LockObj, "WlanLock"));
+    #endif
 }
 
 void wlan_first_start (void) {
     if (wlan_obj.mode < 0) {
         CLR_STATUS_BIT_ALL(wlan_obj.status);
         wlan_obj.mode = sl_Start(0, 0, 0);
+        #ifdef SL_PLATFORM_MULTI_THREADED
         sl_LockObjUnlock (&wlan_LockObj);
+        #endif
     }
 
     // get the mac address
@@ -507,7 +513,9 @@ void wlan_update(void) {
 
 void wlan_stop (uint32_t timeout) {
     wlan_servers_stop();
+    #ifdef SL_PLATFORM_MULTI_THREADED
     sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
+    #endif
     sl_Stop(timeout);
     wlan_clear_data();
     wlan_obj.mode = -1;
@@ -563,11 +571,15 @@ STATIC void wlan_clear_data (void) {
 
 STATIC void wlan_reenable (SlWlanMode_t mode) {
     // stop and start again
+    #ifdef SL_PLATFORM_MULTI_THREADED
     sl_LockObjLock (&wlan_LockObj, SL_OS_WAIT_FOREVER);
+    #endif
     sl_Stop(SL_STOP_TIMEOUT);
     wlan_clear_data();
     wlan_obj.mode = sl_Start(0, 0, 0);
+    #ifdef SL_PLATFORM_MULTI_THREADED
     sl_LockObjUnlock (&wlan_LockObj);
+    #endif
     ASSERT (wlan_obj.mode == mode);
 }
 
