@@ -146,6 +146,20 @@ void mp_hal_signal_input(void) {
     #endif
 }
 
+void mp_hal_uart_rx_intr(int uart_no) {
+    int ch;
+    for (;;) {
+        if ((ch = uart_rx_one_char(uart_no))==-1)
+            break;
+        if (ch == mp_interrupt_char)
+            mp_keyboard_interrupt();
+        else
+            ringbuf_put(&input_buf, ch);
+    }
+    mp_hal_signal_input();
+}
+
+
 static int call_dupterm_read(void) {
     if (MP_STATE_PORT(term_obj) == NULL) {
         return -1;

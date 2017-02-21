@@ -240,7 +240,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     // read the data
     uint8_t *buf = buf_in;
     for (;;) {
-        *buf++ = uart_rx_char();
+        *buf++ = uart_rx_one_char(self->uart_id);
         if (--size == 0 || !uart_rx_wait(self->uart_id, self->timeout_char * 1000)) {
             // return number of bytes read
             return buf - (uint8_t*)buf_in;
