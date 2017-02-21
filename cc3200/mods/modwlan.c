@@ -817,8 +817,9 @@ STATIC mp_obj_t wlan_init_helper(wlan_obj_t *self, const mp_arg_val_t *args) {
     wlan_validate_channel(channel);
 
     // get the antenna type
-    uint8_t antenna = args[4].u_int;
+    uint8_t antenna = 0;
 #if MICROPY_HW_ANTENNA_DIVERSITY
+    antenna = args[4].u_int;
     wlan_validate_antenna(antenna);
 #endif
 
@@ -834,7 +835,9 @@ STATIC const mp_arg_t wlan_init_args[] = {
     { MP_QSTR_ssid,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_auth,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     { MP_QSTR_channel,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = 1} },
+    #if MICROPY_HW_ANTENNA_DIVERSITY
     { MP_QSTR_antenna,      MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = ANTENNA_TYPE_INTERNAL} },
+    #endif
 };
 STATIC mp_obj_t wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
@@ -1295,8 +1298,10 @@ STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_WEP),                 MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA),                 MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
+    #if MICROPY_HW_ANTENNA_DIVERSITY
     { MP_OBJ_NEW_QSTR(MP_QSTR_INT_ANT),             MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_INTERNAL) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_EXT_ANT),             MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_EXTERNAL) },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_ANY_EVENT),           MP_OBJ_NEW_SMALL_INT(MODWLAN_WIFI_EVENT_ANY) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
