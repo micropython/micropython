@@ -672,8 +672,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    if (!mp_obj_is_true(is800k)) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Only 800khz neopixels are supported."));
+    }
     esp_neopixel_write(mp_obj_get_pin_obj(pin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k));
+        (uint8_t*)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
