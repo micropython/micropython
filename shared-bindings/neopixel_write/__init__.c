@@ -30,6 +30,7 @@
 
 #include "common-hal/nativeio/types.h"
 
+#include "shared-bindings/nativeio/DigitalInOut.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 
 //| :mod:`neopixel_write` --- Low-level neopixel implementation
@@ -50,6 +51,9 @@
 //|   :param bytearray buf: The bytes to clock out. No assumption is made about color order
 //|
 STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
+    if (!MP_OBJ_IS_TYPE(digitalinout_obj, &nativeio_digitalinout_type)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Expected a %q", nativeio_digitalinout_type.name));
+    }
     // Convert parameters into expected types.
     const nativeio_digitalinout_obj_t *digitalinout = MP_OBJ_TO_PTR(digitalinout_obj);
     mp_buffer_info_t bufinfo;

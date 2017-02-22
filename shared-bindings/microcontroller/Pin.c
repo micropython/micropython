@@ -74,7 +74,7 @@ const mp_obj_type_t mcu_pin_type = {
 
 void assert_pin(mp_obj_t obj, bool none_ok) {
     if ((obj != mp_const_none || !none_ok) && !MP_OBJ_IS_TYPE(obj, &mcu_pin_type)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Expected a Pin"));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Expected a %q", mcu_pin_type.name));
     }
 }
 
