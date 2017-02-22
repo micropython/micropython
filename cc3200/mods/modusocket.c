@@ -520,7 +520,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t ret = wlan_socket_recv(self, (byte*)vstr.buf, len, &_errno);
     if (ret < 0) {
         if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
-            mp_raise_msg(&mp_type_TimeoutError, "timed out");
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
         mp_raise_OSError(-_errno);
     }
@@ -566,7 +566,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mp_int_t ret = wlan_socket_recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret < 0) {
         if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
-            mp_raise_msg(&mp_type_TimeoutError, "timed out");
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
         mp_raise_OSError(-_errno);
     }
@@ -762,9 +762,6 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),          (mp_obj_t)&socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo),     (mp_obj_t)&mod_usocket_getaddrinfo_obj },
-
-    // class exceptions
-    { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),         (mp_obj_t)&mp_type_TimeoutError },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET),         MP_OBJ_NEW_SMALL_INT(SL_AF_INET) },
