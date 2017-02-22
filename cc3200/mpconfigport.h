@@ -107,6 +107,8 @@
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
+#define MICROPY_PY_UERRNO                           (1)
+#define MICROPY_PY_UERRNO_ERRORCODE                 (0)
 #define MICROPY_PY_THREAD                           (1)
 #define MICROPY_PY_THREAD_GIL                       (1)
 #define MICROPY_PY_UBINASCII                        (0)
@@ -121,6 +123,14 @@
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
+
+// We define our own list of errno constants to include in uerrno module
+#define MICROPY_PY_UERRNO_LIST \
+    X(EPERM) \
+    X(EIO) \
+    X(ENODEV) \
+    X(EINVAL) \
+    X(ETIMEDOUT) \
 
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio fatfs_type_fileio
@@ -161,6 +171,7 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     { MP_OBJ_NEW_QSTR(MP_QSTR_ussl),        (mp_obj_t)&mp_module_ussl },      \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_errno),       (mp_obj_t)&mp_module_uerrno },    \
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct),      (mp_obj_t)&mp_module_ustruct },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re),          (mp_obj_t)&mp_module_ure },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json),        (mp_obj_t)&mp_module_ujson },     \
