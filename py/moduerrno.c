@@ -32,9 +32,10 @@
 
 #if MICROPY_PY_UERRNO
 
-// This list could be defined per port in mpconfigport.h to tailor it to a
-// specific port's needs.  But for now we have a common list.
-#define ERRNO_LIST \
+// This list can be defined per port in mpconfigport.h to tailor it to a
+// specific port's needs.  If it's not defined then we provide a default.
+#ifndef MICROPY_PY_UERRNO_LIST
+#define MICROPY_PY_UERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(EIO) \
@@ -58,10 +59,12 @@
     X(EALREADY) \
     X(EINPROGRESS) \
 
+#endif
+
 #if MICROPY_PY_UERRNO_ERRORCODE
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
     #define X(e) { MP_ROM_INT(MP_ ## e), MP_ROM_QSTR(MP_QSTR_## e) },
-    ERRNO_LIST
+    MICROPY_PY_UERRNO_LIST
     #undef X
 };
 
@@ -85,7 +88,7 @@ STATIC const mp_rom_map_elem_t mp_module_uerrno_globals_table[] = {
     #endif
 
     #define X(e) { MP_ROM_QSTR(MP_QSTR_## e), MP_ROM_INT(MP_ ## e) },
-    ERRNO_LIST
+    MICROPY_PY_UERRNO_LIST
     #undef X
 };
 
