@@ -596,8 +596,8 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
 
     // wait for first char to become available
     if (!uart_rx_wait(self)) {
-        // return EAGAIN error to indicate non-blocking (then read() method returns None)
-        *errcode = EAGAIN;
+        // return MP_EAGAIN error to indicate non-blocking (then read() method returns None)
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
 
@@ -639,7 +639,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
     }
     return ret;
