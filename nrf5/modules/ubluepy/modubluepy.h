@@ -72,6 +72,8 @@ p.advertise(device_name="micr", services=[s])
 
 extern const mp_obj_type_t ubluepy_uuid_type;
 extern const mp_obj_type_t ubluepy_service_type;
+extern const mp_obj_type_t ubluepy_characteristic_type;
+extern const mp_obj_type_t ubluepy_peripheral_type;
 
 typedef enum {
     UBLUEPY_UUID_16_BIT = 1,
