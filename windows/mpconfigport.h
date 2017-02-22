@@ -95,6 +95,7 @@
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_UERRNO           (1)
 
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 #define MICROPY_WARNINGS            (1)
@@ -181,6 +182,20 @@ extern const struct _mp_obj_module_t mp_module_time;
 #ifdef __GNUC__
 #define MP_NOINLINE __attribute__((noinline))
 #endif
+
+// Shorter ERRNO list
+#define ERRNO_LIST \
+    X(EPERM) \
+    X(ENOENT) \
+    X(EIO) \
+    X(EBADF) \
+    X(EAGAIN) \
+    X(ENOMEM) \
+    X(EACCES) \
+    X(EEXIST) \
+    X(ENODEV) \
+    X(EISDIR) \
+    X(EINVAL) \
 
 // MSVC specifics
 #ifdef _MSC_VER
