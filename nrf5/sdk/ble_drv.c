@@ -624,7 +624,12 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GATTS_EVT_WRITE:
             BLE_DRIVER_LOG("GATTS write\n");
-            ubluepy_gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gatts_evt.params.write.handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+
+            uint16_t  handle = p_ble_evt->evt.gatts_evt.params.write.handle;
+            uint16_t  data_len = p_ble_evt->evt.gatts_evt.params.write.len;
+            uint8_t * p_data   = &p_ble_evt->evt.gatts_evt.params.write.data[0];
+
+            ubluepy_gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, handle, data_len, p_data);
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:
