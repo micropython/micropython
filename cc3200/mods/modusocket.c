@@ -422,7 +422,7 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_LITTLE);
 
     // call the NIC to bind the socket
-    int _errno;
+    int _errno = 0;
     if (wlan_socket_bind(self, ip, port, &_errno) != 0) {
         mp_raise_OSError(-_errno);
     }
@@ -459,8 +459,8 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 
     // accept the incoming connection
     uint8_t ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
-    mp_uint_t port;
-    int _errno;
+    mp_uint_t port = 0;
+    int _errno = 0;
     if (wlan_socket_accept(self, socket2, ip, &port, &_errno) != 0) {
         mp_raise_OSError(-_errno);
     }
@@ -546,7 +546,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
     mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_LITTLE);
 
     // call the nic to sendto
-    int _errno;
+    int _errno = 0;
     mp_int_t ret = wlan_socket_sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
     if (ret < 0) {
         mp_raise_OSError(-_errno);
@@ -561,8 +561,8 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(len_in));
     byte ip[4];
-    mp_uint_t port;
-    int _errno;
+    mp_uint_t port = 0;
+    int _errno = 0;
     mp_int_t ret = wlan_socket_recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret < 0) {
         if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
