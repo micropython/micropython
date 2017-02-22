@@ -203,8 +203,9 @@ def gen_rst(results):
 def main():
     """ Main function """
 
-    # clear search path to make sure tests use only builtin modules
-    os.environ['MICROPYPATH'] = ''
+    # set search path so that test scripts find the test modules (and no other ones)
+    os.environ['PYTHONPATH'] = TESTPATH
+    os.environ['MICROPYPATH'] = TESTPATH
 
     files = readfiles()
     results = run_tests(files)
