@@ -28,9 +28,6 @@
 #ifndef MPEXCEPTION_H_
 #define MPEXCEPTION_H_
 
-extern const char mpexception_os_resource_not_avaliable[];
-extern const char mpexception_os_operation_failed[];
-extern const char mpexception_os_request_not_possible[];
 extern const char mpexception_value_invalid_arguments[];
 extern const char mpexception_num_type_invalid_arguments[];
 extern const char mpexception_uncaught[];
