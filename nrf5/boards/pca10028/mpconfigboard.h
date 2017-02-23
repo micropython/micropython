@@ -43,6 +43,7 @@
 #define MICROPY_PY_MACHINE_RTC      (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
@@ -72,7 +73,7 @@
 #define MICROPY_HW_UART1_TX         (pin_A9)
 #define MICROPY_HW_UART1_CTS        (pin_A10)
 #define MICROPY_HW_UART1_RTS        (pin_A8)
-#define MICROPY_HW_UART1_HWFC       (1)
+#define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
