@@ -53,8 +53,9 @@ typedef struct _pyb_uart_obj_t {
     uint32_t baudrate;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
+    uint16_t rxbuflen;
     ringbuf_t rxbuf;
-    byte      buf[RXBUF_SIZE];
+    byte      *buf;
 } pyb_uart_obj_t;
 
 pyb_uart_obj_t pyb_uart_objs[2];
@@ -72,13 +73,13 @@ void uart_init0 (void) {
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u, rxbuflen=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->timeout, self->timeout_char);
+        self->stop, self->timeout, self->timeout_char, self->rxbuflen);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char, ARG_rxbuflen };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -88,6 +89,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_rxbuflen, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -170,6 +172,10 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         self->timeout_char = min_timeout_char;
     }
 
+    self->rxbuflen = args[ARG_rxbuflen].u_int;
+    if (self->uart_id == 0 && self->rxbuflen < 16)
+      self->rxbuflen=16;        /* probably too restrictive */
+
     // setup
     uart_setup(self->uart_id);
 }
@@ -197,10 +203,17 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     // init the peripheral
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+
     pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
+    if (self->rxbuflen) {
+      if (self->buf)
+        m_free(self->buf);
+      self->buf = m_malloc(self->rxbuflen);
+    }
+
     self->rxbuf.buf=self->buf;
-    self->rxbuf.size=RXBUF_SIZE;
+    self->rxbuf.size=self->rxbuflen;
     self->rxbuf.iget=self->rxbuf.iput=0;
 
     return MP_OBJ_FROM_PTR(self);
