@@ -174,20 +174,6 @@ static void uart0_rx_intr_handler(void *para) {
     }
 }
 
-// Waits at most timeout microseconds for at least 1 char to become ready for reading.
-// Returns true if something available, false if not.
-bool uart_rx_wait(uint8 uart_no, uint32_t timeout_us) {
-    uint32_t start = system_get_time();
-    for (;;) {
-        if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
-            return true; // have at least 1 char ready for reading
-        }
-        if (system_get_time() - start >= timeout_us) {
-            return false; // timeout
-        }
-        ets_event_poll();
-    }
-}
 
 int uart_rx_any(uint8 uart_no) {
     if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
