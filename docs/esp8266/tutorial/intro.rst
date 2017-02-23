@@ -73,9 +73,13 @@ device before putting on new MicroPython firmware.
 
 Currently we only support esptool.py to copy across the firmware.  You can find
 this tool here: `<https://github.com/espressif/esptool/>`__, or install it
-using pip (at least version 1.2.1 is required)::
+using pip::
 
     pip install esptool
+
+Versions starting with 1.3 support both Python 2.7 and Python 3.4 (or newer).
+Any older version (at least 1.2.1 is needed) works fine but will require Python
+2.7.
 
 Any other flashing program should work, so feel free to try them out, or refer
 to the documentation for your board to see its recommendations.
