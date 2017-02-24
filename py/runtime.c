@@ -1466,7 +1466,7 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_varg(exc_type, fmt, argptr);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }
@@ -1498,7 +1498,7 @@ NORETURN void mp_raise_ValueError(const char *msg) {
 NORETURN void mp_raise_ValueError_varg(const char *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_varg(&mp_type_ValueError, fmt, argptr);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_ValueError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }
@@ -1510,7 +1510,7 @@ NORETURN void mp_raise_TypeError(const char *msg) {
 NORETURN void mp_raise_TypeError_varg(const char *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_varg(&mp_type_TypeError, fmt, argptr);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_TypeError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }

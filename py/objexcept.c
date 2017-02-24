@@ -322,6 +322,14 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
 }
 
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, ap);
+    va_end(ap);
+    return exception;
+}
+
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const char *fmt, va_list ap) {
     // check that the given type is an exception type
     assert(exc_type->make_new == mp_obj_exception_make_new);
 
@@ -354,10 +362,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             vstr_t vstr;
             vstr_init_fixed_buf(&vstr, max_len, (char *)str_data);
 
-            va_list ap;
-            va_start(ap, fmt);
             vstr_vprintf(&vstr, fmt, ap);
-            va_end(ap);
 
             str->base.type = &mp_type_str;
             str->hash = qstr_compute_hash(str_data, str->len);
@@ -392,12 +397,9 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
                 o->args->items[0] = mp_obj_new_str(fmt, strlen(fmt), false);
             } else {
                 // render exception message and store as .args[0]
-                va_list ap;
                 vstr_t vstr;
                 vstr_init(&vstr, 16);
-                va_start(ap, fmt);
                 vstr_vprintf(&vstr, fmt, ap);
-                va_end(ap);
                 o->args->items[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
             }
         }
