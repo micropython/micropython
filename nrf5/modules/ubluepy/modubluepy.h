@@ -49,6 +49,8 @@ def event_handler(id, length, data):
     elif id == constants.EVT_GAP_DISCONNECTED:
         # disconnect
         LED(2).off()
+    elif id == 80:
+        print("id 80, data:", data)
 
 # u0 = UUID("0x180D") # HRM service
 # u1 = UUID("0x2A37") # HRM measurement
