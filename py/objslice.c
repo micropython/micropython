@@ -129,7 +129,7 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args);
+        size_t n_args, size_t n_kw, const mp_obj_t *args);
 #endif
 
 const mp_obj_type_t mp_type_slice = {
@@ -153,7 +153,10 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
 
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+        size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    if (type != &mp_type_slice) {
+        mp_raise_NotImplementedError("Cannot subclass slice");
+    }
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
