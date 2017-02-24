@@ -380,7 +380,7 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_raise_NotImplementError("");
+        mp_raise_NotImplementedError("");
     }
 
     // get the buffer info
@@ -405,7 +405,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_raise_NotImplementError("");
+        mp_raise_NotImplementedError("");
     }
 
     mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);

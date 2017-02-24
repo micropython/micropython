@@ -1479,7 +1479,7 @@ NORETURN void mp_raise_RuntimeError(const char *msg) {
     mp_raise_msg(&mp_type_RuntimeError, msg);
 }
 
-NORETURN void mp_raise_NotImplementError(const char *msg) {
+NORETURN void mp_raise_NotImplementedError(const char *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 

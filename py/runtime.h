@@ -142,7 +142,7 @@ NORETURN void mp_raise_TypeError(const char *msg);
 NORETURN void mp_raise_TypeError_varg(const char *fmt, ...);
 NORETURN void mp_raise_AttributeError(const char *msg);
 NORETURN void mp_raise_RuntimeError(const char *msg);
-NORETURN void mp_raise_NotImplementError(const char *msg);
+NORETURN void mp_raise_NotImplementedError(const char *msg);
 NORETURN void mp_raise_ImportError(const char *msg);
 NORETURN void mp_raise_IndexError(const char *msg);
 NORETURN void mp_raise_OSError(int errno_);

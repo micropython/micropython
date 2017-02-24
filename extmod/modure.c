@@ -153,7 +153,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         mp_obj_t s = mp_obj_new_str(subj.begin, caps[0] - subj.begin, false);
         mp_obj_list_append(retval, s);
         if (self->re.sub > 0) {
-            mp_raise_NotImplementError("Splitting with sub-captures");
+            mp_raise_NotImplementedError("Splitting with sub-captures");
         }
         subj.begin = caps[1];
         if (maxsplit > 0 && --maxsplit == 0) {
