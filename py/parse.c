@@ -436,7 +436,11 @@ STATIC void push_result_token(parser_t *parser, const rule_t *rule) {
         mp_map_elem_t *elem;
         if (rule->rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            pn = mp_parse_node_new_small_int(MP_OBJ_SMALL_INT_VALUE(elem->value));
+            if (MP_OBJ_IS_SMALL_INT(elem->value)) {
+                pn = mp_parse_node_new_small_int(MP_OBJ_SMALL_INT_VALUE(elem->value));
+            } else {
+                pn = make_node_const_object(parser, lex->tok_line, elem->value);
+            }
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
         }
@@ -666,16 +670,16 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
 
                 // get the value
                 mp_parse_node_t pn_value = ((mp_parse_node_struct_t*)((mp_parse_node_struct_t*)pn1)->nodes[1])->nodes[0];
-                if (!MP_PARSE_NODE_IS_SMALL_INT(pn_value)) {
+                mp_obj_t value;
+                if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
                     parser->parse_error = PARSE_ERROR_CONST;
                     return false;
                 }
-                mp_int_t value = MP_PARSE_NODE_LEAF_SMALL_INT(pn_value);
 
                 // store the value in the table of dynamic constants
                 mp_map_elem_t *elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
                 assert(elem->value == MP_OBJ_NULL);
-                elem->value = MP_OBJ_NEW_SMALL_INT(value);
+                elem->value = value;
 
                 // If the constant starts with an underscore then treat it as a private
                 // variable and don't emit any code to store the value to the id.
