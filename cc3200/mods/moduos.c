@@ -173,9 +173,6 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_umount),          (mp_obj_t)&mp_vfs_umount_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_VfsFat),          (mp_obj_t)&mp_fat_vfs_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_dupterm),         (mp_obj_t)&os_dupterm_obj },
-
-    /// \constant sep - separation character used in paths
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sep),             MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
