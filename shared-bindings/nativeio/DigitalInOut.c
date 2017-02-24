@@ -199,7 +199,7 @@ STATIC mp_obj_t nativeio_digitalinout_obj_get_direction(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout_get_direction_obj, nativeio_digitalinout_obj_get_direction);
 
-mp_obj_property_t nativeio_digitalinout_direction_obj = {
+const mp_obj_property_t nativeio_digitalinout_direction_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_digitalinout_get_direction_obj,
               (mp_obj_t)&mp_const_none_obj,
@@ -228,7 +228,7 @@ STATIC mp_obj_t nativeio_digitalinout_obj_set_value(mp_obj_t self_in, mp_obj_t v
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_digitalinout_set_value_obj, nativeio_digitalinout_obj_set_value);
 
-mp_obj_property_t nativeio_digitalinout_value_obj = {
+const mp_obj_property_t nativeio_digitalinout_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_digitalinout_get_value_obj,
               (mp_obj_t)&nativeio_digitalinout_set_value_obj,
@@ -268,7 +268,7 @@ STATIC mp_obj_t nativeio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_ob
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_digitalinout_set_drive_mode_obj, nativeio_digitalinout_obj_set_drive_mode);
 
-mp_obj_property_t nativeio_digitalinout_drive_mode_obj = {
+const mp_obj_property_t nativeio_digitalinout_drive_mode_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_digitalinout_get_drive_mode_obj,
               (mp_obj_t)&nativeio_digitalinout_set_drive_mode_obj,
@@ -314,7 +314,7 @@ STATIC mp_obj_t nativeio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t pu
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_digitalinout_set_pull_obj, nativeio_digitalinout_obj_set_pull);
 
-mp_obj_property_t nativeio_digitalinout_pull_obj = {
+const mp_obj_property_t nativeio_digitalinout_pull_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_digitalinout_get_pull_obj,
               (mp_obj_t)&nativeio_digitalinout_set_pull_obj,

@@ -162,7 +162,7 @@ STATIC mp_obj_t nativeio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t du
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_pwmout_set_duty_cycle_obj, nativeio_pwmout_obj_set_duty_cycle);
 
-mp_obj_property_t nativeio_pwmout_duty_cycle_obj = {
+const mp_obj_property_t nativeio_pwmout_duty_cycle_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_pwmout_get_duty_cycle_obj,
               (mp_obj_t)&nativeio_pwmout_set_duty_cycle_obj,
@@ -192,7 +192,7 @@ STATIC mp_obj_t nativeio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t fre
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_pwmout_set_frequency_obj, nativeio_pwmout_obj_set_frequency);
 
-mp_obj_property_t nativeio_pwmout_frequency_obj = {
+const mp_obj_property_t nativeio_pwmout_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_pwmout_get_frequency_obj,
               (mp_obj_t)&nativeio_pwmout_set_frequency_obj,

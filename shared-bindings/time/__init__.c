@@ -103,7 +103,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 //|   :param int tm_yday: the day of the year, range [1, 366], -1 indicates not known
 //|   :param int tm_isdst: 1 when in daylight savings, 0 when not, -1 if unknown.
 //|
-mp_obj_namedtuple_type_t struct_time_type_obj = {
+const mp_obj_namedtuple_type_t struct_time_type_obj = {
     .base = {
         .base = {
             .type = &mp_type_type

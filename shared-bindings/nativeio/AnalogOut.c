@@ -120,7 +120,7 @@ STATIC mp_obj_t nativeio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t valu
 }
 MP_DEFINE_CONST_FUN_OBJ_2(nativeio_analogout_set_value_obj, nativeio_analogout_obj_set_value);
 
-mp_obj_property_t nativeio_analogout_value_obj = {
+const mp_obj_property_t nativeio_analogout_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&nativeio_analogout_set_value_obj,

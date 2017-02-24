@@ -118,7 +118,7 @@ STATIC mp_obj_t nativeio_analogin_obj_get_value(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin_get_value_obj, nativeio_analogin_obj_get_value);
 
-mp_obj_property_t nativeio_analogin_value_obj = {
+const mp_obj_property_t nativeio_analogin_value_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_analogin_get_value_obj,
               (mp_obj_t)&mp_const_none_obj,
@@ -139,7 +139,7 @@ STATIC mp_obj_t nativeio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_analogin_get_reference_voltage_obj,
                           nativeio_analogin_obj_get_reference_voltage);
 
-mp_obj_property_t nativeio_analogin_reference_voltage_obj = {
+const mp_obj_property_t nativeio_analogin_reference_voltage_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&nativeio_analogin_get_reference_voltage_obj,
               (mp_obj_t)&mp_const_none_obj,
