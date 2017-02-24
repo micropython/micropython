@@ -322,15 +322,15 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     int cl = fpclassify(val);
     if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+        mp_raise_msg(&mp_type_OverflowError, "can't convert inf to int");
     } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+        mp_raise_ValueError("can't convert NaN to int");
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
         if (icl == MP_FP_CLASS_FIT_SMALLINT) {
             return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "float too big"));
+            mp_raise_ValueError("float too big");
         }
     }
 }
@@ -380,7 +380,7 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_not_implemented("");
+        mp_raise_NotImplementError("");
     }
 
     // get the buffer info
@@ -405,7 +405,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_not_implemented("");
+        mp_raise_NotImplementError("");
     }
 
     mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);

@@ -30,6 +30,7 @@
 #include "py/mpstate.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
+#include "py/runtime.h"
 #include "genhdr/mpversion.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
@@ -103,7 +104,7 @@ STATIC mp_obj_t os_getcwd(void) {
     FRESULT res = f_getcwd(buf, sizeof buf);
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     return mp_obj_new_str(buf, strlen(buf), false);

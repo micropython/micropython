@@ -241,7 +241,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "ulonglong too large"));
+        mp_raise_msg(&mp_type_OverflowError, "ulonglong too large"));
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
@@ -253,9 +253,9 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     int cl = fpclassify(val);
     if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+        mp_raise_msg(&mp_type_OverflowError, "can't convert inf to int"));
     } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+        mp_raise_ValueError("can't convert NaN to int");
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
         if (icl == MP_FP_CLASS_FIT_SMALLINT) {
@@ -263,7 +263,7 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
         } else if (icl == MP_FP_CLASS_FIT_LONGINT) {
             return mp_obj_new_int_from_ll((long long)val);
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "float too big"));
+            mp_raise_ValueError("float too big");
         }
     }
 }

@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mperrno.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/nativeio/AnalogOut.h"
@@ -37,8 +38,7 @@
 void common_hal_nativeio_analogout_construct(nativeio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (pin->pin != PIN_PA02) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "AnalogOut not supported on given pin."));
+        mp_raise_ValueError("AnalogOut not supported on given pin");
         return;
     }
     struct dac_config config_dac;
@@ -46,8 +46,7 @@ void common_hal_nativeio_analogout_construct(nativeio_analogout_obj_t* self,
     config_dac.reference = DAC_REFERENCE_AVCC;
     enum status_code status = dac_init(&self->dac_instance, DAC, &config_dac);
     if (status != STATUS_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "DAC init failed."));
+        mp_raise_OSError(MP_EIO);
         return;
     }
 

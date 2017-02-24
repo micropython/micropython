@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "py/nlr.h"
+#include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mphal.h"
@@ -186,8 +187,7 @@ nativeio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
 void common_hal_nativeio_touchin_construct(nativeio_touchin_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (!pin->has_touch) {
-        // No ADC function on that pin
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have touch capabilities", pin->name));
+        mp_raise_ValueError("Invalid pin");
     }
 
     if (selfcap_config.num_channels > 0) {
@@ -230,18 +230,18 @@ void common_hal_nativeio_touchin_construct(nativeio_touchin_obj_t* self,
             PRIV_SELFCAP_RS_TABLE_INIT, PRIV_NM_TABLE_INIT,
             PRIV_FREQ_AUTO_TUNE_CHK, PRIV_MOIS_TOLERANCE_CHK);
     if (status != TOUCH_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch init failed (%d)", status));
+        mp_raise_OSError(MP_EIO);
     }
     for (int i = 0; i < selfcap_config.num_channels; i++) {
         status = touch_selfcap_sensor_config(SENSOR_TYPE_KEY, i, i,
             NO_AKS_GROUP, 10u, HYST_25, RES_8_BIT, &active_touchin_obj[i]->sensor_id);
         if (status != TOUCH_SUCCESS) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch pad config failed (%d)", status));
+            mp_raise_OSError(MP_EIO);
         }
     }
     status = touch_selfcap_sensors_calibrate(AUTO_TUNE_RSEL);
     if (status != TOUCH_SUCCESS) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Touch pad calibration failed (%d)", status));
+        mp_raise_OSError(MP_EIO);
     }
 
     // Run a measurement to get calibrated.
@@ -275,7 +275,7 @@ void touch_selfcap_measure_complete_callback(void)
 
 bool common_hal_nativeio_touchin_get_value(nativeio_touchin_obj_t *self) {
     if (p_selfcap_measure_data->acq_status & TOUCH_CC_CALIB_ERROR) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Touch calibration error"));
+        mp_raise_RuntimeError("Touch calibration error");
     }
     touch_acq_status = TOUCH_BURST_AGAIN;
     uint64_t start_ticks = ticks_ms;
@@ -287,7 +287,7 @@ bool common_hal_nativeio_touchin_get_value(nativeio_touchin_obj_t *self) {
                 touch_selfcap_measure_complete_callback);
 
         if (touch_ret != TOUCH_SUCCESS) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Touch measure failed"));
+            mp_raise_OSError(MP_EIO);
         }
 
         while(!touch_read_ready && ticks_ms - start_ticks < 1000) {
@@ -299,7 +299,7 @@ bool common_hal_nativeio_touchin_get_value(nativeio_touchin_obj_t *self) {
     }
 
     if (touch_acq_status & TOUCH_BURST_AGAIN) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Touch read failed"));
+        mp_raise_OSError(MP_EIO);
     }
 
     return (p_selfcap_measure_data->p_sensor_states[self->sensor_id / 8] & (1 << (self->sensor_id % 8))) != 0;

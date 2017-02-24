@@ -34,8 +34,7 @@
 
 void common_hal_nativeio_touchin_construct(nativeio_touchin_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-        "No room in flash for capacitive touch hardware support."));
+    mp_raise_NotImplementError("No capacitive touch support");
 }
 
 void common_hal_nativeio_touchin_deinit(nativeio_touchin_obj_t* self) {

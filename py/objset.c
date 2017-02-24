@@ -68,7 +68,7 @@ STATIC void check_set(mp_obj_t o) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
         // Mutable method called on frozenset; emulate CPython behavior, eg:
         // AttributeError: 'frozenset' object has no attribute 'add'
-        mp_raise_msg(&mp_type_AttributeError, "'frozenset' has no such attribute");
+        mp_raise_AttributeError("'frozenset' has no such attribute");
     }
     #endif
     mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set));

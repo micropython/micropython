@@ -498,7 +498,7 @@ STATIC mp_obj_t os_unmount(mp_obj_t path_o) {
     if ((mount_obj = osmount_find_by_path(path))) {
         unmount (mount_obj);
     } else {
-        mp_raise_msg(&mp_type_ValueError, mpexception_value_invalid_arguments);
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 
     return mp_const_none;

@@ -33,6 +33,7 @@
 #include "shared-bindings/nativeio/SPI.h"
 
 #include "lib/utils/context_manager_helpers.h"
+#include "py/mperrno.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 
@@ -124,7 +125,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_spi_obj___exit___obj, 4, 4, 
 
 static void check_lock(nativeio_spi_obj_t *self) {
     if (!common_hal_nativeio_spi_has_lock(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Function requires SPI lock."));
+        mp_raise_RuntimeError("Function requires lock");
     }
 }
 
@@ -147,20 +148,20 @@ STATIC mp_obj_t nativeio_spi_configure(size_t n_args, const mp_obj_t *pos_args, 
 
     uint8_t polarity = args[ARG_polarity].u_int;
     if (polarity != 0 && polarity != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid polarity."));
+        mp_raise_ValueError("Invalid polarity");
     }
     uint8_t phase = args[ARG_phase].u_int;
     if (phase != 0 && phase != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid phase."));
+        mp_raise_ValueError("Invalid phase");
     }
     uint8_t bits = args[ARG_bits].u_int;
     if (bits != 8 && bits != 9) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid number of bits."));
+        mp_raise_ValueError("Invalid number of bits");
     }
 
     if (!common_hal_nativeio_spi_configure(self, args[ARG_baudrate].u_int,
                                            polarity, phase, bits)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI configure failed."));
+        mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
@@ -222,7 +223,7 @@ STATIC mp_obj_t nativeio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     bool ok = common_hal_nativeio_spi_write(self, ((uint8_t*)bufinfo.buf) + start, len);
     if (!ok) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
+        mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
@@ -267,7 +268,7 @@ STATIC mp_obj_t nativeio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, m
 
     bool ok = common_hal_nativeio_spi_read(self, ((uint8_t*)bufinfo.buf) + start, len, args[ARG_write_value].u_int);
     if (!ok) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
+        mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }

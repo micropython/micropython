@@ -463,7 +463,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
                                 // 3MB of text; even gzip-compressed and with minimal structure, it'll take
                                 // roughly half a meg of storage. This form of Unicode escape may be added
                                 // later on, but it's definitely not a priority right now. -- CJA 20140607
-                                mp_not_implemented("unicode name escapes");
+                                mp_raise_NotImplementError("unicode name escapes");
                                 break;
                             default:
                                 if (c >= '0' && c <= '7') {

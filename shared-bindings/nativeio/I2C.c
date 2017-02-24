@@ -109,7 +109,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_i2c___exit___obj, 4, 4, nati
 
 static void check_lock(nativeio_i2c_obj_t *self) {
     if (!common_hal_nativeio_i2c_has_lock(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Function requires I2C lock."));
+        mp_raise_RuntimeError("Function requires lock.");
     }
 }
 

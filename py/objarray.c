@@ -95,7 +95,7 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     if (typecode_size == 0) {
-        mp_raise_msg(&mp_type_ValueError, "bad typecode");
+        mp_raise_ValueError("bad typecode");
     }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
@@ -292,7 +292,7 @@ STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
 
             // Otherwise, can only look for a scalar numeric value in an array
             if (MP_OBJ_IS_INT(rhs_in) || mp_obj_is_float(rhs_in)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementError("");
             }
 
             return mp_const_false;
@@ -382,7 +382,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
         } else if (MP_OBJ_IS_TYPE(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(o->len, index_in, &slice)) {
-                mp_not_implemented("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementError("only slices with step=1 (aka None) are supported");
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -395,7 +395,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        mp_raise_msg(&mp_type_ValueError, "lhs and rhs should be compatible");
+                        mp_raise_ValueError("lhs and rhs should be compatible");
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;
@@ -413,7 +413,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                 } else {
-                    mp_not_implemented("array/bytes required on right side");
+                    mp_raise_NotImplementError("array/bytes required on right side");
                 }
 
                 // TODO: check src/dst compat

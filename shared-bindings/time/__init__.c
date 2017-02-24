@@ -69,7 +69,7 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     int seconds = mp_obj_get_int(seconds_o);
     #endif
     if (seconds < 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "sleep length must be non-negative"));
+        mp_raise_ValueError("sleep length must be non-negative");
     }
     common_hal_time_delay_ms(1000 * seconds);
     return mp_const_none;
@@ -79,10 +79,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 #if MICROPY_PY_COLLECTIONS
 mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_args != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "time.struct_time() takes exactly 1 argument"));
+        mp_raise_TypeError("time.struct_time() takes exactly 1 argument");
     }
     if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "time.struct_time() takes a 9-sequence"));
+        mp_raise_TypeError("time.struct_time() takes a 9-sequence");
     }
 
     mp_obj_tuple_t* tuple = MP_OBJ_TO_PTR(args[0]);

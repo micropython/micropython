@@ -113,8 +113,7 @@ STATIC mp_obj_t nativeio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t valu
    nativeio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    uint32_t v = mp_obj_get_int(value);
    if (v >= (1 << 16)) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-           "AnalogOut is only 16 bits. Value must be less than 65536."));
+       mp_raise_ValueError("AnalogOut is only 16 bits. Value must be less than 65536.");
    }
    common_hal_nativeio_analogout_set_value(self, v);
    return mp_const_none;

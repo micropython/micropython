@@ -92,8 +92,7 @@ STATIC mp_obj_t nativeio_uart_make_new(const mp_obj_type_t *type, size_t n_args,
 
    uint8_t bits = args[ARG_bits].u_int;
    if (bits < 7 || bits > 9) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-           "bits must be 7, 8 or 9"));
+       mp_raise_ValueError("bits must be 7, 8 or 9");
    }
 
    uart_parity_t parity = PARITY_NONE;
@@ -105,8 +104,7 @@ STATIC mp_obj_t nativeio_uart_make_new(const mp_obj_type_t *type, size_t n_args,
 
    uint8_t stop = args[ARG_stop].u_int;
    if (stop != 1 && stop != 2) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-           "stop must be 1 or 2"));
+       mp_raise_ValueError("stop must be 1 or 2");
    }
 
    common_hal_nativeio_uart_construct(self, tx, rx,

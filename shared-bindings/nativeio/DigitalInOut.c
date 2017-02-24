@@ -220,8 +220,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout_get_value_obj, nativeio_digitali
 STATIC mp_obj_t nativeio_digitalinout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
     nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_nativeio_digitalinout_get_direction(self) == DIRECTION_IN) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "Cannot set value when direction is input."));
+        mp_raise_AttributeError("Cannot set value when direction is input.");
         return mp_const_none;
     }
     common_hal_nativeio_digitalinout_set_value(self, mp_obj_is_true(value));
@@ -243,8 +242,7 @@ mp_obj_property_t nativeio_digitalinout_value_obj = {
 STATIC mp_obj_t nativeio_digitalinout_obj_get_drive_mode(mp_obj_t self_in) {
     nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_nativeio_digitalinout_get_direction(self) == DIRECTION_IN) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "Drive mode not used when direction is input."));
+        mp_raise_AttributeError("Drive mode not used when direction is input.");
         return mp_const_none;
     }
     enum digitalinout_drive_mode_t drive_mode = common_hal_nativeio_digitalinout_get_drive_mode(self);
@@ -258,8 +256,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout_get_drive_mode_obj, nativeio_dig
 STATIC mp_obj_t nativeio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_obj_t drive_mode) {
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    if (common_hal_nativeio_digitalinout_get_direction(self) == DIRECTION_IN) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-           "Drive mode not used when direction is input."));
+       mp_raise_AttributeError("Drive mode not used when direction is input.");
        return mp_const_none;
    }
    enum digitalinout_drive_mode_t c_drive_mode = DRIVE_MODE_PUSH_PULL;
@@ -287,8 +284,7 @@ mp_obj_property_t nativeio_digitalinout_drive_mode_obj = {
 STATIC mp_obj_t nativeio_digitalinout_obj_get_pull(mp_obj_t self_in) {
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    if (common_hal_nativeio_digitalinout_get_direction(self) == DIRECTION_OUT) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-           "Pull not used when direction is output."));
+       mp_raise_AttributeError("Pull not used when direction is output.");
        return mp_const_none;
    }
    enum digitalinout_pull_t pull = common_hal_nativeio_digitalinout_get_pull(self);
@@ -304,8 +300,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_digitalinout_get_pull_obj, nativeio_digitalin
 STATIC mp_obj_t nativeio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t pull_obj) {
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    if (common_hal_nativeio_digitalinout_get_direction(self) == DIRECTION_OUT) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-           "Pull not used when direction is output."));
+       mp_raise_AttributeError("Pull not used when direction is output.");
        return mp_const_none;
    }
    enum digitalinout_pull_t pull = PULL_NONE;

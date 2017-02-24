@@ -29,6 +29,7 @@
 
 #include "shared-bindings/nativeio/SPI.h"
 #include "py/nlr.h"
+#include "py/runtime.h"
 #include "samd21_pins.h"
 
 // We use ENABLE registers below we don't want to treat as a macro.
@@ -92,7 +93,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins"));
+        mp_raise_ValueError("Invalid pins");
     }
 
     // Depends on where MOSI and CLK are.
@@ -111,7 +112,7 @@ void common_hal_nativeio_spi_construct(nativeio_spi_obj_t *self,
         }
     }
     if (dopo == 8) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI MOSI and clock pins incompatible"));
+        mp_raise_ValueError("MOSI and clock pins incompatible");
     }
 
     config_spi_master.mux_setting = (dopo << SERCOM_SPI_CTRLA_DOPO_Pos) |

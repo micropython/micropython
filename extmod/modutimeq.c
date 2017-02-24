@@ -121,7 +121,7 @@ STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     mp_obj_t heap_in = args[0];
     mp_obj_utimeq_t *heap = get_heap(heap_in);
     if (heap->len == heap->alloc) {
-        mp_raise_msg(&mp_type_IndexError, "queue overflow");
+        mp_raise_IndexError("queue overflow");
     }
     mp_uint_t l = heap->len;
     heap->items[l].time = MP_OBJ_SMALL_INT_VALUE(args[1]);

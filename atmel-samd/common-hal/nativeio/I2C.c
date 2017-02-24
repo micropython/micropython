@@ -30,6 +30,7 @@
 #include "shared-bindings/nativeio/I2C.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
+#include "py/runtime.h"
 
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
 #include "samd21_pins.h"
@@ -70,7 +71,7 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins."));
+        mp_raise_ValueError("Invalid pins");
     }
 
     config_i2c_master.pinmux_pad0 = sda_pinmux; // SDA
@@ -86,9 +87,9 @@ void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
     if (status != STATUS_OK) {
         common_hal_nativeio_i2c_deinit(self);
         if (status == STATUS_ERR_BAUDRATE_UNAVAILABLE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Unsupported baudrate"));
+            mp_raise_ValueError("Unsupported baudrate");
         } else {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "I2C bus init error"));
+            mp_raise_OSError(MP_EIO);
         }
     }
 

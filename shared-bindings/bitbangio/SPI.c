@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "lib/utils/context_manager_helpers.h"
+#include "py/mperrno.h"
 #include "py/runtime.h"
 
 //| .. currentmodule:: bitbangio
@@ -113,7 +114,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_obj___exit___obj, 4, 4,
 
 static void check_lock(bitbangio_spi_obj_t *self) {
     if (!shared_module_bitbangio_spi_has_lock(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Function requires SPI lock."));
+        mp_raise_RuntimeError("Function requires lock");
     }
 }
 
@@ -136,15 +137,15 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
 
     uint8_t polarity = args[ARG_polarity].u_int;
     if (polarity != 0 && polarity != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid polarity."));
+        mp_raise_ValueError("Invalid polarity");
     }
     uint8_t phase = args[ARG_phase].u_int;
     if (phase != 0 && phase != 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid phase."));
+        mp_raise_ValueError("Invalid phase");
     }
     uint8_t bits = args[ARG_bits].u_int;
     if (bits != 8 && bits != 9) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid number of bits."));
+        mp_raise_ValueError("Invalid number of bits");
     }
 
     shared_module_bitbangio_spi_configure(self, args[ARG_baudrate].u_int, polarity, phase, bits);
@@ -183,7 +184,7 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     check_lock(self);
     bool ok = shared_module_bitbangio_spi_write(self, src.buf, src.len);
     if (!ok) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
+        mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
@@ -200,7 +201,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
     check_lock(args[0]);
     bool ok = shared_module_bitbangio_spi_read(args[0], bufinfo.buf, bufinfo.len);
     if (!ok) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "SPI bus error"));
+        mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }

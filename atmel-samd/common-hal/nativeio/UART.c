@@ -31,6 +31,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/stream.h"
 #include "samd21_pins.h"
 #include "tick.h"
@@ -162,7 +163,7 @@ void common_hal_nativeio_uart_construct(nativeio_uart_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Invalid pins"));
+        mp_raise_ValueError("Invalid pins");
     }
     if (tx == NULL) {
         tx_pad = 0;
@@ -216,12 +217,11 @@ void common_hal_nativeio_uart_construct(nativeio_uart_obj_t *self,
     self->buffer_length *= (bits + 7) / 8;
     self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false);
     if (self->buffer == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "Unable to allocate RX buffer."));
+        mp_raise_msg(&mp_type_MemoryError, "Failed to allocate RX buffer");
     }
 
     if (usart_init(&self->uart_instance, sercom, &config_usart) != STATUS_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Unable to init UART"));
+        mp_raise_OSError(MP_EIO);
     }
 
     // We use our own interrupt handler because we want a circular buffer

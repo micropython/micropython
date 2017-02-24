@@ -155,9 +155,7 @@ STATIC mp_obj_t nativeio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t du
     nativeio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
     if (duty < 0 || duty > 0xffff) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "PWM duty must be between 0 and 65536 (16 bit resolution), not %d",
-            duty));
+        mp_raise_ValueError("PWM duty must be between 0 and 65536 (16 bit resolution)");
     }
    common_hal_nativeio_pwmout_set_duty_cycle(self, duty);
    return mp_const_none;
@@ -185,9 +183,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_pwmout_get_frequency_obj, nativeio_pwmout_obj
 STATIC mp_obj_t nativeio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
     nativeio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!common_hal_nativeio_pwmout_get_variable_frequency(self)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+        mp_raise_AttributeError(
             "PWM frequency not writeable when variable_frequency is False on "
-            "construction."));
+            "construction.");
     }
    common_hal_nativeio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
    return mp_const_none;

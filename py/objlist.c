@@ -156,7 +156,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementError("");
             }
 
             mp_int_t len_adj = slice.start - slice.stop;
@@ -196,7 +196,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_list_t *slice = MP_OBJ_TO_PTR(value);
             mp_bound_slice_t slice_out;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice_out)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementError("");
             }
             mp_int_t len_adj = slice->len - (slice_out.stop - slice_out.start);
             //printf("Len adj: %d\n", len_adj);
@@ -266,7 +266,7 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(args[0]);
     if (self->len == 0) {
-        mp_raise_msg(&mp_type_IndexError, "pop from empty list");
+        mp_raise_IndexError("pop from empty list");
     }
     mp_uint_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];

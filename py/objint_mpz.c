@@ -271,7 +271,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
-                    mp_raise_msg(&mp_type_ValueError, "negative shift count");
+                    mp_raise_ValueError("negative shift count");
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -354,9 +354,9 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     int cl = fpclassify(val);
     if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
+        mp_raise_msg(&mp_type_OverflowError, "can't convert inf to int");
     } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
+        mp_raise_ValueError("can't convert NaN to int");
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
         if (icl == MP_FP_CLASS_FIT_SMALLINT) {

@@ -37,7 +37,7 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_arg_error_terse_mismatch();
         } else {
-            mp_raise_msg(&mp_type_TypeError, "function does not take keyword arguments");
+            mp_raise_TypeError("function does not take keyword arguments");
         }
     }
 
@@ -46,9 +46,9 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                mp_raise_TypeError_varg(
                     "function takes %d positional arguments but %d were given",
-                    n_args_min, n_args));
+                    n_args_min, n_args);
             }
         }
     } else {
@@ -56,17 +56,17 @@ void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_ar
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                mp_raise_TypeError_varg(
                     "function missing %d required positional arguments",
-                    n_args_min - n_args));
+                    n_args_min - n_args);
             }
         } else if (n_args > n_args_max) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_arg_error_terse_mismatch();
             } else {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                mp_raise_TypeError_varg(
                     "function expected at most %d arguments, got %d",
-                    n_args_max, n_args));
+                    n_args_max, n_args);
             }
         }
     }
@@ -89,8 +89,8 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                         mp_arg_error_terse_mismatch();
                     } else {
-                        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                            "'%q' argument required", allowed[i].qst));
+                        mp_raise_TypeError_varg(
+                            "'%q' argument required", allowed[i].qst);
                     }
                 }
                 out_vals[i] = allowed[i].defval;
@@ -115,7 +115,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_arg_error_terse_mismatch();
         } else {
             // TODO better error message
-            mp_raise_msg(&mp_type_TypeError, "extra positional arguments given");
+            mp_raise_TypeError("extra positional arguments given");
         }
     }
     if (kws_found < kws->used) {
@@ -123,7 +123,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_arg_error_terse_mismatch();
         } else {
             // TODO better error message
-            mp_raise_msg(&mp_type_TypeError, "extra keyword arguments given");
+            mp_raise_TypeError("extra keyword arguments given");
         }
     }
 }
@@ -136,12 +136,12 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE || defined(_MSC_VER)
 NORETURN void mp_arg_error_terse_mismatch(void) {
-    mp_raise_msg(&mp_type_TypeError, "argument num/types mismatch");
+    mp_raise_TypeError("argument num/types mismatch");
 }
 #endif
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_not_implemented("keyword argument(s) not yet implemented - use normal args instead");
+    mp_raise_NotImplementError("keyword argument(s) not yet implemented - use normal args instead");
 }
 #endif
