@@ -38,6 +38,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/objint.h"
+#include "py/objstr.h"
 #include "py/builtin.h"
 
 #if MICROPY_ENABLE_COMPILER
@@ -75,8 +76,6 @@ enum {
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    RULE_string, // special node for non-interned string
-    RULE_bytes, // special node for non-interned bytes
     RULE_const_object, // special node for a constant, generic Python object
 
 // define rules without a compile function
@@ -123,8 +122,6 @@ STATIC const rule_t *const rules[] = {
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    NULL, // RULE_string
-    NULL, // RULE_bytes
     NULL, // RULE_const_object
 
 // define rules without a compile function
@@ -326,11 +323,7 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
     } else {
         // node must be a mp_parse_node_struct_t
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_string) {
-            printf("literal str(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_bytes) {
-            printf("literal bytes(%.*s)\n", (int)pns->nodes[1], (char*)pns->nodes[0]);
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
+        if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
             #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
             printf("literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
             #else
@@ -390,21 +383,6 @@ STATIC void push_result_node(parser_t *parser, mp_parse_node_t pn) {
         parser->result_stack_alloc += MICROPY_ALLOC_PARSE_RESULT_INC;
     }
     parser->result_stack[parser->result_stack_top++] = pn;
-}
-
-STATIC mp_parse_node_t make_node_string_bytes(parser_t *parser, size_t src_line, size_t rule_kind, const char *str, size_t len) {
-    mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * 2);
-    if (pn == NULL) {
-        parser->parse_error = PARSE_ERROR_MEMORY;
-        return MP_PARSE_NODE_NULL;
-    }
-    pn->source_line = src_line;
-    pn->kind_num_nodes = rule_kind | (2 << 8);
-    char *p = m_new(char, len);
-    memcpy(p, str, len);
-    pn->nodes[0] = (uintptr_t)p;
-    pn->nodes[1] = len;
-    return (mp_parse_node_t)pn;
 }
 
 STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line, mp_obj_t obj) {
@@ -473,8 +451,11 @@ STATIC void push_result_token(parser_t *parser, const rule_t *rule) {
             // qstr exists, make a leaf node
             pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
-            // not interned, make a node holding a pointer to the string/bytes data
-            pn = make_node_string_bytes(parser, lex->tok_line, lex->tok_kind == MP_TOKEN_STRING ? RULE_string : RULE_bytes, lex->vstr.buf, lex->vstr.len);
+            // not interned, make a node holding a pointer to the string/bytes object
+            mp_obj_t o = mp_obj_new_str_of_type(
+                lex->tok_kind == MP_TOKEN_STRING ? &mp_type_str : &mp_type_bytes,
+                (const byte*)lex->vstr.buf, lex->vstr.len);
+            pn = make_node_const_object(parser, lex->tok_line, o);
         }
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
@@ -934,15 +915,13 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 // this code discards lonely statements, such as doc strings
                 if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
                     mp_parse_node_t p = peek_result(&parser, 1);
-                    if ((MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p)) || MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_string)) {
+                    if ((MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p))
+                        || MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_const_object)) {
                         pop_result(&parser); // MP_PARSE_NODE_NULL
-                        mp_parse_node_t pn = pop_result(&parser); // possibly RULE_string
-                        if (MP_PARSE_NODE_IS_STRUCT(pn)) {
-                            mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
-                            if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_string) {
-                                m_del(char, (char*)pns->nodes[0], (size_t)pns->nodes[1]);
-                            }
-                        }
+                        pop_result(&parser); // const expression (leaf or RULE_const_object)
+                        // Pushing the "pass" rule here will overwrite any RULE_const_object
+                        // entry that was on the result stack, allowing the GC to reclaim
+                        // the memory from the const object when needed.
                         push_result_rule(&parser, rule_src_line, rules[RULE_pass_stmt], 0);
                         break;
                     }

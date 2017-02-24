@@ -15,13 +15,13 @@
            str(str)
 [   8]   rule(5) (n=2)
            id(c)
-[   8]     literal str(a very long str that will not be interned)
+[   8]     literal \.\+
 [   9]   rule(5) (n=2)
            id(d)
            bytes(bytes)
 [  10]   rule(5) (n=2)
            id(e)
-[  10]     literal bytes(a very long bytes that will not be interned)
+[  10]     literal \.\+
 [  11]   rule(5) (n=2)
            id(f)
 [  11]     literal \.\+
