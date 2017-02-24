@@ -235,7 +235,7 @@ class LCD160CR:
         self._fcmd2('<BBB', 0x19, value)
 
     def save_to_flash(self):
-        self._fcmd2('<BBB', 0x66, 'n')
+        self._send(b'\x02fn')
 
     #### PIXEL ACCESS ####
 
