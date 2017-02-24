@@ -40,6 +40,7 @@
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT esp_help_text
+#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY___FILE__         (0)
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
