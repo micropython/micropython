@@ -139,11 +139,9 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
-LDFLAGS = -L asf/thirdparty/CMSIS/Lib/GCC/ -L QTouch/ -L $(dir $(LIBGCC_FILE_NAME)) -L $(dir $(LIBM_FILE_NAME)) -nostdlib -T $(LD_FILE) -Map=$@.map --cref --gc-sections
+LDFLAGS = -Lasf/thirdparty/CMSIS/Lib/GCC/ -LQTouch/ -L$(dir $(LIBM_FILE_NAME)) -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS = -larm_cortexM0l_math -lsamd21_qtouch_gcc -lm -lgcc -lc
-
 
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/adc/adc_sam_d_r/adc.c \
@@ -260,8 +258,8 @@ all: $(BUILD)/firmware.bin
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
-	$(Q)$(SIZE) $@
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(SIZE) $@ | python3 ../tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
