@@ -26,6 +26,8 @@
 
 #include <string.h>
 #include "ble_uart.h"
+#include "ringbuffer.h"
+#include "hal/hal_time.h"
 
 #if MICROPY_PY_BLE_NUS
 
@@ -74,8 +76,21 @@ static ubluepy_peripheral_obj_t ble_uart_peripheral = {
 
 static bool cccd_enabled;
 
+ringBuffer_typedef(uint8_t, ringbuffer_t);
+
+static ringbuffer_t   m_rx_ring_buffer;
+static ringbuffer_t * mp_rx_ring_buffer = &m_rx_ring_buffer;
+static uint8_t        m_rx_ring_buffer_data[128];
+
+
 int mp_hal_stdin_rx_chr(void) {
-    return 0;
+    while (isBufferEmpty(mp_rx_ring_buffer)) {
+        ;
+    }
+
+    uint8_t byte;
+    bufferRead(mp_rx_ring_buffer, byte);
+    return (int)byte;
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
@@ -101,6 +116,14 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
 }
 
+void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
+    for (uint8_t i = 0; i < len; i++) {
+        mp_hal_stdout_tx_strn(&str[i], 1);
+        // for now put in a small delay as it could look like packets are issued to fast.
+        mp_hal_delay_ms(10);
+    }
+}
+
 STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
@@ -118,7 +141,11 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
     if (event_id == 80) { // gatts write
     	if (ble_uart_char_rx.cccd_handle == attr_handle) {
             cccd_enabled = true;
-    	}
+        } else if (ble_uart_char_tx.handle == attr_handle) {
+            for (uint16_t i = 0; i < length; i++) {
+                bufferWrite(mp_rx_ring_buffer, data[i]);
+            }
+        }
     }
 }
 
@@ -151,8 +178,6 @@ void ble_uart_init0(void) {
     }
     mp_obj_list_append(ble_uart_service.char_list, MP_OBJ_FROM_PTR(&ble_uart_char_rx));
 
-
-
     // setup the peripheral
     (void)ble_uart_peripheral;
     ble_uart_peripheral.service_list = mp_obj_new_list(0, NULL);
@@ -184,6 +209,12 @@ void ble_uart_init0(void) {
     (void)services;
 
     cccd_enabled = false;
+
+    // initialize ring buffer
+    m_rx_ring_buffer.size = sizeof(m_rx_ring_buffer_data) + 1;
+    m_rx_ring_buffer.start = 0;
+    m_rx_ring_buffer.end = 0;
+    m_rx_ring_buffer.elems = m_rx_ring_buffer_data;
 
     (void)ble_drv_advertise_data(&adv_data);
 
