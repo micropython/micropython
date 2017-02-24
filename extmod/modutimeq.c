@@ -116,7 +116,7 @@ STATIC void heap_siftup(mp_obj_utimeq_t *heap, mp_uint_t pos) {
     heap_siftdown(heap, start_pos, pos);
 }
 
-STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_utimeq_push(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_t heap_in = args[0];
     mp_obj_utimeq_t *heap = get_heap(heap_in);
@@ -131,9 +131,9 @@ STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     heap->len++;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 4, 4, mod_utimeq_heappush);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_push_obj, 4, 4, mod_utimeq_push);
 
-STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
+STATIC mp_obj_t mod_utimeq_pop(mp_obj_t heap_in, mp_obj_t list_ref) {
     mp_obj_utimeq_t *heap = get_heap(heap_in);
     if (heap->len == 0) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
@@ -156,7 +156,7 @@ STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_pop_obj, mod_utimeq_pop);
 
 #if DEBUG
 STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
@@ -180,8 +180,8 @@ STATIC mp_obj_t utimeq_unary_op(mp_uint_t op, mp_obj_t self_in) {
 }
 
 STATIC const mp_rom_map_elem_t utimeq_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&mod_utimeq_heappush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&mod_utimeq_heappop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&mod_utimeq_push_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&mod_utimeq_pop_obj) },
     #if DEBUG
     { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_utimeq_dump_obj) },
     #endif
