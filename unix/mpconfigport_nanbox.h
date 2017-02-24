@@ -33,6 +33,9 @@
 #define MICROPY_EMIT_THUMB (0)
 #define MICROPY_EMIT_ARM (0)
 
+// help fails to build with nan-boxing
+#define MICROPY_PY_BUILTINS_HELP    (0)
+
 #include <stdint.h>
 
 typedef int64_t mp_int_t;
