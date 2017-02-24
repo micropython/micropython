@@ -257,7 +257,7 @@ SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(ST
 all: $(BUILD)/firmware.bin
 
 $(BUILD)/firmware.elf: $(OBJ)
-	$(ECHO) "LINK $@"
+	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | python3 ../tools/build_memory_info.py $(LD_FILE)
 

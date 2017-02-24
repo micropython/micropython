@@ -24,12 +24,17 @@ BUILD_VERBOSE = 0
 endif
 ifeq ($(BUILD_VERBOSE),0)
 Q = @
+STEPECHO = @:
+else ifeq ($(BUILD_VERBOSE),1)
+Q = @
+STEPECHO = @echo
 else
 Q =
+STEPECHO = @echo
 endif
 # Since this is a new feature, advertise it
 ifeq ($(BUILD_VERBOSE),0)
-$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
+$(info Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.)
 endif
 
 # default settings; can be overriden in main Makefile

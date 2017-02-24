@@ -22,16 +22,16 @@ endif
 
 vpath %.S . $(TOP)
 $(BUILD)/%.o: %.S
-	$(ECHO) "CC $<"
+	$(STEPECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 vpath %.s . $(TOP)
 $(BUILD)/%.o: %.s
-	$(ECHO) "AS $<"
+	$(STEPECHO) "AS $<"
 	$(Q)$(AS) -o $@ $<
 
 define compile_c
-$(ECHO) "CC $<"
+$(STEPECHO) "CC $<"
 $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
 @# The following fixes the dependency file.
 @# See http://make.paulandlesley.org/autodep.html for details.
@@ -55,7 +55,7 @@ QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 vpath %.c . $(TOP)
 
 $(BUILD)/%.pp: %.c
-	$(ECHO) "PreProcess $<"
+	$(STEPECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
 
 # The following rule uses | to create an order only prerequisite. Order only
@@ -70,7 +70,7 @@ $(BUILD)/%.pp: %.c
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
-	$(ECHO) "GEN $@"
+	$(STEPECHO) "GEN $@"
 	$(Q)if [ "$?" = "" ]; then \
 	    echo "QSTR Looks like -B used, trying to emulate"; \
 	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $^ >$(HEADER_BUILD)/qstr.i.last; \
@@ -79,12 +79,12 @@ $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
 	fi
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
-	$(ECHO) "GEN $@"
+	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 	$(Q)touch $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
-	$(ECHO) "GEN $@"
+	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 
 # $(sort $(var)) removes duplicates
@@ -95,14 +95,14 @@ $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
 OBJ_DIRS = $(sort $(dir $(OBJ)))
 $(OBJ): | $(OBJ_DIRS)
 $(OBJ_DIRS):
-	$(MKDIR) -p $@
+	$(Q)$(MKDIR) -p $@
 
 $(HEADER_BUILD):
-	$(MKDIR) -p $@
+	$(Q)$(MKDIR) -p $@
 
 ifneq ($(FROZEN_DIR),)
 $(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
-	$(ECHO) "Generating $@"
+	$(STEPECHO) "Generating $@"
 	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
 endif
 
@@ -114,13 +114,13 @@ FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.
 
 # to build .mpy files from .py files
 $(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
-	@$(ECHO) "MPY $<"
+	$(STEPECHO) "MPY $<"
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $^
 
 # to build frozen_mpy.c from all .mpy files
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
-	@$(ECHO) "Creating $@"
+	$(STEPECHO) "Creating $@"
 	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
 endif
 
@@ -130,7 +130,7 @@ ifneq ($(PROG),)
 all: $(PROG)
 
 $(PROG): $(OBJ)
-	$(ECHO) "LINK $@"
+	$(STEPECHO) "LINK $@"
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
