@@ -93,7 +93,7 @@ class webrepl(myserver):
         ws = _webrepl._webrepl(ws)
         return ws
     def read_from_sock(self,sock):
-    uos.dupterm_notify(sock)
+        uos.dupterm_notify(sock)
     def write_to_socket_loop(self,sock):
         print('socket now connected to repl')
         uos.dupterm(sock)
