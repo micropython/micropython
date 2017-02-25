@@ -150,7 +150,9 @@ The following methods manipulate individual pixels on the display.
 
 .. method:: LCD160CR.get_line(x, y, buf)
 
-    Get a line of pixels into the given buffer.
+    Get a line of pixels into the given buffer. Each pixel is returned as a
+    16-bit RGB value. To return a line of length N pixels, the buffer should
+    be a bytearray of size 2N +1 bytes. Byte zero should be ignored.
 
 .. method:: LCD160CR.screen_dump(buf)
 
