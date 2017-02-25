@@ -2,6 +2,7 @@
 #
 
 # You can set these variables from the command line.
+PYTHON        = python3
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
@@ -60,7 +61,7 @@ clean:
 cpydiff:
 	@echo "Generating MicroPython Differences."
 	rm -f $(GENRSTDIR)/*
-	cd $(CPYDIFFDIR) && python $(CPYDIFF)
+	cd $(CPYDIFFDIR) && $(PYTHON) $(CPYDIFF)
 
 html: cpydiff
 	$(SPHINXBUILD) $(FORCE) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
