@@ -127,7 +127,7 @@ void AC1_Handler             ( void ) __attribute__ ((weak, alias("Dummy_Handler
 #endif
 
 /* Exception Table */
-__attribute__ ((section(".vectors")))
+__attribute__ ((used, section(".vectors")))
 const DeviceVectors exception_table = {
 
         /* Configure Initial Stack Pointer, using linker-generated symbols */
@@ -229,7 +229,7 @@ const DeviceVectors exception_table = {
  * \brief This is the code that gets called on processor reset.
  * To initialize the device, and call the main() routine.
  */
-void Reset_Handler(void)
+__attribute__ ((used))void Reset_Handler(void)
 {
         uint32_t *pSrc, *pDest;
 

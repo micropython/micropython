@@ -36,9 +36,17 @@ typedef struct _mp_obj_tuple_t {
 
 typedef struct _mp_rom_obj_tuple_t {
     mp_obj_base_t base;
-    mp_uint_t len;
+    uint32_t len;
     mp_rom_obj_t items[];
 } mp_rom_obj_tuple_t;
+
+// This is identical to the type above except it makes it clear that there is
+// only one item. This makes lto happy with the namedtuple_base_tuple.
+typedef struct _mp_rom_obj_tuple1_t {
+    mp_obj_base_t base;
+    uint32_t len;
+    mp_rom_obj_t items[1];
+} mp_rom_obj_tuple1_t;
 
 void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in);

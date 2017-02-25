@@ -139,7 +139,7 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_monotonic), (mp_obj_t)&time_monotonic_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&time_sleep_obj },
     #if MICROPY_PY_COLLECTIONS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_struct_time), (mp_obj_t)&struct_time_type_obj },
+    //{ MP_OBJ_NEW_QSTR(MP_QSTR_struct_time), (mp_obj_t)&struct_time_type_obj },
     #endif
 };
 

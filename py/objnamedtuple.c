@@ -125,7 +125,11 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-const mp_rom_obj_tuple_t namedtuple_base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_tuple)}};
+const mp_rom_obj_tuple1_t namedtuple_base_tuple = {
+    .base = {&mp_type_tuple},
+    .len = 1u,
+    .items = {MP_OBJ_FROM_PTR(&mp_type_tuple)}
+};
 
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, mp_uint_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = m_new_obj_var(mp_obj_namedtuple_type_t, qstr, n_fields);

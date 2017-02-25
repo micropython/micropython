@@ -115,7 +115,7 @@ CFLAGS_CORTEX_M0 = \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
 	--param max-inline-insns-single=500
-CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
+CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT) $(BOARD_CFLAGS)
 
 #Debugging/Optimization
 # TODO(tannewt): Figure out what NDEBUG does. Adding it to the debug build
@@ -139,8 +139,8 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
-LDFLAGS = -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/ -LQTouch/ -L$(dir $(LIBM_FILE_NAME)) -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+#LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
+LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/ -LQTouch/ -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS = -larm_cortexM0l_math -lsamd21_qtouch_gcc -lm -lgcc -lc
 
 SRC_ASF = $(addprefix asf/sam0/,\

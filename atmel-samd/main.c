@@ -500,7 +500,7 @@ void samd21_init(void) {
     nvm_set_config(&config_nvm);
 }
 
-int main(int argc, char **argv) {
+int main(void) {
     // initialise the cpu and peripherals
     samd21_init();
 

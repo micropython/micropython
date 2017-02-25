@@ -5,3 +5,5 @@ USB_PID = 0x8015
 FLASH_IMPL = internal_flash.c
 
 CHIP_VARIANT = SAMD21E18A
+
+BOARD_CFLAGS = -flto
