@@ -33,8 +33,18 @@ import time
 import re
 from collections import namedtuple
 
+# Micropython supports syntax of CPython 3.4 with some features from 3.5, and
+# such version should be used to test for differences. If your default python3
+# executable is of lower version, you can point MICROPY_CPYTHON3 environment var
+# to the correct executable.
+if os.name == 'nt':
+    CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3.exe')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../windows/micropython.exe')
+else:
+    CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../unix/micropython')
+
 TESTPATH = '../tests/cpydiff/'
-UPYPATH = '../unix/micropython'
 DOCPATH = '../docs/genrst/'
 INDEXTEMPLATE = '../docs/differences/index_template.txt'
 INDEX = 'index.rst'
@@ -84,10 +94,10 @@ def run_tests(tests):
             input_cpy = f.read()
         input_upy = uimports(input_cpy)
 
-        process = subprocess.Popen('python', shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(CPYTHON3, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         output_cpy = [com.decode('utf8') for com in process.communicate(input_cpy)]
 
-        process = subprocess.Popen(UPYPATH, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(MICROPYTHON, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
         output_upy = [com.decode('utf8') for com in process.communicate(input_upy)]
 
         if output_cpy[0] == output_upy[0] and output_cpy[1] == output_upy[1]:
