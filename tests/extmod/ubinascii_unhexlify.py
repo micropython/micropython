@@ -1,7 +1,12 @@
 try:
-    import ubinascii as binascii
+    try:
+        import ubinascii as binascii
+    except ImportError:
+        import binascii
 except ImportError:
-    import binascii
+    import sys
+    print("SKIP")
+    sys.exit()
 
 print(binascii.unhexlify(b'0001020304050607'))
 print(binascii.unhexlify(b'08090a0b0c0d0e0f'))

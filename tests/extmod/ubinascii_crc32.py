@@ -1,7 +1,13 @@
 try:
-    import ubinascii as binascii
+    try:
+        import ubinascii as binascii
+    except ImportError:
+        import binascii
 except ImportError:
-    import binascii
+    import sys
+    print("SKIP")
+    sys.exit()
+
 try:
     binascii.crc32
 except AttributeError:

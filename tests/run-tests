@@ -23,7 +23,6 @@ MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
 
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
-os.environ['MICROPYPATH'] = ''
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -200,6 +199,7 @@ def run_tests(pyb, tests, args):
     skip_tests = set()
     skip_native = False
     skip_set_type = False
+    skip_async = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
     native = run_micropython(pyb, args, 'feature_check/native_check.py')
@@ -210,6 +210,11 @@ def run_tests(pyb, tests, args):
     native = run_micropython(pyb, args, 'feature_check/set_check.py')
     if native == b'CRASH':
         skip_set_type = True
+
+    # Check if async/await keywords are supported, and skip such tests if it's not
+    native = run_micropython(pyb, args, 'feature_check/async_check.py')
+    if native == b'CRASH':
+        skip_async = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
     t = run_micropython(pyb, args, 'feature_check/repl_emacs_check.py')
@@ -307,6 +312,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
+        skip_tests.add('micropython/heapalloc_iter.py') # requires generators
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
@@ -315,11 +321,13 @@ def run_tests(pyb, tests, args):
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_async = test_name.startswith("async_")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_set_type and is_set_type
+        skip_it |= skip_async and is_async
 
         if skip_it:
             print("skip ", test_file)
@@ -400,6 +408,7 @@ def main():
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
+    cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
@@ -433,6 +442,10 @@ def main():
     else:
         # tests explicitly given
         tests = args.files
+
+    if not args.keep_path:
+        # clear search path to make sure tests use only builtin modules
+        os.environ['MICROPYPATH'] = ''
 
     if not run_tests(pyb, tests, args):
         sys.exit(1)

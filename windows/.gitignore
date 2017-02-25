@@ -7,3 +7,4 @@
 *.ilk
 *.filters
 /build/*
+*.VC.*db

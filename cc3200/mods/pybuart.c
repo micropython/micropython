@@ -279,7 +279,7 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
 STATIC void uart_check_init(pyb_uart_obj_t *self) {
     // not initialized
     if (!self->baudrate) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -471,7 +471,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     if (uart_id > PYB_UART_1) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // get the correct uart instance
@@ -596,8 +596,8 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
 
     // wait for first char to become available
     if (!uart_rx_wait(self)) {
-        // return EAGAIN error to indicate non-blocking (then read() method returns None)
-        *errcode = EAGAIN;
+        // return MP_EAGAIN error to indicate non-blocking (then read() method returns None)
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
 
@@ -619,7 +619,7 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
 
     // write the data
     if (!uart_tx_strn(self, buf, size)) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
+        mp_raise_OSError(MP_EIO);
     }
     return size;
 }
@@ -639,7 +639,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
     }
     return ret;
@@ -664,7 +664,7 @@ const mp_obj_type_t pyb_uart_type = {
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,

@@ -110,7 +110,7 @@ typedef struct _emit_method_table_t {
     void (*setup_except)(emit_t *emit, mp_uint_t label);
     void (*setup_finally)(emit_t *emit, mp_uint_t label);
     void (*end_finally)(emit_t *emit);
-    void (*get_iter)(emit_t *emit);
+    void (*get_iter)(emit_t *emit, bool use_stack);
     void (*for_iter)(emit_t *emit, mp_uint_t label);
     void (*for_iter_end)(emit_t *emit);
     void (*pop_block)(emit_t *emit);
@@ -228,7 +228,7 @@ void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_end_finally(emit_t *emit);
-void mp_emit_bc_get_iter(emit_t *emit);
+void mp_emit_bc_get_iter(emit_t *emit, bool use_stack);
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_for_iter_end(emit_t *emit);
 void mp_emit_bc_pop_block(emit_t *emit);

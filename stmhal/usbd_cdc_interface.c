@@ -43,6 +43,7 @@
 
 #include "py/mpstate.h"
 #include "py/obj.h"
+#include "lib/utils/interrupt_char.h"
 #include "irq.h"
 #include "timer.h"
 #include "usb.h"
@@ -78,8 +79,6 @@ static __IO uint16_t UserTxBufPtrOut = 0; // increment this pointer modulo APP_T
 static uint16_t UserTxBufPtrOutShadow = 0; // shadow of above
 static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting for low-level USB driver
 static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
-
-static int user_interrupt_char = -1;
 
 /* Private function prototypes -----------------------------------------------*/
 static int8_t CDC_Itf_Init     (void);
@@ -147,13 +146,6 @@ static int8_t CDC_Itf_Init(void)
     UserRxBufCur = 0;
     UserRxBufLen = 0;
   
-    /* NOTE: we cannot reset these here, because USBD_CDC_SetInterrupt
-     * may be called before this init function to set these values.
-     * This can happen if the USB enumeration occurs after the call to
-     * USBD_CDC_SetInterrupt.
-    user_interrupt_char = -1;
-    */
-
     return (USBD_OK);
 }
 
@@ -339,7 +331,7 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
 
     uint32_t delta_len;
 
-    if (user_interrupt_char == -1) {
+    if (mp_interrupt_char == -1) {
         // no special interrupt character
         delta_len = *Len;
 
@@ -350,10 +342,10 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
         uint8_t *src = Buf;
         uint8_t *buf_top = Buf + *Len;
         for (; src < buf_top; src++) {
-            if (*src == user_interrupt_char) {
+            if (*src == mp_interrupt_char) {
                 char_found = true;
-                // raise exception when interrupts are finished
-                pendsv_nlr_jump(&MP_STATE_VM(mp_kbd_exception));
+                // raise KeyboardInterrupt when interrupts are finished
+                pendsv_kbd_intr();
             } else {
                 if (char_found) {
                     *dest = *src;
@@ -383,10 +375,6 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
 
 int USBD_CDC_IsConnected(void) {
     return dev_is_connected;
-}
-
-void USBD_CDC_SetInterrupt(int chr) {
-    user_interrupt_char = chr;
 }
 
 int USBD_CDC_TxHalfEmpty(void) {

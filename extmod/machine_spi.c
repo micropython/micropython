@@ -90,12 +90,6 @@ void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint
         if (dest != NULL) {
             dest[i] = data_in;
         }
-
-        // Some ports need a regular callback, but probably we don't need
-        // to do this every byte, or even at all.
-        #ifdef MICROPY_EVENT_POLL_HOOK
-        MICROPY_EVENT_POLL_HOOK;
-        #endif
     }
 }
 

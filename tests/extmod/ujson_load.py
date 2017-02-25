@@ -2,8 +2,13 @@ try:
     from uio import StringIO
     import ujson as json
 except:
-    from io import StringIO
-    import json
+    try:
+        from io import StringIO
+        import json
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 print(json.load(StringIO('null')))
 print(json.load(StringIO('"abc\\u0064e"')))

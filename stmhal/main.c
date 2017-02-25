@@ -27,15 +27,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
-#include "py/lexer.h"
-#include "py/parse.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
@@ -568,7 +563,10 @@ soft_reset:
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
-        mounted_sdcard = init_sdcard_fs(first_soft_reset);
+        // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
+        if (!mounted_flash || f_stat(&fs_user_mount_flash.fatfs, "/SKIPSD", NULL) != FR_OK) {
+            mounted_sdcard = init_sdcard_fs(first_soft_reset);
+        }
     }
 #endif
 
@@ -691,6 +689,10 @@ soft_reset_exit:
 #if MICROPY_HW_ENABLE_CAN
     can_deinit();
 #endif
+
+    #if MICROPY_PY_THREAD
+    pyb_thread_deinit();
+    #endif
 
     first_soft_reset = false;
     goto soft_reset;

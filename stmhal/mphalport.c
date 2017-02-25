@@ -21,10 +21,6 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     mp_raise_OSError(mp_hal_status_to_errno_table[status]);
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    usb_vcp_set_interrupt_char(c);
-}
-
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
 #if 0
@@ -43,7 +39,7 @@ int mp_hal_stdin_rx_chr(void) {
         } else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 

@@ -39,18 +39,17 @@
  */
 
 typedef enum _mp_token_kind_t {
-    MP_TOKEN_END,                   // 0
+    MP_TOKEN_END,
 
     MP_TOKEN_INVALID,
     MP_TOKEN_DEDENT_MISMATCH,
     MP_TOKEN_LONELY_STRING_OPEN,
-    MP_TOKEN_BAD_LINE_CONTINUATION,
 
-    MP_TOKEN_NEWLINE,               // 5
-    MP_TOKEN_INDENT,                // 6
-    MP_TOKEN_DEDENT,                // 7
+    MP_TOKEN_NEWLINE,
+    MP_TOKEN_INDENT,
+    MP_TOKEN_DEDENT,
 
-    MP_TOKEN_NAME,                  // 8
+    MP_TOKEN_NAME,
     MP_TOKEN_INTEGER,
     MP_TOKEN_FLOAT_OR_IMAG,
     MP_TOKEN_STRING,
@@ -58,9 +57,10 @@ typedef enum _mp_token_kind_t {
 
     MP_TOKEN_ELLIPSIS,
 
-    MP_TOKEN_KW_FALSE,              // 14
+    MP_TOKEN_KW_FALSE,
     MP_TOKEN_KW_NONE,
     MP_TOKEN_KW_TRUE,
+    MP_TOKEN_KW___DEBUG__,
     MP_TOKEN_KW_AND,
     MP_TOKEN_KW_AS,
     MP_TOKEN_KW_ASSERT,
@@ -71,7 +71,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_BREAK,
     MP_TOKEN_KW_CLASS,
     MP_TOKEN_KW_CONTINUE,
-    MP_TOKEN_KW_DEF,                // 23
+    MP_TOKEN_KW_DEF,
     MP_TOKEN_KW_DEL,
     MP_TOKEN_KW_ELIF,
     MP_TOKEN_KW_ELSE,
@@ -81,7 +81,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_FROM,
     MP_TOKEN_KW_GLOBAL,
     MP_TOKEN_KW_IF,
-    MP_TOKEN_KW_IMPORT,             // 33
+    MP_TOKEN_KW_IMPORT,
     MP_TOKEN_KW_IN,
     MP_TOKEN_KW_IS,
     MP_TOKEN_KW_LAMBDA,
@@ -91,12 +91,12 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_PASS,
     MP_TOKEN_KW_RAISE,
     MP_TOKEN_KW_RETURN,
-    MP_TOKEN_KW_TRY,                // 43
+    MP_TOKEN_KW_TRY,
     MP_TOKEN_KW_WHILE,
     MP_TOKEN_KW_WITH,
     MP_TOKEN_KW_YIELD,
 
-    MP_TOKEN_OP_PLUS,               // 47
+    MP_TOKEN_OP_PLUS,
     MP_TOKEN_OP_MINUS,
     MP_TOKEN_OP_STAR,
     MP_TOKEN_OP_DBL_STAR,
@@ -106,7 +106,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_LESS,
     MP_TOKEN_OP_DBL_LESS,
     MP_TOKEN_OP_MORE,
-    MP_TOKEN_OP_DBL_MORE,           // 57
+    MP_TOKEN_OP_DBL_MORE,
     MP_TOKEN_OP_AMPERSAND,
     MP_TOKEN_OP_PIPE,
     MP_TOKEN_OP_CARET,
@@ -116,7 +116,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_OP_DBL_EQUAL,
     MP_TOKEN_OP_NOT_EQUAL,
 
-    MP_TOKEN_DEL_PAREN_OPEN,        // 66
+    MP_TOKEN_DEL_PAREN_OPEN,
     MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN,
     MP_TOKEN_DEL_BRACKET_CLOSE,
@@ -126,7 +126,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_COLON,
     MP_TOKEN_DEL_PERIOD,
     MP_TOKEN_DEL_SEMICOLON,
-    MP_TOKEN_DEL_AT,                // 76
+    MP_TOKEN_DEL_AT,
     MP_TOKEN_DEL_EQUAL,
     MP_TOKEN_DEL_PLUS_EQUAL,
     MP_TOKEN_DEL_MINUS_EQUAL,
@@ -136,7 +136,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_DEL_PERCENT_EQUAL,
     MP_TOKEN_DEL_AMPERSAND_EQUAL,
     MP_TOKEN_DEL_PIPE_EQUAL,
-    MP_TOKEN_DEL_CARET_EQUAL,       // 86
+    MP_TOKEN_DEL_CARET_EQUAL,
     MP_TOKEN_DEL_DBL_MORE_EQUAL,
     MP_TOKEN_DEL_DBL_LESS_EQUAL,
     MP_TOKEN_DEL_DBL_STAR_EQUAL,
@@ -151,24 +151,24 @@ typedef struct _mp_lexer_t {
 
     unichar chr0, chr1, chr2;   // current cached characters from source
 
-    mp_uint_t line;             // current source line
-    mp_uint_t column;           // current source column
+    size_t line;                // current source line
+    size_t column;              // current source column
 
     mp_int_t emit_dent;             // non-zero when there are INDENT/DEDENT tokens to emit
     mp_int_t nested_bracket_level;  // >0 when there are nested brackets over multiple lines
 
-    mp_uint_t alloc_indent_level;
-    mp_uint_t num_indent_level;
+    size_t alloc_indent_level;
+    size_t num_indent_level;
     uint16_t *indent_level;
 
-    mp_uint_t tok_line;         // token source line
-    mp_uint_t tok_column;       // token source column
+    size_t tok_line;            // token source line
+    size_t tok_column;          // token source column
     mp_token_kind_t tok_kind;   // token kind
     vstr_t vstr;                // token data
 } mp_lexer_t;
 
 mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader);
-mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len);
+mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len);
 
 void mp_lexer_free(mp_lexer_t *lex);
 void mp_lexer_to_next(mp_lexer_t *lex);

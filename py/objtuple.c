@@ -32,8 +32,6 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 
-STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, mp_uint_t cur);
-
 /******************************************************************************/
 /* tuple                                                                      */
 
@@ -45,7 +43,7 @@ void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
         mp_print_str(print, "(");
         kind = PRINT_REPR;
     }
-    for (mp_uint_t i = 0; i < o->len; i++) {
+    for (size_t i = 0; i < o->len; i++) {
         if (i > 0) {
             mp_print_str(print, ", ");
         }
@@ -80,11 +78,11 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
 
             // TODO optimise for cases where we know the length of the iterator
 
-            mp_uint_t alloc = 4;
-            mp_uint_t len = 0;
+            size_t alloc = 4;
+            size_t len = 0;
             mp_obj_t *items = m_new(mp_obj_t, alloc);
 
-            mp_obj_t iterable = mp_getiter(args[0]);
+            mp_obj_t iterable = mp_getiter(args[0], NULL);
             mp_obj_t item;
             while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                 if (len >= alloc) {
@@ -127,7 +125,7 @@ mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_HASH: {
             // start hash with pointer to empty tuple, to make it fairly unique
             mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
-            for (mp_uint_t i = 0; i < self->len; i++) {
+            for (size_t i = 0; i < self->len; i++) {
                 hash += MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, self->items[i]));
             }
             return MP_OBJ_NEW_SMALL_INT(hash);
@@ -195,10 +193,6 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in) {
-    return mp_obj_new_tuple_iterator(MP_OBJ_TO_PTR(o_in), 0);
-}
-
 STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
@@ -235,7 +229,7 @@ const mp_obj_type_t mp_type_tuple = {
 // the zero-length tuple
 const mp_obj_tuple_t mp_const_empty_tuple_obj = {{&mp_type_tuple}, 0};
 
-mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items) {
+mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items) {
     if (n == 0) {
         return mp_const_empty_tuple;
     }
@@ -243,7 +237,7 @@ mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items) {
     o->base.type = &mp_type_tuple;
     o->len = n;
     if (items) {
-        for (mp_uint_t i = 0; i < n; i++) {
+        for (size_t i = 0; i < n; i++) {
             o->items[i] = items[i];
         }
     }
@@ -270,7 +264,7 @@ typedef struct _mp_obj_tuple_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_tuple_t *tuple;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_tuple_it_t;
 
 STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
@@ -284,11 +278,12 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t mp_obj_new_tuple_iterator(mp_obj_tuple_t *tuple, mp_uint_t cur) {
-    mp_obj_tuple_it_t *o = m_new_obj(mp_obj_tuple_it_t);
+mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_tuple_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_tuple_it_t *o = (mp_obj_tuple_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = tuple_it_iternext;
-    o->tuple = tuple;
-    o->cur = cur;
+    o->tuple = MP_OBJ_TO_PTR(o_in);
+    o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
 }

@@ -77,7 +77,6 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	mpirq.c \
 	mperror.c \
 	mpexception.c \
-	mpsystick.c \
 	)
 
 APP_MODS_SRC_C = $(addprefix mods/,\

@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "py/nlr.h"
-#include "py/parse.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"

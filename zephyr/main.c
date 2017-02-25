@@ -67,10 +67,15 @@ static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 
 void init_zephyr(void) {
+    // TODO: Make addresses configurable
     #ifdef CONFIG_NET_IPV4
-    // TODO: Make address configurable
-    static struct in_addr in4addr_my = { { { 192, 0, 2, 1 } } };
+    static struct in_addr in4addr_my = {{{192, 0, 2, 1}}};
     net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);
+    #endif
+    #ifdef CONFIG_NET_IPV6
+    // 2001:db8::1
+    static struct in6_addr in6addr_my = {{{0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}};
+    net_if_ipv6_addr_add(net_if_get_default(), &in6addr_my, NET_ADDR_MANUAL, 0);
     #endif
 }
 
@@ -121,7 +126,7 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
-    gc_dump_info();
+    //gc_dump_info();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {

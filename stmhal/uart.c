@@ -334,7 +334,7 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
@@ -375,7 +375,7 @@ STATIC bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
         if (HAL_GetTick() - start >= timeout) {
             return false; // timeout
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
@@ -1037,7 +1037,7 @@ const mp_obj_type_t pyb_uart_type = {
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,

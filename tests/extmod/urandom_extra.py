@@ -1,7 +1,12 @@
 try:
     import urandom as random
 except ImportError:
-    import random
+    try:
+        import random
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 try:
     random.randint

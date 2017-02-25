@@ -1,4 +1,10 @@
 # test memoryview
+try:
+    memoryview
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # test reading from bytes
 b = b'1234'

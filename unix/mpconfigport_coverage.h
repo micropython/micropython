@@ -32,6 +32,7 @@
 
 #include <mpconfigport.h>
 
+#define MICROPY_PY_DELATTR_SETATTR     (1)
 #define MICROPY_PY_BUILTINS_HELP       (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
