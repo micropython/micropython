@@ -829,16 +829,11 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             return;
         }
         if (attr == MP_QSTR___dict__) {
-            mp_obj_t attr_dict = mp_obj_new_dict(0);
-            if (self->locals_dict != NULL) {
-                mp_map_t *map = mp_obj_dict_get_map(MP_OBJ_FROM_PTR(self->locals_dict));
-                for (mp_uint_t i = 0; i < map->alloc; ++i) {
-                    if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                        mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
-                    }
-                }
+            if (self->locals_dict == NULL) {
+                dest[0] = mp_obj_new_dict(0);
+            } else {
+                dest[0] = self->locals_dict;
             }
-            dest[0] = attr_dict;
             return;
         }
         #endif
