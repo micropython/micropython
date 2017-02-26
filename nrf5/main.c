@@ -82,6 +82,8 @@ extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
     
+    mp_stack_set_top(&_ram_end);
+
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 400);
