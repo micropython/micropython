@@ -198,37 +198,51 @@ OBJ += $(BUILD)/pins_gen.o
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
-.phony: all flash sd
+.phony: all flash sd binary hex
 
-all: $(BUILD)/firmware.elf binary hex
+all: binary hex
+
+OUTPUT_FILENAME = firmware
+
+## Create binary .bin file from the .out file
+binary: $(BUILD)/$(OUTPUT_FILENAME).bin
+
+$(BUILD)/$(OUTPUT_FILENAME).bin: $(BUILD)/$(OUTPUT_FILENAME).elf
+	$(OBJCOPY) -O binary $< $@
+
+## Create binary .hex file from the .out file
+hex: $(BUILD)/$(OUTPUT_FILENAME).hex
+
+$(BUILD)/$(OUTPUT_FILENAME).hex: $(BUILD)/$(OUTPUT_FILENAME).elf
+	$(OBJCOPY) -O ihex $< $@
 
 FLASHER ?=
 
 ifeq ($(FLASHER),)
 
-flash: $(BUILD)/firmware.elf
-	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
+flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
-sd:
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --eraseall -f $(MCU_VARIANT)
 	nrfjprog --program $(SOFTDEV_HEX) -f $(MCU_VARIANT)
-	nrfjprog --program $(BUILD)/firmware.hex --sectorerase -f $(MCU_VARIANT)
+	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
 
 else ifeq ($(FLASHER), pyocd)
 
-flash: $(BUILD)/firmware.elf
-	pyocd-flashtool -t $(MCU_VARIANT) $(BUILD)/firmware.hex
+flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+	pyocd-flashtool -t $(MCU_VARIANT) $<
 
-sd:
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	pyocd-flashtool -t $(MCU_VARIANT) --chip_erase
 	pyocd-flashtool -t $(MCU_VARIANT) $(SOFTDEV_HEX)
-	pyocd-flashtool -t $(MCU_VARIANT) $(BUILD)/firmware.hex
+	pyocd-flashtool -t $(MCU_VARIANT) $<
 
 endif
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
@@ -280,4 +294,4 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
 include ../py/mkrules.mk
-include mkrules.mk
+
