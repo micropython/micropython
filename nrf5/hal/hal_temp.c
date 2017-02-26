@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 Bander F. Ajba
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,28 +30,32 @@
 
 #ifdef HAL_TEMP_MODULE_ENABLED
 
-/**
- * @brief Function for preparing the temp module for temperature measurement.
- *
- * This function initializes the TEMP module and writes to the hidden configuration register.
- */
 void hal_temp_init(void)
 {
-    /**@note Workaround for PAN_028 rev2.0A anomaly 31 - TEMP: Temperature offset value has to be manually loaded to the TEMP module */
+    // @note Workaround for PAN_028 rev2.0A anomaly 31 - TEMP: Temperature offset value has to be manually loaded to the TEMP module
     *(uint32_t *) 0x4000C504 = 0;
 }
 
-/**
- * @brief Function for reading temperature measurement.
- *
- * The function reads the 10 bit 2's complement value and transforms it to a 32 bit 2's complement value.
- */
 int32_t hal_temp_read(void)
-{    
+{   
+	int32_t volatile temp; 
 	hal_temp_init();
-    /**@note Workaround for PAN_028 rev2.0A anomaly 28 - TEMP: Negative measured values are not represented correctly */
-    return ((NRF_TEMP->TEMP & MASK_SIGN) != 0) ? (NRF_TEMP->TEMP | MASK_SIGN_EXTENSION) : (NRF_TEMP->TEMP);    
-}
-/**@endcond */
 
-#endif // HAL_ADC_MODULE_ENABLED
+    NRF_TEMP->TASKS_START = 1; // Start the temperature measurement.
+
+    while (NRF_TEMP->EVENTS_DATARDY == 0)
+    {
+        // Do nothing.
+    }
+
+    NRF_TEMP->EVENTS_DATARDY = 0;
+
+    // @note Workaround for PAN_028 rev2.0A anomaly 29 - TEMP: Stop task clears the TEMP register. 
+    temp = (((NRF_TEMP->TEMP & MASK_SIGN) != 0) ? (NRF_TEMP->TEMP | MASK_SIGN_EXTENSION) : (NRF_TEMP->TEMP) / 4);
+
+    // @note Workaround for PAN_028 rev2.0A anomaly 30 - TEMP: Temp module analog front end does not power down when DATARDY event occurs.
+    NRF_TEMP->TASKS_STOP = 1; // Stop the temperature measurement. 
+    return temp;
+}
+
+#endif // HAL_TEMP_MODULE_ENABLED

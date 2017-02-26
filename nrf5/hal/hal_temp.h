@@ -1,47 +1,39 @@
-/* Copyright (c) 2012 Nordic Semiconductor. All Rights Reserved.
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
  *
- * The information contained herein is property of Nordic Semiconductor ASA.
- * Terms and conditions of usage are described in detail in NORDIC
- * SEMICONDUCTOR STANDARD SOFTWARE LICENSE AGREEMENT.
+ * The MIT License (MIT)
  *
- * Licensees are granted free, non-transferable use of the information. NO
- * WARRANTY of ANY KIND is provided. This heading must NOT be removed from
- * the file.
+ * Copyright (c) 2017 Bander F. Ajba
  *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
-#ifndef NRF_TEMP_H__
-#define NRF_TEMP_H__
+#ifndef HAL_TEMP_H__
+#define HAL_TEMP_H__
 
 #include "nrf.h"
 
-/**
-* @defgroup nrf_temperature TEMP (temperature) abstraction
-* @{
-* @ingroup nrf_drivers temperature_example
-* @brief Temperature module init and read functions.
-*
-*/
-
-/**@cond NO_DOXYGEN */
 #define MASK_SIGN           (0x00000200UL)
 #define MASK_SIGN_EXTENSION (0xFFFFFC00UL)
 
-/**
- * @brief Function for preparing the temp module for temperature measurement.
- *
- * This function initializes the TEMP module and writes to the hidden configuration register.
- */
 void hal_temp_init(void);
 
-/**
- * @brief Function for reading temperature measurement.
- *
- * The function reads the 10 bit 2's complement value and transforms it to a 32 bit 2's complement value.
- */
 int32_t hal_temp_read(void);
-/**@endcond */
-
-/** @} */
 
 #endif

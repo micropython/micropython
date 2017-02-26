@@ -32,6 +32,7 @@
 
 #define MICROPY_PY_MACHINE_HW_SPI   (0)
 #define MICROPY_PY_MACHINE_PWM      (0)
+#define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)

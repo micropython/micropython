@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 Bander F. Ajba
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,12 @@
 
 #if MICROPY_PY_MACHINE_TEMP
 
-typedef struct _machine_temp_obj_t {
-    mp_obj_base_t base;
-    TEMP_HandleTypeDef *temp;
-} machine_temp_obj_t;
-
-TEMP_HandleTypeDef TEMPHandle0 = {.instance = NULL };
-
-
-STATIC const machine_temp_obj_t machine_temp_obj = {
-    {&machine_temp_type}, &TEMPHandle0
-};
+typedef mp_obj_type_t machine_temp_type_t;
 
 /// \method __str__()
 /// Return a string describing the ADC object.
 STATIC void machine_temp_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
-    machine_temp_obj_t *self = o;
+    machine_temp_type_t *self = o;
 
     (void)self;
 
@@ -69,10 +59,7 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    memset(&TEMPHandle0, 0, sizeof(TEMP_HandleTypeDef));
-    TEMPHandle0.instance = TEMP_BASE;
-
-    const machine_temp_obj_t *self = &machine_temp_obj;
+    const machine_temp_type_t *self = (machine_temp_type_t*) NRF_TEMP_BASE;
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -80,25 +67,7 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
 /// \method read()
 /// Get temperature.
 mp_obj_t machine_temp_read(void) {
-    int32_t volatile temp;
-
-    NRF_TEMP->TASKS_START = 1; /** Start the temperature measurement. */
-
-    /* Busy wait while temperature measurement is not finished, you can skip waiting if you enable interrupt for DATARDY event and read the result in the interrupt. */
-    /*lint -e{845} // A zero has been given as right argument to operator '|'" */
-    while (NRF_TEMP->EVENTS_DATARDY == 0)
-    {
-        // Do nothing.
-    }
-    NRF_TEMP->EVENTS_DATARDY = 0;
-
-    /**@note Workaround for PAN_028 rev2.0A anomaly 29 - TEMP: Stop task clears the TEMP register. */
-    temp = (hal_temp_read() / 4);
-
-    /**@note Workaround for PAN_028 rev2.0A anomaly 30 - TEMP: Temp module analog front end does not power down when DATARDY event occurs. */
-    NRF_TEMP->TASKS_STOP = 1; /** Stop the temperature measurement. */
-
-    return MP_OBJ_NEW_SMALL_INT(temp);
+    return MP_OBJ_NEW_SMALL_INT(hal_temp_read());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_temp_read_obj, machine_temp_read);
 

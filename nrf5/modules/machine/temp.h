@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2017 Bander F. Ajba
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,7 @@
 #ifndef TEMP_H__
 #define TEMP_H__
 
-#include "hal_temp.h"
-
 extern const mp_obj_type_t machine_temp_type;
-
-#define TEMP_BASE (NRF_TEMP_Type *)NRF_TEMP
-
-typedef struct __TEMP_HandleTypeDef
-{
-    NRF_TEMP_Type               *instance;    /* RTC registers base address */
-} TEMP_HandleTypeDef;
 
 int32_t temp_read(void);
 
