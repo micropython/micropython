@@ -43,13 +43,36 @@
 #define BLE_DRIVER_LOG(...)
 #endif
 
+#define EDDYSTONE_UUID 0xFEAA // UUID for Eddystone beacons, Big Endian.
+
+// URL Frame Type, fixed at 0x10.
+// RSSI, 0xEE = -18 dB is the approximate signal strength at 0 m.
+// URL prefix, 0x00 = "http://www".
+// URL
+// URL suffix, 0x01 = ".com"
+#define EDDYSTONE_DATA 0x10, 0xEE, 0x00, 'm', 'i', 'c', 'r', 'o', 'p', 'y', 't', 'h', 'o', 'n', 0x01
+#define BLE_ADV_LENGTH_FIELD_SIZE   1
+#define BLE_ADV_AD_TYPE_FIELD_SIZE  1
+#define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
+
+#define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
+#define UNIT_0_625_MS (625)
+#define UNIT_10_MS    (10000)
+#define APP_CFG_NON_CONN_ADV_TIMEOUT 0 // Disable timeout.
+#define NON_CONNECTABLE_ADV_INTERVAL MSEC_TO_UNITS(100, UNIT_0_625_MS)
+
+#define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(12, UNIT_0_625_MS)
+#define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(12, UNIT_0_625_MS)
+#define BLE_SLAVE_LATENCY            0
+#define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
 
 #define SD_TEST_OR_ENABLE() \
 if (ble_drv_stack_enabled() == 0) { \
     (void)ble_drv_stack_enable(); \
 }
 
-static bool m_adv_in_progress = false;
+static volatile bool m_adv_in_progress = false;
+static volatile bool m_tx_in_progress  = false;
 
 static ubluepy_gap_evt_callback_t ubluepy_gap_event_handler;
 static ubluepy_gatts_evt_callback_t ubluepy_gatts_event_handler;
@@ -134,6 +157,40 @@ uint32_t ble_drv_stack_enable(void) {
 
     BLE_DRIVER_LOG("BLE enable status: " UINT_FMT "\n", (uint16_t)err_code);
 
+    // set up security mode
+    ble_gap_conn_params_t   gap_conn_params;
+    ble_gap_conn_sec_mode_t sec_mode;
+
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
+
+    const char device_name[] = "micr";
+
+    err_code = sd_ble_gap_device_name_set(&sec_mode,
+                                          (const uint8_t *)device_name,
+                                          strlen(device_name));
+
+    if (sd_ble_gap_device_name_set(&sec_mode,
+                                   (const uint8_t *)device_name,
+                                   strlen(device_name)) != 0) {
+
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+              "Cannot set GAP parameters."));
+    }
+
+    // set connection parameters
+    memset(&gap_conn_params, 0, sizeof(gap_conn_params));
+
+    gap_conn_params.min_conn_interval = BLE_MIN_CONN_INTERVAL;
+    gap_conn_params.max_conn_interval = BLE_MAX_CONN_INTERVAL;
+    gap_conn_params.slave_latency     = BLE_SLAVE_LATENCY;
+    gap_conn_params.conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT;
+
+    if (sd_ble_gap_ppcp_set(&gap_conn_params) != 0) {
+
+    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+              "Cannot set PPCP parameters."));
+    }
+
     return err_code;
 }
 
@@ -159,31 +216,14 @@ void ble_drv_address_get(void) {
     uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
 #endif
     BLE_DRIVER_LOG("ble address, type: " HEX2_FMT ", " \
-           "address: " HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT ":" \
-                       HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT "\n", \
-            local_ble_addr.addr_type, \
-            local_ble_addr.addr[5], local_ble_addr.addr[4], local_ble_addr.addr[3], \
-            local_ble_addr.addr[2], local_ble_addr.addr[1], local_ble_addr.addr[0]);
+                   "address: " HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT ":" \
+                               HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT "\n", \
+                   local_ble_addr.addr_type, \
+                   local_ble_addr.addr[5], local_ble_addr.addr[4], local_ble_addr.addr[3], \
+                   local_ble_addr.addr[2], local_ble_addr.addr[1], local_ble_addr.addr[0]);
 
     (void)err_code;
 }
-
-#define EDDYSTONE_UUID 0xFEAA // UUID for Eddystone beacons, Big Endian.
-
-// URL Frame Type, fixed at 0x10.
-// RSSI, 0xEE = -18 dB is the approximate signal strength at 0 m.
-// URL prefix, 0x00 = "http://www".
-// URL
-// URL suffix, 0x01 = ".com"
-#define EDDYSTONE_DATA 0x10, 0xEE, 0x00, 'm', 'i', 'c', 'r', 'o', 'p', 'y', 't', 'h', 'o', 'n', 0x01
-#define BLE_ADV_LENGTH_FIELD_SIZE   1
-#define BLE_ADV_AD_TYPE_FIELD_SIZE  1
-#define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
-
-#define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
-#define UNIT_0_625_MS (625)
-#define APP_CFG_NON_CONN_ADV_TIMEOUT 0 // Disable timeout.
-#define NON_CONNECTABLE_ADV_INTERVAL MSEC_TO_UNITS(100, UNIT_0_625_MS)
 
 void ble_drv_advertise(void) {
     ble_uuid_t adv_uuids[] = {{.uuid = EDDYSTONE_UUID, .type = BLE_UUID_TYPE_BLE}};
@@ -251,8 +291,7 @@ bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
 
         if (sd_ble_gatts_service_add(p_service_obj->type,
                                      &uuid,
-                                     &p_service_obj->handle) != 0)
-        {
+                                     &p_service_obj->handle) != 0) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                       "Can not add Service."));
         }
@@ -264,8 +303,7 @@ bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
 
         if (sd_ble_gatts_service_add(p_service_obj->type,
                                      &uuid,
-                                     &p_service_obj->handle) != 0)
-        {
+                                     &p_service_obj->handle) != 0) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                       "Can not add Service."));
         }
@@ -364,8 +402,8 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         if (sd_ble_gap_device_name_set(&sec_mode,
                                        p_adv_params->p_device_name,
                                        p_adv_params->device_name_len) != 0) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-	                  "Can not apply device name in the stack."));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+	              "Can not apply device name in the stack."));
         }
 
         BLE_DRIVER_LOG("Device name applied\n");
@@ -581,9 +619,13 @@ void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
     hvx_params.p_len  = &hvx_len;
     hvx_params.p_data = p_data;
 
-    uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
+	while (m_tx_in_progress) {
+		;
+	}
 
-    if (err_code != 0) {
+    m_tx_in_progress = true;
+    uint32_t err_code;
+    if ((err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params)) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not notify attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
@@ -611,6 +653,9 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             BLE_DRIVER_LOG("GAP CONNECT\n");
             m_adv_in_progress = false;
             ubluepy_gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            ble_gap_conn_params_t conn_params;
+            (void)sd_ble_gap_ppcp_get(&conn_params);
+            (void)sd_ble_gap_conn_param_update(p_ble_evt->evt.gap_evt.conn_handle, &conn_params);
             break;
 
         case BLE_GAP_EVT_DISCONNECTED:
@@ -636,8 +681,23 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             BLE_DRIVER_LOG("GAP CONN PARAM UPDATE\n");
             break;
 
+        case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+            // No system attributes have been stored.
+            (void)sd_ble_gatts_sys_attr_set(p_ble_evt->evt.gatts_evt.conn_handle, NULL, 0, 0);
+            break;
+
+        case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
+            BLE_DRIVER_LOG("GATTS EVT EXCHANGE MTU REQUEST\n");
+            (void)sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle, 23); // MAX MTU size
+            break;
+
+        case BLE_EVT_TX_COMPLETE:
+            BLE_DRIVER_LOG("BLE EVT TX COMPLETE\n");
+            m_tx_in_progress = false;
+            break;
+
         default:
-            BLE_DRIVER_LOG(">>> unhandled evt: 0x" HEX2_FMT, p_ble_evt->header.evt_id);
+            BLE_DRIVER_LOG(">>> unhandled evt: 0x" HEX2_FMT "\n", p_ble_evt->header.evt_id);
             break;
     }
 }
