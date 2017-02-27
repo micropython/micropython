@@ -185,7 +185,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                 (mp_obj_t)&machine_hard_pwm_type },
 #endif
 #if MICROPY_PY_MACHINE_TEMP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TEMP),                 (mp_obj_t)&machine_temp_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Temp),                 (mp_obj_t)&machine_temp_type },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_RESET_HARD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_WDT) },

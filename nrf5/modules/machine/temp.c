@@ -35,16 +35,22 @@
 
 #if MICROPY_PY_MACHINE_TEMP
 
-typedef mp_obj_type_t machine_temp_type_t;
+typedef struct _machine_temp_obj_t {
+    mp_obj_base_t base;
+} machine_temp_obj_t;
+
+STATIC const machine_temp_obj_t machine_temp_obj;
+
+#define TEMP_BASE (NRF_TEMP_Type *)NRF_TEMP
 
 /// \method __str__()
-/// Return a string describing the ADC object.
+/// Return a string describing the Temp object.
 STATIC void machine_temp_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
-    machine_temp_type_t *self = o;
+    machine_temp_obj_t *self = o;
 
     (void)self;
 
-    mp_printf(print, "TEMP");
+    mp_printf(print, "Temp.read()");
 }
 
 /******************************************************************************/
@@ -58,18 +64,22 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    const machine_temp_type_t *self = (machine_temp_type_t*) NRF_TEMP_BASE;
+    
+    machine_temp_obj_t *self = m_new_obj(machine_temp_obj_t);
+    
+    self->base.type = &machine_temp_type;
 
     return MP_OBJ_FROM_PTR(self);
 }
 
 /// \method read()
 /// Get temperature.
-mp_obj_t machine_temp_read(void) {
+STATIC mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
+
     return MP_OBJ_NEW_SMALL_INT(hal_temp_read());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_temp_read_obj, machine_temp_read);
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_temp_read_obj, 0, 1, machine_temp_read);
 
 STATIC const mp_map_elem_t machine_temp_locals_dict_table[] = {
     // instance methods
@@ -81,7 +91,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_temp_locals_dict, machine_temp_locals_dict_t
 
 const mp_obj_type_t machine_temp_type = {
     { &mp_type_type },
-    .name = MP_QSTR_TEMP,
+    .name = MP_QSTR_Temp,
     .make_new = machine_temp_make_new,
     .locals_dict = (mp_obj_t)&machine_temp_locals_dict,
     .print = machine_temp_print,

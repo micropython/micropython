@@ -30,21 +30,18 @@
 
 #ifdef HAL_TEMP_MODULE_ENABLED
 
-void hal_temp_init(void)
-{
+void hal_temp_init(void) {
     // @note Workaround for PAN_028 rev2.0A anomaly 31 - TEMP: Temperature offset value has to be manually loaded to the TEMP module
     *(uint32_t *) 0x4000C504 = 0;
 }
 
-int32_t hal_temp_read(void)
-{   
+int32_t hal_temp_read(void) {   
 	int32_t volatile temp; 
 	hal_temp_init();
 
     NRF_TEMP->TASKS_START = 1; // Start the temperature measurement.
 
-    while (NRF_TEMP->EVENTS_DATARDY == 0)
-    {
+    while (NRF_TEMP->EVENTS_DATARDY == 0) {
         // Do nothing.
     }
 
