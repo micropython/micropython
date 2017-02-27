@@ -343,7 +343,8 @@ Advanced commands
 
 .. method:: LCD160CR.jpeg(buf)
 
-    Display a JPEG.  `buf` should contain the entire JPEG data.
+    Display a JPEG.  `buf` should contain the entire JPEG data. JPEG data should
+    not include EXIF information.
     The origin of the JPEG is set by :meth:`LCD160CR.set_pos`.
 
 .. method:: LCD160CR.jpeg_start(total_len)
