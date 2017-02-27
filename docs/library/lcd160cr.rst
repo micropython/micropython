@@ -344,7 +344,8 @@ Advanced commands
 .. method:: LCD160CR.jpeg(buf)
 
     Display a JPEG.  `buf` should contain the entire JPEG data. JPEG data should
-    not include EXIF information.
+    not include EXIF information. The following encodings are supported: Baseline
+    DCT, Huffman coding, 8 bits per sample, 3 color components, YCbCr4:2:2.
     The origin of the JPEG is set by :meth:`LCD160CR.set_pos`.
 
 .. method:: LCD160CR.jpeg_start(total_len)
