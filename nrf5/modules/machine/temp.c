@@ -39,10 +39,6 @@ typedef struct _machine_temp_obj_t {
     mp_obj_base_t base;
 } machine_temp_obj_t;
 
-STATIC const machine_temp_obj_t machine_temp_obj;
-
-#define TEMP_BASE (NRF_TEMP_Type *)NRF_TEMP
-
 /// \method __str__()
 /// Return a string describing the Temp object.
 STATIC void machine_temp_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
