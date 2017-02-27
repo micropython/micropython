@@ -18,6 +18,10 @@ try:
     m[0] = 1
 except TypeError:
     print("TypeError")
+try:
+    m[0:2] = b'00'
+except TypeError:
+    print("TypeError")
 
 # test writing to bytearray
 b = bytearray(b)
