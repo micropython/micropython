@@ -44,7 +44,7 @@
 #endif
 
 // offset of nlr_top within mp_state_thread_t structure
-#define NLR_TOP_TH_OFF (0)
+#define NLR_TOP_TH_OFF (2 * 8)
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define NLR_OS_WINDOWS

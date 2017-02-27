@@ -52,7 +52,7 @@
 #endif
 
 // offset of nlr_top within mp_state_thread_t structure
-#define NLR_TOP_TH_OFF (0)
+#define NLR_TOP_TH_OFF (2 * 4)
 
     .file   "nlr.s"
     .text
