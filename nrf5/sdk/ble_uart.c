@@ -40,13 +40,13 @@ static ubluepy_uuid_obj_t uuid_obj_service = {
 static ubluepy_uuid_obj_t uuid_obj_char_tx = {
     .base.type = &ubluepy_uuid_type,
     .type = UBLUEPY_UUID_128_BIT,
-    .value = {0x02, 0x00}
+    .value = {0x03, 0x00}
 };
 
 static ubluepy_uuid_obj_t uuid_obj_char_rx = {
     .base.type = &ubluepy_uuid_type,
     .type = UBLUEPY_UUID_128_BIT,
-    .value = {0x03, 0x00}
+    .value = {0x02, 0x00}
 };
 
 static ubluepy_service_obj_t ble_uart_service = {
@@ -55,16 +55,16 @@ static ubluepy_service_obj_t ble_uart_service = {
     .type = UBLUEPY_SERVICE_PRIMARY
 };
 
-static ubluepy_characteristic_obj_t ble_uart_char_tx = {
+static ubluepy_characteristic_obj_t ble_uart_char_rx = {
     .base.type = &ubluepy_characteristic_type,
-    .p_uuid = &uuid_obj_char_tx,
+    .p_uuid = &uuid_obj_char_rx,
     .props = UBLUEPY_PROP_WRITE | UBLUEPY_PROP_WRITE_WO_RESP,
     .attrs = 0,
 };
 
-static ubluepy_characteristic_obj_t ble_uart_char_rx = {
+static ubluepy_characteristic_obj_t ble_uart_char_tx = {
     .base.type = &ubluepy_characteristic_type,
-    .p_uuid = &uuid_obj_char_rx,
+    .p_uuid = &uuid_obj_char_tx,
     .props = UBLUEPY_PROP_NOTIFY,
     .attrs = UBLUEPY_ATTR_CCCD,
 };
@@ -104,7 +104,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
             send_len = len;
         }
 
-        ubluepy_characteristic_obj_t * p_char = &ble_uart_char_rx;
+        ubluepy_characteristic_obj_t * p_char = &ble_uart_char_tx;
 
         ble_drv_attr_notify(p_char->p_service->p_periph->conn_handle,
                             p_char->handle,
@@ -119,8 +119,6 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     for (uint8_t i = 0; i < len; i++) {
         mp_hal_stdout_tx_strn(&str[i], 1);
-        // for now put in a small delay as it could look like packets are issued to fast.
-        mp_hal_delay_ms(10);
     }
 }
 
@@ -139,9 +137,9 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
     (void)self;
 
     if (event_id == 80) { // gatts write
-    	if (ble_uart_char_rx.cccd_handle == attr_handle) {
+        if (ble_uart_char_tx.cccd_handle == attr_handle) {
             cccd_enabled = true;
-        } else if (ble_uart_char_tx.handle == attr_handle) {
+        } else if (ble_uart_char_rx.handle == attr_handle) {
             for (uint16_t i = 0; i < length; i++) {
                 bufferWrite(mp_rx_ring_buffer, data[i]);
             }
