@@ -446,6 +446,8 @@ class LCD160CR:
         self._send(s)
 
     def jpeg_start(self, l):
+        if l > 0xffff:
+            raise ValueError('length must be 65535 or less')
         self.oflush()
         self._fcmd2('<BBH', 0x6a, l)
 
