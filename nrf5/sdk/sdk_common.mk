@@ -25,4 +25,5 @@ INC += -I./sdk
 
 SRC_C += \
         sdk/modble.c \
-        sdk/ble_drv.c
+        sdk/ble_drv.c \
+        sdk/ble_uart.c
