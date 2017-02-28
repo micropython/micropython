@@ -1,8 +1,6 @@
 
 INC += -I./$(SDK_MODULES_PATH)
 
-include $(SDK_MODULES_PATH)build.mk
-
 INC += -I$(SDK_ROOT)components/softdevice/$(SD)/headers
 INC += -I$(SDK_ROOT)components/softdevice/$(SD)/headers/$(MCU_VARIANT)
 CFLAGS += -DBLUETOOTH_SD_DEBUG=1
