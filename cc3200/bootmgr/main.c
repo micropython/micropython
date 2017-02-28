@@ -252,6 +252,25 @@ static void bootmgr_load_and_execute (_u8 *image) {
 //! Wait while the safe mode pin is being held high and blink the system led
 //! with the specified period
 //*****************************************************************************
+#ifdef WIFIMK
+static bool wait_while_blinking (uint32_t wait_time, uint32_t period, bool force_wait) {
+    _u32 count;
+    for (count = 0; (force_wait || !MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN)) &&
+         ((period * count) < wait_time); count++) {
+        // toogle the led
+        MAP_GPIOPinWrite(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN, ~MAP_GPIOPinRead(MICROPY_SYS_LED_PORT, MICROPY_SYS_LED_PORT_PIN));
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(period * 1000));
+    }
+    return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? false : true;
+}
+
+static bool safe_boot_request_start (uint32_t wait_time) {
+    if (!MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN)) {
+        UtilsDelay(UTILS_DELAY_US_TO_COUNT(wait_time * 1000));
+    }
+    return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? false : true;
+}
+#else
 static bool wait_while_blinking (uint32_t wait_time, uint32_t period, bool force_wait) {
     _u32 count;
     for (count = 0; (force_wait || MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN)) &&
@@ -269,6 +288,7 @@ static bool safe_boot_request_start (uint32_t wait_time) {
     }
     return MAP_GPIOPinRead(MICROPY_SAFE_BOOT_PORT, MICROPY_SAFE_BOOT_PORT_PIN) ? true : false;
 }
+#endif
 
 //*****************************************************************************
 //! Check for the safe mode pin
