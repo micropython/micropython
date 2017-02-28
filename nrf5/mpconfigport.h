@@ -213,6 +213,10 @@
 #define MICROPY_PY_UBLUEPY                       (0)
 #endif
 
+#ifndef MICROPY_PY_BLE_NUS
+#define MICROPY_PY_BLE_NUS                       (0)
+#endif
+
 // type definitions for the specific machine
 
 #define BYTES_PER_WORD (4)
