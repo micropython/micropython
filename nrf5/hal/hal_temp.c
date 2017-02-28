@@ -36,8 +36,8 @@ void hal_temp_init(void) {
 }
 
 int32_t hal_temp_read(void) {   
-	int32_t volatile temp; 
-	hal_temp_init();
+    int32_t volatile temp; 
+    hal_temp_init();
 
     NRF_TEMP->TASKS_START = 1; // Start the temperature measurement.
 

@@ -46,7 +46,7 @@ STATIC void machine_temp_print(const mp_print_t *print, mp_obj_t o, mp_print_kin
 
     (void)self;
 
-    mp_printf(print, "Temp.read()");
+    mp_printf(print, "Temp");
 }
 
 /******************************************************************************/
