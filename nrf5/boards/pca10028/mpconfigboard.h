@@ -43,6 +43,7 @@
 #define MICROPY_PY_MACHINE_RTC      (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)

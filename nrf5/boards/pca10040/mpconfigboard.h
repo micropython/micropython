@@ -36,6 +36,7 @@
 #define MICROPY_PY_MACHINE_RTC      (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_PY_DISPLAY                  (1)
 #define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (1)

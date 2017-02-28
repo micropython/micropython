@@ -32,6 +32,7 @@
 
 #define MICROPY_PY_MACHINE_HW_SPI   (0)
 #define MICROPY_PY_MACHINE_PWM      (0)
+#define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
@@ -46,6 +47,7 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
+
 #define MICROPY_HW_LED_COUNT        (2)
 #define MICROPY_HW_LED_PULLUP       (0)
 
@@ -57,6 +59,6 @@
 #define MICROPY_HW_UART1_TX         (pin_A9)
 #define MICROPY_HW_UART1_CTS        (pin_A10)
 #define MICROPY_HW_UART1_RTS        (pin_A8)
-#define MICROPY_HW_UART1_HWFC       (1)
+#define MICROPY_HW_UART1_HWFC       (0)
 
 #define HELP_TEXT_BOARD_LED         "1,2"
