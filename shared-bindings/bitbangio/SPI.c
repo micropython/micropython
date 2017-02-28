@@ -158,8 +158,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configu
 //|     Attempts to grab the SPI lock. Returns True on success.
 //|
 STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
-    shared_module_bitbangio_spi_try_lock(MP_OBJ_TO_PTR(self_in));
-    return self_in;
+    return mp_obj_new_bool(shared_module_bitbangio_spi_try_lock(MP_OBJ_TO_PTR(self_in)));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock);
 

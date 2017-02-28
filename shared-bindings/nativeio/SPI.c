@@ -172,8 +172,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_spi_configure_obj, 1, nativeio_spi_configure
 //|     Attempts to grab the SPI lock. Returns True on success.
 //|
 STATIC mp_obj_t nativeio_spi_obj_try_lock(mp_obj_t self_in) {
-    common_hal_nativeio_spi_try_lock(MP_OBJ_TO_PTR(self_in));
-    return self_in;
+    return mp_obj_new_bool(common_hal_nativeio_spi_try_lock(MP_OBJ_TO_PTR(self_in)));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(nativeio_spi_try_lock_obj, nativeio_spi_obj_try_lock);
 
