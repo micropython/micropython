@@ -12,6 +12,4 @@ SOFTDEV_HEX ?= $(lastword $(wildcard $(SDK_ROOT)/components/softdevice/s130/hex/
 else ifeq ($(SD), s132)
 CFLAGS += -DBLUETOOTH_SD=132
 SOFTDEV_HEX ?= $(lastword $(wildcard $(SDK_ROOT)/components/softdevice/s132/hex/s132_nrf52_3.0.0_softdevice.hex))
-# Update to local linker file, special linking has to be done
-LD_FILE := $(SDK_MODULES_PATH)nrf52832_aa_s132.ld
 endif
