@@ -58,22 +58,20 @@ int mp_hal_stdin_rx_chr(void) {
 
     return 0;
 }
-#endif
 
-void mp_hal_stdout_tx_str(const char *str) {
-    mp_hal_stdout_tx_strn(str, strlen(str));
-}
-
-#if (MICROPY_PY_BLE_NUS == 0)
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
 }
-#endif
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
+}
+#endif
+
+void mp_hal_stdout_tx_str(const char *str) {
+    mp_hal_stdout_tx_strn(str, strlen(str));
 }
