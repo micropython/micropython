@@ -27,6 +27,8 @@
 #include "py/mpconfig.h"
 #if MICROPY_PY_MACHINE
 
+#include <string.h>
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "extmod/virtpin.h"
@@ -41,20 +43,73 @@ typedef struct _machine_signal_t {
 } machine_signal_t;
 
 STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    enum { ARG_pin, ARG_inverted };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_inverted, MP_ARG_BOOL, {.u_bool = false} },
-    };
+    mp_obj_t pin = args[0];
+    bool inverted = false;
 
-    mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
+    #if defined(MICROPY_PY_MACHINE_PIN_MAKE_NEW)
+    mp_pin_p_t *pin_p = NULL;
 
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
+    if (MP_OBJ_IS_OBJ(pin)) {
+        mp_obj_base_t *pin_base = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
+        pin_p = (mp_pin_p_t*)pin_base->type->protocol;
+    }
+
+    if (pin_p == NULL) {
+        // If first argument isn't a Pin-like object, we filter out "inverted"
+        // from keyword arguments and pass them all to the exported Pin
+        // constructor to create one.
+        mp_obj_t pin_args[n_args + n_kw * 2];
+        memcpy(pin_args, args, n_args * sizeof(mp_obj_t));
+        const mp_obj_t *src = args + n_args;
+        mp_obj_t *dst = pin_args + n_args;
+        mp_obj_t *sig_value = NULL;
+        for (size_t cnt = n_kw; cnt; cnt--) {
+            if (*src == MP_OBJ_NEW_QSTR(MP_QSTR_inverted)) {
+                inverted = mp_obj_is_true(src[1]);
+                n_kw--;
+            } else {
+                *dst++ = *src;
+                *dst++ = src[1];
+            }
+            if (*src == MP_OBJ_NEW_QSTR(MP_QSTR_value)) {
+                // Value is pertained to Signal, so we should invert
+                // it for Pin if needed, and we should do it only when
+                // inversion status is guaranteedly known.
+                sig_value = dst - 1;
+            }
+            src += 2;
+        }
+
+        if (inverted && sig_value != NULL) {
+            *sig_value = mp_obj_is_true(*sig_value) ? MP_OBJ_NEW_SMALL_INT(0) : MP_OBJ_NEW_SMALL_INT(1);
+        }
+
+        // Here we pass NULL as a type, hoping that mp_pin_make_new()
+        // will just ignore it as set a concrete type. If not, we'd need
+        // to expose port's "default" pin type too.
+        pin = MICROPY_PY_MACHINE_PIN_MAKE_NEW(NULL, n_args, n_kw, pin_args);
+    }
+    else
+    #endif
+    // Otherwise there should be 1 or 2 args
+    {
+        if (n_args == 1) {
+            if (n_kw == 0) {
+            } else if (n_kw == 1 && args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_inverted)) {
+                inverted = mp_obj_is_true(args[1]);
+            } else {
+                goto error;
+            }
+        } else {
+        error:
+            mp_raise_TypeError(NULL);
+        }
+    }
 
     machine_signal_t *o = m_new_obj(machine_signal_t);
     o->base.type = type;
-    o->pin = parsed_args[ARG_pin].u_obj;
-    o->inverted = parsed_args[ARG_inverted].u_bool;
+    o->pin = pin;
+    o->inverted = inverted;
     return MP_OBJ_FROM_PTR(o);
 }
 
