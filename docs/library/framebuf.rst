@@ -1,5 +1,5 @@
 :mod:`framebuf` --- Framebuffer manipulation
-===============================================
+============================================
 
 .. module:: framebuf
    :synopsis: Framebuffer manipulation
@@ -7,7 +7,7 @@
 This module provides Framebuffers which may be used to run displays
 
 class FrameBuffer
---------------
+-----------------
 
 The FrameBuffer class provides a pixel buffer which can be drawn upon with
 pixels, lines, rectangles, text and even other FrameBuffers. It is useful
@@ -40,6 +40,8 @@ Constructors
           valid values are ``framebuf.MVLSB``, ``framebuf.RGB565``
           and ``framebuf.GS4_HMSB``. MVLSB is monochrome 8-bit color,
           RGB565 is RGB 16-bit color, and GS4_HMSB is grayscale 4-bit color.
+          Where a colour value c is passed to a method, c is a small integer
+          with a bitmap which is dependent on the format of the FrameBuffer.
         - `stride` is the number of pixels between each horizontal line
           of pixels in the FrameBuffer. This defaults to `width` but may
           need adjustments when implementing a Framebuffer within another
@@ -105,7 +107,9 @@ Other methods
 
     Draw another Framebuffer on top of the current one at the given coordinates.
     If a key color value is specified, it will be considered transparent and all
-    pixels with the same color value will not be drawn.
+    pixels with the same color value will not be drawn. This method works between
+    FrameBuffers utilising different formats, but the resulting colour may be
+    unexpected.
 
 Constants
 ---------
