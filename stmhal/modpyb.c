@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/builtin.h"
+#include "py/mphal.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
@@ -112,7 +113,7 @@ STATIC mp_obj_t pyb_micros(void) {
     // We want to "cast" the 32 bit unsigned into a small-int.  This means
     // copying the MSB down 1 bit (extending the sign down), which is
     // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds());
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_us());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 
@@ -128,7 +129,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 ///         # Perform some operation
 STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
     uint32_t startMicros = mp_obj_get_int(start);
-    uint32_t currMicros = sys_tick_get_microseconds();
+    uint32_t currMicros = mp_hal_ticks_us();
     return MP_OBJ_NEW_SMALL_INT((currMicros - startMicros) & 0x3fffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
