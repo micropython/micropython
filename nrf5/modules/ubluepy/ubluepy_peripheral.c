@@ -53,7 +53,7 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
         mp_obj_t args[3];
         mp_uint_t num_of_args = 3;
         args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
-        args[1] = MP_OBJ_NEW_SMALL_INT(length);
+        args[1] = MP_OBJ_NEW_SMALL_INT(conn_handle);
         if (data != NULL) {
             args[2] = mp_obj_new_bytearray_by_ref(length, data);
         } else {
@@ -74,7 +74,7 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
         mp_obj_t args[3];
         mp_uint_t num_of_args = 3;
         args[0] = MP_OBJ_NEW_SMALL_INT(event_id);
-        args[1] = MP_OBJ_NEW_SMALL_INT(length);
+        args[1] = MP_OBJ_NEW_SMALL_INT(attr_handle);
         if (data != NULL) {
             args[2] = mp_obj_new_bytearray_by_ref(length, data);
         } else {
