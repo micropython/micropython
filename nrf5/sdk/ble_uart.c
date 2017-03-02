@@ -74,7 +74,7 @@ static ubluepy_peripheral_obj_t ble_uart_peripheral = {
     .conn_handle = 0xFFFF,
 };
 
-static bool cccd_enabled;
+static volatile bool m_cccd_enabled;
 
 ringBuffer_typedef(uint8_t, ringbuffer_t);
 
@@ -138,7 +138,7 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
 
     if (event_id == 80) { // gatts write
         if (ble_uart_char_tx.cccd_handle == attr_handle) {
-            cccd_enabled = true;
+            m_cccd_enabled = true;
         } else if (ble_uart_char_rx.handle == attr_handle) {
             for (uint16_t i = 0; i < length; i++) {
                 bufferWrite(mp_rx_ring_buffer, data[i]);
@@ -177,7 +177,6 @@ void ble_uart_init0(void) {
     mp_obj_list_append(ble_uart_service.char_list, MP_OBJ_FROM_PTR(&ble_uart_char_rx));
 
     // setup the peripheral
-    (void)ble_uart_peripheral;
     ble_uart_peripheral.service_list = mp_obj_new_list(0, NULL);
     mp_obj_list_append(ble_uart_peripheral.service_list, MP_OBJ_FROM_PTR(&ble_uart_service));
     ble_uart_service.p_periph = &ble_uart_peripheral;
@@ -206,7 +205,7 @@ void ble_uart_init0(void) {
     (void)device_name;
     (void)services;
 
-    cccd_enabled = false;
+    m_cccd_enabled = false;
 
     // initialize ring buffer
     m_rx_ring_buffer.size = sizeof(m_rx_ring_buffer_data) + 1;
@@ -216,7 +215,7 @@ void ble_uart_init0(void) {
 
     (void)ble_drv_advertise_data(&adv_data);
 
-    while (cccd_enabled != true) {
+    while (m_cccd_enabled != true) {
         ;
     }
 }
