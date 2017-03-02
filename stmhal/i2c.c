@@ -346,7 +346,7 @@ STATIC void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
             // stop bit was generated and bus is back to normal
             return;
         }
-        HAL_Delay(1);
+        mp_hal_delay_ms(1);
     }
     // bus was/is busy, need to reset the peripheral to get it to work again
     i2c_deinit(i2c);

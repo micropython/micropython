@@ -145,7 +145,7 @@ bool sdcard_power_on(void) {
         if (retry == 0) {
             goto error;
         }
-        HAL_Delay(50);
+        mp_hal_delay_ms(50);
     }
 
     // configure the SD bus width for wide operation

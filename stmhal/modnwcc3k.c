@@ -120,7 +120,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
         if (retry == 0 || CC3000_EXPORT(errno) != -95) {
             return CC3000_EXPORT(errno);
         }
-        HAL_Delay(50);
+        mp_hal_delay_ms(50);
     }
 
     if (ip == 0) {

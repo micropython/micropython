@@ -324,7 +324,7 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         //printf("%lu %lu %lu %lu %lu\n", sysclk_source, m, n, p, q);
 
         // let the USB CDC have a chance to process before we change the clock
-        HAL_Delay(5);
+        mp_hal_delay_ms(5);
 
         // desired system clock source is in sysclk_source
         RCC_ClkInitTypeDef RCC_ClkInitStruct;
