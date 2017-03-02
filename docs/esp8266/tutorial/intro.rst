@@ -78,10 +78,10 @@ using pip::
     pip install esptool
 
 Versions starting with 1.3 support both Python 2.7 and Python 3.4 (or newer).
-Any older version (at least 1.2.1 is needed) works fine but will require Python
+An older version (at least 1.2.1 is needed) works fine but will require Python
 2.7.
 
-Any other flashing program should work, so feel free to try them out, or refer
+Any other flashing program should work, so feel free to try them out or refer
 to the documentation for your board to see its recommendations.
 
 Using esptool.py you can erase the flash with the command::
