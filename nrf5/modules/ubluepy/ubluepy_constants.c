@@ -32,11 +32,9 @@
 #include "modubluepy.h"
 
 STATIC const mp_map_elem_t ubluepy_constants_locals_dict_table[] = {
-#if (BLUETOOTH_SD == 132)
     // GAP events
     { MP_OBJ_NEW_QSTR(MP_QSTR_EVT_GAP_CONNECTED),    MP_OBJ_NEW_SMALL_INT(16) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_EVT_GAP_DISCONNECTED), MP_OBJ_NEW_SMALL_INT(17) },
-#endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_UUID_CCCD),            MP_OBJ_NEW_SMALL_INT(0x2902) },
 };
 
