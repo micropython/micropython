@@ -71,8 +71,8 @@ if (ble_drv_stack_enabled() == 0) { \
     (void)ble_drv_stack_enable(); \
 }
 
-static volatile bool m_adv_in_progress = false;
-static volatile bool m_tx_in_progress  = false;
+static volatile bool m_adv_in_progress;
+static volatile bool m_tx_in_progress;
 
 static ubluepy_gap_evt_callback_t ubluepy_gap_event_handler;
 static ubluepy_gatts_evt_callback_t ubluepy_gatts_event_handler;
@@ -101,6 +101,9 @@ void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
 }
 #endif
 uint32_t ble_drv_stack_enable(void) {
+    m_adv_in_progress = false;
+    m_tx_in_progress  = false;
+
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
     memset(&nrf_nvic_state, 0, sizeof(nrf_nvic_state_t));
 #endif
@@ -665,6 +668,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             BLE_DRIVER_LOG("GAP CONNECT\n");
             m_adv_in_progress = false;
             ubluepy_gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+
             ble_gap_conn_params_t conn_params;
             (void)sd_ble_gap_ppcp_get(&conn_params);
             (void)sd_ble_gap_conn_param_update(p_ble_evt->evt.gap_evt.conn_handle, &conn_params);
@@ -709,6 +713,14 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             BLE_DRIVER_LOG("BLE EVT TX COMPLETE\n");
             m_tx_in_progress = false;
             break;
+
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+             BLE_DRIVER_LOG("BLE EVT SEC PARAMS REQUEST\n");
+             // pairing not supported
+             (void)sd_ble_gap_sec_params_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+                                               BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP,
+                                               NULL, NULL);
+             break;
 
         default:
             BLE_DRIVER_LOG(">>> unhandled evt: 0x" HEX2_FMT "\n", p_ble_evt->header.evt_id);
