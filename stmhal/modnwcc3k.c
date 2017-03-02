@@ -36,6 +36,7 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
