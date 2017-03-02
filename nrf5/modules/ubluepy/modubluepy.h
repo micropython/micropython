@@ -40,8 +40,9 @@ DB setup:
 from ubluepy import Service, Characteristic, UUID, Peripheral, constants
 from pyb import LED
 
-def event_handler(id, length, data):
-    print("BLE event:", id, "length:", length)
+def event_handler(id, handle, data):
+    print("BLE event:", id, "handle:", handle)
+    print(data)
 
     if id == constants.EVT_GAP_CONNECTED:
         # connected
