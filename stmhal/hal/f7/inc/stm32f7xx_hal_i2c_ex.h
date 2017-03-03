@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_i2c_ex.h
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   Header file of I2C HAL Extension module.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -64,8 +64,28 @@
 /** @defgroup I2CEx_Analog_Filter I2CEx Analog Filter
   * @{
   */
-#define I2C_ANALOGFILTER_ENABLE        ((uint32_t)0x00000000)
+#define I2C_ANALOGFILTER_ENABLE        ((uint32_t)0x00000000U)
 #define I2C_ANALOGFILTER_DISABLE       I2C_CR1_ANFOFF
+/**
+  * @}
+  */
+
+/** @defgroup I2CEx_FastModePlus I2C Extended Fast Mode Plus
+  * @{
+  */
+#if defined (STM32F765xx) || defined (STM32F767xx) || defined (STM32F769xx) || defined (STM32F777xx) || defined (STM32F779xx)
+
+#define I2C_FASTMODEPLUS_PB6          SYSCFG_PMC_I2C_PB6_FMP
+#define I2C_FASTMODEPLUS_PB7          SYSCFG_PMC_I2C_PB7_FMP
+#define I2C_FASTMODEPLUS_PB8          SYSCFG_PMC_I2C_PB8_FMP
+#define I2C_FASTMODEPLUS_PB9          SYSCFG_PMC_I2C_PB9_FMP
+
+#define I2C_FASTMODEPLUS_I2C1         SYSCFG_PMC_I2C1_FMP
+#define I2C_FASTMODEPLUS_I2C2         SYSCFG_PMC_I2C2_FMP
+#define I2C_FASTMODEPLUS_I2C3         SYSCFG_PMC_I2C3_FMP
+#define I2C_FASTMODEPLUS_I2C4         SYSCFG_PMC_I2C4_FMP
+
+#endif /* STM32F767xx || STM32F769xx || STM32F777xx || STM32F779xx  */
 /**
   * @}
   */
@@ -80,6 +100,10 @@
 /* Peripheral Control methods  ************************************************/
 HAL_StatusTypeDef HAL_I2CEx_ConfigAnalogFilter(I2C_HandleTypeDef *hi2c, uint32_t AnalogFilter);
 HAL_StatusTypeDef HAL_I2CEx_ConfigDigitalFilter(I2C_HandleTypeDef *hi2c, uint32_t DigitalFilter);
+#if defined (STM32F765xx) || defined (STM32F767xx) || defined (STM32F769xx) || defined (STM32F777xx) || defined (STM32F779xx)
+void HAL_I2CEx_EnableFastModePlus(uint32_t ConfigFastModePlus);
+void HAL_I2CEx_DisableFastModePlus(uint32_t ConfigFastModePlus);
+#endif /* STM32F767xx || STM32F769xx || STM32F777xx || STM32F779xx */
 
 /* Private constants ---------------------------------------------------------*/
 /** @defgroup I2C_Private_Constants I2C Private Constants
@@ -97,7 +121,42 @@ HAL_StatusTypeDef HAL_I2CEx_ConfigDigitalFilter(I2C_HandleTypeDef *hi2c, uint32_
 #define IS_I2C_ANALOG_FILTER(FILTER)    (((FILTER) == I2C_ANALOGFILTER_ENABLE) || \
                                           ((FILTER) == I2C_ANALOGFILTER_DISABLE))
 
-#define IS_I2C_DIGITAL_FILTER(FILTER)   ((FILTER) <= 0x0000000F)
+#define IS_I2C_DIGITAL_FILTER(FILTER)   ((FILTER) <= 0x0000000FU)
+
+#if defined(SYSCFG_PMC_I2C1_FMP) && defined(SYSCFG_PMC_I2C2_FMP) && defined(SYSCFG_PMC_I2C3_FMP) && defined(SYSCFG_PMC_I2C4_FMP)
+#define IS_I2C_FASTMODEPLUS(__CONFIG__) ((((__CONFIG__) & I2C_FASTMODEPLUS_PB6)  == I2C_FASTMODEPLUS_PB6)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB7)  == I2C_FASTMODEPLUS_PB7)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB8)  == I2C_FASTMODEPLUS_PB8)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB9)  == I2C_FASTMODEPLUS_PB9)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C1) == I2C_FASTMODEPLUS_I2C1) || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C2) == I2C_FASTMODEPLUS_I2C2) || \
+										 (((__CONFIG__) & I2C_FASTMODEPLUS_I2C3) == I2C_FASTMODEPLUS_I2C3) || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C4) == I2C_FASTMODEPLUS_I2C4))
+#elif defined(SYSCFG_PMC_I2C1_FMP) && defined(SYSCFG_PMC_I2C2_FMP) && defined(SYSCFG_PMC_I2C3_FMP)
+#define IS_I2C_FASTMODEPLUS(__CONFIG__) ((((__CONFIG__) & I2C_FASTMODEPLUS_PB6)  == I2C_FASTMODEPLUS_PB6)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB7)  == I2C_FASTMODEPLUS_PB7)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB8)  == I2C_FASTMODEPLUS_PB8)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB9)  == I2C_FASTMODEPLUS_PB9)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C1) == I2C_FASTMODEPLUS_I2C1) || \
+										 (((__CONFIG__) & I2C_FASTMODEPLUS_I2C2) == I2C_FASTMODEPLUS_I2C2) || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C3) == I2C_FASTMODEPLUS_I2C3))
+#elif defined(SYSCFG_PMC_I2C1_FMP) && defined(SYSCFG_PMC_I2C2_FMP)
+#define IS_I2C_FASTMODEPLUS(__CONFIG__) ((((__CONFIG__) & I2C_FASTMODEPLUS_PB6)  == I2C_FASTMODEPLUS_PB6)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB7)  == I2C_FASTMODEPLUS_PB7)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB8)  == I2C_FASTMODEPLUS_PB8)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB9)  == I2C_FASTMODEPLUS_PB9)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C1) == I2C_FASTMODEPLUS_I2C1) || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C2) == I2C_FASTMODEPLUS_I2C2))
+#elif defined(SYSCFG_PMC_I2C1_FMP)
+#define IS_I2C_FASTMODEPLUS(__CONFIG__) ((((__CONFIG__) & I2C_FASTMODEPLUS_PB6)  == I2C_FASTMODEPLUS_PB6)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB7)  == I2C_FASTMODEPLUS_PB7)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB8)  == I2C_FASTMODEPLUS_PB8)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_PB9)  == I2C_FASTMODEPLUS_PB9)  || \
+                                         (((__CONFIG__) & I2C_FASTMODEPLUS_I2C1) == I2C_FASTMODEPLUS_I2C1))
+#endif /* SYSCFG_PMC_I2C1_FMP && SYSCFG_PMC_I2C2_FMP && SYSCFG_PMC_I2C3_FMP && SYSCFG_PMC_I2C4_FMP */
+/**
+  * @}
+  */
 /**
   * @}
   */

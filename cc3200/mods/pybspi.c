@@ -30,6 +30,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "bufhelper.h"
 #include "inc/hw_types.h"
 #include "inc/hw_mcspi.h"
@@ -131,7 +132,7 @@ STATIC void pybspi_rx (pyb_spi_obj_t *self, void *data) {
 
 STATIC void pybspi_transfer (pyb_spi_obj_t *self, const char *txdata, char *rxdata, uint32_t len, uint32_t *txchar) {
     if (!self->baudrate) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
     // send and receive the data
     MAP_SPICSEnable(GSPI_BASE);
@@ -225,7 +226,7 @@ static const mp_arg_t pyb_spi_init_args[] = {
     { MP_QSTR_firstbit,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = PYBSPI_FIRST_BIT_MSB} },
     { MP_QSTR_pins,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -234,7 +235,7 @@ STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // setup the object

@@ -1,7 +1,12 @@
 try:
     import ure as re
 except ImportError:
-    import re
+    try:
+        import re
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 r = re.compile(".+")
 m = r.match("abc")
@@ -10,6 +15,10 @@ try:
     m.group(1)
 except IndexError:
     print("IndexError")
+
+# conversion of re and match to string
+str(r)
+str(m)
 
 r = re.compile("(.+)1")
 m = r.match("xyz781")

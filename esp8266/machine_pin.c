@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "extmod/virtpin.h"
 #include "modmachine.h"
 
 #define GET_TRIGGER(phys_port) \
@@ -276,7 +277,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
 }
 
 // constructor(id, ...)
-STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted pin object
@@ -300,7 +301,7 @@ STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     pyb_pin_obj_t *self = self_in;
     if (n_args == 0) {
@@ -374,6 +375,23 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_pin_irq_obj, 1, pyb_pin_irq);
 
+STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode);
+STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)errcode;
+    pyb_pin_obj_t *self = self_in;
+
+    switch (request) {
+        case MP_PIN_READ: {
+            return pin_get(self->phys_port);
+        }
+        case MP_PIN_WRITE: {
+            pin_set(self->phys_port, arg);
+            return 0;
+        }
+    }
+    return -1;
+}
+
 STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pyb_pin_init_obj },
@@ -396,12 +414,17 @@ STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_pin_locals_dict, pyb_pin_locals_dict_table);
 
+STATIC const mp_pin_p_t pin_pin_p = {
+    .ioctl = pin_ioctl,
+};
+
 const mp_obj_type_t pyb_pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
     .print = pyb_pin_print,
     .make_new = pyb_pin_make_new,
     .call = pyb_pin_call,
+    .protocol = &pin_pin_p,
     .locals_dict = (mp_obj_t)&pyb_pin_locals_dict,
 };
 

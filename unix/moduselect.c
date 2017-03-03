@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014 Damien P. George
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2015-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_PY_USELECT
+#if MICROPY_PY_USELECT_POSIX
 
 #include <stdio.h>
 #include <errno.h>
@@ -54,6 +54,12 @@ typedef struct _mp_obj_poll_t {
     unsigned short alloc;
     unsigned short len;
     struct pollfd *entries;
+    mp_obj_t *obj_map;
+    short iter_cnt;
+    short iter_idx;
+    int flags;
+    // callee-owned tuple
+    mp_obj_t ret_tuple;
 } mp_obj_poll_t;
 
 STATIC int get_fd(mp_obj_t fdlike) {
@@ -75,6 +81,7 @@ STATIC int get_fd(mp_obj_t fdlike) {
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
+    bool is_fd = MP_OBJ_IS_INT(args[1]);
     int fd = get_fd(args[1]);
 
     mp_uint_t flags;
@@ -101,9 +108,19 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     if (free_slot == NULL) {
         if (self->len >= self->alloc) {
             self->entries = m_renew(struct pollfd, self->entries, self->alloc, self->alloc + 4);
+            if (self->obj_map) {
+                self->obj_map = m_renew(mp_obj_t, self->obj_map, self->alloc, self->alloc + 4);
+            }
             self->alloc += 4;
         }
         free_slot = &self->entries[self->len++];
+    }
+
+    if (!is_fd) {
+        if (self->obj_map == NULL) {
+            self->obj_map = m_new0(mp_obj_t, self->alloc);
+        }
+        self->obj_map[free_slot - self->entries] = args[1];
     }
 
     free_slot->fd = fd;
@@ -121,6 +138,9 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->fd = -1;
+            if (self->obj_map) {
+                self->obj_map[entries - self->entries] = MP_OBJ_NULL;
+            }
             break;
         }
         entries++;
@@ -149,9 +169,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
-/// \method poll([timeout])
-/// Timeout is in milliseconds.
-STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
+STATIC int poll_poll_internal(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
     // work out timeout (it's given already in ms)
@@ -169,11 +187,23 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
         }
     }
 
+    self->flags = flags;
+
     int n_ready = poll(self->entries, self->len, timeout);
     RAISE_ERRNO(n_ready, errno);
+    return n_ready;
+}
+
+/// \method poll([timeout])
+/// Timeout is in milliseconds.
+STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
+    int n_ready = poll_poll_internal(n_args, args);
+
     if (n_ready == 0) {
         return mp_const_empty_tuple;
     }
+
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
 
     mp_obj_list_t *ret_list = MP_OBJ_TO_PTR(mp_obj_new_list(n_ready, NULL));
     int ret_i = 0;
@@ -181,10 +211,15 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     for (int i = 0; i < self->len; i++, entries++) {
         if (entries->revents != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-            t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            // If there's an object stored, return it, otherwise raw fd
+            if (self->obj_map && self->obj_map[i] != MP_OBJ_NULL) {
+                t->items[0] = self->obj_map[i];
+            } else {
+                t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            }
             t->items[1] = MP_OBJ_NEW_SMALL_INT(entries->revents);
             ret_list->items[ret_i++] = MP_OBJ_FROM_PTR(t);
-            if (flags & FLAG_ONESHOT) {
+            if (self->flags & FLAG_ONESHOT) {
                 entries->events = 0;
             }
         }
@@ -194,17 +229,67 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
+STATIC mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (self->ret_tuple == MP_OBJ_NULL) {
+        self->ret_tuple = mp_obj_new_tuple(2, NULL);
+    }
+
+    int n_ready = poll_poll_internal(n_args, args);
+    self->iter_cnt = n_ready;
+    self->iter_idx = 0;
+
+    return args[0];
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_ipoll_obj, 1, 3, poll_ipoll);
+
+STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->iter_cnt == 0) {
+        return MP_OBJ_STOP_ITERATION;
+    }
+
+    self->iter_cnt--;
+
+    struct pollfd *entries = self->entries;
+    for (int i = self->iter_idx; i < self->len; i++, entries++) {
+        if (entries->revents != 0) {
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->ret_tuple);
+            // If there's an object stored, return it, otherwise raw fd
+            if (self->obj_map && self->obj_map[i] != MP_OBJ_NULL) {
+                t->items[0] = self->obj_map[i];
+            } else {
+                t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            }
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(entries->revents);
+            if (self->flags & FLAG_ONESHOT) {
+                entries->events = 0;
+            }
+            return MP_OBJ_FROM_PTR(t);
+        }
+    }
+
+    assert(!"inconsistent number of poll active entries");
+    self->iter_cnt = 0;
+    return MP_OBJ_STOP_ITERATION;
+}
+
 STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
     { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
     { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
 STATIC const mp_obj_type_t mp_type_poll = {
     { &mp_type_type },
     .name = MP_QSTR_poll,
+    .getiter = mp_identity_getiter,
+    .iternext = poll_iternext,
     .locals_dict = (void*)&poll_locals_dict,
 };
 
@@ -218,6 +303,9 @@ STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     poll->entries = m_new(struct pollfd, alloc);
     poll->alloc = alloc;
     poll->len = 0;
+    poll->obj_map = NULL;
+    poll->iter_cnt = 0;
+    poll->ret_tuple = MP_OBJ_NULL;
     return MP_OBJ_FROM_PTR(poll);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_poll_obj, 0, 1, select_poll);
@@ -238,4 +326,4 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 
-#endif // MICROPY_PY_USELECT
+#endif // MICROPY_PY_USELECT_POSIX

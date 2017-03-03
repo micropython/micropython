@@ -200,6 +200,21 @@ bool uart_rx_wait(uint32_t timeout_us) {
     }
 }
 
+int uart_rx_any(uint8 uart) {
+    if (input_buf.iget != input_buf.iput) {
+        return true; // have at least 1 char ready for reading
+    }
+    return false;
+}
+
+int uart_tx_any_room(uint8 uart) {
+    uint32_t fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
+    if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) >= 126) {
+        return false;
+    }
+    return true;
+}
+
 // Returns char from the input buffer, else -1 if buffer is empty.
 int uart_rx_char(void) {
     return ringbuf_get(&input_buf);

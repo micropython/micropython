@@ -185,7 +185,7 @@ STATIC void pyb_servo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 
 /// \classmethod \constructor(id)
 /// Create a servo object.  `id` is 1-4.
-STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

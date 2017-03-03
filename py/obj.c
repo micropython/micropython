@@ -271,8 +271,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
         return 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
-        return mp_obj_int_as_float(arg);
+        return mp_obj_int_as_float_impl(arg);
+    #endif
     } else if (mp_obj_is_float(arg)) {
         return mp_obj_float_get(arg);
     } else {
@@ -296,9 +298,11 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
         *real = MP_OBJ_SMALL_INT_VALUE(arg);
         *imag = 0;
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
-        *real = mp_obj_int_as_float(arg);
+        *real = mp_obj_int_as_float_impl(arg);
         *imag = 0;
+    #endif
     } else if (mp_obj_is_float(arg)) {
         *real = mp_obj_float_get(arg);
         *imag = 0;
@@ -476,6 +480,11 @@ mp_obj_t mp_identity(mp_obj_t self) {
     return self;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
+
+mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
+    (void)iter_buf;
+    return self;
+}
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_type_t *type = mp_obj_get_type(obj);

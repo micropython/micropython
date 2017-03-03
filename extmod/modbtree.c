@@ -81,6 +81,12 @@ STATIC void btree_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
     mp_printf(print, "<btree %p>", self->db);
 }
 
+STATIC mp_obj_t btree_flush(mp_obj_t self_in) {
+    mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(__bt_sync(self->db, 0));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_flush_obj, btree_flush);
+
 STATIC mp_obj_t btree_close(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(__bt_close(self->db));
@@ -178,7 +184,8 @@ STATIC mp_obj_t btree_items(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_items_obj, 1, 4, btree_items);
 
-STATIC mp_obj_t btree_getiter(mp_obj_t self_in) {
+STATIC mp_obj_t btree_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    (void)iter_buf;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->next_flags != 0) {
         // If we're called immediately after keys(), values(), or items(),
@@ -314,6 +321,7 @@ STATIC mp_obj_t btree_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
 
 STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&btree_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&btree_put_obj) },
     { MP_ROM_QSTR(MP_QSTR_seq), MP_ROM_PTR(&btree_seq_obj) },

@@ -1,0 +1,15 @@
+MicroPython \.\+ version
+Use \.\+
+>>> # tests for autocompletion
+>>> import sys
+>>> not_exist.[K[K[K[K[K[K[K[K[K[K
+>>> not_exist[K[K[K[K[K[K[K[K[K
+>>> x = '123'
+>>> 1, x.isdigit()
+(1, True)
+>>> i = str
+>>> i.lower('ABC')
+'abc'
+>>> j = None
+>>> j.[K[K
+>>> 

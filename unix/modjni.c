@@ -157,7 +157,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t jclass_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "kwargs not supported"));
     }
@@ -554,7 +554,7 @@ next_method:
 }
 
 
-STATIC mp_obj_t jmethod_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "kwargs not supported"));
     }

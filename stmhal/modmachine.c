@@ -25,19 +25,23 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "lib/utils/pyexec.h"
-#include "lib/fatfs/ff.h"
-#include "lib/fatfs/diskio.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 #include "gccollect.h"
 #include "irq.h"
+#include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
 #include "pin.h"
@@ -144,11 +148,21 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
 
     // free space on flash
     {
-        DWORD nclst;
-        FATFS *fatfs;
-        f_getfree("/flash", &nclst, &fatfs);
-        printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
+        for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+            if (strncmp("/flash", vfs->str, vfs->len) == 0) {
+                // assumes that it's a FatFs filesystem
+                fs_user_mount_t *vfs_fat = MP_OBJ_TO_PTR(vfs->obj);
+                DWORD nclst;
+                f_getfree(&vfs_fat->fatfs, &nclst);
+                printf("LFS free: %u bytes\n", (uint)(nclst * vfs_fat->fatfs.csize * 512));
+                break;
+            }
+        }
     }
+
+    #if MICROPY_PY_THREAD
+    pyb_thread_dump();
+    #endif
 
     if (n_args == 1) {
         // arg given means dump gc allocation table
@@ -310,7 +324,7 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         //printf("%lu %lu %lu %lu %lu\n", sysclk_source, m, n, p, q);
 
         // let the USB CDC have a chance to process before we change the clock
-        HAL_Delay(5);
+        mp_hal_delay_ms(5);
 
         // desired system clock source is in sysclk_source
         RCC_ClkInitTypeDef RCC_ClkInitStruct;
@@ -533,6 +547,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem32),                   (mp_obj_t)&machine_mem32_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Signal),              (mp_obj_t)&machine_signal_type },
 
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },

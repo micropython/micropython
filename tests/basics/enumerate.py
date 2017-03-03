@@ -1,3 +1,10 @@
+try:
+    enumerate
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
+
 print(list(enumerate([])))
 print(list(enumerate([1, 2, 3])))
 print(list(enumerate([1, 2, 3], 5)))

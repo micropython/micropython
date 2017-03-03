@@ -190,3 +190,6 @@ nlr_jump:
 #endif
 
 #endif // defined(__i386__) && !MICROPY_NLR_SETJMP
+#if defined(linux)
+    .section    .note.GNU-stack,"",%progbits
+#endif

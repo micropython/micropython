@@ -38,9 +38,9 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "bufhelper.h"
 #include "usb.h"
-#include "pybioctl.h"
 
 #if defined(USE_USB_FS)
 #define USB_PHY_ID  USB_PHY_FS_ID
@@ -97,9 +97,7 @@ const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 };
 
 void pyb_usb_init0(void) {
-    // create an exception object for interrupting by VCP
-    MP_STATE_PORT(mp_const_vcp_interrupt) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-    USBD_CDC_SetInterrupt(-1, MP_STATE_PORT(mp_const_vcp_interrupt));
+    mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 
@@ -142,15 +140,6 @@ void pyb_usb_dev_deinit(void) {
 
 bool usb_vcp_is_enabled(void) {
     return (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) != 0;
-}
-
-void usb_vcp_set_interrupt_char(int c) {
-    if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
-        if (c != -1) {
-            mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_const_vcp_interrupt));
-        }
-        USBD_CDC_SetInterrupt(c, MP_STATE_PORT(mp_const_vcp_interrupt));
-    }
 }
 
 int usb_vcp_recv_byte(uint8_t *c) {
@@ -356,7 +345,7 @@ STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 
 /// \classmethod \constructor()
 /// Create a new USB_VCP object.
-STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -367,7 +356,7 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, mp_uint_t n_args
 }
 
 STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) {
-    usb_vcp_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
@@ -502,14 +491,14 @@ STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t 
 
 STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_IOCTL_POLL_RD) && USBD_CDC_RxNum() > 0) {
-            ret |= MP_IOCTL_POLL_RD;
+        if ((flags & MP_STREAM_POLL_RD) && USBD_CDC_RxNum() > 0) {
+            ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_IOCTL_POLL_WR) && USBD_CDC_TxHalfEmpty()) {
-            ret |= MP_IOCTL_POLL_WR;
+        if ((flags & MP_STREAM_POLL_WR) && USBD_CDC_TxHalfEmpty()) {
+            ret |= MP_STREAM_POLL_WR;
         }
     } else {
         *errcode = MP_EINVAL;
@@ -529,7 +518,7 @@ const mp_obj_type_t pyb_usb_vcp_type = {
     .name = MP_QSTR_USB_VCP,
     .print = pyb_usb_vcp_print,
     .make_new = pyb_usb_vcp_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &pyb_usb_vcp_stream_p,
     .locals_dict = (mp_obj_t)&pyb_usb_vcp_locals_dict,
@@ -544,7 +533,7 @@ typedef struct _pyb_usb_hid_obj_t {
 
 STATIC const pyb_usb_hid_obj_t pyb_usb_hid_obj = {{&pyb_usb_hid_type}};
 
-STATIC mp_obj_t pyb_usb_hid_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_usb_hid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -610,7 +599,11 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
     }
 
     // send the data
-    USBD_HID_SendReport(&hUSBDDevice, bufinfo.buf, bufinfo.len);
+    if (USBD_OK == USBD_HID_SendReport(&hUSBDDevice, bufinfo.buf, bufinfo.len)) {
+        return mp_obj_new_int(bufinfo.len);
+    } else {
+        return mp_obj_new_int(0);
+    }
 #endif
 
     return mp_const_none;
@@ -632,11 +625,14 @@ STATIC MP_DEFINE_CONST_DICT(pyb_usb_hid_locals_dict, pyb_usb_hid_locals_dict_tab
 
 STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     mp_uint_t ret;
-    if (request == MP_IOCTL_POLL) {
+    if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_IOCTL_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {
-            ret |= MP_IOCTL_POLL_WR;
+        if ((flags & MP_STREAM_POLL_RD) && USBD_HID_RxNum() > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {
+            ret |= MP_STREAM_POLL_WR;
         }
     } else {
         *errcode = MP_EINVAL;

@@ -113,11 +113,14 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
 
-        /*
-        printf("----------------\n");
-        mp_parse_node_print(parse_tree.root, 0);
-        printf("----------------\n");
-        */
+        #if defined(MICROPY_UNIX_COVERAGE)
+        // allow to print the parse tree in the coverage build
+        if (mp_verbose_flag >= 3) {
+            printf("----------------\n");
+            mp_parse_node_print(parse_tree.root, 0);
+            printf("----------------\n");
+        }
+        #endif
 
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
 
@@ -246,7 +249,7 @@ STATIC int do_repl(void) {
 
     #else
 
-    // use GNU or simple readline
+    // use simple readline
 
     for (;;) {
         char *line = prompt(">>> ");
@@ -425,6 +428,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
         #endif
     }
     mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
+    if (*path == ':') {
+        path_num++;
+    }
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
         path_num++;
         if (p != NULL) {

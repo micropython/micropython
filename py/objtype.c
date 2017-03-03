@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -284,7 +284,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     }
 
     // https://docs.python.org/3.4/reference/datamodel.html#object.__new__
-    // "If __new__() does not return an instance of cls, then the new instance’s __init__() method will not be invoked."
+    // "If __new__() does not return an instance of cls, then the new instance's __init__() method will not be invoked."
     if (mp_obj_get_type(new_ret) != self) {
         return new_ret;
     }
@@ -533,6 +533,15 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 
     // try __getattr__
     if (attr != MP_QSTR___getattr__) {
+        #if MICROPY_PY_DELATTR_SETATTR
+        // If the requested attr is __setattr__/__delattr__ then don't delegate the lookup
+        // to __getattr__.  If we followed CPython's behaviour then __setattr__/__delattr__
+        // would have already been found in the "object" base class.
+        if (attr == MP_QSTR___setattr__ || attr == MP_QSTR___delattr__) {
+            return;
+        }
+        #endif
+
         mp_obj_t dest2[3];
         mp_load_method_maybe(self_in, MP_QSTR___getattr__, dest2);
         if (dest2[0] != MP_OBJ_NULL) {
@@ -626,10 +635,35 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
 
     if (value == MP_OBJ_NULL) {
         // delete attribute
+        #if MICROPY_PY_DELATTR_SETATTR
+        // try __delattr__ first
+        mp_obj_t attr_delattr_method[3];
+        mp_load_method_maybe(self_in, MP_QSTR___delattr__, attr_delattr_method);
+        if (attr_delattr_method[0] != MP_OBJ_NULL) {
+            // __delattr__ exists, so call it
+            attr_delattr_method[2] = MP_OBJ_NEW_QSTR(attr);
+            mp_call_method_n_kw(1, 0, attr_delattr_method);
+            return true;
+        }
+        #endif
+
         mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
         return elem != NULL;
     } else {
         // store attribute
+        #if MICROPY_PY_DELATTR_SETATTR
+        // try __setattr__ first
+        mp_obj_t attr_setattr_method[4];
+        mp_load_method_maybe(self_in, MP_QSTR___setattr__, attr_setattr_method);
+        if (attr_setattr_method[0] != MP_OBJ_NULL) {
+            // __setattr__ exists, so call it
+            attr_setattr_method[2] = MP_OBJ_NEW_QSTR(attr);
+            attr_setattr_method[3] = value;
+            mp_call_method_n_kw(2, 0, attr_setattr_method);
+            return true;
+        }
+        #endif
+
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
         return true;
     }
@@ -687,9 +721,8 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
 }
 
-STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in) {
+STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in, mp_obj_t *member) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___call__,
@@ -702,11 +735,13 @@ STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in) {
 }
 
 bool mp_obj_instance_is_callable(mp_obj_t self_in) {
-    return mp_obj_instance_get_call(self_in) != MP_OBJ_NULL;
+    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+    return mp_obj_instance_get_call(self_in, member) != MP_OBJ_NULL;
 }
 
 mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_t call = mp_obj_instance_get_call(self_in);
+    mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
+    mp_obj_t call = mp_obj_instance_get_call(self_in, member);
     if (call == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_msg(&mp_type_TypeError, "object not callable");
@@ -719,11 +754,11 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     if (call == MP_OBJ_SENTINEL) {
         return mp_call_function_n_kw(self->subobj[0], n_args, n_kw, args);
     }
-    mp_obj_t meth = mp_obj_new_bound_meth(call, self_in);
-    return mp_call_function_n_kw(meth, n_args, n_kw, args);
+
+    return mp_call_method_self_n_kw(member[0], member[1], n_args, n_kw, args);
 }
 
-STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
+STATIC mp_obj_t instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t member[2] = {MP_OBJ_NULL};
     struct class_lookup_data lookup = {
@@ -738,7 +773,7 @@ STATIC mp_obj_t instance_getiter(mp_obj_t self_in) {
         return MP_OBJ_NULL;
     } else if (member[0] == MP_OBJ_SENTINEL) {
         mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
-        return type->getiter(self->subobj[0]);
+        return type->getiter(self->subobj[0], iter_buf);
     } else {
         return mp_call_method_n_kw(0, 0, member);
     }

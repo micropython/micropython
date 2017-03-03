@@ -27,12 +27,16 @@
 // Default unix config while intended to be comprehensive, may still not enable
 // all the features, this config should enable more (testable) options.
 
+#define MICROPY_VFS                    (1)
+#define MICROPY_PY_UOS_VFS             (1)
+
 #include <mpconfigport.h>
 
+#define MICROPY_PY_DELATTR_SETATTR     (1)
+#define MICROPY_PY_BUILTINS_HELP       (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
-#undef MICROPY_FSUSERMOUNT
 #undef MICROPY_VFS_FAT
-#define MICROPY_FSUSERMOUNT            (1)
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_PY_FRAMEBUF            (1)

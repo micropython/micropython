@@ -304,7 +304,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
 /// Construct a new timer object of the given id.  If additional
 /// arguments are given, then the timer is initialised by `init(...)`.
 /// `id` can be 1 to 14, excluding 3.
-STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 

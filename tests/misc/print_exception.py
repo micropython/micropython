@@ -41,3 +41,13 @@ try:
 except Exception as e:
     print('caught')
     print_exc(e)
+
+# Here we have a function with lots of bytecode generated for a single source-line, and
+# there is an error right at the end of the bytecode.  It should report the correct line.
+def f():
+    f([1, 2], [1, 2], [1, 2], {1:1, 1:1, 1:1, 1:1, 1:1, 1:1, 1:X})
+    return 1
+try:
+    f()
+except Exception as e:
+    print_exc(e)

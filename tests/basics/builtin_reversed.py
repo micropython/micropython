@@ -1,4 +1,10 @@
 # test the builtin reverse() function
+try:
+    reversed
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # list
 print(list(reversed([])))

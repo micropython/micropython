@@ -49,8 +49,22 @@ qemu_cortex_m3):
 
     make qemu
 
+With the default configuration, networking is now enabled, so you need to
+follow instructions in https://wiki.zephyrproject.org/view/Networking-with-Qemu
+to setup host side of TAP/SLIP networking. If you get error like:
+
+    could not connect serial device to character backend 'unix:/tmp/slip.sock'
+
+it's a sign that you didn't followed instructions above. If you would like
+to just run it quickly without extra setup, see "minimal" build below.
+
 For deploying/flashing a firmware on a real board, follow Zephyr
-documentation for a given board.
+documentation for a given board, including known issues for that board
+(if any). (Mind again that networking is enabled for the default build,
+so you should know if there're any special requirements in that regard,
+cf. for example QEMU networking requirements above; real hardware boards
+generally should not have any special requirements, unless there're known
+issues).
 
 
 Quick example
@@ -93,3 +107,8 @@ default over time.
 To make a minimal build:
 
     make BOARD=<board> minimal
+
+To run a minimal build in QEMU without requiring TAP networking setup
+run the following after you built image with the previous command:
+
+    make BOARD=<qemu_x86|qemu_cortex_m3> qemu-minimal

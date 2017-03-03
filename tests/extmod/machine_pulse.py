@@ -43,12 +43,5 @@ t = machine.time_pulse_us(p, 0)
 print(type(t))
 
 p = ConstPin(0)
-try:
-    machine.time_pulse_us(p, 1, 10)
-except OSError:
-    print("OSError")
-
-try:
-    machine.time_pulse_us(p, 0, 10)
-except OSError:
-    print("OSError")
+print(machine.time_pulse_us(p, 1, 10))
+print(machine.time_pulse_us(p, 0, 10))

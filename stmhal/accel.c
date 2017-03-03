@@ -69,16 +69,16 @@ STATIC void accel_start(void) {
     I2CHandle1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
     I2CHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
     I2CHandle1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLED;
+    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
     I2CHandle1.Init.OwnAddress1     = PYB_I2C_MASTER_ADDRESS;
     I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
     i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
     mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off
-    HAL_Delay(30);
+    mp_hal_delay_ms(30);
     mp_hal_pin_high(&MICROPY_HW_MMA_AVDD_PIN); // turn on
-    HAL_Delay(30);
+    mp_hal_delay_ms(30);
 
     HAL_StatusTypeDef status;
 
@@ -98,7 +98,7 @@ STATIC void accel_start(void) {
     status = HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
 
     // wait for MMA to become active
-    HAL_Delay(30);
+    mp_hal_delay_ms(30);
 }
 
 /******************************************************************************/
@@ -125,7 +125,7 @@ STATIC pyb_accel_obj_t pyb_accel_obj;
 ///     accel = pyb.Accel()
 ///     pyb.delay(20)
 ///     print(accel.x())
-STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 

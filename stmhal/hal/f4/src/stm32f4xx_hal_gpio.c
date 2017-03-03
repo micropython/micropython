@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f4xx_hal_gpio.c
   * @author  MCD Application Team
-  * @version V1.1.0
-  * @date    19-June-2014
+  * @version V1.5.2
+  * @date    22-September-2016
   * @brief   GPIO HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the General Purpose Input/Output (GPIO) peripheral:
@@ -15,42 +15,43 @@
                     ##### GPIO Peripheral features #####
   ==============================================================================
   [..] 
-    (+) Each port bit of the general-purpose I/O (GPIO) ports can be individually 
-        configured by software in several modes:
-        (++) Input mode 
-        (++) Analog mode
-        (++) Output mode
-        (++) Alternate function mode
-        (++) External interrupt/event lines
+  Subject to the specific hardware characteristics of each I/O port listed in the datasheet, each
+  port bit of the General Purpose IO (GPIO) Ports, can be individually configured by software
+  in several modes:
+  (+) Input mode 
+  (+) Analog mode
+  (+) Output mode
+  (+) Alternate function mode
+  (+) External interrupt/event lines
 
-    (+) During and just after reset, the alternate functions and external interrupt  
-        lines are not active and the I/O ports are configured in input floating mode.
-     
-    (+) All GPIO pins have weak internal pull-up and pull-down resistors, which can be 
-        activated or not.
+  [..]  
+  During and just after reset, the alternate functions and external interrupt  
+  lines are not active and the I/O ports are configured in input floating mode.
+  
+  [..]   
+  All GPIO pins have weak internal pull-up and pull-down resistors, which can be 
+  activated or not.
 
-    (+) In Output or Alternate mode, each IO can be configured on open-drain or push-pull
-        type and the IO speed can be selected depending on the VDD value.
+  [..]
+  In Output or Alternate mode, each IO can be configured on open-drain or push-pull
+  type and the IO speed can be selected depending on the VDD value.
 
-    (+) The microcontroller IO pins are connected to onboard peripherals/modules through a 
-        multiplexer that allows only one peripheral alternate function (AF) connected 
-       to an IO pin at a time. In this way, there can be no conflict between peripherals 
-       sharing the same IO pin. 
-
-    (+) All ports have external interrupt/event capability. To use external interrupt 
-        lines, the port must be configured in input mode. All available GPIO pins are 
-        connected to the 16 external interrupt/event lines from EXTI0 to EXTI15.
-
-    (+) The external interrupt/event controller consists of up to 23 edge detectors 
-        (16 lines are connected to GPIO) for generating event/interrupt requests (each 
-        input line can be independently configured to select the type (interrupt or event) 
-        and the corresponding trigger event (rising or falling or both). Each line can 
-        also be masked independently. 
+  [..]  
+  All ports have external interrupt/event capability. To use external interrupt 
+  lines, the port must be configured in input mode. All available GPIO pins are 
+  connected to the 16 external interrupt/event lines from EXTI0 to EXTI15.
+  
+  [..]
+  The external interrupt/event controller consists of up to 23 edge detectors 
+  (16 lines are connected to GPIO) for generating event/interrupt requests (each 
+  input line can be independently configured to select the type (interrupt or event) 
+  and the corresponding trigger event (rising or falling or both). Each line can 
+  also be masked independently. 
 
                      ##### How to use this driver #####
   ==============================================================================  
   [..]
-    (#) Enable the GPIO AHB clock using the following function: __GPIOx_CLK_ENABLE(). 
+    (#) Enable the GPIO AHB clock using the following function: __HAL_RCC_GPIOx_CLK_ENABLE(). 
 
     (#) Configure the GPIO pin(s) using HAL_GPIO_Init().
         (++) Configure the IO mode using "Mode" member from GPIO_InitTypeDef structure
@@ -74,6 +75,9 @@
             
     (#) To set/reset the level of a pin configured in output mode use 
         HAL_GPIO_WritePin()/HAL_GPIO_TogglePin().
+    
+    (#) To lock pin configuration until next reset use HAL_GPIO_LockPin().
+
                  
     (#) During and just after reset, the alternate functions are not 
         active and the GPIO pins are configured in input floating mode (except JTAG
@@ -91,7 +95,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -125,7 +129,7 @@
   * @{
   */
 
-/** @defgroup GPIO
+/** @defgroup GPIO GPIO
   * @brief GPIO HAL module driver
   * @{
   */
@@ -134,47 +138,45 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+/** @addtogroup GPIO_Private_Constants GPIO Private Constants
+  * @{
+  */
+#define GPIO_MODE             ((uint32_t)0x00000003U)
+#define EXTI_MODE             ((uint32_t)0x10000000U)
+#define GPIO_MODE_IT          ((uint32_t)0x00010000U)
+#define GPIO_MODE_EVT         ((uint32_t)0x00020000U)
+#define RISING_EDGE           ((uint32_t)0x00100000U)
+#define FALLING_EDGE          ((uint32_t)0x00200000U)
+#define GPIO_OUTPUT_TYPE      ((uint32_t)0x00000010U)
+
+#define GPIO_NUMBER           ((uint32_t)16U)
+/**
+  * @}
+  */
 /* Private macro -------------------------------------------------------------*/
-#define GET_GPIO_SOURCE(__GPIOx__) \
-(((uint32_t)(__GPIOx__) == ((uint32_t)GPIOA_BASE))? (uint32_t)0 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x0400)))? (uint32_t)1 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x0800)))? (uint32_t)2 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x0C00)))? (uint32_t)3 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x1000)))? (uint32_t)4 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x1400)))? (uint32_t)5 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x1800)))? (uint32_t)6 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x1C00)))? (uint32_t)7 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x2000)))? (uint32_t)8 :\
- ((uint32_t)(__GPIOx__) == ((uint32_t)(GPIOA_BASE + 0x2400)))? (uint32_t)9 : (uint32_t)10)
-
-#define GPIO_MODE             ((uint32_t)0x00000003)
-#define EXTI_MODE             ((uint32_t)0x10000000)
-#define GPIO_MODE_IT          ((uint32_t)0x00010000)
-#define GPIO_MODE_EVT         ((uint32_t)0x00020000)
-#define RISING_EDGE           ((uint32_t)0x00100000)
-#define FALLING_EDGE          ((uint32_t)0x00200000)
-#define GPIO_OUTPUT_TYPE      ((uint32_t)0x00000010)
-
-#define GPIO_NUMBER           ((uint32_t)16)
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-
-/** @defgroup GPIO_Private_Functions
+/* Exported functions --------------------------------------------------------*/
+/** @defgroup GPIO_Exported_Functions GPIO Exported Functions
   * @{
   */
 
-/** @defgroup GPIO_Group1 Initialization and de-initialization functions 
- *  @brief    Initialization and Configuration functions
- *
-@verbatim
+/** @defgroup GPIO_Exported_Functions_Group1 Initialization and de-initialization functions
+  *  @brief    Initialization and Configuration functions
+  *
+@verbatim    
  ===============================================================================
               ##### Initialization and de-initialization functions #####
  ===============================================================================
-
+  [..]
+    This section provides functions allowing to initialize and de-initialize the GPIOs
+    to be ready for use.
+ 
 @endverbatim
   * @{
   */
+
 
 /**
   * @brief  Initializes the GPIOx peripheral according to the specified parameters in the GPIO_Init.
@@ -187,20 +189,21 @@
 void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
   uint32_t position;
-  uint32_t ioposition = 0x00;
-  uint32_t iocurrent = 0x00;
-  uint32_t temp = 0x00;
+  uint32_t ioposition = 0x00U;
+  uint32_t iocurrent = 0x00U;
+  uint32_t temp = 0x00U;
 
   /* Check the parameters */
+  assert_param(IS_GPIO_ALL_INSTANCE(GPIOx));
   assert_param(IS_GPIO_PIN(GPIO_Init->Pin));
   assert_param(IS_GPIO_MODE(GPIO_Init->Mode));
   assert_param(IS_GPIO_PULL(GPIO_Init->Pull));
 
   /* Configure the port pins */
-  for(position = 0; position < GPIO_NUMBER; position++)
+  for(position = 0U; position < GPIO_NUMBER; position++)
   {
     /* Get the IO position */
-    ioposition = ((uint32_t)0x01) << position;
+    ioposition = ((uint32_t)0x01U) << position;
     /* Get the current IO position */
     iocurrent = (uint32_t)(GPIO_Init->Pin) & ioposition;
 
@@ -213,16 +216,16 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         /* Check the Alternate function parameter */
         assert_param(IS_GPIO_AF(GPIO_Init->Alternate));
         /* Configure Alternate function mapped with the current IO */
-        temp = GPIOx->AFR[position >> 3];
-        temp &= ~((uint32_t)0xF << ((uint32_t)(position & (uint32_t)0x07) * 4)) ;
-        temp |= ((uint32_t)(GPIO_Init->Alternate) << (((uint32_t)position & (uint32_t)0x07) * 4));
-        GPIOx->AFR[position >> 3] = temp;
+        temp = GPIOx->AFR[position >> 3U];
+        temp &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
+        temp |= ((uint32_t)(GPIO_Init->Alternate) << (((uint32_t)position & (uint32_t)0x07U) * 4U));
+        GPIOx->AFR[position >> 3U] = temp;
       }
 
       /* Configure IO Direction mode (Input, Output, Alternate or Analog) */
       temp = GPIOx->MODER;
-      temp &= ~(GPIO_MODER_MODER0 << (position * 2));
-      temp |= ((GPIO_Init->Mode & GPIO_MODE) << (position * 2));
+      temp &= ~(GPIO_MODER_MODER0 << (position * 2U));
+      temp |= ((GPIO_Init->Mode & GPIO_MODE) << (position * 2U));
       GPIOx->MODER = temp;
 
       /* In case of Output or Alternate function mode selection */
@@ -233,21 +236,21 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         assert_param(IS_GPIO_SPEED(GPIO_Init->Speed));
         /* Configure the IO Speed */
         temp = GPIOx->OSPEEDR; 
-        temp &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2));
-        temp |= (GPIO_Init->Speed << (position * 2));
+        temp &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
+        temp |= (GPIO_Init->Speed << (position * 2U));
         GPIOx->OSPEEDR = temp;
 
         /* Configure the IO Output Type */
         temp = GPIOx->OTYPER;
         temp &= ~(GPIO_OTYPER_OT_0 << position) ;
-        temp |= (((GPIO_Init->Mode & GPIO_OUTPUT_TYPE) >> 4) << position);
+        temp |= (((GPIO_Init->Mode & GPIO_OUTPUT_TYPE) >> 4U) << position);
         GPIOx->OTYPER = temp;
       }
 
       /* Activate the Pull-up or Pull down resistor for the current IO */
       temp = GPIOx->PUPDR;
-      temp &= ~(GPIO_PUPDR_PUPDR0 << (position * 2));
-      temp |= ((GPIO_Init->Pull) << (position * 2));
+      temp &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
+      temp |= ((GPIO_Init->Pull) << (position * 2U));
       GPIOx->PUPDR = temp;
 
       /*--------------------- EXTI Mode Configuration ------------------------*/
@@ -255,12 +258,12 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
       if((GPIO_Init->Mode & EXTI_MODE) == EXTI_MODE)
       {
         /* Enable SYSCFG Clock */
-        __SYSCFG_CLK_ENABLE();
+        __HAL_RCC_SYSCFG_CLK_ENABLE();
 
-        temp = SYSCFG->EXTICR[position >> 2];
-        temp &= ~(((uint32_t)0x0F) << (4 * (position & 0x03)));
-        temp |= ((uint32_t)(GET_GPIO_SOURCE(GPIOx)) << (4 * (position & 0x03)));
-        SYSCFG->EXTICR[position >> 2] = temp;
+        temp = SYSCFG->EXTICR[position >> 2U];
+        temp &= ~(((uint32_t)0x0FU) << (4U * (position & 0x03U)));
+        temp |= ((uint32_t)(GPIO_GET_INDEX(GPIOx)) << (4U * (position & 0x03U)));
+        SYSCFG->EXTICR[position >> 2U] = temp;
 
         /* Clear EXTI line configuration */
         temp = EXTI->IMR;
@@ -311,48 +314,56 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 void HAL_GPIO_DeInit(GPIO_TypeDef  *GPIOx, uint32_t GPIO_Pin)
 {
   uint32_t position;
-  uint32_t ioposition = 0x00;
-  uint32_t iocurrent = 0x00;
-  uint32_t tmp = 0x00;
+  uint32_t ioposition = 0x00U;
+  uint32_t iocurrent = 0x00U;
+  uint32_t tmp = 0x00U;
 
+  /* Check the parameters */
+  assert_param(IS_GPIO_ALL_INSTANCE(GPIOx));
+  
   /* Configure the port pins */
-  for(position = 0; position < GPIO_NUMBER; position++)
+  for(position = 0U; position < GPIO_NUMBER; position++)
   {
     /* Get the IO position */
-    ioposition = ((uint32_t)0x01) << position;
+    ioposition = ((uint32_t)0x01U) << position;
     /* Get the current IO position */
     iocurrent = (GPIO_Pin) & ioposition;
 
     if(iocurrent == ioposition)
     {
       /*------------------------- GPIO Mode Configuration --------------------*/
-      /* Configure IO Direction in Input Floting Mode */
-      GPIOx->MODER &= ~(GPIO_MODER_MODER0 << (position * 2));
+      /* Configure IO Direction in Input Floating Mode */
+      GPIOx->MODER &= ~(GPIO_MODER_MODER0 << (position * 2U));
 
       /* Configure the default Alternate Function in current IO */
-      GPIOx->AFR[position >> 3] &= ~((uint32_t)0xF << ((uint32_t)(position & (uint32_t)0x07) * 4)) ;
+      GPIOx->AFR[position >> 3U] &= ~((uint32_t)0xFU << ((uint32_t)(position & (uint32_t)0x07U) * 4U)) ;
 
       /* Configure the default value for IO Speed */
-      GPIOx->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2));
+      GPIOx->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR0 << (position * 2U));
 
       /* Configure the default value IO Output Type */
       GPIOx->OTYPER  &= ~(GPIO_OTYPER_OT_0 << position) ;
 
-      /* Deactivate the Pull-up oand Pull-down resistor for the current IO */
-      GPIOx->PUPDR &= ~(GPIO_PUPDR_PUPDR0 << (position * 2));
+      /* Deactivate the Pull-up and Pull-down resistor for the current IO */
+      GPIOx->PUPDR &= ~(GPIO_PUPDR_PUPDR0 << (position * 2U));
 
       /*------------------------- EXTI Mode Configuration --------------------*/
-      /* Configure the External Interrupt or event for the current IO */
-      tmp = ((uint32_t)0x0F) << (4 * (position & 0x03));
-      SYSCFG->EXTICR[position >> 2] &= ~tmp;
+      tmp = SYSCFG->EXTICR[position >> 2U];
+      tmp &= (((uint32_t)0x0FU) << (4U * (position & 0x03U)));
+      if(tmp == ((uint32_t)(GPIO_GET_INDEX(GPIOx)) << (4U * (position & 0x03U))))
+      {
+        /* Configure the External Interrupt or event for the current IO */
+        tmp = ((uint32_t)0x0FU) << (4U * (position & 0x03U));
+        SYSCFG->EXTICR[position >> 2U] &= ~tmp;
 
-      /* Clear EXTI line configuration */
-      EXTI->IMR &= ~((uint32_t)iocurrent);
-      EXTI->EMR &= ~((uint32_t)iocurrent);
-
-      /* Clear Rising Falling edge configuration */
-      EXTI->RTSR &= ~((uint32_t)iocurrent);
-      EXTI->FTSR &= ~((uint32_t)iocurrent);
+        /* Clear EXTI line configuration */
+        EXTI->IMR &= ~((uint32_t)iocurrent);
+        EXTI->EMR &= ~((uint32_t)iocurrent);
+        
+        /* Clear Rising Falling edge configuration */
+        EXTI->RTSR &= ~((uint32_t)iocurrent);
+        EXTI->FTSR &= ~((uint32_t)iocurrent);
+      }
     }
   }
 }
@@ -361,9 +372,9 @@ void HAL_GPIO_DeInit(GPIO_TypeDef  *GPIOx, uint32_t GPIO_Pin)
   * @}
   */
 
-/** @defgroup GPIO_Group2 IO operation functions 
- *  @brief   GPIO Read and Write
- *
+/** @defgroup GPIO_Exported_Functions_Group2 IO operation functions 
+  *  @brief   GPIO Read and Write
+  *
 @verbatim
  ===============================================================================
                        ##### IO operation functions #####
@@ -424,11 +435,11 @@ void HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState Pin
 
   if(PinState != GPIO_PIN_RESET)
   {
-    GPIOx->BSRRL = GPIO_Pin;
+    GPIOx->BSRR = GPIO_Pin;
   }
   else
   {
-    GPIOx->BSRRH = GPIO_Pin ;
+    GPIOx->BSRR = (uint32_t)GPIO_Pin << 16U;
   }
 }
 
@@ -508,6 +519,8 @@ void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
   */
 __weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(GPIO_Pin);
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_GPIO_EXTI_Callback could be implemented in the user file
    */

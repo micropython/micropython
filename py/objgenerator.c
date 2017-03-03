@@ -156,9 +156,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             }
 
         case MP_VM_RETURN_YIELD:
-            if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
-                mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
-            }
             return ret;
 
         case MP_VM_RETURN_EXCEPTION:
@@ -193,7 +190,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
-    exc = mp_make_raise_obj(exc);
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
@@ -240,7 +236,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
 };

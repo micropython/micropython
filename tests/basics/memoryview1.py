@@ -1,4 +1,10 @@
 # test memoryview
+try:
+    memoryview
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # test reading from bytes
 b = b'1234'
@@ -10,6 +16,10 @@ print(list(m))
 # test writing to bytes
 try:
     m[0] = 1
+except TypeError:
+    print("TypeError")
+try:
+    m[0:2] = b'00'
 except TypeError:
     print("TypeError")
 
@@ -28,6 +38,7 @@ print(list(m[1:-1]))
 # this tests get_buffer of memoryview
 m = memoryview(bytearray(2))
 print(bytearray(m))
+print(list(memoryview(memoryview(b'1234')))) # read-only memoryview
 
 import array
 a = array.array('i', [1, 2, 3, 4])
@@ -78,3 +89,9 @@ try:
     m4[1:3] = m2[1:3]
 except ValueError:
     print("ValueError")
+
+# invalid assignment on RHS
+try:
+    memoryview(array.array('i'))[0:2] = b'1234'
+except ValueError:
+    print('ValueError')

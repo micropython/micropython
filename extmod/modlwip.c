@@ -1,10 +1,11 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Galen Hazelwood
+ * Copyright (c) 2015-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,7 +115,7 @@ u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
 }
 
 // constructor lwip.slip(device=integer, iplocal=string, ipremote=string)
-STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
     lwip_slip_obj.base.type = &lwip_slip_type;
@@ -578,8 +579,7 @@ STATIC void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 // FIXME: Only supports two arguments at present
-STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args,
-    mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     lwip_socket_obj_t *socket = m_new_obj_with_finaliser(lwip_socket_obj_t);
@@ -1127,6 +1127,34 @@ STATIC mp_uint_t lwip_socket_write(mp_obj_t self_in, const void *buf, mp_uint_t 
     return MP_STREAM_ERROR;
 }
 
+STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    lwip_socket_obj_t *socket = self_in;
+    mp_uint_t ret;
+
+    if (request == MP_STREAM_POLL) {
+        uintptr_t flags = arg;
+        ret = 0;
+
+        if (flags & MP_STREAM_POLL_RD && socket->incoming.pbuf != NULL) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+
+        if (flags & MP_STREAM_POLL_WR && tcp_sndbuf(socket->pcb.tcp) > 0) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+
+        if (flags & MP_STREAM_POLL_HUP && socket->state == STATE_PEER_CLOSED) {
+            ret |= MP_STREAM_POLL_HUP;
+        }
+
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+
+    return ret;
+}
+
 STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&lwip_socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&lwip_socket_close_obj },
@@ -1145,6 +1173,7 @@ STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&lwip_socket_makefile_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
 };
@@ -1153,6 +1182,7 @@ STATIC MP_DEFINE_CONST_DICT(lwip_socket_locals_dict, lwip_socket_locals_dict_tab
 STATIC const mp_stream_p_t lwip_socket_stream_p = {
     .read = lwip_socket_read,
     .write = lwip_socket_write,
+    .ioctl = lwip_socket_ioctl,
 };
 
 STATIC const mp_obj_type_t lwip_socket_type = {

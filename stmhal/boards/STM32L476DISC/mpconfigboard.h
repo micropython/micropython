@@ -1,5 +1,8 @@
 #include STM32_HAL_H
 
+#define MICROPY_BOARD_EARLY_INIT    STM32L476DISC_board_early_init
+void STM32L476DISC_board_early_init(void);
+
 #define MICROPY_HW_BOARD_NAME       "L476-DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32L476"
 
@@ -16,6 +19,13 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
+// use external SPI flash for storage
+#define MICROPY_HW_SPIFLASH_SIZE_BITS (128 * 1024 * 1024)
+#define MICROPY_HW_SPIFLASH_CS      (pin_E11)
+#define MICROPY_HW_SPIFLASH_SCK     (pin_E10)
+#define MICROPY_HW_SPIFLASH_MOSI    (pin_E12)
+#define MICROPY_HW_SPIFLASH_MISO    (pin_E13)
+
 // MSI is used and is 4MHz
 #define MICROPY_HW_CLK_PLLM (1)
 #define MICROPY_HW_CLK_PLLN (40)
@@ -26,9 +36,8 @@
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // USART config
-#define MICROPY_HW_UART2_PORT (GPIOD)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_5 | GPIO_PIN_6)
-
+#define MICROPY_HW_UART2_TX     (pin_D5)
+#define MICROPY_HW_UART2_RX     (pin_D6)
 // USART 2 is connected to the virtual com port on the ST-LINK
 #define MICROPY_HW_UART_REPL        PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD   115200

@@ -19,6 +19,9 @@ CSUPEROPT = -O3
 INC += -I../lib
 INC += -I../lib/netutils
 
+# this sets the config file for FatFs
+CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
+
 ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
@@ -120,6 +123,7 @@ PY_O_BASENAME = \
 	compile.o \
 	emitcommon.o \
 	emitbc.o \
+	asmbase.o \
 	asmx64.o \
 	emitnx64.o \
 	asmx86.o \
@@ -129,6 +133,9 @@ PY_O_BASENAME = \
 	emitinlinethumb.o \
 	asmarm.o \
 	emitnarm.o \
+	asmxtensa.o \
+	emitnxtensa.o \
+	emitinlinextensa.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
@@ -185,6 +192,7 @@ PY_O_BASENAME = \
 	binary.o \
 	builtinimport.o \
 	builtinevex.o \
+	builtinhelp.o \
 	modarray.o \
 	modbuiltins.o \
 	modcollections.o \
@@ -208,26 +216,28 @@ PY_O_BASENAME = \
 	../extmod/modure.o \
 	../extmod/moduzlib.o \
 	../extmod/moduheapq.o \
+	../extmod/modutimeq.o \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
 	../extmod/virtpin.o \
 	../extmod/machine_mem.o \
 	../extmod/machine_pinbase.o \
+	../extmod/machine_signal.o \
 	../extmod/machine_pulse.o \
 	../extmod/machine_i2c.o \
 	../extmod/machine_spi.o \
 	../extmod/modussl_axtls.o \
 	../extmod/modussl_mbedtls.o \
 	../extmod/modurandom.o \
+	../extmod/moduselect.o \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
-	../extmod/fsusermount.o \
+	../extmod/vfs.o \
+	../extmod/vfs_reader.o \
 	../extmod/vfs_fat.o \
-	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
 	../extmod/uos_dupterm.o \
@@ -248,7 +258,7 @@ PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
-SRC_QSTR_IGNORE = nlr% emitnx% emitnthumb% emitnarm%
+SRC_QSTR_IGNORE = nlr% emitnx86% emitnx64% emitnthumb% emitnarm% emitnxtensa%
 SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)
 
 # Anything that depends on FORCE will be considered out-of-date
@@ -288,6 +298,10 @@ $(PY_BUILD)/emitnthumb.o: py/emitnative.c
 
 $(PY_BUILD)/emitnarm.o: CFLAGS += -DN_ARM
 $(PY_BUILD)/emitnarm.o: py/emitnative.c
+	$(call compile_c)
+
+$(PY_BUILD)/emitnxtensa.o: CFLAGS += -DN_XTENSA
+$(PY_BUILD)/emitnxtensa.o: py/emitnative.c
 	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2

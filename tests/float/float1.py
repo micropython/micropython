@@ -75,6 +75,11 @@ try:
 except ZeroDivisionError:
     print("ZeroDivisionError")
 
+try:
+    0.0 ** -1
+except ZeroDivisionError:
+    print("ZeroDivisionError")
+
 # unsupported unary ops
 
 try:
@@ -86,6 +91,12 @@ try:
     1.2 in 3.4
 except TypeError:
     print("TypeError")
+
+# small int on LHS, float on RHS, unsupported op
+try:
+    print(1 | 1.0)
+except TypeError:
+    print('TypeError')
 
 # can't convert list to float
 try:

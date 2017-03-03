@@ -30,6 +30,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "bufhelper.h"
 #include "inc/hw_types.h"
@@ -144,7 +145,7 @@ STATIC bool pyb_i2c_transaction(uint cmd) {
 STATIC void pyb_i2c_check_init(pyb_i2c_obj_t *self) {
     // not initialized
     if (!self->baudrate) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -256,7 +257,7 @@ STATIC void pyb_i2c_read_into (mp_arg_val_t *args, vstr_t *vstr) {
 
     // receive the data
     if (!pyb_i2c_read(args[0].u_int, (byte *)vstr->buf, vstr->len)) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
+        mp_raise_OSError(MP_EIO);
     }
 }
 
@@ -275,7 +276,7 @@ STATIC void pyb_i2c_readmem_into (mp_arg_val_t *args, vstr_t *vstr) {
     if (pyb_i2c_mem_addr_write (i2c_addr, (byte *)&mem_addr, mem_addr_size)) {
         // Read the specified length of data
         if (!pyb_i2c_read (i2c_addr, (byte *)vstr->buf, vstr->len)) {
-            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
+            mp_raise_OSError(MP_EIO);
         }
     }
 }
@@ -332,7 +333,7 @@ STATIC const mp_arg_t pyb_i2c_init_args[] = {
     { MP_QSTR_baudrate,  MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 100000} },
     { MP_QSTR_pins,      MP_ARG_KW_ONLY  | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -341,7 +342,7 @@ STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // setup the object
@@ -445,7 +446,7 @@ STATIC mp_obj_t pyb_i2c_writeto(mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
 
     // send the data
     if (!pyb_i2c_write(args[0].u_int, bufinfo.buf, bufinfo.len, args[2].u_bool)) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
+        mp_raise_OSError(MP_EIO);
     }
 
     // return the number of bytes written
@@ -514,7 +515,7 @@ STATIC mp_obj_t pyb_i2c_writeto_mem(mp_uint_t n_args, const mp_obj_t *pos_args, 
         return mp_obj_new_int(bufinfo.len);
     }
 
-    mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
+    mp_raise_OSError(MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_writeto_mem_obj, 1, pyb_i2c_writeto_mem);
 

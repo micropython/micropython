@@ -45,20 +45,34 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-static __IO uint8_t dev_is_connected = 0; // indicates if we are connected
-
 static uint8_t buffer[2][HID_DATA_FS_MAX_PACKET_SIZE]; // pair of buffers to read individual packets into
 static int8_t current_read_buffer = 0; // which buffer to read from
-static uint32_t last_read_len; // length of last read
+static uint32_t last_read_len = 0; // length of last read
 static int8_t current_write_buffer = 0; // which buffer to write to
 
-
 /* Private function prototypes -----------------------------------------------*/
+static int8_t HID_Itf_Init     (void);
 static int8_t HID_Itf_Receive  (uint8_t* pbuf, uint32_t Len);
 
 const USBD_HID_ItfTypeDef USBD_HID_fops = {
+    HID_Itf_Init,
     HID_Itf_Receive
 };
+
+/**
+  * @brief  HID_Itf_Init
+  *         Initializes the HID media low layer
+  * @param  None
+  * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t HID_Itf_Init(void)
+{
+    current_read_buffer = 0;
+    last_read_len = 0;
+    current_write_buffer = 0;
+    USBD_HID_SetRxBuffer(&hUSBDDevice, buffer[current_write_buffer]);
+    return USBD_OK;
+}
 
 /**
   * @brief  HID_Itf_Receive
@@ -75,8 +89,14 @@ static int8_t HID_Itf_Receive(uint8_t* Buf, uint32_t Len) {
     // initiate next USB packet transfer, to append to existing data in buffer
     USBD_HID_SetRxBuffer(&hUSBDDevice, buffer[current_write_buffer]);
     USBD_HID_ReceivePacket(&hUSBDDevice);
-
+    // Set NAK to indicate we need to process read buffer
+    USBD_HID_SetNAK(&hUSBDDevice);
     return USBD_OK;
+}
+
+// Returns number of ready rx buffers.
+int USBD_HID_RxNum(void) {
+    return (current_read_buffer != current_write_buffer);
 }
 
 // timout in milliseconds.
@@ -105,6 +125,9 @@ int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     // Copy bytes from device to user buffer
     memcpy(buf, buffer[current_read_buffer], last_read_len);
     current_read_buffer = !current_read_buffer;
+
+    // Clear NAK to indicate we are ready to read more data
+    USBD_HID_ClearNAK(&hUSBDDevice);
 
     // Success, return number of bytes read
     return last_read_len;

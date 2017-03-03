@@ -189,6 +189,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UHEAPQ
     { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
 #endif
+#if MICROPY_PY_UTIMEQ
+    { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&mp_module_utimeq) },
+#endif
 #if MICROPY_PY_UHASHLIB
     { MP_ROM_QSTR(MP_QSTR_uhashlib), MP_ROM_PTR(&mp_module_uhashlib) },
 #endif
@@ -197,6 +200,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #endif
 #if MICROPY_PY_URANDOM
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_module_urandom) },
+#endif
+#if MICROPY_PY_USELECT
+    { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
 #endif
 #if MICROPY_PY_USSL
     { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
@@ -221,15 +227,15 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     MICROPY_PORT_BUILTIN_MODULES
 };
 
-STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
+MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-void mp_module_init(void) {
-    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
-}
+#if MICROPY_MODULE_WEAK_LINKS
+STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+};
 
-void mp_module_deinit(void) {
-    //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
-}
+MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
+#endif
 
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {

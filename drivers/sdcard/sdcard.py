@@ -142,7 +142,7 @@ class SDCard:
         buf[5] = crc
         self.spi.write(buf)
 
-        # wait for the repsonse (response[7] == 0)
+        # wait for the response (response[7] == 0)
         for i in range(_CMD_TIMEOUT):
             response = self.spi.read(1, 0xff)[0]
             if not (response & 0x80):

@@ -57,6 +57,7 @@ class FreezeError(Exception):
         return 'error while freezing %s: %s' % (self.rawcode.source_file, self.msg)
 
 class Config:
+    MPY_VERSION = 1
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
     MICROPY_LONGINT_IMPL_MPZ = 2
@@ -258,7 +259,10 @@ class RawCode:
         # generate bytecode data
         print()
         print('// frozen bytecode for file %s, scope %s%s' % (self.source_file.str, parent_name, self.simple_name.str))
-        print('STATIC const byte bytecode_data_%s[%u] = {' % (self.escaped_name, len(self.bytecode)))
+        print('STATIC ', end='')
+        if not config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
+            print('const ', end='')
+        print('byte bytecode_data_%s[%u] = {' % (self.escaped_name, len(self.bytecode)))
         print('   ', end='')
         for i in range(self.ip2):
             print(' 0x%02x,' % self.bytecode[i], end='')
@@ -435,8 +439,8 @@ def read_mpy(filename):
         header = bytes_cons(f.read(4))
         if header[0] != ord('M'):
             raise Exception('not a valid .mpy file')
-        if header[1] != 0:
-            raise Exception('incompatible version')
+        if header[1] != config.MPY_VERSION:
+            raise Exception('incompatible .mpy version')
         feature_flags = header[2]
         config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE = (feature_flags & 1) != 0
         config.MICROPY_PY_BUILTINS_STR_UNICODE = (feature_flags & 2) != 0
@@ -463,8 +467,8 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#include "py/emitglue.h"')
     print()
 
-    print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE')
-    print('#error "MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE not supported with frozen mpy files"')
+    print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE != %u' % config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
+    print('#error "incompatible MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE"')
     print('#endif')
     print()
 

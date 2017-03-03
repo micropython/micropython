@@ -147,21 +147,34 @@ STATIC mp_obj_t stringio___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
 
-STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
+STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type, mp_uint_t alloc) {
     mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
     o->base.type = type;
-    o->vstr = vstr_new(16);
+    o->vstr = vstr_new(alloc);
     o->pos = 0;
     return o;
 }
 
 STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_kw; // TODO check n_kw==0
-    mp_obj_stringio_t *o = stringio_new(type_in);
+
+    mp_uint_t sz = 16;
+    bool initdata = false;
+    mp_buffer_info_t bufinfo;
 
     if (n_args > 0) {
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+        if (MP_OBJ_IS_INT(args[0])) {
+            sz = mp_obj_get_int(args[0]);
+        } else {
+            mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+            sz = bufinfo.len;
+            initdata = true;
+        }
+    }
+
+    mp_obj_stringio_t *o = stringio_new(type_in, sz);
+
+    if (initdata) {
         stringio_write(MP_OBJ_FROM_PTR(o), bufinfo.buf, bufinfo.len, NULL);
         // Cur ptr is always at the beginning of buffer at the construction
         o->pos = 0;
@@ -202,7 +215,7 @@ const mp_obj_type_t mp_type_stringio = {
     .name = MP_QSTR_StringIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stringio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
@@ -214,7 +227,7 @@ const mp_obj_type_t mp_type_bytesio = {
     .name = MP_QSTR_BytesIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &bytesio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,

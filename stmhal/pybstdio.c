@@ -120,7 +120,7 @@ STATIC const mp_obj_type_t stdio_obj_type = {
     .name = MP_QSTR_FileIO,
     // TODO .make_new?
     .print = stdio_obj_print,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stdio_obj_stream_p,
     .locals_dict = (mp_obj_t)&stdio_locals_dict,
@@ -153,7 +153,7 @@ STATIC const mp_obj_type_t stdio_buffer_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
     .print = stdio_obj_print,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stdio_buffer_obj_stream_p,
     .locals_dict = (mp_obj_t)&stdio_locals_dict,

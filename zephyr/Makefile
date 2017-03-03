@@ -7,7 +7,12 @@
 #
 
 BOARD ?= qemu_x86
+ifeq ($(MAKECMDGOALS), minimal)
+# For minimal, CONF_FILE must be overriden early due to $(Z_EXPORTS) target
+CONF_FILE = prj_minimal.conf
+else
 CONF_FILE = prj.conf
+endif
 # Zephyr 1.5.0
 #OUTDIR_PREFIX =
 # Zephyr 1.6.0
@@ -44,7 +49,6 @@ SRC_C = main.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/interrupt_char.c \
-	lib/utils/pyhelp.c \
 	lib/mp-readline/readline.c \
 	$(SRC_MOD)
 
@@ -58,7 +62,7 @@ CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 
 include ../py/mkrules.mk
 
-$(Z_EXPORTS):
+$(Z_EXPORTS): $(CONF_FILE)
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports
 
 GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
@@ -84,10 +88,18 @@ $(Z_SYSGEN_H):
 	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
 
 minimal:
-	$(MAKE) BOARD=$(BOARD) CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
+	$(MAKE) BOARD=$(BOARD) CONF_FILE=prj_minimal.conf CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
+
+qemu-minimal:
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=prj_minimal.conf QEMU_NET=0 run
 
 # Clean Zephyr things too
 clean: z_clean
 
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
+
+.PHONY: prj.conf
+prj.conf: prj_base.conf
+	cat $< >$@
+	if [ -f prj_$(BOARD).conf ]; then cat prj_$(BOARD).conf >>$@; fi

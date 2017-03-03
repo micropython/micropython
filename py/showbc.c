@@ -82,7 +82,6 @@ const mp_uint_t *mp_showbc_const_table;
 
 void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
-    mp_showbc_const_table = const_table;
 
     // get bytecode parameters
     mp_uint_t n_state = mp_decode_uint(&ip);
@@ -159,7 +158,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
-    mp_bytecode_print2(ip, len - 0);
+    mp_bytecode_print2(ip, len - 0, const_table);
 }
 
 const byte *mp_bytecode_print_str(const byte *ip) {
@@ -388,6 +387,10 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("GET_ITER");
             break;
 
+        case MP_BC_GET_ITER_STACK:
+            printf("GET_ITER_STACK");
+            break;
+
         case MP_BC_FOR_ITER:
             DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
             printf("FOR_ITER " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));
@@ -547,8 +550,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
     return ip;
 }
 
-void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
+void mp_bytecode_print2(const byte *ip, size_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
+    mp_showbc_const_table = const_table;
     while (ip < len + mp_showbc_code_start) {
         printf("%02u ", (uint)(ip - mp_showbc_code_start));
         ip = mp_bytecode_print_str(ip);

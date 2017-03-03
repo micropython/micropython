@@ -87,10 +87,10 @@ typedef int8_t mpz_dbl_dig_signed_t;
 #define MPZ_NUM_DIG_FOR_LL ((sizeof(long long) * 8 + MPZ_DIG_SIZE - 1) / MPZ_DIG_SIZE)
 
 typedef struct _mpz_t {
-    mp_uint_t neg : 1;
-    mp_uint_t fixed_dig : 1;
-    mp_uint_t alloc : BITS_PER_WORD - 2;
-    mp_uint_t len;
+    size_t neg : 1;
+    size_t fixed_dig : 1;
+    size_t alloc : 8 * sizeof(size_t) - 2;
+    size_t len;
     mpz_dig_t *dig;
 } mpz_t;
 
@@ -99,7 +99,7 @@ typedef struct _mpz_t {
 
 void mpz_init_zero(mpz_t *z);
 void mpz_init_from_int(mpz_t *z, mp_int_t val);
-void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, mp_uint_t dig_alloc, mp_int_t val);
+void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, size_t dig_alloc, mp_int_t val);
 void mpz_deinit(mpz_t *z);
 
 void mpz_set(mpz_t *dest, const mpz_t *src);
@@ -108,7 +108,8 @@ void mpz_set_from_ll(mpz_t *z, long long i, bool is_signed);
 #if MICROPY_PY_BUILTINS_FLOAT
 void mpz_set_from_float(mpz_t *z, mp_float_t src);
 #endif
-mp_uint_t mpz_set_from_str(mpz_t *z, const char *str, mp_uint_t len, bool neg, mp_uint_t base);
+size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base);
+void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf);
 
 bool mpz_is_zero(const mpz_t *z);
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
@@ -122,6 +123,7 @@ void mpz_add_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
+void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t *mod);
 void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
@@ -131,11 +133,10 @@ static inline size_t mpz_max_num_bits(const mpz_t *z) { return z->len * MPZ_DIG_
 mp_int_t mpz_hash(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);
 bool mpz_as_uint_checked(const mpz_t *z, mp_uint_t *value);
-void mpz_as_bytes(const mpz_t *z, bool big_endian, mp_uint_t len, byte *buf);
+void mpz_as_bytes(const mpz_t *z, bool big_endian, size_t len, byte *buf);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mpz_as_float(const mpz_t *z);
 #endif
-mp_uint_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma);
-mp_uint_t mpz_as_str_inpl(const mpz_t *z, mp_uint_t base, const char *prefix, char base_char, char comma, char *str);
+size_t mpz_as_str_inpl(const mpz_t *z, unsigned int base, const char *prefix, char base_char, char comma, char *str);
 
 #endif // __MICROPY_INCLUDED_PY_MPZ_H__

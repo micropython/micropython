@@ -25,12 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <std.h>
-
 #include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "modnetwork.h"
 #include "mpexception.h"
@@ -91,7 +90,7 @@ STATIC const mp_arg_t network_server_args[] = {
     { MP_QSTR_login,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -101,7 +100,7 @@ STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, mp_uint_t n_a
     // check the server id
     if (args[0].u_obj != MP_OBJ_NULL) {
         if (mp_obj_get_int(args[0].u_obj) != 0) {
-            mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+            mp_raise_OSError(MP_ENODEV);
         }
     }
 

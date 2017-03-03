@@ -1,7 +1,12 @@
 #include <mpconfigport.h>
 
-#undef MICROPY_FSUSERMOUNT
-#define MICROPY_FSUSERMOUNT             (0)
+#undef MICROPY_EMIT_XTENSA
+#define MICROPY_EMIT_XTENSA             (0)
+#undef MICROPY_EMIT_INLINE_XTENSA
+#define MICROPY_EMIT_INLINE_XTENSA      (0)
+
+#undef MICROPY_VFS
+#define MICROPY_VFS                     (0)
 #undef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT                 (0)
 
@@ -17,3 +22,10 @@
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #undef MICROPY_PY_ALL_SPECIAL_METHODS
 #define MICROPY_PY_ALL_SPECIAL_METHODS  (0)
+
+#undef MICROPY_PY_FRAMEBUF
+#define MICROPY_PY_FRAMEBUF             (0)
+
+#undef mp_import_stat
+#undef mp_builtin_open
+#undef mp_builtin_open_obj

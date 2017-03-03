@@ -1,6 +1,14 @@
 import sys
-import uos
-import uerrno
+try:
+    import uerrno
+    try:
+        import uos_vfs as uos
+    except ImportError:
+        import uos
+except ImportError:
+    print("SKIP")
+    sys.exit()
+
 try:
     uos.VfsFat
 except AttributeError:
@@ -34,7 +42,7 @@ class RAMFS:
 
 
 try:
-    bdev = RAMFS(48)
+    bdev = RAMFS(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
@@ -44,12 +52,8 @@ uos.VfsFat.mkfs(bdev)
 print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
 
-vfs = uos.VfsFat(bdev, "/ramdisk")
-
-try:
-    vfs.statvfs("/null")
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
+vfs = uos.VfsFat(bdev)
+uos.mount(vfs, "/ramdisk")
 
 print("statvfs:", vfs.statvfs("/ramdisk"))
 print("getcwd:", vfs.getcwd())
@@ -64,8 +68,7 @@ with vfs.open("foo_file.txt", "w") as f:
 print(vfs.listdir())
 
 print("stat root:", vfs.stat("/"))
-print("stat disk:", vfs.stat("/ramdisk/"))
-print("stat file:", vfs.stat("foo_file.txt"))
+print("stat file:", vfs.stat("foo_file.txt")[:-3]) # timestamps differ across runs
 
 print(b"FOO_FILETXT" in bdev.data)
 print(b"hello!" in bdev.data)
@@ -86,16 +89,7 @@ except OSError as e:
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
 
-vfs.umount()
-try:
-    vfs.listdir()
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
+uos.umount(vfs)
 
-try:
-    vfs.getcwd()
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
-
-vfs = uos.VfsFat(bdev, "/ramdisk")
+vfs = uos.VfsFat(bdev)
 print(vfs.listdir(b""))

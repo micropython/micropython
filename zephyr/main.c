@@ -28,6 +28,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <zephyr.h>
+#ifdef CONFIG_NETWORKING
+#include <net/net_context.h>
+#include <net/nbuf.h>
+#endif
+
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -60,35 +66,56 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 
+void init_zephyr(void) {
+    // TODO: Make addresses configurable
+    #ifdef CONFIG_NET_IPV4
+    static struct in_addr in4addr_my = {{{192, 0, 2, 1}}};
+    net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);
+    #endif
+    #ifdef CONFIG_NET_IPV6
+    // 2001:db8::1
+    static struct in6_addr in6addr_my = {{{0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}};
+    net_if_ipv6_addr_add(net_if_get_default(), &in6addr_my, NET_ADDR_MANUAL, 0);
+    #endif
+}
+
 int real_main(void) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
     mp_stack_set_top(stack_top);
-    // Should be set to stack size in prj.mdef minus fuzz factor
-    mp_stack_set_limit(3584);
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
 
+    init_zephyr();
+
+soft_reset:
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
     mp_init();
-    MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    mp_obj_list_init(mp_sys_argv, 0);
+
     #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
     #endif
-    #if MICROPY_REPL_EVENT_DRIVEN
-    pyexec_event_repl_init();
+
     for (;;) {
-        int c = mp_hal_stdin_rx_chr();
-        if (pyexec_event_repl_process_char(c)) {
-            break;
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
         }
     }
-    #else
-    pyexec_friendly_repl();
-    #endif
-    //do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    //do_str("for i in range(10):\r\n  print(i)", MP_PARSE_FILE_INPUT);
-    mp_deinit();
+
+    printf("soft reboot\n");
+    goto soft_reset;
+
     return 0;
 }
 
@@ -99,7 +126,7 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
-    gc_dump_info();
+    //gc_dump_info();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {

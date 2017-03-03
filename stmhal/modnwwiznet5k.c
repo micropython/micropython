@@ -202,7 +202,7 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
             *_errno = MP_ENOTCONN; // ??
             return -1;
         }
-        HAL_Delay(1);
+        mp_hal_delay_ms(1);
     }
 }
 
@@ -318,7 +318,7 @@ STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
 
 /// \classmethod \constructor(spi, pin_cs, pin_rst)
 /// Create and return a WIZNET5K object.
-STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
 
@@ -348,9 +348,9 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     mp_hal_pin_output(wiznet5k_obj.rst);
 
     mp_hal_pin_low(wiznet5k_obj.rst);
-    HAL_Delay(1); // datasheet says 2us
+    mp_hal_delay_ms(1); // datasheet says 2us
     mp_hal_pin_high(wiznet5k_obj.rst);
-    HAL_Delay(160); // datasheet says 150ms
+    mp_hal_delay_ms(160); // datasheet says 150ms
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
@@ -371,7 +371,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, mp_uint_t n_args, m
     ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
 
     // seems we need a small delay after init
-    HAL_Delay(250);
+    mp_hal_delay_ms(250);
 
     // register with network module
     mod_network_register_nic(&wiznet5k_obj);

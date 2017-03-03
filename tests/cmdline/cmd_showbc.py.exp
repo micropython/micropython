@@ -175,14 +175,12 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ LOAD_FAST 15
 \\d\+ MAKE_CLOSURE \.\+ 2
 \\d\+ LOAD_FAST 2
-\\d\+ GET_ITER
 \\d\+ CALL_FUNCTION n=1 nkw=0
 \\d\+ STORE_FAST 0
 \\d\+ LOAD_FAST 14
 \\d\+ LOAD_FAST 15
 \\d\+ MAKE_CLOSURE \.\+ 2
 \\d\+ LOAD_FAST 2
-\\d\+ GET_ITER
 \\d\+ CALL_FUNCTION n=1 nkw=0
 \\d\+ STORE_FAST 0
 \\d\+ LOAD_FAST 0
@@ -245,7 +243,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ LOAD_FAST 0
 \\d\+ STORE_FAST 0
 \\d\+ LOAD_DEREF 14
-\\d\+ GET_ITER
+\\d\+ GET_ITER_STACK
 \\d\+ FOR_ITER \\d\+
 \\d\+ STORE_FAST 0
 \\d\+ LOAD_FAST 1
@@ -435,58 +433,63 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
 arg names: * * *
-(N_STATE 6)
+(N_STATE 9)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
-00 LOAD_FAST 2
-01 FOR_ITER 17
-04 STORE_FAST 3
-05 LOAD_DEREF 1
-07 POP_JUMP_IF_FALSE 1
-10 LOAD_DEREF 0
-12 YIELD_VALUE
-13 POP_TOP
-14 JUMP 1
-17 LOAD_CONST_NONE
-18 RETURN_VALUE
+00 LOAD_NULL
+01 LOAD_FAST 2
+02 LOAD_NULL
+03 LOAD_NULL
+04 FOR_ITER 20
+07 STORE_FAST 3
+08 LOAD_DEREF 1
+10 POP_JUMP_IF_FALSE 4
+13 LOAD_DEREF 0
+15 YIELD_VALUE
+16 POP_TOP
+17 JUMP 4
+20 LOAD_CONST_NONE
+21 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
 arg names: * * *
-(N_STATE 7)
+(N_STATE 10)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
 00 BUILD_LIST 0
 02 LOAD_FAST 2
-03 FOR_ITER 19
-06 STORE_FAST 3
-07 LOAD_DEREF 1
-09 POP_JUMP_IF_FALSE 3
-12 LOAD_DEREF 0
-14 STORE_COMP 8
-16 JUMP 3
-19 RETURN_VALUE
+03 GET_ITER_STACK
+04 FOR_ITER 20
+07 STORE_FAST 3
+08 LOAD_DEREF 1
+10 POP_JUMP_IF_FALSE 4
+13 LOAD_DEREF 0
+15 STORE_COMP 20
+17 JUMP 4
+20 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
 \.\+5b
 arg names: * * *
-(N_STATE 8)
+(N_STATE 11)
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
 ########
 00 BUILD_MAP 0
 02 LOAD_FAST 2
-03 FOR_ITER 21
-06 STORE_FAST 3
-07 LOAD_DEREF 1
-09 POP_JUMP_IF_FALSE 3
-12 LOAD_DEREF 0
-14 LOAD_DEREF 0
-16 STORE_COMP 13
-18 JUMP 3
-21 RETURN_VALUE
+03 GET_ITER_STACK
+04 FOR_ITER 22
+07 STORE_FAST 3
+08 LOAD_DEREF 1
+10 POP_JUMP_IF_FALSE 4
+13 LOAD_DEREF 0
+15 LOAD_DEREF 0
+17 STORE_COMP 25
+19 JUMP 4
+22 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
