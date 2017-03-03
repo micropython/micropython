@@ -192,6 +192,10 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     int ret = mbedtls_ssl_read(&o->ssl, buf, size);
+    if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+        // end of stream
+        return 0;
+    }
     if (ret >= 0) {
         return ret;
     }
