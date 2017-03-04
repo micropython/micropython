@@ -27,9 +27,6 @@
   .syntax unified
   .arch armv6-m
 
-  .section .stack
-  .align 3
-
 .global __Vectors
 .global Default_Handler
 
