@@ -797,11 +797,7 @@ void mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
-        if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
-            mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
-        } else {
-            mp_obj_list_get(seq_in, &seq_len, &seq_items);
-        }
+        mp_obj_get_array(seq_in, &seq_len, &seq_items);
         if (seq_len < num) {
             goto too_short;
         } else if (seq_len > num) {
@@ -851,11 +847,7 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     mp_uint_t seq_len;
     if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
-        if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
-            mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
-        } else {
-            mp_obj_list_get(seq_in, &seq_len, &seq_items);
-        }
+        mp_obj_get_array(seq_in, &seq_len, &seq_items);
         if (seq_len < num_left + num_right) {
             goto too_short;
         }
