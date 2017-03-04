@@ -1,25 +1,28 @@
 
-SDK_MODULES ?=
+SOFTDEV_HEX_NAME ?=
 
-ifeq ($(SD), s1xx)
-	SDK_MODULES = iot_0.9.0
-else ifeq ($(SD), s110)
-    SDK_MODULES = sdk_10.0.0
+ifeq ($(SD), s110)
+	INC += -I$(SDK_ROOT)components/softdevice/$(SD)/headers
+	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
+	CFLAGS += -DBLUETOOTH_SD=110
+	SOFTDEV_HEX_NAME = s110_nrf51_8.0.0_softdevice.hex
 else ifeq ($(SD), s120)
-	SDK_MODULES = sdk_10.0.0
-	$(error No supported BLE wrapper)
+	$(error No BLE wrapper available yet)
 else ifeq ($(SD), s130)
-    SDK_MODULES = sdk_10.0.0
+	$(error No BLE wrapper available yet)
 else ifeq ($(SD), s132)
-	SDK_MODULES = sdk_12.1.0
-	SDK_COMPONENTS = 0
+	INC += -I$(SDK_ROOT)components/softdevice/$(SD)/headers
+	INC += -I$(SDK_ROOT)components/softdevice/$(SD)/headers/$(MCU_VARIANT)
+	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
+	CFLAGS += -DBLUETOOTH_SD=132
+	SOFTDEV_HEX_NAME = s132_nrf52_3.0.0_softdevice.hex
+#else ifeq ($(SD), s1xx)
+#	include sdk/iot_0.9.0/sdk.mk
 else
-	$(error No SDK configured for this SD)
+	$(error Incorrect softdevice set flag)
 endif
 
-SDK_MODULES_PATH = sdk/$(SDK_MODULES)/
-
-include $(SDK_MODULES_PATH)sdk.mk
+SOFTDEV_HEX = $(lastword $(wildcard $(SDK_ROOT)/components/softdevice/$(SD)/hex/$(SOFTDEV_HEX_NAME)))
 
 INC += -I./sdk
 
