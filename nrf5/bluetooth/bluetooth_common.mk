@@ -17,16 +17,16 @@ else ifeq ($(SD), s132)
 	CFLAGS += -DBLUETOOTH_SD=132
 	SOFTDEV_HEX_NAME = s132_nrf52_3.0.0_softdevice.hex
 #else ifeq ($(SD), s1xx)
-#	include sdk/iot_0.9.0/sdk.mk
+#	include bluetooth/iot_0.9.0/sdk.mk
 else
 	$(error Incorrect softdevice set flag)
 endif
 
 SOFTDEV_HEX = $(lastword $(wildcard $(SDK_ROOT)/components/softdevice/$(SD)/hex/$(SOFTDEV_HEX_NAME)))
 
-INC += -I./sdk
+INC += -I./bluetooth
 
 SRC_C += \
-        sdk/modble.c \
-        sdk/ble_drv.c \
-        sdk/ble_uart.c
+        bluetooth/modble.c \
+        bluetooth/ble_drv.c \
+        bluetooth/ble_uart.c
