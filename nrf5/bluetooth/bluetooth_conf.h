@@ -1,5 +1,5 @@
-#ifndef NRF_SDK_CONF_H__
-#define NRF_SDK_CONF_H__
+#ifndef BLUETOOTH_CONF_H__
+#define BLUETOOTH_CONF_H__
 
 // SD specific configurations.
 
