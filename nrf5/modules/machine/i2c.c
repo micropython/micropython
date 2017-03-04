@@ -131,7 +131,10 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 #include <stdio.h>
 
 int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
-    printf("machine_hard_i2c_readfrom called\n");
+    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)self_in;
+
+    hal_twi_master_rx(self->i2c->instance, addr, len, dest, stop);
+
     return 0;
 }
 
