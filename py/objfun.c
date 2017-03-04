@@ -511,17 +511,11 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
             // convert float to int (could also pass in float registers)
             return (mp_int_t)mp_obj_float_get(obj);
 #endif
-        } else if (type == &mp_type_tuple) {
+        } else if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
             mp_uint_t len;
             mp_obj_t *items;
-            mp_obj_tuple_get(obj, &len, &items);
-            return (mp_uint_t)items;
-        } else if (type == &mp_type_list) {
-            // pointer to start of list (could pass length, but then could use len(x) for that)
-            mp_uint_t len;
-            mp_obj_t *items;
-            mp_obj_list_get(obj, &len, &items);
+            mp_obj_get_array(obj, &len, &items);
             return (mp_uint_t)items;
         } else {
             mp_buffer_info_t bufinfo;

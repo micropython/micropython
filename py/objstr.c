@@ -430,16 +430,13 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     // process args
     mp_uint_t seq_len;
     mp_obj_t *seq_items;
-    if (MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
-        mp_obj_tuple_get(arg, &seq_len, &seq_items);
-    } else {
-        if (!MP_OBJ_IS_TYPE(arg, &mp_type_list)) {
-            // arg is not a list, try to convert it to one
-            // TODO: Try to optimize?
-            arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
-        }
-        mp_obj_list_get(arg, &seq_len, &seq_items);
+
+    if (!MP_OBJ_IS_TYPE(arg, &mp_type_list) && !MP_OBJ_IS_TYPE(arg, &mp_type_tuple)) {
+        // arg is not a list nor a tuple, try to convert it to a list
+        // TODO: Try to optimize?
+        arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
     }
+    mp_obj_get_array(arg, &seq_len, &seq_items);
 
     // count required length
     size_t required_len = 0;
