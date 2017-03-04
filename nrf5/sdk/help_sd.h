@@ -27,7 +27,7 @@
 #ifndef HELP_SD_H__
 #define HELP_SD_H__
 
-#include "nrf5_sdk_conf.h"
+#include "bluetooth_conf.h"
 
 #if MICROPY_PY_BLE
 

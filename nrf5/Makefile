@@ -31,7 +31,7 @@ else
 	include ../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
 
-	include sdk/sdk_common.mk
+	include sdk/bluetooth_common.mk
 endif
 
 # qstr definitions (must come before including py.mk)
