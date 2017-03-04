@@ -93,8 +93,37 @@ void hal_twi_master_tx(NRF_TWI_Type  * p_instance,
 void hal_twi_master_rx(NRF_TWI_Type  * p_instance,
                        uint8_t         addr,
                        uint16_t        transfer_size,
-                       const uint8_t * rx_data) {
+                       uint8_t       * rx_data,
+                       bool            stop) {
 
+    uint16_t number_of_rxd_bytes = 0;
+
+    p_instance->ADDRESS = addr;
+
+    p_instance->EVENTS_RXDREADY = 0;
+
+    p_instance->TASKS_STARTRX  = 1;
+
+    while (number_of_rxd_bytes < transfer_size) {
+        // wait for the transaction complete
+        while (p_instance->EVENTS_RXDREADY == 0) {
+            ;
+        }
+
+        rx_data[number_of_rxd_bytes] = p_instance->RXD;
+        p_instance->EVENTS_RXDREADY = 0;
+
+        number_of_rxd_bytes++;
+    }
+
+    if (stop) {
+        p_instance->EVENTS_STOPPED   = 0;
+        p_instance->TASKS_STOP       = 1;
+
+        while (p_instance->EVENTS_STOPPED == 0) {
+            ;
+        }
+    }
 }
 
 void hal_twi_slave_init(NRF_TWI_Type * p_instance, hal_twi_init_t const * p_twi_init) {
