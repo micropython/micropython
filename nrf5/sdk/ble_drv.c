@@ -110,7 +110,7 @@ uint32_t ble_drv_stack_enable(void) {
 
 #if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
 #if BLUETOOTH_LFCLK_RC
-    uint32_t err_code = sd_softdevice_enable(NRF_CLOCK_LFCLKSRC_RC_250_PPM_4000MS_CALIBRATION,
+    uint32_t err_code = sd_softdevice_enable(NRF_CLOCK_LFCLKSRC_RC_250_PPM_250MS_CALIBRATION,
                                              softdevice_assert_handler);
 #else
     uint32_t err_code = sd_softdevice_enable(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM,
