@@ -1,5 +1,4 @@
 MCU_SERIES = m0
 MCU_VARIANT = nrf51
 MCU_SUB_VARIANT = nrf51822
-LD_FILE = boards/$(MCU_SUB_VARIANT)_aa.ld
-
+LD_FILE = boards/nrf51x22_256k_16k.ld
