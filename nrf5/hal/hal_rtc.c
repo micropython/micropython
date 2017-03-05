@@ -26,11 +26,83 @@
 
 #include "mphalport.h"
 #include "hal_rtc.h"
+#include "hal_irq.h"
 
 #ifdef HAL_RTC_MODULE_ENABLED
 
-void hal_rtc_init(NRF_RTC_Type * p_instance, hal_rtc_init_t const * p_rtc_init) {
+static hal_rtc_app_callback m_callback;
+
+void hal_rtc_callback_set(hal_rtc_app_callback callback) {
+    m_callback = callback;
 }
+
+void hal_rtc_init(hal_rtc_conf_t const * p_rtc_conf) {
+    p_rtc_conf->p_instance->PRESCALER = (32768 / p_rtc_conf->frequency) - 1; // approx correct.
+    hal_irq_priority(p_rtc_conf->irq_num, p_rtc_conf->irq_priority);
+}
+
+void hal_rtc_start(hal_rtc_conf_t const * p_rtc_conf, uint16_t period) {
+    p_rtc_conf->p_instance->CC[0] = period;
+    p_rtc_conf->p_instance->EVTENSET = RTC_EVTEN_COMPARE0_Msk;
+    p_rtc_conf->p_instance->INTENSET = RTC_INTENSET_COMPARE0_Msk;
+
+    hal_irq_clear(p_rtc_conf->irq_num);
+    hal_irq_enable(p_rtc_conf->irq_num);
+
+    p_rtc_conf->p_instance->TASKS_START = 1;
+}
+
+void hal_rtc_stop(hal_rtc_conf_t const * p_rtc_conf) {
+    p_rtc_conf->p_instance->TASKS_STOP = 1;
+
+    p_rtc_conf->p_instance->EVTENCLR = RTC_EVTEN_COMPARE0_Msk;
+    p_rtc_conf->p_instance->INTENCLR = RTC_INTENSET_COMPARE0_Msk;
+
+    hal_irq_disable(p_rtc_conf->irq_num);
+}
+
+void RTC0_IRQHandler(void)
+{
+    // clear all events
+    NRF_RTC0->EVENTS_COMPARE[0] = 0;
+    NRF_RTC0->EVENTS_COMPARE[1] = 0;
+    NRF_RTC0->EVENTS_COMPARE[2] = 0;
+    NRF_RTC0->EVENTS_COMPARE[3] = 0;
+    NRF_RTC0->EVENTS_TICK       = 0;
+    NRF_RTC0->EVENTS_OVRFLW     = 0;
+
+    m_callback(NRF_RTC0);
+}
+
+void RTC1_IRQHandler(void)
+{
+    // clear all events
+    NRF_RTC1->EVENTS_COMPARE[0] = 0;
+    NRF_RTC1->EVENTS_COMPARE[1] = 0;
+    NRF_RTC1->EVENTS_COMPARE[2] = 0;
+    NRF_RTC1->EVENTS_COMPARE[3] = 0;
+    NRF_RTC1->EVENTS_TICK       = 0;
+    NRF_RTC1->EVENTS_OVRFLW     = 0;
+
+    m_callback(NRF_RTC1);
+}
+
+#if NRF52
+
+void RTC2_IRQHandler(void)
+{
+    // clear all events
+    NRF_RTC2->EVENTS_COMPARE[0] = 0;
+    NRF_RTC2->EVENTS_COMPARE[1] = 0;
+    NRF_RTC2->EVENTS_COMPARE[2] = 0;
+    NRF_RTC2->EVENTS_COMPARE[3] = 0;
+    NRF_RTC2->EVENTS_TICK       = 0;
+    NRF_RTC2->EVENTS_OVRFLW     = 0;
+
+    m_callback(NRF_RTC2);
+}
+
+#endif // NRF52
 
 #endif // HAL_RTC_MODULE_ENABLED
 

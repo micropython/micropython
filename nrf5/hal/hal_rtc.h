@@ -49,22 +49,33 @@
 #error "Device not supported."
 #endif
 
+typedef void (*hal_rtc_app_callback)(NRF_RTC_Type * p_instance);
+
 /**
   * @brief  RTC Configuration Structure definition
   */
 typedef struct {
-} hal_rtc_init_t;
+    NRF_RTC_Type     * p_instance;   /* RTC registers base address */
+    uint32_t           irq_num;      /* RTC IRQ num */
+    uint32_t           irq_priority; /* RTC IRQ priority */
+    uint16_t           frequency;    /* RTC frequency in Hz */
+} hal_rtc_conf_t;
 
 /**
   * @brief  RTC handle Structure definition
   */
 typedef struct __RTC_HandleTypeDef
 {
-    NRF_RTC_Type               *instance;    /* RTC registers base address */
-    hal_rtc_init_t             init;         /* RTC initialization parameters */
-    uint8_t                    id;           /* RTC instance id */
+    uint8_t            id;           /* RTC instance id */
+    hal_rtc_conf_t     config;       /* RTC config */
 } RTC_HandleTypeDef;
 
-void hal_rtc_init(NRF_RTC_Type * p_instance, hal_rtc_init_t const * p_rtc_init);
+void hal_rtc_callback_set(hal_rtc_app_callback callback);
+
+void hal_rtc_init(hal_rtc_conf_t const * p_rtc_config);
+
+void hal_rtc_start(hal_rtc_conf_t const * p_rtc_conf, uint16_t period);
+
+void hal_rtc_stop(hal_rtc_conf_t const * p_rtc_conf);
 
 #endif // HAL_RTC_H__
