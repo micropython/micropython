@@ -49,7 +49,9 @@
 #if MICROPY_PY_MACHINE_TEMP
 #include "temp.h"
 #endif
-
+#if MICROPY_PY_MACHINE_RTC
+#include "rtc.h"
+#endif
 
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
@@ -180,6 +182,9 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 #endif
 #if MICROPY_PY_MACHINE_ADC
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&machine_adc_type },
+#endif
+#if MICROPY_PY_MACHINE_RTC
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&machine_rtc_type },
 #endif
 #if MICROPY_PY_MACHINE_PWM
     { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                 (mp_obj_t)&machine_hard_pwm_type },
