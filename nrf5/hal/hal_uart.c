@@ -60,7 +60,7 @@ uint32_t hal_uart_baudrate_lookup[] = {
     UART_BAUDRATE_BAUDRATE_Baud1M,     ///< 1000000 baud.
 };
 
-void nrf_uart_char_write(uint8_t ch) {
+void hal_uart_char_write(uint8_t ch) {
     UART_BASE->TXD = (uint8_t)ch;
     while (UART_BASE->EVENTS_TXDRDY != 1) {
         // Blocking wait.
@@ -70,7 +70,7 @@ void nrf_uart_char_write(uint8_t ch) {
     UART_BASE->EVENTS_TXDRDY = 0;
 }
 
-uint8_t nrf_uart_char_read(void) {
+uint8_t hal_uart_char_read(void) {
     while (UART_BASE->EVENTS_RXDRDY != 1) {
         // Wait for RXD data.
     }
@@ -79,27 +79,27 @@ uint8_t nrf_uart_char_read(void) {
     return (uint8_t)UART_BASE->RXD;
 }
 
-void nrf_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
+void hal_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
     int i = 0;
     uint8_t ch = p_buffer[i++];
     while (i < num_of_bytes) {
-        nrf_uart_char_write(ch);
+        hal_uart_char_write(ch);
         ch = p_buffer[i++];
     }
     cb();
 }
 
-void nrf_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
+void hal_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
     int i = 0;
     while (i < num_of_bytes) {
-        uint8_t ch = nrf_uart_char_read();
+        uint8_t ch = hal_uart_char_read();
         p_buffer[i] = ch;
         i++;
     }
     cb();
 }
 
-void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
+void hal_uart_init(hal_uart_init_t const * p_uart_init) {
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 

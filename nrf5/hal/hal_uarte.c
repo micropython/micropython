@@ -68,21 +68,21 @@ static const uint32_t hal_uart_baudrate_lookup[] = {
     UARTE_BAUDRATE_BAUDRATE_Baud1M,     ///< 1000000 baud.
 };
 
-__STATIC_INLINE void nrf_uart_irq_clear(void) {
+__STATIC_INLINE void hal_uart_irq_clear(void) {
     NVIC_ClearPendingIRQ(UART_IRQ_NUM);
 }
 
-__STATIC_INLINE void nrf_uart_irq_enable(uint8_t priority) {
+__STATIC_INLINE void hal_uart_irq_enable(uint8_t priority) {
     NVIC_SetPriority(UART_IRQ_NUM, priority);
-    nrf_uart_irq_clear();
+    hal_uart_irq_clear();
     NVIC_EnableIRQ(UART_IRQ_NUM);
 }
 
 void nrf_sendchar(int ch) {
-    nrf_uart_char_write(ch);
+    hal_uart_char_write(ch);
 }
 
-void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
+void hal_uart_init(hal_uart_init_t const * p_uart_init) {
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_pin_set(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin);
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
@@ -121,7 +121,7 @@ void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
 #endif
     }
 
-    nrf_uart_irq_enable(p_uart_init->irq_priority);
+    hal_uart_irq_enable(p_uart_init->irq_priority);
 
     UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
     UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
@@ -132,7 +132,7 @@ void nrf_uart_init(hal_uart_init_t const * p_uart_init) {
     UARTE_BASE->EVENTS_ENDRX  = 0;
 }
 
-void nrf_uart_char_write(uint8_t ch) {
+void hal_uart_char_write(uint8_t ch) {
     static volatile uint8_t m_tx_buf[TX_BUF_SIZE];
     (void)m_tx_buf;
 
@@ -153,7 +153,7 @@ void nrf_uart_char_write(uint8_t ch) {
     UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
 }
 
-uint8_t nrf_uart_char_read(void) {
+uint8_t hal_uart_char_read(void) {
     static volatile uint8_t m_rx_buf[RX_BUF_SIZE];
 
     UARTE_BASE->INTENCLR = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
@@ -173,7 +173,7 @@ uint8_t nrf_uart_char_read(void) {
     return (uint8_t)m_rx_buf[0];
 }
 
-void nrf_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
+void hal_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
     dma_write_cb = cb;
 
     UARTE_BASE->TXD.PTR       = (uint32_t)p_buffer;
@@ -189,7 +189,7 @@ void nrf_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_compl
 
 }
 
-void nrf_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
+void hal_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
     dma_read_cb = cb;
 
     UARTE_BASE->RXD.PTR       = (uint32_t)(p_buffer);

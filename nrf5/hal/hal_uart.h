@@ -122,14 +122,14 @@ typedef struct {
 
 typedef void (*uart_complete_cb)(void);
 
-void nrf_uart_init(hal_uart_init_t const * p_uart_init);
+void hal_uart_init(hal_uart_init_t const * p_uart_init);
 
-void nrf_uart_char_write(uint8_t ch);
+void hal_uart_char_write(uint8_t ch);
 
-uint8_t nrf_uart_char_read(void);
+uint8_t hal_uart_char_read(void);
 
-void nrf_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb);
+void hal_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb);
 
-void nrf_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb);
+void hal_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb);
 
 #endif // UART_H__
