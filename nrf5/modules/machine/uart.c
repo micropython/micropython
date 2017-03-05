@@ -111,11 +111,11 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 }
 
 int uart_rx_char(pyb_uart_obj_t *self) {
-    return (int)nrf_uart_char_read();
+    return (int)hal_uart_char_read();
 }
 
 STATIC void uart_tx_char(pyb_uart_obj_t * self, int c) {
-    nrf_uart_char_write((char)c);
+    hal_uart_char_write((char)c);
 }
 
 
@@ -225,7 +225,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     uart_init.cts_pin = &MICROPY_HW_UART1_CTS;
 #endif
 
-    nrf_uart_init(&uart_init);
+    hal_uart_init(&uart_init);
 
     return mp_const_none;
 }
