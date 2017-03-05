@@ -15,7 +15,7 @@ INC += -I$(BUILD)
 INC += -I../tools/tinytest/
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
 	 -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
