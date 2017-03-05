@@ -48,6 +48,7 @@
 #include "pin.h"
 #include "spi.h"
 #include "i2c.h"
+#include "rtc.h"
 #if MICROPY_PY_MACHINE_PWM
 #include "pwm.h"
 #endif
@@ -114,6 +115,10 @@ int main(int argc, char **argv) {
 
 #if MICROPY_PY_MACHINE_PWM
     pwm_init0();
+#endif
+
+#if MICROPY_PY_MACHINE_RTC
+    rtc_init0();
 #endif
 
 #if MICROPY_PY_MACHINE_TIMER
