@@ -38,22 +38,44 @@
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     RTC_HandleTypeDef *rtc;
+    mp_obj_t callback;
 } machine_rtc_obj_t;
 
-RTC_HandleTypeDef RTCHandle0 = {.instance = NULL, .id = 0};
-RTC_HandleTypeDef RTCHandle1 = {.instance = NULL, .id = 1};
+RTC_HandleTypeDef RTCHandle0 = {.config.p_instance = NULL, .id = 0};
+RTC_HandleTypeDef RTCHandle1 = {.config.p_instance = NULL, .id = 1};
 
 STATIC const machine_rtc_obj_t machine_rtc_obj[] = {
     {{&machine_rtc_type}, &RTCHandle0},
     {{&machine_rtc_type}, &RTCHandle1},
 };
 
+STATIC void hal_interrupt_handle(NRF_RTC_Type * p_instance) {
+    if (p_instance == RTC0) {
+        const machine_rtc_obj_t *self = &machine_rtc_obj[0];
+        mp_call_function_0(self->callback);
+    } else if (p_instance == RTC1) {
+        const machine_rtc_obj_t *self = &machine_rtc_obj[1];
+        mp_call_function_0(self->callback);
+    }
+#if NRF52
+    else if (p_instance == RTC2) {
+        const machine_rtc_obj_t *self = &machine_rtc_obj[2];
+        mp_call_function_0(self->callback);
+    }
+#endif
+}
+
 void rtc_init0(void) {
+
+    hal_rtc_callback_set(hal_interrupt_handle);
+
     // reset the RTC handles
     memset(&RTCHandle0, 0, sizeof(RTC_HandleTypeDef));
-    RTCHandle0.instance = RTC0;
+    RTCHandle0.config.p_instance = RTC0;
+    RTCHandle0.config.irq_num    = RTC0_IRQ_NUM;
     memset(&RTCHandle1, 0, sizeof(RTC_HandleTypeDef));
-    RTCHandle1.instance = RTC1;
+    RTCHandle1.config.p_instance = RTC1;
+    RTCHandle1.config.irq_num    = RTC1_IRQ_NUM;
 }
 
 STATIC int rtc_find(mp_obj_t id) {
@@ -75,43 +97,94 @@ STATIC void rtc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind)
 /******************************************************************************/
 /* MicroPython bindings for machine API                                       */
 
-// for make_new
-enum {
-    ARG_NEW_id,
-};
-
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
+        { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_callback,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_NEW_id].u_obj == MP_OBJ_NEW_SMALL_INT(-1)) {
+    if (args[0].u_obj == MP_OBJ_NEW_SMALL_INT(-1)) {
         // index -1 does not exist
         return mp_const_none;
         // TODO: raise exception
     }
 
     // get static peripheral object
-    int rtc_id = rtc_find(args[ARG_NEW_id].u_obj);
-    const machine_rtc_obj_t *self = &machine_rtc_obj[rtc_id];
+    int rtc_id = rtc_find(args[0].u_obj);
 
-    hal_rtc_init(self->rtc->instance, &self->rtc->init);
+    // unconst machine object in order to set a callback.
+    machine_rtc_obj_t * self = (machine_rtc_obj_t *)&machine_rtc_obj[rtc_id];
+
+    mp_obj_t freq_obj = args[1].u_obj;
+
+    if (freq_obj != mp_const_none && MP_OBJ_IS_INT(freq_obj)) {
+        self->rtc->config.frequency = mp_obj_get_int(freq_obj);
+    } else {
+        // raise exception
+    }
+
+    if (args[2].u_obj != mp_const_none) {
+        self->callback = args[2].u_obj;
+    }
+
+    // hardcode priority to 3, to make sure it is less than any bluetooth stack.
+
+#if (BLUETOOTH_SD == 100)
+    self->rtc->config.irq_priority = 3;
+#else
+    self->rtc->config.irq_priority = 6;
+#endif
+
+    hal_rtc_init(&self->rtc->config);
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+/// \method start(period)
+/// Start the RTC timer. Timeout occurs after number of periods
+/// in the configured frequency has been reached.
+///
+STATIC mp_obj_t machine_rtc_start(mp_obj_t self_in, mp_obj_t period_in) {
+    machine_rtc_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t period = mp_obj_get_int(period_in);
+
+    hal_rtc_start(&self->rtc->config, period);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_start_obj, machine_rtc_start);
+
+/// \method stop()
+/// Stop the RTC timer.
+///
+STATIC mp_obj_t machine_rtc_stop(mp_obj_t self_in) {
+    machine_rtc_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    hal_rtc_stop(&self->rtc->config);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_stop_obj, machine_rtc_stop);
+
+
+STATIC const mp_map_elem_t machine_rtc_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_start), (mp_obj_t)(&machine_rtc_start_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop),  (mp_obj_t)(&machine_rtc_stop_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
 const mp_obj_type_t machine_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .print = rtc_print,
     .make_new = machine_rtc_make_new,
-#if 0
     .locals_dict = (mp_obj_t)&machine_rtc_locals_dict
-#endif
 };
 
 #endif // MICROPY_PY_MACHINE_RTC
