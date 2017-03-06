@@ -40,7 +40,7 @@ typedef struct _machine_rtc_obj_t {
     RTC_HandleTypeDef *rtc;
     mp_obj_t callback;
     mp_int_t period;
-    mp_int_t type;
+    mp_int_t mode;
 } machine_rtc_obj_t;
 
 RTC_HandleTypeDef RTCHandle0 = {.config.p_instance = NULL, .id = 0};
@@ -57,7 +57,7 @@ STATIC void hal_interrupt_handle(NRF_RTC_Type * p_instance) {
         mp_call_function_0(self->callback);
 
         hal_rtc_stop(&self->rtc->config);
-        if (self->type == 1) {
+        if (self->mode == 1) {
             hal_rtc_start(&self->rtc->config, self->period);
         }
     } else if (p_instance == RTC1) {
@@ -118,7 +118,7 @@ STATIC void rtc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind)
 from machine import RTC
 def cb():
     print("Callback")
-r = RTC(0, 8, cb, type=RTC.PERIODIC)
+r = RTC(0, 8, cb, mode=RTC.PERIODIC)
 r.start(16)
 */
 
@@ -127,7 +127,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
         { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_callback,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_type,      MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mode,      MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -158,7 +158,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
         self->callback = args[2].u_obj;
     }
 
-    self->type = args[3].u_int;
+    self->mode = args[3].u_int;
 
     hal_rtc_init(&self->rtc->config);
 
