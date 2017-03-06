@@ -389,6 +389,19 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     }
                     // found weak linked module
                     module_obj = el->value;
+                    if (MICROPY_MODULE_BUILTIN_INIT) {
+                        // look for __init__ and call it if it exists
+                        // Note: this code doesn't work fully correctly because it allows the
+                        // __init__ function to be called twice if the module is imported by its
+                        // non-weak-link name.  Also, this code is duplicated in objmodule.c.
+                        mp_obj_t dest[2];
+                        mp_load_method_maybe(el->value, MP_QSTR___init__, dest);
+                        if (dest[0] != MP_OBJ_NULL) {
+                            mp_call_method_n_kw(0, 0, dest);
+                            // register module so __init__ is not called again
+                            mp_module_register(mod_name, el->value);
+                        }
+                    }
                 } else {
                     no_exist:
                 #else
