@@ -49,9 +49,6 @@ print(float('nan') * 1j)
 print(float('inf') * (1 + 1j))
 print(float('-inf') * (1 + 1j))
 
-# convert bignum to complex on rhs
-ans = 1j + (1 << 70); print("%.5g %.5g" % (ans.real, ans.imag))
-
 # can't assign to attributes
 try:
     (1j).imag = 0
