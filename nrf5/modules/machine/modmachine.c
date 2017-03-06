@@ -154,6 +154,7 @@ STATIC mp_obj_t machine_sleep(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 
 STATIC mp_obj_t machine_deepsleep(void) {
+    __WFI();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
