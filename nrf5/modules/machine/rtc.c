@@ -44,7 +44,7 @@ typedef struct _machine_rtc_obj_t {
 RTC_HandleTypeDef RTCHandle0 = {.config.p_instance = NULL, .id = 0};
 RTC_HandleTypeDef RTCHandle1 = {.config.p_instance = NULL, .id = 1};
 
-STATIC const machine_rtc_obj_t machine_rtc_obj[] = {
+STATIC machine_rtc_obj_t machine_rtc_obj[] = {
     {{&machine_rtc_type}, &RTCHandle0},
     {{&machine_rtc_type}, &RTCHandle1},
 };
