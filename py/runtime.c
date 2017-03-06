@@ -854,11 +854,6 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
         if (MP_OBJ_IS_TYPE(seq_in, &mp_type_tuple)) {
             mp_obj_tuple_get(seq_in, &seq_len, &seq_items);
         } else {
-            if (num_left == 0 && num_right == 0) {
-                // *a, = b # sets a to b if b is a list
-                items[0] = seq_in;
-                return;
-            }
             mp_obj_list_get(seq_in, &seq_len, &seq_items);
         }
         if (seq_len < num_left + num_right) {
