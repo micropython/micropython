@@ -148,6 +148,7 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 STATIC mp_obj_t machine_sleep(void) {
+    __WFE();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
