@@ -52,24 +52,27 @@ STATIC machine_rtc_obj_t machine_rtc_obj[] = {
 };
 
 STATIC void hal_interrupt_handle(NRF_RTC_Type * p_instance) {
+	const machine_rtc_obj_t * self = NULL;
     if (p_instance == RTC0) {
-        const machine_rtc_obj_t *self = &machine_rtc_obj[0];
+        self = &machine_rtc_obj[0];
         mp_call_function_0(self->callback);
-
-        hal_rtc_stop(&self->rtc->config);
-        if (self->mode == 1) {
-            hal_rtc_start(&self->rtc->config, self->period);
-        }
     } else if (p_instance == RTC1) {
-        const machine_rtc_obj_t *self = &machine_rtc_obj[1];
+        self = &machine_rtc_obj[1];
         mp_call_function_0(self->callback);
     }
 #if NRF52
     else if (p_instance == RTC2) {
-        const machine_rtc_obj_t *self = &machine_rtc_obj[2];
+        self = &machine_rtc_obj[2];
         mp_call_function_0(self->callback);
     }
 #endif
+
+    if (self != NULL) {
+        hal_rtc_stop(&self->rtc->config);
+        if (self->mode == 1) {
+            hal_rtc_start(&self->rtc->config, self->period);
+        }
+    }
 }
 
 void rtc_init0(void) {
