@@ -49,7 +49,10 @@ void hal_rtc_init(hal_rtc_conf_t const * p_rtc_conf) {
 }
 
 void hal_rtc_start(hal_rtc_conf_t const * p_rtc_conf, uint16_t period) {
-    p_rtc_conf->p_instance->CC[0] = period;
+    uint32_t counter = p_rtc_conf->p_instance->COUNTER;
+
+    p_rtc_conf->p_instance->CC[0] = counter + period;
+
     p_rtc_conf->p_instance->EVTENSET = RTC_EVTEN_COMPARE0_Msk;
     p_rtc_conf->p_instance->INTENSET = RTC_INTENSET_COMPARE0_Msk;
 
@@ -60,12 +63,12 @@ void hal_rtc_start(hal_rtc_conf_t const * p_rtc_conf, uint16_t period) {
 }
 
 void hal_rtc_stop(hal_rtc_conf_t const * p_rtc_conf) {
-    p_rtc_conf->p_instance->TASKS_STOP = 1;
-
     p_rtc_conf->p_instance->EVTENCLR = RTC_EVTEN_COMPARE0_Msk;
     p_rtc_conf->p_instance->INTENCLR = RTC_INTENSET_COMPARE0_Msk;
 
     hal_irq_disable(p_rtc_conf->irq_num);
+
+    p_rtc_conf->p_instance->TASKS_STOP = 1;
 }
 
 void RTC0_IRQHandler(void)
