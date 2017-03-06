@@ -39,6 +39,8 @@ typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     RTC_HandleTypeDef *rtc;
     mp_obj_t callback;
+    mp_int_t period;
+    mp_int_t type;
 } machine_rtc_obj_t;
 
 RTC_HandleTypeDef RTCHandle0 = {.config.p_instance = NULL, .id = 0};
@@ -53,6 +55,11 @@ STATIC void hal_interrupt_handle(NRF_RTC_Type * p_instance) {
     if (p_instance == RTC0) {
         const machine_rtc_obj_t *self = &machine_rtc_obj[0];
         mp_call_function_0(self->callback);
+
+        hal_rtc_stop(&self->rtc->config);
+        if (self->type == 1) {
+            hal_rtc_start(&self->rtc->config, self->period);
+        }
     } else if (p_instance == RTC1) {
         const machine_rtc_obj_t *self = &machine_rtc_obj[1];
         mp_call_function_0(self->callback);
@@ -111,7 +118,7 @@ STATIC void rtc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind)
 from machine import RTC
 def cb():
     print("Callback")
-r = RTC(0, 8, cb)
+r = RTC(0, 8, cb, type=RTC.PERIODIC)
 r.start(16)
 */
 
@@ -120,6 +127,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
         { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_callback,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_type,      MP_ARG_KW_ONLY  | MP_ARG_INT, {.u_int = 0} },
     };
 
     // parse args
@@ -150,6 +158,8 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
         self->callback = args[2].u_obj;
     }
 
+    self->type = args[3].u_int;
+
     hal_rtc_init(&self->rtc->config);
 
     return MP_OBJ_FROM_PTR(self);
@@ -162,6 +172,8 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
 STATIC mp_obj_t machine_rtc_start(mp_obj_t self_in, mp_obj_t period_in) {
     machine_rtc_obj_t * self = MP_OBJ_TO_PTR(self_in);
     mp_int_t period = mp_obj_get_int(period_in);
+
+    self->period = mp_obj_get_int(period_in);
 
     hal_rtc_start(&self->rtc->config, period);
 
@@ -185,6 +197,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_stop_obj, machine_rtc_stop);
 STATIC const mp_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_start), (mp_obj_t)(&machine_rtc_start_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_stop),  (mp_obj_t)(&machine_rtc_stop_obj) },
+
+    // constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ONESHOT),  MP_OBJ_NEW_SMALL_INT(0) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PERIODIC), MP_OBJ_NEW_SMALL_INT(1) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
