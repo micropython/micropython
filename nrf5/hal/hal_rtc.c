@@ -39,6 +39,13 @@ void hal_rtc_callback_set(hal_rtc_app_callback callback) {
 void hal_rtc_init(hal_rtc_conf_t const * p_rtc_conf) {
     p_rtc_conf->p_instance->PRESCALER = (32768 / p_rtc_conf->frequency) - 1; // approx correct.
     hal_irq_priority(p_rtc_conf->irq_num, p_rtc_conf->irq_priority);
+
+    // start LFCLK if not already started
+    if (NRF_CLOCK->LFCLKSTAT == 0) {
+        NRF_CLOCK->TASKS_LFCLKSTART = 1;
+        while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0);
+        NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
+    }
 }
 
 void hal_rtc_start(hal_rtc_conf_t const * p_rtc_conf, uint16_t period) {
