@@ -5,21 +5,31 @@ try:
 except:
     import struct
 
+import sys
+
+maxsize_bits = 0
+maxsize = sys.maxsize
+while maxsize:
+    maxsize >>= 1
+    maxsize_bits += 1
+
 # work out configuration values
-is_64bit = struct.calcsize("P") == 8
+is_64bit = maxsize_bits > 32
 # 0 = none, 1 = long long, 2 = mpz
-try:
-    dummy = 0x7fffffffffffffff
-    try:
-        if (0xffffffffffffffff + 1) > 0:
-            ll_type = 2
-        else:
-            ll_type = 1
-    except:
-        # in case the sum in the if statement above changes to raising an exception on overflow
+ll_type = None
+if is_64bit:
+    if maxsize_bits < 63:
+        ll_type = 0
+else:
+    if maxsize_bits < 31:
+        ll_type = 0
+if ll_type is None:
+    one = 1
+    if one << 65 < one << 62:
         ll_type = 1
-except:
-    ll_type = 0
+    else:
+        ll_type = 2
+
 
 # basic conversion
 print(int(14187745.))
