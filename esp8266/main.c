@@ -65,7 +65,9 @@ STATIC void mp_reset(void) {
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
-    pyexec_file("main.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        pyexec_file("main.py");
+    }
 #endif
 }
 
