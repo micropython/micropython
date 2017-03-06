@@ -32,6 +32,7 @@
 #include "py/objstr.h"
 #include "py/objint.h"
 #include "py/stream.h"
+#include "py/smallint.h"
 
 #if MICROPY_PY_SYS
 
@@ -162,12 +163,12 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
 
     #if MICROPY_PY_SYS_MAXSIZE
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
-    // INT_MAX is not representable as small int, as we know that small int
-    // takes one bit for tag. So, we have little choice but to provide this
-    // value. Apps also should be careful to not try to compare sys.maxsize
-    // with some number (which may not fit in available int size), but instead
-    // count number of significant bits in sys.maxsize.
-    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(INT_MAX >> 1) },
+    // Maximum mp_int_t value is not representable as small int, so we have
+    // little choice but to use MP_SMALL_INT_MAX. Apps also should be careful
+    // to not try to compare sys.maxsize to some literal number (as this
+    // number might not fit in available int size), but instead count number
+    // of "one" bits in sys.maxsize.
+    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(MP_SMALL_INT_MAX) },
     #else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_maxsize_obj) },
     #endif
