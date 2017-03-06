@@ -73,9 +73,19 @@ void rtc_init0(void) {
     memset(&RTCHandle0, 0, sizeof(RTC_HandleTypeDef));
     RTCHandle0.config.p_instance = RTC0;
     RTCHandle0.config.irq_num    = RTC0_IRQ_NUM;
+#if (BLUETOOTH_SD == 100)
+    RTCHandle0.config.irq_priority = 3;
+#else
+    RTCHandle0.config.irq_priority = 6;
+#endif
     memset(&RTCHandle1, 0, sizeof(RTC_HandleTypeDef));
     RTCHandle1.config.p_instance = RTC1;
     RTCHandle1.config.irq_num    = RTC1_IRQ_NUM;
+#if (BLUETOOTH_SD == 100)
+    RTCHandle1.config.irq_priority = 3;
+#else
+    RTCHandle1.config.irq_priority = 6;
+#endif
 }
 
 STATIC int rtc_find(mp_obj_t id) {
@@ -96,6 +106,14 @@ STATIC void rtc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind)
 
 /******************************************************************************/
 /* MicroPython bindings for machine API                                       */
+
+/*
+from machine import RTC
+def cb():
+    print("Callback")
+r = RTC(0, 8, cb)
+r.start(16)
+*/
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
@@ -131,14 +149,6 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     if (args[2].u_obj != mp_const_none) {
         self->callback = args[2].u_obj;
     }
-
-    // hardcode priority to 3, to make sure it is less than any bluetooth stack.
-
-#if (BLUETOOTH_SD == 100)
-    self->rtc->config.irq_priority = 3;
-#else
-    self->rtc->config.irq_priority = 6;
-#endif
 
     hal_rtc_init(&self->rtc->config);
 
