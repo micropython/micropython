@@ -15,10 +15,7 @@ def test(num, num_str):
             if check > 1e-6:
                 print('FAIL', num_str, fmt, s, len(s), check)
 
-# check pure zero
-test(0.0, '0.0')
-
-# check some powers of 10, making sure to include exponents with 3 digits
-for e in range(-8, 8):
+# check most powers of 10, making sure to include exponents with 3 digits
+for e in range(-101, 102):
     num = pow(10, e)
     test(num, '1e%d' % e)
