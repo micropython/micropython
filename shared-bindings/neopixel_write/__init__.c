@@ -42,8 +42,8 @@
 //|
 //| The `neopixel_write` module contains a helper method to write out bytes in
 //| the 800khz neopixel protocol.
-
-//| .. method:: neopixel_write.neopixel_write(digitalinout, buf, is800KHz)
+//|
+//| .. method:: neopixel_write.neopixel_write(digitalinout, buf)
 //|
 //|   Write buf out on the given DigitalInOut.
 //|

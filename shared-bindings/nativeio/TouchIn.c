@@ -38,7 +38,7 @@
 //| .. currentmodule:: nativeio
 //|
 //| :class:`TouchIn` -- Read the state of a capacitive touch sensor
-//| ============================================
+//| ===================================================================
 //|
 //| Usage::
 //|

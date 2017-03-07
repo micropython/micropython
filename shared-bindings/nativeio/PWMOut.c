@@ -39,11 +39,11 @@
 //|
 //| PWMOut can be used to output a PWM signal on a given pin.
 //|
-//| .. class:: PWMOut(pin, duty_cycle=0, frequency=500, variable_frequency=False)
+//| .. class:: PWMOut(pin, \*, duty_cycle=0, frequency=500, variable_frequency=False)
 //|
 //|   Create a PWM object associated with the given pin. This allows you to
 //|   write PWM signals out on the given pin. Frequency is fixed after init
-//|   unless `variable_frequency` is True.
+//|   unless ``variable_frequency`` is True.
 //|
 //|   .. note:: When ``variable_frequency`` is True, further PWM outputs may be
 //|     limited because it may take more internal resources to be flexible. So,
@@ -143,8 +143,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_pwmout___exit___obj, 4, 4, n
 //|   .. attribute:: duty_cycle
 //|
 //|      16 bit value that dictates how much of one cycle is high (1) versus low
-//|      (0). 255 will always be high, 0 will always be low and 127 will be half
-//|      high and then half low.
+//|      (0). 0xffff will always be high, 0 will always be low and 0x7fff will
+//|      be half high and then half low.
 STATIC mp_obj_t nativeio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
    nativeio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    return MP_OBJ_NEW_SMALL_INT(common_hal_nativeio_pwmout_get_duty_cycle(self));

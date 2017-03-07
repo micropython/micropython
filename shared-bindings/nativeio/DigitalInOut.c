@@ -116,8 +116,8 @@ extern const nativeio_digitalinout_drive_mode_obj_t nativeio_digitalinout_drive_
 STATIC mp_obj_t nativeio_digitalinout_switch_to_output(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_value, ARG_drive_mode };
    static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_value,      MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-       { MP_QSTR_drive_mode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = &nativeio_digitalinout_drive_mode_push_pull_obj} },
+       { MP_QSTR_value,      MP_ARG_BOOL, {.u_bool = false} },
+       { MP_QSTR_drive_mode, MP_ARG_OBJ, {.u_rom_obj = &nativeio_digitalinout_drive_mode_push_pull_obj} },
    };
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -159,7 +159,7 @@ extern const nativeio_digitalinout_pull_obj_t nativeio_digitalinout_pull_down_ob
 STATIC mp_obj_t nativeio_digitalinout_switch_to_input(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
    enum { ARG_pull };
    static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_pull,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+       { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
    };
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -279,7 +279,7 @@ const mp_obj_property_t nativeio_digitalinout_drive_mode_obj = {
 //|
 //|       Get or set the pin pull.
 //|
-//|       :raises AttributeError: if the direction is `out`.
+//|       :raises AttributeError: if the direction is ~`Direction.OUT`.
 //|
 STATIC mp_obj_t nativeio_digitalinout_obj_get_pull(mp_obj_t self_in) {
    nativeio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -53,7 +53,7 @@
 //|
 //|   :param ~microcontroller.Pin scl: The clock pin
 //|   :param ~microcontroller.Pin sda: The data pin
-//|   :param int frequency: The clock frequency
+//|   :param int frequency: The clock frequency in Hertz
 //|
 STATIC mp_obj_t nativeio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
@@ -139,6 +139,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(nativeio_i2c_scan_obj, nativeio_i2c_scan);
 //|   .. method:: I2C.try_lock()
 //|
 //|     Attempts to grab the I2C lock. Returns True on success.
+//|
+//|     :return: True when lock has been grabbed
+//|     :rtype: bool
 //|
 STATIC mp_obj_t nativeio_i2c_obj_try_lock(mp_obj_t self_in) {
     return mp_obj_new_bool(common_hal_nativeio_i2c_try_lock(MP_OBJ_TO_PTR(self_in)));

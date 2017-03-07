@@ -38,7 +38,7 @@
 //| :class:`I2C` --- Two wire serial protocol
 //| ------------------------------------------
 //|
-//| .. class:: I2C(scl, sda, \* frequency=400000)
+//| .. class:: I2C(scl, sda, \*, frequency=400000)
 //|
 //|   I2C is a two-wire protocol for communicating between devices.  At the
 //|   physical level it consists of 2 wires: SCL and SDA, the clock and data

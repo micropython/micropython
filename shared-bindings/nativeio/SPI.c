@@ -50,7 +50,7 @@
 //| select line. (This is common because multiple slaves can share the `!clock`,
 //| `!MOSI` and `!MISO` lines and therefore the hardware.)
 //|
-//| .. class:: SPI(clock, MOSI, MISO)
+//| .. class:: SPI(clock, MOSI=None, MISO=None)
 //|
 //|    Construct an SPI object on the given pins.
 //|
@@ -129,9 +129,15 @@ static void check_lock(nativeio_spi_obj_t *self) {
     }
 }
 
-//|   .. method:: SPI.configure(baudrate=100000)
+//|   .. method:: SPI.configure(\*, baudrate=100000, polarity=0, phase=0, bits=8)
 //|
 //|     Configures the SPI bus. Only valid when locked.
+//|
+//|     :param int baudrate: the clock rate in Hertz
+//|     :param int polarity: the base state of the clock line (0 or 1)
+//|     :param int phase: the edge of the clock that data is captured. First (0)
+//|       or second (1). Rising or falling depends on clock polarity.
+//|     :param int bits: the number of bits per word
 //|
 STATIC mp_obj_t nativeio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
@@ -170,6 +176,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(nativeio_spi_configure_obj, 1, nativeio_spi_configure
 //|   .. method:: SPI.try_lock()
 //|
 //|     Attempts to grab the SPI lock. Returns True on success.
+//|
+//|     :return: True when lock has been grabbed
+//|     :rtype: bool
 //|
 STATIC mp_obj_t nativeio_spi_obj_try_lock(mp_obj_t self_in) {
     return mp_obj_new_bool(common_hal_nativeio_spi_try_lock(MP_OBJ_TO_PTR(self_in)));

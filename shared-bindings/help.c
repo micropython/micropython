@@ -28,7 +28,7 @@
 #include "shared-bindings/help.h"
 
 //| :func:`help` - Built-in method to provide helpful information
-//| ========================================================
+//| ==============================================================
 //|
 //| .. method:: help(object=None)
 //|

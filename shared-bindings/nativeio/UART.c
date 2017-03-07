@@ -143,7 +143,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_uart___exit___obj, 4, 4, nat
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|   .. method:: read([nbytes])
+//|   .. method:: read(nbytes=None)
 //|
 //|     Read characters.  If ``nbytes`` is specified then read at most that many
 //|     bytes. Otherwise, read everything that has been buffered.
@@ -151,7 +151,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(nativeio_uart___exit___obj, 4, 4, nat
 //|     :return: Data read
 //|     :rtype: bytes or None
 //|
-//|   .. method:: readinto(buf[, nbytes])
+//|   .. method:: readinto(buf, nbytes=None)
 //|
 //|     Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|     that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
