@@ -304,6 +304,10 @@ Advanced commands
     the 16-bit RGB values for the pixels, and they will be written to the area
     specified by :meth:`LCD160CR.set_spi_win`, starting from the top-left corner.
 
+    The `framebuf <framebuf.html>`_ module can be used to construct frame buffers
+    and provides drawing primitives. Using a frame buffer will improve 
+    performance of animations when compared to drawing directly to the screen.
+
 .. method:: LCD160CR.set_scroll(on)
 
     Turn scrolling on or off.  This controls globally whether any window regions will
@@ -341,7 +345,9 @@ Advanced commands
 
 .. method:: LCD160CR.jpeg(buf)
 
-    Display a JPEG.  `buf` should contain the entire JPEG data.
+    Display a JPEG.  `buf` should contain the entire JPEG data. JPEG data should
+    not include EXIF information. The following encodings are supported: Baseline
+    DCT, Huffman coding, 8 bits per sample, 3 color components, YCbCr4:2:2.
     The origin of the JPEG is set by :meth:`LCD160CR.set_pos`.
 
 .. method:: LCD160CR.jpeg_start(total_len)

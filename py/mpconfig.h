@@ -917,6 +917,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_UERRNO (0)
 #endif
 
+// Whether to provide the uerrno.errorcode dict
+#ifndef MICROPY_PY_UERRNO_ERRORCODE
+#define MICROPY_PY_UERRNO_ERRORCODE (1)
+#endif
+
 // Whether to provide "uselect" module (baremetal implementation)
 #ifndef MICROPY_PY_USELECT
 #define MICROPY_PY_USELECT (0)

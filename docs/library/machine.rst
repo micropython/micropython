@@ -134,24 +134,24 @@ Constants
 ---------
 
 .. data:: machine.IDLE
-.. data:: machine.SLEEP
-.. data:: machine.DEEPSLEEP
+          machine.SLEEP
+          machine.DEEPSLEEP
 
-    irq wake values
+    IRQ wake values.
 
 .. data:: machine.PWRON_RESET
-.. data:: machine.HARD_RESET
-.. data:: machine.WDT_RESET
-.. data:: machine.DEEPSLEEP_RESET
-.. data:: machine.SOFT_RESET
+          machine.HARD_RESET
+          machine.WDT_RESET
+          machine.DEEPSLEEP_RESET
+          machine.SOFT_RESET
 
-    reset causes
+    Reset causes.
 
 .. data:: machine.WLAN_WAKE
-.. data:: machine.PIN_WAKE
-.. data:: machine.RTC_WAKE
+          machine.PIN_WAKE
+          machine.RTC_WAKE
 
-    wake reasons
+    Wake-up reasons.
 
 Classes
 -------

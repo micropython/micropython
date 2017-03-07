@@ -47,8 +47,6 @@ typedef enum {
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    PN_string, // special node for non-interned string
-    PN_bytes, // special node for non-interned bytes
     PN_const_object, // special node for a constant, generic Python object
 // define rules without a compile function
 #define DEF_RULE(rule, comp, kind, ...)
@@ -1880,8 +1878,6 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
             // for non-REPL, evaluate then discard the expression
             if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0]) && !MP_PARSE_NODE_IS_ID(pns->nodes[0]))
-                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)
-                || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_bytes)
                 || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_const_object)) {
                 // do nothing with a lonely constant
             } else {
@@ -2600,31 +2596,17 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
 }
 #endif
 
-STATIC void compile_string(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // only create and load the actual str object on the last pass
-    if (comp->pass != MP_PASS_EMIT) {
-        EMIT_ARG(load_const_obj, mp_const_none);
-    } else {
-        EMIT_ARG(load_const_obj, mp_obj_new_str((const char*)pns->nodes[0], pns->nodes[1], false));
-    }
-}
-
-STATIC void compile_bytes(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // only create and load the actual bytes object on the last pass
-    if (comp->pass != MP_PASS_EMIT) {
-        EMIT_ARG(load_const_obj, mp_const_none);
-    } else {
-        EMIT_ARG(load_const_obj, mp_obj_new_bytes((const byte*)pns->nodes[0], pns->nodes[1]));
-    }
+STATIC mp_obj_t get_const_object(mp_parse_node_struct_t *pns) {
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+    // nodes are 32-bit pointers, but need to extract 64-bit object
+    return (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
+    #else
+    return (mp_obj_t)pns->nodes[0];
+    #endif
 }
 
 STATIC void compile_const_object(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-    // nodes are 32-bit pointers, but need to extract 64-bit object
-    EMIT_ARG(load_const_obj, (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
-    #else
-    EMIT_ARG(load_const_obj, (mp_obj_t)pns->nodes[0]);
-    #endif
+    EMIT_ARG(load_const_obj, get_const_object(pns));
 }
 
 typedef void (*compile_function_t)(compiler_t*, mp_parse_node_struct_t*);
@@ -2637,8 +2619,6 @@ STATIC const compile_function_t compile_function[] = {
 #undef c
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    compile_string,
-    compile_bytes,
     compile_const_object,
 };
 
@@ -2891,7 +2871,8 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
         if ((MP_PARSE_NODE_IS_LEAF(pns->nodes[0])
                 && MP_PARSE_NODE_LEAF_KIND(pns->nodes[0]) == MP_PARSE_NODE_STRING)
-            || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_string)) {
+            || (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_const_object)
+                && MP_OBJ_IS_STR(get_const_object((mp_parse_node_struct_t*)pns->nodes[0])))) {
                 // compile the doc string
                 compile_node(comp, pns->nodes[0]);
                 // store the doc string

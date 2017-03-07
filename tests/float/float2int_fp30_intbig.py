@@ -5,25 +5,33 @@ try:
 except:
     import struct
 
+import sys
+maxsize_bits = 0
+maxsize = sys.maxsize
+while maxsize:
+    maxsize >>= 1
+    maxsize_bits += 1
+
 # work out configuration values
-is_64bit = struct.calcsize("P") == 8
+is_64bit = maxsize_bits > 32
 # 0 = none, 1 = long long, 2 = mpz
-try:
-    dummy = 0x7fffffffffffffff
-    try:
-        if (0xffffffffffffffff + 1) > 0:
-            ll_type = 2
-        else:
-            ll_type = 1
-    except:
-        # in case the sum in the if statement above changes to raising an exception on overflow
+ll_type = None
+if is_64bit:
+    if maxsize_bits < 63:
+        ll_type = 0
+else:
+    if maxsize_bits < 31:
+        ll_type = 0
+if ll_type is None:
+    one = 1
+    if one << 65 < one << 62:
         ll_type = 1
-except:
-    ll_type = 0
+    else:
+        ll_type = 2
 
 # basic conversion
-print(int(14187745.))
-print("%d" % 14187745.)
+print(int(14187744.))
+print("%d" % 14187744.)
 if ll_type == 2:
     print(int(2.**100))
     print("%d" % 2.**100)
@@ -39,7 +47,7 @@ print("power of  2 test: %s" % (testpass and 'passed' or 'failed'))
 
 # TODO why does 10**12 fail this test for single precision float?
 testpass = True
-p10_rng = 9 if (ll_type == 0 and ~is_64bit) else 11
+p10_rng = 9
 for i in range(0,p10_rng):
     digcnt = len(str(int(10.**i))) - 1;
     if i != digcnt:
@@ -78,8 +86,8 @@ if ll_type != 2:
     fp2int_test(neg_good_fp, 'neg good', False)
     fp2int_test(pos_good_fp, 'pos good', False)
 else:
-    fp2int_test(-1.999999879*2.**127., 'large neg', False)
-    fp2int_test(1.999999879*2.**127., 'large pos', False)
+    fp2int_test(-1.999999879*2.**126., 'large neg', False)
+    fp2int_test(1.999999879*2.**126., 'large pos', False)
 
 fp2int_test(float('inf'), 'inf test', True)
 fp2int_test(float('nan'), 'NaN test', True)

@@ -196,11 +196,13 @@ typedef struct _mp_state_vm_t {
 // This structure holds state that is specific to a given thread.
 // Everything in this structure is scanned for root pointers.
 typedef struct _mp_state_thread_t {
+    mp_obj_dict_t *dict_locals;
+    mp_obj_dict_t *dict_globals;
+
     // Note: nlr asm code has the offset of this hard-coded
     nlr_buf_t *nlr_top; // ROOT POINTER
 
     // Stack top at the start of program
-    // Note: this entry is used to locate the end of the root pointer section.
     char *stack_top;
 
     #if MICROPY_STACK_CHECK
@@ -208,15 +210,11 @@ typedef struct _mp_state_thread_t {
     #endif
 } mp_state_thread_t;
 
-// This structure combines the above 3 structures, and adds the local
-// and global dicts.
+// This structure combines the above 3 structures.
+// The order of the entries are important for root pointer scanning in the GC to work.
 // Note: if this structure changes then revisit all nlr asm code since they
 // have the offset of nlr_top hard-coded.
 typedef struct _mp_state_ctx_t {
-    // these must come first for root pointer scanning in GC to work
-    mp_obj_dict_t *dict_locals;
-    mp_obj_dict_t *dict_globals;
-    // these must come next in this order for root pointer scanning in GC to work
     mp_state_thread_t thread;
     mp_state_vm_t vm;
     mp_state_mem_t mem;
@@ -224,7 +222,7 @@ typedef struct _mp_state_ctx_t {
 
 extern mp_state_ctx_t mp_state_ctx;
 
-#define MP_STATE_CTX(x) (mp_state_ctx.x)
+#define MP_STATE_CTX(x) MP_STATE_THREAD(x)
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
 

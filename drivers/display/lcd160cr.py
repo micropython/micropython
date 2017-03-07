@@ -235,7 +235,7 @@ class LCD160CR:
         self._fcmd2('<BBB', 0x19, value)
 
     def save_to_flash(self):
-        self._fcmd2('<BBB', 0x66, 'n')
+        self._send(b'\x02fn')
 
     #### PIXEL ACCESS ####
 
@@ -243,13 +243,13 @@ class LCD160CR:
         self._fcmd2b('<BBBBH', 0x41, x, y, c)
 
     def get_pixel(self, x, y):
-        self._fcmd2b('<BBBB', 0x61, x, y)
+        self._fcmd2('<BBBB', 0x61, x, y)
         t = 1000
         while t:
             self.i2c.readfrom_into(self.i2c_addr, self.buf1)
             if self.buf1[0] >= 2:
                 self.i2c.readfrom_into(self.i2c_addr, self.buf[3])
-                return self.buf[3][1] + self.buf[3][2] << 8
+                return self.buf[3][1] | self.buf[3][2] << 8
             t -= 1
             sleep_ms(1)
         raise OSError(uerrno.ETIMEDOUT)
@@ -446,6 +446,8 @@ class LCD160CR:
         self._send(s)
 
     def jpeg_start(self, l):
+        if l > 0xffff:
+            raise ValueError('length must be 65535 or less')
         self.oflush()
         self._fcmd2('<BBH', 0x6a, l)
 

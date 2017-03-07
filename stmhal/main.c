@@ -71,10 +71,10 @@ void flash_error(int n) {
     for (int i = 0; i < n; i++) {
         led_state(PYB_LED_RED, 1);
         led_state(PYB_LED_GREEN, 0);
-        HAL_Delay(250);
+        mp_hal_delay_ms(250);
         led_state(PYB_LED_RED, 0);
         led_state(PYB_LED_GREEN, 1);
-        HAL_Delay(250);
+        mp_hal_delay_ms(250);
     }
     led_state(PYB_LED_GREEN, 0);
 }
@@ -349,7 +349,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
             if (!switch_get()) {
                 break;
             }
-            HAL_Delay(20);
+            mp_hal_delay_ms(20);
             if (i % 30 == 29) {
                 if (++reset_mode > 3) {
                     reset_mode = 1;
@@ -364,13 +364,13 @@ STATIC uint update_reset_mode(uint reset_mode) {
             led_state(2, 0);
             led_state(3, 0);
             led_state(4, 0);
-            HAL_Delay(50);
+            mp_hal_delay_ms(50);
             led_state(2, reset_mode & 1);
             led_state(3, reset_mode & 2);
             led_state(4, reset_mode & 4);
-            HAL_Delay(50);
+            mp_hal_delay_ms(50);
         }
-        HAL_Delay(400);
+        mp_hal_delay_ms(400);
 
 #elif defined(MICROPY_HW_LED1)
 
@@ -383,11 +383,11 @@ STATIC uint update_reset_mode(uint reset_mode) {
                     break;
                 }
                 led_state(1, 1);
-                HAL_Delay(100);
+                mp_hal_delay_ms(100);
                 led_state(1, 0);
-                HAL_Delay(200);
+                mp_hal_delay_ms(200);
             }
-            HAL_Delay(400);
+            mp_hal_delay_ms(400);
             if (!switch_get()) {
                 break;
             }
@@ -399,11 +399,11 @@ STATIC uint update_reset_mode(uint reset_mode) {
         for (uint i = 0; i < 2; i++) {
             for (uint j = 0; j < reset_mode; j++) {
                 led_state(1, 1);
-                HAL_Delay(100);
+                mp_hal_delay_ms(100);
                 led_state(1, 0);
-                HAL_Delay(200);
+                mp_hal_delay_ms(200);
             }
-            HAL_Delay(400);
+            mp_hal_delay_ms(400);
         }
 #else
 #error Need a reset mode update method

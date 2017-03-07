@@ -76,9 +76,9 @@ STATIC void accel_start(void) {
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
     mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off
-    HAL_Delay(30);
+    mp_hal_delay_ms(30);
     mp_hal_pin_high(&MICROPY_HW_MMA_AVDD_PIN); // turn on
-    HAL_Delay(30);
+    mp_hal_delay_ms(30);
 
     HAL_StatusTypeDef status;
 
@@ -98,7 +98,7 @@ STATIC void accel_start(void) {
     status = HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
 
     // wait for MMA to become active
-    HAL_Delay(30);
+    mp_hal_delay_ms(30);
 }
 
 /******************************************************************************/

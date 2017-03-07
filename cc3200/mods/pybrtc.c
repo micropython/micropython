@@ -25,11 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include <std.h>
-
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -294,7 +293,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // setup the object
@@ -362,7 +361,7 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 
     // check the alarm id
     if (args[0].u_int != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     uint32_t f_seconds;
@@ -397,7 +396,7 @@ STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
 
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // get the current time
@@ -415,7 +414,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc
 STATIC mp_obj_t pyb_rtc_alarm_cancel (mp_uint_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
     // disable the alarm
     pyb_rtc_disable_alarm();

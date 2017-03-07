@@ -75,11 +75,15 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         } else
         #endif
         {
+            #if MICROPY_ENABLE_COMPILER
             // source is a lexer, parse and compile the script
             mp_lexer_t *lex = source;
             qstr source_name = lex->source_name;
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
             module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
+            #else
+            mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
+            #endif
         }
 
         // execute code
@@ -137,6 +141,7 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
     return ret;
 }
 
+#if MICROPY_ENABLE_COMPILER
 #if MICROPY_REPL_EVENT_DRIVEN
 
 typedef struct _repl_t {
@@ -497,6 +502,7 @@ friendly_repl_reset:
 }
 
 #endif // MICROPY_REPL_EVENT_DRIVEN
+#endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
     mp_lexer_t *lex = mp_lexer_new_from_file(filename);

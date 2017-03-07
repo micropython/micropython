@@ -35,10 +35,6 @@
 
 #if MICROPY_USE_READLINE == 1
 #include "lib/mp-readline/readline.h"
-#elif MICROPY_USE_READLINE == 2
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <readline/tilde.h>
 #endif
 
 char *prompt(char *p) {
@@ -66,12 +62,6 @@ char *prompt(char *p) {
     char *line = malloc(vstr.len + 1);
     memcpy(line, vstr.buf, vstr.len + 1);
     vstr_clear(&vstr);
-#elif MICROPY_USE_READLINE == 2
-    // GNU readline
-    char *line = readline(p);
-    if (line) {
-        add_history(line);
-    }
 #else
     // simple read string
     static char buf[256];
@@ -124,8 +114,6 @@ void prompt_read_history(void) {
         }
         vstr_clear(&vstr);
     }
-    #elif MICROPY_USE_READLINE == 2
-    read_history(tilde_expand("~/.micropython.history"));
     #endif
 #endif
 }
@@ -152,8 +140,6 @@ void prompt_write_history(void) {
             close(fd);
         }
     }
-    #elif MICROPY_USE_READLINE == 2
-    write_history(tilde_expand("~/.micropython.history"));
     #endif
 #endif
 }

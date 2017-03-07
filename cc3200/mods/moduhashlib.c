@@ -93,7 +93,7 @@ STATIC void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest) {
             self->digested = false;
         }
     } else {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -106,7 +106,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
         }
     } else if (self->c_size < self->b_size) {
         // it's a fixed len block which is still incomplete
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
 
     if (!self->digested) {

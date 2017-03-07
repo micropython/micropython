@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,24 @@
  * THE SOFTWARE.
  */
 
-// This file is needed because in some cases we can't include stdio.h,
-// because the CC3100 socket driver has name clashes with it.
+#include "extmod/machine_mem.h"
+#include "extmod/machine_pinbase.h"
+#include "extmod/machine_signal.h"
 
-typedef unsigned int size_t;
+STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
 
-int printf(const char *fmt, ...);
-int snprintf(char *str, size_t size, const char *fmt, ...);
+    { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
-// Convenience function, defined in main.c.
-void stoupper (char *str);
+    { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&machine_pinbase_type) },
+    { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
+
+const mp_obj_module_t mp_module_machine = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&machine_module_globals,
+};

@@ -418,6 +418,10 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 uint8_t* dest_items = o->items;
                 #if MICROPY_PY_BUILTINS_MEMORYVIEW
                 if (o->base.type == &mp_type_memoryview) {
+                    if ((o->typecode & 0x80) == 0) {
+                        // store to read-only memoryview not allowed
+                        return MP_OBJ_NULL;
+                    }
                     if (len_adj != 0) {
                         goto compat_error;
                     }

@@ -198,6 +198,7 @@ def run_tests(pyb, tests, args):
 
     skip_tests = set()
     skip_native = False
+    skip_int_big = False
     skip_set_type = False
     skip_async = False
 
@@ -205,6 +206,11 @@ def run_tests(pyb, tests, args):
     native = run_micropython(pyb, args, 'feature_check/native_check.py')
     if native == b'CRASH':
         skip_native = True
+
+    # Check if arbitrary-precision integers are supported, and skip such tests if it's not
+    native = run_micropython(pyb, args, 'feature_check/int_big.py')
+    if native == b'CRASH':
+        skip_int_big = True
 
     # Check if set type (and set literals) is supported, and skip such tests if it's not
     native = run_micropython(pyb, args, 'feature_check/set_check.py')
@@ -320,12 +326,14 @@ def run_tests(pyb, tests, args):
         test_name = os.path.splitext(test_basename)[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
+        is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
         is_async = test_name.startswith("async_")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
+        skip_it |= skip_int_big and is_int_big
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
 

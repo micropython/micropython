@@ -1,49 +1,60 @@
-# check cases converting float to int, relying only on single precision float
+# check cases converting float to int, requiring double precision float
 
 try:
     import ustruct as struct
 except:
     import struct
 
-# work out configuration values
-is_64bit = struct.calcsize("P") == 8
-# 0 = none, 1 = long long, 2 = mpz
-try:
-    dummy = 0x7fffffffffffffff
-    try:
-        if (0xffffffffffffffff + 1) > 0:
-            ll_type = 2
-        else:
-            ll_type = 1
-    except:
-        # in case the sum in the if statement above changes to raising an exception on overflow
-        ll_type = 1
-except:
-    ll_type = 0
+import sys
+maxsize_bits = 0
+maxsize = sys.maxsize
+while maxsize:
+    maxsize >>= 1
+    maxsize_bits += 1
 
-# basic conversion
-print(int(14187744.))
-print("%d" % 14187744.)
-if ll_type == 2:
-    print(int(2.**100))
-    print("%d" % 2.**100)
+# work out configuration values
+is_64bit = maxsize_bits > 32
+# 0 = none, 1 = long long, 2 = mpz
+ll_type = None
+if is_64bit:
+    if maxsize_bits < 63:
+        ll_type = 0
+else:
+    if maxsize_bits < 31:
+        ll_type = 0
+if ll_type is None:
+    one = 1
+    if one << 65 < one << 62:
+        ll_type = 1
+    else:
+        ll_type = 2
+
+# This case occurs with time.time() values
+if ll_type != 0:
+    print(int(1418774543.))
+    print("%d" % 1418774543.)
+    if ll_type == 3:
+        print(int(2.**100))
+        print("%d" % 2.**100)
+else:
+    print(int(1073741823.))
+    print("%d" % 1073741823.)
 
 testpass = True
-p2_rng = ((30,63,127),(62,63,127))[is_64bit][ll_type]
+p2_rng = ((30,63,1024),(62,63,1024))[is_64bit][ll_type]
 for i in range(0,p2_rng):
     bitcnt = len(bin(int(2.**i))) - 3;
     if i != bitcnt:
-        print('fail: 2.**%u was %u bits long' % (i, bitcnt));
+        print('fail: 2**%u was %u bits long' % (i, bitcnt));
         testpass = False
 print("power of  2 test: %s" % (testpass and 'passed' or 'failed'))
 
-# TODO why does 10**12 fail this test for single precision float?
 testpass = True
-p10_rng = 9
+p10_rng = ((9,18,23),(18,18,23))[is_64bit][ll_type]
 for i in range(0,p10_rng):
     digcnt = len(str(int(10.**i))) - 1;
     if i != digcnt:
-        print('fail: 10.**%u was %u digits long' % (i, digcnt));
+        print('fail: 10**%u was %u digits long' % (i, digcnt));
         testpass = False
 print("power of 10 test: %s" % (testpass and 'passed' or 'failed'))
 
@@ -78,8 +89,8 @@ if ll_type != 2:
     fp2int_test(neg_good_fp, 'neg good', False)
     fp2int_test(pos_good_fp, 'pos good', False)
 else:
-    fp2int_test(-1.999999879*2.**126., 'large neg', False)
-    fp2int_test(1.999999879*2.**126., 'large pos', False)
+    fp2int_test(-1.9999999999999981*2.**1023., 'large neg', False)
+    fp2int_test(1.9999999999999981*2.**1023., 'large pos', False)
 
 fp2int_test(float('inf'), 'inf test', True)
 fp2int_test(float('nan'), 'NaN test', True)

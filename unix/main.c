@@ -249,7 +249,7 @@ STATIC int do_repl(void) {
 
     #else
 
-    // use GNU or simple readline
+    // use simple readline
 
     for (;;) {
         char *line = prompt(">>> ");

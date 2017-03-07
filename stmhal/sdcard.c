@@ -28,9 +28,9 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
-#include "mphalport.h"
 
 #include "sdcard.h"
 #include "pin.h"
@@ -145,7 +145,7 @@ bool sdcard_power_on(void) {
         if (retry == 0) {
             goto error;
         }
-        HAL_Delay(50);
+        mp_hal_delay_ms(50);
     }
 
     // configure the SD bus width for wide operation

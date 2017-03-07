@@ -27,6 +27,7 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs_fat.h"
@@ -108,7 +109,7 @@ STATIC mp_obj_t pyb_sd_init_helper (pybsd_obj_t *self, const mp_arg_val_t *args)
 
     pyb_sd_hw_init (self);
     if (sd_disk_init() != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
+        mp_raise_OSError(MP_EIO);
     }
 
     // register it with the sleep module
@@ -133,7 +134,7 @@ STATIC mp_obj_t pyb_sd_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // setup and initialize the object

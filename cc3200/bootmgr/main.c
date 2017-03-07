@@ -26,8 +26,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#include "std.h"
+#include <stdio.h>
 
 #include "py/mpconfig.h"
 #include "hw_ints.h"

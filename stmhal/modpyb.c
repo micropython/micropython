@@ -34,6 +34,7 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/builtin.h"
+#include "py/mphal.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
@@ -71,20 +72,6 @@ STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_fault_debug_obj, pyb_fault_debug);
 
-/// \function millis()
-/// Returns the number of milliseconds since the board was last reset.
-///
-/// The result is always a micropython smallint (31-bit signed number), so
-/// after 2^30 milliseconds (about 12.4 days) this will start to return
-/// negative numbers.
-STATIC mp_obj_t pyb_millis(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(HAL_GetTick());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
-
 /// \function elapsed_millis(start)
 /// Returns the number of milliseconds which have elapsed since `start`.
 ///
@@ -97,24 +84,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_millis_obj, pyb_millis);
 ///         # Perform some operation
 STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
     uint32_t startMillis = mp_obj_get_int(start);
-    uint32_t currMillis = HAL_GetTick();
+    uint32_t currMillis = mp_hal_ticks_ms();
     return MP_OBJ_NEW_SMALL_INT((currMillis - startMillis) & 0x3fffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
-
-/// \function micros()
-/// Returns the number of microseconds since the board was last reset.
-///
-/// The result is always a micropython smallint (31-bit signed number), so
-/// after 2^30 microseconds (about 17.8 minutes) this will start to return
-/// negative numbers.
-STATIC mp_obj_t pyb_micros(void) {
-    // We want to "cast" the 32 bit unsigned into a small-int.  This means
-    // copying the MSB down 1 bit (extending the sign down), which is
-    // equivalent to just using the MP_OBJ_NEW_SMALL_INT macro.
-    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 
 /// \function elapsed_micros(start)
 /// Returns the number of microseconds which have elapsed since `start`.
@@ -128,7 +101,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_micros_obj, pyb_micros);
 ///         # Perform some operation
 STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
     uint32_t startMicros = mp_obj_get_int(start);
-    uint32_t currMicros = sys_tick_get_microseconds();
+    uint32_t currMicros = mp_hal_ticks_us();
     return MP_OBJ_NEW_SMALL_INT((currMicros - startMicros) & 0x3fffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_micros_obj, pyb_elapsed_micros);
@@ -168,9 +141,9 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_have_cdc), (mp_obj_t)&pyb_have_cdc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_hid), (mp_obj_t)&pyb_hid_send_report_obj },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&pyb_millis_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_millis), (mp_obj_t)&mp_utime_ticks_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&pyb_micros_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&mp_utime_ticks_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros), (mp_obj_t)&pyb_elapsed_micros_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&mp_utime_sleep_ms_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&mp_utime_sleep_us_obj },

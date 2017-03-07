@@ -70,16 +70,6 @@ S.arr10[0] = 0x11223344
 print(hex(S.arr10[0]))
 assert hex(S.arr10[0]) == "0x11223344"
 
-# assign int64
-S.arr11[0] = 0x11223344
-print(hex(S.arr11[0]))
-assert hex(S.arr11[0]) == "0x11223344"
-
-# assign uint64
-S.arr12[0] = 0x11223344
-print(hex(S.arr12[0]))
-assert hex(S.arr12[0]) == "0x11223344"
-
 # index out of range
 try:
     print(S.arr8[2])
