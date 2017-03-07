@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
 #include "py/mpstate.h"
 #include "py/nlr.h"
 
@@ -46,7 +47,14 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     (void)nlr;
 
     __asm volatile (
+    // Check for Zephyr, which uses a different calling convention
+    // by default.
+    // TODO: Better check for Zephyr.
+    // TODE: Better support for various x86 calling conventions
+    // (unfortunately, __attribute__((naked)) is not supported on x86).
+    #ifndef CONFIG_SOC_IA32
     "pop    %ebp                \n" // undo function's prelude
+    #endif
     "mov    4(%esp), %edx       \n" // load nlr_buf
     "mov    (%esp), %eax        \n" // load return %eip
     "mov    %eax, 8(%edx)       \n" // store %eip into nlr_buf
