@@ -128,7 +128,7 @@
 #endif
 
 #ifndef MICROPY_PY_MACHINE_PWM
-#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_PWM      (0)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_TIMER
