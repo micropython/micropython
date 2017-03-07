@@ -170,7 +170,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
 
     // set the UART configuration values
     memset(&self->uart, 0, sizeof(self->uart));
-    UART_InitTypeDef *init = &self->uart.init;
+    UART_InitTypeDef * init = &self->uart.init;
 
     // baudrate
     init->baud_rate = args[0].u_int;
@@ -210,13 +210,65 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
         .flow_control = false,
 #endif
         .use_parity   = false,
-        .baud_rate    = HAL_UART_BAUD_115K2,
 #if (BLUETOOTH_SD == 100)
         .irq_priority = 3
 #else
         .irq_priority = 6
 #endif
     };
+
+    switch (init->baud_rate) {
+        case 1200:
+            uart_init.baud_rate = HAL_UART_BAUD_1K2;
+            break;
+        case 2400:
+            uart_init.baud_rate = HAL_UART_BAUD_2K4;
+            break;
+        case 4800:
+            uart_init.baud_rate = HAL_UART_BAUD_4K8;
+            break;
+        case 9600:
+            uart_init.baud_rate = HAL_UART_BAUD_9K6;
+            break;
+        case 14400:
+            uart_init.baud_rate = HAL_UART_BAUD_14K4;
+            break;
+        case 19200:
+            uart_init.baud_rate = HAL_UART_BAUD_19K2;
+            break;
+        case 28800:
+            uart_init.baud_rate = HAL_UART_BAUD_28K8;
+            break;
+        case 38400:
+            uart_init.baud_rate = HAL_UART_BAUD_38K4;
+            break;
+        case 57600:
+            uart_init.baud_rate = HAL_UART_BAUD_57K6;
+            break;
+        case 76800:
+            uart_init.baud_rate = HAL_UART_BAUD_76K8;
+            break;
+        case 115200:
+            uart_init.baud_rate = HAL_UART_BAUD_115K2;
+            break;
+        case 230400:
+            uart_init.baud_rate = HAL_UART_BAUD_230K4;
+            break;
+        case 250000:
+            uart_init.baud_rate = HAL_UART_BAUD_250K0;
+            break;
+        case 500000:
+            uart_init.baud_rate = HAL_UART_BAUD_500K0;
+            break;
+        case 1000000:
+            uart_init.baud_rate = HAL_UART_BAUD_1M0;
+            break;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                      "UART baudrate not supported, %ul", init->baud_rate));
+            break;
+    }
+
     uart_init.rx_pin = &MICROPY_HW_UART1_RX;
     uart_init.tx_pin = &MICROPY_HW_UART1_TX;
 
