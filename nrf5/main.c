@@ -233,12 +233,14 @@ void HardFault_Handler(void)
 #endif
 }
 
-
-void nlr_jump_fail(void *val) {
-}
-
 void NORETURN __fatal_error(const char *msg) {
     while (1);
+}
+
+void nlr_jump_fail(void *val) {
+    printf("FATAL: uncaught exception %p\n", val);
+    mp_obj_print_exception(&mp_plat_print, (mp_obj_t)val);
+    __fatal_error("");
 }
 
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
