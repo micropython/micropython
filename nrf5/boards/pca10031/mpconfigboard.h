@@ -30,7 +30,6 @@
 #define MICROPY_HW_MCU_NAME         "NRF51822"
 #define MICROPY_PY_SYS_PLATFORM     "nrf51-dongle"
 
-#define MICROPY_PY_MACHINE_PWM      (0)
 #define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_HW_HAS_SWITCH       (0)
