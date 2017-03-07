@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014 Damien P. George
- * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2016-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 
 struct qentry {
     mp_uint_t time;
+    mp_uint_t id;
     mp_obj_t callback;
     mp_obj_t args;
 };
@@ -54,6 +55,7 @@ typedef struct _mp_obj_utimeq_t {
     struct qentry items[];
 } mp_obj_utimeq_t;
 
+STATIC mp_uint_t utimeq_id;
 
 STATIC mp_obj_utimeq_t *get_heap(mp_obj_t heap_in) {
     return MP_OBJ_TO_PTR(heap_in);
@@ -63,6 +65,11 @@ STATIC bool time_less_than(struct qentry *item, struct qentry *parent) {
     mp_uint_t item_tm = item->time;
     mp_uint_t parent_tm = parent->time;
     mp_uint_t res = parent_tm - item_tm;
+    if (res == 0) {
+        // TODO: This actually should use the same "ring" logic
+        // as for time, to avoid artifacts when id's overflow.
+        return item->id < parent->id;
+    }
     if ((mp_int_t)res < 0) {
         res += MODULO;
     }
@@ -125,6 +132,7 @@ STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     }
     mp_uint_t l = heap->len;
     heap->items[l].time = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    heap->items[l].id = utimeq_id++;
     heap->items[l].callback = args[2];
     heap->items[l].args = args[3];
     heap_siftdown(heap, 0, heap->len);
