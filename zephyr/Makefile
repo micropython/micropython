@@ -42,6 +42,7 @@ INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 SRC_C = main.c \
 	help.c \
 	modutime.c \
+	modzephyr.c \
 	modmachine.c \
 	machine_pin.c \
 	uart_core.c \
