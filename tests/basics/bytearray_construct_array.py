@@ -7,5 +7,5 @@ except ImportError:
     sys.exit()
 
 # arrays
-print(bytearray(array('h', [1, 2])))
-print(bytearray(array('I', [1, 2])))
+print(bytearray(array('b', [1, 2])))
+print(bytearray(array('h', [0x101, 0x202])))
