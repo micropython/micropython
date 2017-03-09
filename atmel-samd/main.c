@@ -7,6 +7,7 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
+#include "py/stackctrl.h"
 
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
@@ -503,6 +504,9 @@ void samd21_init(void) {
     nvm_set_config(&config_nvm);
 }
 
+extern uint32_t _estack;
+extern uint32_t _ebss;
+
 int main(void) {
     // initialise the cpu and peripherals
     samd21_init();
@@ -512,6 +516,11 @@ int main(void) {
     // stack so the GC can account for objects that may be referenced by the
     // stack between here and where gc_collect is called.
     stack_top = (char*)&stack_dummy;
+
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    mp_stack_ctrl_init();
+    mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
 
     // Initialise the local flash filesystem after the gc in case we need to
     // grab memory from it. Create it if needed, mount in on /flash, and set it
