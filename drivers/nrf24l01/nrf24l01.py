@@ -118,13 +118,17 @@ class NRF24L01:
         self.cs.high()
         return self.buffer[0]
 
-    def reg_write(self, reg, value=None, buffer=None):
+    def reg_write_bytes(self, reg, buffer):
         self.cs.low()
         self.spi.readinto(self.buffer, 0x20 | reg)
-        if value is not None:
-            self.spi.read(1, value)
-        else:
-            self.spi.write(buffer)
+        self.spi.write(buffer)
+        self.cs.high()
+        return self.buffer[0]
+
+    def reg_write(self, reg, value):
+        self.cs.low()
+        self.spi.readinto(self.buffer, 0x20 | reg)
+        self.spi.read(1, value)
         self.cs.high()
         return self.buffer[0]
 
@@ -160,8 +164,8 @@ class NRF24L01:
     # address should be a bytes object 5 bytes long
     def open_tx_pipe(self, address):
         assert len(address) == 5
-        self.reg_write(RX_ADDR_P0, buffer=address)
-        self.reg_write(TX_ADDR, buffer=address)
+        self.reg_write_bytes(RX_ADDR_P0, address)
+        self.reg_write_bytes(TX_ADDR, address)
         self.reg_write(RX_PW_P0, self.payload_size)
 
     # address should be a bytes object 5 bytes long
@@ -173,7 +177,7 @@ class NRF24L01:
         if pipe_id == 0:
             self.pipe0_read_addr = address
         if pipe_id < 2:
-            self.reg_write(RX_ADDR_P0 + pipe_id, buffer=address)
+            self.reg_write_bytes(RX_ADDR_P0 + pipe_id, address)
         else:
             self.reg_write(RX_ADDR_P0 + pipe_id, address[0])
         self.reg_write(RX_PW_P0 + pipe_id, self.payload_size)
@@ -184,7 +188,7 @@ class NRF24L01:
         self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
 
         if self.pipe0_read_addr is not None:
-            self.reg_write(RX_ADDR_P0, buffer=self.pipe0_read_addr)
+            self.reg_write_bytes(RX_ADDR_P0, self.pipe0_read_addr)
 
         self.flush_rx()
         self.flush_tx()
