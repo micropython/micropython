@@ -217,7 +217,7 @@ class NRF24L01:
         start = utime.ticks_ms()
         result = None
         while (result is None and
-               utime.ticks_diff(start, utime.ticks_ms()) < timeout):
+               utime.ticks_diff(utime.ticks_ms(), start) < timeout):
             result = self.send_done() # 1 == success, 2 == fail
         if result == 2:
             raise OSError("send failed")
