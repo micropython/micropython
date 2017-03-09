@@ -46,6 +46,7 @@ RX_EMPTY    = const(0x01) # 1 if RX FIFO is empty
 # constants for instructions
 R_RX_PL_WID  = const(0x60) # read RX payload width
 R_RX_PAYLOAD = const(0x61) # read RX payload
+ACTIVATE     = const(0x80) # activate a feature
 W_TX_PAYLOAD = const(0xa0) # write TX payload
 FLUSH_TX     = const(0xe1) # flush TX FIFO
 FLUSH_RX     = const(0xe2) # flush RX FIFO
@@ -141,6 +142,12 @@ class NRF24L01:
     def flush_tx(self):
         self.cs.low()
         self.spi.read(1, FLUSH_TX)
+        self.cs.high()
+
+    def activate(self, data=0x73):
+        self.cs.low()
+        self.spi.read(1, FLUSH_TX)
+        self.spi.read(1, data)
         self.cs.high()
 
     # power is one of POWER_x defines; speed is one of SPEED_x defines
