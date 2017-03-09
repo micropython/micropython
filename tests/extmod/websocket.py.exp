@@ -1,0 +1,15 @@
+<websocket>
+b'ping'
+b'ping'
+b'\x81\x04pong'
+b'pingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingping'
+b'\x81~\x00\x80pongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpong'
+None
+None
+b'\x81\x02\x8a\x00'
+b''
+b'\x81\x02\x88\x00'
+8
+1
+2
+EINVAL: True
