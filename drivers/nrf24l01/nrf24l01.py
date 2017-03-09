@@ -18,6 +18,7 @@ TX_ADDR     = const(0x10)
 RX_PW_P0    = const(0x11)
 FIFO_STATUS = const(0x17)
 DYNPD	    = const(0x1c)
+FEATURE     = const(0x1d)
 
 # CONFIG register
 EN_CRC      = const(0x08) # enable CRC
