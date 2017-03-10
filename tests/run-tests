@@ -209,7 +209,7 @@ def run_tests(pyb, tests, args):
 
     # Check if arbitrary-precision integers are supported, and skip such tests if it's not
     native = run_micropython(pyb, args, 'feature_check/int_big.py')
-    if native == b'CRASH':
+    if native != b'1000000000000000000000000000000000000000000000\n':
         skip_int_big = True
 
     # Check if set type (and set literals) is supported, and skip such tests if it's not
