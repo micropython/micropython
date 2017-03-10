@@ -109,3 +109,23 @@ try:
     uos.umount('/test_mnt')
 except OSError:
     print('OSError')
+
+# root dir
+uos.mount(Filesystem(3), '/')
+print(uos.listdir())
+open('test')
+
+uos.mount(Filesystem(4), '/mnt')
+print(uos.listdir())
+print(uos.listdir('/mnt'))
+uos.chdir('/mnt')
+print(uos.listdir())
+
+# chdir to a subdir within root-mounted vfs, and then listdir
+uos.chdir('/subdir')
+print(uos.listdir())
+uos.chdir('/')
+
+uos.umount('/')
+print(uos.listdir('/'))
+uos.umount('/mnt')

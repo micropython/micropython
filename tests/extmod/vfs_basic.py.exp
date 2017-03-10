@@ -32,3 +32,22 @@ OSError
 1 umount
 2 umount
 OSError
+3 mount False False
+3 listdir /
+['a3']
+3 open test r
+4 mount False False
+3 listdir /
+['mnt', 'a3']
+4 listdir /
+['a4']
+4 chdir /
+4 listdir 
+['a4']
+3 chdir /subdir
+3 listdir 
+['a3']
+3 chdir /
+3 umount
+['mnt']
+4 umount
