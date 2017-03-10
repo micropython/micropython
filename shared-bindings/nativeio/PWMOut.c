@@ -95,7 +95,7 @@ STATIC mp_obj_t nativeio_pwmout_make_new(const mp_obj_type_t *type, size_t n_arg
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    enum { ARG_duty, ARG_frequency, ARG_variable_frequency };
+    enum { ARG_duty_cycle, ARG_frequency, ARG_variable_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 500} },
@@ -103,11 +103,11 @@ STATIC mp_obj_t nativeio_pwmout_make_new(const mp_obj_type_t *type, size_t n_arg
     };
     mp_arg_val_t parsed_args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, args + 1, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, parsed_args);
-    uint8_t duty = parsed_args[ARG_duty].u_int;
+    uint16_t duty_cycle = parsed_args[ARG_duty_cycle].u_int;
     uint32_t frequency = parsed_args[ARG_frequency].u_int;
     bool variable_frequency = parsed_args[ARG_variable_frequency].u_int;
 
-    common_hal_nativeio_pwmout_construct(self, pin, duty, frequency, variable_frequency);
+    common_hal_nativeio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
 
     return MP_OBJ_FROM_PTR(self);
 }
