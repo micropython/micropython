@@ -167,8 +167,6 @@ static const char fresh_readme_txt[] =
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
-    vfs_fat->str = NULL;
-    vfs_fat->len = 0;
     vfs_fat->flags = 0;
     pyb_flash_init_vfs(vfs_fat);
 
@@ -274,8 +272,6 @@ STATIC bool init_sdcard_fs(bool first_soft_reset) {
         if (vfs == NULL || vfs_fat == NULL) {
             break;
         }
-        vfs_fat->str = NULL;
-        vfs_fat->len = 0;
         vfs_fat->flags = FSUSER_FREE_OBJ;
         sdcard_init_vfs(vfs_fat, part_num);
 

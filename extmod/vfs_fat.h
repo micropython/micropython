@@ -36,8 +36,6 @@
 
 typedef struct _fs_user_mount_t {
     mp_obj_base_t base;
-    const char *str;
-    uint16_t len; // length of str
     uint16_t flags;
     mp_obj_t readblocks[4];
     mp_obj_t writeblocks[4];

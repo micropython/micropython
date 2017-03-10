@@ -55,8 +55,6 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
     vfs->base.type = type;
     vfs->flags = FSUSER_FREE_OBJ;
-    vfs->str = NULL;
-    vfs->len = 0;
     vfs->fatfs.drv = vfs;
 
     // load block protocol methods
