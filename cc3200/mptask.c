@@ -98,7 +98,6 @@ OsiTaskHandle   svTaskHandle;
  DECLARE PRIVATE DATA
  ******************************************************************************/
 static fs_user_mount_t *sflash_vfs_fat;
-static mp_vfs_mount_t sflash_vfs_mount;
 
 static const char fresh_main_py[] = "# main.py -- put your code here!\r\n";
 static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
@@ -328,11 +327,16 @@ STATIC void mptask_init_sflash_filesystem (void) {
             mptask_create_main_py();
         }
     } else {
+    fail:
         __fatal_error("failed to create /flash");
     }
 
     // mount the flash device (there should be no other devices mounted at this point)
-    mp_vfs_mount_t *vfs = &sflash_vfs_mount;
+    // we allocate this structure on the heap because vfs->next is a root pointer
+    mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+    if (vfs == NULL) {
+        goto fail;
+    }
     vfs->str = "/flash";
     vfs->len = 6;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
