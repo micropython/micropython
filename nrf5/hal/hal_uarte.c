@@ -29,25 +29,21 @@
 #include "mphalport.h"
 
 #include "hal_uart.h"
+#include "hal_irq.h"
 
 #ifdef HAL_UARTE_MODULE_ENABLED
 
 #include "nrf.h"
 
-#if NRF52
-
-#define UARTE_BASE   ((NRF_UARTE_Type *) NRF_UARTE0_BASE)
-#define UART_IRQ_NUM UARTE0_UART0_IRQn
-
-#else
+#ifndef NRF52
 #error "Device not supported."
 #endif
 
+#define UART_BASE(x) ((NRF_UART_Type *)UART_BASE_POINTERS[x])
+#define UART_IRQ_NUM(x) (UART_IRQ_VALUES[x])
+
 #define TX_BUF_SIZE 1
 #define RX_BUF_SIZE 1
-
-static uart_complete_cb dma_read_cb  = NULL;
-static uart_complete_cb dma_write_cb = NULL;
 
 static const uint32_t hal_uart_baudrate_lookup[] = {
     UARTE_BAUDRATE_BAUDRATE_Baud1200,   ///< 1200 baud.
@@ -68,26 +64,19 @@ static const uint32_t hal_uart_baudrate_lookup[] = {
     UARTE_BAUDRATE_BAUDRATE_Baud1M,     ///< 1000000 baud.
 };
 
-__STATIC_INLINE void hal_uart_irq_clear(void) {
-    NVIC_ClearPendingIRQ(UART_IRQ_NUM);
+void nrf_sendchar(NRF_UART_Type * p_instance, int ch) {
+    hal_uart_char_write(p_instance, ch);
 }
 
-__STATIC_INLINE void hal_uart_irq_enable(uint8_t priority) {
-    NVIC_SetPriority(UART_IRQ_NUM, priority);
-    hal_uart_irq_clear();
-    NVIC_EnableIRQ(UART_IRQ_NUM);
-}
+void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_init) {
 
-void nrf_sendchar(int ch) {
-    hal_uart_char_write(ch);
-}
+    NRF_UARTE_Type * uarte_instance = (NRF_UARTE_Type *)p_instance;
 
-void hal_uart_init(hal_uart_init_t const * p_uart_init) {
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_pin_set(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin);
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
-    UARTE_BASE->BAUDRATE = (hal_uart_baudrate_lookup[p_uart_init->baud_rate]);
+    uarte_instance->BAUDRATE = (hal_uart_baudrate_lookup[p_uart_init->baud_rate]);
 
     uint32_t hwfc   = (p_uart_init->flow_control) 
                       ? (UARTE_CONFIG_HWFC_Enabled << UARTE_CONFIG_HWFC_Pos)
@@ -97,14 +86,14 @@ void hal_uart_init(hal_uart_init_t const * p_uart_init) {
                       ? (UARTE_CONFIG_PARITY_Included << UARTE_CONFIG_PARITY_Pos)
                       : (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos);
 
-    UARTE_BASE->CONFIG = (uint32_t)hwfc | (uint32_t)parity;
+    uarte_instance->CONFIG = (uint32_t)hwfc | (uint32_t)parity;
 
-    UARTE_BASE->PSEL.RXD = p_uart_init->rx_pin->pin;
-    UARTE_BASE->PSEL.TXD = p_uart_init->tx_pin->pin;
+    uarte_instance->PSEL.RXD = p_uart_init->rx_pin->pin;
+    uarte_instance->PSEL.TXD = p_uart_init->tx_pin->pin;
 
 #if NRF52840_XXAA
-    UARTE_BASE->PSEL.RXD |= (p_uart_init->rx_pin->port << UARTE_PSEL_RXD_PORT_Pos);
-    UARTE_BASE->PSEL.TXD |= (p_uart_init->tx_pin->port << UARTE_PSEL_TXD_PORT_Pos);
+    uarte_instance->PSEL.RXD |= (p_uart_init->rx_pin->port << UARTE_PSEL_RXD_PORT_Pos);
+    uarte_instance->PSEL.TXD |= (p_uart_init->tx_pin->port << UARTE_PSEL_TXD_PORT_Pos);
 #endif
 
     if (hwfc) {
@@ -112,132 +101,80 @@ void hal_uart_init(hal_uart_init_t const * p_uart_init) {
         hal_gpio_cfg_pin(p_uart_init->rts_pin->port, p_uart_init->rts_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
         hal_gpio_pin_set(p_uart_init->rts_pin->port, p_uart_init->rts_pin->pin);
 
-        UARTE_BASE->PSEL.RTS = p_uart_init->rts_pin->pin;
-        UARTE_BASE->PSEL.CTS = p_uart_init->cts_pin->pin;
+        uarte_instance->PSEL.RTS = p_uart_init->rts_pin->pin;
+        uarte_instance->PSEL.CTS = p_uart_init->cts_pin->pin;
 
 #if NRF52840_XXAA
-        UARTE_BASE->PSEL.RTS |= (p_uart_init->rx_pin->port << UARTE_PSEL_RTS_PORT_Pos);
-        UARTE_BASE->PSEL.CTS |= (p_uart_init->rx_pin->port << UARTE_PSEL_CTS_PORT_Pos);
+        uarte_instance->PSEL.RTS |= (p_uart_init->rx_pin->port << UARTE_PSEL_RTS_PORT_Pos);
+        uarte_instance->PSEL.CTS |= (p_uart_init->rx_pin->port << UARTE_PSEL_CTS_PORT_Pos);
 #endif
     }
 
-    hal_uart_irq_enable(p_uart_init->irq_priority);
+    hal_irq_priority(p_uart_init->irq_num, p_uart_init->irq_priority);
+    hal_irq_enable(p_uart_init->irq_num);
 
-    UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
-    UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
+    uarte_instance->INTENSET = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
+    uarte_instance->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
 
-    UARTE_BASE->ENABLE = (UARTE_ENABLE_ENABLE_Enabled << UARTE_ENABLE_ENABLE_Pos);
+    uarte_instance->ENABLE = (UARTE_ENABLE_ENABLE_Enabled << UARTE_ENABLE_ENABLE_Pos);
 
-    UARTE_BASE->EVENTS_ENDTX  = 0;
-    UARTE_BASE->EVENTS_ENDRX  = 0;
+    uarte_instance->EVENTS_ENDTX  = 0;
+    uarte_instance->EVENTS_ENDRX  = 0;
 }
 
-void hal_uart_char_write(uint8_t ch) {
+hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch) {
+
+    NRF_UARTE_Type * uarte_instance = (NRF_UARTE_Type *)p_instance;
+
+    uarte_instance->ERRORSRC = 0;
+
+
     static volatile uint8_t m_tx_buf[TX_BUF_SIZE];
     (void)m_tx_buf;
 
-    UARTE_BASE->INTENCLR = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
+    uarte_instance->INTENCLR = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
 
     m_tx_buf[0] = ch;
 
-    UARTE_BASE->TXD.PTR = (uint32_t)((uint8_t *)m_tx_buf);
-    UARTE_BASE->TXD.MAXCNT = (uint32_t)sizeof(m_tx_buf);
+    uarte_instance->TXD.PTR = (uint32_t)((uint8_t *)m_tx_buf);
+    uarte_instance->TXD.MAXCNT = (uint32_t)sizeof(m_tx_buf);
 
-    UARTE_BASE->TASKS_STARTTX = 1;
+    uarte_instance->TASKS_STARTTX = 1;
 
-    while((0 == UARTE_BASE->EVENTS_ENDTX));
+    while((0 == uarte_instance->EVENTS_ENDTX));
 
-    UARTE_BASE->EVENTS_ENDTX  = 0;
-    UARTE_BASE->TASKS_STOPTX  = 1;
+    uarte_instance->EVENTS_ENDTX  = 0;
+    uarte_instance->TASKS_STOPTX  = 1;
 
-    UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
+    uarte_instance->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
+
+    return uarte_instance->ERRORSRC;
 }
 
-uint8_t hal_uart_char_read(void) {
+hal_uart_error_t hal_uart_char_read(NRF_UART_Type * p_instance, uint8_t * ch) {
+
+    NRF_UARTE_Type * uarte_instance = (NRF_UARTE_Type *)p_instance;
+
+    uarte_instance->ERRORSRC = 0;
+
     static volatile uint8_t m_rx_buf[RX_BUF_SIZE];
 
-    UARTE_BASE->INTENCLR = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
+    uarte_instance->INTENCLR = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
 
-    UARTE_BASE->RXD.PTR = (uint32_t)((uint8_t *)m_rx_buf);
-    UARTE_BASE->RXD.MAXCNT = (uint32_t)sizeof(m_rx_buf);
+    uarte_instance->RXD.PTR = (uint32_t)((uint8_t *)m_rx_buf);
+    uarte_instance->RXD.MAXCNT = (uint32_t)sizeof(m_rx_buf);
 
-    UARTE_BASE->TASKS_STARTRX = 1;
+    uarte_instance->TASKS_STARTRX = 1;
 
-    while ((0 == UARTE_BASE->EVENTS_ENDRX));
+    while ((0 == uarte_instance->EVENTS_ENDRX));
 
-    UARTE_BASE->EVENTS_ENDRX  = 0;
-    UARTE_BASE->TASKS_STOPRX  = 1;
+    uarte_instance->EVENTS_ENDRX  = 0;
+    uarte_instance->TASKS_STOPRX  = 1;
 
-    UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
+    uarte_instance->INTENSET = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
+    *ch = (uint8_t)m_rx_buf[0];
 
-    return (uint8_t)m_rx_buf[0];
-}
-
-void hal_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
-    dma_write_cb = cb;
-
-    UARTE_BASE->TXD.PTR       = (uint32_t)p_buffer;
-    UARTE_BASE->TXD.MAXCNT    = num_of_bytes;
-    UARTE_BASE->TASKS_STARTTX = 1;
-
-    while((0 == UARTE_BASE->EVENTS_ENDTX));
-
-    UARTE_BASE->EVENTS_ENDTX  = 0;
-    UARTE_BASE->TASKS_STOPTX  = 1;
-
-    UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDTX_Set << UARTE_INTENSET_ENDTX_Pos);
-
-}
-
-void hal_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
-    dma_read_cb = cb;
-
-    UARTE_BASE->RXD.PTR       = (uint32_t)(p_buffer);
-    UARTE_BASE->RXD.MAXCNT    = num_of_bytes;
-    UARTE_BASE->TASKS_STARTRX = 1;
-
-    while ((0 == UARTE_BASE->EVENTS_ENDRX));
-
-    UARTE_BASE->EVENTS_ENDRX  = 0;
-    UARTE_BASE->TASKS_STOPRX  = 1;
-
-    UARTE_BASE->INTENSET = (UARTE_INTENSET_ENDRX_Set << UARTE_INTENSET_ENDRX_Pos);
-
-}
-
-static void dma_read_complete(void) {
-    UARTE_BASE->TASKS_STOPRX  = 1;
-
-    if (dma_read_cb != NULL) {
-        uart_complete_cb temp_cb = dma_read_cb;
-        dma_read_cb = NULL;
-        temp_cb();
-    }
-}
-
-static void dma_write_complete(void) {
-    UARTE_BASE->TASKS_STOPTX  = 1;
-
-    if (dma_write_cb != NULL) {
-        uart_complete_cb temp_cb = dma_write_cb;
-        dma_write_cb = NULL;
-        temp_cb();
-    }
-}
-
-void UARTE0_UART0_IRQHandler(void) {
-    if ((UARTE_BASE->EVENTS_ENDRX) 
-        && (UARTE_BASE->INTEN & UARTE_INTENSET_ENDRX_Msk)) {
-        
-        UARTE_BASE->EVENTS_ENDRX = 0;
-        dma_read_complete();
-
-    } else if ((UARTE_BASE->EVENTS_ENDTX) 
-        && (UARTE_BASE->INTEN & UARTE_INTENSET_ENDTX_Msk)) {
-
-        UARTE_BASE->EVENTS_ENDTX = 0;
-        dma_write_complete();
-    }
+    return uarte_instance->ERRORSRC;
 }
 
 #endif // HAL_UARTE_MODULE_ENABLED

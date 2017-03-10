@@ -341,10 +341,10 @@ extern const struct _mp_obj_module_t ble_module;
     struct _pyb_timer_obj_t *pyb_timer_obj_all[14]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
-    struct _pyb_uart_obj_t *pyb_stdio_uart; \
+    struct _machine_hard_uart_obj_t *pyb_stdio_uart; \
     \
     /* pointers to all UART objects (if they have been created) */ \
-    struct _pyb_uart_obj_t *pyb_uart_obj_all[1]; \
+    struct _machine_hard_uart_obj_t *pyb_uart_obj_all[1]; \
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \

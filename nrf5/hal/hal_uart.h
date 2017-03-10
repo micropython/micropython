@@ -33,42 +33,49 @@
 #include "nrf.h"
 
 #if NRF51
-
-#define UART_HWCONTROL_NONE                  ((uint32_t)UART_CONFIG_HWFC_Disabled << UART_CONFIG_HWFC_Pos)
-#define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos)
-#define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
+  #define UART_HWCONTROL_NONE                  ((uint32_t)UART_CONFIG_HWFC_Disabled << UART_CONFIG_HWFC_Pos)
+  #define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos)
+  #define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
                               (((CONTROL) == UART_HWCONTROL_NONE) || \
                                ((CONTROL) == UART_HWCONTROL_RTS_CTS))
+  #define UART_BASE_POINTERS (const uint32_t[]){NRF_UART0_BASE}
+  #define UART_IRQ_VALUES (const uint32_t[]){UART0_IRQn}
 
 #elif NRF52
-
-#define UART_HWCONTROL_NONE                  ((uint32_t)UARTE_CONFIG_HWFC_Disabled << UARTE_CONFIG_HWFC_Pos)
-#define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UARTE_CONFIG_HWFC_Enabled << UARTE_CONFIG_HWFC_Pos)
-#define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
+  #define UART_HWCONTROL_NONE                  ((uint32_t)UARTE_CONFIG_HWFC_Disabled << UARTE_CONFIG_HWFC_Pos)
+  #define UART_HWCONTROL_RTS_CTS               ((uint32_t)(UARTE_CONFIG_HWFC_Enabled << UARTE_CONFIG_HWFC_Pos)
+  #define IS_UART_HARDWARE_FLOW_CONTROL(CONTROL)\
                               (((CONTROL) == UART_HWCONTROL_NONE) || \
                                ((CONTROL) == UART_HWCONTROL_RTS_CTS))
+  #ifdef HAL_UART_MODULE_ENABLED
+    #define UART_BASE_POINTERS (const uint32_t[]){NRF_UART0_BASE}
+    #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn}
+  #else // HAL_UARTE_MODULE_ENABLED
+    #ifdef NRF52832_XXAA
+      #define UART_BASE_POINTERS (const uint32_t[]){NRF_UARTE0_BASE}
+      #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn}
+    #elif NRF52840_XXAA
+      #define UART_BASE_POINTERS (const uint32_t[]){NRF_UARTE0_BASE, \
+                                                    NRF_UARTE1_BASE}
+      #define UART_IRQ_VALUES (const uint32_t[]){UARTE0_UART0_IRQn, \
+                                                 UARTE1_IRQn}
+    #endif // HAL_UARTE_MODULE_ENABLED
+  #endif
 #else
 #error "Device not supported."
 #endif
-typedef enum {
-  HAL_UART_STATE_RESET             = 0x00,    /*!< Peripheral is not yet Initialized                  */
-  HAL_UART_STATE_READY             = 0x01,    /*!< Peripheral Initialized and ready for use           */
-  HAL_UART_STATE_BUSY              = 0x02,    /*!< an internal process is ongoing                     */
-  HAL_UART_STATE_BUSY_TX           = 0x12,    /*!< Data Transmission process is ongoing               */
-  HAL_UART_STATE_BUSY_RX           = 0x22,    /*!< Data Reception process is ongoing                  */
-  HAL_UART_STATE_BUSY_TX_RX        = 0x32,    /*!< Data Transmission and Reception process is ongoing */
-  HAL_UART_STATE_TIMEOUT           = 0x03,    /*!< Timeout state                                      */
-  HAL_UART_STATE_ERROR             = 0x04     /*!< Error                                              */
-} HAL_UART_StateTypeDef;
+
+#define UART_BASE(x) ((NRF_UART_Type *)UART_BASE_POINTERS[x])
+#define UART_IRQ_NUM(x) (UART_IRQ_VALUES[x])
 
 typedef enum
 {
-  HAL_UART_ERROR_NONE      = 0x00,    /*!< No error */
-  HAL_UART_ERROR_ORE       = 0x01,    /*!< Overrun error. A start bit is received while the previous data still lies in RXD. (Previous data is lost.) */
-  HAL_UART_ERROR_PE        = 0x02,    /*!< Parity error. A character with bad parity is received, if HW parity check is enabled. */
-  HAL_UART_ERROR_FE        = 0x04,    /*!< Frame error. A valid stop bit is not detected on the serial data input after all bits in a character have been received. */
-  HAL_UART_ERROR_BE        = 0x08,    /*!< Break error. The serial data input is '0' for longer than the length of a data frame. (The data frame length is 10 bits without parity bit, and 11 bits with parity bit.). */
-} HAL_UART_ErrorTypeDef;
+    HAL_UART_ERROR_NONE      = 0x00,    /*!< No error */
+    HAL_UART_ERROR_ORE       = 0x01,    /*!< Overrun error. A start bit is received while the previous data still lies in RXD. (Previous data is lost.) */
+    HAL_UART_ERROR_PE        = 0x02,    /*!< Parity error. A character with bad parity is received, if HW parity check is enabled. */
+    HAL_UART_ERROR_FE        = 0x04,    /*!< Frame error. A valid stop bit is not detected on the serial data input after all bits in a character have been received. */
+    HAL_UART_ERROR_BE        = 0x08,    /*!< Break error. The serial data input is '0' for longer than the length of a data frame. (The data frame length is 10 bits without parity bit, and 11 bits with parity bit.). */
+} hal_uart_error_t;
 
 typedef enum {
     HAL_UART_BAUD_1K2 = 0,        /**< 1200 baud */
@@ -89,47 +96,30 @@ typedef enum {
 } hal_uart_baudrate_t;
 
 typedef struct {
-    uint32_t baud_rate;
-    uint32_t flow_control;
-} UART_InitTypeDef;
+    uint8_t           id;           /* UART instance id */
+    const pin_obj_t * rx_pin;       /* RX pin. */
+    const pin_obj_t * tx_pin;       /* TX pin. */
+    const pin_obj_t * rts_pin;      /* RTS pin, only used if flow control is enabled. */
+    const pin_obj_t * cts_pin;      /* CTS pin, only used if flow control is enabled. */
+    bool              flow_control; /* Flow control setting, if flow control is used, the system will use low power UART mode, based on CTS signal. */
+    bool              use_parity;   /* Even parity if TRUE, no parity if FALSE. */
+    uint32_t          baud_rate;    /* Baud rate configuration. */
+    uint32_t          irq_priority; /* UARTE IRQ priority. */
+    uint32_t          irq_num;
+} hal_uart_init_t;
 
 typedef struct
 {
-    NRF_UART_Type      *instance;          /* UART registers base address        */
-    UART_InitTypeDef   init;               /* UART communication parameters      */
-    uint8_t            *p_tx_buff;         /* Pointer to UART Tx transfer Buffer */
-    uint16_t           tx_xfer_size;       /* UART Tx Transfer size              */
-    uint16_t           tx_xfer_count;      /* UART Tx Transfer Counter           */
-    uint8_t            *p_rx_buff;         /* Pointer to UART Rx transfer Buffer */
-    uint16_t           rx_xfer_size;       /* UART Rx Transfer size              */
-    uint16_t           rx_xfer_count;      /* UART Rx Transfer Counter           */
-    __IO HAL_UART_StateTypeDef state;      /* UART communication state           */
-    __IO HAL_UART_ErrorTypeDef error_code; /* UART Error code                    */
-
+    NRF_UART_Type     * p_instance; /* UART registers base address   */
+    hal_uart_init_t     init;       /* UART communication parameters */
 } UART_HandleTypeDef;
-
-typedef struct {
-    const pin_obj_t * rx_pin;       /**< RX pin. */
-    const pin_obj_t * tx_pin;       /**< TX pin. */
-    const pin_obj_t * rts_pin;      /**< RTS pin, only used if flow control is enabled. */
-    const pin_obj_t * cts_pin;      /**< CTS pin, only used if flow control is enabled. */
-    bool              flow_control; /**< Flow control setting, if flow control is used, the system will use low power UART mode, based on CTS signal. */
-    bool              use_parity;   /**< Even parity if TRUE, no parity if FALSE. */
-    uint32_t          baud_rate;    /**< Baud rate configuration. */
-    uint32_t          irq_priority; /**< UARTE IRQ priority. */
-} hal_uart_init_t;
-
 
 typedef void (*uart_complete_cb)(void);
 
-void hal_uart_init(hal_uart_init_t const * p_uart_init);
+void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_init);
 
-void hal_uart_char_write(uint8_t ch);
+hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch);
 
-uint8_t hal_uart_char_read(void);
+hal_uart_error_t hal_uart_char_read(NRF_UART_Type * p_instance, uint8_t * ch);
 
-void hal_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb);
-
-void hal_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb);
-
-#endif // UART_H__
+#endif // HAL_UART_H__

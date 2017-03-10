@@ -135,10 +135,10 @@ int main(int argc, char **argv) {
 #if (MICROPY_PY_BLE_NUS == 0)
     {
         mp_obj_t args[2] = {
-            MP_OBJ_NEW_SMALL_INT(PYB_UART_1),
+            MP_OBJ_NEW_SMALL_INT(0),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_STATE_PORT(pyb_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
 #endif
 

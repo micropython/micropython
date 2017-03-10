@@ -33,14 +33,6 @@
 
 #ifdef HAL_UART_MODULE_ENABLED
 
-#ifdef NRF51
-#define UART_BASE   ((NRF_UART_Type *) NRF_UART0_BASE)
-#define UART_IRQ_NUM UART0_IRQn
-#else
-#define UART_BASE   ((NRF_UART_Type *) NRF_UART0_BASE)
-#define UART_IRQ_NUM UARTE0_UART0_IRQn
-#endif
-
 uint32_t hal_uart_baudrate_lookup[] = {
     UART_BAUDRATE_BAUDRATE_Baud1200,   ///< 1200 baud.
     UART_BAUDRATE_BAUDRATE_Baud2400,   ///< 2400 baud.
@@ -60,80 +52,95 @@ uint32_t hal_uart_baudrate_lookup[] = {
     UART_BAUDRATE_BAUDRATE_Baud1M,     ///< 1000000 baud.
 };
 
-void hal_uart_char_write(uint8_t ch) {
-    UART_BASE->TXD = (uint8_t)ch;
-    while (UART_BASE->EVENTS_TXDRDY != 1) {
+hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch) {
+    p_instance->ERRORSRC = 0;
+    p_instance->TXD   = (uint8_t)ch;
+    while (p_instance->EVENTS_TXDRDY != 1) {
         // Blocking wait.
     }
 
     // Clear the TX flag.
-    UART_BASE->EVENTS_TXDRDY = 0;
+    p_instance->EVENTS_TXDRDY = 0;
+
+    return p_instance->ERRORSRC;
 }
 
-uint8_t hal_uart_char_read(void) {
-    while (UART_BASE->EVENTS_RXDRDY != 1) {
+hal_uart_error_t hal_uart_char_read(NRF_UART_Type * p_instance, uint8_t * ch) {
+    p_instance->ERRORSRC = 0;
+    while (p_instance->EVENTS_RXDRDY != 1) {
         // Wait for RXD data.
     }
 
-    UART_BASE->EVENTS_RXDRDY = 0;
-    return (uint8_t)UART_BASE->RXD;
+    p_instance->EVENTS_RXDRDY = 0;
+    *ch = p_instance->RXD;
+
+    return p_instance->ERRORSRC;
 }
 
-void hal_uart_buffer_write(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
+hal_uart_error_t hal_uart_buffer_write(NRF_UART_Type * p_instance, uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
     int i = 0;
+    hal_uart_error_t err = 0;
     uint8_t ch = p_buffer[i++];
     while (i < num_of_bytes) {
-        hal_uart_char_write(ch);
+        err = hal_uart_char_write(p_instance, ch);
+        if (err) {
+            return err;
+        }
         ch = p_buffer[i++];
     }
     cb();
+    return err;
 }
 
-void hal_uart_buffer_read(uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
+hal_uart_error_t hal_uart_buffer_read(NRF_UART_Type * p_instance, uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
     int i = 0;
+    hal_uart_error_t err = 0;
     while (i < num_of_bytes) {
-        uint8_t ch = hal_uart_char_read();
-        p_buffer[i] = ch;
+        hal_uart_error_t err = hal_uart_char_read(p_instance, &p_buffer[i]);
+        if (err) {
+            return err;
+        }
         i++;
     }
     cb();
+    return err;
 }
 
-void hal_uart_init(hal_uart_init_t const * p_uart_init) {
+void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_init) {
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
     hal_gpio_pin_clear(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin);
 
-    UART_BASE->PSELTXD = p_uart_init->tx_pin->pin;
-    UART_BASE->PSELRXD = p_uart_init->rx_pin->pin;
+    p_instance->PSELTXD = p_uart_init->tx_pin->pin;
+    p_instance->PSELRXD = p_uart_init->rx_pin->pin;
 
 #if NRF52840_XXAA
-    UART_BASE->PSELTXD |= (p_uart_init->tx_pin->port << UARTE_PSEL_TXD_PORT_Pos);
-    UART_BASE->PSELRXD |= (p_uart_init->rx_pin->port << UARTE_PSEL_RXD_PORT_Pos);
+    p_instance->PSELTXD |= (p_uart_init->tx_pin->port << UARTE_PSEL_TXD_PORT_Pos);
+    p_instance->PSELRXD |= (p_uart_init->rx_pin->port << UARTE_PSEL_RXD_PORT_Pos);
 #endif
 
     if (p_uart_init->flow_control) {
         hal_gpio_cfg_pin(p_uart_init->rts_pin->port, p_uart_init->rts_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
         hal_gpio_cfg_pin(p_uart_init->cts_pin->port, p_uart_init->cts_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
-        UART_BASE->PSELCTS = p_uart_init->cts_pin->pin;
-        UART_BASE->PSELRTS = p_uart_init->rts_pin->pin;
+        p_instance->PSELCTS = p_uart_init->cts_pin->pin;
+        p_instance->PSELRTS = p_uart_init->rts_pin->pin;
 
 #if NRF52840_XXAA
-        UART_BASE->PSELCTS |= (p_uart_init->cts_pin->port << UARTE_PSEL_CTS_PORT_Pos);
-        UART_BASE->PSELRTS |= (p_uart_init->rts_pin->port << UARTE_PSEL_RTS_PORT_Pos);
+        p_instance->PSELCTS |= (p_uart_init->cts_pin->port << UARTE_PSEL_CTS_PORT_Pos);
+        p_instance->PSELRTS |= (p_uart_init->rts_pin->port << UARTE_PSEL_RTS_PORT_Pos);
 #endif
 
-        UART_BASE->CONFIG  = (UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos);
+        p_instance->CONFIG  = (UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos);
     }
 
-    UART_BASE->BAUDRATE      = (hal_uart_baudrate_lookup[p_uart_init->baud_rate]);
-    UART_BASE->ENABLE        = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
-    UART_BASE->EVENTS_TXDRDY = 0;
-    UART_BASE->EVENTS_RXDRDY = 0;
-    UART_BASE->TASKS_STARTTX = 1;
-    UART_BASE->TASKS_STARTRX = 1;
+    p_instance->BAUDRATE      = (hal_uart_baudrate_lookup[p_uart_init->baud_rate]);
+    p_instance->ENABLE        = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
+    p_instance->EVENTS_TXDRDY = 0;
+    p_instance->EVENTS_RXDRDY = 0;
+    p_instance->TASKS_STARTTX = 1;
+    p_instance->TASKS_STARTRX = 1;
 }
 
 #endif // HAL_UART_MODULE_ENABLED

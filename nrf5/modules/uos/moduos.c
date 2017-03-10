@@ -118,7 +118,7 @@ STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         if (args[0] == mp_const_none) {
             MP_STATE_PORT(pyb_stdio_uart) = NULL;
-        } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+        } else if (mp_obj_get_type(args[0]) == &machine_hard_uart_type) {
             MP_STATE_PORT(pyb_stdio_uart) = args[0];
         } else {
             nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a UART object"));
