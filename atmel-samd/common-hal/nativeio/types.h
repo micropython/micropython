@@ -101,6 +101,12 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
+    __IO PORT_PINCFG_Type *pincfg;
+    uint8_t pin;
+} nativeio_pulseout_obj_t;
+
+typedef struct {
+    mp_obj_base_t base;
     // Only support TouchIn when external SPI flash is used.
     #ifdef SPI_FLASH_SECTOR_SIZE
     const mcu_pin_obj_t * pin;

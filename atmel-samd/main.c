@@ -25,6 +25,7 @@
 #include <board.h>
 
 #include "common-hal/nativeio/AnalogIn.h"
+#include "common-hal/nativeio/PulseOut.h"
 #include "common-hal/nativeio/PWMOut.h"
 #include "common-hal/usb_hid/__init__.h"
 
@@ -169,6 +170,8 @@ void reset_samd21(void) {
 #endif
 
     analogin_reset();
+
+    pulseout_reset();
 
     // Wait for the DAC to sync.
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}

@@ -224,6 +224,7 @@ SRC_BINDINGS = \
 	nativeio/AnalogOut.c \
 	nativeio/DigitalInOut.c \
 	nativeio/I2C.c \
+	nativeio/PulseOut.c \
 	nativeio/PWMOut.c \
 	nativeio/SPI.c \
 	nativeio/UART.c \
