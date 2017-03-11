@@ -1,8 +1,13 @@
-try:
-    import uio as io
-except ImportError:
-    import io
 import sys
+try:
+    try:
+        import uio as io
+    except ImportError:
+        import io
+except ImportError:
+    print("SKIP")
+    sys.exit()
+
 if hasattr(sys, 'print_exception'):
     print_exception = sys.print_exception
 else:
