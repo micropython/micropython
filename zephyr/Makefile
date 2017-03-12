@@ -102,5 +102,4 @@ z_clean:
 
 .PHONY: prj.conf
 prj.conf: prj_base.conf
-	cat $< >$@
-	if [ -f prj_$(BOARD).conf ]; then cat prj_$(BOARD).conf >>$@; fi
+	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
