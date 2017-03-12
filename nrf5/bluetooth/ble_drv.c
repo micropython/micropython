@@ -36,7 +36,7 @@
 #include "ble.h" // sd_ble_uuid_encode
 
 
-#define BLE_DRIVER_VERBOSE 0
+#define BLE_DRIVER_VERBOSE 1
 #if BLE_DRIVER_VERBOSE
 #define BLE_DRIVER_LOG printf
 #else
@@ -661,13 +661,30 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t 
     ubluepy_gatts_event_handler = evt_handler;
 }
 
-void ble_drv_scan_start(void) {
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
 
+void ble_drv_scan_start(void) {
+    ble_gap_scan_params_t scan_params;
+    scan_params.active   = 1;
+    scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
+    scan_params.window   = MSEC_TO_UNITS(100, UNIT_0_625_MS);
+    scan_params.timeout  = 0; // Infinite
+
+#if (BLUETOOTH_SD == 130)
+    scan_params.selective   = 0,
+    scan_params.p_whitelist = NULL,
+#else
+    scan_params.use_whitelist = 0,
+#endif
+
+    sd_ble_gap_scan_start(&scan_params);
 }
 
 void ble_drv_scan_stop(void) {
-
+    sd_ble_gap_scan_stop();
 }
+
+#endif
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // S132 event ranges.
@@ -734,6 +751,12 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                                                BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP,
                                                NULL, NULL);
              break;
+
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+        case BLE_GAP_EVT_ADV_REPORT:
+             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
+             break;
+#endif
 
         default:
             BLE_DRIVER_LOG(">>> unhandled evt: 0x" HEX2_FMT "\n", p_ble_evt->header.evt_id);
