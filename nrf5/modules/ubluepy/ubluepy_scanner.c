@@ -33,6 +33,7 @@
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
 #include "ble_drv.h"
+#include "hal_time.h"
 
 STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_scanner_obj_t * self = (ubluepy_scanner_obj_t *)o;
@@ -57,14 +58,42 @@ STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(s);
 }
 
+/// \method scan(timeout)
+/// Scan for devices. Timeout is in milliseconds and will set the duration
+/// of the scanning.
+///
+STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
+    ubluepy_scanner_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t timeout = mp_obj_get_int(timeout_in);
+
+    // start
+    ble_drv_scan_start();
+
+    // sleep
+    mp_hal_delay_ms(timeout);
+
+    // stop
+    ble_drv_scan_stop();
+
+    (void)self;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_scanner_scan_obj, scanner_scan);
+
+STATIC const mp_map_elem_t ubluepy_scanner_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)(&ubluepy_scanner_scan_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(ubluepy_scanner_locals_dict, ubluepy_scanner_locals_dict_table);
+
+
 const mp_obj_type_t ubluepy_scanner_type = {
     { &mp_type_type },
     .name = MP_QSTR_Scanner,
     .print = ubluepy_scanner_print,
     .make_new = ubluepy_scanner_make_new,
-#if 0
     .locals_dict = (mp_obj_t)&ubluepy_scanner_locals_dict
-#endif
 };
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
