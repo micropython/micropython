@@ -77,6 +77,8 @@ extern const mp_obj_type_t ubluepy_uuid_type;
 extern const mp_obj_type_t ubluepy_service_type;
 extern const mp_obj_type_t ubluepy_characteristic_type;
 extern const mp_obj_type_t ubluepy_peripheral_type;
+extern const mp_obj_type_t ubluepy_scanner_type;
+extern const mp_obj_type_t ubluepy_scan_entry_type;
 
 typedef enum {
     UBLUEPY_UUID_16_BIT = 1,
@@ -142,6 +144,14 @@ typedef struct _ubluepy_advertise_data_t {
     mp_obj_t * p_services;
     uint8_t    num_of_services;
 } ubluepy_advertise_data_t;
+
+typedef struct _ubluepy_scanner_obj_t {
+    mp_obj_base_t base;
+} ubluepy_scanner_obj_t;
+
+typedef struct _ubluepy_scan_entry_obj_t {
+    mp_obj_base_t base;
+} ubluepy_scan_entry_obj_t;
 
 typedef enum _ubluepy_prop_t {
     UBLUEPY_PROP_BROADCAST      = 0x01,
