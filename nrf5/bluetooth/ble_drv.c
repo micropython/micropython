@@ -36,7 +36,7 @@
 #include "ble.h" // sd_ble_uuid_encode
 
 
-#define BLE_DRIVER_VERBOSE 0
+#define BLE_DRIVER_VERBOSE 1
 #if BLE_DRIVER_VERBOSE
 #define BLE_DRIVER_LOG printf
 #else
@@ -664,7 +664,6 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t 
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
 
 void ble_drv_scan_start(void) {
-#if 0
     SD_TEST_OR_ENABLE();
 
     ble_gap_scan_params_t scan_params;
@@ -685,7 +684,6 @@ void ble_drv_scan_start(void) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not start scanning. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
-#endif // 0
 }
 
 void ble_drv_scan_stop(void) {
