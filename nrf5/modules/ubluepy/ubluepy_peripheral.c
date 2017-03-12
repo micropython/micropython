@@ -247,7 +247,7 @@ STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_setNotificationHandler), (mp_obj_t)(&ubluepy_peripheral_set_notif_handler_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_setConnectionHandler),   (mp_obj_t)(&ubluepy_peripheral_set_conn_handler_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getServices),            (mp_obj_t)(&ubluepy_peripheral_get_services_obj) },
-#if MICROPY_PY_UBLUEPY_CENTRAL
+#if 0 // MICROPY_PY_UBLUEPY_CENTRAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect),                (mp_obj_t)(&ubluepy_peripheral_connect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),             (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getServiceByUUID),       (mp_obj_t)(&ubluepy_peripheral_get_service_by_uuid_obj) },
