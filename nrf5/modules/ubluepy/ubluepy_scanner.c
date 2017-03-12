@@ -34,11 +34,17 @@
 
 #include "ble_drv.h"
 
+STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+    ubluepy_scanner_obj_t * self = (ubluepy_scanner_obj_t *)o;
+    (void)self;
+    mp_printf(print, "Scanner");
+}
+
 const mp_obj_type_t ubluepy_scanner_type = {
     { &mp_type_type },
     .name = MP_QSTR_Scanner,
-#if 0
     .print = ubluepy_scanner_print,
+#if 0
     .make_new = ubluepy_scanner_make_new,
     .locals_dict = (mp_obj_t)&ubluepy_scanner_locals_dict
 #endif
