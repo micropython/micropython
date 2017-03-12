@@ -36,7 +36,7 @@
 #include "ble.h" // sd_ble_uuid_encode
 
 
-#define BLE_DRIVER_VERBOSE 1
+#define BLE_DRIVER_VERBOSE 0
 #if BLE_DRIVER_VERBOSE
 #define BLE_DRIVER_LOG printf
 #else
@@ -664,6 +664,9 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t 
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
 
 void ble_drv_scan_start(void) {
+#if 0
+    SD_TEST_OR_ENABLE();
+
     ble_gap_scan_params_t scan_params;
     scan_params.active   = 1;
     scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
@@ -671,13 +674,18 @@ void ble_drv_scan_start(void) {
     scan_params.timeout  = 0; // Infinite
 
 #if (BLUETOOTH_SD == 130)
-    scan_params.selective   = 0,
-    scan_params.p_whitelist = NULL,
+    scan_params.selective   = 0;
+    scan_params.p_whitelist = NULL;
 #else
-    scan_params.use_whitelist = 0,
+    scan_params.use_whitelist = 0;
 #endif
 
-    sd_ble_gap_scan_start(&scan_params);
+    uint32_t err_code;
+    if ((err_code = sd_ble_gap_scan_start(&scan_params)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not start scanning. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+#endif // 0
 }
 
 void ble_drv_scan_stop(void) {
