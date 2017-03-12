@@ -40,12 +40,29 @@ STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_
     mp_printf(print, "Scanner");
 }
 
+STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    static const mp_arg_t allowed_args[] = {
+
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    ubluepy_scanner_obj_t * s = m_new_obj(ubluepy_scanner_obj_t);
+    s->base.type = type;
+
+//    s->scan_list = mp_obj_new_list(0, NULL);
+
+    return MP_OBJ_FROM_PTR(s);
+}
+
 const mp_obj_type_t ubluepy_scanner_type = {
     { &mp_type_type },
     .name = MP_QSTR_Scanner,
     .print = ubluepy_scanner_print,
-#if 0
     .make_new = ubluepy_scanner_make_new,
+#if 0
     .locals_dict = (mp_obj_t)&ubluepy_scanner_locals_dict
 #endif
 };
