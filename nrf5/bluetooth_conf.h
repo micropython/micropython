@@ -23,6 +23,7 @@
 #define MICROPY_PY_BLE_NUS              (0)
 #define MICROPY_PY_UBLUEPY              (1)
 #define MICROPY_PY_UBLUEPY_PERIPHERAL   (1)
+#define MICROPY_PY_UBLUEPY_CENTRAL      (0)
 
 #else
 #error "SD not supported"
