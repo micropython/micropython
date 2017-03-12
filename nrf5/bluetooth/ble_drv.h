@@ -60,4 +60,8 @@ void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uin
 
 void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
+void ble_drv_scan_start(void);
+
+void ble_drv_scan_stop(void);
+
 #endif // BLUETOOTH_LE_DRIVER_H__

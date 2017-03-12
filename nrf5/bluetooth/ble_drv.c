@@ -661,6 +661,14 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t 
     ubluepy_gatts_event_handler = evt_handler;
 }
 
+void ble_drv_scan_start(void) {
+
+}
+
+void ble_drv_scan_stop(void) {
+
+}
+
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // S132 event ranges.
 // Common 0x01 -> 0x0F
