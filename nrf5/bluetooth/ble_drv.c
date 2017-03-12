@@ -745,17 +745,17 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-             BLE_DRIVER_LOG("BLE EVT SEC PARAMS REQUEST\n");
-             // pairing not supported
-             (void)sd_ble_gap_sec_params_reply(p_ble_evt->evt.gatts_evt.conn_handle,
-                                               BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP,
-                                               NULL, NULL);
-             break;
+            BLE_DRIVER_LOG("BLE EVT SEC PARAMS REQUEST\n");
+            // pairing not supported
+            (void)sd_ble_gap_sec_params_reply(p_ble_evt->evt.gatts_evt.conn_handle,
+                                              BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP,
+                                              NULL, NULL);
+            break;
 
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
         case BLE_GAP_EVT_ADV_REPORT:
-             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
-             break;
+            BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
+            break;
 #endif
 
         default:
