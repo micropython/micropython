@@ -25,7 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_VFS
+#if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
 #include <errno.h>
@@ -37,10 +37,8 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
 
-#if MICROPY_VFS_FAT
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
-#endif
 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
@@ -300,4 +298,4 @@ mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode)
     return file_open(self, &mp_type_textio, arg_vals);
 }
 
-#endif // MICROPY_VFS
+#endif // MICROPY_VFS && MICROPY_VFS_FAT
