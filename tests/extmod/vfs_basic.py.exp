@@ -1,0 +1,17 @@
+1 mount False False
+['test_mnt']
+1 listdir /
+['a1']
+1 listdir /
+['a1']
+2 mount True False
+['test_mnt', 'test_mnt2']
+2 listdir /
+['a2']
+1 chdir /
+1 listdir 
+['a1']
+1 open test_file r
+1 open test_file wb
+1 umount
+2 umount
