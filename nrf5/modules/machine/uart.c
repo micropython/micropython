@@ -137,7 +137,7 @@ void uart_tx_strn_cooked(machine_hard_uart_obj_t *uart_obj, const char *str, uin
 /******************************************************************************/
 /* Micro Python bindings                                                      */
 
-STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void machine_hard_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
 }
 
 
@@ -283,18 +283,6 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-/// \method any()
-/// Return `True` if any characters waiting, else `False`.
-STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
-    machine_hard_uart_obj_t *self = self_in;
-    if (uart_rx_any(self)) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
-
 /// \method writechar(char)
 /// Write a single character on the bus.  `char` is an integer to write.
 /// Return value: `None`.
@@ -343,7 +331,7 @@ STATIC mp_obj_t machine_hard_uart_sendbreak(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_sendbreak_obj, machine_hard_uart_sendbreak);
 
-STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
+STATIC const mp_map_elem_t machine_hard_uart_locals_dict_table[] = {
     // instance methods
     /// \method read([nbytes])
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
@@ -363,7 +351,7 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
 */
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(machine_hard_uart_locals_dict, machine_hard_uart_locals_dict_table);
 
 STATIC mp_uint_t machine_hard_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_hard_uart_obj_t *self = self_in;
@@ -437,11 +425,11 @@ STATIC const mp_stream_p_t uart_stream_p = {
 const mp_obj_type_t machine_hard_uart_type = {
     { &mp_type_type },
     .name = MP_QSTR_UART,
-    .print = pyb_uart_print,
+    .print = machine_hard_uart_print,
     .make_new = machine_hard_uart_make_new,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
+    .locals_dict = (mp_obj_t)&machine_hard_uart_locals_dict,
 };
 
