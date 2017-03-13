@@ -63,6 +63,10 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
+} nativeio_pulsein_obj_t;
+
+typedef struct {
+    mp_obj_base_t base;
 } nativeio_pulseout_obj_t;
 
 typedef struct {

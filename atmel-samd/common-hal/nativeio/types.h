@@ -90,6 +90,25 @@ typedef struct {
 
 typedef struct {
     mp_obj_base_t base;
+    uint8_t channel;
+    uint8_t pin;
+    uint16_t* buffer;
+    uint16_t maxlen;
+    bool idle_state;
+    volatile uint16_t start;
+    volatile uint16_t len;
+    volatile bool first_edge;
+    uint16_t ticks_per_ms;
+} nativeio_pulsein_obj_t;
+
+typedef struct {
+    mp_obj_base_t base;
+    __IO PORT_PINCFG_Type *pincfg;
+    uint8_t pin;
+} nativeio_pulseout_obj_t;
+
+typedef struct {
+    mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
     const pin_timer_t* timer;
     bool variable_frequency;
@@ -98,12 +117,6 @@ typedef struct {
         struct tcc_module tcc_instance;
     };
 } nativeio_pwmout_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    __IO PORT_PINCFG_Type *pincfg;
-    uint8_t pin;
-} nativeio_pulseout_obj_t;
 
 typedef struct {
     mp_obj_base_t base;

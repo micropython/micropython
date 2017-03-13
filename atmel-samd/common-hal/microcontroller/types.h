@@ -59,6 +59,8 @@ typedef struct {
     mp_obj_base_t base;
     qstr name;
     uint8_t pin;
+    bool has_extint:1;
+    uint8_t extint_channel:7;
     bool has_adc:1;
     enum adc_positive_input adc_input:7;
     bool has_touch:1;

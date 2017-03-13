@@ -150,6 +150,8 @@ LIBS = -larm_cortexM0l_math -lsamd21_qtouch_gcc -lm -lgcc -lc
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/adc/adc_sam_d_r/adc.c \
 	drivers/dac/dac_sam_d_c/dac.c \
+	drivers/extint/extint_callback.c \
+	drivers/extint/extint_sam_d_r/extint.c \
 	drivers/nvm/nvm.c \
 	drivers/port/port.c \
 	drivers/sercom/i2c/i2c_sam0/i2c_master.c \
@@ -224,6 +226,7 @@ SRC_BINDINGS = \
 	nativeio/AnalogOut.c \
 	nativeio/DigitalInOut.c \
 	nativeio/I2C.c \
+	nativeio/PulseIn.c \
 	nativeio/PulseOut.c \
 	nativeio/PWMOut.c \
 	nativeio/SPI.c \

@@ -114,6 +114,7 @@ SRC_COMMON_HAL = \
 	nativeio/AnalogOut.c \
 	nativeio/DigitalInOut.c \
 	nativeio/I2C.c \
+	nativeio/PulseIn.c \
 	nativeio/PulseOut.c \
 	nativeio/PWMOut.c \
 	nativeio/SPI.c \

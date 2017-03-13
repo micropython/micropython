@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@
 #include "shared-bindings/nativeio/AnalogOut.h"
 #include "shared-bindings/nativeio/DigitalInOut.h"
 #include "shared-bindings/nativeio/I2C.h"
+#include "shared-bindings/nativeio/PulseIn.h"
 #include "shared-bindings/nativeio/PulseOut.h"
 #include "shared-bindings/nativeio/PWMOut.h"
 #include "shared-bindings/nativeio/SPI.h"
@@ -75,6 +76,7 @@
 //|     AnalogOut
 //|     DigitalInOut
 //|     I2C
+//|     PulseIn
 //|     PulseOut
 //|     PWMOut
 //|     SPI
@@ -118,6 +120,7 @@ STATIC const mp_rom_map_elem_t nativeio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AnalogOut),   MP_ROM_PTR(&nativeio_analogout_type) },
     { MP_ROM_QSTR(MP_QSTR_DigitalInOut),  MP_ROM_PTR(&nativeio_digitalinout_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&nativeio_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_PulseIn), MP_ROM_PTR(&nativeio_pulsein_type) },
     { MP_ROM_QSTR(MP_QSTR_PulseOut), MP_ROM_PTR(&nativeio_pulseout_type) },
     { MP_ROM_QSTR(MP_QSTR_PWMOut), MP_ROM_PTR(&nativeio_pwmout_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&nativeio_spi_type) },

@@ -24,19 +24,23 @@
  * THE SOFTWARE.
  */
 
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_PULSEIN_H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_PULSEIN_H__
 
-#include <stdint.h>
+#include "common-hal/microcontroller/types.h"
+#include "common-hal/nativeio/types.h"
 
-#include "py/runtime.h"
-#include "shared-bindings/nativeio/PulseOut.h"
+extern const mp_obj_type_t nativeio_pulsein_type;
 
-void common_hal_nativeio_pulseout_construct(nativeio_pulseout_obj_t* self,
-                                            const nativeio_pwmout_obj_t* carrier) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "No hardware support for PulseOut."));
-}
+extern void common_hal_nativeio_pulsein_construct(nativeio_pulsein_obj_t* self,
+    const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state);
+extern void common_hal_nativeio_pulsein_deinit(nativeio_pulsein_obj_t* self);
+extern void common_hal_nativeio_pulsein_pause(nativeio_pulsein_obj_t* self);
+extern void common_hal_nativeio_pulsein_resume(nativeio_pulsein_obj_t* self, uint16_t trigger_duration);
+extern void common_hal_nativeio_pulsein_clear(nativeio_pulsein_obj_t* self);
+extern uint16_t common_hal_nativeio_pulsein_popleft(nativeio_pulsein_obj_t* self);
+extern uint16_t common_hal_nativeio_pulsein_get_maxlen(nativeio_pulsein_obj_t* self);
+extern uint16_t common_hal_nativeio_pulsein_get_len(nativeio_pulsein_obj_t* self);
+extern uint16_t common_hal_nativeio_pulsein_get_item(nativeio_pulsein_obj_t* self, int16_t index);
 
-void common_hal_nativeio_pulseout_deinit(nativeio_pulseout_obj_t* self) {
-}
-
-void common_hal_nativeio_pulseout_send(nativeio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
-}
+#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_PULSEIN_H__

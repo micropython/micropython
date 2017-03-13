@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+
+#include <stdint.h>
 
 #include "mpconfigport.h"
+#include "py/gc.h"
+#include "py/runtime.h"
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/nativeio/PulseIn.h"
 
-extern volatile uint64_t ticks_ms;
+void common_hal_nativeio_pulsein_construct(nativeio_pulsein_obj_t* self,
+        const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
+    mp_raise_NotImplementedError("");
+}
 
-extern struct tc_module ms_timer;
+void common_hal_nativeio_pulsein_deinit(nativeio_pulsein_obj_t* self) {
 
-void tick_init(void);
+}
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_TICK_H__
+void common_hal_nativeio_pulsein_pause(nativeio_pulsein_obj_t* self) {
+}
+
+void common_hal_nativeio_pulsein_resume(nativeio_pulsein_obj_t* self,
+        uint16_t trigger_duration) {
+}
+
+void common_hal_nativeio_pulsein_clear(nativeio_pulsein_obj_t* self) {
+}
+
+uint16_t common_hal_nativeio_pulsein_popleft(nativeio_pulsein_obj_t* self) {
+    return 0;
+}
+
+uint16_t common_hal_nativeio_pulsein_get_maxlen(nativeio_pulsein_obj_t* self) {
+    return 0;
+}
+
+uint16_t common_hal_nativeio_pulsein_get_len(nativeio_pulsein_obj_t* self) {
+    return 0;
+}
+
+uint16_t common_hal_nativeio_pulsein_get_item(nativeio_pulsein_obj_t* self,
+        int16_t index) {
+    return 0;
+}

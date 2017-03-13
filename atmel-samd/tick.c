@@ -7,7 +7,7 @@
 // Global millisecond tick count
 volatile uint64_t ticks_ms = 0;
 
-static struct tc_module ms_timer;
+struct tc_module ms_timer;
 
 static void ms_tick(struct tc_module *const module_inst) {
     // SysTick interrupt handler called when the SysTick timer reaches zero
