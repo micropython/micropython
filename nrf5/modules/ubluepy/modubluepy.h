@@ -155,7 +155,7 @@ typedef struct _ubluepy_scan_entry_obj_t {
     uint8_t       addr[6];
     uint8_t       addr_type;
     bool          connectable;
-    uint8_t       rssi;
+    int8_t        rssi;
     mp_obj_t      data;
 } ubluepy_scan_entry_obj_t;
 
