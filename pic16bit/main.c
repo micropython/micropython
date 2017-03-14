@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "py/mperrno.h"
 #include "lib/utils/pyexec.h"
 #include "readline.h"
 #include "board.h"
@@ -98,7 +99,7 @@ void gc_collect(void) {
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(MP_ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
