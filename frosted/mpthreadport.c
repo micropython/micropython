@@ -135,32 +135,12 @@ void mp_thread_start(void) {
 }
 
 void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
-    // default stack size is 8k machine-words
-    if (*stack_size == 0) {
-        *stack_size = 8192 * BYTES_PER_WORD;
-    }
-
-    // minimum stack size is set by pthreads
-    if (*stack_size < PTHREAD_STACK_MIN) {
-        *stack_size = PTHREAD_STACK_MIN;
-    }
-
-    // set thread attributes
-    pthread_attr_t attr;
-    int ret = pthread_attr_init(&attr);
-    if (ret != 0) {
-        goto er;
-    }
-    ret = pthread_attr_setstacksize(&attr, *stack_size);
-    if (ret != 0) {
-        goto er;
-    }
-
+    int ret;
     pthread_mutex_lock(&thread_mutex);
 
     // create thread
     pthread_t id;
-    ret = pthread_create(&id, &attr, entry, arg);
+    ret = pthread_create(&id, NULL, entry, arg);
     if (ret != 0) {
         pthread_mutex_unlock(&thread_mutex);
         goto er;
@@ -168,7 +148,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
 
     // adjust stack_size to provide room to recover from hitting the limit
     // this value seems to be about right for both 32-bit and 64-bit builds
-    *stack_size -= 8192;
+    *stack_size -= 1024;
 
     // add thread to linked list of all threads
     thread_t *th = malloc(sizeof(thread_t));
