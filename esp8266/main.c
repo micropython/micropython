@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "lib/mp-readline/readline.h"
@@ -111,7 +112,7 @@ void user_init(void) {
 
 #if !MICROPY_VFS
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(MP_ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
