@@ -225,18 +225,13 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
 
 mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
     mp_reader_t reader;
-    if (!mp_reader_new_mem(&reader, buf, len, 0)) {
-        m_malloc_fail(BYTES_PER_WORD); // we need to raise a MemoryError
-    }
+    mp_reader_new_mem(&reader, buf, len, 0);
     return mp_raw_code_load(&reader);
 }
 
 mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
     mp_reader_t reader;
-    int ret = mp_reader_new_file(&reader, filename);
-    if (ret != 0) {
-        mp_raise_OSError(ret);
-    }
+    mp_reader_new_file(&reader, filename);
     return mp_raw_code_load(&reader);
 }
 

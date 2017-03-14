@@ -699,13 +699,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
 }
 
 mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
-    mp_lexer_t *lex = m_new_obj_maybe(mp_lexer_t);
-
-    // check for memory allocation error
-    if (lex == NULL) {
-        reader.close(reader.data);
-        return NULL;
-    }
+    mp_lexer_t *lex = m_new_obj(mp_lexer_t);
 
     lex->source_name = src_name;
     lex->reader = reader;
@@ -715,15 +709,8 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->nested_bracket_level = 0;
     lex->alloc_indent_level = MICROPY_ALLOC_LEXER_INDENT_INIT;
     lex->num_indent_level = 1;
-    lex->indent_level = m_new_maybe(uint16_t, lex->alloc_indent_level);
+    lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);
-
-    // check for memory allocation error
-    // note: vstr_init above may fail on malloc, but so may mp_lexer_to_next below
-    if (lex->indent_level == NULL) {
-        mp_lexer_free(lex);
-        return NULL;
-    }
 
     // store sentinel for first indentation level
     lex->indent_level[0] = 0;
@@ -764,9 +751,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
 
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len) {
     mp_reader_t reader;
-    if (!mp_reader_new_mem(&reader, (const byte*)str, len, free_len)) {
-        return NULL;
-    }
+    mp_reader_new_mem(&reader, (const byte*)str, len, free_len);
     return mp_lexer_new(src_name, reader);
 }
 
@@ -774,10 +759,7 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     mp_reader_t reader;
-    int ret = mp_reader_new_file(&reader, filename);
-    if (ret != 0) {
-        return NULL;
-    }
+    mp_reader_new_file(&reader, filename);
     return mp_lexer_new(qstr_from_str(filename), reader);
 }
 
@@ -785,10 +767,7 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
 
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd) {
     mp_reader_t reader;
-    int ret = mp_reader_new_file_from_fd(&reader, fd, close_fd);
-    if (ret != 0) {
-        return NULL;
-    }
+    mp_reader_new_file_from_fd(&reader, fd, close_fd);
     return mp_lexer_new(filename, reader);
 }
 
