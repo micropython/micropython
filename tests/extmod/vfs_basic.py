@@ -46,6 +46,10 @@ class Filesystem:
         print(self.id, 'open', file, mode)
 
 
+# first we umount any existing mount points the target may have
+for path in uos.listdir('/'):
+    uos.umount('/' + path)
+
 # stat root dir
 print(uos.stat('/'))
 
