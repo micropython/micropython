@@ -41,9 +41,14 @@ STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_d
     ubluepy_scan_entry_obj_t * item = m_new_obj(ubluepy_scan_entry_obj_t);
     item->base.type = &ubluepy_scan_entry_type;
 
-    mp_obj_list_append(self->adv_reports, item);
+    item->addr[0] = data->p_peer_addr[5];
+    item->addr[1] = data->p_peer_addr[4];
+    item->addr[2] = data->p_peer_addr[3];
+    item->addr[3] = data->p_peer_addr[2];
+    item->addr[4] = data->p_peer_addr[1];
+    item->addr[5] = data->p_peer_addr[0];
 
-    (void)self;
+    mp_obj_list_append(self->adv_reports, item);
 }
 
 STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
