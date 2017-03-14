@@ -6,15 +6,12 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
+#include "py/mperrno.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-    if (lex == NULL) {
-        return;
-    }
-
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
@@ -35,7 +32,7 @@ int main(int argc, char **argv) {
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(MP_ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
