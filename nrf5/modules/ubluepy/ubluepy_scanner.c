@@ -38,7 +38,10 @@
 STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
     ubluepy_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_obj_list_append(self->adv_reports, MP_OBJ_NEW_SMALL_INT(event_id)); // TODO: Swap out with ScanEntry
+    ubluepy_scan_entry_obj_t * item = m_new_obj(ubluepy_scan_entry_obj_t);
+    item->base.type = &ubluepy_scan_entry_type;
+
+    mp_obj_list_append(self->adv_reports, item);
 
     (void)self;
 }
@@ -61,8 +64,6 @@ STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_arg
     ubluepy_scanner_obj_t * s = m_new_obj(ubluepy_scanner_obj_t);
     s->base.type = type;
 
-    s->adv_reports = mp_obj_new_list(0, NULL);
-
     return MP_OBJ_FROM_PTR(s);
 }
 
@@ -73,6 +74,8 @@ STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_arg
 STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
     ubluepy_scanner_obj_t * self = MP_OBJ_TO_PTR(self_in);
     mp_int_t timeout = mp_obj_get_int(timeout_in);
+
+    self->adv_reports = mp_obj_new_list(0, NULL);
 
     ble_drv_adv_report_handler_set(MP_OBJ_FROM_PTR(self), adv_event_handler);
 
