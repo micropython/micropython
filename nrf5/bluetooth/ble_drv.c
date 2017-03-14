@@ -773,7 +773,8 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                 .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.scan_rsp,
                 .rssi         = p_ble_evt->evt.gap_evt.params.adv_report.rssi,
                 .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.dlen,
-                .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data
+                .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data,
+                .type         = p_ble_evt->evt.gap_evt.params.adv_report.type
             };
 
             // TODO: Fix unsafe callback to possible undefined callback...

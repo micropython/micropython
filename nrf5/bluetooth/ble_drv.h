@@ -38,6 +38,7 @@ typedef struct {
     int8_t    rssi;
     uint8_t   data_len;
     uint8_t * p_data;
+    uint8_t   type;
 } ble_drv_adv_data_t;
 
 typedef void (*ble_drv_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
