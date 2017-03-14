@@ -25,9 +25,32 @@ class Filesystem:
         return ['a%d' % self.id]
     def chdir(self, dir):
         print(self.id, 'chdir', dir)
+    def getcwd(self):
+        print(self.id, 'getcwd')
+        return 'dir%d' % self.id
+    def mkdir(self, path):
+        print(self.id, 'mkdir', path)
+    def remove(self, path):
+        print(self.id, 'remove', path)
+    def rename(self, old_path, new_path):
+        print(self.id, 'rename', old_path, new_path)
+    def rmdir(self, path):
+        print(self.id, 'rmdir', path)
+    def stat(self, path):
+        print(self.id, 'stat', path)
+        return (self.id,)
+    def statvfs(self, path):
+        print(self.id, 'statvfs', path)
+        return (self.id,)
     def open(self, file, mode):
         print(self.id, 'open', file, mode)
 
+
+# stat root dir
+print(uos.stat('/'))
+
+# getcwd when in root dir
+print(uos.getcwd())
 
 # basic mounting and listdir
 uos.mount(Filesystem(1), '/test_mnt')
@@ -42,14 +65,43 @@ uos.mount(Filesystem(2), '/test_mnt2', readonly=True)
 print(uos.listdir())
 print(uos.listdir('/test_mnt2'))
 
-# chdir
+# mounting over an existing mount point
+try:
+    uos.mount(Filesystem(3), '/test_mnt2')
+except OSError:
+    print('OSError')
+
+# mkdir of a mount point
+try:
+    uos.mkdir('/test_mnt')
+except OSError:
+    print('OSError')
+
+# rename across a filesystem
+try:
+    uos.rename('/test_mnt/a', '/test_mnt2/b')
+except OSError:
+    print('OSError')
+
+# delegating to mounted filesystem
 uos.chdir('test_mnt')
 print(uos.listdir())
-
-# open
+print(uos.getcwd())
+uos.mkdir('test_dir')
+uos.remove('test_file')
+uos.rename('test_file', 'test_file2')
+uos.rmdir('test_dir')
+print(uos.stat('test_file'))
+print(uos.statvfs('/test_mnt'))
 open('test_file')
 open('test_file', 'wb')
 
 # umount
 uos.umount('/test_mnt')
 uos.umount('/test_mnt2')
+
+# umount a non-existent mount point
+try:
+    uos.umount('/test_mnt')
+except OSError:
+    print('OSError')
