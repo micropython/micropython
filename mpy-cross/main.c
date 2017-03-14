@@ -57,14 +57,10 @@ STATIC void stderr_print_strn(void *env, const char *str, mp_uint_t len) {
 STATIC const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
 STATIC int compile_and_save(const char *file, const char *output_file, const char *source_file) {
-    mp_lexer_t *lex = mp_lexer_new_from_file(file);
-    if (lex == NULL) {
-        printf("could not open file '%s' for reading\n", file);
-        return 1;
-    }
-
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_file(file);
+
         qstr source_name;
         if (source_file == NULL) {
             source_name = lex->source_name;
