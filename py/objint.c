@@ -127,11 +127,17 @@ mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 #undef MP_FLOAT_EXP_SHIFT_I32
 #endif
 
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+typedef mp_longint_impl_t fmt_int_t;
+#else
+typedef mp_int_t fmt_int_t;
+#endif
+
 void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     // The size of this buffer is rather arbitrary. If it's not large
     // enough, a dynamic one will be allocated.
-    char stack_buf[sizeof(mp_int_t) * 4];
+    char stack_buf[sizeof(fmt_int_t) * 4];
     char *buf = stack_buf;
     size_t buf_size = sizeof(stack_buf);
     size_t fmt_size;
@@ -143,12 +149,6 @@ void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         m_del(char, buf, buf_size);
     }
 }
-
-#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-typedef mp_longint_impl_t fmt_int_t;
-#else
-typedef mp_int_t fmt_int_t;
-#endif
 
 STATIC const uint8_t log_base2_floor[] = {
     0, 1, 1, 2,
