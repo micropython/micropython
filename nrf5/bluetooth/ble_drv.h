@@ -32,6 +32,14 @@
 
 #include "modubluepy.h"
 
+typedef struct {
+    uint8_t * p_peer_addr;
+    bool      is_scan_resp;
+    int8_t    rssi;
+    uint8_t   data_len;
+    uint8_t * p_data;
+} ble_drv_adv_data_t;
+
 uint32_t ble_drv_stack_enable(void);
 
 void ble_drv_stack_disable(void);
@@ -63,5 +71,7 @@ void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
 void ble_drv_scan_start(void);
 
 void ble_drv_scan_stop(void);
+
+void ble_drv_adv_report_handler_set(mp_obj_t obj, ubluepy_adv_evt_callback_t evt_handler);
 
 #endif // BLUETOOTH_LE_DRIVER_H__
