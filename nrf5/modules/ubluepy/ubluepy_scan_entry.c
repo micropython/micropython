@@ -43,14 +43,32 @@ STATIC void ubluepy_scan_entry_print(const mp_print_t *print, mp_obj_t o, mp_pri
               self->addr[3], self->addr[4], self->addr[5]);
 }
 
+STATIC void ubluepy_scan_entry_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // not load attribute
+        return;
+    }
+    ubluepy_scan_entry_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (attr == MP_QSTR_addr) {
+        dest[0] = mp_obj_new_bytearray_by_ref(6, self->addr);
+    } else if (attr == MP_QSTR_addr_type) {
+        dest[0] = mp_obj_new_int(self->addr_type);
+    } else if (attr == MP_QSTR_rssi) {
+        dest[0] = mp_obj_new_int(self->rssi);
+    }
+
+}
+
+
 const mp_obj_type_t ubluepy_scan_entry_type = {
     { &mp_type_type },
     .name = MP_QSTR_ScanEntry,
     .print = ubluepy_scan_entry_print,
 #if 0
     .make_new = ubluepy_scan_entry_make_new,
-    .locals_dict = (mp_obj_t)&ubluepy_scan_entry_locals_dict
+    .locals_dict = (mp_obj_t)&ubluepy_scan_entry_locals_dict,
 #endif
+    .attr = ubluepy_scan_entry_attr
 };
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
