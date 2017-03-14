@@ -35,6 +35,14 @@
 #include "ble_drv.h"
 #include "hal_time.h"
 
+STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
+    ubluepy_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_obj_list_append(self->adv_reports, MP_OBJ_NEW_SMALL_INT(event_id)); // TODO: Swap out with ScanEntry
+
+    (void)self;
+}
+
 STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_scanner_obj_t * self = (ubluepy_scanner_obj_t *)o;
     (void)self;
@@ -53,7 +61,7 @@ STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_arg
     ubluepy_scanner_obj_t * s = m_new_obj(ubluepy_scanner_obj_t);
     s->base.type = type;
 
-//    s->scan_list = mp_obj_new_list(0, NULL);
+    s->adv_reports = mp_obj_new_list(0, NULL);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -66,6 +74,8 @@ STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
     ubluepy_scanner_obj_t * self = MP_OBJ_TO_PTR(self_in);
     mp_int_t timeout = mp_obj_get_int(timeout_in);
 
+    ble_drv_adv_report_handler_set(MP_OBJ_FROM_PTR(self), adv_event_handler);
+
     // start
     ble_drv_scan_start();
 
@@ -75,9 +85,7 @@ STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
     // stop
     ble_drv_scan_stop();
 
-    (void)self;
-
-    return mp_const_none;
+    return self->adv_reports;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_scanner_scan_obj, scanner_scan);
 
