@@ -495,7 +495,7 @@ friendly_repl_reset:
 #endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
-    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, 0);
+    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
 }
 
 #if MICROPY_MODULE_FROZEN
