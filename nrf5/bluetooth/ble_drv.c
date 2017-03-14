@@ -74,9 +74,9 @@ if (ble_drv_stack_enabled() == 0) { \
 static volatile bool m_adv_in_progress;
 static volatile bool m_tx_in_progress;
 
-static ubluepy_gap_evt_callback_t        ubluepy_gap_event_handler;
-static ubluepy_adv_evt_callback_t        ubluepy_adv_event_handler;
-static ubluepy_gatts_evt_callback_t      ubluepy_gatts_event_handler;
+static ble_drv_gap_evt_callback_t        gap_event_handler;
+static ble_drv_adv_evt_callback_t        adv_event_handler;
+static ble_drv_gatts_evt_callback_t      gatts_event_handler;
 
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_adv_observer;
@@ -653,19 +653,19 @@ void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
     }
 }
 
-void ble_drv_gap_event_handler_set(mp_obj_t obj, ubluepy_gap_evt_callback_t evt_handler) {
+void ble_drv_gap_event_handler_set(mp_obj_t obj, ble_drv_gap_evt_callback_t evt_handler) {
     mp_gap_observer = obj;
-    ubluepy_gap_event_handler = evt_handler;
+    gap_event_handler = evt_handler;
 }
 
-void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t evt_handler) {
+void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler) {
     mp_gatts_observer = obj;
-    ubluepy_gatts_event_handler = evt_handler;
+    gatts_event_handler = evt_handler;
 }
 
-void ble_drv_adv_report_handler_set(mp_obj_t obj, ubluepy_adv_evt_callback_t evt_handler) {
+void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler) {
     mp_adv_observer = obj;
-    ubluepy_adv_event_handler = evt_handler;
+    adv_event_handler = evt_handler;
 }
 
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
@@ -710,7 +710,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_GAP_EVT_CONNECTED:
             BLE_DRIVER_LOG("GAP CONNECT\n");
             m_adv_in_progress = false;
-            ubluepy_gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
 
             ble_gap_conn_params_t conn_params;
             (void)sd_ble_gap_ppcp_get(&conn_params);
@@ -719,11 +719,11 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GAP_EVT_DISCONNECTED:
             BLE_DRIVER_LOG("GAP DISCONNECT\n");
-            ubluepy_gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            gap_event_handler(mp_gap_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gap_evt.conn_handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GATTS_EVT_HVC:
-            ubluepy_gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gatts_evt.params.hvc.handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
+            gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, p_ble_evt->evt.gatts_evt.params.hvc.handle, p_ble_evt->header.evt_len - (2 * sizeof(uint16_t)), NULL);
             break;
 
         case BLE_GATTS_EVT_WRITE:
@@ -733,7 +733,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             uint16_t  data_len = p_ble_evt->evt.gatts_evt.params.write.len;
             uint8_t * p_data   = &p_ble_evt->evt.gatts_evt.params.write.data[0];
 
-            ubluepy_gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, handle, data_len, p_data);
+            gatts_event_handler(mp_gatts_observer, p_ble_evt->header.evt_id, handle, data_len, p_data);
             break;
 
         case BLE_GAP_EVT_CONN_PARAM_UPDATE:
@@ -777,7 +777,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             };
 
             // TODO: Fix unsafe callback to possible undefined callback...
-            ubluepy_adv_event_handler(mp_adv_observer,
+            adv_event_handler(mp_adv_observer,
                                       p_ble_evt->header.evt_id,
                                       &adv_data);
             break;

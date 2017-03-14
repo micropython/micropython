@@ -169,8 +169,4 @@ typedef enum _ubluepy_attr_t {
     UBLUEPY_ATTR_SCCD           = 0x02,
 } ubluepy_attr_t;
 
-typedef void (*ubluepy_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
-typedef void (*ubluepy_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
-typedef void (*ubluepy_adv_evt_callback_t)(mp_obj_t self, uint16_t event_id, ble_drv_adv_data_t * data);
-
 #endif // UBLUEPY_H__

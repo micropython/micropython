@@ -40,6 +40,10 @@ typedef struct {
     uint8_t * p_data;
 } ble_drv_adv_data_t;
 
+typedef void (*ble_drv_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
+typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
+typedef void (*ble_drv_adv_evt_callback_t)(mp_obj_t self, uint16_t event_id, ble_drv_adv_data_t * data);
+
 uint32_t ble_drv_stack_enable(void);
 
 void ble_drv_stack_disable(void);
@@ -58,9 +62,9 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
 
 bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params);
 
-void ble_drv_gap_event_handler_set(mp_obj_t obs, ubluepy_gap_evt_callback_t evt_handler);
+void ble_drv_gap_event_handler_set(mp_obj_t obs, ble_drv_gap_evt_callback_t evt_handler);
 
-void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t evt_handler);
+void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler);
 
 void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
@@ -72,6 +76,6 @@ void ble_drv_scan_start(void);
 
 void ble_drv_scan_stop(void);
 
-void ble_drv_adv_report_handler_set(mp_obj_t obj, ubluepy_adv_evt_callback_t evt_handler);
+void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler);
 
 #endif // BLUETOOTH_LE_DRIVER_H__
