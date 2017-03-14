@@ -37,7 +37,10 @@
 STATIC void ubluepy_scan_entry_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_scan_entry_obj_t * self = (ubluepy_scan_entry_obj_t *)o;
     (void)self;
-    mp_printf(print, "ScanEntry");
+    mp_printf(print, "ScanEntry(addr: "HEX2_FMT":"HEX2_FMT":"HEX2_FMT":" \
+                                       HEX2_FMT":"HEX2_FMT":"HEX2_FMT")",
+              self->addr[0], self->addr[1], self->addr[2],
+              self->addr[3], self->addr[4], self->addr[5]);
 }
 
 const mp_obj_type_t ubluepy_scan_entry_type = {
