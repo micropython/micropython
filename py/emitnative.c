@@ -385,11 +385,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
                 ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
             } else if (i == 2) {
                 ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
-            } else if (i == 3) {
-                ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
             } else {
-                // TODO not implemented
-                mp_not_implemented("more than 4 viper args");
+                assert(i == 3); // should be true; max 4 args is checked above
+                ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
             }
         }
         #endif
@@ -527,9 +525,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     ASM_END_PASS(emit->as);
 
     // check stack is back to zero size
-    if (emit->stack_size != 0) {
-        mp_printf(&mp_plat_print, "ERROR: stack size not back to zero; got %d\n", emit->stack_size);
-    }
+    assert(emit->stack_size == 0);
 
     if (emit->pass == MP_PASS_EMIT) {
         void *f = mp_asm_base_get_code(&emit->as->base);
@@ -867,7 +863,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
                     break;
                 default:
                     // not handled
-                    assert(0);
+                    mp_not_implemented("conversion to object");
             }
         }
 
@@ -2202,7 +2198,8 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 emit_post_top_set_vtype(emit, vtype_cast);
                 break;
             default:
-                assert(!"TODO: convert obj to int");
+                // this can happen when casting a cast: int(int)
+                mp_not_implemented("casting");
         }
     } else {
         assert(vtype_fun == VTYPE_PYOBJ);
