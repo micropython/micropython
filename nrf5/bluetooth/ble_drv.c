@@ -74,11 +74,13 @@ if (ble_drv_stack_enabled() == 0) { \
 static volatile bool m_adv_in_progress;
 static volatile bool m_tx_in_progress;
 
-static ubluepy_gap_evt_callback_t ubluepy_gap_event_handler;
-static ubluepy_gatts_evt_callback_t ubluepy_gatts_event_handler;
+static ubluepy_gap_evt_callback_t        ubluepy_gap_event_handler;
+static ubluepy_adv_evt_callback_t        ubluepy_adv_event_handler;
+static ubluepy_gatts_evt_callback_t      ubluepy_gatts_event_handler;
 
-static mp_obj_t                   mp_gap_observer;
-static mp_obj_t                   mp_gatts_observer;
+static mp_obj_t mp_gap_observer;
+static mp_obj_t mp_adv_observer;
+static mp_obj_t mp_gatts_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -661,6 +663,11 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ubluepy_gatts_evt_callback_t 
     ubluepy_gatts_event_handler = evt_handler;
 }
 
+void ble_drv_adv_report_handler_set(mp_obj_t obj, ubluepy_adv_evt_callback_t evt_handler) {
+    mp_adv_observer = obj;
+    ubluepy_adv_event_handler = evt_handler;
+}
+
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
 
 void ble_drv_scan_start(void) {
@@ -761,6 +768,18 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
         case BLE_GAP_EVT_ADV_REPORT:
             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
+            ble_drv_adv_data_t adv_data = {
+                .p_peer_addr  = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr,
+                .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.scan_rsp,
+                .rssi         = p_ble_evt->evt.gap_evt.params.adv_report.rssi,
+                .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.dlen,
+                .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data
+            };
+
+            // TODO: Fix unsafe callback to possible undefined callback...
+            ubluepy_adv_event_handler(mp_adv_observer,
+                                      p_ble_evt->header.evt_id,
+                                      &adv_data);
             break;
 #endif
 
