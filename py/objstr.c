@@ -2065,9 +2065,10 @@ STATIC void bad_implicit_conversion(mp_obj_t self_in) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError("can't convert to str implicitly");
     } else {
+        const qstr src_name = mp_obj_get_type(self_in)->name;
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "can't convert '%s' object to str implicitly",
-            mp_obj_get_type_str(self_in)));
+            "can't convert '%q' object to %q implicitly",
+            src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str));
     }
 }
 
