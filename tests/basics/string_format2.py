@@ -1,6 +1,6 @@
 # comprehensive functionality test for {} format string
 
-int_tests = False # these take a while, and some give wrong results
+int_tests = False # these take a while
 char_tests = True
 str_tests = True
 
