@@ -39,7 +39,7 @@ script:
   - make -C bare-arm
   - make -C qemu-arm test
   - make -C stmhal
-  - make -C stmhal -B MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
+  - make -C stmhal BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
   - make -C stmhal BOARD=STM32F7DISC
   - make -C stmhal BOARD=STM32L476DISC
   - make -C teensy
