@@ -292,6 +292,35 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
     }
 
+    // scheduler
+    {
+        mp_printf(&mp_plat_print, "# scheduler\n");
+
+        // lock scheduler
+        mp_sched_lock();
+
+        // schedule multiple callbacks; last one should fail
+        for (int i = 0; i < 5; ++i) {
+            mp_printf(&mp_plat_print, "sched(%d)=%d\n", i, mp_sched_schedule(MP_OBJ_FROM_PTR(&mp_builtin_print_obj), MP_OBJ_NEW_SMALL_INT(i)));
+        }
+
+        // test nested locking/unlocking
+        mp_sched_lock();
+        mp_sched_unlock();
+
+        // shouldn't do anything while scheduler is locked
+        mp_handle_pending();
+
+        // unlock scheduler
+        mp_sched_unlock();
+        mp_printf(&mp_plat_print, "unlocked\n");
+
+        // drain pending callbacks
+        while (mp_sched_num_pending()) {
+            mp_handle_pending();
+        }
+    }
+
     mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
     s->base.type = &mp_type_stest_fileio;
     s->buf = NULL;
