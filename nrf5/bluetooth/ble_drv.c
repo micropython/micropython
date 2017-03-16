@@ -36,7 +36,7 @@
 #include "ble.h" // sd_ble_uuid_encode
 
 
-#define BLE_DRIVER_VERBOSE 0
+#define BLE_DRIVER_VERBOSE 1
 #if BLE_DRIVER_VERBOSE
 #define BLE_DRIVER_LOG printf
 #else
@@ -770,11 +770,12 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
             ble_drv_adv_data_t adv_data = {
                 .p_peer_addr  = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr,
+                .addr_type    = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr_type,
                 .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.scan_rsp,
                 .rssi         = p_ble_evt->evt.gap_evt.params.adv_report.rssi,
                 .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.dlen,
                 .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data,
-                .type         = p_ble_evt->evt.gap_evt.params.adv_report.type
+                .adv_type     = p_ble_evt->evt.gap_evt.params.adv_report.type
             };
 
             // TODO: Fix unsafe callback to possible undefined callback...

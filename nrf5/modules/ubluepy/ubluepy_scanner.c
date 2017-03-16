@@ -48,7 +48,7 @@ STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_d
     item->addr[4] = data->p_peer_addr[1];
     item->addr[5] = data->p_peer_addr[0];
 
-    item->addr_type = data->type;
+    item->addr_type = data->addr_type;
     item->rssi      = data->rssi;
 
     mp_obj_list_append(self->adv_reports, item);
