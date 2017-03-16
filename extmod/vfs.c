@@ -43,33 +43,38 @@
 // Returns MP_VFS_ROOT for root dir (and then path_out is undefined) and
 // MP_VFS_NONE for path not found.
 mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out) {
-    if (path[0] == '/' && path[1] == 0) {
-        return MP_VFS_ROOT;
-    } else if (MP_STATE_VM(vfs_cur) == MP_VFS_ROOT) {
-        // in root dir
-        if (path[0] == 0) {
-            return MP_VFS_ROOT;
+    if (*path == '/' || MP_STATE_VM(vfs_cur) == MP_VFS_ROOT) {
+        // an absolute path, or the current volume is root, so search root dir
+        bool is_abs = 0;
+        if (*path == '/') {
+            ++path;
+            is_abs = 1;
         }
-    } else if (*path != '/') {
-        // a relative path within a mounted device
-        *path_out = path;
-        return MP_STATE_VM(vfs_cur);
-    }
-
-    for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
-        if (strncmp(path, vfs->str, vfs->len) == 0) {
-            if (path[vfs->len] == '/') {
-                *path_out = path + vfs->len;
-                return vfs;
-            } else if (path[vfs->len] == '\0') {
-                *path_out = "/";
-                return vfs;
+        for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+            size_t len = vfs->len - 1;
+            if (strncmp(path, vfs->str + 1, len) == 0) {
+                if (path[len] == '/') {
+                    *path_out = path + len;
+                    return vfs;
+                } else if (path[len] == '\0') {
+                    *path_out = "/";
+                    return vfs;
+                }
             }
         }
+        if (*path == '\0') {
+            // path was "" or "/" so return virtual root
+            return MP_VFS_ROOT;
+        }
+        if (is_abs) {
+            // path began with / and was not found
+            return MP_VFS_NONE;
+        }
     }
 
-    // mount point not found
-    return MP_VFS_NONE;
+    // a relative path within a mounted device
+    *path_out = path;
+    return MP_STATE_VM(vfs_cur);
 }
 
 // Version of mp_vfs_lookup_path that takes and returns uPy string objects.

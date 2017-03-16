@@ -65,7 +65,6 @@ void SystemClock_Config(void);
 
 pyb_thread_t pyb_thread_main;
 fs_user_mount_t fs_user_mount_flash;
-mp_vfs_mount_t mp_vfs_mount_flash;
 
 void flash_error(int n) {
     for (int i = 0; i < n; i++) {
@@ -168,8 +167,6 @@ static const char fresh_readme_txt[] =
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
-    vfs_fat->str = NULL;
-    vfs_fat->len = 0;
     vfs_fat->flags = 0;
     pyb_flash_init_vfs(vfs_fat);
 
@@ -219,12 +216,17 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     } else if (res == FR_OK) {
         // mount sucessful
     } else {
+    fail:
         printf("PYB: can't mount flash\n");
         return false;
     }
 
     // mount the flash device (there should be no other devices mounted at this point)
-    mp_vfs_mount_t *vfs = &mp_vfs_mount_flash;
+    // we allocate this structure on the heap because vfs->next is a root pointer
+    mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+    if (vfs == NULL) {
+        goto fail;
+    }
     vfs->str = "/flash";
     vfs->len = 6;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
@@ -270,8 +272,6 @@ STATIC bool init_sdcard_fs(bool first_soft_reset) {
         if (vfs == NULL || vfs_fat == NULL) {
             break;
         }
-        vfs_fat->str = NULL;
-        vfs_fat->len = 0;
         vfs_fat->flags = FSUSER_FREE_OBJ;
         sdcard_init_vfs(vfs_fat, part_num);
 

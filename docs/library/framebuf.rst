@@ -39,7 +39,7 @@ Constructors
         - `height` is the height of the FrameBuffer in pixels
         - `format` specifies the type of pixel used in the FrameBuffer;
           valid values are ``framebuf.MVLSB``, ``framebuf.RGB565``
-          and ``framebuf.GS4_HMSB``. MVLSB is monochrome 8-bit color,
+          and ``framebuf.GS4_HMSB``. MVLSB is monochrome 1-bit color,
           RGB565 is RGB 16-bit color, and GS4_HMSB is grayscale 4-bit color.
           Where a color value c is passed to a method, c is a small integer
           with an encoding that is dependent on the format of the FrameBuffer.

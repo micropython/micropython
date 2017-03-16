@@ -36,10 +36,12 @@ LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:
 
 SRC_C = \
 	main.c \
+	moduos.c \
 	modmachine.c \
 
 SRC_TEST_C = \
 	test_main.c \
+	moduos.c \
 	modmachine.c \
 
 LIB_SRC_C = $(addprefix lib/,\

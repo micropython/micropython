@@ -28,7 +28,7 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_VFS
+#if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdint.h>
 #include <stdio.h>
@@ -277,4 +277,4 @@ DRESULT disk_ioctl (
     }
 }
 
-#endif // MICROPY_VFS
+#endif // MICROPY_VFS && MICROPY_VFS_FAT

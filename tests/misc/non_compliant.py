@@ -1,7 +1,12 @@
 # tests for things that are not implemented, or have non-compliant behaviour
 
-import array
-import ustruct
+try:
+    import array
+    import ustruct
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # when super can't find self
 try:

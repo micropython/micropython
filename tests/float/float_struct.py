@@ -1,9 +1,13 @@
 # test struct package with floats
-
 try:
-    import ustruct as struct
-except:
-    import struct
+    try:
+        import ustruct as struct
+    except:
+        import struct
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 i = 1. + 1/2
 # TODO: it looks like '=' format modifier is not yet supported

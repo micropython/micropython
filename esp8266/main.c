@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "lib/mp-readline/readline.h"
@@ -64,7 +65,9 @@ STATIC void mp_reset(void) {
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
-    pyexec_file("main.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        pyexec_file("main.py");
+    }
 #endif
 }
 
@@ -111,7 +114,7 @@ void user_init(void) {
 
 #if !MICROPY_VFS
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(MP_ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {

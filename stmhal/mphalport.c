@@ -72,6 +72,10 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
 void mp_hal_ticks_cpu_enable(void) {
     if (!mp_hal_ticks_cpu_enabled) {
         CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        #if defined(__CORTEX_M) && __CORTEX_M == 7
+        // on Cortex-M7 we must unlock the DWT before writing to its registers
+        DWT->LAR = 0xc5acce55;
+        #endif
         DWT->CYCCNT = 0;
         DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
         mp_hal_ticks_cpu_enabled = true;

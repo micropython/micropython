@@ -60,6 +60,7 @@
 #define MICROPY_PY_STRUCT           (0)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
+#define MICROPY_PY_ZEPHYR           (1)
 #define MICROPY_PY_SYS_MODULES      (0)
 #define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #define MICROPY_FLOAT_IMPL (MICROPY_FLOAT_IMPL_FLOAT)
@@ -100,6 +101,7 @@ typedef long mp_off_t;
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_time;
+extern const struct _mp_obj_module_t mp_module_zephyr;
 
 #if MICROPY_PY_UTIME
 #define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
@@ -107,9 +109,16 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MICROPY_PY_UTIME_DEF
 #endif
 
+#if MICROPY_PY_ZEPHYR
+#define MICROPY_PY_ZEPHYR_DEF { MP_ROM_QSTR(MP_QSTR_zephyr), MP_ROM_PTR(&mp_module_zephyr) },
+#else
+#define MICROPY_PY_ZEPHYR_DEF
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     MICROPY_PY_UTIME_DEF \
+    MICROPY_PY_ZEPHYR_DEF \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_time) }, \

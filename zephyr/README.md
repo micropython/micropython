@@ -98,17 +98,17 @@ below 128KB, as long as Zephyr project is committed to maintain stable
 minimal size of their kernel (which they appear to be). Note that at such
 size, there is no support for any Zephyr features beyond REPL over UART,
 and only very minimal set of builtin Python modules. Thus, this build
-is more suitable for code size control and quick demonstrations even on
+is more suitable for code size control and quick demonstrations on
 smaller systems. It's also suitable for careful enabling of features one
-by one to achieve needed functionality and code size. This is in contrast
-to the "default" build, which may get more and more features enabled by
-default over time.
+by one to achieve needed functionality and code size. This is in a
+contrast to the "default" build, which may get more and more features
+enabled over time.
 
 To make a minimal build:
 
-    make BOARD=<board> minimal
+    ./make-minimal BOARD=<board>
 
 To run a minimal build in QEMU without requiring TAP networking setup
 run the following after you built image with the previous command:
 
-    make BOARD=<qemu_x86|qemu_cortex_m3> qemu-minimal
+    ./make-minimal BOARD=<qemu_x86|qemu_cortex_m3> qemu

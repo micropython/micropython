@@ -5,17 +5,10 @@
 # recursively Makefile.zephyr to build complete application binary
 # using Zephyr build system.
 #
+# To build a "minimal" configuration, use "make-minimal" wrapper.
 
 BOARD ?= qemu_x86
-ifeq ($(MAKECMDGOALS), minimal)
-# For minimal, CONF_FILE must be overriden early due to $(Z_EXPORTS) target
-CONF_FILE = prj_minimal.conf
-else
 CONF_FILE = prj.conf
-endif
-# Zephyr 1.5.0
-#OUTDIR_PREFIX =
-# Zephyr 1.6.0
 OUTDIR_PREFIX = $(BOARD)
 
 # Default heap size is 16KB, which is on conservative side, to let
@@ -42,6 +35,7 @@ INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 SRC_C = main.c \
 	help.c \
 	modutime.c \
+	modzephyr.c \
 	modmachine.c \
 	machine_pin.c \
 	uart_core.c \
@@ -65,7 +59,7 @@ include ../py/mkrules.mk
 $(Z_EXPORTS): $(CONF_FILE)
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports
 
-GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug
 KCONFIG_TARGETS = \
 	initconfig config nconfig menuconfig xconfig gconfig \
 	oldconfig silentoldconfig defconfig savedefconfig \
@@ -87,12 +81,6 @@ $(Z_SYSGEN_H):
 	rm -f $(LIBMICROPYTHON)
 	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
 
-minimal:
-	$(MAKE) BOARD=$(BOARD) CONF_FILE=prj_minimal.conf CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
-
-qemu-minimal:
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=prj_minimal.conf QEMU_NET=0 run
-
 # Clean Zephyr things too
 clean: z_clean
 
@@ -101,5 +89,4 @@ z_clean:
 
 .PHONY: prj.conf
 prj.conf: prj_base.conf
-	cat $< >$@
-	if [ -f prj_$(BOARD).conf ]; then cat prj_$(BOARD).conf >>$@; fi
+	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@

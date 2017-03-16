@@ -131,18 +131,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 }
 
 #if MICROPY_ENABLE_COMPILER
-STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char *fname) {
-
-    if (lex == NULL) {
-        // we verified the file exists using stat, but lexer could still fail
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_msg(&mp_type_ImportError, "module not found");
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-                "no module named '%s'", fname));
-        }
-    }
-
+STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     #if MICROPY_PY___FILE__
     qstr source_name = lex->source_name;
     mp_store_attr(module_obj, MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
@@ -207,7 +196,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // found the filename in the list of frozen files, then load and execute it.
     #if MICROPY_MODULE_FROZEN_STR
     if (frozen_type == MP_FROZEN_STR) {
-        do_load_from_lexer(module_obj, modref, file_str);
+        do_load_from_lexer(module_obj, modref);
         return;
     }
     #endif
@@ -235,7 +224,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_ENABLE_COMPILER
     {
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
-        do_load_from_lexer(module_obj, lex, file_str);
+        do_load_from_lexer(module_obj, lex);
         return;
     }
     #endif

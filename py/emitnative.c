@@ -385,11 +385,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
                 ASM_MOV_REG_REG(emit->as, REG_LOCAL_2, REG_ARG_2);
             } else if (i == 2) {
                 ASM_MOV_REG_REG(emit->as, REG_LOCAL_3, REG_ARG_3);
-            } else if (i == 3) {
-                ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
             } else {
-                // TODO not implemented
-                mp_not_implemented("more than 4 viper args");
+                assert(i == 3); // should be true; max 4 args is checked above
+                ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_4, i - REG_LOCAL_NUM);
             }
         }
         #endif
@@ -527,9 +525,7 @@ STATIC void emit_native_end_pass(emit_t *emit) {
     ASM_END_PASS(emit->as);
 
     // check stack is back to zero size
-    if (emit->stack_size != 0) {
-        mp_printf(&mp_plat_print, "ERROR: stack size not back to zero; got %d\n", emit->stack_size);
-    }
+    assert(emit->stack_size == 0);
 
     if (emit->pass == MP_PASS_EMIT) {
         void *f = mp_asm_base_get_code(&emit->as->base);
@@ -595,38 +591,9 @@ STATIC void emit_native_set_source_line(emit_t *emit, mp_uint_t source_line) {
     (void)source_line;
 }
 
-/*
-STATIC void emit_pre_raw(emit_t *emit, int stack_size_delta) {
-    adjust_stack(emit, stack_size_delta);
-    emit->last_emit_was_return_value = false;
-}
-*/
-
 // this must be called at start of emit functions
 STATIC void emit_native_pre(emit_t *emit) {
     emit->last_emit_was_return_value = false;
-    // settle the stack
-    /*
-    if (regs_needed != 0) {
-        for (int i = 0; i < emit->stack_size; i++) {
-            switch (emit->stack_info[i].kind) {
-                case STACK_VALUE:
-                    break;
-
-                case STACK_REG:
-                    // TODO only push reg if in regs_needed
-                    emit->stack_info[i].kind = STACK_VALUE;
-                    ASM_MOV_REG_TO_LOCAL(emit->as, emit->stack_info[i].data.u_reg, emit->stack_start + i);
-                    break;
-
-                case STACK_IMM:
-                    // don't think we ever need to push imms for settling
-                    //ASM_MOV_IMM_TO_LOCAL(emit->last_imm, emit->stack_start + i);
-                    break;
-            }
-        }
-    }
-    */
 }
 
 // depth==0 is top, depth==1 is before top, etc
@@ -867,7 +834,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
                     break;
                 default:
                     // not handled
-                    assert(0);
+                    mp_not_implemented("conversion to object");
             }
         }
 
@@ -1011,9 +978,7 @@ STATIC void emit_native_load_const_str(emit_t *emit, qstr qst) {
     // do native array access.  For now we just load them as any other object.
     /*
     if (emit->do_viper_types) {
-        // not implemented properly
         // load a pointer to the asciiz string?
-        assert(0);
         emit_post_push_imm(emit, VTYPE_PTR, (mp_uint_t)qstr_str(qst));
     } else
     */
@@ -1843,12 +1808,6 @@ STATIC void emit_native_pop_block(emit_t *emit) {
 
 STATIC void emit_native_pop_except(emit_t *emit) {
     (void)emit;
-    /*
-    emit_native_pre(emit);
-    emit_call(emit, MP_F_NLR_POP);
-    adjust_stack(emit, -(mp_int_t)(sizeof(nlr_buf_t) / sizeof(mp_uint_t)));
-    emit_post(emit);
-    */
 }
 
 STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
@@ -2202,7 +2161,8 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 emit_post_top_set_vtype(emit, vtype_cast);
                 break;
             default:
-                assert(!"TODO: convert obj to int");
+                // this can happen when casting a cast: int(int)
+                mp_not_implemented("casting");
         }
     } else {
         assert(vtype_fun == VTYPE_PYOBJ);
@@ -2259,7 +2219,6 @@ STATIC void emit_native_return_value(emit_t *emit) {
         assert(vtype == VTYPE_PYOBJ);
     }
     emit->last_emit_was_return_value = true;
-    //ASM_BREAK_POINT(emit->as); // to insert a break-point for debugging
     ASM_EXIT(emit->as);
 }
 

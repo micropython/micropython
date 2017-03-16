@@ -54,7 +54,17 @@ const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
-    mp_not_implemented("");
+    int delta = 1;
+    if (!big_endian) {
+        buf += len - 1;
+        delta = -1;
+    }
+
+    mp_longint_impl_t value = 0;
+    for (; len--; buf += delta) {
+        value = (value << 8) | *buf;
+    }
+    return mp_obj_new_int_from_ll(value);
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
