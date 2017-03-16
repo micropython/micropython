@@ -354,7 +354,7 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: {
-            if (lhs_len == 0) {
+            if (lhs_len == 0 && mp_obj_get_type(rhs_in) == lhs_type) {
                 return rhs_in;
             }
             if (rhs_len == 0) {
