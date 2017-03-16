@@ -10,10 +10,8 @@ h = 16
 size = w * h // 8
 buf = bytearray(size)
 maps = {framebuf.MVLSB : 'MVLSB',
-        framebuf.VMAP : 'VMAP',
-        framebuf.VMAP_REV : 'VMAP_REV',
-        framebuf.HMAP : 'HMAP',
-        framebuf.HMAP_REV : 'HMAP_REV'}
+        framebuf.MHLSB : 'MHLSB',
+        framebuf.MHMSB : 'MHMSB'}
 
 for mapping in maps.keys():
     for x in range(size):

@@ -57,28 +57,26 @@ typedef struct _mp_framebuf_p_t {
 #define FRAMEBUF_MVLSB    (0)
 #define FRAMEBUF_RGB565   (1)
 #define FRAMEBUF_GS4_HMSB (2)
-// Horizontal and vertical 1 bit maps as per RFC issue 1817:
-#define FRAMEBUF_HMAP     (3)
-#define FRAMEBUF_HMAP_REV (4)
-#define FRAMEBUF_VMAP     (5)
-#define FRAMEBUF_VMAP_REV (6)
+// Horizontal 1 bit maps as per RFC issue 1817:
+#define FRAMEBUF_MHLSB    (3)
+#define FRAMEBUF_MHMSB    (4)
 
-// Functions for horizontal map
+// Functions for MHLSB and MHMSB
 
 STATIC void hmap_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
     size_t index = (x + y * fb->stride) >> 3;
-    int offset = fb->format == FRAMEBUF_HMAP_REV ? x & 0x07 : 7 - (x & 0x07);
+    int offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : 7 - (x & 0x07);
     ((uint8_t*)fb->buf)[index] = (((uint8_t*)fb->buf)[index] & ~(0x01 << offset)) | ((color != 0) << offset);
 }
 
 STATIC uint32_t hmap_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
     size_t index = (x + y * fb->stride) >> 3;
-    int offset = fb->format == FRAMEBUF_HMAP_REV ? x & 0x07 : 7 - (x & 0x07);
+    int offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : 7 - (x & 0x07);
     return (((uint8_t*)fb->buf)[index] >> (offset)) & 0x01;
 }
 
 STATIC void hmap_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
-    int reverse = fb->format == FRAMEBUF_HMAP_REV;
+    int reverse = fb->format == FRAMEBUF_MHMSB;
     int advance = fb->stride >> 3;
     while (w--) {
         uint8_t *b = &((uint8_t*)fb->buf)[(x >> 3) + y * advance];
@@ -88,34 +86,6 @@ STATIC void hmap_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int
             b += advance;
         }
         ++x;
-    }
-}
-
-// Functions for vertical map
-
-STATIC void vmap_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
-    size_t index = (y + x * fb->stride) >> 3;
-    int offset = fb->format == FRAMEBUF_VMAP_REV ? 7 - (y & 0x07) : y & 0x07;
-    ((uint8_t*)fb->buf)[index] = (((uint8_t*)fb->buf)[index] & ~(0x01 << offset)) | ((color != 0) << offset);
-}
-
-STATIC uint32_t vmap_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
-    size_t index = (y + x * fb->stride) >> 3;
-    int offset = fb->format == FRAMEBUF_VMAP_REV ? 7 - (y & 0x07) : y & 0x07;
-    return (((uint8_t*)fb->buf)[index] >> (offset)) & 0x01;
-}
-
-STATIC void vmap_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
-    int reverse = fb->format == FRAMEBUF_VMAP_REV;
-    int advance = fb->stride >> 3;
-    while (h--) {
-        uint8_t *b = &((uint8_t*)fb->buf)[(y >> 3) + x * advance];
-        int offset = reverse ? 7 - (y & 7) : y & 7;
-        for (int ww = w; ww; --ww) {
-            *b = (*b & ~(0x01 << offset)) | ((col != 0) << offset);
-            b += advance;
-        }
-        ++y;
     }
 }
 
@@ -218,10 +188,8 @@ STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
     [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
     [FRAMEBUF_GS4_HMSB] = {gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
-    [FRAMEBUF_HMAP] = {hmap_setpixel, hmap_getpixel, hmap_fill_rect},
-    [FRAMEBUF_HMAP_REV] = {hmap_setpixel, hmap_getpixel, hmap_fill_rect},
-    [FRAMEBUF_VMAP] = {vmap_setpixel, vmap_getpixel, vmap_fill_rect},
-    [FRAMEBUF_VMAP_REV] = {vmap_setpixel, vmap_getpixel, vmap_fill_rect},
+    [FRAMEBUF_MHLSB] = {hmap_setpixel, hmap_getpixel, hmap_fill_rect},
+    [FRAMEBUF_MHMSB] = {hmap_setpixel, hmap_getpixel, hmap_fill_rect},
 };
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t color) {
@@ -272,13 +240,9 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
         case FRAMEBUF_RGB565:
         case FRAMEBUF_GS4_HMSB:
             break;
-        case FRAMEBUF_HMAP:
-        case FRAMEBUF_HMAP_REV:
+        case FRAMEBUF_MHLSB:
+        case FRAMEBUF_MHMSB:
             o->stride = o->width & 7 ? (o->width & ~7) + 8 : o->width;
-            break;
-        case FRAMEBUF_VMAP:
-        case FRAMEBUF_VMAP_REV:
-            o->stride = o->height & 7 ? (o->height & ~7) + 8 : o->height;
             break;
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -618,10 +582,8 @@ STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MVLSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_RGB565), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565) },
     { MP_ROM_QSTR(MP_QSTR_GS4_HMSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_GS4_HMSB) },
-    { MP_ROM_QSTR(MP_QSTR_HMAP), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_HMAP) },
-    { MP_ROM_QSTR(MP_QSTR_HMAP_REV), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_HMAP_REV) },
-    { MP_ROM_QSTR(MP_QSTR_VMAP), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_VMAP) },
-    { MP_ROM_QSTR(MP_QSTR_VMAP_REV), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_VMAP_REV) },
+    { MP_ROM_QSTR(MP_QSTR_MHLSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MHLSB) },
+    { MP_ROM_QSTR(MP_QSTR_MHMSB), MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MHMSB) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(framebuf_module_globals, framebuf_module_globals_table);
