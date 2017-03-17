@@ -86,25 +86,26 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
-//    - code_state->ip should contain the offset in bytes from the start of
-//      the bytecode chunk to just after n_state and n_exc_stack
-//    - code_state->n_state should be set to the state size (locals plus stack)
-void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->ip should contain the offset in bytes from the pointer
+//      code_state->fun_bc->bytecode to the entry n_state (0 for bytecode, non-zero for native)
+void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
-    size_t n_state = code_state->n_state;
+
+    // get the function object that we want to set up (could be bytecode or native code)
+    mp_obj_fun_bc_t *self = code_state->fun_bc;
 
     // ip comes in as an offset into bytecode, so turn it into a true pointer
     code_state->ip = self->bytecode + (size_t)code_state->ip;
-
-    // store pointer to constant table
-    code_state->const_table = self->const_table;
 
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
     #endif
 
     // get params
+    size_t n_state = mp_decode_uint(&code_state->ip);
+    mp_decode_uint(&code_state->ip); // skip n_exc_stack
     size_t scope_flags = *code_state->ip++;
     size_t n_pos_args = *code_state->ip++;
     size_t n_kwonly_args = *code_state->ip++;
@@ -168,7 +169,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, siz
         }
 
         // get pointer to arg_names array
-        const mp_obj_t *arg_names = (const mp_obj_t*)code_state->const_table;
+        const mp_obj_t *arg_names = (const mp_obj_t*)self->const_table;
 
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
@@ -244,9 +245,8 @@ continue2:;
     // get the ip and skip argument names
     const byte *ip = code_state->ip;
 
-    // store pointer to code_info and jump over it
+    // jump over code info (source file and line-number mapping)
     {
-        code_state->code_info = ip;
         const byte *ip2 = ip;
         size_t code_info_size = mp_decode_uint(&ip2);
         ip += code_info_size;

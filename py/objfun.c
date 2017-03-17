@@ -220,9 +220,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
         return NULL;
     }
 
-    code_state->ip = (byte*)(ip - self->bytecode); // offset to after n_state/n_exc_stack
-    code_state->n_state = n_state;
-    mp_setup_code_state(code_state, self, n_args, n_kw, args);
+    code_state->fun_bc = self;
+    code_state->ip = 0;
+    mp_setup_code_state(code_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     code_state->old_globals = mp_globals_get();
@@ -265,9 +265,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         state_size = 0; // indicate that we allocated using alloca
     }
 
-    code_state->ip = (byte*)(ip - self->bytecode); // offset to after n_state/n_exc_stack
-    code_state->n_state = n_state;
-    mp_setup_code_state(code_state, self, n_args, n_kw, args);
+    code_state->fun_bc = self;
+    code_state->ip = 0;
+    mp_setup_code_state(code_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     code_state->old_globals = mp_globals_get();

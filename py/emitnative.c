@@ -407,43 +407,29 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         #endif
 
         // prepare incoming arguments for call to mp_setup_code_state
+
         #if N_X86
-        asm_x86_mov_arg_to_r32(emit->as, 0, REG_ARG_2);
-        asm_x86_mov_arg_to_r32(emit->as, 1, REG_ARG_3);
-        asm_x86_mov_arg_to_r32(emit->as, 2, REG_ARG_4);
-        asm_x86_mov_arg_to_r32(emit->as, 3, REG_ARG_5);
-        #else
-        #if N_THUMB
-        ASM_MOV_REG_REG(emit->as, ASM_THUMB_REG_R4, REG_ARG_4);
-        #elif N_ARM
-        ASM_MOV_REG_REG(emit->as, ASM_ARM_REG_R4, REG_ARG_4);
-        #else
-        ASM_MOV_REG_REG(emit->as, REG_ARG_5, REG_ARG_4);
+        asm_x86_mov_arg_to_r32(emit->as, 0, REG_ARG_1);
+        asm_x86_mov_arg_to_r32(emit->as, 1, REG_ARG_2);
+        asm_x86_mov_arg_to_r32(emit->as, 2, REG_ARG_3);
+        asm_x86_mov_arg_to_r32(emit->as, 3, REG_ARG_4);
         #endif
-        ASM_MOV_REG_REG(emit->as, REG_ARG_4, REG_ARG_3);
-        ASM_MOV_REG_REG(emit->as, REG_ARG_3, REG_ARG_2);
-        ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_ARG_1);
-        #endif
+
+        // set code_state.fun_bc
+        ASM_MOV_REG_TO_LOCAL(emit->as, REG_ARG_1, offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t));
 
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
-        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state_t, ip) / sizeof(mp_uint_t), REG_ARG_1);
-
-        // set code_state.n_state
-        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->n_state, offsetof(mp_code_state_t, n_state) / sizeof(mp_uint_t), REG_ARG_1);
+        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state_t, ip) / sizeof(uintptr_t), REG_ARG_1);
 
         // put address of code_state into first arg
         ASM_MOV_LOCAL_ADDR_TO_REG(emit->as, 0, REG_ARG_1);
 
         // call mp_setup_code_state to prepare code_state structure
         #if N_THUMB
-        asm_thumb_op16(emit->as, 0xb400 | (1 << ASM_THUMB_REG_R4)); // push 5th arg
         asm_thumb_bl_ind(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE, ASM_THUMB_REG_R4);
-        asm_thumb_op16(emit->as, 0xbc00 | (1 << REG_RET)); // pop dummy (was 5th arg)
         #elif N_ARM
-        asm_arm_push(emit->as, 1 << ASM_ARM_REG_R4); // push 5th arg
         asm_arm_bl_ind(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE, ASM_ARM_REG_R4);
-        asm_arm_pop(emit->as, 1 << REG_RET); // pop dummy (was 5th arg)
         #else
         ASM_CALL_IND(emit->as, mp_fun_table[MP_F_SETUP_CODE_STATE], MP_F_SETUP_CODE_STATE);
         #endif
@@ -477,6 +463,9 @@ STATIC void emit_native_end_pass(emit_t *emit) {
 
     if (!emit->do_viper_types) {
         emit->prelude_offset = mp_asm_base_get_code_pos(&emit->as->base);
+        mp_asm_base_data(&emit->as->base, 1, 0x80 | ((emit->n_state >> 7) & 0x7f));
+        mp_asm_base_data(&emit->as->base, 1, emit->n_state & 0x7f);
+        mp_asm_base_data(&emit->as->base, 1, 0); // n_exc_stack
         mp_asm_base_data(&emit->as->base, 1, emit->scope->scope_flags);
         mp_asm_base_data(&emit->as->base, 1, emit->scope->num_pos_args);
         mp_asm_base_data(&emit->as->base, 1, emit->scope->num_kwonly_args);

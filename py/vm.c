@@ -73,10 +73,10 @@ typedef enum {
     ip += 2;
 #define DECODE_PTR \
     DECODE_UINT; \
-    void *ptr = (void*)(uintptr_t)code_state->const_table[unum]
+    void *ptr = (void*)(uintptr_t)code_state->fun_bc->const_table[unum]
 #define DECODE_OBJ \
     DECODE_UINT; \
-    mp_obj_t obj = (mp_obj_t)code_state->const_table[unum]
+    mp_obj_t obj = (mp_obj_t)code_state->fun_bc->const_table[unum]
 
 #else
 
@@ -162,8 +162,10 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 run_code_state: ;
 #endif
     // Pointers which are constant for particular invocation of mp_execute_bytecode()
-    mp_obj_t * /*const*/ fastn = &code_state->state[code_state->n_state - 1];
-    mp_exc_stack_t * /*const*/ exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
+    const byte *temp_bc = code_state->fun_bc->bytecode;
+    size_t n_state = mp_decode_uint(&temp_bc);
+    mp_obj_t * /*const*/ fastn = &code_state->state[n_state - 1];
+    mp_exc_stack_t * /*const*/ exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
 
     // variables that are visible to the exception handler (declared volatile)
     volatile bool currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
@@ -1327,8 +1329,16 @@ unwind_loop:
             // But consider how to handle nested exceptions.
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
-                const byte *ip = code_state->code_info;
+                const byte *ip = code_state->fun_bc->bytecode;
+                mp_decode_uint(&ip); // skip n_state
+                mp_decode_uint(&ip); // skip n_exc_stack
+                ip++; // skip scope_params
+                ip++; // skip n_pos_args
+                ip++; // skip n_kwonly_args
+                ip++; // skip n_def_pos_args
+                size_t bc = code_state->ip - ip;
                 size_t code_info_size = mp_decode_uint(&ip);
+                bc -= code_info_size;
                 #if MICROPY_PERSISTENT_CODE
                 qstr block_name = ip[0] | (ip[1] << 8);
                 qstr source_file = ip[2] | (ip[3] << 8);
@@ -1337,7 +1347,6 @@ unwind_loop:
                 qstr block_name = mp_decode_uint(&ip);
                 qstr source_file = mp_decode_uint(&ip);
                 #endif
-                size_t bc = code_state->ip - code_state->code_info - code_info_size;
                 size_t source_line = 1;
                 size_t c;
                 while ((c = *ip)) {
@@ -1393,8 +1402,8 @@ unwind_loop:
             } else if (code_state->prev != NULL) {
                 mp_globals_set(code_state->old_globals);
                 code_state = code_state->prev;
-                fastn = &code_state->state[code_state->n_state - 1];
-                exc_stack = (mp_exc_stack_t*)(code_state->state + code_state->n_state);
+                fastn = &code_state->state[n_state - 1];
+                exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
                 // variables that are visible to the exception handler (declared volatile)
                 currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
                 exc_sp = MP_TAGPTR_PTR(code_state->exc_sp); // stack grows up, exc_sp points to top of stack
