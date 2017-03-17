@@ -54,6 +54,16 @@ mp_uint_t mp_decode_uint(const byte **ptr) {
     return unum;
 }
 
+// This function is used to help reduce stack usage at the caller, for the case when
+// the caller doesn't need to increase the ptr argument.  If ptr is a local variable
+// and the caller uses mp_decode_uint(&ptr) instead of this function, then the compiler
+// must allocate a slot on the stack for ptr, and this slot cannot be reused for
+// anything else in the function because the pointer may have been stored in a global
+// and reused later in the function.
+mp_uint_t mp_decode_uint_value(const byte *ptr) {
+    return mp_decode_uint(&ptr);
+}
+
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
@@ -246,11 +256,7 @@ continue2:;
     const byte *ip = code_state->ip;
 
     // jump over code info (source file and line-number mapping)
-    {
-        const byte *ip2 = ip;
-        size_t code_info_size = mp_decode_uint(&ip2);
-        ip += code_info_size;
-    }
+    ip += mp_decode_uint_value(ip);
 
     // bytecode prelude: initialise closed over variables
     size_t local_num;

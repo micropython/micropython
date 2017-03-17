@@ -162,8 +162,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 run_code_state: ;
 #endif
     // Pointers which are constant for particular invocation of mp_execute_bytecode()
-    const byte *temp_bc = code_state->fun_bc->bytecode;
-    size_t n_state = mp_decode_uint(&temp_bc);
+    size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
     mp_obj_t * /*const*/ fastn = &code_state->state[n_state - 1];
     mp_exc_stack_t * /*const*/ exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
 

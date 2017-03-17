@@ -135,8 +135,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             break;
 
         case MP_VM_RETURN_EXCEPTION: {
-            const byte *bc = self->code_state.fun_bc->bytecode;
-            size_t n_state = mp_decode_uint(&bc);
+            size_t n_state = mp_decode_uint_value(self->code_state.fun_bc->bytecode);
             self->code_state.ip = 0;
             *ret_val = self->code_state.state[n_state - 1];
             break;
