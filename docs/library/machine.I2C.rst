@@ -100,7 +100,7 @@ General Methods
 
    Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
    those that respond.  A device responds if it pulls the SDA line low after
-   its address (including a read bit) is sent on the bus.
+   its address (including a write bit) is sent on the bus.
 
    Note: on WiPy the I2C object must be in master mode for this method to be valid.
 
