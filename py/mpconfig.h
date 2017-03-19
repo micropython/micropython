@@ -825,6 +825,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
 #endif
 
+// Whether to provide "collections.deque" type
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE
+#define MICROPY_PY_COLLECTIONS_DEQUE (0)
+#endif
 // Whether to provide "math" module
 #ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH (1)
