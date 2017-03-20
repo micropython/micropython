@@ -78,7 +78,6 @@ $(LIBMICROPYTHON): $(Z_SYSGEN_H)
 build/genhdr/qstr.i.last: $(Z_SYSGEN_H)
 
 $(Z_SYSGEN_H):
-	rm -f $(LIBMICROPYTHON)
 	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
 
 # Clean Zephyr things too
