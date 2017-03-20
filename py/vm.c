@@ -1301,8 +1301,14 @@ pending_exception_check:
                 #else
                 {
                 #endif
+                    #if MICROPY_ENABLE_SCHEDULER
+                    // can only switch threads if the scheduler is unlocked
+                    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE)
+                    #endif
+                    {
                     MP_THREAD_GIL_EXIT();
                     MP_THREAD_GIL_ENTER();
+                    }
                 }
                 #endif
 
