@@ -95,7 +95,7 @@ void pin_init0(void) {
     ETS_GPIO_INTR_ATTACH(pin_intr_handler_iram, NULL);
     // disable all interrupts
     memset(&MP_STATE_PORT(pin_irq_handler)[0], 0, 16 * sizeof(mp_obj_t));
-    memset(pin_irq_is_hard, 0, sizeof(pin_irq_obj));
+    memset(pin_irq_is_hard, 0, sizeof(pin_irq_is_hard));
     for (int p = 0; p < 16; ++p) {
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << p);
         SET_TRIGGER(p, 0);
