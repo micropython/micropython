@@ -368,7 +368,7 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "pin does not have IRQ capabilities"));
     }
 
-    if (n_args > 1) {
+    if (n_args > 1 || kw_args->used != 0) {
         // configure irq
         mp_obj_t handler = args[ARG_handler].u_obj;
         uint32_t trigger = args[ARG_trigger].u_int;
