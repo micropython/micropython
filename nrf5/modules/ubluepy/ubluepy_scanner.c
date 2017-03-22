@@ -41,12 +41,17 @@ STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_d
     ubluepy_scan_entry_obj_t * item = m_new_obj(ubluepy_scan_entry_obj_t);
     item->base.type = &ubluepy_scan_entry_type;
 
-    item->addr[0] = data->p_peer_addr[5];
-    item->addr[1] = data->p_peer_addr[4];
-    item->addr[2] = data->p_peer_addr[3];
-    item->addr[3] = data->p_peer_addr[2];
-    item->addr[4] = data->p_peer_addr[1];
-    item->addr[5] = data->p_peer_addr[0];
+    vstr_t vstr;
+    vstr_init(&vstr, 17);
+
+    vstr_printf(&vstr, ""HEX2_FMT":"HEX2_FMT":"HEX2_FMT":" \
+                         HEX2_FMT":"HEX2_FMT":"HEX2_FMT"",
+                data->p_peer_addr[5], data->p_peer_addr[4], data->p_peer_addr[3],
+                data->p_peer_addr[2], data->p_peer_addr[1], data->p_peer_addr[0]);
+
+    item->addr = mp_obj_new_str(vstr.buf, vstr.len, false);
+
+    vstr_clear(&vstr);
 
     item->addr_type = data->addr_type;
     item->rssi      = data->rssi;

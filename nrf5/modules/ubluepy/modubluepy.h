@@ -152,7 +152,7 @@ typedef struct _ubluepy_scanner_obj_t {
 
 typedef struct _ubluepy_scan_entry_obj_t {
     mp_obj_base_t base;
-    uint8_t       addr[6];
+    mp_obj_t      addr;
     uint8_t       addr_type;
     bool          connectable;
     int8_t        rssi;
