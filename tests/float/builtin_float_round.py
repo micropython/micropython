@@ -15,3 +15,10 @@ for i in range(11):
 # test second arg
 for i in range(-1, 3):
     print(round(1.47, i))
+
+# test inf and nan
+for val in (float('inf'), float('nan')):
+    try:
+        round(val)
+    except (ValueError, OverflowError) as e:
+        print(type(e))
