@@ -1761,7 +1761,7 @@ STATIC void emit_native_get_iter(emit_t *emit, bool use_stack) {
     emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
     assert(vtype == VTYPE_PYOBJ);
     if (use_stack) {
-        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t));
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, MP_OBJ_ITER_BUF_NSLOTS);
         emit_call(emit, MP_F_NATIVE_GETITER);
     } else {
         // mp_getiter will allocate the iter_buf on the heap
@@ -1773,8 +1773,8 @@ STATIC void emit_native_get_iter(emit_t *emit, bool use_stack) {
 
 STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
     emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_1, sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t));
-    adjust_stack(emit, 4);
+    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_1, MP_OBJ_ITER_BUF_NSLOTS);
+    adjust_stack(emit, MP_OBJ_ITER_BUF_NSLOTS);
     emit_call(emit, MP_F_NATIVE_ITERNEXT);
     ASM_MOV_IMM_TO_REG(emit->as, (mp_uint_t)MP_OBJ_STOP_ITERATION, REG_TEMP1);
     ASM_JUMP_IF_REG_EQ(emit->as, REG_RET, REG_TEMP1, label);
@@ -1784,7 +1784,7 @@ STATIC void emit_native_for_iter(emit_t *emit, mp_uint_t label) {
 STATIC void emit_native_for_iter_end(emit_t *emit) {
     // adjust stack counter (we get here from for_iter ending, which popped the value for us)
     emit_native_pre(emit);
-    adjust_stack(emit, -(sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t)));
+    adjust_stack(emit, -MP_OBJ_ITER_BUF_NSLOTS);
     emit_post(emit);
 }
 
