@@ -106,7 +106,7 @@ extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
     // set stack pointer
-    asm volatile ("ldr sp, =_estack");
+    __asm volatile ("ldr sp, =_estack");
     // copy .data section from flash to RAM
     for (uint32_t *src = &_sidata, *dest = &_sdata; dest < &_edata;) {
         *dest++ = *src++;
