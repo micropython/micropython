@@ -471,7 +471,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
             return MP_OBJ_FROM_PTR(res);
 #endif
         } else {
-            mp_uint_t index = mp_get_index(o->base.type, o->len, index_in, false);
+            size_t index = mp_get_index(o->base.type, o->len, index_in, false);
             #if MICROPY_PY_BUILTINS_MEMORYVIEW
             if (o->base.type == &mp_type_memoryview) {
                 index += o->free;

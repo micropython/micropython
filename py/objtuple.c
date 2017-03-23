@@ -186,7 +186,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return MP_OBJ_FROM_PTR(res);
         }
 #endif
-        mp_uint_t index_value = mp_get_index(self->base.type, self->len, index, false);
+        size_t index_value = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_value];
     } else {
         return MP_OBJ_NULL; // op not supported

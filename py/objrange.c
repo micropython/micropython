@@ -155,7 +155,7 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return MP_OBJ_FROM_PTR(o);
         }
 #endif
-        uint index_val = mp_get_index(self->base.type, len, index, false);
+        size_t index_val = mp_get_index(self->base.type, len, index, false);
         return MP_OBJ_NEW_SMALL_INT(self->start + index_val * self->step);
     } else {
         return MP_OBJ_NULL; // op not supported

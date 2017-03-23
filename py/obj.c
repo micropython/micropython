@@ -351,7 +351,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
 }
 
 // is_slice determines whether the index is a slice index
-mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice) {
+size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool is_slice) {
     mp_int_t i;
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
@@ -384,7 +384,9 @@ mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index,
             }
         }
     }
-    return i;
+
+    // By this point 0 <= i <= len and so fits in a size_t
+    return (size_t)i;
 }
 
 mp_obj_t mp_obj_id(mp_obj_t o_in) {

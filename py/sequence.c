@@ -239,8 +239,8 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, mp_uint_t len1, const
 mp_obj_t mp_seq_index_obj(const mp_obj_t *items, mp_uint_t len, mp_uint_t n_args, const mp_obj_t *args) {
     mp_obj_type_t *type = mp_obj_get_type(args[0]);
     mp_obj_t value = args[1];
-    uint start = 0;
-    uint stop = len;
+    size_t start = 0;
+    size_t stop = len;
 
     if (n_args >= 3) {
         start = mp_get_index(type, len, args[2], true);
@@ -249,7 +249,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, mp_uint_t len, mp_uint_t n_args
         }
     }
 
-    for (mp_uint_t i = start; i < stop; i++) {
+    for (size_t i = start; i < stop; i++) {
         if (mp_obj_equal(items[i], value)) {
             // Common sense says this cannot overflow small int
             return MP_OBJ_NEW_SMALL_INT(i);

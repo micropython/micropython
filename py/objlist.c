@@ -186,7 +186,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return MP_OBJ_FROM_PTR(res);
         }
 #endif
-        mp_uint_t index_val = mp_get_index(self->base.type, self->len, index, false);
+        size_t index_val = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_val];
     } else {
 #if MICROPY_PY_BUILTINS_SLICE
@@ -268,7 +268,7 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     if (self->len == 0) {
         mp_raise_msg(&mp_type_IndexError, "pop from empty list");
     }
-    mp_uint_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
+    size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];
     self->len -= 1;
     memmove(self->items + index, self->items + index + 1, (self->len - index) * sizeof(mp_obj_t));
@@ -490,7 +490,7 @@ void mp_obj_list_set_len(mp_obj_t self_in, size_t len) {
 
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t i = mp_get_index(self->base.type, self->len, index, false);
+    size_t i = mp_get_index(self->base.type, self->len, index, false);
     self->items[i] = value;
 }
 
