@@ -86,7 +86,7 @@ SRC_LIB = $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/log1pf.c \
 	libm/acoshf.c \
 	libm/asinhf.c \

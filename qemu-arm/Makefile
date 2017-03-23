@@ -47,7 +47,7 @@ SRC_TEST_C = \
 LIB_SRC_C = $(addprefix lib/,\
 	libm/math.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \
