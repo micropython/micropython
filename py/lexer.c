@@ -159,7 +159,6 @@ STATIC void next_char(mp_lexer_t *lex) {
 
 STATIC void indent_push(mp_lexer_t *lex, size_t indent) {
     if (lex->num_indent_level >= lex->alloc_indent_level) {
-        // TODO use m_renew_maybe and somehow indicate an error if it fails... probably by using MP_TOKEN_MEMORY_ERROR
         lex->indent_level = m_renew(uint16_t, lex->indent_level, lex->alloc_indent_level, lex->alloc_indent_level + MICROPY_ALLOC_LEXEL_INDENT_INC);
         lex->alloc_indent_level += MICROPY_ALLOC_LEXEL_INDENT_INC;
     }
