@@ -478,10 +478,11 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     }
     mp_float_t val = mp_obj_get_float(o_in);
     mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val);
+    return mp_obj_new_int_from_float(rounded);
 #else
     mp_int_t r = mp_obj_get_int(o_in);
-#endif
     return mp_obj_new_int(r);
+#endif
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj, 1, 2, mp_builtin_round);
 
