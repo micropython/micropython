@@ -80,4 +80,6 @@ void ble_drv_scan_stop(void);
 
 void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler);
 
+void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
+
 #endif // BLUETOOTH_LE_DRIVER_H__

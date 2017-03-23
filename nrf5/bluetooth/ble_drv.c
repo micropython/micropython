@@ -697,6 +697,38 @@ void ble_drv_scan_stop(void) {
     sd_ble_gap_scan_stop();
 }
 
+void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
+    SD_TEST_OR_ENABLE();
+
+    ble_gap_scan_params_t scan_params;
+    scan_params.active   = 1;
+    scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
+    scan_params.window   = MSEC_TO_UNITS(100, UNIT_0_625_MS);
+    scan_params.timeout  = 0; // Infinite
+
+#if (BLUETOOTH_SD == 130)
+    scan_params.selective   = 0;
+    scan_params.p_whitelist = NULL;
+#else
+    scan_params.use_whitelist = 0;
+#endif
+
+    ble_gap_addr_t addr;
+    memset(&addr, 0, sizeof(addr));
+
+    addr.addr_type = addr_type;
+    memcpy(addr.addr, p_addr, 6);
+
+    ble_gap_conn_params_t conn_params;
+    (void)sd_ble_gap_ppcp_get(&conn_params);
+
+    uint32_t err_code;
+    if ((err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params)) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not connect. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+}
+
 #endif
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
