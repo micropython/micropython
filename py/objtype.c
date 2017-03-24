@@ -48,7 +48,7 @@ STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_
 /******************************************************************************/
 // instance object
 
-STATIC mp_obj_t mp_obj_new_instance(const mp_obj_type_t *class, uint subobjs) {
+STATIC mp_obj_t mp_obj_new_instance(const mp_obj_type_t *class, size_t subobjs) {
     mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, subobjs);
     o->base.type = class;
     mp_map_init(&o->members, 0);
@@ -57,11 +57,11 @@ STATIC mp_obj_t mp_obj_new_instance(const mp_obj_type_t *class, uint subobjs) {
 }
 
 STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_type_t **last_native_base) {
-    mp_uint_t len = type->bases_tuple->len;
+    size_t len = type->bases_tuple->len;
     mp_obj_t *items = type->bases_tuple->items;
 
     int count = 0;
-    for (uint i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         const mp_obj_type_t *bt = (const mp_obj_type_t *)MP_OBJ_TO_PTR(items[i]);
         if (bt == &mp_type_object) {
@@ -96,7 +96,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
 struct class_lookup_data {
     mp_obj_instance_t *obj;
     qstr attr;
-    mp_uint_t meth_offset;
+    size_t meth_offset;
     mp_obj_t *dest;
     bool is_type;
 };
@@ -165,12 +165,12 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             return;
         }
 
-        mp_uint_t len = type->bases_tuple->len;
+        size_t len = type->bases_tuple->len;
         mp_obj_t *items = type->bases_tuple->items;
         if (len == 0) {
             return;
         }
-        for (uint i = 0; i < len - 1; i++) {
+        for (size_t i = 0; i < len - 1; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
             mp_obj_type_t *bt = (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]);
             if (bt == &mp_type_object) {
@@ -239,7 +239,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     assert(mp_obj_is_instance_type(self));
 
     const mp_obj_type_t *native_base;
-    uint num_native_bases = instance_count_native_bases(self, &native_base);
+    size_t num_native_bases = instance_count_native_bases(self, &native_base);
     assert(num_native_bases < 2);
 
     mp_obj_instance_t *o = MP_OBJ_TO_PTR(mp_obj_new_instance(self, num_native_bases));
@@ -477,7 +477,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         // it will not result in modifications to the actual instance members.
         mp_map_t *map = &self->members;
         mp_obj_t attr_dict = mp_obj_new_dict(map->used);
-        for (mp_uint_t i = 0; i < map->alloc; ++i) {
+        for (size_t i = 0; i < map->alloc; ++i) {
             if (MP_MAP_SLOT_IS_FILLED(map, i)) {
                 mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
             }
@@ -688,7 +688,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
         .dest = member,
         .is_type = false,
     };
-    uint meth_args;
+    size_t meth_args;
     if (value == MP_OBJ_NULL) {
         // delete item
         lookup.attr = MP_QSTR___delitem__;
@@ -919,7 +919,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_uint_t len;
     mp_obj_t *items;
     mp_obj_tuple_get(bases_tuple, &len, &items);
-    for (uint i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_type_t *t = MP_OBJ_TO_PTR(items[i]);
         // TODO: Verify with CPy, tested on function type
@@ -957,7 +957,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->locals_dict = MP_OBJ_TO_PTR(locals_dict);
 
     const mp_obj_type_t *native_base;
-    uint num_native_bases = instance_count_native_bases(o, &native_base);
+    size_t num_native_bases = instance_count_native_bases(o, &native_base);
     if (num_native_bases > 1) {
         mp_raise_msg(&mp_type_TypeError, "multiple bases have instance lay-out conflict");
     }
@@ -1020,7 +1020,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 
-    mp_uint_t len = type->bases_tuple->len;
+    size_t len = type->bases_tuple->len;
     mp_obj_t *items = type->bases_tuple->items;
     struct class_lookup_data lookup = {
         .obj = MP_OBJ_TO_PTR(self->obj),
@@ -1029,7 +1029,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         .dest = dest,
         .is_type = false,
     };
-    for (uint i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
         mp_obj_class_lookup(&lookup, (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]));
         if (dest[0] != MP_OBJ_NULL) {
@@ -1079,14 +1079,14 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         }
 
         // get the base objects (they should be type objects)
-        mp_uint_t len = self->bases_tuple->len;
+        size_t len = self->bases_tuple->len;
         mp_obj_t *items = self->bases_tuple->items;
         if (len == 0) {
             return false;
         }
 
         // iterate through the base objects
-        for (uint i = 0; i < len - 1; i++) {
+        for (size_t i = 0; i < len - 1; i++) {
             if (mp_obj_is_subclass_fast(items[i], classinfo)) {
                 return true;
             }
@@ -1109,7 +1109,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
         mp_raise_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes");
     }
 
-    for (uint i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         // We explicitly check for 'object' here since no-one explicitly derives from it
         if (items[i] == MP_OBJ_FROM_PTR(&mp_type_object) || mp_obj_is_subclass_fast(object, items[i])) {
             return mp_const_true;
