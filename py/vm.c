@@ -285,12 +285,12 @@ dispatch_loop:
                     DECODE_QSTR;
                     mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
                     mp_uint_t x = *ip;
-                    if (x < MP_STATE_CTX(dict_locals)->map.alloc && MP_STATE_CTX(dict_locals)->map.table[x].key == key) {
-                        PUSH(MP_STATE_CTX(dict_locals)->map.table[x].value);
+                    if (x < mp_locals_get()->map.alloc && mp_locals_get()->map.table[x].key == key) {
+                        PUSH(mp_locals_get()->map.table[x].value);
                     } else {
-                        mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_CTX(dict_locals)->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        mp_map_elem_t *elem = mp_map_lookup(&mp_locals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
                         if (elem != NULL) {
-                            *(byte*)ip = (elem - &MP_STATE_CTX(dict_locals)->map.table[0]) & 0xff;
+                            *(byte*)ip = (elem - &mp_locals_get()->map.table[0]) & 0xff;
                             PUSH(elem->value);
                         } else {
                             PUSH(mp_load_name(MP_OBJ_QSTR_VALUE(key)));
@@ -314,12 +314,12 @@ dispatch_loop:
                     DECODE_QSTR;
                     mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
                     mp_uint_t x = *ip;
-                    if (x < MP_STATE_CTX(dict_globals)->map.alloc && MP_STATE_CTX(dict_globals)->map.table[x].key == key) {
-                        PUSH(MP_STATE_CTX(dict_globals)->map.table[x].value);
+                    if (x < mp_globals_get()->map.alloc && mp_globals_get()->map.table[x].key == key) {
+                        PUSH(mp_globals_get()->map.table[x].value);
                     } else {
-                        mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_CTX(dict_globals)->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+                        mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
                         if (elem != NULL) {
-                            *(byte*)ip = (elem - &MP_STATE_CTX(dict_globals)->map.table[0]) & 0xff;
+                            *(byte*)ip = (elem - &mp_globals_get()->map.table[0]) & 0xff;
                             PUSH(elem->value);
                         } else {
                             PUSH(mp_load_global(MP_OBJ_QSTR_VALUE(key)));

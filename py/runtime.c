@@ -97,7 +97,8 @@ void mp_init(void) {
     mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(dict_main)), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
-    MP_STATE_CTX(dict_locals) = MP_STATE_CTX(dict_globals) = &MP_STATE_VM(dict_main);
+    mp_locals_set(&MP_STATE_VM(dict_main));
+    mp_globals_set(&MP_STATE_VM(dict_main));
 
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
@@ -136,8 +137,8 @@ mp_obj_t mp_load_name(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
     // If we're at the outer scope (locals == globals), dispatch to load_global right away
-    if (MP_STATE_CTX(dict_locals) != MP_STATE_CTX(dict_globals)) {
-        mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_CTX(dict_locals)->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+    if (mp_locals_get() != mp_globals_get()) {
+        mp_map_elem_t *elem = mp_map_lookup(&mp_locals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
         if (elem != NULL) {
             return elem->value;
         }
@@ -148,7 +149,7 @@ mp_obj_t mp_load_name(qstr qst) {
 mp_obj_t mp_load_global(qstr qst) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qst));
-    mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_CTX(dict_globals)->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
     if (elem == NULL) {
         #if MICROPY_CAN_OVERRIDE_BUILTINS
         if (MP_STATE_VM(mp_module_builtins_override_dict) != NULL) {
@@ -188,24 +189,24 @@ mp_obj_t mp_load_build_class(void) {
 
 void mp_store_name(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_locals)), MP_OBJ_NEW_QSTR(qst), obj);
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
 void mp_delete_name(qstr qst) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
-    mp_obj_dict_delete(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_locals)), MP_OBJ_NEW_QSTR(qst));
+    mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
 void mp_store_global(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qst), obj);
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_globals)), MP_OBJ_NEW_QSTR(qst), obj);
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
 void mp_delete_global(qstr qst) {
     DEBUG_OP_printf("delete global %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
-    mp_obj_dict_delete(MP_OBJ_FROM_PTR(MP_STATE_CTX(dict_globals)), MP_OBJ_NEW_QSTR(qst));
+    mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
 mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
