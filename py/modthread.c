@@ -215,7 +215,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     thread_entry_args_t *th_args;
 
     // get positional arguments
-    mp_uint_t pos_args_len;
+    size_t pos_args_len;
     mp_obj_t *pos_args_items;
     mp_obj_get_array(args[1], &pos_args_len, &pos_args_items);
 

@@ -916,7 +916,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
     // Basic validation of base classes
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *items;
     mp_obj_tuple_get(bases_tuple, &len, &items);
     for (size_t i = 0; i < len; i++) {
@@ -1098,7 +1098,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 }
 
 STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *items;
     if (MP_OBJ_IS_TYPE(classinfo, &mp_type_type)) {
         len = 1;

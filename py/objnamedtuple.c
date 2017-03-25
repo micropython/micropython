@@ -158,7 +158,7 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t 
 
 STATIC mp_obj_t new_namedtuple_type(mp_obj_t name_in, mp_obj_t fields_in) {
     qstr name = mp_obj_str_get_qstr(name_in);
-    mp_uint_t n_fields;
+    size_t n_fields;
     mp_obj_t *fields;
     #if MICROPY_CPYTHON_COMPAT
     if (MP_OBJ_IS_STR(fields_in)) {

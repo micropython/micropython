@@ -97,7 +97,7 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
 #if MICROPY_PY_SYS
     // extract the list of paths
-    mp_uint_t path_num;
+    size_t path_num;
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 

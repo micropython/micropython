@@ -513,7 +513,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 #endif
         } else if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
-            mp_uint_t len;
+            size_t len;
             mp_obj_t *items;
             mp_obj_get_array(obj, &len, &items);
             return (mp_uint_t)items;

@@ -244,7 +244,7 @@ mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-void mp_obj_tuple_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items) {
+void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     *len = self->len;
