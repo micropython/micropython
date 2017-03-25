@@ -38,7 +38,9 @@ Major components in this repository:
 - minimal/ -- a minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
-- docs/ -- user documentation in Sphinx reStructuredText format.
+- docs/ -- user documentation in Sphinx reStructuredText format. Rendered
+  HTML documentation is available at http://docs.micropython.org (be sure
+  to select needed board/port at the bottom left corner).
 
 Additional components:
 - bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
