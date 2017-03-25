@@ -50,6 +50,7 @@ Additional components:
 - pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
 - cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
 - esp8266/ -- an experimental port for ESP8266 WiFi modules.
+- extmod/ -- additional (non-core) modules implemented in C.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
 
