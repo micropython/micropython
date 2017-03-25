@@ -99,9 +99,7 @@ void common_hal_nativeio_digitalinout_set_value(
             port_base->OUTSET.reg = pin_mask;
         }
     } else {
-        if (!self->open_drain) {
-            port_base->DIRSET.reg = pin_mask;
-        }
+        port_base->DIRSET.reg = pin_mask;
         port_base->OUTCLR.reg = pin_mask;
     }
 }

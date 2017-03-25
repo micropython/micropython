@@ -34,6 +34,7 @@
 
 #include "shared-bindings/bitbangio/__init__.h"
 #include "shared-bindings/bitbangio/I2C.h"
+#include "shared-bindings/bitbangio/OneWire.h"
 #include "shared-bindings/bitbangio/SPI.h"
 #include "shared-module/bitbangio/types.h"
 
@@ -49,7 +50,7 @@
 //| The `bitbangio` module contains classes to provide digital protocol support
 //| regardless of whether the underlying hardware exists to use the protocol.
 //|
-//| First try to use `nativeio` module instead which utilizes peripheral
+//| First try to use `nativeio` module instead which may utilize peripheral
 //| hardware to implement the protocols. Native implementations will be faster
 //| than bitbanged versions and have more capabilities.
 //|
@@ -59,6 +60,7 @@
 //|     :maxdepth: 3
 //|
 //|     I2C
+//|     OneWire
 //|     SPI
 //|
 //| All libraries change hardware state and should be deinitialized when they
@@ -81,6 +83,7 @@
 STATIC const mp_rom_map_elem_t bitbangio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitbangio) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&bitbangio_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&bitbangio_onewire_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&bitbangio_spi_type) },
 };
 

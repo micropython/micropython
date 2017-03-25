@@ -253,7 +253,9 @@ SRC_SHARED_MODULE = \
 	help.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
+	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
+	nativeio/OneWire.c \
 	uheap/__init__.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \

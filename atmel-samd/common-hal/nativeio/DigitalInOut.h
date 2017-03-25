@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,60 +24,16 @@
  * THE SOFTWARE.
  */
 
-// This defines the types used to underly the standard nativeio Python objects.
-// The shared API is defined in terms of these types.
-
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__
-
-#include "common-hal/microcontroller/types.h"
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_DIGITALINOUT_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_DIGITALINOUT_H__
 
 #include "py/obj.h"
-
-// Use the bitbang wrapper for OneWire
-// TODO(tannewt): Wrap bitbangio for I2C too.
-#include "shared-module/nativeio/OneWire.h"
 
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t * pin;
-} nativeio_analogin_obj_t;
+    bool output;
+    bool open_drain;
+} nativeio_digitalinout_obj_t;
 
-// Not supported, throws error on construction.
-typedef struct {
-    mp_obj_base_t base;
-} nativeio_analogout_obj_t;
-
-// Not supported, throws error on construction.
-typedef struct {
-    mp_obj_base_t base;
-} nativeio_i2c_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    bool locked;
-} nativeio_spi_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-} nativeio_pulsein_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-} nativeio_pulseout_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    int channel;
-    const mcu_pin_obj_t* pin;
-} nativeio_pwmout_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-} nativeio_touchin_obj_t;
-
-typedef struct {
-  mp_obj_base_t base;
-} nativeio_uart_obj_t;
-
-#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_TYPES_H__
+#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NATIVEIO_DIGITALINOUT_H__

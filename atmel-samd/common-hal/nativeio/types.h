@@ -52,6 +52,10 @@
 
 #include "py/obj.h"
 
+// Import bitbang implemented types. Must be after DigitalInOut because they
+// likely depend on it.
+#include "shared-module/nativeio/OneWire.h"
+
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t * pin;
@@ -62,13 +66,6 @@ typedef struct {
     mp_obj_base_t base;
     struct dac_module dac_instance;
 } nativeio_analogout_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    bool output;
-    bool open_drain;
-} nativeio_digitalinout_obj_t;
 
 typedef struct {
     mp_obj_base_t base;

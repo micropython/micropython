@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
-#define __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_ONEWIRE_H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_ONEWIRE_H__
 
-#include "common-hal/nativeio/DigitalInOut.h"
+#include "common-hal/microcontroller/types.h"
+#include "shared-module/bitbangio/types.h"
 
-#include "py/obj.h"
+extern const mp_obj_type_t bitbangio_onewire_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    nativeio_digitalinout_obj_t scl;
-    nativeio_digitalinout_obj_t sda;
-    uint32_t us_delay;
-    volatile bool locked;
-} bitbangio_i2c_obj_t;
+extern void shared_module_bitbangio_onewire_construct(bitbangio_onewire_obj_t* self,
+    const mcu_pin_obj_t* pin);
+extern void shared_module_bitbangio_onewire_deinit(bitbangio_onewire_obj_t* self);
+extern bool shared_module_bitbangio_onewire_reset(bitbangio_onewire_obj_t* self);
+extern bool shared_module_bitbangio_onewire_read_bit(bitbangio_onewire_obj_t* self);
+extern void shared_module_bitbangio_onewire_write_bit(bitbangio_onewire_obj_t* self, bool bit);
 
-typedef struct {
-    mp_obj_base_t base;
-    nativeio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
-
-typedef struct {
-    mp_obj_base_t base;
-    nativeio_digitalinout_obj_t clock;
-    nativeio_digitalinout_obj_t mosi;
-    nativeio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
-
-#endif // __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
+#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_NATIVEIO_ONEWIRE_H__

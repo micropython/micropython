@@ -39,6 +39,7 @@
 #include "shared-bindings/nativeio/AnalogOut.h"
 #include "shared-bindings/nativeio/DigitalInOut.h"
 #include "shared-bindings/nativeio/I2C.h"
+#include "shared-bindings/nativeio/OneWire.h"
 #include "shared-bindings/nativeio/PulseIn.h"
 #include "shared-bindings/nativeio/PulseOut.h"
 #include "shared-bindings/nativeio/PWMOut.h"
@@ -57,15 +58,16 @@
 //|   :synopsis: Hardware accelerated behavior
 //|   :platform: SAMD21
 //|
-//| The `nativeio` module contains classes to provide access to IO accelerated
-//| by hardware on the onboard microcontroller. The classes are meant to align
-//| with commonly hardware accelerated IO and not necessarily match up with
-//| microcontroller structure (because it varies).
+//| The `nativeio` module contains classes to provide access to IO typically
+//| accelerated by hardware on the onboard microcontroller. The classes are
+//| meant to align with commonly hardware accelerated IO and not necessarily
+//| match up with microcontroller structure (because it varies).
 //|
-//| If the microcontroller doesn't not support the behavior in a hardware
-//| accelerated fashion it throws a NotImplementedError on construction. Use
-//| `bitbangio` module instead which only depends on
-//| :py:class:`~nativeio.DigitalInOut` and is shared across hardware ports.
+//| When the microcontroller does not support the behavior in a hardware
+//| accelerated fashion it may internally use a bitbang routine. However, if
+//| hardware support is available on a subset of pins but not those provided,
+//| then a RuntimeError will be raised. Use the `bitbangio` module to explicitly
+//| bitbang a protocol on any general purpose pins.
 //|
 //| Libraries
 //|
@@ -76,6 +78,7 @@
 //|     AnalogOut
 //|     DigitalInOut
 //|     I2C
+//|     OneWire
 //|     PulseIn
 //|     PulseOut
 //|     PWMOut
@@ -120,6 +123,7 @@ STATIC const mp_rom_map_elem_t nativeio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AnalogOut),   MP_ROM_PTR(&nativeio_analogout_type) },
     { MP_ROM_QSTR(MP_QSTR_DigitalInOut),  MP_ROM_PTR(&nativeio_digitalinout_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&nativeio_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&nativeio_onewire_type) },
     { MP_ROM_QSTR(MP_QSTR_PulseIn), MP_ROM_PTR(&nativeio_pulsein_type) },
     { MP_ROM_QSTR(MP_QSTR_PulseOut), MP_ROM_PTR(&nativeio_pulseout_type) },
     { MP_ROM_QSTR(MP_QSTR_PWMOut), MP_ROM_PTR(&nativeio_pwmout_type) },

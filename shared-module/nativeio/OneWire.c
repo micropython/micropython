@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
-#define __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
+// Wraps the bitbangio implementation of OneWire for use in nativeio.
+#include "common-hal/microcontroller/types.h"
+#include "shared-bindings/bitbangio/OneWire.h"
+#include "common-hal/nativeio/types.h"
 
-#include "common-hal/nativeio/DigitalInOut.h"
+void common_hal_nativeio_onewire_construct(nativeio_onewire_obj_t* self,
+        const mcu_pin_obj_t* pin) {
+    shared_module_bitbangio_onewire_construct(&self->bitbang, pin);
+}
 
-#include "py/obj.h"
+void common_hal_nativeio_onewire_deinit(nativeio_onewire_obj_t* self) {
+    shared_module_bitbangio_onewire_deinit(&self->bitbang);
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    nativeio_digitalinout_obj_t scl;
-    nativeio_digitalinout_obj_t sda;
-    uint32_t us_delay;
-    volatile bool locked;
-} bitbangio_i2c_obj_t;
+bool common_hal_nativeio_onewire_reset(nativeio_onewire_obj_t* self) {
+    return shared_module_bitbangio_onewire_reset(&self->bitbang);
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    nativeio_digitalinout_obj_t pin;
-} bitbangio_onewire_obj_t;
+bool common_hal_nativeio_onewire_read_bit(nativeio_onewire_obj_t* self) {
+    return shared_module_bitbangio_onewire_read_bit(&self->bitbang);
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    nativeio_digitalinout_obj_t clock;
-    nativeio_digitalinout_obj_t mosi;
-    nativeio_digitalinout_obj_t miso;
-    uint32_t delay_half;
-    bool has_miso:1;
-    bool has_mosi:1;
-    uint8_t polarity:1;
-    uint8_t phase:1;
-    volatile bool locked:1;
-} bitbangio_spi_obj_t;
-
-#endif // __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
+void common_hal_nativeio_onewire_write_bit(nativeio_onewire_obj_t* self,
+        bool bit) {
+    shared_module_bitbangio_onewire_write_bit(&self->bitbang, bit);
+}
