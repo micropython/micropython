@@ -90,8 +90,7 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
         if (i == VMIN || i == VTIME) {
             term.c_cc[i] = mp_obj_get_int(cc->items[i]);
         } else {
-            mp_uint_t len;
-            term.c_cc[i] = *mp_obj_str_get_data(cc->items[i], &len);
+            term.c_cc[i] = *mp_obj_str_get_str(cc->items[i]);
         }
     }
 
