@@ -162,8 +162,7 @@ STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // get typecode
-    mp_uint_t l;
-    const char *typecode = mp_obj_str_get_data(args[0], &l);
+    const char *typecode = mp_obj_str_get_str(args[0]);
 
     if (n_args == 1) {
         // 1 arg: make an empty array
