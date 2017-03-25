@@ -111,7 +111,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         // go through each path looking for a directory or file
         for (mp_uint_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
-            mp_uint_t p_len;
+            size_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
             if (p_len > 0) {
                 vstr_add_strn(dest, p, p_len);
@@ -265,7 +265,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_uint_t mod_len;
+    size_t mod_len;
     const char *mod_str = mp_obj_str_get_data(module_name, &mod_len);
 
     if (level != 0) {
@@ -296,7 +296,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         DEBUG_printf("\n");
 #endif
 
-        mp_uint_t this_name_l;
+        size_t this_name_l;
         const char *this_name = mp_obj_str_get_data(this_name_q, &this_name_l);
 
         const char *p = this_name + this_name_l;

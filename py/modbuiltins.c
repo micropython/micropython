@@ -336,7 +336,7 @@ STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
-    mp_uint_t len;
+    size_t len;
     const char *str = mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     if (MP_OBJ_IS_STR(o_in)) {
@@ -397,9 +397,9 @@ STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *args, mp_map_t *
     mp_map_elem_t *sep_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_MAP_LOOKUP);
     mp_map_elem_t *end_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_end), MP_MAP_LOOKUP);
     const char *sep_data = " ";
-    mp_uint_t sep_len = 1;
+    size_t sep_len = 1;
     const char *end_data = "\n";
-    mp_uint_t end_len = 1;
+    size_t end_len = 1;
     if (sep_elem != NULL && sep_elem->value != mp_const_none) {
         sep_data = mp_obj_str_get_data(sep_elem->value, &sep_len);
     }

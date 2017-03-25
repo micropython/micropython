@@ -501,7 +501,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return mp_obj_int_get_truncated(obj);
     } else if (MP_OBJ_IS_STR(obj)) {
         // pointer to the string (it's probably constant though!)
-        mp_uint_t l;
+        size_t l;
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);

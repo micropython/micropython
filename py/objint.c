@@ -56,7 +56,7 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
                 return args[0];
             } else if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
                 // a string, parse it
-                mp_uint_t l;
+                size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_integer(s, l, 0, NULL);
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -72,7 +72,7 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
         default: {
             // should be a string, parse it
             // TODO proper error checking of argument types
-            mp_uint_t l;
+            size_t l;
             const char *s = mp_obj_str_get_data(args[0], &l);
             return mp_parse_num_integer(s, l, mp_obj_get_int(args[1]), NULL);
         }

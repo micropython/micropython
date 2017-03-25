@@ -153,7 +153,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             mp_obj_t obj = MP_OBJ_NULL;
             for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
                 if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                    mp_uint_t d_len;
+                    size_t d_len;
                     const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
                     if (s_len == d_len && strncmp(s_start, d_str, d_len) == 0) {
                         obj = dict->map.table[i].value;
@@ -197,7 +197,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             mp_uint_t match_len = 0;
             for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
                 if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                    mp_uint_t d_len;
+                    size_t d_len;
                     const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
                     if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                         if (match_str == NULL) {
@@ -247,7 +247,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             int line_len = MAX_LINE_LEN; // force a newline for first word
             for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
                 if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                    mp_uint_t d_len;
+                    size_t d_len;
                     const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
                     if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                         int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;

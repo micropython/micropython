@@ -78,7 +78,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     // get the source
-    mp_uint_t str_len;
+    size_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // get the filename
@@ -128,7 +128,7 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     }
     #endif
 
-    mp_uint_t str_len;
+    size_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // create the lexer

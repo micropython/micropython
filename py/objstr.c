@@ -513,7 +513,7 @@ mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
             bad_implicit_conversion(sep);
         }
 
-        mp_uint_t sep_len;
+        size_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
 
         if (sep_len == 0) {
@@ -611,7 +611,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     if (sep == mp_const_none) {
         mp_not_implemented("rsplit(None,n)");
     } else {
-        mp_uint_t sep_len;
+        size_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
 
         if (sep_len == 0) {
@@ -1306,12 +1306,12 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             switch (type) {
                 case '\0': // no explicit format type implies 's'
                 case 's': {
-                    mp_uint_t slen;
+                    size_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);
                     if (precision < 0) {
                         precision = slen;
                     }
-                    if (slen > (mp_uint_t)precision) {
+                    if (slen > (size_t)precision) {
                         slen = precision;
                     }
                     mp_print_strn(&print, s, slen, flags, fill, width);
@@ -1452,7 +1452,7 @@ not_enough_args:
         switch (*str) {
             case 'c':
                 if (MP_OBJ_IS_STR(arg)) {
-                    mp_uint_t slen;
+                    size_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);
                     if (slen != 1) {
                         mp_raise_TypeError("%%c requires int or char");
@@ -2097,7 +2097,7 @@ const char *mp_obj_str_get_str(mp_obj_t self_in) {
     }
 }
 
-const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len) {
+const char *mp_obj_str_get_data(mp_obj_t self_in, size_t *len) {
     if (MP_OBJ_IS_STR_OR_BYTES(self_in)) {
         GET_STR_DATA_LEN(self_in, s, l);
         *len = l;
