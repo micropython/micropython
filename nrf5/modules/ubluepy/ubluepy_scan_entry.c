@@ -56,15 +56,29 @@ STATIC void ubluepy_scan_entry_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest)
 
 }
 
+/// \method getScanData()
+/// Return list of the scan data tupples.
+///
+STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in, mp_obj_t type_in) {
+    ubluepy_scan_entry_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    (void)self;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_scan_entry_get_scan_data_obj, scan_entry_get_scan_data);
+
+STATIC const mp_map_elem_t ubluepy_scan_entry_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getScanData),           (mp_obj_t)(&ubluepy_scan_entry_get_scan_data_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(ubluepy_scan_entry_locals_dict, ubluepy_scan_entry_locals_dict_table);
+
 
 const mp_obj_type_t ubluepy_scan_entry_type = {
     { &mp_type_type },
     .name = MP_QSTR_ScanEntry,
     .print = ubluepy_scan_entry_print,
-#if 0
-    .make_new = ubluepy_scan_entry_make_new,
     .locals_dict = (mp_obj_t)&ubluepy_scan_entry_locals_dict,
-#endif
     .attr = ubluepy_scan_entry_attr
 };
 
