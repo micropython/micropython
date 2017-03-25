@@ -134,7 +134,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
     mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get the mount point
-    mp_uint_t mnt_len;
+    size_t mnt_len;
     const char *mnt_str = mp_obj_str_get_data(pos_args[1], &mnt_len);
 
     // see if we need to auto-detect and create the filesystem
@@ -180,7 +180,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 2, mp_vfs_mount);
 mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
     // remove vfs from the mount table
     mp_vfs_mount_t *vfs = NULL;
-    mp_uint_t mnt_len;
+    size_t mnt_len;
     const char *mnt_str = NULL;
     if (MP_OBJ_IS_STR(mnt_in)) {
         mnt_str = mp_obj_str_get_data(mnt_in, &mnt_len);
