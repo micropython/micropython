@@ -1,8 +1,4 @@
-[![Build Status][travis-img]][travis-repo] [![Coverage Status][coveralls-img]][coveralls-repo]
-[travis-img]:  https://travis-ci.org/micropython/micropython.png?branch=master
-[travis-repo]: https://travis-ci.org/micropython/micropython
-[coveralls-img]:  https://coveralls.io/repos/micropython/micropython/badge.png?branch=master
-[coveralls-repo]: https://coveralls.io/r/micropython/micropython?branch=master
+[![Build Status](https://travis-ci.org/micropython/micropython.png?branch=master)](https://travis-ci.org/micropython/micropython) [![Coverage Status](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
 
 The MicroPython project
 =======================
