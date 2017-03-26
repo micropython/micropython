@@ -466,8 +466,7 @@ STATIC void esp_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) {
 
 STATIC mp_obj_t esp_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in,
     mp_obj_t lambda_in) {
-    mp_uint_t hlen;
-    const char *host = mp_obj_str_get_data(host_in, &hlen);
+    const char *host = mp_obj_str_get_str(host_in);
     ip_addr_t ipaddr;
 
     esp_getaddrinfo_cb_struct.lambda = lambda_in;
