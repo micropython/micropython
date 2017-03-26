@@ -773,7 +773,7 @@ STATIC mp_obj_t wlan_init_helper(wlan_obj_t *self, const mp_arg_val_t *args) {
     wlan_validate_mode(mode);
 
     // get the ssid
-    mp_uint_t ssid_len = 0;
+    size_t ssid_len = 0;
     const char *ssid = NULL;
     if (args[1].u_obj != NULL) {
         ssid = mp_obj_str_get_data(args[1].u_obj, &ssid_len);
@@ -782,7 +782,7 @@ STATIC mp_obj_t wlan_init_helper(wlan_obj_t *self, const mp_arg_val_t *args) {
 
     // get the auth config
     uint8_t auth = SL_SEC_TYPE_OPEN;
-    mp_uint_t key_len = 0;
+    size_t key_len = 0;
     const char *key = NULL;
     if (args[2].u_obj != mp_const_none) {
         mp_obj_t *sec;
@@ -922,13 +922,13 @@ STATIC mp_obj_t wlan_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get the ssid
-    mp_uint_t ssid_len;
+    size_t ssid_len;
     const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
     wlan_validate_ssid_len(ssid_len);
 
     // get the auth config
     uint8_t auth = SL_SEC_TYPE_OPEN;
-    mp_uint_t key_len = 0;
+    size_t key_len = 0;
     const char *key = NULL;
     if (args[1].u_obj != mp_const_none) {
         mp_obj_t *sec;
@@ -1077,7 +1077,7 @@ STATIC mp_obj_t wlan_ssid (mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         return mp_obj_new_str((const char *)self->ssid, strlen((const char *)self->ssid), false);
     } else {
-        mp_uint_t len;
+        size_t len;
         const char *ssid = mp_obj_str_get_data(args[1], &len);
         wlan_validate_ssid_len(len);
         wlan_set_ssid(ssid, len, false);
@@ -1101,7 +1101,7 @@ STATIC mp_obj_t wlan_auth (mp_uint_t n_args, const mp_obj_t *args) {
     } else {
         // get the auth config
         uint8_t auth = SL_SEC_TYPE_OPEN;
-        mp_uint_t key_len = 0;
+        size_t key_len = 0;
         const char *key = NULL;
         if (args[1] != mp_const_none) {
             mp_obj_t *sec;
