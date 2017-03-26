@@ -607,8 +607,8 @@ void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint
                                                handle,
                                                &gatts_value);
     if (err_code != 0) {
-	    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
 
 }
@@ -641,9 +641,9 @@ void ble_drv_attr_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
     hvx_params.p_len  = &hvx_len;
     hvx_params.p_data = p_data;
 
-	while (m_tx_in_progress) {
-		;
-	}
+    while (m_tx_in_progress) {
+        ;
+    }
 
     m_tx_in_progress = true;
     uint32_t err_code;
