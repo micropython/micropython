@@ -38,7 +38,7 @@
 #include "py/bc.h"
 
 #if 0
-#define TRACE(ip) printf("sp=%d ", (int)(sp - code_state->sp)); mp_bytecode_print2(ip, 1, code_state->const_table);
+#define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
 #define TRACE(ip)
 #endif
