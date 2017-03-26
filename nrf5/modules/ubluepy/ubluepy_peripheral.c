@@ -249,6 +249,32 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
     (void)self;
+
+    if (MP_OBJ_IS_STR(dev_addr)) {
+        GET_STR_DATA_LEN(dev_addr, str_data, str_len);
+        if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
+
+            uint8_t * p_addr = m_new(uint8_t, 6);
+
+            p_addr[0]  = unichar_xdigit_value(str_data[16]);
+            p_addr[0] += unichar_xdigit_value(str_data[15]) << 4;
+            p_addr[1]  = unichar_xdigit_value(str_data[13]);
+            p_addr[1] += unichar_xdigit_value(str_data[12]) << 4;
+            p_addr[2]  = unichar_xdigit_value(str_data[10]);
+            p_addr[2] += unichar_xdigit_value(str_data[9]) << 4;
+            p_addr[3]  = unichar_xdigit_value(str_data[7]);
+            p_addr[3] += unichar_xdigit_value(str_data[6]) << 4;
+            p_addr[4]  = unichar_xdigit_value(str_data[4]);
+            p_addr[4] += unichar_xdigit_value(str_data[3]) << 4;
+            p_addr[5]  = unichar_xdigit_value(str_data[1]);
+            p_addr[5] += unichar_xdigit_value(str_data[0]) << 4;
+
+            ble_drv_connect(p_addr, 1);
+
+            m_del(uint8_t, p_addr, 6);
+        }
+    }
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_connect_obj, peripheral_connect);
