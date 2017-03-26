@@ -69,6 +69,8 @@ void ble_drv_gap_event_handler_set(mp_obj_t obs, ble_drv_gap_evt_callback_t evt_
 
 void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler);
 
+void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t evt_handler);
+
 void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);

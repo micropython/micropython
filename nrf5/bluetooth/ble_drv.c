@@ -77,10 +77,12 @@ static volatile bool m_tx_in_progress;
 static ble_drv_gap_evt_callback_t        gap_event_handler;
 static ble_drv_adv_evt_callback_t        adv_event_handler;
 static ble_drv_gatts_evt_callback_t      gatts_event_handler;
+static ble_drv_gattc_evt_callback_t      gattc_event_handler;
 
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gatts_observer;
+static mp_obj_t mp_gattc_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -661,6 +663,11 @@ void ble_drv_gap_event_handler_set(mp_obj_t obj, ble_drv_gap_evt_callback_t evt_
 void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler) {
     mp_gatts_observer = obj;
     gatts_event_handler = evt_handler;
+}
+
+void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t evt_handler) {
+    mp_gattc_observer = obj;
+    gattc_event_handler = evt_handler;
 }
 
 void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt_handler) {
