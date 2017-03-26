@@ -196,7 +196,7 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 
     // set date and time
     mp_obj_t *items;
-    uint len;
+    size_t len;
     mp_obj_get_array(datetime, &len, &items);
 
     // verify the tuple

@@ -388,7 +388,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *a
     uint flowcontrol = UART_FLOWCONTROL_NONE;
     if (pins_o != mp_const_none) {
         mp_obj_t *pins;
-        mp_uint_t n_pins = 2;
+        size_t n_pins = 2;
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
             pins = (mp_obj_t *)pyb_uart_def_pin[self->uart_id];
@@ -454,7 +454,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     if (args[0].u_obj == MP_OBJ_NULL) {
         if (args[5].u_obj != MP_OBJ_NULL) {
             mp_obj_t *pins;
-            mp_uint_t n_pins = 2;
+            size_t n_pins = 2;
             mp_obj_get_array(args[5].u_obj, &n_pins, &pins);
             // check the Tx pin (or the Rx if Tx is None)
             if (pins[0] == mp_const_none) {
