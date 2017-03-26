@@ -36,7 +36,7 @@
 #include "ble.h" // sd_ble_uuid_encode
 
 
-#define BLE_DRIVER_VERBOSE 1
+#define BLE_DRIVER_VERBOSE 0
 #if BLE_DRIVER_VERBOSE
 #define BLE_DRIVER_LOG printf
 #else
