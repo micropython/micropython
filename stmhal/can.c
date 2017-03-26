@@ -631,8 +631,8 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_uint_t len;
-    mp_uint_t rtr_len;
+    size_t len;
+    size_t rtr_len;
     mp_uint_t rtr_masks[4] = {0, 0, 0, 0};
     mp_obj_t *rtr_flags;
     mp_obj_t *params;
