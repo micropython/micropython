@@ -824,8 +824,15 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
             // TODO: Fix unsafe callback to possible undefined callback...
             adv_event_handler(mp_adv_observer,
-                                      p_ble_evt->header.evt_id,
-                                      &adv_data);
+                              p_ble_evt->header.evt_id,
+                              &adv_data);
+            break;
+
+        case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+            BLE_DRIVER_LOG("BLE EVT CONN PARAM UPDATE REQUEST\n");
+
+            (void)sd_ble_gap_conn_param_update(p_ble_evt->evt.gap_evt.conn_handle,
+                                               &p_ble_evt->evt.gap_evt.params.conn_param_update_request.conn_params);
             break;
 #endif
 
