@@ -748,6 +748,18 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     }
 }
 
+void ble_drv_discover_services(void) {
+
+}
+
+void ble_drv_discover_characteristic(void) {
+
+}
+
+void ble_drv_discover_descriptors(void) {
+
+}
+
 #endif
 
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {

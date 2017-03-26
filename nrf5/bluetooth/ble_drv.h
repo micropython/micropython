@@ -85,4 +85,10 @@ void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt
 
 void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
 
+void ble_drv_discover_services(void);
+
+void ble_drv_discover_characteristic(void);
+
+void ble_drv_discover_descriptors(void);
+
 #endif // BLUETOOTH_LE_DRIVER_H__
