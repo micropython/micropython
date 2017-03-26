@@ -337,7 +337,7 @@ void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
 }
 
 // note: returned value in *items may point to the interior of a GC block
-void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
+void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     mp_uint_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
