@@ -76,7 +76,7 @@
 #define Lun_0_removal                           vfs_removal
 #define Lun_0_usb_read_10                       vfs_usb_read_10
 #define Lun_0_usb_write_10                      vfs_usb_write_10
-#define LUN_0_NAME                              "\"MicroPython VFS[0]\""
+#define LUN_0_NAME                              "\"CircuitPython VFS[0]\""
 //! @}
 
 #define MEM_USB                                 LUN_USB
