@@ -2190,9 +2190,10 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         compile_load_id(comp, MP_QSTR___class__);
         // look for first argument to function (assumes it's "self")
         for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
-            if (comp->scope_cur->id_info[i].flags & ID_FLAG_IS_PARAM) {
+            id_info_t *id = &comp->scope_cur->id_info[i];
+            if (id->flags & ID_FLAG_IS_PARAM) {
                 // first argument found; load it and call super
-                EMIT_LOAD_FAST(MP_QSTR_, comp->scope_cur->id_info[i].local_num);
+                compile_load_id(comp, id->qst);
                 EMIT_ARG(call_function, 2, 0, 0);
                 return;
             }
