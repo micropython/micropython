@@ -37,5 +37,6 @@ void autoreset_start(void);
 void autoreset_stop(void);
 void autoreset_enable(void);
 void autoreset_disable(void);
+bool autoreset_is_enabled(void);
 
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_AUTORESET_H__

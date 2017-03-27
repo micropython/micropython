@@ -259,7 +259,7 @@ bool start_mp(void) {
     #ifdef AUTORESET_DELAY_MS
     if (cdc_enabled_at_start) {
         mp_hal_stdout_tx_str("\r\n");
-        mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
+        mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
     }
     #endif
 
@@ -330,10 +330,14 @@ bool start_mp(void) {
         if (!cdc_enabled_before && mp_cdc_enabled) {
             if (cdc_enabled_at_start) {
                 mp_hal_stdout_tx_str("\r\n\r\n");
-            } else {
-                mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them.\r\n");
             }
-            mp_hal_stdout_tx_str("Press any key to enter the REPL and disable auto-reset. Use CTRL-D to soft reset.\r\n");
+
+            if (!cdc_enabled_at_start && autoreset_is_enabled()) {
+                mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
+            } else {
+                mp_hal_stdout_tx_str("Auto-soft reset is off.\r\n");
+            }
+            mp_hal_stdout_tx_str("Press any key to enter the REPL. Use CTRL-D to soft reset.\r\n");
         }
         if (cdc_enabled_before && !mp_cdc_enabled) {
             cdc_enabled_at_start = false;

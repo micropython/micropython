@@ -54,6 +54,10 @@ void autoreset_disable() {
     autoreset_enabled = false;
 }
 
+inline bool autoreset_is_enabled() {
+    return autoreset_enabled;
+}
+
 void autoreset_start() {
     autoreset_delay_ms = AUTORESET_DELAY_MS;
 }
