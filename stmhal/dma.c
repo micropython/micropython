@@ -443,7 +443,7 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
         } else {
             // only necessary initialization
             dma->State = HAL_DMA_STATE_READY;
-#if defined(MCU_SERIES_F4)
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
             // calculate DMA base address and bitshift to be used in IRQ handler
             extern uint32_t DMA_CalcBaseAndBitshift(DMA_HandleTypeDef *hdma);
             DMA_CalcBaseAndBitshift(dma);
