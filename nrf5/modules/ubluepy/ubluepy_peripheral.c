@@ -87,6 +87,17 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
 
 }
 
+#if MICROPY_PY_UBLUEPY_CENTRAL
+
+static volatile bool m_disc_evt_received;
+
+STATIC void gattc_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    (void)self;
+    m_disc_evt_received = true;
+}
+#endif
+
 STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
         ARG_NEW_DEVICE_ADDR,
@@ -107,6 +118,9 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
 
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(s), gap_event_handler);
     ble_drv_gatts_event_handler_set(MP_OBJ_FROM_PTR(s), gatts_event_handler);
+#if MICROPY_PY_UBLUEPY_CENTRAL
+    ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(s), gattc_event_handler);
+#endif
 
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
@@ -274,6 +288,34 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
             m_del(uint8_t, p_addr, 6);
         }
     }
+
+    // block until connected
+    while (self->conn_handle == 0xFFFF) {
+        ;
+    }
+
+    ubluepy_service_obj_t * p_service;
+    bool retval;
+    do {
+        // create an initial service
+        p_service = m_new_obj(ubluepy_service_obj_t);
+        p_service->base.type = &ubluepy_service_type;
+
+        // assign peripheral reference to the service object
+        p_service->p_periph = self;
+
+        // assign an empty uuid object to the service object
+        // TODO
+
+        // Do service discovery
+        m_disc_evt_received = false;
+
+        retval = ble_drv_discover_services(p_service);
+
+        while (m_disc_evt_received != true) {
+            ;
+        }
+    } while (m_disc_evt_received && retval == true);
 
     return mp_const_none;
 }
