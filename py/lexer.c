@@ -176,7 +176,6 @@ STATIC void indent_pop(mp_lexer_t *lex) {
 // some tricky operator encoding:
 //     <op>  = begin with <op>, if this opchar matches then begin here
 //     e<op> = end with <op>, if this opchar matches then end
-//     E<op> = mandatory end with <op>, this opchar must match, then end
 //     c<op> = continue with <op>, if this opchar matches then continue matching
 // this means if the start of two ops are the same then they are equal til the last char
 
@@ -193,7 +192,7 @@ STATIC const char *const tok_enc =
     "%e="         // % %=
     "^e="         // ^ ^=
     "=e="         // = ==
-    "!E=";        // !=
+    "!.";         // start of special cases: != . ...
 
 // TODO static assert that number of tokens is less than 256 so we can safely make this table with byte sized entries
 STATIC const uint8_t tok_enc_kind[] = {
@@ -213,7 +212,6 @@ STATIC const uint8_t tok_enc_kind[] = {
     MP_TOKEN_OP_PERCENT, MP_TOKEN_DEL_PERCENT_EQUAL,
     MP_TOKEN_OP_CARET, MP_TOKEN_DEL_CARET_EQUAL,
     MP_TOKEN_DEL_EQUAL, MP_TOKEN_OP_DBL_EQUAL,
-    MP_TOKEN_OP_NOT_EQUAL,
 };
 
 // must have the same order as enum in lexer.h
@@ -603,20 +601,6 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             }
         }
 
-    } else if (is_char(lex, '.')) {
-        // special handling for . and ... operators, because .. is not a valid operator
-
-        // get first char
-        next_char(lex);
-
-        if (is_char_and(lex, '.', '.')) {
-            next_char(lex);
-            next_char(lex);
-            lex->tok_kind = MP_TOKEN_ELLIPSIS;
-        } else {
-            lex->tok_kind = MP_TOKEN_DEL_PERIOD;
-        }
-
     } else {
         // search for encoded delimiter or operator
 
@@ -624,9 +608,6 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         size_t tok_enc_index = 0;
         for (; *t != 0 && !is_char(lex, *t); t += 1) {
             if (*t == 'e' || *t == 'c') {
-                t += 1;
-            } else if (*t == 'E') {
-                tok_enc_index -= 1;
                 t += 1;
             }
             tok_enc_index += 1;
@@ -638,54 +619,47 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             // didn't match any delimiter or operator characters
             lex->tok_kind = MP_TOKEN_INVALID;
 
+        } else if (*t == '!') {
+            // "!=" is a special case because "!" is not a valid operator
+            if (is_char(lex, '=')) {
+                next_char(lex);
+                lex->tok_kind = MP_TOKEN_OP_NOT_EQUAL;
+            } else {
+                lex->tok_kind = MP_TOKEN_INVALID;
+            }
+
+        } else if (*t == '.') {
+            // "." and "..." are special cases because ".." is not a valid operator
+            if (is_char_and(lex, '.', '.')) {
+                next_char(lex);
+                next_char(lex);
+                lex->tok_kind = MP_TOKEN_ELLIPSIS;
+            } else {
+                lex->tok_kind = MP_TOKEN_DEL_PERIOD;
+            }
+
         } else {
             // matched a delimiter or operator character
 
             // get the maximum characters for a valid token
             t += 1;
             size_t t_index = tok_enc_index;
-            for (;;) {
-                for (; *t == 'e'; t += 1) {
-                    t += 1;
-                    t_index += 1;
-                    if (is_char(lex, *t)) {
-                        next_char(lex);
-                        tok_enc_index = t_index;
+            while (*t == 'c' || *t == 'e') {
+                t_index += 1;
+                if (is_char(lex, t[1])) {
+                    next_char(lex);
+                    tok_enc_index = t_index;
+                    if (*t == 'e') {
                         break;
                     }
-                }
-
-                if (*t == 'E') {
-                    t += 1;
-                    if (is_char(lex, *t)) {
-                        next_char(lex);
-                        tok_enc_index = t_index;
-                    } else {
-                        lex->tok_kind = MP_TOKEN_INVALID;
-                        goto tok_enc_no_match;
-                    }
+                } else if (*t == 'c') {
                     break;
                 }
-
-                if (*t == 'c') {
-                    t += 1;
-                    t_index += 1;
-                    if (is_char(lex, *t)) {
-                        next_char(lex);
-                        tok_enc_index = t_index;
-                        t += 1;
-                    } else {
-                        break;
-                    }
-                } else {
-                    break;
-                }
+                t += 2;
             }
 
             // set token kind
             lex->tok_kind = tok_enc_kind[tok_enc_index];
-
-            tok_enc_no_match:
 
             // compute bracket level for implicit line joining
             if (lex->tok_kind == MP_TOKEN_DEL_PAREN_OPEN || lex->tok_kind == MP_TOKEN_DEL_BRACKET_OPEN || lex->tok_kind == MP_TOKEN_DEL_BRACE_OPEN) {
