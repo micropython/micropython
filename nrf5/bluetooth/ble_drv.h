@@ -85,9 +85,9 @@ void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt
 
 void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
 
-void ble_drv_discover_services(void);
+bool ble_drv_discover_services(ubluepy_service_obj_t * p_service_obj);
 
-void ble_drv_discover_characteristic(void);
+bool ble_drv_discover_characteristic(ubluepy_characteristic_obj_t * p_char_obj);
 
 void ble_drv_discover_descriptors(void);
 
