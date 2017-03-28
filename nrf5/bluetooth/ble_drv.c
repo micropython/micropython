@@ -749,6 +749,15 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
 }
 
 bool ble_drv_discover_services(ubluepy_service_obj_t * p_service_obj) {
+    BLE_DRIVER_LOG("Discover primary services. Conn handle: 0x" HEX2_FMT "\n",
+                   p_service_obj->p_periph->conn_handle);
+
+    uint32_t err_code;
+    err_code = sd_ble_gattc_primary_services_discover(p_service_obj->p_periph->conn_handle,
+                                                      0x0001,
+                                                      NULL);
+
+    (void)err_code;
     return false;
 }
 
@@ -853,6 +862,12 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             (void)sd_ble_gap_conn_param_update(p_ble_evt->evt.gap_evt.conn_handle,
                                                &p_ble_evt->evt.gap_evt.params.conn_param_update_request.conn_params);
             break;
+
+        case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
+            BLE_DRIVER_LOG("BLE EVT PRIMARY SERVICE DISCOVERY RESPONSE\n");
+            gattc_event_handler(mp_gattc_observer, p_ble_evt->header.evt_id, 0, 0, NULL);
+            break;
+
 #endif
 
         default:
