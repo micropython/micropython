@@ -419,6 +419,7 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
             dma_init(&tx_dma, self->tx_dma_descr, self->spi);
             self->spi->hdmatx = &tx_dma;
             self->spi->hdmarx = NULL;
+            MP_HAL_CLEAN_DCACHE(src, len);
             status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t*)src, len);
             if (status == HAL_OK) {
                 status = spi_wait_dma_finished(self->spi, timeout);
@@ -440,7 +441,7 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
             }
             dma_init(&rx_dma, self->rx_dma_descr, self->spi);
             self->spi->hdmarx = &rx_dma;
-
+            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             status = HAL_SPI_Receive_DMA(self->spi, dest, len);
             if (status == HAL_OK) {
                 status = spi_wait_dma_finished(self->spi, timeout);
@@ -460,6 +461,8 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
             self->spi->hdmatx = &tx_dma;
             dma_init(&rx_dma, self->rx_dma_descr, self->spi);
             self->spi->hdmarx = &rx_dma;
+            MP_HAL_CLEAN_DCACHE(src, len);
+            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t*)src, dest, len);
             if (status == HAL_OK) {
                 status = spi_wait_dma_finished(self->spi, timeout);
