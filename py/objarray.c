@@ -391,7 +391,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        mp_raise_msg(&mp_type_ValueError, "lhs and rhs should be compatible");
+                        mp_raise_ValueError("lhs and rhs should be compatible");
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;

@@ -105,7 +105,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     }
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
-            mp_raise_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator");
+            mp_raise_TypeError("can't send non-None value to a just-started generator");
         }
     } else {
         *self->code_state.sp = send_value;

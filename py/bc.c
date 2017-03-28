@@ -197,7 +197,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                    mp_raise_msg(&mp_type_TypeError, "unexpected keyword argument");
+                    mp_raise_TypeError("unexpected keyword argument");
                 } else {
                     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                         "unexpected keyword argument '%q'", MP_OBJ_QSTR_VALUE(wanted_arg_name)));
@@ -250,7 +250,7 @@ continue2:;
     } else {
         // no keyword arguments given
         if (n_kwonly_args != 0) {
-            mp_raise_msg(&mp_type_TypeError, "function missing keyword-only argument");
+            mp_raise_TypeError("function missing keyword-only argument");
         }
         if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
             *var_pos_kw_args = mp_obj_new_dict(0);

@@ -256,7 +256,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, cons
         }
     }
 
-    mp_raise_msg(&mp_type_ValueError, "object not in sequence");
+    mp_raise_ValueError("object not in sequence");
 }
 
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value) {
