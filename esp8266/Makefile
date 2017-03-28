@@ -113,7 +113,6 @@ SRC_COMMON_HAL = \
 	nativeio/AnalogIn.c \
 	nativeio/AnalogOut.c \
 	nativeio/DigitalInOut.c \
-	nativeio/I2C.c \
 	nativeio/PulseIn.c \
 	nativeio/PulseOut.c \
 	nativeio/PWMOut.c \
@@ -132,6 +131,7 @@ SRC_SHARED_MODULE = \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
+	nativeio/I2C.c \
 	nativeio/OneWire.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \

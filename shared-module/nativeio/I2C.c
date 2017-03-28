@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,39 +25,42 @@
  */
 
 #include "shared-bindings/nativeio/I2C.h"
+#include "shared-bindings/bitbangio/I2C.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
 
 void common_hal_nativeio_i2c_construct(nativeio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t freq) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-        "No hardware support for I2C. Use bitbangio instead."));
+    shared_module_bitbangio_i2c_construct(&self->bitbang, scl, sda, freq);
 }
 
 void common_hal_nativeio_i2c_deinit(nativeio_i2c_obj_t *self) {
+    shared_module_bitbangio_i2c_deinit(&self->bitbang);
 }
 
 bool common_hal_nativeio_i2c_probe(nativeio_i2c_obj_t *self, uint8_t addr) {
-    return false;
+    return shared_module_bitbangio_i2c_probe(&self->bitbang, addr);
 }
 
 bool common_hal_nativeio_i2c_try_lock(nativeio_i2c_obj_t *self) {
-    return false;
+    return shared_module_bitbangio_i2c_try_lock(&self->bitbang);
 }
 
 bool common_hal_nativeio_i2c_has_lock(nativeio_i2c_obj_t *self) {
-    return false;
+    return shared_module_bitbangio_i2c_has_lock(&self->bitbang);
 }
 
 void common_hal_nativeio_i2c_unlock(nativeio_i2c_obj_t *self) {
+    shared_module_bitbangio_i2c_unlock(&self->bitbang);
 }
 
 uint8_t common_hal_nativeio_i2c_write(nativeio_i2c_obj_t *self, uint16_t addr,
         const uint8_t * data, size_t len, bool transmit_stop_bit) {
-    return MP_EIO;
+    return shared_module_bitbangio_i2c_write(&self->bitbang, addr, data, len,
+        transmit_stop_bit);
 }
 
 uint8_t common_hal_nativeio_i2c_read(nativeio_i2c_obj_t *self, uint16_t addr,
         uint8_t * data, size_t len) {
-    return MP_EIO;
+    return shared_module_bitbangio_i2c_read(&self->bitbang, addr, data, len);
 }
