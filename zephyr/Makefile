@@ -18,7 +18,6 @@ MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
 # Zephyr (generated) config files - must be defined before include below
-Z_SYSGEN_H = outdir/$(OUTDIR_PREFIX)/misc/generated/sysgen/sysgen.h
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
 include $(Z_EXPORTS)
 
@@ -71,15 +70,13 @@ $(GENERIC_TARGETS): $(LIBMICROPYTHON)
 $(CLEAN_TARGETS):  clean
 
 $(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
-	$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) $@
 
-$(LIBMICROPYTHON): $(Z_SYSGEN_H)
-build/genhdr/qstr.i.last: $(Z_SYSGEN_H)
+$(LIBMICROPYTHON): | $(Z_EXPORTS)
+build/genhdr/qstr.i.last: | $(Z_EXPORTS)
 
-$(Z_SYSGEN_H):
-	rm -f $(LIBMICROPYTHON)
-	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
+# If we recreate libmicropython, also cause zephyr.bin relink
+LIBMICROPYTHON_EXTRA_CMD = -$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 
 # Clean Zephyr things too
 clean: z_clean
