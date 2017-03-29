@@ -268,7 +268,7 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
 
     t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * SECSIZE(fatfs)); // f_bsize
     t->items[1] = t->items[0]; // f_frsize
-    t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2) * fatfs->csize); // f_blocks
+    t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2)); // f_blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst); // f_bfree
     t->items[4] = t->items[3]; // f_bavail
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // f_files
