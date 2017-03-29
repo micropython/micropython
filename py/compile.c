@@ -456,8 +456,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                     break;
             }
         } else {
-            compile_syntax_error(comp, pn, "can't assign to literal");
-            return;
+            goto cannot_assign;
         }
     } else {
         // pn must be a struct
@@ -472,7 +471,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
             case PN_exprlist:
                 // lhs is a tuple
                 if (assign_kind != ASSIGN_STORE) {
-                    goto bad_aug;
+                    goto cannot_assign;
                 }
                 c_assign_tuple(comp, MP_PARSE_NODE_NULL, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
                 break;
@@ -485,7 +484,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                 } else {
                     assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
                     if (assign_kind != ASSIGN_STORE) {
-                        goto bad_aug;
+                        goto cannot_assign;
                     }
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
                     goto testlist_comp;
@@ -495,7 +494,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
             case PN_atom_bracket:
                 // lhs is something in brackets
                 if (assign_kind != ASSIGN_STORE) {
-                    goto bad_aug;
+                    goto cannot_assign;
                 }
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty list, assignment allowed
@@ -543,10 +542,6 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
 
     cannot_assign:
     compile_syntax_error(comp, pn, "can't assign to expression");
-    return;
-
-    bad_aug:
-    compile_syntax_error(comp, pn, "illegal expression for augmented assignment");
 }
 
 // stuff for lambda and comprehensions and generators:
