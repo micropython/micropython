@@ -403,6 +403,11 @@ STATIC HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t 
     return HAL_OK;
 }
 
+// A transfer of "len" bytes should take len*8*1000/baudrate milliseconds.
+// To simplify the calculation we assume the baudrate is never less than 8kHz
+// and use that value for the baudrate in the formula, plus a small constant.
+#define SPI_TRANSFER_TIMEOUT(len) ((len) + 100)
+
 STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is
@@ -815,7 +820,7 @@ STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    spi_transfer((pyb_spi_obj_t*)self_in, len, src, dest, 100);
+    spi_transfer((pyb_spi_obj_t*)self_in, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
 STATIC const mp_machine_spi_p_t pyb_spi_p = {
@@ -932,7 +937,7 @@ STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
 
 STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_transfer(self->pyb, len, src, dest, 100);
+    spi_transfer(self->pyb, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
 STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
