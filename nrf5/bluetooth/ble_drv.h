@@ -42,10 +42,18 @@ typedef struct {
     uint8_t   adv_type;
 } ble_drv_adv_data_t;
 
+typedef struct {
+    uint16_t uuid;
+    uint8_t  uuid_type;
+    uint16_t start_handle;
+    uint16_t end_handle;
+} ble_drv_service_data_t;
+
 typedef void (*ble_drv_gap_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gatts_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_gattc_evt_callback_t)(mp_obj_t self, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data);
 typedef void (*ble_drv_adv_evt_callback_t)(mp_obj_t self, uint16_t event_id, ble_drv_adv_data_t * data);
+typedef void (*ble_drv_disc_add_service_callback_t)(mp_obj_t self, ble_drv_service_data_t * p_service_data);
 
 uint32_t ble_drv_stack_enable(void);
 
@@ -85,7 +93,7 @@ void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt
 
 void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
 
-bool ble_drv_discover_services(ubluepy_service_obj_t * p_service_obj);
+bool ble_drv_discover_services(mp_obj_t obj, uint16_t conn_handle, ble_drv_disc_add_service_callback_t cb);
 
 bool ble_drv_discover_characteristic(ubluepy_characteristic_obj_t * p_char_obj);
 

@@ -74,15 +74,17 @@ if (ble_drv_stack_enabled() == 0) { \
 static volatile bool m_adv_in_progress;
 static volatile bool m_tx_in_progress;
 
-static ble_drv_gap_evt_callback_t        gap_event_handler;
-static ble_drv_adv_evt_callback_t        adv_event_handler;
-static ble_drv_gatts_evt_callback_t      gatts_event_handler;
-static ble_drv_gattc_evt_callback_t      gattc_event_handler;
+static ble_drv_gap_evt_callback_t          gap_event_handler;
+static ble_drv_adv_evt_callback_t          adv_event_handler;
+static ble_drv_gatts_evt_callback_t        gatts_event_handler;
+static ble_drv_gattc_evt_callback_t        gattc_event_handler;
+static ble_drv_disc_add_service_callback_t disc_add_service_handler;
 
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gatts_observer;
 static mp_obj_t mp_gattc_observer;
+static mp_obj_t mp_gattc_disc_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -748,17 +750,20 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     }
 }
 
-bool ble_drv_discover_services(ubluepy_service_obj_t * p_service_obj) {
+bool ble_drv_discover_services(mp_obj_t obj, uint16_t conn_handle, ble_drv_disc_add_service_callback_t cb) {
     BLE_DRIVER_LOG("Discover primary services. Conn handle: 0x" HEX2_FMT "\n",
-                   p_service_obj->p_periph->conn_handle);
+                   conn_handle);
+
+    mp_gattc_disc_observer = obj;
+    disc_add_service_handler = cb;
 
     uint32_t err_code;
-    err_code = sd_ble_gattc_primary_services_discover(p_service_obj->p_periph->conn_handle,
+    err_code = sd_ble_gattc_primary_services_discover(conn_handle,
                                                       0x0001,
                                                       NULL);
 
     (void)err_code;
-    return false;
+    return true;
 }
 
 bool ble_drv_discover_characteristic(ubluepy_characteristic_obj_t * p_char_obj) {
@@ -865,7 +870,22 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
             BLE_DRIVER_LOG("BLE EVT PRIMARY SERVICE DISCOVERY RESPONSE\n");
-            gattc_event_handler(mp_gattc_observer, p_ble_evt->header.evt_id, 0, 0, NULL);
+
+
+
+
+            for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.count; i++) {
+                ble_gattc_service_t * p_service = &p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.services[i];
+
+                ble_drv_service_data_t service;
+                service.uuid_type    = p_service->uuid.type;
+                service.uuid         = p_service->uuid.uuid;
+                service.start_handle = p_service->handle_range.start_handle;
+                service.end_handle   = p_service->handle_range.end_handle;
+
+                disc_add_service_handler(mp_gattc_disc_observer, &service);
+            }
+
             break;
 
 #endif
