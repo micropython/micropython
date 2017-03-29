@@ -278,6 +278,8 @@ STATIC void pyb_i2c_readmem_into (mp_arg_val_t *args, vstr_t *vstr) {
         if (!pyb_i2c_read (i2c_addr, (byte *)vstr->buf, vstr->len)) {
             mp_raise_OSError(MP_EIO);
         }
+    } else {
+        mp_raise_OSError(MP_EIO);
     }
 }
 
