@@ -256,6 +256,25 @@ STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral_get_services);
 
 
+void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
+    ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
+    p_service->base.type = &ubluepy_service_type;
+
+    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
+    p_uuid->base.type = &ubluepy_uuid_type;
+
+    p_service->p_uuid = p_uuid;
+
+    p_uuid->type = p_service_data->uuid_type;
+    p_uuid->value[0] = p_service_data->uuid & 0xFF;
+    p_uuid->value[1] = p_service_data->uuid >> 8;
+
+    p_service->handle = p_service_data->start_handle;
+
+    peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
+}
+
+
 /// \method connect(device_address)
 /// Connect to device peripheral with the given device address.
 ///
@@ -294,28 +313,7 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
         ;
     }
 
-    ubluepy_service_obj_t * p_service;
-    bool retval;
-    do {
-        // create an initial service
-        p_service = m_new_obj(ubluepy_service_obj_t);
-        p_service->base.type = &ubluepy_service_type;
-
-        // assign peripheral reference to the service object
-        p_service->p_periph = self;
-
-        // assign an empty uuid object to the service object
-        // TODO
-
-        // Do service discovery
-        m_disc_evt_received = false;
-
-        retval = ble_drv_discover_services(p_service);
-
-        while (m_disc_evt_received != true) {
-            ;
-        }
-    } while (m_disc_evt_received && retval == true);
+    (void)ble_drv_discover_services(self, self->conn_handle, disc_add_service);
 
     return mp_const_none;
 }
