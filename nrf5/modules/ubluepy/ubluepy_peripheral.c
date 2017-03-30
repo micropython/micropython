@@ -37,7 +37,8 @@
 STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
     (void)self;
-    mp_printf(print, "Peripheral");
+    mp_printf(print, "Peripheral(conn_handle: " HEX2_FMT ")",
+              self->conn_handle);
 }
 
 STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
@@ -269,19 +270,46 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
     p_uuid->value[0] = p_service_data->uuid & 0xFF;
     p_uuid->value[1] = p_service_data->uuid >> 8;
 
-    p_service->handle = p_service_data->start_handle;
+    p_service->handle       = p_service_data->start_handle;
+    p_service->start_handle = p_service_data->start_handle;
+    p_service->end_handle   = p_service_data->end_handle;
+
+    p_service->char_list = mp_obj_new_list(0, NULL);
 
     peripheral_add_service(self, MP_OBJ_FROM_PTR(p_service));
 }
 
+void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
+	ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
+    ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
+    p_char->base.type = &ubluepy_characteristic_type;
+
+    ubluepy_uuid_obj_t * p_uuid = m_new_obj(ubluepy_uuid_obj_t);
+    p_uuid->base.type = &ubluepy_uuid_type;
+
+    p_char->p_uuid = p_uuid;
+
+    p_uuid->type = p_desc_data->uuid_type;
+    p_uuid->value[0] = p_desc_data->uuid & 0xFF;
+    p_uuid->value[1] = p_desc_data->uuid >> 8;
+
+    // add characteristic specific data from discovery
+    p_char->props  = p_desc_data->props;
+    p_char->handle = p_desc_data->value_handle;
+
+    // equivalent to ubluepy_service.c - service_add_characteristic()
+    // except the registration of the characteristic towards the bluetooth stack
+    p_char->service_handle = p_service->handle;
+    p_char->p_service      = p_service;
+
+    mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
+}
 
 /// \method connect(device_address)
 /// Connect to device peripheral with the given device address.
 ///
 STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
-
-    (void)self;
 
     if (MP_OBJ_IS_STR(dev_addr)) {
         GET_STR_DATA_LEN(dev_addr, str_data, str_len);
@@ -313,7 +341,30 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
         ;
     }
 
-    (void)ble_drv_discover_services(self, self->conn_handle, disc_add_service);
+    bool retval = ble_drv_discover_services(self, self->conn_handle, disc_add_service);
+    if (retval != true) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Error during service discovery"));
+    }
+
+    // For each service perform a characteristic discovery
+    mp_obj_t * services = NULL;
+    mp_uint_t  num_services;
+    mp_obj_get_array(self->service_list, &num_services, &services);
+
+    for (uint16_t s = 0; s < num_services; s++) {
+        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[s];
+
+        bool retval = ble_drv_discover_characteristic(p_service,
+                                                      self->conn_handle,
+                                                      p_service->start_handle,
+                                                      p_service->end_handle,
+                                                      disc_add_char);
+        if (retval != true) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Error during characteristic discovery"));
+        }
+    }
 
     return mp_const_none;
 }
