@@ -1,4 +1,5 @@
-//This board is only confirmed to operate using openocd.
+// This board is confirmed to operate using stlink and openocd.
+// REPL is on UART(1) and is available through the stlink USB-UART device.
 // To use openocd run "OPENOCD_CONFIG=boards/openocd_stm32f7.cfg" in
 // the make command.
 #define MICROPY_HW_BOARD_NAME       "F769DISC"
@@ -54,7 +55,7 @@
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
-#define MICROPY_HW_USRSW_PIN        (pin_I11)
+#define MICROPY_HW_USRSW_PIN        (pin_A0)
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
 #define MICROPY_HW_USRSW_PRESSED    (1)
