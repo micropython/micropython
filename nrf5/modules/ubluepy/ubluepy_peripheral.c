@@ -280,7 +280,7 @@ void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_d
 }
 
 void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data) {
-	ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
+    ubluepy_service_obj_t        * p_service   = MP_OBJ_TO_PTR(service_in);
     ubluepy_characteristic_obj_t * p_char = m_new_obj(ubluepy_characteristic_obj_t);
     p_char->base.type = &ubluepy_characteristic_type;
 
