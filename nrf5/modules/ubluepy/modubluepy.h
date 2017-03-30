@@ -113,6 +113,8 @@ typedef struct _ubluepy_service_obj_t {
     ubluepy_uuid_obj_t       * p_uuid;
     ubluepy_peripheral_obj_t * p_periph;
     mp_obj_t                   char_list;
+    uint16_t                   start_handle;
+    uint16_t                   end_handle;
 } ubluepy_service_obj_t;
 
 typedef struct _ubluepy_characteristic_obj_t {
