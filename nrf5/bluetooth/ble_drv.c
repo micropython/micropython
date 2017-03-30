@@ -79,12 +79,14 @@ static ble_drv_adv_evt_callback_t          adv_event_handler;
 static ble_drv_gatts_evt_callback_t        gatts_event_handler;
 static ble_drv_gattc_evt_callback_t        gattc_event_handler;
 static ble_drv_disc_add_service_callback_t disc_add_service_handler;
+static ble_drv_disc_add_char_callback_t    disc_add_char_handler;
 
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gatts_observer;
 static mp_obj_t mp_gattc_observer;
-static mp_obj_t mp_gattc_disc_observer;
+static mp_obj_t mp_gattc_disc_service_observer;
+static mp_obj_t mp_gattc_disc_char_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -754,20 +756,52 @@ bool ble_drv_discover_services(mp_obj_t obj, uint16_t conn_handle, ble_drv_disc_
     BLE_DRIVER_LOG("Discover primary services. Conn handle: 0x" HEX2_FMT "\n",
                    conn_handle);
 
-    mp_gattc_disc_observer = obj;
+    mp_gattc_disc_service_observer = obj;
     disc_add_service_handler = cb;
 
     uint32_t err_code;
     err_code = sd_ble_gattc_primary_services_discover(conn_handle,
                                                       0x0001,
                                                       NULL);
+    if (err_code != 0) {
+        return false;
+    }
 
-    (void)err_code;
+    // busy loop until last service has been iterated
+    while (disc_add_service_handler != NULL) {
+        ;
+    }
+
     return true;
 }
 
-bool ble_drv_discover_characteristic(ubluepy_characteristic_obj_t * p_char_obj) {
-    return false;
+bool ble_drv_discover_characteristic(mp_obj_t obj,
+                                     uint16_t conn_handle,
+                                     uint16_t start_handle,
+                                     uint16_t end_handle,
+                                     ble_drv_disc_add_char_callback_t cb) {
+    BLE_DRIVER_LOG("Discover characteristicts. Conn handle: 0x" HEX2_FMT "\n",
+                   conn_handle);
+
+    mp_gattc_disc_char_observer = obj;
+    disc_add_char_handler = cb;
+
+    ble_gattc_handle_range_t handle_range;
+    handle_range.start_handle = start_handle;
+    handle_range.end_handle   = end_handle;
+
+    uint32_t err_code;
+    err_code = sd_ble_gattc_characteristics_discover(conn_handle, &handle_range);
+    if (err_code != 0) {
+        return false;
+    }
+
+    // busy loop until last service has been iterated
+    while (disc_add_char_handler != NULL) {
+        ;
+    }
+
+    return true;
 }
 
 void ble_drv_discover_descriptors(void) {
@@ -871,9 +905,6 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
             BLE_DRIVER_LOG("BLE EVT PRIMARY SERVICE DISCOVERY RESPONSE\n");
 
-
-
-
             for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.count; i++) {
                 ble_gattc_service_t * p_service = &p_ble_evt->evt.gattc_evt.params.prim_srvc_disc_rsp.services[i];
 
@@ -883,8 +914,41 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                 service.start_handle = p_service->handle_range.start_handle;
                 service.end_handle   = p_service->handle_range.end_handle;
 
-                disc_add_service_handler(mp_gattc_disc_observer, &service);
+                disc_add_service_handler(mp_gattc_disc_service_observer, &service);
             }
+
+            // mark end of service discovery
+            disc_add_service_handler = NULL;
+
+            break;
+
+        case BLE_GATTC_EVT_CHAR_DISC_RSP:
+            BLE_DRIVER_LOG("BLE EVT CHAR DISCOVERY RESPONSE\n");
+
+            for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count; i++) {
+                ble_gattc_char_t * p_char = &p_ble_evt->evt.gattc_evt.params.char_disc_rsp.chars[i];
+
+                ble_drv_char_data_t char_data;
+                char_data.uuid_type    = p_char->uuid.type;
+                char_data.uuid         = p_char->uuid.uuid;
+                char_data.decl_handle  = p_char->handle_decl;
+                char_data.value_handle = p_char->handle_value;
+
+                char_data.props |= (p_char->char_props.broadcast) ? UBLUEPY_PROP_BROADCAST : 0;
+                char_data.props |= (p_char->char_props.read) ? UBLUEPY_PROP_READ : 0;
+                char_data.props |= (p_char->char_props.write_wo_resp) ? UBLUEPY_PROP_WRITE_WO_RESP : 0;
+                char_data.props |= (p_char->char_props.write) ? UBLUEPY_PROP_WRITE : 0;
+                char_data.props |= (p_char->char_props.notify) ? UBLUEPY_PROP_NOTIFY : 0;
+                char_data.props |= (p_char->char_props.indicate) ? UBLUEPY_PROP_INDICATE : 0;
+            #if 0
+                char_data.props |= (p_char->char_props.auth_signed_wr) ? UBLUEPY_PROP_NOTIFY : 0;
+            #endif
+
+                disc_add_char_handler(mp_gattc_disc_char_observer, &char_data);
+            }
+
+            // mark end of characteristic discovery
+            disc_add_char_handler = NULL;
 
             break;
 
