@@ -601,7 +601,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     return true;
 }
 
-void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
     ble_gatts_value_t gatts_value;
     memset(&gatts_value, 0, sizeof(gatts_value));
 
@@ -617,6 +617,16 @@ void ble_drv_attr_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint
                   "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
 
+}
+
+void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+    uint32_t err_code = sd_ble_gattc_read(conn_handle,
+                                          handle,
+                                          0);
+    if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
 }
 
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
