@@ -952,6 +952,17 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
             break;
 
+        case BLE_GATTC_EVT_READ_RSP:
+            BLE_DRIVER_LOG("BLE EVT READ RESPONSE\n");
+            break;
+
+        case BLE_GATTC_EVT_WRITE_RSP:
+            BLE_DRIVER_LOG("BLE EVT WRITE RESPONSE\n");
+            break;
+
+        case BLE_GATTC_EVT_HVX:
+            BLE_DRIVER_LOG("BLE EVT HVX RESPONSE\n");
+            break;
 #endif
 
         default:
