@@ -56,7 +56,12 @@ CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 include ../py/mkrules.mk
 
 $(Z_EXPORTS): $(CONF_FILE)
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports
+	# We use single target here ($(Z_EXPORTS)) for simplicity, but actually
+	# number of things get generated here: 'initconfig' generates C header for
+	# Kconfig configuration, 'outputexports' generates make environment with CC,
+	# etc., and 'lib' generates other headers which may be included by zephyr.h,
+	# e.g. DTS-related.
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports lib
 
 GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug
 KCONFIG_TARGETS = \
