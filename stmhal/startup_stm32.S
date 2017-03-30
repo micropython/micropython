@@ -335,6 +335,12 @@ g_pfnVectors:
   .word     I2C4_EV_IRQHandler                /* I2C4 Event                   */
   .word     I2C4_ER_IRQHandler                /* I2C4 Error                   */
   .word     SPDIF_RX_IRQHandler               /* SPDIF_RX                     */
+  .word     DSIHOST_IRQHandler                /* DSI host                     */
+  .word     DFSDM1_FLT0_IRQHandler            /* DFSDM1 filter 0              */
+  .word     DFSDM1_FLT1_IRQHandler            /* DFSDM1 filter 1              */
+  .word     DFSDM1_FLT2_IRQHandler            /* DFSDM1 filter 2              */
+  .word     DFSDM1_FLT3_IRQHandler            /* DFSDM1 filter 3              */
+  .word     SDMMC2_IRQHandler                 /* SDMMC2                       */
 #endif
 
 /*******************************************************************************
@@ -793,6 +799,24 @@ g_pfnVectors:
 
    .weak      SPDIF_RX_IRQHandler
    .thumb_set SPDIF_RX_IRQHandler,Default_Handler
+
+   .weak      DSIHOST_IRQHandler
+   .thumb_set DSIHOST_IRQHandler,Default_Handler
+
+   .weak      DFSDM1_FLT0_IRQHandler
+   .thumb_set DFSDM1_FLT0_IRQHandler,Default_Handler
+
+   .weak      DFSDM1_FLT1_IRQHandler
+   .thumb_set DFSDM1_FLT1_IRQHandler,Default_Handler
+
+   .weak      DFSDM1_FLT2_IRQHandler
+   .thumb_set DFSDM1_FLT2_IRQHandler,Default_Handler
+
+   .weak      DFSDM1_FLT3_IRQHandler
+   .thumb_set DFSDM1_FLT3_IRQHandler,Default_Handler
+
+   .weak      SDMMC2_IRQHandler
+   .thumb_set SDMMC2_IRQHandler,Default_Handler
 #endif
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
