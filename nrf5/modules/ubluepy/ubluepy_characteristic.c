@@ -86,8 +86,10 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
 ///
 STATIC mp_obj_t char_read(mp_obj_t self_in) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    // ble_drv_characteristic_read();
+    ble_drv_attr_c_read(self->p_service->p_periph->conn_handle,
+                        self->handle,
+                        0,
+                        NULL);
 
     return mp_const_none;
 }
