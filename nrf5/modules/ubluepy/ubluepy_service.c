@@ -151,6 +151,15 @@ STATIC mp_obj_t service_get_characteristic(mp_obj_t self_in, mp_obj_t uuid) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_service_get_char_obj, service_get_characteristic);
 
+/// \method uuid()
+/// Get UUID instance of the Service.
+///
+STATIC mp_obj_t service_uuid(mp_obj_t self_in) {
+    ubluepy_service_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_FROM_PTR(self->p_uuid);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_service_get_uuid_obj, service_uuid);
+
 STATIC const mp_map_elem_t ubluepy_service_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristic),  (mp_obj_t)(&ubluepy_service_get_char_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_addCharacteristic),  (mp_obj_t)(&ubluepy_service_add_char_obj) },
@@ -158,8 +167,8 @@ STATIC const mp_map_elem_t ubluepy_service_locals_dict_table[] = {
 #if 0
 	// Properties
     { MP_OBJ_NEW_QSTR(MP_QSTR_peripheral), (mp_obj_t)(&ubluepy_service_get_peripheral_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),       (mp_obj_t)(&ubluepy_service_get_uuid_obj) },
 #endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),       (mp_obj_t)(&ubluepy_service_get_uuid_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PRIMARY),   MP_OBJ_NEW_SMALL_INT(UBLUEPY_SERVICE_PRIMARY) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SECONDARY), MP_OBJ_NEW_SMALL_INT(UBLUEPY_SERVICE_SECONDARY) },
 };
