@@ -44,6 +44,24 @@ STATIC const mp_obj_type_t socket_type;
 
 #define RAISE_ERRNO(x) { int _err = x; if (_err < 0) mp_raise_OSError(-_err); }
 
+STATIC void socket_check_closed(socket_obj_t *socket) {
+    if (socket->ctx == NULL) {
+        // already closed
+        mp_raise_OSError(EBADF);
+    }
+}
+
+STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct sockaddr *sockaddr) {
+    // We employ the fact that port and address offsets are the same for IPv4 & IPv6
+    struct sockaddr_in *sockaddr_in = (struct sockaddr_in*)sockaddr;
+
+    mp_obj_t *addr_items;
+    mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
+    sockaddr_in->sin_family = net_context_get_family(socket->ctx);
+    RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
+    sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
+}
+
 // Methods
 
 STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -88,6 +106,30 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return socket;
 }
 
+STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
+    socket_obj_t *socket = self_in;
+    socket_check_closed(socket);
+
+    struct sockaddr sockaddr;
+    parse_inet_addr(socket, addr_in, &sockaddr);
+
+    RAISE_ERRNO(net_context_bind(socket->ctx, &sockaddr, sizeof(sockaddr)));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
+
+STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
+    socket_obj_t *socket = self_in;
+    socket_check_closed(socket);
+
+    struct sockaddr sockaddr;
+    parse_inet_addr(socket, addr_in, &sockaddr);
+
+    RAISE_ERRNO(net_context_connect(socket->ctx, &sockaddr, sizeof(sockaddr), NULL, K_FOREVER, NULL));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
+
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
     if (socket->ctx != NULL) {
@@ -101,6 +143,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&socket_bind_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&socket_connect_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
