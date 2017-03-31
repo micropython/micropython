@@ -17,7 +17,6 @@ include ../py/py.mk
 
 INC +=  -I.
 INC +=  -I..
-INC += -I../lib/timeutils
 INC += -I$(BUILD)
 
 # compiler settings

@@ -33,6 +33,7 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "lib/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "genhdr/mpversion.h"
@@ -43,7 +44,6 @@
 #include "random.h"
 #include "mpexception.h"
 #include "version.h"
-#include "timeutils.h"
 #include "pybsd.h"
 #include "pybuart.h"
 

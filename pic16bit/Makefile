@@ -14,7 +14,6 @@ PART = 33FJ256GP506
 
 INC += -I.
 INC += -I..
-INC += -I../lib/mp-readline
 INC += -I../stmhal
 INC += -I$(BUILD)
 INC += -I$(XC16)/include

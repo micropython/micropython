@@ -34,7 +34,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "modusocket.h"
 #include "mpexception.h"

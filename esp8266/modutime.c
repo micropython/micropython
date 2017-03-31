@@ -34,8 +34,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/smallint.h"
+#include "lib/timeutils/timeutils.h"
 #include "modmachine.h"
-#include "timeutils.h"
 #include "user_interface.h"
 #include "extmod/utime_mphal.h"
 
