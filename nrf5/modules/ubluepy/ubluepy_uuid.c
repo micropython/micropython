@@ -139,12 +139,25 @@ STATIC mp_obj_t ubluepy_uuid_make_new(const mp_obj_type_t *type, size_t n_args, 
     return MP_OBJ_FROM_PTR(s);
 }
 
+/// \method binVal()
+/// Get binary value of the 16 or 128 bit UUID. Returned as bytearray type.
+///
+STATIC mp_obj_t uuid_bin_val(mp_obj_t self_in) {
+    ubluepy_uuid_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    // TODO: Extend the uint16 byte value to 16 byte if 128-bit,
+    //       also encapsulate it in a bytearray. For now, return
+    //       the uint16_t field of the UUID.
+    return MP_OBJ_NEW_SMALL_INT(self->value[0] | self->value[1] << 8);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_uuid_bin_val_obj, uuid_bin_val);
+
 STATIC const mp_map_elem_t ubluepy_uuid_locals_dict_table[] = {
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_getCommonName), (mp_obj_t)(&ubluepy_uuid_get_common_name_obj) },
+#endif
     // Properties
     { MP_OBJ_NEW_QSTR(MP_QSTR_binVal), (mp_obj_t)(&ubluepy_uuid_bin_val_obj) },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_uuid_locals_dict, ubluepy_uuid_locals_dict_table);
