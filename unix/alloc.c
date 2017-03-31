@@ -49,7 +49,7 @@ typedef struct _mmap_region_t {
     struct _mmap_region_t *next;
 } mmap_region_t;
 
-void mp_unix_alloc_exec(mp_uint_t min_size, void **ptr, mp_uint_t *size) {
+void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size) {
     // size needs to be a multiple of the page size
     *size = (min_size + 0xfff) & (~0xfff);
     *ptr = mmap(NULL, *size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -65,7 +65,7 @@ void mp_unix_alloc_exec(mp_uint_t min_size, void **ptr, mp_uint_t *size) {
     MP_STATE_VM(mmap_region_head) = rg;
 }
 
-void mp_unix_free_exec(void *ptr, mp_uint_t size) {
+void mp_unix_free_exec(void *ptr, size_t size) {
     munmap(ptr, size);
 
     // unlink the mmap'd region from the list
@@ -93,7 +93,7 @@ void *ffi_closure_alloc(size_t size, void **code);
 void ffi_closure_free(void *ptr);
 
 void *ffi_closure_alloc(size_t size, void **code) {
-    mp_uint_t dummy;
+    size_t dummy;
     mp_unix_alloc_exec(size, code, &dummy);
     return *code;
 }
