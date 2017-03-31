@@ -130,6 +130,25 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
+STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
+    socket_obj_t *socket = self_in;
+    socket_check_closed(socket);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    struct net_buf *send_buf = net_nbuf_get_tx(socket->ctx, K_FOREVER);
+    // TODO: Probably should limit how much data we send in one call still
+    if (!net_nbuf_append(send_buf, bufinfo.len, bufinfo.buf, K_FOREVER)) {
+        mp_raise_OSError(ENOSPC);
+    }
+
+    RAISE_ERRNO(net_context_send(send_buf, /*cb*/NULL, K_FOREVER, NULL, NULL));
+
+    return mp_obj_new_int_from_uint(bufinfo.len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
+
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
     if (socket->ctx != NULL) {
@@ -145,6 +164,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&socket_bind_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&socket_connect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
