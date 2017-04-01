@@ -666,6 +666,13 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
+// Whether to support multiple inheritance of Python classes.  Multiple
+// inheritance makes some C functions inherently recursive, and adds a bit of
+// code overhead.
+#ifndef MICROPY_MULTIPLE_INHERITANCE
+#define MICROPY_MULTIPLE_INHERITANCE (1)
+#endif
+
 // Whether to implement attributes on functions
 #ifndef MICROPY_PY_FUNCTION_ATTRS
 #define MICROPY_PY_FUNCTION_ATTRS (0)

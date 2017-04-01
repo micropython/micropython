@@ -67,6 +67,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
         } else if (type->parent == NULL) {
             // No parents so end search here.
             return count;
+        #if MICROPY_MULTIPLE_INHERITANCE
         } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
             // Multiple parents, search through them all recursively.
             const mp_obj_tuple_t *parent_tuple = type->parent;
@@ -78,6 +79,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
                 count += instance_count_native_bases(bt, last_native_base);
             }
             return count;
+        #endif
         } else {
             // A single parent, use iteration to continue the search.
             type = type->parent;
@@ -172,6 +174,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         if (type->parent == NULL) {
             DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
+        #if MICROPY_MULTIPLE_INHERITANCE
         } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
             const mp_obj_tuple_t *parent_tuple = type->parent;
             const mp_obj_t *item = parent_tuple->items;
@@ -192,6 +195,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
             // search last base (simple tail recursion elimination)
             assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
             type = (mp_obj_type_t*)MP_OBJ_TO_PTR(*item);
+        #endif
         } else {
             type = type->parent;
         }
@@ -247,7 +251,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_instance_type(self));
 
-    const mp_obj_type_t *native_base;
+    const mp_obj_type_t *native_base = NULL;
     size_t num_native_bases = instance_count_native_bases(self, &native_base);
     assert(num_native_bases < 2);
 
@@ -1022,7 +1026,11 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         o->protocol = ((mp_obj_type_t*)MP_OBJ_TO_PTR(bases_items[0]))->protocol;
 
         if (bases_len >= 2) {
+            #if MICROPY_MULTIPLE_INHERITANCE
             o->parent = MP_OBJ_TO_PTR(bases_tuple);
+            #else
+            mp_raise_NotImplementedError("multiple inheritance not supported");
+            #endif
         } else {
             o->parent = MP_OBJ_TO_PTR(bases_items[0]);
         }
@@ -1101,6 +1109,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
     if (type->parent == NULL) {
         // no parents, do nothing
+    #if MICROPY_MULTIPLE_INHERITANCE
     } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
         const mp_obj_tuple_t *parent_tuple = type->parent;
         size_t len = parent_tuple->len;
@@ -1112,6 +1121,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 return;
             }
         }
+    #endif
     } else {
         mp_obj_class_lookup(&lookup, type->parent);
         if (dest[0] != MP_OBJ_NULL) {
@@ -1158,6 +1168,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         if (self->parent == NULL) {
             // type has no parents
             return false;
+        #if MICROPY_MULTIPLE_INHERITANCE
         } else if (((mp_obj_base_t*)self->parent)->type == &mp_type_tuple) {
             // get the base objects (they should be type objects)
             const mp_obj_tuple_t *parent_tuple = self->parent;
@@ -1173,6 +1184,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 
             // search last base (simple tail recursion elimination)
             object = *item;
+        #endif
         } else {
             // type has 1 parent
             object = MP_OBJ_FROM_PTR(self->parent);
