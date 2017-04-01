@@ -78,7 +78,15 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
     // clear pointer to service
     s->p_service = NULL;
 
+    // clear pointer to char value data
+    s->value_data = NULL;
+
     return MP_OBJ_FROM_PTR(s);
+}
+
+void char_data_callback(mp_obj_t self_in, uint16_t length, uint8_t * p_data) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    self->value_data = mp_obj_new_bytearray(length, p_data);
 }
 
 /// \method read()
@@ -86,12 +94,15 @@ STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_
 ///
 STATIC mp_obj_t char_read(mp_obj_t self_in) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+
+    // TODO: free any previous allocation of value_data
+
     ble_drv_attr_c_read(self->p_service->p_periph->conn_handle,
                         self->handle,
-                        0,
-                        NULL);
+                        self_in,
+                        char_data_callback);
 
-    return mp_const_none;
+    return self->value_data;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
 
@@ -130,6 +141,16 @@ STATIC mp_obj_t char_properties(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_properties_obj, char_properties);
 
+/// \method uuid()
+/// Get UUID instance of the characteristic.
+///
+STATIC mp_obj_t char_uuid(mp_obj_t self_in) {
+    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_FROM_PTR(self->p_uuid);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_uuid_obj, char_uuid);
+
+
 STATIC const mp_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),               (mp_obj_t)(&ubluepy_characteristic_read_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),              (mp_obj_t)(&ubluepy_characteristic_write_obj) },
@@ -140,9 +161,9 @@ STATIC const mp_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
 
     // Properties
     { MP_OBJ_NEW_QSTR(MP_QSTR_peripheral), (mp_obj_t)(&ubluepy_characteristic_get_peripheral_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),       (mp_obj_t)(&ubluepy_characteristic_get_uuid_obj) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_properties),         (mp_obj_t)(&ubluepy_characteristic_get_properties_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),                (mp_obj_t)(&ubluepy_characteristic_get_uuid_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_properties),          (mp_obj_t)(&ubluepy_characteristic_get_properties_obj) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_BROADCAST),      MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_BROADCAST) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_READ),           MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_READ) },
