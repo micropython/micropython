@@ -117,7 +117,7 @@ void uart_flush(uint8 uart) {
 }
 
 /******************************************************************************
- * FunctionName : uart1_write_char
+ * FunctionName : uart_os_write_char
  * Description  : Internal used function
  *                Do some special deal while tx char is '\r' or '\n'
  * Parameters   : char c - character to tx
@@ -193,7 +193,7 @@ static void uart0_rx_intr_handler(void *para) {
         mp_hal_signal_input();
 
         // Clear pending FIFO interrupts
-        WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
+        WRITE_PERI_REG(UART_INT_CLR(uart_no), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
         ETS_UART_INTR_ENABLE();
     }
 }

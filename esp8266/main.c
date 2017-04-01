@@ -108,6 +108,7 @@ soft_reset:
     #endif
 }
 
+// Seems unused
 void user_init(void) {
     system_init_done_cb(init_done);
 }
