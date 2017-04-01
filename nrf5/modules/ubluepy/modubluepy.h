@@ -128,6 +128,7 @@ typedef struct _ubluepy_characteristic_obj_t {
     uint8_t                 props;
     uint8_t                 attrs;
     ubluepy_service_obj_t * p_service;
+    mp_obj_t                value_data;
 } ubluepy_characteristic_obj_t;
 
 typedef struct _ubluepy_descriptor_obj_t {
