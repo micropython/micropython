@@ -1,4 +1,4 @@
-from ubluepy import Scanner
+from ubluepy import Scanner, constants
 
 def bytes_to_str(bytes):
     string = ""
@@ -12,7 +12,7 @@ def get_device_names(scan_entries):
         scan = e.getScanData()
         if scan:
             for s in scan:
-               if s[0] == 9:
+               if s[0] == constants.ad_types.AD_TYPE_COMPLETE_LOCAL_NAME:
                    dev_names.append((e, bytes_to_str(s[2])))
     return dev_names
 
