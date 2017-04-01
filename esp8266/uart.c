@@ -29,6 +29,7 @@ extern UartDevice UartDev;
 
 // the uart to which OS messages go; -1 to disable
 static int uart_os = UART_OS;
+static int uart_os_stdin = UART_OS;
 
 #if MICROPY_REPL_EVENT_DRIVEN
 static os_event_t uart_evt_queue[16];
@@ -141,6 +142,11 @@ uart_os_config(int uart) {
     uart_os = uart;
 }
 
+void ICACHE_FLASH_ATTR
+uart_os_input(int uart) {
+    uart_os_stdin = uart;
+}
+
 /******************************************************************************
  * FunctionName : uart0_rx_intr_handler
  * Description  : Internal used function
@@ -165,14 +171,21 @@ static void uart0_rx_intr_handler(void *para) {
         // fifo full
         goto read_chars;
     } else if (UART_RXFIFO_TOUT_INT_ST == (READ_PERI_REG(UART_INT_ST(uart_no)) & UART_RXFIFO_TOUT_INT_ST)) {
+        // rx timeout
         read_chars:
         ETS_UART_INTR_DISABLE();
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
+            // Raw data processing.
+            if (uart_os_stdin == -1) {
+                // Disable repl's stdin interpretation
+                goto put_char;
+            }
             if (RcvChar == mp_interrupt_char) {
                 mp_keyboard_interrupt();
             } else {
+                put_char:
                 ringbuf_put(&input_buf, RcvChar);
             }
         }
@@ -263,6 +276,11 @@ void ICACHE_FLASH_ATTR uart_setup(uint8 uart) {
 
 #if MICROPY_REPL_EVENT_DRIVEN
 void uart_task_handler(os_event_t *evt) {
+    if (uart_os_stdin == -1) {
+        // Disable repl's stdin interpretation
+        return;
+    }
+
     if (pyexec_repl_active) {
         // TODO: Just returning here isn't exactly right.
         // What really should be done is something like
@@ -274,6 +292,7 @@ void uart_task_handler(os_event_t *evt) {
         return;
     }
 
+    // Buffered data processing and interpretation
     int c, ret = 0;
     while ((c = ringbuf_get(&input_buf)) >= 0) {
         if (c == interrupt_char) {

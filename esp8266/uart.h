@@ -98,6 +98,7 @@ int uart_rx_char(void);
 void uart_tx_one_char(uint8 uart, uint8 TxChar);
 void uart_flush(uint8 uart);
 void uart_os_config(int uart);
+void uart_os_input(int uart);
 void uart_setup(uint8 uart);
 // check status of rx/tx
 int uart_rx_any(uint8 uart);
