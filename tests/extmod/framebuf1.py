@@ -9,9 +9,9 @@ w = 5
 h = 16
 size = w * h // 8
 buf = bytearray(size)
-maps = {framebuf.MVLSB : 'MVLSB',
-        framebuf.MHLSB : 'MHLSB',
-        framebuf.MHMSB : 'MHMSB'}
+maps = {framebuf.MONO_VLSB : 'MONO_VLSB',
+        framebuf.MONO_HLSB : 'MONO_HLSB',
+        framebuf.MONO_HMSB : 'MONO_HMSB'}
 
 for mapping in maps.keys():
     for x in range(size):
@@ -107,3 +107,4 @@ except ValueError:
 # test legacy constructor
 fbuf = framebuf.FrameBuffer1(buf, w, h)
 fbuf = framebuf.FrameBuffer1(buf, w, h, w)
+print(framebuf.MVLSB == framebuf.MONO_VLSB)
