@@ -63,7 +63,7 @@ typedef void (*ble_drv_gattc_evt_callback_t)(mp_obj_t self, uint16_t event_id, u
 typedef void (*ble_drv_adv_evt_callback_t)(mp_obj_t self, uint16_t event_id, ble_drv_adv_data_t * data);
 typedef void (*ble_drv_disc_add_service_callback_t)(mp_obj_t self, ble_drv_service_data_t * p_service_data);
 typedef void (*ble_drv_disc_add_char_callback_t)(mp_obj_t self, ble_drv_char_data_t * p_desc_data);
-
+typedef void (*ble_drv_gattc_char_data_callback_t)(mp_obj_t self, uint16_t length, uint8_t * p_data);
 
 uint32_t ble_drv_stack_enable(void);
 
@@ -91,7 +91,7 @@ void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t 
 
 void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
-void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
+void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, ble_drv_gattc_char_data_callback_t cb);
 
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 

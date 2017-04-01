@@ -80,6 +80,7 @@ static ble_drv_gatts_evt_callback_t        gatts_event_handler;
 static ble_drv_gattc_evt_callback_t        gattc_event_handler;
 static ble_drv_disc_add_service_callback_t disc_add_service_handler;
 static ble_drv_disc_add_char_callback_t    disc_add_char_handler;
+static ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
 
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_adv_observer;
@@ -87,6 +88,7 @@ static mp_obj_t mp_gatts_observer;
 static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
+static mp_obj_t mp_gattc_char_data_observer;
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -619,13 +621,21 @@ void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
 
 }
 
-void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, ble_drv_gattc_char_data_callback_t cb) {
+
+    mp_gattc_char_data_observer = obj;
+    gattc_char_data_handle = cb;
+
     uint32_t err_code = sd_ble_gattc_read(conn_handle,
                                           handle,
                                           0);
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+
+    while (gattc_char_data_handle != NULL) {
+        ;
     }
 }
 
@@ -963,7 +973,17 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             break;
 
         case BLE_GATTC_EVT_READ_RSP:
-            BLE_DRIVER_LOG("BLE EVT READ RESPONSE\n");
+            BLE_DRIVER_LOG("BLE EVT READ RESPONSE, offset: 0x"HEX2_FMT", length: 0x"HEX2_FMT"\n",
+                           p_ble_evt->evt.gattc_evt.params.read_rsp.offset,
+                           p_ble_evt->evt.gattc_evt.params.read_rsp.len);
+
+            gattc_char_data_handle(mp_gattc_char_data_observer,
+                                   p_ble_evt->evt.gattc_evt.params.read_rsp.len,
+                                   p_ble_evt->evt.gattc_evt.params.read_rsp.data);
+
+            // mark end of read
+            gattc_char_data_handle = NULL;
+
             break;
 
         case BLE_GATTC_EVT_WRITE_RSP:
