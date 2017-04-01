@@ -79,6 +79,8 @@ extern const mp_obj_type_t ubluepy_characteristic_type;
 extern const mp_obj_type_t ubluepy_peripheral_type;
 extern const mp_obj_type_t ubluepy_scanner_type;
 extern const mp_obj_type_t ubluepy_scan_entry_type;
+extern const mp_obj_type_t ubluepy_constants_type;
+extern const mp_obj_type_t ubluepy_constants_ad_types_type;
 
 typedef enum {
     UBLUEPY_UUID_16_BIT = 1,
