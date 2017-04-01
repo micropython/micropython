@@ -95,6 +95,7 @@ void char_data_callback(mp_obj_t self_in, uint16_t length, uint8_t * p_data) {
 STATIC mp_obj_t char_read(mp_obj_t self_in) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
+#if MICROPY_PY_UBLUEPY_CENTRAL
     // TODO: free any previous allocation of value_data
 
     ble_drv_attr_c_read(self->p_service->p_periph->conn_handle,
@@ -103,6 +104,10 @@ STATIC mp_obj_t char_read(mp_obj_t self_in) {
                         char_data_callback);
 
     return self->value_data;
+#else
+    (void)self;
+    return mp_const_none;
+#endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
 
