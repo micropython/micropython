@@ -75,20 +75,26 @@ static volatile bool m_adv_in_progress;
 static volatile bool m_tx_in_progress;
 
 static ble_drv_gap_evt_callback_t          gap_event_handler;
-static ble_drv_adv_evt_callback_t          adv_event_handler;
 static ble_drv_gatts_evt_callback_t        gatts_event_handler;
+
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+static ble_drv_adv_evt_callback_t          adv_event_handler;
 static ble_drv_gattc_evt_callback_t        gattc_event_handler;
 static ble_drv_disc_add_service_callback_t disc_add_service_handler;
 static ble_drv_disc_add_char_callback_t    disc_add_char_handler;
 static ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
+#endif
 
 static mp_obj_t mp_gap_observer;
-static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gatts_observer;
+
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
 static mp_obj_t mp_gattc_char_data_observer;
+#endif
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
@@ -621,24 +627,6 @@ void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, ui
 
 }
 
-void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, ble_drv_gattc_char_data_callback_t cb) {
-
-    mp_gattc_char_data_observer = obj;
-    gattc_char_data_handle = cb;
-
-    uint32_t err_code = sd_ble_gattc_read(conn_handle,
-                                          handle,
-                                          0);
-    if (err_code != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
-    }
-
-    while (gattc_char_data_handle != NULL) {
-        ;
-    }
-}
-
 void ble_drv_attr_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
     ble_gatts_value_t gatts_value;
     memset(&gatts_value, 0, sizeof(gatts_value));
@@ -689,6 +677,8 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t 
     gatts_event_handler = evt_handler;
 }
 
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+
 void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t evt_handler) {
     mp_gattc_observer = obj;
     gattc_event_handler = evt_handler;
@@ -699,7 +689,24 @@ void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt
     adv_event_handler = evt_handler;
 }
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+
+void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, ble_drv_gattc_char_data_callback_t cb) {
+
+    mp_gattc_char_data_observer = obj;
+    gattc_char_data_handle = cb;
+
+    uint32_t err_code = sd_ble_gattc_read(conn_handle,
+                                          handle,
+                                          0);
+    if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not read attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+    }
+
+    while (gattc_char_data_handle != NULL) {
+        ;
+    }
+}
 
 void ble_drv_scan_start(void) {
     SD_TEST_OR_ENABLE();
