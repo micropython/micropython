@@ -128,8 +128,6 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 
-#define BYTES_PER_WORD sizeof(mp_int_t)
-
 // Just assume Windows is little-endian - mingw32 gcc doesn't
 // define standard endianness macros.
 #define MP_ENDIANNESS_LITTLE (1)

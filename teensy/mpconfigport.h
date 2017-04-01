@@ -54,8 +54,6 @@ extern const struct _mp_obj_module_t time_module;
 
 // type definitions for the specific machine
 
-#define BYTES_PER_WORD (4)
-
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 

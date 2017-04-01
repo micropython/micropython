@@ -233,8 +233,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 #endif
 
-#define BYTES_PER_WORD sizeof(mp_int_t)
-
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;

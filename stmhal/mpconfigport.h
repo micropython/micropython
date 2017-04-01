@@ -264,8 +264,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 // type definitions for the specific machine
 
-#define BYTES_PER_WORD (4)
-
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
