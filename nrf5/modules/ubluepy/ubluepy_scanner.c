@@ -55,6 +55,7 @@ STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_d
 
     item->addr_type = data->addr_type;
     item->rssi      = data->rssi;
+    item->data      = mp_obj_new_bytearray(data->data_len, data->p_data);
 
     mp_obj_list_append(self->adv_reports, item);
 }
