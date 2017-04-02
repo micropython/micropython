@@ -43,14 +43,6 @@
 #define BLE_DRIVER_LOG(...)
 #endif
 
-#define EDDYSTONE_UUID 0xFEAA // UUID for Eddystone beacons, Big Endian.
-
-// URL Frame Type, fixed at 0x10.
-// RSSI, 0xEE = -18 dB is the approximate signal strength at 0 m.
-// URL prefix, 0x00 = "http://www".
-// URL
-// URL suffix, 0x01 = ".com"
-#define EDDYSTONE_DATA 0x10, 0xEE, 0x00, 'm', 'i', 'c', 'r', 'o', 'p', 'y', 't', 'h', 'o', 'n', 0x01
 #define BLE_ADV_LENGTH_FIELD_SIZE   1
 #define BLE_ADV_AD_TYPE_FIELD_SIZE  1
 #define BLE_AD_TYPE_FLAGS_DATA_SIZE 1
@@ -251,50 +243,6 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
 
     p_addr->addr_type = local_ble_addr.addr_type;
     memcpy(p_addr->addr, local_ble_addr.addr, 6);
-}
-
-void ble_drv_advertise(void) {
-    ble_uuid_t adv_uuids[] = {{.uuid = EDDYSTONE_UUID, .type = BLE_UUID_TYPE_BLE}};
-    uint8_t encoded_size;
-    uint8_t uuid_encoded[2];
-    uint32_t err_code = sd_ble_uuid_encode(&adv_uuids[0], &encoded_size, uuid_encoded);
-    (void)err_code;
-
-    BLE_DRIVER_LOG("Encoded UUID size: " UINT_FMT ": result: " HEX2_FMT "\n", encoded_size, (uint16_t)err_code);
-    BLE_DRIVER_LOG("Encoded UUID: " HEX2_FMT " " HEX2_FMT "\n", uuid_encoded[0], uuid_encoded[1]);
-
-    uint8_t eddystone_data[] = {EDDYSTONE_DATA}; // Temp buffer to calculate the size.
-
-    uint8_t adv_data[] = {
-        (uint8_t)(BLE_ADV_AD_TYPE_FIELD_SIZE + BLE_AD_TYPE_FLAGS_DATA_SIZE),
-        BLE_GAP_AD_TYPE_FLAGS,
-        BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE,
-        3,
-        BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE,
-        uuid_encoded[0], uuid_encoded[1],
-        (uint8_t)(BLE_ADV_AD_TYPE_FIELD_SIZE + sizeof(eddystone_data) + 2),
-        BLE_GAP_AD_TYPE_SERVICE_DATA,
-        uuid_encoded[0], uuid_encoded[1],
-        EDDYSTONE_DATA
-    };
-
-    // Scan response data not set.
-    err_code = sd_ble_gap_adv_data_set(adv_data, sizeof(adv_data), NULL, 0);
-    BLE_DRIVER_LOG("Set Adv data status: " UINT_FMT ", size: " UINT_FMT "\n", (uint16_t)err_code, sizeof(adv_data));
-
-    ble_gap_adv_params_t m_adv_params;
-
-    // Initialize advertising params.
-    memset(&m_adv_params, 0, sizeof(m_adv_params));
-    m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
-    m_adv_params.p_peer_addr = NULL;                                // Undirected advertisement.
-    m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
-    m_adv_params.interval    = NON_CONNECTABLE_ADV_INTERVAL;
-    m_adv_params.timeout     = APP_CFG_NON_CONN_ADV_TIMEOUT;
-
-    err_code = sd_ble_gap_adv_start(&m_adv_params);
-
-    BLE_DRIVER_LOG("Advertisment start status: " UINT_FMT "\n", (uint16_t)err_code);
 }
 
 bool ble_drv_uuid_add_vs(uint8_t * p_uuid, uint8_t * idx) {
