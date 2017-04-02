@@ -36,7 +36,6 @@
 "available:\n" \
 "  ble.enable()    -- enable softdevice\n" \
 "  ble.disable()   -- disable softdevice\n" \
-"  ble.advertise() -- Start advertising Eddystone beacon\n" \
 "\n"
  
 #else

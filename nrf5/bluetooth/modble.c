@@ -67,18 +67,10 @@ mp_obj_t ble_obj_address_print(void) {
     return mp_const_none;
 }
 
-/// \method advertise()
-/// Bluetooth Low Energy advertise.
-mp_obj_t ble_obj_advertise(void) {
-    ble_drv_advertise();
-    return mp_const_none;
-}
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enable_obj, ble_obj_enable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_disable_obj, ble_obj_disable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enabled_obj, ble_obj_enabled);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_address_print_obj, ble_obj_address_print);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_advertise_obj, ble_obj_advertise);
 
 STATIC const mp_map_elem_t ble_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ble) },
@@ -86,7 +78,6 @@ STATIC const mp_map_elem_t ble_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&ble_obj_disable_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ble_obj_enabled_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_address_print), (mp_obj_t)&ble_obj_address_print_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_advertise), (mp_obj_t)&ble_obj_advertise_obj},
 };
 
 
