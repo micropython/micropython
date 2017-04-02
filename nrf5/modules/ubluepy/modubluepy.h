@@ -148,6 +148,8 @@ typedef struct _ubluepy_advertise_data_t {
     uint8_t    device_name_len;
     mp_obj_t * p_services;
     uint8_t    num_of_services;
+    uint8_t *  p_data;
+    uint8_t    data_len;
 } ubluepy_advertise_data_t;
 
 typedef struct _ubluepy_scanner_obj_t {
