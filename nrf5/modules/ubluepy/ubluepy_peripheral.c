@@ -210,14 +210,20 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     }
 
     if (data_obj != mp_const_none) {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
 
+        if (bufinfo.len > 0) {
+            adv_data.p_data   = bufinfo.buf;
+            adv_data.data_len = bufinfo.len;
+        }
     }
 
     (void)ble_drv_advertise_data(&adv_data);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 1, peripheral_advertise);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 0, peripheral_advertise);
 
 /// \method disconnect()
 /// disconnect connection.
