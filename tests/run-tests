@@ -201,6 +201,7 @@ def run_tests(pyb, tests, args):
     skip_int_big = False
     skip_set_type = False
     skip_async = False
+    skip_const = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
     native = run_micropython(pyb, args, 'feature_check/native_check.py')
@@ -221,6 +222,11 @@ def run_tests(pyb, tests, args):
     native = run_micropython(pyb, args, 'feature_check/async_check.py')
     if native == b'CRASH':
         skip_async = True
+
+    # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
+    native = run_micropython(pyb, args, 'feature_check/const.py')
+    if native == b'CRASH':
+        skip_const = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
     t = run_micropython(pyb, args, 'feature_check/repl_emacs_check.py')
@@ -330,6 +336,7 @@ def run_tests(pyb, tests, args):
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
         is_async = test_name.startswith("async_")
+        is_const = test_name.startswith("const")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
@@ -337,6 +344,7 @@ def run_tests(pyb, tests, args):
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
+        skip_it |= skip_const and is_const
 
         if skip_it:
             print("skip ", test_file)
