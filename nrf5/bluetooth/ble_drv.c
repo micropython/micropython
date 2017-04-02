@@ -548,7 +548,11 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     // initialize advertising params
     memset(&m_adv_params, 0, sizeof(m_adv_params));
-    m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
+    if (p_adv_params->connectable) {
+        m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
+    } else {
+        m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
+    }
     m_adv_params.p_peer_addr = NULL;                                // undirected advertisement
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval    = MSEC_TO_UNITS(100, UNIT_0_625_MS);   // approx 8 ms

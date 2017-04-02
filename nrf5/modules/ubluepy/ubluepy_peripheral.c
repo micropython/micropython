@@ -169,14 +169,15 @@ STATIC mp_obj_t peripheral_set_conn_handler(mp_obj_t self_in, mp_obj_t func) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, peripheral_set_conn_handler);
 
-/// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray])
-/// Start advertising.
+/// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray], [connectable=True])
+/// Start advertising. Connectable advertisment type by default.
 ///
 STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_device_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_data,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -187,6 +188,7 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_obj_t device_name_obj = args[0].u_obj;
     mp_obj_t service_obj     = args[1].u_obj;
     mp_obj_t data_obj        = args[2].u_obj;
+    mp_obj_t connectable_obj = args[3].u_obj;
 
     ubluepy_advertise_data_t adv_data;
     memset(&adv_data, 0, sizeof(ubluepy_advertise_data_t));
@@ -217,6 +219,11 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
             adv_data.p_data   = bufinfo.buf;
             adv_data.data_len = bufinfo.len;
         }
+    }
+
+    adv_data.connectable = true;
+    if (connectable_obj != mp_const_none && !(mp_obj_is_true(connectable_obj))) {
+        adv_data.connectable = false;
     }
 
     (void)ble_drv_advertise_data(&adv_data);

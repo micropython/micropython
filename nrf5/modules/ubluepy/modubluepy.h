@@ -150,6 +150,7 @@ typedef struct _ubluepy_advertise_data_t {
     uint8_t    num_of_services;
     uint8_t *  p_data;
     uint8_t    data_len;
+    bool       connectable;
 } ubluepy_advertise_data_t;
 
 typedef struct _ubluepy_scanner_obj_t {

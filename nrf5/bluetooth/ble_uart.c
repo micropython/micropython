@@ -213,6 +213,8 @@ void ble_uart_init0(void) {
     m_rx_ring_buffer.end = 0;
     m_rx_ring_buffer.elems = m_rx_ring_buffer_data;
 
+    adv_data.connectable = true;
+
     (void)ble_drv_advertise_data(&adv_data);
 
     while (m_cccd_enabled != true) {
