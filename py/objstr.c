@@ -236,7 +236,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     mp_obj_t item;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         mp_int_t val = mp_obj_get_int(item);
-        #if MICROPY_CPYTHON_COMPAT
+        #if MICROPY_FULL_CHECKS
         if (val < 0 || val > 255) {
             mp_raise_ValueError("bytes value out of range");
         }
