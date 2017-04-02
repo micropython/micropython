@@ -189,16 +189,11 @@ uint32_t ble_drv_stack_enable(void) {
 
     const char device_name[] = "micr";
 
-    err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *)device_name,
-                                          strlen(device_name));
-
-    if (sd_ble_gap_device_name_set(&sec_mode,
-                                   (const uint8_t *)device_name,
-                                   strlen(device_name)) != 0) {
-
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-              "Cannot set GAP parameters."));
+    if ((err_code = sd_ble_gap_device_name_set(&sec_mode,
+                                               (const uint8_t *)device_name,
+                                                strlen(device_name))) != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Cannot apply GAP parameters."));
     }
 
     // set connection parameters
@@ -447,13 +442,16 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         byte_pos += p_adv_params->device_name_len;
     }
 
-    // set flags, default to disc mode
-    adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + BLE_AD_TYPE_FLAGS_DATA_SIZE);
-    byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
-    adv_data[byte_pos] = BLE_GAP_AD_TYPE_FLAGS;
-    byte_pos += BLE_AD_TYPE_FLAGS_DATA_SIZE;
-    adv_data[byte_pos] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
-    byte_pos += 1;
+    // Add FLAGS only if manually controlled data has not been used.
+    if (p_adv_params->data_len == 0) {
+        // set flags, default to disc mode
+        adv_data[byte_pos] = (BLE_ADV_AD_TYPE_FIELD_SIZE + BLE_AD_TYPE_FLAGS_DATA_SIZE);
+        byte_pos += BLE_ADV_LENGTH_FIELD_SIZE;
+        adv_data[byte_pos] = BLE_GAP_AD_TYPE_FLAGS;
+        byte_pos += BLE_AD_TYPE_FLAGS_DATA_SIZE;
+        adv_data[byte_pos] = BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE;
+        byte_pos += 1;
+    }
 
     if (p_adv_params->num_of_services > 0) {
 
@@ -571,10 +569,21 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
         }
     }
 
+    if ((p_adv_params->data_len > 0) && (p_adv_params->p_data != NULL)) {
+        if (p_adv_params->data_len + byte_pos > BLE_GAP_ADV_MAX_SIZE) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Can not fit data into the advertisment packet."));
+        }
+
+        memcpy(adv_data, p_adv_params->p_data, p_adv_params->data_len);
+        byte_pos += p_adv_params->data_len;
+    }
+
     // scan response data not set
-    if (sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0) != 0) {
+    uint32_t err_code;
+    if ((err_code = sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0)) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Can not apply advertisment data."));
+                  "Can not apply advertisment data. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
     BLE_DRIVER_LOG("Set Adv data size: " UINT_FMT "\n", byte_pos);
 
@@ -598,7 +607,7 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 #endif
 
     m_adv_in_progress = false;
-    uint32_t err_code = sd_ble_gap_adv_start(&m_adv_params);
+    err_code = sd_ble_gap_adv_start(&m_adv_params);
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not start advertisment. status: 0x" HEX2_FMT, (uint16_t)err_code));
