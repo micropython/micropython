@@ -34,8 +34,9 @@
 #define HELP_TEXT_SD \
 "If compiled with SD=<softdevice> the additional commands are\n" \
 "available:\n" \
-"  ble.enable()    -- enable softdevice\n" \
-"  ble.disable()   -- disable softdevice\n" \
+"  ble.enable()    -- enable bluetooth stack\n" \
+"  ble.disable()   -- disable bluetooth stack\n" \
+"  ble.enabled()   -- check whether bluetooth stack is enabled\n" \
 "\n"
  
 #else
