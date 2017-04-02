@@ -456,7 +456,10 @@ def main():
         # clear search path to make sure tests use only builtin modules
         os.environ['MICROPYPATH'] = ''
 
-    if not run_tests(pyb, tests, args):
+    res = run_tests(pyb, tests, args)
+    if pyb:
+        pyb.close()
+    if not res:
         sys.exit(1)
 
 if __name__ == "__main__":
