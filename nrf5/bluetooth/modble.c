@@ -60,24 +60,38 @@ mp_obj_t ble_obj_enabled(void) {
     return MP_OBJ_NEW_SMALL_INT(enabled);
 }
 
-/// \method address_print()
-/// Print device address.
-mp_obj_t ble_obj_address_print(void) {
-    ble_drv_address_get();
-    return mp_const_none;
+/// \method address()
+/// Return device address as text string.
+mp_obj_t ble_obj_address(void) {
+    ble_drv_addr_t local_addr;
+    ble_drv_address_get(&local_addr);
+
+    vstr_t vstr;
+    vstr_init(&vstr, 17);
+
+    vstr_printf(&vstr, ""HEX2_FMT":"HEX2_FMT":"HEX2_FMT":" \
+                         HEX2_FMT":"HEX2_FMT":"HEX2_FMT"",
+                local_addr.addr[5], local_addr.addr[4], local_addr.addr[3],
+                local_addr.addr[2], local_addr.addr[1], local_addr.addr[0]);
+
+    mp_obj_t mac_str = mp_obj_new_str(vstr.buf, vstr.len, false);
+
+    vstr_clear(&vstr);
+
+    return mac_str;
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enable_obj, ble_obj_enable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_disable_obj, ble_obj_disable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enabled_obj, ble_obj_enabled);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_address_print_obj, ble_obj_address_print);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_address_obj, ble_obj_address);
 
 STATIC const mp_map_elem_t ble_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ble) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&ble_obj_enable_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&ble_obj_disable_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ble_obj_enabled_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_address_print), (mp_obj_t)&ble_obj_address_print_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_address), (mp_obj_t)&ble_obj_address_obj},
 };
 
 
