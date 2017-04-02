@@ -300,6 +300,7 @@ def main():
             pyb.enter_raw_repl()
         except PyboardError as er:
             print(er)
+            pyb.close()
             sys.exit(1)
 
         def execbuffer(buf):
@@ -307,6 +308,7 @@ def main():
                 ret, ret_err = pyb.exec_raw(buf, timeout=None, data_consumer=stdout_write_bytes)
             except PyboardError as er:
                 print(er)
+                pyb.close()
                 sys.exit(1)
             except KeyboardInterrupt:
                 sys.exit(1)
