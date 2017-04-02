@@ -37,6 +37,7 @@
 "  ble.enable()    -- enable bluetooth stack\n" \
 "  ble.disable()   -- disable bluetooth stack\n" \
 "  ble.enabled()   -- check whether bluetooth stack is enabled\n" \
+"  ble.address()   -- return device address as text string\n" \
 "\n"
  
 #else
