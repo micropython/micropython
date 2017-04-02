@@ -227,13 +227,21 @@ uint8_t ble_drv_stack_enabled(void) {
     return is_enabled;
 }
 
-void ble_drv_address_get(void) {
+void ble_drv_address_get(ble_drv_addr_t * p_addr) {
+    SD_TEST_OR_ENABLE();
+
     ble_gap_addr_t local_ble_addr;
 #if (BLUETOOTH_SD != 132)
     uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
 #else
     uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
 #endif
+
+    if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                  "Can not query for the device address."));
+    }
+
     BLE_DRIVER_LOG("ble address, type: " HEX2_FMT ", " \
                    "address: " HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT ":" \
                                HEX2_FMT ":" HEX2_FMT ":" HEX2_FMT "\n", \
@@ -241,7 +249,8 @@ void ble_drv_address_get(void) {
                    local_ble_addr.addr[5], local_ble_addr.addr[4], local_ble_addr.addr[3], \
                    local_ble_addr.addr[2], local_ble_addr.addr[1], local_ble_addr.addr[0]);
 
-    (void)err_code;
+    p_addr->addr_type = local_ble_addr.addr_type;
+    memcpy(p_addr->addr, local_ble_addr.addr, 6);
 }
 
 void ble_drv_advertise(void) {
