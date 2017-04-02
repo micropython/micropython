@@ -1,10 +1,15 @@
 import sys
-import uerrno
 try:
-    import uos_vfs as uos
-    open = uos.vfs_open
+    import uerrno
+    try:
+        import uos_vfs as uos
+        open = uos.vfs_open
+    except ImportError:
+        import uos
 except ImportError:
-    import uos
+    print("SKIP")
+    sys.exit()
+
 try:
     uos.VfsFat
 except AttributeError:
