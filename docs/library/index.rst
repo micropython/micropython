@@ -153,6 +153,7 @@ the following libraries.
 .. toctree::
    :maxdepth: 1
 
+   btree.rst
    framebuf.rst
    machine.rst
    micropython.rst
