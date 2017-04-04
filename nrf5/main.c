@@ -197,6 +197,9 @@ int main(int argc, char **argv) {
 
 #if MICROPY_PY_BLE_NUS
     ble_uart_init0();
+    while (!ble_uart_enabled()) {
+        ;
+    }
 #endif
 
     for (;;) {

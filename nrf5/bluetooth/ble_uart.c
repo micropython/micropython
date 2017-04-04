@@ -31,6 +31,10 @@
 
 #if MICROPY_PY_BLE_NUS
 
+#if BLUETOOTH_WEBBLUETOOTH_REPL
+#include "hal_time.h"
+#endif // BLUETOOTH_WEBBLUETOOTH_REPL
+
 static ubluepy_uuid_obj_t uuid_obj_service = {
     .base.type = &ubluepy_uuid_type,
     .type = UBLUEPY_UUID_128_BIT,
@@ -75,6 +79,7 @@ static ubluepy_peripheral_obj_t ble_uart_peripheral = {
 };
 
 static volatile bool m_cccd_enabled;
+static volatile bool m_connected;
 
 ringBuffer_typedef(uint8_t, ringbuffer_t);
 
@@ -82,6 +87,11 @@ static ringbuffer_t   m_rx_ring_buffer;
 static ringbuffer_t * mp_rx_ring_buffer = &m_rx_ring_buffer;
 static uint8_t        m_rx_ring_buffer_data[128];
 
+static ubluepy_advertise_data_t m_adv_data_uart_service;
+
+#if BLUETOOTH_WEBBLUETOOTH_REPL
+static ubluepy_advertise_data_t m_adv_data_eddystone_url;
+#endif // BLUETOOTH_WEBBLUETOOTH_REPL
 
 int mp_hal_stdin_rx_chr(void) {
     while (isBufferEmpty(mp_rx_ring_buffer)) {
@@ -127,8 +137,10 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
 
     if (event_id == 16) {                // connect event
         self->conn_handle = conn_handle;
+        m_connected = true;
     } else if (event_id == 17) {         // disconnect event
         self->conn_handle = 0xFFFF;      // invalid connection handle
+        m_connected = false;
     }
 }
 
@@ -195,15 +207,21 @@ void ble_uart_init0(void) {
     mp_uint_t  num_services;
     mp_obj_get_array(service_list, &num_services, &services);
 
-    ubluepy_advertise_data_t adv_data = {
-        .p_services = services,
-        .num_of_services = num_services,
-        .p_device_name = (uint8_t *)device_name,
-        .device_name_len = strlen(device_name)
-    };
+    m_adv_data_uart_service.p_services      = services;
+    m_adv_data_uart_service.num_of_services = num_services;
+    m_adv_data_uart_service.p_device_name   = (uint8_t *)device_name;
+    m_adv_data_uart_service.device_name_len = strlen(device_name);
+    m_adv_data_uart_service.connectable     = true;
 
-    (void)device_name;
-    (void)services;
+#if BLUETOOTH_WEBBLUETOOTH_REPL
+    static uint8_t eddystone_url_data[26] = {0x2, 0x1, 0x6,
+                                             0x3, 0x3, 0xaa, 0xfe,
+                                             18, 0x16, 0xaa, 0xfe, 0x10, 0xee, 0x0, 'm', 'i', 'c', 'r', 'o', 'p', 'y', 't', 'h', 'o', 'n', 0x1};
+    // eddystone url adv data
+    m_adv_data_eddystone_url.p_data      = eddystone_url_data;
+    m_adv_data_eddystone_url.data_len    = sizeof(eddystone_url_data);
+    m_adv_data_eddystone_url.connectable = false;
+#endif
 
     m_cccd_enabled = false;
 
@@ -213,15 +231,33 @@ void ble_uart_init0(void) {
     m_rx_ring_buffer.end = 0;
     m_rx_ring_buffer.elems = m_rx_ring_buffer_data;
 
-    adv_data.connectable = true;
+    m_connected = false;
 
-    (void)ble_drv_advertise_data(&adv_data);
-
-    while (m_cccd_enabled != true) {
-        ;
-    }
+    ble_uart_advertise();
 }
 
+void ble_uart_advertise(void) {
+#if BLUETOOTH_WEBBLUETOOTH_REPL
+    while (!m_connected) {
+        (void)ble_drv_advertise_data(&m_adv_data_uart_service);
+        mp_hal_delay_ms(500);
+        (void)ble_drv_advertise_data(&m_adv_data_eddystone_url);
+        mp_hal_delay_ms(500);
+    }
+
+    ble_drv_advertise_stop();
+#else
+    (void)ble_drv_advertise_data(&m_adv_data_uart_service);
+#endif // BLUETOOTH_WEBBLUETOOTH_REPL
+}
+
+bool ble_uart_connected(void) {
+    return (m_connected);
+}
+
+bool ble_uart_enabled(void) {
+    return (m_cccd_enabled);
+}
 
 #endif // MICROPY_PY_BLE_NUS
 
