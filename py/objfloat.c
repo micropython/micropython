@@ -106,6 +106,7 @@ STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
+        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
         default: return MP_OBJ_NULL; // op not supported
