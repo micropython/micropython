@@ -261,8 +261,10 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
         // We have sent data and are waiting for the low-level USB driver to
         // finish sending it over the USB in-endpoint.
-        // SOF occurs every 1ms, so we have a 150 * 1ms = 150ms timeout
-        if (UserTxBufPtrWaitCount < 150) {
+        // SOF occurs every 1ms, so we have a 500 * 1ms = 500ms timeout
+        // We have a relatively large timeout because the USB host may be busy
+        // doing other things and we must give it a chance to read our data.
+        if (UserTxBufPtrWaitCount < 500) {
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
             if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
