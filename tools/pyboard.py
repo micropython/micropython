@@ -170,7 +170,7 @@ class ProcessPtyToTerminal:
         import subprocess
         import re
         import serial
-        self.subp = subprocess.Popen(cmd.split(), bufsize=0, shell=True, preexec_fn=os.setsid,
+        self.subp = subprocess.Popen(cmd.split(), bufsize=0, shell=False, preexec_fn=os.setsid,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         pty_line = self.subp.stderr.readline().decode("utf-8")
         m = re.search(r"/dev/pts/[0-9]+", pty_line)
