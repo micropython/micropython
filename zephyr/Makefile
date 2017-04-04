@@ -93,3 +93,6 @@ z_clean:
 .PHONY: prj.conf
 prj.conf: prj_base.conf
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
+
+test:
+	cd ../tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"
