@@ -172,7 +172,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     RAISE_ERRNO(net_context_get(family, socktype, proto, &socket->ctx));
 
-    return socket;
+    return MP_OBJ_FROM_PTR(socket);
 }
 
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
