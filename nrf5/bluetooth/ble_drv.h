@@ -86,6 +86,8 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj);
 
 bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params);
 
+void ble_drv_advertise_stop(void);
+
 void ble_drv_gap_event_handler_set(mp_obj_t obs, ble_drv_gap_evt_callback_t evt_handler);
 
 void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t evt_handler);

@@ -553,21 +553,14 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     } else {
         m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
     }
+
     m_adv_params.p_peer_addr = NULL;                                // undirected advertisement
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval    = MSEC_TO_UNITS(100, UNIT_0_625_MS);   // approx 8 ms
     m_adv_params.timeout     = 0;                                   // infinite advertisment
 
-#if (BLUETOOTH_SD == 132)
-    if (m_adv_in_progress == true) {
-        if (sd_ble_gap_adv_stop() != 0) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                      "Can not stop advertisment."));
-        }
-    }
-#endif
+    ble_drv_advertise_stop();
 
-    m_adv_in_progress = false;
     err_code = sd_ble_gap_adv_start(&m_adv_params);
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -577,6 +570,17 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     m_adv_in_progress = true;
 
     return true;
+}
+
+void ble_drv_advertise_stop(void) {
+    if (m_adv_in_progress == true) {
+        uint32_t err_code;
+        if ((err_code = sd_ble_gap_adv_stop()) != 0) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Can not stop advertisment. status: 0x" HEX2_FMT, (uint16_t)err_code));
+        }
+    }
+    m_adv_in_progress = false;
 }
 
 void ble_drv_attr_s_read(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
