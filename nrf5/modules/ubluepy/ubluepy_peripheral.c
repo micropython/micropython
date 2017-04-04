@@ -163,6 +163,8 @@ STATIC mp_obj_t peripheral_set_conn_handler(mp_obj_t self_in, mp_obj_t func) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, peripheral_set_conn_handler);
 
+#if MICROPY_PY_UBLUEPY_PERIPHERAL
+
 /// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray], [connectable=True])
 /// Start advertising. Connectable advertisment type by default.
 ///
@@ -230,6 +232,22 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 0, peripheral_advertise);
+
+/// \method advertise_stop()
+/// Stop advertisment if any onging advertisment.
+///
+STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    (void)self;
+
+    ble_drv_advertise_stop();
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_advertise_stop_obj, peripheral_advertise_stop);
+
+#endif // MICROPY_PY_UBLUEPY_PERIPHERAL
 
 /// \method disconnect()
 /// disconnect connection.
@@ -406,6 +424,7 @@ STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
     { MP_OBJ_NEW_QSTR(MP_QSTR_advertise),              (mp_obj_t)(&ubluepy_peripheral_advertise_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_advertise_stop),         (mp_obj_t)(&ubluepy_peripheral_advertise_stop_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),             (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_addService),             (mp_obj_t)(&ubluepy_peripheral_add_service_obj) },
 #if 0
