@@ -128,6 +128,15 @@ static void sock_received_cb(struct net_context *context, struct net_buf *net_bu
     k_fifo_put(&socket->recv_q, net_buf);
 }
 
+socket_obj_t *socket_new(void) {
+    socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
+    socket->base.type = (mp_obj_t)&socket_type;
+    k_fifo_init(&socket->recv_q);
+    socket->cur_buf = NULL;
+    socket->state = STATE_NEW;
+    return socket;
+}
+
 // Methods
 
 STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -143,11 +152,7 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
-    socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
-    socket->base.type = type;
-    k_fifo_init(&socket->recv_q);
-    socket->cur_buf = NULL;
-    socket->state = STATE_NEW;
+    socket_obj_t *socket = socket_new();
 
     int family = AF_INET;
     int socktype = SOCK_STREAM;
