@@ -117,12 +117,6 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
     ubluepy_peripheral_obj_t *s = m_new_obj(ubluepy_peripheral_obj_t);
     s->base.type = type;
 
-    ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(s), gap_event_handler);
-    ble_drv_gatts_event_handler_set(MP_OBJ_FROM_PTR(s), gatts_event_handler);
-#if MICROPY_PY_UBLUEPY_CENTRAL
-    ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(s), gattc_event_handler);
-#endif
-
     s->delegate      = mp_const_none;
     s->conn_handler  = mp_const_none;
     s->notif_handler = mp_const_none;
@@ -180,6 +174,8 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
         { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -224,6 +220,9 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
     adv_data.connectable = true;
     if (connectable_obj != mp_const_none && !(mp_obj_is_true(connectable_obj))) {
         adv_data.connectable = false;
+    } else {
+        ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
+        ble_drv_gatts_event_handler_set(MP_OBJ_FROM_PTR(self), gatts_event_handler);
     }
 
     (void)ble_drv_advertise_data(&adv_data);
@@ -269,6 +268,7 @@ STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral_get_services);
 
+#if MICROPY_PY_UBLUEPY_CENTRAL
 
 void static disc_add_service(mp_obj_t self, ble_drv_service_data_t * p_service_data) {
     ubluepy_service_obj_t * p_service = m_new_obj(ubluepy_service_obj_t);
@@ -354,6 +354,8 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
         ;
     }
 
+    ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(s), gattc_event_handler);
+
     bool retval = ble_drv_discover_services(self, self->conn_handle, disc_add_service);
     if (retval != true) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -383,6 +385,7 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_connect_obj, peripheral_connect);
 
+#endif
 
 STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_withDelegate),           (mp_obj_t)(&ubluepy_peripheral_with_delegate_obj) },
