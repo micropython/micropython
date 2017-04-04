@@ -41,6 +41,10 @@ print(1j == 1j)
 print(abs(1j))
 print("%.5g" % abs(1j + 2))
 
+# builtin hash
+print(hash(1 + 0j))
+print(type(hash(1j)))
+
 # float on lhs should delegate to complex
 print(1.2 + 3j)
 
