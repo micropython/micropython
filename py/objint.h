@@ -41,17 +41,12 @@ typedef struct _mp_obj_int_t {
 extern const mp_obj_int_t mp_maxsize_obj;
 
 #if MICROPY_PY_BUILTINS_FLOAT
-typedef enum {
-    MP_FP_CLASS_FIT_SMALLINT,
-    MP_FP_CLASS_FIT_LONGINT,
-    MP_FP_CLASS_OVERFLOW
-} mp_fp_as_int_class_t;
-
-mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val);
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in);
-#endif // MICROPY_PY_BUILTINS_FLOAT
+#endif
 
 size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma);
+
+mp_obj_int_t *mp_obj_int_new_mpz(void);
 
 void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
 char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,

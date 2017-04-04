@@ -74,7 +74,7 @@ const mp_obj_int_t mp_maxsize_obj = {
 #undef NUM_DIG
 #endif
 
-STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
+mp_obj_int_t *mp_obj_int_new_mpz(void) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
     mpz_init_zero(&o->mpz);
@@ -386,26 +386,6 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     }
     return mp_obj_new_int_from_ull(value);
 }
-
-#if MICROPY_PY_BUILTINS_FLOAT
-mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    int cl = fpclassify(val);
-    if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
-    } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
-    } else {
-        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
-        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
-        } else {
-            mp_obj_int_t *o = mp_obj_int_new_mpz();
-            mpz_set_from_float(&o->mpz, val);
-            return MP_OBJ_FROM_PTR(o);
-        }
-    }
-}
-#endif
 
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
