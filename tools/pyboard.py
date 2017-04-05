@@ -179,7 +179,9 @@ class ProcessPtyToTerminal:
             self.close()
             sys.exit(1)
         pty = m.group()
-        self.ser = serial.Serial(pty, interCharTimeout=1)
+        # rtscts, dsrdtr params are to workaround pyserial bug:
+        # http://stackoverflow.com/questions/34831131/pyserial-does-not-play-well-with-virtual-port
+        self.ser = serial.Serial(pty, interCharTimeout=1, rtscts=True, dsrdtr=True)
 
     def close(self):
         import signal
