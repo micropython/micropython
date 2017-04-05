@@ -70,39 +70,37 @@ Functions
 
        Sleep for the given number of seconds.
 
-.. only:: port_unix or port_pyboard or port_wipy or port_esp8266
+.. function:: sleep_ms(ms)
 
-    .. function:: sleep_ms(ms)
+   Delay for given number of milliseconds, should be positive or 0.
 
-       Delay for given number of milliseconds, should be positive or 0.
+.. function:: sleep_us(us)
 
-    .. function:: sleep_us(us)
+   Delay for given number of microseconds, should be positive or 0.
 
-       Delay for given number of microseconds, should be positive or 0.
+.. function:: ticks_ms()
 
-    .. function:: ticks_ms()
+    Returns an increasing millisecond counter with an arbitrary reference point, that
+    wraps around after some value. This value is not explicitly exposed, but we will
+    refer to it as ``TICKS_MAX`` to simplify discussion. Period of the values is
+    ``TICKS_PERIOD = TICKS_MAX + 1``. ``TICKS_PERIOD`` is guaranteed to be a power of
+    two, but otherwise may differ from port to port. The same period value is used
+    for all of ``ticks_ms()``, ``ticks_us()``, ``ticks_cpu()`` functions (for
+    simplicity). Thus, these functions will return a value in range [``0`` ..
+    ``TICKS_MAX``], inclusive, total ``TICKS_PERIOD`` values. Note that only
+    non-negative values are used. For the most part, you should treat values returned
+    by these functions as opaque. The only operations available for them are
+    ``ticks_diff()`` and ``ticks_add()`` functions described below.
 
-        Returns an increasing millisecond counter with an arbitrary reference point, that
-        wraps around after some value. This value is not explicitly exposed, but we will
-        refer to it as ``TICKS_MAX`` to simplify discussion. Period of the values is
-        ``TICKS_PERIOD = TICKS_MAX + 1``. ``TICKS_PERIOD`` is guaranteed to be a power of
-        two, but otherwise may differ from port to port. The same period value is used
-        for all of ``ticks_ms()``, ``ticks_us()``, ``ticks_cpu()`` functions (for
-        simplicity). Thus, these functions will return a value in range [``0`` ..
-        ``TICKS_MAX``], inclusive, total ``TICKS_PERIOD`` values. Note that only
-        non-negative values are used. For the most part, you should treat values returned
-        by these functions as opaque. The only operations available for them are
-        ``ticks_diff()`` and ``ticks_add()`` functions described below.
+    Note: Performing standard mathematical operations (+, -) or relational
+    operators (<, <=, >, >=) directly on these value will lead to invalid
+    result. Performing mathematical operations and then passing their results
+    as arguments to ``ticks_diff()`` or ``ticks_add()`` will also lead to
+    invalid results from the latter functions.
 
-        Note: Performing standard mathematical operations (+, -) or relational
-        operators (<, <=, >, >=) directly on these value will lead to invalid
-        result. Performing mathematical operations and then passing their results
-        as arguments to ``ticks_diff()`` or ``ticks_add()`` will also lead to
-        invalid results from the latter functions.
+.. function:: ticks_us()
 
-    .. function:: ticks_us()
-
-       Just like ``ticks_ms()`` above, but in microseconds.
+   Just like ``ticks_ms()`` above, but in microseconds.
 
 .. function:: ticks_cpu()
 
