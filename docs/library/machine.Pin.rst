@@ -225,16 +225,6 @@ Methods
 
    This method returns a callback object.
 
-.. only:: port_wipy
-
-    .. method:: Pin.alt_list()
-
-       Returns a list of the alternate functions supported by the pin. List items are
-       a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
-
-       Availability: WiPy.
-
-
 Attributes
 ----------
 

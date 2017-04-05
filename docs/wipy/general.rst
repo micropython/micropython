@@ -232,3 +232,10 @@ For interrupts, the ``priority`` can take values in the range 1-7.  And the
   - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
     ``GP11``, ``GP17`` and ``GP24`` can wake the board. In this case all of the
     6 pins can be enabled as a ``machine.Sleep.HIBERNATE`` wake source at the same time.
+
+Additional Pin methods:
+
+.. method:: machine.Pin.alt_list()
+
+   Returns a list of the alternate functions supported by the pin. List items are
+   a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
