@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 #include <zephyr.h>
+// Zephyr's generated version header
+#include <version.h>
 #include <net/net_context.h>
 #include <net/nbuf.h>
 
@@ -54,6 +56,36 @@ typedef struct _socket_obj_t {
 } socket_obj_t;
 
 STATIC const mp_obj_type_t socket_type;
+
+// k_fifo extended API
+
+static inline void *_k_fifo_peek_head(struct k_fifo *fifo)
+{
+#if KERNEL_VERSION_NUMBER < 0x010763 /* 1.7.99 */
+    return sys_slist_peek_head(&fifo->data_q);
+#else
+    return sys_slist_peek_head(&fifo->_queue.data_q);
+#endif
+}
+
+static inline void *_k_fifo_peek_tail(struct k_fifo *fifo)
+{
+#if KERNEL_VERSION_NUMBER < 0x010763 /* 1.7.99 */
+    return sys_slist_peek_tail(&fifo->data_q);
+#else
+    return sys_slist_peek_tail(&fifo->_queue.data_q);
+#endif
+}
+
+static inline void _k_fifo_wait_non_empty(struct k_fifo *fifo, int32_t timeout)
+{
+    struct k_poll_event events[] = {
+        K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_FIFO_DATA_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, fifo),
+    };
+
+    k_poll(events, MP_ARRAY_SIZE(events), timeout);
+    DEBUG_printf("poll res: %d\n", events[0].state);
+}
 
 // Helper functions
 
@@ -112,8 +144,7 @@ static void sock_received_cb(struct net_context *context, struct net_buf *net_bu
 
     // if net_buf == NULL, EOF
     if (net_buf == NULL) {
-        // TODO: k_fifo accessor for this?
-        struct net_buf *last_buf = (struct net_buf*)sys_slist_peek_tail(&socket->recv_q.data_q);
+        struct net_buf *last_buf = _k_fifo_peek_tail(&socket->recv_q);
         // We abuse "buf_sent" flag to store EOF flag
         net_nbuf_set_buf_sent(last_buf, true);
         DEBUG_printf("Set EOF flag on %p\n", last_buf);
