@@ -10,18 +10,6 @@ SS (Slave Select), to select a particular device on a bus with which
 communication takes place. Management of an SS signal should happen in
 user code (via machine.Pin class).
 
-.. only:: port_wipy
-
-    See usage model of I2C; SPI is very similar.  Main difference is
-    parameters to init the SPI bus::
-
-        from machine import SPI
-        spi = SPI(0, mode=SPI.MASTER, baudrate=1000000, polarity=0, phase=0, firstbit=SPI.MSB)
-
-    Only required parameter is mode, must be SPI.MASTER.  Polarity can be 0 or 
-    1, and is the level the idle clock line sits at.  Phase can be 0 or 1 to 
-    sample data on the first or second clock edge respectively.
-
 Constructors
 ------------
 
