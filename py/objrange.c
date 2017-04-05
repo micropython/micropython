@@ -105,8 +105,10 @@ STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         o->start = mp_obj_get_int(args[0]);
         o->stop = mp_obj_get_int(args[1]);
         if (n_args == 3) {
-            // TODO check step is non-zero
             o->step = mp_obj_get_int(args[2]);
+            if (o->step == 0) {
+                mp_raise_ValueError("zero step");
+            }
         }
     }
 

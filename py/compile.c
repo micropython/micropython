@@ -1444,8 +1444,9 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     pn_range_start = args[0];
                     pn_range_end = args[1];
                     pn_range_step = args[2];
-                    // We need to know sign of step. This is possible only if it's constant
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_range_step)) {
+                    // the step must be a non-zero constant integer to do the optimisation
+                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_range_step)
+                        || MP_PARSE_NODE_LEAF_SMALL_INT(pn_range_step) == 0) {
                         optimize = false;
                     }
                 }
