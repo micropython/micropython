@@ -548,6 +548,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
 #endif
 
+// Whether to provide a high-quality hash for float and complex numbers.
+// Otherwise the default is a very simple but correct hashing function.
+#ifndef MICROPY_FLOAT_HIGH_QUALITY_HASH
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (0)
+#endif
+
 // Enable features which improve CPython compatibility
 // but may lead to more code size/memory usage.
 // TODO: Originally intended as generic category to not

@@ -730,7 +730,11 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t s
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float
+#if MICROPY_FLOAT_HIGH_QUALITY_HASH
+mp_int_t mp_float_hash(mp_float_t val);
+#else
 static inline mp_int_t mp_float_hash(mp_float_t val) { return (mp_int_t)val; }
+#endif
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 
 // complex
