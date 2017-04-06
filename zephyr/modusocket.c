@@ -145,9 +145,14 @@ static void sock_received_cb(struct net_context *context, struct net_buf *net_bu
     // if net_buf == NULL, EOF
     if (net_buf == NULL) {
         struct net_buf *last_buf = _k_fifo_peek_tail(&socket->recv_q);
-        // We abuse "buf_sent" flag to store EOF flag
-        net_nbuf_set_buf_sent(last_buf, true);
-        DEBUG_printf("Set EOF flag on %p\n", last_buf);
+        if (last_buf == NULL) {
+            socket->state = STATE_PEER_CLOSED;
+            DEBUG_printf("Marked socket %p as peer-closed\n", socket);
+        } else {
+            // We abuse "buf_sent" flag to store EOF flag
+            net_nbuf_set_buf_sent(last_buf, true);
+            DEBUG_printf("Set EOF flag on %p\n", last_buf);
+        }
         return;
     }
 
