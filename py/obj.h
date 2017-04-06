@@ -525,8 +525,11 @@ struct _mp_obj_type_t {
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
 
-    // A tuple containing all the base types of this type.
-    struct _mp_obj_tuple_t *bases_tuple;
+    // A pointer to the parents of this type:
+    //  - 0 parents: pointer is NULL (object is implicitly the single parent)
+    //  - 1 parent: a pointer to the type of that parent
+    //  - 2 or more parents: pointer to a tuple object containing the parent types
+    const void *parent;
 
     // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;

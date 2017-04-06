@@ -57,26 +57,34 @@ STATIC mp_obj_t mp_obj_new_instance(const mp_obj_type_t *class, size_t subobjs) 
 }
 
 STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_type_t **last_native_base) {
-    size_t len = type->bases_tuple->len;
-    mp_obj_t *items = type->bases_tuple->items;
-
     int count = 0;
-    for (size_t i = 0; i < len; i++) {
-        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        const mp_obj_type_t *bt = (const mp_obj_type_t *)MP_OBJ_TO_PTR(items[i]);
-        if (bt == &mp_type_object) {
-            // Not a "real" type
-            continue;
-        }
-        if (mp_obj_is_native_type(bt)) {
-            *last_native_base = bt;
-            count++;
+    for (;;) {
+        if (type == &mp_type_object) {
+            // Not a "real" type, end search here.
+            return count;
+        } else if (mp_obj_is_native_type(type)) {
+            // Native types don't have parents (at least not from our perspective) so end.
+            *last_native_base = type;
+            return count + 1;
+        } else if (type->parent == NULL) {
+            // No parents so end search here.
+            return count;
+        } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
+            // Multiple parents, search through them all recursively.
+            const mp_obj_tuple_t *parent_tuple = type->parent;
+            const mp_obj_t *item = parent_tuple->items;
+            const mp_obj_t *top = item + parent_tuple->len;
+            for (; item < top; ++item) {
+                assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
+                const mp_obj_type_t *bt = (const mp_obj_type_t *)MP_OBJ_TO_PTR(*item);
+                count += instance_count_native_bases(bt, last_native_base);
+            }
+            return count;
         } else {
-            count += instance_count_native_bases(bt, last_native_base);
+            // A single parent, use iteration to continue the search.
+            type = type->parent;
         }
     }
-
-    return count;
 }
 
 // TODO
@@ -160,32 +168,31 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
 
         // attribute not found, keep searching base classes
 
-        // for a const struct, this entry might be NULL
-        if (type->bases_tuple == NULL) {
+        if (type->parent == NULL) {
             return;
-        }
-
-        size_t len = type->bases_tuple->len;
-        mp_obj_t *items = type->bases_tuple->items;
-        if (len == 0) {
-            return;
-        }
-        for (size_t i = 0; i < len - 1; i++) {
-            assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-            mp_obj_type_t *bt = (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]);
-            if (bt == &mp_type_object) {
-                // Not a "real" type
-                continue;
+        } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
+            const mp_obj_tuple_t *parent_tuple = type->parent;
+            const mp_obj_t *item = parent_tuple->items;
+            const mp_obj_t *top = item + parent_tuple->len - 1;
+            for (; item < top; ++item) {
+                assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
+                mp_obj_type_t *bt = (mp_obj_type_t*)MP_OBJ_TO_PTR(*item);
+                if (bt == &mp_type_object) {
+                    // Not a "real" type
+                    continue;
+                }
+                mp_obj_class_lookup(lookup, bt);
+                if (lookup->dest[0] != MP_OBJ_NULL) {
+                    return;
+                }
             }
-            mp_obj_class_lookup(lookup, bt);
-            if (lookup->dest[0] != MP_OBJ_NULL) {
-                return;
-            }
-        }
 
-        // search last base (simple tail recursion elimination)
-        assert(MP_OBJ_IS_TYPE(items[len - 1], &mp_type_type));
-        type = (mp_obj_type_t*)MP_OBJ_TO_PTR(items[len - 1]);
+            // search last base (simple tail recursion elimination)
+            assert(MP_OBJ_IS_TYPE(*item, &mp_type_type));
+            type = (mp_obj_type_t*)MP_OBJ_TO_PTR(*item);
+        } else {
+            type = type->parent;
+        }
         if (type == &mp_type_object) {
             // Not a "real" type
             return;
@@ -946,14 +953,21 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->getiter = instance_getiter;
     //o->iternext = ; not implemented
     o->buffer_p.get_buffer = instance_get_buffer;
-    // Inherit protocol from a base class. This allows to define an
-    // abstract base class which would translate C-level protocol to
-    // Python method calls, and any subclass inheriting from it will
-    // support this feature.
+
     if (len > 0) {
+        // Inherit protocol from a base class. This allows to define an
+        // abstract base class which would translate C-level protocol to
+        // Python method calls, and any subclass inheriting from it will
+        // support this feature.
         o->protocol = ((mp_obj_type_t*)MP_OBJ_TO_PTR(items[0]))->protocol;
+
+        if (len >= 2) {
+            o->parent = MP_OBJ_TO_PTR(bases_tuple);
+        } else {
+            o->parent = MP_OBJ_TO_PTR(items[0]);
+        }
     }
-    o->bases_tuple = MP_OBJ_TO_PTR(bases_tuple);
+
     o->locals_dict = MP_OBJ_TO_PTR(locals_dict);
 
     const mp_obj_type_t *native_base;
@@ -1015,13 +1029,6 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
     mp_obj_type_t *type = MP_OBJ_TO_PTR(self->type);
 
-    // for a const struct, this entry might be NULL
-    if (type->bases_tuple == NULL) {
-        return;
-    }
-
-    size_t len = type->bases_tuple->len;
-    mp_obj_t *items = type->bases_tuple->items;
     struct class_lookup_data lookup = {
         .obj = MP_OBJ_TO_PTR(self->obj),
         .attr = attr,
@@ -1029,13 +1036,27 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         .dest = dest,
         .is_type = false,
     };
-    for (size_t i = 0; i < len; i++) {
-        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        mp_obj_class_lookup(&lookup, (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]));
+
+    if (type->parent == NULL) {
+        // no parents, do nothing
+    } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
+        const mp_obj_tuple_t *parent_tuple = type->parent;
+        size_t len = parent_tuple->len;
+        const mp_obj_t *items = parent_tuple->items;
+        for (size_t i = 0; i < len; i++) {
+            assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+            mp_obj_class_lookup(&lookup, (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]));
+            if (dest[0] != MP_OBJ_NULL) {
+                return;
+            }
+        }
+    } else {
+        mp_obj_class_lookup(&lookup, type->parent);
         if (dest[0] != MP_OBJ_NULL) {
             return;
         }
     }
+
     mp_obj_class_lookup(&lookup, &mp_type_object);
 }
 
@@ -1073,27 +1094,28 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
 
         const mp_obj_type_t *self = MP_OBJ_TO_PTR(object);
 
-        // for a const struct, this entry might be NULL
-        if (self->bases_tuple == NULL) {
+        if (self->parent == NULL) {
+            // type has no parents
             return false;
-        }
+        } else if (((mp_obj_base_t*)self->parent)->type == &mp_type_tuple) {
+            // get the base objects (they should be type objects)
+            const mp_obj_tuple_t *parent_tuple = self->parent;
+            const mp_obj_t *item = parent_tuple->items;
+            const mp_obj_t *top = item + parent_tuple->len - 1;
 
-        // get the base objects (they should be type objects)
-        size_t len = self->bases_tuple->len;
-        mp_obj_t *items = self->bases_tuple->items;
-        if (len == 0) {
-            return false;
-        }
-
-        // iterate through the base objects
-        for (size_t i = 0; i < len - 1; i++) {
-            if (mp_obj_is_subclass_fast(items[i], classinfo)) {
-                return true;
+            // iterate through the base objects
+            for (; item < top; ++item) {
+                if (mp_obj_is_subclass_fast(*item, classinfo)) {
+                    return true;
+                }
             }
-        }
 
-        // search last base (simple tail recursion elimination)
-        object = items[len - 1];
+            // search last base (simple tail recursion elimination)
+            object = *item;
+        } else {
+            // type has 1 parent
+            object = MP_OBJ_FROM_PTR(self->parent);
+        }
     }
 }
 
