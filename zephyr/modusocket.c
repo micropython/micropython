@@ -244,6 +244,16 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
+STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
+    socket_obj_t *socket = self_in;
+    socket_check_closed(socket);
+
+    mp_int_t backlog = mp_obj_get_int(backlog_in);
+    RAISE_ERRNO(net_context_listen(socket->ctx, backlog));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+
 STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     socket_obj_t *socket = self_in;
     socket_check_closed(socket);
@@ -368,6 +378,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&socket_close_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&socket_bind_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&socket_connect_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&socket_listen_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
 };
