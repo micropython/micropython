@@ -45,7 +45,10 @@
 typedef struct _socket_obj_t {
     mp_obj_base_t base;
     struct net_context *ctx;
-    struct k_fifo recv_q;
+    union {
+        struct k_fifo recv_q;
+        struct k_fifo accept_q;
+    };
     struct net_buf *cur_buf;
 
     #define STATE_NEW 0
@@ -164,6 +167,15 @@ static void sock_received_cb(struct net_context *context, struct net_buf *net_bu
     k_fifo_put(&socket->recv_q, net_buf);
 }
 
+// Callback for incoming connections.
+static void sock_accepted_cb(struct net_context *new_ctx, struct sockaddr *addr, socklen_t addrlen, int status, void *user_data) {
+    socket_obj_t *socket = (socket_obj_t*)user_data;
+    DEBUG_printf("accept cb: context: %p, status: %d, new ctx: %p\n", socket->ctx, status, new_ctx);
+    DEBUG_printf("new_ctx ref_cnt: %d\n", new_ctx->refcount);
+
+    k_fifo_put(&socket->accept_q, new_ctx);
+}
+
 socket_obj_t *socket_new(void) {
     socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
     socket->base.type = (mp_obj_t)&socket_type;
@@ -255,9 +267,32 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
 
     mp_int_t backlog = mp_obj_get_int(backlog_in);
     RAISE_ERRNO(net_context_listen(socket->ctx, backlog));
+    RAISE_ERRNO(net_context_accept(socket->ctx, sock_accepted_cb, K_NO_WAIT, socket));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+
+STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
+    socket_obj_t *socket = self_in;
+    socket_check_closed(socket);
+
+    struct net_context *ctx = k_fifo_get(&socket->accept_q, K_FOREVER);
+    // Was overwritten by fifo
+    ctx->refcount = 1;
+
+    socket_obj_t *socket2 = socket_new();
+    socket2->ctx = ctx;
+    DEBUG_printf("Setting recv cb after accept()\n");
+    RAISE_ERRNO(net_context_recv(ctx, sock_received_cb, K_NO_WAIT, socket2));
+
+    mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
+    client->items[0] = MP_OBJ_FROM_PTR(socket2);
+    // TODO
+    client->items[1] = mp_const_none;
+
+    return MP_OBJ_FROM_PTR(client);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
 STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     socket_obj_t *socket = self_in;
@@ -384,6 +419,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&socket_bind_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&socket_connect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&socket_listen_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_accept), (mp_obj_t)&socket_accept_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
 };
