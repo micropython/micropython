@@ -224,8 +224,13 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     parse_inet_addr(socket, addr_in, &sockaddr);
 
     RAISE_ERRNO(net_context_bind(socket->ctx, &sockaddr, sizeof(sockaddr)));
-    DEBUG_printf("Setting recv cb after bind\n");
-    RAISE_ERRNO(net_context_recv(socket->ctx, sock_received_cb, K_NO_WAIT, socket));
+    // For DGRAM socket, we expect to receive packets after call to bind(),
+    // but for STREAM socket, next expected operation is listen(), which
+    // doesn't work if recv callback is set.
+    if (net_context_get_type(socket->ctx) == SOCK_DGRAM) {
+        DEBUG_printf("Setting recv cb after bind\n");
+        RAISE_ERRNO(net_context_recv(socket->ctx, sock_received_cb, K_NO_WAIT, socket));
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
