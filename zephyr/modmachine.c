@@ -32,6 +32,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
@@ -56,6 +57,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
 
     // reset causes
     /*{ MP_ROM_QSTR(MP_QSTR_PWRON_RESET), MP_ROM_INT(REASON_DEFAULT_RST) },*/
