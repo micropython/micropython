@@ -41,18 +41,6 @@ Functions
 
    Create a new socket using the given address family, socket type and protocol number.
 
-    .. only:: port_wipy
-
-        .. note::
-
-           SSL sockets need to be created the following way before wrapping them with 
-           ``ssl.wrap_socket``::
-
-              import socket
-              import ssl
-              s = socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SEC)
-              ss = ssl.wrap_socket(s)
-
 .. function:: socket.getaddrinfo(host, port)
 
    Translate the host/port argument into a sequence of 5-tuples that contain all the 

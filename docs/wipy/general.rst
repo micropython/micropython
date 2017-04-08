@@ -239,3 +239,17 @@ Additional Pin methods:
 
    Returns a list of the alternate functions supported by the pin. List items are
    a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
+
+Known issues
+------------
+
+Incompatible way to create SSL sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SSL sockets need to be created the following way before wrapping them with.
+``ssl.wrap_socket``::
+
+  import socket
+  import ssl
+  s = socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SEC)
+  ss = ssl.wrap_socket(s)
