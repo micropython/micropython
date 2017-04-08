@@ -253,3 +253,23 @@ SSL sockets need to be created the following way before wrapping them with.
   import ssl
   s = socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SEC)
   ss = ssl.wrap_socket(s)
+
+Incompatibilities in uhashlib module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Due to hardware implementation details of the WiPy, data must be buffered before being
+digested, which would make it impossible to calculate the hash of big blocks of data that
+do not fit in RAM. In this case, since most likely the total size of the data is known
+in advance, the size can be passed to the constructor and hence the HASH hardware engine
+of the WiPy can be properly initialized without needing buffering. If ``block_size`` is
+to be given, an initial chunk of ``data`` must be passed as well. **When using this extension,
+care must be taken to make sure that the length of all intermediate chunks (including the
+initial one) is a multiple of 4 bytes.** The last chunk may be of any length.
+
+Example::
+
+   hash = uhashlib.sha1('abcd1234', 1001)    # length of the initial piece is multiple of 4 bytes
+   hash.update('1234')                       # also multiple of 4 bytes
+   ...
+   hash.update('12345')                      # last chunk may be of any length
+   hash.digest()
