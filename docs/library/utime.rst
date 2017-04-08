@@ -55,20 +55,12 @@ Functions
    which expresses a time as per localtime. It returns an integer which is
    the number of seconds since Jan 1, 2000.
 
-.. only:: port_unix or port_pyboard or port_esp8266
+.. function:: sleep(seconds)
 
-    .. function:: sleep(seconds)
-
-       Sleep for the given number of seconds.  Seconds can be a floating-point number to
-       sleep for a fractional number of seconds. Note that other MicroPython ports may
-       not accept floating-point argument, for compatibility with them use ``sleep_ms()``
-       and ``sleep_us()`` functions.
-
-.. only:: port_wipy
-
-    .. function:: sleep(seconds)
-
-       Sleep for the given number of seconds.
+   Sleep for the given number of seconds. Some boards may accept `seconds` as a
+   floating-point number to sleep for a fractional number of seconds. Note that
+   other boards may not accept a floating-point argument, for compatibility with
+   them use ``sleep_ms()`` and ``sleep_us()`` functions.
 
 .. function:: sleep_ms(ms)
 
