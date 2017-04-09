@@ -511,7 +511,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mode),    (mp_obj_t)&pin_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pull),    (mp_obj_t)&pin_pull_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_af),      (mp_obj_t)&pin_af_obj },
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_irq),     (mp_obj_t)&pin_irq_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),     (mp_obj_t)&pin_irq_obj },
 
     // class methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_mapper),  (mp_obj_t)&pin_mapper_obj },
