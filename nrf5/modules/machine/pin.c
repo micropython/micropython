@@ -478,6 +478,24 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
+STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT,  {.u_int = HAL_GPIO_POLARITY_EVENT_TOGGLE} },
+        { MP_QSTR_wake,    MP_ARG_BOOL, {.u_bool = false} },
+    };
+    pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    (void)self;
+
+    // return the irq object
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
+
+
 STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pin_init_obj },
@@ -493,6 +511,7 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mode),    (mp_obj_t)&pin_mode_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pull),    (mp_obj_t)&pin_pull_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_af),      (mp_obj_t)&pin_af_obj },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_irq),     (mp_obj_t)&pin_irq_obj },
 
     // class methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_mapper),  (mp_obj_t)&pin_mapper_obj },
