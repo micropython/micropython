@@ -62,7 +62,6 @@ INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/display
 INC += -I./modules/machine
-INC += -I./modules/network
 INC += -I./modules/ubluepy
 INC += -I../lib/mp-readline
 
@@ -148,8 +147,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/pwm.c \
 	machine/led.c \
 	machine/temp.c \
-	usocket/modusocket.c \
-	network/modnetwork.c \
 	uos/moduos.c \
 	utime/modutime.c \
 	pyb/modpyb.c \

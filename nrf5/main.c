@@ -41,7 +41,6 @@
 #include "readline.h"
 #include "gccollect.h"
 #include "modmachine.h"
-#include "modnetwork.h"
 #include "led.h"
 #include "uart.h"
 #include "nrf.h"
@@ -173,10 +172,6 @@ int main(int argc, char **argv) {
         }
         no_mem_for_sd:;
     }
-#endif
-
-#if MICROPY_PY_NETWORK
-    mod_network_init();
 #endif
 
 #if MICROPY_HW_LED_TRICOLOR

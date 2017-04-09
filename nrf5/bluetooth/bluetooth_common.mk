@@ -16,8 +16,6 @@ else ifeq ($(SD), s132)
 	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
 	CFLAGS += -DBLUETOOTH_SD=132
 	SOFTDEV_HEX_NAME = s132_nrf52_3.0.0_softdevice.hex
-#else ifeq ($(SD), s1xx)
-#	include bluetooth/iot_0.9.0/sdk.mk
 else
 	$(error Incorrect softdevice set flag)
 endif

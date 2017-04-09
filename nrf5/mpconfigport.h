@@ -139,14 +139,6 @@
 #define MICROPY_PY_MACHINE_RTC      (0)
 #endif
 
-#ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET          (1)
-#endif
-
-#ifndef MICROPY_PY_NETWORK
-#define MICROPY_PY_NETWORK          (1)
-#endif
-
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
@@ -184,23 +176,7 @@ extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
-
-#if MICROPY_PY_USOCKET
-#define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
-#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket },
-#else
-#define SOCKET_BUILTIN_MODULE
-#define SOCKET_BUILTIN_MODULE_WEAK_LINKS
-#endif
-
-#if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },
-#else
-#define NETWORK_BUILTIN_MODULE
-#endif
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy), (mp_obj_t)&mp_module_ubluepy },
@@ -218,8 +194,6 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
-    SOCKET_BUILTIN_MODULE \
-    NETWORK_BUILTIN_MODULE \
     UBLUEPY_MODULE \
 
 
@@ -236,7 +210,6 @@ extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&mp_module_uos }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
-    SOCKET_BUILTIN_MODULE_WEAK_LINKS \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
