@@ -43,9 +43,9 @@
 
 #define GPIO_BASE(x) ((NRF_GPIO_Type *)POINTERS[x])
 
-#define hal_gpio_pin_high(p)       (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTSET = (p)->pin_mask)
-#define hal_gpio_pin_low(p)        (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTCLR = (p)->pin_mask)
-#define hal_gpio_pin_read(p)       (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->IN >> ((p)->pin) & 1)
+#define hal_gpio_pin_high(p) (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTSET = (p)->pin_mask)
+#define hal_gpio_pin_low(p)  (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->OUTCLR = (p)->pin_mask)
+#define hal_gpio_pin_read(p) (((NRF_GPIO_Type *)(GPIO_BASE((p)->port)))->IN >> ((p)->pin) & 1)
 
 typedef enum {
     HAL_GPIO_POLARITY_EVENT_LOW_TO_HIGH = GPIOTE_CONFIG_POLARITY_LoToHi << GPIOTE_CONFIG_POLARITY_Pos,
@@ -54,13 +54,13 @@ typedef enum {
 
 typedef enum {
     HAL_GPIO_PULL_DISABLED = (GPIO_PIN_CNF_PULL_Disabled << GPIO_PIN_CNF_PULL_Pos),
-    HAL_GPIO_PULL_DOWN = (GPIO_PIN_CNF_PULL_Pulldown << GPIO_PIN_CNF_PULL_Pos),
-    HAL_GPIO_PULL_UP = (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
+    HAL_GPIO_PULL_DOWN     = (GPIO_PIN_CNF_PULL_Pulldown << GPIO_PIN_CNF_PULL_Pos),
+    HAL_GPIO_PULL_UP       = (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
 } hal_gpio_pull_t;
 
 typedef enum {
     HAL_GPIO_MODE_OUTPUT = (GPIO_PIN_CNF_DIR_Output << GPIO_PIN_CNF_DIR_Pos),
-    HAL_GPIO_MODE_INPUT = (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos),
+    HAL_GPIO_MODE_INPUT  = (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos),
 } hal_gpio_mode_t;
 
 static inline void hal_gpio_cfg_pin(uint8_t port, uint32_t pin_number, hal_gpio_mode_t mode, hal_gpio_pull_t pull) {
