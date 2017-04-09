@@ -214,6 +214,7 @@ void ble_uart_init0(void) {
     m_adv_data_uart_service.connectable     = true;
 
 #if BLUETOOTH_WEBBLUETOOTH_REPL
+    // for now point eddystone URL to https://goo.gl/x46FES => https://glennrub.github.io/webbluetooth/micropython/repl/
     static uint8_t eddystone_url_data[27] = {0x2, 0x1, 0x6,
                                              0x3, 0x3, 0xaa, 0xfe,
                                              19, 0x16, 0xaa, 0xfe, 0x10, 0xee, 0x3, 'g', 'o', 'o', '.', 'g', 'l', '/', 'x', '4', '6', 'F', 'E', 'S'};
