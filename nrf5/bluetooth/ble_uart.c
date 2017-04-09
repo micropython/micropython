@@ -214,9 +214,9 @@ void ble_uart_init0(void) {
     m_adv_data_uart_service.connectable     = true;
 
 #if BLUETOOTH_WEBBLUETOOTH_REPL
-    static uint8_t eddystone_url_data[26] = {0x2, 0x1, 0x6,
+    static uint8_t eddystone_url_data[27] = {0x2, 0x1, 0x6,
                                              0x3, 0x3, 0xaa, 0xfe,
-                                             18, 0x16, 0xaa, 0xfe, 0x10, 0xee, 0x0, 'm', 'i', 'c', 'r', 'o', 'p', 'y', 't', 'h', 'o', 'n', 0x1};
+                                             19, 0x16, 0xaa, 0xfe, 0x10, 0xee, 0x3, 'g', 'o', 'o', '.', 'g', 'l', '/', 'x', '4', '6', 'F', 'E', 'S'};
     // eddystone url adv data
     m_adv_data_eddystone_url.p_data      = eddystone_url_data;
     m_adv_data_eddystone_url.data_len    = sizeof(eddystone_url_data);
