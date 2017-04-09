@@ -60,7 +60,6 @@ INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
-INC += -I./modules/display
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I../lib/mp-readline
