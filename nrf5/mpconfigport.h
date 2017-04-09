@@ -147,60 +147,6 @@
 #define MICROPY_PY_NETWORK          (1)
 #endif
 
-
-
-#ifndef MICROPY_PY_DISPLAY
-
-#define MICROPY_PY_DISPLAY                  (0)
-#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (0)
-#define MICROPY_PY_DISPLAY_LCD_ILI9341      (0)
-#define MICROPY_PY_DISPLAY_LCD_LS0XXB7DXXX  (0)
-#define MICROPY_PY_DISPLAY_LCD_SSD1289      (0)
-#define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
-#define MICROPY_PY_DISPLAY_OLED_SSD1305     (0)
-#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (0)
-#define MICROPY_PY_DISPLAY_GRAPHICS         (0)
-
-#elif MICROPY_PY_DISPLAY
-
-// Default to include Monochrome Framebuffer
-// if display module is selected.
-#ifndef MICROPY_PY_DISPLAY_FRAMEBUFFER
-#define MICROPY_PY_DISPLAY_FRAMEBUFFER      (1)
-#endif
-
-// Default to include graphics library if
-// display modue is selected.
-#ifndef MICROPY_PY_DISPLAY_GRAPHICS
-#define MICROPY_PY_DISPLAY_GRAPHICS         (1)
-#endif
-
-#ifndef MICROPY_PY_DISPLAY_EPAPER_SLD00200P
-#define MICROPY_PY_DISPLAY_EPAPER_SLD00200P (0)
-#endif
-
-#ifndef MICROPY_PY_DISPLAY_LCD_ILI9341
-#define MICROPY_PY_DISPLAY_LCD_ILI9341      (0)
-#endif
-
-#ifndef MICROPY_PY_DISPLAY_LCD_LS0XXB7DXXX
-#define MICROPY_PY_DISPLAY_LCD_LS0XXB7DXXX  (0)
-#endif
-
-#ifndef MICROPY_PY_DISPLAY_LCD_SSD1289
-#define MICROPY_PY_DISPLAY_LCD_SSD1289      (0)
-#endif
-
-#ifndef MICROPY_PY_DISPLAY_OLED_SSD1305
-#define MICROPY_PY_DISPLAY_OLED_SSD1305     (0)
-#endif
-
-#ifndef MICROPY_PY_DISPLAY_OLED_SSD1306
-#define MICROPY_PY_DISPLAY_OLED_SSD1306     (0)
-#endif
-
-#endif // MICROPY_PY_DISPLAY
-
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
@@ -240,9 +186,6 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_lcd_mono_fb;
-extern const struct _mp_obj_module_t mp_module_display;
-extern const struct _mp_obj_module_t graphics_module;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 
 #if MICROPY_PY_USOCKET
@@ -257,24 +200,6 @@ extern const struct _mp_obj_module_t mp_module_ubluepy;
 #define NETWORK_BUILTIN_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },
 #else
 #define NETWORK_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_LCD_MONO_FB
-#define LCD_MONO_FB_MODULE                  { MP_OBJ_NEW_QSTR(MP_QSTR_lcd_mono_fb), (mp_obj_t)&mp_module_lcd_mono_fb },
-#else
-#define LCD_MONO_FB_MODULE
-#endif
-
-#if MICROPY_PY_DISPLAY
-#define DISPLAY_MODULE                      { MP_OBJ_NEW_QSTR(MP_QSTR_display), (mp_obj_t)&mp_module_display },
-#else
-#define DISPLAY_MODULE
-#endif
-
-#if MICROPY_PY_DISPLAY_GRAPHICS
-#define GRAPHICS_MODULE                     { MP_OBJ_NEW_QSTR(MP_QSTR_draw), (mp_obj_t)&graphics_module },
-#else
-#define GRAPHICS_MODULE
 #endif
 
 #if MICROPY_PY_UBLUEPY
@@ -295,9 +220,6 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
-    LCD_MONO_FB_MODULE \
-    DISPLAY_MODULE \
-    GRAPHICS_MODULE \
     UBLUEPY_MODULE \
 
 
@@ -308,9 +230,6 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
-    LCD_MONO_FB_MODULE \
-    DISPLAY_MODULE \
-    GRAPHICS_MODULE \
 
 #endif // BLUETOOTH_SD
 

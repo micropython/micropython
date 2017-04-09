@@ -137,21 +137,6 @@ SRC_C += \
 	fatfs_port.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
-	display/moddisplay.c \
-	display/epaper_sld00200p_obj.c \
-	display/epaper_sld00200p_driver.c \
-	display/lcd_ili9341_obj.c \
-	display/lcd_ili9341_driver.c \
-	display/lcd_ls0xxb7dxxx_obj.c \
-	display/lcd_ls0xxb7dxxx_driver.c \
-	display/lcd_ssd1289_obj.c \
-	display/lcd_ssd1289_driver.c \
-	display/oled_ssd1305_obj.c \
-	display/oled_ssd1305_driver.c \
-	display/oled_ssd1306_obj.c \
-	display/oled_ssd1306_driver.c \
-	display/framebuffer.c \
-	graphic/draw.c \
 	machine/modmachine.c \
 	machine/uart.c \
 	machine/spi.c \
