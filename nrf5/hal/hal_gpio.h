@@ -27,6 +27,8 @@
 #ifndef HAL_GPIO_H__
 #define HAL_GPIO_H__
 
+#include "nrf.h"
+
 #if NRF51
   #define POINTERS (const uint32_t[]){NRF_GPIO_BASE}
 #endif
