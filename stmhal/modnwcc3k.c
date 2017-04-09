@@ -37,7 +37,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -477,11 +477,11 @@ STATIC mp_obj_t cc3k_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get ssid
-    mp_uint_t ssid_len;
+    size_t ssid_len;
     const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
 
     // get key and sec
-    mp_uint_t key_len = 0;
+    size_t key_len = 0;
     const char *key = NULL;
     mp_uint_t sec = WLAN_SEC_UNSEC;
     if (args[1].u_obj != mp_const_none) {

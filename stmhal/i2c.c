@@ -37,14 +37,6 @@
 #include "dma.h"
 #include "i2c.h"
 
-#if !defined(MICROPY_HW_I2C_BAUDRATE_DEFAULT)
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 400000
-#endif
-
-#if !defined(MICROPY_HW_I2C_BAUDRATE_MAX)
-#define MICROPY_HW_I2C_BAUDRATE_MAX 400000
-#endif
-
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
 ///
@@ -134,9 +126,41 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #endif
 };
 
-#if defined(MICROPY_HW_I2C_BAUDRATE_TIMING)
+#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+
 // The STM32F0, F3, F7 and L4 use a TIMINGR register rather than ClockSpeed and
 // DutyCycle.
+
+#if defined(STM32F746xx)
+
+// The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
+// defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
+#define MICROPY_HW_I2C_BAUDRATE_TIMING {{100000, 0x40912732}}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (100000)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (100000)
+
+#elif defined(STM32F767xx) || defined(STM32F769xx)
+
+// These timing values are for f_I2CCLK=54MHz and are only approximate
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {100000, 0xb0420f13}, \
+        {400000, 0x70330309}, \
+        {1000000, 0x50100103}, \
+    }
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (1000000)
+
+#elif defined(MCU_SERIES_L4)
+
+// The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
+// defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
+#define MICROPY_HW_I2C_BAUDRATE_TIMING {{100000, 0x90112626}}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (100000)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (100000)
+
+#else
+#error "no I2C timings for this MCU"
+#endif
 
 STATIC const struct {
     uint32_t    baudrate;
@@ -167,6 +191,9 @@ uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
 
 #else
 
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (400000)
+
 STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
     init->ClockSpeed = baudrate;
     init->DutyCycle = I2C_DUTYCYCLE_16_9;
@@ -176,7 +203,7 @@ uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
     return init->ClockSpeed;
 }
 
-#endif // MICROPY_HW_I2C_BAUDRATE_TIMING
+#endif
 
 void i2c_init0(void) {
     // reset the I2C1 handles
@@ -733,12 +760,14 @@ STATIC mp_obj_t pyb_i2c_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         if (!use_dma) {
             status = HAL_I2C_Master_Transmit(self->i2c, i2c_addr, bufinfo.buf, bufinfo.len, args[2].u_int);
         } else {
+            MP_HAL_CLEAN_DCACHE(bufinfo.buf, bufinfo.len);
             status = HAL_I2C_Master_Transmit_DMA(self->i2c, i2c_addr, bufinfo.buf, bufinfo.len);
         }
     } else {
         if (!use_dma) {
             status = HAL_I2C_Slave_Transmit(self->i2c, bufinfo.buf, bufinfo.len, args[2].u_int);
         } else {
+            MP_HAL_CLEAN_DCACHE(bufinfo.buf, bufinfo.len);
             status = HAL_I2C_Slave_Transmit_DMA(self->i2c, bufinfo.buf, bufinfo.len);
         }
     }
@@ -807,12 +836,14 @@ STATIC mp_obj_t pyb_i2c_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
         if (!use_dma) {
             status = HAL_I2C_Master_Receive(self->i2c, i2c_addr, (uint8_t*)vstr.buf, vstr.len, args[2].u_int);
         } else {
+            MP_HAL_CLEANINVALIDATE_DCACHE(vstr.buf, vstr.len);
             status = HAL_I2C_Master_Receive_DMA(self->i2c, i2c_addr, (uint8_t*)vstr.buf, vstr.len);
         }
     } else {
         if (!use_dma) {
             status = HAL_I2C_Slave_Receive(self->i2c, (uint8_t*)vstr.buf, vstr.len, args[2].u_int);
         } else {
+            MP_HAL_CLEANINVALIDATE_DCACHE(vstr.buf, vstr.len);
             status = HAL_I2C_Slave_Receive_DMA(self->i2c, (uint8_t*)vstr.buf, vstr.len);
         }
     }
@@ -893,6 +924,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
         dma_init(&rx_dma, self->rx_dma_descr, self->i2c);
         self->i2c->hdmatx = NULL;
         self->i2c->hdmarx = &rx_dma;
+        MP_HAL_CLEANINVALIDATE_DCACHE(vstr.buf, vstr.len);
         status = HAL_I2C_Mem_Read_DMA(self->i2c, i2c_addr, mem_addr, mem_addr_size, (uint8_t*)vstr.buf, vstr.len);
         if (status == HAL_OK) {
             status = i2c_wait_dma_finished(self->i2c, args[3].u_int);
@@ -961,6 +993,7 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         dma_init(&tx_dma, self->tx_dma_descr, self->i2c);
         self->i2c->hdmatx = &tx_dma;
         self->i2c->hdmarx = NULL;
+        MP_HAL_CLEAN_DCACHE(bufinfo.buf, bufinfo.len);
         status = HAL_I2C_Mem_Write_DMA(self->i2c, i2c_addr, mem_addr, mem_addr_size, bufinfo.buf, bufinfo.len);
         if (status == HAL_OK) {
             status = i2c_wait_dma_finished(self->i2c, args[3].u_int);

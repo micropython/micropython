@@ -97,7 +97,7 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *dest) {
 #if MICROPY_PY_SYS
     // extract the list of paths
-    mp_uint_t path_num;
+    size_t path_num;
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
 
@@ -111,7 +111,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
         // go through each path looking for a directory or file
         for (mp_uint_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
-            mp_uint_t p_len;
+            size_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
             if (p_len > 0) {
                 vstr_add_strn(dest, p, p_len);
@@ -265,7 +265,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_uint_t mod_len;
+    size_t mod_len;
     const char *mod_str = mp_obj_str_get_data(module_name, &mod_len);
 
     if (level != 0) {
@@ -296,7 +296,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         DEBUG_printf("\n");
 #endif
 
-        mp_uint_t this_name_l;
+        size_t this_name_l;
         const char *this_name = mp_obj_str_get_data(this_name_q, &this_name_l);
 
         const char *p = this_name + this_name_l;
@@ -341,7 +341,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
         DEBUG_printf("Resolved base name for relative import: '%s'\n", qstr_str(new_mod_q));
         if (new_mod_q == MP_QSTR_) {
-            mp_raise_msg(&mp_type_ValueError, "cannot perform relative import");
+            mp_raise_ValueError("cannot perform relative import");
         }
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
         mod_str = new_mod;

@@ -80,7 +80,7 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
         case 1:
             if (MP_OBJ_IS_STR(args[0])) {
                 // a string, parse it
-                mp_uint_t l;
+                size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_decimal(s, l, true, true, NULL);
             } else if (MP_OBJ_IS_TYPE(args[0], &mp_type_complex)) {
@@ -117,6 +117,7 @@ STATIC mp_obj_t complex_unary_op(mp_uint_t op, mp_obj_t o_in) {
     mp_obj_complex_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->real != 0 || o->imag != 0);
+        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(o->real) ^ mp_float_hash(o->imag));
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
         default: return MP_OBJ_NULL; // op not supported

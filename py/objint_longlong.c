@@ -263,26 +263,6 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     return o;
 }
 
-#if MICROPY_PY_BUILTINS_FLOAT
-mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    int cl = fpclassify(val);
-    if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
-    } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
-    } else {
-        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
-        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
-        } else if (icl == MP_FP_CLASS_FIT_LONGINT) {
-            return mp_obj_new_int_from_ll((long long)val);
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "float too big"));
-        }
-    }
-}
-#endif
-
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow

@@ -10,7 +10,7 @@
 #include "py/mphal.h"
 #include "gccollect.h"
 #include "lib/utils/pyexec.h"
-#include "readline.h"
+#include "lib/mp-readline/readline.h"
 #include "lexermemzip.h"
 
 #include "Arduino.h"

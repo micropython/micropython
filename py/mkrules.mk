@@ -142,8 +142,15 @@ clean-prog:
 endif
 
 LIBMICROPYTHON = libmicropython.a
+
+# We can execute extra commands after library creation using
+# LIBMICROPYTHON_EXTRA_CMD. This may be needed e.g. to integrate
+# with 3rd-party projects which don't have proper dependency
+# tracking. Then LIBMICROPYTHON_EXTRA_CMD can e.g. touch some
+# other file to cause needed effect, e.g. relinking with new lib.
 lib $(LIBMICROPYTHON): $(OBJ)
 	$(AR) rcs $(LIBMICROPYTHON) $^
+	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:
 	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)

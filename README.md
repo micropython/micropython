@@ -1,8 +1,4 @@
-[![Build Status][travis-img]][travis-repo] [![Coverage Status][coveralls-img]][coveralls-repo]
-[travis-img]:  https://travis-ci.org/micropython/micropython.png?branch=master
-[travis-repo]: https://travis-ci.org/micropython/micropython
-[coveralls-img]:  https://coveralls.io/repos/micropython/micropython/badge.png?branch=master
-[coveralls-repo]: https://coveralls.io/r/micropython/micropython?branch=master
+[![Build Status](https://travis-ci.org/micropython/micropython.png?branch=master)](https://travis-ci.org/micropython/micropython) [![Coverage Status](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
 
 The MicroPython project
 =======================
@@ -38,7 +34,9 @@ Major components in this repository:
 - minimal/ -- a minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
-- docs/ -- user documentation in Sphinx reStructuredText format.
+- docs/ -- user documentation in Sphinx reStructuredText format. Rendered
+  HTML documentation is available at http://docs.micropython.org (be sure
+  to select needed board/port at the bottom left corner).
 
 Additional components:
 - bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
@@ -48,6 +46,7 @@ Additional components:
 - pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
 - cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
 - esp8266/ -- an experimental port for ESP8266 WiFi modules.
+- extmod/ -- additional (non-core) modules implemented in C.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
 

@@ -52,11 +52,6 @@
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
-// TODO These should go in i2c.c
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
-
 // SPI
 #define MICROPY_HW_SPI3_NSS         (pin_A4)
 #define MICROPY_HW_SPI3_SCK         (pin_B3)

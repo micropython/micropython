@@ -138,7 +138,8 @@ mp_obj_t mp_obj_tuple_unary_op(mp_uint_t op, mp_obj_t self_in) {
 mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_tuple_t *o = MP_OBJ_TO_PTR(lhs);
     switch (op) {
-        case MP_BINARY_OP_ADD: {
+        case MP_BINARY_OP_ADD:
+        case MP_BINARY_OP_INPLACE_ADD: {
             if (!mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(rhs)), MP_OBJ_FROM_PTR(&mp_type_tuple))) {
                 return MP_OBJ_NULL; // op not supported
             }
@@ -186,7 +187,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             return MP_OBJ_FROM_PTR(res);
         }
 #endif
-        mp_uint_t index_value = mp_get_index(self->base.type, self->len, index, false);
+        size_t index_value = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_value];
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -244,7 +245,7 @@ mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-void mp_obj_tuple_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items) {
+void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     *len = self->len;

@@ -29,6 +29,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#include "lib/timeutils/timeutils.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -37,7 +38,6 @@
 #include "pybrtc.h"
 #include "mpirq.h"
 #include "pybsleep.h"
-#include "timeutils.h"
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
@@ -196,7 +196,7 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 
     // set date and time
     mp_obj_t *items;
-    uint len;
+    size_t len;
     mp_obj_get_array(datetime, &len, &items);
 
     // verify the tuple

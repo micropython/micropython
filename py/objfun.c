@@ -220,9 +220,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
         return NULL;
     }
 
-    code_state->ip = (byte*)(ip - self->bytecode); // offset to after n_state/n_exc_stack
-    code_state->n_state = n_state;
-    mp_setup_code_state(code_state, self, n_args, n_kw, args);
+    code_state->fun_bc = self;
+    code_state->ip = 0;
+    mp_setup_code_state(code_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     code_state->old_globals = mp_globals_get();
@@ -265,9 +265,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         state_size = 0; // indicate that we allocated using alloca
     }
 
-    code_state->ip = (byte*)(ip - self->bytecode); // offset to after n_state/n_exc_stack
-    code_state->n_state = n_state;
-    mp_setup_code_state(code_state, self, n_args, n_kw, args);
+    code_state->fun_bc = self;
+    code_state->ip = 0;
+    mp_setup_code_state(code_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
     code_state->old_globals = mp_globals_get();
@@ -501,7 +501,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return mp_obj_int_get_truncated(obj);
     } else if (MP_OBJ_IS_STR(obj)) {
         // pointer to the string (it's probably constant though!)
-        mp_uint_t l;
+        size_t l;
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(obj);
@@ -513,7 +513,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 #endif
         } else if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
-            mp_uint_t len;
+            size_t len;
             mp_obj_t *items;
             mp_obj_get_array(obj, &len, &items);
             return (mp_uint_t)items;

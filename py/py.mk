@@ -16,9 +16,6 @@ endif
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
-INC += -I../lib
-INC += -I../lib/netutils
-
 # this sets the config file for FatFs
 CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
 
@@ -143,6 +140,7 @@ PY_O_BASENAME = \
 	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
+	scheduler.o \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \

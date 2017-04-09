@@ -56,7 +56,7 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
                 return args[0];
             } else if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
                 // a string, parse it
-                mp_uint_t l;
+                size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
                 return mp_parse_num_integer(s, l, 0, NULL);
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -72,7 +72,7 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
         default: {
             // should be a string, parse it
             // TODO proper error checking of argument types
-            mp_uint_t l;
+            size_t l;
             const char *s = mp_obj_str_get_data(args[0], &l);
             return mp_parse_num_integer(s, l, mp_obj_get_int(args[1]), NULL);
         }
@@ -80,7 +80,14 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
+
+typedef enum {
+    MP_FP_CLASS_FIT_SMALLINT,
+    MP_FP_CLASS_FIT_LONGINT,
+    MP_FP_CLASS_OVERFLOW
+} mp_fp_as_int_class_t;
+
+STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
     union {
         mp_float_t f;
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
@@ -103,7 +110,12 @@ mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         e |= u.i[MP_ENDIANNESS_BIG] != 0;
 #endif
-        e += ((1 << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
+        if ((e & ~(1 << MP_FLOAT_SIGN_SHIFT_I32)) == 0) {
+            // handle case of -0 (when sign is set but rest of bits are zero)
+            e = 0;
+        } else {
+            e += ((1 << MP_FLOAT_EXP_BITS) - 1) << MP_FLOAT_EXP_SHIFT_I32;
+        }
     } else {
         e &= ~((1 << MP_FLOAT_EXP_SHIFT_I32) - 1);
     }
@@ -125,6 +137,35 @@ mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 }
 #undef MP_FLOAT_SIGN_SHIFT_I32
 #undef MP_FLOAT_EXP_SHIFT_I32
+
+mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
+    int cl = fpclassify(val);
+    if (cl == FP_INFINITE) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "can't convert inf to int"));
+    } else if (cl == FP_NAN) {
+        mp_raise_ValueError("can't convert NaN to int");
+    } else {
+        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
+        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
+            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
+        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+        } else {
+            mp_obj_int_t *o = mp_obj_int_new_mpz();
+            mpz_set_from_float(&o->mpz, val);
+            return MP_OBJ_FROM_PTR(o);
+        }
+        #else
+        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+        } else if (icl == MP_FP_CLASS_FIT_LONGINT) {
+            return mp_obj_new_int_from_ll((long long)val);
+        #endif
+        } else {
+            mp_raise_ValueError("float too big");
+        }
+        #endif
+    }
+}
+
 #endif
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
@@ -317,24 +358,6 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
-
-#if MICROPY_PY_BUILTINS_FLOAT
-mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    int cl = fpclassify(val);
-    if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
-    } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
-    } else {
-        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
-        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "float too big"));
-        }
-    }
-}
-#endif
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {

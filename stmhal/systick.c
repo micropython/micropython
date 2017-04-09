@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "irq.h"
 #include "systick.h"
@@ -50,23 +51,17 @@ void HAL_Delay(uint32_t Delay) {
 }
 
 // Core delay function that does an efficient sleep and may switch thread context.
-// Note: Upon entering this function we may or may not have the GIL.
+// If IRQs are enabled then we must have the GIL.
 void mp_hal_delay_ms(mp_uint_t Delay) {
     if (query_irq() == IRQ_STATE_ENABLED) {
         // IRQs enabled, so can use systick counter to do the delay
         uint32_t start = uwTick;
         // Wraparound of tick is taken care of by 2's complement arithmetic.
         while (uwTick - start < Delay) {
-            // Enter sleep mode, waiting for (at least) the SysTick interrupt.
-            #if MICROPY_PY_THREAD
-            if (pyb_thread_enabled) {
-                pyb_thread_yield();
-            } else {
-                __WFI();
-            }
-            #else
-            __WFI();
-            #endif
+            // This macro will execute the necessary idle behaviour.  It may
+            // raise an exception, switch threads or enter sleep mode (waiting for
+            // (at least) the SysTick interrupt).
+            MICROPY_EVENT_POLL_HOOK
         }
     } else {
         // IRQs disabled, so need to use a busy loop for the delay.

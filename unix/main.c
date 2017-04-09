@@ -437,7 +437,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         path = "~/.micropython/lib:/usr/lib/micropython";
         #endif
     }
-    mp_uint_t path_num = 1; // [0] is for current dir (or base dir of the script)
+    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
     if (*path == ':') {
         path_num++;
     }

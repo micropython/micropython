@@ -34,8 +34,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/smallint.h"
+#include "lib/timeutils/timeutils.h"
 #include "modmachine.h"
-#include "timeutils.h"
 #include "user_interface.h"
 #include "extmod/utime_mphal.h"
 
@@ -84,7 +84,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 /// which expresses a time as per localtime. It returns an integer which is
 /// the number of seconds since Jan 1, 2000.
 STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *elem;
     mp_obj_get_array(tuple, &len, &elem);
 

@@ -15,7 +15,7 @@ INC += -I$(BUILD)
 INC += -I../tools/tinytest/
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
 	 -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
@@ -47,7 +47,7 @@ SRC_TEST_C = \
 LIB_SRC_C = $(addprefix lib/,\
 	libm/math.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \

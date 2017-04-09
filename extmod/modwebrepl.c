@@ -308,7 +308,7 @@ STATIC mp_obj_t webrepl_close(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_close_obj, webrepl_close);
 
 STATIC mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
-    mp_uint_t len;
+    size_t len;
     const char *passwd = mp_obj_str_get_data(passwd_in, &len);
     if (len > sizeof(webrepl_passwd) - 1) {
         mp_raise_ValueError("");

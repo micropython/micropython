@@ -36,7 +36,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 
 #include "lwip/init.h"
 #include "lwip/timers.h"
@@ -1264,8 +1264,7 @@ STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) 
 
 // lwip.getaddrinfo
 STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
-    mp_uint_t hlen;
-    const char *host = mp_obj_str_get_data(host_in, &hlen);
+    const char *host = mp_obj_str_get_str(host_in);
     mp_int_t port = mp_obj_get_int(port_in);
 
     getaddrinfo_state_t state;

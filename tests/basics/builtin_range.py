@@ -34,6 +34,12 @@ print(range(1, 4)[1:])
 print(range(1, 4)[:-1])
 print(range(7, -2, -4)[:])
 
+# zero step
+try:
+    range(1, 2, 0)
+except ValueError:
+    print("ValueError")
+
 # bad unary op
 try:
     -range(1)

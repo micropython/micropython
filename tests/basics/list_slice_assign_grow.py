@@ -26,3 +26,8 @@ print(l)
 l = list(x)
 l[100:100] = [10, 20, 30, 40]
 print(l)
+
+# growing by using itself on RHS
+l = list(range(10))
+l[4:] = l
+print(l)

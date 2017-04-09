@@ -179,3 +179,97 @@ Details on sleep modes
 * ``machine.sleep()``: 950uA (in WLAN STA mode). Wake sources are ``Pin``, ``RTC``
   and ``WLAN``
 * ``machine.deepsleep()``: ~350uA. Wake sources are ``Pin`` and ``RTC``.
+
+Additional details for machine.Pin
+----------------------------------
+
+On the WiPy board the pins are identified by their string id::
+
+    from machine import Pin
+    g = machine.Pin('GP9', mode=Pin.OUT, pull=None, drive=Pin.MED_POWER, alt=-1)
+
+You can also configure the Pin to generate interrupts. For instance::
+
+    from machine import Pin
+
+    def pincb(pin):
+        print(pin.id())
+
+    pin_int = Pin('GP10', mode=Pin.IN, pull=Pin.PULL_DOWN)
+    pin_int.irq(trigger=Pin.IRQ_RISING, handler=pincb)
+    # the callback can be triggered manually
+    pin_int.irq()()
+    # to disable the callback
+    pin_int.irq().disable()
+
+Now every time a falling edge is seen on the gpio pin, the callback will be
+executed. Caution: mechanical push buttons have "bounce" and pushing or
+releasing a switch will often generate multiple edges.
+See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
+explanation, along with various techniques for debouncing.
+
+All pin objects go through the pin mapper to come up with one of the
+gpio pins.
+
+For the ``drive`` parameter the strengths are:
+
+  - ``Pin.LOW_POWER`` - 2mA drive capability.
+  - ``Pin.MED_POWER`` - 4mA drive capability.
+  - ``Pin.HIGH_POWER`` - 6mA drive capability.
+
+For the ``alt`` parameter please refer to the pinout and alternate functions
+table at <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_
+for the specific alternate functions that each pin supports.
+
+For interrupts, the ``priority`` can take values in the range 1-7.  And the
+``wake`` parameter has the following properties:
+
+  - If ``wake_from=machine.Sleep.ACTIVE`` any pin can wake the board.
+  - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
+    ``GP11``, GP17`` or ``GP24`` can wake the board. Note that only 1
+    of this pins can be enabled as a wake source at the same time, so, only
+    the last enabled pin as a ``machine.Sleep.SUSPENDED`` wake source will have effect.
+  - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
+    ``GP11``, ``GP17`` and ``GP24`` can wake the board. In this case all of the
+    6 pins can be enabled as a ``machine.Sleep.HIBERNATE`` wake source at the same time.
+
+Additional Pin methods:
+
+.. method:: machine.Pin.alt_list()
+
+   Returns a list of the alternate functions supported by the pin. List items are
+   a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
+
+Known issues
+------------
+
+Incompatible way to create SSL sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SSL sockets need to be created the following way before wrapping them with.
+``ssl.wrap_socket``::
+
+  import socket
+  import ssl
+  s = socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SEC)
+  ss = ssl.wrap_socket(s)
+
+Incompatibilities in uhashlib module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Due to hardware implementation details of the WiPy, data must be buffered before being
+digested, which would make it impossible to calculate the hash of big blocks of data that
+do not fit in RAM. In this case, since most likely the total size of the data is known
+in advance, the size can be passed to the constructor and hence the HASH hardware engine
+of the WiPy can be properly initialized without needing buffering. If ``block_size`` is
+to be given, an initial chunk of ``data`` must be passed as well. **When using this extension,
+care must be taken to make sure that the length of all intermediate chunks (including the
+initial one) is a multiple of 4 bytes.** The last chunk may be of any length.
+
+Example::
+
+   hash = uhashlib.sha1('abcd1234', 1001)    # length of the initial piece is multiple of 4 bytes
+   hash.update('1234')                       # also multiple of 4 bytes
+   ...
+   hash.update('12345')                      # last chunk may be of any length
+   hash.digest()

@@ -201,6 +201,7 @@ def run_tests(pyb, tests, args):
     skip_int_big = False
     skip_set_type = False
     skip_async = False
+    skip_const = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
     native = run_micropython(pyb, args, 'feature_check/native_check.py')
@@ -221,6 +222,11 @@ def run_tests(pyb, tests, args):
     native = run_micropython(pyb, args, 'feature_check/async_check.py')
     if native == b'CRASH':
         skip_async = True
+
+    # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
+    native = run_micropython(pyb, args, 'feature_check/const.py')
+    if native == b'CRASH':
+        skip_const = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
     t = run_micropython(pyb, args, 'feature_check/repl_emacs_check.py')
@@ -243,6 +249,7 @@ def run_tests(pyb, tests, args):
 
     if not has_complex:
         skip_tests.add('float/complex1.py')
+        skip_tests.add('float/complex1_intbig.py')
         skip_tests.add('float/int_big_float.py')
         skip_tests.add('float/true_value.py')
         skip_tests.add('float/types.py')
@@ -279,11 +286,14 @@ def run_tests(pyb, tests, args):
             skip_tests.add('extmod/urandom_basic.py')       # requires urandom
             skip_tests.add('extmod/urandom_extra.py')       # requires urandom
         elif args.target == 'esp8266':
-            skip_tests.add('float/float2int.py')            # requires at least fp32, there's float2int_fp30.py instead
+            skip_tests.add('float/float2int_intbig.py')     # requires at least fp32, there's float2int_fp30_intbig.py instead
             skip_tests.add('float/string_format.py')        # requires at least fp32, there's string_format_fp30.py instead
             skip_tests.add('float/bytes_construct.py')      # requires fp32
             skip_tests.add('float/bytearray_construct.py')  # requires fp32
             skip_tests.add('misc/rge_sm.py')                # too large
+        elif args.target == 'minimal':
+            skip_tests.add('misc/rge_sm.py')                # too large
+            skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -319,6 +329,7 @@ def run_tests(pyb, tests, args):
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_iter.py') # requires generators
+        skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
@@ -329,6 +340,7 @@ def run_tests(pyb, tests, args):
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
         is_async = test_name.startswith("async_")
+        is_const = test_name.startswith("const")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
@@ -336,6 +348,7 @@ def run_tests(pyb, tests, args):
         skip_it |= skip_int_big and is_int_big
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
+        skip_it |= skip_const and is_const
 
         if skip_it:
             print("skip ", test_file)
@@ -420,7 +433,7 @@ def main():
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal')
     if args.target in EXTERNAL_TARGETS:
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
@@ -435,7 +448,7 @@ def main():
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            elif args.target == 'esp8266':
+            elif args.target in ('esp8266', 'minimal'):
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests
@@ -455,7 +468,10 @@ def main():
         # clear search path to make sure tests use only builtin modules
         os.environ['MICROPYPATH'] = ''
 
-    if not run_tests(pyb, tests, args):
+    res = run_tests(pyb, tests, args)
+    if pyb:
+        pyb.close()
+    if not res:
         sys.exit(1)
 
 if __name__ == "__main__":

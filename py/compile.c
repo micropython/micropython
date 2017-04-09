@@ -456,8 +456,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                     break;
             }
         } else {
-            compile_syntax_error(comp, pn, "can't assign to literal");
-            return;
+            goto cannot_assign;
         }
     } else {
         // pn must be a struct
@@ -472,7 +471,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
             case PN_exprlist:
                 // lhs is a tuple
                 if (assign_kind != ASSIGN_STORE) {
-                    goto bad_aug;
+                    goto cannot_assign;
                 }
                 c_assign_tuple(comp, MP_PARSE_NODE_NULL, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
                 break;
@@ -485,7 +484,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                 } else {
                     assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
                     if (assign_kind != ASSIGN_STORE) {
-                        goto bad_aug;
+                        goto cannot_assign;
                     }
                     pns = (mp_parse_node_struct_t*)pns->nodes[0];
                     goto testlist_comp;
@@ -495,7 +494,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
             case PN_atom_bracket:
                 // lhs is something in brackets
                 if (assign_kind != ASSIGN_STORE) {
-                    goto bad_aug;
+                    goto cannot_assign;
                 }
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty list, assignment allowed
@@ -543,10 +542,6 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
 
     cannot_assign:
     compile_syntax_error(comp, pn, "can't assign to expression");
-    return;
-
-    bad_aug:
-    compile_syntax_error(comp, pn, "illegal expression for augmented assignment");
 }
 
 // stuff for lambda and comprehensions and generators:
@@ -1449,8 +1444,9 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     pn_range_start = args[0];
                     pn_range_end = args[1];
                     pn_range_step = args[2];
-                    // We need to know sign of step. This is possible only if it's constant
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_range_step)) {
+                    // the step must be a non-zero constant integer to do the optimisation
+                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_range_step)
+                        || MP_PARSE_NODE_LEAF_SMALL_INT(pn_range_step) == 0) {
                         optimize = false;
                     }
                 }
@@ -1529,7 +1525,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
         if (MP_PARSE_NODE_IS_NULL(pns_except->nodes[0])) {
             // this is a catch all exception handler
             if (i + 1 != n_except) {
-                compile_syntax_error(comp, pn_excepts[i], "default 'except:' must be last");
+                compile_syntax_error(comp, pn_excepts[i], "default 'except' must be last");
                 compile_decrease_except_level(comp);
                 return;
             }
@@ -2190,9 +2186,10 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         compile_load_id(comp, MP_QSTR___class__);
         // look for first argument to function (assumes it's "self")
         for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
-            if (comp->scope_cur->id_info[i].flags & ID_FLAG_IS_PARAM) {
+            id_info_t *id = &comp->scope_cur->id_info[i];
+            if (id->flags & ID_FLAG_IS_PARAM) {
                 // first argument found; load it and call super
-                EMIT_LOAD_FAST(MP_QSTR_, comp->scope_cur->id_info[i].local_num);
+                compile_load_id(comp, id->qst);
                 EMIT_ARG(call_function, 2, 0, 0);
                 return;
             }
@@ -2437,13 +2434,21 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     compile_node(comp, pn_i);
                     if (is_dict) {
                         if (!is_key_value) {
-                            compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting key:value for dictionary");
+                            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, "invalid syntax");
+                            } else {
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting key:value for dict");
+                            }
                             return;
                         }
                         EMIT(store_map);
                     } else {
                         if (is_key_value) {
-                            compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting just a value for set");
+                            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, "invalid syntax");
+                            } else {
+                                compile_syntax_error(comp, (mp_parse_node_t)pns, "expecting just a value for set");
+                            }
                             return;
                         }
                     }
@@ -3005,6 +3010,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // There are 4 slots on the stack for the iterator, and the first one is
         // NULL to indicate that the second one points to the iterator object.
         if (scope->kind == SCOPE_GEN_EXPR) {
+            // TODO static assert that MP_OBJ_ITER_BUF_NSLOTS == 4
             EMIT(load_null);
             compile_load_id(comp, qstr_arg);
             EMIT(load_null);

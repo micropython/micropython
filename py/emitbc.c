@@ -735,7 +735,7 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
             // need to pop the iterator if we are breaking out of a for loop
             emit_write_bytecode_byte(emit, MP_BC_POP_TOP);
             // also pop the iter_buf
-            for (size_t i = 0; i < sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t) - 1; ++i) {
+            for (size_t i = 0; i < MP_OBJ_ITER_BUF_NSLOTS - 1; ++i) {
                 emit_write_bytecode_byte(emit, MP_BC_POP_TOP);
             }
         }
@@ -778,7 +778,7 @@ void mp_emit_bc_end_finally(emit_t *emit) {
 }
 
 void mp_emit_bc_get_iter(emit_t *emit, bool use_stack) {
-    emit_bc_pre(emit, use_stack ? sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t) - 1 : 0);
+    emit_bc_pre(emit, use_stack ? MP_OBJ_ITER_BUF_NSLOTS - 1 : 0);
     emit_write_bytecode_byte(emit, use_stack ? MP_BC_GET_ITER_STACK : MP_BC_GET_ITER);
 }
 
@@ -788,7 +788,7 @@ void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label) {
 }
 
 void mp_emit_bc_for_iter_end(emit_t *emit) {
-    emit_bc_pre(emit, -(sizeof(mp_obj_iter_buf_t) / sizeof(mp_obj_t)));
+    emit_bc_pre(emit, -MP_OBJ_ITER_BUF_NSLOTS);
 }
 
 void mp_emit_bc_pop_block(emit_t *emit) {

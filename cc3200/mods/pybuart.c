@@ -375,10 +375,13 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *a
         config |= UART_CONFIG_PAR_NONE;
     } else {
         uint parity = mp_obj_get_int(args[2].u_obj);
-        if (parity != UART_CONFIG_PAR_ODD && parity != UART_CONFIG_PAR_EVEN) {
+        if (parity == 0) {
+            config |= UART_CONFIG_PAR_EVEN;
+        } else if (parity == 1) {
+            config |= UART_CONFIG_PAR_ODD;
+        } else {
             goto error;
         }
-        config |= parity;
     }
     // stop bits
     config |= (args[3].u_int == 1 ? UART_CONFIG_STOP_ONE : UART_CONFIG_STOP_TWO);
@@ -388,7 +391,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *a
     uint flowcontrol = UART_FLOWCONTROL_NONE;
     if (pins_o != mp_const_none) {
         mp_obj_t *pins;
-        mp_uint_t n_pins = 2;
+        size_t n_pins = 2;
         if (pins_o == MP_OBJ_NULL) {
             // use the default pins
             pins = (mp_obj_t *)pyb_uart_def_pin[self->uart_id];
@@ -454,7 +457,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     if (args[0].u_obj == MP_OBJ_NULL) {
         if (args[5].u_obj != MP_OBJ_NULL) {
             mp_obj_t *pins;
-            mp_uint_t n_pins = 2;
+            size_t n_pins = 2;
             mp_obj_get_array(args[5].u_obj, &n_pins, &pins);
             // check the Tx pin (or the Rx if Tx is None)
             if (pins[0] == mp_const_none) {
@@ -577,8 +580,6 @@ STATIC const mp_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),       (mp_obj_t)&mp_stream_write_obj },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_EVEN),        MP_OBJ_NEW_SMALL_INT(UART_CONFIG_PAR_EVEN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ODD),         MP_OBJ_NEW_SMALL_INT(UART_CONFIG_PAR_ODD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX_ANY),      MP_OBJ_NEW_SMALL_INT(UART_TRIGGER_RX_ANY) },
 };
 

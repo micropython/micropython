@@ -631,8 +631,8 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_uint_t len;
-    mp_uint_t rtr_len;
+    size_t len;
+    size_t rtr_len;
     mp_uint_t rtr_masks[4] = {0, 0, 0, 0};
     mp_obj_t *rtr_flags;
     mp_obj_t *params;
@@ -865,6 +865,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
     }
 
     if (callback != mp_const_none) {
+        mp_sched_lock();
         gc_lock();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
@@ -877,6 +878,7 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
         }
         gc_unlock();
+        mp_sched_unlock();
     }
 }
 

@@ -217,6 +217,9 @@ extern const struct _mp_obj_module_t mp_module_jni;
 
 // type definitions for the specific machine
 
+// For size_t and ssize_t
+#include <unistd.h>
+
 // assume that if we already defined the obj repr then we also defined types
 #ifndef MICROPY_OBJ_REPR
 #ifdef __LP64__
@@ -230,8 +233,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 #endif
 
-#define BYTES_PER_WORD sizeof(mp_int_t)
-
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;
@@ -239,8 +240,8 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
-void mp_unix_free_exec(void *ptr, mp_uint_t size);
+void mp_unix_alloc_exec(size_t min_size, void** ptr, size_t *size);
+void mp_unix_free_exec(void *ptr, size_t size);
 void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
@@ -253,7 +254,6 @@ void mp_unix_mark_exec(void);
 #if MICROPY_PY_OS_DUPTERM
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #else
-#include <unistd.h>
 #define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
 #endif
 

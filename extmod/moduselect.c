@@ -113,7 +113,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
 /// \function select(rlist, wlist, xlist[, timeout])
 STATIC mp_obj_t select_select(uint n_args, const mp_obj_t *args) {
     // get array data from tuple/list arguments
-    mp_uint_t rwx_len[3];
+    size_t rwx_len[3];
     mp_obj_t *r_array, *w_array, *x_array;
     mp_obj_get_array(args[0], &rwx_len[0], &r_array);
     mp_obj_get_array(args[1], &rwx_len[1], &w_array);

@@ -50,6 +50,16 @@ typedef struct mp_dynamic_compiler_t {
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
 
+// These are the values for sched_state
+#define MP_SCHED_IDLE (1)
+#define MP_SCHED_LOCKED (-1)
+#define MP_SCHED_PENDING (0) // 0 so it's a quick check in the VM
+
+typedef struct _mp_sched_item_t {
+    mp_obj_t func;
+    mp_obj_t arg;
+} mp_sched_item_t;
+
 // This structure hold information about the memory allocation system.
 typedef struct _mp_state_mem_t {
     #if MICROPY_MEM_STATS
@@ -128,6 +138,12 @@ typedef struct _mp_state_vm_t {
 
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
+
+    #if MICROPY_ENABLE_SCHEDULER
+    volatile int16_t sched_state;
+    uint16_t sched_sp;
+    mp_sched_item_t sched_stack[MICROPY_SCHEDULER_DEPTH];
+    #endif
 
     // current exception being handled, for sys.exc_info()
     #if MICROPY_PY_SYS_EXC_INFO
@@ -222,7 +238,6 @@ typedef struct _mp_state_ctx_t {
 
 extern mp_state_ctx_t mp_state_ctx;
 
-#define MP_STATE_CTX(x) MP_STATE_THREAD(x)
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
 

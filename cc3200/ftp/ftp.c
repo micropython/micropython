@@ -29,6 +29,7 @@
 
 #include "py/mpstate.h"
 #include "py/obj.h"
+#include "lib/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
@@ -48,7 +49,6 @@
 #include "fifo.h"
 #include "socketfifo.h"
 #include "updater.h"
-#include "timeutils.h"
 #include "moduos.h"
 
 /******************************************************************************

@@ -32,7 +32,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_USOCKET
@@ -388,7 +388,7 @@ STATIC const mp_obj_type_t socket_type = {
 
 // function usocket.getaddrinfo(host, port)
 STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
-    mp_uint_t hlen;
+    size_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
     mp_int_t port = mp_obj_get_int(port_in);
 
