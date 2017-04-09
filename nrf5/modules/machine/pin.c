@@ -613,3 +613,39 @@ const mp_obj_type_t pin_af_type = {
     .print = pin_af_obj_print,
     .locals_dict = (mp_obj_t)&pin_af_locals_dict,
 };
+
+/******************************************************************************/
+// Pin IRQ object
+
+typedef struct _pin_irq_obj_t {
+    mp_obj_base_t base;
+    pin_obj_t pin;
+} pin_irq_obj_t;
+
+STATIC const mp_obj_type_t pin_irq_type;
+
+STATIC mp_obj_t pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    pin_irq_obj_t *self = self_in;
+    (void)self;
+    return mp_const_none;
+}
+
+STATIC mp_obj_t pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
+    pin_irq_obj_t *self = args[0];
+    (void)self;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_irq_trigger_obj, 1, 2, pin_irq_trigger);
+
+STATIC const mp_rom_map_elem_t pin_irq_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_trigger),  MP_ROM_PTR(&pin_irq_trigger_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(pin_irq_locals_dict, pin_irq_locals_dict_table);
+
+STATIC const mp_obj_type_t pin_irq_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_IRQ,
+    .call = pin_irq_call,
+    .locals_dict = (mp_obj_dict_t*)&pin_irq_locals_dict,
+};
