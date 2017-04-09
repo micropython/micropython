@@ -32,7 +32,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_USOCKET
