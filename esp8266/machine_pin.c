@@ -287,7 +287,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
 }
 
 // constructor(id, ...)
-STATIC mp_obj_t pyb_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted pin object
@@ -436,7 +436,7 @@ const mp_obj_type_t pyb_pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
     .print = pyb_pin_print,
-    .make_new = pyb_pin_make_new,
+    .make_new = mp_pin_make_new,
     .call = pyb_pin_call,
     .protocol = &pin_pin_p,
     .locals_dict = (mp_obj_t)&pyb_pin_locals_dict,
