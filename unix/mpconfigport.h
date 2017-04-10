@@ -156,6 +156,7 @@
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
 extern const struct _mp_obj_module_t mp_module_machine;
@@ -283,7 +284,6 @@ void mp_unix_mark_exec(void);
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
-    mp_obj_t keyboard_interrupt_obj; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()

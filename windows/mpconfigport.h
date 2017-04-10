@@ -104,6 +104,7 @@
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (256)
+#define MICROPY_KBD_EXCEPTION       (1)
 
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
@@ -161,8 +162,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #if MICROPY_USE_READLINE == 1
 #define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[50]; \
-    mp_obj_t keyboard_interrupt_obj;
+    char *readline_hist[50];
 #endif
 
 #define MP_STATE_PORT               MP_STATE_VM
