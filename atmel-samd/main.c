@@ -24,13 +24,13 @@
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
-#include "common-hal/nativeio/AnalogIn.h"
-#include "common-hal/nativeio/PulseOut.h"
-#include "common-hal/nativeio/PWMOut.h"
+#include "common-hal/analogio/AnalogIn.h"
+#include "common-hal/pulseio/PulseOut.h"
+#include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/usb_hid/__init__.h"
 
 #ifdef EXPRESS_BOARD
-#include "common-hal/nativeio/types.h"
+#include "common-hal/touchio/TouchIn.h"
 #include "QTouch/touch_api_ptc.h"
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100)
 #else
@@ -138,7 +138,7 @@ void reset_mp(void) {
 }
 
 #ifdef EXPRESS_BOARD
-extern nativeio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
+extern touchio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
 extern touch_selfcap_config_t selfcap_config;
 #endif
 extern volatile bool mp_msc_enabled;

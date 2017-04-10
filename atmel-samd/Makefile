@@ -221,33 +221,34 @@ SRC_BINDINGS = \
 	board/__init__.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
-	nativeio/__init__.c \
-	nativeio/AnalogIn.c \
-	nativeio/AnalogOut.c \
-	nativeio/DigitalInOut.c \
-	nativeio/I2C.c \
-	nativeio/PulseIn.c \
-	nativeio/PulseOut.c \
-	nativeio/PWMOut.c \
-	nativeio/SPI.c \
-	nativeio/UART.c \
+	analogio/__init__.c \
+	analogio/AnalogIn.c \
+	analogio/AnalogOut.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	pulseio/__init__.c \
+	pulseio/PulseIn.c \
+	pulseio/PulseOut.c \
+	pulseio/PWMOut.c \
+	busio/__init__.c \
+	busio/I2C.c \
+	busio/SPI.c \
+	busio/UART.c \
 	neopixel_write/__init__.c \
 	time/__init__.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c
 
-SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
-                        $(addprefix common-hal/, $(SRC_BINDINGS))
-
 # Handle touch support on its own since it only fits in the image when external
 # flash is used to store the file system.
-SRC_BINDINGS_EXPANDED += shared-bindings/nativeio/TouchIn.c
-
-ifeq ($(FLASH_IMPL),internal_flash.c)
-SRC_BINDINGS_EXPANDED += common-hal/nativeio/TouchInStub.c
-else
-SRC_BINDINGS_EXPANDED += common-hal/nativeio/TouchIn.c
+# TODO(tannewt): Remove this after we switch to freetouch and rely on the linker
+# to drop classes we don't need.
+ifneq ($(FLASH_IMPL),internal_flash.c)
+SRC_BINDINGS += touchio/__init__.c touchio/TouchIn.c
 endif
+
+SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
+                        $(addprefix common-hal/, $(SRC_BINDINGS))
 
 SRC_SHARED_MODULE = \
 	help.c \
@@ -255,7 +256,7 @@ SRC_SHARED_MODULE = \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
-	nativeio/OneWire.c \
+	busio/OneWire.c \
 	uheap/__init__.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \

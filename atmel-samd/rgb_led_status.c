@@ -4,7 +4,7 @@
 #include "mphalport.h"
 
 #include "shared-bindings/bitbangio/SPI.h"
-#include "shared-bindings/nativeio/DigitalInOut.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "shared-module/bitbangio/types.h"
 #include "rgb_led_status.h"
@@ -12,7 +12,7 @@
 
 #ifdef MICROPY_HW_NEOPIXEL
 static uint8_t status_neopixel_color[3];
-static nativeio_digitalinout_obj_t status_neopixel;
+static digitalio_digitalinout_obj_t status_neopixel;
 #endif
 
 #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
@@ -26,8 +26,8 @@ static uint32_t current_status_color = 0;
 
 void rgb_led_status_init() {
     #ifdef MICROPY_HW_NEOPIXEL
-        common_hal_nativeio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
-        common_hal_nativeio_digitalinout_switch_to_output(&status_neopixel, false, DRIVE_MODE_PUSH_PULL);
+        common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
+        common_hal_digitalio_digitalinout_switch_to_output(&status_neopixel, false, DRIVE_MODE_PUSH_PULL);
     #endif
     #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
         shared_module_bitbangio_spi_construct(&status_apa102,

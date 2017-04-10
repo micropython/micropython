@@ -29,8 +29,9 @@
 #include "shared-bindings/neopixel_write/__init__.h"
 
 #include "asf/common2/services/delay/delay.h"
+#include "asf/sam0/drivers/port/port.h"
 
-void common_hal_neopixel_write(const nativeio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
+void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
     // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
     uint8_t  *ptr, *end, p, bitMask;

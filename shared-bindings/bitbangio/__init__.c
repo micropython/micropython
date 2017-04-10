@@ -25,7 +25,7 @@
  */
 
 // bitbangio implements some standard protocols in the processor. Its only
-// dependency is nativeio.DigitalInOut.
+// dependency is digitalio.
 
 #include <stdint.h>
 
@@ -45,12 +45,13 @@
 //|
 //| .. module:: bitbangio
 //|   :synopsis: Digital protocols implemented by the CPU
-//|   :platform: SAMD21
+//|   :platform: SAMD21, ESP8266
 //|
-//| The `bitbangio` module contains classes to provide digital protocol support
-//| regardless of whether the underlying hardware exists to use the protocol.
+//| The `bitbangio` module contains classes to provide digital bus protocol
+//| support regardless of whether the underlying hardware exists to use the
+//| protocol.
 //|
-//| First try to use `nativeio` module instead which may utilize peripheral
+//| First try to use `busio` module instead which may utilize peripheral
 //| hardware to implement the protocols. Native implementations will be faster
 //| than bitbanged versions and have more capabilities.
 //|

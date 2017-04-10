@@ -40,7 +40,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/nativeio/PWMOut.h"
+#include "common-hal/pulseio/PWMOut.h"
 
 STATIC char heap[36 * 1024];
 

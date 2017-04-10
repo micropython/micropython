@@ -27,28 +27,28 @@
 #ifndef __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
 #define __MICROPY_INCLUDED_SHARED_MODULE_BITBANGIO_TYPES_H__
 
-#include "common-hal/nativeio/DigitalInOut.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    nativeio_digitalinout_obj_t scl;
-    nativeio_digitalinout_obj_t sda;
+    digitalio_digitalinout_obj_t scl;
+    digitalio_digitalinout_obj_t sda;
     uint32_t us_delay;
     volatile bool locked;
 } bitbangio_i2c_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
-    nativeio_digitalinout_obj_t pin;
+    digitalio_digitalinout_obj_t pin;
 } bitbangio_onewire_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
-    nativeio_digitalinout_obj_t clock;
-    nativeio_digitalinout_obj_t mosi;
-    nativeio_digitalinout_obj_t miso;
+    digitalio_digitalinout_obj_t clock;
+    digitalio_digitalinout_obj_t mosi;
+    digitalio_digitalinout_obj_t miso;
     uint32_t delay_half;
     bool has_miso:1;
     bool has_mosi:1;

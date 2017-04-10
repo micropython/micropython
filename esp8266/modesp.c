@@ -38,7 +38,7 @@
 #include "netutils.h"
 #include "queue.h"
 #include "ets_sys.h"
-#include "uart.h"
+#include "espuart.h"
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"

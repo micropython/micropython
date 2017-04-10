@@ -31,7 +31,7 @@
 
 #include "common-hal/microcontroller/types.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/nativeio/DigitalInOut.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-module/bitbangio/types.h"
 
 #define I2C_STRETCH_LIMIT 255
@@ -43,30 +43,30 @@ STATIC void delay(bitbangio_i2c_obj_t *self) {
 }
 
 STATIC void scl_low(bitbangio_i2c_obj_t *self) {
-    common_hal_nativeio_digitalinout_set_value(&self->scl, false);
+    common_hal_digitalio_digitalinout_set_value(&self->scl, false);
 }
 
 STATIC void scl_release(bitbangio_i2c_obj_t *self) {
-    common_hal_nativeio_digitalinout_set_value(&self->scl, true);
+    common_hal_digitalio_digitalinout_set_value(&self->scl, true);
     delay(self);
     // For clock stretching, wait for the SCL pin to be released, with timeout.
-    for (int count = I2C_STRETCH_LIMIT; !common_hal_nativeio_digitalinout_get_value(&self->scl) && count; --count) {
+    for (int count = I2C_STRETCH_LIMIT; !common_hal_digitalio_digitalinout_get_value(&self->scl) && count; --count) {
         common_hal_mcu_delay_us(1);
     }
 }
 
 STATIC void sda_low(bitbangio_i2c_obj_t *self) {
-    common_hal_nativeio_digitalinout_set_value(&self->sda, false);
+    common_hal_digitalio_digitalinout_set_value(&self->sda, false);
 }
 
 STATIC void sda_release(bitbangio_i2c_obj_t *self) {
-    common_hal_nativeio_digitalinout_set_value(&self->sda, true);
+    common_hal_digitalio_digitalinout_set_value(&self->sda, true);
 }
 
 STATIC bool sda_read(bitbangio_i2c_obj_t *self) {
-    common_hal_nativeio_digitalinout_switch_to_input(&self->sda, PULL_UP);
-    bool value = common_hal_nativeio_digitalinout_get_value(&self->sda);
-    common_hal_nativeio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
+    common_hal_digitalio_digitalinout_switch_to_input(&self->sda, PULL_UP);
+    bool value = common_hal_digitalio_digitalinout_get_value(&self->sda);
+    common_hal_digitalio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
     return value;
 }
 
@@ -147,24 +147,24 @@ void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
     if (self->us_delay == 0) {
         self->us_delay = 1;
     }
-    digitalinout_result_t result = common_hal_nativeio_digitalinout_construct(&self->scl, scl);
+    digitalinout_result_t result = common_hal_digitalio_digitalinout_construct(&self->scl, scl);
     if (result != DIGITALINOUT_OK) {
         return;
     }
-    result = common_hal_nativeio_digitalinout_construct(&self->sda, sda);
+    result = common_hal_digitalio_digitalinout_construct(&self->sda, sda);
     if (result != DIGITALINOUT_OK) {
-        common_hal_nativeio_digitalinout_deinit(&self->scl);
+        common_hal_digitalio_digitalinout_deinit(&self->scl);
         return;
     }
-    common_hal_nativeio_digitalinout_switch_to_output(&self->scl, true, DRIVE_MODE_OPEN_DRAIN);
-    common_hal_nativeio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
+    common_hal_digitalio_digitalinout_switch_to_output(&self->scl, true, DRIVE_MODE_OPEN_DRAIN);
+    common_hal_digitalio_digitalinout_switch_to_output(&self->sda, true, DRIVE_MODE_OPEN_DRAIN);
 
     stop(self);
 }
 
 void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self) {
-    common_hal_nativeio_digitalinout_deinit(&self->scl);
-    common_hal_nativeio_digitalinout_deinit(&self->sda);
+    common_hal_digitalio_digitalinout_deinit(&self->scl);
+    common_hal_digitalio_digitalinout_deinit(&self->sda);
 }
 
 bool shared_module_bitbangio_i2c_try_lock(bitbangio_i2c_obj_t *self) {

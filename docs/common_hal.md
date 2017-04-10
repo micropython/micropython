@@ -1,5 +1,7 @@
-# Adding `nativeio` support to other ports
-`nativeio` provides a well-defined, cross-port hardware abstraction layer built to support different devices and their drivers. It's backed by the Common HAL, a C api suitable for supporting different hardware in a similar manner. By sharing this C api, developers can support new hardware easily and cross-port functionality to the new hardware.
+# Adding `digitalio` support to other ports
+`digitalio` provides a well-defined, cross-port hardware abstraction layer built to support different devices and their drivers. It's backed by the Common HAL, a C api suitable for supporting different hardware in a similar manner. By sharing this C api, developers can support new hardware easily and cross-port functionality to the new hardware.
+
+These instructions also apply to `analogio`, `busio`, `pulseio` and `touchio`. Most drivers depend on `analogio`, `digitalio` and `busio` so start with those.
 
 ## File layout
 Common HAL related files are found in these locations:
@@ -20,15 +22,23 @@ SRC_BINDINGS = \
 	board/__init__.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
-	nativeio/__init__.c \
-	nativeio/AnalogIn.c \
-	nativeio/AnalogOut.c \
-	nativeio/DigitalInOut.c \
-	nativeio/I2C.c \
-	nativeio/PWMOut.c \
-	nativeio/SPI.c \
+	analogio/__init__.c \
+	analogio/AnalogIn.c \
+	analogio/AnalogOut.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	pulseio/__init__.c \
+	pulseio/PulseIn.c \
+	pulseio/PulseOut.c \
+	pulseio/PWMOut.c \
+	busio/__init__.c \
+	busio/I2C.c \
+	busio/SPI.c \
+	busio/UART.c \
 	neopixel_write/__init__.c \
-	time/__init__.c
+	time/__init__.c \
+	usb_hid/__init__.c \
+	usb_hid/Device.c
 
 SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
                         $(addprefix common-hal/, $(SRC_BINDINGS))
@@ -46,14 +56,20 @@ Built in modules are typically defined in `mpconfigport.h`. To add support you s
 
 ```
 extern const struct _mp_obj_module_t microcontroller_module;
-extern const struct _mp_obj_module_t nativeio_module;
+extern const struct _mp_obj_module_t analogio_module;
+extern const struct _mp_obj_module_t digitalio_module;
+extern const struct _mp_obj_module_t pulseio_module;
+extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_nativeio), (mp_obj_t)&nativeio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module } \

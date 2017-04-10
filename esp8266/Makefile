@@ -79,7 +79,7 @@ SRC_C = \
 	esp_init_data.c \
 	gccollect.c \
 	lexerstr32.c \
-	uart.c \
+	espuart.c \
 	esppwm.c \
 	esponewire.c \
 	espneopixel.c \
@@ -109,16 +109,18 @@ SRC_C = \
 SRC_COMMON_HAL = \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
-	nativeio/__init__.c \
-	nativeio/AnalogIn.c \
-	nativeio/AnalogOut.c \
-	nativeio/DigitalInOut.c \
-	nativeio/PulseIn.c \
-	nativeio/PulseOut.c \
-	nativeio/PWMOut.c \
-	nativeio/SPI.c \
-	nativeio/TouchIn.c \
-	nativeio/UART.c \
+	analogio/__init__.c \
+	analogio/AnalogIn.c \
+	analogio/AnalogOut.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	pulseio/__init__.c \
+	pulseio/PulseIn.c \
+	pulseio/PulseOut.c \
+	pulseio/PWMOut.c \
+	busio/__init__.c \
+	busio/SPI.c \
+	busio/UART.c \
 	neopixel_write/__init__.c \
 	time/__init__.c \
 	board/__init__.c
@@ -131,8 +133,8 @@ SRC_SHARED_MODULE = \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
-	nativeio/I2C.c \
-	nativeio/OneWire.c \
+	busio/I2C.c \
+	busio/OneWire.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

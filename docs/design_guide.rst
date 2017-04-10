@@ -267,8 +267,8 @@ you can because you never know how much something will be called. Fewer
 allocations means less time spent cleaning up. So, where you can, prefer
 bytearray buffers that are created in ``__init__`` and used throughout the
 object with methods that read or write into the buffer instead of creating new
-objects. `nativeio` classes are design to read and write to subsections of
-buffers.
+objects. Unified hardware API classes such as `busio.SPI` are design to read and
+write to subsections of buffers.
 
 Its ok to allocate an object to return to the user. Just beware of causing more
 than one allocation per call due to internal logic.

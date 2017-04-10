@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include "ets_sys.h"
 #include "etshal.h"
-#include "uart.h"
+#include "espuart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
