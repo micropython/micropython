@@ -120,8 +120,8 @@ typedef struct _mp_state_vm_t {
     // memory for exception arguments if we can't allocate RAM
     #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     #if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
-    // statically allocated buf
-    byte mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE];
+    // statically allocated buf (needs to be aligned to mp_obj_t)
+    mp_obj_t mp_emergency_exception_buf[MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE / sizeof(mp_obj_t)];
     #else
     // dynamically allocated buf
     byte *mp_emergency_exception_buf;

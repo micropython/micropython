@@ -348,7 +348,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
             tuple->items[0] = MP_OBJ_FROM_PTR(str);
 
             byte *str_data = (byte *)&str[1];
-            uint max_len = MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size
+            size_t max_len = (byte*)MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size
                          - str_data;
 
             vstr_t vstr;
@@ -366,14 +366,14 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char
 
             o->args = tuple;
 
-            uint offset = &str_data[str->len] - MP_STATE_VM(mp_emergency_exception_buf);
+            size_t offset = &str_data[str->len] - (byte*)MP_STATE_VM(mp_emergency_exception_buf);
             offset += sizeof(void *) - 1;
             offset &= ~(sizeof(void *) - 1);
 
             if ((mp_emergency_exception_buf_size - offset) > (sizeof(o->traceback_data[0]) * 3)) {
                 // We have room to store some traceback.
                 o->traceback_data = (size_t*)((byte *)MP_STATE_VM(mp_emergency_exception_buf) + offset);
-                o->traceback_alloc = (MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - (byte *)o->traceback_data) / sizeof(o->traceback_data[0]);
+                o->traceback_alloc = ((byte*)MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - (byte *)o->traceback_data) / sizeof(o->traceback_data[0]);
                 o->traceback_len = 0;
             }
         }
