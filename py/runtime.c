@@ -78,7 +78,7 @@ void mp_init(void) {
     MP_STATE_VM(mp_kbd_exception).traceback_alloc = 0;
     MP_STATE_VM(mp_kbd_exception).traceback_len = 0;
     MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
-    MP_STATE_VM(mp_kbd_exception).args = mp_const_empty_tuple;
+    MP_STATE_VM(mp_kbd_exception).args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
     #endif
 
     // call port specific initialization if any
