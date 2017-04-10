@@ -445,7 +445,7 @@
 #   endif
 #endif
 
-// Whether to provide the mp_kbd_exception object
+// Whether to provide the mp_kbd_exception object, and micropython.kbd_intr function
 #ifndef MICROPY_KBD_EXCEPTION
 #define MICROPY_KBD_EXCEPTION (0)
 #endif
