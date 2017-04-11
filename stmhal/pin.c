@@ -245,7 +245,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, cons
 /// \classmethod \constructor(id, ...)
 /// Create a new Pin object associated with the id.  If additional arguments are given,
 /// they are used to initialise the pin.  See `init`.
-STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
@@ -567,7 +567,7 @@ const mp_obj_type_t pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
     .print = pin_print,
-    .make_new = pin_make_new,
+    .make_new = mp_pin_make_new,
     .call = pin_call,
     .protocol = &pin_pin_p,
     .locals_dict = (mp_obj_t)&pin_locals_dict,
