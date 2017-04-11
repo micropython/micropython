@@ -102,8 +102,6 @@ int main(int argc, char **argv) {
 
     readline_init0();
 
-    pin_init0();
-
 #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
 #endif
@@ -140,6 +138,8 @@ int main(int argc, char **argv) {
         MP_STATE_PORT(pyb_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
 #endif
+
+pin_init0();
 
 #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
