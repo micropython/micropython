@@ -36,7 +36,8 @@
 #include <net/net_context.h>
 #include <net/nbuf.h>
 
-#if 0 // print debugging info
+#define DEBUG 0
+#if DEBUG // print debugging info
 #define DEBUG_printf printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
@@ -144,6 +145,9 @@ static void sock_received_cb(struct net_context *context, struct net_buf *net_bu
         DEBUG_printf(" (sz=%d, l=%d), token: %p", net_buf->size, net_buf->len, net_nbuf_token(net_buf));
     }
     DEBUG_printf("\n");
+    #if DEBUG > 1
+    net_nbuf_print_frags(net_buf);
+    #endif
 
     // if net_buf == NULL, EOF
     if (net_buf == NULL) {
