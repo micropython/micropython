@@ -96,4 +96,31 @@ static inline void hal_gpio_pin_toggle(uint8_t port, uint32_t pin) {
     }
 }
 
+typedef enum {
+    HAL_GPIO_EVENT_CHANNEL_0 = 0,
+    HAL_GPIO_EVENT_CHANNEL_1,
+    HAL_GPIO_EVENT_CHANNEL_2,
+    HAL_GPIO_EVENT_CHANNEL_3,
+#if NRF52
+    HAL_GPIO_EVENT_CHANNEL_4,
+    HAL_GPIO_EVENT_CHANNEL_5,
+    HAL_GPIO_EVENT_CHANNEL_6,
+    HAL_GPIO_EVENT_CHANNEL_7
+#endif
+} hal_gpio_event_channel_t;
+
+typedef struct {
+    hal_gpio_event_channel_t  channel;
+    hal_gpio_polarity_event_t event;
+    uint32_t                  pin;
+    uint8_t                   port;
+    uint8_t                   init_level;
+} hal_gpio_event_config_t;
+
+typedef void (*hal_gpio_event_callback_t)(hal_gpio_event_channel_t channel);
+
+void hal_gpio_register_callback(hal_gpio_event_callback_t cb);
+
+void hal_gpio_event_config(hal_gpio_event_config_t const * p_config);
+
 #endif // HAL_GPIO_H__
