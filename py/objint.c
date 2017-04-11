@@ -224,7 +224,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     fmt_int_t num;
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
         // A small int; get the integer value to format.
-        num = mp_obj_get_int(self_in);
+        num = MP_OBJ_SMALL_INT_VALUE(self_in);
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
         // Not a small int.
