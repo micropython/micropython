@@ -95,10 +95,15 @@
 // Pin class variables
 STATIC bool pin_class_debug;
 
+// Forward declare function
+void gpio_irq_event_callback(hal_gpio_event_channel_t channel);
+
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
     MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
     pin_class_debug = false;
+
+    hal_gpio_register_callback(gpio_irq_event_callback);
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
@@ -635,6 +640,10 @@ const mp_obj_type_t pin_af_type = {
 
 /******************************************************************************/
 // Pin IRQ object
+
+void gpio_irq_event_callback(hal_gpio_event_channel_t channel) {
+    // printf("### gpio irq received on channel %d\n", (uint16_t)channel);
+}
 
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;
