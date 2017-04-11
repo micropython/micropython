@@ -87,12 +87,14 @@ static void pulsein_callback(void) {
     } else {
         uint32_t ms_diff = current_ms - last_ms[self->channel];
         uint16_t us_diff = current_us - last_us[self->channel];
-        if (last_us[self->channel] > current_us) {
-            us_diff = 1000 + current_us - last_us[self->channel];
-        }
         uint32_t total_diff = us_diff;
-        if (ms_diff > 1) {
-            total_diff += (ms_diff - 1) * 1000;
+        if (last_us[self->channel] > current_us) {
+            total_diff = 1000 + current_us - last_us[self->channel];
+            if (ms_diff > 1) {
+                total_diff += (ms_diff - 1) * 1000;
+            }
+        } else {
+            total_diff += ms_diff * 1000;
         }
         uint16_t duration = 0xffff;
         if (total_diff < duration) {
