@@ -25,6 +25,7 @@
 #include <board.h>
 
 #include "common-hal/analogio/AnalogIn.h"
+#include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/usb_hid/__init__.h"
@@ -171,6 +172,7 @@ void reset_samd21(void) {
 
     analogin_reset();
 
+    pulsein_reset();
     pulseout_reset();
 
     // Wait for the DAC to sync.
