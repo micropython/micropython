@@ -170,8 +170,10 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 typedef mp_longint_impl_t fmt_int_t;
+typedef unsigned long long fmt_uint_t;
 #else
 typedef mp_int_t fmt_int_t;
+typedef mp_uint_t fmt_uint_t;
 #endif
 
 void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -265,8 +267,9 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
         *(--b) = '0';
     } else {
         do {
-            int c = num % base;
-            num /= base;
+            // The cast to fmt_uint_t is because num is positive and we want unsigned arithmetic
+            int c = (fmt_uint_t)num % base;
+            num = (fmt_uint_t)num / base;
             if (c >= 10) {
                 c += base_char - 10;
             } else {
