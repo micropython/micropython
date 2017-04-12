@@ -39,12 +39,12 @@
 typedef struct _machine_signal_t {
     mp_obj_base_t base;
     mp_obj_t pin;
-    bool inverted;
+    bool invert;
 } machine_signal_t;
 
 STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_t pin = args[0];
-    bool inverted = false;
+    bool invert = false;
 
     #if defined(MICROPY_PY_MACHINE_PIN_MAKE_NEW)
     mp_pin_p_t *pin_p = NULL;
@@ -55,7 +55,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
 
     if (pin_p == NULL) {
-        // If first argument isn't a Pin-like object, we filter out "inverted"
+        // If first argument isn't a Pin-like object, we filter out "invert"
         // from keyword arguments and pass them all to the exported Pin
         // constructor to create one.
         mp_obj_t pin_args[n_args + n_kw * 2];
@@ -64,8 +64,8 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         mp_obj_t *dst = pin_args + n_args;
         mp_obj_t *sig_value = NULL;
         for (size_t cnt = n_kw; cnt; cnt--) {
-            if (*src == MP_OBJ_NEW_QSTR(MP_QSTR_inverted)) {
-                inverted = mp_obj_is_true(src[1]);
+            if (*src == MP_OBJ_NEW_QSTR(MP_QSTR_invert)) {
+                invert = mp_obj_is_true(src[1]);
                 n_kw--;
             } else {
                 *dst++ = *src;
@@ -80,7 +80,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
             src += 2;
         }
 
-        if (inverted && sig_value != NULL) {
+        if (invert && sig_value != NULL) {
             *sig_value = mp_obj_is_true(*sig_value) ? MP_OBJ_NEW_SMALL_INT(0) : MP_OBJ_NEW_SMALL_INT(1);
         }
 
@@ -95,8 +95,8 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     {
         if (n_args == 1) {
             if (n_kw == 0) {
-            } else if (n_kw == 1 && args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_inverted)) {
-                inverted = mp_obj_is_true(args[1]);
+            } else if (n_kw == 1 && args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_invert)) {
+                invert = mp_obj_is_true(args[1]);
             } else {
                 goto error;
             }
@@ -109,7 +109,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     machine_signal_t *o = m_new_obj(machine_signal_t);
     o->base.type = type;
     o->pin = pin;
-    o->inverted = inverted;
+    o->invert = invert;
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -119,10 +119,10 @@ STATIC mp_uint_t signal_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg
 
     switch (request) {
         case MP_PIN_READ: {
-            return mp_virtual_pin_read(self->pin) ^ self->inverted;
+            return mp_virtual_pin_read(self->pin) ^ self->invert;
         }
         case MP_PIN_WRITE: {
-            mp_virtual_pin_write(self->pin, arg ^ self->inverted);
+            mp_virtual_pin_write(self->pin, arg ^ self->invert);
             return 0;
         }
     }
