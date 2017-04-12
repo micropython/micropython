@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H__
 #define __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
 
 extern const mp_obj_type_t analogio_analogout_type;

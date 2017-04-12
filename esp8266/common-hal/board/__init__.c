@@ -28,7 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 // Pins aren't actually defined here. They are in the board specific directory
 // such as boards/feather_huzzah/pins.c.

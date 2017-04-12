@@ -48,6 +48,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         // No ADC function on that pin
         mp_raise_ValueError("Pin does not have ADC capabilities");
     }
+    claim_pin(pin);
 
     self->pin = pin;
 

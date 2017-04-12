@@ -202,6 +202,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (rx != NULL) {
         *pinmuxes[rx_pad] = rx_pinmux;
         self->rx_pin = rx->pin;
+        claim_pin(rx);
     }
 
     self->tx_pin = NO_PIN;
@@ -209,6 +210,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (tx != NULL) {
         *pinmuxes[tx_pad] = tx_pinmux;
         self->tx_pin = tx->pin;
+        claim_pin(tx);
     }
 
     self->timeout_ms = timeout;
@@ -217,10 +219,12 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->buffer_length *= (bits + 7) / 8;
     self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false);
     if (self->buffer == NULL) {
+        common_hal_busio_uart_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, "Failed to allocate RX buffer");
     }
 
     if (usart_init(&self->uart_instance, sercom, &config_usart) != STATUS_OK) {
+        common_hal_busio_uart_deinit(self);
         mp_raise_OSError(MP_EIO);
     }
 

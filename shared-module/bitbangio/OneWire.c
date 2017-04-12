@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/bitbangio/OneWire.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"

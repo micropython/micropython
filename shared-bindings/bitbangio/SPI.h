@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "shared-module/bitbangio/types.h"
 
 // Type object used in Python. Should be shared between ports.

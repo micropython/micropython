@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 #include "asf/sam0/drivers/sercom/spi/spi.h"
 #include "py/obj.h"

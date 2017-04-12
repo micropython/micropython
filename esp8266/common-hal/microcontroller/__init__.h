@@ -27,7 +27,7 @@
  #ifndef __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER___INIT___H__
  #define __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER___INIT___H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 extern const mcu_pin_obj_t pin_TOUT;
 extern const mcu_pin_obj_t pin_XPD_DCDC;

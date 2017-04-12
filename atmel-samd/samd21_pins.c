@@ -66,16 +66,6 @@ const mcu_pin_obj_t pin_## p_name = { \
 
 #define NO_ADC_INPUT (0)
 
-void reset_pin(uint8_t pin) {
-    if (pin >= PORT_BITS) {
-        return;
-    }
-    struct system_pinmux_config config;
-    system_pinmux_get_config_defaults(&config);
-    config.powersave = true;
-    system_pinmux_pin_set_config(pin, &config);
-}
-
 // Pins in datasheet order.
 // NOTE(tannewt): TC wave out 0 is commented out because the first channel is
 // used to vary the 16 bit timer's frequency.

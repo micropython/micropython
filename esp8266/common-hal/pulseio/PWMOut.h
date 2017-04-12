@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PWMOUT_H__
 #define __MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PWMOUT_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;

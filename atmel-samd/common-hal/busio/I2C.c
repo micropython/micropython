@@ -77,6 +77,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     self->sda_pin = sda->pin;
     self->scl_pin = scl->pin;
+    claim_pin(sda);
+    claim_pin(scl);
 
     enum status_code status = i2c_master_init(&self->i2c_master_instance,
         sercom, &config_i2c_master);

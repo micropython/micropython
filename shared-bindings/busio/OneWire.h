@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H__
 #define __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/OneWire.h"
 
 extern const mp_obj_type_t busio_onewire_type;

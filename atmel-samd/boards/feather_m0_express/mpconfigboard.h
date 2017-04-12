@@ -3,7 +3,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-#define MICROPY_HW_NEOPIXEL &pin_PA06
+#define MICROPY_HW_NEOPIXEL (&pin_PA06)
 
 #define SPI_FLASH_BAUDRATE  (1000000)
 

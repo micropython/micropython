@@ -1,7 +1,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_SAMD21_PINS_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_SAMD21_PINS_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 void reset_pin(uint8_t pin);
 

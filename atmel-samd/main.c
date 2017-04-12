@@ -117,6 +117,7 @@ static char *stack_top;
 static char heap[16384];
 
 void reset_mp(void) {
+    reset_status_led();
     new_status_color(0x8f008f);
     autoreset_stop();
     autoreset_enable();
@@ -175,10 +176,11 @@ void reset_samd21(void) {
     pulsein_reset();
     pulseout_reset();
 
-    // Wait for the DAC to sync.
+    // Wait for the DAC to sync then reset.
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
 
+    // Reset pins
     struct system_pinmux_config config;
     system_pinmux_get_config_defaults(&config);
     config.powersave = true;
@@ -279,6 +281,7 @@ bool start_mp(void) {
                      maybe_run("main.py", &result) ||
                      maybe_run("main.txt", &result);
     }
+    reset_status_led();
 
     if (result.return_code & PYEXEC_FORCED_EXIT) {
         return reset_next_character;

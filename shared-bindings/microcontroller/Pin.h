@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
 #define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "py/obj.h"
 
 // Type object used in Python. Should be shared between ports.

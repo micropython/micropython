@@ -36,7 +36,7 @@
 
 #include "py/obj.h"
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
 
 // Type object used in Python. Should be shared between ports.

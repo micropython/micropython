@@ -23,5 +23,6 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_D11), (mp_obj_t)&pin_PA16 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_D12), (mp_obj_t)&pin_PA19 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_D13), (mp_obj_t)&pin_PA17 },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), (mp_obj_t)&pin_PA06 },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);

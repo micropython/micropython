@@ -27,6 +27,16 @@
 #ifndef __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H__
 #define __MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H__
 
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    qstr name;
+    uint8_t gpio_number;
+    uint8_t gpio_function;
+    uint32_t peripheral;
+} mcu_pin_obj_t;
+
 // Magic values for gpio_number.
 #define NO_GPIO 0xff
 #define SPECIAL_CASE 0xfe

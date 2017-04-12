@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H__
 #define __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 

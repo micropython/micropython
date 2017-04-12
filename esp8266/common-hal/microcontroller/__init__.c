@@ -25,7 +25,7 @@
  */
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "eagle_soc.h"

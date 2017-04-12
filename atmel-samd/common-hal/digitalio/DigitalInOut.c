@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
 #include "asf/sam0/drivers/port/port.h"
@@ -38,6 +39,7 @@
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         digitalio_digitalinout_obj_t* self, const mcu_pin_obj_t* pin) {
+    claim_pin(pin);
     self->pin = pin;
 
     struct port_config pin_conf;
@@ -50,11 +52,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 }
 
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self) {
-    struct port_config pin_conf;
-    port_get_config_defaults(&pin_conf);
-
-    pin_conf.powersave  = true;
-    port_pin_set_config(self->pin->pin, &pin_conf);
+    reset_pin(self->pin->pin);
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(

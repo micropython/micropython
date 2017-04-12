@@ -49,6 +49,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         mp_raise_OSError(MP_EIO);
         return;
     }
+    claim_pin(pin);
 
     struct dac_chan_config config_analogout_chan;
     dac_chan_get_config_defaults(&config_analogout_chan);

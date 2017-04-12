@@ -27,6 +27,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "rgb_led_status.h"
 #include "samd21_pins.h"
 
 // We use ENABLE registers below we don't want to treat as a macro.
@@ -53,7 +54,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         Sercom* potential_sercom = clock->sercom[i].sercom;
         if (potential_sercom == NULL ||
+        #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
+            (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
+             potential_sercom != status_apa102.spi_master_instance.hw &&
+             !apa102_sck_in_use)) {
+        #else
             potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {
+        #endif
             continue;
         }
         clock_pinmux = PINMUX(clock->pin, (i == 0) ? MUX_C : MUX_D);
@@ -122,15 +129,18 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                              &config_spi_master.pinmux_pad3};
     *pinmuxes[clock_pad] = clock_pinmux;
     self->clock_pin = clock->pin;
+    claim_pin(clock);
     self->MOSI_pin = NO_PIN;
     if (!mosi_none) {
         *pinmuxes[mosi_pad] = mosi_pinmux;
         self->MOSI_pin = mosi->pin;
+        claim_pin(mosi);
     }
     self->MISO_pin = NO_PIN;
     if (!miso_none) {
         *pinmuxes[miso_pad] = miso_pinmux;
         self->MISO_pin = miso->pin;
+        claim_pin(miso);
     }
 
     // Always start at 250khz which is what SD cards need. They are sensitive to

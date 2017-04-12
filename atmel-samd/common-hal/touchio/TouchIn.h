@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 #include "QTouch/touch_api_ptc.h"
 

@@ -26,7 +26,77 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "rgb_led_status.h"
+#include "samd21_pins.h"
+
+#ifdef MICROPY_HW_NEOPIXEL
+bool neopixel_in_use;
+#endif
+#ifdef MICROPY_HW_APA102_MOSI
+bool apa102_sck_in_use;
+bool apa102_mosi_in_use;
+#endif
+
+void reset_pin(uint8_t pin) {
+    if (pin >= PORT_BITS) {
+        return;
+    }
+
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL->pin) {
+        neopixel_in_use = false;
+        rgb_led_status_init();
+        return;
+    }
+    #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin == MICROPY_HW_APA102_MOSI->pin ||
+        pin == MICROPY_HW_APA102_SCK->pin) {
+        apa102_mosi_in_use = apa102_mosi_in_use && pin != MICROPY_HW_APA102_MOSI->pin;
+        apa102_sck_in_use = apa102_sck_in_use && pin != MICROPY_HW_APA102_SCK->pin;
+        if (!apa102_sck_in_use && !apa102_mosi_in_use) {
+            rgb_led_status_init();
+        }
+        return;
+    }
+    #endif
+
+    struct system_pinmux_config config;
+    system_pinmux_get_config_defaults(&config);
+    config.powersave = true;
+    system_pinmux_pin_set_config(pin, &config);
+}
+
+void claim_pin(const mcu_pin_obj_t* pin) {
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL) {
+        neopixel_in_use = true;
+    }
+    #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin == MICROPY_HW_APA102_MOSI) {
+        apa102_mosi_in_use = true;
+    }
+    if (pin == MICROPY_HW_APA102_SCK) {
+        apa102_sck_in_use = true;
+    }
+    #endif
+}
+
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL) {
+        return !neopixel_in_use;
+    }
+    #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin == MICROPY_HW_APA102_MOSI) {
+        return !apa102_mosi_in_use;
+    }
+    if (pin == MICROPY_HW_APA102_SCK) {
+        return !apa102_sck_in_use;
+    }
+    #endif
     PortGroup *const port = system_pinmux_get_group_from_gpio_pin(pin->pin);
     uint32_t pin_index = (pin->pin);
     PORT_PINCFG_Type state = port->PINCFG[pin_index];

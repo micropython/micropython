@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGIN_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 // Don't reorder these includes because they are dependencies of adc_feature.h.
 // They should really be included by adc_feature.h.

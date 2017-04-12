@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 
 #include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
 #include "py/obj.h"

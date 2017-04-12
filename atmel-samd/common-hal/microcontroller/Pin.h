@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_TYPES_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_TYPES_H__
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H__
 
 // Don't reorder these includes because they are dependencies of adc_feature.h.
 // They should really be included by adc_feature.h.
@@ -70,4 +70,17 @@ typedef struct {
     pin_sercom_t sercom[NUM_SERCOMS_PER_PIN];
 } mcu_pin_obj_t;
 
-#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_TYPES_H__
+#ifdef MICROPY_HW_NEOPIXEL
+extern bool neopixel_in_use;
+#endif
+#ifdef MICROPY_HW_APA102_MOSI
+extern bool apa102_sck_in_use;
+extern bool apa102_mosi_in_use;
+#endif
+
+// reset_pin takes the pin number instead of the pointer so that objects don't
+// need to store a full pointer.
+void reset_pin(uint8_t pin);
+void claim_pin(const mcu_pin_obj_t* pin);
+
+#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H__

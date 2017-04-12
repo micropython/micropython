@@ -189,6 +189,7 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     if (!pin->has_touch) {
         mp_raise_ValueError("Invalid pin");
     }
+    claim_pin(pin);
 
     if (selfcap_config.num_channels > 0) {
         // Deinit the touch sensor, we're going to reinitialize it.

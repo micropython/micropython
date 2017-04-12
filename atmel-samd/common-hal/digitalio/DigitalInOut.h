@@ -27,7 +27,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DIGITALIO_DIGITALINOUT_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DIGITALIO_DIGITALINOUT_H__
 
-#include "common-hal/microcontroller/types.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "py/obj.h"
 
 typedef struct {
