@@ -36,7 +36,7 @@ script:
   - make -C atmel-samd BOARD=feather_m0_basic
   - make -C atmel-samd BOARD=feather_m0_express
   - make -C atmel-samd BOARD=metro_m0_flash
-  - make -C atmel-samd BOARD=cplay_m0_flash
+  - make -C atmel-samd BOARD=circuitplayground_express
   - make -C atmel-samd BOARD=trinket_m0
   - make -C atmel-samd BOARD=gemma_m0
   - make -C minimal CROSS=1 build/firmware.bin

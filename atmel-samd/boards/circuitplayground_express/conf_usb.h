@@ -19,7 +19,7 @@
 #endif
 
 #ifndef USB_DEVICE_PRODUCT_NAME
-#  define USB_DEVICE_PRODUCT_NAME "Circuit Playground M0 (Experimental)"
+#  define USB_DEVICE_PRODUCT_NAME "CircuitPlayground Express"
 #endif
 // #define  USB_DEVICE_SERIAL_NAME           "12...EF"
 #define  USB_DEVICE_GET_SERIAL_NAME_POINTER  serial_number

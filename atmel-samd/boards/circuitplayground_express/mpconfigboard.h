@@ -1,6 +1,6 @@
 #define USB_REPL
 
-#define MICROPY_HW_BOARD_NAME "Adafruit Circuit Playground M0 (Experimental)"
+#define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 //#define MICROPY_HW_LED_MSC  PIN_PA17
