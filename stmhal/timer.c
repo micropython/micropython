@@ -1302,6 +1302,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
     } else if (mp_obj_is_callable(callback)) {
         self->callback = callback;
         uint8_t tim_id = self->timer->tim_id;
+        __HAL_TIM_CLEAR_IT(&self->timer->tim, TIMER_IRQ_MASK(self->channel));
         if (tim_id == 1) {
             HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
         #if defined(TIM8) // STM32F401 doesn't have a TIM8
