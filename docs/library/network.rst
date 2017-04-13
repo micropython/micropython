@@ -340,7 +340,8 @@ For example::
     .. method:: wlan.config('param')
     .. method:: wlan.config(param=value, ...)
 
-       Get or set general network interface parameters. These methods allow to work
+       Get or set general network interface parameters. ``wlan.active()`` must be
+       ``True`` for configuration to be set and saved. These methods allow to work
        with additional parameters beyond standard IP configuration (as dealt with by
        ``wlan.ifconfig()``). These include network-specific and hardware-specific
        parameters. For setting parameters, keyword argument syntax should be used,
