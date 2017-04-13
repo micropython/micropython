@@ -110,7 +110,7 @@ http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html
 Troubleshooting
 ---------------
 
-While the port is still in alpha, it's known to be generally stable. If you
+While the port is in beta, it's known to be generally stable. If you
 experience strange bootloops, crashes, lockups, here's a list to check against:
 
 - You didn't erase flash before programming MicroPython firmware.
