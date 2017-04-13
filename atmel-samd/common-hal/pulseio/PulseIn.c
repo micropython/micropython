@@ -78,7 +78,9 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 static void pulsein_callback(void) {
     // Grab the current time first.
     uint16_t current_us = tc_get_count_value(&ms_timer);
-    uint64_t current_ms = ticks_ms;
+    // Add the overflow flag to account for tick interrupts that are blocked by
+    // this interrupt.
+    uint64_t current_ms = ticks_ms + TC5->COUNT16.INTFLAG.bit.OVF;
     pulseio_pulsein_obj_t* self = active_pulseins[extint_get_current_channel()];
     current_us = current_us * 1000 / self->ticks_per_ms;
     if (self->first_edge) {
