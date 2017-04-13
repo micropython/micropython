@@ -120,8 +120,6 @@ STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
 // to the fact that it copies data byte by byte).
 static char *net_buf_gather(struct net_buf *buf, char *to, unsigned max_len) {
     struct net_buf *tmp = buf->frags;
-    unsigned header_len = net_nbuf_appdata(buf) - tmp->data;
-    net_buf_pull(tmp, header_len);
 
     while (tmp && max_len) {
         unsigned len = tmp->len;
@@ -165,6 +163,10 @@ static void sock_received_cb(struct net_context *context, struct net_buf *net_bu
 
     // Make sure that "EOF flag" is not set
     net_nbuf_set_buf_sent(net_buf, false);
+
+    // We don't care about packet header, so get rid of it asap
+    unsigned header_len = net_nbuf_appdata(net_buf) - net_buf->frags->data;
+    net_buf_pull(net_buf->frags, header_len);
 
     // net_buf->frags will be overwritten by fifo, so save it
     net_nbuf_set_token(net_buf, net_buf->frags);
@@ -350,15 +352,13 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
                 return mp_const_empty_bytes;
             }
 
-            unsigned header_len = 0;
             if (socket->cur_buf == NULL) {
                 DEBUG_printf("TCP recv: no cur_buf, getting\n");
                 struct net_buf *net_buf = k_fifo_get(&socket->recv_q, K_FOREVER);
                 // Restore ->frags overwritten by fifo
                 net_buf->frags = net_nbuf_token(net_buf);
 
-                header_len = net_nbuf_appdata(net_buf) - net_buf->frags->data;
-                DEBUG_printf("TCP recv: new cur_buf: %p, hdr_len: %u\n", net_buf, header_len);
+                DEBUG_printf("TCP recv: new cur_buf: %p\n", net_buf);
                 socket->cur_buf = net_buf;
             }
 
@@ -368,7 +368,6 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
                 assert(0);
             }
 
-            net_buf_pull(frag, header_len);
             unsigned frag_len = frag->len;
             recv_len = frag_len;
             if (recv_len > max_len) {
