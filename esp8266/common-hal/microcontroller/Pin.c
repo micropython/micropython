@@ -47,7 +47,8 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
 
 void reset_pins(void) {
     for (int i = 0; i < 17; i++) {
-        if (i == 0 || (i > 6 && i < 13) || i == 12) {
+        // 5 is RXD, 6 is TXD
+        if (i == 0 || (i > 4 && i < 13) || i == 12) {
             continue;
         }
         uint32_t peripheral = PERIPHS_IO_MUX + i * 4;
