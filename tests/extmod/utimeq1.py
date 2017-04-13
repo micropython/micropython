@@ -34,6 +34,41 @@ try:
 except IndexError:
     pass
 
+# unsupported unary op
+try:
+    ~h
+    assert False
+except TypeError:
+    pass
+
+# pushing on full queue
+h = utimeq(1)
+h.push(1, 0, 0)
+try:
+    h.push(2, 0, 0)
+    assert False
+except IndexError:
+    pass
+
+# popping into invalid type
+try:
+    h.pop([])
+    assert False
+except TypeError:
+    pass
+
+# length
+assert len(h) == 1
+
+# peektime
+assert h.peektime() == 1
+
+# peektime with empty queue
+try:
+    utimeq(1).peektime()
+    assert False
+except IndexError:
+    pass
 
 def pop_all(h):
     l = []
