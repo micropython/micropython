@@ -48,6 +48,9 @@ static uint16_t last_us[EIC_NUMBER_OF_INTERRUPTS];
 
 void pulsein_reset(void) {
     for (int i = 0; i < EIC_NUMBER_OF_INTERRUPTS; i++) {
+        if (active_pulseins[i] != NULL) {
+            extint_chan_disable_callback(i, EXTINT_CALLBACK_TYPE_DETECT);
+        }
         active_pulseins[i] = NULL;
         last_ms[i] = 0;
         last_us[i] = 0;
