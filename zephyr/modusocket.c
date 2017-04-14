@@ -308,14 +308,22 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
 
     struct net_buf *send_buf = net_nbuf_get_tx(socket->ctx, K_FOREVER);
-    // TODO: Probably should limit how much data we send in one call still
-    if (!net_nbuf_append(send_buf, bufinfo.len, bufinfo.buf, K_FOREVER)) {
-        mp_raise_OSError(ENOSPC);
+
+    unsigned len = net_if_get_mtu(net_context_get_iface(socket->ctx));
+    // Arbitrary value to account for protocol headers
+    len -= 64;
+    if (len > bufinfo.len) {
+        len = bufinfo.len;
+    }
+
+    if (!net_nbuf_append(send_buf, len, bufinfo.buf, K_FOREVER)) {
+        len = net_buf_frags_len(send_buf);
+        //mp_raise_OSError(ENOSPC);
     }
 
     RAISE_ERRNO(net_context_send(send_buf, /*cb*/NULL, K_FOREVER, NULL, NULL));
 
-    return mp_obj_new_int_from_uint(bufinfo.len);
+    return mp_obj_new_int_from_uint(len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
