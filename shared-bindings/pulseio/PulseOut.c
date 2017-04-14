@@ -57,7 +57,7 @@
 //|     with pulseio.PWMOut(board.D13, duty_cycle=2 ** 15) as pwm:
 //|         pulse = pulseio.PulseOut(pwm)
 //|         #                             on   off     on     off   on
-//|         pulses = array.array('h', [65000, 1000, 65000, 65000, 1000])
+//|         pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
 //|         pulse.send(pulses)
 //|
 //|         # Modify the array of pulses.
