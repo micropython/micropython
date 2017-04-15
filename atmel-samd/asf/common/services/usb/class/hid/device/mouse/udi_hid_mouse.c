@@ -119,6 +119,12 @@ static bool udi_hid_mouse_setreport(void);
 //@}
 
 //! HID report descriptor for standard HID mouse
+//*** CircuitPython: added COMPILER_WORD_ALIGNED to ensure descriptor is word aligned.
+// Without this, descriptor sent to host was garbled.
+// It appears this is necessary but frequently omitted in UDC_DESC_STORAGE declarations
+// in ASF code.
+// See comments about buffer alignment in asf/common/services/usb/udc/udd.h
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udi_hid_mouse_report_desc_t udi_hid_mouse_report_desc = {
 	{
 				0x05, 0x01,	/* Usage Page (Generic Desktop),       */
