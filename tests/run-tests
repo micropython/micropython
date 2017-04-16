@@ -145,7 +145,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
     # don't try to convert the output if we should skip this test
-    if output_mupy == b'SKIP\n':
+    if output_mupy in (b'SKIP\n', b'CRASH'):
         return output_mupy
 
     if is_special or test_file in special_tests:
