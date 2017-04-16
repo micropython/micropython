@@ -85,13 +85,6 @@ Miscellaneous functions
 
 .. only:: port_wipy
 
-    .. function:: main(filename)
-
-        Set the filename of the main script to run after boot.py is finished.  If
-        this function is not called then the default file main.py will be executed.
-
-        It only makes sense to call this function from within boot.py.
-
     .. function:: rng()
 
         Return a 24-bit software generated random number.

@@ -296,3 +296,13 @@ Example::
    ...
    hash.update('12345')                      # last chunk may be of any length
    hash.digest()
+
+Unrelated function in machine module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: main(filename)
+
+    Set the filename of the main script to run after boot.py is finished.  If
+    this function is not called then the default file main.py will be executed.
+
+    It only makes sense to call this function from within boot.py.
