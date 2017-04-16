@@ -336,21 +336,19 @@ STATIC mp_obj_t pyb_pin_value(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pin_value_obj, 1, 2, pyb_pin_value);
 
-// pin.low()
-STATIC mp_obj_t pyb_pin_low(mp_obj_t self_in) {
+STATIC mp_obj_t pyb_pin_off(mp_obj_t self_in) {
     pyb_pin_obj_t *self = self_in;
     pin_set(self->phys_port, 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_low_obj, pyb_pin_low);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_off_obj, pyb_pin_off);
 
-// pin.high()
-STATIC mp_obj_t pyb_pin_high(mp_obj_t self_in) {
+STATIC mp_obj_t pyb_pin_on(mp_obj_t self_in) {
     pyb_pin_obj_t *self = self_in;
     pin_set(self->phys_port, 1);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_high_obj, pyb_pin_high);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_pin_on_obj, pyb_pin_on);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -410,8 +408,8 @@ STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pyb_pin_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value),   (mp_obj_t)&pyb_pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_low),     (mp_obj_t)&pyb_pin_low_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_high),    (mp_obj_t)&pyb_pin_high_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_off),     (mp_obj_t)&pyb_pin_off_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_on),      (mp_obj_t)&pyb_pin_on_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_irq),     (mp_obj_t)&pyb_pin_irq_obj },
 
     // class constants
