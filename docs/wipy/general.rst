@@ -254,6 +254,29 @@ SSL sockets need to be created the following way before wrapping them with.
   s = socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SEC)
   ss = ssl.wrap_socket(s)
 
+Certificates must be used in order to validate the other side of the connection, and also to
+authenticate ourselves with the other end. Such certificates must be stored as files using the
+FTP server, and they must be placed in specific paths with specific names.
+
+- The certificate to validate the other side goes in: **'/flash/cert/ca.pem'**
+- The certificate to authenticate ourselves goes in: **'/flash/cert/cert.pem'**
+- The key for our own certificate goes in: **'/flash/cert/private.key'**
+
+.. note::
+
+  When these files are stored, they are placed inside the internal **hidden** file system
+  (just like firmware updates), and therefore they are never visible.
+
+For instance to connect to the Blynk servers using certificates, take the file ``ca.pem`` located
+in the `blynk examples folder <https://github.com/wipy/wipy/tree/master/examples/blynk>`_.
+and put it in '/flash/cert/'. Then do::
+
+  import socket
+  import ssl
+  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_SEC)
+  ss = ssl.wrap_socket(s, cert_reqs=ssl.CERT_REQUIRED, ca_certs='/flash/cert/ca.pem')
+  ss.connect(socket.getaddrinfo('cloud.blynk.cc', 8441)[0][-1])
+
 Incompatibilities in uhashlib module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
