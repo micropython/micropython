@@ -11,3 +11,6 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
+[submodule "atmel-samd/freetouch"]
+	path = atmel-samd/freetouch
+	url = git@github.com:adafruit/Adafruit_FreeTouch.git

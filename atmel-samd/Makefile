@@ -73,6 +73,7 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	)
 INC += -Iasf/thirdparty/CMSIS/Include
 INC += -Iboards/$(BOARD)/
+INC += -Ifreetouch/
 INC += -I$(BUILD)
 
 CFLAGS_CORTEX_M0 = \
@@ -144,8 +145,8 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
 #LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/ -LQTouch/ -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
-LIBS = -larm_cortexM0l_math -lsamd21_qtouch_gcc -lm -lgcc -lc
+LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/ -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LIBS = -larm_cortexM0l_math -lm -lgcc -lc
 
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/adc/adc_sam_d_r/adc.c \
@@ -201,6 +202,7 @@ SRC_C = \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
 	boards/$(BOARD)/init.c \
 	boards/$(BOARD)/pins.c \
+	freetouch/adafruit_ptc.c \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -236,16 +238,10 @@ SRC_BINDINGS = \
 	busio/UART.c \
 	neopixel_write/__init__.c \
 	time/__init__.c \
+	touchio/__init__.c \
+	touchio/TouchIn.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c
-
-# Handle touch support on its own since it only fits in the image when external
-# flash is used to store the file system.
-# TODO(tannewt): Remove this after we switch to freetouch and rely on the linker
-# to drop classes we don't need.
-ifneq ($(FLASH_IMPL),internal_flash.c)
-SRC_BINDINGS += touchio/__init__.c touchio/TouchIn.c
-endif
 
 SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
                         $(addprefix common-hal/, $(SRC_BINDINGS))

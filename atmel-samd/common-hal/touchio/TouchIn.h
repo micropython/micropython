@@ -29,14 +29,18 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "QTouch/touch_api_ptc.h"
+#include "samd21_ptc_component.h"
+#include "adafruit_ptc.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t * pin;
-    sensor_id_t sensor_id;
+    struct adafruit_ptc_config config;
+    uint16_t threshold;
 } touchio_touchin_obj_t;
+
+void touchin_reset(void);
 
 #endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_TOUCHIO_TOUCHIN_H__

@@ -32,7 +32,6 @@
 
 #ifdef EXPRESS_BOARD
 #include "common-hal/touchio/TouchIn.h"
-#include "QTouch/touch_api_ptc.h"
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100)
 #else
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100)
@@ -139,10 +138,6 @@ void reset_mp(void) {
     mp_obj_list_init(mp_sys_argv, 0);
 }
 
-#ifdef EXPRESS_BOARD
-extern touchio_touchin_obj_t *active_touchin_obj[DEF_SELFCAP_NUM_CHANNELS];
-extern touch_selfcap_config_t selfcap_config;
-#endif
 extern volatile bool mp_msc_enabled;
 
 void reset_samd21(void) {
@@ -163,12 +158,7 @@ void reset_samd21(void) {
     }
 
 #ifdef EXPRESS_BOARD
-    touch_selfcap_sensors_deinit();
-    for (int i = 0; i < selfcap_config.num_channels; i++) {
-        active_touchin_obj[i] = NULL;
-    }
-    selfcap_config.num_channels = 0;
-    selfcap_config.num_sensors = 0;
+    touchin_reset();
 #endif
 
     analogin_reset();
