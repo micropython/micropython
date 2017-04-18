@@ -240,6 +240,23 @@ Additional Pin methods:
    Returns a list of the alternate functions supported by the pin. List items are
    a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
 
+Additional details for machine.I2C
+----------------------------------
+
+On the WiPy there is a single hardware I2C peripheral, identified by "0".  By
+default this is the peripheral that is used when constructing an I2C instance.
+The default pins are GP23 for SCL and GP13 for SDA, and one can create the
+default I2C peripheral simply by doing::
+
+    i2c = machine.I2C()
+
+The pins and frequency can be specified as::
+
+    i2c = machine.I2C(freq=400000, scl='GP23', sda='GP13')
+
+Only certain pins can be used as SCL/SDA.  Please refer to the pinout for further
+information.
+
 Known issues
 ------------
 
