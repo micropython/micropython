@@ -28,5 +28,12 @@ class NeoPixel:
         for i in range(self.n):
             self[i] = color
 
+    def fill(self, color):
+        r, g, b = color
+        for i in range(len(self.buf) / 3):
+            self.buf[i * 3] = g
+            self.buf[i * 3 + 1] = r
+            self.buf[i * 3 + 2] = b
+
     def write(self):
         neopixel_write(self.pin, self.buf, True)
