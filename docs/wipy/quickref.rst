@@ -112,7 +112,7 @@ See :ref:`machine.I2C <machine.I2C>`. ::
 
     from machine import I2C
     # configure the I2C bus
-    i2c = I2C(0, I2C.MASTER, baudrate=100000)
+    i2c = I2C(baudrate=100000)
     i2c.scan() # returns list of slave addresses
     i2c.writeto(0x42, 'hello') # send 5 bytes to slave with address 0x42
     i2c.readfrom(0x42, 5) # receive 5 bytes from slave
