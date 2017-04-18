@@ -52,7 +52,6 @@
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
-#define MICROPY_PY_FRAMEBUF         (0)
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
@@ -142,12 +141,14 @@ extern const struct _mp_obj_module_t usb_hid_module;
 // Internal flash size dependent settings.
 #if BOARD_FLASH_SIZE > 192000
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
+    #define MICROPY_PY_FRAMEBUF         (1)
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
     #define EXPRESS_BOARD
 #else
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
+    #define MICROPY_PY_FRAMEBUF         (0)
     #define EXTRA_BUILTIN_MODULES
 #endif
 
