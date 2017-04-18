@@ -32,17 +32,6 @@ using the standard stream methods::
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
 
-.. only:: port_pyboard
-
-    Individual characters can be read/written using::
-
-        uart.readchar()     # read 1 character and returns it as an integer
-        uart.writechar(42)  # write 1 character
-
-    To check if there is anything to be read, use::
-
-        uart.any()               # returns True if any characters waiting
-
 Constructors
 ------------
 
