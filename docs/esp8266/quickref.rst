@@ -88,7 +88,7 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-Virtual (RTOS-based) timers are supported. Use the ``machine.Timer`` class
+Virtual (RTOS-based) timers are supported. Use the :ref:`machine.Timer <machine.Timer>` class
 with timer ID of -1::
 
     from machine import Timer
@@ -102,7 +102,7 @@ The period is in milliseconds.
 Pins and GPIO
 -------------
 
-Use the ``machine.Pin`` class::
+Use the :ref:`machine.Pin <machine.Pin>` class::
 
     from machine import Pin
 
@@ -155,7 +155,7 @@ ADC (analog to digital conversion)
 ADC is available on a dedicated pin.
 Note that input voltages on the ADC pin must be between 0v and 1.0v.
 
-Use the ``machine.ADC`` class::
+Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
@@ -166,7 +166,8 @@ Software SPI bus
 ----------------
 
 There are two SPI drivers. One is implemented in software (bit-banging)
-and works on all pins::
+and works on all pins, and is accessed via the :ref:`machine.SPI <machine.SPI>`
+class::
 
     from machine import Pin, SPI
 
@@ -208,7 +209,8 @@ constructor and init (as those are fixed)::
 I2C bus
 -------
 
-The I2C driver is implemented in software and works on all pins::
+The I2C driver is implemented in software and works on all pins,
+and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
 
     from machine import Pin, I2C
 
