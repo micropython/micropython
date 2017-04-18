@@ -65,11 +65,22 @@ typedef enum {
     HAL_PWM_FREQ_125khz
 } hal_pwm_freq_t;
 
+/**
+  * @brief  PWM mode type definition
+  */
+typedef enum {
+    HAL_PWM_MODE_LOW_HIGH = 0,
+    HAL_PWM_MODE_HIGH_LOW
+} hal_pwm_mode_t;
+
+
 typedef struct {
     uint8_t pwm_pin;
     hal_pwm_freq_t freq;
     uint8_t duty;
+    uint16_t pulse_width;
     uint16_t period;
+    hal_pwm_mode_t mode;
 } hal_pwm_init_t;
 
 /**
