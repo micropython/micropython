@@ -261,7 +261,7 @@ DEF_RULE(atom_expr_await, c(atom_expr_await), and(3), tok(KW_AWAIT), rule(atom),
 DEF_RULE_NC(atom_expr, or(1), rule(atom_expr_normal))
 #endif
 DEF_RULE(atom_expr_normal, c(atom_expr_normal), and_ident(2), rule(atom), opt_rule(atom_expr_trailers))
-DEF_RULE(atom_expr_trailers, c(atom_expr_trailers), one_or_more, rule(trailer))
+DEF_RULE_NC(atom_expr_trailers, one_or_more, rule(trailer))
 DEF_RULE_NC(power_dbl_star, and_ident(2), tok(OP_DBL_STAR), rule(factor))
 
 // atom: '(' [yield_expr|testlist_comp] ')' | '[' [testlist_comp] ']' | '{' [dictorsetmaker] '}' | NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False'
