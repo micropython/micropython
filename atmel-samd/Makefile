@@ -107,6 +107,7 @@ CFLAGS_CORTEX_M0 = \
 	-ffunction-sections \
 	-fdata-sections \
 	-fshort-enums \
+	-flto \
 	-D ARM_MATH_CM0PLUS=true \
 	-DSYSTICK_MODE \
 	-DEXTINT_CALLBACK_MODE=true \
@@ -120,7 +121,7 @@ CFLAGS_CORTEX_M0 = \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
 	--param max-inline-insns-single=500
-CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT) $(BOARD_CFLAGS)
+CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 
 #Debugging/Optimization
 # TODO(tannewt): Figure out what NDEBUG does. Adding it to the debug build
