@@ -160,8 +160,7 @@ methods are convenience functions to communicate with such devices.
    The argument `addrsize` specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).
 
-   On WiPy the return value is the number of bytes read.  Otherwise the
-   return value is `None`.
+   The method returns `None`.
 
 .. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
 
@@ -170,5 +169,4 @@ methods are convenience functions to communicate with such devices.
    The argument `addrsize` specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).
 
-   On WiPy the return value is the number of bytes written.  Otherwise the
-   return value is `None`.
+   The method returns `None`.
