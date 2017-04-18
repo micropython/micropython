@@ -85,6 +85,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_LOAD_BUILD_CLASS] = 0,
     [MP_F_LOAD_ATTR] = 2,
     [MP_F_LOAD_METHOD] = 3,
+    [MP_F_LOAD_SUPER_METHOD] = 2,
     [MP_F_STORE_NAME] = 2,
     [MP_F_STORE_GLOBAL] = 2,
     [MP_F_STORE_ATTR] = 3,
@@ -1065,12 +1066,18 @@ STATIC void emit_native_load_attr(emit_t *emit, qstr qst) {
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_load_method(emit_t *emit, qstr qst) {
-    vtype_kind_t vtype_base;
-    emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
-    assert(vtype_base == VTYPE_PYOBJ);
-    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
-    emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, qst, REG_ARG_2); // arg2 = method name
+STATIC void emit_native_load_method(emit_t *emit, qstr qst, bool is_super) {
+    if (is_super) {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, 3); // arg2 = dest ptr
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, 2); // arg2 = dest ptr
+        emit_call_with_imm_arg(emit, MP_F_LOAD_SUPER_METHOD, qst, REG_ARG_1); // arg1 = method name
+    } else {
+        vtype_kind_t vtype_base;
+        emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
+        assert(vtype_base == VTYPE_PYOBJ);
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_3, 2); // arg3 = dest ptr
+        emit_call_with_imm_arg(emit, MP_F_LOAD_METHOD, qst, REG_ARG_2); // arg2 = method name
+    }
 }
 
 STATIC void emit_native_load_build_class(emit_t *emit) {

@@ -1694,7 +1694,7 @@ STATIC void compile_yield_from(compiler_t *comp) {
 
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
-    EMIT_ARG(load_method, method);
+    EMIT_ARG(load_method, method, false);
     EMIT_ARG(call_method, 0, 0, 0);
     compile_yield_from(comp);
 }
@@ -1785,7 +1785,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         }
 
         compile_load_id(comp, context);
-        EMIT_ARG(load_method, MP_QSTR___aexit__);
+        EMIT_ARG(load_method, MP_QSTR___aexit__, false);
 
         EMIT_ARG(setup_except, try_exception_label);
         compile_increase_except_level(comp);
@@ -2219,9 +2219,20 @@ STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *p
             return;
         }
 
-        // a super() call
-        EMIT_ARG(call_function, 2, 0, 0);
-        i = 1;
+        if (num_trail >= 3
+            && MP_PARSE_NODE_STRUCT_KIND(pns_trail[1]) == PN_trailer_period
+            && MP_PARSE_NODE_STRUCT_KIND(pns_trail[2]) == PN_trailer_paren) {
+            // optimisation for method calls super().f(...), to eliminate heap allocation
+            mp_parse_node_struct_t *pns_period = pns_trail[1];
+            mp_parse_node_struct_t *pns_paren = pns_trail[2];
+            EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0]), true);
+            compile_trailer_paren_helper(comp, pns_paren->nodes[0], true, 0);
+            i = 3;
+        } else {
+            // a super() call
+            EMIT_ARG(call_function, 2, 0, 0);
+            i = 1;
+        }
     }
 
     // compile the remaining trailers
@@ -2232,7 +2243,7 @@ STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *p
             // optimisation for method calls a.f(...), following PyPy
             mp_parse_node_struct_t *pns_period = pns_trail[i];
             mp_parse_node_struct_t *pns_paren = pns_trail[i + 1];
-            EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0]));
+            EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0]), false);
             compile_trailer_paren_helper(comp, pns_paren->nodes[0], true, 0);
             i += 1;
         } else {

@@ -88,7 +88,7 @@ typedef struct _emit_method_table_t {
     void (*load_const_obj)(emit_t *emit, mp_obj_t obj);
     void (*load_null)(emit_t *emit);
     void (*load_attr)(emit_t *emit, qstr qst);
-    void (*load_method)(emit_t *emit, qstr qst);
+    void (*load_method)(emit_t *emit, qstr qst, bool is_super);
     void (*load_build_class)(emit_t *emit);
     void (*load_subscr)(emit_t *emit);
     void (*store_attr)(emit_t *emit, qstr qst);
@@ -205,7 +205,7 @@ void mp_emit_bc_load_const_str(emit_t *emit, qstr qst);
 void mp_emit_bc_load_const_obj(emit_t *emit, mp_obj_t obj);
 void mp_emit_bc_load_null(emit_t *emit);
 void mp_emit_bc_load_attr(emit_t *emit, qstr qst);
-void mp_emit_bc_load_method(emit_t *emit, qstr qst);
+void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super);
 void mp_emit_bc_load_build_class(emit_t *emit);
 void mp_emit_bc_load_subscr(emit_t *emit);
 void mp_emit_bc_store_attr(emit_t *emit, qstr qst);

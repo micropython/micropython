@@ -376,6 +376,14 @@ dispatch_loop:
                     DISPATCH();
                 }
 
+                ENTRY(MP_BC_LOAD_SUPER_METHOD): {
+                    MARK_EXC_IP_SELECTIVE();
+                    DECODE_QSTR;
+                    sp -= 1;
+                    mp_load_super_method(qst, sp - 1);
+                    DISPATCH();
+                }
+
                 ENTRY(MP_BC_LOAD_BUILD_CLASS):
                     MARK_EXC_IP_SELECTIVE();
                     PUSH(mp_load_build_class());
