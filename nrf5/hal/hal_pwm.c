@@ -50,10 +50,20 @@ static const uint32_t hal_pwm_frequency_lookup[] = {
 
 void hal_pwm_init(NRF_PWM_Type * p_instance, hal_pwm_init_t const * p_pwm_init) {
     g_pwm_period = p_pwm_init->period;
-    uint16_t duty_cycle = ((g_pwm_period * p_pwm_init->duty)/100);
+    uint16_t pulse_width = ((g_pwm_period * p_pwm_init->duty)/100);
 
-    g_pwm_seq[0] = duty_cycle;
-    g_pwm_seq[1] = duty_cycle;
+    if (p_pwm_init->pulse_width > 0) {
+        pulse_width = p_pwm_init->pulse_width;
+    }
+
+    if (p_pwm_init->mode == HAL_PWM_MODE_HIGH_LOW) {
+        g_pwm_seq[0] = g_pwm_period - pulse_width;
+        g_pwm_seq[1] = g_pwm_period - pulse_width;
+    } else {
+        g_pwm_seq[0] = pulse_width;
+        g_pwm_seq[1] = pulse_width;
+    }
+
     g_pwm_seq[2] = 0;
     g_pwm_seq[3] = 0;
 
