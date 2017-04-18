@@ -45,7 +45,7 @@ Methods
        a hardware SPI block. Arbitrary pin assignments are possible only for a bitbanging SPI driver
        (``id`` = -1).
      - ``pins`` - WiPy port doesn't ``sck``, ``mosi``, ``miso`` arguments, and instead allows to
-     specify them as a tuple of ``pins`` parameter.
+       specify them as a tuple of ``pins`` parameter.
 
 .. method:: SPI.deinit()
 
