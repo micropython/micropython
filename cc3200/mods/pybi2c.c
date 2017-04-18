@@ -477,7 +477,7 @@ STATIC mp_obj_t pyb_i2c_readfrom_mem_into(mp_uint_t n_args, const mp_obj_t *pos_
     // get the buffer to read into
     vstr_t vstr;
     pyb_i2c_readmem_into (args, &vstr);
-    return mp_obj_new_int(vstr.len);
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_readfrom_mem_into_obj, 1, pyb_i2c_readfrom_mem_into);
 
@@ -501,8 +501,7 @@ STATIC mp_obj_t pyb_i2c_writeto_mem(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     // write the register address to write to.
     if (pyb_i2c_mem_write (i2c_addr, (byte *)&mem_addr, mem_addr_size, bufinfo.buf, bufinfo.len)) {
-        // return the number of bytes written
-        return mp_obj_new_int(bufinfo.len);
+        return mp_const_none;
     }
 
     mp_raise_OSError(MP_EIO);
