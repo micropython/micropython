@@ -273,6 +273,17 @@ class Pyboard:
         if not data.endswith(b'soft reboot\r\n'):
             print(data)
             raise PyboardError('could not enter raw repl')
+
+        # Wait for any char after a potentially hard reboot.
+        # On some platforms, soft reboot can be actually a hard
+        # reboot to achieve completely clean environment. QEMU
+        # when rebooted appears to do something like reopening
+        # a stdout, and without this magic read, we can get into
+        # some race condition.
+        self.serial.read(1)
+
+        # After soft reboot we're in friendly REPL again
+        self.serial.write(b'\x01') # ctrl-A: enter raw REPL
         # By splitting this into 2 reads, it allows boot.py to print stuff,
         # which will show up after the soft reboot and before the raw REPL.
         data = self.read_until(1, b'raw REPL; CTRL-B to exit\r\n')
