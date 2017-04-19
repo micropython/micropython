@@ -137,6 +137,7 @@ soft_reset:
     gc_init(&_boot, &_eheap);
 
     // MicroPython init
+    pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);

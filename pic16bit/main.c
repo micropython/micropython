@@ -70,6 +70,7 @@ soft_reset:
     mp_init();
     mp_hal_init();
     readline_init0();
+    pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 
     // REPL loop
     for (;;) {
