@@ -113,7 +113,11 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     mp_float_t o_val = mp_obj_float_get(o_in);
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
+    const int precision = 6;
+    #else
     const int precision = 7;
+    #endif
 #else
     char buf[32];
     const int precision = 16;
