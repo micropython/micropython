@@ -7,6 +7,12 @@ cache:
   directories:
     - "${HOME}/persist"
 
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - $(ls bin/* | tr "\n" ":")
+
 notifications:
   webhooks:
     urls:
@@ -32,13 +38,7 @@ before_script:
 script:
   # Build mpy-cross first because other builds depend on it.
   - make -C mpy-cross
-  - make -C atmel-samd BOARD=arduino_zero
-  - make -C atmel-samd BOARD=feather_m0_basic
-  - make -C atmel-samd BOARD=feather_m0_express
-  - make -C atmel-samd BOARD=metro_m0_flash
-  - make -C atmel-samd BOARD=circuitplayground_express
-  - make -C atmel-samd BOARD=trinket_m0
-  - make -C atmel-samd BOARD=gemma_m0
+  - tools/build_adafruit_bins.h
   - make -C minimal CROSS=1 build/firmware.bin
   - ls -l minimal/build/firmware.bin
   - tools/check_code_size.sh

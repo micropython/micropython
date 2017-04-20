@@ -5,15 +5,25 @@ ATMEL_BOARDS="arduino_zero circuitplayground_express feather_m0_basic feather_m0
 
 for board in $ATMEL_BOARDS; do
     make -C atmel-samd BOARD=$board
+    (( exit_status = exit_status || $? ))
 done
 make -C esp8266 BOARD=feather_huzzah
+(( exit_status = exit_status || $? ))
 
 version=`git describe --tags --exact-match`
 if [ $? -ne 0 ]; then
-    version=`git rev-parse --short HEAD`
+    version=`date +%Y%m%d`-`git rev-parse --short HEAD`
 fi
 
 for board in $ATMEL_BOARDS; do
-    cp atmel-samd/build-$board/firmware.bin bin/adafruit-circuitpython-$board-$version.bin
+    mkdir -p bin/$board/
+    cp atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
+    (( exit_status = exit_status || $? ))
+    python2 tools/uf2/utils/uf2conv.py -c -o bin/$board/adafruit-circuitpython-$board-$version.uf2 bin/$board/adafruit-circuitpython-$board-$version.bin
+    (( exit_status = exit_status || $? ))
 done
-cp esp8266/build/firmware-combined.bin bin/adafruit-circuitpython-feather_huzzah-$version.bin
+mkdir -p bin/esp8266/
+cp esp8266/build/firmware-combined.bin bin/esp8266/adafruit-circuitpython-feather_huzzah-$version.bin
+(( exit_status = exit_status || $? ))
+
+exit $exit_status
