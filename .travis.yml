@@ -38,7 +38,7 @@ before_script:
 script:
   # Build mpy-cross first because other builds depend on it.
   - make -C mpy-cross
-  - tools/build_adafruit_bins.h
+  - tools/build_adafruit_bins.sh
   - make -C minimal CROSS=1 build/firmware.bin
   - ls -l minimal/build/firmware.bin
   - tools/check_code_size.sh
