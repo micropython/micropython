@@ -11,7 +11,9 @@ addons:
   artifacts:
     debug: true
     paths:
-    - $(ls bin/* | tr "\n" ":")
+    - $(ls -d1 */* | tr "\n" ":")
+    target_paths: /
+    working_dir: bin
 
 notifications:
   webhooks:
