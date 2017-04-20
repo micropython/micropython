@@ -68,12 +68,10 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     adafruit_ptc_get_config_default(&self->config);
     self->config.pin = pin->pin;
     self->config.yline = pin->touch_y_line;
-    mp_printf(&mp_plat_print, "pin %d line %d\n", pin->pin, pin->touch_y_line);
 
     adafruit_ptc_init(PTC, &self->config);
 
     self->threshold = 2 * get_raw_reading(self);
-    //mp_printf(&mp_plat_print, "%d\n", self->threshold);
 }
 
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
@@ -87,6 +85,5 @@ void touchin_reset() {
 
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
     uint16_t reading = get_raw_reading(self);
-    //mp_printf(&mp_plat_print, "%d\n", reading);
     return reading > self->threshold;
 }
