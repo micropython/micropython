@@ -207,6 +207,7 @@ SRC_C = \
 	lib/fatfs/ff.c \
 	lib/fatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
+	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \

@@ -171,6 +171,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/buffer_helper.c \
 	utils/context_manager_helpers.c \
 	utils/pyexec.c \
 	utils/pyhelp.c \

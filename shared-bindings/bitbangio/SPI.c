@@ -185,6 +185,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 //|
 //|     Write the data contained in ``buf``. Requires the SPI being locked.
 //|
+// TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
@@ -203,6 +204,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 //|
 //|     Read into the buffer specified by ``buf`` while writing zeroes. Requires the SPI being locked.
 //|
+// TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);

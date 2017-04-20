@@ -30,6 +30,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/I2C.h"
 
+#include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
 #include "py/runtime.h"
 //| .. currentmodule:: busio
@@ -187,18 +188,11 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
-    int32_t end = args[ARG_end].u_int;
-    if (end < 0) {
-        end += bufinfo.len;
-    }
-    uint32_t start = args[ARG_start].u_int;
-    uint32_t len = end - start;
-    if ((uint32_t) end < start) {
-        len = 0;
-    } else if (len > bufinfo.len) {
-        len = bufinfo.len;
-    }
-    uint8_t status = common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, len);
+
+    int32_t start = args[ARG_start].u_int;
+    uint32_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+    uint8_t status = common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, length);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -241,21 +235,14 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    int32_t end = args[ARG_end].u_int;
-    if (end < 0) {
-        end += bufinfo.len;
-    }
-    uint32_t start = args[ARG_start].u_int;
-    uint32_t len = end - start;
-    if ((uint32_t) end < start) {
-        len = 0;
-    } else if (len > bufinfo.len) {
-        len = bufinfo.len;
-    }
+
+    int32_t start = args[ARG_start].u_int;
+    uint32_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
     // do the transfer
     uint8_t status = common_hal_busio_i2c_write(self, args[ARG_address].u_int,
-        ((uint8_t*) bufinfo.buf) + start, len, args[ARG_stop].u_bool);
+        ((uint8_t*) bufinfo.buf) + start, length, args[ARG_stop].u_bool);
     if (status != 0) {
         mp_raise_OSError(status);
     }
