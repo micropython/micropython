@@ -97,6 +97,7 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
         return !apa102_sck_in_use;
     }
     #endif
+
     PortGroup *const port = system_pinmux_get_group_from_gpio_pin(pin->pin);
     uint32_t pin_index = (pin->pin);
     PORT_PINCFG_Type state = port->PINCFG[pin_index];

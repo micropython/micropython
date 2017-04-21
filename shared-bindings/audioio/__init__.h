@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGIN_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGIN_H__
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO___INIT___H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO___INIT___H__
 
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/analogio/AnalogIn.h"
+#include "py/obj.h"
 
-extern const mp_obj_type_t analogio_analogin_type;
+// Nothing now.
 
-void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self, const mcu_pin_obj_t *pin);
-void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t* self);
-uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t* self);
-float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t* self);
-
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGIN_H__
+#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO___INIT___H__

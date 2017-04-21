@@ -125,6 +125,7 @@ typedef long mp_off_t;
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t microcontroller_module;
 extern const struct _mp_obj_module_t bitbangio_module;
+extern const struct _mp_obj_module_t audioio_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
@@ -143,6 +144,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #define MICROPY_PY_FRAMEBUF         (1)
     #define EXTRA_BUILTIN_MODULES \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
     #define EXPRESS_BOARD

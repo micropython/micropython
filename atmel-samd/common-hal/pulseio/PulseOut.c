@@ -32,6 +32,7 @@
 #include "asf/sam0/drivers/port/port.h"
 
 #include "mpconfigport.h"
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 
@@ -39,7 +40,7 @@
 
 // This timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
-static struct tc_module tc_instance;
+static struct tc_module* tc_instance;
 static uint8_t refcount = 0;
 
 static __IO PORT_PINCFG_Type *active_pincfg = NULL;
@@ -68,7 +69,7 @@ void pulse_finish(struct tc_module *const module) {
         return;
     }
     current_compare = (current_compare + pulse_buffer[pulse_index] * 3 / 4) & 0xffff;
-    tc_set_compare_value(&tc_instance, TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
+    tc_set_compare_value(tc_instance, TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
     if (pulse_index % 2 == 0) {
         turn_on(active_pincfg);
     }
@@ -76,6 +77,7 @@ void pulse_finish(struct tc_module *const module) {
 
 void pulseout_reset() {
     refcount = 0;
+    tc_instance = 0;
     active_pincfg = NULL;
 }
 
@@ -94,6 +96,10 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
         if (t == NULL) {
             mp_raise_RuntimeError("All timers in use");
         }
+        tc_instance = gc_alloc(sizeof(struct tc_module), false);
+        if (t == NULL) {
+            mp_raise_msg(&mp_type_MemoryError, "");
+        }
 
         struct tc_config config_tc;
         tc_get_config_defaults(&config_tc);
@@ -102,10 +108,10 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
         config_tc.clock_prescaler = TC_CTRLA_PRESCALER_DIV64;
         config_tc.wave_generation = TC_WAVE_GENERATION_NORMAL_FREQ;
 
-        tc_init(&tc_instance, t, &config_tc);
-        tc_register_callback(&tc_instance, pulse_finish, TC_CALLBACK_CC_CHANNEL0);
-        tc_enable(&tc_instance);
-        tc_stop_counter(&tc_instance);
+        tc_init(tc_instance, t, &config_tc);
+        tc_register_callback(tc_instance, pulse_finish, TC_CALLBACK_CC_CHANNEL0);
+        tc_enable(tc_instance);
+        tc_stop_counter(tc_instance);
     }
     refcount++;
 
@@ -130,7 +136,9 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 
     refcount--;
     if (refcount == 0) {
-        tc_reset(&tc_instance);
+        tc_reset(tc_instance);
+        gc_free(tc_instance);
+        tc_instance = NULL;
     }
 }
 
@@ -144,11 +152,11 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     pulse_length = length;
 
     current_compare = pulses[0] * 3 / 4;
-    tc_set_compare_value(&tc_instance, TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
+    tc_set_compare_value(tc_instance, TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
 
-    tc_enable_callback(&tc_instance, TC_CALLBACK_CC_CHANNEL0);
+    tc_enable_callback(tc_instance, TC_CALLBACK_CC_CHANNEL0);
     turn_on(active_pincfg);
-    tc_start_counter(&tc_instance);
+    tc_start_counter(tc_instance);
 
     while(pulse_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
@@ -158,7 +166,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
         #endif
     }
 
-    tc_stop_counter(&tc_instance);
-    tc_disable_callback(&tc_instance, TC_CALLBACK_CC_CHANNEL0);
+    tc_stop_counter(tc_instance);
+    tc_disable_callback(tc_instance, TC_CALLBACK_CC_CHANNEL0);
     active_pincfg = NULL;
 }

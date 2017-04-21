@@ -25,6 +25,7 @@
 #include <board.h>
 
 #include "common-hal/analogio/AnalogIn.h"
+#include "common-hal/audioio/AudioOut.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
@@ -40,6 +41,7 @@
 #include "autoreset.h"
 #include "mpconfigboard.h"
 #include "rgb_led_status.h"
+#include "shared_dma.h"
 #include "tick.h"
 
 fs_user_mount_t fs_user_mount_flash;
@@ -180,6 +182,7 @@ void reset_samd21(void) {
     system_pinmux_group_set_config(&(PORT->Group[0]), pin_mask[0] & ~MICROPY_PORT_A, &config);
     system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
 
+    audioout_reset();
     pwmout_reset();
 
     usb_hid_reset();
@@ -504,6 +507,8 @@ void samd21_init(void) {
     nvm_get_config_defaults(&config_nvm);
     config_nvm.manual_page_write = false;
     nvm_set_config(&config_nvm);
+
+    init_shared_dma();
 }
 
 extern uint32_t _estack;

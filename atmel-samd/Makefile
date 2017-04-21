@@ -48,7 +48,8 @@ INC += -Iasf/common/services/usb/udc/
 INC += -Iasf/common/utils
 INC += -Iasf/common2/services/delay/
 INC +=  $(addprefix -Iasf/sam0/,\
-	drivers/extint/ \
+	drivers/events \
+	drivers/extint \
 	drivers/port \
 	drivers/system \
 	drivers/adc/adc_sam_d_r \
@@ -107,7 +108,6 @@ CFLAGS_CORTEX_M0 = \
 	-ffunction-sections \
 	-fdata-sections \
 	-fshort-enums \
-	-flto \
 	-D ARM_MATH_CM0PLUS=true \
 	-DSYSTICK_MODE \
 	-DEXTINT_CALLBACK_MODE=true \
@@ -118,6 +118,7 @@ CFLAGS_CORTEX_M0 = \
 	-DDAC_CALLBACK_MODE=false \
 	-DTCC_ASYNC=false \
 	-DADC_CALLBACK_MODE=false \
+	-DEVENTS_INTERRUPT_HOOKS_MODE=false \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
 	--param max-inline-insns-single=500
@@ -129,7 +130,7 @@ CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 ifeq ($(DEBUG), 1)
 CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER
 else
-CFLAGS += -Os -DNDEBUG
+CFLAGS += -Os -DNDEBUG -flto
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -152,6 +153,8 @@ LIBS = -larm_cortexM0l_math -lm -lgcc -lc
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/adc/adc_sam_d_r/adc.c \
 	drivers/dac/dac_sam_d_c/dac.c \
+	drivers/dma/dma.c \
+	drivers/events/events_sam_d_r/events.c \
 	drivers/extint/extint_callback.c \
 	drivers/extint/extint_sam_d_r/extint.c \
 	drivers/nvm/nvm.c \
@@ -183,6 +186,7 @@ SRC_C = \
 	moduos.c \
 	mphalport.c \
 	samd21_pins.c \
+	shared_dma.c \
 	rgb_led_status.c \
 	tick.c \
 	$(FLASH_IMPL) \
@@ -228,6 +232,8 @@ SRC_BINDINGS = \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
+	audioio/__init__.c \
+	audioio/AudioOut.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	pulseio/__init__.c \

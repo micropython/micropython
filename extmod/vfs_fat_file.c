@@ -24,7 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "extmod/vfs_fat_file.h"
+
 // *_ADHOC part is for cc3200 port which doesn't use general uPy
 // infrastructure and instead duplicates code. TODO: Resolve.
 #if MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
@@ -37,15 +38,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/fatfs/ff.h"
-#include "extmod/vfs_fat_file.h"
-
-#if MICROPY_VFS_FAT
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
-#endif
-
-extern const mp_obj_type_t mp_type_fileio;
-extern const mp_obj_type_t mp_type_textio;
 
 // this table converts from FRESULT to POSIX errno
 const byte fresult_to_errno_table[20] = {
@@ -70,11 +62,6 @@ const byte fresult_to_errno_table[20] = {
     [FR_TOO_MANY_OPEN_FILES] = MP_EMFILE,
     [FR_INVALID_PARAMETER] = MP_EINVAL,
 };
-
-typedef struct _pyb_file_obj_t {
-    mp_obj_base_t base;
-    FIL fp;
-} pyb_file_obj_t;
 
 STATIC void file_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
