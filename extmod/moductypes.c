@@ -360,7 +360,7 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
         return;
     }
     #endif
-    mp_int_t v = mp_obj_get_int(val);
+    mp_int_t v = mp_obj_get_int_truncated(val);
     switch (val_type) {
         case UINT8:
             ((uint8_t*)p)[index] = (uint8_t)v; return;
