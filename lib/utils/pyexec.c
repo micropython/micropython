@@ -188,6 +188,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
     } else if (c == CHAR_CTRL_B) {
         // change to friendly REPL
         pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+        vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
         pyexec_friendly_repl_process_char(CHAR_CTRL_B);
         return 0;
