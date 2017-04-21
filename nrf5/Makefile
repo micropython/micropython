@@ -5,13 +5,6 @@ ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
 
-check_defined = \
-    $(strip $(foreach 1,$1, \
-        $(call __check_defined,$1,$(strip $(value 2)))))
-__check_defined = \
-    $(if $(value $1),, \
-      $(error Undefined $1$(if $2, ($2))))
-
 # If SoftDevice is selected, try to use that one.
 SD ?=
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
@@ -25,7 +18,6 @@ ifeq ($(SD), )
 	include ../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
 else
-        $(call check_defined, SDK_ROOT, path to SDK containing softdevice)
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
 	include ../py/mkenv.mk
