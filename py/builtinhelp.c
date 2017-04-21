@@ -44,7 +44,10 @@ const char *mp_help_default_text =
 "  CTRL-D        -- on a blank line, exit or do a soft reset\n"
 "  CTRL-E        -- on a blank line, enter paste mode\n"
 "\n"
-"For further help on a specific object, type help(obj)\n"
+"For further help on a specific object, type help(obj).\n"
+#if defined(MICROPY_PY_BUILTINS_HELP_MODULES)
+"For a list of all builtin modules, type help('modules').\n"
+#endif
 ;
 
 STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
