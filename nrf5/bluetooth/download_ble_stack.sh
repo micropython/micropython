@@ -2,7 +2,12 @@
 
 function download_s110_nrf51
 {
-    echo "### Downloading nrf51_s110 ###"
+    echo ""
+    echo "##############################"
+    echo "### Downloading s110_nrf51 ###"
+    echo "##############################"
+    echo ""
+
     wget https://developer.nordicsemi.com/nRF5_SDK/nRF51_SDK_v10.x.x/nRF51_SDK_10.0.0_dc26b5e.zip
     unzip nRF51_SDK_10.0.0_dc26b5e.zip components/softdevice/s110/*
     mv components s110_nrf51
@@ -11,14 +16,17 @@ function download_s110_nrf51
 
 function download_s132_nrf52
 {
-    echo "### Downloading nrf52_s132 ###"
+    echo ""
+    echo "##############################"
+    echo "### Downloading s132_nrf52 ###"
+    echo "##############################"
+    echo ""
+
     wget https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v12.x.x/nRF5_SDK_12.1.0_0d23e2a.zip
     unzip nRF5_SDK_12.1.0_0d23e2a.zip components/softdevice/s132/*
     mv components s132_nrf52
     rm nRF5_SDK_12.1.0_0d23e2a.zip
 }
-
-cd bluetooth
 
 if [ $# -eq 0 ]; then 
     echo "No Bluetooth LE stack defined, downloading all."
@@ -32,7 +40,5 @@ else
             download_s132_nrf52 ;;
     esac
 fi
-
-cd ..
 
 exit 0
