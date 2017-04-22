@@ -2833,14 +2833,14 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
         } else {
             EMIT_ARG(store_comp, comp->scope_cur->kind, 4 * for_depth + 5);
         }
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_if)) {
+    } else if (MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn_iter) == PN_comp_if) {
         // if condition
         mp_parse_node_struct_t *pns_comp_if = (mp_parse_node_struct_t*)pn_iter;
         c_if_cond(comp, pns_comp_if->nodes[0], false, l_top);
         pn_iter = pns_comp_if->nodes[1];
         goto tail_recursion;
     } else {
-        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_for)); // should be
+        assert(MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn_iter) == PN_comp_for); // should be
         // for loop
         mp_parse_node_struct_t *pns_comp_for2 = (mp_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);
