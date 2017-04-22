@@ -45,6 +45,7 @@
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_RETURN_IF_EXPR (1)
 
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
