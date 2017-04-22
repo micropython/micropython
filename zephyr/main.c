@@ -66,6 +66,10 @@ void init_zephyr(void) {
     #ifdef CONFIG_NET_IPV4
     static struct in_addr in4addr_my = {{{192, 0, 2, 1}}};
     net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);
+    static struct in_addr in4netmask_my = {{{255, 255, 255, 0}}};
+    net_if_ipv4_set_netmask(net_if_get_default(), &in4netmask_my);
+    static struct in_addr in4gw_my = {{{192, 0, 2, 2}}};
+    net_if_ipv4_set_gw(net_if_get_default(), &in4gw_my);
     #endif
     #ifdef CONFIG_NET_IPV6
     // 2001:db8::1
