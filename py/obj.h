@@ -661,7 +661,6 @@ mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(size_t n_args);
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
-mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_obj_new_module(qstr module_name);
