@@ -26,30 +26,43 @@ CMD_LISTDIR_NEXT = 3
 CMD_OPEN = 4
 CMD_CLOSE = 5
 CMD_READ = 6
+CMD_WRITE = 7
 
 fs_hook_code = """\
-import os, select, ustruct as struct, micropython
+import os, io, select, ustruct as struct, micropython
 CMD_STAT = 1
 CMD_LISTDIR_START = 2
 CMD_LISTDIR_NEXT = 3
 CMD_OPEN = 4
 CMD_CLOSE = 5
 CMD_READ = 6
+CMD_WRITE = 7
 class RemoteCommand:
     def __init__(self):
-        # TODO sys.stdio doesn't support polling
-        import sys
-        self.fout = sys.stdout.buffer
-        self.fin = sys.stdin.buffer
-        #import pyb
-        #self.fout = pyb.USB_VCP()
-        #self.fin = pyb.USB_VCP()
+        try:
+            import pyb
+            self.fout = pyb.USB_VCP()
+            self.fin = pyb.USB_VCP()
+            self.can_poll = True
+        except:
+            import sys
+            self.fout = sys.stdout.buffer
+            self.fin = sys.stdin.buffer
+            # TODO sys.stdio doesn't support polling
+            self.can_poll = False
+    def poll_in(self):
+        if self.can_poll:
+            res = select.select([self.fin], [], [], 1000)
+            if not res[0]:
+                raise Exception('timeout waiting for remote response')
     def rd(self, n):
         # implement reading with a timeout in case other side disappears
-        #res = select.select([self.fin], [], [], 1000)
-        #if not res[0]:
-        #    raise Exception('timeout waiting for remote response')
+        self.poll_in()
         return self.fin.read(n)
+    def rdinto(self, buf):
+        # implement reading with a timeout in case other side disappears
+        self.poll_in()
+        return self.fin.readinto(buf)
     def begin(self, type):
         micropython.kbd_intr(-1)
         self.fout.write(bytearray([0x18, type]))
@@ -66,6 +79,9 @@ class RemoteCommand:
     def rd_bytes(self):
         n = struct.unpack('<H', self.rd(2))[0]
         return self.rd(n)
+    def rd_bytes_into(self, buf):
+        n = struct.unpack('<H', self.rd(2))[0]
+        return self.rdinto(buf)
     def wr_bytes(self, b):
         self.fout.write(struct.pack('<H', len(b)))
         self.fout.write(b)
@@ -81,7 +97,7 @@ class RemoteCommand:
         assert l <= 255
         self.fout.write(bytearray([l]) + b)
 
-class RemoteFile:
+class RemoteFile(io.IOBase):
     def __init__(self, cmd, fd, is_text):
         self.cmd = cmd
         self.fd = fd
@@ -102,13 +118,34 @@ class RemoteFile:
             data = str(data, 'utf8')
         self.cmd.end()
         return data
+    def readinto(self, buf):
+        self.cmd.begin(CMD_READ)
+        self.cmd.wr_int32(self.fd)
+        self.cmd.wr_int32(len(buf))
+        n = self.cmd.rd_bytes_into(buf)
+        self.cmd.end()
+        return n
+    def write(self, buf):
+        self.cmd.begin(CMD_WRITE)
+        self.cmd.wr_int32(self.fd)
+        self.cmd.wr_bytes(buf)
+        n = self.cmd.rd_int32()
+        self.cmd.end()
+        return n
 
 class RemoteFS:
     def mount(self, readonly, mkfs):
         self.cmd = RemoteCommand()
         self.readonly = readonly
     def chdir(self, path):
-        self.path = path
+        if path.startswith('/'):
+            self.path = path
+        else:
+            self.path += path
+        if not self.path.endswith('/'):
+            self.path += '/'
+    def getcwd(self):
+        return self.path
     def stat(self, path):
         self.cmd.begin(CMD_STAT)
         self.cmd.wr_str(self.path + path)
@@ -259,6 +296,14 @@ def do_read(cmd):
         buf = bytes(buf, 'utf8')
     cmd.wr_bytes(buf)
 
+def do_write(cmd):
+    fd = cmd.rd_int32()
+    buf = cmd.rd_bytes()
+    if data_files[fd][1]:
+        buf = str(buf, 'utf8')
+    n = data_files[fd][0].write(buf)
+    cmd.wr_int32(n)
+
 cmd_table = {
     CMD_STAT: do_stat,
     CMD_LISTDIR_START: do_listdir_start,
@@ -266,9 +311,11 @@ cmd_table = {
     CMD_OPEN: do_open,
     CMD_CLOSE: do_close,
     CMD_READ: do_read,
+    CMD_WRITE: do_write,
 }
 
 def main_loop(console, dev):
+    # TODO add option to not restart pyboard, to continue a previous session
     pyb = pyboard.Pyboard(dev)
     pyb.enter_raw_repl()
     pyb.exec_(fs_hook_code)
