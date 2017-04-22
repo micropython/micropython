@@ -1422,7 +1422,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns_it = (mp_parse_node_struct_t*)pns->nodes[1];
         if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0])
             && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == MP_QSTR_range
-            && MP_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren)) {
+            && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pns_it->nodes[1]) == PN_trailer_paren) {
             mp_parse_node_t pn_range_args = ((mp_parse_node_struct_t*)pns_it->nodes[1])->nodes[0];
             mp_parse_node_t *args;
             int n_args = mp_parse_node_extract_list(&pn_range_args, PN_arglist, &args);
