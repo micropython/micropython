@@ -586,8 +586,16 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
 }
 
 STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) {
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)
-        || MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_varargslist_star)) {
+    // For efficiency of the code below we extract the parse-node kind here
+    int pn_kind;
+    if (MP_PARSE_NODE_IS_ID(pn)) {
+        pn_kind = -1;
+    } else {
+        assert(MP_PARSE_NODE_IS_STRUCT(pn));
+        pn_kind = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn);
+    }
+
+    if (pn_kind == PN_typedargslist_star || pn_kind == PN_varargslist_star) {
         comp->have_star = true;
         /* don't need to distinguish bare from named star
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -598,8 +606,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
         }
         */
 
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_dbl_star)
-        || MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_varargslist_dbl_star)) {
+    } else if (pn_kind == PN_typedargslist_dbl_star || pn_kind == PN_varargslist_dbl_star) {
         // named double star
         // TODO do we need to do anything with this?
 
@@ -607,14 +614,14 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
         mp_parse_node_t pn_id;
         mp_parse_node_t pn_colon;
         mp_parse_node_t pn_equal;
-        if (MP_PARSE_NODE_IS_ID(pn)) {
+        if (pn_kind == -1) {
             // this parameter is just an id
 
             pn_id = pn;
             pn_colon = MP_PARSE_NODE_NULL;
             pn_equal = MP_PARSE_NODE_NULL;
 
-        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)) {
+        } else if (pn_kind == PN_typedargslist_name) {
             // this parameter has a colon and/or equal specifier
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -623,7 +630,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
             pn_equal = pns->nodes[2];
 
         } else {
-            assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_varargslist_name)); // should be
+            assert(pn_kind == PN_varargslist_name); // should be
             // this parameter has an equal specifier
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
