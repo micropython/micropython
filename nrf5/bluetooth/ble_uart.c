@@ -212,6 +212,7 @@ void ble_uart_init0(void) {
     m_adv_data_uart_service.p_device_name   = (uint8_t *)device_name;
     m_adv_data_uart_service.device_name_len = strlen(device_name);
     m_adv_data_uart_service.connectable     = true;
+    m_adv_data_uart_service.p_data          = NULL;
 
 #if BLUETOOTH_WEBBLUETOOTH_REPL
     // for now point eddystone URL to https://goo.gl/x46FES => https://glennrub.github.io/webbluetooth/micropython/repl/
