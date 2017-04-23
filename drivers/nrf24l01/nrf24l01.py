@@ -66,8 +66,8 @@ class NRF24L01:
         ce.init(ce.OUT, value=0)
 
         # reset everything
-        self.ce.low()
-        self.cs.high()
+        self.ce(0)
+        self.cs(1)
         self.payload_size = payload_size
         self.pipe0_read_addr = None
         utime.sleep_ms(5)
@@ -109,36 +109,36 @@ class NRF24L01:
             self.spi.init(master, baudrate=baudrate, polarity=0, phase=0)
 
     def reg_read(self, reg):
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, reg)
         self.spi.readinto(self.buf)
-        self.cs.high()
+        self.cs(1)
         return self.buf[0]
 
     def reg_write_bytes(self, reg, buf):
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, 0x20 | reg)
         self.spi.write(buf)
-        self.cs.high()
+        self.cs(1)
         return self.buf[0]
 
     def reg_write(self, reg, value):
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, 0x20 | reg)
         ret = self.buf[0]
         self.spi.readinto(self.buf, value)
-        self.cs.high()
+        self.cs(1)
         return ret
 
     def flush_rx(self):
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, FLUSH_RX)
-        self.cs.high()
+        self.cs(1)
 
     def flush_tx(self):
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, FLUSH_TX)
-        self.cs.high()
+        self.cs(1)
 
     # power is one of POWER_x defines; speed is one of SPEED_x defines
     def set_power_speed(self, power, speed):
@@ -190,11 +190,11 @@ class NRF24L01:
 
         self.flush_rx()
         self.flush_tx()
-        self.ce.high()
+        self.ce(1)
         utime.sleep_us(130)
 
     def stop_listening(self):
-        self.ce.low()
+        self.ce(0)
         self.flush_tx()
         self.flush_rx()
 
@@ -204,10 +204,10 @@ class NRF24L01:
 
     def recv(self):
         # get the data
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, R_RX_PAYLOAD)
         buf = self.spi.read(self.payload_size)
-        self.cs.high()
+        self.cs(1)
         # clear RX ready flag
         self.reg_write(STATUS, RX_DR)
 
@@ -229,17 +229,17 @@ class NRF24L01:
         self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
         utime.sleep_us(150)
         # send the data
-        self.cs.low()
+        self.cs(0)
         self.spi.readinto(self.buf, W_TX_PAYLOAD)
         self.spi.write(buf)
         if len(buf) < self.payload_size:
             self.spi.write(b'\x00' * (self.payload_size - len(buf))) # pad out data
-        self.cs.high()
+        self.cs(1)
 
         # enable the chip so it can send the data
-        self.ce.high()
+        self.ce(1)
         utime.sleep_us(15) # needs to be >10us
-        self.ce.low()
+        self.ce(0)
 
     # returns None if send still in progress, 1 for success, 2 for fail
     def send_done(self):
