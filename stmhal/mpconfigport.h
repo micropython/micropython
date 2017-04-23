@@ -45,6 +45,7 @@
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_RETURN_IF_EXPR (1)
 
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
@@ -123,6 +124,7 @@
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI      (1)

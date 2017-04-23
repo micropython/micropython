@@ -17,7 +17,7 @@ A note of callbacks used by functions and class methods of ``machine`` module:
 all these callbacks should be considered as executing in an interrupt context.
 This is true for both physical devices with IDs >= 0 and "virtual" devices
 with negative IDs like -1 (these "virtual" devices are still thin shims on
-top of real hardware and real hardware intrerrupts). See :ref:`isr_rules`.
+top of real hardware and real hardware interrupts). See :ref:`isr_rules`.
 
 Reset related functions
 -----------------------
@@ -84,13 +84,6 @@ Miscellaneous functions
 -----------------------
 
 .. only:: port_wipy
-
-    .. function:: main(filename)
-
-        Set the filename of the main script to run after boot.py is finished.  If
-        this function is not called then the default file main.py will be executed.
-
-        It only makes sense to call this function from within boot.py.
 
     .. function:: rng()
 

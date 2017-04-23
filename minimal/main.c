@@ -125,7 +125,7 @@ void Default_Handler(void) {
     }
 }
 
-uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
+const uint32_t isr_vector[] __attribute__((section(".isr_vector"))) = {
     (uint32_t)&_estack,
     (uint32_t)&Reset_Handler,
     (uint32_t)&Default_Handler, // NMI_Handler

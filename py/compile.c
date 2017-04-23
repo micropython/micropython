@@ -115,7 +115,6 @@ typedef struct _compiler_t {
 
     uint8_t is_repl;
     uint8_t pass; // holds enum type pass_kind_t
-    uint8_t func_arg_is_super; // used to compile special case of super() function call
     uint8_t have_star;
 
     // try to keep compiler clean from nlr
@@ -586,8 +585,16 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
 }
 
 STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) {
-    if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_star)
-        || MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_varargslist_star)) {
+    // For efficiency of the code below we extract the parse-node kind here
+    int pn_kind;
+    if (MP_PARSE_NODE_IS_ID(pn)) {
+        pn_kind = -1;
+    } else {
+        assert(MP_PARSE_NODE_IS_STRUCT(pn));
+        pn_kind = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn);
+    }
+
+    if (pn_kind == PN_typedargslist_star || pn_kind == PN_varargslist_star) {
         comp->have_star = true;
         /* don't need to distinguish bare from named star
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -598,8 +605,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
         }
         */
 
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_dbl_star)
-        || MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_varargslist_dbl_star)) {
+    } else if (pn_kind == PN_typedargslist_dbl_star || pn_kind == PN_varargslist_dbl_star) {
         // named double star
         // TODO do we need to do anything with this?
 
@@ -607,14 +613,14 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
         mp_parse_node_t pn_id;
         mp_parse_node_t pn_colon;
         mp_parse_node_t pn_equal;
-        if (MP_PARSE_NODE_IS_ID(pn)) {
+        if (pn_kind == -1) {
             // this parameter is just an id
 
             pn_id = pn;
             pn_colon = MP_PARSE_NODE_NULL;
             pn_equal = MP_PARSE_NODE_NULL;
 
-        } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_typedargslist_name)) {
+        } else if (pn_kind == PN_typedargslist_name) {
             // this parameter has a colon and/or equal specifier
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -623,7 +629,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
             pn_equal = pns->nodes[2];
 
         } else {
-            assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_varargslist_name)); // should be
+            assert(pn_kind == PN_varargslist_name); // should be
             // this parameter has an equal specifier
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -755,7 +761,6 @@ STATIC qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pn
     if (MP_PARSE_NODE_IS_STRUCT_KIND(parents, PN_classdef_2)) {
         parents = MP_PARSE_NODE_NULL;
     }
-    comp->func_arg_is_super = false;
     compile_trailer_paren_helper(comp, parents, false, 2);
 
     // return its name (the 'C' in class C(...):")
@@ -829,7 +834,6 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
             // nodes[1] contains arguments to the decorator function, if any
             if (!MP_PARSE_NODE_IS_NULL(pns_decorator->nodes[1])) {
                 // call the decorator function with the arguments in nodes[1]
-                comp->func_arg_is_super = false;
                 compile_node(comp, pns_decorator->nodes[1]);
             }
         }
@@ -973,7 +977,8 @@ STATIC void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // no argument to 'return', so return None
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_test_if_expr)) {
+    } else if (MICROPY_COMP_RETURN_IF_EXPR
+        && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_test_if_expr)) {
         // special case when returning an if-expression; to match CPython optimisation
         mp_parse_node_struct_t *pns_test_if_expr = (mp_parse_node_struct_t*)pns->nodes[0];
         mp_parse_node_struct_t *pns_test_if_else = (mp_parse_node_struct_t*)pns_test_if_expr->nodes[1];
@@ -1422,7 +1427,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns_it = (mp_parse_node_struct_t*)pns->nodes[1];
         if (MP_PARSE_NODE_IS_ID(pns_it->nodes[0])
             && MP_PARSE_NODE_LEAF_ARG(pns_it->nodes[0]) == MP_QSTR_range
-            && MP_PARSE_NODE_IS_STRUCT_KIND(pns_it->nodes[1], PN_trailer_paren)) {
+            && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pns_it->nodes[1]) == PN_trailer_paren) {
             mp_parse_node_t pn_range_args = ((mp_parse_node_struct_t*)pns_it->nodes[1])->nodes[0];
             mp_parse_node_t *args;
             int n_args = mp_parse_node_extract_list(&pn_range_args, PN_arglist, &args);
@@ -1689,7 +1694,7 @@ STATIC void compile_yield_from(compiler_t *comp) {
 
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
-    EMIT_ARG(load_method, method);
+    EMIT_ARG(load_method, method, false);
     EMIT_ARG(call_method, 0, 0, 0);
     compile_yield_from(comp);
 }
@@ -1780,7 +1785,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         }
 
         compile_load_id(comp, context);
-        EMIT_ARG(load_method, MP_QSTR___aexit__);
+        EMIT_ARG(load_method, MP_QSTR___aexit__, false);
 
         EMIT_ARG(setup_except, try_exception_label);
         compile_increase_except_level(comp);
@@ -2167,10 +2172,85 @@ STATIC void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // this is to handle special super() call
-    comp->func_arg_is_super = MP_PARSE_NODE_IS_ID(pns->nodes[0]) && MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]) == MP_QSTR_super;
+    // compile the subject of the expression
+    compile_node(comp, pns->nodes[0]);
 
-    compile_generic_all_nodes(comp, pns);
+    // compile_atom_expr_await may call us with a NULL node
+    if (MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
+        return;
+    }
+
+    // get the array of trailers (known to be an array of PARSE_NODE_STRUCT)
+    size_t num_trail = 1;
+    mp_parse_node_struct_t **pns_trail = (mp_parse_node_struct_t**)&pns->nodes[1];
+    if (MP_PARSE_NODE_STRUCT_KIND(pns_trail[0]) == PN_atom_expr_trailers) {
+        num_trail = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_trail[0]);
+        pns_trail = (mp_parse_node_struct_t**)&pns_trail[0]->nodes[0];
+    }
+
+    // the current index into the array of trailers
+    size_t i = 0;
+
+    // handle special super() call
+    if (comp->scope_cur->kind == SCOPE_FUNCTION
+        && MP_PARSE_NODE_IS_ID(pns->nodes[0])
+        && MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]) == MP_QSTR_super
+        && MP_PARSE_NODE_STRUCT_KIND(pns_trail[0]) == PN_trailer_paren
+        && MP_PARSE_NODE_IS_NULL(pns_trail[0]->nodes[0])) {
+        // at this point we have matched "super()" within a function
+
+        // load the class for super to search for a parent
+        compile_load_id(comp, MP_QSTR___class__);
+
+        // look for first argument to function (assumes it's "self")
+        bool found = false;
+        id_info_t *id = &comp->scope_cur->id_info[0];
+        for (size_t n = comp->scope_cur->id_info_len; n > 0; --n, ++id) {
+            if (id->flags & ID_FLAG_IS_PARAM) {
+                // first argument found; load it
+                compile_load_id(comp, id->qst);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns_trail[0],
+                "super() can't find self"); // really a TypeError
+            return;
+        }
+
+        if (num_trail >= 3
+            && MP_PARSE_NODE_STRUCT_KIND(pns_trail[1]) == PN_trailer_period
+            && MP_PARSE_NODE_STRUCT_KIND(pns_trail[2]) == PN_trailer_paren) {
+            // optimisation for method calls super().f(...), to eliminate heap allocation
+            mp_parse_node_struct_t *pns_period = pns_trail[1];
+            mp_parse_node_struct_t *pns_paren = pns_trail[2];
+            EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0]), true);
+            compile_trailer_paren_helper(comp, pns_paren->nodes[0], true, 0);
+            i = 3;
+        } else {
+            // a super() call
+            EMIT_ARG(call_function, 2, 0, 0);
+            i = 1;
+        }
+    }
+
+    // compile the remaining trailers
+    for (; i < num_trail; i++) {
+        if (i + 1 < num_trail
+            && MP_PARSE_NODE_STRUCT_KIND(pns_trail[i]) == PN_trailer_period
+            && MP_PARSE_NODE_STRUCT_KIND(pns_trail[i + 1]) == PN_trailer_paren) {
+            // optimisation for method calls a.f(...), following PyPy
+            mp_parse_node_struct_t *pns_period = pns_trail[i];
+            mp_parse_node_struct_t *pns_paren = pns_trail[i + 1];
+            EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0]), false);
+            compile_trailer_paren_helper(comp, pns_paren->nodes[0], true, 0);
+            i += 1;
+        } else {
+            // node is one of: trailer_paren, trailer_bracket, trailer_period
+            compile_node(comp, (mp_parse_node_t)pns_trail[i]);
+        }
+    }
 }
 
 STATIC void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -2180,23 +2260,6 @@ STATIC void compile_power(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_arglist, bool is_method_call, int n_positional_extra) {
     // function to call is on top of stack
-
-    // this is to handle special super() call
-    if (MP_PARSE_NODE_IS_NULL(pn_arglist) && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
-        compile_load_id(comp, MP_QSTR___class__);
-        // look for first argument to function (assumes it's "self")
-        for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
-            id_info_t *id = &comp->scope_cur->id_info[i];
-            if (id->flags & ID_FLAG_IS_PARAM) {
-                // first argument found; load it and call super
-                compile_load_id(comp, id->qst);
-                EMIT_ARG(call_function, 2, 0, 0);
-                return;
-            }
-        }
-        compile_syntax_error(comp, MP_PARSE_NODE_NULL, "super() call cannot find self"); // really a TypeError
-        return;
-    }
 
     // get the list of arguments
     mp_parse_node_t *args;
@@ -2274,23 +2337,6 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
         EMIT_ARG(call_method, n_positional, n_keyword, star_flags);
     } else {
         EMIT_ARG(call_function, n_positional, n_keyword, star_flags);
-    }
-}
-
-STATIC void compile_atom_expr_trailers(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    for (int i = 0; i < num_nodes; i++) {
-        if (i + 1 < num_nodes && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i], PN_trailer_period) && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[i + 1], PN_trailer_paren)) {
-            // optimisation for method calls a.f(...), following PyPy
-            mp_parse_node_struct_t *pns_period = (mp_parse_node_struct_t*)pns->nodes[i];
-            mp_parse_node_struct_t *pns_paren = (mp_parse_node_struct_t*)pns->nodes[i + 1];
-            EMIT_ARG(load_method, MP_PARSE_NODE_LEAF_ARG(pns_period->nodes[0])); // get the method
-            compile_trailer_paren_helper(comp, pns_paren->nodes[0], true, 0);
-            i += 1;
-        } else {
-            compile_node(comp, pns->nodes[i]);
-        }
-        comp->func_arg_is_super = false;
     }
 }
 
@@ -2825,14 +2871,14 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
         } else {
             EMIT_ARG(store_comp, comp->scope_cur->kind, 4 * for_depth + 5);
         }
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_if)) {
+    } else if (MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn_iter) == PN_comp_if) {
         // if condition
         mp_parse_node_struct_t *pns_comp_if = (mp_parse_node_struct_t*)pn_iter;
         c_if_cond(comp, pns_comp_if->nodes[0], false, l_top);
         pn_iter = pns_comp_if->nodes[1];
         goto tail_recursion;
     } else {
-        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_iter, PN_comp_for)); // should be
+        assert(MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)pn_iter) == PN_comp_for); // should be
         // for loop
         mp_parse_node_struct_t *pns_comp_for2 = (mp_parse_node_struct_t*)pn_iter;
         compile_node(comp, pns_comp_for2->nodes[1]);

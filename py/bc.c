@@ -304,7 +304,7 @@ STATIC const byte opcode_format_table[64] = {
     OC4(U, U, U, U), // 0x0c-0x0f
     OC4(B, B, B, U), // 0x10-0x13
     OC4(V, U, Q, V), // 0x14-0x17
-    OC4(B, U, V, V), // 0x18-0x1b
+    OC4(B, V, V, Q), // 0x18-0x1b
     OC4(Q, Q, Q, Q), // 0x1c-0x1f
     OC4(B, B, V, V), // 0x20-0x23
     OC4(Q, Q, Q, B), // 0x24-0x27

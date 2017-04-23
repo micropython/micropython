@@ -1,4 +1,5 @@
 .. currentmodule:: machine
+.. _machine.UART:
 
 class UART -- duplex serial communication bus
 =============================================
@@ -32,17 +33,6 @@ using the standard stream methods::
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
 
-.. only:: port_pyboard
-
-    Individual characters can be read/written using::
-
-        uart.readchar()     # read 1 character and returns it as an integer
-        uart.writechar(42)  # write 1 character
-
-    To check if there is anything to be read, use::
-
-        uart.any()               # returns True if any characters waiting
-
 Constructors
 ------------
 
@@ -69,15 +59,14 @@ Methods
            When no pins are given, then the default set of TX and RX pins is taken, and hardware 
            flow control will be disabled. If pins=None, no pin assignment will be made.
 
-.. only:: not port_esp8266
+.. method:: UART.deinit()
 
-    .. method:: UART.deinit()
+   Turn off the UART bus.
 
-       Turn off the UART bus.
+.. method:: UART.any()
 
-    .. method:: UART.any()
-
-       Return the number of characters available for reading.
+   Return true value if there're characters available for reading. On some
+   boards, the number of available characters is returned.
 
 .. method:: UART.read([nbytes])
 
@@ -107,13 +96,10 @@ Methods
 
    Return value: number of bytes written or ``None`` on timeout.
 
-.. only:: not port_esp8266
+.. method:: UART.sendbreak()
 
-    .. method:: UART.sendbreak()
-
-       Send a break condition on the bus.  This drives the bus low for a duration
-       of 13 bits.
-       Return value: ``None``.
+   Send a break condition on the bus. This drives the bus low for a duration
+   longer than required for a normal transmission of a character.
 
 .. only:: port_wipy
 
@@ -139,8 +125,6 @@ Methods
           characters waiting.
 
        Returns an irq object.
-
-.. only:: not port_esp8266
 
     Constants
     ---------

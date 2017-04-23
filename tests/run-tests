@@ -49,15 +49,15 @@ def convert_regex_escapes(line):
     return bytes(''.join(cs), 'utf8')
 
 
-def run_micropython(pyb, args, test_file):
+def run_micropython(pyb, args, test_file, is_special=False):
     special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'basics/builtin_help.py', 'thread/thread_exc2.py')
-    is_special = False
     if pyb is None:
         # run on PC
         if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
             # special handling for tests of the unix cmdline program
             is_special = True
 
+        if is_special:
             # check for any cmdline options needed for this test
             args = [MICROPYTHON]
             with open(test_file, 'rb') as f:
@@ -145,7 +145,7 @@ def run_micropython(pyb, args, test_file):
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
     # don't try to convert the output if we should skip this test
-    if output_mupy == b'SKIP\n':
+    if output_mupy in (b'SKIP\n', b'CRASH'):
         return output_mupy
 
     if is_special or test_file in special_tests:
@@ -189,7 +189,12 @@ def run_micropython(pyb, args, test_file):
 
     return output_mupy
 
-def run_tests(pyb, tests, args):
+
+def run_feature_check(pyb, args, base_path, test_file):
+    return run_micropython(pyb, args, base_path + "/feature_check/" + test_file, is_special=True)
+
+
+def run_tests(pyb, tests, args, base_path="."):
     test_count = 0
     testcase_count = 0
     passed_count = 0
@@ -204,39 +209,39 @@ def run_tests(pyb, tests, args):
     skip_const = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/native_check.py')
+    native = run_feature_check(pyb, args, base_path, 'native_check.py')
     if native == b'CRASH':
         skip_native = True
 
     # Check if arbitrary-precision integers are supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/int_big.py')
+    native = run_feature_check(pyb, args, base_path, 'int_big.py')
     if native != b'1000000000000000000000000000000000000000000000\n':
         skip_int_big = True
 
     # Check if set type (and set literals) is supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/set_check.py')
+    native = run_feature_check(pyb, args, base_path, 'set_check.py')
     if native == b'CRASH':
         skip_set_type = True
 
     # Check if async/await keywords are supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/async_check.py')
+    native = run_feature_check(pyb, args, base_path, 'async_check.py')
     if native == b'CRASH':
         skip_async = True
 
     # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/const.py')
+    native = run_feature_check(pyb, args, base_path, 'const.py')
     if native == b'CRASH':
         skip_const = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
-    t = run_micropython(pyb, args, 'feature_check/repl_emacs_check.py')
+    t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
     if not 'True' in str(t, 'ascii'):
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
-    upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
-    has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
-    has_coverage = run_micropython(pyb, args, 'feature_check/coverage.py') == b'coverage\n'
-    cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
+    upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
+    has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
+    has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
+    cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
 
     # Some tests shouldn't be run under Travis CI
@@ -468,7 +473,11 @@ def main():
         # clear search path to make sure tests use only builtin modules
         os.environ['MICROPYPATH'] = ''
 
-    res = run_tests(pyb, tests, args)
+    # Even if we run completely different tests in a different directory,
+    # we need to access feature_check's from the same directory as the
+    # run-tests script itself.
+    base_path = os.path.dirname(sys.argv[0]) or "."
+    res = run_tests(pyb, tests, args, base_path)
     if pyb:
         pyb.close()
     if not res:

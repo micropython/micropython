@@ -37,12 +37,13 @@
 #define MP_BC_LOAD_CONST_OBJ     (0x17) // ptr
 #define MP_BC_LOAD_NULL          (0x18)
 
-#define MP_BC_LOAD_FAST_N        (0x1a) // uint
-#define MP_BC_LOAD_DEREF         (0x1b) // uint
-#define MP_BC_LOAD_NAME          (0x1c) // qstr
-#define MP_BC_LOAD_GLOBAL        (0x1d) // qstr
-#define MP_BC_LOAD_ATTR          (0x1e) // qstr
-#define MP_BC_LOAD_METHOD        (0x1f) // qstr
+#define MP_BC_LOAD_FAST_N        (0x19) // uint
+#define MP_BC_LOAD_DEREF         (0x1a) // uint
+#define MP_BC_LOAD_NAME          (0x1b) // qstr
+#define MP_BC_LOAD_GLOBAL        (0x1c) // qstr
+#define MP_BC_LOAD_ATTR          (0x1d) // qstr
+#define MP_BC_LOAD_METHOD        (0x1e) // qstr
+#define MP_BC_LOAD_SUPER_METHOD  (0x1f) // qstr
 #define MP_BC_LOAD_BUILD_CLASS   (0x20)
 #define MP_BC_LOAD_SUBSCR        (0x21)
 

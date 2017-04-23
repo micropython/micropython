@@ -353,6 +353,12 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #endif
 
+// Whether to enable optimisation of: return a if b else c
+// Costs about 80 bytes (Thumb2) and saves 2 bytes of bytecode for each use
+#ifndef MICROPY_COMP_RETURN_IF_EXPR
+#define MICROPY_COMP_RETURN_IF_EXPR (0)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
@@ -445,7 +451,7 @@
 #   endif
 #endif
 
-// Whether to provide the mp_kbd_exception object
+// Whether to provide the mp_kbd_exception object, and micropython.kbd_intr function
 #ifndef MICROPY_KBD_EXCEPTION
 #define MICROPY_KBD_EXCEPTION (0)
 #endif
@@ -546,6 +552,12 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
+#endif
+
+// Whether to provide a high-quality hash for float and complex numbers.
+// Otherwise the default is a very simple but correct hashing function.
+#ifndef MICROPY_FLOAT_HIGH_QUALITY_HASH
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (0)
 #endif
 
 // Enable features which improve CPython compatibility

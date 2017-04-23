@@ -594,9 +594,9 @@ void mp_emit_bc_load_attr(emit_t *emit, qstr qst) {
     }
 }
 
-void mp_emit_bc_load_method(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_METHOD, qst);
+void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super) {
+    emit_bc_pre(emit, 1 - 2 * is_super);
+    emit_write_bytecode_byte_qstr(emit, is_super ? MP_BC_LOAD_SUPER_METHOD : MP_BC_LOAD_METHOD, qst);
 }
 
 void mp_emit_bc_load_build_class(emit_t *emit) {

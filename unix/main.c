@@ -425,9 +425,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_init();
 
-    // create keyboard interrupt object
-    MP_STATE_VM(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
-
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {

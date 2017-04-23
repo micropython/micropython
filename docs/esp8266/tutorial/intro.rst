@@ -20,9 +20,12 @@ characteristic of a board is how much flash it has, how the GPIO pins are
 connected to the outside world, and whether it includes a built-in USB-serial
 convertor to make the UART available to your PC.
 
-The minimum requirement for flash size is 512k.  A board with this amount of
-flash will not have room for a filesystem, but otherwise is fully functional.
-If your board has 1Mbyte or more of flash then it will support a filesystem.
+The minimum requirement for flash size is 1Mbyte. There is also a special
+build for boards with 512KB, but it is highly limited comparing to the
+normal build: there is no support for filesystem, and thus features which
+depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
+be more interesting for users who build from source and fine-tune parameters
+for their particular application.
 
 Names of pins will be given in this tutorial using the chip names (eg GPIO0)
 and it should be straightforward to find which pin this corresponds to on your

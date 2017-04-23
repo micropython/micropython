@@ -32,6 +32,7 @@
 
 #include <mpconfigport.h>
 
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_ENABLE_SCHEDULER       (1)
 #define MICROPY_PY_DELATTR_SETATTR     (1)
 #define MICROPY_PY_BUILTINS_HELP       (1)

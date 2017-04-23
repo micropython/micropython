@@ -133,6 +133,7 @@ void *const mp_fun_table[MP_F_NUMBER_OF] = {
     mp_load_build_class,
     mp_load_attr,
     mp_load_method,
+    mp_load_super_method,
     mp_store_name,
     mp_store_global,
     mp_store_attr,

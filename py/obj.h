@@ -470,16 +470,27 @@ typedef struct _mp_stream_p_t {
 } mp_stream_p_t;
 
 struct _mp_obj_type_t {
+    // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
+
+    // The name of this type.
     qstr name;
+
+    // Corresponds to __repr__ and __str__ special methods.
     mp_print_fun_t print;
-    mp_make_new_fun_t make_new;     // to make an instance of the type
 
+    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
+    mp_make_new_fun_t make_new;
+
+    // Corresponds to __call__ special method, ie T(...).
     mp_call_fun_t call;
-    mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NULL if op not supported
-    mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NULL if op not supported
 
-    // implements load, store and delete attribute
+    // Implements unary and binary operations.
+    // Can return MP_OBJ_NULL if the operation is not supported.
+    mp_unary_op_fun_t unary_op;
+    mp_binary_op_fun_t binary_op;
+
+    // Implements load, store and delete attribute.
     //
     // dest[0] = MP_OBJ_NULL means load
     //  return: for fail, do nothing
@@ -492,35 +503,36 @@ struct _mp_obj_type_t {
     //          for success set dest[0] = MP_OBJ_NULL
     mp_attr_fun_t attr;
 
-    mp_subscr_fun_t subscr;         // implements load, store, delete subscripting
-                                    // value=MP_OBJ_NULL means delete, value=MP_OBJ_SENTINEL means load, else store
-                                    // can return MP_OBJ_NULL if op not supported
+    // Implements load, store and delete subscripting:
+    //  - value = MP_OBJ_SENTINEL means load
+    //  - value = MP_OBJ_NULL means delete
+    //  - all other values mean store the value
+    // Can return MP_OBJ_NULL if operation not supported.
+    mp_subscr_fun_t subscr;
 
-    // corresponds to __iter__ special method
-    // can use given mp_obj_iter_buf_t to store iterator
-    // otherwise can return a pointer to an object on the heap
+    // Corresponds to __iter__ special method.
+    // Can use the given mp_obj_iter_buf_t to store iterator object,
+    // otherwise can return a pointer to an object on the heap.
     mp_getiter_fun_t getiter;
 
-    mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
+    // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
+    // as an optimisation instead of raising StopIteration() with no args.
+    mp_fun_1_t iternext;
 
+    // Implements the buffer protocol if supported by this type.
     mp_buffer_p_t buffer_p;
+
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
 
-    // these are for dynamically created types (classes)
-    struct _mp_obj_tuple_t *bases_tuple;
+    // A pointer to the parents of this type:
+    //  - 0 parents: pointer is NULL (object is implicitly the single parent)
+    //  - 1 parent: a pointer to the type of that parent
+    //  - 2 or more parents: pointer to a tuple object containing the parent types
+    const void *parent;
+
+    // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
-
-    /*
-    What we might need to add here:
-
-    len             str tuple list map
-    abs             float complex
-    hash            bool int none str
-    equal           int str
-
-    unpack seq      list tuple
-    */
 };
 
 // Constant types, globally accessible
@@ -649,7 +661,6 @@ mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
 mp_obj_t mp_obj_new_dict(size_t n_args);
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
-mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
 mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_obj_new_module(qstr module_name);
@@ -718,7 +729,11 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t s
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float
+#if MICROPY_FLOAT_HIGH_QUALITY_HASH
+mp_int_t mp_float_hash(mp_float_t val);
+#else
 static inline mp_int_t mp_float_hash(mp_float_t val) { return (mp_int_t)val; }
+#endif
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 
 // complex

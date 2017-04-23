@@ -577,8 +577,6 @@ const mp_obj_type_t mp_type_dict = {
 };
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
-STATIC const mp_rom_obj_tuple_t ordereddict_base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_dict)}};
-
 const mp_obj_type_t mp_type_ordereddict = {
     { &mp_type_type },
     .name = MP_QSTR_OrderedDict,
@@ -588,7 +586,7 @@ const mp_obj_type_t mp_type_ordereddict = {
     .binary_op = dict_binary_op,
     .subscr = dict_subscr,
     .getiter = dict_getiter,
-    .bases_tuple = (mp_obj_tuple_t*)(mp_rom_obj_tuple_t*)&ordereddict_base_tuple,
+    .parent = &mp_type_dict,
     .locals_dict = (mp_obj_dict_t*)&dict_locals_dict,
 };
 #endif

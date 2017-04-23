@@ -40,20 +40,20 @@
 STATIC void sighandler(int signum) {
     if (signum == SIGINT) {
         #if MICROPY_ASYNC_KBD_INTR
-        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
+        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         sigset_t mask;
         sigemptyset(&mask);
         // On entry to handler, its signal is blocked, and unblocked on
         // normal exit. As we instead perform longjmp, unblock it manually.
         sigprocmask(SIG_SETMASK, &mask, NULL);
-        nlr_raise(MP_STATE_VM(keyboard_interrupt_obj));
+        nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
         #else
-        if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
+        if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
-        MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
+        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
+        MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
         #endif
     }
 }

@@ -7,7 +7,7 @@ arg names:
 (N_EXC_STACK 0)
   bc=-1 line=1
 ########
-  bc=\\d\+ line=152
+  bc=\\d\+ line=155
 00 MAKE_FUNCTION \.\+
 \\d\+ STORE_NAME f
 \\d\+ MAKE_FUNCTION \.\+
@@ -25,6 +25,8 @@ arg names:
 \\d\+ CALL_FUNCTION n=2 nkw=0
 \\d\+ STORE_NAME Class
 \\d\+ DELETE_NAME Class
+\\d\+ MAKE_FUNCTION \.\+
+\\d\+ STORE_NAME f
 \\d\+ LOAD_CONST_NONE
 \\d\+ RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
@@ -428,6 +430,23 @@ arg names:
 10 STORE_NAME __qualname__
 13 LOAD_CONST_NONE
 14 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
+########
+\.\+5b
+arg names: self
+(N_STATE 4)
+(N_EXC_STACK 0)
+  bc=-1 line=1
+  bc=0 line=156
+00 LOAD_GLOBAL super (cache=0)
+\\d\+ LOAD_GLOBAL __class__ (cache=0)
+\\d\+ LOAD_FAST 0
+\\d\+ LOAD_SUPER_METHOD f
+\\d\+ CALL_METHOD n=0 nkw=0
+\\d\+ POP_TOP
+\\d\+ LOAD_CONST_NONE
+\\d\+ RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
