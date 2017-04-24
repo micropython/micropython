@@ -3,7 +3,6 @@ SOFTDEV_HEX_NAME ?=
 SOFTDEV_HEX_PATH ?=
 
 ifeq ($(SD), s110)
-	SOFTDEV_VERSION = 8.0.0
 	INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
 	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
 	CFLAGS += -DBLUETOOTH_SD=110
@@ -15,7 +14,6 @@ else ifeq ($(SD), s120)
 else ifeq ($(SD), s130)
 	$(error No BLE wrapper available yet)
 else ifeq ($(SD), s132)
-	SOFTDEV_VERSION=3.0.0
 	INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
 	INC += -Ibluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
 	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
