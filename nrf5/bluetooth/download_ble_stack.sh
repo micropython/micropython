@@ -8,10 +8,13 @@ function download_s110_nrf51
     echo "####################################"
     echo ""
 
-    wget https://developer.nordicsemi.com/nRF5_SDK/nRF51_SDK_v10.x.x/nRF51_SDK_10.0.0_dc26b5e.zip
-    unzip nRF51_SDK_10.0.0_dc26b5e.zip components/softdevice/s110/*
-    mv components s110_nrf51_8.0.0
-    rm nRF51_SDK_10.0.0_dc26b5e.zip
+    mkdir s110_nrf51_8.0.0
+    cd s110_nrf51_8.0.0
+    wget https://www.nordicsemi.com/eng/nordic/download_resource/45846/3/78153065/80234
+    mv 80234 temp.zip
+    unzip temp.zip
+    rm temp.zip
+    cd -
 }
 
 function download_s132_nrf52
@@ -22,10 +25,14 @@ function download_s132_nrf52
     echo "####################################"
     echo ""
 
-    wget https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v12.x.x/nRF5_SDK_12.1.0_0d23e2a.zip
-    unzip nRF5_SDK_12.1.0_0d23e2a.zip components/softdevice/s132/*
-    mv components s132_nrf52_3.0.0
-    rm nRF5_SDK_12.1.0_0d23e2a.zip
+    mkdir s132_nrf52_3.0.0
+    cd s132_nrf52_3.0.0
+
+    wget https://www.nordicsemi.com/eng/nordic/download_resource/56261/6/26298825/108144
+    mv 108144 temp.zip
+    unzip temp.zip
+    rm temp.zip
+    cd -
 }
 
 if [ $# -eq 0 ]; then 
