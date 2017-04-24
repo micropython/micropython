@@ -33,7 +33,7 @@ DWORD get_fattime(void) {
 
     // TODO: Optimize division (there's no HW division support on ESP8266,
     // so it's expensive).
-    uint32_t secs = (uint32_t)(pyb_rtc_get_us_since_2000() / 1000000);
+    uint32_t secs = (uint32_t)(esp_clk_get_us_since_2000() / 1000000);
 
     timeutils_struct_time_t tm;
     timeutils_seconds_since_2000_to_struct_time(secs, &tm);

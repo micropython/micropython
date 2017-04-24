@@ -34,6 +34,9 @@ void pin_set(uint pin, int value);
 extern uint32_t pyb_rtc_alarm0_wake;
 extern uint64_t pyb_rtc_alarm0_expiry;
 
+void esp_clk_set_us_since_2000(uint64_t nowus);
+uint64_t esp_clk_get_us_since_2000();
+
 void pyb_rtc_set_us_since_2000(uint64_t nowus);
 uint64_t pyb_rtc_get_us_since_2000();
 void rtc_prepare_deepsleep(uint64_t sleep_us);
