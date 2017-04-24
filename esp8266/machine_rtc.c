@@ -33,18 +33,20 @@
 #include "lib/timeutils/timeutils.h"
 #include "user_interface.h"
 #include "modmachine.h"
+#include "ets_alt_task.h"
 
 typedef struct _pyb_rtc_obj_t {
     mp_obj_base_t base;
 } pyb_rtc_obj_t;
 
 #define MEM_MAGIC           0x75507921
-#define MEM_DELTA_ADDR      64
-#define MEM_CAL_ADDR        (MEM_DELTA_ADDR + 2)
-#define MEM_USER_MAGIC_ADDR (MEM_CAL_ADDR + 1)
+#define MEM_RTC_BASE        64
+#define MEM_RTCOFS_ADDR     (MEM_RTC_BASE    + 0)
+#define MEM_RTCREF_ADDR     (MEM_RTCOFS_ADDR + 2)
+#define MEM_USER_MAGIC_ADDR (MEM_RTCREF_ADDR + 1)
 #define MEM_USER_LEN_ADDR   (MEM_USER_MAGIC_ADDR + 1)
 #define MEM_USER_DATA_ADDR  (MEM_USER_LEN_ADDR + 1)
-#define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_DELTA_ADDR) * 4)
+#define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_RTC_BASE) * 4)
 
 // singleton RTC object
 STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
@@ -55,23 +57,83 @@ uint64_t pyb_rtc_alarm0_expiry; // in microseconds
 
 // RTC overflow checking
 STATIC uint32_t rtc_last_ticks;
+STATIC uint32_t rtc_last_cal;
+// Clock overflow checking
+STATIC uint64_t clk_offset;
+
+uint64_t esp_clk_get_us_since_boot() {
+    return ((uint64_t)system_time_high_word << 32) | (uint64_t)system_get_time();
+}
+
+void esp_clk_set_us_since_2000(uint64_t nowus) {
+    // Set current time as base for future calculations
+    clk_offset = nowus - esp_clk_get_us_since_boot();
+};
+
+uint64_t esp_clk_get_us_since_2000() {
+    return clk_offset + esp_clk_get_us_since_boot(); 
+};
+
+void pyb_rtc_set_us_since_2000(uint64_t nowus) {
+    // Get the current clock tick
+    rtc_last_ticks = system_get_rtc_time();
+    // Set current time as base for future calculations
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &nowus, sizeof(nowus));
+    system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+};
+
+uint64_t pyb_rtc_get_us_since_2000() {
+    uint64_t offset;
+    uint32_t rtc_ticks;
+
+    system_rtc_mem_read(MEM_RTCOFS_ADDR, &offset, sizeof(offset));
+    rtc_ticks = system_get_rtc_time();
+    rtc_last_cal = system_rtc_clock_cali_proc();
+
+    int64_t delta = rtc_ticks;
+    if (rtc_ticks >= rtc_last_ticks) {
+      delta-= rtc_last_ticks;
+    } else {
+      // If overflow happened, assume 1 wrap-around and persist info for the new cycle
+      delta+= ~rtc_last_ticks+1;
+    }
+    offset+= (delta * rtc_last_cal) >> 12;
+    // Since RTC cal is volatile, we have to rebase every time 
+    rtc_last_ticks = rtc_ticks;
+    // Since RTC enjoys persistence across (some) reboots, we persist the rebase to enjoy the benefit 
+    system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &offset, sizeof(offset));
+    return offset; 
+};
 
 void mp_hal_rtc_init(void) {
     uint32_t magic;
 
     system_rtc_mem_read(MEM_USER_MAGIC_ADDR, &magic, sizeof(magic));
     if (magic != MEM_MAGIC) {
+        // Reset clock to 2000-01-01 00:00:00 AM
+        esp_clk_set_us_since_2000(0);
+        pyb_rtc_set_us_since_2000(0); 
         magic = MEM_MAGIC;
         system_rtc_mem_write(MEM_USER_MAGIC_ADDR, &magic, sizeof(magic));
-        uint32_t cal = system_rtc_clock_cali_proc();
-        int64_t delta = 0;
-        system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
-        system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
         uint32_t len = 0;
         system_rtc_mem_write(MEM_USER_LEN_ADDR, &len, sizeof(len));
+    } else {
+        // Check reset cause to determine what to do with stored RTC ticks
+        struct rst_info *rtc_info = system_get_rst_info();
+        if (rtc_info->reason == REASON_EXT_SYS_RST) {
+          // External reset, RTC ticks reset to zero
+          // Note: PowerOn and ChipEn also cause ticks to reset but since they also randomize entire RTC memory,
+          //   it is assumed the control flow never reach here for those two cases
+          rtc_last_ticks = 0;
+          system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+        } else {
+          // Load back the RTC cycle base
+          system_rtc_mem_read(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
+        }
+        // Use rtc clock's data to reinitialize system clock
+        esp_clk_set_us_since_2000(pyb_rtc_get_us_since_2000());
     }
-    // system_get_rtc_time() is always 0 after reset/deepsleep
-    rtc_last_ticks = system_get_rtc_time();
 
     // reset ALARM0 state
     pyb_rtc_alarm0_wake = 0;
@@ -86,44 +148,12 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
-void pyb_rtc_set_us_since_2000(uint64_t nowus) {
-    uint32_t cal = system_rtc_clock_cali_proc();
-    // Save RTC ticks for overflow detection.
-    rtc_last_ticks = system_get_rtc_time();
-    int64_t delta = nowus - (((uint64_t)rtc_last_ticks * cal) >> 12);
-
-    // As the calibration value jitters quite a bit, to make the
-    // clock at least somewhat practially usable, we need to store it
-    system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
-    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
-};
-
-uint64_t pyb_rtc_get_us_since_2000() {
-    uint32_t cal;
-    int64_t delta;
-    uint32_t rtc_ticks;
-
-    system_rtc_mem_read(MEM_CAL_ADDR, &cal, sizeof(cal));
-    system_rtc_mem_read(MEM_DELTA_ADDR, &delta, sizeof(delta));
-
-    // ESP-SDK system_get_rtc_time() only returns uint32 and therefore
-    // overflow about every 7:45h.  Thus, we have to check for
-    // overflow and handle it.
-    rtc_ticks = system_get_rtc_time();
-    if (rtc_ticks < rtc_last_ticks) {
-        // Adjust delta because of RTC overflow.
-        delta += (uint64_t)cal << 20;
-        system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
-    }
-    rtc_last_ticks = rtc_ticks;
-
-    return (((uint64_t)rtc_ticks * cal) >> 12) + delta;
-};
-
 void rtc_prepare_deepsleep(uint64_t sleep_us) {
     // RTC time will reset at wake up. Let's be preared for this.
-    int64_t delta = pyb_rtc_get_us_since_2000() + sleep_us;
-    system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
+    int64_t newoffset = pyb_rtc_get_us_since_2000() + sleep_us;
+    rtc_last_ticks+= (sleep_us << 12) / rtc_last_cal;
+    system_rtc_mem_write(MEM_RTCOFS_ADDR, &newoffset, sizeof(newoffset));
+    system_rtc_mem_write(MEM_RTCREF_ADDR, &rtc_last_ticks, sizeof(rtc_last_ticks));
 }
 
 STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
@@ -151,7 +181,7 @@ STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 8, &items);
 
-        pyb_rtc_set_us_since_2000(
+        uint64_t arg_us = (
             ((uint64_t)timeutils_seconds_since_2000(
                 mp_obj_get_int(items[0]),
                 mp_obj_get_int(items[1]),
@@ -159,6 +189,8 @@ STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
                 mp_obj_get_int(items[4]),
                 mp_obj_get_int(items[5]),
                 mp_obj_get_int(items[6])) * 1000 + mp_obj_get_int(items[7])) * 1000);
+        pyb_rtc_set_us_since_2000(arg_us);
+        esp_clk_set_us_since_2000(arg_us);
 
         return mp_const_none;
     }
