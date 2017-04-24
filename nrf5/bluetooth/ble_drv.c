@@ -223,10 +223,10 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
     SD_TEST_OR_ENABLE();
 
     ble_gap_addr_t local_ble_addr;
-#if (BLUETOOTH_SD != 132)
-    uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
-#else
+#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
     uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
+#else
+    uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
 #endif
 
     if (err_code != 0) {
@@ -694,7 +694,7 @@ void ble_drv_scan_start(void) {
 #if (BLUETOOTH_SD == 130)
     scan_params.selective   = 0;
     scan_params.p_whitelist = NULL;
-#else
+#elif (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
     scan_params.use_whitelist = 0;
 #endif
 
@@ -721,7 +721,7 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
 #if (BLUETOOTH_SD == 130)
     scan_params.selective   = 0;
     scan_params.p_whitelist = NULL;
-#else
+#elif (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
     scan_params.use_whitelist = 0;
 #endif
 
@@ -857,7 +857,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             (void)sd_ble_gatts_sys_attr_set(p_ble_evt->evt.gatts_evt.conn_handle, NULL, 0, 0);
             break;
 
-#if (BLUETOOTH_SD == 132)
+#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
             BLE_DRIVER_LOG("GATTS EVT EXCHANGE MTU REQUEST\n");
             (void)sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle, 23); // MAX MTU size
