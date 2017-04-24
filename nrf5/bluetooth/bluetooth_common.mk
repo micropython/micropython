@@ -21,7 +21,7 @@ else ifeq ($(SD), s132)
 
 ifeq ($(SOFTDEV_VERSION), 2.0.1)
 	CFLAGS += -DBLE_API_VERSION=2
-else ifeq ($(SOFTDEV_vERSION), 3.0.0)
+else ifeq ($(SOFTDEV_VERSION), 3.0.0)
 	CFLAGS += -DBLE_API_VERSION=3
 endif
 
