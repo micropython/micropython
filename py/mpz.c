@@ -938,6 +938,8 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) 
         #endif
         num_bits -= DIG_SIZE;
     }
+
+    z->len = mpn_remove_trailing_zeros(z->dig, z->dig + z->len);
 }
 
 bool mpz_is_zero(const mpz_t *z) {
