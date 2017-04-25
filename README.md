@@ -3,15 +3,31 @@
 [![Build Status](https://travis-ci.org/adafruit/circuitpython.svg?branch=master)](https://travis-ci.org/adafruit/circuitpython) [![Doc Status](https://readthedocs.org/projects/circuitpython/badge/?version=latest)](http://circuitpython.readthedocs.io/) [![Gitter](https://badges.gitter.im/adafruit/circuitpython.svg)](https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 This is an open source derivative of [MicroPython](http://www.micropython.org)
-for use on educational development boards designed and sold by [Adafruit](https://www.adafruit.com)
-including the [Arduino Zero](https://www.arduino.cc/en/Main/ArduinoBoardZero), [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772), [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821) and
-[Adafruit Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995).
+for use on educational development boards designed and sold by [Adafruit](https://www.adafruit.com).
 
 As a MicroPython derivative, this implements Python 3.x on microcontrollers such
 as the SAMD21 and ESP8266.
 
 ## Project Status
 This project is in beta. Most APIs should be stable going forward.
+
+### Supported boards
+
+#### Designed for CircuitPython
+* [Adafruit Feather M0 Express](https://www.adafruit.com/product/3403)
+
+#### Other
+* [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821)
+* [Adafruit Feather M0 Basic](https://www.adafruit.com/products/2772)
+* [Adafruit Feather M0 Bluefruit LE](https://www.adafruit.com/products/2995) (uses M0 Basic binaries)
+* [Adafruit Feather M0 Adalogger](https://www.adafruit.com/product/2796) (MicroSD card not supported yet.)
+* [Arduino Zero](https://www.arduino.cc/en/Main/ArduinoBoardZero)
+
+## Download
+
+Official binaries are available through the [latest GitHub releases](https://github.com/adafruit/circuitpython/releases).
+Continuous (one per commit) builds are available [here](https://adafruit-circuit-python.s3.amazonaws.com/index.html?prefix=bin)
+which includes experimental hardware support.
 
 ## Documentation
 
@@ -60,6 +76,7 @@ The core code of MicroPython is shared amongst ports including CircuitPython:
 - `py` Core Python implementation, including compiler, runtime, and
   core library.
 - `shared-bindings` Shared definition of Python modules, their docs and backing C APIs. Ports must implement the C API to support the corresponding module.
+- `shared-module` Shared implementation of Python modules that may be based on `common-hal`.
 - `tests` Test framework and test scripts.
 - `tools` Various tools, including the pyboard.py module.
 
