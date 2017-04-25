@@ -51,19 +51,16 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
+#define MICROPY_HW_LED_COUNT        (2)
 #define MICROPY_HW_LED_PULLUP       (1)
 
 #define MICROPY_HW_LED1             (17) // LED1
-#define MICROPY_HW_LED2             (18) // LED2
-#define MICROPY_HW_LED3             (19) // LED3
-#define MICROPY_HW_LED4             (20) // LED4
+#define MICROPY_HW_LED2             (19) // LED2
 
 // UART config
 #define MICROPY_HW_UART1_RX         (pin_A8)
 #define MICROPY_HW_UART1_TX         (pin_A6)
-#define MICROPY_HW_UART1_CTS        (pin_A7)
-#define MICROPY_HW_UART1_RTS        (pin_A5)
-#define MICROPY_HW_UART1_HWFC       (1)
+#define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
@@ -75,4 +72,4 @@
 #define MICROPY_HW_PWM1_NAME        "PWM1"
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
-#define HELP_TEXT_BOARD_LED         "1,2,3,4"
+#define HELP_TEXT_BOARD_LED         "1,2"
