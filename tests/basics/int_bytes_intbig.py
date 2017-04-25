@@ -7,3 +7,6 @@ ib = int.from_bytes(b, "big")
 print(il)
 print(ib)
 print(il.to_bytes(20, "little"))
+
+# check that extra zero bytes don't change the internal int value
+print(int.from_bytes(b + bytes(10), "little") == int.from_bytes(b, "little"))
