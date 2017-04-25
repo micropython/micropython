@@ -49,6 +49,12 @@
  Definition of normalise: ?
 */
 
+STATIC size_t mpn_remove_trailing_zeros(mpz_dig_t *oidig, mpz_dig_t *idig) {
+    for (--idig; idig >= oidig && *idig == 0; --idig) {
+    }
+    return idig + 1 - oidig;
+}
+
 /* compares i with j
    returns sign(i - j)
    assumes i, j are normalised
@@ -190,16 +196,7 @@ STATIC size_t mpn_sub(mpz_dig_t *idig, const mpz_dig_t *jdig, size_t jlen, const
         borrow >>= DIG_SIZE;
     }
 
-    for (--idig; idig >= oidig && *idig == 0; --idig) {
-    }
-
-    return idig + 1 - oidig;
-}
-
-STATIC size_t mpn_remove_trailing_zeros(mpz_dig_t *oidig, mpz_dig_t *idig) {
-    for (--idig; idig >= oidig && *idig == 0; --idig) {
-    }
-    return idig + 1 - oidig;
+    return mpn_remove_trailing_zeros(oidig, idig);
 }
 
 #if MICROPY_OPT_MPZ_BITWISE
