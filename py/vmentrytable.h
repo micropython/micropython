@@ -44,6 +44,7 @@ static const void *const entry_table[256] = {
     [MP_BC_LOAD_GLOBAL] = &&entry_MP_BC_LOAD_GLOBAL,
     [MP_BC_LOAD_ATTR] = &&entry_MP_BC_LOAD_ATTR,
     [MP_BC_LOAD_METHOD] = &&entry_MP_BC_LOAD_METHOD,
+    [MP_BC_LOAD_SUPER_METHOD] = &&entry_MP_BC_LOAD_SUPER_METHOD,
     [MP_BC_LOAD_BUILD_CLASS] = &&entry_MP_BC_LOAD_BUILD_CLASS,
     [MP_BC_LOAD_SUBSCR] = &&entry_MP_BC_LOAD_SUBSCR,
     [MP_BC_STORE_FAST_N] = &&entry_MP_BC_STORE_FAST_N,
@@ -73,22 +74,21 @@ static const void *const entry_table[256] = {
     [MP_BC_SETUP_FINALLY] = &&entry_MP_BC_SETUP_FINALLY,
     [MP_BC_END_FINALLY] = &&entry_MP_BC_END_FINALLY,
     [MP_BC_GET_ITER] = &&entry_MP_BC_GET_ITER,
+    [MP_BC_GET_ITER_STACK] = &&entry_MP_BC_GET_ITER_STACK,
     [MP_BC_FOR_ITER] = &&entry_MP_BC_FOR_ITER,
     [MP_BC_POP_BLOCK] = &&entry_MP_BC_POP_BLOCK,
     [MP_BC_POP_EXCEPT] = &&entry_MP_BC_POP_EXCEPT,
     [MP_BC_BUILD_TUPLE] = &&entry_MP_BC_BUILD_TUPLE,
     [MP_BC_BUILD_LIST] = &&entry_MP_BC_BUILD_LIST,
-    [MP_BC_LIST_APPEND] = &&entry_MP_BC_LIST_APPEND,
     [MP_BC_BUILD_MAP] = &&entry_MP_BC_BUILD_MAP,
     [MP_BC_STORE_MAP] = &&entry_MP_BC_STORE_MAP,
-    [MP_BC_MAP_ADD] = &&entry_MP_BC_MAP_ADD,
     #if MICROPY_PY_BUILTINS_SET
     [MP_BC_BUILD_SET] = &&entry_MP_BC_BUILD_SET,
-    [MP_BC_SET_ADD] = &&entry_MP_BC_SET_ADD,
     #endif
     #if MICROPY_PY_BUILTINS_SLICE
     [MP_BC_BUILD_SLICE] = &&entry_MP_BC_BUILD_SLICE,
     #endif
+    [MP_BC_STORE_COMP] = &&entry_MP_BC_STORE_COMP,
     [MP_BC_UNPACK_SEQUENCE] = &&entry_MP_BC_UNPACK_SEQUENCE,
     [MP_BC_UNPACK_EX] = &&entry_MP_BC_UNPACK_EX,
     [MP_BC_MAKE_FUNCTION] = &&entry_MP_BC_MAKE_FUNCTION,

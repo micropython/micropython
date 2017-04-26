@@ -51,6 +51,5 @@ STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
 
 const mp_obj_module_t stm_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_stm,
     .globals = (mp_obj_dict_t*)&stm_module_globals,
 };

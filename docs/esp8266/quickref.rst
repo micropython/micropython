@@ -9,6 +9,12 @@ Quick reference for the ESP8266
 
 The Adafruit Feather HUZZAH board (image attribution: Adafruit).
 
+Installing MicroPython
+----------------------
+
+See the corresponding section of tutorial: :ref:`intro`. It also includes
+a troubleshooting subsection.
+
 General board control
 ---------------------
 
@@ -17,14 +23,14 @@ Tab-completion is useful to find out what methods an object has.
 Paste mode (ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
 
-The ``machine`` module::
+The :mod:`machine` module::
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
     machine.freq(160000000) # set the CPU frequency to 160 MHz
 
-The ``esp`` module::
+The :mod:`esp` module::
 
     import esp
 
@@ -34,7 +40,7 @@ The ``esp`` module::
 Networking
 ----------
 
-The ``network`` module::
+The :mod:`network` module::
 
     import network
 
@@ -63,13 +69,13 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the ``socket`` module can be used
+Once the network is established the :mod:`socket <usocket>` module can be used
 to create and use TCP/UDP sockets as usual.
 
 Delay and timing
 ----------------
 
-Use the ``time`` module::
+Use the :mod:`time <utime>` module::
 
     import time
 
@@ -77,12 +83,12 @@ Use the ``time`` module::
     time.sleep_ms(500)      # sleep for 500 milliseconds
     time.sleep_us(10)       # sleep for 10 microseconds
     start = time.ticks_ms() # get millisecond counter
-    delta = time.ticks_diff(start, time.ticks_ms()) # compute time difference
+    delta = time.ticks_diff(time.ticks_ms(), start) # compute time difference
 
 Timers
 ------
 
-Virtual (RTOS-based) timers are supported. Use the ``machine.Timer`` class
+Virtual (RTOS-based) timers are supported. Use the :ref:`machine.Timer <machine.Timer>` class
 with timer ID of -1::
 
     from machine import Timer
@@ -96,7 +102,7 @@ The period is in milliseconds.
 Pins and GPIO
 -------------
 
-Use the ``machine.Pin`` class::
+Use the :ref:`machine.Pin <machine.Pin>` class::
 
     from machine import Pin
 
@@ -149,24 +155,26 @@ ADC (analog to digital conversion)
 ADC is available on a dedicated pin.
 Note that input voltages on the ADC pin must be between 0v and 1.0v.
 
-Use the ``machine.ADC`` class::
+Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
     adc = ADC(0)            # create ADC object on ADC pin
     adc.read()              # read value, 0-1024
 
-SPI bus
--------
+Software SPI bus
+----------------
 
-The SPI driver is implemented in software and works on all pins::
+There are two SPI drivers. One is implemented in software (bit-banging)
+and works on all pins, and is accessed via the :ref:`machine.SPI <machine.SPI>`
+class::
 
     from machine import Pin, SPI
 
     # construct an SPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SPI(-1, baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -183,10 +191,26 @@ The SPI driver is implemented in software and works on all pins::
     spi.write_readinto(b'1234', buf) # write to MOSI and read from MISO into the buffer
     spi.write_readinto(buf, buf) # write buf to MOSI and read MISO back into buf
 
+
+Hardware SPI bus
+----------------
+
+The hardware SPI is faster (up to 80Mhz), but only works on following pins:
+``MISO`` is GPIO12, ``MOSI`` is GPIO13, and ``SCK`` is GPIO14. It has the same
+methods as the bitbanging SPI class above, except for the pin parameters for the
+constructor and init (as those are fixed)::
+
+    from machine import Pin, SPI
+
+    hspi = SPI(1, baudrate=80000000, polarity=0, phase=0)
+
+(``SPI(0)`` is used for FlashROM and not available to users.)
+
 I2C bus
 -------
 
-The I2C driver is implemented in software and works on all pins::
+The I2C driver is implemented in software and works on all pins,
+and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
 
     from machine import Pin, I2C
 
@@ -233,15 +257,14 @@ The OneWire driver is implemented in software and works on all pins::
     ow.scan()               # return a list of devices on the bus
     ow.reset()              # reset the bus
     ow.readbyte()           # read a byte
-    ow.read(5)              # read 5 bytes
     ow.writebyte(0x12)      # write a byte on the bus
     ow.write('123')         # write bytes on the bus
     ow.select_rom(b'12345678') # select a specific device by its ROM code
 
-There is a specific driver for DS18B20 devices::
+There is a specific driver for DS18S20 and DS18B20 devices::
 
-    import time
-    ds = onewire.DS18B20(ow)
+    import time, ds18x20
+    ds = ds18x20.DS18X20(ow)
     roms = ds.scan()
     ds.convert_temp()
     time.sleep_ms(750)
@@ -291,22 +314,40 @@ For low-level driving of an APA102::
     import esp
     esp.apa102_write(clock_pin, data_pin, rgbi_buf)
 
+DHT driver
+----------
+
+The DHT driver is implemented in software and works on all pins::
+
+    import dht
+    import machine
+
+    d = dht.DHT11(machine.Pin(4))
+    d.measure()
+    d.temperature() # eg. 23 (°C)
+    d.humidity()    # eg. 41 (% RH)
+
+    d = dht.DHT22(machine.Pin(4))
+    d.measure()
+    d.temperature() # eg. 23.6 (°C)
+    d.humidity()    # eg. 41.3 (% RH)
+
 WebREPL (web browser interactive prompt)
 ----------------------------------------
 
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
 experimental feature available in ESP8266 port. Download web client
 from https://github.com/micropython/webrepl (hosted version available
-at http://micropython.org/webrepl), and start the daemon on a device
-using::
+at http://micropython.org/webrepl), and configure it by executing::
+
+    import webrepl_setup
+
+and following on-screen instructions. After reboot, it will be available
+for connection. If you disabled automatic start-up on boot, you may
+run configured daemon on demand using::
 
     import webrepl
     webrepl.start()
-
-(Release versions have it started on boot by default.)
-
-On a first connection, you will be prompted to set password for future
-sessions to use.
 
 The supported way to use WebREPL is by connecting to ESP8266 access point,
 but the daemon is also started on STA interface if it is active, so if your
@@ -314,12 +355,10 @@ router is set up and works correctly, you may also use WebREPL while connected
 to your normal Internet access point (use the ESP8266 AP connection method
 if you face any issues).
 
-WebREPL is an experimental feature and a work in progress, and has known
-issues.
+Besides terminal/command prompt access, WebREPL also has provision for file
+transfer (both upload and download). Web client has buttons for the
+corresponding functions, or you can use command-line client ``webrepl_cli.py``
+from the repository above.
 
-There's also provision to transfer (both upload and download)
-files over WebREPL connection, but it has even more experimental status
-than the WebREPL terminal mode. It is still a practical way to
-get script files onto ESP8266, so give it a try using ``webrepl_cli.py``
-from the repository above. See the MicroPython forum for other
-community-supported alternatives to transfer files to ESP8266.
+See the MicroPython forum for other community-supported alternatives
+to transfer files to ESP8266.

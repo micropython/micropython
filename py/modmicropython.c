@@ -29,10 +29,22 @@
 #include "py/mpstate.h"
 #include "py/builtin.h"
 #include "py/stackctrl.h"
+#include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
+
+STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(MP_STATE_VM(mp_optimise_value));
+    } else {
+        MP_STATE_VM(mp_optimise_value) = mp_obj_get_int(args[0]);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_opt_level_obj, 0, 1, mp_micropython_opt_level);
 
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 
@@ -118,8 +130,28 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_unlock_obj, mp_micropython_
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
 #endif
 
+#if MICROPY_KBD_EXCEPTION
+STATIC mp_obj_t mp_micropython_kbd_intr(mp_obj_t int_chr_in) {
+    mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd_intr);
+#endif
+
+#if MICROPY_ENABLE_SCHEDULER
+STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
+    if (!mp_sched_schedule(function, arg)) {
+        mp_raise_msg(&mp_type_RuntimeError, "schedule stack full");
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
+    { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR_opt_level), MP_ROM_PTR(&mp_micropython_opt_level_obj) },
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 #if MICROPY_MEM_STATS
     { MP_ROM_QSTR(MP_QSTR_mem_total), MP_ROM_PTR(&mp_micropython_mem_total_obj) },
@@ -139,12 +171,17 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_heap_lock), MP_ROM_PTR(&mp_micropython_heap_lock_obj) },
     { MP_ROM_QSTR(MP_QSTR_heap_unlock), MP_ROM_PTR(&mp_micropython_heap_unlock_obj) },
     #endif
+    #if MICROPY_KBD_EXCEPTION
+    { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },
+    #endif
+    #if MICROPY_ENABLE_SCHEDULER
+    { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_micropython_globals, mp_module_micropython_globals_table);
 
 const mp_obj_module_t mp_module_micropython = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_micropython,
     .globals = (mp_obj_dict_t*)&mp_module_micropython_globals,
 };

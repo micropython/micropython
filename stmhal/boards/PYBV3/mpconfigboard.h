@@ -24,20 +24,20 @@
 #define MICROPY_HW_RTC_USE_LSE      (1)
 
 // UART config
-#define MICROPY_HW_UART1_PORT (GPIOA)
-#define MICROPY_HW_UART1_PINS (GPIO_PIN_9 | GPIO_PIN_10)
-#define MICROPY_HW_UART2_PORT (GPIOA)
-#define MICROPY_HW_UART2_PINS (GPIO_PIN_2 | GPIO_PIN_3)
-#define MICROPY_HW_UART2_RTS  (GPIO_PIN_1)
-#define MICROPY_HW_UART2_CTS  (GPIO_PIN_0)
-#define MICROPY_HW_UART3_PORT (GPIOB)
-#define MICROPY_HW_UART3_PINS (GPIO_PIN_10 | GPIO_PIN_11)
-#define MICROPY_HW_UART3_RTS  (GPIO_PIN_14)
-#define MICROPY_HW_UART3_CTS  (GPIO_PIN_13)
-#define MICROPY_HW_UART4_PORT (GPIOA)
-#define MICROPY_HW_UART4_PINS (GPIO_PIN_0 | GPIO_PIN_1)
-#define MICROPY_HW_UART6_PORT (GPIOC)
-#define MICROPY_HW_UART6_PINS (GPIO_PIN_6 | GPIO_PIN_7)
+#define MICROPY_HW_UART1_TX     (pin_A9)
+#define MICROPY_HW_UART1_RX     (pin_A10)
+#define MICROPY_HW_UART2_TX     (pin_A2)
+#define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART2_RTS    (pin_A1)
+#define MICROPY_HW_UART2_CTS    (pin_A0)
+#define MICROPY_HW_UART3_TX     (pin_B10)
+#define MICROPY_HW_UART3_RX     (pin_B11)
+#define MICROPY_HW_UART3_RTS    (pin_B14)
+#define MICROPY_HW_UART3_CTS    (pin_B13)
+#define MICROPY_HW_UART4_TX     (pin_A0)
+#define MICROPY_HW_UART4_RX     (pin_A1)
+#define MICROPY_HW_UART6_TX     (pin_C6)
+#define MICROPY_HW_UART6_RX     (pin_C7)
 
 // X-skin: X9=PB6=SCL, X10=PB7=SDA
 #define MICROPY_HW_I2C1_SCL (pin_B6)
@@ -73,9 +73,8 @@
 #define MICROPY_HW_LED4             (pin_C5)  // G2 - green
 #define MICROPY_HW_LED1_PWM         { TIM1, 1, TIM_CHANNEL_1, GPIO_AF1_TIM1 }
 #define MICROPY_HW_LED2_PWM         { TIM1, 1, TIM_CHANNEL_3, GPIO_AF1_TIM1 }
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRH = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRL = pin->pin_mask)
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
 // SD card detect switch
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C13)

@@ -1,213 +1,230 @@
 .. currentmodule:: machine
+.. _machine.Pin:
 
 class Pin -- control I/O pins
 =============================
 
-A pin is the basic object to control I/O pins (also known as GPIO -
-general-purpose input/output). It has methods to set
-the mode of the pin (input, output, etc) and methods to get and set the
-digital logic level. For analog control of a pin, see the ADC class.
+A pin object is used to control I/O pins (also known as GPIO - general-purpose
+input/output).  Pin objects are commonly associated with a physical pin that can
+drive an output voltage and read input voltages.  The pin class has methods to set the mode of
+the pin (IN, OUT, etc) and methods to get and set the digital logic level.
+For analog control of a pin, see the :class:`ADC` class.
 
-Usage Model:
+A pin object is constructed by using an identifier which unambiguously
+specifies a certain I/O pin.  The allowed forms of the identifier and the
+physical pin that the identifier maps to are port-specific.  Possibilities
+for the identifier are an integer, a string or a tuple with port and pin
+number.
 
-.. only:: port_wipy
-
-    Board pins are identified by their string id::
-
-        from machine import Pin
-        g = machine.Pin('GP9', mode=Pin.OUT, pull=None, drive=Pin.MED_POWER, alt=-1)
-
-    You can also configure the Pin to generate interrupts. For instance::
-
-        from machine import Pin
-
-        def pincb(pin):
-            print(pin.id())
-
-        pin_int = Pin('GP10', mode=Pin.IN, pull=Pin.PULL_DOWN)
-        pin_int.irq(trigger=Pin.IRQ_RISING, handler=pincb)
-        # the callback can be triggered manually
-        pin_int.irq()()
-        # to disable the callback
-        pin_int.irq().disable()
-
-    Now every time a falling edge is seen on the gpio pin, the callback will be
-    executed. Caution: mechanical push buttons have "bounce" and pushing or
-    releasing a switch will often generate multiple edges.
-    See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
-    explanation, along with various techniques for debouncing.
-
-    All pin objects go through the pin mapper to come up with one of the
-    gpio pins.
-
-.. only:: port_esp8266
-
-   ::
+Usage Model::
 
     from machine import Pin
 
-    # create an output pin on GPIO0
+    # create an output pin on pin #0
     p0 = Pin(0, Pin.OUT)
+
+    # set the value low then high
     p0.value(0)
     p0.value(1)
 
-    # create an input pin on GPIO2
+    # create an input pin on pin #2, with a pull up resistor
     p2 = Pin(2, Pin.IN, Pin.PULL_UP)
+
+    # read and print the pin value
     print(p2.value())
+
+    # reconfigure pin #0 in input mode
+    p0.mode(p0.IN)
+
+    # configure an irq callback
+    p0.irq(lambda p:print(p))
 
 Constructors
 ------------
 
-.. class:: Pin(id, ...)
+.. class:: Pin(id, mode=-1, pull=-1, \*, value, drive, alt)
 
-   Create a new Pin object associated with the id.  If additional arguments are given,
-   they are used to initialise the pin.  See :meth:`Pin.init`.
+   Access the pin peripheral (GPIO pin) associated with the given ``id``.  If
+   additional arguments are given in the constructor then they are used to initialise
+   the pin.  Any settings that are not specified will remain in their previous state.
+
+   The arguments are:
+
+     - ``id`` is mandatory and can be an arbitrary object.  Among possible value
+       types are: int (an internal Pin identifier), str (a Pin name), and tuple
+       (pair of [port, pin]).
+
+     - ``mode`` specifies the pin mode, which can be one of:
+
+       - ``Pin.IN`` - Pin is configured for input.  If viewed as an output the pin
+         is in high-impedance state.
+
+       - ``Pin.OUT`` - Pin is configured for (normal) output.
+
+       - ``Pin.OPEN_DRAIN`` - Pin is configured for open-drain output. Open-drain
+         output works in the following way: if the output value is set to 0 the pin
+         is active at a low level; if the output value is 1 the pin is in a high-impedance
+         state.  Not all ports implement this mode, or some might only on certain pins.
+
+       - ``Pin.ALT`` - Pin is configured to perform an alternative function, which is
+         port specific.  For a pin configured in such a way any other Pin methods
+         (except :meth:`Pin.init`) are not applicable (calling them will lead to undefined,
+         or a hardware-specific, result).  Not all ports implement this mode.
+
+       - ``Pin.ALT_OPEN_DRAIN`` - The Same as ``Pin.ALT``, but the pin is configured as
+         open-drain.  Not all ports implement this mode.
+
+     - ``pull`` specifies if the pin has a (weak) pull resistor attached, and can be
+       one of:
+
+       - ``None`` - No pull up or down resistor.
+       - ``Pin.PULL_UP`` - Pull up resistor enabled.
+       - ``Pin.PULL_DOWN`` - Pull down resistor enabled.
+
+     - ``value`` is valid only for Pin.OUT and Pin.OPEN_DRAIN modes and specifies initial
+       output pin value if given, otherwise the state of the pin peripheral remains
+       unchanged.
+
+     - ``drive`` specifies the output power of the pin and can be one of: ``Pin.LOW_POWER``,
+       ``Pin.MED_POWER`` or ``Pin.HIGH_POWER``.  The actual current driving capabilities
+       are port dependent.  Not all ports implement this argument.
+
+     - ``alt`` specifies an alternate function for the pin and the values it can take are
+       port dependent.  This argument is valid only for ``Pin.ALT`` and ``Pin.ALT_OPEN_DRAIN``
+       modes.  It may be used when a pin supports more than one alternate function.  If only
+       one pin alternate function is supported the this argument is not required.  Not all
+       ports implement this argument.
+
+   As specified above, the Pin class allows to set an alternate function for a particular
+   pin, but it does not specify any further operations on such a pin.  Pins configured in
+   alternate-function mode are usually not used as GPIO but are instead driven by other
+   hardware peripherals.  The only operation supported on such a pin is re-initialising,
+   by calling the constructor or :meth:`Pin.init` method.  If a pin that is configured in
+   alternate-function mode is re-initialised with ``Pin.IN``, ``Pin.OUT``, or
+   ``Pin.OPEN_DRAIN``, the alternate function will be removed from the pin.
 
 Methods
 -------
 
-.. only:: port_wipy
+.. method:: Pin.init(mode=-1, pull=-1, \*, value, drive, alt)
 
-    .. method:: Pin.init(mode, pull, \*, drive, alt)
-    
-       Initialise the pin:
+   Re-initialise the pin using the given parameters.  Only those arguments that
+   are specified will be set.  The rest of the pin peripheral state will remain
+   unchanged.  See the constructor documentation for details of the arguments.
 
-         - ``mode`` can be one of:
+   Returns ``None``.
 
-            - ``Pin.IN``  - input pin.
-            - ``Pin.OUT`` - output pin in push-pull mode.
-            - ``Pin.OPEN_DRAIN`` - output pin in open-drain mode.
-            - ``Pin.ALT`` - pin mapped to an alternate function.
-            - ``Pin.ALT_OPEN_DRAIN`` - pin mapped to an alternate function in open-drain mode.
+.. method:: Pin.value([x])
 
-         - ``pull`` can be one of:
+   This method allows to set and get the value of the pin, depending on whether
+   the argument ``x`` is supplied or not.
 
-            - ``None`` - no pull up or down resistor.
-            - ``Pin.PULL_UP`` - pull up resistor enabled.
-            - ``Pin.PULL_DOWN`` - pull down resitor enabled.
+   If the argument is omitted then this method gets the digital logic level of
+   the pin, returning 0 or 1 corresponding to low and high voltage signals
+   respectively.  The behaviour of this method depends on the mode of the pin:
 
-         - ``drive`` can be one of:
+     - ``Pin.IN`` - The method returns the actual input value currently present
+       on the pin.
+     - ``Pin.OUT`` - The behaviour and return value of the method is undefined.
+     - ``Pin.OPEN_DRAIN`` - If the pin is in state '0' then the behaviour and
+       return value of the method is undefined.  Otherwise, if the pin is in
+       state '1', the method returns the actual input value currently present
+       on the pin.
 
-            - ``Pin.LOW_POWER`` - 2mA drive capability.
-            - ``Pin.MED_POWER`` - 4mA drive capability.
-            - ``Pin.HIGH_POWER`` - 6mA drive capability.
+   If the argument is supplied then this method sets the digital logic level of
+   the pin.  The argument ``x`` can be anything that converts to a boolean.
+   If it converts to ``True``, the pin is set to state '1', otherwise it is set
+   to state '0'.  The behaviour of this method depends on the mode of the pin:
 
-         - ``alt`` is the number of the alternate function. Please refer to the
-           `pinout and alternate functions table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_
-           for the specific alternate functions that each pin supports.
+     - ``Pin.IN`` - The value is stored in the output buffer for the pin.  The
+       pin state does not change, it remains in the high-impedance state.  The
+       stored value will become active on the pin as soon as it is changed to
+       ``Pin.OUT`` or ``Pin.OPEN_DRAIN`` mode.
+     - ``Pin.OUT`` - The output buffer is set to the given value immediately.
+     - ``Pin.OPEN_DRAIN`` - If the value is '0' the pin is set to a low voltage
+       state.  Otherwise the pin is set to high-impedance state.
 
-       Returns: ``None``.
+   When setting the value this method returns ``None``.
 
-    .. method:: Pin.id()
+.. method:: Pin.out_value()
 
-       Get the pin id.
+   Return the value stored in the output buffer of a pin, regardless of its mode.
 
-.. only:: port_esp8266
+   Not all ports implement this method.
 
-    .. method:: Pin.init(mode, pull=None, \*, value)
+.. method:: Pin.__call__([x])
 
-       Initialise the pin:
+   Pin objects are callable.  The call method provides a (fast) shortcut to set
+   and get the value of the pin.  It is equivalent to Pin.value([x]).
+   See :meth:`Pin.value` for more details.
 
-         - `mode` can be one of:
+.. method:: Pin.toggle()
 
-            - ``Pin.IN``  - input pin.
-            - ``Pin.OUT`` - output pin in push-pull mode.
+   Toggle the output value of the pin.  Equivalent to ``pin.value(not pin.out_value())``.
+   Returns ``None``.
 
-         - `pull` can be one of:
+   Not all ports implement this method.
 
-            - ``None`` - no pull up or down resistor.
-            - ``Pin.PULL_UP`` - pull up resistor enabled.
+   Availability: WiPy.
 
-         - if `value` is given then it is the output value to set the pin
-           if it is in output mode.
+.. method:: Pin.id()
 
-.. method:: Pin.value([value])
+   Get the pin identifier.  This may return the ``id`` as specified in the
+   constructor.  Or it may return a canonical software-specific pin id.
 
-   Get or set the digital logic level of the pin:
+.. method:: Pin.mode([mode])
 
-     - With no argument, return 0 or 1 depending on the logic level of the pin.
-     - With ``value`` given, set the logic level of the pin.  ``value`` can be
-       anything that converts to a boolean.  If it converts to ``True``, the pin
-       is set high, otherwise it is set low.
+   Get or set the pin mode.
+   See the constructor documentation for details of the ``mode`` argument.
 
-.. method:: Pin.__call__([value])
+.. method:: Pin.pull([pull])
 
-   Pin objects are callable. The call method provides a (fast) shortcut to set and get the value of the pin.
-   See :func:`Pin.value` for more details.
+   Get or set the pin pull state.
+   See the constructor documentation for details of the ``pull`` argument.
 
-.. method:: Pin.alt_list()
+.. method:: Pin.drive([drive])
 
-    Returns a list of the alternate functions supported by the pin. List items are
-    a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
+   Get or set the pin drive strength.
+   See the constructor documentation for details of the ``drive`` argument.
 
-    Availability: WiPy.
+   Not all ports implement this method.
 
-.. only:: port_wipy
+   Availability: WiPy.
 
-    .. method:: Pin.toggle()
+.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), \*, priority=1, wake=None)
 
-        Toggle the value of the pin.
+   Configure an interrupt handler to be called when the trigger source of the
+   pin is active.  If the pin mode is ``Pin.IN`` then the trigger source is
+   the external value on the pin.  If the pin mode is ``Pin.OUT`` then the
+   trigger source is the output buffer of the pin.  Otherwise, if the pin mode
+   is ``Pin.OPEN_DRAIN`` then the trigger source is the output buffer for
+   state '0' and the external pin value for state '1'.
 
-    .. method:: Pin.mode([mode])
+   The arguments are:
 
-        Get or set the pin mode.
+     - ``handler`` is an optional function to be called when the interrupt
+       triggers.
 
-    .. method:: Pin.pull([pull])
+     - ``trigger`` configures the event which can generate an interrupt.
+       Possible values are:
 
-        Get or set the pin pull.
+       - ``Pin.IRQ_FALLING`` interrupt on falling edge.
+       - ``Pin.IRQ_RISING`` interrupt on rising edge.
+       - ``Pin.IRQ_LOW_LEVEL`` interrupt on low level.
+       - ``Pin.IRQ_HIGH_LEVEL`` interrupt on high level.
 
-    .. method:: Pin.drive([drive])
+       These values can be OR'ed together to trigger on multiple events.
 
-        Get or set the pin drive strength.
+     - ``priority`` sets the priority level of the interrupt.  The values it
+       can take are port-specific, but higher values always represent higher
+       priorities.
 
-    .. method:: Pin.irq(\*, trigger, priority=1, handler=None, wake=None)
+     - ``wake`` selects the power mode in which this interrupt can wake up the
+       system.  It can be ``machine.IDLE``, ``machine.SLEEP`` or ``machine.DEEPSLEEP``.
+       These values can also be OR'ed together to make a pin generate interrupts in
+       more than one power mode.
 
-        Create a callback to be triggered when the input level at the pin changes.
-
-            - ``trigger`` configures the pin level which can generate an interrupt. Possible values are:
-
-                - ``Pin.IRQ_FALLING`` interrupt on falling edge.
-                - ``Pin.IRQ_RISING`` interrupt on rising edge.
-                - ``Pin.IRQ_LOW_LEVEL`` interrupt on low level.
-                - ``Pin.IRQ_HIGH_LEVEL`` interrupt on high level.
-              
-              The values can be *ORed* together, for instance mode=Pin.IRQ_FALLING | Pin.IRQ_RISING
-
-            - ``priority`` level of the interrupt. Can take values in the range 1-7.
-              Higher values represent higher priorities.
-            - ``handler`` is an optional function to be called when new characters arrive.
-            - ``wakes`` selects the power mode in which this interrupt can wake up the
-              board. Please note:
-
-              - If ``wake_from=machine.Sleep.ACTIVE`` any pin can wake the board.
-              - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
-                ``GP11``, GP17`` or ``GP24`` can wake the board. Note that only 1
-                of this pins can be enabled as a wake source at the same time, so, only
-                the last enabled pin as a ``machine.Sleep.SUSPENDED`` wake source will have effect.
-              - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
-                ``GP11``, ``GP17`` and ``GP24`` can wake the board. In this case all of the
-                6 pins can be enabled as a ``machine.Sleep.HIBERNATE`` wake source at the same time.
-              - Values can be ORed to make a pin generate interrupts in more than one power
-                mode.
-
-            Returns a callback object.
-
-.. only:: port_esp8266
-
-    .. method:: Pin.irq(\*, trigger, handler=None)
-
-        Create a callback to be triggered when the input level at the pin changes.
-
-            - ``trigger`` configures the pin level which can generate an interrupt. Possible values are:
-
-                - ``Pin.IRQ_FALLING`` interrupt on falling edge.
-                - ``Pin.IRQ_RISING`` interrupt on rising edge.
-
-              The values can be OR'ed together to trigger on multiple events.
-
-            - ``handler`` is an optional function to be called when the interrupt triggers.
-
-            Returns a callback object.
+   This method returns a callback object.
 
 Attributes
 ----------
@@ -239,7 +256,8 @@ not all constants are available on all ports.
 .. data:: Pin.PULL_UP
           Pin.PULL_DOWN
 
-   Selects the whether there is a pull up/down resistor.
+   Selects whether there is a pull up/down resistor.  Use the value
+   ``None`` for no pull.
 
 .. data:: Pin.LOW_POWER
           Pin.MED_POWER

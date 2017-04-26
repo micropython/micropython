@@ -37,17 +37,23 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     (void)kind;
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
 
+    const char *module_name = "";
+    mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
+    if (elem != NULL) {
+        module_name = mp_obj_str_get_str(elem->value);
+    }
+
 #if MICROPY_PY___FILE__
     // If we store __file__ to imported modules then try to lookup this
     // symbol to give more information about the module.
-    mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
+    elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___file__), MP_MAP_LOOKUP);
     if (elem != NULL) {
-        mp_printf(print, "<module '%q' from '%s'>", self->name, mp_obj_str_get_str(elem->value));
+        mp_printf(print, "<module '%s' from '%s'>", module_name, mp_obj_str_get_str(elem->value));
         return;
     }
 #endif
 
-    mp_printf(print, "<module '%q'>", self->name);
+    mp_printf(print, "<module '%s'>", module_name);
 }
 
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -106,7 +112,6 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     // create new module object
     mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
     o->base.type = &mp_type_module;
-    o->name = module_name;
     o->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
@@ -184,6 +189,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_UHEAPQ
     { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
 #endif
+#if MICROPY_PY_UTIMEQ
+    { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&mp_module_utimeq) },
+#endif
 #if MICROPY_PY_UHASHLIB
     { MP_ROM_QSTR(MP_QSTR_uhashlib), MP_ROM_PTR(&mp_module_uhashlib) },
 #endif
@@ -192,6 +200,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #endif
 #if MICROPY_PY_URANDOM
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_module_urandom) },
+#endif
+#if MICROPY_PY_USELECT
+    { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
 #endif
 #if MICROPY_PY_USSL
     { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
@@ -216,15 +227,15 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     MICROPY_PORT_BUILTIN_MODULES
 };
 
-STATIC MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
+MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-void mp_module_init(void) {
-    mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
-}
+#if MICROPY_MODULE_WEAK_LINKS
+STATIC const mp_rom_map_elem_t mp_builtin_module_weak_links_table[] = {
+    MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
+};
 
-void mp_module_deinit(void) {
-    //mp_map_deinit(&MP_STATE_VM(mp_loaded_modules_map));
-}
+MP_DEFINE_CONST_MAP(mp_builtin_module_weak_links_map, mp_builtin_module_weak_links_table);
+#endif
 
 // returns MP_OBJ_NULL if not found
 mp_obj_t mp_module_get(qstr module_name) {

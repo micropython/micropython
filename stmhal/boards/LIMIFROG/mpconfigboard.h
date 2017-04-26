@@ -29,21 +29,14 @@ void LIMIFROG_board_early_init(void);
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // USART config
-#define MICROPY_HW_UART3_PORT (GPIOC)
-#define MICROPY_HW_UART3_PINS (GPIO_PIN_10 | GPIO_PIN_11)
+#define MICROPY_HW_UART3_TX (pin_C10)
+#define MICROPY_HW_UART3_RX (pin_C11)
 
 // I2C busses
 #define MICROPY_HW_I2C1_SCL (pin_B8)
 #define MICROPY_HW_I2C1_SDA (pin_B9)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
-// We use an array of baudrates and corresponding TIMINGR values.
-//
-// The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
-// defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x90112626}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
 
 // SPI busses
 #define MICROPY_HW_SPI1_NSS     (pin_A4)
@@ -63,9 +56,8 @@ void LIMIFROG_board_early_init(void);
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_C3) // red
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRR = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRR = pin->pin_mask<<16)
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
 // #define MICROPY_HW_USB_OTG_ID_PIN      (pin_C12) // This is not the official ID Pin which should be PA10

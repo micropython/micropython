@@ -15,3 +15,12 @@ c = C()
 print(c[1])
 c[1] = 2
 del c[3]
+
+# index not supported
+class A:
+    pass
+a = A()
+try:
+    a[1]
+except TypeError:
+    print('TypeError')

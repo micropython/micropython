@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "std.h"
+#include <stdio.h>
 
 #include "py/mpconfig.h"
 #include "py/obj.h"
@@ -112,7 +112,7 @@ void mp_irq_remove (const mp_obj_t parent) {
 
 uint mp_irq_translate_priority (uint priority) {
     if (priority < 1 || priority > MP_ARRAY_SIZE(mp_irq_priorities)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     return mp_irq_priorities[priority - 1];
 }
@@ -176,7 +176,7 @@ STATIC mp_obj_t mp_irq_flags (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_irq_flags_obj, mp_irq_flags);
 
-STATIC mp_obj_t mp_irq_call (mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     mp_irq_handler (self_in);
     return mp_const_none;

@@ -6,6 +6,13 @@ for x in range(*(1, 3)):
 for x in range(1, *(6, 2)):
     print(x)
 
+# zero step
+try:
+    for x in range(1, 2, 0):
+        pass
+except ValueError:
+    print('ValueError')
+
 # apply args using **
 try:
     for x in range(**{'end':1}):
@@ -31,6 +38,11 @@ except TypeError:
     print('TypeError')
 try:
     for x in range(0, end=1):
+        print(x)
+except TypeError:
+    print('TypeError')
+try:
+    for x in range(start=0, end=1):
         print(x)
 except TypeError:
     print('TypeError')

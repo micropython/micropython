@@ -25,9 +25,7 @@
  */
 
 #include "py/mpconfig.h"
-// *_ADHOC part is for cc3200 port which doesn't use general uPy
-// infrastructure and instead duplicates code. TODO: Resolve.
-#if MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
+#if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
 #include <errno.h>
@@ -35,13 +33,12 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/vfs_fat_file.h"
+#include "py/mperrno.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs_fat.h"
 
-#if MICROPY_VFS_FAT
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
-#endif
 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
@@ -49,25 +46,25 @@ extern const mp_obj_type_t mp_type_textio;
 // this table converts from FRESULT to POSIX errno
 const byte fresult_to_errno_table[20] = {
     [FR_OK] = 0,
-    [FR_DISK_ERR] = EIO,
-    [FR_INT_ERR] = EIO,
-    [FR_NOT_READY] = EBUSY,
-    [FR_NO_FILE] = ENOENT,
-    [FR_NO_PATH] = ENOENT,
-    [FR_INVALID_NAME] = EINVAL,
-    [FR_DENIED] = EACCES,
-    [FR_EXIST] = EEXIST,
-    [FR_INVALID_OBJECT] = EINVAL,
-    [FR_WRITE_PROTECTED] = EROFS,
-    [FR_INVALID_DRIVE] = ENODEV,
-    [FR_NOT_ENABLED] = ENODEV,
-    [FR_NO_FILESYSTEM] = ENODEV,
-    [FR_MKFS_ABORTED] = EIO,
-    [FR_TIMEOUT] = EIO,
-    [FR_LOCKED] = EIO,
-    [FR_NOT_ENOUGH_CORE] = ENOMEM,
-    [FR_TOO_MANY_OPEN_FILES] = EMFILE,
-    [FR_INVALID_PARAMETER] = EINVAL,
+    [FR_DISK_ERR] = MP_EIO,
+    [FR_INT_ERR] = MP_EIO,
+    [FR_NOT_READY] = MP_EBUSY,
+    [FR_NO_FILE] = MP_ENOENT,
+    [FR_NO_PATH] = MP_ENOENT,
+    [FR_INVALID_NAME] = MP_EINVAL,
+    [FR_DENIED] = MP_EACCES,
+    [FR_EXIST] = MP_EEXIST,
+    [FR_INVALID_OBJECT] = MP_EINVAL,
+    [FR_WRITE_PROTECTED] = MP_EROFS,
+    [FR_INVALID_DRIVE] = MP_ENODEV,
+    [FR_NOT_ENABLED] = MP_ENODEV,
+    [FR_NO_FILESYSTEM] = MP_ENODEV,
+    [FR_MKFS_ABORTED] = MP_EIO,
+    [FR_TIMEOUT] = MP_EIO,
+    [FR_LOCKED] = MP_EIO,
+    [FR_NOT_ENOUGH_CORE] = MP_ENOMEM,
+    [FR_TOO_MANY_OPEN_FILES] = MP_EMFILE,
+    [FR_INVALID_PARAMETER] = MP_EINVAL,
 };
 
 typedef struct _pyb_file_obj_t {
@@ -101,22 +98,22 @@ STATIC mp_uint_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t siz
     }
     if (sz_out != size) {
         // The FatFS documentation says that this means disk full.
-        *errcode = ENOSPC;
+        *errcode = MP_ENOSPC;
         return MP_STREAM_ERROR;
     }
     return sz_out;
 }
 
-STATIC mp_obj_t file_obj_flush(mp_obj_t self_in) {
-    pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    f_sync(&self->fp);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_flush_obj, file_obj_flush);
 
 STATIC mp_obj_t file_obj_close(mp_obj_t self_in) {
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    f_close(&self->fp);
+    // if fs==NULL then the file is closed and in that case this method is a no-op
+    if (self->fp.obj.fs != NULL) {
+        FRESULT res = f_close(&self->fp);
+        if (res != FR_OK) {
+            mp_raise_OSError(fresult_to_errno_table[res]);
+        }
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
@@ -140,7 +137,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
 
             case 1: // SEEK_CUR
                 if (s->offset != 0) {
-                    *errcode = ENOTSUP;
+                    *errcode = MP_EOPNOTSUPP;
                     return MP_STREAM_ERROR;
                 }
                 // no-operation
@@ -154,8 +151,16 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
         s->offset = f_tell(&self->fp);
         return 0;
 
+    } else if (request == MP_STREAM_FLUSH) {
+        FRESULT res = f_sync(&self->fp);
+        if (res != FR_OK) {
+            *errcode = fresult_to_errno_table[res];
+            return MP_STREAM_ERROR;
+        }
+        return 0;
+
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
 }
@@ -169,7 +174,7 @@ STATIC const mp_arg_t file_open_args[] = {
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
-STATIC mp_obj_t file_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
+STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_arg_val_t *args) {
     int mode = 0;
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
     // TODO make sure only one of r, w, x, a, and b, t are specified
@@ -205,10 +210,11 @@ STATIC mp_obj_t file_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     o->base.type = type;
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
-    FRESULT res = f_open(&o->fp, fname, mode);
+    assert(vfs != NULL);
+    FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     // for 'a' mode, we must begin at the end of the file
@@ -222,19 +228,18 @@ STATIC mp_obj_t file_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
 STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open(type, arg_vals);
+    return file_open(NULL, type, arg_vals);
 }
 
 // TODO gc hook to close the file if not already closed
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readall), MP_ROM_PTR(&mp_stream_readall_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&file_obj_flush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&file_obj_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
@@ -257,7 +262,7 @@ const mp_obj_type_t mp_type_fileio = {
     .name = MP_QSTR_FileIO,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &fileio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
@@ -276,18 +281,21 @@ const mp_obj_type_t mp_type_textio = {
     .name = MP_QSTR_TextIOWrapper,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &textio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes
-mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
     // TODO: analyze buffering args and instantiate appropriate type
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all(n_args, args, kwargs, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open(&mp_type_textio, arg_vals);
+    arg_vals[0].u_obj = path;
+    arg_vals[1].u_obj = mode;
+    arg_vals[2].u_obj = mp_const_none;
+    return file_open(self, &mp_type_textio, arg_vals);
 }
 
-#endif // MICROPY_FSUSERMOUNT
+#endif // MICROPY_VFS && MICROPY_VFS_FAT

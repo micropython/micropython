@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "py/nlr.h"
-#include "py/parse.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
@@ -12,7 +10,7 @@
 #include "py/mphal.h"
 #include "gccollect.h"
 #include "lib/utils/pyexec.h"
-#include "readline.h"
+#include "lib/mp-readline/readline.h"
 #include "lexermemzip.h"
 
 #include "Arduino.h"
@@ -302,7 +300,7 @@ soft_reset:
 #endif
 
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("boot");
+    pyexec_frozen_module("boot.py");
 #else
     if (!pyexec_file("/boot.py")) {
         flash_error(4);
@@ -314,10 +312,10 @@ soft_reset:
 
     // run main script
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("main");
+    pyexec_frozen_module("main.py");
 #else
     {
-        vstr_t *vstr = vstr_new();
+        vstr_t *vstr = vstr_new(16);
         vstr_add_str(vstr, "/");
         if (pyb_config_main == MP_OBJ_NULL) {
             vstr_add_str(vstr, "main.py");

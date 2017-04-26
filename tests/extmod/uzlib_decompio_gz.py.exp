@@ -1,0 +1,13 @@
+16
+b'h'
+18
+b'el'
+b'lo'
+31
+b''
+b''
+31
+b'hello'
+b'hello'
+ValueError
+OSError(22,)

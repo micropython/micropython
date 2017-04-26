@@ -44,9 +44,11 @@
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_RETURN_IF_EXPR (1)
 
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 
+#define MICROPY_READER_POSIX        (1)
 #define MICROPY_ENABLE_RUNTIME      (0)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -59,6 +61,7 @@
 
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_CPYTHON_COMPAT      (1)
+#define MICROPY_USE_INTERNAL_PRINTF (0)
 
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
@@ -87,6 +90,10 @@
 #ifdef __LP64__
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
+#elif defined ( __MINGW32__ ) && defined( _WIN64 )
+#include <stdint.h>
+typedef __int64 mp_int_t;
+typedef unsigned __int64 mp_uint_t;
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
 // regardless for actual size.
@@ -94,17 +101,12 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 
-#define BYTES_PER_WORD sizeof(mp_int_t)
-
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;
 #else
 typedef long mp_off_t;
 #endif
-
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
 
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
@@ -115,6 +117,8 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__
 #include <stdlib.h>
+#elif defined( _WIN32 )
+#include <malloc.h>
 #else
 #include <alloca.h>
 #endif

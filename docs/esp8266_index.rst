@@ -5,6 +5,7 @@ MicroPython documentation and references
 
     esp8266/quickref.rst
     library/index.rst
+    genrst/index.rst
     license.rst
     esp8266_contents.rst
 

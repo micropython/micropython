@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 #include "bufhelper.h"
 #include "inc/hw_types.h"
 #include "inc/hw_adc.h"
@@ -104,7 +105,7 @@ STATIC void pyb_adc_init (pyb_adc_obj_t *self) {
 STATIC void pyb_adc_check_init(void) {
     // not initialized
     if (!pyb_adc_obj.enabled) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -140,7 +141,7 @@ STATIC const mp_arg_t pyb_adc_init_args[] = {
     { MP_QSTR_id,                          MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_bits,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 12} },
 };
-STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -149,12 +150,12 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // check the number of bits
     if (args[1].u_int != 12) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 
     // setup the object
@@ -173,7 +174,7 @@ STATIC mp_obj_t adc_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_adc_init_args[1], args);
     // check the number of bits
     if (args[0].u_int != 12) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     pyb_adc_init(pos_args[0]);
     return mp_const_none;
@@ -206,11 +207,11 @@ STATIC mp_obj_t adc_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     if (args[0].u_obj != MP_OBJ_NULL) {
         ch_id = mp_obj_get_int(args[0].u_obj);
         if (ch_id >= PYB_ADC_NUM_CHANNELS) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_os_resource_not_avaliable));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         } else if (args[1].u_obj != mp_const_none) {
             uint pin_ch_id = pin_find_peripheral_type (args[1].u_obj, PIN_FN_ADC, 0);
             if (ch_id != pin_ch_id) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+                mp_raise_ValueError(mpexception_value_invalid_arguments);
             }
         }
     } else {
@@ -277,7 +278,7 @@ STATIC mp_obj_t adc_channel_value(mp_obj_t self_in) {
 
     // the channel must be enabled
     if (!self->enabled) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_OSError(MP_EPERM);
     }
 
     // wait until a new value is available
@@ -289,7 +290,7 @@ STATIC mp_obj_t adc_channel_value(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_channel_value_obj, adc_channel_value);
 
-STATIC mp_obj_t adc_channel_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t adc_channel_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     return adc_channel_value (self_in);
 }

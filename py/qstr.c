@@ -199,7 +199,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
             byte *new_p = m_renew_maybe(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_alloc) + n_bytes, false);
             if (new_p == NULL) {
                 // could not grow existing memory; shrink it to fit previous
-                (void)m_renew(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_used));
+                (void)m_renew_maybe(byte, MP_STATE_VM(qstr_last_chunk), MP_STATE_VM(qstr_last_alloc), MP_STATE_VM(qstr_last_used), false);
                 MP_STATE_VM(qstr_last_chunk) = NULL;
             } else {
                 // could grow existing memory
@@ -275,7 +275,6 @@ size_t qstr_len(qstr q) {
     return Q_GET_LENGTH(qd);
 }
 
-// XXX to remove!
 const char *qstr_str(qstr q) {
     const byte *qd = find_qstr(q);
     return (const char*)Q_GET_DATA(qd);

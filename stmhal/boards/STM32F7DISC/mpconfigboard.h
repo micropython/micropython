@@ -20,24 +20,27 @@
 void STM32F7DISC_board_early_init(void);
 
 // HSE is 25MHz
+// VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
+// SYSCLK = VCOClock / PLLP = 432 MHz / 2 = 216 MHz
+// USB/SDMMC/RNG Clock = VCOClock / PLLQ = 432 MHz / 9 = 48 MHz
 #define MICROPY_HW_CLK_PLLM (25)
-#define MICROPY_HW_CLK_PLLN (336)
+#define MICROPY_HW_CLK_PLLN (432)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
-#define MICROPY_HW_CLK_PLLQ (7)
+#define MICROPY_HW_CLK_PLLQ (9)
 
-#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_6
+// From the reference manual, for 2.7V to 3.6V
+// 151-180 MHz => 5 wait states
+// 181-210 MHz => 6 wait states
+// 211-216 MHz => 7 wait states
+#define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_7 // 210-216 MHz needs 7 wait states
 
 // UART config
-#define MICROPY_HW_UART1_TX_PORT    (GPIOA)
-#define MICROPY_HW_UART1_TX_PIN     (GPIO_PIN_9)
-#define MICROPY_HW_UART1_RX_PORT    (GPIOB)
-#define MICROPY_HW_UART1_RX_PIN     (GPIO_PIN_7)
-
-#define MICROPY_HW_UART6_PORT       (GPIOC)
-#define MICROPY_HW_UART6_PINS       (GPIO_PIN_6 | GPIO_PIN_7)
-#define MICROPY_HW_UART7_PORT       (GPIOF)
-#define MICROPY_HW_UART7_PINS       (GPIO_PIN_6 | GPIO_PIN_7)
-
+#define MICROPY_HW_UART1_TX         (pin_A9)
+#define MICROPY_HW_UART1_RX         (pin_B7)
+#define MICROPY_HW_UART6_TX         (pin_C6)
+#define MICROPY_HW_UART6_RX         (pin_C7)
+#define MICROPY_HW_UART7_TX         (pin_F6)
+#define MICROPY_HW_UART7_RX         (pin_F7)
 #define MICROPY_HW_UART_REPL        PYB_UART_1
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
@@ -47,16 +50,6 @@ void STM32F7DISC_board_early_init(void);
 
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
-
-// The STM32F7 uses a TIMINGR register which is configured using an Excel
-// Spreadsheet from AN4235: http://www.st.com/web/en/catalog/tools/PF258335
-// We use an array of baudrates and corresponding TIMINGR values.
-//
-// The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
-// defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
 
 // SPI
 #define MICROPY_HW_SPI2_NSS         (pin_I0)
@@ -72,9 +65,8 @@ void STM32F7DISC_board_early_init(void);
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_I1) // green
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRR = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRR = (pin->pin_mask << 16))
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // SD card detect switch
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C13)

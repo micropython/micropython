@@ -35,6 +35,6 @@ This can be achieved with:
     make MICROPY_PORT=<port_name> latexpdf
 
 but require rather complete install of LaTeX with various extensions. On
-Debiab/Ubuntu, try (500MB+ download):
+Debian/Ubuntu, try (500MB+ download):
 
     apt-get install texlive-latex-recommended texlive-latex-extra

@@ -5,7 +5,12 @@
 try:
     from collections import namedtuple
 except ImportError:
-    from ucollections import namedtuple
+    try:
+        from ucollections import namedtuple
+    except ImportError:
+        import sys
+        print("SKIP")
+        sys.exit()
 
 _DefragResultBase = namedtuple('DefragResult', [ 'foo', 'bar' ])
 

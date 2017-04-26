@@ -14,7 +14,7 @@ Here, the "0" is the pin that you want to access.  Usually you want to
 configure the pin to be input or output, and you do this when constructing
 it.  To make an input pin use::
 
-    >>> pin = machine.Pin(0, machine.Pin.OUT, machine.Pin.PULL_UP)
+    >>> pin = machine.Pin(0, machine.Pin.IN, machine.Pin.PULL_UP)
 
 You can either use PULL_UP or None for the input pull-mode.  If it's
 not specified then it defaults to None, which is no pull resistor.

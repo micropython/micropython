@@ -25,9 +25,9 @@
  */
 
 #include "py/obj.h"
-#include "lib/fatfs/ff.h"
-#include "timeutils.h"
-#include "modpybrtc.h"
+#include "lib/timeutils/timeutils.h"
+#include "lib/oofatfs/ff.h"
+#include "modmachine.h"
 
 DWORD get_fattime(void) {
 

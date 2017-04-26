@@ -1,6 +1,6 @@
 # check that we can do certain things without allocating heap memory
 
-import gc
+import micropython
 
 def f1(a):
     print(a)
@@ -18,7 +18,7 @@ def f3(a, b, c, d):
 global_var = 1
 
 def test():
-    global global_var
+    global global_var, global_exc
     global_var = 2      # set an existing global variable
     for i in range(2):  # for loop
         f1(i)           # function call
@@ -28,12 +28,7 @@ def test():
         f2(i, i)        # 2 args
     f3(1, 2, 3, 4)  # function with lots of local state
 
-# call h with heap allocation disabled and all memory used up
-gc.disable()
-try:
-    while True:
-        'a'.lower # allocates 1 cell for boundmeth
-except MemoryError:
-    pass
+# call test() with heap allocation disabled
+micropython.heap_lock()
 test()
-gc.enable()
+micropython.heap_unlock()

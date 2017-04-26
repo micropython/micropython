@@ -152,6 +152,12 @@ void gc_init(void *start, void *end) {
     // allow auto collection
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    // by default, maxuint for gc threshold, effectively turning gc-by-threshold off
+    MP_STATE_MEM(gc_alloc_threshold) = (size_t)-1;
+    MP_STATE_MEM(gc_alloc_amount) = 0;
+    #endif
+
     #if MICROPY_PY_THREAD
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
@@ -252,18 +258,20 @@ STATIC void gc_sweep(void) {
             case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
-                    #if MICROPY_PY_THREAD
-                    // TODO need to think about reentrancy with finaliser code
-                    assert(!"finaliser with threading not implemented");
-                    #endif
                     mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
                     if (obj->type != NULL) {
                         // if the object has a type then see if it has a __del__ method
                         mp_obj_t dest[2];
                         mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
                         if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
+                            // load_method returned a method, execute it in a protected environment
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_lock();
+                            #endif
+                            mp_call_function_1_protected(dest[0], dest[1]);
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_unlock();
+                            #endif
                         }
                     }
                     // clear finaliser flag
@@ -294,6 +302,9 @@ STATIC void gc_sweep(void) {
 void gc_collect_start(void) {
     GC_ENTER();
     MP_STATE_MEM(gc_lock_depth)++;
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    MP_STATE_MEM(gc_alloc_amount) = 0;
+    #endif
     MP_STATE_MEM(gc_stack_overflow) = 0;
     MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
     // Trace root pointers.  This relies on the root pointers being organised
@@ -405,6 +416,15 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     size_t start_block;
     size_t n_free = 0;
     int collected = !MP_STATE_MEM(gc_auto_collect_enabled);
+
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    if (!collected && MP_STATE_MEM(gc_alloc_amount) >= MP_STATE_MEM(gc_alloc_threshold)) {
+        GC_EXIT();
+        gc_collect();
+        GC_ENTER();
+    }
+    #endif
+
     for (;;) {
 
         // look for a run of n_blocks available blocks
@@ -456,14 +476,23 @@ found:
     void *ret_ptr = (void*)(MP_STATE_MEM(gc_pool_start) + start_block * BYTES_PER_BLOCK);
     DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
 
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    MP_STATE_MEM(gc_alloc_amount) += n_blocks;
+    #endif
+
     GC_EXIT();
 
+    #if MICROPY_GC_CONSERVATIVE_CLEAR
+    // be conservative and zero out all the newly allocated blocks
+    memset((byte*)ret_ptr, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK);
+    #else
     // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
     memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
+    #endif
 
     #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
@@ -691,8 +720,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
         GC_EXIT();
 
+        #if MICROPY_GC_CONSERVATIVE_CLEAR
+        // be conservative and zero out all the newly allocated blocks
+        memset((byte*)ptr_in + n_blocks * BYTES_PER_BLOCK, 0, (new_blocks - n_blocks) * BYTES_PER_BLOCK);
+        #else
         // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
         memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
+        #endif
 
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();

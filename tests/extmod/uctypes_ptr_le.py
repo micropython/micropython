@@ -1,5 +1,9 @@
 import sys
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    sys.exit()
 
 if sys.byteorder != "little":
     print("SKIP")
@@ -14,7 +18,7 @@ desc = {
 bytes = b"01"
 
 addr = uctypes.addressof(bytes)
-buf = addr.to_bytes(uctypes.sizeof(desc))
+buf = addr.to_bytes(uctypes.sizeof(desc), "little")
 
 S = uctypes.struct(uctypes.addressof(buf), desc, uctypes.LITTLE_ENDIAN)
 

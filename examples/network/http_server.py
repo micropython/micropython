@@ -10,7 +10,7 @@ HTTP/1.0 200 OK
 Hello #%d from MicroPython!
 """
 
-def main(use_stream=False):
+def main(micropython_optimize=False):
     s = socket.socket()
 
     # Binding to all interfaces - server will be accessible to other hosts!
@@ -26,26 +26,37 @@ def main(use_stream=False):
     counter = 0
     while True:
         res = s.accept()
-        client_s = res[0]
+        client_sock = res[0]
         client_addr = res[1]
         print("Client address:", client_addr)
-        print("Client socket:", client_s)
-        print("Request:")
-        if use_stream:
-            # MicroPython socket objects support stream (aka file) interface
-            # directly.
-            req = client_s.readline()
-            print(req)
-            while True:
-                h = client_s.readline()
-                if h == b"" or h == b"\r\n":
-                    break
-                print(h)
-            client_s.write(CONTENT % counter)
+        print("Client socket:", client_sock)
+
+        if not micropython_optimize:
+            # To read line-oriented protocol (like HTTP) from a socket (and
+            # avoid short read problem), it must be wrapped in a stream (aka
+            # file-like) object. That's how you do it in CPython:
+            client_stream = client_sock.makefile("rwb")
         else:
-            print(client_s.recv(4096))
-            client_s.send(CONTENT % counter)
-        client_s.close()
+            # .. but MicroPython socket objects support stream interface
+            # directly, so calling .makefile() method is not required. If
+            # you develop application which will run only on MicroPython,
+            # especially on a resource-constrained embedded device, you
+            # may take this shortcut to save resources.
+            client_stream = client_sock
+
+        print("Request:")
+        req = client_stream.readline()
+        print(req)
+        while True:
+            h = client_stream.readline()
+            if h == b"" or h == b"\r\n":
+                break
+            print(h)
+        client_stream.write(CONTENT % counter)
+
+        client_stream.close()
+        if not micropython_optimize:
+            client_sock.close()
         counter += 1
         print()
 

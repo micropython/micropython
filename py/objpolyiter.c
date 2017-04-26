@@ -49,6 +49,6 @@ STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
 const mp_obj_type_t mp_type_polymorph_iter = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = polymorph_it_iternext,
 };

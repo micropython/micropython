@@ -93,7 +93,7 @@ STATIC void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest) {
             self->digested = false;
         }
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -106,7 +106,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
         }
     } else if (self->c_size < self->b_size) {
         // it's a fixed len block which is still incomplete
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_OSError(MP_EPERM);
     }
 
     if (!self->digested) {
@@ -121,7 +121,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
 
 /// \classmethod \constructor([data[, block_size]])
 /// initial data must be given if block_size wants to be passed
-STATIC mp_obj_t hash_make_new(mp_obj_t type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t hash_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
     mp_obj_hash_t *self = m_new0(mp_obj_hash_t, 1);
     self->base.type = type_in;
@@ -204,7 +204,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_hashlib_globals, mp_module_hashlib_globals
 
 const mp_obj_module_t mp_module_uhashlib = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uhashlib,
     .globals = (mp_obj_dict_t*)&mp_module_hashlib_globals,
 };
 

@@ -1,4 +1,4 @@
-# tests that differ when running under Python 3.4 vs 3.5
+# tests that differ when running under Python 3.4 vs 3.5/3.6
 
 # from basics/fun_kwvarargs.py
 # test evaluation order of arguments (in 3.4 it's backwards, 3.5 it's fixed)
@@ -13,14 +13,15 @@ f4(*print_ret(['a', 'b']), kw_arg=print_ret(None))
 {print_ret(1):print_ret(2)}
 
 # from basics/syntaxerror.py
-# can't have multiple * or ** (in 3.5 we can)
 def test_syntax(code):
     try:
         exec(code)
     except SyntaxError:
         print("SyntaxError")
-test_syntax("f(*a, *b)")
-test_syntax("f(**a, **b)")
+test_syntax("f(*a, *b)") # can't have multiple * (in 3.5 we can)
+test_syntax("f(**a, **b)") # can't have multiple ** (in 3.5 we can)
+test_syntax("() = []") # can't assign to empty tuple (in 3.6 we can)
+test_syntax("del ()") # can't delete empty tuple (in 3.6 we can)
 
 # from basics/sys1.py
 # uPy prints version 3.4

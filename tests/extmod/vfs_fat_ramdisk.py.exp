@@ -1,4 +1,15 @@
-getcwd: /ramdisk
-hello!
-getcwd: /ramdisk/foo_dir
-getcwd: /ramdisk
+True
+True
+statvfs: (512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
+getcwd: /
+True
+['foo_file.txt']
+stat root: (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+stat file: (32768, 0, 0, 0, 0, 0, 6)
+True
+True
+getcwd: /foo_dir
+[]
+True
+getcwd: /
+[b'foo_file.txt', b'foo_dir']

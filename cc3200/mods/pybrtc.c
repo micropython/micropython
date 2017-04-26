@@ -25,11 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <std.h>
-
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
+#include "lib/timeutils/timeutils.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -38,7 +38,6 @@
 #include "pybrtc.h"
 #include "mpirq.h"
 #include "pybsleep.h"
-#include "timeutils.h"
 #include "simplelink.h"
 #include "modnetwork.h"
 #include "modwlan.h"
@@ -197,12 +196,12 @@ STATIC uint pyb_rtc_datetime_s_us(const mp_obj_t datetime, uint32_t *seconds) {
 
     // set date and time
     mp_obj_t *items;
-    uint len;
+    size_t len;
     mp_obj_get_array(datetime, &len, &items);
 
     // verify the tuple
     if (len < 3 || len > 8) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
 
     tm.tm_year = mp_obj_get_int(items[0]);
@@ -285,7 +284,7 @@ STATIC const mp_arg_t pyb_rtc_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_datetime,                       MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -294,7 +293,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // setup the object
@@ -362,7 +361,7 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 
     // check the alarm id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_OSError(MP_ENODEV);
     }
 
     uint32_t f_seconds;
@@ -371,7 +370,7 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
     if (MP_OBJ_IS_TYPE(args[1].u_obj, &mp_type_tuple)) { // datetime tuple given
         // repeat cannot be used with a datetime tuple
         if (repeat) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
         f_mseconds = pyb_rtc_datetime_s_us (args[1].u_obj, &f_seconds) / 1000;
     } else { // then it must be an integer
@@ -397,7 +396,7 @@ STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
 
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // get the current time
@@ -415,7 +414,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc
 STATIC mp_obj_t pyb_rtc_alarm_cancel (mp_uint_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_OSError(MP_ENODEV);
     }
     // disable the alarm
     pyb_rtc_disable_alarm();
@@ -453,7 +452,7 @@ STATIC mp_obj_t pyb_rtc_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     return _irq;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 

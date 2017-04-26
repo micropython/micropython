@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm32f7xx_hal_gpio.c
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   GPIO HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the General Purpose Input/Output (GPIO) peripheral:
@@ -95,7 +95,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -141,15 +141,15 @@
 /** @addtogroup GPIO_Private_Constants GPIO Private Constants
   * @{
   */
-#define GPIO_MODE             ((uint32_t)0x00000003)
-#define EXTI_MODE             ((uint32_t)0x10000000)
-#define GPIO_MODE_IT          ((uint32_t)0x00010000)
-#define GPIO_MODE_EVT         ((uint32_t)0x00020000)
-#define RISING_EDGE           ((uint32_t)0x00100000)
-#define FALLING_EDGE          ((uint32_t)0x00200000)
-#define GPIO_OUTPUT_TYPE      ((uint32_t)0x00000010)
+#define GPIO_MODE             ((uint32_t)0x00000003U)
+#define EXTI_MODE             ((uint32_t)0x10000000U)
+#define GPIO_MODE_IT          ((uint32_t)0x00010000U)
+#define GPIO_MODE_EVT         ((uint32_t)0x00020000U)
+#define RISING_EDGE           ((uint32_t)0x00100000U)
+#define FALLING_EDGE          ((uint32_t)0x00200000U)
+#define GPIO_OUTPUT_TYPE      ((uint32_t)0x00000010U)
 
-#define GPIO_NUMBER           ((uint32_t)16)
+#define GPIO_NUMBER           ((uint32_t)16U)
 /**
   * @}
   */
@@ -514,6 +514,9 @@ void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
   */
 __weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(GPIO_Pin);
+
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_GPIO_EXTI_Callback could be implemented in the user file
    */

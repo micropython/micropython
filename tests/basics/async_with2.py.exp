@@ -9,7 +9,7 @@ coro yielded: 31
 coro yielded: 32
 body f returned: 33
 body end
-exit
+exit None None
 f start: 20
 coro yielded: 21
 coro yielded: 22

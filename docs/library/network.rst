@@ -5,11 +5,12 @@
 .. module:: network
    :synopsis: network configuration
 
-This module provides network drivers and routing configuration.  Network
-drivers for specific hardware are available within this module and are
-used to configure a hardware network interface.  Configured interfaces
-are then available for use via the :mod:`socket` module. To use this module
-the network build of firmware must be installed.
+This module provides network drivers and routing configuration. To use this
+module, a MicroPython variant/build with network capabilities must be installed.
+Network drivers for specific hardware are available within this module and are
+used to configure hardware network interface(s). Network services provided
+by configured interfaces are then available for use via the :mod:`socket`
+module.
 
 For example::
 
@@ -79,7 +80,7 @@ For example::
     class CC3K
     ==========
     
-    This class provides a driver for CC3000 wifi modules.  Example usage::
+    This class provides a driver for CC3000 WiFi modules.  Example usage::
     
         import network
         nic = network.CC3K(pyb.SPI(2), pyb.Pin.board.Y5, pyb.Pin.board.Y4, pyb.Pin.board.Y3)
@@ -128,16 +129,16 @@ For example::
     
     .. method:: cc3k.connect(ssid, key=None, \*, security=WPA2, bssid=None)
     
-       Connect to a wifi access point using the given SSID, and other security
+       Connect to a WiFi access point using the given SSID, and other security
        parameters.
     
     .. method:: cc3k.disconnect()
     
-       Disconnect from the wifi access point.
+       Disconnect from the WiFi access point.
     
     .. method:: cc3k.isconnected()
     
-       Returns True if connected to a wifi access point and has a valid IP address,
+       Returns True if connected to a WiFi access point and has a valid IP address,
        False otherwise.
     
     .. method:: cc3k.ifconfig()
@@ -237,7 +238,7 @@ For example::
         Get or set the PHY mode.
 
         If the ``mode`` parameter is provided, sets the mode to its value. If
-        the function is called wihout parameters, returns the current mode.
+        the function is called without parameters, returns the current mode.
 
         The possible modes are defined as constants:
             * ``MODE_11B`` -- IEEE 802.11b,
@@ -319,17 +320,17 @@ For example::
             * ``STAT_WRONG_PASSWORD`` -- failed due to incorrect password,
             * ``STAT_NO_AP_FOUND`` -- failed because no access point replied,
             * ``STAT_CONNECT_FAIL`` -- failed due to other problems,
-            * ``STAT_GOT_IP`` -- connection susccessful.
+            * ``STAT_GOT_IP`` -- connection successful.
 
     .. method:: wlan.isconnected()
 
-        In case of STA mode, returns ``True`` if connected to a wifi access
+        In case of STA mode, returns ``True`` if connected to a WiFi access
         point and has a valid IP address.  In AP mode returns ``True`` when a
         station is connected. Returns ``False`` otherwise.
 
     .. method:: wlan.ifconfig([(ip, subnet, gateway, dns)])
 
-       Get/set IP-level network interface paremeters: IP address, subnet mask,
+       Get/set IP-level network interface parameters: IP address, subnet mask,
        gateway and DNS server. When called with no arguments, this method returns
        a 4-tuple with the above information. To set the above values, pass a
        4-tuple with the required information.  For example::
@@ -343,12 +344,12 @@ For example::
        with additional parameters beyond standard IP configuration (as dealt with by
        ``wlan.ifconfig()``). These include network-specific and hardware-specific
        parameters. For setting parameters, keyword argument syntax should be used,
-       multiple parameters can be set at once. For querying, paremeters name should
-       be quoted as a string, and only one paramter can be queries at time::
+       multiple parameters can be set at once. For querying, parameters name should
+       be quoted as a string, and only one parameter can be queries at time::
 
         # Set WiFi access point name (formally known as ESSID) and WiFi channel
         ap.config(essid='My AP', channel=11)
-        # Queey params one by one
+        # Query params one by one
         print(ap.config('essid'))
         print(ap.config('channel'))
 
@@ -397,7 +398,7 @@ For example::
     .. note::
 
        The ``WLAN`` constructor is special in the sense that if no arguments besides the id are given,
-       it will return the already exisiting ``WLAN`` instance without re-configuring it. This is
+       it will return the already existing ``WLAN`` instance without re-configuring it. This is
        because ``WLAN`` is a system feature of the WiPy. If the already existing instance is not
        initialized it will do the same as the other constructors an will initialize it with default
        values.
@@ -433,7 +434,7 @@ For example::
 
     .. method:: wlan.connect(ssid, \*, auth=None, bssid=None, timeout=None)
 
-       Connect to a wifi access point using the given SSID, and other security
+       Connect to a WiFi access point using the given SSID, and other security
        parameters.
 
           - ``auth`` is a tuple with (sec, key). Security can be ``None``, ``WLAN.WEP``,
@@ -451,16 +452,16 @@ For example::
 
     .. method:: wlan.disconnect()
 
-       Disconnect from the wifi access point.
+       Disconnect from the WiFi access point.
 
     .. method:: wlan.isconnected()
 
-       In case of STA mode, returns ``True`` if connected to a wifi access point and has a valid IP address.
+       In case of STA mode, returns ``True`` if connected to a WiFi access point and has a valid IP address.
        In AP mode returns ``True`` when a station is connected, ``False`` otherwise.
 
     .. method:: wlan.ifconfig(if_id=0, config=['dhcp' or configtuple])
 
-       With no parameters given eturns a 4-tuple of ``(ip, subnet_mask, gateway, DNS_server)``.
+       With no parameters given returns a 4-tuple of ``(ip, subnet_mask, gateway, DNS_server)``.
 
        if ``'dhcp'`` is passed as a parameter then the DHCP client is enabled and the IP params
        are negotiated with the AP.
@@ -498,10 +499,10 @@ For example::
         Create a callback to be triggered when a WLAN event occurs during ``machine.SLEEP``
         mode. Events are triggered by socket activity or by WLAN connection/disconnection.
 
-            - ``handler`` is the function that gets called when the irq is triggered.
+            - ``handler`` is the function that gets called when the IRQ is triggered.
             - ``wake`` must be ``machine.SLEEP``.
 
-        Returns an irq object.
+        Returns an IRQ object.
 
     Constants
     ---------

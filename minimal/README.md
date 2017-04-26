@@ -33,3 +33,15 @@ This version of the build will work out-of-the-box on a pyboard (and
 anything similar), and will give you a MicroPython REPL on UART1 at 9600
 baud.  Pin PA13 will also be driven high, and this turns on the red LED on
 the pyboard.
+
+## Building without the built-in MicroPython compiler
+
+This minimal port can be built with the built-in MicroPython compiler
+disabled.  This will reduce the firmware by about 20k on a Thumb2 machine,
+and by about 40k on 32-bit x86.  Without the compiler the REPL will be
+disabled, but pre-compiled scripts can still be executed.
+
+To test out this feature, change the `MICROPY_ENABLE_COMPILER` config
+option to "0" in the mpconfigport.h file in this directory.  Then
+recompile and run the firmware and it will execute the frozentest.py
+file.

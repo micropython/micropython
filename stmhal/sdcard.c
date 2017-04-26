@@ -28,8 +28,9 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/fsusermount.h"
+#include "py/mphal.h"
+#include "lib/oofatfs/ff.h"
+#include "extmod/vfs_fat.h"
 
 #include "sdcard.h"
 #include "pin.h"
@@ -42,10 +43,28 @@
 
 #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
 
+// The F7 has 2 SDMMC units but at the moment we only support using one of them in
+// a given build.  If a boards config file defines MICROPY_HW_SDMMC2_CK then SDMMC2
+// is used, otherwise SDMMC1 is used.
+
+#if defined(MICROPY_HW_SDMMC2_CK)
+#define SDIO SDMMC2
+#define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC2_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC2_CLK_DISABLE()
+#define SDMMC_IRQn SDMMC2_IRQn
+#define SDMMC_TX_DMA dma_SDMMC_2_TX
+#define SDMMC_RX_DMA dma_SDMMC_2_RX
+#else
+#define SDIO SDMMC1
+#define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC1_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC1_CLK_DISABLE()
+#define SDMMC_IRQn SDMMC1_IRQn
+#define SDMMC_TX_DMA dma_SDIO_0_TX
+#define SDMMC_RX_DMA dma_SDIO_0_RX
+#endif
+
 // The F7 & L4 series calls the peripheral SDMMC rather than SDIO, so provide some
 // #defines for backwards compatability.
-
-#define SDIO    SDMMC1
 
 #define SDIO_CLOCK_EDGE_RISING              SDMMC_CLOCK_EDGE_RISING
 #define SDIO_CLOCK_EDGE_FALLING             SDMMC_CLOCK_EDGE_FALLING
@@ -65,6 +84,16 @@
 
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_TRANSFER_CLK_DIV
 
+#else
+
+// These are definitions for F4 MCUs so there is a common macro across all MCUs.
+
+#define SDMMC_CLK_ENABLE() __SDIO_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE() __SDIO_CLK_DISABLE()
+#define SDMMC_IRQn SDIO_IRQn
+#define SDMMC_TX_DMA dma_SDIO_0_TX
+#define SDMMC_RX_DMA dma_SDIO_0_RX
+
 #endif
 
 // TODO: Since SDIO is fundamentally half-duplex, we really only need to
@@ -80,46 +109,52 @@ static SD_HandleTypeDef sd_handle;
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
 
 void sdcard_init(void) {
-    GPIO_InitTypeDef GPIO_Init_Structure;
-
     // invalidate the sd_handle
     sd_handle.Instance = NULL;
 
     // configure SD GPIO
     // we do this here an not in HAL_SD_MspInit because it apparently
     // makes it more robust to have the pins always pulled high
-    GPIO_Init_Structure.Mode = GPIO_MODE_AF_PP;
-    GPIO_Init_Structure.Pull = GPIO_PULLUP;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Alternate = GPIO_AF12_SDIO;
-    GPIO_Init_Structure.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
-    HAL_GPIO_Init(GPIOC, &GPIO_Init_Structure);
-    GPIO_Init_Structure.Pin = GPIO_PIN_2;
-    HAL_GPIO_Init(GPIOD, &GPIO_Init_Structure);
+    // Note: the mp_hal_pin_config function will configure the GPIO in
+    // fast mode which can do up to 50MHz.  This should be plenty for SDIO
+    // which clocks up to 25MHz maximum.
+    #if defined(MICROPY_HW_SDMMC2_CK)
+    // Use SDMMC2 peripheral with pins provided by the board's config
+    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    #else
+    // Default SDIO/SDMMC1 config
+    mp_hal_pin_config(&pin_C8, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C9, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C10, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_C12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&pin_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    #endif
 
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
-    GPIO_Init_Structure.Mode = GPIO_MODE_INPUT;
-    GPIO_Init_Structure.Pull = MICROPY_HW_SDCARD_DETECT_PULL;
-    GPIO_Init_Structure.Speed = GPIO_SPEED_HIGH;
-    GPIO_Init_Structure.Pin = MICROPY_HW_SDCARD_DETECT_PIN.pin_mask;
-    HAL_GPIO_Init(MICROPY_HW_SDCARD_DETECT_PIN.gpio, &GPIO_Init_Structure);
+    mp_hal_pin_config(&MICROPY_HW_SDCARD_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_SDCARD_DETECT_PULL, 0);
 }
 
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
     // enable SDIO clock
-    __SDIO_CLK_ENABLE();
+    SDMMC_CLK_ENABLE();
 
     // NVIC configuration for SDIO interrupts
-    HAL_NVIC_SetPriority(SDIO_IRQn, IRQ_PRI_SDIO, IRQ_SUBPRI_SDIO);
-    HAL_NVIC_EnableIRQ(SDIO_IRQn);
+    HAL_NVIC_SetPriority(SDMMC_IRQn, IRQ_PRI_SDIO, IRQ_SUBPRI_SDIO);
+    HAL_NVIC_EnableIRQ(SDMMC_IRQn);
 
     // GPIO have already been initialised by sdcard_init
 }
 
 void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd) {
-    HAL_NVIC_DisableIRQ(SDIO_IRQn);
-    __SDIO_CLK_DISABLE();
+    HAL_NVIC_DisableIRQ(SDMMC_IRQn);
+    SDMMC_CLK_DISABLE();
 }
 
 bool sdcard_is_present(void) {
@@ -138,7 +173,7 @@ bool sdcard_power_on(void) {
     sd_handle.Instance = SDIO;
     sd_handle.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
     sd_handle.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
-    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_DISABLE;
+    sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_ENABLE;
     sd_handle.Init.BusWide             = SDIO_BUS_WIDE_1B;
     sd_handle.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
     sd_handle.Init.ClockDiv            = SDIO_TRANSFER_CLK_DIV;
@@ -149,7 +184,7 @@ bool sdcard_power_on(void) {
         if (retry == 0) {
             goto error;
         }
-        HAL_Delay(50);
+        mp_hal_delay_ms(50);
     }
 
     // configure the SD bus width for wide operation
@@ -188,6 +223,14 @@ void SDIO_IRQHandler(void) {
     IRQ_EXIT(SDIO_IRQn);
 }
 
+#if defined(MCU_SERIES_F7)
+void SDMMC2_IRQHandler(void) {
+    IRQ_ENTER(SDMMC2_IRQn);
+    HAL_SD_IRQHandler(&sd_handle);
+    IRQ_EXIT(SDMMC2_IRQn);
+}
+#endif
+
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
@@ -218,8 +261,12 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
-        dma_init(&sd_rx_dma, &dma_SDIO_0_RX, &sd_handle);
+        dma_init(&sd_rx_dma, &SDMMC_RX_DMA, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
+
+        // make sure cache is flushed and invalidated so when DMA updates the RAM
+        // from reading the peripheral the CPU then reads the new data
+        MP_HAL_CLEANINVALIDATE_DCACHE(dest, num_blocks * SDCARD_BLOCK_SIZE);
 
         err = HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
         if (err == SD_OK) {
@@ -227,7 +274,7 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
             err = HAL_SD_CheckReadOperation(&sd_handle, 100000000);
         }
 
-        dma_deinit(&dma_SDIO_0_RX);
+        dma_deinit(&SDMMC_RX_DMA);
         sd_handle.hdmarx = NULL;
 
         restore_irq_pri(basepri);
@@ -274,15 +321,18 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
-        dma_init(&sd_tx_dma, &dma_SDIO_0_TX, &sd_handle);
+        dma_init(&sd_tx_dma, &SDMMC_TX_DMA, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
+
+        // make sure cache is flushed to RAM so the DMA can read the correct data
+        MP_HAL_CLEAN_DCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
 
         err = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
         if (err == SD_OK) {
             // wait for DMA transfer to finish, with a large timeout
             err = HAL_SD_CheckWriteOperation(&sd_handle, 100000000);
         }
-        dma_deinit(&dma_SDIO_0_TX);
+        dma_deinit(&SDMMC_TX_DMA);
         sd_handle.hdmatx = NULL;
 
         restore_irq_pri(basepri);
@@ -440,8 +490,11 @@ const mp_obj_type_t pyb_sdcard_type = {
     .locals_dict = (mp_obj_t)&pyb_sdcard_locals_dict,
 };
 
-void sdcard_init_vfs(fs_user_mount_t *vfs) {
+void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
+    vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
+    vfs->fatfs.part = part;
     vfs->readblocks[0] = (mp_obj_t)&pyb_sdcard_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&pyb_sdcard_obj;
     vfs->readblocks[2] = (mp_obj_t)sdcard_read_blocks; // native version

@@ -33,12 +33,9 @@
 #include "ets_alt_task.h"
 #include "py/obj.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
-
-extern void ets_wdt_disable(void);
-extern void wdt_feed(void);
-extern void ets_delay_us();
 
 STATIC byte input_buf_array[256];
 ringbuf_t input_buf = {input_buf_array, sizeof(input_buf_array)};
@@ -46,7 +43,7 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
 const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 
 void mp_hal_init(void) {
-    ets_wdt_disable(); // it's a pain while developing
+    //ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
 }
@@ -64,7 +61,14 @@ int mp_hal_stdin_rx_chr(void) {
         if (c != -1) {
             return c;
         }
+        #if 0
+        // Idles CPU but need more testing before enabling
+        if (!ets_loop_iter()) {
+            asm("waiti 0");
+        }
+        #else
         mp_hal_delay_us(1);
+        #endif
     }
 }
 
@@ -114,7 +118,7 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
 }
 
 uint32_t mp_hal_ticks_ms(void) {
-    return system_get_time() / 1000;
+    return ((uint64_t)system_time_high_word << 32 | (uint64_t)system_get_time()) / 1000;
 }
 
 uint32_t mp_hal_ticks_us(void) {
@@ -125,21 +129,9 @@ void mp_hal_delay_ms(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
-    }
-    extern int interrupt_char;
-    interrupt_char = c;
-}
-
 void ets_event_poll(void) {
     ets_loop_iter();
-    if (MP_STATE_VM(mp_pending_exception) != NULL) {
-        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        nlr_raise(obj);
-    }
+    mp_handle_pending();
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
@@ -177,7 +169,7 @@ static int call_dupterm_read(void) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(MP_STATE_PORT(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
         nlr_pop();
-        if (*(byte*)bufinfo.buf == interrupt_char) {
+        if (*(byte*)bufinfo.buf == mp_interrupt_char) {
             mp_keyboard_interrupt();
             return -2;
         }
@@ -258,4 +250,9 @@ int ets_esf_free_bufs(int idx) {
         cnt++;
     }
     return cnt;
+}
+
+extern int mp_stream_errno;
+int *__errno() {
+    return &mp_stream_errno;
 }

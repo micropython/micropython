@@ -32,6 +32,9 @@
 
 #if MICROPY_DEBUG_PRINTERS
 
+// redirect all printfs in this file to the platform print stream
+#define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+
 #define DECODE_UINT { \
     unum = 0; \
     do { \
@@ -79,7 +82,6 @@ const mp_uint_t *mp_showbc_const_table;
 
 void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
-    mp_showbc_const_table = const_table;
 
     // get bytecode parameters
     mp_uint_t n_state = mp_decode_uint(&ip);
@@ -96,6 +98,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
     #if MICROPY_PERSISTENT_CODE
     qstr block_name = code_info[0] | (code_info[1] << 8);
     qstr source_file = code_info[2] | (code_info[3] << 8);
+    code_info += 4;
     #else
     qstr block_name = mp_decode_uint(&code_info);
     qstr source_file = mp_decode_uint(&code_info);
@@ -155,7 +158,7 @@ void mp_bytecode_print(const void *descr, const byte *ip, mp_uint_t len, const m
             printf("  bc=" INT_FMT " line=" UINT_FMT "\n", bc, source_line);
         }
     }
-    mp_bytecode_print2(ip, len - 0);
+    mp_bytecode_print2(ip, len - 0, const_table);
 }
 
 const byte *mp_bytecode_print_str(const byte *ip) {
@@ -240,6 +243,11 @@ const byte *mp_bytecode_print_str(const byte *ip) {
         case MP_BC_LOAD_METHOD:
             DECODE_QSTR;
             printf("LOAD_METHOD %s", qstr_str(qst));
+            break;
+
+        case MP_BC_LOAD_SUPER_METHOD:
+            DECODE_QSTR;
+            printf("LOAD_SUPER_METHOD %s", qstr_str(qst));
             break;
 
         case MP_BC_LOAD_BUILD_CLASS:
@@ -384,6 +392,10 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("GET_ITER");
             break;
 
+        case MP_BC_GET_ITER_STACK:
+            printf("GET_ITER_STACK");
+            break;
+
         case MP_BC_FOR_ITER:
             DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
             printf("FOR_ITER " UINT_FMT, (mp_uint_t)(ip + unum - mp_showbc_code_start));
@@ -409,11 +421,6 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_LIST " UINT_FMT, unum);
             break;
 
-        case MP_BC_LIST_APPEND:
-            DECODE_UINT;
-            printf("LIST_APPEND " UINT_FMT, unum);
-            break;
-
         case MP_BC_BUILD_MAP:
             DECODE_UINT;
             printf("BUILD_MAP " UINT_FMT, unum);
@@ -423,19 +430,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("STORE_MAP");
             break;
 
-        case MP_BC_MAP_ADD:
-            DECODE_UINT;
-            printf("MAP_ADD " UINT_FMT, unum);
-            break;
-
         case MP_BC_BUILD_SET:
             DECODE_UINT;
             printf("BUILD_SET " UINT_FMT, unum);
-            break;
-
-        case MP_BC_SET_ADD:
-            DECODE_UINT;
-            printf("SET_ADD " UINT_FMT, unum);
             break;
 
 #if MICROPY_PY_BUILTINS_SLICE
@@ -444,6 +441,11 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("BUILD_SLICE " UINT_FMT, unum);
             break;
 #endif
+
+        case MP_BC_STORE_COMP:
+            DECODE_UINT;
+            printf("STORE_COMP " UINT_FMT, unum);
+            break;
 
         case MP_BC_UNPACK_SEQUENCE:
             DECODE_UINT;
@@ -553,8 +555,9 @@ const byte *mp_bytecode_print_str(const byte *ip) {
     return ip;
 }
 
-void mp_bytecode_print2(const byte *ip, mp_uint_t len) {
+void mp_bytecode_print2(const byte *ip, size_t len, const mp_uint_t *const_table) {
     mp_showbc_code_start = ip;
+    mp_showbc_const_table = const_table;
     while (ip < len + mp_showbc_code_start) {
         printf("%02u ", (uint)(ip - mp_showbc_code_start));
         ip = mp_bytecode_print_str(ip);

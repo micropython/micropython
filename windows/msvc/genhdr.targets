@@ -87,6 +87,10 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
+  <Target Name="RemoveGeneratedFiles" AfterTargets="Clean">
+    <RemoveDir Directories="$(DestDir)"/>
+  </Target>
+
   <!--Copies SourceFile to DestFile only if SourceFile's content differs from DestFile's.
       We use this to 'touch' the generated files only when they are really newer
       so a build is only triggered if the generated content actually changed,

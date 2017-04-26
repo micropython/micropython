@@ -29,6 +29,7 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
@@ -92,7 +93,7 @@ STATIC const mp_arg_t pyb_wdt_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
     { MP_QSTR_timeout,                        MP_ARG_INT,  {.u_int = 5000} },   // 5 s
 };
-STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // check the arguments
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -100,14 +101,14 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp
     mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), pyb_wdt_init_args, args);
 
     if (args[0].u_obj != mp_const_none && mp_obj_get_int(args[0].u_obj) > 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_OSError(MP_ENODEV);
     }
     uint timeout_ms = args[1].u_int;
     if (timeout_ms < PYBWDT_MIN_TIMEOUT_MS) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     if (pyb_wdt_obj.running) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_OSError(MP_EPERM);
     }
 
     // Enable the WDT peripheral clock

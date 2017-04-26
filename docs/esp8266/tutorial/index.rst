@@ -29,4 +29,5 @@ to `<https://www.python.org>`__.
    powerctrl.rst
    onewire.rst
    neopixel.rst
+   dht.rst
    nextsteps.rst

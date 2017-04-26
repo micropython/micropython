@@ -54,7 +54,36 @@
 #define ADCx                    (ADC1)
 #define ADCx_CLK_ENABLE         __ADC1_CLK_ENABLE
 #define ADC_NUM_CHANNELS        (19)
-#define ADC_NUM_GPIO_CHANNELS   (16)
+
+#if defined(MCU_SERIES_F4)
+
+#define ADC_FIRST_GPIO_CHANNEL  (0)
+#define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_CAL_ADDRESS         (0x1fff7a2a)
+#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
+#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
+
+#elif defined(MCU_SERIES_F7)
+
+#define ADC_FIRST_GPIO_CHANNEL  (0)
+#define ADC_LAST_GPIO_CHANNEL   (15)
+#define ADC_CAL_ADDRESS         (0x1ff0f44a)
+#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
+#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
+
+#elif defined(MCU_SERIES_L4)
+
+#define ADC_FIRST_GPIO_CHANNEL  (1)
+#define ADC_LAST_GPIO_CHANNEL   (16)
+#define ADC_CAL_ADDRESS         (0x1fff75aa)
+#define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS - 2))
+#define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 0x20))
+
+#else
+
+#error Unsupported processor
+
+#endif
 
 #if defined(STM32F405xx) || defined(STM32F415xx) || \
     defined(STM32F407xx) || defined(STM32F417xx) || \
@@ -63,7 +92,8 @@
 #define VBAT_DIV (2)
 #elif defined(STM32F427xx) || defined(STM32F429xx) || \
       defined(STM32F437xx) || defined(STM32F439xx) || \
-      defined(STM32F746xx)
+      defined(STM32F746xx) || defined(STM32F767xx) || \
+      defined(STM32F769xx)
 #define VBAT_DIV (4)
 #elif defined(STM32L476xx)
 #define VBAT_DIV (3)
@@ -75,12 +105,28 @@
 #define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resoultion) */
 #define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
 
+// scale and calibration values for VBAT and VREF
+#define ADC_SCALE (3.3f / 4095)
+#define VREFIN_CAL ((uint16_t *)ADC_CAL_ADDRESS)
+
 typedef struct _pyb_obj_adc_t {
     mp_obj_base_t base;
     mp_obj_t pin_name;
     int channel;
     ADC_HandleTypeDef handle;
 } pyb_obj_adc_t;
+
+// convert user-facing channel number into internal channel number
+static inline uint32_t adc_get_internal_channel(uint32_t channel) {
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    // on F4 and F7 MCUs we want channel 16 to always be the TEMPSENSOR
+    // (on some MCUs ADC_CHANNEL_TEMPSENSOR=16, on others it doesn't)
+    if (channel == 16) {
+        channel = ADC_CHANNEL_TEMPSENSOR;
+    }
+    #endif
+    return channel;
+}
 
 STATIC bool is_adcx_channel(int channel) {
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
@@ -124,14 +170,20 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
         return;
     }
 
-    if (adc_obj->channel < ADC_NUM_GPIO_CHANNELS) {
+    if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
       // Channels 0-16 correspond to real pins. Configure the GPIO pin in
       // ADC mode.
       const pin_obj_t *pin = pin_adc1[adc_obj->channel];
       mp_hal_gpio_clock_enable(pin->gpio);
       GPIO_InitTypeDef GPIO_InitStructure;
       GPIO_InitStructure.Pin = pin->pin_mask;
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
       GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
+#elif defined(MCU_SERIES_L4)
+      GPIO_InitStructure.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
+#else
+    #error Unsupported processor
+#endif
       GPIO_InitStructure.Pull = GPIO_NOPULL;
       HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
     }
@@ -140,7 +192,6 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 
     ADC_HandleTypeDef *adcHandle = &adc_obj->handle;
     adcHandle->Instance                   = ADCx;
-    adcHandle->Init.Resolution            = ADC_RESOLUTION12b;
     adcHandle->Init.ContinuousConvMode    = DISABLE;
     adcHandle->Init.DiscontinuousConvMode = DISABLE;
     adcHandle->Init.NbrOfDiscConversion   = 0;
@@ -148,15 +199,18 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
-    adcHandle->Init.EOCSelection          = DISABLE;
+    adcHandle->Init.Resolution            = ADC_RESOLUTION_12B;
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
+    adcHandle->Init.EOCSelection          = DISABLE;
 #elif defined(MCU_SERIES_L4)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIG_T1_CC1;
+    adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
+    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
+    adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
     adcHandle->Init.LowPowerAutoWait      = DISABLE;
     adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
     adcHandle->Init.OversamplingMode      = DISABLE;
@@ -165,30 +219,42 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 #endif
 
     HAL_ADC_Init(adcHandle);
+
+#if defined(MCU_SERIES_L4)
+    ADC_MultiModeTypeDef multimode;
+    multimode.Mode = ADC_MODE_INDEPENDENT;
+    if (HAL_ADCEx_MultiModeConfigChannel(adcHandle, &multimode) != HAL_OK)
+    {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Can not set multimode on ADC1 channel: %d", adc_obj->channel));
+    }
+#endif
 }
 
-STATIC void adc_config_channel(pyb_obj_adc_t *adc_obj) {
+STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    sConfig.Channel = adc_obj->channel;
+    sConfig.Channel = channel;
     sConfig.Rank = 1;
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
 #elif defined(MCU_SERIES_L4)
     sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+    sConfig.SingleDiff = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
 #else
     #error Unsupported processor
 #endif
     sConfig.Offset = 0;
 
-    HAL_ADC_ConfigChannel(&adc_obj->handle, &sConfig);
+    HAL_ADC_ConfigChannel(adc_handle, &sConfig);
 }
 
 STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
     uint32_t rawValue = 0;
 
     HAL_ADC_Start(adcHandle);
-    if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK && HAL_ADC_GetState(adcHandle) == HAL_ADC_STATE_EOC_REG) {
+    if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK
+        && (HAL_ADC_GetState(adcHandle) & HAL_ADC_STATE_EOC_REG) == HAL_ADC_STATE_EOC_REG) {
         rawValue = HAL_ADC_GetValue(adcHandle);
     }
     HAL_ADC_Stop(adcHandle);
@@ -209,7 +275,7 @@ STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 /// \classmethod \constructor(pin)
 /// Create an ADC object associated with the given pin.
 /// This allows you to then read analog values on that pin.
-STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -219,7 +285,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
     uint32_t channel;
 
     if (MP_OBJ_IS_INT(pin_obj)) {
-        channel = mp_obj_get_int(pin_obj);
+        channel = adc_get_internal_channel(mp_obj_get_int(pin_obj));
     } else {
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC1) == 0) {
@@ -232,8 +298,14 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
     if (!is_adcx_channel(channel)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "not a valid ADC Channel: %d", channel));
     }
-    if (pin_adc1[channel] == NULL) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "channel %d not available on this board", channel));
+
+
+    if (ADC_FIRST_GPIO_CHANNEL <= channel && channel <= ADC_LAST_GPIO_CHANNEL) {
+        // these channels correspond to physical GPIO ports so make sure they exist
+        if (pin_adc1[channel] == NULL) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                "channel %d not available on this board", channel));
+        }
     }
 
     pyb_obj_adc_t *o = m_new_obj(pyb_obj_adc_t);
@@ -252,7 +324,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
 STATIC mp_obj_t adc_read(mp_obj_t self_in) {
     pyb_obj_adc_t *self = self_in;
 
-    adc_config_channel(self);
+    adc_config_channel(&self->handle, self->channel);
     uint32_t data = adc_read_channel(&self->handle);
     return mp_obj_new_int(data);
 }
@@ -313,7 +385,7 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     }
 
     // configure the ADC channel
-    adc_config_channel(self);
+    adc_config_channel(&self->handle, self->channel);
 
     // This uses the timer in polling mode to do the sampling
     // TODO use DMA
@@ -390,28 +462,33 @@ typedef struct _pyb_adc_all_obj_t {
     ADC_HandleTypeDef handle;
 } pyb_adc_all_obj_t;
 
-void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
+void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_mask) {
 
     switch (resolution) {
-        case 6:  resolution = ADC_RESOLUTION6b;  break;
-        case 8:  resolution = ADC_RESOLUTION8b;  break;
-        case 10: resolution = ADC_RESOLUTION10b; break;
-        case 12: resolution = ADC_RESOLUTION12b; break;
+        case 6:  resolution = ADC_RESOLUTION_6B;  break;
+        case 8:  resolution = ADC_RESOLUTION_8B;  break;
+        case 10: resolution = ADC_RESOLUTION_10B; break;
+        case 12: resolution = ADC_RESOLUTION_12B; break;
         default:
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "resolution %d not supported", resolution));
     }
 
-    for (uint32_t channel = 0; channel < ADC_NUM_GPIO_CHANNELS; channel++) {
-        // Channels 0-16 correspond to real pins. Configure the GPIO pin in
-        // ADC mode.
-        const pin_obj_t *pin = pin_adc1[channel];
-        mp_hal_gpio_clock_enable(pin->gpio);
-        GPIO_InitTypeDef GPIO_InitStructure;
-        GPIO_InitStructure.Pin = pin->pin_mask;
-        GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-        GPIO_InitStructure.Pull = GPIO_NOPULL;
-        HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+    for (uint32_t channel = ADC_FIRST_GPIO_CHANNEL; channel <= ADC_LAST_GPIO_CHANNEL; ++channel) {
+        // only initialise those channels that are selected with the en_mask
+        if (en_mask & (1 << channel)) {
+            // Channels 0-16 correspond to real pins. Configure the GPIO pin in
+            // ADC mode.
+            const pin_obj_t *pin = pin_adc1[channel];
+            if (pin) {
+                mp_hal_gpio_clock_enable(pin->gpio);
+                GPIO_InitTypeDef GPIO_InitStructure;
+                GPIO_InitStructure.Pin = pin->pin_mask;
+                GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
+                GPIO_InitStructure.Pull = GPIO_NOPULL;
+                HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+            }
+        }
     }
 
     adcx_clock_enable();
@@ -428,7 +505,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
     adcHandle->Init.DMAContinuousRequests = DISABLE;
     adcHandle->Init.EOCSelection          = DISABLE;
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
 #elif defined(MCU_SERIES_L4)
@@ -446,19 +523,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution) {
 }
 
 uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
-    ADC_ChannelConfTypeDef sConfig;
-    sConfig.Channel = channel;
-    sConfig.Rank = 1;
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
-#elif defined(MCU_SERIES_L4)
-    sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
-#else
-    #error Unsupported processor
-#endif
-    sConfig.Offset = 0;
-    HAL_ADC_ConfigChannel(adcHandle, &sConfig);
-
+    adc_config_channel(adcHandle, channel);
     return adc_read_channel(adcHandle);
 }
 
@@ -466,9 +531,9 @@ int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
     uint32_t res_reg = __HAL_ADC_GET_RESOLUTION(adcHandle);
 
     switch (res_reg) {
-        case ADC_RESOLUTION6b:  return 6;
-        case ADC_RESOLUTION8b:  return 8;
-        case ADC_RESOLUTION10b: return 10;
+        case ADC_RESOLUTION_6B:  return 6;
+        case ADC_RESOLUTION_8B:  return 8;
+        case ADC_RESOLUTION_10B: return 10;
     }
     return 12;
 }
@@ -484,6 +549,19 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
+// correction factor for reference value
+STATIC volatile float adc_refcor = 1.0f;
+
+float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
+    int32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_TEMPSENSOR);
+
+    // constants assume 12-bit resolution so we scale the raw value to 12-bits
+    raw_value <<= (12 - adc_get_resolution(adcHandle));
+
+    float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0;
+    return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
+}
+
 float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     uint32_t raw_value = adc_config_and_read_channel(adcHandle, ADC_CHANNEL_VBAT);
 
@@ -491,8 +569,16 @@ float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
 
-    // multiplier is 3.3/4095
-    return raw_value * VBAT_DIV * 0.8058608058608059e-3f;
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
+    // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
+    // conversions to work.  VBATE is enabled by the above call to read
+    // the channel, and here we disable VBATE so a subsequent call for
+    // TEMPSENSOR or VREFINT works correctly.
+    ADC->CCR &= ~ADC_CCR_VBATE;
+    #endif
+
+    return raw_value * VBAT_DIV * ADC_SCALE * adc_refcor;
 }
 
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
@@ -502,29 +588,36 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
 
-    // multiplier is 3.3/4095
-    return raw_value * 0.8058608058608059e-3f;
+    // update the reference correction factor
+    adc_refcor = ((float)(*VREFIN_CAL)) / ((float)raw_value);
+
+    return (*VREFIN_CAL) * ADC_SCALE;
 }
 #endif
 
 /******************************************************************************/
 /* Micro Python bindings : adc_all object                                     */
 
-STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // make ADCAll object
     pyb_adc_all_obj_t *o = m_new_obj(pyb_adc_all_obj_t);
     o->base.type = &pyb_adc_all_type;
-    adc_init_all(o, mp_obj_get_int(args[0])); // args[0] is the resolution
+    mp_int_t res = mp_obj_get_int(args[0]);
+    uint32_t en_mask = 0xffffffff;
+    if (n_args > 1) {
+        en_mask =  mp_obj_get_int(args[1]);
+    }
+    adc_init_all(o, res, en_mask);
 
     return o;
 }
 
 STATIC mp_obj_t adc_all_read_channel(mp_obj_t self_in, mp_obj_t channel) {
     pyb_adc_all_obj_t *self = self_in;
-    uint32_t chan = mp_obj_get_int(channel);
+    uint32_t chan = adc_get_internal_channel(mp_obj_get_int(channel));
     uint32_t data = adc_config_and_read_channel(&self->handle, chan);
     return mp_obj_new_int(data);
 }
@@ -532,8 +625,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(adc_all_read_channel_obj, adc_all_read_channel)
 
 STATIC mp_obj_t adc_all_read_core_temp(mp_obj_t self_in) {
     pyb_adc_all_obj_t *self = self_in;
+    #if MICROPY_PY_BUILTINS_FLOAT
+    float data = adc_read_core_temp_float(&self->handle);
+    return mp_obj_new_float(data);
+    #else
     int data  = adc_read_core_temp(&self->handle);
     return mp_obj_new_int(data);
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_temp_obj, adc_all_read_core_temp);
 
@@ -551,6 +649,13 @@ STATIC mp_obj_t adc_all_read_core_vref(mp_obj_t self_in) {
     return mp_obj_new_float(data);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_core_vref_obj, adc_all_read_core_vref);
+
+STATIC mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
+    pyb_adc_all_obj_t *self = self_in;
+    adc_read_core_vref(&self->handle);
+    return mp_obj_new_float(3.3 * adc_refcor);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_vref_obj, adc_all_read_vref);
 #endif
 
 STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
@@ -559,6 +664,7 @@ STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
 #if MICROPY_PY_BUILTINS_FLOAT
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vbat), (mp_obj_t)&adc_all_read_core_vbat_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vref), (mp_obj_t)&adc_all_read_core_vref_obj},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read_vref), (mp_obj_t)&adc_all_read_vref_obj},
 #endif
 };
 

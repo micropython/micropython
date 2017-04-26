@@ -98,13 +98,6 @@ int main (void) {
     for ( ; ; );
 }
 
-void stoupper (char *str) {
-    while (str && *str != '\0') {
-        *str = (char)toupper((int)(*str));
-        str++;
-    }
-}
-
 // We need this when configSUPPORT_STATIC_ALLOCATION is enabled
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     StackType_t **ppxIdleTaskStackBuffer,

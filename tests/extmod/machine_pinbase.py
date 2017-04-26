@@ -1,10 +1,16 @@
 try:
-    from umachine import PinBase
+    import umachine as machine
 except ImportError:
-    from machine import PinBase
+    import machine
+try:
+    machine.PinBase
+except AttributeError:
+    print("SKIP")
+    import sys
+    sys.exit()
 
 
-class MyPin(PinBase):
+class MyPin(machine.PinBase):
 
     def __init__(self):
         print("__init__")

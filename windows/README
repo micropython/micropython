@@ -52,5 +52,5 @@ backend which has the look&feel of a standard Unix console:
 For more info, see https://www.winehq.org/docs/wineusr-guide/cui-programs
 
 If built without line editing and history capabilities
-(MICROPY_USE_READLINE=0), the resulting binary can be built using standard
+(MICROPY_USE_READLINE=0), the resulting binary can be run using the standard
 "wine" tool.

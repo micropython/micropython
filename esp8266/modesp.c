@@ -25,492 +25,18 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "drivers/dht/dht.h"
-#include "netutils.h"
-#include "queue.h"
-#include "ets_sys.h"
 #include "uart.h"
 #include "user_interface.h"
-#include "espconn.h"
-#include "spi_flash.h"
 #include "mem.h"
 #include "espneopixel.h"
 #include "espapa102.h"
-#include "modpyb.h"
-#include "modpybrtc.h"
-
-#define MODESP_ESPCONN (0)
-
-#if MODESP_ESPCONN
-STATIC const mp_obj_type_t esp_socket_type;
-
-typedef struct _esp_socket_obj_t {
-    mp_obj_base_t base;
-    struct espconn *espconn;
-
-    mp_obj_t cb_connect;
-    mp_obj_t cb_recv;
-    mp_obj_t cb_sent;
-    mp_obj_t cb_disconnect;
-
-    uint8_t *recvbuf;
-    mp_uint_t recvbuf_len;
-
-    bool fromserver;
-
-    mp_obj_list_t *connlist;
-} esp_socket_obj_t;
-
-// Due to the onconnect callback not being able to recognize the parent esp_socket,
-// we can have only one esp_socket listening at a time
-// This should be solvable by some PIC hacking
-STATIC esp_socket_obj_t *esp_socket_listening;
-
-STATIC mp_obj_t esp_socket_make_new_base() {
-    esp_socket_obj_t *s = m_new_obj_with_finaliser(esp_socket_obj_t);
-    s->recvbuf = NULL;
-    s->base.type = (mp_obj_t)&esp_socket_type;
-    s->cb_connect = mp_const_none;
-    s->cb_recv = mp_const_none;
-    s->cb_disconnect = mp_const_none;
-    s->cb_sent = mp_const_none;
-    s->fromserver = false;
-    s->connlist = NULL;
-    return s;
-}
-
-// constructor esp_socket(family=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP, fileno=None)
-// Arguments ignored as we do not support UDP (yet)
-STATIC mp_obj_t esp_socket_make_new(const mp_obj_type_t *type_in, mp_uint_t n_args,
-    mp_uint_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 4, false);
-
-    esp_socket_obj_t *s = esp_socket_make_new_base();
-    s->espconn = m_new_obj(struct espconn);
-
-    s->espconn->reverse = s;
-    // TODO: UDP Support
-    s->espconn->type = ESPCONN_TCP;
-    s->espconn->state = ESPCONN_NONE;
-
-    s->espconn->proto.tcp = m_new_obj(esp_tcp);
-
-    return s;
-}
-
-// method socket.close()
-STATIC mp_obj_t esp_socket_close(mp_obj_t self_in) {
-    esp_socket_obj_t *s = self_in;
-
-    if (esp_socket_listening == s) {
-        esp_socket_listening = NULL;
-    }
-
-    if (s->espconn->state != ESPCONN_NONE && s->espconn->state != ESPCONN_CLOSE) {
-        espconn_disconnect(s->espconn);
-    }
-
-    if (s->connlist != NULL) {
-        mp_obj_list_set_len(s->connlist, 0);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_socket_close_obj, esp_socket_close);
-
-// method socket.__del__()
-STATIC mp_obj_t esp_socket___del__(mp_obj_t self_in) {
-    esp_socket_obj_t *s = self_in;
-
-    esp_socket_close(self_in);
-
-    if (s->fromserver) {
-        espconn_delete(s->espconn);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_socket___del___obj, esp_socket___del__);
-
-// method socket.bind(address)
-STATIC mp_obj_t esp_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
-    esp_socket_obj_t *s = self_in;
-
-    mp_uint_t port = netutils_parse_inet_addr(addr_in,
-        s->espconn->proto.tcp->remote_ip, NETUTILS_BIG);
-    s->espconn->proto.tcp->local_port = port;
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_bind_obj, esp_socket_bind);
-
-STATIC void esp_socket_recv_callback(void *arg, char *pdata, unsigned short len) {
-    struct espconn *conn = arg;
-    esp_socket_obj_t *s = conn->reverse;
-
-    if (s->cb_recv != mp_const_none) {
-        call_function_2_protected(s->cb_recv, s, mp_obj_new_bytes((byte *)pdata, len));
-    } else {
-        if (s->recvbuf == NULL) {
-            s->recvbuf = m_new(uint8_t, len);
-            s->recvbuf_len = len;
-            if (s->recvbuf != NULL) {
-                memcpy(s->recvbuf, pdata, len);
-            }
-        } else {
-            s->recvbuf = m_renew(uint8_t, s->recvbuf, s->recvbuf_len, s->recvbuf_len + len);
-            if (s->recvbuf != NULL) {
-                memcpy(&s->recvbuf[s->recvbuf_len], pdata, len);
-                s->recvbuf_len += len;
-            }
-        }
-        if (s->recvbuf == NULL) {
-            esp_socket_close(s);
-            return;
-        }
-    }
-}
-
-STATIC void esp_socket_sent_callback(void *arg) {
-    struct espconn *conn = arg;
-    esp_socket_obj_t *s = conn->reverse;
-
-    if (s->cb_sent != mp_const_none) {
-        call_function_1_protected(s->cb_sent, s);
-    }
-}
-
-STATIC void esp_socket_disconnect_callback(void *arg) {
-    struct espconn *conn = arg;
-    esp_socket_obj_t *s = conn->reverse;
-
-    if (s->cb_disconnect != mp_const_none) {
-        call_function_1_protected(s->cb_disconnect, s);
-    }
-
-    esp_socket_close(s);
-}
-
-STATIC void esp_socket_connect_callback_server(void *arg) {
-    struct espconn *conn = arg;
-
-    esp_socket_obj_t *s = esp_socket_make_new_base();
-    s->espconn = conn;
-    s->fromserver = true;
-    conn->reverse = s;
-
-    espconn_regist_recvcb(conn, esp_socket_recv_callback);
-    espconn_regist_sentcb(conn, esp_socket_sent_callback);
-    espconn_regist_disconcb(conn, esp_socket_disconnect_callback);
-    espconn_regist_time(conn, 15, 0);
-
-    if (esp_socket_listening->cb_connect != mp_const_none) {
-        call_function_1_protected(esp_socket_listening->cb_connect, s);
-    } else {
-        mp_obj_list_append(esp_socket_listening->connlist, s);
-    }
-}
-
-STATIC void esp_socket_connect_callback_client(void *arg) {
-    struct espconn *conn = arg;
-    esp_socket_obj_t *s = conn->reverse;
-
-    if (s->cb_connect != mp_const_none) {
-        call_function_1_protected(s->cb_connect, s);
-    }
-}
-
-// method socket.listen(backlog)
-STATIC mp_obj_t esp_socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
-    esp_socket_obj_t *s = self_in;
-
-    if (esp_socket_listening != NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "only one espconn can listen at a time"));
-    }
-
-    esp_socket_listening = s;
-
-    s->connlist = mp_obj_new_list(0, NULL);
-
-    espconn_regist_connectcb(s->espconn, esp_socket_connect_callback_server);
-    espconn_accept(s->espconn);
-    espconn_regist_time(s->espconn, 1500, 0);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_listen_obj, esp_socket_listen);
-
-// method socket.accept()
-STATIC mp_obj_t esp_socket_accept(mp_obj_t self_in) {
-    esp_socket_obj_t *s = self_in;
-
-    if (s->connlist == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "not listening"));
-    }
-
-    do {
-        mp_uint_t len;
-        mp_obj_t *items;
-
-        mp_obj_list_get(s->connlist, &len, &items);
-        if (len == 0) {
-            break;
-        }
-
-        esp_socket_obj_t *rs = items[0];
-        mp_obj_list_remove(s->connlist, rs);
-        if (rs->espconn->state != ESPCONN_CLOSE) {
-            return rs;
-        }
-    } while (true);
-
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-        "no connection in queue"));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_socket_accept_obj, esp_socket_accept);
-
-// method socket.connect(address)
-STATIC mp_obj_t esp_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
-    esp_socket_obj_t *s = self_in;
-
-    if (s->espconn == NULL || s->espconn->state != ESPCONN_NONE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "transport endpoint is already connected or closed"));
-    }
-
-    espconn_regist_connectcb(s->espconn, esp_socket_connect_callback_client);
-    espconn_regist_recvcb(s->espconn, esp_socket_recv_callback);
-    espconn_regist_sentcb(s->espconn, esp_socket_sent_callback);
-    espconn_regist_disconcb(s->espconn, esp_socket_disconnect_callback);
-
-    s->espconn->proto.tcp->remote_port =
-        netutils_parse_inet_addr(addr_in, s->espconn->proto.tcp->remote_ip,
-            NETUTILS_BIG);
-    espconn_connect(s->espconn);
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_connect_obj, esp_socket_connect);
-
-// method socket.send(bytes)
-STATIC mp_obj_t esp_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
-    esp_socket_obj_t *s = self_in;
-
-    if (s->espconn->state == ESPCONN_NONE || s->espconn->state == ESPCONN_CLOSE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "not connected"));
-    }
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-
-    espconn_sent(s->espconn, bufinfo.buf, bufinfo.len);
-
-    return mp_obj_new_int(bufinfo.len);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_send_obj, esp_socket_send);
-
-// method socket.recv(bufsize)
-STATIC mp_obj_t esp_socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
-    esp_socket_obj_t *s = self_in;
-
-    if (s->recvbuf == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "no data available"));
-    }
-
-    mp_uint_t mxl = mp_obj_get_int(len_in);
-    if (mxl >= s->recvbuf_len) {
-        mp_obj_t trt = mp_obj_new_bytes(s->recvbuf, s->recvbuf_len);
-        m_del(uint8_t, s->recvbuf, s->recvbuf_len);
-        s->recvbuf = NULL;
-        return trt;
-    } else {
-        mp_obj_t trt = mp_obj_new_bytes(s->recvbuf, mxl);
-        memmove(s->recvbuf, &s->recvbuf[mxl], s->recvbuf_len - mxl);
-        s->recvbuf = m_renew(uint8_t, s->recvbuf, s->recvbuf_len, s->recvbuf_len - mxl);
-        s->recvbuf_len -= mxl;
-        return trt;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_recv_obj, esp_socket_recv);
-
-// method socket.sendto(bytes, address)
-STATIC mp_obj_t esp_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "UDP not supported"));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_socket_sendto_obj, esp_socket_sendto);
-
-// method socket.recvfrom(bufsize)
-STATIC mp_obj_t esp_socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "UDP not supported"));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_recvfrom_obj, esp_socket_recvfrom);
-
-// method socket.getpeername()
-STATIC mp_obj_t esp_socket_getpeername(mp_obj_t self_in) {
-    esp_socket_obj_t *s = self_in;
-
-    if (s->espconn->state == ESPCONN_NONE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-            "not connected"));
-    }
-
-    mp_obj_t tuple[2] = {
-        netutils_format_ipv4_addr(s->espconn->proto.tcp->remote_ip, NETUTILS_BIG),
-        mp_obj_new_int(s->espconn->proto.tcp->remote_port),
-    };
-
-    return mp_obj_new_tuple(2, tuple);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_socket_getpeername_obj, esp_socket_getpeername);
-
-STATIC mp_obj_t esp_socket_onconnect(mp_obj_t self_in, mp_obj_t lambda_in) {
-    esp_socket_obj_t *s = self_in;
-    s->cb_connect = lambda_in;
-
-    if (s->connlist != NULL) {
-        do {
-            mp_uint_t len;
-            mp_obj_t *items;
-
-            mp_obj_list_get(s->connlist, &len, &items);
-            if (len == 0) {
-                break;
-            }
-
-            esp_socket_obj_t *rs = items[0];
-            mp_obj_list_remove(s->connlist, rs);
-            if (s->espconn->state != ESPCONN_CLOSE) {
-                call_function_1_protected(s->cb_connect, rs);
-            }
-        } while (true);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_onconnect_obj, esp_socket_onconnect);
-
-STATIC mp_obj_t esp_socket_onrecv(mp_obj_t self_in, mp_obj_t lambda_in) {
-    esp_socket_obj_t *s = self_in;
-    s->cb_recv = lambda_in;
-    if (s->recvbuf != NULL) {
-        call_function_2_protected(s->cb_recv, s,
-            mp_obj_new_bytes((byte *)s->recvbuf, s->recvbuf_len));
-        s->recvbuf = NULL;
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_onrecv_obj, esp_socket_onrecv);
-
-STATIC mp_obj_t esp_socket_onsent(mp_obj_t self_in, mp_obj_t lambda_in) {
-    esp_socket_obj_t *s = self_in;
-    s->cb_sent = lambda_in;
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_onsent_obj, esp_socket_onsent);
-
-STATIC mp_obj_t esp_socket_ondisconnect(mp_obj_t self_in, mp_obj_t lambda_in) {
-    esp_socket_obj_t *s = self_in;
-    s->cb_disconnect = lambda_in;
-
-    if (s->espconn->state == ESPCONN_CLOSE) {
-        call_function_1_protected(s->cb_disconnect, s);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_socket_ondisconnect_obj, esp_socket_ondisconnect);
-
-typedef struct _esp_getaddrinfo_cb_struct_t {
-    mp_obj_t lambda;
-    mp_uint_t port;
-} esp_getaddrinfo_cb_struct_t;
-
-STATIC esp_getaddrinfo_cb_struct_t esp_getaddrinfo_cb_struct;
-
-STATIC void esp_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) {
-    mp_obj_t namestr = mp_obj_new_str(name, strlen(name), true);
-    if (ipaddr != NULL) {
-        uint8_t ip[4];
-        ip[0] = (ipaddr->addr >> 24) & 0xff;
-        ip[1] = (ipaddr->addr >> 16) & 0xff;
-        ip[2] = (ipaddr->addr >>  8) & 0xff;
-        ip[3] = (ipaddr->addr >>  0) & 0xff;
-
-        mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
-
-        tuple->items[0] = MP_OBJ_NEW_SMALL_INT(0);
-        tuple->items[1] = MP_OBJ_NEW_SMALL_INT(0);
-        tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
-        tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-        tuple->items[4] = netutils_format_inet_addr(ip,
-            esp_getaddrinfo_cb_struct.port, NETUTILS_LITTLE);
-        call_function_2_protected(esp_getaddrinfo_cb_struct.lambda, namestr, tuple);
-    } else {
-        call_function_2_protected(esp_getaddrinfo_cb_struct.lambda, namestr, mp_const_none);
-    }
-}
-
-STATIC mp_obj_t esp_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in,
-    mp_obj_t lambda_in) {
-    mp_uint_t hlen;
-    const char *host = mp_obj_str_get_data(host_in, &hlen);
-    ip_addr_t ipaddr;
-
-    esp_getaddrinfo_cb_struct.lambda = lambda_in;
-    esp_getaddrinfo_cb_struct.port = mp_obj_get_int(port_in);
-
-    err_t ret = espconn_gethostbyname(NULL, host, &ipaddr,
-        esp_getaddrinfo_cb);
-
-    if (ret == ESPCONN_OK) {
-        esp_getaddrinfo_cb(host, &ipaddr, NULL);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_getaddrinfo_obj, esp_getaddrinfo);
-
-STATIC const mp_map_elem_t esp_socket_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&esp_socket___del___obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&esp_socket_close_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&esp_socket_bind_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&esp_socket_listen_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_accept), (mp_obj_t)&esp_socket_accept_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_socket_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&esp_socket_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&esp_socket_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&esp_socket_sendto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&esp_socket_recvfrom_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getpeername), (mp_obj_t)&esp_socket_getpeername_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_onconnect), (mp_obj_t)&esp_socket_onconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_onrecv), (mp_obj_t)&esp_socket_onrecv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_onsent), (mp_obj_t)&esp_socket_onsent_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ondisconnect), (mp_obj_t)&esp_socket_ondisconnect_obj },
-};
-STATIC MP_DEFINE_CONST_DICT(esp_socket_locals_dict, esp_socket_locals_dict_table);
-
-STATIC const mp_obj_type_t esp_socket_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_socket,
-    .make_new = esp_socket_make_new,
-    .locals_dict = (mp_obj_t)&esp_socket_locals_dict,
-};
-#endif
+#include "modmachine.h"
 
 #define MODESP_INCLUDE_CONSTANTS (1)
 
@@ -583,7 +109,7 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     if (alloc_buf) {
         m_del(byte, buf, len);
     }
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
+    mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
 
@@ -598,9 +124,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     if (res == SPI_FLASH_RESULT_OK) {
         return mp_const_none;
     }
-    nlr_raise(mp_obj_new_exception_arg1(
-        &mp_type_OSError,
-        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
+    mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
 
@@ -610,9 +134,7 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     if (res == SPI_FLASH_RESULT_OK) {
         return mp_const_none;
     }
-    nlr_raise(mp_obj_new_exception_arg1(
-        &mp_type_OSError,
-        MP_OBJ_NEW_SMALL_INT(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO)));
+    mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
@@ -633,6 +155,47 @@ STATIC mp_obj_t esp_flash_size(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
+// If there's just 1 loadable segment at the start of flash,
+// we assume there's a yaota8266 bootloader.
+#define IS_OTA_FIRMWARE() ((*(uint32_t*)0x40200000 & 0xff00) == 0x100)
+
+STATIC mp_obj_t esp_flash_user_start(void) {
+    if (IS_OTA_FIRMWARE()) {
+        return MP_OBJ_NEW_SMALL_INT(0x3c000 + 0x90000);
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(0x90000);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
+
+STATIC mp_obj_t esp_check_fw(void) {
+    MD5_CTX ctx;
+    char *fw_start = (char*)0x40200000;
+    if (IS_OTA_FIRMWARE()) {
+        // Skip yaota8266 bootloader
+        fw_start += 0x3c000;
+    }
+
+    uint32_t size = *(uint32_t*)(fw_start + 0x8ffc);
+    printf("size: %d\n", size);
+    if (size > 1024 * 1024) {
+        printf("Invalid size\n");
+        return mp_const_false;
+    }
+    MD5Init(&ctx);
+    MD5Update(&ctx, fw_start + 4, size - 4);
+    unsigned char digest[16];
+    MD5Final(digest, &ctx);
+    printf("md5: ");
+    for (int i = 0; i < 16; i++) {
+        printf("%02x", digest[i]);
+    }
+    printf("\n");
+    return mp_obj_new_bool(memcmp(digest, fw_start + size, sizeof(digest)) == 0);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
+
+
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -642,6 +205,7 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 
+#if MICROPY_ESP8266_APA102
 STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -651,6 +215,7 @@ STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
+#endif
 
 STATIC mp_obj_t esp_freemem() {
     return MP_OBJ_NEW_SMALL_INT(system_get_free_heap_size());
@@ -679,6 +244,111 @@ STATIC mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+
+// We provide here a way of committing executable data to a region from
+// which it can be executed by the CPU.  There are 2 such writable regions:
+//  - iram1, which may have some space left at the end of it
+//  - memory-mapped flash rom
+//
+// By default the iram1 region (the space at the end of it) is used.  The
+// user can select iram1 or a section of flash by calling the
+// esp.set_native_code_location() function; see below.  If flash is selected
+// then it is erased as needed.
+
+#include "gccollect.h"
+
+#define IRAM1_END (0x40108000)
+#define FLASH_START (0x40200000)
+#define FLASH_END (0x40300000)
+#define FLASH_SEC_SIZE (4096)
+
+#define ESP_NATIVE_CODE_IRAM1 (0)
+#define ESP_NATIVE_CODE_FLASH (1)
+
+extern uint32_t _lit4_end;
+STATIC uint32_t esp_native_code_location;
+STATIC uint32_t esp_native_code_start;
+STATIC uint32_t esp_native_code_end;
+STATIC uint32_t esp_native_code_cur;
+STATIC uint32_t esp_native_code_erased;
+
+void esp_native_code_init(void) {
+    esp_native_code_location = ESP_NATIVE_CODE_IRAM1;
+    esp_native_code_start = (uint32_t)&_lit4_end;
+    esp_native_code_end = IRAM1_END;
+    esp_native_code_cur = esp_native_code_start;
+    esp_native_code_erased = 0;
+}
+
+void esp_native_code_gc_collect(void) {
+    void *src;
+    if (esp_native_code_location == ESP_NATIVE_CODE_IRAM1) {
+        src = (void*)esp_native_code_start;
+    } else {
+        src = (void*)(FLASH_START + esp_native_code_start);
+    }
+    gc_collect_root(src, (esp_native_code_end - esp_native_code_start) / sizeof(uint32_t));
+}
+
+void *esp_native_code_commit(void *buf, size_t len) {
+    //printf("COMMIT(buf=%p, len=%u, start=%08x, cur=%08x, end=%08x, erased=%08x)\n", buf, len, esp_native_code_start, esp_native_code_cur, esp_native_code_end, esp_native_code_erased);
+
+    len = (len + 3) & ~3;
+    if (esp_native_code_cur + len > esp_native_code_end) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError,
+            "memory allocation failed, allocating %u bytes for native code", (uint)len));
+    }
+
+    void *dest;
+    if (esp_native_code_location == ESP_NATIVE_CODE_IRAM1) {
+        dest = (void*)esp_native_code_cur;
+        memcpy(dest, buf, len);
+    } else {
+        SpiFlashOpResult res;
+        while (esp_native_code_erased < esp_native_code_cur + len) {
+            res = spi_flash_erase_sector(esp_native_code_erased / FLASH_SEC_SIZE);
+            if (res != SPI_FLASH_RESULT_OK) {
+                break;
+            }
+            esp_native_code_erased += FLASH_SEC_SIZE;
+        }
+        if (res == SPI_FLASH_RESULT_OK) {
+            res = spi_flash_write(esp_native_code_cur, buf, len);
+        }
+        if (res != SPI_FLASH_RESULT_OK) {
+            mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
+        }
+        dest = (void*)(FLASH_START + esp_native_code_cur);
+    }
+
+    esp_native_code_cur += len;
+
+    return dest;
+}
+
+STATIC mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in) {
+    if (start_in == mp_const_none && len_in == mp_const_none) {
+        // use end of iram1 region
+        esp_native_code_init();
+    } else {
+        // use flash; input params are byte offsets from start of flash
+        esp_native_code_location = ESP_NATIVE_CODE_FLASH;
+        esp_native_code_start = mp_obj_get_int(start_in);
+        esp_native_code_end = esp_native_code_start + mp_obj_get_int(len_in);
+        esp_native_code_cur = esp_native_code_start;
+        esp_native_code_erased = esp_native_code_start;
+        // memory-mapped flash is limited in extents to 1MByte
+        if (esp_native_code_end > FLASH_END - FLASH_START) {
+            mp_raise_ValueError("flash location must be below 1MByte");
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_set_native_code_location_obj, esp_set_native_code_location);
+
+#endif
+
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
@@ -690,19 +360,24 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_write), (mp_obj_t)&esp_flash_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_erase), (mp_obj_t)&esp_flash_erase_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_size), (mp_obj_t)&esp_flash_size_obj },
-    #if MODESP_ESPCONN
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
-    #endif
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_user_start), (mp_obj_t)&esp_flash_user_start_obj },
+    #if MICROPY_ESP8266_NEOPIXEL
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&esp_neopixel_write_obj },
+    #endif
+    #if MICROPY_ESP8266_APA102
     { MP_OBJ_NEW_QSTR(MP_QSTR_apa102_write), (mp_obj_t)&esp_apa102_write_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_dht_readinto), (mp_obj_t)&dht_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freemem), (mp_obj_t)&esp_freemem_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_meminfo), (mp_obj_t)&esp_meminfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_check_fw), (mp_obj_t)&esp_check_fw_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj }, // TODO delete/rename/move elsewhere
     { MP_OBJ_NEW_QSTR(MP_QSTR_malloc), (mp_obj_t)&esp_malloc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_free), (mp_obj_t)&esp_free_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_esf_free_bufs), (mp_obj_t)&esp_esf_free_bufs_obj },
+    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_native_code_location), (mp_obj_t)&esp_set_native_code_location_obj },
+    #endif
 
 #if MODESP_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_NONE),
@@ -725,6 +400,5 @@ STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);
 
 const mp_obj_module_t esp_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_esp,
     .globals = (mp_obj_dict_t*)&esp_module_globals,
 };

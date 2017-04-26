@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/virtpin.h"
 #include "pin.h"
 
 /// \moduleref pyb
@@ -199,15 +200,15 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         if (mode == GPIO_MODE_INPUT) {
             mode_qst = MP_QSTR_IN;
         } else if (mode == GPIO_MODE_OUTPUT_PP) {
-            mode_qst = MP_QSTR_OUT_PP;
+            mode_qst = MP_QSTR_OUT;
         } else if (mode == GPIO_MODE_OUTPUT_OD) {
-            mode_qst = MP_QSTR_OUT_OD;
+            mode_qst = MP_QSTR_OPEN_DRAIN;
         } else {
             af = true;
             if (mode == GPIO_MODE_AF_PP) {
-                mode_qst = MP_QSTR_AF_PP;
+                mode_qst = MP_QSTR_ALT;
             } else {
-                mode_qst = MP_QSTR_AF_OD;
+                mode_qst = MP_QSTR_ALT_OPEN_DRAIN;
             }
         }
         mp_print_str(print, qstr_str(mode_qst));
@@ -244,7 +245,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, cons
 /// \classmethod \constructor(id, ...)
 /// Create a new Pin object associated with the id.  If additional arguments are given,
 /// they are used to initialise the pin.  See `init`.
-STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
@@ -261,19 +262,15 @@ STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uin
 }
 
 // fast method for getting/setting pin value
-STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(GPIO_read_pin(self->gpio, self->pin));
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_pin_read(self));
     } else {
         // set pin
-        if (mp_obj_is_true(args[0])) {
-            GPIO_set_pin(self->gpio, self->pin_mask);
-        } else {
-            GPIO_clear_pin(self->gpio, self->pin_mask);
-        }
+        mp_hal_pin_write(self, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
 }
@@ -371,11 +368,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
 
     // if given, set the pin value before initialising to prevent glitches
     if (args[3].u_obj != MP_OBJ_NULL) {
-        if (mp_obj_is_true(args[3].u_obj)) {
-            GPIO_set_pin(self->gpio, self->pin_mask);
-        } else {
-            GPIO_clear_pin(self->gpio, self->pin_mask);
-        }
+        mp_hal_pin_write(self, mp_obj_is_true(args[3].u_obj));
     }
 
     // configure the GPIO as requested
@@ -411,7 +404,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 /// Set the pin to a low logic level.
 STATIC mp_obj_t pin_low(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    GPIO_clear_pin(self->gpio, self->pin_mask);;
+    mp_hal_pin_low(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
@@ -420,7 +413,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_low_obj, pin_low);
 /// Set the pin to a high logic level.
 STATIC mp_obj_t pin_high(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
-    GPIO_set_pin(self->gpio, self->pin_mask);;
+    mp_hal_pin_high(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_high_obj, pin_high);
@@ -550,12 +543,33 @@ STATIC const mp_map_elem_t pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
+STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)errcode;
+    pin_obj_t *self = self_in;
+
+    switch (request) {
+        case MP_PIN_READ: {
+            return mp_hal_pin_read(self);
+        }
+        case MP_PIN_WRITE: {
+            mp_hal_pin_write(self, arg);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+STATIC const mp_pin_p_t pin_pin_p = {
+    .ioctl = pin_ioctl,
+};
+
 const mp_obj_type_t pin_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pin,
     .print = pin_print,
-    .make_new = pin_make_new,
+    .make_new = mp_pin_make_new,
     .call = pin_call,
+    .protocol = &pin_pin_p,
     .locals_dict = (mp_obj_t)&pin_locals_dict,
 };
 

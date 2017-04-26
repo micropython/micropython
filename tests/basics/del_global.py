@@ -54,3 +54,8 @@ try:
     print(c)
 except NameError:
     print("NameError")
+
+a = 1
+b = 2
+c = 3
+del (a, (b, c))

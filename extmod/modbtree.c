@@ -31,6 +31,8 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/runtime0.h"
+#include "py/stream.h"
 
 #if MICROPY_PY_BTREE
 
@@ -56,7 +58,7 @@ STATIC const mp_obj_type_t btree_type;
 
 #define CHECK_ERROR(res) \
         if (res == RET_ERROR) { \
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno))); \
+            mp_raise_OSError(errno); \
         }
 
 void __dbpanic(DB *db) {
@@ -79,6 +81,12 @@ STATIC void btree_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
     mp_printf(print, "<btree %p>", self->db);
 }
 
+STATIC mp_obj_t btree_flush(mp_obj_t self_in) {
+    mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(__bt_sync(self->db, 0));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_flush_obj, btree_flush);
+
 STATIC mp_obj_t btree_close(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(__bt_close(self->db));
@@ -89,12 +97,8 @@ STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
-    // Different ports may have different type sizes
-    mp_uint_t v;
-    key.data = (void*)mp_obj_str_get_data(args[1], &v);
-    key.size = v;
-    val.data = (void*)mp_obj_str_get_data(args[2], &v);
-    val.size = v;
+    key.data = (void*)mp_obj_str_get_data(args[1], &key.size);
+    val.data = (void*)mp_obj_str_get_data(args[2], &val.size);
     return MP_OBJ_NEW_SMALL_INT(__bt_put(self->db, &key, &val, 0));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
@@ -102,10 +106,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
 STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
-    // Different ports may have different type sizes
-    mp_uint_t v;
-    key.data = (void*)mp_obj_str_get_data(args[1], &v);
-    key.size = v;
+    key.data = (void*)mp_obj_str_get_data(args[1], &key.size);
     int res = __bt_get(self->db, &key, &val, 0);
     if (res == RET_SPECIAL) {
         if (n_args > 2) {
@@ -124,13 +125,11 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     int flags = MP_OBJ_SMALL_INT_VALUE(args[1]);
     DBT key, val;
     if (n_args > 2) {
-        // Different ports may have different type sizes
-        mp_uint_t v;
-        key.data = (void*)mp_obj_str_get_data(args[2], &v);
-        key.size = v;
+        key.data = (void*)mp_obj_str_get_data(args[2], &key.size);
     }
 
     int res = __bt_seq(self->db, &key, &val, flags);
+    CHECK_ERROR(res);
     if (res == RET_SPECIAL) {
         return mp_const_none;
     }
@@ -175,7 +174,8 @@ STATIC mp_obj_t btree_items(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_items_obj, 1, 4, btree_items);
 
-STATIC mp_obj_t btree_getiter(mp_obj_t self_in) {
+STATIC mp_obj_t btree_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    (void)iter_buf;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->next_flags != 0) {
         // If we're called immediately after keys(), values(), or items(),
@@ -196,14 +196,11 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
     DBT key, val;
     int res;
-    // Different ports may have different type sizes
-    mp_uint_t v;
     bool desc = self->flags & FLAG_DESC;
     if (self->start_key != MP_OBJ_NULL) {
         int flags = R_FIRST;
         if (self->start_key != mp_const_none) {
-            key.data = (void*)mp_obj_str_get_data(self->start_key, &v);
-            key.size = v;
+            key.data = (void*)mp_obj_str_get_data(self->start_key, &key.size);
             flags = R_CURSOR;
         } else if (desc) {
             flags = R_LAST;
@@ -221,8 +218,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 
     if (self->end_key != mp_const_none) {
         DBT end_key;
-        end_key.data = (void*)mp_obj_str_get_data(self->end_key, &v);
-        end_key.size = v;
+        end_key.data = (void*)mp_obj_str_get_data(self->end_key, &end_key.size);
         BTREE *t = self->db->internal;
         int cmp = t->bt_cmp(&key, &end_key);
         if (desc) {
@@ -254,13 +250,10 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
-    // Different ports may have different type sizes
-    mp_uint_t v;
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;
-        key.data = (void*)mp_obj_str_get_data(index, &v);
-        key.size = v;
+        key.data = (void*)mp_obj_str_get_data(index, &key.size);
         int res = __bt_delete(self->db, &key, 0);
         if (res == RET_SPECIAL) {
             nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
@@ -270,8 +263,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         DBT key, val;
-        key.data = (void*)mp_obj_str_get_data(index, &v);
-        key.size = v;
+        key.data = (void*)mp_obj_str_get_data(index, &key.size);
         int res = __bt_get(self->db, &key, &val, 0);
         if (res == RET_SPECIAL) {
             nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
@@ -281,18 +273,33 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else {
         // store
         DBT key, val;
-        key.data = (void*)mp_obj_str_get_data(index, &v);
-        key.size = v;
-        val.data = (void*)mp_obj_str_get_data(value, &v);
-        val.size = v;
+        key.data = (void*)mp_obj_str_get_data(index, &key.size);
+        val.data = (void*)mp_obj_str_get_data(value, &val.size);
         int res = __bt_put(self->db, &key, &val, 0);
         CHECK_ERROR(res);
         return mp_const_none;
     }
 }
 
+STATIC mp_obj_t btree_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    mp_obj_btree_t *self = MP_OBJ_TO_PTR(lhs_in);
+    switch (op) {
+        case MP_BINARY_OP_IN: {
+            DBT key, val;
+            key.data = (void*)mp_obj_str_get_data(rhs_in, &key.size);
+            int res = __bt_get(self->db, &key, &val, 0);
+            CHECK_ERROR(res);
+            return mp_obj_new_bool(res != RET_SPECIAL);
+        }
+        default:
+            // op not supported
+            return MP_OBJ_NULL;
+    }
+}
+
 STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&btree_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&btree_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_put), MP_ROM_PTR(&btree_put_obj) },
     { MP_ROM_QSTR(MP_QSTR_seq), MP_ROM_PTR(&btree_seq_obj) },
@@ -310,27 +317,47 @@ STATIC const mp_obj_type_t btree_type = {
     .print = btree_print,
     .getiter = btree_getiter,
     .iternext = btree_iternext,
+    .binary_op = btree_binary_op,
     .subscr = btree_subscr,
     .locals_dict = (void*)&btree_locals_dict,
 };
 
+STATIC FILEVTABLE btree_stream_fvtable = {
+    mp_stream_posix_read,
+    mp_stream_posix_write,
+    mp_stream_posix_lseek,
+    mp_stream_posix_fsync
+};
+
 STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_flags, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_cachesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_pagesize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_minkeypage, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
-    const char *fname = NULL;
-    if (pos_args[0] != mp_const_none) {
-        fname = mp_obj_str_get_str(pos_args[0]);
-    }
+    // Make sure we got a stream object
+    mp_get_stream_raise(pos_args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
     struct {
-        mp_arg_val_t server_side;
+        mp_arg_val_t flags;
+        mp_arg_val_t cachesize;
+        mp_arg_val_t pagesize;
+        mp_arg_val_t minkeypage;
     } args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+    BTREEINFO openinfo = {0};
+    openinfo.flags = args.flags.u_int;
+    openinfo.cachesize = args.cachesize.u_int;
+    openinfo.psize = args.pagesize.u_int;
+    openinfo.minkeypage = args.minkeypage.u_int;
 
-    DB *db = __bt_open(fname, /*flags*/O_CREAT | O_RDWR, /*mode*/0770, /*openinfo*/NULL, /*dflags*/0);
+    DB *db = __bt_open(pos_args[0], &btree_stream_fvtable, &openinfo, /*dflags*/0);
+    if (db == NULL) {
+        mp_raise_OSError(errno);
+    }
     return MP_OBJ_FROM_PTR(btree_new(db));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_btree_open_obj, 1, mod_btree_open);
@@ -346,7 +373,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_tab
 
 const mp_obj_module_t mp_module_btree = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_btree,
     .globals = (mp_obj_dict_t*)&mp_module_btree_globals,
 };
 

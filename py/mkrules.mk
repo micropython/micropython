@@ -49,7 +49,7 @@ $(BUILD)/%.o: %.c
 # List all native flags since the current build system doesn't have
 # the micropython configuration available. However, these flags are
 # needed to extract all qstrings
-QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
+QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM -DN_XTENSA
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
 vpath %.c . $(TOP)
@@ -71,12 +71,7 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
 	$(ECHO) "GEN $@"
-	$(Q)if [ "$?" = "" ]; then \
-	    echo "QSTR Looks like -B used, trying to emulate"; \
-	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $^ >$(HEADER_BUILD)/qstr.i.last; \
-	else \
-	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last; \
-	fi
+	$(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last;
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
@@ -99,6 +94,29 @@ $(OBJ_DIRS):
 
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
+
+ifneq ($(FROZEN_DIR),)
+$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
+	$(ECHO) "Generating $@"
+	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+# make a list of all the .py files that need compiling and freezing
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
+FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
+
+# to build .mpy files from .py files
+$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
+	@$(ECHO) "MPY $<"
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(MPY_CROSS) -o $@ -s $(^:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $^
+
+# to build frozen_mpy.c from all .mpy files
+$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
+endif
 
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
@@ -123,11 +141,19 @@ clean-prog:
 .PHONY: clean-prog
 endif
 
-lib: $(OBJ)
-	$(AR) rcs libmicropython.a $^
+LIBMICROPYTHON = libmicropython.a
+
+# We can execute extra commands after library creation using
+# LIBMICROPYTHON_EXTRA_CMD. This may be needed e.g. to integrate
+# with 3rd-party projects which don't have proper dependency
+# tracking. Then LIBMICROPYTHON_EXTRA_CMD can e.g. touch some
+# other file to cause needed effect, e.g. relinking with new lib.
+lib $(LIBMICROPYTHON): $(OBJ)
+	$(AR) rcs $(LIBMICROPYTHON) $^
+	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:
-	$(RM) -rf $(BUILD)
+	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
 print-cfg:

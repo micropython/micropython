@@ -31,7 +31,7 @@
 
 #include "py/obj.h"
 #include "py/nlr.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 
 // Takes an array with a raw IPv4 address and returns something like '192.168.0.1'.
 mp_obj_t netutils_format_ipv4_addr(uint8_t *ip, netutils_endian_t endian) {
@@ -56,7 +56,7 @@ mp_obj_t netutils_format_inet_addr(uint8_t *ip, mp_uint_t port, netutils_endian_
 }
 
 void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian) {
-    mp_uint_t addr_len;
+    size_t addr_len;
     const char *addr_str = mp_obj_str_get_data(addr_in, &addr_len);
     if (addr_len == 0) {
         // special case of no address given

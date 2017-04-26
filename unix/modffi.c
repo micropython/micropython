@@ -35,6 +35,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/mperrno.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"
@@ -125,8 +126,7 @@ STATIC ffi_type *char2ffi_type(char c)
 STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
 {
     if (MP_OBJ_IS_STR(o_in)) {
-        mp_uint_t len;
-        const char *s = mp_obj_str_get_data(o_in, &len);
+        const char *s = mp_obj_str_get_str(o_in);
         ffi_type *t = char2ffi_type(*s);
         if (t != NULL) {
             return t;
@@ -193,7 +193,8 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     o->rettype = *rettype;
     o->argtypes = argtypes;
 
-    mp_obj_t iterable = mp_getiter(argtypes_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(argtypes_in, &iter_buf);
     mp_obj_t item;
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -215,7 +216,7 @@ STATIC mp_obj_t ffimod_func(size_t n_args, const mp_obj_t *args) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
+        mp_raise_OSError(MP_ENOENT);
     }
     return make_func(args[1], sym, args[3]);
 }
@@ -250,7 +251,8 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     o->rettype = *rettype;
 
-    mp_obj_t iterable = mp_getiter(paramtypes_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(paramtypes_in, &iter_buf);
     mp_obj_t item;
     int i = 0;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
@@ -278,7 +280,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
+        mp_raise_OSError(MP_ENOENT);
     }
     mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
     o->base.type = &ffivar_type;
@@ -295,7 +297,7 @@ STATIC mp_obj_t ffimod_addr(mp_obj_t self_in, mp_obj_t symname_in) {
 
     void *sym = dlsym(self->handle, symname);
     if (sym == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOENT)));
+        mp_raise_OSError(MP_ENOENT);
     }
     return mp_obj_new_int((uintptr_t)sym);
 }
@@ -312,7 +314,7 @@ STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     void *mod = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
 
     if (mod == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+        mp_raise_OSError(errno);
     }
     mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
     o->base.type = type;
@@ -499,6 +501,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_ffi_globals, mp_module_ffi_globals_table);
 
 const mp_obj_module_t mp_module_ffi = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_ffi,
     .globals = (mp_obj_dict_t*)&mp_module_ffi_globals,
 };

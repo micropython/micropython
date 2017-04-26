@@ -73,7 +73,7 @@ Methods
        value, which is an integer in the range [-511 : 512].  With one
        argument it sets the RTC calibration.
     
-       The RTC Smooth Calibration mechanism addjusts the RTC clock rate by
+       The RTC Smooth Calibration mechanism adjusts the RTC clock rate by
        adding or subtracting the given number of ticks from the 32768 Hz
        clock over a 32 second period (corresponding to 2^20 clock ticks.)
        Each tick added will speed up the clock by 1 part in 2^20, or 0.954

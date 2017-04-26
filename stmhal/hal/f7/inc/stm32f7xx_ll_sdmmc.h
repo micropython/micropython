@@ -2,13 +2,13 @@
   ******************************************************************************
   * @file    stm32f7xx_ll_sdmmc.h
   * @author  MCD Application Team
-  * @version V1.0.1
-  * @date    25-June-2015
+  * @version V1.1.2
+  * @date    23-September-2016
   * @brief   Header file of SDMMC HAL module.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -149,7 +149,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Clock_Edge Clock Edge
   * @{
   */
-#define SDMMC_CLOCK_EDGE_RISING               ((uint32_t)0x00000000)
+#define SDMMC_CLOCK_EDGE_RISING               ((uint32_t)0x00000000U)
 #define SDMMC_CLOCK_EDGE_FALLING              SDMMC_CLKCR_NEGEDGE
 
 #define IS_SDMMC_CLOCK_EDGE(EDGE) (((EDGE) == SDMMC_CLOCK_EDGE_RISING) || \
@@ -161,7 +161,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Clock_Bypass Clock Bypass
   * @{
   */
-#define SDMMC_CLOCK_BYPASS_DISABLE             ((uint32_t)0x00000000)
+#define SDMMC_CLOCK_BYPASS_DISABLE             ((uint32_t)0x00000000U)
 #define SDMMC_CLOCK_BYPASS_ENABLE              SDMMC_CLKCR_BYPASS
 
 #define IS_SDMMC_CLOCK_BYPASS(BYPASS) (((BYPASS) == SDMMC_CLOCK_BYPASS_DISABLE) || \
@@ -173,7 +173,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Clock_Power_Save Clock Power Saving
   * @{
   */
-#define SDMMC_CLOCK_POWER_SAVE_DISABLE         ((uint32_t)0x00000000)
+#define SDMMC_CLOCK_POWER_SAVE_DISABLE         ((uint32_t)0x00000000U)
 #define SDMMC_CLOCK_POWER_SAVE_ENABLE          SDMMC_CLKCR_PWRSAV
 
 #define IS_SDMMC_CLOCK_POWER_SAVE(SAVE) (((SAVE) == SDMMC_CLOCK_POWER_SAVE_DISABLE) || \
@@ -185,7 +185,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Bus_Wide Bus Width
   * @{
   */
-#define SDMMC_BUS_WIDE_1B                      ((uint32_t)0x00000000)
+#define SDMMC_BUS_WIDE_1B                      ((uint32_t)0x00000000U)
 #define SDMMC_BUS_WIDE_4B                      SDMMC_CLKCR_WIDBUS_0
 #define SDMMC_BUS_WIDE_8B                      SDMMC_CLKCR_WIDBUS_1
 
@@ -199,7 +199,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Hardware_Flow_Control Hardware Flow Control
   * @{
   */
-#define SDMMC_HARDWARE_FLOW_CONTROL_DISABLE    ((uint32_t)0x00000000)
+#define SDMMC_HARDWARE_FLOW_CONTROL_DISABLE    ((uint32_t)0x00000000U)
 #define SDMMC_HARDWARE_FLOW_CONTROL_ENABLE     SDMMC_CLKCR_HWFC_EN
 
 #define IS_SDMMC_HARDWARE_FLOW_CONTROL(CONTROL) (((CONTROL) == SDMMC_HARDWARE_FLOW_CONTROL_DISABLE) || \
@@ -227,7 +227,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Response_Type Response Type
   * @{
   */
-#define SDMMC_RESPONSE_NO                    ((uint32_t)0x00000000)
+#define SDMMC_RESPONSE_NO                    ((uint32_t)0x00000000U)
 #define SDMMC_RESPONSE_SHORT                 SDMMC_CMD_WAITRESP_0
 #define SDMMC_RESPONSE_LONG                  SDMMC_CMD_WAITRESP
 
@@ -241,7 +241,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Wait_Interrupt_State Wait Interrupt
   * @{
   */
-#define SDMMC_WAIT_NO                        ((uint32_t)0x00000000)
+#define SDMMC_WAIT_NO                        ((uint32_t)0x00000000U)
 #define SDMMC_WAIT_IT                        SDMMC_CMD_WAITINT
 #define SDMMC_WAIT_PEND                      SDMMC_CMD_WAITPEND
 
@@ -255,7 +255,7 @@ typedef struct
 /** @defgroup SDMMC_LL_CPSM_State CPSM State
   * @{
   */
-#define SDMMC_CPSM_DISABLE                   ((uint32_t)0x00000000)
+#define SDMMC_CPSM_DISABLE                   ((uint32_t)0x00000000U)
 #define SDMMC_CPSM_ENABLE                    SDMMC_CMD_CPSMEN
 
 #define IS_SDMMC_CPSM(CPSM) (((CPSM) == SDMMC_CPSM_DISABLE) || \
@@ -267,9 +267,9 @@ typedef struct
 /** @defgroup SDMMC_LL_Response_Registers Response Register
   * @{
   */
-#define SDMMC_RESP1                          ((uint32_t)0x00000000)
-#define SDMMC_RESP2                          ((uint32_t)0x00000004)
-#define SDMMC_RESP3                          ((uint32_t)0x00000008)
+#define SDMMC_RESP1                          ((uint32_t)0x00000000U)
+#define SDMMC_RESP2                          ((uint32_t)0x00000004U)
+#define SDMMC_RESP3                          ((uint32_t)0x00000008U)
 #define SDMMC_RESP4                          ((uint32_t)0x0000000C)
 
 #define IS_SDMMC_RESP(RESP) (((RESP) == SDMMC_RESP1) || \
@@ -291,7 +291,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Data_Block_Size  Data Block Size
   * @{
   */
-#define SDMMC_DATABLOCK_SIZE_1B               ((uint32_t)0x00000000)
+#define SDMMC_DATABLOCK_SIZE_1B               ((uint32_t)0x00000000U)
 #define SDMMC_DATABLOCK_SIZE_2B               SDMMC_DCTRL_DBLOCKSIZE_0
 #define SDMMC_DATABLOCK_SIZE_4B               SDMMC_DCTRL_DBLOCKSIZE_1
 #define SDMMC_DATABLOCK_SIZE_8B               (SDMMC_DCTRL_DBLOCKSIZE_0|SDMMC_DCTRL_DBLOCKSIZE_1)
@@ -329,7 +329,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Transfer_Direction Transfer Direction
   * @{
   */
-#define SDMMC_TRANSFER_DIR_TO_CARD            ((uint32_t)0x00000000)
+#define SDMMC_TRANSFER_DIR_TO_CARD            ((uint32_t)0x00000000U)
 #define SDMMC_TRANSFER_DIR_TO_SDMMC            SDMMC_DCTRL_DTDIR
 
 #define IS_SDMMC_TRANSFER_DIR(DIR) (((DIR) == SDMMC_TRANSFER_DIR_TO_CARD) || \
@@ -341,7 +341,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Transfer_Type Transfer Type
   * @{
   */
-#define SDMMC_TRANSFER_MODE_BLOCK             ((uint32_t)0x00000000)
+#define SDMMC_TRANSFER_MODE_BLOCK             ((uint32_t)0x00000000U)
 #define SDMMC_TRANSFER_MODE_STREAM            SDMMC_DCTRL_DTMODE
 
 #define IS_SDMMC_TRANSFER_MODE(MODE) (((MODE) == SDMMC_TRANSFER_MODE_BLOCK) || \
@@ -353,7 +353,7 @@ typedef struct
 /** @defgroup SDMMC_LL_DPSM_State DPSM State
   * @{
   */
-#define SDMMC_DPSM_DISABLE                    ((uint32_t)0x00000000)
+#define SDMMC_DPSM_DISABLE                    ((uint32_t)0x00000000U)
 #define SDMMC_DPSM_ENABLE                     SDMMC_DCTRL_DTEN
 
 #define IS_SDMMC_DPSM(DPSM) (((DPSM) == SDMMC_DPSM_DISABLE) ||\
@@ -365,7 +365,7 @@ typedef struct
 /** @defgroup SDMMC_LL_Read_Wait_Mode Read Wait Mode
   * @{
   */
-#define SDMMC_READ_WAIT_MODE_DATA2                ((uint32_t)0x00000000)
+#define SDMMC_READ_WAIT_MODE_DATA2                ((uint32_t)0x00000000U)
 #define SDMMC_READ_WAIT_MODE_CLK                  (SDMMC_DCTRL_RWMOD)
 
 #define IS_SDMMC_READWAIT_MODE(MODE) (((MODE) == SDMMC_READ_WAIT_MODE_CLK) || \

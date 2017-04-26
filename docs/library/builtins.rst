@@ -1,7 +1,7 @@
 Builtin Functions
 =================
 
-All builtin functions are described here. They are alse available via
+All builtin functions are described here. They are also available via
 ``builtins`` module.
 
 .. function:: abs()
@@ -27,6 +27,11 @@ All builtin functions are described here. They are alse available via
 .. function:: compile()
 
 .. class:: complex()
+
+.. function:: delattr(obj, name)
+
+   The argument *name* should be a string, and this function deletes the named
+   attribute from the object given by *obj*.
 
 .. class:: dict()
 
@@ -61,6 +66,16 @@ All builtin functions are described here. They are alse available via
 .. function:: input()
 
 .. class:: int()
+
+   .. classmethod:: from_bytes(bytes, byteorder)
+
+      In MicroPython, `byteorder` parameter must be positional (this is
+      compatible with CPython).
+
+   .. method:: to_bytes(size, byteorder)
+
+      In MicroPython, `byteorder` parameter must be positional (this is
+      compatible with CPython).
 
 .. function:: isinstance()
 
@@ -109,6 +124,10 @@ All builtin functions are described here. They are alse available via
 .. class:: set()
 
 .. function:: setattr()
+
+.. class:: slice()
+
+   The *slice* builtin is the type that slice objects have.
 
 .. function:: sorted()
 

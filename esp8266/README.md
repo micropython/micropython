@@ -70,12 +70,24 @@ $ make deploy
 ```
 This will use the `esptool.py` script to download the images.  You must have
 your ESP module in the bootloader mode, and connected to a serial port on your PC.
-The default serial port is `/dev/ttyACM0`.  To specify another, use, eg:
+The default serial port is `/dev/ttyACM0`, flash mode is `qio` and flash size is
+`detect` (auto-detect based on Flash ID). To specify other values, use, eg (note
+that flash size is in megabits):
 ```bash
-$ make PORT=/dev/ttyUSB0 deploy
+$ make PORT=/dev/ttyUSB0 FLASH_MODE=qio FLASH_SIZE=32m deploy
 ```
 
-The image produced is `firmware-combined.bin`, to be flashed at 0x00000.
+The image produced is `build/firmware-combined.bin`, to be flashed at 0x00000.
+
+__512KB FlashROM version__
+
+The normal build described above requires modules with at least 1MB of FlashROM
+onboard. There's a special configuration for 512KB modules, which can be
+built with `make 512k`. This configuration is highly limited, lacks filesystem
+support, WebREPL, and has many other features disabled. It's mostly suitable
+for advanced users who are interested to fine-tune options to achieve a required
+setup. If you are an end user, please consider using a module with at least 1MB
+of FlashROM.
 
 First start
 -----------
@@ -108,7 +120,7 @@ http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html
 Troubleshooting
 ---------------
 
-While the port is still in alpha, it's known to be generally stable. If you
+While the port is in beta, it's known to be generally stable. If you
 experience strange bootloops, crashes, lockups, here's a list to check against:
 
 - You didn't erase flash before programming MicroPython firmware.

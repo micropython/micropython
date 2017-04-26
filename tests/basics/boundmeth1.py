@@ -22,3 +22,9 @@ print(m(1))
 # bound method with lots of extra args
 m = A().h
 print(m(1, 2, 3, 4, 5, 6))
+
+# can't assign attributes to a bound method
+try:
+    A().f.x = 1
+except AttributeError:
+    print('AttributeError')

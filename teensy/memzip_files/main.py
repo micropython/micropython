@@ -1,3 +1,5 @@
+import pyb
+
 print("Executing main.py")
 
 led = pyb.LED(1)

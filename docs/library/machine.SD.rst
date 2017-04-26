@@ -1,4 +1,5 @@
 .. currentmodule:: machine
+.. _machine.SD:
 
 class SD -- secure digital memory card
 ======================================

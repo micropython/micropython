@@ -388,10 +388,6 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             }
             *rs = '1';
         }
-        if (fp_isless1(f) && fmt == 'f') {
-            // We rounded up to 1.0
-            prec--;
-        }
     }
 
     // verify that we did not overrun the input buffer so far

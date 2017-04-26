@@ -28,7 +28,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
@@ -251,10 +250,13 @@ void extint_swint(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
+    // we need 0 to 1 transition to trigger the interrupt
 #if defined(MCU_SERIES_L4)
-    EXTI->SWIER1 = (1 << line);
+    EXTI->SWIER1 &= ~(1 << line);
+    EXTI->SWIER1 |= (1 << line);
 #else
-    EXTI->SWIER = (1 << line);
+    EXTI->SWIER &= ~(1 << line);
+    EXTI->SWIER |= (1 << line);
 #endif
 }
 
@@ -347,7 +349,7 @@ STATIC const mp_arg_t pyb_extint_make_new_args[] = {
 };
 #define PYB_EXTINT_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(pyb_extint_make_new_args)
 
-STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
 
     // parse args
@@ -409,6 +411,7 @@ void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
             if (*cb != mp_const_none) {
+                mp_sched_lock();
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
@@ -424,6 +427,7 @@ void Handle_EXTI_Irq(uint32_t line) {
                     mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
+                mp_sched_unlock();
             }
         }
     }

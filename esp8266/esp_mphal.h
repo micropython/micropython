@@ -28,10 +28,10 @@
 #define _INCLUDED_MPHAL_H_
 
 #include "py/ringbuf.h"
+#include "lib/utils/interrupt_char.h"
 #include "xtirq.h"
 
 void mp_keyboard_interrupt(void);
-extern int interrupt_char;
 
 struct _mp_print_t;
 // Structure for UART-only output via mp_printf()
@@ -47,6 +47,12 @@ void mp_hal_init(void);
 void mp_hal_rtc_init(void);
 
 uint32_t mp_hal_ticks_us(void);
+__attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
+  uint32_t ccount;
+  __asm__ __volatile__("rsr %0,ccount":"=a" (ccount));
+  return ccount;
+}
+
 void mp_hal_delay_us(uint32_t);
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
@@ -69,9 +75,11 @@ void ets_event_poll(void);
 // C-level pin HAL
 #include "etshal.h"
 #include "gpio.h"
-#include "esp8266/modpyb.h"
+#include "esp8266/modmachine.h"
+#define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t uint32_t
 #define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
+#define mp_hal_pin_name(p) (p)
 void mp_hal_pin_input(mp_hal_pin_obj_t pin);
 void mp_hal_pin_output(mp_hal_pin_obj_t pin);
 void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);

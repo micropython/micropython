@@ -32,13 +32,14 @@ typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
     mp_uint_t hash;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
-    mp_uint_t len;
+    size_t len;
     const byte *data;
 } mp_obj_str_t;
 
 #define MP_DEFINE_STR_OBJ(obj_name, str) mp_obj_str_t obj_name = {{&mp_type_str}, 0, sizeof(str) - 1, (const byte*)str}
 
 // use this macro to extract the string hash
+// warning: the hash can be 0, meaning invalid, and must then be explicitly computed from the data
 #define GET_STR_HASH(str_obj_in, str_hash) \
     mp_uint_t str_hash; if (MP_OBJ_IS_QSTR(str_obj_in)) \
     { str_hash = qstr_hash(MP_OBJ_QSTR_VALUE(str_obj_in)); } else { str_hash = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->hash; }
@@ -71,34 +72,34 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
 
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice);
-const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *needle, mp_uint_t nlen, mp_int_t direction);
+const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
 
-MP_DECLARE_CONST_FUN_OBJ(str_encode_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_find_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_rfind_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_index_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_rindex_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_join_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_split_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_splitlines_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_rsplit_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_startswith_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_endswith_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_strip_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_lstrip_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_rstrip_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_format_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_replace_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_count_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_partition_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_rpartition_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_center_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_lower_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_upper_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_isspace_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_isalpha_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_isdigit_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_isupper_obj);
-MP_DECLARE_CONST_FUN_OBJ(str_islower_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(str_join_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(str_splitlines_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj);
+MP_DECLARE_CONST_FUN_OBJ_KW(str_format_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(str_partition_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(str_rpartition_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(str_center_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_lower_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_upper_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_isspace_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_isalpha_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
 
 #endif // __MICROPY_INCLUDED_PY_OBJSTR_H__
