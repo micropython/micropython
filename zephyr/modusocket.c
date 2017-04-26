@@ -343,14 +343,16 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
-STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
+STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *errcode) {
     socket_obj_t *socket = self_in;
-    socket_check_closed(socket);
+    if (socket->ctx == NULL) {
+        // already closed
+        *errcode = EBADF;
+        return MP_STREAM_ERROR;
+    }
 
     enum net_sock_type sock_type = net_context_get_type(socket->ctx);
-    mp_int_t max_len = mp_obj_get_int(len_in);
     unsigned recv_len;
-    vstr_t vstr;
 
     if (sock_type == SOCK_DGRAM) {
 
@@ -365,15 +367,14 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
             recv_len = max_len;
         }
 
-        vstr_init_len(&vstr, recv_len);
-        net_buf_gather(net_buf, vstr.buf, recv_len);
+        net_buf_gather(net_buf, buf, recv_len);
         net_nbuf_unref(net_buf);
 
     } else if (sock_type == SOCK_STREAM) {
 
         do {
             if (socket->state == STATE_PEER_CLOSED) {
-                return mp_const_empty_bytes;
+                return 0;
             }
 
             if (socket->cur_buf == NULL) {
@@ -399,8 +400,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
             }
             DEBUG_printf("%d data bytes in head frag, going to read %d\n", frag_len, recv_len);
 
-            vstr_init_len(&vstr, recv_len);
-            memcpy(vstr.buf, frag->data, recv_len);
+            memcpy(buf, frag->data, recv_len);
 
             if (recv_len != frag_len) {
                 net_buf_pull(frag, recv_len);
@@ -420,13 +420,32 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
         // Zephyr IP stack appears to feed empty net_buf's with empty
         // frags for various TCP control packets.
         } while (recv_len == 0);
-
-    } else {
-        mp_not_implemented("");
     }
 
-    mp_obj_t ret = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-    return ret;
+    return recv_len;
+}
+
+STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
+    mp_int_t max_len = mp_obj_get_int(len_in);
+    vstr_t vstr;
+    // +1 to accommodate for trailing \0
+    vstr_init_len(&vstr, max_len + 1);
+
+    int err;
+    mp_uint_t len = sock_read(self_in, vstr.buf, max_len, &err);
+
+    if (len == MP_STREAM_ERROR) {
+        vstr_clear(&vstr);
+        mp_raise_OSError(err);
+    }
+
+    if (len == 0) {
+        vstr_clear(&vstr);
+        return mp_const_empty_bytes;
+    }
+
+    vstr.len = len;
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
@@ -455,7 +474,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
 STATIC const mp_stream_p_t socket_stream_p = {
-    //.read = sock_read,
+    .read = sock_read,
     .write = sock_write,
     //.ioctl = sock_ioctl,
 };
