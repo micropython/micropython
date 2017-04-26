@@ -373,11 +373,12 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
     } else if (sock_type == SOCK_STREAM) {
 
         do {
-            if (socket->state == STATE_PEER_CLOSED) {
-                return 0;
-            }
 
             if (socket->cur_buf == NULL) {
+                if (socket->state == STATE_PEER_CLOSED) {
+                    return 0;
+                }
+
                 DEBUG_printf("TCP recv: no cur_buf, getting\n");
                 struct net_buf *net_buf = k_fifo_get(&socket->recv_q, K_FOREVER);
                 // Restore ->frags overwritten by fifo
