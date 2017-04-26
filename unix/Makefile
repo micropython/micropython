@@ -213,7 +213,7 @@ minimal:
 	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= \
 	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
 	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
-	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
+	    MICROPY_USE_READLINE=0
 
 # build interpreter with nan-boxing as object model
 nanbox:

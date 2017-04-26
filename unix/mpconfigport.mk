@@ -8,9 +8,6 @@ MICROPY_FORCE_32BIT = 0
 #  1 - use MicroPython version of readline
 MICROPY_USE_READLINE = 1
 
-# Whether to enable FatFs VFS
-MICROPY_FATFS = 1
-
 # btree module using Berkeley DB 1.xx
 MICROPY_PY_BTREE = 1
 
