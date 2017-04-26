@@ -40,14 +40,6 @@
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
-// Python3 no longer has "l" suffix for long ints. We allow to use it
-// for debugging purpose though.
-#ifdef DEBUG
-#define SUFFIX "l"
-#else
-#define SUFFIX ""
-#endif
-
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
 const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
