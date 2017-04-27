@@ -1438,6 +1438,10 @@ NORETURN void mp_raise_TypeError(const char *msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
+NORETURN void mp_raise_RuntimeError(const char *msg) {
+    mp_raise_msg(&mp_type_RuntimeError, msg);
+}
+
 NORETURN void mp_raise_OSError(int errno_) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
 }
