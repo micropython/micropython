@@ -530,7 +530,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_HW_ENABLE_RNG
     { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&pyb_rng_get_obj) },
 #endif
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&pyb_wfi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&pyb_wfe_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },

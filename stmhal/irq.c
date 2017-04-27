@@ -45,6 +45,14 @@ STATIC mp_obj_t pyb_wfi(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
 
+STATIC mp_obj_t pyb_wfe(void) {
+    __WFE();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfe_obj, pyb_wfe);
+
+
+
 /// \function disable_irq()
 /// Disable interrupt requests.
 /// Returns the previous IRQ state: `False`/`True` for disabled/enabled IRQs
