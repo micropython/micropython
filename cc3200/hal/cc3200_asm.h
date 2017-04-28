@@ -46,10 +46,24 @@ static inline void __WFI(void) {
                     "    isb      \n"
                     "    wfi      \n");
 }
+
+__attribute__(( always_inline ))
+static inline void __WFE(void) {
+    __asm volatile ("    dsb      \n"
+                    "    isb      \n"
+                    "    wfe      \n");
+}
+
 #else
 // For some reason the debugger gets disconnected when entering any of the sleep modes
 __attribute__(( always_inline ))
 static inline void __WFI(void) {
+    __asm volatile ("    dsb      \n"
+                    "    isb      \n");
+}
+
+__attribute__(( always_inline ))
+static inline void __WFE(void) {
     __asm volatile ("    dsb      \n"
                     "    isb      \n");
 }

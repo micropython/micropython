@@ -112,6 +112,10 @@ __attribute__(( always_inline )) static inline void __WFI(void) {
   __asm volatile ("wfi");
 }
 
+__attribute__(( always_inline )) static inline void __WFE(void) {
+  __asm volatile ("wfe");
+}
+
 void mp_hal_set_interrupt_char(int c);
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
