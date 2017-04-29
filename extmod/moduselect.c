@@ -269,18 +269,18 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
-STATIC const mp_map_elem_t poll_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_register), (mp_obj_t)&poll_register_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unregister), (mp_obj_t)&poll_unregister_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_modify), (mp_obj_t)&poll_modify_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&poll_poll_obj },
+STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
+    { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
 STATIC const mp_obj_type_t mp_type_poll = {
     { &mp_type_type },
     .name = MP_QSTR_poll,
-    .locals_dict = (mp_obj_t)&poll_locals_dict,
+    .locals_dict = (void*)&poll_locals_dict,
 };
 
 /// \function poll()
@@ -292,14 +292,14 @@ STATIC mp_obj_t select_poll(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
-STATIC const mp_map_elem_t mp_module_select_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_uselect) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_select_select_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_poll), (mp_obj_t)&mp_select_poll_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLIN), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_RD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLOUT), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_WR) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLERR), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_ERR) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POLLHUP), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_HUP) },
+STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect) },
+    { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj) },
+    { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj) },
+    { MP_ROM_QSTR(MP_QSTR_POLLIN), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_RD) },
+    { MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_WR) },
+    { MP_ROM_QSTR(MP_QSTR_POLLERR), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_ERR) },
+    { MP_ROM_QSTR(MP_QSTR_POLLHUP), MP_OBJ_NEW_SMALL_INT(MP_STREAM_POLL_HUP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_table);
