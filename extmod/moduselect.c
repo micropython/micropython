@@ -182,7 +182,11 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
     mp_map_t poll_map;
+    short iter_cnt;
+    short iter_idx;
     int flags;
+    // callee-owned tuple
+    mp_obj_t ret_tuple;
 } mp_obj_poll_t;
 
 /// \method register(obj[, eventmask])
@@ -279,17 +283,67 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
+STATIC mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (self->ret_tuple == MP_OBJ_NULL) {
+        self->ret_tuple = mp_obj_new_tuple(2, NULL);
+    }
+
+    int n_ready = poll_poll_internal(n_args, args);
+    self->iter_cnt = n_ready;
+    self->iter_idx = 0;
+
+    return args[0];
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_ipoll_obj, 1, 3, poll_ipoll);
+
+STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->iter_cnt == 0) {
+        return MP_OBJ_STOP_ITERATION;
+    }
+
+    self->iter_cnt--;
+
+    for (mp_uint_t i = self->iter_idx; i < self->poll_map.alloc; ++i) {
+        self->iter_idx++;
+        if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
+            continue;
+        }
+        poll_obj_t *poll_obj = (poll_obj_t*)self->poll_map.table[i].value;
+        if (poll_obj->flags_ret != 0) {
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->ret_tuple);
+            t->items[0] = poll_obj->obj;
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret);
+            if (self->flags & FLAG_ONESHOT) {
+                // Don't poll next time, until new event flags will be set explicitly
+                poll_obj->flags = 0;
+            }
+            return MP_OBJ_FROM_PTR(t);
+        }
+    }
+
+    assert(!"inconsistent number of poll active entries");
+    self->iter_cnt = 0;
+    return MP_OBJ_STOP_ITERATION;
+}
+
 STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
     { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
     { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
 STATIC const mp_obj_type_t mp_type_poll = {
     { &mp_type_type },
     .name = MP_QSTR_poll,
+    .getiter = mp_identity_getiter,
+    .iternext = poll_iternext,
     .locals_dict = (void*)&poll_locals_dict,
 };
 
@@ -298,6 +352,8 @@ STATIC mp_obj_t select_poll(void) {
     mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
     poll->base.type = &mp_type_poll;
     mp_map_init(&poll->poll_map, 0);
+    poll->iter_cnt = 0;
+    poll->ret_tuple = MP_OBJ_NULL;
     return poll;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
