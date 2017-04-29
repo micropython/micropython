@@ -64,6 +64,54 @@ mp_uint_t mp_decode_uint_value(const byte *ptr) {
     return mp_decode_uint(&ptr);
 }
 
+// Get source line information for the current IP within bytecode state -
+// for exceptions, etc.
+void mp_bytecode_get_src_loc(mp_code_state_t *code_state, mp_bytecode_src_loc_t *src_loc) {
+    const byte *ip = code_state->fun_bc->bytecode;
+    mp_decode_uint(&ip); // skip n_state
+    mp_decode_uint(&ip); // skip n_exc_stack
+    ip++; // skip scope_params
+    ip++; // skip n_pos_args
+    ip++; // skip n_kwonly_args
+    ip++; // skip n_def_pos_args
+    size_t bc = code_state->ip - ip;
+    size_t code_info_size = mp_decode_uint(&ip);
+    bc -= code_info_size;
+    #if MICROPY_PERSISTENT_CODE
+    src_loc->block_name = ip[0] | (ip[1] << 8);
+    src_loc->source_file = ip[2] | (ip[3] << 8);
+    ip += 4;
+    #else
+    src_loc->block_name = mp_decode_uint(&ip);
+    src_loc->source_file = mp_decode_uint(&ip);
+    #endif
+    size_t source_line = 1;
+    size_t c;
+    while ((c = *ip)) {
+        size_t b, l;
+        if ((c & 0x80) == 0) {
+            // 0b0LLBBBBB encoding
+            b = c & 0x1f;
+            l = c >> 5;
+            ip += 1;
+        } else {
+            // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
+            b = c & 0xf;
+            l = ((c << 4) & 0x700) | ip[1];
+            ip += 2;
+        }
+        if (bc >= b) {
+            bc -= b;
+            source_line += l;
+        } else {
+            // found source line corresponding to bytecode offset
+            break;
+        }
+    }
+
+    src_loc->source_line = source_line;
+}
+
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues

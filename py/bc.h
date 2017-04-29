@@ -90,12 +90,20 @@ typedef struct _mp_code_state_t {
     //mp_exc_stack_t exc_state[0];
 } mp_code_state_t;
 
+// Location within bytecode object, in terms of source
+typedef struct _mp_bytecode_src_loc_t {
+    qstr block_name;
+    qstr source_file;
+    size_t source_line;
+} mp_bytecode_src_loc_t;
+
 mp_uint_t mp_decode_uint(const byte **ptr);
 mp_uint_t mp_decode_uint_value(const byte *ptr);
 
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc);
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
+void mp_bytecode_get_src_loc(mp_code_state_t *code_state, mp_bytecode_src_loc_t *src_loc);
 void mp_bytecode_print(const void *descr, const byte *code, mp_uint_t len, const mp_uint_t *const_table);
 void mp_bytecode_print2(const byte *code, size_t len, const mp_uint_t *const_table);
 const byte *mp_bytecode_print_str(const byte *ip);

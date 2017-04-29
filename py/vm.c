@@ -1363,48 +1363,10 @@ unwind_loop:
             // But consider how to handle nested exceptions.
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
-                const byte *ip = code_state->fun_bc->bytecode;
-                mp_decode_uint(&ip); // skip n_state
-                mp_decode_uint(&ip); // skip n_exc_stack
-                ip++; // skip scope_params
-                ip++; // skip n_pos_args
-                ip++; // skip n_kwonly_args
-                ip++; // skip n_def_pos_args
-                size_t bc = code_state->ip - ip;
-                size_t code_info_size = mp_decode_uint(&ip);
-                bc -= code_info_size;
-                #if MICROPY_PERSISTENT_CODE
-                qstr block_name = ip[0] | (ip[1] << 8);
-                qstr source_file = ip[2] | (ip[3] << 8);
-                ip += 4;
-                #else
-                qstr block_name = mp_decode_uint(&ip);
-                qstr source_file = mp_decode_uint(&ip);
-                #endif
-                size_t source_line = 1;
-                size_t c;
-                while ((c = *ip)) {
-                    size_t b, l;
-                    if ((c & 0x80) == 0) {
-                        // 0b0LLBBBBB encoding
-                        b = c & 0x1f;
-                        l = c >> 5;
-                        ip += 1;
-                    } else {
-                        // 0b1LLLBBBB 0bLLLLLLLL encoding (l's LSB in second byte)
-                        b = c & 0xf;
-                        l = ((c << 4) & 0x700) | ip[1];
-                        ip += 2;
-                    }
-                    if (bc >= b) {
-                        bc -= b;
-                        source_line += l;
-                    } else {
-                        // found source line corresponding to bytecode offset
-                        break;
-                    }
-                }
-                mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val), source_file, source_line, block_name);
+                mp_bytecode_src_loc_t src_loc;
+                mp_bytecode_get_src_loc(code_state, &src_loc);
+                mp_obj_exception_add_traceback(MP_OBJ_FROM_PTR(nlr.ret_val),
+                    src_loc.source_file, src_loc.source_line, src_loc.block_name);
             }
 
             while (currently_in_except_block) {
