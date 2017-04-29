@@ -182,6 +182,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
     mp_map_t poll_map;
+    int flags;
 } mp_obj_poll_t;
 
 /// \method register(obj[, eventmask])
@@ -219,9 +220,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
-/// \method poll([timeout])
-/// Timeout is in milliseconds.
-STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
+STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = args[0];
 
     // work out timeout (its given already in ms)
@@ -239,33 +238,44 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
         }
     }
 
+    self->flags = flags;
+
     mp_uint_t start_tick = mp_hal_ticks_ms();
+    mp_uint_t n_ready;
     for (;;) {
         // poll the objects
-        mp_uint_t n_ready = poll_map_poll(&self->poll_map, NULL);
-
+        n_ready = poll_map_poll(&self->poll_map, NULL);
         if (n_ready > 0 || (timeout != -1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
-            // one or more objects are ready, or we had a timeout
-            mp_obj_list_t *ret_list = mp_obj_new_list(n_ready, NULL);
-            n_ready = 0;
-            for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
-                if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
-                    continue;
-                }
-                poll_obj_t *poll_obj = (poll_obj_t*)self->poll_map.table[i].value;
-                if (poll_obj->flags_ret != 0) {
-                    mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
-                    ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
-                    if (flags & FLAG_ONESHOT) {
-                        // Don't poll next time, until new event flags will be set explicitly
-                        poll_obj->flags = 0;
-                    }
-                }
-            }
-            return ret_list;
+            break;
         }
         MICROPY_EVENT_POLL_HOOK
     }
+
+    return n_ready;
+}
+
+STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
+    mp_obj_poll_t *self = args[0];
+    mp_uint_t n_ready = poll_poll_internal(n_args, args);
+
+    // one or more objects are ready, or we had a timeout
+    mp_obj_list_t *ret_list = mp_obj_new_list(n_ready, NULL);
+    n_ready = 0;
+    for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
+        if (!MP_MAP_SLOT_IS_FILLED(&self->poll_map, i)) {
+            continue;
+        }
+        poll_obj_t *poll_obj = (poll_obj_t*)self->poll_map.table[i].value;
+        if (poll_obj->flags_ret != 0) {
+            mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
+            ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
+            if (self->flags & FLAG_ONESHOT) {
+                // Don't poll next time, until new event flags will be set explicitly
+                poll_obj->flags = 0;
+            }
+        }
+    }
+    return ret_list;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
 
