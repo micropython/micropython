@@ -275,6 +275,8 @@ def main():
                     l = f.readline()
                     if not l:
                         break
+                    if l[0] == "#":
+                        continue
                     to_install.append(l.rstrip())
         elif opt == "--debug":
             debug = True
