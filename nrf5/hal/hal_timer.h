@@ -30,30 +30,29 @@
 #include "nrf.h"
 
 #if NRF51
-
-#define TIMER0 ((NRF_TIMER_Type *) NRF_TIMER0)
-#define TIMER0_IRQ_NUM TIMER0_IRQn
-#define TIMER1 ((NRF_TIMER_Type *) NRF_TIMER1)
-#define TIMER1_IRQ_NUM TIMER1_IRQn
-#define TIMER2 ((NRF_TIMER_Type *) NRF_TIMER2)
-#define TIMER2_IRQ_NUM TIMER2_IRQn
-
-#elif NRF52
-
-#define TIMER0 ((NRF_TIMER_Type *) NRF_TIMER0)
-#define TIMER0_IRQ_NUM TIMER0_IRQn
-#define TIMER1 ((NRF_TIMER_Type *) NRF_TIMER1)
-#define TIMER1_IRQ_NUM TIMER1_IRQn
-#define TIMER2 ((NRF_TIMER_Type *) NRF_TIMER2)
-#define TIMER2_IRQ_NUM TIMER2_IRQn
-#define TIMER3 ((NRF_TIMER_Type *) NRF_TIMER3)
-#define TIMER3_IRQ_NUM TIMER3_IRQn
-#define TIMER4 ((NRF_TIMER_Type *) NRF_TIMER4)
-#define TIMER4_IRQ_NUM TIMER4_IRQn
-
-#else
-#error "Device not supported."
+  #define TIMER_BASE_POINTERS (const uint32_t[]){NRF_TIMER0_BASE, \
+                                                 NRF_TIMER1_BASE, \
+                                                 NRF_TIMER2_BASE}
+  #define TIMER_IRQ_VALUES (const uint32_t[]){TIMER0_IRQn, \
+                                              TIMER1_IRQn, \
+                                              TIMER2_IRQn}
 #endif
+
+#if NRF52
+  #define TIMER_BASE_POINTERS (const uint32_t[]){NRF_TIMER0_BASE, \
+                                                 NRF_TIMER1_BASE, \
+                                                 NRF_TIMER1_BASE, \
+                                                 NRF_TIMER1_BASE, \
+                                                 NRF_TIMER2_BASE}
+  #define TIMER_IRQ_VALUES (const uint32_t[]){TIMER0_IRQn, \
+                                              TIMER1_IRQn, \
+                                              TIMER2_IRQn, \
+                                              TIMER3_IRQn, \
+                                              TIMER4_IRQn}
+#endif
+
+#define TIMER_BASE(x) ((NRF_TIMER_Type *)TIMER_BASE_POINTERS[x])
+#define TIMER_IRQ_NUM(x) (TIMER_IRQ_VALUES[x])
 
 /**
   * @brief  Timer Configuration Structure definition

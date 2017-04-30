@@ -53,11 +53,11 @@ STATIC const machine_timer_obj_t machine_timer_obj[] = {
 void timer_init0(void) {
     // reset the Timer handles
     memset(&TimerHandle0, 0, sizeof(Timer_HandleTypeDef));
-    TimerHandle0.instance = TIMER0;
+    TimerHandle0.instance = TIMER_BASE(0);
     memset(&TimerHandle1, 0, sizeof(Timer_HandleTypeDef));
-    TimerHandle0.instance = TIMER1;
+    TimerHandle0.instance = TIMER_BASE(1);
     memset(&TimerHandle2, 0, sizeof(Timer_HandleTypeDef));
-    TimerHandle0.instance = TIMER2;
+    TimerHandle0.instance = TIMER_BASE(2);
 }
 
 STATIC int timer_find(mp_obj_t id) {
