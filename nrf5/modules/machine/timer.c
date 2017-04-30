@@ -44,10 +44,19 @@ static hal_timer_conf_t timer_config0 = {.id = 0};
 static hal_timer_conf_t timer_config1 = {.id = 1};
 static hal_timer_conf_t timer_config2 = {.id = 2};
 
+#if NRF52
+static hal_timer_conf_t timer_config3 = {.id = 3};
+static hal_timer_conf_t timer_config4 = {.id = 4};
+#endif
+
 STATIC const machine_timer_obj_t machine_timer_obj[] = {
     {{&machine_timer_type}, &timer_config0},
     {{&machine_timer_type}, &timer_config1},
     {{&machine_timer_type}, &timer_config2},
+#if NRF52
+    {{&machine_timer_type}, &timer_config3},
+    {{&machine_timer_type}, &timer_config4},
+#endif
 };
 
 void timer_init0(void) {
