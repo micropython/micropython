@@ -58,18 +58,10 @@
   * @brief  Timer Configuration Structure definition
   */
 typedef struct {
-} hal_timer_init_t;
+    uint8_t  id;
+    uint8_t  irq_priority;
+} hal_timer_conf_t;
 
-/**
-  * @brief  Timer handle Structure definition
-  */
-typedef struct __Timer_HandleTypeDef
-{
-    NRF_TIMER_Type             *instance;    /* Timer registers base address */
-    hal_timer_init_t           init;         /* Timer initialization parameters */
-    uint8_t                    id;           /* Timer instance id */
-} Timer_HandleTypeDef;
-
-void hal_timer_init(NRF_TIMER_Type * p_instance, hal_timer_init_t const * p_timer_init);
+void hal_timer_init(hal_timer_conf_t const * p_timer_config);
 
 #endif // HAL_TIMER_H__

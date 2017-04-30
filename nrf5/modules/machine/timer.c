@@ -36,35 +36,28 @@
 #if MICROPY_PY_MACHINE_TIMER
 
 typedef struct _machine_timer_obj_t {
-    mp_obj_base_t base;
-    Timer_HandleTypeDef *timer;
+    mp_obj_base_t      base;
+    hal_timer_conf_t * p_config;
 } machine_timer_obj_t;
 
-Timer_HandleTypeDef TimerHandle0 = {.instance = NULL, .id = 0};
-Timer_HandleTypeDef TimerHandle1 = {.instance = NULL, .id = 1};
-Timer_HandleTypeDef TimerHandle2 = {.instance = NULL, .id = 2};
+static hal_timer_conf_t timer_config0 = {.id = 0};
+static hal_timer_conf_t timer_config1 = {.id = 1};
+static hal_timer_conf_t timer_config2 = {.id = 2};
 
 STATIC const machine_timer_obj_t machine_timer_obj[] = {
-    {{&machine_timer_type}, &TimerHandle0},
-    {{&machine_timer_type}, &TimerHandle1},
-    {{&machine_timer_type}, &TimerHandle2},
+    {{&machine_timer_type}, &timer_config0},
+    {{&machine_timer_type}, &timer_config1},
+    {{&machine_timer_type}, &timer_config2},
 };
 
 void timer_init0(void) {
-    // reset the Timer handles
-    memset(&TimerHandle0, 0, sizeof(Timer_HandleTypeDef));
-    TimerHandle0.instance = TIMER_BASE(0);
-    memset(&TimerHandle1, 0, sizeof(Timer_HandleTypeDef));
-    TimerHandle0.instance = TIMER_BASE(1);
-    memset(&TimerHandle2, 0, sizeof(Timer_HandleTypeDef));
-    TimerHandle0.instance = TIMER_BASE(2);
 }
 
 STATIC int timer_find(mp_obj_t id) {
     // given an integer id
     int timer_id = mp_obj_get_int(id);
     if (timer_id >= 0 && timer_id <= MP_ARRAY_SIZE(machine_timer_obj)
-        && machine_timer_obj[timer_id].timer != NULL) {
+        && machine_timer_obj[timer_id].p_config != NULL) {
         return timer_id;
     }
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -73,7 +66,7 @@ STATIC int timer_find(mp_obj_t id) {
 
 STATIC void timer_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     machine_timer_obj_t *self = o;
-    mp_printf(print, "Timer(%u)", self->timer->id);
+    mp_printf(print, "Timer(%u)", self->p_config->id);
 }
 
 /******************************************************************************/
@@ -103,7 +96,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     int timer_id = timer_find(args[ARG_NEW_id].u_obj);
     const machine_timer_obj_t *self = &machine_timer_obj[timer_id];
 
-    hal_timer_init(self->timer->instance, &self->timer->init);
+    hal_timer_init(self->p_config);
 
     return MP_OBJ_FROM_PTR(self);
 }
