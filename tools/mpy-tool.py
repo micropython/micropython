@@ -45,7 +45,7 @@ import sys
 import struct
 from collections import namedtuple
 
-sys.path.append('../py')
+sys.path.append(sys.path[0] + '/../py')
 import makeqstrdata as qstrutil
 
 class FreezeError(Exception):
