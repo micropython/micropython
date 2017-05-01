@@ -32,6 +32,7 @@
 #include "py/mphal.h"
 #include "modmusic.h"
 #include "musictunes.h"
+#include "drivers/pwm.h"
 
 #define DEFAULT_BPM      120
 #define DEFAULT_TICKS    4 // i.e. 4 ticks per beat
@@ -53,7 +54,7 @@ typedef struct _music_data_t {
     uint32_t async_wait_ticks;
     uint16_t async_notes_len;
     uint16_t async_notes_index;
-    const microbit_pin_obj_t *async_pin;
+    const pin_obj_t *async_pin;
     mp_obj_t async_note;
 } music_data_t;
 
@@ -67,7 +68,7 @@ enum {
 
 extern uint32_t ticks;
 
-STATIC uint32_t start_note(const char *note_str, size_t note_len, const microbit_pin_obj_t *pin);
+STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin);
 
 void microbit_music_tick(void) {
     if (music_data == NULL) {
@@ -137,7 +138,7 @@ STATIC void wait_async_music_idle(void) {
     }
 }
 
-STATIC uint32_t start_note(const char *note_str, size_t note_len, const microbit_pin_obj_t *pin) {
+STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin) {
     pwm_set_duty_cycle(pin->name, 128);
 
     // [NOTE](#|b)(octave)(:length)
@@ -268,7 +269,7 @@ STATIC mp_obj_t microbit_music_get_tempo(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_music_get_tempo_obj, microbit_music_get_tempo);
 
 STATIC mp_obj_t microbit_music_stop(mp_uint_t n_args, const mp_obj_t *args) {
-    const microbit_pin_obj_t *pin;
+    const pin_obj_t *pin;
     if (n_args == 0) {
         pin = &microbit_p0_obj;
     } else {
@@ -316,7 +317,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
     music_data->async_pin = NULL;
 
     // get the pin to play on
-    const microbit_pin_obj_t *pin = microbit_obj_get_pin(args[1].u_obj);
+    const pin_obj_t *pin = microbit_obj_get_pin(args[1].u_obj);
     microbit_obj_pin_acquire(pin, microbit_pin_mode_music);
 
     // start the tune running in the background
@@ -360,7 +361,7 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
     // get the parameters
     mp_uint_t frequency = args[0].u_int;
     mp_int_t duration = args[1].u_int;
-    const microbit_pin_obj_t *pin = microbit_obj_get_pin(args[2].u_obj);
+    const pin_obj_t *pin = microbit_obj_get_pin(args[2].u_obj);
 
     // Update pin modes
     microbit_obj_pin_free(music_data->async_pin);
