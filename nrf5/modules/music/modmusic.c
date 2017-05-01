@@ -24,18 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "microbitobj.h"
-#include "microbitmusic.h"
-
-extern "C" {
-
+// #include "microbitobj.h"
+// #include "microbitmusic.h"
+#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mphal.h"
-#include "modmicrobit.h"
-#include "microbit/microbitobj.h"
-#include "microbit/microbitpin.h"
-#include "lib/pwm.h"
+#include "modmusic.h"
+#include "musictunes.h"
 
 #define DEFAULT_BPM      120
 #define DEFAULT_TICKS    4 // i.e. 4 ticks per beat
@@ -474,8 +470,5 @@ STATIC MP_DEFINE_CONST_DICT(microbit_music_locals_dict, microbit_music_locals_di
 
 const mp_obj_module_t music_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_music,
     .globals = (mp_obj_dict_t*)&microbit_music_locals_dict,
 };
-
-}
