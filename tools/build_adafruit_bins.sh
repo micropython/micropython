@@ -7,7 +7,7 @@ for board in $ATMEL_BOARDS; do
     make -C atmel-samd BOARD=$board
     (( exit_status = exit_status || $? ))
 done
-if [ -z "$ARTIFACTS_BUCKET" ]; then
+if [ -z "$TRAVIS" ]; then
     make -C esp8266 BOARD=feather_huzzah
     (( exit_status = exit_status || $? ))
 fi
@@ -26,7 +26,7 @@ for board in $ATMEL_BOARDS; do
 done
 
 # Skip ESP8266 on Travis
-if [ -z "$ARTIFACTS_BUCKET" ]; then
+if [ -z "$TRAVIS" ]; then
     mkdir -p bin/esp8266/
     cp esp8266/build/firmware-combined.bin bin/esp8266/adafruit-circuitpython-feather_huzzah-$version.bin
     (( exit_status = exit_status || $? ))
