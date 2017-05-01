@@ -30,7 +30,6 @@
  */
 
 #include "py/objtuple.h"
-#include "modmicrobit.h"
 
 #define N(q) MP_OBJ_NEW_QSTR(MP_QSTR_ ## q)
 #define T(name, ...) const mp_obj_tuple_t microbit_music_tune_ ## name ## _obj = {{&mp_type_tuple}, .len = (sizeof((mp_obj_t[]){__VA_ARGS__})/sizeof(mp_obj_t)), .items = {__VA_ARGS__}};
