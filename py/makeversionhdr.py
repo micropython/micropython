@@ -70,6 +70,11 @@ def make_version_header(filename):
         info = get_version_info_from_docs_conf()
 
     git_tag, git_hash, ver = info
+    if len(ver) < 3:
+        ver = ("0", "0", "0")
+        version_string = git_hash
+    else:
+        version_string = ".".join(ver)
 
     # Generate the file with the git and version info
     file_data = """\
@@ -80,9 +85,9 @@ def make_version_header(filename):
 #define MICROPY_VERSION_MAJOR (%s)
 #define MICROPY_VERSION_MINOR (%s)
 #define MICROPY_VERSION_MICRO (%s)
-#define MICROPY_VERSION_STRING "%s.%s.%s"
+#define MICROPY_VERSION_STRING "%s"
 """ % (git_tag, git_hash, datetime.date.today().strftime("%Y-%m-%d"),
-    ver[0], ver[1], ver[2], ver[0], ver[1], ver[2])
+    ver[0], ver[1], ver[2], version_string)
 
     # Check if the file contents changed from last time
     write_file = True
