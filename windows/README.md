@@ -1,4 +1,4 @@
-This is experimental, community-supported Windows port of MicroPython.
+This is the experimental, community-supported Windows port of MicroPython.
 It is based on Unix port, and expected to remain so.
 The port requires additional testing, debugging, and patches. Please
 consider to contribute.
@@ -18,8 +18,8 @@ spurious errors (you may need to disable -Werror):
     make CROSS_COMPILE=i586-mingw32msvc-
 
 
-Bulding under Cygwin
---------------------
+Building under Cygwin
+---------------------
 
 Install following packages using cygwin's setup.exe:
 
@@ -39,18 +39,29 @@ Or for 64bit:
 Building using MS Visual Studio 2013 (or higher)
 ------------------------------------------------
 
-In IDE, open `micropython.vcxproj` and build.
+In the IDE, open `micropython.vcxproj` and build.
 
-To build from command line:
+To build from the command line:
 
     msbuild micropython.vcxproj
+
+__Stack usage__
+
+The msvc compiler is quite stack-hungry which might result in a "maximum recursion depth exceeded"
+RuntimeError for code with lots of nested function calls.
+There are several ways to deal with this:
+- increase the threshold used for detection by altering the argument to `mp_stack_set_limit` in `unix/main.c`
+- disable detection all together by setting `MICROPY_STACK_CHECK` to "0" in `windows/mpconfigport.h`
+- disable the /GL compiler flag by setting `WholeProgramOptimization` to "false"
+
+See [issue 2927](https://github.com/micropython/micropython/issues/2927) for more information.
 
 
 Running on Linux using Wine
 ---------------------------
 
 The default build (MICROPY_USE_READLINE=1) uses extended Windows console
-functions and thus should be run using `wineconsole` tool. Depending
+functions and thus should be ran using the `wineconsole` tool. Depending
 on the Wine build configuration, you may also want to select the curses
 backend which has the look&feel of a standard Unix console:
 
