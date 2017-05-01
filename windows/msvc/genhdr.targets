@@ -69,13 +69,14 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </ItemGroup>
     <PropertyGroup>
       <ForceQstrRebuild>@(QstrDependencies->AnyHaveMetadataValue('Changed', 'True'))</ForceQstrRebuild>
+      <RunPreProcConcat>@(PyQstrSourceFiles->AnyHaveMetadataValue('Changed', 'True'))</RunPreProcConcat>
     </PropertyGroup>
 
     <MakeDir Directories="@(PyQstrSourceFiles->'%(OutDir)')"/>
     <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
           Condition="'%(PyQstrSourceFiles.Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <ConcatPreProcFiles InputFiles="@(PyQstrSourceFiles->'%(OutFile)')" OutputFile="$(DestDir)qstr.i.last"
-                        Condition="@(PyQstrSourceFiles->AnyHaveMetadataValue('Changed', 'True')) Or '$(ForceQstrRebuild)' == 'True'"/>
+                        Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
   </Target>
