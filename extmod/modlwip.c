@@ -1143,8 +1143,11 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= MP_STREAM_POLL_WR;
         }
 
-        if (flags & MP_STREAM_POLL_HUP && socket->state == STATE_PEER_CLOSED) {
-            ret |= MP_STREAM_POLL_HUP;
+        if (socket->state == STATE_PEER_CLOSED) {
+            // Peer-closed socket is both readable and writable: read will
+            // return EOF, write - error. Without this poll will hang on a
+            // socket which was closed by peer.
+            ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
         }
 
     } else {
