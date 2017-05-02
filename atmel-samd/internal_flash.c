@@ -68,6 +68,10 @@ uint32_t internal_flash_get_block_count(void) {
 void internal_flash_flush(void) {
 }
 
+void flash_flush(void) {
+    internal_flash_flush();
+}
+
 static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_block, uint32_t num_blocks) {
     buf[0] = boot;
 

@@ -23,14 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #include "shared_dma.h"
+
+#include "asf/sam0/drivers/system/interrupt/system_interrupt.h"
 
 // We allocate two DMA resources for the entire lifecycle of the board (not the
 // vm) because the general_dma resource will be shared between the REPL and SPI
 // flash. Both uses must block each other in order to prevent conflict.
 struct dma_resource audio_dma;
-struct dma_resource general_dma;
+struct dma_resource general_dma_tx;
+struct dma_resource general_dma_rx;
 
 void init_shared_dma(void) {
     struct dma_resource_config config;
@@ -45,10 +47,118 @@ void init_shared_dma(void) {
     // Turn on the transfer complete interrupt so that the job_status changes to done.
     g_chan_interrupt_flag[audio_dma.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
 
+    // Prioritize the RX channel over the TX channel because TX can cause an RX
+    // overflow.
     dma_get_config_defaults(&config);
-    dma_allocate(&general_dma, &config);
+    config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
+    config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
+    dma_allocate(&general_dma_rx, &config);
+    g_chan_interrupt_flag[general_dma_rx.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
+
+    dma_get_config_defaults(&config);
+    config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
+    config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
+    dma_allocate(&general_dma_tx, &config);
+    g_chan_interrupt_flag[general_dma_tx.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
 
     // Be sneaky and reuse the active descriptor memory.
     audio_dma.descriptor = &descriptor_section[audio_dma.channel_id];
-    general_dma.descriptor = &descriptor_section[general_dma.channel_id];
+    general_dma_rx.descriptor = &descriptor_section[general_dma_rx.channel_id];
+    general_dma_tx.descriptor = &descriptor_section[general_dma_tx.channel_id];
+}
+
+static uint8_t sercom_index(Sercom* sercom) {
+    return ((uint32_t) sercom - (uint32_t) SERCOM0) / 0x400;
+}
+
+static void dma_configure(uint8_t channel, uint8_t trigsrc) {
+    system_interrupt_enter_critical_section();
+    /** Select the DMA channel and clear software trigger */
+    DMAC->CHID.reg = DMAC_CHID_ID(channel);
+    DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
+    DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
+    DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channel));
+    DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(DMA_PRIORITY_LEVEL_0) | \
+            DMAC_CHCTRLB_TRIGSRC(trigsrc) | \
+            DMAC_CHCTRLB_TRIGACT(DMA_TRIGGER_ACTION_BEAT);
+    system_interrupt_leave_critical_section();
+}
+
+enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length) {
+    if (general_dma_tx.job_status != STATUS_OK) {
+        return general_dma_tx.job_status;
+    }
+    dma_configure(general_dma_tx.channel_id, sercom_index(sercom) * 2 + 2);
+
+    // Set up TX second.
+    struct dma_descriptor_config descriptor_config;
+    dma_descriptor_get_config_defaults(&descriptor_config);
+    descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
+    descriptor_config.dst_increment_enable = false;
+    descriptor_config.block_transfer_count = length;
+    descriptor_config.source_address = ((uint32_t)buffer + length);
+    // DATA register is consistently addressed across all SERCOM modes.
+    descriptor_config.destination_address = ((uint32_t)&sercom->SPI.DATA.reg);
+
+    dma_descriptor_create(general_dma_tx.descriptor, &descriptor_config);
+    enum status_code status = dma_start_transfer_job(&general_dma_tx);
+    if (status != STATUS_OK) {
+        return status;
+    }
+
+    // Wait for the transfer to finish.
+    while (general_dma_tx.job_status == STATUS_BUSY) {}
+
+    // This transmit will cause the RX buffer overflow but we're OK with that.
+    // So, read the garbage data and clear the overflow flag.
+    sercom->SPI.DATA.reg;
+    sercom->SPI.DATA.reg;
+    sercom->SPI.STATUS.bit.BUFOVF = 1;
+    sercom->SPI.DATA.reg;
+
+    return general_dma_tx.job_status;
+}
+
+enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx) {
+    if (general_dma_tx.job_status != STATUS_OK) {
+        return general_dma_tx.job_status;
+    }
+
+    dma_configure(general_dma_tx.channel_id, sercom_index(sercom) * 2 + 2);
+    dma_configure(general_dma_rx.channel_id, sercom_index(sercom) * 2 + 1);
+
+    // Set up RX first.
+    struct dma_descriptor_config descriptor_config;
+    dma_descriptor_get_config_defaults(&descriptor_config);
+    descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
+    descriptor_config.src_increment_enable = false;
+    descriptor_config.block_transfer_count = length;
+    // DATA register is consistently addressed across all SERCOM modes.
+    descriptor_config.source_address = ((uint32_t)&sercom->SPI.DATA.reg);
+    descriptor_config.destination_address = ((uint32_t)buffer + length);
+
+    dma_descriptor_create(general_dma_rx.descriptor, &descriptor_config);
+
+    // Set up TX to retransmit the same byte over and over.
+    dma_descriptor_get_config_defaults(&descriptor_config);
+    descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
+    descriptor_config.src_increment_enable = false;
+    descriptor_config.dst_increment_enable = false;
+    descriptor_config.block_transfer_count = length;
+    descriptor_config.source_address = ((uint32_t)&tx);
+    // DATA register is consistently addressed across all SERCOM modes.
+    descriptor_config.destination_address = ((uint32_t)&sercom->SPI.DATA.reg);
+
+    dma_descriptor_create(general_dma_tx.descriptor, &descriptor_config);
+
+    // Start the RX job first so we don't miss the first byte. The TX job clocks
+    // the output.
+    general_dma_rx.transfered_size = 0;
+    dma_start_transfer_job(&general_dma_rx);
+    general_dma_tx.transfered_size = 0;
+    dma_start_transfer_job(&general_dma_tx);
+
+    // Wait for the transfer to finish.
+    while (general_dma_rx.job_status == STATUS_BUSY) {}
+    return general_dma_rx.job_status;
 }

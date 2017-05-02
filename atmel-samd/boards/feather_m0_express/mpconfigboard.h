@@ -5,7 +5,8 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA06)
 
-#define SPI_FLASH_BAUDRATE  (1000000)
+// Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
+#define SPI_FLASH_BAUDRATE  (8000000)
 
 #define SPI_FLASH_MUX_SETTING SPI_SIGNAL_MUX_SETTING_C
 #define SPI_FLASH_PAD0_PINMUX PINMUX_PA08D_SERCOM2_PAD0 // MOSI

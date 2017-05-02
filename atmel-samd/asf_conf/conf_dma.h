@@ -46,6 +46,6 @@
 #ifndef CONF_DMA_H_INCLUDED
 #define CONF_DMA_H_INCLUDED
 
-#  define CONF_MAX_USED_CHANNEL_NUM     2
+#  define CONF_MAX_USED_CHANNEL_NUM     3
 
 #endif

@@ -39,6 +39,7 @@
 #endif
 
 #include "autoreset.h"
+#include "flash_api.h"
 #include "mpconfigboard.h"
 #include "rgb_led_status.h"
 #include "shared_dma.h"
@@ -66,8 +67,6 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
-extern void flash_init_vfs(fs_user_mount_t *vfs);
-
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
 void init_flash_fs(void) {
@@ -93,6 +92,8 @@ void init_flash_fs(void) {
         vfs->flags &= ~FSUSER_USB_WRITEABLE;
 
         res = f_mkfs("/flash", 0, 0);
+        // Flush the new file system to make sure its repaired immediately.
+        flash_flush();
         if (res != FR_OK) {
             MP_STATE_PORT(fs_user_mount)[0] = NULL;
             return;

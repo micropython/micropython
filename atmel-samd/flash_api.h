@@ -23,19 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+extern void flash_init_vfs(fs_user_mount_t *vfs);
+extern void flash_flush(void);
 
-#include "asf/sam0/drivers/dma/dma.h"
-
-extern struct dma_resource audio_dma;
-extern struct dma_resource general_dma_tx;
-extern struct dma_resource general_dma_rx;
-
-void init_shared_dma(void);
-
-enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
-enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__

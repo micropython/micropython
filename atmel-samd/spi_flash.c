@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016, 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 #include "extmod/fsusermount.h"
 
 #include "rgb_led_status.h"
+#include "shared_dma.h"
 
 #define SPI_FLASH_PART1_START_BLOCK (0x1)
 
@@ -46,6 +47,7 @@
 #define CMD_READ_DATA 0x03
 #define CMD_SECTOR_ERASE 0x20
 // #define CMD_SECTOR_ERASE CMD_READ_JEDEC_ID
+#define CMD_DISABLE_WRITE 0x04
 #define CMD_ENABLE_WRITE 0x06
 #define CMD_PAGE_PROGRAM 0x02
 // #define CMD_PAGE_PROGRAM CMD_READ_JEDEC_ID
@@ -124,7 +126,7 @@ static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
     flash_enable();
     status = spi_write_buffer_wait(&spi_flash_instance, read_request, 4);
     if (status == STATUS_OK) {
-        status = spi_read_buffer_wait(&spi_flash_instance, data, data_length, 0x00);
+        status = shared_dma_read(spi_flash_instance.hw, data, data_length, 0x00);
     }
     flash_disable();
     return status == STATUS_OK;
@@ -149,7 +151,7 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
         enum status_code status;
         status = spi_write_buffer_wait(&spi_flash_instance, command, 4);
         if (status == STATUS_OK) {
-            status = spi_write_buffer_wait(&spi_flash_instance, data + bytes_written, page_size);
+            status = shared_dma_write(spi_flash_instance.hw, data + bytes_written, page_size);
         }
         flash_disable();
         if (status != STATUS_OK) {
@@ -222,9 +224,8 @@ void spi_flash_init(void) {
         uint8_t jedec_id_request[4] = {CMD_READ_JEDEC_ID, 0x00, 0x00, 0x00};
         uint8_t response[4] = {0x00, 0x00, 0x00, 0x00};
         flash_enable();
-        volatile enum status_code status = spi_transceive_buffer_wait(&spi_flash_instance, jedec_id_request, response, 4);
+        spi_transceive_buffer_wait(&spi_flash_instance, jedec_id_request, response, 4);
         flash_disable();
-        (void) status;
         if (response[1] == 0x01 && response[2] == 0x40 && response[3] == 0x15) {
             flash_size = 1 << 21; // 2 MiB
             sector_size = 1 << 12; // 4 KiB
@@ -233,6 +234,15 @@ void spi_flash_init(void) {
             // Unknown flash chip!
             flash_size = 0;
         }
+
+        // Turn off writes in case this is a microcontroller only reset.
+        uint8_t disable_write_request[1] = {CMD_DISABLE_WRITE};
+        uint8_t disable_response[1] = {0x00};
+        flash_enable();
+        spi_transceive_buffer_wait(&spi_flash_instance, disable_write_request, disable_response, 1);
+        flash_disable();
+
+        wait_for_flash_ready();
 
         current_sector = NO_SECTOR_LOADED;
         dirty_mask = 0;
@@ -402,6 +412,10 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
 // the cache after.
 void spi_flash_flush(void) {
     spi_flash_flush_keep_cache(false);
+}
+
+void flash_flush(void) {
+    spi_flash_flush();
 }
 
 // Builds a partition entry for the MBR.

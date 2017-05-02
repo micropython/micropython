@@ -3,9 +3,8 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-//#define MICROPY_HW_LED_MSC  PIN_PA17
-
-#define SPI_FLASH_BAUDRATE  (1000000)
+// Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
+#define SPI_FLASH_BAUDRATE  (8000000)
 
 // On-board flash
 #define SPI_FLASH_MUX_SETTING SPI_SIGNAL_MUX_SETTING_E
