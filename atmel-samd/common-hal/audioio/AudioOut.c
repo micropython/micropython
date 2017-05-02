@@ -194,7 +194,7 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
 
     // Connect the DAC to DMA
     dac_event = gc_alloc(sizeof(struct events_resource), false);
-    if (tc_event == NULL) {
+    if (dac_event == NULL) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, "");
     }
