@@ -35,6 +35,7 @@
 #define MICROPY_HEAP_SIZE (16 * 1024)
 #endif
 
+#define MICROPY_ENABLE_SOURCE_LINE  (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_HELPER_REPL         (1)
