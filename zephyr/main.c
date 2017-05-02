@@ -31,7 +31,6 @@
 #include <zephyr.h>
 #ifdef CONFIG_NETWORKING
 #include <net/net_context.h>
-#include <net/nbuf.h>
 #endif
 
 #include "py/nlr.h"
