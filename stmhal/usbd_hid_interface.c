@@ -51,8 +51,8 @@ static uint32_t last_read_len = 0; // length of last read
 static int8_t current_write_buffer = 0; // which buffer to write to
 
 /* Private function prototypes -----------------------------------------------*/
-static int8_t HID_Itf_Init     (void);
-static int8_t HID_Itf_Receive  (uint8_t* pbuf, uint32_t Len);
+static int8_t HID_Itf_Init     (USBD_HandleTypeDef *pdev);
+static int8_t HID_Itf_Receive  (USBD_HandleTypeDef *pdev, uint8_t* pbuf, uint32_t Len);
 
 const USBD_HID_ItfTypeDef USBD_HID_fops = {
     HID_Itf_Init,
@@ -65,12 +65,12 @@ const USBD_HID_ItfTypeDef USBD_HID_fops = {
   * @param  None
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t HID_Itf_Init(void)
+static int8_t HID_Itf_Init(USBD_HandleTypeDef *pdev)
 {
     current_read_buffer = 0;
     last_read_len = 0;
     current_write_buffer = 0;
-    USBD_HID_SetRxBuffer(&hUSBDDevice, buffer[current_write_buffer]);
+    USBD_HID_SetRxBuffer(pdev, buffer[current_write_buffer]);
     return USBD_OK;
 }
 
@@ -83,14 +83,14 @@ static int8_t HID_Itf_Init(void)
   * @note   The buffer we are passed here is just UserRxBuffer, so we are
   *         free to modify it.
   */
-static int8_t HID_Itf_Receive(uint8_t* Buf, uint32_t Len) {
+static int8_t HID_Itf_Receive(USBD_HandleTypeDef *pdev, uint8_t* Buf, uint32_t Len) {
     current_write_buffer = !current_write_buffer;
     last_read_len = Len;
     // initiate next USB packet transfer, to append to existing data in buffer
-    USBD_HID_SetRxBuffer(&hUSBDDevice, buffer[current_write_buffer]);
-    USBD_HID_ReceivePacket(&hUSBDDevice);
+    USBD_HID_SetRxBuffer(pdev, buffer[current_write_buffer]);
+    USBD_HID_ReceivePacket(pdev);
     // Set NAK to indicate we need to process read buffer
-    USBD_HID_SetNAK(&hUSBDDevice);
+    USBD_HID_SetNAK(pdev);
     return USBD_OK;
 }
 
