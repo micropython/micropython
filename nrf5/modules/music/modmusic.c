@@ -326,8 +326,17 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
     music_data->async_pin = NULL;
 
     // get the pin to play on
-// TODO: const pin_obj_t *pin = microbit_obj_get_pin(args[1].u_obj);
-// TODO: microbit_obj_pin_acquire(pin, microbit_pin_mode_music);
+    const pin_obj_t *pin;
+    if (n_args >= 2) {
+#ifdef MICROPY_HW_MUSIC_PIN
+        pin = &MICROPY_HW_MUSIC_PIN;
+#else
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin parameter not given"));
+#endif
+    } else {
+        pin = (pin_obj_t *)args[1].u_obj;
+    }
+    // TODO: microbit_obj_pin_acquire(pin, microbit_pin_mode_music);
 
     // start the tune running in the background
     music_data->async_state = ASYNC_MUSIC_STATE_IDLE;
@@ -343,7 +352,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
     } else {
         music_data->async_note = items;
     }
-// TODO: music_data->async_pin = pin;
+    music_data->async_pin = pin;
     music_data->async_state = ASYNC_MUSIC_STATE_NEXT_NOTE;
 
     if (args[2].u_bool) {
@@ -393,7 +402,7 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
         music_data->async_notes_len = 0;
         music_data->async_notes_index = 0;
         music_data->async_note = NULL;
-//TODO: music_data->async_pin = pin;
+        music_data->async_pin = pin;
         music_data->async_state = ASYNC_MUSIC_STATE_ARTICULATE;
 
         if (wait) {
