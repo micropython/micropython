@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "rgb_led_status.h"
 #include "samd21_pins.h"
+#include "shared_dma.h"
 
 // We use ENABLE registers below we don't want to treat as a macro.
 #undef ENABLE
@@ -127,6 +128,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                              &config_spi_master.pinmux_pad1,
                              &config_spi_master.pinmux_pad2,
                              &config_spi_master.pinmux_pad3};
+    // Set other pinmuxes to unused so we don't accidentally change other pin
+    // state.
+    for (uint8_t i = 0; i < 4; i++) {
+        *pinmuxes[i] = PINMUX_UNUSED;
+    }
     *pinmuxes[clock_pad] = clock_pinmux;
     self->clock_pin = clock->pin;
     claim_pin(clock);
@@ -220,10 +226,12 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     if (len == 0) {
         return true;
     }
-    enum status_code status = spi_write_buffer_wait(
-        &self->spi_master_instance,
-        data,
-        len);
+    enum status_code status;
+    if (len >= 16) {
+        status = shared_dma_write(self->spi_master_instance.hw, data, len);
+    } else {
+        status = spi_write_buffer_wait(&self->spi_master_instance, data, len);
+    }
     return status == STATUS_OK;
 }
 
@@ -232,10 +240,11 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     if (len == 0) {
         return true;
     }
-    enum status_code status = spi_read_buffer_wait(
-        &self->spi_master_instance,
-        data,
-        len,
-        write_value);
+    enum status_code status;
+    if (len >= 16) {
+        status = shared_dma_read(self->spi_master_instance.hw, data, len, write_value);
+    } else {
+        status = spi_read_buffer_wait(&self->spi_master_instance, data, len, write_value);
+    }
     return status == STATUS_OK;
 }

@@ -13,7 +13,7 @@
 // Use default pinmux for the chip select since we manage it ourselves.
 #define SPI_FLASH_PAD1_PINMUX PINMUX_PA09D_SERCOM2_PAD1 // SCK
 #define SPI_FLASH_PAD2_PINMUX PINMUX_PA14C_SERCOM2_PAD2 // MISO
-#define SPI_FLASH_PAD3_PINMUX PINMUX_DEFAULT // SCK
+#define SPI_FLASH_PAD3_PINMUX PINMUX_UNUSED // SCK
 #define SPI_FLASH_SERCOM      SERCOM2
 
 #define SPI_FLASH_CS          PIN_PA13
