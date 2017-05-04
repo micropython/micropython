@@ -192,6 +192,11 @@ extern const struct _mp_obj_module_t usb_hid_module;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
+    struct tc_module* audioout_tc_instance; \
+    struct dac_module* audioout_dac_instance; \
+    struct events_resource* audioout_tc_event; \
+    struct events_resource* audioout_dac_event; \
+    struct tc_module* pulseout_tc_instance; \
     FLASH_ROOT_POINTERS \
 
 bool udi_msc_process_trans(void);

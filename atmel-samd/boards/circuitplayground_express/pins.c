@@ -92,7 +92,7 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SDA),   (mp_obj_t)&pin_PA00 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SCL),   (mp_obj_t)&pin_PA01 },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SPEAKER_SHUTDOWN), (mp_obj_t)&pin_PA30 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPEAKER_ENABLE), (mp_obj_t)&pin_PA30 },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCK),  (mp_obj_t)&pin_PA21 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PA20 },

@@ -49,11 +49,9 @@ extern uint8_t timer_refcount[TC_INST_NUM + TCC_INST_NUM];
 extern const uint16_t prescaler[8];
 
 // This timer is shared amongst all AudioOut objects under the assumption that
-// the code is single threaded.
-static struct tc_module* tc_instance;
-static struct dac_module* dac_instance;
-static struct events_resource* tc_event;
-static struct events_resource* dac_event;
+// the code is single threaded. The audioout_tc_instance, audioout_dac_instance,
+// audioout_tc_event, and audioout_dac_event pointers live in
+// MICROPY_PORT_ROOT_POINTERS so they don't get garbage collected.
 
 // The AudioOut object is being currently played. Only it can pause the timer
 // and change its frequency.
@@ -62,25 +60,22 @@ static audioio_audioout_obj_t* active_audioout;
 static uint8_t refcount = 0;
 
 void audioout_reset(void) {
-    // Only reset DMA. PWMOut will reset the timer.
+    // Only reset DMA. PWMOut will reset the timer. Other code will reset the DAC.
     refcount = 0;
-    tc_instance = NULL;
-    if (dac_instance != NULL) {
-        dac_reset(dac_instance);
-    }
-    dac_instance = NULL;
+    MP_STATE_VM(audioout_tc_instance) = NULL;
+    MP_STATE_VM(audioout_dac_instance) = NULL;
 
-    if (tc_event != NULL) {
-        events_detach_user(tc_event, EVSYS_ID_USER_DAC_START);
-        events_release(tc_event);
+    if (MP_STATE_VM(audioout_tc_event) != NULL) {
+        events_detach_user(MP_STATE_VM(audioout_tc_event), EVSYS_ID_USER_DAC_START);
+        events_release(MP_STATE_VM(audioout_tc_event));
     }
-    tc_event = NULL;
+    MP_STATE_VM(audioout_tc_event) = NULL;
 
-    if (dac_event != NULL) {
-        events_detach_user(dac_event, EVSYS_ID_USER_DMAC_CH_0);
-        events_release(dac_event);
+    if (MP_STATE_VM(audioout_dac_event) != NULL) {
+        events_detach_user(MP_STATE_VM(audioout_dac_event), EVSYS_ID_USER_DMAC_CH_0);
+        events_release(MP_STATE_VM(audioout_dac_event));
     }
-    dac_event = NULL;
+    MP_STATE_VM(audioout_dac_event) = NULL;
 
     dma_abort_job(&audio_dma);
 }
@@ -90,8 +85,8 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
 
     // Configure the DAC to output on input event and to output an empty event
     // that triggers the DMA to load the next sample.
-    dac_instance = gc_alloc(sizeof(struct dac_module), false);
-    if (dac_instance == NULL) {
+    MP_STATE_VM(audioout_dac_instance) = gc_alloc(sizeof(struct dac_module), false);
+    if (MP_STATE_VM(audioout_dac_instance) == NULL) {
         mp_raise_msg(&mp_type_MemoryError, "");
     }
     struct dac_config config_dac;
@@ -99,7 +94,7 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
     config_dac.left_adjust = true;
     config_dac.reference = DAC_REFERENCE_AVCC;
     config_dac.clock_source = GCLK_GENERATOR_0;
-    enum status_code status = dac_init(dac_instance, DAC, &config_dac);
+    enum status_code status = dac_init(MP_STATE_VM(audioout_dac_instance), DAC, &config_dac);
     if (status != STATUS_OK) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_OSError(MP_EIO);
@@ -108,14 +103,12 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
 
     struct dac_chan_config channel_config;
     dac_chan_get_config_defaults(&channel_config);
-    dac_chan_set_config(dac_instance, DAC_CHANNEL_0, &channel_config);
-    dac_chan_enable(dac_instance, DAC_CHANNEL_0);
+    dac_chan_set_config(MP_STATE_VM(audioout_dac_instance), DAC_CHANNEL_0, &channel_config);
+    dac_chan_enable(MP_STATE_VM(audioout_dac_instance), DAC_CHANNEL_0);
 
     struct dac_events events_dac = { .generate_event_on_buffer_empty = true,
                                      .on_event_start_conversion = true };
-    dac_enable_events(dac_instance, &events_dac);
-
-    dac_enable(dac_instance);
+    dac_enable_events(MP_STATE_VM(audioout_dac_instance), &events_dac);
 
     // Figure out which timer we are using.
     Tc *t = NULL;
@@ -131,8 +124,8 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
         mp_raise_RuntimeError("All timers in use");
         return;
     }
-    tc_instance = gc_alloc(sizeof(struct tc_module), false);
-    if (tc_instance == NULL) {
+    MP_STATE_VM(audioout_tc_instance) = gc_alloc(sizeof(struct tc_module), false);
+    if (MP_STATE_VM(audioout_tc_instance) == NULL) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, "");
     }
@@ -140,28 +133,28 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
     // Don't bother setting the period. We set it before you playback anything.
     struct tc_config config_tc;
     tc_get_config_defaults(&config_tc);
-
     config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
     config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
     config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_FREQ;
-    if (tc_init(tc_instance, t, &config_tc) != STATUS_OK) {
+    if (tc_init(MP_STATE_VM(audioout_tc_instance), t, &config_tc) != STATUS_OK) {
         common_hal_audioio_audioout_deinit(self);
-        mp_printf(&mp_plat_print, "tc \n");
         mp_raise_OSError(MP_EIO);
         return;
     };
 
     struct tc_events events_tc;
     events_tc.generate_event_on_overflow = true;
-    tc_enable_events(tc_instance, &events_tc);
+    events_tc.on_event_perform_action = false;
+    events_tc.event_action = TC_EVENT_ACTION_OFF;
+    tc_enable_events(MP_STATE_VM(audioout_tc_instance), &events_tc);
 
-    tc_enable(tc_instance);
-    tc_stop_counter(tc_instance);
+    tc_enable(MP_STATE_VM(audioout_tc_instance));
+    tc_stop_counter(MP_STATE_VM(audioout_tc_instance));
 
     // Connect the timer overflow event, which happens at the target frequency,
     // to the DAC conversion trigger.
-    tc_event = gc_alloc(sizeof(struct events_resource), false);
-    if (tc_event == NULL) {
+    MP_STATE_VM(audioout_tc_event) = gc_alloc(sizeof(struct events_resource), false);
+    if (MP_STATE_VM(audioout_tc_event) == NULL) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, "");
     }
@@ -185,24 +178,24 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
 
     config.generator    = generator;
     config.path         = EVENTS_PATH_ASYNCHRONOUS;
-    if (events_allocate(tc_event, &config) != STATUS_OK ||
-        events_attach_user(tc_event, EVSYS_ID_USER_DAC_START) != STATUS_OK) {
+    if (events_allocate(MP_STATE_VM(audioout_tc_event), &config) != STATUS_OK ||
+        events_attach_user(MP_STATE_VM(audioout_tc_event), EVSYS_ID_USER_DAC_START) != STATUS_OK) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_OSError(MP_EIO);
         return;
     }
 
     // Connect the DAC to DMA
-    dac_event = gc_alloc(sizeof(struct events_resource), false);
-    if (dac_event == NULL) {
+    MP_STATE_VM(audioout_dac_event) = gc_alloc(sizeof(struct events_resource), false);
+    if (MP_STATE_VM(audioout_dac_event) == NULL) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, "");
     }
     events_get_config_defaults(&config);
     config.generator    = EVSYS_ID_GEN_DAC_EMPTY;
     config.path         = EVENTS_PATH_ASYNCHRONOUS;
-    if (events_allocate(dac_event, &config) != STATUS_OK ||
-        events_attach_user(dac_event, EVSYS_ID_USER_DMAC_CH_0) != STATUS_OK) {
+    if (events_allocate(MP_STATE_VM(audioout_dac_event), &config) != STATUS_OK ||
+        events_attach_user(MP_STATE_VM(audioout_dac_event), EVSYS_ID_USER_DMAC_CH_0) != STATUS_OK) {
         common_hal_audioio_audioout_deinit(self);
         mp_raise_OSError(MP_EIO);
         return;
@@ -239,26 +232,26 @@ void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* sel
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
     refcount--;
     if (refcount == 0) {
-        if (tc_instance != NULL) {
-            tc_reset(tc_instance);
-            gc_free(tc_instance);
-            tc_instance = NULL;
+        if (MP_STATE_VM(audioout_tc_instance) != NULL) {
+            tc_reset(MP_STATE_VM(audioout_tc_instance));
+            gc_free(MP_STATE_VM(audioout_tc_instance));
+            MP_STATE_VM(audioout_tc_instance) = NULL;
         }
-        if (dac_instance != NULL) {
-            dac_reset(dac_instance);
-            gc_free(dac_instance);
-            dac_instance = NULL;
+        if (MP_STATE_VM(audioout_dac_instance) != NULL) {
+            dac_reset(MP_STATE_VM(audioout_dac_instance));
+            gc_free(MP_STATE_VM(audioout_dac_instance));
+            MP_STATE_VM(audioout_dac_instance) = NULL;
         }
-        if (tc_event != NULL) {
-            events_detach_user(tc_event, EVSYS_ID_USER_DAC_START);
-            events_release(tc_event);
-            gc_free(tc_event);
-            tc_event = NULL;
+        if (MP_STATE_VM(audioout_tc_event) != NULL) {
+            events_detach_user(MP_STATE_VM(audioout_tc_event), EVSYS_ID_USER_DAC_START);
+            events_release(MP_STATE_VM(audioout_tc_event));
+            gc_free(MP_STATE_VM(audioout_tc_event));
+            MP_STATE_VM(audioout_tc_event) = NULL;
         }
-        if (dac_event != NULL) {
-            events_release(dac_event);
-            gc_free(dac_event);
-            dac_event = NULL;
+        if (MP_STATE_VM(audioout_dac_event) != NULL) {
+            events_release(MP_STATE_VM(audioout_dac_event));
+            gc_free(MP_STATE_VM(audioout_dac_event));
+            MP_STATE_VM(audioout_dac_event) = NULL;
         }
         reset_pin(self->pin->pin);
     }
@@ -274,17 +267,17 @@ static void set_timer_frequency(uint32_t frequency) {
             break;
         }
     }
-    uint8_t old_divisor = tc_instance->hw->COUNT16.CTRLA.bit.PRESCALER;
+    uint8_t old_divisor = MP_STATE_VM(audioout_tc_instance)->hw->COUNT16.CTRLA.bit.PRESCALER;
     if (new_divisor != old_divisor) {
-        tc_disable(tc_instance);
-        tc_instance->hw->COUNT16.CTRLA.bit.PRESCALER = new_divisor;
-        tc_enable(tc_instance);
+        tc_disable(MP_STATE_VM(audioout_tc_instance));
+        MP_STATE_VM(audioout_tc_instance)->hw->COUNT16.CTRLA.bit.PRESCALER = new_divisor;
+        tc_enable(MP_STATE_VM(audioout_tc_instance));
     }
-    while (tc_is_syncing(tc_instance)) {
+    while (tc_is_syncing(MP_STATE_VM(audioout_tc_instance))) {
         /* Wait for sync */
     }
-    tc_instance->hw->COUNT16.CC[0].reg = new_top;
-    while (tc_is_syncing(tc_instance)) {
+    MP_STATE_VM(audioout_tc_instance)->hw->COUNT16.CC[0].reg = new_top;
+    while (tc_is_syncing(MP_STATE_VM(audioout_tc_instance))) {
         /* Wait for sync */
     }
 }
@@ -293,8 +286,10 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop) {
     common_hal_audioio_audioout_get_playing(self);
     // Shut down any active playback.
     if (active_audioout != NULL) {
-        tc_stop_counter(tc_instance);
+        tc_stop_counter(MP_STATE_VM(audioout_tc_instance));
         dma_abort_job(&audio_dma);
+    } else {
+        dac_enable(MP_STATE_VM(audioout_dac_instance));
     }
     struct dma_descriptor_config descriptor_config;
     dma_descriptor_get_config_defaults(&descriptor_config);
@@ -314,15 +309,15 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop) {
     dma_start_transfer_job(&audio_dma);
 
     set_timer_frequency(self->frequency);
-    tc_start_counter(tc_instance);
+    tc_start_counter(MP_STATE_VM(audioout_tc_instance));
 }
 
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
     if (common_hal_audioio_audioout_get_playing(self)) {
-        tc_stop_counter(tc_instance);
+        tc_stop_counter(MP_STATE_VM(audioout_tc_instance));
         dma_abort_job(&audio_dma);
         active_audioout = NULL;
-        // TODO(tannewt): Disable the DAC to save power.
+        dac_disable(MP_STATE_VM(audioout_dac_instance));
     }
 }
 
