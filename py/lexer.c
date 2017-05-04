@@ -120,6 +120,19 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
+// If lexer starts with CR or CR LF, convert the sequence to a single LF.
+STATIC void convert_crlf(mp_lexer_t *lex) {
+    if (lex->chr0 == '\r') {
+        // CR is a new line, converted to LF
+        lex->chr0 = '\n';
+        if (lex->chr1 == '\n') {
+            // CR LF is a single new line
+            lex->chr1 = lex->chr2;
+            lex->chr2 = lex->reader.readbyte(lex->reader.data);
+        }
+    }
+}
+
 STATIC void next_char(mp_lexer_t *lex) {
     if (lex->chr0 == '\n') {
         // a new line
@@ -137,15 +150,7 @@ STATIC void next_char(mp_lexer_t *lex) {
     lex->chr1 = lex->chr2;
     lex->chr2 = lex->reader.readbyte(lex->reader.data);
 
-    if (lex->chr0 == '\r') {
-        // CR is a new line, converted to LF
-        lex->chr0 = '\n';
-        if (lex->chr1 == '\n') {
-            // CR LF is a single new line
-            lex->chr1 = lex->chr2;
-            lex->chr2 = lex->reader.readbyte(lex->reader.data);
-        }
-    }
+    convert_crlf(lex);
 
     if (lex->chr2 == MP_LEXER_EOF) {
         // EOF, check if we need to insert a newline at end of file
@@ -693,13 +698,13 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->chr1 = reader.readbyte(reader.data);
     lex->chr2 = reader.readbyte(reader.data);
 
+    convert_crlf(lex);
+
     // if input stream is 0, 1 or 2 characters long and doesn't end in a newline, then insert a newline at the end
     if (lex->chr0 == MP_LEXER_EOF) {
         lex->chr0 = '\n';
     } else if (lex->chr1 == MP_LEXER_EOF) {
-        if (lex->chr0 == '\r') {
-            lex->chr0 = '\n';
-        } else if (lex->chr0 != '\n') {
+        if (lex->chr0 != '\n') {
             lex->chr1 = '\n';
         }
     } else if (lex->chr2 == MP_LEXER_EOF) {
