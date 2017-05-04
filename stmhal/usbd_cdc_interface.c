@@ -288,9 +288,9 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = UserTxBufPtrOutShadow;
 
-        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
+        USBD_CDC_SetTxBuffer(hpcd->pData, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
 
-        if (USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(hpcd->pData) == USBD_OK) {
             UserTxBufPtrOutShadow += buffsize;
             if (UserTxBufPtrOutShadow == APP_TX_DATA_SIZE) {
                 UserTxBufPtrOutShadow = 0;
