@@ -104,11 +104,13 @@
 
 #ifdef LOG_HEAP_ACTIVITY
 volatile uint32_t change_me;
-
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 void __attribute__ ((noinline)) gc_log_change(uint32_t start_block, uint32_t length) {
     change_me += start_block;
     change_me += length; // Break on this line.
 }
+#pragma GCC pop_options
 #endif
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool

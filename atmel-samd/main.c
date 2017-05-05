@@ -115,7 +115,6 @@ void init_flash_fs(void) {
     f_chdrive("/flash");
 }
 
-static char *stack_top;
 static char heap[16384];
 
 void reset_mp(void) {
@@ -519,12 +518,6 @@ int main(void) {
     // initialise the cpu and peripherals
     samd21_init();
 
-    int stack_dummy;
-    // Store the location of stack_dummy as an approximation for the top of the
-    // stack so the GC can account for objects that may be referenced by the
-    // stack between here and where gc_collect is called.
-    stack_top = (char*)&stack_dummy;
-
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
@@ -581,7 +574,7 @@ void gc_collect(void) {
     gc_collect_start();
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
+    gc_collect_root(&dummy, ((mp_uint_t)&_estack - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
 }
 
