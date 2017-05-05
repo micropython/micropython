@@ -694,6 +694,14 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->chr2 = reader.readbyte(reader.data);
     next_char(lex);
 
+    // next_char() handles a 2-character stream, but we still need to handle
+    // an input stream of 0 or 1 character that isn't a newline.
+    if (lex->chr0 == MP_LEXER_EOF) {
+        lex->chr0 = '\n';
+    } else if (lex->chr1 == MP_LEXER_EOF && lex->chr0 != '\n') {
+        lex->chr1 = '\n';
+    }
+
     // preload first token
     mp_lexer_to_next(lex);
 
