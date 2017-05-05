@@ -10,4 +10,4 @@ e
 True
 d
 True
-['foo_dir']
+[('foo_dir', 16384, 0)]

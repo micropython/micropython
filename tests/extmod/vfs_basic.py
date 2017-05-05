@@ -20,9 +20,9 @@ class Filesystem:
         print(self.id, 'mount', readonly, mkfs)
     def umount(self):
         print(self.id, 'umount')
-    def listdir(self, dir):
-        print(self.id, 'listdir', dir)
-        return ['a%d' % self.id]
+    def ilistdir(self, dir):
+        print(self.id, 'ilistdir', dir)
+        return iter([('a%d' % self.id, 0, 0)])
     def chdir(self, dir):
         print(self.id, 'chdir', dir)
     def getcwd(self):
@@ -63,6 +63,18 @@ print(uos.getcwd())
 # basic mounting and listdir
 uos.mount(Filesystem(1), '/test_mnt')
 print(uos.listdir())
+
+# ilistdir
+i = uos.ilistdir()
+print(next(i))
+try:
+    next(i)
+except StopIteration:
+    print('StopIteration')
+try:
+    next(i)
+except StopIteration:
+    print('StopIteration')
 
 # referencing the mount point in different ways
 print(uos.listdir('test_mnt'))
