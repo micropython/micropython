@@ -155,6 +155,7 @@ STATIC const mp_map_elem_t os_module_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_chdir),           (mp_obj_t)&mp_vfs_chdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd),          (mp_obj_t)&mp_vfs_getcwd_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ilistdir),        (mp_obj_t)&mp_vfs_ilistdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_listdir),         (mp_obj_t)&mp_vfs_listdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir),           (mp_obj_t)&mp_vfs_mkdir_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rename),          (mp_obj_t)&mp_vfs_rename_obj},
