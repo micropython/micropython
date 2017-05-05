@@ -77,6 +77,10 @@ typedef struct _pyb_can_obj_t {
     mp_obj_base_t base;
     mp_obj_t rxcallback0;
     mp_obj_t rxcallback1;
+    mp_obj_t rxirq0;
+    mp_obj_t rxirq1;
+    bool     rxirq0_is_soft:1;
+    bool     rxirq1_is_soft:1;
     mp_uint_t can_id : 8;
     bool is_enabled : 1;
     bool extframe : 1;
@@ -386,6 +390,8 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
         self->rxcallback0 = mp_const_none;
         self->rxcallback1 = mp_const_none;
+        self->rxirq0 = mp_const_none;
+        self->rxirq1 = mp_const_none;
         self->rx_state0 = RX_STATE_FIFO_EMPTY;
         self->rx_state1 = RX_STATE_FIFO_EMPTY;
 
@@ -536,7 +542,9 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // Manage the rx state machine
     if ((args[0].u_int == CAN_FIFO0 && self->rxcallback0 != mp_const_none) ||
-        (args[0].u_int == CAN_FIFO1 && self->rxcallback1 != mp_const_none)) {
+        (args[0].u_int == CAN_FIFO1 && self->rxcallback1 != mp_const_none) ||
+        (args[0].u_int == CAN_FIFO0 && self->rxirq0 != mp_const_none) ||
+        (args[0].u_int == CAN_FIFO1 && self->rxirq1 != mp_const_none)) {
         byte *state = (args[0].u_int == CAN_FIFO0) ? &self->rx_state0 : &self->rx_state1;
 
         switch (*state) {
@@ -777,6 +785,58 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_can_rxcallback_obj, pyb_can_rxcallback);
 
+STATIC mp_obj_t pyb_can_rxirq(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT,  {.u_int = CAN_FILTER_FIFO0} },
+        { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_soft,     MP_ARG_KW_ONLY  | MP_ARG_BOOL, {.u_bool = true} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args-1, pos_args+1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    pyb_can_obj_t *self  = pos_args[0];
+    mp_int_t fifo        = args[0].u_int;
+    mp_obj_t callback_in = args[1].u_obj;
+    bool is_soft         = args[2].u_bool;
+    mp_obj_t *callback;
+
+    if (fifo == 0) {
+        callback = &self->rxirq0;
+        self->rxirq0_is_soft = is_soft;
+    } else {
+        callback = &self->rxirq1;
+        self->rxirq1_is_soft = is_soft;
+    }
+
+    if (callback_in == mp_const_none) {
+        __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
+        __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FF0 : CAN_IT_FF1);
+        __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
+        *callback = mp_const_none;
+    } else if (*callback != mp_const_none) {
+        // Rx call backs has already been initialized
+        // only the callback function should be changed
+        *callback = callback_in;
+    } else if (mp_obj_is_callable(callback_in)) {
+        *callback = callback_in;
+        uint32_t irq;
+        if (self->can_id == PYB_CAN_1) {
+            irq = (fifo == 0) ? CAN1_RX0_IRQn : CAN1_RX1_IRQn;
+        } else {
+            irq = (fifo == 0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
+        }
+        HAL_NVIC_SetPriority(irq, IRQ_PRI_CAN, IRQ_SUBPRI_CAN);
+        HAL_NVIC_EnableIRQ(irq);
+        __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
+        __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FF0  : CAN_IT_FF1);
+        __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FOV0 : CAN_IT_FOV1);
+    }
+    return mp_const_none;
+    //return pyb_can_rxirq_helper(self, fifo, callback_in, is_soft);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_rxirq_obj, 1, pyb_can_rxirq);
+
 STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_can_init_obj },
@@ -788,6 +848,7 @@ STATIC const mp_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_setfilter), (mp_obj_t)&pyb_can_setfilter_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_clearfilter), (mp_obj_t)&pyb_can_clearfilter_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_rxcallback), (mp_obj_t)&pyb_can_rxcallback_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rxirq), (mp_obj_t)&pyb_can_rxirq_obj },
 
     // class constants
     // Note: we use the ST constants >> 4 so they fit in a small-int.  The
@@ -830,15 +891,28 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
     pyb_can_obj_t *self;
     mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
     byte *state;
+    bool is_soft;
 
     self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
-
-    if (fifo_id == CAN_FIFO0) {
-        callback = self->rxcallback0;
-        state = &self->rx_state0;
+    if (self->rxcallback0 == mp_const_none && self->rxcallback1 == mp_const_none) {
+        if (fifo_id == CAN_FIFO0) {
+            callback = self->rxirq0;
+            state = &self->rx_state0;
+            is_soft = self->rxirq0_is_soft;
+        } else {
+            callback = self->rxirq1;
+            state = &self->rx_state1;
+            is_soft = self->rxirq1_is_soft;
+        }
     } else {
-        callback = self->rxcallback1;
-        state = &self->rx_state1;
+        is_soft = false;
+        if (fifo_id == CAN_FIFO0) {
+            callback = self->rxcallback0;
+            state = &self->rx_state0;
+        } else {
+            callback = self->rxcallback1;
+            state = &self->rx_state1;
+        }
     }
 
     switch (*state) {
@@ -869,7 +943,17 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
         gc_lock();
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            mp_call_function_2(callback, self, irq_reason);
+            if (is_soft) {
+                if (!mp_sched_schedule(callback, self)) {
+                    mp_raise_msg(&mp_type_RuntimeError, "schedule stack full");
+                }
+            } else {
+                if (self->rxcallback0 == mp_const_none && self->rxcallback1 == mp_const_none) {
+                    mp_call_function_1(callback, self);
+                } else {
+                    mp_call_function_2(callback, self, irq_reason);
+                }
+            }
             nlr_pop();
         } else {
             // Uncaught exception; disable the callback so it doesn't run again.
