@@ -133,13 +133,39 @@ STATIC const mp_obj_type_t bufwriter_type = {
 
 #if MICROPY_MODULE_FROZEN_STR
 STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
+    VSTR_FIXED(path_buf, MICROPY_ALLOC_PATH_MAX);
+    size_t len;
+
+    // As an extension to pkg_resources.resource_stream(), we support
+    // package parameter being None, the path_in is interpreted as a
+    // raw path.
     if (package_in != mp_const_none) {
-        mp_not_implemented("");
+        mp_obj_t args[5];
+        args[0] = package_in;
+        args[1] = mp_const_none; // TODO should be globals
+        args[2] = mp_const_none; // TODO should be locals
+        args[3] = mp_const_true; // Pass sentinel "non empty" value to force returning of leaf module
+        args[4] = MP_OBJ_NEW_SMALL_INT(0);
+
+        // TODO lookup __import__ and call that instead of going straight to builtin implementation
+        mp_obj_t pkg = mp_builtin___import__(5, args);
+
+        mp_obj_t dest[2];
+        mp_load_method_maybe(pkg, MP_QSTR___path__, dest);
+        if (dest[0] == MP_OBJ_NULL) {
+            mp_raise_TypeError(NULL);
+        }
+
+        const char *path = mp_obj_str_get_data(dest[0], &len);
+        vstr_add_strn(&path_buf, path, len);
+        vstr_add_byte(&path_buf, '/');
     }
 
-    size_t len;
     const char *path = mp_obj_str_get_data(path_in, &len);
-    const char *data = mp_find_frozen_str(path, &len);
+    vstr_add_strn(&path_buf, path, len);
+
+    len = path_buf.len;
+    const char *data = mp_find_frozen_str(path_buf.buf, &len);
     if (data != NULL) {
         mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
         o->base.type = &mp_type_bytesio;
@@ -150,7 +176,8 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
         return MP_OBJ_FROM_PTR(o);
     }
 
-    return mp_builtin_open(1, &path_in, (mp_map_t*)&mp_const_empty_map);
+    mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len, false);
+    return mp_builtin_open(1, &path_out, (mp_map_t*)&mp_const_empty_map);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
 #endif
