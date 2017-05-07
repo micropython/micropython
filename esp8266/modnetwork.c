@@ -30,6 +30,7 @@
 
 #include "py/nlr.h"
 #include "py/objlist.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
@@ -200,6 +201,116 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     return list;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
+
+STATIC mp_obj_t *esp_sniffer_list = NULL;
+STATIC mp_obj_t esp_sniffer_mac_filter;
+
+STATIC void esp_sniffer_cb(void *result, uint16_t len) {
+    if (esp_sniffer_list == NULL){
+        return ;
+    }
+    if (len > 27){
+        nlr_buf_t nlr;
+        if(nlr_push(&nlr) == 0){
+            
+            mp_obj_t source = mp_obj_new_bytes((const byte *)result + 16, 6);
+            mp_obj_t dest = mp_obj_new_bytes((const byte *)result + 22, 6);
+            if ((esp_sniffer_mac_filter != mp_const_empty_bytes) & \
+                    (!mp_obj_str_equal(esp_sniffer_mac_filter, source))){
+                nlr_pop();
+                return ;
+            }
+            
+            mp_obj_t *mac_items;
+            size_t mac_num;
+            mp_obj_list_get(*esp_sniffer_list, &mac_num, &mac_items);
+            for(uint16_t i = 0; i < mac_num; i ++){
+                size_t item_num;
+                mp_obj_t *items;
+                mp_obj_tuple_get(mac_items[i], &item_num, &items);
+                if (mp_obj_str_equal(items[0], source) && mp_obj_str_equal(items[1], dest)){
+                    items[2] = mp_obj_new_int_from_uint(MP_OBJ_SMALL_INT_VALUE(items[2])+1);
+                    nlr_pop();
+                    return ;
+                }
+            }
+            mp_obj_tuple_t *t = mp_obj_new_tuple(3, NULL);
+            t->items[0] = source;
+            t->items[1] = dest;
+            t->items[2] = mp_obj_new_int_from_uint(1);
+            mp_obj_list_append(*esp_sniffer_list, MP_OBJ_FROM_PTR(t));
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+            *esp_sniffer_list = MP_OBJ_NULL;
+        }
+    }
+}
+
+STATIC mp_obj_t esp_sniffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+
+    require_if(pos_args[0], STATION_IF);
+    if ((wifi_get_opmode() & STATION_MODE) == 0){
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+                    "STA must be active"));
+    }
+
+    enum {ARG_mac, ARG_ch, ARG_timeout};
+    static const mp_arg_t allowed_args[] ={
+        { MP_QSTR_mac, MP_ARG_OBJ, {.u_obj = mp_const_empty_bytes} },
+        { MP_QSTR_ch, MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 1} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    if (MP_OBJ_IS_STR_OR_BYTES(args[ARG_mac].u_obj)){
+        esp_sniffer_mac_filter = args[ARG_mac].u_obj;
+    }else{
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
+                    "invalid mac type"));
+    }
+
+    uint32_t ch = args[ARG_ch].u_int;
+    uint32_t timeout_us = args[ARG_timeout].u_int * 1000000;
+    timeout_us = timeout_us>1000000?timeout_us:1000000;
+
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    esp_sniffer_list = &list;
+
+    //Disconnect all connections
+    wifi_station_disconnect();
+    //Register the callback function
+    wifi_set_promiscuous_rx_cb((wifi_promiscuous_cb_t)esp_sniffer_cb);
+    //Set the channel
+    wifi_set_channel(ch);
+    //Set the mac address to filter
+    /*
+    if(args[ARG_mac].u_obj != mp_const_none){
+        wifi_promiscuous_set_mac((const uint8_t *)mac);
+    }*/
+    wifi_promiscuous_enable(1);
+    uint32_t start = system_get_time();
+    while (esp_sniffer_list != NULL){
+        if (MP_STATE_VM(mp_pending_exception) != NULL) {
+            esp_sniffer_list = NULL;
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(obj);
+        }
+        if (system_get_time() - start >= timeout_us){
+            esp_sniffer_list = NULL;
+        }
+        ets_loop_iter();
+    }
+    if (list == MP_OBJ_NULL){
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "sniffer failed"));
+    }
+    wifi_promiscuous_enable(0);
+    return list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_sniffer_obj, 1, esp_sniffer);
 
 /// \method isconnected()
 /// Return True if connected to an AP and an IP address has been assigned,
@@ -433,6 +544,7 @@ STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sniffer), (mp_obj_t)&esp_sniffer_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_config), (mp_obj_t)&esp_config_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
@@ -473,7 +585,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECTING)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_WRONG_PASSWORD),
         MP_OBJ_NEW_SMALL_INT(STATION_WRONG_PASSWORD)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_NO_AP_FOUND),
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_NO_AP_FOUND), 
         MP_OBJ_NEW_SMALL_INT(STATION_NO_AP_FOUND)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECT_FAIL),
         MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
