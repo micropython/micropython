@@ -429,8 +429,13 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
                 // if args[3] (fromtuple) has magic value False, set up
                 // this module for command-line "-m" option (set module's
-                // name to __main__ instead of real name).
-                if (i == mod_len && fromtuple == mp_const_false) {
+                // name to __main__ instead of real name). Do this only
+                // for *modules* however - packages never have their names
+                // replaced, instead they're -m'ed using a special __main__
+                // submodule in them. (This all apparently is done to not
+                // touch package name itself, which is important for future
+                // imports).
+                if (i == mod_len && fromtuple == mp_const_false && stat != MP_IMPORT_STAT_DIR) {
                     mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
                     #if MICROPY_CPYTHON_COMPAT
