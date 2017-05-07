@@ -41,6 +41,8 @@
 #include "ets_alt_task.h"
 #include "lwip/dns.h"
 
+#include "ieee80211.h"
+
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
 typedef struct _wlan_if_obj_t {
@@ -209,11 +211,18 @@ STATIC void esp_sniffer_cb(void *result, uint16_t len){
     if (esp_sniffer_list == NULL){
         return ;
     }
-    if (len > 27){
+    if (len == 12){
+        //struct RxControl *sniffer = (struct RxControl*)result;
+        return ;
+    }else if(len == 128){
+        //struct sniffer_buf2 *sniffer = (struct sniffer_buf2*)result;
+        return ;
+    }else{
         nlr_buf_t nlr;
         if(nlr_push(&nlr) == 0){
-            mp_obj_t source = mp_obj_new_bytes((const byte *)result + 16, 6);
-            mp_obj_t dest = mp_obj_new_bytes((const byte *)result + 22, 6);
+            struct sniffer_buf *sniffer = (struct sniffer_buf*)result;
+            mp_obj_t source = mp_obj_new_bytes((const byte *)sniffer->buf + 4, 6);
+            mp_obj_t dest = mp_obj_new_bytes((const byte *)sniffer->buf + 10, 6);
 
             if ((esp_sniffer_mac_filter != mp_const_empty_bytes) &&\
                     (!mp_obj_str_equal(esp_sniffer_mac_filter, source))){
@@ -285,11 +294,10 @@ STATIC mp_obj_t esp_sniffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     //Set the channel
     wifi_set_channel(ch);
     //Set the mac address to filter
-    /*
-    if (args[ARG_mac].u_obj != mp_const_none){
+    /*if (args[ARG_mac].u_obj != mp_const_none){
+        const char *mac = mp_obj_str_get_str(esp_sniffer_mac_filter);
         wifi_promiscuous_set_mac((const uint8_t *)mac);
-    }
-    */
+    }*/
     wifi_promiscuous_enable(1);
     uint32_t start = system_get_time();
     while (esp_sniffer_list != NULL){
