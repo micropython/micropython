@@ -154,19 +154,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_pause_obj, pulseio_pulsein_obj_pause);
 //|
 //|     :param int trigger_duration: trigger pulse duration in microseconds
 //|
-STATIC mp_obj_t pulseio_pulsein_obj_resume(mp_obj_t self_in, mp_obj_t duration_obj) {
-    pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint16_t trigger_duration = 0;
-    if (MP_OBJ_IS_SMALL_INT(duration_obj)) {
-        trigger_duration = MP_OBJ_SMALL_INT_VALUE(duration_obj);
-    } else if (duration_obj != mp_const_none) {
-        mp_raise_TypeError("trigger_duration must be int");
-    }
+STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_trigger_duration };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_trigger_duration, MP_ARG_OBJ, {.u_int = 0} },
+    };
+    pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_pulseio_pulsein_resume(self, trigger_duration);
+    common_hal_pulseio_pulsein_resume(self, args[ARG_trigger_duration].u_int);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(pulseio_pulsein_resume_obj, pulseio_pulsein_obj_resume);
+MP_DEFINE_CONST_FUN_OBJ_KW(pulseio_pulsein_resume_obj, 1, pulseio_pulsein_obj_resume);
 
 //|   .. method:: clear()
 //|
