@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_MACHINE_SOFT_PWM
+
 #include "stddef.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -247,3 +249,5 @@ void pwm_release(int32_t pin) {
     ((pwm_events *)ev)->events[i].pin = 31;
     hal_gpio_pin_clear(0, pin);
 }
+
+#endif // MICROPY_PY_MACHINE_SOFT_PWM
