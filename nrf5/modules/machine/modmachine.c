@@ -41,6 +41,7 @@
 #include "uart.h"
 #include "spi.h"
 #include "i2c.h"
+#include "timer.h"
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
 #endif
@@ -213,11 +214,14 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 #if MICROPY_PY_MACHINE_RTC
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&machine_rtc_type },
 #endif
+#if MICROPY_PY_MACHINE_TIMER
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Timer),               (mp_obj_t)&machine_timer_type },
+#endif
 #if MICROPY_PY_MACHINE_HW_PWM
     { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                 (mp_obj_t)&machine_hard_pwm_type },
 #endif
 #if MICROPY_PY_MACHINE_TEMP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Temp),                 (mp_obj_t)&machine_temp_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_Temp),                (mp_obj_t)&machine_temp_type },
 #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_RESET_HARD) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_WDT) },
