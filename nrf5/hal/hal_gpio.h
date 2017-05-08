@@ -78,6 +78,10 @@ static inline void hal_gpio_out_set(uint8_t port, uint32_t pin_mask) {
     GPIO_BASE(port)->OUTSET = pin_mask;
 }
 
+static inline void hal_gpio_out_clear(uint8_t port, uint32_t pin_mask) {
+    GPIO_BASE(port)->OUTCLR = pin_mask;
+}
+
 static inline void hal_gpio_pin_set(uint8_t port, uint32_t pin) {
     GPIO_BASE(port)->OUTSET = (1 << pin);
 }
