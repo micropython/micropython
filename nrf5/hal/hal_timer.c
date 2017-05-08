@@ -33,6 +33,12 @@ void hal_timer_init(hal_timer_conf_t const * p_timer_conf) {
 
 }
 
+void hal_timer_start(uint8_t id) {
+}
+
+void hal_timer_stop(uint8_t id) {
+}
+
 void TIMER0_IRQHandler(void) {
 
 }

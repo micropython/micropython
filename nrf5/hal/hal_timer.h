@@ -64,4 +64,8 @@ typedef struct {
 
 void hal_timer_init(hal_timer_conf_t const * p_timer_config);
 
+void hal_timer_start(uint8_t id);
+
+void hal_timer_stop(uint8_t id);
+
 #endif // HAL_TIMER_H__
