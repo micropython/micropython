@@ -131,6 +131,10 @@
 #define MICROPY_PY_MACHINE_HW_PWM   (0)
 #endif
 
+#ifndef MICROPY_PY_MACHINE_SOFT_PWM
+#define MICROPY_PY_MACHINE_SOFT_PWM (0)
+#endif
+
 #ifndef MICROPY_PY_MACHINE_TIMER
 #define MICROPY_PY_MACHINE_TIMER    (0)
 #endif
