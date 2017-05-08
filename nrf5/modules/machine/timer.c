@@ -65,7 +65,7 @@ void timer_init0(void) {
 STATIC int timer_find(mp_obj_t id) {
     // given an integer id
     int timer_id = mp_obj_get_int(id);
-    if (timer_id >= 0 && timer_id <= MP_ARRAY_SIZE(machine_timer_obj)
+    if (timer_id >= 0 && timer_id < MP_ARRAY_SIZE(machine_timer_obj)
         && machine_timer_obj[timer_id].p_config != NULL) {
         return timer_id;
     }
