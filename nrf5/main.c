@@ -48,7 +48,7 @@
 #include "spi.h"
 #include "i2c.h"
 #include "rtc.h"
-#if MICROPY_PY_MACHINE_PWM
+#if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
 #endif
 #include "timer.h"
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
     i2c_init0();
 #endif
 
-#if MICROPY_PY_MACHINE_PWM
+#if MICROPY_PY_MACHINE_HW_PWM
     pwm_init0();
 #endif
 

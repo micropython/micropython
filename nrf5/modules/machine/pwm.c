@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#if MICROPY_PY_MACHINE_PWM
+#if MICROPY_PY_MACHINE_HW_PWM
 
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -329,4 +329,4 @@ const mp_obj_type_t machine_hard_pwm_type = {
     .locals_dict = (mp_obj_t)&machine_pwm_locals_dict,
 };
 
-#endif // MICROPY_PY_MACHINE_PWM
+#endif // MICROPY_PY_MACHINE_HW_PWM
