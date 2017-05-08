@@ -110,14 +110,47 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
+/// \method start(period)
+/// Start the timer.
+///
+STATIC mp_obj_t machine_timer_start(mp_obj_t self_in, mp_obj_t period_in) {
+    machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    (void)self;
+    // hal_timer_start(id);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_timer_start_obj, machine_timer_start);
+
+/// \method stop()
+/// Stop the timer.
+///
+STATIC mp_obj_t machine_timer_stop(mp_obj_t self_in) {
+    machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    (void)self;
+    // hal_timer_stop(id);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_stop_obj, machine_timer_stop);
+
+STATIC const mp_map_elem_t machine_timer_locals_dict_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_start), (mp_obj_t)(&machine_timer_start_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_stop),  (mp_obj_t)(&machine_timer_stop_obj) },
+
+    // constants
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ONESHOT),  MP_OBJ_NEW_SMALL_INT(0) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PERIODIC), MP_OBJ_NEW_SMALL_INT(1) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
+
 const mp_obj_type_t machine_timer_type = {
     { &mp_type_type },
     .name = MP_QSTR_Timer,
     .print = timer_print,
     .make_new = machine_timer_make_new,
-#if 0
     .locals_dict = (mp_obj_t)&machine_timer_locals_dict
-#endif
 };
 
 #endif // MICROPY_PY_MACHINE_TIMER
