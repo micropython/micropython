@@ -95,12 +95,6 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_NEW_id].u_obj == MP_OBJ_NEW_SMALL_INT(-1)) {
-        // index -1 does not exist
-        return mp_const_none;
-        // TODO: raise exception
-    }
-
     // get static peripheral object
     int timer_id = timer_find(args[ARG_NEW_id].u_obj);
     const machine_timer_obj_t *self = &machine_timer_obj[timer_id];
