@@ -76,15 +76,15 @@ int DEBUG_printf(const char *fmt, ...) {
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;
-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
+    MP_PLAT_PRINT_STRN(&c, 1);
     return chr;
 }
 
 // need this because gcc optimises printf("string\n") -> puts("string")
 int puts(const char *s) {
-    mp_hal_stdout_tx_strn_cooked(s, strlen(s));
+    MP_PLAT_PRINT_STRN(s, strlen(s));
     char chr = '\n';
-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
+    MP_PLAT_PRINT_STRN("\n", 1);
     return 1;
 }
 
