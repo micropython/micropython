@@ -84,6 +84,7 @@
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT nrf5_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
+#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
@@ -114,6 +115,10 @@
 #define MICROPY_PY_MACHINE_SPI      (0)
 #define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
 #define MICROPY_PY_FRAMEBUF         (0)
+
+#ifndef MICROPY_PY_MUSIC
+#define MICROPY_PY_MUSIC            (0)
+#endif
 
 #ifndef MICROPY_PY_MACHINE_ADC
 #define MICROPY_PY_MACHINE_ADC      (0)
@@ -181,11 +186,18 @@ extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
+extern const struct _mp_obj_module_t music_module;
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_OBJ_NEW_QSTR(MP_QSTR_ubluepy), (mp_obj_t)&mp_module_ubluepy },
 #else
 #define UBLUEPY_MODULE
+#endif
+
+#if MICROPY_PY_MUSIC
+#define MUSIC_MODULE                        { MP_OBJ_NEW_QSTR(MP_QSTR_music), (mp_obj_t)&music_module },
+#else
+#define MUSIC_MODULE
 #endif
 
 
@@ -198,6 +210,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
+    MUSIC_MODULE \
     UBLUEPY_MODULE \
 
 
@@ -208,6 +221,8 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&machine_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_uos }, \
+    MUSIC_MODULE \
+
 
 #endif // BLUETOOTH_SD
 
@@ -244,6 +259,11 @@ extern const struct _mp_obj_module_t ble_module;
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
+    \
+    /* microbit modules */ \
+    struct _music_data_t *music_data; \
+    const struct _pwm_events *pwm_active_events; \
+    const struct _pwm_events *pwm_pending_events; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
