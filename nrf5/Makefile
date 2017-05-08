@@ -126,6 +126,7 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
+	drivers/pwm.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
@@ -152,6 +153,8 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_descriptor.c \
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
+	music/modmusic.c \
+	music/musictunes.c \
 	)
 
 #ifeq ($(SD), )
