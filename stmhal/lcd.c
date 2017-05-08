@@ -504,17 +504,17 @@ STATIC mp_obj_t pyb_lcd_show(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_lcd_show_obj, pyb_lcd_show);
 
-STATIC const mp_map_elem_t pyb_lcd_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_lcd_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_command), (mp_obj_t)&pyb_lcd_command_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_contrast), (mp_obj_t)&pyb_lcd_contrast_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_light), (mp_obj_t)&pyb_lcd_light_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&pyb_lcd_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fill), (mp_obj_t)&pyb_lcd_fill_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&pyb_lcd_get_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pixel), (mp_obj_t)&pyb_lcd_pixel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_text), (mp_obj_t)&pyb_lcd_text_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&pyb_lcd_show_obj },
+    { MP_ROM_QSTR(MP_QSTR_command), MP_ROM_PTR(&pyb_lcd_command_obj) },
+    { MP_ROM_QSTR(MP_QSTR_contrast), MP_ROM_PTR(&pyb_lcd_contrast_obj) },
+    { MP_ROM_QSTR(MP_QSTR_light), MP_ROM_PTR(&pyb_lcd_light_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_lcd_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&pyb_lcd_fill_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&pyb_lcd_get_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&pyb_lcd_pixel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&pyb_lcd_text_obj) },
+    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&pyb_lcd_show_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_lcd_locals_dict, pyb_lcd_locals_dict_table);
@@ -523,7 +523,7 @@ const mp_obj_type_t pyb_lcd_type = {
     { &mp_type_type },
     .name = MP_QSTR_LCD,
     .make_new = pyb_lcd_make_new,
-    .locals_dict = (mp_obj_t)&pyb_lcd_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_lcd_locals_dict,
 };
 
 #endif // MICROPY_HW_HAS_LCD

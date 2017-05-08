@@ -317,11 +317,11 @@ STATIC mp_obj_t pyb_servo_speed(mp_uint_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_speed_obj, 1, 3, pyb_servo_speed);
 
-STATIC const mp_map_elem_t pyb_servo_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_servo_pulse_width_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_calibration), (mp_obj_t)&pyb_servo_calibration_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_angle), (mp_obj_t)&pyb_servo_angle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_speed), (mp_obj_t)&pyb_servo_speed_obj },
+STATIC const mp_rom_map_elem_t pyb_servo_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_pulse_width), MP_ROM_PTR(&pyb_servo_pulse_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&pyb_servo_calibration_obj) },
+    { MP_ROM_QSTR(MP_QSTR_angle), MP_ROM_PTR(&pyb_servo_angle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_speed), MP_ROM_PTR(&pyb_servo_speed_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_servo_locals_dict, pyb_servo_locals_dict_table);
@@ -331,5 +331,5 @@ const mp_obj_type_t pyb_servo_type = {
     .name = MP_QSTR_Servo,
     .print = pyb_servo_print,
     .make_new = pyb_servo_make_new,
-    .locals_dict = (mp_obj_t)&pyb_servo_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_servo_locals_dict,
 };

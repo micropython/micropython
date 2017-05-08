@@ -64,7 +64,7 @@ $(Z_EXPORTS): $(CONF_FILE)
 	# e.g. DTS-related.
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports lib
 
-GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
 KCONFIG_TARGETS = \
 	initconfig config nconfig menuconfig xconfig gconfig \
 	oldconfig silentoldconfig defconfig savedefconfig \

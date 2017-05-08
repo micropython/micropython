@@ -171,7 +171,8 @@ STATIC int pyexec_friendly_repl_process_char(int c);
 void pyexec_event_repl_init(void) {
     MP_STATE_VM(repl_line) = vstr_new(32);
     repl.cont_line = false;
-    readline_init(MP_STATE_VM(repl_line), ">>> ");
+    // no prompt before printing friendly REPL banner or entering raw REPL
+    readline_init(MP_STATE_VM(repl_line), "");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
         pyexec_raw_repl_process_char(CHAR_CTRL_A);
     } else {
@@ -187,6 +188,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
     } else if (c == CHAR_CTRL_B) {
         // change to friendly REPL
         pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+        vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
         pyexec_friendly_repl_process_char(CHAR_CTRL_B);
         return 0;

@@ -1143,8 +1143,11 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= MP_STREAM_POLL_WR;
         }
 
-        if (flags & MP_STREAM_POLL_HUP && socket->state == STATE_PEER_CLOSED) {
-            ret |= MP_STREAM_POLL_HUP;
+        if (socket->state == STATE_PEER_CLOSED) {
+            // Peer-closed socket is both readable and writable: read will
+            // return EOF, write - error. Without this poll will hang on a
+            // socket which was closed by peer.
+            ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
         }
 
     } else {
@@ -1263,7 +1266,12 @@ STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) 
 }
 
 // lwip.getaddrinfo
-STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
+STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
+    if (n_args > 2) {
+        mp_warning("getaddrinfo constraints not supported");
+    }
+
+    mp_obj_t host_in = args[0], port_in = args[1];
     const char *host = mp_obj_str_get_str(host_in);
     mp_int_t port = mp_obj_get_int(port_in);
 
@@ -1299,7 +1307,7 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     tuple->items[4] = netutils_format_inet_addr((uint8_t*)&state.ipaddr, port, NETUTILS_BIG);
     return mp_obj_new_list(1, (mp_obj_t*)&tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_getaddrinfo_obj, lwip_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_getaddrinfo_obj, 2, 6, lwip_getaddrinfo);
 
 // Debug functions
 
