@@ -24,14 +24,15 @@
  * THE SOFTWARE.
  */
 
-#if MICROPY_PY_MACHINE_SOFT_PWM || MICROPY_PY_MACHINE_HW_PWM
+#include "py/mphal.h"
+
+#if MICROPY_PY_MUSIC
 
 // #include "microbitobj.h"
 // #include "microbitmusic.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
-#include "py/mphal.h"
 #include "modmusic.h"
 #include "musictunes.h"
 #include "drivers/pwm.h"
@@ -495,4 +496,4 @@ const mp_obj_module_t music_module = {
     .globals = (mp_obj_dict_t*)&microbit_music_locals_dict,
 };
 
-#endif // MICROPY_PY_MACHINE_SOFT_PWM || MICROPY_PY_MACHINE_HW_PWM
+#endif // MICROPY_PY_MUSIC
