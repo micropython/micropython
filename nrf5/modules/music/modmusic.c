@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_MACHINE_SOFT_PWM || MICROPY_PY_MACHINE_HW_PWM
+
 // #include "microbitobj.h"
 // #include "microbitmusic.h"
 #include "py/obj.h"
@@ -91,7 +93,7 @@ void microbit_music_tick(void) {
 
     if (music_data->async_state == ASYNC_MUSIC_STATE_ARTICULATE) {
         // turn off output and rest
-        pwm_set_duty_cycle(music_data->async_pin->name, 0);
+        pwm_set_duty_cycle(music_data->async_pin->pin, 0); // TODO: remove pin setting.
         music_data->async_wait_ticks = ticks + ARTICULATION_MS;
         music_data->async_state = ASYNC_MUSIC_STATE_NEXT_NOTE;
     } else if (music_data->async_state == ASYNC_MUSIC_STATE_NEXT_NOTE) {
@@ -114,7 +116,7 @@ void microbit_music_tick(void) {
         }
         if (note == mp_const_none) {
             // a rest (is this even used anymore?)
-            pwm_set_duty_cycle(music_data->async_pin->name, 0);
+            pwm_set_duty_cycle(music_data->async_pin->pin, 0); // TODO: remove pin setting.
             music_data->async_wait_ticks = 60000 / music_data->bpm;
             music_data->async_state = ASYNC_MUSIC_STATE_NEXT_NOTE;
         } else {
@@ -135,14 +137,14 @@ STATIC void wait_async_music_idle(void) {
         // allow CTRL-C to stop the music
         if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
             music_data->async_state = ASYNC_MUSIC_STATE_IDLE;
-            pwm_set_duty_cycle(music_data->async_pin->name, 0);
+            pwm_set_duty_cycle(music_data->async_pin->pin, 0); // TODO: remove pin setting.
             break;
         }
     }
 }
 
 STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin) {
-    pwm_set_duty_cycle(pin->name, 128);
+    pwm_set_duty_cycle(pin->pin, 128); // TODO: remove pin setting.
 
     // [NOTE](#|b)(octave)(:length)
     // technically, c4 is middle c, so we'll go with that...
@@ -240,7 +242,7 @@ STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_
         }
         pwm_set_period_us(period);
     } else {
-        pwm_set_duty_cycle(pin->name, 0);
+        pwm_set_duty_cycle(pin->pin, 0); // TODO: remove pin setting.
     }
 
     // Cut off a short time from end of note so we hear articulation.
@@ -285,7 +287,7 @@ STATIC mp_obj_t microbit_music_stop(mp_uint_t n_args, const mp_obj_t *args) {
     (void)pin;
     // Raise exception if the pin we are trying to stop is not in a compatible mode.
 // TODO: microbit_obj_pin_acquire(pin, microbit_pin_mode_music);
-// TODO: pwm_set_duty_cycle(pin->name, 0);
+    pwm_set_duty_cycle(pin->pin, 0); // TODO: remove pin setting.
 // TODO: microbit_obj_pin_free(pin);
     music_data->async_pin = NULL;
     music_data->async_state = ASYNC_MUSIC_STATE_IDLE;
@@ -387,11 +389,11 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
     music_data->async_pin = NULL;
 //TODO: microbit_obj_pin_acquire(pin, microbit_pin_mode_music);
     bool wait = args[3].u_bool;
-//TODO: pwm_set_duty_cycle(pin->name, 128);
+    pwm_set_duty_cycle(pin->pin, 128); // TODO: remove pin setting.
     if (frequency == 0) {
 //TODO: pwm_release(pin->name);
     } else if (pwm_set_period_us(1000000/frequency)) {
-//TODO: pwm_release(pin->name);
+        pwm_release(pin->pin); // TODO: remove pin setting.
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid pitch"));
     }
     if (duration >= 0) {
@@ -492,3 +494,5 @@ const mp_obj_module_t music_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&microbit_music_locals_dict,
 };
+
+#endif // MICROPY_PY_MACHINE_SOFT_PWM || MICROPY_PY_MACHINE_HW_PWM
