@@ -433,9 +433,9 @@ STATIC mp_obj_t wiznet5k_ifconfig(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
 
-STATIC const mp_map_elem_t wiznet5k_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_regs), (mp_obj_t)&wiznet5k_regs_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&wiznet5k_ifconfig_obj },
+STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
@@ -445,7 +445,7 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
         { &mp_type_type },
         .name = MP_QSTR_WIZNET5K,
         .make_new = wiznet5k_make_new,
-        .locals_dict = (mp_obj_t)&wiznet5k_locals_dict,
+        .locals_dict = (mp_obj_dict_t*)&wiznet5k_locals_dict,
     },
     .gethostbyname = wiznet5k_gethostbyname,
     .socket = wiznet5k_socket_socket,

@@ -71,17 +71,17 @@ STATIC mp_obj_t network_route(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 
-STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
+STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
 
     #if MICROPY_PY_WIZNET5K
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WIZNET5K), (mp_obj_t)&mod_network_nic_type_wiznet5k },
+    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
     #endif
     #if MICROPY_PY_CC3K
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CC3K), (mp_obj_t)&mod_network_nic_type_cc3k },
+    { MP_ROM_QSTR(MP_QSTR_CC3K), MP_ROM_PTR(&mod_network_nic_type_cc3k) },
     #endif
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_route), (mp_obj_t)&network_route_obj },
+    { MP_ROM_QSTR(MP_QSTR_route), MP_ROM_PTR(&network_route_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);

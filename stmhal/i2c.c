@@ -1010,22 +1010,22 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_mem_write_obj, 1, pyb_i2c_mem_write);
 
-STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_i2c_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_i2c_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_is_ready), (mp_obj_t)&pyb_i2c_is_ready_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&pyb_i2c_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_i2c_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_i2c_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_read), (mp_obj_t)&pyb_i2c_mem_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mem_write), (mp_obj_t)&pyb_i2c_mem_write_obj },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_i2c_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_i2c_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_is_ready), MP_ROM_PTR(&pyb_i2c_is_ready_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&pyb_i2c_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_i2c_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_i2c_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem_read), MP_ROM_PTR(&pyb_i2c_mem_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mem_write), MP_ROM_PTR(&pyb_i2c_mem_write_obj) },
 
     // class constants
     /// \constant MASTER - for initialising the bus to master mode
     /// \constant SLAVE - for initialising the bus to slave mode
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MASTER),       MP_OBJ_NEW_SMALL_INT(PYB_I2C_MASTER) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SLAVE),        MP_OBJ_NEW_SMALL_INT(PYB_I2C_SLAVE) },
+    { MP_ROM_QSTR(MP_QSTR_MASTER), MP_ROM_INT(PYB_I2C_MASTER) },
+    { MP_ROM_QSTR(MP_QSTR_SLAVE), MP_ROM_INT(PYB_I2C_SLAVE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);
@@ -1035,5 +1035,5 @@ const mp_obj_type_t pyb_i2c_type = {
     .name = MP_QSTR_I2C,
     .print = pyb_i2c_print,
     .make_new = pyb_i2c_make_new,
-    .locals_dict = (mp_obj_t)&pyb_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_i2c_locals_dict,
 };

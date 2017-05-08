@@ -162,13 +162,13 @@ def print_regs_as_submodules(reg_name, reg_defs, modules, needed_qstrs):
     modules.append((mod_name_lower, mod_name_upper))
 
     print("""
-STATIC const mp_map_elem_t stm_%s_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_%s) },
+STATIC const mp_rom_map_elem_t stm_%s_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_%s) },
 """ % (mod_name_lower, mod_name_upper))
     needed_qstrs.add(mod_name_upper)
 
     for r in reg_defs:
-        print('    { MP_OBJ_NEW_QSTR(MP_QSTR_%s), MP_OBJ_NEW_SMALL_INT(%#x) }, // %s-bits, %s' % (r[0], r[1], r[2], r[3]))
+        print('    { MP_ROM_QSTR(MP_QSTR_%s), MP_ROM_INT(%#x) }, // %s-bits, %s' % (r[0], r[1], r[2], r[3]))
         needed_qstrs.add(r[0])
 
     print("""};
