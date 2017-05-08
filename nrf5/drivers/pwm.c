@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+
 #if MICROPY_PY_MACHINE_SOFT_PWM
 
 #include "stddef.h"
