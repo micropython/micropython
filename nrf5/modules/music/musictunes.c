@@ -29,7 +29,10 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/objtuple.h"
+
+#if MICROPY_PY_MUSIC
 
 #define N(q) MP_OBJ_NEW_QSTR(MP_QSTR_ ## q)
 #define T(name, ...) const mp_obj_tuple_t microbit_music_tune_ ## name ## _obj = {{&mp_type_tuple}, .len = (sizeof((mp_obj_t[]){__VA_ARGS__})/sizeof(mp_obj_t)), .items = {__VA_ARGS__}};
@@ -157,3 +160,5 @@ T(power_down,
 
 #undef N
 #undef T
+
+#endif // MICROPY_PY_MUSIC
