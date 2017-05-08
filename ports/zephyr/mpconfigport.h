@@ -67,6 +67,8 @@
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_USOCKET          (1)
 #endif
+#define MICROPY_PY_UBINASCII        (1)
+#define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_ZEPHYR           (1)
