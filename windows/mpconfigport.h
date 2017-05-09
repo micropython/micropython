@@ -170,7 +170,7 @@ void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
 
-#if defined (_MSC_VER) && defined (MICROPY_PY_FFI)
+#if MICROPY_PY_FFI
     extern const struct _mp_obj_module_t mp_module_ffi;
     #define MICROPY_PY_FFI_DEF    { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
 #else
