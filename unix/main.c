@@ -553,6 +553,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
                 mp_obj_t mod;
                 nlr_buf_t nlr;
+                bool subpkg_tried = false;
+
+            reimport:
                 if (nlr_push(&nlr) == 0) {
                     mod = mp_builtin___import__(MP_ARRAY_SIZE(import_args), import_args);
                     nlr_pop();
@@ -561,11 +564,17 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
-                if (mp_obj_is_package(mod)) {
-                    // TODO
-                    mp_printf(&mp_stderr_print, "%s: -m for packages not yet implemented\n", argv[0]);
-                    exit(1);
+                if (mp_obj_is_package(mod) && !subpkg_tried) {
+                    subpkg_tried = true;
+                    vstr_t vstr;
+                    int len = strlen(argv[a + 1]);
+                    vstr_init(&vstr, len + sizeof(".__main__"));
+                    vstr_add_strn(&vstr, argv[a + 1], len);
+                    vstr_add_strn(&vstr, ".__main__", sizeof(".__main__") - 1);
+                    import_args[0] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+                    goto reimport;
                 }
+
                 ret = 0;
                 break;
             } else if (strcmp(argv[a], "-X") == 0) {
