@@ -233,7 +233,7 @@ STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, void *func) {
     for (uint i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(mp_int_t*)args[i]);
     }
-    mp_obj_t res = mp_call_function_n_kw(MP_OBJ_FROM_PTR(func), cif->nargs, 0, *pyargs);
+    mp_obj_t res = mp_call_function_n_kw(MP_OBJ_FROM_PTR(func), cif->nargs, 0, pyargs);
 
     if (res != mp_const_none) {
         *(ffi_arg*)ret = mp_obj_int_get_truncated(res);
