@@ -233,11 +233,11 @@ class Pins(object):
                     self.board_pins.append(NamedPin(row[0], pin))
 
     def print_named(self, label, named_pins):
-        print('STATIC const mp_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
+        print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
         for named_pin in named_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                print('  {{ MP_OBJ_NEW_QSTR(MP_QSTR_{:s}), (mp_obj_t)&pin_{:s} }},'.format(named_pin.name(),  pin.cpu_pin_name()))
+                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
         print('};')
         print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
 
@@ -305,8 +305,8 @@ class Pins(object):
                             if len(mux_name) > mux_name_width:
                                 mux_name_width = len(mux_name)
             for mux_name in sorted(af_hdr_set):
-                key = 'MP_OBJ_NEW_QSTR(MP_QSTR_{}),'.format(mux_name)
-                val = 'MP_OBJ_NEW_SMALL_INT(GPIO_{})'.format(mux_name)
+                key = 'MP_ROM_QSTR(MP_QSTR_{}),'.format(mux_name)
+                val = 'MP_ROM_INT(GPIO_{})'.format(mux_name)
                 print('    { %-*s %s },' % (mux_name_width + 26, key, val),
                       file=af_const_file)
 

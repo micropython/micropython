@@ -77,10 +77,10 @@ STATIC mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_temp_read_obj, 0, 1, machine_temp_read);
 
-STATIC const mp_map_elem_t machine_temp_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t machine_temp_locals_dict_table[] = {
     // instance methods
     // class methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_machine_temp_read_obj },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_machine_temp_read_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_temp_locals_dict, machine_temp_locals_dict_table);
@@ -89,7 +89,7 @@ const mp_obj_type_t machine_temp_type = {
     { &mp_type_type },
     .name = MP_QSTR_Temp,
     .make_new = machine_temp_make_new,
-    .locals_dict = (mp_obj_t)&machine_temp_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&machine_temp_locals_dict,
     .print = machine_temp_print,
 };
 

@@ -197,13 +197,13 @@ STATIC mp_obj_t machine_rtc_stop(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_stop_obj, machine_rtc_stop);
 
 
-STATIC const mp_map_elem_t machine_rtc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_start), (mp_obj_t)(&machine_rtc_start_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stop),  (mp_obj_t)(&machine_rtc_stop_obj) },
+STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&machine_rtc_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop),  MP_ROM_PTR(&machine_rtc_stop_obj) },
 
     // constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ONESHOT),  MP_OBJ_NEW_SMALL_INT(0) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PERIODIC), MP_OBJ_NEW_SMALL_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_ONESHOT),  MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(1) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
@@ -213,7 +213,7 @@ const mp_obj_type_t machine_rtc_type = {
     .name = MP_QSTR_RTC,
     .print = rtc_print,
     .make_new = machine_rtc_make_new,
-    .locals_dict = (mp_obj_t)&machine_rtc_locals_dict
+    .locals_dict = (mp_obj_dict_t*)&machine_rtc_locals_dict
 };
 
 #endif // MICROPY_PY_MACHINE_RTC

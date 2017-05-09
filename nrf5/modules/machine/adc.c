@@ -123,12 +123,12 @@ mp_obj_t machine_adc_battery_level(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_battery_level);
 
-STATIC const mp_map_elem_t machine_adc_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value), (mp_obj_t)&mp_machine_adc_value_obj },
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) },
 
     // class methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_battery_level), (mp_obj_t)&mp_machine_adc_battery_level_obj },
+    { MP_ROM_QSTR(MP_QSTR_battery_level), MP_ROM_PTR(&mp_machine_adc_battery_level_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
@@ -137,7 +137,7 @@ const mp_obj_type_t machine_adc_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADC,
     .make_new = machine_adc_make_new,
-    .locals_dict = (mp_obj_t)&machine_adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&machine_adc_locals_dict,
     .print = machine_adc_print,
 };
 

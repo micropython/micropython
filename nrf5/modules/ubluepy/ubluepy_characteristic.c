@@ -156,34 +156,34 @@ STATIC mp_obj_t char_uuid(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_uuid_obj, char_uuid);
 
 
-STATIC const mp_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read),               (mp_obj_t)(&ubluepy_characteristic_read_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write),              (mp_obj_t)(&ubluepy_characteristic_write_obj) },
+STATIC const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read),                MP_ROM_PTR(&ubluepy_characteristic_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),               MP_ROM_PTR(&ubluepy_characteristic_write_obj) },
 #if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_supportsRead),       (mp_obj_t)(&ubluepy_characteristic_supports_read_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_propertiesToString), (mp_obj_t)(&ubluepy_characteristic_properties_to_str_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getHandle),          (mp_obj_t)(&ubluepy_characteristic_get_handle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_supportsRead),        MP_ROM_PTR(&ubluepy_characteristic_supports_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_propertiesToString),  MP_ROM_PTR(&ubluepy_characteristic_properties_to_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getHandle),           MP_ROM_PTR(&ubluepy_characteristic_get_handle_obj) },
 
     // Properties
-    { MP_OBJ_NEW_QSTR(MP_QSTR_peripheral), (mp_obj_t)(&ubluepy_characteristic_get_peripheral_obj) },
+    { MP_ROM_QSTR(MP_QSTR_peripheral),          MP_ROM_PTR(&ubluepy_characteristic_get_peripheral_obj) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uuid),                (mp_obj_t)(&ubluepy_characteristic_get_uuid_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_properties),          (mp_obj_t)(&ubluepy_characteristic_get_properties_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uuid),                MP_ROM_PTR(&ubluepy_characteristic_get_uuid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_properties),          MP_ROM_PTR(&ubluepy_characteristic_get_properties_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_BROADCAST),      MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_BROADCAST) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_READ),           MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_READ) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_WRITE_WO_RESP),  MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_WRITE_WO_RESP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_WRITE),          MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_WRITE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_NOTIFY),         MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_NOTIFY) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_INDICATE),       MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_INDICATE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_OBJ_NEW_SMALL_INT(UBLUEPY_PROP_AUTH_SIGNED_WR) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_BROADCAST),      MP_ROM_INT(UBLUEPY_PROP_BROADCAST) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_READ),           MP_ROM_INT(UBLUEPY_PROP_READ) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_WRITE_WO_RESP),  MP_ROM_INT(UBLUEPY_PROP_WRITE_WO_RESP) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_WRITE),          MP_ROM_INT(UBLUEPY_PROP_WRITE) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_NOTIFY),         MP_ROM_INT(UBLUEPY_PROP_NOTIFY) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_INDICATE),       MP_ROM_INT(UBLUEPY_PROP_INDICATE) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_ROM_INT(UBLUEPY_PROP_AUTH_SIGNED_WR) },
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ATTR_CCCD), MP_OBJ_NEW_SMALL_INT(UBLUEPY_ATTR_CCCD) },
+    { MP_ROM_QSTR(MP_QSTR_ATTR_CCCD),           MP_ROM_INT(UBLUEPY_ATTR_CCCD) },
 #endif
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_OBJ_NEW_SMALL_INT(UBLUEPY_ATTR_SCCD) },
+    { MP_ROM_QSTR(MP_QSTR_PROP_AUTH_SIGNED_WR), MP_ROM_INT(UBLUEPY_ATTR_SCCD) },
 #endif
 };
 
@@ -194,7 +194,7 @@ const mp_obj_type_t ubluepy_characteristic_type = {
     .name = MP_QSTR_Characteristic,
     .print = ubluepy_characteristic_print,
     .make_new = ubluepy_characteristic_make_new,
-    .locals_dict = (mp_obj_t)&ubluepy_characteristic_locals_dict
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_characteristic_locals_dict
 };
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL

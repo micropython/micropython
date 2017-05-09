@@ -86,12 +86,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_disable_obj, ble_obj_disable);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_enabled_obj, ble_obj_enabled);
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ble_obj_address_obj, ble_obj_address);
 
-STATIC const mp_map_elem_t ble_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_ble) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&ble_obj_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&ble_obj_disable_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enabled), (mp_obj_t)&ble_obj_enabled_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_address), (mp_obj_t)&ble_obj_address_obj},
+STATIC const mp_rom_map_elem_t ble_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ble) },
+    { MP_ROM_QSTR(MP_QSTR_enable),   MP_ROM_PTR(&ble_obj_enable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable),  MP_ROM_PTR(&ble_obj_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enabled),  MP_ROM_PTR(&ble_obj_enabled_obj) },
+    { MP_ROM_QSTR(MP_QSTR_address),  MP_ROM_PTR(&ble_obj_address_obj) },
 };
 
 

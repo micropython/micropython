@@ -215,24 +215,24 @@ STATIC mp_obj_t machine_pwm_duty(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_pwm_duty_obj, 1, 2, machine_pwm_duty);
 
 STATIC const mp_rom_map_elem_t machine_pwm_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pwm_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init),   MP_ROM_PTR(&machine_pwm_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_pwm_deinit_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&mp_machine_pwm_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_freq),   MP_ROM_PTR(&mp_machine_pwm_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&mp_machine_pwm_period_obj) },
-    { MP_ROM_QSTR(MP_QSTR_duty), MP_ROM_PTR(&mp_machine_pwm_duty_obj) },
+    { MP_ROM_QSTR(MP_QSTR_duty),   MP_ROM_PTR(&mp_machine_pwm_duty_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_16MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_16Mhz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_8MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_8Mhz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_4MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_4Mhz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_2MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_2Mhz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_1MHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_1Mhz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_500KHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_500khz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_250KHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_250khz) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FREQ_125KHZ), MP_OBJ_NEW_SMALL_INT(HAL_PWM_FREQ_125khz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_16MHZ),    MP_ROM_INT(HAL_PWM_FREQ_16Mhz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_8MHZ),     MP_ROM_INT(HAL_PWM_FREQ_8Mhz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_4MHZ),     MP_ROM_INT(HAL_PWM_FREQ_4Mhz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_2MHZ),     MP_ROM_INT(HAL_PWM_FREQ_2Mhz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_1MHZ),     MP_ROM_INT(HAL_PWM_FREQ_1Mhz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_500KHZ),   MP_ROM_INT(HAL_PWM_FREQ_500khz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_250KHZ),   MP_ROM_INT(HAL_PWM_FREQ_250khz) },
+    { MP_ROM_QSTR(MP_QSTR_FREQ_125KHZ),   MP_ROM_INT(HAL_PWM_FREQ_125khz) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_LOW_HIGH), MP_OBJ_NEW_SMALL_INT(HAL_PWM_MODE_LOW_HIGH) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_HIGH_LOW), MP_OBJ_NEW_SMALL_INT(HAL_PWM_MODE_HIGH_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_LOW_HIGH), MP_ROM_INT(HAL_PWM_MODE_LOW_HIGH) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_HIGH_LOW), MP_ROM_INT(HAL_PWM_MODE_HIGH_LOW) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_pwm_locals_dict, machine_pwm_locals_dict_table);
@@ -326,7 +326,7 @@ const mp_obj_type_t machine_hard_pwm_type = {
     .name = MP_QSTR_PWM,
     .print = machine_hard_pwm_print,
     .make_new = machine_pwm_make_new,
-    .locals_dict = (mp_obj_t)&machine_pwm_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&machine_pwm_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_HW_PWM

@@ -405,37 +405,37 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_connect_obj, peripheral_conn
 
 #endif
 
-STATIC const mp_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_withDelegate),           (mp_obj_t)(&ubluepy_peripheral_with_delegate_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setNotificationHandler), (mp_obj_t)(&ubluepy_peripheral_set_notif_handler_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setConnectionHandler),   (mp_obj_t)(&ubluepy_peripheral_set_conn_handler_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getServices),            (mp_obj_t)(&ubluepy_peripheral_get_services_obj) },
+STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&ubluepy_peripheral_with_delegate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setNotificationHandler), MP_ROM_PTR(&ubluepy_peripheral_set_notif_handler_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&ubluepy_peripheral_set_conn_handler_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getServices),            MP_ROM_PTR(&ubluepy_peripheral_get_services_obj) },
 #if MICROPY_PY_UBLUEPY_CENTRAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect),                (mp_obj_t)(&ubluepy_peripheral_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),                MP_ROM_PTR(&ubluepy_peripheral_connect_obj) },
 #if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),             (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getServiceByUUID),       (mp_obj_t)(&ubluepy_peripheral_get_service_by_uuid_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getCharacteristics),     (mp_obj_t)(&ubluepy_peripheral_get_chars_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getDescriptors),         (mp_obj_t)(&ubluepy_peripheral_get_descs_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_waitForNotifications),   (mp_obj_t)(&ubluepy_peripheral_wait_for_notif_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeCharacteristic),    (mp_obj_t)(&ubluepy_peripheral_write_char_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readCharacteristic),     (mp_obj_t)(&ubluepy_peripheral_read_char_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&ubluepy_peripheral_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getServiceByUUID),       MP_ROM_PTR(&ubluepy_peripheral_get_service_by_uuid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getCharacteristics),     MP_ROM_PTR(&ubluepy_peripheral_get_chars_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getDescriptors),         MP_ROM_PTR(&ubluepy_peripheral_get_descs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_waitForNotifications),   MP_ROM_PTR(&ubluepy_peripheral_wait_for_notif_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&ubluepy_peripheral_write_char_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
 #endif // 0
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
-    { MP_OBJ_NEW_QSTR(MP_QSTR_advertise),              (mp_obj_t)(&ubluepy_peripheral_advertise_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_advertise_stop),         (mp_obj_t)(&ubluepy_peripheral_advertise_stop_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),             (mp_obj_t)(&ubluepy_peripheral_disconnect_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_addService),             (mp_obj_t)(&ubluepy_peripheral_add_service_obj) },
+    { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_advertise_stop),         MP_ROM_PTR(&ubluepy_peripheral_advertise_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),             MP_ROM_PTR(&ubluepy_peripheral_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_addService),             MP_ROM_PTR(&ubluepy_peripheral_add_service_obj) },
 #if 0
-    { MP_OBJ_NEW_QSTR(MP_QSTR_addCharacteristic),      (mp_obj_t)(&ubluepy_peripheral_add_char_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_addDescriptor),          (mp_obj_t)(&ubluepy_peripheral_add_desc_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeCharacteristic),    (mp_obj_t)(&ubluepy_peripheral_write_char_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readCharacteristic),     (mp_obj_t)(&ubluepy_peripheral_read_char_obj) },
+    { MP_ROM_QSTR(MP_QSTR_addCharacteristic),      MP_ROM_PTR(&ubluepy_peripheral_add_char_obj) },
+    { MP_ROM_QSTR(MP_QSTR_addDescriptor),          MP_ROM_PTR(&ubluepy_peripheral_add_desc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeCharacteristic),    MP_ROM_PTR(&ubluepy_peripheral_write_char_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readCharacteristic),     MP_ROM_PTR(&ubluepy_peripheral_read_char_obj) },
 #endif
 #endif
 #if MICROPY_PY_UBLUEPY_BROADCASTER
-    { MP_OBJ_NEW_QSTR(MP_QSTR_advertise),            (mp_obj_t)(&ubluepy_peripheral_advertise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_advertise),              MP_ROM_PTR(&ubluepy_peripheral_advertise_obj) },
 #endif
 #if MICROPY_PY_UBLUEPY_OBSERVER
 	// Nothing yet.
@@ -449,7 +449,7 @@ const mp_obj_type_t ubluepy_peripheral_type = {
     .name = MP_QSTR_Peripheral,
     .print = ubluepy_peripheral_print,
     .make_new = ubluepy_peripheral_make_new,
-    .locals_dict = (mp_obj_t)&ubluepy_peripheral_locals_dict
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_peripheral_locals_dict
 };
 
 #endif // MICROPY_PY_UBLUEPY

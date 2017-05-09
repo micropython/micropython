@@ -68,11 +68,11 @@ STATIC mp_obj_t delegate_handle_notif(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_delegate_handle_notif_obj, delegate_handle_notif);
 
-STATIC const mp_map_elem_t ubluepy_delegate_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_handleConnection),   (mp_obj_t)(&ubluepy_delegate_handle_conn_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_handleNotification), (mp_obj_t)(&ubluepy_delegate_handle_notif_obj) },
+STATIC const mp_rom_map_elem_t ubluepy_delegate_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_handleConnection),   MP_ROM_PTR(&ubluepy_delegate_handle_conn_obj) },
+    { MP_ROM_QSTR(MP_QSTR_handleNotification), MP_ROM_PTR(&ubluepy_delegate_handle_notif_obj) },
 #if 0
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_handleDiscovery),    (mp_obj_t)(&ubluepy_delegate_handle_disc_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_handleDiscovery),    MP_ROM_PTR(&ubluepy_delegate_handle_disc_obj) },
 #endif
 };
 
@@ -83,7 +83,7 @@ const mp_obj_type_t ubluepy_delegate_type = {
     .name = MP_QSTR_DefaultDelegate,
     .print = ubluepy_delegate_print,
     .make_new = ubluepy_delegate_make_new,
-    .locals_dict = (mp_obj_t)&ubluepy_delegate_locals_dict
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_delegate_locals_dict
 };
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL

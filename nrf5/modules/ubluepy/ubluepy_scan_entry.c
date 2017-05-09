@@ -127,11 +127,11 @@ STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_scan_entry_get_scan_data_obj, scan_entry_get_scan_data);
 
-STATIC const mp_map_elem_t ubluepy_scan_entry_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_addr),                  (mp_obj_t)(&bluepy_scan_entry_get_addr_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_addr_type),             (mp_obj_t)(&bluepy_scan_entry_get_addr_type_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rssi),                  (mp_obj_t)(&bluepy_scan_entry_get_rssi_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getScanData),           (mp_obj_t)(&ubluepy_scan_entry_get_scan_data_obj) },
+STATIC const mp_rom_map_elem_t ubluepy_scan_entry_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_addr),        MP_ROM_PTR(&bluepy_scan_entry_get_addr_obj) },
+    { MP_ROM_QSTR(MP_QSTR_addr_type),   MP_ROM_PTR(&bluepy_scan_entry_get_addr_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rssi),        MP_ROM_PTR(&bluepy_scan_entry_get_rssi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getScanData), MP_ROM_PTR(&ubluepy_scan_entry_get_scan_data_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_scan_entry_locals_dict, ubluepy_scan_entry_locals_dict_table);
@@ -140,7 +140,7 @@ const mp_obj_type_t ubluepy_scan_entry_type = {
     { &mp_type_type },
     .name = MP_QSTR_ScanEntry,
     .print = ubluepy_scan_entry_print,
-    .locals_dict = (mp_obj_t)&ubluepy_scan_entry_locals_dict
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_scan_entry_locals_dict
 };
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL

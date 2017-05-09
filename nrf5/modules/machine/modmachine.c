@@ -187,51 +187,51 @@ STATIC mp_obj_t machine_disable_irq(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
-STATIC const mp_map_elem_t machine_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_umachine) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&machine_reset_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_soft_reset),          (mp_obj_t)&machine_soft_reset_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&machine_enable_irq_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&machine_disable_irq_obj },
+STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),           MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset),              MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset),         MP_ROM_PTR(&machine_soft_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) },
 #if MICROPY_HW_ENABLE_RNG
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rng),                 (mp_obj_t)&pyb_rng_get_obj },
+    { MP_ROM_QSTR(MP_QSTR_rng),                MP_ROM_PTR(&pyb_rng_get_obj) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),               (mp_obj_t)&machine_sleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deepsleep),           (mp_obj_t)&machine_deepsleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reset_cause),         (mp_obj_t)&machine_reset_cause_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Pin),                 (mp_obj_t)&pin_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&machine_hard_uart_type },
+    { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deepsleep),          MP_ROM_PTR(&machine_deepsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_cause),        MP_ROM_PTR(&machine_reset_cause_obj) },
+    { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART),               MP_ROM_PTR(&machine_hard_uart_type) },
 #if MICROPY_PY_MACHINE_HW_SPI
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&machine_hard_spi_type },
+    { MP_ROM_QSTR(MP_QSTR_SPI),                MP_ROM_PTR(&machine_hard_spi_type) },
 #endif
 #if MICROPY_PY_MACHINE_I2C
-    { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&machine_i2c_type },
+    { MP_ROM_QSTR(MP_QSTR_I2C),                MP_ROM_PTR(&machine_i2c_type) },
 #endif
 #if MICROPY_PY_MACHINE_ADC
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&machine_adc_type },
+    { MP_ROM_QSTR(MP_QSTR_ADC),                MP_ROM_PTR(&machine_adc_type) },
 #endif
 #if MICROPY_PY_MACHINE_RTC
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&machine_rtc_type },
+    { MP_ROM_QSTR(MP_QSTR_RTC),                MP_ROM_PTR(&machine_rtc_type) },
 #endif
 #if MICROPY_PY_MACHINE_TIMER
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Timer),               (mp_obj_t)&machine_timer_type },
+    { MP_ROM_QSTR(MP_QSTR_Timer),              MP_ROM_PTR(&machine_timer_type) },
 #endif
 #if MICROPY_PY_MACHINE_HW_PWM
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                 (mp_obj_t)&machine_hard_pwm_type },
+    { MP_ROM_QSTR(MP_QSTR_PWM),                MP_ROM_PTR(mp_obj_t)&machine_hard_pwm_type) },
 #endif
 #if MICROPY_PY_MACHINE_TEMP
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Temp),                (mp_obj_t)&machine_temp_type },
+    { MP_ROM_QSTR(MP_QSTR_Temp),               MP_ROM_PTR(&machine_temp_type) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HARD_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_RESET_HARD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WDT_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_WDT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOFT_RESET),         MP_OBJ_NEW_SMALL_INT(PYB_RESET_SOFT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LOCKUP_RESET),       MP_OBJ_NEW_SMALL_INT(PYB_RESET_LOCKUP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PWRON_RESET),        MP_OBJ_NEW_SMALL_INT(PYB_RESET_POWER_ON) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LPCOMP_RESET),       MP_OBJ_NEW_SMALL_INT(PYB_RESET_LPCOMP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_OBJ_NEW_SMALL_INT(PYB_RESET_DIF) },
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),         MP_ROM_INT(PYB_RESET_HARD) },
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),          MP_ROM_INT(PYB_RESET_WDT) },
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),         MP_ROM_INT(PYB_RESET_SOFT) },
+    { MP_ROM_QSTR(MP_QSTR_LOCKUP_RESET),       MP_ROM_INT(PYB_RESET_LOCKUP) },
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),        MP_ROM_INT(PYB_RESET_POWER_ON) },
+    { MP_ROM_QSTR(MP_QSTR_LPCOMP_RESET),       MP_ROM_INT(PYB_RESET_LPCOMP) },
+    { MP_ROM_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_ROM_INT(PYB_RESET_DIF) },
 #if NRF52
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NFC_RESET),          MP_OBJ_NEW_SMALL_INT(PYB_RESET_NFC) },
+    { MP_ROM_QSTR(MP_QSTR_NFC_RESET),          MP_ROM_INT(PYB_RESET_NFC) },
 #endif
 };
 

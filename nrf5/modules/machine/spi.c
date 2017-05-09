@@ -379,7 +379,7 @@ const mp_obj_type_t machine_hard_spi_type = {
     .print = machine_hard_spi_print,
     .make_new = machine_spi_make_new,
     .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_t)&machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&machine_spi_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_HW_SPI

@@ -106,8 +106,8 @@ STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_scanner_scan_obj, scanner_scan);
 
-STATIC const mp_map_elem_t ubluepy_scanner_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)(&ubluepy_scanner_scan_obj) },
+STATIC const mp_rom_map_elem_t ubluepy_scanner_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&ubluepy_scanner_scan_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_scanner_locals_dict, ubluepy_scanner_locals_dict_table);
@@ -118,7 +118,7 @@ const mp_obj_type_t ubluepy_scanner_type = {
     .name = MP_QSTR_Scanner,
     .print = ubluepy_scanner_print,
     .make_new = ubluepy_scanner_make_new,
-    .locals_dict = (mp_obj_t)&ubluepy_scanner_locals_dict
+    .locals_dict = (mp_obj_dict_t*)&ubluepy_scanner_locals_dict
 };
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL
