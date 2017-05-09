@@ -44,6 +44,14 @@ except MemoryError:
     print("SKIP")
     sys.exit()
 
+# first we umount any existing mount points the target may have
+try:
+    uos.umount('/')
+except OSError:
+    pass
+for path in uos.listdir('/'):
+    uos.umount('/' + path)
+
 uos.VfsFat.mkfs(bdev)
 uos.mount(bdev, '/')
 
