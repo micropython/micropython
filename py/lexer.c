@@ -137,23 +137,18 @@ STATIC void next_char(mp_lexer_t *lex) {
     lex->chr1 = lex->chr2;
     lex->chr2 = lex->reader.readbyte(lex->reader.data);
 
-    if (lex->chr0 == '\r') {
+    if (lex->chr1 == '\r') {
         // CR is a new line, converted to LF
-        lex->chr0 = '\n';
-        if (lex->chr1 == '\n') {
-            // CR LF is a single new line
-            lex->chr1 = lex->chr2;
+        lex->chr1 = '\n';
+        if (lex->chr2 == '\n') {
+            // CR LF is a single new line, throw out the extra LF
             lex->chr2 = lex->reader.readbyte(lex->reader.data);
         }
     }
 
-    if (lex->chr2 == MP_LEXER_EOF) {
-        // EOF, check if we need to insert a newline at end of file
-        if (lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
-            // if lex->chr1 == '\r' then this makes a CR LF which will be converted to LF above
-            // otherwise it just inserts a LF
-            lex->chr2 = '\n';
-        }
+    // check if we need to insert a newline at end of file
+    if (lex->chr2 == MP_LEXER_EOF && lex->chr1 != MP_LEXER_EOF && lex->chr1 != '\n') {
+        lex->chr2 = '\n';
     }
 }
 
