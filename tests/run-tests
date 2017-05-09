@@ -262,6 +262,11 @@ def run_tests(pyb, tests, args, base_path="."):
     if not has_coverage:
         skip_tests.add('cmdline/cmd_parsetree.py')
 
+    if os.name == 'nt':
+        skip_tests.add('unix/ffi_callback.py')
+        skip_tests.add('unix/ffi_float.py')
+        skip_tests.add('unix/ffi_float2.py')
+
     # Some tests shouldn't be run on a PC
     if pyb is None:
         # unix build does not have the GIL so can't run thread mutation tests
