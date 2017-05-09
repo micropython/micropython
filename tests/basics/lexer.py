@@ -27,6 +27,14 @@ print(eval("1\r"))
 print(eval("12\r"))
 print(eval("123\r"))
 
+# line continuation
+print(eval("'123' \\\r '456'"))
+print(eval("'123' \\\n '456'"))
+print(eval("'123' \\\r\n '456'"))
+print(eval("'123'\\\r'456'"))
+print(eval("'123'\\\n'456'"))
+print(eval("'123'\\\r\n'456'"))
+
 # backslash used to escape a line-break in a string
 print('a\
 b')
