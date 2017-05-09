@@ -53,7 +53,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'basics/builtin_help.py', 'thread/thread_exc2.py')
     if pyb is None:
         # run on PC
-        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
+        if test_file.startswith(('cmdline/', 'feature_check/', 'windows/')) or test_file in special_tests:
             # special handling for tests of the unix cmdline program
             is_special = True
 
