@@ -422,7 +422,7 @@ STATIC bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
                 next_char(lex);
             }
             // had_physical_newline will be set on next loop
-        } else if (is_char_and(lex, '\\', '\n')) {
+        } else if (is_char(lex, '\\') && is_char_following_or(lex, '\n', '\r')) {
             // line-continuation, so don't set had_physical_newline
             next_char(lex);
             next_char(lex);
