@@ -677,7 +677,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->source_name = src_name;
     lex->reader = reader;
     lex->line = 1;
-    lex->column = 0;
+    lex->column = -2;   // account for 3 dummy bytes
     lex->emit_dent = 0;
     lex->nested_bracket_level = 0;
     lex->alloc_indent_level = MICROPY_ALLOC_LEXER_INDENT_INIT;
@@ -689,18 +689,11 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->indent_level[0] = 0;
 
     // load lexer with start of file, advancing lex->column to 1
-    lex->chr0 = 0;    // dummy character burned off by next_char()
-    lex->chr1 = reader.readbyte(reader.data);
-    lex->chr2 = reader.readbyte(reader.data);
+    // start with dummy bytes and use next_char() for proper EOL/EOF handling
+    lex->chr0 = lex->chr1 = lex->chr2 = 0;
     next_char(lex);
-
-    // next_char() handles a 2-character stream, but we still need to handle
-    // an input stream of 0 or 1 character that isn't a newline.
-    if (lex->chr0 == MP_LEXER_EOF) {
-        lex->chr0 = '\n';
-    } else if (lex->chr1 == MP_LEXER_EOF && lex->chr0 != '\n') {
-        lex->chr1 = '\n';
-    }
+    next_char(lex);
+    next_char(lex);
 
     // preload first token
     mp_lexer_to_next(lex);
