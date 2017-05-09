@@ -262,11 +262,6 @@ def run_tests(pyb, tests, args, base_path="."):
     if not has_coverage:
         skip_tests.add('cmdline/cmd_parsetree.py')
 
-    if os.name == 'nt':
-        skip_tests.add('unix/ffi_callback.py')
-        skip_tests.add('unix/ffi_float.py')
-        skip_tests.add('unix/ffi_float2.py')
-
     # Some tests shouldn't be run on a PC
     if pyb is None:
         # unix build does not have the GIL so can't run thread mutation tests
@@ -312,6 +307,11 @@ def run_tests(pyb, tests, args, base_path="."):
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
         skip_tests.add('import/import_file.py') # works but CPython prints forward slashes
+        skip_tests.add('unix/ffi_callback.py')
+        skip_tests.add('unix/ffi_float.py')
+        skip_tests.add('unix/ffi_float2.py')
+    else:
+        skip_tests.add('windows/ffi_getversion.py')
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
