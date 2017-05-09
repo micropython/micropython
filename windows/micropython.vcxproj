@@ -92,12 +92,6 @@
     <ClCompile />
     <Link />
   </ItemDefinitionGroup>
-  <ItemGroup  Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <MASM Include="libffi_msvc\win64.asm" />
-  </ItemGroup>
-  <ItemGroup  Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <MASM Include="libffi_msvc\win64.asm" />
-  </ItemGroup>
   <Import Project="msvc/sources.props" />
   <Import Project="msvc/genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
