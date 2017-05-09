@@ -465,7 +465,7 @@ def main():
                 test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
             else:
                 # run PC tests
-                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'stress', 'unicode', 'extmod', 'unix', 'cmdline')
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'stress', 'unicode', 'extmod', 'unix', 'windows', 'cmdline')
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
