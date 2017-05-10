@@ -225,9 +225,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     mp_int_t mode = 0;
     if (fno.fattrib & AM_DIR) {
-        mode |= 0x4000; // stat.S_IFDIR
+        mode |= MP_S_IFDIR;
     } else {
-        mode |= 0x8000; // stat.S_IFREG
+        mode |= MP_S_IFREG;
     }
     mp_int_t seconds = timeutils_seconds_since_2000(
         1980 + ((fno.fdate >> 9) & 0x7f),

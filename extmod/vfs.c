@@ -408,7 +408,7 @@ mp_obj_t mp_vfs_stat(mp_obj_t path_in) {
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs == MP_VFS_ROOT) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
-        t->items[0] = MP_OBJ_NEW_SMALL_INT(0x4000); // st_mode = stat.S_IFDIR
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR); // st_mode
         for (int i = 1; i <= 9; ++i) {
             t->items[i] = MP_OBJ_NEW_SMALL_INT(0); // dev, nlink, uid, gid, size, atime, mtime, ctime
         }
