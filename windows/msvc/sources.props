@@ -6,7 +6,8 @@
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\dlfcn_win32\*.c" />
-    <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\*.c" />
+    <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\*.c" Exclude="$(PyBaseDir)windows\libffi_msvc\win32.c" />
+    <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\win32.c" Condition="'$(Platform)'=='Win32'" />
     <MASM Include="$(PyBaseDir)windows\libffi_msvc\win64.asm" Condition="'$(Platform)'=='x64'" />
     <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
     <ClCompile Include="$(PyBaseDir)unix\file.c"/>
@@ -40,9 +41,4 @@
     <ClInclude Include="$(PyBaseDir)windows\dlfcn_win32\*.h" />
     <ClInclude Include="$(PyBaseDir)windows\libffi_msvc\*.h" />
   </ItemGroup>
-  <Target Name="Remove libffi_msvc win32" BeforeTargets="ClCompile" Condition="'$(Platform)'=='x64'">
-    <ItemGroup>
-      <ClCompile Remove="$(PyBaseDir)windows\libffi_msvc\win32.c" />
-    </ItemGroup>
-  </Target>
 </Project>
