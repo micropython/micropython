@@ -141,6 +141,11 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_VFS_FAT                (0)
 
+#define MICROPY_READER_VFS             (1)
+#define MICROPY_VFS                    (1)
+#define MICROPY_VFS_POSIX              (1)
+#define MICROPY_PY_UOS_VFS             (1)
+
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
@@ -214,7 +219,7 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_SOCKET_DEF \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
+    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) }, \
     MICROPY_PY_UOS_VFS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
