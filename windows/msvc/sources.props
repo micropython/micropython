@@ -5,6 +5,7 @@
     <ClCompile Include="$(PyBaseDir)py\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
+    <ClCompile Include="$(PyBaseDir)windows\dlfcn_win32\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\win32.c" Condition="'$(Platform)'=='x64'" >
         <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -39,6 +40,7 @@
     <ClInclude Include="$(PyBaseDir)py\*.h" />
     <ClInclude Include="$(PyBaseDir)windows\*.h" />
     <ClInclude Include="$(PyBaseDir)windows\msvc\*.h" />
+    <ClInclude Include="$(PyBaseDir)windows\dlfcn_win32\*.h" />
     <ClInclude Include="$(PyBaseDir)windows\libffi_msvc\*.h" />
   </ItemGroup>
 </Project>
