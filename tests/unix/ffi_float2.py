@@ -17,7 +17,8 @@ def ffi_open(names):
             err = e
     raise err
 
-libm = ffi_open(('libm.so', 'libm.so.6', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
+libm = ffi_open(('libm.so', 'libm.so.6', 'libc.so.0', 'libc.so.6', 'libc.dylib',
+    'MSVCR120.DLL', 'API-MS-WIN-CRT-UTILITY-L1-1-0.DLL', 'ucrtbase.dll'))
 
 # Some libc's implement tgammaf as header macro with tgamma(), so don't assume
 # it'll be in library.

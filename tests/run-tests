@@ -307,9 +307,6 @@ def run_tests(pyb, tests, args, base_path="."):
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
         skip_tests.add('import/import_file.py') # works but CPython prints forward slashes
-        skip_tests.add('unix/ffi_callback.py')
-        skip_tests.add('unix/ffi_float.py')
-        skip_tests.add('unix/ffi_float2.py')
     else:
         skip_tests.add('windows/ffi_getversion.py')
 
