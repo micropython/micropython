@@ -48,6 +48,8 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
 
@@ -444,6 +446,17 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_init();
 
+    #if MICROPY_VFS_POSIX
+    {
+        // mount the host FS at the root of our internal VFS
+        mp_obj_t args[2];
+        args[0] = mp_vfs_posix_type.make_new(&mp_vfs_posix_type, 0, 0, NULL);
+        args[1] = mp_obj_new_str("/", 1, true);
+        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
+        MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+    }
+    #endif
+
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
@@ -643,6 +656,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
 }
 
 uint mp_import_stat(const char *path) {
+    #if MICROPY_VFS_POSIX
+    return mp_vfs_import_stat(path);
+    #else
     struct stat st;
     if (stat(path, &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -652,6 +668,7 @@ uint mp_import_stat(const char *path) {
         }
     }
     return MP_IMPORT_STAT_NO_EXIST;
+    #endif
 }
 
 void nlr_jump_fail(void *val) {
