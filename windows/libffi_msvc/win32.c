@@ -37,8 +37,6 @@
 #include <ffi.h>
 #include <ffi_common.h>
 
-#ifndef _WIN64
-
 __declspec(naked) int
 ffi_call_x86(void (* prepfunc)(char *, extended_cif *), /* 8 */
 	     extended_cif *ecif, /* 12 */
@@ -162,5 +160,3 @@ sc_epilogue:
 		ret
 	}
 }
-
-#endif
