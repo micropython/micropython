@@ -7,7 +7,7 @@
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\dlfcn_win32\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\*.c" />
-    <MASM Include="libffi_msvc\win64.asm" Condition="'$(Platform)'=='x64'" />
+    <MASM Include="$(PyBaseDir)windows\libffi_msvc\win64.asm" Condition="'$(Platform)'=='x64'" />
     <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
     <ClCompile Include="$(PyBaseDir)unix\file.c"/>
     <ClCompile Include="$(PyBaseDir)unix\gccollect.c"/>
