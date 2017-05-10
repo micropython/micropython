@@ -35,6 +35,9 @@
 
 #if MICROPY_VFS
 
+#if MICROPY_VFS_POSIX
+#include "extmod/vfs_posix.h"
+#endif
 #if MICROPY_VFS_FAT
 #include "extmod/vfs_fat.h"
 #endif
@@ -120,8 +123,13 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     if (vfs == MP_VFS_NONE || vfs == MP_VFS_ROOT) {
         return MP_IMPORT_STAT_NO_EXIST;
     }
-    #if MICROPY_VFS_FAT
     // fast paths for known VFS types
+    #if MICROPY_VFS_POSIX
+    if (mp_obj_get_type(vfs->obj) == &mp_vfs_posix_type) {
+        return mp_vfs_posix_import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
+    }
+    #endif
+    #if MICROPY_VFS_FAT
     if (mp_obj_get_type(vfs->obj) == &mp_fat_vfs_type) {
         return fat_vfs_import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
