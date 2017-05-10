@@ -21,8 +21,8 @@ import termios
 import pyboard
 
 CMD_STAT = 1
-CMD_LISTDIR_START = 2
-CMD_LISTDIR_NEXT = 3
+CMD_ILISTDIR_START = 2
+CMD_ILISTDIR_NEXT = 3
 CMD_OPEN = 4
 CMD_CLOSE = 5
 CMD_READ = 6
@@ -31,8 +31,8 @@ CMD_WRITE = 7
 fs_hook_code = """\
 import os, io, select, ustruct as struct, micropython
 CMD_STAT = 1
-CMD_LISTDIR_START = 2
-CMD_LISTDIR_NEXT = 3
+CMD_ILISTDIR_START = 2
+CMD_ILISTDIR_NEXT = 3
 CMD_OPEN = 4
 CMD_CLOSE = 5
 CMD_READ = 6
@@ -153,19 +153,23 @@ class RemoteFS:
         if res < 0:
             raise OSError(-res)
         return tuple(self.cmd.rd_uint32() for _ in range(10))
-    def listdir(self, path):
-        l = []
-        self.cmd.begin(CMD_LISTDIR_START)
+    def ilistdir(self, path):
+        self.cmd.begin(CMD_ILISTDIR_START)
         self.cmd.wr_str(self.path + path)
-        while True:
-            self.cmd.begin(CMD_LISTDIR_NEXT)
-            entry = self.cmd.rd_str()
-            if entry:
-                l.append(entry)
-            else:
-                break
         self.cmd.end()
-        return l
+        def ilistdir_next():
+            while True:
+                self.cmd.begin(CMD_ILISTDIR_NEXT)
+                name = self.cmd.rd_str()
+                if name:
+                    type = self.cmd.rd_uint32()
+                    inode = self.cmd.rd_uint32()
+                    self.cmd.end()
+                    yield (name, type, inode)
+                else:
+                    self.cmd.end()
+                    break
+        return ilistdir_next()
     def open(self, path, mode):
         self.cmd.begin(CMD_OPEN)
         self.cmd.wr_str(self.path + path)
@@ -239,7 +243,7 @@ class PyboardCommand:
         self.fout.write(bytearray([l]) + b)
 
 root = './'
-data_listdir = []
+data_ilistdir = []
 data_files = []
 
 def do_stat(cmd):
@@ -254,15 +258,18 @@ def do_stat(cmd):
         for val in stat:
             cmd.wr_uint32(val) # TODO will all values always fit in 32 bits?
 
-def do_listdir_start(cmd):
-    global data_listdir
+def do_ilistdir_start(cmd):
+    global data_ilistdir
     path = root + cmd.rd_str()
-    data_listdir = os.listdir(path)
+    data_ilistdir = os.listdir(path)
 
-def do_listdir_next(cmd):
-    if data_listdir:
-        entry = data_listdir.pop(0)
+def do_ilistdir_next(cmd):
+    if data_ilistdir:
+        entry = data_ilistdir.pop(0)
+        stat = os.stat(entry)
         cmd.wr_str(entry)
+        cmd.wr_uint32(stat.st_mode & 0xc000)
+        cmd.wr_uint32(stat.st_ino)
     else:
         cmd.wr_str('')
 
@@ -306,8 +313,8 @@ def do_write(cmd):
 
 cmd_table = {
     CMD_STAT: do_stat,
-    CMD_LISTDIR_START: do_listdir_start,
-    CMD_LISTDIR_NEXT: do_listdir_next,
+    CMD_ILISTDIR_START: do_ilistdir_start,
+    CMD_ILISTDIR_NEXT: do_ilistdir_next,
     CMD_OPEN: do_open,
     CMD_CLOSE: do_close,
     CMD_READ: do_read,
