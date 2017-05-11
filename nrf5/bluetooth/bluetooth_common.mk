@@ -53,10 +53,3 @@ SOFTDEV_HEX = $(SOFTDEV_HEX_PATH)/$(SOFTDEV_HEX_NAME)
 ifeq ($(shell test ! -e $(SOFTDEV_HEX) && echo -n no),no)
     $(error $(STACK_MISSING_ERROR))
 endif
-
-INC += -I./bluetooth
-
-SRC_C += \
-        bluetooth/modble.c \
-        bluetooth/ble_drv.c \
-        bluetooth/ble_uart.c

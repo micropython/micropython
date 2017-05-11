@@ -54,7 +54,9 @@ INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
+INC += -I./modules/ble
 INC += -I../lib/mp-readline
+INC += -I./bluetooth
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
@@ -127,6 +129,8 @@ SRC_C += \
 	pin_named_pins.c \
 	fatfs_port.c \
 	drivers/pwm.c \
+	bluetooth/ble_drv.c \
+	bluetooth/ble_uart.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
@@ -155,6 +159,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_scan_entry.c \
 	music/modmusic.c \
 	music/musictunes.c \
+	ble/modble.c \
 	)
 
 #ifeq ($(SD), )
