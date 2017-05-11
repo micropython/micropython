@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mperrno.h"
+#include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 
 typedef struct _mp_vfs_posix_obj_t {
@@ -192,7 +193,13 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         }
 
         #ifdef _DIRENT_HAVE_D_TYPE
-        t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+        if (dirent->d_type == DT_DIR) {
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
+        } else if (dirent->d_type == DT_REG) {
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG);
+        } else {
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
+        }
         #else
         // DT_UNKNOWN should have 0 value on any reasonable system
         t->items[1] = MP_OBJ_NEW_SMALL_INT(0);
