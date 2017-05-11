@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if BLUETOOTH_SD
+
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -1003,3 +1005,5 @@ void SWI2_EGU2_IRQHandler(void) {
         ble_evt_handler((ble_evt_t *)m_ble_evt_buf);
     } while (err_code != NRF_ERROR_NOT_FOUND && err_code != NRF_SUCCESS);
 }
+
+#endif // BLUETOOTH_SD

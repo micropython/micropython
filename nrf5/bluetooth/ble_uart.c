@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if BLUETOOTH_SD
+
 #include <string.h>
 #include "ble_uart.h"
 #include "ringbuffer.h"
@@ -263,3 +265,4 @@ bool ble_uart_enabled(void) {
 
 #endif // MICROPY_PY_BLE_NUS
 
+#endif // BLUETOOTH_SD

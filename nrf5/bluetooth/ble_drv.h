@@ -27,6 +27,8 @@
 #ifndef BLUETOOTH_LE_DRIVER_H__
 #define BLUETOOTH_LE_DRIVER_H__
 
+#if BLUETOOTH_SD
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -119,5 +121,7 @@ bool ble_drv_discover_characteristic(mp_obj_t obj,
                                      ble_drv_disc_add_char_callback_t cb);
 
 void ble_drv_discover_descriptors(void);
+
+#endif // BLUETOOTH_SD
 
 #endif // BLUETOOTH_LE_DRIVER_H__
