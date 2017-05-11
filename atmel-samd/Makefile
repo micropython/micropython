@@ -183,6 +183,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 SRC_C = \
 	access_vfs.c \
 	autoreload.c \
+	background.c \
 	builtin_open.c \
 	fatfs_port.c \
 	flash_api.c \

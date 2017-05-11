@@ -71,6 +71,26 @@
 //|         time.sleep(1)
 //|         sample.stop()
 //|
+//|   Playing a wave file from flash::
+//|
+//|     import board
+//|     import audioio
+//|     import digitalio
+//|
+//|     # Required for CircuitPlayground Express
+//|     speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
+//|     speaker_enable.switch_to_output(value=True)
+//|
+//|     f = open("cplay-5.1-16bit-16khz.wav", "rb")
+//
+//|     a = audioio.AudioOut(board.A0, f)
+//|
+//|     print("playing")
+//|     a.play()
+//|     while a.playing:
+//|       pass
+//|     print("stopped")
+//|
 STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, true);
     mp_obj_t pin_obj = args[0];

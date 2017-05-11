@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,38 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H__
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H__
 
-#include "common-hal/microcontroller/Pin.h"
-#include "asf/sam0/drivers/tc/tc.h"
+void run_background_tasks(void);
 
-#include "extmod/vfs_fat_file.h"
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    uint32_t frequency;
-    uint8_t* buffer;
-
-    // File playback specific:
-    uint8_t* second_buffer;
-    DmacDescriptor* second_descriptor;
-    uint32_t file_length; // In bytes
-    uint16_t data_start; // Where the data values start
-    uint8_t bytes_per_sample;
-    bool signed_samples;
-    uint16_t last_loaded_block;
-    uint32_t bytes_remaining;
-
-    bool loop;
-    uint32_t len;
-    pyb_file_obj_t* file;
-} audioio_audioout_obj_t;
-
-void audioout_reset(void);
-
-void audioout_background(void);
-
-#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H__
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H__

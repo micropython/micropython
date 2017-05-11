@@ -58,7 +58,7 @@ void reset_all_pins(void) {
     // Configure SWD
     system_pinmux_get_config_defaults(&config);
     config.mux_position = 0x6;
-    system_pinmux_group_set_config(&(PORT->Group[0]), PIN_PA30 | PIN_PA31, &config);
+    system_pinmux_group_set_config(&(PORT->Group[0]), PORT_PA30 | PORT_PA31, &config);
 
     #ifdef MICROPY_HW_NEOPIXEL
     neopixel_in_use = false;

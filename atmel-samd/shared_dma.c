@@ -43,6 +43,7 @@ void init_shared_dma(void) {
     config.peripheral_trigger = DAC_DMAC_ID_EMPTY;
     config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
     config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
+    config.event_config.event_output_enable = true;
     dma_allocate(&audio_dma, &config);
     // Turn on the transfer complete interrupt so that the job_status changes to done.
     g_chan_interrupt_flag[audio_dma.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
