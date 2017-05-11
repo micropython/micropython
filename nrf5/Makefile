@@ -23,7 +23,7 @@ else
 	include ../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
 
-	include bluetooth/bluetooth_common.mk
+	include drivers/bluetooth/bluetooth_common.mk
 endif
 
 # qstr definitions (must come before including py.mk)
@@ -56,7 +56,7 @@ INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/ble
 INC += -I../lib/mp-readline
-INC += -I./bluetooth
+INC += -I./drivers/bluetooth
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
@@ -129,8 +129,8 @@ SRC_C += \
 	pin_named_pins.c \
 	fatfs_port.c \
 	drivers/pwm.c \
-	bluetooth/ble_drv.c \
-	bluetooth/ble_uart.c \
+	drivers/bluetooth/ble_drv.c \
+	drivers/bluetooth/ble_uart.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
