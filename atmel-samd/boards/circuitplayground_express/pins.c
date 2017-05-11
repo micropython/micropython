@@ -70,9 +70,9 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_TEMPERATURE), (mp_obj_t)&pin_PA09 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A9), (mp_obj_t)&pin_PA09 },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LEFT_BUTTON), (mp_obj_t)&pin_PA28 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_A), (mp_obj_t)&pin_PA28 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D4), (mp_obj_t)&pin_PA28 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RIGHT_BUTTON), (mp_obj_t)&pin_PA14 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_B), (mp_obj_t)&pin_PA14 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D5), (mp_obj_t)&pin_PA14 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLIDE_SWITCH), (mp_obj_t)&pin_PA15 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D7), (mp_obj_t)&pin_PA15 },
