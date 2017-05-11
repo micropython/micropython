@@ -129,7 +129,7 @@ STATIC mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return MP_OBJ_NULL; // op not supported
             }
-            if (n < 0) {
+            if (n < 0 || o->len == 0) {
                 n = 0;
             }
             mp_obj_list_t *s = list_new(o->len * n);

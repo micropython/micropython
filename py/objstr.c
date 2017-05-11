@@ -305,7 +305,7 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         if (!mp_obj_get_int_maybe(rhs_in, &n)) {
             return MP_OBJ_NULL; // op not supported
         }
-        if (n <= 0) {
+        if (n <= 0 || lhs_len == 0) {
             if (lhs_type == &mp_type_str) {
                 return MP_OBJ_NEW_QSTR(MP_QSTR_); // empty str
             } else {
