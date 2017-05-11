@@ -102,13 +102,13 @@ STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
 
     if (n_args > 1) {
         p = mp_obj_str_get_data(args[1], &len);
+        len = MIN(len, sizeof(config.ssid));
         memcpy(config.ssid, p, len);
         if (n_args > 2) {
             p = mp_obj_str_get_data(args[2], &len);
-        } else {
-            p = "";
+            len = MIN(len, sizeof(config.password));
+            memcpy(config.password, p, len);
         }
-        memcpy(config.password, p, len);
 
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
