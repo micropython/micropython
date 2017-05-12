@@ -76,7 +76,7 @@
 // size.
 // #define MICROPY_FATFS_MAX_SS           (4096)
 
-#define FLASH_BLOCK_SIZE            (512)
+#define FILESYSTEM_BLOCK_SIZE       (512)
 
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)

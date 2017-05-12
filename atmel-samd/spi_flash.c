@@ -52,19 +52,11 @@
 #define CMD_PAGE_PROGRAM 0x02
 // #define CMD_PAGE_PROGRAM CMD_READ_JEDEC_ID
 #define CMD_READ_STATUS 0x05
+#define CMD_WRITE_STATUS_BYTE1 0x01
 
 static bool spi_flash_is_initialised = false;
 
 struct spi_module spi_flash_instance;
-
-// The total size of the flash.
-static uint32_t flash_size;
-
-// The erase sector size.
-static uint32_t sector_size;
-
-// The page size. Its the maximum number of bytes that can be written at once.
-static uint32_t page_size;
 
 // The currently cached sector in the cache, ram or flash based.
 static uint32_t current_sector;
@@ -74,7 +66,7 @@ static uint32_t current_sector;
 static uint32_t dirty_mask;
 
 // Address of the scratch flash sector.
-#define SCRATCH_SECTOR (flash_size - sector_size)
+#define SCRATCH_SECTOR (SPI_FLASH_TOTAL_SIZE - SPI_FLASH_ERASE_SIZE)
 
 // Enable the flash over SPI.
 static void flash_enable(void) {
@@ -92,7 +84,7 @@ static bool wait_for_flash_ready(void) {
     uint8_t response[2] = {0x00, 0x01};
     enum status_code status = STATUS_OK;
     // Both the write enable and write in progress bits should be low.
-    while (status == STATUS_OK && ((response[1] & 0x1) == 1 || (response[1] & 0x2) == 2)) {
+    while (status == STATUS_OK && (response[1] & 0x3) != 0) {
         flash_enable();
         status = spi_transceive_buffer_wait(&spi_flash_instance, status_request, response, 2);
         flash_disable();
@@ -118,7 +110,12 @@ static void address_to_bytes(uint32_t address, uint8_t* bytes) {
 
 // Read data_length's worth of bytes starting at address into data.
 static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
-    wait_for_flash_ready();
+    if (!spi_flash_is_initialised) {
+        return false;
+    }
+    if (!wait_for_flash_ready()) {
+        return false;
+    }
     enum status_code status;
     // We can read as much as we want sequentially.
     uint8_t read_request[4] = {CMD_READ_DATA, 0x00, 0x00, 0x00};
@@ -136,22 +133,30 @@ static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
 // that the sector that address resides in has already been erased. So make sure
 // to run erase_sector.
 static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_length) {
-    if (page_size == 0) {
+    if (!spi_flash_is_initialised) {
         return false;
     }
     for (uint32_t bytes_written = 0;
         bytes_written < data_length;
-        bytes_written += page_size) {
+        bytes_written += SPI_FLASH_PAGE_SIZE) {
         if (!wait_for_flash_ready() || !write_enable()) {
             return false;
         }
+        enum status_code status;
+
+        // Print out the protection status.
+        uint8_t protect_check[5] = {0x3C, 0x00, 0x00, 0x00, 0x00};
+        address_to_bytes(address + bytes_written, protect_check + 1);
+        flash_enable();
+        status = spi_write_buffer_wait(&spi_flash_instance, protect_check, 5);
+        flash_disable();
+
         flash_enable();
         uint8_t command[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
         address_to_bytes(address + bytes_written, command + 1);
-        enum status_code status;
         status = spi_write_buffer_wait(&spi_flash_instance, command, 4);
         if (status == STATUS_OK) {
-            status = shared_dma_write(spi_flash_instance.hw, data + bytes_written, page_size);
+            status = shared_dma_write(spi_flash_instance.hw, data + bytes_written, SPI_FLASH_PAGE_SIZE);
         }
         flash_disable();
         if (status != STATUS_OK) {
@@ -182,12 +187,12 @@ static bool erase_sector(uint32_t sector_address) {
 // Sector is really 24 bits.
 static bool copy_block(uint32_t src_address, uint32_t dest_address) {
     // Copy page by page to minimize RAM buffer.
-    uint8_t buffer[page_size];
-    for (uint32_t i = 0; i < FLASH_BLOCK_SIZE / page_size; i++) {
-        if (!read_flash(src_address + i * page_size, buffer, page_size)) {
+    uint8_t buffer[SPI_FLASH_PAGE_SIZE];
+    for (uint32_t i = 0; i < FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE; i++) {
+        if (!read_flash(src_address + i * SPI_FLASH_PAGE_SIZE, buffer, SPI_FLASH_PAGE_SIZE)) {
             return false;
         }
-        if (!write_flash(dest_address + i * page_size, buffer, page_size)) {
+        if (!write_flash(dest_address + i * SPI_FLASH_PAGE_SIZE, buffer, SPI_FLASH_PAGE_SIZE)) {
             return false;
         }
     }
@@ -226,14 +231,26 @@ void spi_flash_init(void) {
         flash_enable();
         spi_transceive_buffer_wait(&spi_flash_instance, jedec_id_request, response, 4);
         flash_disable();
-        if (response[1] == 0x01 && response[2] == 0x40 && response[3] == 0x15) {
-            flash_size = 1 << 21; // 2 MiB
-            sector_size = 1 << 12; // 4 KiB
-            page_size = 256; // 256 bytes
+        if (response[1] == SPI_FLASH_JEDEC_MANUFACTURER &&
+            response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
+            response[3] == SPI_FLASH_JEDEC_CAPACITY) {
+            spi_flash_is_initialised = true;
         } else {
             // Unknown flash chip!
-            flash_size = 0;
+            spi_flash_is_initialised = false;
+            return;
         }
+
+        #ifdef SPI_FLASH_SECTOR_PROTECTION
+        write_enable();
+
+        // Turn off sector protection
+        uint8_t disable_protect_request[2] = {CMD_WRITE_STATUS_BYTE1, 0x00};
+        uint8_t disable_protect_response[2] = {0x00, 0x00};
+        flash_enable();
+        spi_transceive_buffer_wait(&spi_flash_instance, disable_protect_request, disable_protect_response, 2);
+        flash_disable();
+        #endif
 
         // Turn off writes in case this is a microcontroller only reset.
         uint8_t disable_write_request[1] = {CMD_DISABLE_WRITE};
@@ -254,14 +271,14 @@ void spi_flash_init(void) {
 
 // The size of each individual block.
 uint32_t spi_flash_get_block_size(void) {
-    return FLASH_BLOCK_SIZE;
+    return FILESYSTEM_BLOCK_SIZE;
 }
 
 // The total number of available blocks.
 uint32_t spi_flash_get_block_count(void) {
     // We subtract one erase sector size because we may use it as a staging area
     // for writes.
-    return SPI_FLASH_PART1_START_BLOCK + (flash_size - sector_size) / FLASH_BLOCK_SIZE;
+    return SPI_FLASH_PART1_START_BLOCK + (SPI_FLASH_TOTAL_SIZE - SPI_FLASH_ERASE_SIZE) / FILESYSTEM_BLOCK_SIZE;
 }
 
 // Flush the cache that was written to the scratch portion of flash. Only used
@@ -270,11 +287,11 @@ static bool flush_scratch_flash(void) {
     // First, copy out any blocks that we haven't touched from the sector we've
     // cached.
     bool copy_to_scratch_ok = true;
-    for (uint8_t i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
+    for (uint8_t i = 0; i < SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE; i++) {
         if ((dirty_mask & (1 << i)) == 0) {
             copy_to_scratch_ok = copy_to_scratch_ok &&
-                copy_block(current_sector + i * FLASH_BLOCK_SIZE,
-                           SCRATCH_SECTOR + i * FLASH_BLOCK_SIZE);
+                copy_block(current_sector + i * FILESYSTEM_BLOCK_SIZE,
+                           SCRATCH_SECTOR + i * FILESYSTEM_BLOCK_SIZE);
         }
     }
     if (!copy_to_scratch_ok) {
@@ -285,9 +302,9 @@ static bool flush_scratch_flash(void) {
     // Second, erase the current sector.
     erase_sector(current_sector);
     // Finally, copy the new version into it.
-    for (uint8_t i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
-        copy_block(SCRATCH_SECTOR + i * FLASH_BLOCK_SIZE,
-                   current_sector + i * FLASH_BLOCK_SIZE);
+    for (uint8_t i = 0; i < SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE; i++) {
+        copy_block(SCRATCH_SECTOR + i * FILESYSTEM_BLOCK_SIZE,
+                   current_sector + i * FILESYSTEM_BLOCK_SIZE);
     }
     return true;
 }
@@ -296,8 +313,8 @@ static bool flush_scratch_flash(void) {
 // ram. Each page is allocated separately so that the GC doesn't need to provide
 // one huge block. We can free it as we write if we want to also.
 static bool allocate_ram_cache(void) {
-    uint8_t blocks_per_sector = sector_size / FLASH_BLOCK_SIZE;
-    uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+    uint8_t blocks_per_sector = SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE;
+    uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
     MP_STATE_VM(flash_ram_cache) = gc_alloc(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
@@ -309,7 +326,7 @@ static bool allocate_ram_cache(void) {
     bool success = true;
     for (i = 0; i < blocks_per_sector; i++) {
         for (j = 0; j < pages_per_block; j++) {
-            uint8_t *page_cache = gc_alloc(page_size, false);
+            uint8_t *page_cache = gc_alloc(SPI_FLASH_PAGE_SIZE, false);
             if (page_cache == NULL) {
                 success = false;
                 break;
@@ -344,14 +361,14 @@ static bool flush_ram_cache(bool keep_cache) {
     // we've cached. If we don't do this we'll erase the data during the sector
     // erase below.
     bool copy_to_ram_ok = true;
-    uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
-    for (uint8_t i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
+    uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
+    for (uint8_t i = 0; i < SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE; i++) {
         if ((dirty_mask & (1 << i)) == 0) {
             for (uint8_t j = 0; j < pages_per_block; j++) {
                 copy_to_ram_ok = read_flash(
-                    current_sector + (i * pages_per_block + j) * page_size,
+                    current_sector + (i * pages_per_block + j) * SPI_FLASH_PAGE_SIZE,
                     MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
-                    page_size);
+                    SPI_FLASH_PAGE_SIZE);
                 if (!copy_to_ram_ok) {
                     break;
                 }
@@ -368,11 +385,11 @@ static bool flush_ram_cache(bool keep_cache) {
     // Second, erase the current sector.
     erase_sector(current_sector);
     // Lastly, write all the data in ram that we've cached.
-    for (uint8_t i = 0; i < sector_size / FLASH_BLOCK_SIZE; i++) {
+    for (uint8_t i = 0; i < SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE; i++) {
         for (uint8_t j = 0; j < pages_per_block; j++) {
-            write_flash(current_sector + (i * pages_per_block + j) * page_size,
+            write_flash(current_sector + (i * pages_per_block + j) * SPI_FLASH_PAGE_SIZE,
                         MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
-                        page_size);
+                        SPI_FLASH_PAGE_SIZE);
             if (!keep_cache) {
                 gc_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
@@ -460,7 +477,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
     if (SPI_FLASH_PART1_START_BLOCK <= block && block < spi_flash_get_block_count()) {
         // a block in partition 1
         block -= SPI_FLASH_PART1_START_BLOCK;
-        return block * FLASH_BLOCK_SIZE;
+        return block * FILESYSTEM_BLOCK_SIZE;
     }
     // bad block
     return -1;
@@ -485,7 +502,7 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
     } else if (block < SPI_FLASH_PART1_START_BLOCK) {
-        memset(dest, 0, FLASH_BLOCK_SIZE);
+        memset(dest, 0, FILESYSTEM_BLOCK_SIZE);
         return true;
     } else {
         // Non-MBR block, get data from flash memory.
@@ -496,25 +513,25 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
         }
 
         // Mask out the lower bits that designate the address within the sector.
-        uint32_t this_sector = address & (~(sector_size - 1));
-        uint8_t block_index = (address / FLASH_BLOCK_SIZE) % (sector_size / FLASH_BLOCK_SIZE);
+        uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
+        uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
         uint8_t mask = 1 << (block_index);
         // We're reading from the currently cached sector.
         if (current_sector == this_sector && (mask & dirty_mask) > 0) {
             if (MP_STATE_VM(flash_ram_cache) != NULL) {
-                uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+                uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
                 for (int i = 0; i < pages_per_block; i++) {
-                    memcpy(dest + i * page_size,
+                    memcpy(dest + i * SPI_FLASH_PAGE_SIZE,
                            MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
-                           page_size);
+                           SPI_FLASH_PAGE_SIZE);
                 }
                 return true;
             } else {
-                uint32_t scratch_address = SCRATCH_SECTOR + block_index * FLASH_BLOCK_SIZE;
-                return read_flash(scratch_address, dest, FLASH_BLOCK_SIZE);
+                uint32_t scratch_address = SCRATCH_SECTOR + block_index * FILESYSTEM_BLOCK_SIZE;
+                return read_flash(scratch_address, dest, FILESYSTEM_BLOCK_SIZE);
             }
         }
-        return read_flash(address, dest, FLASH_BLOCK_SIZE);
+        return read_flash(address, dest, FILESYSTEM_BLOCK_SIZE);
     }
 }
 
@@ -532,8 +549,8 @@ bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
         // Wait for any previous writes to finish.
         wait_for_flash_ready();
         // Mask out the lower bits that designate the address within the sector.
-        uint32_t this_sector = address & (~(sector_size - 1));
-        uint8_t block_index = (address / FLASH_BLOCK_SIZE) % (sector_size / FLASH_BLOCK_SIZE);
+        uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
+        uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
         uint8_t mask = 1 << (block_index);
         // Flush the cache if we're moving onto a sector our we're writing the
         // same block again.
@@ -551,23 +568,23 @@ bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
         dirty_mask |= mask;
         // Copy the block to the appropriate cache.
         if (MP_STATE_VM(flash_ram_cache) != NULL) {
-            uint8_t pages_per_block = FLASH_BLOCK_SIZE / page_size;
+            uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
             for (int i = 0; i < pages_per_block; i++) {
                 memcpy(MP_STATE_VM(flash_ram_cache)[block_index * pages_per_block + i],
-                       data + i * page_size,
-                       page_size);
+                       data + i * SPI_FLASH_PAGE_SIZE,
+                       SPI_FLASH_PAGE_SIZE);
             }
             return true;
         } else {
-            uint32_t scratch_address = SCRATCH_SECTOR + block_index * FLASH_BLOCK_SIZE;
-            return write_flash(scratch_address, data, FLASH_BLOCK_SIZE);
+            uint32_t scratch_address = SCRATCH_SECTOR + block_index * FILESYSTEM_BLOCK_SIZE;
+            return write_flash(scratch_address, data, FILESYSTEM_BLOCK_SIZE);
         }
     }
 }
 
 mp_uint_t spi_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     for (size_t i = 0; i < num_blocks; i++) {
-        if (!spi_flash_read_block(dest + i * FLASH_BLOCK_SIZE, block_num + i)) {
+        if (!spi_flash_read_block(dest + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }
     }
@@ -576,7 +593,7 @@ mp_uint_t spi_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_
 
 mp_uint_t spi_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     for (size_t i = 0; i < num_blocks; i++) {
-        if (!spi_flash_write_block(src + i * FLASH_BLOCK_SIZE, block_num + i)) {
+        if (!spi_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }
     }
@@ -602,7 +619,7 @@ STATIC mp_obj_t spi_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args,
 STATIC mp_obj_t spi_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = spi_flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FLASH_BLOCK_SIZE);
+    mp_uint_t ret = spi_flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(spi_flash_obj_readblocks_obj, spi_flash_obj_readblocks);
@@ -610,7 +627,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(spi_flash_obj_readblocks_obj, spi_flash_obj_rea
 STATIC mp_obj_t spi_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = spi_flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FLASH_BLOCK_SIZE);
+    mp_uint_t ret = spi_flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(spi_flash_obj_writeblocks_obj, spi_flash_obj_writeblocks);

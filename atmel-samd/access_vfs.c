@@ -126,7 +126,7 @@ bool vfs_unload(bool unload)
 //!
 Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 {
-    uint8_t sector_buffer[FLASH_BLOCK_SIZE];
+    uint8_t sector_buffer[FILESYSTEM_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
         DRESULT result = disk_read(VFS_INDEX, sector_buffer, addr + sector, 1);
         if (result == RES_PARERR) {
@@ -135,7 +135,7 @@ Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
         if (result == RES_ERROR) {
             return CTRL_FAIL;
         }
-        if (!udi_msc_trans_block(true, sector_buffer, FLASH_BLOCK_SIZE, NULL)) {
+        if (!udi_msc_trans_block(true, sector_buffer, FILESYSTEM_BLOCK_SIZE, NULL)) {
             return CTRL_FAIL; // transfer aborted
         }
     }
@@ -155,9 +155,9 @@ Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 //!
 Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
 {
-    uint8_t sector_buffer[FLASH_BLOCK_SIZE];
+    uint8_t sector_buffer[FILESYSTEM_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
-        if (!udi_msc_trans_block(false, sector_buffer, FLASH_BLOCK_SIZE, NULL)) {
+        if (!udi_msc_trans_block(false, sector_buffer, FILESYSTEM_BLOCK_SIZE, NULL)) {
             return CTRL_FAIL; // transfer aborted
         }
         uint32_t sector_address = addr + sector;
@@ -174,13 +174,13 @@ Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
         volatile uint16_t x = addr;
         (void) x;
         #if _MAX_SS != _MIN_SS
-        if (vfs->ssize == FLASH_BLOCK_SIZE) {
+        if (vfs->ssize == FILESYSTEM_BLOCK_SIZE) {
         #else
         // The compiler can optimize this away.
-        if (_MAX_SS == FLASH_BLOCK_SIZE) {
+        if (_MAX_SS == FILESYSTEM_BLOCK_SIZE) {
         #endif
             if (sector_address == vfs->fatfs.winsect && sector_address > 0) {
-                memcpy(vfs->fatfs.win, sector_buffer, FLASH_BLOCK_SIZE);
+                memcpy(vfs->fatfs.win, sector_buffer, FILESYSTEM_BLOCK_SIZE);
             }
         }
     }

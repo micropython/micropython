@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H__
 
-#include <stdbool.h>
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
 
-#include "mpconfigport.h"
+// Settings for the Cypress (was Spansion) S25FL216K 2MiB SPI flash.
+// Datasheet: http://www.cypress.com/file/197346/download
 
-#define FLASH_ROOT_POINTERS
+// The total flash size in bytes.
+#define SPI_FLASH_TOTAL_SIZE  (1 << 21) // 2 MiB
 
-#define INTERNAL_FLASH_SYSTICK_MASK    (0x1ff) // 512ms
-#define INTERNAL_FLASH_IDLE_TICK(tick) (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
+// The size of the smallest erase unit thats erased with command 0x20.
+#define SPI_FLASH_ERASE_SIZE  (1 << 12) // 4 KiB
 
-void internal_flash_init(void);
-uint32_t internal_flash_get_block_size(void);
-uint32_t internal_flash_get_block_count(void);
-void internal_flash_irq_handler(void);
-void internal_flash_flush(void);
-bool internal_flash_read_block(uint8_t *dest, uint32_t block);
-bool internal_flash_write_block(const uint8_t *src, uint32_t block);
+// The size of a page that is programmed with page program command 0x02.
+#define SPI_FLASH_PAGE_SIZE   (256)     // 256 bytes
 
-// these return 0 on success, non-zero on error
-mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
-mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
+// These are the first three response bytes to the JEDEC ID command 0x9f that is
+// used to confirm we're talking to the flash we expect.
+#define SPI_FLASH_JEDEC_MANUFACTURER 0x01
+#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
+#define SPI_FLASH_JEDEC_CAPACITY     0x15
 
-extern const struct _mp_obj_type_t internal_flash_type;
-
-struct _fs_user_mount_t;
-void flash_init_vfs(struct _fs_user_mount_t *vfs);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H__
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__

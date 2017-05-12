@@ -43,7 +43,7 @@
 
 #define INTERNAL_FLASH_MEM_SEG1_START_ADDR (0x00040000 - TOTAL_INTERNAL_FLASH_SIZE)
 #define INTERNAL_FLASH_PART1_START_BLOCK (0x1)
-#define INTERNAL_FLASH_PART1_NUM_BLOCKS (TOTAL_INTERNAL_FLASH_SIZE / INTERNAL_FLASH_BLOCK_SIZE)
+#define INTERNAL_FLASH_PART1_NUM_BLOCKS (TOTAL_INTERNAL_FLASH_SIZE / FILESYSTEM_BLOCK_SIZE)
 
 void internal_flash_init(void) {
     // Activity LED for flash writes.
@@ -58,7 +58,7 @@ void internal_flash_init(void) {
 }
 
 uint32_t internal_flash_get_block_size(void) {
-    return INTERNAL_FLASH_BLOCK_SIZE;
+    return FILESYSTEM_BLOCK_SIZE;
 }
 
 uint32_t internal_flash_get_block_count(void) {
@@ -112,7 +112,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
     if (INTERNAL_FLASH_PART1_START_BLOCK <= block && block < INTERNAL_FLASH_PART1_START_BLOCK + INTERNAL_FLASH_PART1_NUM_BLOCKS) {
         // a block in partition 1
         block -= INTERNAL_FLASH_PART1_START_BLOCK;
-        return INTERNAL_FLASH_MEM_SEG1_START_ADDR + block * INTERNAL_FLASH_BLOCK_SIZE;
+        return INTERNAL_FLASH_MEM_SEG1_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
     }
     // bad block
     return -1;
@@ -147,7 +147,7 @@ bool internal_flash_read_block(uint8_t *dest, uint32_t block) {
         enum status_code error_code;
         // A block is made up of multiple pages. Read each page
         // sequentially.
-        for (int i = 0; i < INTERNAL_FLASH_BLOCK_SIZE / NVMCTRL_PAGE_SIZE; i++) {
+        for (int i = 0; i < FILESYSTEM_BLOCK_SIZE / NVMCTRL_PAGE_SIZE; i++) {
           do
           {
               error_code = nvm_read_buffer(src + i * NVMCTRL_PAGE_SIZE,
@@ -195,7 +195,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
 
         // A block is made up of multiple pages. Write each page
         // sequentially.
-        for (int i = 0; i < INTERNAL_FLASH_BLOCK_SIZE / NVMCTRL_PAGE_SIZE; i++) {
+        for (int i = 0; i < FILESYSTEM_BLOCK_SIZE / NVMCTRL_PAGE_SIZE; i++) {
           do
           {
               error_code = nvm_write_buffer(dest + i * NVMCTRL_PAGE_SIZE,
@@ -216,7 +216,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
 
 mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     for (size_t i = 0; i < num_blocks; i++) {
-        if (!internal_flash_read_block(dest + i * INTERNAL_FLASH_BLOCK_SIZE, block_num + i)) {
+        if (!internal_flash_read_block(dest + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }
     }
@@ -225,7 +225,7 @@ mp_uint_t internal_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t
 
 mp_uint_t internal_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     for (size_t i = 0; i < num_blocks; i++) {
-        if (!internal_flash_write_block(src + i * INTERNAL_FLASH_BLOCK_SIZE, block_num + i)) {
+        if (!internal_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }
     }
@@ -251,7 +251,7 @@ STATIC mp_obj_t internal_flash_obj_make_new(const mp_obj_type_t *type, size_t n_
 STATIC mp_obj_t internal_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = internal_flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FLASH_BLOCK_SIZE);
+    mp_uint_t ret = internal_flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(internal_flash_obj_readblocks_obj, internal_flash_obj_readblocks);
@@ -259,7 +259,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(internal_flash_obj_readblocks_obj, internal_fla
 STATIC mp_obj_t internal_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = internal_flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FLASH_BLOCK_SIZE);
+    mp_uint_t ret = internal_flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(internal_flash_obj_writeblocks_obj, internal_flash_obj_writeblocks);

@@ -73,6 +73,7 @@ INC +=  $(addprefix -Iasf/sam0/,\
 	utils/preprocessor \
 	)
 INC += -Iasf/thirdparty/CMSIS/Include
+INC += -Iboards
 INC += -Iboards/$(BOARD)/
 INC += -Ifreetouch/
 INC += -I$(BUILD)
