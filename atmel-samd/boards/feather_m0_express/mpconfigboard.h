@@ -21,8 +21,6 @@
 #define MICROPY_PORT_A        (PORT_PA06 | PORT_PA08 | PORT_PA09 | PORT_PA14 | PORT_PA13 | PORT_PA14 | PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        ( 0 )
 
-#define AUTORESET_DELAY_MS 500
-
 #include "spi_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000)

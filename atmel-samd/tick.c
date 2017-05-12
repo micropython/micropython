@@ -1,4 +1,4 @@
-#include "autoreset.h"
+#include "autoreload.h"
 
 #include "tick.h"
 
@@ -14,8 +14,8 @@ static void ms_tick(struct tc_module *const module_inst) {
     // (every millisecond).
     ticks_ms += 1;
 
-    #ifdef AUTORESET_DELAY_MS
-        autoreset_tick();
+    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+        autoreload_tick();
     #endif
 }
 

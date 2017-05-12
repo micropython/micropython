@@ -180,7 +180,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 
 SRC_C = \
 	access_vfs.c \
-	autoreset.c \
+	autoreload.c \
 	builtin_open.c \
 	fatfs_port.c \
 	main.c \

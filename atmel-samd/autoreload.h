@@ -24,44 +24,19 @@
  * THE SOFTWARE.
  */
 
-#include "autoreset.h"
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
 
-#include "asf/sam0/drivers/tc/tc_interrupt.h"
-#include "lib/utils/interrupt_char.h"
-#include "py/mphal.h"
+#include <stdbool.h>
 
-volatile uint32_t autoreset_delay_ms = 0;
-bool autoreset_enabled = false;
-volatile bool reset_next_character = false;
+extern volatile bool reload_next_character;
 
-inline void autoreset_tick() {
-    if (autoreset_delay_ms == 0) {
-        return;
-    }
-    if (autoreset_delay_ms == 1 && autoreset_enabled && !reset_next_character) {
-        mp_keyboard_interrupt();
-        reset_next_character = true;
-    }
-    autoreset_delay_ms--;
-}
+void autoreload_tick(void);
 
-void autoreset_enable() {
-    autoreset_enabled = true;
-    reset_next_character = false;
-}
+void autoreload_start(void);
+void autoreload_stop(void);
+void autoreload_enable(void);
+void autoreload_disable(void);
+bool autoreload_is_enabled(void);
 
-void autoreset_disable() {
-    autoreset_enabled = false;
-}
-
-inline bool autoreset_is_enabled() {
-    return autoreset_enabled;
-}
-
-void autoreset_start() {
-    autoreset_delay_ms = AUTORESET_DELAY_MS;
-}
-
-void autoreset_stop() {
-    autoreset_delay_ms = 0;
-}
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__

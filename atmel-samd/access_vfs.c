@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include "access_vfs.h"
-#include "autoreset.h"
+#include "autoreload.h"
 
 #include "asf/common/services/usb/class/msc/device/udi_msc.h"
 #include "extmod/fsusermount.h"
@@ -184,6 +184,6 @@ Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
             }
         }
     }
-    autoreset_start();
+    autoreload_start();
     return CTRL_GOOD;
 }

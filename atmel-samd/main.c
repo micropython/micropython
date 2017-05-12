@@ -38,7 +38,7 @@
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100)
 #endif
 
-#include "autoreset.h"
+#include "autoreload.h"
 #include "flash_api.h"
 #include "mpconfigboard.h"
 #include "rgb_led_status.h"
@@ -84,7 +84,7 @@ void init_flash_fs(void) {
     FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
 
     if (res == FR_NO_FILESYSTEM) {
-        // no filesystem, or asked to reset it, so create a fresh one
+        // no filesystem so create a fresh one
 
         // We are before USB initializes so temporarily undo the USB_WRITEABLE
         // requirement.
@@ -120,8 +120,8 @@ static char heap[16384];
 void reset_mp(void) {
     reset_status_led();
     new_status_color(0x8f008f);
-    autoreset_stop();
-    autoreset_enable();
+    autoreload_stop();
+    autoreload_enable();
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
     // as we re-init the GC all bets are off on the cache.
@@ -245,10 +245,10 @@ bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
 
 bool start_mp(void) {
     bool cdc_enabled_at_start = mp_cdc_enabled;
-    #ifdef AUTORESET_DELAY_MS
+    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
     if (cdc_enabled_at_start) {
         mp_hal_stdout_tx_str("\r\n");
-        mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
+        mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
     }
     #endif
 
@@ -269,7 +269,7 @@ bool start_mp(void) {
     reset_status_led();
 
     if (result.return_code & PYEXEC_FORCED_EXIT) {
-        return reset_next_character;
+        return reload_next_character;
     }
 
     // If not is USB mode then do not skip the repl.
@@ -309,11 +309,11 @@ bool start_mp(void) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
         #endif
-        if (reset_next_character) {
+        if (reload_next_character) {
             return true;
         }
         if (usb_rx_count > 0) {
-            // Skip REPL if reset was requested.
+            // Skip REPL if reload was requested.
             return receive_usb() == CHAR_CTRL_D;
         }
 
@@ -322,12 +322,12 @@ bool start_mp(void) {
                 mp_hal_stdout_tx_str("\r\n\r\n");
             }
 
-            if (!cdc_enabled_at_start && autoreset_is_enabled()) {
-                mp_hal_stdout_tx_str("Auto-soft reset is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
+            if (!cdc_enabled_at_start && autoreload_is_enabled()) {
+                mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
             } else {
-                mp_hal_stdout_tx_str("Auto-soft reset is off.\r\n");
+                mp_hal_stdout_tx_str("Auto-reload is off.\r\n");
             }
-            mp_hal_stdout_tx_str("Press any key to enter the REPL. Use CTRL-D to soft reset.\r\n");
+            mp_hal_stdout_tx_str("Press any key to enter the REPL. Use CTRL-D to reload.\r\n");
         }
         if (cdc_enabled_before && !mp_cdc_enabled) {
             cdc_enabled_at_start = false;
@@ -529,13 +529,13 @@ int main(void) {
 
 
     // Main script is finished, so now go into REPL mode.
-    // The REPL mode can change, or it can request a soft reset.
+    // The REPL mode can change, or it can request a reload.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
     bool first_run = true;
     for (;;) {
         if (!skip_repl) {
-            autoreset_disable();
+            autoreload_disable();
             new_status_color(REPL_RUNNING);
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
                 exit_code = pyexec_raw_repl();

@@ -25,7 +25,7 @@
  */
  #include "py/obj.h"
  #include "py/runtime.h"
- #include "autoreset.h"
+ #include "autoreload.h"
 
 //| :mod:`samd` --- SAMD implementation settings
 //| =================================================
@@ -35,31 +35,31 @@
 //|   :platform: SAMD21
 //|
 
-//| .. method:: enable_autoreset()
+//| .. method:: enable_autoreload()
 //|
-//|   Enable autoreset based on USB file write activity.
+//|   Enable autoreload based on USB file write activity.
 //|
-STATIC mp_obj_t samd_enable_autoreset(void) {
-    autoreset_enable();
+STATIC mp_obj_t samd_enable_autoreload(void) {
+    autoreload_enable();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(samd_enable_autoreset_obj, samd_enable_autoreset);
+MP_DEFINE_CONST_FUN_OBJ_0(samd_enable_autoreload_obj, samd_enable_autoreload);
 
-//| .. method:: disable_autoreset()
+//| .. method:: disable_autoreload()
 //|
-//|   Disable autoreset based on USB file write activity until the next reset
-//|   or until `enable_autoreset` is called.
+//|   Disable autoreload based on USB file write activity until the next reload
+//|   or until `enable_autoreload` is called.
 //|
-STATIC mp_obj_t samd_disable_autoreset(void) {
-    autoreset_disable();
+STATIC mp_obj_t samd_disable_autoreload(void) {
+    autoreload_disable();
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(samd_disable_autoreset_obj, samd_disable_autoreset);
+MP_DEFINE_CONST_FUN_OBJ_0(samd_disable_autoreload_obj, samd_disable_autoreload);
 
 STATIC const mp_rom_map_elem_t samd_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_samd) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreset),  MP_ROM_PTR(&samd_enable_autoreset_obj)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreset),  MP_ROM_PTR(&samd_disable_autoreset_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&samd_enable_autoreload_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&samd_disable_autoreload_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);

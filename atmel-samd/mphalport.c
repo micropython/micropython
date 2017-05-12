@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "autoreset.h"
+#include "autoreload.h"
 #include "compiler.h"
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/class/cdc/device/udi_cdc.h"
@@ -131,8 +131,8 @@ int receive_usb(void) {
         return 0;
     }
 
-    // Disable autoreset if someone is using the repl.
-    autoreset_disable();
+    // Disable autoreload if someone is using the repl.
+    autoreload_disable();
 
     // Copy from head.
     cpu_irq_disable();
@@ -157,7 +157,7 @@ int mp_hal_stdin_rx_chr(void) {
             MICROPY_VM_HOOK_LOOP
         #endif
         #ifdef USB_REPL
-        if (reset_next_character) {
+        if (reload_next_character) {
             return CHAR_CTRL_D;
         }
         if (usb_rx_count > 0) {
@@ -228,7 +228,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
             #ifdef MICROPY_VM_HOOK_LOOP
                 MICROPY_VM_HOOK_LOOP
             #endif
-            // Check to see if we've been CTRL-Ced by autoreset or the user.
+            // Check to see if we've been CTRL-Ced by autoreload or the user.
             if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
                 break;
             }

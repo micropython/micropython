@@ -32,8 +32,6 @@
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
-#define AUTORESET_DELAY_MS 500
-
 #include "spi_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000)

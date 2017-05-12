@@ -203,4 +203,6 @@ bool udi_msc_process_trans(void);
 #define MICROPY_VM_HOOK_LOOP udi_msc_process_trans();
 #define MICROPY_VM_HOOK_RETURN udi_msc_process_trans();
 
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+
 #endif  // __INCLUDED_MPCONFIGPORT_H
