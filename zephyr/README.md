@@ -1,20 +1,19 @@
 MicroPython port to Zephyr RTOS
 ===============================
 
-This is an initial port of MicroPython to Zephyr RTOS
+This is an work-in-progress port of MicroPython to Zephyr RTOS
 (http://zephyrproject.org).
 
-The port integrates well with Zephyr build system, using the latest
-features which will be available in 1.6.0, and thus requires Zephyr
-master to build against. All boards supported by Zephyr (with standard
-level of feature support, like UART console) should work with
-MicroPython (but not all were tested).
+This port requires Zephyr version 1.8 or higher. All boards supported
+by Zephyr (with standard level of features support, like UART console)
+should work with MicroPython (but not all were tested).
 
 Features supported at this time:
 
 * REPL (interactive prompt) over Zephyr UART console.
 * `utime` module for time measurements and delays.
 * `machine.Pin` class for GPIO control.
+* `usocket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
   run-on-boot capability.
@@ -97,10 +96,10 @@ MicroPython is committed to maintain minimal binary size for Zephyr port
 below 128KB, as long as Zephyr project is committed to maintain stable
 minimal size of their kernel (which they appear to be). Note that at such
 size, there is no support for any Zephyr features beyond REPL over UART,
-and only very minimal set of builtin Python modules. Thus, this build
-is more suitable for code size control and quick demonstrations on
-smaller systems. It's also suitable for careful enabling of features one
-by one to achieve needed functionality and code size. This is in a
+and only very minimal set of builtin Python modules is available. Thus,
+this build is more suitable for code size control and quick demonstrations
+on smaller systems. It's also suitable for careful enabling of features
+one by one to achieve needed functionality and code size. This is in the
 contrast to the "default" build, which may get more and more features
 enabled over time.
 
