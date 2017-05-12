@@ -50,7 +50,7 @@ void reset_all_pins(void) {
     uint32_t pin_mask[2] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB or SWD lines.
-    pin_mask[0] &= ~(PIN_PA24 | PIN_PA25 | PIN_PA30 | PIN_PA31);
+    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31);
 
     system_pinmux_group_set_config(&(PORT->Group[0]), pin_mask[0] & ~MICROPY_PORT_A, &config);
     system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
