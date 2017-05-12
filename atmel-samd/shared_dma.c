@@ -106,15 +106,18 @@ enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_
         return status;
     }
 
-    // Wait for the transfer to finish.
+    // Wait for the dma transfer to finish.
     while (general_dma_tx.job_status == STATUS_BUSY) {}
 
+    // Wait for the SPI transfer to complete.
+    while (sercom->SPI.INTFLAG.bit.TXC == 0) {}
+
     // This transmit will cause the RX buffer overflow but we're OK with that.
-    // So, read the garbage data and clear the overflow flag.
-    sercom->SPI.DATA.reg;
-    sercom->SPI.DATA.reg;
+    // So, read the garbage and clear the overflow flag.
+    while (sercom->SPI.INTFLAG.bit.RXC == 1) {
+        sercom->SPI.DATA.reg;
+    }
     sercom->SPI.STATUS.bit.BUFOVF = 1;
-    sercom->SPI.DATA.reg;
 
     return general_dma_tx.job_status;
 }
@@ -160,5 +163,7 @@ enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t lengt
 
     // Wait for the transfer to finish.
     while (general_dma_rx.job_status == STATUS_BUSY) {}
+
+    while (sercom->SPI.INTFLAG.bit.RXC == 1) {}
     return general_dma_rx.job_status;
 }
