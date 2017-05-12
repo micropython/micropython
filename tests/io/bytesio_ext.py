@@ -4,6 +4,10 @@ try:
 except ImportError:
     import io
 
+a = io.BytesIO(b"foobar")
+a.seek(10)
+print(a.read(10))
+
 a = io.BytesIO()
 print(a.seek(8))
 a.write(b"123")
