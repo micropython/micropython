@@ -172,15 +172,7 @@ void reset_samd21(void) {
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
 
-    // Reset pins
-    struct system_pinmux_config config;
-    system_pinmux_get_config_defaults(&config);
-    config.powersave = true;
-
-    uint32_t pin_mask[2] = PORT_OUT_IMPLEMENTED;
-
-    system_pinmux_group_set_config(&(PORT->Group[0]), pin_mask[0] & ~MICROPY_PORT_A, &config);
-    system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
+    reset_all_pins();
 
     audioout_reset();
     pwmout_reset();
