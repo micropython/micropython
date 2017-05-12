@@ -372,7 +372,7 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
         ;
     }
 
-    ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(s), gattc_event_handler);
+    ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(self), gattc_event_handler);
 
     bool retval = ble_drv_discover_services(self, self->conn_handle, disc_add_service);
     if (retval != true) {
