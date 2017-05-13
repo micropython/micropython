@@ -36,6 +36,7 @@
 #include <version.h>
 #include <net/net_context.h>
 #include <net/net_pkt.h>
+#include <net/dns_resolve.h>
 
 #define DEBUG 0
 #if DEBUG // print debugging info
@@ -112,6 +113,27 @@ STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
     sockaddr_in->sin_family = net_context_get_family(socket->ctx);
     RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
+}
+
+STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
+    // We employ the fact that port and address offsets are the same for IPv4 & IPv6
+    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6*)addr;
+    char buf[40];
+    net_addr_ntop(addr->family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
+    mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->family == AF_INET ? 2 : 4, NULL);
+
+    tuple->items[0] = mp_obj_new_str(buf, strlen(buf), false);
+    // We employ the fact that port offset is the same for IPv4 & IPv6
+    // not filled in
+    //tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
+    tuple->items[1] = port;
+
+    if (addr->family == AF_INET6) {
+        tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0); // flow_info
+        tuple->items[3] = MP_OBJ_NEW_SMALL_INT(sockaddr_in6->sin6_scope_id);
+    }
+
+    return MP_OBJ_FROM_PTR(tuple);
 }
 
 // Copy data from Zephyr net_buf chain into linear buffer.
@@ -507,6 +529,69 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
 
+//
+// getaddrinfo() implementation
+//
+
+typedef struct _getaddrinfo_state_t {
+    mp_obj_t result;
+    struct k_sem sem;
+    mp_obj_t port;
+} getaddrinfo_state_t;
+
+void dns_resolve_cb(enum dns_resolve_status status, struct dns_addrinfo *info, void *user_data) {
+    getaddrinfo_state_t *state = user_data;
+
+    if (info == NULL) {
+        k_sem_give(&state->sem);
+        return;
+    }
+
+    mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
+    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(info->ai_family);
+    // info->ai_socktype not filled
+    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SOCK_STREAM);
+    // info->ai_protocol not filled
+    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP);
+    tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    tuple->items[4] = format_inet_addr(&info->ai_addr, state->port);
+    mp_obj_list_append(state->result, MP_OBJ_FROM_PTR(tuple));
+}
+
+STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t host_in = args[0], port_in = args[1];
+    const char *host = mp_obj_str_get_str(host_in);
+    mp_int_t family = 0;
+    if (n_args > 2) {
+        family = mp_obj_get_int(args[2]);
+    }
+
+    getaddrinfo_state_t state;
+    // Just validate that it's int
+    (void)mp_obj_get_int(port_in);
+    state.port = port_in;
+    state.result = mp_obj_new_list(0, NULL);
+    k_sem_init(&state.sem, 0, UINT_MAX);
+
+    int status;
+    for (int i = 2; i--;) {
+        int type = (family != AF_INET6 ? DNS_QUERY_TYPE_A : DNS_QUERY_TYPE_AAAA);
+        status = dns_get_addr_info(host, type, NULL, dns_resolve_cb, &state, 3000);
+        if (status < 0) {
+            mp_raise_OSError(status);
+        }
+        k_sem_take(&state.sem, K_FOREVER);
+        if (family != 0) {
+            break;
+        }
+        family = AF_INET6;
+    }
+
+    return state.result;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_getaddrinfo_obj, 2, 3, mod_getaddrinfo);
+
+
 STATIC mp_obj_t pkt_get_info(void) {
     struct k_mem_slab *rx, *tx;
     struct net_buf_pool *rx_data, *tx_data;
@@ -534,6 +619,7 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(1) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(2) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&mod_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pkt_get_info), (mp_obj_t)&pkt_get_info_obj },
 };
 
