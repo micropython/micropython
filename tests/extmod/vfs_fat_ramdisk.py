@@ -93,3 +93,9 @@ uos.umount(vfs)
 
 vfs = uos.VfsFat(bdev)
 print(list(vfs.ilistdir(b"")))
+
+# list a non-existent directory
+try:
+    vfs.ilistdir(b"no_exist")
+except OSError as e:
+    print('ENOENT:', e.args[0] == uerrno.ENOENT)

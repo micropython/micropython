@@ -13,3 +13,4 @@ getcwd: /foo_dir
 True
 getcwd: /
 [(b'foo_file.txt', 32768, 0), (b'foo_dir', 16384, 0)]
+ENOENT: True
