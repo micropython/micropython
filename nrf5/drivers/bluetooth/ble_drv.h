@@ -112,7 +112,7 @@ void ble_drv_adv_report_handler_set(mp_obj_t obj, ble_drv_adv_evt_callback_t evt
 
 void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type);
 
-bool ble_drv_discover_services(mp_obj_t obj, uint16_t conn_handle, ble_drv_disc_add_service_callback_t cb);
+bool ble_drv_discover_services(mp_obj_t obj, uint16_t conn_handle, uint16_t start_handle, ble_drv_disc_add_service_callback_t cb);
 
 bool ble_drv_discover_characteristic(mp_obj_t obj,
                                      uint16_t conn_handle,
