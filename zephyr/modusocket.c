@@ -35,7 +35,7 @@
 // Zephyr's generated version header
 #include <version.h>
 #include <net/net_context.h>
-#include <net/nbuf.h>
+#include <net/net_pkt.h>
 
 #define DEBUG 0
 #if DEBUG // print debugging info
@@ -51,7 +51,7 @@ typedef struct _socket_obj_t {
         struct k_fifo recv_q;
         struct k_fifo accept_q;
     };
-    struct net_buf *cur_buf;
+    struct net_pkt *cur_pkt;
 
     #define STATE_NEW 0
     #define STATE_CONNECTING 1
@@ -115,12 +115,12 @@ STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
 }
 
 // Copy data from Zephyr net_buf chain into linear buffer.
-// We don't use net_nbuf_read(), because it's weird (e.g., we'd like to
-// free processed data fragment ASAP, while net_nbuf_read() holds onto
+// We don't use net_pkt_read(), because it's weird (e.g., we'd like to
+// free processed data fragment ASAP, while net_pkt_read() holds onto
 // the whole fragment chain to do its deeds, and that's minor comparing
 // to the fact that it copies data byte by byte).
-static char *net_buf_gather(struct net_buf *buf, char *to, unsigned max_len) {
-    struct net_buf *tmp = buf->frags;
+static char *net_pkt_gather(struct net_pkt *pkt, char *to, unsigned max_len) {
+    struct net_buf *tmp = pkt->frags;
 
     while (tmp && max_len) {
         unsigned len = tmp->len;
@@ -130,48 +130,46 @@ static char *net_buf_gather(struct net_buf *buf, char *to, unsigned max_len) {
         memcpy(to, tmp->data, len);
         to += len;
         max_len -= len;
-        tmp = net_buf_frag_del(buf, tmp);
+        tmp = net_pkt_frag_del(pkt, NULL, tmp);
     }
 
     return to;
 }
 
 // Callback for incoming packets.
-static void sock_received_cb(struct net_context *context, struct net_buf *net_buf, int status, void *user_data) {
+static void sock_received_cb(struct net_context *context, struct net_pkt *pkt, int status, void *user_data) {
     socket_obj_t *socket = (socket_obj_t*)user_data;
-    DEBUG_printf("recv cb: context: %p, status: %d, buf: %p", context, status, net_buf);
-    if (net_buf) {
-        DEBUG_printf(" (sz=%d, l=%d), token: %p", net_buf->size, net_buf->len, net_nbuf_token(net_buf));
+    DEBUG_printf("recv cb: context: %p, status: %d, pkt: %p", context, status, pkt);
+    if (pkt) {
+        DEBUG_printf(" (appdatalen=%d), token: %p", pkt->appdatalen, net_pkt_token(pkt));
     }
     DEBUG_printf("\n");
     #if DEBUG > 1
-    net_nbuf_print_frags(net_buf);
+    net_pkt_print_frags(pkt);
     #endif
 
     // if net_buf == NULL, EOF
-    if (net_buf == NULL) {
-        struct net_buf *last_buf = _k_fifo_peek_tail(&socket->recv_q);
-        if (last_buf == NULL) {
+    if (pkt == NULL) {
+        struct net_pkt *last_pkt = _k_fifo_peek_tail(&socket->recv_q);
+        if (last_pkt == NULL) {
             socket->state = STATE_PEER_CLOSED;
             DEBUG_printf("Marked socket %p as peer-closed\n", socket);
         } else {
             // We abuse "buf_sent" flag to store EOF flag
-            net_nbuf_set_buf_sent(last_buf, true);
-            DEBUG_printf("Set EOF flag on %p\n", last_buf);
+            net_pkt_set_sent(last_pkt, true);
+            DEBUG_printf("Set EOF flag on %p\n", last_pkt);
         }
         return;
     }
 
     // Make sure that "EOF flag" is not set
-    net_nbuf_set_buf_sent(net_buf, false);
+    net_pkt_set_sent(pkt, false);
 
     // We don't care about packet header, so get rid of it asap
-    unsigned header_len = net_nbuf_appdata(net_buf) - net_buf->frags->data;
-    net_buf_pull(net_buf->frags, header_len);
+    unsigned header_len = net_pkt_appdata(pkt) - pkt->frags->data;
+    net_buf_pull(pkt->frags, header_len);
 
-    // net_buf->frags will be overwritten by fifo, so save it
-    net_nbuf_set_token(net_buf, net_buf->frags);
-    k_fifo_put(&socket->recv_q, net_buf);
+    k_fifo_put(&socket->recv_q, pkt);
 }
 
 // Callback for incoming connections.
@@ -187,7 +185,7 @@ socket_obj_t *socket_new(void) {
     socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
     socket->base.type = (mp_obj_t)&socket_type;
     k_fifo_init(&socket->recv_q);
-    socket->cur_buf = NULL;
+    socket->cur_pkt = NULL;
     socket->state = STATE_NEW;
     return socket;
 }
@@ -309,7 +307,7 @@ STATIC mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, i
         return MP_STREAM_ERROR;
     }
 
-    struct net_buf *send_buf = net_nbuf_get_tx(socket->ctx, K_FOREVER);
+    struct net_pkt *send_pkt = net_pkt_get_tx(socket->ctx, K_FOREVER);
 
     unsigned len = net_if_get_mtu(net_context_get_iface(socket->ctx));
     // Arbitrary value to account for protocol headers
@@ -318,11 +316,11 @@ STATIC mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, i
         len = size;
     }
 
-    if (!net_nbuf_append(send_buf, len, buf, K_FOREVER)) {
-        len = net_buf_frags_len(send_buf);
+    if (!net_pkt_append(send_pkt, len, buf, K_FOREVER)) {
+        len = net_pkt_get_len(send_pkt);
     }
 
-    int err = net_context_send(send_buf, /*cb*/NULL, K_FOREVER, NULL, NULL);
+    int err = net_context_send(send_pkt, /*cb*/NULL, K_FOREVER, NULL, NULL);
     if (err < 0) {
         *errcode = -err;
         return MP_STREAM_ERROR;
@@ -356,41 +354,37 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
 
     if (sock_type == SOCK_DGRAM) {
 
-        struct net_buf *net_buf = k_fifo_get(&socket->recv_q, K_FOREVER);
-        // Restore ->frags overwritten by fifo
-        net_buf->frags = net_nbuf_token(net_buf);
+        struct net_pkt *pkt = k_fifo_get(&socket->recv_q, K_FOREVER);
 
-        recv_len = net_nbuf_appdatalen(net_buf);
-        DEBUG_printf("recv: net_buf=%p, appdatalen: %d\n", net_buf, recv_len);
+        recv_len = net_pkt_appdatalen(pkt);
+        DEBUG_printf("recv: pkt=%p, appdatalen: %d\n", pkt, recv_len);
 
         if (recv_len > max_len) {
             recv_len = max_len;
         }
 
-        net_buf_gather(net_buf, buf, recv_len);
-        net_nbuf_unref(net_buf);
+        net_pkt_gather(pkt, buf, recv_len);
+        net_pkt_unref(pkt);
 
     } else if (sock_type == SOCK_STREAM) {
 
         do {
 
-            if (socket->cur_buf == NULL) {
+            if (socket->cur_pkt == NULL) {
                 if (socket->state == STATE_PEER_CLOSED) {
                     return 0;
                 }
 
-                DEBUG_printf("TCP recv: no cur_buf, getting\n");
-                struct net_buf *net_buf = k_fifo_get(&socket->recv_q, K_FOREVER);
-                // Restore ->frags overwritten by fifo
-                net_buf->frags = net_nbuf_token(net_buf);
+                DEBUG_printf("TCP recv: no cur_pkt, getting\n");
+                struct net_pkt *pkt = k_fifo_get(&socket->recv_q, K_FOREVER);
 
-                DEBUG_printf("TCP recv: new cur_buf: %p\n", net_buf);
-                socket->cur_buf = net_buf;
+                DEBUG_printf("TCP recv: new cur_pkt: %p\n", pkt);
+                socket->cur_pkt = pkt;
             }
 
-            struct net_buf *frag = socket->cur_buf->frags;
+            struct net_buf *frag = socket->cur_pkt->frags;
             if (frag == NULL) {
-                printf("net_buf has empty fragments on start!\n");
+                printf("net_pkt has empty fragments on start!\n");
                 assert(0);
             }
 
@@ -406,20 +400,20 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
             if (recv_len != frag_len) {
                 net_buf_pull(frag, recv_len);
             } else {
-                frag = net_buf_frag_del(socket->cur_buf, frag);
+                frag = net_pkt_frag_del(socket->cur_pkt, NULL, frag);
                 if (frag == NULL) {
-                    DEBUG_printf("Finished processing net_buf %p\n", socket->cur_buf);
-                    // If "buf_sent" flag was set, it's last packet and we reached EOF
-                    if (net_nbuf_buf_sent(socket->cur_buf)) {
+                    DEBUG_printf("Finished processing pkt %p\n", socket->cur_pkt);
+                    // If "sent" flag was set, it's last packet and we reached EOF
+                    if (net_pkt_sent(socket->cur_pkt)) {
                         socket->state = STATE_PEER_CLOSED;
                     }
-                    net_nbuf_unref(socket->cur_buf);
-                    socket->cur_buf = NULL;
+                    net_pkt_unref(socket->cur_pkt);
+                    socket->cur_pkt = NULL;
                 }
             }
         // Keep repeating while we're getting empty fragments
-        // Zephyr IP stack appears to feed empty net_buf's with empty
-        // frags for various TCP control packets.
+        // Zephyr IP stack appears to have fed empty net_buf's with empty
+        // frags for various TCP control packets - in previous versions.
         } while (recv_len == 0);
     }
 
@@ -507,17 +501,18 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
 
-STATIC mp_obj_t nbuf_get_info(void) {
-    struct net_buf_pool *rx, *tx, *rx_data, *tx_data;
-    net_nbuf_get_info(&rx, &tx, &rx_data, &tx_data);
+STATIC mp_obj_t pkt_get_info(void) {
+    struct k_mem_slab *rx, *tx;
+    struct net_buf_pool *rx_data, *tx_data;
+    net_pkt_get_info(&rx, &tx, &rx_data, &tx_data);
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(rx->avail_count);
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(tx->avail_count);
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(k_mem_slab_num_free_get(rx));
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(k_mem_slab_num_free_get(tx));
     t->items[2] = MP_OBJ_NEW_SMALL_INT(rx_data->avail_count);
     t->items[3] = MP_OBJ_NEW_SMALL_INT(tx_data->avail_count);
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(nbuf_get_info_obj, nbuf_get_info);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pkt_get_info_obj, pkt_get_info);
 
 STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
@@ -533,7 +528,7 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(1) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(2) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_nbuf_get_info), (mp_obj_t)&nbuf_get_info_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pkt_get_info), (mp_obj_t)&pkt_get_info_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);
