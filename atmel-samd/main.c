@@ -47,6 +47,12 @@
 
 fs_user_mount_t fs_user_mount_flash;
 
+typedef enum {
+    NO_SAFE_MODE = 0,
+    BROWNOUT,
+    HARD_CRASH,
+} safe_mode_t;
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -234,31 +240,40 @@ bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
     return true;
 }
 
-bool start_mp(void) {
+bool start_mp(safe_mode_t safe_mode) {
     bool cdc_enabled_at_start = mp_cdc_enabled;
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
     if (cdc_enabled_at_start) {
         mp_hal_stdout_tx_str("\r\n");
-        mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
+        if (autoreload_is_enabled()) {
+            mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
+        } else if (safe_mode != NO_SAFE_MODE) {
+            mp_hal_stdout_tx_str("Running in safe mode! Auto-reload is off.\r\n");
+        }
     }
     #endif
-    bool found_main = false;
+
     pyexec_result_t result;
-    new_status_color(MAIN_RUNNING);
-    found_main = maybe_run("code.txt", &result) ||
-                 maybe_run("code.py", &result) ||
-                 maybe_run("main.py", &result) ||
-                 maybe_run("main.txt", &result);
-    reset_status_led();
+    bool found_main = false;
+    if (safe_mode != NO_SAFE_MODE) {
+        mp_hal_stdout_tx_str("Running in safe mode! Not running saved code.\r\n");
+    } else {
+        new_status_color(MAIN_RUNNING);
+        found_main = maybe_run("code.txt", &result) ||
+                     maybe_run("code.py", &result) ||
+                     maybe_run("main.py", &result) ||
+                     maybe_run("main.txt", &result);
+        reset_status_led();
 
-    if (result.return_code & PYEXEC_FORCED_EXIT) {
-        return reload_next_character;
+        if (result.return_code & PYEXEC_FORCED_EXIT) {
+            return reload_next_character;
+        }
+
+        // If not is USB mode then do not skip the repl.
+        #ifndef USB_REPL
+        return false;
+        #endif
     }
-
-    // If not is USB mode then do not skip the repl.
-    #ifndef USB_REPL
-    return false;
-    #endif
 
     // Wait for connection or character.
     bool cdc_enabled_before = false;
@@ -310,7 +325,18 @@ bool start_mp(void) {
             } else {
                 mp_hal_stdout_tx_str("Auto-reload is off.\r\n");
             }
-            mp_hal_stdout_tx_str("Press any key to enter the REPL. Use CTRL-D to reload.\r\n");
+            if (safe_mode != NO_SAFE_MODE) {
+                mp_hal_stdout_tx_str("\r\nYou are running in safe mode which means something really bad happened.\r\n");
+                if (safe_mode == HARD_CRASH) {
+                    mp_hal_stdout_tx_str("Looks like our core CircuitPython code crashed hard. Whoops!\r\n");
+                    mp_hal_stdout_tx_str("Please file an issue here with the contents of your CIRCUITPY drive:\r\n");
+                    mp_hal_stdout_tx_str("https://github.com/adafruit/circuitpython/issues\r\n");
+                } else if (safe_mode == BROWNOUT) {
+                    mp_hal_stdout_tx_str("The microcontroller's power dipped. Please make sure your power supply provides \r\n");
+                    mp_hal_stdout_tx_str("enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\r\n");
+                }
+            }
+            mp_hal_stdout_tx_str("\r\nPress any key to enter the REPL. Use CTRL-D to reload.\r\n");
         }
         if (cdc_enabled_before && !mp_cdc_enabled) {
             cdc_enabled_at_start = false;
@@ -330,7 +356,11 @@ bool start_mp(void) {
             if (brightness > 255) {
                 brightness = 511 - brightness;
             }
-            new_status_color(color_brightness(ALL_DONE, brightness));
+            if (safe_mode == NO_SAFE_MODE) {
+                new_status_color(color_brightness(ALL_DONE, brightness));
+            } else {
+                new_status_color(color_brightness(SAFE_MODE, brightness));
+            }
         } else {
             if (tick_diff > total_exception_cycle) {
                 pattern_start = ticks_ms;
@@ -430,11 +460,35 @@ void load_serial_number(void) {
     }
 }
 
-void samd21_init(void) {
+// Provided by the linker;
+extern uint32_t _ezero;
+
+safe_mode_t samd21_init(void) {
 #ifdef ENABLE_MICRO_TRACE_BUFFER
     REG_MTB_POSITION = ((uint32_t) (mtb - REG_MTB_BASE)) & 0xFFFFFFF8;
     REG_MTB_FLOW = (((uint32_t) mtb - REG_MTB_BASE) + TRACE_BUFFER_SIZE_BYTES) & 0xFFFFFFF8;
     REG_MTB_MASTER = 0x80000000 + (TRACE_BUFFER_MAGNITUDE_PACKETS - 1);
+#endif
+
+// On power on start or external reset, set _ezero to the canary word. If it
+// gets killed, we boot in safe mod. _ezero is the boundary between statically
+// allocated memory including the fixed MicroPython heap and the stack. If either
+// misbehaves, the canary will not be in tact after soft reset.
+#ifdef CIRCUITPY_CANARY_WORD
+    if (PM->RCAUSE.bit.POR == 1 || PM->RCAUSE.bit.EXT == 1) {
+        _ezero = CIRCUITPY_CANARY_WORD;
+    } else if (PM->RCAUSE.bit.SYST == 1) {
+        // If we're starting from a system reset we're likely coming from the
+        // bootloader or hard fault handler. If we're coming from the handler
+        // the canary will be CIRCUITPY_SAFE_RESTART_WORD and we don't want to
+        // revive the canary so that a second hard fault won't restart. Resets
+        // from anywhere else are ok.
+        if (_ezero == CIRCUITPY_SAFE_RESTART_WORD) {
+            _ezero = ~CIRCUITPY_CANARY_WORD;
+        } else {
+            _ezero = CIRCUITPY_CANARY_WORD;
+        }
+    }
 #endif
 
     load_serial_number();
@@ -444,7 +498,6 @@ void samd21_init(void) {
 
     // Initialize the sleep manager
     sleepmgr_init();
-
 
     uint16_t dfll_fine_calibration = 0x1ff;
 #ifdef CALIBRATE_CRYSTALLESS
@@ -484,6 +537,19 @@ void samd21_init(void) {
     nvm_set_config(&config_nvm);
 
     init_shared_dma();
+
+    #ifdef CIRCUITPY_CANARY_WORD
+    // Run in safe mode if the canary is corrupt.
+    if (_ezero != CIRCUITPY_CANARY_WORD) {
+        return HARD_CRASH;
+    }
+    #endif
+
+    if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
+        return BROWNOUT;
+    }
+
+    return NO_SAFE_MODE;
 }
 
 extern uint32_t _estack;
@@ -491,7 +557,7 @@ extern uint32_t _ebss;
 
 int main(void) {
     // initialise the cpu and peripherals
-    samd21_init();
+    safe_mode_t safe_mode = samd21_init();
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -507,28 +573,33 @@ int main(void) {
     reset_samd21();
     reset_mp();
 
-    // Run boot before initing USB and capture output in a file.
-    new_status_color(BOOT_RUNNING);
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    FIL file_pointer;
-    boot_output_file = &file_pointer;
-    FRESULT result = f_open(boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
-    if (result != FR_OK) {
-        while (true) {}
+    // If not in safe mode, run boot before initing USB and capture output in a
+    // file.
+    if (safe_mode == NO_SAFE_MODE) {
+        new_status_color(BOOT_RUNNING);
+        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        FIL file_pointer;
+        boot_output_file = &file_pointer;
+        f_open(boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+        #endif
+
+        // TODO(tannewt): Re-add support for flashing boot error output.
+        bool found_boot = maybe_run("settings.txt", NULL) ||
+                          maybe_run("settings.py", NULL) ||
+                          maybe_run("boot.py", NULL) ||
+                          maybe_run("boot.txt", NULL);
+        (void) found_boot;
+
+        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        f_close(boot_output_file);
+        boot_output_file = NULL;
+        #endif
+
+        // Reset to remove any state that boot.py setup. It should only be used to
+        // change internal state thats not in the heap.
+        reset_samd21();
+        reset_mp();
     }
-    #endif
-
-    // TODO(tannewt): Re-add support for flashing boot error output.
-    bool found_boot = maybe_run("settings.txt", NULL) ||
-                      maybe_run("settings.py", NULL) ||
-                      maybe_run("boot.py", NULL) ||
-                      maybe_run("boot.txt", NULL);
-    (void) found_boot;
-
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    f_close(boot_output_file);
-    boot_output_file = NULL;
-    #endif
 
     // Turn off local writing in favor of USB writing prior to initializing USB.
     flash_set_usb_writeable(true);
@@ -539,11 +610,6 @@ int main(void) {
     #ifdef USB_REPL
         udc_start();
     #endif
-
-    // Reset to remove any state that boot.py setup. It should only be used to
-    // change internal state thats not in the heap.
-    reset_samd21();
-    reset_mp();
 
     // Boot script is finished, so now go into REPL/main mode.
     int exit_code = PYEXEC_FORCED_EXIT;
@@ -567,7 +633,7 @@ int main(void) {
                 mp_hal_stdout_tx_str("soft reboot\r\n");
             }
             first_run = false;
-            skip_repl = start_mp();
+            skip_repl = start_mp(safe_mode);
             reset_samd21();
             reset_mp();
         } else if (exit_code != 0) {

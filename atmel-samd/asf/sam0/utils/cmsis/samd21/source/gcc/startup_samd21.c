@@ -275,12 +275,22 @@ __attribute__ ((used))void Reset_Handler(void)
         while (true);
 }
 
+extern uint32_t _ezero;
+
 void HardFault_Handler(void)
 {
 #ifdef ENABLE_MICRO_TRACE_BUFFER
     // Turn off the micro trace buffer so we don't fill it up in the infinite
     // loop below.
     REG_MTB_MASTER = 0x00000000 + 6;
+#endif
+#ifdef CIRCUITPY_CANARY_WORD
+    // If the canary is intact, then kill it and reset so we have a chance to
+    // read our files.
+    if (_ezero == CIRCUITPY_CANARY_WORD) {
+        _ezero = CIRCUITPY_SAFE_RESTART_WORD;
+        NVIC_SystemReset();
+    }
 #endif
     while(true) {}
 }

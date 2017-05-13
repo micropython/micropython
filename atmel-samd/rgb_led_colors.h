@@ -10,6 +10,7 @@
 
 #define BOOT_RUNNING BLUE
 #define MAIN_RUNNING GREEN
+#define SAFE_MODE    YELLOW
 #define ALL_DONE     GREEN
 #define REPL_RUNNING WHITE
 

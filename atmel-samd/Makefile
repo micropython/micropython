@@ -122,6 +122,8 @@ CFLAGS_CORTEX_M0 = \
 	-DEVENTS_INTERRUPT_HOOKS_MODE=false \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
+	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
+	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
 CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
 
@@ -276,7 +278,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 
 SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 
-all: $(BUILD)/firmware.bin
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
@@ -286,6 +288,10 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
+
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
+	$(ECHO) "Create $@"
+	python2 ../tools/uf2/utils/uf2conv.py -c -o $@ $^
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"
