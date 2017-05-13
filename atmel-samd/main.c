@@ -86,11 +86,6 @@ void init_flash_fs(void) {
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem so create a fresh one
 
-        // We are before USB initializes so temporarily undo the USB_WRITEABLE
-        // requirement.
-        bool usb_writeable = (vfs->flags & FSUSER_USB_WRITEABLE) > 0;
-        vfs->flags &= ~FSUSER_USB_WRITEABLE;
-
         res = f_mkfs("/flash", 0, 0);
         // Flush the new file system to make sure its repaired immediately.
         flash_flush();
@@ -101,10 +96,6 @@ void init_flash_fs(void) {
 
         // set label
         f_setlabel("CIRCUITPY");
-
-        if (usb_writeable) {
-            vfs->flags |= FSUSER_USB_WRITEABLE;
-        }
     } else if (res != FR_OK) {
         MP_STATE_PORT(fs_user_mount)[0] = NULL;
         return;
@@ -251,21 +242,13 @@ bool start_mp(void) {
         mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
     }
     #endif
-
-    new_status_color(BOOT_RUNNING);
-    pyexec_result_t result;
-    bool found_boot = maybe_run("settings.txt", &result) ||
-                      maybe_run("settings.py", &result) ||
-                      maybe_run("boot.py", &result) ||
-                      maybe_run("boot.txt", &result);
     bool found_main = false;
-    if (!found_boot || !(result.return_code & PYEXEC_FORCED_EXIT)) {
-        new_status_color(MAIN_RUNNING);
-        found_main = maybe_run("code.txt", &result) ||
-                     maybe_run("code.py", &result) ||
-                     maybe_run("main.py", &result) ||
-                     maybe_run("main.txt", &result);
-    }
+    pyexec_result_t result;
+    new_status_color(MAIN_RUNNING);
+    found_main = maybe_run("code.txt", &result) ||
+                 maybe_run("code.py", &result) ||
+                 maybe_run("main.py", &result) ||
+                 maybe_run("main.txt", &result);
     reset_status_led();
 
     if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -520,6 +503,36 @@ int main(void) {
     // as current dir.
     init_flash_fs();
 
+    // Reset everything and prep MicroPython to run boot.py.
+    reset_samd21();
+    reset_mp();
+
+    // Run boot before initing USB and capture output in a file.
+    new_status_color(BOOT_RUNNING);
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    FIL file_pointer;
+    boot_output_file = &file_pointer;
+    FRESULT result = f_open(boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+    if (result != FR_OK) {
+        while (true) {}
+    }
+    #endif
+
+    // TODO(tannewt): Re-add support for flashing boot error output.
+    bool found_boot = maybe_run("settings.txt", NULL) ||
+                      maybe_run("settings.py", NULL) ||
+                      maybe_run("boot.py", NULL) ||
+                      maybe_run("boot.txt", NULL);
+    (void) found_boot;
+
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    f_close(boot_output_file);
+    boot_output_file = NULL;
+    #endif
+
+    // Turn off local writing in favor of USB writing prior to initializing USB.
+    flash_set_usb_writeable(true);
+
     usb_hid_init();
 
     // Start USB after getting everything going.
@@ -527,14 +540,18 @@ int main(void) {
         udc_start();
     #endif
 
+    // Reset to remove any state that boot.py setup. It should only be used to
+    // change internal state thats not in the heap.
+    reset_samd21();
+    reset_mp();
 
-    // Main script is finished, so now go into REPL mode.
-    // The REPL mode can change, or it can request a reload.
+    // Boot script is finished, so now go into REPL/main mode.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
     bool first_run = true;
     for (;;) {
         if (!skip_repl) {
+            // The REPL mode can change, or it can request a reload.
             autoreload_disable();
             new_status_color(REPL_RUNNING);
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -542,15 +559,17 @@ int main(void) {
             } else {
                 exit_code = pyexec_friendly_repl();
             }
+            reset_samd21();
+            reset_mp();
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
                 mp_hal_stdout_tx_str("soft reboot\r\n");
             }
-            reset_samd21();
-            reset_mp();
             first_run = false;
             skip_repl = start_mp();
+            reset_samd21();
+            reset_mp();
         } else if (exit_code != 0) {
             break;
         }

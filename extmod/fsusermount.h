@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+
+#ifndef __MICROPY_INCLUDED_EXTMOD_FSUSERMOUNT_H__
+#define __MICROPY_INCLUDED_EXTMOD_FSUSERMOUNT_H__
+
 #include "lib/fatfs/ff.h"
 #include "py/obj.h"
 
@@ -65,3 +69,5 @@ mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in);
 MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(fsuser_umount_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj);
+
+#endif  // __MICROPY_INCLUDED_EXTMOD_FSUSERMOUNT_H__

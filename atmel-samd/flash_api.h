@@ -26,7 +26,11 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
 
+#include "extmod/fsusermount.h"
+
 extern void flash_init_vfs(fs_user_mount_t *vfs);
 extern void flash_flush(void);
+
+void flash_set_usb_writeable(bool usb_writeable);
 
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__

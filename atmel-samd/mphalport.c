@@ -191,6 +191,13 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     usart_write_buffer_wait(&usart_instance, (uint8_t*) str, len);
     #endif
 
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    if (boot_output_file != NULL) {
+        UINT bytes_written = 0;
+        f_write(boot_output_file, str, len, &bytes_written);
+    }
+    #endif
+
     #ifdef USB_REPL
     // Always make sure there is enough room in the usb buffer for the outgoing
     // string. If there isn't we risk getting caught in a loop within the usb

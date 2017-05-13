@@ -204,5 +204,6 @@ bool udi_msc_process_trans(void);
 #define MICROPY_VM_HOOK_RETURN udi_msc_process_trans();
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#define CIRCUITPY_BOOT_OUTPUT_FILE "/flash/boot_out.txt"
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

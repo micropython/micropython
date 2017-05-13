@@ -183,6 +183,7 @@ SRC_C = \
 	autoreload.c \
 	builtin_open.c \
 	fatfs_port.c \
+	flash_api.c \
 	main.c \
 	moduos.c \
 	mphalport.c \

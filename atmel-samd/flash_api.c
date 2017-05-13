@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
+#include "flash_api.h"
 
-#include "py/obj.h"
+#include "py/mpstate.h"
 
-#include "lib/fatfs/ff.h"
+#define VFS_INDEX 0
 
-#define USB_RX_BUF_SIZE 128
+void flash_set_usb_writeable(bool usb_writeable) {
+    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+        return;
+    }
+    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
+    if (vfs == NULL) {
+        return;
+    }
 
-// Global millisecond tick count (driven by SysTick interrupt).
-extern volatile uint64_t ticks_ms;
-
-static inline mp_uint_t mp_hal_ticks_ms(void) {
-  return ticks_ms;
+    if (usb_writeable) {
+        vfs->flags |= FSUSER_USB_WRITEABLE;
+    } else {
+        vfs->flags &= ~FSUSER_USB_WRITEABLE;
+    }
 }
-// Number of bytes in receive buffer
-volatile uint8_t usb_rx_count;
-volatile bool mp_cdc_enabled;
-
-FIL* boot_output_file;
-
-int receive_usb(void);
-
-void mp_hal_set_interrupt_char(int c);
-
-void mp_hal_disable_all_interrupts(void);
-
-void mp_hal_enable_all_interrupts(void);
-
-#endif // __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__

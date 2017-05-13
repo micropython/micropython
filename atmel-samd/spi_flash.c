@@ -661,7 +661,7 @@ const mp_obj_type_t spi_flash_type = {
 };
 
 void flash_init_vfs(fs_user_mount_t *vfs) {
-    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL | FSUSER_USB_WRITEABLE;
+    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
     vfs->readblocks[0] = (mp_obj_t)&spi_flash_obj_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&spi_flash_obj;
     vfs->readblocks[2] = (mp_obj_t)spi_flash_read_blocks; // native version
