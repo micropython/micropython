@@ -153,6 +153,7 @@ static void sock_received_cb(struct net_context *context, struct net_pkt *pkt, i
         struct net_pkt *last_pkt = _k_fifo_peek_tail(&socket->recv_q);
         if (last_pkt == NULL) {
             socket->state = STATE_PEER_CLOSED;
+            k_fifo_cancel_wait(&socket->recv_q);
             DEBUG_printf("Marked socket %p as peer-closed\n", socket);
         } else {
             // We abuse "buf_sent" flag to store EOF flag
@@ -377,6 +378,11 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
 
                 DEBUG_printf("TCP recv: no cur_pkt, getting\n");
                 struct net_pkt *pkt = k_fifo_get(&socket->recv_q, K_FOREVER);
+
+                if (pkt == NULL) {
+                    DEBUG_printf("TCP recv: NULL return from fifo\n");
+                    continue;
+                }
 
                 DEBUG_printf("TCP recv: new cur_pkt: %p\n", pkt);
                 socket->cur_pkt = pkt;
