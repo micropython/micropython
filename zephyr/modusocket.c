@@ -316,9 +316,9 @@ STATIC mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, i
         len = size;
     }
 
-    if (!net_pkt_append(send_pkt, len, buf, K_FOREVER)) {
-        len = net_pkt_get_len(send_pkt);
-    }
+    // TODO: Return value of 0 is a hard case (as we wait forever, should
+    // not happen).
+    len = net_pkt_append(send_pkt, len, buf, K_FOREVER);
 
     int err = net_context_send(send_pkt, /*cb*/NULL, K_FOREVER, NULL, NULL);
     if (err < 0) {
