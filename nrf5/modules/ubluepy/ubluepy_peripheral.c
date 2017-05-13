@@ -336,11 +336,26 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
     mp_obj_list_append(p_service->char_list, MP_OBJ_FROM_PTR(p_char));
 }
 
-/// \method connect(device_address)
+/// \method connect(device_address [, addr_type=ADDR_TYPE_PUBLIC])
 /// Connect to device peripheral with the given device address.
+/// addr_type can be either ADDR_TYPE_PUBLIC (default) or
+/// ADDR_TYPE_RANDOM_STATIC.
 ///
-STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
-    ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_obj_t dev_addr              = pos_args[1];
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_ADDR_TYPE_PUBLIC } },
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    uint8_t addr_type = args[0].u_int;
+
+    ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
@@ -363,7 +378,7 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
             p_addr[5]  = unichar_xdigit_value(str_data[1]);
             p_addr[5] += unichar_xdigit_value(str_data[0]) << 4;
 
-            ble_drv_connect(p_addr, 1);
+            ble_drv_connect(p_addr, addr_type);
 
             m_del(uint8_t, p_addr, 6);
         }
@@ -403,7 +418,7 @@ STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_connect_obj, peripheral_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_connect_obj, 2, peripheral_connect);
 
 #endif
 

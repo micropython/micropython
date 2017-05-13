@@ -92,6 +92,15 @@ typedef enum {
     UBLUEPY_SERVICE_SECONDARY = 2
 } ubluepy_service_type_t;
 
+typedef enum {
+    UBLUEPY_ADDR_TYPE_PUBLIC = 0,
+    UBLUEPY_ADDR_TYPE_RANDOM_STATIC = 1,
+#if 0
+    UBLUEPY_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE = 2,
+    UBLUEPY_ADDR_TYPE_RANDOM_PRIVATE_NON_RESOLVABLE = 3,
+#endif
+} ubluepy_addr_type_t;
+
 typedef struct _ubluepy_uuid_obj_t {
     mp_obj_base_t       base;
     ubluepy_uuid_type_t type;
