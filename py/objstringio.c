@@ -95,17 +95,24 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     switch (request) {
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
-            mp_uint_t ref = 0;
+            mp_int_t new_pos = s->offset;
             switch (s->whence) {
                 case 1: // SEEK_CUR
-                    ref = o->pos;
+                    new_pos += o->pos;
                     break;
                 case 2: // SEEK_END
-                    ref = o->vstr->len;
+                    new_pos += o->vstr->len;
                     break;
             }
-            o->pos = ref + s->offset;
-            s->offset = o->pos;
+            if (new_pos < 0) {
+                if (s->offset > 0) {
+                    // adding positive offset overflowed to a negative value
+                    mp_raise_msg(&mp_type_OverflowError, "new position too large");
+                }
+                // negative offset went past start of string; reset to start
+                new_pos = 0;
+            }
+            o->pos = s->offset = new_pos;
             return 0;
         }
         case MP_STREAM_FLUSH:
