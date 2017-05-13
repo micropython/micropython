@@ -52,10 +52,8 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
             // stop on error or end of dir
             break;
         }
-        if (fn[0] == '.' && (fn[1] == 0 || (fn[1] == '.' && fn[2] == 0))) {
-            // skip . and ..
-            continue;
-        }
+
+        // Note that FatFS already filters . and .., so we don't need to
 
         // make 3-tuple with info about this entry
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
