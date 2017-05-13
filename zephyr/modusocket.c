@@ -507,6 +507,18 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
 
+STATIC mp_obj_t nbuf_get_info(void) {
+    struct net_buf_pool *rx, *tx, *rx_data, *tx_data;
+    net_nbuf_get_info(&rx, &tx, &rx_data, &tx_data);
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(rx->avail_count);
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(tx->avail_count);
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(rx_data->avail_count);
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(tx_data->avail_count);
+    return MP_OBJ_FROM_PTR(t);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(nbuf_get_info_obj, nbuf_get_info);
+
 STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
     // objects
@@ -520,6 +532,8 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(1) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(2) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_nbuf_get_info), (mp_obj_t)&nbuf_get_info_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);
