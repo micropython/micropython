@@ -342,6 +342,8 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
 STATIC mp_obj_t peripheral_connect(mp_obj_t self_in, mp_obj_t dev_addr) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
+    ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
+
     if (MP_OBJ_IS_STR(dev_addr)) {
         GET_STR_DATA_LEN(dev_addr, str_data, str_len);
         if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
