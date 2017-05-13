@@ -357,8 +357,6 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
 
     ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
 
-    ble_drv_gap_event_handler_set(MP_OBJ_FROM_PTR(self), gap_event_handler);
-
     if (MP_OBJ_IS_STR(dev_addr)) {
         GET_STR_DATA_LEN(dev_addr, str_data, str_len);
         if (str_len == 17) { // Example "11:22:33:aa:bb:cc"
