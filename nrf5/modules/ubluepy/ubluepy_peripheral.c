@@ -389,10 +389,21 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
 
     ble_drv_gattc_event_handler_set(MP_OBJ_FROM_PTR(self), gattc_event_handler);
 
-    bool retval = ble_drv_discover_services(self, self->conn_handle, disc_add_service);
-    if (retval != true) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-                  "Error during service discovery"));
+    bool service_disc_retval = ble_drv_discover_services(self, self->conn_handle, 0x0001, disc_add_service);
+
+    // continue discovery of primary services ...
+    while (service_disc_retval) {
+        // locate the last added service
+        mp_obj_t * services = NULL;
+        mp_uint_t  num_services;
+        mp_obj_get_array(self->service_list, &num_services, &services);
+
+        ubluepy_service_obj_t * p_service = (ubluepy_service_obj_t *)services[num_services - 1];
+
+        service_disc_retval = ble_drv_discover_services(self,
+                                                        self->conn_handle,
+                                                        p_service->end_handle,
+                                                        disc_add_service);
     }
 
     // For each service perform a characteristic discovery
