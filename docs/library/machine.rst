@@ -147,6 +147,7 @@ Classes
 
    machine.I2C.rst
    machine.Pin.rst
+   machine.Signal.rst
    machine.RTC.rst
    machine.SPI.rst
    machine.Timer.rst
