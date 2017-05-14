@@ -687,6 +687,21 @@ void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, bl
 
 void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
 
+	ble_gattc_write_params_t write_params;
+
+	write_params.write_op = BLE_GATT_OP_WRITE_CMD;
+	write_params.flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL;
+	write_params.handle   = handle;
+	write_params.offset   = 0;
+	write_params.len      = len;
+	write_params.p_value  = p_data;
+
+	uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+
+	if (err_code != 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Can not write attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
+	}
 }
 
 void ble_drv_scan_start(void) {
