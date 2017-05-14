@@ -68,6 +68,7 @@ if (ble_drv_stack_enabled() == 0) { \
 static volatile bool m_adv_in_progress;
 static volatile bool m_tx_in_progress;
 static volatile bool m_primary_service_found;
+static volatile bool m_characteristic_found;
 
 static ble_drv_gap_evt_callback_t          gap_event_handler;
 static ble_drv_gatts_evt_callback_t        gatts_event_handler;
@@ -800,6 +801,8 @@ bool ble_drv_discover_characteristic(mp_obj_t obj,
     handle_range.start_handle = start_handle;
     handle_range.end_handle   = end_handle;
 
+    m_characteristic_found = false;
+
     uint32_t err_code;
     err_code = sd_ble_gattc_characteristics_discover(conn_handle, &handle_range);
     if (err_code != 0) {
@@ -811,7 +814,11 @@ bool ble_drv_discover_characteristic(mp_obj_t obj,
         ;
     }
 
-    return true;
+    if (m_characteristic_found) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void ble_drv_discover_descriptors(void) {
@@ -938,7 +945,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GATTC_EVT_CHAR_DISC_RSP:
             BLE_DRIVER_LOG("BLE EVT CHAR DISCOVERY RESPONSE\n");
-
+            BLE_DRIVER_LOG(">>> characteristic count: %d\n", p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count);
             for (uint16_t i = 0; i < p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count; i++) {
                 ble_gattc_char_t * p_char = &p_ble_evt->evt.gattc_evt.params.char_disc_rsp.chars[i];
 
@@ -959,6 +966,10 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             #endif
 
                 disc_add_char_handler(mp_gattc_disc_char_observer, &char_data);
+            }
+
+            if (p_ble_evt->evt.gattc_evt.params.char_disc_rsp.count > 0) {
+                m_characteristic_found = true;
             }
 
             // mark end of characteristic discovery
