@@ -120,18 +120,29 @@ STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
-    if (self->props & UBLUEPY_PROP_NOTIFY) {
-        ble_drv_attr_s_notify(self->p_service->p_periph->conn_handle,
-                              self->handle,
-                              bufinfo.len,
-                              bufinfo.buf);
-    } else {
-        ble_drv_attr_s_write(self->p_service->p_periph->conn_handle,
-                             self->handle,
-                             bufinfo.len,
-                             bufinfo.buf);
-    }
+    // figure out mode of the Peripheral
+    ubluepy_role_type_t role = self->p_service->p_periph->role;
 
+    if (role == UBLUEPY_ROLE_PERIPHERAL) {
+        if (self->props & UBLUEPY_PROP_NOTIFY) {
+            ble_drv_attr_s_notify(self->p_service->p_periph->conn_handle,
+                                  self->handle,
+                                  bufinfo.len,
+                                  bufinfo.buf);
+        } else {
+            ble_drv_attr_s_write(self->p_service->p_periph->conn_handle,
+                                 self->handle,
+                                 bufinfo.len,
+                                 bufinfo.buf);
+        }
+    } else {
+#if MICROPY_PY_UBLUEPY_CENTRAL
+        ble_drv_attr_c_write(self->p_service->p_periph->conn_handle,
+                             self->handle,
+                             0,
+                             NULL);
+#endif
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_characteristic_write_obj, char_write);
