@@ -104,6 +104,8 @@ void ble_drv_attr_s_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
 
 void ble_drv_attr_s_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
 
+void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data);
+
 void ble_drv_scan_start(void);
 
 void ble_drv_scan_stop(void);

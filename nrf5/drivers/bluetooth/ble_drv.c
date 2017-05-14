@@ -685,6 +685,10 @@ void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, bl
     }
 }
 
+void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+
+}
+
 void ble_drv_scan_start(void) {
     SD_TEST_OR_ENABLE();
 
