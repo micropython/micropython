@@ -178,6 +178,8 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
+    self->role = UBLUEPY_ROLE_PERIPHERAL;
+
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -344,6 +346,8 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
 STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_obj_t dev_addr              = pos_args[1];
+
+    self->role = self->role = UBLUEPY_ROLE_CENTRAL;
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_ADDR_TYPE_PUBLIC } },
