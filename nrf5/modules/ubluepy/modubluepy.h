@@ -101,6 +101,11 @@ typedef enum {
 #endif
 } ubluepy_addr_type_t;
 
+typedef enum {
+    UBLUEPY_ROLE_PERIPHERAL,
+	UBLUEPY_ROLE_CENTRAL
+} ubluepy_role_type_t;
+
 typedef struct _ubluepy_uuid_obj_t {
     mp_obj_base_t       base;
     ubluepy_uuid_type_t type;
@@ -109,12 +114,13 @@ typedef struct _ubluepy_uuid_obj_t {
 } ubluepy_uuid_obj_t;
 
 typedef struct _ubluepy_peripheral_obj_t {
-    mp_obj_base_t base;
-    uint16_t      conn_handle;
-    mp_obj_t      delegate;
-    mp_obj_t      notif_handler;
-    mp_obj_t      conn_handler;
-    mp_obj_t      service_list;
+    mp_obj_base_t       base;
+    ubluepy_role_type_t role;
+    uint16_t            conn_handle;
+    mp_obj_t            delegate;
+    mp_obj_t            notif_handler;
+    mp_obj_t            conn_handler;
+    mp_obj_t            service_list;
 } ubluepy_peripheral_obj_t;
 
 typedef struct _ubluepy_service_obj_t {
