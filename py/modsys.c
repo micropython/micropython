@@ -45,7 +45,7 @@ extern struct _mp_dummy_t mp_sys_stdin_obj;
 extern struct _mp_dummy_t mp_sys_stdout_obj;
 extern struct _mp_dummy_t mp_sys_stderr_obj;
 
-#if MICROPY_PY_IO
+#if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adaptor};
 #endif
 
@@ -106,7 +106,7 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_PY_IO
+    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {
         stream_obj = MP_OBJ_TO_PTR(args[1]); // XXX may fail

@@ -37,6 +37,21 @@ Functions
 
    Get the current directory.
 
+.. function:: ilistdir([dir])
+
+   This function returns an iterator which then yields 3-tuples corresponding to
+   the entries in the directory that it is listing.  With no argument it lists the
+   current directory, otherwise it lists the directory given by `dir`.
+
+   The 3-tuples have the form `(name, type, inode)`:
+
+    - `name` is a string (or bytes if `dir` is a bytes object) and is the name of
+      the entry;
+    - `type` is an integer that specifies the type of the entry, with 0x4000 for
+      directories and 0x8000 for regular files;
+    - `inode` is an integer corresponding to the inode of the file, and may be 0
+      for filesystems that don't have such a notion.
+
 .. function:: listdir([dir])
 
    With no argument, list the current directory.  Otherwise list the given directory.

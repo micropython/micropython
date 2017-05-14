@@ -34,51 +34,62 @@
 #include "extmod/vfs_fat.h"
 #include "py/lexer.h"
 
-// TODO: actually, the core function should be ilistdir()
-
-mp_obj_t fat_vfs_listdir2(fs_user_mount_t *vfs, const char *path, bool is_str_type) {
-    FRESULT res;
-    FILINFO fno;
+typedef struct _mp_vfs_fat_ilistdir_it_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    bool is_str;
     FF_DIR dir;
+} mp_vfs_fat_ilistdir_it_t;
 
-    res = f_opendir(&vfs->fatfs, &dir, path);
+STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
+    mp_vfs_fat_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
+
+    for (;;) {
+        FILINFO fno;
+        FRESULT res = f_readdir(&self->dir, &fno);
+        char *fn = fno.fname;
+        if (res != FR_OK || fn[0] == 0) {
+            // stop on error or end of dir
+            break;
+        }
+
+        // Note that FatFS already filters . and .., so we don't need to
+
+        // make 3-tuple with info about this entry
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+        if (self->is_str) {
+            t->items[0] = mp_obj_new_str(fn, strlen(fn), false);
+        } else {
+            t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
+        }
+        if (fno.fattrib & AM_DIR) {
+            // dir
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
+        } else {
+            // file
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG);
+        }
+        t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
+
+        return MP_OBJ_FROM_PTR(t);
+    }
+
+    // ignore error because we may be closing a second time
+    f_closedir(&self->dir);
+
+    return MP_OBJ_STOP_ITERATION;
+}
+
+mp_obj_t fat_vfs_ilistdir2(fs_user_mount_t *vfs, const char *path, bool is_str_type) {
+    mp_vfs_fat_ilistdir_it_t *iter = m_new_obj(mp_vfs_fat_ilistdir_it_t);
+    iter->base.type = &mp_type_polymorph_iter;
+    iter->iternext = mp_vfs_fat_ilistdir_it_iternext;
+    iter->is_str = is_str_type;
+    FRESULT res = f_opendir(&vfs->fatfs, &iter->dir, path);
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
-
-    mp_obj_t dir_list = mp_obj_new_list(0, NULL);
-
-    for (;;) {
-        res = f_readdir(&dir, &fno);                   /* Read a directory item */
-        if (res != FR_OK || fno.fname[0] == 0) break;  /* Break on error or end of dir */
-        if (fno.fname[0] == '.' && fno.fname[1] == 0) continue;             /* Ignore . entry */
-        if (fno.fname[0] == '.' && fno.fname[1] == '.' && fno.fname[2] == 0) continue;             /* Ignore .. entry */
-
-        char *fn = fno.fname;
-
-        /*
-        if (fno.fattrib & AM_DIR) {
-            // dir
-        } else {
-            // file
-        }
-        */
-
-        // make a string object for this entry
-        mp_obj_t entry_o;
-        if (is_str_type) {
-            entry_o = mp_obj_new_str(fn, strlen(fn), false);
-        } else {
-            entry_o = mp_obj_new_bytes((const byte*)fn, strlen(fn));
-        }
-
-        // add the entry to the list
-        mp_obj_list_append(dir_list, entry_o);
-    }
-
-    f_closedir(&dir);
-
-    return dir_list;
+    return MP_OBJ_FROM_PTR(iter);
 }
 
 mp_import_stat_t fat_vfs_import_stat(fs_user_mount_t *vfs, const char *path) {

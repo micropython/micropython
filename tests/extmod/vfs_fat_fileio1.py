@@ -115,4 +115,4 @@ except OSError as e:
     print(e.args[0] == 20) # uerrno.ENOTDIR
 
 vfs.remove("foo_file.txt")
-print(vfs.listdir())
+print(list(vfs.ilistdir()))

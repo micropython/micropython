@@ -2,6 +2,7 @@
 include ../py/mkenv.mk
 
 FROZEN_DIR = scripts
+FROZEN_MPY_DIR = modules
 
 # define main target
 PROG = micropython

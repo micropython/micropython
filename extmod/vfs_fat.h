@@ -57,4 +57,4 @@ mp_import_stat_t fat_vfs_import_stat(struct _fs_user_mount_t *vfs, const char *p
 mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
-mp_obj_t fat_vfs_listdir2(struct _fs_user_mount_t *vfs, const char *path, bool is_str_type);
+mp_obj_t fat_vfs_ilistdir2(struct _fs_user_mount_t *vfs, const char *path, bool is_str_type);

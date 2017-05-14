@@ -2,20 +2,23 @@
 /
 1 mount False False
 ['test_mnt']
-1 listdir /
+('test_mnt', 16384, 0)
+StopIteration
+StopIteration
+1 ilistdir /
 ['a1']
-1 listdir /
+1 ilistdir /
 ['a1']
 2 mount True False
 ['test_mnt', 'test_mnt2']
-2 listdir /
+2 ilistdir /
 ['a2']
 3 mount False False
 OSError
 OSError
 OSError
 1 chdir /
-1 listdir 
+1 ilistdir 
 ['a1']
 1 getcwd
 /test_mntdir1
@@ -32,3 +35,22 @@ OSError
 1 umount
 2 umount
 OSError
+3 mount False False
+3 ilistdir /
+['a3']
+3 open test r
+4 mount False False
+3 ilistdir /
+['mnt', 'a3']
+4 ilistdir /
+['a4']
+4 chdir /
+4 ilistdir 
+['a4']
+3 chdir /subdir
+3 ilistdir 
+['a3']
+3 chdir /
+3 umount
+['mnt']
+4 umount

@@ -332,25 +332,25 @@ class RawCode:
                 raise FreezeError(self, 'freezing of object %r is not implemented' % (obj,))
 
         # generate constant table
-        print('STATIC const mp_uint_t const_table_data_%s[%u] = {'
+        print('STATIC const mp_rom_obj_t const_table_data_%s[%u] = {'
             % (self.escaped_name, len(self.qstrs) + len(self.objs) + len(self.raw_codes)))
         for qst in self.qstrs:
-            print('    (mp_uint_t)MP_OBJ_NEW_QSTR(%s),' % global_qstrs[qst].qstr_id)
+            print('    MP_ROM_QSTR(%s),' % global_qstrs[qst].qstr_id)
         for i in range(len(self.objs)):
             if type(self.objs[i]) is float:
                 print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
-                print('    (mp_uint_t)&const_obj_%s_%u,' % (self.escaped_name, i))
+                print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
                 print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C')
                 n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
                 n = ((n & ~0x3) | 2) + 0x80800000
-                print('    (mp_uint_t)0x%08x,' % (n,))
+                print('    MP_ROM_INT(0x%08x),' % (n,))
                 print('#else')
                 print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
                 print('#endif')
             else:
-                print('    (mp_uint_t)&const_obj_%s_%u,' % (self.escaped_name, i))
+                print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
         for rc in self.raw_codes:
-            print('    (mp_uint_t)&raw_code_%s,' % rc.escaped_name)
+            print('    MP_ROM_PTR(&raw_code_%s),' % rc.escaped_name)
         print('};')
 
         # generate module
@@ -362,7 +362,7 @@ class RawCode:
         print('    .n_pos_args = %u,' % self.prelude[3])
         print('    .data.u_byte = {')
         print('        .bytecode = bytecode_data_%s,' % self.escaped_name)
-        print('        .const_table = const_table_data_%s,' % self.escaped_name)
+        print('        .const_table = (mp_uint_t*)const_table_data_%s,' % self.escaped_name)
         print('        #if MICROPY_PERSISTENT_CODE_SAVE')
         print('        .bc_len = %u,' % len(self.bytecode))
         print('        .n_obj = %u,' % len(self.objs))
