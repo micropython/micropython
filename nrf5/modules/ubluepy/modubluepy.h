@@ -103,7 +103,7 @@ typedef enum {
 
 typedef enum {
     UBLUEPY_ROLE_PERIPHERAL,
-	UBLUEPY_ROLE_CENTRAL
+    UBLUEPY_ROLE_CENTRAL
 } ubluepy_role_type_t;
 
 typedef struct _ubluepy_uuid_obj_t {
