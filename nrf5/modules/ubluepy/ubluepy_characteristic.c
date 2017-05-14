@@ -139,8 +139,8 @@ STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
 #if MICROPY_PY_UBLUEPY_CENTRAL
         ble_drv_attr_c_write(self->p_service->p_periph->conn_handle,
                              self->handle,
-                             0,
-                             NULL);
+                             bufinfo.len,
+                             bufinfo.buf);
 #endif
     }
     return mp_const_none;
