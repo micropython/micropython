@@ -347,7 +347,7 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_obj_t dev_addr              = pos_args[1];
 
-    self->role = self->role = UBLUEPY_ROLE_CENTRAL;
+    self->role = UBLUEPY_ROLE_CENTRAL;
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_addr_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_ADDR_TYPE_PUBLIC } },
