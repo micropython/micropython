@@ -121,15 +121,15 @@ STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     if (self->props & UBLUEPY_PROP_NOTIFY) {
-        ble_drv_attr_notify(self->p_service->p_periph->conn_handle,
-                            self->handle,
-                            bufinfo.len,
-                            bufinfo.buf);
+        ble_drv_attr_s_notify(self->p_service->p_periph->conn_handle,
+                              self->handle,
+                              bufinfo.len,
+                              bufinfo.buf);
     } else {
-        ble_drv_attr_write(self->p_service->p_periph->conn_handle,
-                           self->handle,
-                           bufinfo.len,
-                           bufinfo.buf);
+        ble_drv_attr_s_write(self->p_service->p_periph->conn_handle,
+                             self->handle,
+                             bufinfo.len,
+                             bufinfo.buf);
     }
 
     return mp_const_none;
