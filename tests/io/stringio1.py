@@ -13,10 +13,6 @@ print(a.getvalue())
 print(a.read())
 print(a.read())
 
-a = io.StringIO("foobar")
-a.seek(10)
-print(repr(a.read(10)))
-
 a = io.StringIO()
 a.write("foo")
 print(a.getvalue())
