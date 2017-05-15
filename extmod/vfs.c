@@ -286,7 +286,49 @@ mp_obj_t mp_vfs_getcwd(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj, mp_vfs_getcwd);
 
-mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
+typedef struct _mp_vfs_ilistdir_it_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    union {
+        mp_vfs_mount_t *vfs;
+        mp_obj_t iter;
+    } cur;
+    bool is_str;
+    bool is_iter;
+} mp_vfs_ilistdir_it_t;
+
+STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
+    mp_vfs_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->is_iter) {
+        // continue delegating to root dir
+        return mp_iternext(self->cur.iter);
+    } else if (self->cur.vfs == NULL) {
+        // finished iterating mount points and no root dir is mounted
+        return MP_OBJ_STOP_ITERATION;
+    } else {
+        // continue iterating mount points
+        mp_vfs_mount_t *vfs = self->cur.vfs;
+        self->cur.vfs = vfs->next;
+        if (vfs->len == 1) {
+            // vfs is mounted at root dir, delegate to it
+            mp_obj_t root = mp_obj_new_str("/", 1, false);
+            self->is_iter = true;
+            self->cur.iter = mp_vfs_proxy_call(vfs, MP_QSTR_ilistdir, 1, &root);
+            return mp_iternext(self->cur.iter);
+        } else {
+            // a mounted directory
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+            t->items[0] = mp_obj_new_str_of_type(
+                self->is_str ? &mp_type_str : &mp_type_bytes,
+                (const byte*)vfs->str + 1, vfs->len - 1);
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR);
+            t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
+            return MP_OBJ_FROM_PTR(t);
+        }
+    }
+}
+
+mp_obj_t mp_vfs_ilistdir(size_t n_args, const mp_obj_t *args) {
     mp_obj_t path_in;
     if (n_args == 1) {
         path_in = args[0];
@@ -299,22 +341,29 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
 
     if (vfs == MP_VFS_ROOT) {
         // list the root directory
-        mp_obj_t dir_list = mp_obj_new_list(0, NULL);
-        for (vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
-            if (vfs->len == 1) {
-                // vfs is mounted at root dir, delegate to it
-                mp_obj_t root = mp_obj_new_str("/", 1, false);
-                mp_obj_t dir_list2 = mp_vfs_proxy_call(vfs, MP_QSTR_listdir, 1, &root);
-                dir_list = mp_binary_op(MP_BINARY_OP_ADD, dir_list, dir_list2);
-            } else {
-                mp_obj_list_append(dir_list, mp_obj_new_str_of_type(mp_obj_get_type(path_in),
-                    (const byte*)vfs->str + 1, vfs->len - 1));
-            }
-        }
-        return dir_list;
+        mp_vfs_ilistdir_it_t *iter = m_new_obj(mp_vfs_ilistdir_it_t);
+        iter->base.type = &mp_type_polymorph_iter;
+        iter->iternext = mp_vfs_ilistdir_it_iternext;
+        iter->cur.vfs = MP_STATE_VM(vfs_mount_table);
+        iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
+        iter->is_iter = false;
+        return MP_OBJ_FROM_PTR(iter);
     }
 
-    return mp_vfs_proxy_call(vfs, MP_QSTR_listdir, 1, &path_out);
+    return mp_vfs_proxy_call(vfs, MP_QSTR_ilistdir, 1, &path_out);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_ilistdir_obj, 0, 1, mp_vfs_ilistdir);
+
+mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t iter = mp_vfs_ilistdir(n_args, args);
+    mp_obj_t dir_list = mp_obj_new_list(0, NULL);
+    mp_obj_t next;
+    while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+        mp_obj_t *items;
+        mp_obj_get_array_fixed_n(next, 3, &items);
+        mp_obj_list_append(dir_list, items[0]);
+    }
+    return dir_list;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 
@@ -359,7 +408,7 @@ mp_obj_t mp_vfs_stat(mp_obj_t path_in) {
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs == MP_VFS_ROOT) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
-        t->items[0] = MP_OBJ_NEW_SMALL_INT(0x4000); // st_mode = stat.S_IFDIR
+        t->items[0] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR); // st_mode
         for (int i = 1; i <= 9; ++i) {
             t->items[i] = MP_OBJ_NEW_SMALL_INT(0); // dev, nlink, uid, gid, size, atime, mtime, ctime
         }

@@ -158,15 +158,6 @@ Methods
    and get the value of the pin.  It is equivalent to Pin.value([x]).
    See :meth:`Pin.value` for more details.
 
-.. method:: Pin.toggle()
-
-   Toggle the output value of the pin.  Equivalent to ``pin.value(not pin.out_value())``.
-   Returns ``None``.
-
-   Not all ports implement this method.
-
-   Availability: WiPy.
-
 .. method:: Pin.id()
 
    Get the pin identifier.  This may return the ``id`` as specified in the

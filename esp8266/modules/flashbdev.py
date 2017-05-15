@@ -3,7 +3,7 @@ import esp
 class FlashBdev:
 
     SEC_SIZE = 4096
-    RESERVED_SECS = 0
+    RESERVED_SECS = 1
     START_SEC = esp.flash_user_start() // SEC_SIZE + RESERVED_SECS
     NUM_BLK = 0x6b - RESERVED_SECS
 

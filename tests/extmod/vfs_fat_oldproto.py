@@ -53,10 +53,10 @@ uos.mount(vfs, "/ramdisk")
 with vfs.open("file.txt", "w") as f:
     f.write("hello!")
 
-print(vfs.listdir())
+print(list(vfs.ilistdir()))
 
 with vfs.open("file.txt", "r") as f:
     print(f.read())
 
 vfs.remove("file.txt")
-print(vfs.listdir())
+print(list(vfs.ilistdir()))

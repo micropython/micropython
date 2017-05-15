@@ -19,6 +19,8 @@ EXTERN(_KernelExceptionVector)
 EXTERN(_NMIExceptionVector)
 EXTERN(_UserExceptionVector)
 
+_firmware_size = ORIGIN(irom0_0_seg) + LENGTH(irom0_0_seg) - 0x40200000;
+
 PROVIDE(_memmap_vecbase_reset = 0x40000000);
 
 /* Various memory-map dependent cache attribute settings: */

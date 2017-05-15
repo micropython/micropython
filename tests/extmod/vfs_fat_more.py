@@ -1,10 +1,15 @@
 import sys
 import uerrno
 try:
-    import uos_vfs as uos
-    open = uos.vfs_open
+    try:
+        import uos_vfs as uos
+        open = uos.vfs_open
+    except ImportError:
+        import uos
 except ImportError:
-    import uos
+    print("SKIP")
+    sys.exit()
+
 try:
     uos.VfsFat
 except AttributeError:
@@ -43,6 +48,14 @@ try:
 except MemoryError:
     print("SKIP")
     sys.exit()
+
+# first we umount any existing mount points the target may have
+try:
+    uos.umount('/')
+except OSError:
+    pass
+for path in uos.listdir('/'):
+    uos.umount('/' + path)
 
 uos.VfsFat.mkfs(bdev)
 uos.mount(bdev, '/')
