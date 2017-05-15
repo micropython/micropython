@@ -78,11 +78,11 @@ static mp_obj_t mp_gatts_observer;
 static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
 
-static ble_drv_adv_evt_callback_t          adv_event_handler;
-static ble_drv_gattc_evt_callback_t        gattc_event_handler;
-static ble_drv_disc_add_service_callback_t disc_add_service_handler;
-static ble_drv_disc_add_char_callback_t    disc_add_char_handler;
-static ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
+static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
+static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
+static volatile ble_drv_disc_add_service_callback_t disc_add_service_handler;
+static volatile ble_drv_disc_add_char_callback_t    disc_add_char_handler;
+static volatile ble_drv_gattc_char_data_callback_t  gattc_char_data_handle;
 
 static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gattc_observer;
