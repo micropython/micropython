@@ -21,7 +21,7 @@ for board in $ATMEL_BOARDS; do
     mkdir -p bin/$board/
     cp atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
     (( exit_status = exit_status || $? ))
-    python2 tools/uf2/utils/uf2conv.py -c -o bin/$board/adafruit-circuitpython-$board-$version.uf2 bin/$board/adafruit-circuitpython-$board-$version.bin
+    cp atmel-samd/build-$board/firmware.uf2 bin/$board/adafruit-circuitpython-$board-$version.uf2
     (( exit_status = exit_status || $? ))
 done
 
