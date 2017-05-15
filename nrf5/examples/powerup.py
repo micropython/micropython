@@ -62,7 +62,6 @@ def find_device_by_name(name):
     scan_res = s.scan(500)
 
     device_names = get_device_names(scan_res)
-    # print(device_names)
     for dev in device_names:
         if name == dev[1]:
             return dev[0]
@@ -71,10 +70,10 @@ class PowerUp3:
     def __init__(self):
         self.x_adc = ADC(1)
 
-        self.button_speed_up = Pin("A13", mode=Pin.IN, pull=Pin.PULL_UP)
-        self.button_speed_down = Pin("A15", mode=Pin.IN, pull=Pin.PULL_UP)
-        self.button_speed_full = Pin("A14", mode=Pin.IN, pull=Pin.PULL_UP)
-        self.button_speed_off = Pin("A16", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_up = Pin("A13", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_down = Pin("A15", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_full = Pin("A14", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_off = Pin("A16", mode=Pin.IN, pull=Pin.PULL_UP)
 
         self.x_mid = 0
         
@@ -86,16 +85,16 @@ class PowerUp3:
         return self.x_adc.value()
         
     def button_speed_up(self):
-        return bool(self.button_speed_up.value())
+        return not bool(self.btn_speed_up.value())
 
     def button_speed_down(self):
-        return bool(self.button_speed_down.value())
+        return not bool(self.btn_speed_down.value())
 
     def button_speed_full(self):
-        return bool(self.button_speed_full.value())
+        return not bool(self.btn_speed_full.value())
 
     def button_speed_off(self):
-        return bool(self.button_speed_off.value())
+        return not bool(self.btn_speed_off.value())
 
     def calibrate(self):
         self.x_mid = self.read_stick_x()
@@ -135,7 +134,6 @@ class PowerUp3:
         while not dev:
             dev = find_device_by_name("TailorToys PowerUp")
             if dev:
-                # print(dev.addr())
                 self.p = Peripheral()
                 self.p.connect(dev.addr())
 
@@ -149,7 +147,7 @@ class PowerUp3:
 
     def rudder_left(self, angle):
         steps = (angle // self.interval_size_left)
-        new_angle = 7 - steps
+        new_angle = 25 - steps
 
         if self.old_angle != new_angle:
             self.angle(new_angle)
@@ -178,8 +176,8 @@ class PowerUp3:
         right_threshold = self.x_mid + adc_threshold
         left_threshold = self.x_mid - adc_threshold
 
-        self.interval_size_left = self.x_mid // 7
-        self.interval_size_right = (255 - self.x_mid) // 7
+        self.interval_size_left = self.x_mid // 25
+        self.interval_size_right = (255 - self.x_mid) // 25
 
         self.old_angle = 0
         self.old_speed = 0
@@ -201,14 +199,13 @@ class PowerUp3:
             # read out new speed
             new_speed = self.old_speed
 
-            # TODO: bool return not working correctly, so test negated for now.
-            if not self.button_speed_up():
+            if self.button_speed_up():
                 new_speed += 25
-            elif not self.button_speed_down():
+            elif self.button_speed_down():
                 new_speed -= 25
-            elif not self.button_speed_full():
+            elif self.button_speed_full():
                 new_speed = 100
-            elif not self.button_speed_off():
+            elif self.button_speed_off():
                 new_speed = 0
             else:
                 pass
