@@ -35,7 +35,8 @@
 #include "py/objstr.h"
 #include "modmusic.h"
 #include "musictunes.h"
-#include "drivers/pwm.h"
+#include "softpwm.h"
+#include "ticker.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 
@@ -71,10 +72,16 @@ enum {
 
 #define music_data MP_STATE_PORT(music_data)
 
-// extern uint32_t ticks;
-static uint32_t ticks = 0; // TODO
+extern uint32_t ticks;
 
 STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin);
+
+void microbit_music_init0(void) {
+    pwm_init();
+    ticker_init(microbit_music_tick);
+    ticker_start();
+    pwm_start();
+}
 
 void microbit_music_tick(void) {
     if (music_data == NULL) {
