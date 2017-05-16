@@ -4,6 +4,8 @@
 
 #include "uart.h"
 
+#include "irq.h"
+
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -18,15 +20,15 @@ unsigned int getSP ();
 extern unsigned char interactive_py[];
 extern unsigned int interactive_py_len;
 
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
+void do_str(const char *src, mp_parse_input_kind_t input_kind, const char* srcname, size_t len) {
+    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, len, 0);
     if (lex == NULL) {
         return;
     }
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
+        qstr source_name = srcname;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
         mp_call_function_0(module_fun);
@@ -41,6 +43,9 @@ unsigned int heap_end;
 
 int main(int argc, char **argv) {
     uart_init();
+    //timer_init();
+    //enable_timer_irq ();
+    
     printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
 
     printf ( " ! -- My Source: \n" );
@@ -61,7 +66,6 @@ int main(int argc, char **argv) {
             uart_send( interactive_py[i] );
         }
     }
-    interactive_py_len = 0;
 
     setSP ( SP_START );
     heap_end = HEAP_START;
@@ -125,7 +129,7 @@ res = gpio_write ( 16, 1 );\n\
 print ('BOAH');\n\
 ", MP_PARSE_FILE_INPUT);*/
 
-    do_str ( interactive_py, MP_PARSE_FILE_INPUT );
+    do_str ( interactive_py, MP_PARSE_FILE_INPUT, "interactive.py", (size_t) interactive_py_len );
 
     unsigned int sp = getSP();
     printf ("SP: %08x\n", sp );

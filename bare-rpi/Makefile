@@ -32,6 +32,7 @@ LIBS = -L. -lc -lm -L/usr/lib/gcc/arm-none-eabi/6.3.1/hard -lgcc
 
 SRC_C = \
 	main.c \
+	irq.c \
 	uart.c \
 	syscalls.c 	\
 	module_rawptr.c \

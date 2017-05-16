@@ -1,5 +1,5 @@
-#ifndef RASPBOOTIN2_PLATFORM
-#define RASPBOOTIN2_PLATFORM
+#ifndef RPI_PLATFORM
+#define RPI_PLATFORM
 
     // uncomment the line you want to build for
     //#define PLATFORM_RPI
