@@ -52,7 +52,6 @@ typedef struct _socket_obj_t {
         struct k_fifo recv_q;
         struct k_fifo accept_q;
     };
-    struct net_pkt *cur_pkt;
 
     #define STATE_NEW 0
     #define STATE_CONNECTING 1
@@ -208,7 +207,6 @@ socket_obj_t *socket_new(void) {
     socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
     socket->base.type = (mp_obj_t)&socket_type;
     k_fifo_init(&socket->recv_q);
-    socket->cur_pkt = NULL;
     socket->state = STATE_NEW;
     return socket;
 }
@@ -393,26 +391,20 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
 
         do {
 
-            if (socket->cur_pkt == NULL) {
-                if (socket->state == STATE_PEER_CLOSED) {
-                    return 0;
-                }
-
-                DEBUG_printf("TCP recv: no cur_pkt, getting\n");
-                _k_fifo_wait_non_empty(&socket->recv_q, K_FOREVER);
-                struct net_pkt *pkt = _k_fifo_peek_head(&socket->recv_q);
-                if (pkt == NULL) {
-                    DEBUG_printf("TCP recv: NULL return from fifo\n");
-                    continue;
-                }
-                // Drop head packet from queue
-                k_fifo_get(&socket->recv_q, K_NO_WAIT);
-
-                DEBUG_printf("TCP recv: new cur_pkt: %p\n", pkt);
-                socket->cur_pkt = pkt;
+            if (socket->state == STATE_PEER_CLOSED) {
+                return 0;
             }
 
-            struct net_buf *frag = socket->cur_pkt->frags;
+            _k_fifo_wait_non_empty(&socket->recv_q, K_FOREVER);
+            struct net_pkt *pkt = _k_fifo_peek_head(&socket->recv_q);
+            if (pkt == NULL) {
+                DEBUG_printf("TCP recv: NULL return from fifo\n");
+                continue;
+            }
+
+            DEBUG_printf("TCP recv: cur_pkt: %p\n", pkt);
+
+            struct net_buf *frag = pkt->frags;
             if (frag == NULL) {
                 printf("net_pkt has empty fragments on start!\n");
                 assert(0);
@@ -430,15 +422,17 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
             if (recv_len != frag_len) {
                 net_buf_pull(frag, recv_len);
             } else {
-                frag = net_pkt_frag_del(socket->cur_pkt, NULL, frag);
+                frag = net_pkt_frag_del(pkt, NULL, frag);
                 if (frag == NULL) {
-                    DEBUG_printf("Finished processing pkt %p\n", socket->cur_pkt);
+                    DEBUG_printf("Finished processing pkt %p\n", pkt);
+                    // Drop head packet from queue
+                    k_fifo_get(&socket->recv_q, K_NO_WAIT);
+
                     // If "sent" flag was set, it's last packet and we reached EOF
-                    if (net_pkt_sent(socket->cur_pkt)) {
+                    if (net_pkt_sent(pkt)) {
                         socket->state = STATE_PEER_CLOSED;
                     }
-                    net_pkt_unref(socket->cur_pkt);
-                    socket->cur_pkt = NULL;
+                    net_pkt_unref(pkt);
                 }
             }
         // Keep repeating while we're getting empty fragments
