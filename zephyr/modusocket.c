@@ -399,12 +399,14 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
                 }
 
                 DEBUG_printf("TCP recv: no cur_pkt, getting\n");
-                struct net_pkt *pkt = k_fifo_get(&socket->recv_q, K_FOREVER);
-
+                _k_fifo_wait_non_empty(&socket->recv_q, K_FOREVER);
+                struct net_pkt *pkt = _k_fifo_peek_head(&socket->recv_q);
                 if (pkt == NULL) {
                     DEBUG_printf("TCP recv: NULL return from fifo\n");
                     continue;
                 }
+                // Drop head packet from queue
+                k_fifo_get(&socket->recv_q, K_NO_WAIT);
 
                 DEBUG_printf("TCP recv: new cur_pkt: %p\n", pkt);
                 socket->cur_pkt = pkt;
