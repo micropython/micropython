@@ -14,7 +14,9 @@ This project is in beta. Most APIs should be stable going forward.
 ### Supported boards
 
 #### Designed for CircuitPython
+* [Adafruit CircuitPlayground Express](https://www.adafruit.com/product/3333)
 * [Adafruit Feather M0 Express](https://www.adafruit.com/product/3403)
+* [Adafruit Metro M0 Express](https://www.adafruit.com/product/3505)
 
 #### Other
 * [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821)
@@ -48,7 +50,14 @@ project admins. Please join the [Gitter chat](https://gitter.im/adafruit/circuit
 * Port for Atmel SAMD21 (Commonly known as M0 in product names.)
 * No `machine` API on Atmel SAMD21 port.
 * Only supports Atmel SAMD21 and ESP8266 ports.
-* Unified hardware APIs: [`analogio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html), [`busio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html), [`digitalio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html), [`pulseio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html), [`touchio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html), [`microcontroller`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html), [`board`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html), [`bitbangio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html) (Only available on atmel-samd21 and ESP8266 currently.)
+* The order that files are run and the state thats shared between them. The goal is to clarify the role of each file and make them independent from each other.
+    * `boot.py` (or `settings.py`) runs only once on start up before USB is initialized. This lays the ground work for configuring USB at startup rather than it being fixed. Since serial is not available, output is written to boot_out.txt.
+    * `code.py` (or `main.py`) is run after every reload until it finishes or is interrupted. After its done the vm and hardware is reinitialized. **This means you cannot read state from code.py in the REPL anymore.** This was changed to reduce confusion about pins and memory being in use.
+    * After code.py the REPL can be entered by pressing any key. It no longer shares state with code.py so its a fresh vm.
+    * Autoreload state will be maintained across reload.
+* Adds a safe mode that does not run user code after a hard crash or brown out. The hope is that this will make it easier to fix code that causes nasty crashes by making it available through mass storage after the crash. A reset (the button) is needed after its fixed to get back into normal mode.
+* Unified hardware APIs:
+[`audioio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html), [`analogio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html), [`busio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html), [`digitalio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html), [`pulseio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html), [`touchio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html), [`microcontroller`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html), [`board`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html), [`bitbangio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html) (Only available on atmel-samd21 and ESP8266 currently.)
 * Tracks MicroPython's releases (not master).
 * No module aliasing. (`uos` and `utime` are not available as `os` and `time` respectively.)
 * Modules with a CPython counterpart, such as `time`, are strict [subsets](https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html) of their [CPython version](https://docs.python.org/3.4/library/time.html?highlight=time#module-time). Therefore, code from CircuitPython is runnable on CPython but not necessarily the reverse.
@@ -56,10 +65,10 @@ project admins. Please join the [Gitter chat](https://gitter.im/adafruit/circuit
 * `os` only available as `uos`
 * atmel-samd21 features
     * RGB status LED
-    * Auto-reset after file write over mass storage. (Disable with `samd.disable_autoreset()`)
+    * Auto-reload after file write over mass storage. (Disable with `samd.disable_autoreload()`)
     * Wait state after boot and main run, before REPL.
-    * Main is one of these: code.txt, code.py, main.py, main.txt
-    * Boot is one of these: settings.txt, settings.py, boot.py, boot.txt
+    * Main is one of these: `code.txt`, `code.py`, `main.py`, `main.txt`
+    * Boot is one of these: `settings.txt`, `settings.py`, `boot.py`, `boot.txt`
 
 ## Project Structure
 Here is an overview of the top-level directories.
