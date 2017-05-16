@@ -122,6 +122,9 @@ int main(int argc, char **argv) {
     timer_init0();
 #endif
 
+#if MICROPY_PY_MUSIC
+    microbit_music_init0();
+#endif
     /*
     extint_init0();
     timer_init0();
