@@ -54,9 +54,11 @@ INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
+INC += -I./modules/music
 INC += -I./modules/ble
 INC += -I../lib/mp-readline
 INC += -I./drivers/bluetooth
+INC += -I./drivers
 
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
@@ -128,7 +130,8 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
-	drivers/pwm.c \
+	drivers/softpwm.c \
+	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 
