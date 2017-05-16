@@ -47,8 +47,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(samd_enable_autoreload_obj, samd_enable_autoreload);
 
 //| .. method:: disable_autoreload()
 //|
-//|   Disable autoreload based on USB file write activity until the next reload
-//|   or until `enable_autoreload` is called.
+//|   Disable autoreload based on USB file write activity until
+//|   `enable_autoreload` is called.
 //|
 STATIC mp_obj_t samd_disable_autoreload(void) {
     autoreload_disable();

@@ -131,9 +131,6 @@ int receive_usb(void) {
         return 0;
     }
 
-    // Disable autoreload if someone is using the repl.
-    autoreload_disable();
-
     // Copy from head.
     cpu_irq_disable();
     int data = usb_rx_buf[usb_rx_buf_head];

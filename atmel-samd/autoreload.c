@@ -64,4 +64,5 @@ void autoreload_start() {
 
 void autoreload_stop() {
     autoreload_delay_ms = 0;
+    reload_next_character = false;
 }

@@ -118,7 +118,6 @@ void reset_mp(void) {
     reset_status_led();
     new_status_color(0x8f008f);
     autoreload_stop();
-    autoreload_enable();
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
     // as we re-init the GC all bets are off on the cache.
@@ -249,6 +248,8 @@ bool start_mp(safe_mode_t safe_mode) {
             mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
         } else if (safe_mode != NO_SAFE_MODE) {
             mp_hal_stdout_tx_str("Running in safe mode! Auto-reload is off.\r\n");
+        } else if (!autoreload_is_enabled()) {
+            mp_hal_stdout_tx_str("Auto-reload is off.\r\n");
         }
     }
     #endif
@@ -320,10 +321,12 @@ bool start_mp(safe_mode_t safe_mode) {
                 mp_hal_stdout_tx_str("\r\n\r\n");
             }
 
-            if (!cdc_enabled_at_start && autoreload_is_enabled()) {
-                mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
-            } else {
-                mp_hal_stdout_tx_str("Auto-reload is off.\r\n");
+            if (!cdc_enabled_at_start) {
+                if (autoreload_is_enabled()) {
+                    mp_hal_stdout_tx_str("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\r\n");
+                } else {
+                    mp_hal_stdout_tx_str("Auto-reload is off.\r\n");
+                }
             }
             if (safe_mode != NO_SAFE_MODE) {
                 mp_hal_stdout_tx_str("\r\nYou are running in safe mode which means something really bad happened.\r\n");
@@ -618,12 +621,16 @@ int main(void) {
     for (;;) {
         if (!skip_repl) {
             // The REPL mode can change, or it can request a reload.
+            bool autoreload_on = autoreload_is_enabled();
             autoreload_disable();
             new_status_color(REPL_RUNNING);
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
                 exit_code = pyexec_raw_repl();
             } else {
                 exit_code = pyexec_friendly_repl();
+            }
+            if (autoreload_on) {
+                autoreload_enable();
             }
             reset_samd21();
             reset_mp();
