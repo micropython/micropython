@@ -343,7 +343,7 @@ class RawCode:
                 print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C')
                 n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
                 n = ((n & ~0x3) | 2) + 0x80800000
-                print('    MP_ROM_INT(0x%08x),' % (n,))
+                print('    (mp_rom_obj_t)(0x%08x),' % (n,))
                 print('#else')
                 print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
                 print('#endif')
