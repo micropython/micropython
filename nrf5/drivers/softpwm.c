@@ -35,6 +35,8 @@
 #include "hal_gpio.h"
 #include "pin.h"
 
+#include "ticker.h"
+
 #define CYCLES_PER_MICROSECONDS 16
 
 #define MICROSECONDS_PER_TICK 16
@@ -171,11 +173,11 @@ int32_t pwm_callback(void) {
 }
 
 void pwm_start(void) {
-    // set_ticker_callback(PWM_TICKER_INDEX, pwm_callback, 120);
+    set_ticker_callback(PWM_TICKER_INDEX, pwm_callback, 120);
 }
 
 void pwm_stop(void) {
-    // clear_ticker_callback(PWM_TICKER_INDEX);
+    clear_ticker_callback(PWM_TICKER_INDEX);
 }
 
 static void pwm_set_period_ticks(int32_t ticks) {
