@@ -572,10 +572,7 @@ STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     int status;
     for (int i = 2; i--;) {
         int type = (family != AF_INET6 ? DNS_QUERY_TYPE_A : DNS_QUERY_TYPE_AAAA);
-        status = dns_get_addr_info(host, type, NULL, dns_resolve_cb, &state, 3000);
-        if (status < 0) {
-            mp_raise_OSError(status);
-        }
+        RAISE_ERRNO(dns_get_addr_info(host, type, NULL, dns_resolve_cb, &state, 3000));
         k_sem_take(&state.sem, K_FOREVER);
         if (family != 0) {
             break;
