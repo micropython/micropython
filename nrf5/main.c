@@ -41,6 +41,7 @@
 #include "readline.h"
 #include "gccollect.h"
 #include "modmachine.h"
+#include "modmusic.h"
 #include "led.h"
 #include "uart.h"
 #include "nrf.h"
