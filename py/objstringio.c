@@ -68,23 +68,29 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
+    mp_uint_t new_pos, org_len;
+    
     check_stringio_is_open(o);
-    mp_int_t remaining = o->vstr->alloc - o->pos;
-    mp_uint_t org_len = o->vstr->len;
-    if ((mp_int_t)size > remaining) {
+    new_pos = o->pos + size;
+    if (new_pos < size) {
+        // Writing <size> bytes will overflow o->pos beyond limit of mp_uint_t.
+        mp_raise_msg(&mp_type_OverflowError, "new position too large");
+    }
+    org_len = o->vstr->len;
+    if (new_pos > o->vstr->alloc) {
         // Take all what's already allocated...
         o->vstr->len = o->vstr->alloc;
         // ... and add more
-        vstr_add_len(o->vstr, size - remaining);
+        vstr_add_len(o->vstr, new_pos - o->vstr->alloc);
     }
     // If there was a seek past EOF, clear the hole
     if (o->pos > org_len) {
         memset(o->vstr->buf + org_len, 0, o->pos - org_len);
     }
     memcpy(o->vstr->buf + o->pos, buf, size);
-    o->pos += size;
-    if (o->pos > o->vstr->len) {
-        o->vstr->len = o->pos;
+    o->pos = new_pos;
+    if (new_pos > o->vstr->len) {
+        o->vstr->len = new_pos;
     }
     return size;
 }
