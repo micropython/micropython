@@ -16,17 +16,25 @@ def show_adc(lcd, adc):
         pass
     for i in range(3):
         lcd.set_text_color((825, 1625, 1600)[i], 0)
-        lcd.set_font(2)
-        lcd.set_pos(0, 100 + i * 16)
+        if lcd.h == 160:
+            lcd.set_font(2)
+            lcd.set_pos(0, 100 + i * 16)
+        else:
+            lcd.set_font(2, trans=1)
+            lcd.set_pos(0, lcd.h-60 + i * 16)
         lcd.write('%4s: ' % ('TEMP', 'VBAT', 'VREF')[i])
         if i > 0:
             s = '%6.3fV' % data[i]
         else:
             s = '%5.1f°C' % data[i]
-        lcd.set_font(1, bold=0, scale=1)
+        if lcd.h == 160:
+            lcd.set_font(1, bold=0, scale=1)
+        else:
+            lcd.set_font(1, bold=0, scale=1, trans=1)
+            lcd.set_pos(45, lcd.h-60 + i * 16)
         lcd.write(s)
 
-def test_features(lcd):
+def test_features(lcd, orient=lcd160cr.PORTRAIT):
     # if we run on pyboard then use ADC and RTC features
     try:
         import pyb
@@ -38,7 +46,7 @@ def test_features(lcd):
 
     # set orientation and clear screen
     lcd = get_lcd(lcd)
-    lcd.set_orient(lcd160cr.PORTRAIT)
+    lcd.set_orient(orient)
     lcd.set_pen(0, 0)
     lcd.erase()
 
@@ -114,10 +122,10 @@ def test_features(lcd):
         lcd.set_pos(2, 9)
         lcd.write('%.2f fps' % (1000000 / dt))
 
-def test_mandel(lcd):
+def test_mandel(lcd, orient=lcd160cr.PORTRAIT):
     # set orientation and clear screen
     lcd = get_lcd(lcd)
-    lcd.set_orient(lcd160cr.PORTRAIT)
+    lcd.set_orient(orient)
     lcd.set_pen(0, 0xffff)
     lcd.erase()
 
@@ -140,9 +148,11 @@ def test_mandel(lcd):
     spi = lcd.fast_spi()
 
     # draw the Mandelbrot set line-by-line
+    hh = ((h - 1) / 3.2)
+    ww = ((w - 1) / 2.4)
     for v in range(h):
         for u in range(w):
-            c = in_set((v / ((h - 1) / 3.2) - 2.3) + (u / ((w - 1) / 2.4) - 1.2) * 1j)
+            c = in_set((v / hh - 2.3) + (u / ww - 1.2) * 1j)
             if c < 16:
                 rgb = c << 12 | c << 6
             else:
@@ -151,10 +161,10 @@ def test_mandel(lcd):
             line[2 * u + 1] = rgb >> 8
         spi.write(line)
 
-def test_all(lcd):
+def test_all(lcd, orient=lcd160cr.PORTRAIT):
     lcd = get_lcd(lcd)
-    test_features(lcd)
-    test_mandel(lcd)
+    test_features(lcd, orient)
+    test_mandel(lcd, orient)
 
 print('To run all tests: test_all(<lcd>)')
 print('Individual tests are: test_features, test_mandel')
