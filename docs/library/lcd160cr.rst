@@ -150,11 +150,19 @@ The following methods manipulate individual pixels on the display.
 
 .. method:: LCD160CR.get_line(x, y, buf)
 
-    Get a line of pixels into the given buffer.
+    Low-level method to get a line of pixels into the given buffer.
+    To read `n` pixels `buf` should be `2*n+1` bytes in length.  The first byte
+    is a dummy byte and should be ignored, and subsequent bytes represent the
+    pixels in the line starting at coordinate `(x, y)`.
 
-.. method:: LCD160CR.screen_dump(buf)
+.. method:: LCD160CR.screen_dump(buf, x=0, y=0, w=None, h=None)
 
-    Dump the entire screen to the given buffer.
+    Dump the contents of the screen to the given buffer.  The parameters `x` and `y`
+    specify the starting coordinate, and `w` and `h` the size of the region.  If `w`
+    or `h` are `None` then they will take on their maximum values, set by the size
+    of the screen minus the given `x` and `y` values.  `buf` should be large enough
+    to hold `2*w*h` bytes.  If it's smaller then only the initial horizontal lines
+    will be stored.
 
 .. method:: LCD160CR.screen_load(buf)
 
