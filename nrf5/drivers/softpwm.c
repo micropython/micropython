@@ -79,7 +79,7 @@ static const pwm_events OFF_EVENTS = {
 #define active_events MP_STATE_PORT(pwm_active_events)
 #define pending_events MP_STATE_PORT(pwm_pending_events)
 
-void pwm_init(void) {
+void softpwm_init(void) {
     active_events = &OFF_EVENTS;
     pending_events = NULL;
 }

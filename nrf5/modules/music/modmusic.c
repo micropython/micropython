@@ -77,7 +77,7 @@ extern uint32_t ticks;
 STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin);
 
 void microbit_music_init0(void) {
-    pwm_init();
+    softpwm_init();
     ticker_init(microbit_music_tick);
     ticker_start();
     pwm_start();

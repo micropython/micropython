@@ -1,7 +1,7 @@
 #ifndef __MICROPY_INCLUDED_LIB_PWM_H__
 #define __MICROPY_INCLUDED_LIB_PWM_H__
 
-void pwm_init(void);
+void softpwm_init(void);
 void pwm_start(void);
 void pwm_stop(void);
 
