@@ -31,21 +31,49 @@
 
 #include "nrf.h"
 
+#if BLUETOOTH_SD
+#include "nrf_sdm.h"
+#endif
+
 static inline void hal_irq_clear(uint32_t irq_num) {
+#if BLUETOOTH_SD
+    sd_nvic_ClearPendingIRQ(irq_num);
+#else
     NVIC_ClearPendingIRQ(irq_num);
+#endif
 }
 
 static inline void hal_irq_enable(uint32_t irq_num) {
     hal_irq_clear(irq_num);
+#if BLUETOOTH_SD
+    sd_nvic_EnableIRQ(irq_num);
+#else
     NVIC_EnableIRQ(irq_num);
+#endif
 }
 
 static inline void hal_irq_disable(uint32_t irq_num) {
+#if BLUETOOTH_SD
+    sd_nvic_DisableIRQ(irq_num);
+#else
     NVIC_DisableIRQ(irq_num);
+#endif
 }
 
 static inline void hal_irq_priority(uint32_t irq_num, uint8_t priority) {
+#if BLUETOOTH_SD
+    sd_nvic_SetPriority(irq_num, priority);
+#else
     NVIC_SetPriority(irq_num, priority);
+#endif
+}
+
+static inline void hal_irq_pending(uint32_t irq_num) {
+#if BLUETOOTH_SD
+    sd_nvic_SetPendingIRQ(irq_num);
+#else
+    NVIC_SetPendingIRQ(irq_num);
+#endif
 }
 
 #endif // HAL_IRQ_H__
