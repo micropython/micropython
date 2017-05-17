@@ -39,9 +39,11 @@ void hal_timer_start(uint8_t id) {
 void hal_timer_stop(uint8_t id) {
 }
 
+#if (MICROPY_PY_MACHINE_SOFT_PWM != 1)
 void TIMER0_IRQHandler(void) {
 
 }
+#endif
 
 void TIMER1_IRQHandler(void) {
 
