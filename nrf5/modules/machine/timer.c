@@ -97,6 +97,14 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 
     // get static peripheral object
     int timer_id = timer_find(args[ARG_NEW_id].u_obj);
+
+#if MICROPY_PY_MACHINE_SOFT_PWM
+    if (timer_id == 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                  "Timer(%d) reserved by ticker driver.", timer_id));
+    }
+#endif
+
     const machine_timer_obj_t *self = &machine_timer_obj[timer_id];
 
     hal_timer_init(self->p_config);
