@@ -26,6 +26,8 @@
 
 #include "py/mphal.h"
 
+#if MICROPY_PY_MACHINE_SOFT_PWM
+
 #include "ticker.h"
 
 #define FastTicker NRF_TIMER0
@@ -169,3 +171,5 @@ int set_low_priority_callback(callback_ptr callback, int id) {
     NVIC_SetPendingIRQ(LowPriority_IRQn);
     return 0;
 }
+
+#endif // MICROPY_PY_MACHINE_SOFT_PWM
