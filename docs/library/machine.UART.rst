@@ -65,8 +65,16 @@ Methods
 
 .. method:: UART.any()
 
-   Return true value if there're characters available for reading. On some
-   boards, the number of available characters is returned.
+   Returns an integer counting the number of characters that can be read without
+   blocking.  It will return 0 if there are no characters available and a positive
+   number if there are characters.  The method may return 1 even if there is more
+   than one character available for reading.
+
+   For more sophisticated querying of available characters use select.poll::
+
+    poll = select.poll()
+    poll.register(uart, select.POLLIN)
+    poll.poll(timeout)
 
 .. method:: UART.read([nbytes])
 
