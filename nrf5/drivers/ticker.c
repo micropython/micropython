@@ -29,22 +29,21 @@
 #if MICROPY_PY_MACHINE_SOFT_PWM
 
 #include "ticker.h"
+#include "hal_irq.h"
 
 #define FastTicker NRF_TIMER0
 #define FastTicker_IRQn TIMER0_IRQn
 #define FastTicker_IRQHandler TIMER0_IRQHandler
 
-#define SlowTicker_IRQn SWI3_IRQn
-#define SlowTicker_IRQHandler SWI3_IRQHandler
-
-#define LowPriority_IRQn SWI4_IRQn
-#define LowPriority_IRQHandler SWI4_IRQHandler
+#define SlowTicker_IRQn SWI0_IRQn
+#define SlowTicker_IRQHandler SWI0_IRQHandler
 
 // Ticker callback function called every MACRO_TICK
 static callback_ptr slow_ticker;
 
 void ticker_init(callback_ptr slow_ticker_callback) {
     slow_ticker = slow_ticker_callback;
+
     NRF_TIMER_Type *ticker = FastTicker;
 #if NRF51
     ticker->POWER = 1;
@@ -58,24 +57,23 @@ void ticker_init(callback_ptr slow_ticker_callback) {
     ticker->PRESCALER = 4; // 1 tick == 1 microsecond
     ticker->INTENSET = TIMER_INTENSET_COMPARE3_Msk;
     ticker->SHORTS = 0;
-    NVIC_SetPriority(FastTicker_IRQn, 1);
-    NVIC_SetPriority(SlowTicker_IRQn, 2);
-    NVIC_SetPriority(LowPriority_IRQn, 3);
-    NVIC_EnableIRQ(SlowTicker_IRQn);
-    NVIC_EnableIRQ(LowPriority_IRQn);
+
+    hal_irq_priority(FastTicker_IRQn, 1);
+    hal_irq_priority(SlowTicker_IRQn, 3);
+    hal_irq_enable(SlowTicker_IRQn);
 }
 
 /* Start and stop timer 0 including workarounds for Anomaly 73 for Timer
 * http://www.nordicsemi.com/eng/content/download/29490/494569/file/nRF51822-PAN%20v3.0.pdf
 */
 void ticker_start(void) {
-    NVIC_EnableIRQ(FastTicker_IRQn);
+    hal_irq_enable(FastTicker_IRQn);
     *(uint32_t *)0x40008C0C = 1; //for Timer 0
     FastTicker->TASKS_START = 1;
 }
 
 void ticker_stop(void) {
-    NVIC_DisableIRQ(FastTicker_IRQn);
+    hal_irq_disable(FastTicker_IRQn);
     FastTicker->TASKS_STOP = 1;
     *(uint32_t *)0x40008C0C = 0; //for Timer 0
 }
@@ -107,7 +105,7 @@ void FastTicker_IRQHandler(void) {
         ticker->EVENTS_COMPARE[3] = 0;
         ticker->CC[3] += MICROSECONDS_PER_MACRO_TICK;
         ticks += MILLISECONDS_PER_MACRO_TICK;
-        NVIC_SetPendingIRQ(SlowTicker_IRQn);
+        hal_irq_pending(SlowTicker_IRQn);
     }
 }
 
@@ -150,6 +148,8 @@ void SlowTicker_IRQHandler(void)
     slow_ticker();
 }
 
+#if NRF52
+
 #define LOW_PRIORITY_CALLBACK_LIMIT 4
 callback_ptr low_priority_callbacks[LOW_PRIORITY_CALLBACK_LIMIT] = { NULL, NULL, NULL, NULL };
 
@@ -171,5 +171,7 @@ int set_low_priority_callback(callback_ptr callback, int id) {
     NVIC_SetPendingIRQ(LowPriority_IRQn);
     return 0;
 }
+
+#endif // NRF52
 
 #endif // MICROPY_PY_MACHINE_SOFT_PWM
