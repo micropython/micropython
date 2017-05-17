@@ -74,7 +74,8 @@ STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, 
     new_pos = o->pos + size;
     if (new_pos < size) {
         // Writing <size> bytes will overflow o->pos beyond limit of mp_uint_t.
-        mp_raise_msg(&mp_type_OverflowError, "new position too large");
+        *errcode = MP_EFBIG;
+        return MP_STREAM_ERROR;
     }
     org_len = o->vstr->len;
     if (new_pos > o->vstr->alloc) {
@@ -113,12 +114,14 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
             new_pos = ref + s->offset;
             if (s->offset < 0) {
                 if (new_pos > ref) {
-                    // negative offset went past 0
+                    // Negative offset from SEEK_CUR or SEEK_END went past 0.
+                    // CPython sets position to 0, POSIX returns an EINVAL error
                     new_pos = 0;
                 }
             } else if (new_pos < ref) {
                 // positive offset went beyond the limit of mp_uint_t
-                mp_raise_msg(&mp_type_OverflowError, "new position too large");
+                *errcode = MP_EINVAL;  // replace with MP_EOVERFLOW when defined
+                return MP_STREAM_ERROR;
             }
             s->offset = o->pos = new_pos;
             return 0;
