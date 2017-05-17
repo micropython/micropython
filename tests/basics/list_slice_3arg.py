@@ -26,3 +26,15 @@ print(x[-1:-1:-1])
 print(x[-1:-2:-1])
 print(x[-1:-11:-1])
 print(x[-10:-11:-1])
+
+print(x[:-15:-1])
+
+if len([][::-1]):
+	print('Skipping crashing tests with negative step.')
+else:
+	print([][::-1])
+	print([1][::-1])
+	print([][:-20:-1])
+	print([1][:-20:-1])
+	print([][-20::-1])
+	print([1][-20::-1])

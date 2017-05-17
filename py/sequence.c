@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
+#include "py/smallint.h"
 
 // Helpers for sequence types
 
@@ -48,11 +49,31 @@ void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times
 
 #if MICROPY_PY_BUILTINS_SLICE
 
+// Adjust slice index (start or stop) based on length of object and step direction.
+// Negative index treated as offset from length of object.  Enforce range of
+// 0 to <len> for forward step, -1 to (<len> - 1) for reverse step.
+STATIC void mp_seq_adjust_index(mp_uint_t len, mp_int_t *index, bool reverse) {
+    if (*index < 0) {
+        *index += len;
+        if (*index < 0) {
+            *index = reverse ? -1 : 0;
+        }
+    }
+    else if ((mp_uint_t) *index >= len) {
+        *index = reverse ? len - 1 : len;
+    }
+}
+
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes) {
     mp_obj_t ostart, ostop, ostep;
     mp_int_t start, stop;
+    bool reverse;
+
     mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
 
+    if (len >= MP_SMALL_INT_MAX) {
+        mp_raise_ValueError("object too large to slice");
+    }
     if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
         indexes->step = mp_obj_get_int(ostep);
         if (indexes->step == 0) {
@@ -62,53 +83,33 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
         indexes->step = 1;
     }
 
+    reverse = indexes->step < 0;
     if (ostart == mp_const_none) {
-        if (indexes->step > 0) {
-            start = 0;
-        } else {
-            start = len - 1;
-        }
+        start = reverse ? MP_SMALL_INT_MAX : 0;
     } else {
         start = mp_obj_get_int(ostart);
     }
     if (ostop == mp_const_none) {
-        if (indexes->step > 0) {
-            stop = len;
-        } else {
-            stop = 0;
-        }
+        stop = reverse ? MP_SMALL_INT_MIN : MP_SMALL_INT_MAX;
     } else {
         stop = mp_obj_get_int(ostop);
-        if (stop >= 0 && indexes->step < 0) {
-            stop += 1;
-        }
     }
 
-    // Unlike subscription, out-of-bounds slice indexes are never error
-    if (start < 0) {
-        start = len + start;
-        if (start < 0) {
-            start = 0;
-        }
-    } else if (indexes->step > 0 && (mp_uint_t)start > len) {
-        start = len;
-    } else if (indexes->step < 0 && (mp_uint_t)start > len - 1) {
-        start = len - 1;
-    }
-    if (stop < 0) {
-        stop = len + stop;
-        if (indexes->step < 0) {
-            stop += 1;
-        }
-    } else if ((mp_uint_t)stop > len) {
-        stop = len;
-    }
-
+    // Unlike subscription, out-of-bounds slice indexes are never error.
+    // Adjust start and stop to be absolute indexes based on the object's length.
+    mp_seq_adjust_index(len, &start, reverse);
+    mp_seq_adjust_index(len, &stop, reverse);
+    
+    // Enforce stop >= start on positive step and stop <= start on negative step.
     // CPython returns empty sequence in such case, or point for assignment is at start
-    if (indexes->step > 0 && start > stop) {
-        stop = start;
-    } else if (indexes->step < 0 && start < stop) {
-        stop = start + 1;
+    if (reverse) {
+        if (start < stop) {
+            stop = start;
+        }
+    } else {
+        if (start > stop) {
+            stop = start;
+        }
     }
 
     indexes->start = start;
@@ -128,7 +129,7 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
     mp_obj_t res = mp_obj_new_list(0, NULL);
 
     if (step < 0) {
-        while (start >= stop) {
+        while (start > stop) {
             mp_obj_list_append(res, seq[start]);
             start += step;
         }

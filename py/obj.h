@@ -834,8 +834,8 @@ const mp_obj_t *mp_obj_property_get(mp_obj_t self_in);
 
 // slice indexes resolved to particular sequence
 typedef struct {
-    mp_uint_t start;
-    mp_uint_t stop;
+    mp_int_t start;
+    mp_int_t stop;
     mp_int_t step;
 } mp_bound_slice_t;
 
