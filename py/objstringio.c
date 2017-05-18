@@ -56,6 +56,9 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
+    if (o->vstr->len <= o->pos) {  // read to EOF, or seeked to EOF or beyond
+        return 0;
+    }
     mp_uint_t remaining = o->vstr->len - o->pos;
     if (size > remaining) {
         size = remaining;

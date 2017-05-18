@@ -62,6 +62,13 @@ static char heap[MICROPY_HEAP_SIZE];
 
 void init_zephyr(void) {
     // TODO: Make addresses configurable
+    #ifdef CONFIG_NETWORKING
+    if (net_if_get_default() == NULL) {
+        // If there's no default networking interface,
+        // there's nothing to configure.
+        return;
+    }
+    #endif
     #ifdef CONFIG_NET_IPV4
     static struct in_addr in4addr_my = {{{192, 0, 2, 1}}};
     net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);

@@ -88,15 +88,22 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
     if (start < 0) {
         start = len + start;
         if (start < 0) {
-            start = 0;
+            if (indexes->step < 0) {
+                start = -1;
+            } else {
+                start = 0;
+            }
         }
     } else if (indexes->step > 0 && (mp_uint_t)start > len) {
         start = len;
-    } else if (indexes->step < 0 && (mp_uint_t)start > len - 1) {
+    } else if (indexes->step < 0 && (mp_uint_t)start >= len) {
         start = len - 1;
     }
     if (stop < 0) {
         stop = len + stop;
+        if (stop < 0) {
+            stop = -1;
+        }
         if (indexes->step < 0) {
             stop += 1;
         }

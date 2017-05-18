@@ -257,6 +257,7 @@ class LCD160CR:
     def get_line(self, x, y, buf):
         l = len(buf) // 2
         self._fcmd2b('<BBBBB', 0x10, l, x, y)
+        l *= 2
         t = 1000
         while t:
             self.i2c.readfrom_into(self.i2c_addr, self.buf1)
@@ -267,21 +268,28 @@ class LCD160CR:
             sleep_ms(1)
         raise OSError(uerrno.ETIMEDOUT)
 
-    def screen_dump(self, buf):
-        line = bytearray(self.w + 1)
-        h = len(buf) // (2 * self.w)
-        if h > self.h:
-            h = self.h
-        for i in range(h):
-            ix = i * self.w * 2
-            self.get_line(0, i, line)
-            for j in range(1, len(line)):
-                buf[ix] = line[j]
-                ix += 1
-            self.get_line(self.w // 2, i, line)
-            for j in range(1, len(line)):
-                buf[ix] = line[j]
-                ix += 1
+    def screen_dump(self, buf, x=0, y=0, w=None, h=None):
+        if w is None:
+            w = self.w - x
+        if h is None:
+            h = self.h - y
+        if w <= 127:
+            line = bytearray(2 * w + 1)
+            line2 = None
+        else:
+            # split line if more than 254 bytes needed
+            buflen = (w + 1) // 2
+            line = bytearray(2 * buflen + 1)
+            line2 = memoryview(line)[:2 * (w - buflen) + 1]
+        for i in range(min(len(buf) // (2 * w), h)):
+            ix = i * w * 2
+            self.get_line(x, y + i, line)
+            buf[ix:ix + len(line) - 1] = memoryview(line)[1:]
+            ix += len(line) - 1
+            if line2:
+                self.get_line(x + buflen, y + i, line2)
+                buf[ix:ix + len(line2) - 1] = memoryview(line2)[1:]
+                ix += len(line2) - 1
 
     def screen_load(self, buf):
         l = self.w * self.h * 2+2
