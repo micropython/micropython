@@ -154,6 +154,10 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             o->start = self->start + slice.start * self->step;
             o->stop = self->start + slice.stop * self->step;
             o->step = slice.step * self->step;
+            if (slice.step < 0) {
+                // Negative slice steps have inclusive stop, so adjust for exclusive
+                o->stop -= self->step;
+            }
             return MP_OBJ_FROM_PTR(o);
         }
 #endif
