@@ -148,30 +148,4 @@ void SlowTicker_IRQHandler(void)
     slow_ticker();
 }
 
-#if NRF52
-
-#define LOW_PRIORITY_CALLBACK_LIMIT 4
-callback_ptr low_priority_callbacks[LOW_PRIORITY_CALLBACK_LIMIT] = { NULL, NULL, NULL, NULL };
-
-void LowPriority_IRQHandler(void)
-{
-    for (int id = 0; id < LOW_PRIORITY_CALLBACK_LIMIT; id++) {
-        callback_ptr callback = low_priority_callbacks[id];
-        if (callback != NULL) {
-            low_priority_callbacks[id] = NULL;
-            callback();
-        }
-    }
-}
-
-int set_low_priority_callback(callback_ptr callback, int id) {
-    if (low_priority_callbacks[id] != NULL)
-        return -1;
-    low_priority_callbacks[id] = callback;
-    NVIC_SetPendingIRQ(LowPriority_IRQn);
-    return 0;
-}
-
-#endif // NRF52
-
 #endif // MICROPY_PY_MACHINE_SOFT_PWM
