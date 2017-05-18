@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "py/mpconfig.h"
 
 #include "py/nlr.h"
@@ -211,6 +213,16 @@ STATIC mp_obj_t mod_os_ilistdir(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_ilistdir_obj, 0, 1, mod_os_ilistdir);
 
+STATIC mp_obj_t os_getpid(void) {
+    return mp_obj_new_int(getpid());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getpid_obj, os_getpid);
+
+STATIC mp_obj_t os_getppid(void) {
+    return mp_obj_new_int(getppid());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getppid_obj, os_getppid);
+
 STATIC mp_obj_t mod_os_errno(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(errno);
@@ -220,6 +232,23 @@ STATIC mp_obj_t mod_os_errno(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_errno_obj, 0, 1, mod_os_errno);
+
+STATIC mp_obj_t os_urandom(mp_obj_t num) {
+    int rngfd;
+    mp_int_t n = mp_obj_get_int(num);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
+    rngfd = open("/dev/random", O_RDONLY);
+    if (rngfd < 0) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_BaseException, "no random device"));
+    }
+    if (read(rngfd, vstr.buf, n) != n) {
+        close(rngfd);
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_BaseException, "Error retrieving random bytes"));
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
@@ -233,16 +262,13 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getpid), MP_ROM_PTR(&os_getpid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getppid), MP_ROM_PTR(&os_getppid_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), (mp_obj_t)&os_urandom_obj },
     #if MICROPY_FSUSERMOUNT
     { MP_ROM_QSTR(MP_QSTR_vfs_mount), MP_ROM_PTR(&fsuser_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_vfs_umount), MP_ROM_PTR(&fsuser_umount_obj) },
     { MP_ROM_QSTR(MP_QSTR_vfs_mkfs), MP_ROM_PTR(&fsuser_mkfs_obj) },
-    #endif
-    #if MICROPY_VFS_FAT
-    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
-    #endif
-    #if MICROPY_PY_OS_DUPTERM
-    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
     #endif
 };
 

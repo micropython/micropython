@@ -82,7 +82,7 @@
 #define MICROPY_PY_SYS_MAXSIZE      (0)
 #define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_UTIME            (0)
+#define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UCTYPES          (1)
 #define MICROPY_PY_UZLIB            (0)
