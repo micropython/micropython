@@ -32,7 +32,11 @@
 #include "nrf.h"
 
 #if BLUETOOTH_SD
-#include "nrf_sdm.h"
+#if NRF51
+  #include "nrf_sdm.h"
+#elif NRF52
+  #include "nrf_nvic.h"
+#endif
 #endif
 
 static inline void hal_irq_clear(uint32_t irq_num) {
