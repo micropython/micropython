@@ -41,12 +41,28 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind, const char* srcna
 
 unsigned int heap_end;
 
+extern volatile int b;
+
 int main(int argc, char **argv) {
+    setSP ( SP_START );
+    heap_end = HEAP_START;
+    
     uart_init();
-    //timer_init();
-    //enable_timer_irq ();
+    timer_init();
+    enable_timer_irq ();
     
     printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
+
+    int i =0;
+    while (1)
+    {
+        if ( b == 1 )
+        {
+            printf ("%d\n", i);
+            i++;
+            b = 0;
+        }    
+    }
 
     printf ( " ! -- My Source: \n" );
     int line = 1;
@@ -66,9 +82,9 @@ int main(int argc, char **argv) {
             uart_send( interactive_py[i] );
         }
     }
+    
+    uart_send('\n');
 
-    setSP ( SP_START );
-    heap_end = HEAP_START;
     //heap_start = HEAP_START;
 
     int x = 0x800000;

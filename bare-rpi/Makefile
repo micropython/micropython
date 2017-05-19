@@ -20,6 +20,8 @@ CCPU = $(CFLAGS_RPI)
 CFLAGS = $(INC) -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_RPI) $(COPT)
 CFLAGS += -Os 
 
+LIST=kernel.list
+
 #Debugging/Optimization
 #ifeq ($(DEBUG), 1)
 #
@@ -53,6 +55,9 @@ LIBC=./libc.a
 LIBM=./libm.a
 NEWLIB_PATH=newlib-cygwin
 LIB=./
+
+dump: $(BUILD)/firmware.elf
+	$(CROSS_COMPILE)objdump -d $(BUILD)/firmware.elf > $(LIST)
 
 newlib: $(BUILD) $(LIBC)
 build/arm-none-eabi/newlib/libc.a: 

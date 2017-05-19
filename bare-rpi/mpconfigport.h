@@ -7,9 +7,9 @@
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_ALLOC_PATH_MAX      (512)
-#define MICROPY_EMIT_ARM            (1)
+#define MICROPY_EMIT_ARM            (0)
 
-//#define MICROPY_ENABLE_GC (1)
+#define MICROPY_ENABLE_GC (1)
 //#define MICROPY_ENABLE_FINALISER (0)
 //#define MICROPY_STACK_CHECK (0)
 
