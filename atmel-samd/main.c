@@ -576,6 +576,9 @@ int main(void) {
     reset_samd21();
     reset_mp();
 
+    // Turn on autoreload by default but before boot.py in case it wants to change it.
+    autoreload_enable();
+
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (safe_mode == NO_SAFE_MODE) {
