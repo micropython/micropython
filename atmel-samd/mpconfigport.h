@@ -39,8 +39,6 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE (1)
 #define MICROPY_PY_BUILTINS_FILTER  (1)
-#define MICROPY_PY_BUILTINS_FROZENSET (0)
-#define MICROPY_PY_BUILTINS_REVERSED (0)
 #define MICROPY_PY_BUILTINS_SET     (1)
 #define MICROPY_PY_BUILTINS_SLICE   (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
@@ -141,6 +139,12 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 // Internal flash size dependent settings.
 #if BOARD_FLASH_SIZE > 192000
+    #define MICROPY_PY_BUILTINS_STR_CENTER (1)
+    #define MICROPY_PY_BUILTINS_STR_PARTITION (1)
+    #define MICROPY_PY_BUILTINS_FROZENSET (1)
+    #define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
+    #define MICROPY_PY_BUILTINS_REVERSED (1)
+    #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #define MICROPY_PY_FRAMEBUF         (1)
     #define EXTRA_BUILTIN_MODULES \
@@ -149,6 +153,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
     #define EXPRESS_BOARD
 #else
+    #define MICROPY_PY_BUILTINS_REVERSED (0)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
     #define MICROPY_PY_FRAMEBUF         (0)
     #define EXTRA_BUILTIN_MODULES
