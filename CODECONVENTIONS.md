@@ -24,7 +24,7 @@ a change in a detail, if needed. Any change beyond 5 lines would likely
 require such detailed description.
 
 To get good practical examples of good commits and their messages, browse
-thry the `git log` of the project.
+the `git log` of the project.
 
 Python code conventions
 =======================
