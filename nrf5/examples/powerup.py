@@ -147,7 +147,7 @@ class PowerUp3:
 
     def rudder_left(self, angle):
         steps = (angle // self.interval_size_left)
-        new_angle = 25 - steps
+        new_angle = 60 - steps
 
         if self.old_angle != new_angle:
             self.angle(new_angle)
@@ -162,8 +162,8 @@ class PowerUp3:
             self.old_angle = new_angle
 
     def throttle(self, speed):
-        if (speed > 100):
-            speed = 100
+        if (speed > 200):
+            speed = 200
         elif (speed < 0):
             speed = 0
 
@@ -176,8 +176,8 @@ class PowerUp3:
         right_threshold = self.x_mid + adc_threshold
         left_threshold = self.x_mid - adc_threshold
 
-        self.interval_size_left = self.x_mid // 25
-        self.interval_size_right = (255 - self.x_mid) // 25
+        self.interval_size_left = self.x_mid // 60
+        self.interval_size_right = (255 - self.x_mid) // 60
 
         self.old_angle = 0
         self.old_speed = 0
@@ -204,7 +204,7 @@ class PowerUp3:
             elif self.button_speed_down():
                 new_speed -= 25
             elif self.button_speed_full():
-                new_speed = 100
+                new_speed = 200
             elif self.button_speed_off():
                 new_speed = 0
             else:
