@@ -166,20 +166,14 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ble/modble.c \
 	)
 
-#ifeq ($(SD), )
-
 SRC_C += \
 	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
-
-SRC_S = \
-	device/$(MCU_VARIANT)/startup_$(MCU_VARIANT).s \
-
-#endif
+	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
-OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
+OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
