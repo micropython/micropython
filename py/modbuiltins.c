@@ -225,20 +225,16 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
+    mp_map_elem_t *elem;
     if (dict != NULL) {
-        for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                mp_obj_list_append(dir, dict->map.table[i].key);
-            }
+        for (size_t i = 0; (elem = mp_map_iter_next(&dict->map, &i)); ) {
+            mp_obj_list_append(dir, elem->key);
         }
     }
-    if (members != NULL) {
-        for (mp_uint_t i = 0; i < members->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(members, i)) {
-                mp_obj_list_append(dir, members->table[i].key);
-            }
-        }
+    for (size_t i = 0; (elem = mp_map_iter_next(members, &i)); ) {
+        mp_obj_list_append(dir, elem->key);
     }
+    
     return dir;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_dir_obj, 0, 1, mp_builtin_dir);

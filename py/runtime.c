@@ -731,16 +731,15 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         // dictionary
         mp_map_t *map = mp_obj_dict_get_map(kw_dict);
         assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
-        for (size_t i = 0; i < map->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                // the key must be a qstr, so intern it if it's a string
-                mp_obj_t key = map->table[i].key;
-                if (MP_OBJ_IS_TYPE(key, &mp_type_str)) {
-                    key = mp_obj_str_intern(key);
-                }
-                args2[args2_len++] = key;
-                args2[args2_len++] = map->table[i].value;
+        mp_map_elem_t *elem;
+        for (size_t i = 0; (elem = mp_map_iter_next(map, &i)); ) {
+            // the key must be a qstr, so intern it if it's a string
+            mp_obj_t key = elem->key;
+            if (MP_OBJ_IS_TYPE(key, &mp_type_str)) {
+                key = mp_obj_str_intern(key);
             }
+            args2[args2_len++] = key;
+            args2[args2_len++] = elem->value;
         }
     } else {
         // generic mapping:
@@ -1356,12 +1355,11 @@ void mp_import_all(mp_obj_t module) {
 
     // TODO: Support __all__
     mp_map_t *map = mp_obj_dict_get_map(MP_OBJ_FROM_PTR(mp_obj_module_get_globals(module)));
-    for (size_t i = 0; i < map->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-            qstr name = MP_OBJ_QSTR_VALUE(map->table[i].key);
-            if (*qstr_str(name) != '_') {
-                mp_store_name(name, map->table[i].value);
-            }
+    mp_map_elem_t *elem;
+    for (size_t i = 0; (elem = mp_map_iter_next(map, &i)); ) {
+        qstr name = MP_OBJ_QSTR_VALUE(elem->key);
+        if (*qstr_str(name) != '_') {
+            mp_store_name(name, elem->value);
         }
     }
 }

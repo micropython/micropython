@@ -186,7 +186,7 @@ typedef struct _mp_obj_dict_it_t {
 
 STATIC mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     mp_obj_dict_it_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_elem_t *next = dict_iter_next((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->dict), &self->cur);
+    mp_map_elem_t *next = dict_iter_next((mp_obj_dict_t*)MP_OBJ_TO_PTR(self->dict), &self->cur);
 
     if (next == NULL) {
         return MP_OBJ_STOP_ITERATION;
@@ -380,10 +380,9 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     }
 
     // update the dict with any keyword args
-    for (size_t i = 0; i < kwargs->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
-            mp_map_lookup(&self->map, kwargs->table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = kwargs->table[i].value;
-        }
+    mp_map_elem_t *elem;
+    for (size_t i = 0; (elem = mp_map_iter_next(kwargs, &i)); ) {
+        mp_map_lookup(&self->map, elem->key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = elem->value;
     }
 
     return mp_const_none;
@@ -421,7 +420,7 @@ typedef struct _mp_obj_dict_view_t {
 STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &dict_view_it_type));
     mp_obj_dict_view_it_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_elem_t *next = dict_iter_next((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->dict), &self->cur);
+    mp_map_elem_t *next = dict_iter_next((mp_obj_dict_t*)MP_OBJ_TO_PTR(self->dict), &self->cur);
 
     if (next == NULL) {
         return MP_OBJ_STOP_ITERATION;

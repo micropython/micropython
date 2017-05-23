@@ -484,10 +484,9 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         // it will not result in modifications to the actual instance members.
         mp_map_t *map = &self->members;
         mp_obj_t attr_dict = mp_obj_new_dict(map->used);
-        for (size_t i = 0; i < map->alloc; ++i) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
-            }
+        mp_map_elem_t *e;
+        for (size_t i = 0; (e = mp_map_iter_next(map, &i)); ) {
+            mp_obj_dict_store(attr_dict, e->key, e->value);
         }
         dest[0] = attr_dict;
         return;

@@ -57,10 +57,9 @@ STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
 
 #if MICROPY_PY_BUILTINS_HELP_MODULES
 STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
-    for (size_t i = 0; i < map->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-            mp_obj_list_append(list, map->table[i].key);
-        }
+    mp_map_elem_t *elem;
+    for (size_t i = 0; (elem = mp_map_iter_next(map, &i)); ) {
+        mp_obj_list_append(list, elem->key);
     }
 }
 
@@ -100,7 +99,7 @@ STATIC void mp_help_print_modules(void) {
     // print the list of modules in a column-first order
     #define NUM_COLUMNS (4)
     #define COLUMN_WIDTH (18)
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);
     unsigned int num_rows = (len + NUM_COLUMNS - 1) / NUM_COLUMNS;

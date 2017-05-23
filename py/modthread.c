@@ -233,11 +233,10 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
         th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
         th_args->n_kw = map->used;
         // copy across the keyword arguments
-        for (size_t i = 0, n = pos_args_len; i < map->alloc; ++i) {
-            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
-                th_args->args[n++] = map->table[i].key;
-                th_args->args[n++] = map->table[i].value;
-            }
+		mp_map_elem_t *elem;
+        for (size_t i = 0, n = pos_args_len; (elem = mp_map_iter_next(map, &i)); ) {
+            th_args->args[n++] = elem->key;
+            th_args->args[n++] = elem->value;
         }
     }
 
