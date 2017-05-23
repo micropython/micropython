@@ -26,9 +26,9 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
   { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), (mp_obj_t)&pin_PA22 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_PA23 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), (mp_obj_t)&pin_PA30 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_SCK),  (mp_obj_t)&pin_PB11 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_MOSI), (mp_obj_t)&pin_PB10 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_MISO), (mp_obj_t)&pin_PA12 },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_SCK),  (mp_obj_t)&pin_PB11 },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PB10 },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_PA12 },
   { MP_OBJ_NEW_QSTR(MP_QSTR_FLASH_CS),   (mp_obj_t)&pin_PA13 },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
