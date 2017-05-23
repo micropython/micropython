@@ -123,6 +123,25 @@ void mp_map_clear(mp_map_t *map) {
     map->table = NULL;
 }
 
+// This is a helper function to iterate through a map.  The state of
+// the iteration is held in *cur and should be initialised with zero for the
+// first call.  Will return NULL when no more elements are available.
+mp_map_elem_t *mp_map_iter_next(const mp_map_t *map, size_t *cur) {
+    size_t max;
+
+    if (map) {
+        max = map->alloc;
+        for (size_t i = *cur; i < max; i++) {
+            if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+                *cur = i + 1;
+                return &(map->table[i]);
+            }
+        }
+    }
+    
+    return NULL;
+}
+
 STATIC void mp_map_rehash(mp_map_t *map) {
     size_t old_alloc = map->alloc;
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
