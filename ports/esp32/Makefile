@@ -141,6 +141,7 @@ SRC_C = \
 	moduhashlib.c \
 	espneopixel.c \
 	machine_hw_spi.c \
+	machine_wdt.c \
 	mpthreadport.c \
 	$(SRC_MOD)
 
