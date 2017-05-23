@@ -35,6 +35,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/objstr.h"
 
 #include "lib/netutils/netutils.h"
 
@@ -42,9 +43,11 @@
 #include "lwip/timers.h"
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
-//#include "lwip/raw.h"
 #include "lwip/dns.h"
 #include "lwip/tcp_impl.h"
+#include "lwip/inet.h"
+#include "lwip/igmp.h"
+#include "lwip/opt.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -217,6 +220,29 @@ static const int error_lookup_table[] = {
 
 /*******************************************************************************/
 // The socket object provided by lwip.socket.
+
+/*
+ * Level number for (get/set)sockopt() to apply to socket itself.
+ */
+#define  SOL_SOCKET  0xfff    /* options for socket level */
+
+#define IPPROTO_IP      0
+
+#if LWIP_IGMP
+/*
+ * Options and types for UDP multicast traffic handling
+ */
+#define IP_ADD_MEMBERSHIP  3
+#define IP_DROP_MEMBERSHIP 4
+#define IP_MULTICAST_TTL   5
+#define IP_MULTICAST_IF    6
+#define IP_MULTICAST_LOOP  7
+
+typedef struct ip_mreq {
+    struct in_addr imr_multiaddr; /* IP multicast address of group */
+    struct in_addr imr_interface; /* local IP address of interface */
+} ip_mreq;
+#endif /* LWIP_IGMP */
 
 #define MOD_NETWORK_AF_INET (2)
 #define MOD_NETWORK_AF_INET6 (10)
@@ -1066,7 +1092,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblo
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
-
+    int level = mp_obj_get_int(args[1]);
     int opt = mp_obj_get_int(args[2]);
     if (opt == 20) {
         if (args[3] == mp_const_none) {
@@ -1077,22 +1103,67 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
-    // Integer options
-    mp_int_t val = mp_obj_get_int(args[3]);
-    switch (opt) {
+    switch (level) {
+
+      case SOL_SOCKET:
+        switch (opt) {
+
         case SOF_REUSEADDR:
-            // Options are common for UDP and TCP pcb's.
-            if (val) {
-                ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
-            } else {
-                ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
-            }
-            break;
+          if (args[3]) {
+              ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+          } else {
+              ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
+          }
+          break;
+
+          break;
         default:
-            printf("Warning: lwip.setsockopt() not implemented\n");
-    }
-    return mp_const_none;
+          printf("Warning: lwip.setsockopt() SOL_SOCKET option not implemented\n");
+
+        }  /* switch (opt) */
+        break;
+
+      case IPPROTO_IP:
+        switch (opt) {
+#if LWIP_IGMP
+        case IP_ADD_MEMBERSHIP:;
+
+        // args[3] contains 2 IP adresses (interface & multicast IPs), i.e. 8 bytes of data
+        // that are obtained via mp_obj_str_get_data(). The resulting char array is then assigned
+        // to a mreq struct that will contain 2 separate IPs that we will use to Join
+        // a multicast group
+
+        size_t len;
+        const char *ips = mp_obj_str_get_data(args[3], &len);
+        struct ip_mreq *imr = (struct ip_mreq *)ips;
+
+        ip_addr_t if_addr;
+        ip_addr_t multi_addr;
+
+        inet_addr_to_ipaddr(&if_addr, &imr->imr_interface);
+        inet_addr_to_ipaddr(&multi_addr, &imr->imr_multiaddr);
+
+        if (igmp_joingroup(&if_addr, &multi_addr) != 0) {
+            mp_raise_OSError(MP_EIO);
+        }
+
+        inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, &imr->imr_multiaddr);
+
+        break;
+        default:
+          printf("Warning: lwip.setsockopt() IPPROTO_IP option not implemented\n");
+
+        } /* switch (opt) */
+        break;
+        default:
+          printf("Warning: lwip.setsockopt() level not implemented\n");
+
+#endif /* LWIP_IGMP */
+        }
+
+return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
 
 STATIC mp_obj_t lwip_socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
@@ -1309,6 +1380,16 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_getaddrinfo_obj, 2, 6, lwip_getaddrinfo);
 
+STATIC mp_obj_t lwip_inet_aton(mp_obj_t addr_in) {
+    vstr_t vstr;
+    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
+    netutils_parse_ipv4_addr(addr_in, ip, NETUTILS_BIG);
+    vstr_init_len(&vstr, 4);
+    vstr.buf = (char *)ip;
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(lwip_inet_aton_obj, lwip_inet_aton);
+
 // Debug functions
 
 STATIC mp_obj_t lwip_print_pcbs() {
@@ -1325,6 +1406,7 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_lwip_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&lwip_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_print_pcbs), (mp_obj_t)&lwip_print_pcbs_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_inet_aton), (mp_obj_t)&lwip_inet_aton_obj },
     // objects
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&lwip_socket_type },
 #ifdef MICROPY_PY_LWIP_SLIP
@@ -1338,8 +1420,11 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_DGRAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_RAW) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(1) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SOL_SOCKET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
+	{ MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INADDR_ANY), MP_OBJ_NEW_SMALL_INT(INADDR_ANY) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);
