@@ -451,6 +451,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(microbit_music_set_tempo_obj, 0, microbit_music_set_t
 
 
 static mp_obj_t music_init(void) {
+    microbit_music_init0();
+
     music_data = m_new_obj(music_data_t);
     music_data->bpm = DEFAULT_BPM;
     music_data->ticks = DEFAULT_TICKS;
