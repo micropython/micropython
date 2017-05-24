@@ -48,6 +48,7 @@
 #include "lwip/inet.h"
 #include "lwip/igmp.h"
 #include "lwip/opt.h"
+#include "lwip/sockets.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
