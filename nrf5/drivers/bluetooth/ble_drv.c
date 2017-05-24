@@ -94,11 +94,9 @@ static mp_obj_t mp_gattc_char_data_observer;
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
 
-#if NRF51
-nrf_nvic_state_t nrf_nvic_state;;
-#else
-nrf_nvic_state_t nrf_nvic_state;
-#endif // NRF51
+#ifdef NRF52
+nrf_nvic_state_t nrf_nvic_state = {0};
+#endif // NRF52
 
 #endif // (BLUETOOTH_SD != 100)
 
@@ -114,10 +112,6 @@ void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
 uint32_t ble_drv_stack_enable(void) {
     m_adv_in_progress = false;
     m_tx_in_progress  = false;
-
-#if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
-    memset(&nrf_nvic_state, 0, sizeof(nrf_nvic_state_t));
-#endif
 
 #if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
 #if BLUETOOTH_LFCLK_RC
