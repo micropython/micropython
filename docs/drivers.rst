@@ -1,8 +1,9 @@
-Adafruit CircuitPython drivers
+Additional Libraries on GitHub
 ========================================
 
-These are drivers available in separate GitHub repos. They are designed for use
-with CircuitPython and may or may not work with `MicroPython <https://micropython.org>`_.
+These are libraries and drivers available in separate GitHub repos. They are
+designed for use with CircuitPython and may or may not work with
+`MicroPython <https://micropython.org>`_.
 
 .. _bundle_installation:
 
@@ -33,6 +34,14 @@ the ``lib/`` directory. Some drivers may not work without them.
 
     Register Library <https://circuitpython.readthedocs.io/projects/register/en/latest/>
     BusDevice Library <https://circuitpython.readthedocs.io/projects/bus_device/en/latest/>
+
+Helper Libraries
+-------
+
+These libraries build on top of the low level APIS to simplify common tasks.
+
+.. toctree::
+    USB Human Interface Device (Keyboard and Mouse) <https://circuitpython.readthedocs.io/projects/hid/en/latest/>
 
 Drivers
 -------
