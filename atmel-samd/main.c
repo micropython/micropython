@@ -125,6 +125,9 @@ void reset_mp(void) {
     disk_ioctl(1, CTRL_SYNC, NULL);
     disk_ioctl(2, CTRL_SYNC, NULL);
 
+    // Clear the readline history. It references the heap we're about to destroy.
+    readline_init0();
+
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
