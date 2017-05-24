@@ -48,6 +48,7 @@
 #include "lwip/inet.h"
 #include "lwip/igmp.h"
 #include "lwip/opt.h"
+#include "lwip/sockets.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -1094,6 +1095,7 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
     lwip_socket_obj_t *socket = args[0];
     int level = mp_obj_get_int(args[1]);
     int opt = mp_obj_get_int(args[2]);
+
     if (opt == 20) {
         if (args[3] == mp_const_none) {
             socket->callback = MP_OBJ_NULL;
@@ -1126,37 +1128,71 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
       case IPPROTO_IP:
         switch (opt) {
 #if LWIP_IGMP
+        case IP_MULTICAST_TTL:
+          socket->pcb.udp->ttl = mp_obj_get_int(args[3]);
+          break;
+
+        case IP_MULTICAST_LOOP:
+          if (args[3]) {
+            udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) | UDP_FLAGS_MULTICAST_LOOP);
+          } else {
+            udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) & ~UDP_FLAGS_MULTICAST_LOOP);
+          }
+          break;
+
+        case IP_MULTICAST_IF:;
+          size_t len_mif;
+          const char *mif_ip = mp_obj_str_get_data(args[3], &len_mif);
+          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, (struct in_addr*)mif_ip);
+          break;
+
         case IP_ADD_MEMBERSHIP:;
 
-        // args[3] contains 2 IP adresses (interface & multicast IPs), i.e. 8 bytes of data
-        // that are obtained via mp_obj_str_get_data(). The resulting char array is then assigned
-        // to a mreq struct that will contain 2 separate IPs that we will use to Join
-        // a multicast group
+          // args[3] contains 2 IP adresses (interface & multicast IPs), i.e. 8 bytes of data
+          // that are obtained via mp_obj_str_get_data(). The resulting char array is then assigned
+          // to a mreq struct that will contain 2 separate IPs that we will use to Join
+          // a multicast group
 
-        size_t len;
-        const char *ips = mp_obj_str_get_data(args[3], &len);
-        struct ip_mreq *imr = (struct ip_mreq *)ips;
+          size_t len;
+          const char *ips = mp_obj_str_get_data(args[3], &len);
+          struct ip_mreq *imr = (struct ip_mreq *)ips;
 
-        ip_addr_t if_addr;
-        ip_addr_t multi_addr;
+          ip_addr_t if_addr;
+          ip_addr_t multi_addr;
+          inet_addr_to_ipaddr(&if_addr, &imr->imr_interface);
+          inet_addr_to_ipaddr(&multi_addr, &imr->imr_multiaddr);
 
-        inet_addr_to_ipaddr(&if_addr, &imr->imr_interface);
-        inet_addr_to_ipaddr(&multi_addr, &imr->imr_multiaddr);
+          if (igmp_joingroup(&if_addr, &multi_addr) != 0) {
+              mp_raise_OSError(MP_EIO);
+          }
 
-        if (igmp_joingroup(&if_addr, &multi_addr) != 0) {
+          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, &imr->imr_multiaddr);
+
+          break;
+
+        case IP_DROP_MEMBERSHIP:;
+          size_t len_drop;
+          const char *ips_drop = mp_obj_str_get_data(args[3], &len_drop);
+          struct ip_mreq *imr_drop = (struct ip_mreq *)ips_drop;
+
+          ip_addr_t if_addr_drop;
+          ip_addr_t multi_addr_drop;
+          inet_addr_to_ipaddr(&if_addr_drop, &imr_drop->imr_interface);
+          inet_addr_to_ipaddr(&multi_addr_drop, &imr_drop->imr_multiaddr);
+
+          if (igmp_leavegroup(&if_addr_drop, &multi_addr_drop) != 0) {
             mp_raise_OSError(MP_EIO);
-        }
+          }
+          break;
 
-        inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, &imr->imr_multiaddr);
-
-        break;
         default:
           printf("Warning: lwip.setsockopt() IPPROTO_IP option not implemented\n");
 
         } /* switch (opt) */
         break;
-        default:
-          printf("Warning: lwip.setsockopt() level not implemented\n");
+
+      default:
+        printf("Warning: lwip.setsockopt() level not implemented\n");
 
 #endif /* LWIP_IGMP */
         }
