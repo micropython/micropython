@@ -32,52 +32,88 @@
 #include "nrf.h"
 
 #if BLUETOOTH_SD
-#if NRF51
-  #include "nrf_sdm.h"
-#elif NRF52
+#include "py/nlr.h"
+#include "ble_drv.h"
+
+#define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
+
+#ifdef NRF51
+  #include "nrf_soc.h"
+#elif defined(NRF52)
   #include "nrf_nvic.h"
 #endif
-#endif
+#endif // BLUETOOTH_SD
 
 static inline void hal_irq_clear(uint32_t irq_num) {
 #if BLUETOOTH_SD
-    sd_nvic_ClearPendingIRQ(irq_num);
-#else
-    NVIC_ClearPendingIRQ(irq_num);
-#endif
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        if (sd_nvic_ClearPendingIRQ(irq_num) != 0) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                      "IRQ (%d) clear error", irq_num));
+        }
+    } else
+#endif // BLUETOOTH_SD
+    {
+        NVIC_ClearPendingIRQ(irq_num);
+    }
 }
 
 static inline void hal_irq_enable(uint32_t irq_num) {
     hal_irq_clear(irq_num);
+
 #if BLUETOOTH_SD
-    sd_nvic_EnableIRQ(irq_num);
-#else
-    NVIC_EnableIRQ(irq_num);
-#endif
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        if (sd_nvic_EnableIRQ(irq_num) != 0) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                      "IRQ (%d) enable error", irq_num));
+        }
+    } else
+#endif // BLUETOOTH_SD
+    {
+        NVIC_EnableIRQ(irq_num);
+    }
 }
 
 static inline void hal_irq_disable(uint32_t irq_num) {
 #if BLUETOOTH_SD
-    sd_nvic_DisableIRQ(irq_num);
-#else
-    NVIC_DisableIRQ(irq_num);
-#endif
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        if (sd_nvic_DisableIRQ(irq_num) != 0) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                      "IRQ (%d) disable error", irq_num));
+        }
+    } else
+#endif // BLUETOOTH_SD
+    {
+        NVIC_DisableIRQ(irq_num);
+    }
 }
 
 static inline void hal_irq_priority(uint32_t irq_num, uint8_t priority) {
 #if BLUETOOTH_SD
-    sd_nvic_SetPriority(irq_num, priority);
-#else
-    NVIC_SetPriority(irq_num, priority);
-#endif
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        if (sd_nvic_SetPriority(irq_num, priority) != 0) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                      "IRQ (%d) priority error", irq_num, priority));
+        }
+    } else
+#endif // BLUETOOTH_SD
+    {
+        NVIC_SetPriority(irq_num, priority);
+    }
 }
 
 static inline void hal_irq_pending(uint32_t irq_num) {
 #if BLUETOOTH_SD
-    sd_nvic_SetPendingIRQ(irq_num);
-#else
-    NVIC_SetPendingIRQ(irq_num);
-#endif
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        if (sd_nvic_SetPendingIRQ(irq_num) != 0) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                      "IRQ (%d) pending error", irq_num));
+        }
+    } else
+#endif // BLUETOOTH_SD
+    {
+        NVIC_SetPendingIRQ(irq_num);
+    }
 }
 
 #endif // HAL_IRQ_H__
