@@ -31,21 +31,21 @@
 #include "ticker.h"
 #include "hal_irq.h"
 
-#define FastTicker NRF_TIMER0
-#define FastTicker_IRQn TIMER0_IRQn
-#define FastTicker_IRQHandler TIMER0_IRQHandler
+#define FastTicker NRF_TIMER1
+#define FastTicker_IRQn TIMER1_IRQn
+#define FastTicker_IRQHandler TIMER1_IRQHandler
 
 #define SlowTicker_IRQn SWI0_IRQn
 #define SlowTicker_IRQHandler SWI0_IRQHandler
 
 // Ticker callback function called every MACRO_TICK
-static callback_ptr slow_ticker;
+static volatile callback_ptr slow_ticker;
 
 void ticker_init(callback_ptr slow_ticker_callback) {
     slow_ticker = slow_ticker_callback;
 
     NRF_TIMER_Type *ticker = FastTicker;
-#if NRF51
+#ifdef NRF51
     ticker->POWER = 1;
 #endif
     __NOP();
@@ -58,31 +58,42 @@ void ticker_init(callback_ptr slow_ticker_callback) {
     ticker->INTENSET = TIMER_INTENSET_COMPARE3_Msk;
     ticker->SHORTS = 0;
 
+#ifdef NRF51
     hal_irq_priority(FastTicker_IRQn, 1);
+#else
+    hal_irq_priority(FastTicker_IRQn, 2);
+#endif
+
     hal_irq_priority(SlowTicker_IRQn, 3);
+    hal_irq_priority(SlowTicker_IRQn, 3);
+
     hal_irq_enable(SlowTicker_IRQn);
 }
 
-/* Start and stop timer 0 including workarounds for Anomaly 73 for Timer
+/* Start and stop timer 1 including workarounds for Anomaly 73 for Timer
 * http://www.nordicsemi.com/eng/content/download/29490/494569/file/nRF51822-PAN%20v3.0.pdf
 */
 void ticker_start(void) {
     hal_irq_enable(FastTicker_IRQn);
-    *(uint32_t *)0x40008C0C = 1; //for Timer 0
+#ifdef NRF51
+    *(uint32_t *)0x40009C0C = 1; // for Timer 1
+#endif
     FastTicker->TASKS_START = 1;
 }
 
 void ticker_stop(void) {
     hal_irq_disable(FastTicker_IRQn);
     FastTicker->TASKS_STOP = 1;
-    *(uint32_t *)0x40008C0C = 0; //for Timer 0
+#ifdef NRF51
+    *(uint32_t *)0x40009C0C = 0; // for Timer 1
+#endif
 }
 
 int32_t noop(void) {
     return -1;
 }
 
-uint32_t ticks;
+volatile uint32_t ticks;
 
 static ticker_callback_ptr callbacks[3] = { noop, noop, noop };
 

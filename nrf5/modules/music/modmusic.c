@@ -72,7 +72,7 @@ enum {
 
 #define music_data MP_STATE_PORT(music_data)
 
-extern uint32_t ticks;
+extern volatile uint32_t ticks;
 
 STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin);
 
