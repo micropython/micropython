@@ -306,8 +306,11 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
     } else { // Default
         self->pyb->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
     }
-
-    self->pyb->spi->init.irq_priority = 4;
+#ifdef NRF51
+    self->pyb->spi->init.irq_priority = 3;
+#else
+    self->pyb->spi->init.irq_priority = 6;
+#endif
     self->pyb->spi->init.mode = HAL_SPI_MODE_CPOL0_CPHA0;
     self->pyb->spi->init.firstbit = (args[ARG_NEW_firstbit].u_int == 0) ? HAL_SPI_MSB_FIRST : HAL_SPI_LSB_FIRST;;
     hal_spi_master_init(self->pyb->spi->instance, &self->pyb->spi->init);
