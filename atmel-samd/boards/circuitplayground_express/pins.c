@@ -36,8 +36,8 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_IR_TX),  (mp_obj_t)&pin_PA23 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IR_PROXIMITY), (mp_obj_t)&pin_PA04 },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MICROPHONE_SCK), (mp_obj_t)&pin_PA10 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MICROPHONE_DO), (mp_obj_t)&pin_PA08 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MICROPHONE_CLOCK), (mp_obj_t)&pin_PA10 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MICROPHONE_DATA), (mp_obj_t)&pin_PA08 },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_INTERRUPT), (mp_obj_t)&pin_PA13 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ACCELEROMETER_SDA),   (mp_obj_t)&pin_PA00 },

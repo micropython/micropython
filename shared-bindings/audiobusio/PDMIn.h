@@ -24,24 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H__
 
-#include "asf/sam0/drivers/dma/dma.h"
+#include "common-hal/audiobusio/PDMIn.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "extmod/vfs_fat_file.h"
 
-extern struct dma_resource audio_dma;
-extern struct dma_resource general_dma_tx;
-extern struct dma_resource general_dma_rx;
+extern const mp_obj_type_t audiobusio_pdmin_type;
 
-volatile bool audio_dma_in_use;
+void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
+    const mcu_pin_obj_t* clock_pin, const mcu_pin_obj_t* data_pin,
+    uint32_t frequency, uint8_t bit_depth, bool mono, uint8_t oversample);
+void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self);
+uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* self,
+    uint16_t* buffer, uint32_t length);
+uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self);
+uint32_t common_hal_audiobusio_pdmin_get_frequency(audiobusio_pdmin_obj_t* self);
+// TODO(tannewt): Add record to file
 
-void init_shared_dma(void);
-
-enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
-enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
-
-// Allocate a counter to track how far along we are in a DMA double buffer.
-bool allocate_block_counter(void);
-void switch_audiodma_trigger(uint8_t trigger_dmac_id);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H__

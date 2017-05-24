@@ -137,6 +137,19 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
     if (!spi_flash_is_initialised) {
         return false;
     }
+    // Don't bother writing if the data is all 1s. Thats equivalent to the flash
+    // state after an erase.
+    bool all_ones = true;
+    for (uint16_t i = 0; i < data_length; i++) {
+        if (data[i] != 0xff) {
+            all_ones = false;
+            break;
+        }
+    }
+    if (all_ones) {
+        return true;
+    }
+
     for (uint32_t bytes_written = 0;
         bytes_written < data_length;
         bytes_written += SPI_FLASH_PAGE_SIZE) {
@@ -145,12 +158,14 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
         }
         enum status_code status;
 
+        #ifdef SPI_FLASH_SECTOR_PROTECTION
         // Print out the protection status.
-        uint8_t protect_check[5] = {0x3C, 0x00, 0x00, 0x00, 0x00};
-        address_to_bytes(address + bytes_written, protect_check + 1);
-        flash_enable();
-        status = spi_write_buffer_wait(&spi_flash_instance, protect_check, 5);
-        flash_disable();
+        // uint8_t protect_check[5] = {0x3C, 0x00, 0x00, 0x00, 0x00};
+        // address_to_bytes(address + bytes_written, protect_check + 1);
+        // flash_enable();
+        // status = spi_write_buffer_wait(&spi_flash_instance, protect_check, 5);
+        // flash_disable();
+        #endif
 
         flash_enable();
         uint8_t command[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
@@ -163,6 +178,34 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
         if (status != STATUS_OK) {
             return false;
         }
+    }
+    return true;
+}
+
+static bool page_erased(uint32_t sector_address) {
+    // Check the first few bytes to catch the common case where there is data
+    // without using a bunch of memory.
+    uint8_t short_buffer[4];
+    if (read_flash(sector_address, short_buffer, 4)) {
+        for (uint16_t i = 0; i < 4; i++) {
+            if (short_buffer[i] != 0xff) {
+                return false;
+            }
+        }
+    } else {
+        return false;
+    }
+
+    // Now check the full length.
+    uint8_t full_buffer[FILESYSTEM_BLOCK_SIZE];
+    if (read_flash(sector_address, full_buffer, FILESYSTEM_BLOCK_SIZE)) {
+        for (uint16_t i = 0; i < FILESYSTEM_BLOCK_SIZE; i++) {
+            if (short_buffer[i] != 0xff) {
+                return false;
+            }
+        }
+    } else {
+        return false;
     }
     return true;
 }
@@ -553,9 +596,14 @@ bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
         uint32_t this_sector = address & (~(SPI_FLASH_ERASE_SIZE - 1));
         uint8_t block_index = (address / FILESYSTEM_BLOCK_SIZE) % (SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE);
         uint8_t mask = 1 << (block_index);
-        // Flush the cache if we're moving onto a sector our we're writing the
+        // Flush the cache if we're moving onto a sector or we're writing the
         // same block again.
         if (current_sector != this_sector || (mask & dirty_mask) > 0) {
+            // Check to see if we'd write to an erased page. In that case we
+            // can write directly.
+            if (page_erased(address)) {
+                return write_flash(address, data, FILESYSTEM_BLOCK_SIZE);
+            }
             if (current_sector != NO_SECTOR_LOADED) {
                 spi_flash_flush_keep_cache(true);
             }

@@ -120,6 +120,7 @@ CFLAGS_CORTEX_M0 = \
 	-DTCC_ASYNC=false \
 	-DADC_CALLBACK_MODE=false \
 	-DEVENTS_INTERRUPT_HOOKS_MODE=false \
+	-DI2S_CALLBACK_MODE=false \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
@@ -162,6 +163,7 @@ SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/events/events_sam_d_r/events.c \
 	drivers/extint/extint_callback.c \
 	drivers/extint/extint_sam_d_r/extint.c \
+	drivers/i2s/i2s.c \
 	drivers/nvm/nvm.c \
 	drivers/port/port.c \
 	drivers/sercom/i2c/i2c_sam0/i2c_master.c \
@@ -233,6 +235,8 @@ SRC_COMMON_HAL = \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
+	audiobusio/__init__.c \
+	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	board/__init__.c \

@@ -76,7 +76,7 @@ void audioout_reset(void) {
     // Only reset DMA. PWMOut will reset the timer. Other code will reset the DAC.
     refcount = 0;
     MP_STATE_VM(audioout_sample_timer) = NULL;
-    MP_STATE_VM(audioout_block_counter) = NULL;
+    MP_STATE_VM(audiodma_block_counter) = NULL;
     MP_STATE_VM(audioout_dac_instance) = NULL;
 
     if (MP_STATE_VM(audioout_sample_event) != NULL) {
@@ -85,10 +85,10 @@ void audioout_reset(void) {
     }
     MP_STATE_VM(audioout_sample_event) = NULL;
 
-    if (MP_STATE_VM(audioout_block_event) != NULL) {
-        events_release(MP_STATE_VM(audioout_block_event));
+    if (MP_STATE_VM(audiodma_block_event) != NULL) {
+        events_release(MP_STATE_VM(audiodma_block_event));
     }
-    MP_STATE_VM(audioout_block_event) = NULL;
+    MP_STATE_VM(audiodma_block_event) = NULL;
 
     if (MP_STATE_VM(audioout_dac_event) != NULL) {
         events_detach_user(MP_STATE_VM(audioout_dac_event), EVSYS_ID_USER_DMAC_CH_0);
@@ -102,12 +102,12 @@ void audioout_reset(void) {
 // WARN(tannewt): DO NOT print from here. It calls background tasks and causes a
 // stack overflow.
 void audioout_background(void) {
-    if (MP_STATE_VM(audioout_block_counter) != NULL &&
+    if (MP_STATE_VM(audiodma_block_counter) != NULL &&
             active_audioout != NULL &&
             active_audioout->second_buffer != NULL &&
-            active_audioout->last_loaded_block < tc_get_count_value(MP_STATE_VM(audioout_block_counter))) {
+            active_audioout->last_loaded_block < tc_get_count_value(MP_STATE_VM(audiodma_block_counter))) {
         uint8_t* buffer;
-        if (tc_get_count_value(MP_STATE_VM(audioout_block_counter)) % 2 == 1) {
+        if (tc_get_count_value(MP_STATE_VM(audiodma_block_counter)) % 2 == 1) {
             buffer = active_audioout->buffer;
         } else {
             buffer = active_audioout->second_buffer;
@@ -146,82 +146,6 @@ void audioout_background(void) {
             }
         }
     }
-}
-
-static void allocate_block_counter(audioio_audioout_obj_t* self) {
-    // Find a timer to count DMA block completions.
-    Tc *t = NULL;
-    Tc *tcs[TC_INST_NUM] = TC_INSTS;
-    for (uint8_t i = TC_INST_NUM; i > 0; i--) {
-        if (tcs[i - 1]->COUNT16.CTRLA.bit.ENABLE == 0) {
-            t = tcs[i - 1];
-            break;
-        }
-    }
-    if (t == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_RuntimeError("All timers in use");
-        return;
-    }
-    MP_STATE_VM(audioout_block_counter) = gc_alloc(sizeof(struct tc_module), false);
-    if (MP_STATE_VM(audioout_block_counter) == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
-
-    // Don't bother setting the period. We set it before you playback anything.
-    struct tc_config config_tc;
-    tc_get_config_defaults(&config_tc);
-    config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
-    config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
-    if (tc_init(MP_STATE_VM(audioout_block_counter), t, &config_tc) != STATUS_OK) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_OSError(MP_EIO);
-        return;
-    };
-
-    struct tc_events events_tc;
-    events_tc.generate_event_on_overflow = false;
-    events_tc.on_event_perform_action = true;
-    events_tc.event_action = TC_EVENT_ACTION_INCREMENT_COUNTER;
-    tc_enable_events(MP_STATE_VM(audioout_block_counter), &events_tc);
-
-    // Connect the timer overflow event, which happens at the target frequency,
-    // to the DAC conversion trigger.
-    MP_STATE_VM(audioout_block_event) = gc_alloc(sizeof(struct events_resource), false);
-    if (MP_STATE_VM(audioout_block_event) == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
-    struct events_config config;
-    events_get_config_defaults(&config);
-
-    uint8_t user = EVSYS_ID_USER_TC3_EVU;
-    if (t == TC4) {
-        user = EVSYS_ID_USER_TC4_EVU;
-    } else if (t == TC5) {
-        user = EVSYS_ID_USER_TC5_EVU;
-#ifdef TC6
-    } else if (t == TC6) {
-        user = EVSYS_ID_USER_TC6_EVU;
-#endif
-#ifdef TC7
-    } else if (t == TC7) {
-        user = EVSYS_ID_USER_TC7_EVU;
-#endif
-    }
-
-    config.generator    = EVSYS_ID_GEN_DMAC_CH_0;
-    config.path         = EVENTS_PATH_ASYNCHRONOUS;
-    if (events_allocate(MP_STATE_VM(audioout_block_event), &config) != STATUS_OK ||
-        events_attach_user(MP_STATE_VM(audioout_block_event), user) != STATUS_OK) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_OSError(MP_EIO);
-        return;
-    }
-
-    tc_enable(MP_STATE_VM(audioout_block_counter));
-    tc_stop_counter(MP_STATE_VM(audioout_block_counter));
 }
 
 static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* pin) {
@@ -380,8 +304,8 @@ void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* sel
         refcount++;
         shared_construct(self, pin);
     }
-    if (MP_STATE_VM(audioout_block_counter) == NULL) {
-        allocate_block_counter(self);
+    if (MP_STATE_VM(audiodma_block_counter) == NULL && !allocate_block_counter()) {
+        mp_raise_RuntimeError("Unable to allocate audio DMA block counter.");
     }
 
     // Load the wave
@@ -519,6 +443,7 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop) {
     } else {
         dac_enable(MP_STATE_VM(audioout_dac_instance));
     }
+    switch_audiodma_trigger(DAC_DMAC_ID_EMPTY);
     struct dma_descriptor_config descriptor_config;
     dma_descriptor_get_config_defaults(&descriptor_config);
     if (self->bytes_per_sample == 2) {
@@ -580,8 +505,8 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop) {
     active_audioout = self;
     dma_start_transfer_job(&audio_dma);
 
-    if (MP_STATE_VM(audioout_block_counter) != NULL) {
-        tc_start_counter(MP_STATE_VM(audioout_block_counter));
+    if (MP_STATE_VM(audiodma_block_counter) != NULL) {
+        tc_start_counter(MP_STATE_VM(audiodma_block_counter));
     }
     set_timer_frequency(self->frequency);
     tc_start_counter(MP_STATE_VM(audioout_sample_timer));
@@ -589,8 +514,8 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop) {
 
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
     if (active_audioout == self) {
-        if (MP_STATE_VM(audioout_block_counter) != NULL) {
-            tc_stop_counter(MP_STATE_VM(audioout_block_counter));
+        if (MP_STATE_VM(audiodma_block_counter) != NULL) {
+            tc_stop_counter(MP_STATE_VM(audiodma_block_counter));
         }
         tc_stop_counter(MP_STATE_VM(audioout_sample_timer));
         dma_abort_job(&audio_dma);

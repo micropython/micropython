@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,24 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H__
 
-#include "asf/sam0/drivers/dma/dma.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "asf/sam0/drivers/i2s/i2s.h"
+#include "asf/sam0/drivers/tc/tc.h"
 
-extern struct dma_resource audio_dma;
-extern struct dma_resource general_dma_tx;
-extern struct dma_resource general_dma_rx;
+#include "extmod/vfs_fat_file.h"
+#include "py/obj.h"
 
-volatile bool audio_dma_in_use;
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t *clock_pin;
+    const mcu_pin_obj_t *data_pin;
+    uint32_t frequency;
+    struct i2s_module i2s_instance;
+    uint8_t serializer;
+    uint8_t clock_unit;
+    uint8_t bytes_per_sample;
+    uint8_t bit_depth;
+} audiobusio_pdmin_obj_t;
 
-void init_shared_dma(void);
+void pdmin_reset(void);
 
-enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
-enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
+void pdmin_background(void);
 
-// Allocate a counter to track how far along we are in a DMA double buffer.
-bool allocate_block_counter(void);
-void switch_audiodma_trigger(uint8_t trigger_dmac_id);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H__

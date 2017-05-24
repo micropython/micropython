@@ -139,6 +139,7 @@ typedef long mp_off_t;
 extern const struct _mp_obj_module_t microcontroller_module;
 extern const struct _mp_obj_module_t bitbangio_module;
 extern const struct _mp_obj_module_t audioio_module;
+extern const struct _mp_obj_module_t audiobusio_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
@@ -167,6 +168,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_FRAMEBUF         (1)
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
     #define EXPRESS_BOARD
@@ -218,11 +220,11 @@ extern const struct _mp_obj_module_t usb_hid_module;
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
+    struct tc_module* audiodma_block_counter; \
+    struct events_resource* audiodma_block_event; \
     struct tc_module* audioout_sample_timer; \
-    struct tc_module* audioout_block_counter; \
     struct dac_module* audioout_dac_instance; \
     struct events_resource* audioout_sample_event; \
-    struct events_resource* audioout_block_event; \
     struct events_resource* audioout_dac_event; \
     struct tc_module* pulseout_tc_instance; \
     FLASH_ROOT_POINTERS \

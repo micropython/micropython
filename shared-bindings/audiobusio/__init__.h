@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,24 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO___INIT___H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO___INIT___H__
 
-#include "asf/sam0/drivers/dma/dma.h"
+#include "py/obj.h"
 
-extern struct dma_resource audio_dma;
-extern struct dma_resource general_dma_tx;
-extern struct dma_resource general_dma_rx;
+// Nothing now.
 
-volatile bool audio_dma_in_use;
-
-void init_shared_dma(void);
-
-enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
-enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
-
-// Allocate a counter to track how far along we are in a DMA double buffer.
-bool allocate_block_counter(void);
-void switch_audiodma_trigger(uint8_t trigger_dmac_id);
-
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO___INIT___H__
