@@ -448,7 +448,19 @@ bool mp_emit_bc_last_emit_was_return_value(emit_t *emit) {
 }
 
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
+    if (emit->pass == MP_PASS_SCOPE) {
+        return;
+    }
+    assert((mp_int_t)emit->stack_size + delta >= 0);
     emit->stack_size += delta;
+    if (emit->stack_size > emit->scope->stack_size) {
+        emit->scope->stack_size = emit->stack_size;
+    }
+    emit->last_emit_was_return_value = false;
+}
+
+static inline void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
+    mp_emit_bc_adjust_stack_size(emit, stack_size_delta);
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
@@ -469,18 +481,6 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
     (void)emit;
     (void)source_line;
 #endif
-}
-
-STATIC void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
-    if (emit->pass == MP_PASS_SCOPE) {
-        return;
-    }
-    assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
-    emit->stack_size += stack_size_delta;
-    if (emit->stack_size > emit->scope->stack_size) {
-        emit->scope->stack_size = emit->stack_size;
-    }
-    emit->last_emit_was_return_value = false;
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
