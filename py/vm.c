@@ -1436,6 +1436,7 @@ unwind_loop:
             } else if (code_state->prev != NULL) {
                 mp_globals_set(code_state->old_globals);
                 code_state = code_state->prev;
+                size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
                 fastn = &code_state->state[n_state - 1];
                 exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
                 // variables that are visible to the exception handler (declared volatile)
