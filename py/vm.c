@@ -690,8 +690,7 @@ unwind_jump:;
                     }
                     ip = (const byte*)MP_OBJ_TO_PTR(POP()); // pop destination ip for jump
                     if (unum != 0) {
-                        // pop iter and iter_buf
-                        sp--;
+                        // pop the exhausted iterator
                         sp -= MP_OBJ_ITER_BUF_NSLOTS;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
