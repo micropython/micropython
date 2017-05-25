@@ -64,9 +64,9 @@
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_A25) // (Arduino D13)
-#define MICROPY_HW_SPI0_MOSI        (pin_A23) // (Arduino D11)
-#define MICROPY_HW_SPI0_MISO        (pin_A24) // (Arduino D12)
+#define MICROPY_HW_SPI0_SCK         (pin_A12) // (Arduino D13)
+#define MICROPY_HW_SPI0_MOSI        (pin_A13) // (Arduino D11)
+#define MICROPY_HW_SPI0_MISO        (pin_A14) // (Arduino D12)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
