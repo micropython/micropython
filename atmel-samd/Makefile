@@ -227,7 +227,6 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
-	input.c \
 	)
 
 SRC_BINDINGS = \

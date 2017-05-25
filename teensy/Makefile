@@ -94,7 +94,6 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	gccollect.c \
-	input.c \
 	irq.c \
 	pin.c \
 	pin_named_pins.c \

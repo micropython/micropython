@@ -141,7 +141,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
-	input.c \
 	)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
