@@ -1109,11 +1109,12 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
       case SOL_SOCKET:
         switch (opt) {
-
         case SOF_REUSEADDR:
-          if (args[3]) {
+
+          if (mp_obj_get_int(args[3])) {
               ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
           } else {
+              printf("SOF_REUSEADDR NOT TRUE \n");
               ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
           }
           break;
@@ -1133,7 +1134,7 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
           break;
 
         case IP_MULTICAST_LOOP:
-          if (args[3]) {
+          if (mp_obj_get_int(args[3])) {
             udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) | UDP_FLAGS_MULTICAST_LOOP);
           } else {
             udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) & ~UDP_FLAGS_MULTICAST_LOOP);
@@ -1460,6 +1461,10 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
 	{ MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_TTL) },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_LOOP), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_LOOP) },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_IF), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_IF) },
+  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_DROP_MEMBERSHIP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INADDR_ANY), MP_OBJ_NEW_SMALL_INT(INADDR_ANY) },
 };
 
