@@ -188,7 +188,6 @@ PY_O_BASENAME = \
 	stream.o \
 	binary.o \
 	builtinimport.o \
-	builtininput.o \
 	builtinevex.o \
 	modarray.o \
 	modbuiltins.o \

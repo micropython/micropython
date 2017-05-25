@@ -223,6 +223,7 @@ SRC_C = \
 	lib/utils/pyhelp.c \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
+	lib/mp-readline/builtin_input.c \
 	lib/mp-readline/readline.c
 
 STM_SRC_C = $(addprefix stmhal/,\

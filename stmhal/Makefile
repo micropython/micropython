@@ -108,6 +108,7 @@ SRC_LIB = $(addprefix lib/,\
 	libm/wf_tgamma.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
+	mp-readline/builtin_input.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
