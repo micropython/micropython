@@ -38,8 +38,7 @@ def setup():
     wifi()
     uos.VfsFat.mkfs(bdev)
     vfs = uos.VfsFat(bdev)
-    uos.mount(vfs, '/flash')
-    uos.chdir('/flash')
+    uos.mount(vfs, '/')
     with open("boot.py", "w") as f:
         f.write("""\
 # This file is executed on every boot (including wake-boot from deepsleep)
