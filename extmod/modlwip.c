@@ -1092,6 +1092,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblo
 
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
+    // To realize behaviour close to regular lwip / sockets.c,
+    // options passed as args are assigned as follows:
+    //
+    // level (int) - protocol level at which the option resides
+    // opt (int) - specifies the option to be set
+    // optval (int/struct) - the value of the option to be set. May be of type
+    //                       int or string of byte(s), depending on option.
+    //
+    // To support passing of IP addresses as optval,
+    // a lwip_inet_aton(mp_obj_t addr_in) function has been added.
+
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
     int level = mp_obj_get_int(args[1]);
@@ -1108,9 +1119,13 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
+    // Switch through option levels
+    // Right now, only SOL_SOCKET and IPPROTO_IP are implemented
     switch (level) {
 
       case SOL_SOCKET:
+      // Switch through SOL_SOCKET options
+      // Only SOF_REUSEADDR is implemented yet
         switch (opt) {
         case SOF_REUSEADDR:
 
@@ -1130,6 +1145,8 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         break;
 
       case IPPROTO_IP:
+      // Switch through IPPROTO_IP options
+      // Only IGMP cases are implemented yet
         switch (opt) {
 #if LWIP_IGMP
         case IP_MULTICAST_TTL:
@@ -1152,10 +1169,9 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
         case IP_ADD_MEMBERSHIP:;
 
-          // args[3] contains 2 IP adresses (interface & multicast IPs), i.e. 8 bytes of data
-          // that are obtained via mp_obj_str_get_data(). The resulting char array is then assigned
-          // to a mreq struct that will contain 2 separate IPs that we will use to Join
-          // a multicast group
+          // optval is a string of 8 bytes that carry the multicast IP and the interface
+          // IP to be set. In order to stay close to lwip's syntax, optval is cast to
+          // an ip_mreq struct that can hold 2 separate IPs.
 
           const char *ips_add = mp_obj_str_get_data(optval, &optval_len);
           struct ip_mreq *imr_add = (struct ip_mreq *)ips_add;
@@ -1418,6 +1434,8 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_getaddrinfo_obj, 2, 6, lwip_getaddrinfo);
 
+// Function that enables passing IP addresses from python,
+// e.g. to be used in socket.setsockopt()
 STATIC mp_obj_t lwip_inet_aton(mp_obj_t addr_in) {
     vstr_t vstr;
     uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
