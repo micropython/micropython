@@ -71,23 +71,30 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
+    mp_uint_t new_pos, org_len;
+    
     check_stringio_is_open(o);
-    mp_int_t remaining = o->vstr->alloc - o->pos;
-    mp_uint_t org_len = o->vstr->len;
-    if ((mp_int_t)size > remaining) {
+    new_pos = o->pos + size;
+    if (new_pos < size) {
+        // Writing <size> bytes will overflow o->pos beyond limit of mp_uint_t.
+        *errcode = MP_EFBIG;
+        return MP_STREAM_ERROR;
+    }
+    org_len = o->vstr->len;
+    if (new_pos > o->vstr->alloc) {
         // Take all what's already allocated...
         o->vstr->len = o->vstr->alloc;
         // ... and add more
-        vstr_add_len(o->vstr, size - remaining);
+        vstr_add_len(o->vstr, new_pos - o->vstr->alloc);
     }
     // If there was a seek past EOF, clear the hole
     if (o->pos > org_len) {
         memset(o->vstr->buf + org_len, 0, o->pos - org_len);
     }
     memcpy(o->vstr->buf + o->pos, buf, size);
-    o->pos += size;
-    if (o->pos > o->vstr->len) {
-        o->vstr->len = o->pos;
+    o->pos = new_pos;
+    if (new_pos > o->vstr->len) {
+        o->vstr->len = new_pos;
     }
     return size;
 }
@@ -98,7 +105,7 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     switch (request) {
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
-            mp_uint_t ref = 0;
+            mp_uint_t new_pos, ref = 0;
             switch (s->whence) {
                 case 1: // SEEK_CUR
                     ref = o->pos;
@@ -107,8 +114,19 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
                     ref = o->vstr->len;
                     break;
             }
-            o->pos = ref + s->offset;
-            s->offset = o->pos;
+            new_pos = ref + s->offset;
+            if (s->offset < 0) {
+                if (new_pos > ref) {
+                    // Negative offset from SEEK_CUR or SEEK_END went past 0.
+                    // CPython sets position to 0, POSIX returns an EINVAL error
+                    new_pos = 0;
+                }
+            } else if (new_pos < ref) {
+                // positive offset went beyond the limit of mp_uint_t
+                *errcode = MP_EINVAL;  // replace with MP_EOVERFLOW when defined
+                return MP_STREAM_ERROR;
+            }
+            s->offset = o->pos = new_pos;
             return 0;
         }
         case MP_STREAM_FLUSH:
