@@ -43,12 +43,11 @@
 #include "lwip/timers.h"
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
+//#include "lwip/raw.h"
 #include "lwip/dns.h"
 #include "lwip/tcp_impl.h"
 #include "lwip/inet.h"
 #include "lwip/igmp.h"
-#include "lwip/opt.h"
-#include "lwip/sockets.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -238,6 +237,7 @@ static const int error_lookup_table[] = {
 #define IP_MULTICAST_TTL   5
 #define IP_MULTICAST_IF    6
 #define IP_MULTICAST_LOOP  7
+
 
 typedef struct ip_mreq {
     struct in_addr imr_multiaddr; /* IP multicast address of group */
@@ -1105,6 +1105,7 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
+
     int level = mp_obj_get_int(args[1]);
     int opt = mp_obj_get_int(args[2]);
     mp_obj_t optval = args[3];
@@ -1477,13 +1478,13 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_RAW) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SOL_SOCKET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_TTL) },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_LOOP), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_LOOP) },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_IF), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_IF) },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_DROP_MEMBERSHIP) },
+  	{ MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_TTL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_LOOP), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_LOOP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_IF), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_IF) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_DROP_MEMBERSHIP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_INADDR_ANY), MP_OBJ_NEW_SMALL_INT(INADDR_ANY) },
 };
 
