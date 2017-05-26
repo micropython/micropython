@@ -1091,13 +1091,16 @@ STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblocking);
 
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
+
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
     int level = mp_obj_get_int(args[1]);
     int opt = mp_obj_get_int(args[2]);
+    mp_obj_t optval = args[3];
+    size_t optval_len;
 
     if (opt == 20) {
-        if (args[3] == mp_const_none) {
+        if (optval == mp_const_none) {
             socket->callback = MP_OBJ_NULL;
         } else {
             socket->callback = args[3];
@@ -1111,7 +1114,7 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         switch (opt) {
         case SOF_REUSEADDR:
 
-          if (mp_obj_get_int(args[3])) {
+          if (mp_obj_get_int(optval)) {
               ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
           } else {
               printf("SOF_REUSEADDR NOT TRUE \n");
@@ -1130,11 +1133,11 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         switch (opt) {
 #if LWIP_IGMP
         case IP_MULTICAST_TTL:
-          socket->pcb.udp->ttl = mp_obj_get_int(args[3]);
+          socket->pcb.udp->ttl = mp_obj_get_int(optval);
           break;
 
         case IP_MULTICAST_LOOP:
-          if (mp_obj_get_int(args[3])) {
+          if (mp_obj_get_int(optval)) {
             udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) | UDP_FLAGS_MULTICAST_LOOP);
           } else {
             udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) & ~UDP_FLAGS_MULTICAST_LOOP);
@@ -1142,9 +1145,9 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
           break;
 
         case IP_MULTICAST_IF:;
-          size_t len_mif;
-          const char *mif_ip = mp_obj_str_get_data(args[3], &len_mif);
-          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, (struct in_addr*)mif_ip);
+          const char *mif_ip = mp_obj_str_get_data(optval, &optval_len);
+          struct in_addr *mif_ip_struct = (struct in_addr *)mif_ip;
+          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, mif_ip_struct);
           break;
 
         case IP_ADD_MEMBERSHIP:;
@@ -1154,26 +1157,24 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
           // to a mreq struct that will contain 2 separate IPs that we will use to Join
           // a multicast group
 
-          size_t len;
-          const char *ips = mp_obj_str_get_data(args[3], &len);
-          struct ip_mreq *imr = (struct ip_mreq *)ips;
+          const char *ips_add = mp_obj_str_get_data(optval, &optval_len);
+          struct ip_mreq *imr_add = (struct ip_mreq *)ips_add;
 
-          ip_addr_t if_addr;
-          ip_addr_t multi_addr;
-          inet_addr_to_ipaddr(&if_addr, &imr->imr_interface);
-          inet_addr_to_ipaddr(&multi_addr, &imr->imr_multiaddr);
+          ip_addr_t if_addr_add;
+          ip_addr_t multi_addr_add;
+          inet_addr_to_ipaddr(&if_addr_add, &imr_add->imr_interface);
+          inet_addr_to_ipaddr(&multi_addr_add, &imr_add->imr_multiaddr);
 
-          if (igmp_joingroup(&if_addr, &multi_addr) != 0) {
+          if (igmp_joingroup(&if_addr_add, &multi_addr_add) != 0) {
               mp_raise_OSError(MP_EIO);
           }
 
-          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, &imr->imr_multiaddr);
+          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, &imr_add->imr_multiaddr);
 
           break;
 
         case IP_DROP_MEMBERSHIP:;
-          size_t len_drop;
-          const char *ips_drop = mp_obj_str_get_data(args[3], &len_drop);
+          const char *ips_drop = mp_obj_str_get_data(optval, &optval_len);
           struct ip_mreq *imr_drop = (struct ip_mreq *)ips_drop;
 
           ip_addr_t if_addr_drop;
