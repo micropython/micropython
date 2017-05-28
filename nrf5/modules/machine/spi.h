@@ -28,14 +28,9 @@
 
 #include "hal_spi.h"
 
-typedef struct _pyb_spi_obj_t {
-    mp_obj_base_t base;
-    SPI_HandleTypeDef *spi;
-} pyb_spi_obj_t;
-
 typedef struct _machine_hard_spi_obj_t {
     mp_obj_base_t base;
-    const pyb_spi_obj_t *pyb;
+    SPI_HandleTypeDef *spi;
 } machine_hard_spi_obj_t;
 
 extern const mp_obj_type_t machine_hard_spi_type;

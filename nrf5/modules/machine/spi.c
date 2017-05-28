@@ -72,7 +72,7 @@ SPI_HandleTypeDef SPIHandle3 = {.instance = NULL}; // 32 Mbs master only
 #endif // NRF52840_XXAA
 #endif // NRF52
 
-STATIC const pyb_spi_obj_t machine_spi_obj[] = {
+STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_hard_spi_type}, &SPIHandle0},
     {{&machine_hard_spi_type}, &SPIHandle1},
 #if NRF52
@@ -115,8 +115,8 @@ STATIC int spi_find(mp_obj_t id) {
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
-        if (spi_id >= 0 && spi_id <= MP_ARRAY_SIZE(machine_spi_obj)
-            && machine_spi_obj[spi_id].spi != NULL) {
+        if (spi_id >= 0 && spi_id <= MP_ARRAY_SIZE(machine_hard_spi_obj)
+            && machine_hard_spi_obj[spi_id].spi != NULL) {
             return spi_id;
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -130,7 +130,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
 void spi_deinit(SPI_HandleTypeDef *spi) {
 }
 
-STATIC void spi_transfer(const pyb_spi_obj_t * self, size_t len, const void * src, void * dest) {
+STATIC void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest) {
     hal_spi_master_tx_rx(self->spi->instance, len, src, dest);
 }
 
@@ -246,20 +246,9 @@ STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_tab
 
 /* code for hard implementation ***********************************************/
 
-STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
-    {{&machine_hard_spi_type}, &machine_spi_obj[0]},
-    {{&machine_hard_spi_type}, &machine_spi_obj[1]},
-#if NRF52
-    {{&machine_hard_spi_type}, &machine_spi_obj[2]},
-#if NRF52840_XXAA
-    {{&machine_hard_spi_type}, &machine_spi_obj[3]},
-#endif
-#endif
-};
-
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = self_in;
-    spi_print(print, self->pyb->spi, false);
+    spi_print(print, self->spi, false);
 }
 
 STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
@@ -272,48 +261,48 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
         && args[ARG_NEW_mosi].u_obj != MP_OBJ_NULL
         && args[ARG_NEW_miso].u_obj != MP_OBJ_NULL) {
 
-        self->pyb->spi->init.clk_pin = args[ARG_NEW_sck].u_obj;
-        self->pyb->spi->init.mosi_pin = args[ARG_NEW_mosi].u_obj;
-        self->pyb->spi->init.miso_pin = args[ARG_NEW_miso].u_obj;
+        self->spi->init.clk_pin = args[ARG_NEW_sck].u_obj;
+        self->spi->init.mosi_pin = args[ARG_NEW_mosi].u_obj;
+        self->spi->init.miso_pin = args[ARG_NEW_miso].u_obj;
     } else {
-        self->pyb->spi->init.clk_pin = &MICROPY_HW_SPI0_SCK;
-        self->pyb->spi->init.mosi_pin = &MICROPY_HW_SPI0_MOSI;
-        self->pyb->spi->init.miso_pin = &MICROPY_HW_SPI0_MISO;
+        self->spi->init.clk_pin = &MICROPY_HW_SPI0_SCK;
+        self->spi->init.mosi_pin = &MICROPY_HW_SPI0_MOSI;
+        self->spi->init.miso_pin = &MICROPY_HW_SPI0_MISO;
     }
 
     int baudrate = args[ARG_NEW_baudrate].u_int;
 
     if (baudrate <= 125000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_125_Kbps;
+        self->spi->init.freq = HAL_SPI_FREQ_125_Kbps;
     } else if (baudrate <= 250000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_250_Kbps;
+        self->spi->init.freq = HAL_SPI_FREQ_250_Kbps;
     } else if (baudrate <= 500000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_500_Kbps;
+        self->spi->init.freq = HAL_SPI_FREQ_500_Kbps;
     } else if (baudrate <= 1000000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
     } else if (baudrate <= 2000000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_2_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_2_Mbps;
     } else if (baudrate <= 4000000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_4_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_4_Mbps;
     } else if (baudrate <= 8000000) {
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_8_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_8_Mbps;
 #if NRF52840_XXAA
     } else if (baudrate <= 16000000) {
-    	self->pyb->spi->init.freq = HAL_SPI_FREQ_16_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_16_Mbps;
     } else if (baudrate <= 32000000) {
-    	self->pyb->spi->init.freq = HAL_SPI_FREQ_32_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_32_Mbps;
 #endif
     } else { // Default
-        self->pyb->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
+        self->spi->init.freq = HAL_SPI_FREQ_1_Mbps;
     }
 #ifdef NRF51
-    self->pyb->spi->init.irq_priority = 3;
+    self->spi->init.irq_priority = 3;
 #else
-    self->pyb->spi->init.irq_priority = 6;
+    self->spi->init.irq_priority = 6;
 #endif
-    self->pyb->spi->init.mode = HAL_SPI_MODE_CPOL0_CPHA0;
-    self->pyb->spi->init.firstbit = (args[ARG_NEW_firstbit].u_int == 0) ? HAL_SPI_MSB_FIRST : HAL_SPI_LSB_FIRST;;
-    hal_spi_master_init(self->pyb->spi->instance, &self->pyb->spi->init);
+    self->spi->init.mode = HAL_SPI_MODE_CPOL0_CPHA0;
+    self->spi->init.firstbit = (args[ARG_NEW_firstbit].u_int == 0) ? HAL_SPI_MSB_FIRST : HAL_SPI_LSB_FIRST;;
+    hal_spi_master_init(self->spi->instance, &self->spi->init);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -323,12 +312,12 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
 
 STATIC void machine_hard_spi_deinit(mp_obj_t self_in) {
     machine_hard_spi_obj_t *self = self_in;
-    spi_deinit(self->pyb->spi);
+    spi_deinit(self->spi);
 }
 
 STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_transfer(self->pyb, len, src, dest);
+    spi_transfer(self, len, src, dest);
 }
 
 
