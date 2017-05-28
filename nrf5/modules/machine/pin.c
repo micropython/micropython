@@ -284,6 +284,20 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, con
     }
 }
 
+STATIC mp_obj_t pin_off(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    mp_hal_pin_low(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_off_obj, pin_off);
+
+STATIC mp_obj_t pin_on(mp_obj_t self_in) {
+    pin_obj_t *self = self_in;
+    mp_hal_pin_high(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
+
 /// \classmethod mapper([fun])
 /// Get or set the pin mapper function.
 STATIC mp_obj_t pin_mapper(mp_uint_t n_args, const mp_obj_t *args) {
@@ -505,6 +519,8 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&pin_low_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&pin_high_obj) },
     { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&pin_name_obj) },
