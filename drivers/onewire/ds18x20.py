@@ -7,11 +7,11 @@ temperature sensors.  It supports multiple devices on the same 1-wire bus.
 The following example assumes the ground of your DS18x20 is connected to
 Y11, vcc is connected to Y9 and the data pin is connected to Y10.
 
->>> from pyb import Pin
+>>> from machine import Pin
 >>> gnd = Pin('Y11', Pin.OUT_PP)
->>> gnd.low()
+>>> gnd.off()
 >>> vcc = Pin('Y9', Pin.OUT_PP)
->>> vcc.high()
+>>> vcc.on()
 
 >>> from ds18x20 import DS18X20
 >>> d = DS18X20(Pin('Y10'))

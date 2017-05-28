@@ -138,21 +138,19 @@ STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
-// pin.low()
-STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
+STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
     (void)gpio_pin_write(self->port, self->pin, 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
 
-// pin.high()
-STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
+STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
     machine_pin_obj_t *self = self_in;
     (void)gpio_pin_write(self->port, self->pin, 1);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
 STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
@@ -176,8 +174,8 @@ STATIC const mp_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&machine_pin_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_value),   (mp_obj_t)&machine_pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_low),     (mp_obj_t)&machine_pin_low_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_high),    (mp_obj_t)&machine_pin_high_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_off),     (mp_obj_t)&machine_pin_off_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_on),      (mp_obj_t)&machine_pin_on_obj },
 
     // class constants
     { MP_OBJ_NEW_QSTR(MP_QSTR_IN),        MP_OBJ_NEW_SMALL_INT(GPIO_DIR_IN) },
