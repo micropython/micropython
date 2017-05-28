@@ -22,9 +22,24 @@ Example usage on ESP8266:
 Example usage on NRF52832:
 
     import os, machine, sdcard
-    sd = sdcard.SDCard(machine.SPI(0), machine.PIN("A22", mode=machine.Pin.OUT))
+    sd = sdcard.SDCard(machine.SPI(0), machine.Pin("A22", mode=machine.Pin.OUT))
     os.mount(sd, "")
     os.listdir()
+
+Direct wireing on SD card (SPI):
+# ______________________________
+# |                              \
+# |             9.    | NC    |   \
+# |             1.      | ~CS   | |
+# |             2.      | MOSI  | |
+# |             3.      | GND   | |
+# |             4.      | VCC3.3| |
+# |             5.      | SCK   | |
+# |             6.      | GND   | |
+# |             7.      | MISO  | |
+# |             8.      | NC    | |
+# |                               |
+# ---------------------------------
 
 """
 
