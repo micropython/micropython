@@ -152,6 +152,14 @@ Methods
    and get the value of the pin.  It is equivalent to Pin.value([x]).
    See :meth:`Pin.value` for more details.
 
+.. method:: Pin.on()
+
+   Set pin to "1" output level.
+
+.. method:: Pin.off()
+
+   Set pin to "0" output level.
+
 .. method:: Pin.mode([mode])
 
    Get or set the pin mode.
