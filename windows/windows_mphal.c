@@ -72,7 +72,7 @@ void mp_hal_stdio_mode_orig(void) {
 // Previous versions of the mp_hal code would install a handler whenever Ctrl-C input is
 // allowed and remove the handler again when it is not. That is not necessary though (1),
 // and it might introduce problems (2) because console notifications are delivered to the
-// application in a seperate thread. 
+// application in a separate thread.
 // (1) mp_hal_set_interrupt_char effectively enables/disables processing of Ctrl-C via the
 // ENABLE_PROCESSED_INPUT flag so in raw mode console_sighandler won't be called.
 // (2) if mp_hal_set_interrupt_char would remove the handler while Ctrl-C was issued earlier,

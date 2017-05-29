@@ -36,7 +36,7 @@
 #include "extmod/utime_mphal.h"
 
 STATIC mp_obj_t mod_time_time(void) {
-    /* The absense of FP support is deliberate. The Zephyr port uses
+    /* The absence of FP support is deliberate. The Zephyr port uses
      * single precision floats so the fraction component will start to
      * lose precision on devices with a long uptime.
      */

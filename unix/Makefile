@@ -262,7 +262,7 @@ coverage_test: coverage
 	gcov -o build-coverage/extmod ../extmod/*.c
 
 # Value of configure's --host= option (required for cross-compilation).
-# Deduce it from CROSS_COMPILE by default, but can be overriden.
+# Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)
 CROSS_COMPILE_HOST = --host=$(patsubst %-,%,$(CROSS_COMPILE))
 else

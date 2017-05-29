@@ -798,7 +798,7 @@ STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
-    //+1 to accomodate the last character
+    //+1 to accommodate the last character
     size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     if (stripped_len == orig_str_len) {
         // If nothing was stripped, don't bother to dup original string
@@ -1811,7 +1811,7 @@ STATIC mp_obj_t str_islower(mp_obj_t self_in) {
 }
 
 #if MICROPY_CPYTHON_COMPAT
-// These methods are superfluous in the presense of str() and bytes()
+// These methods are superfluous in the presence of str() and bytes()
 // constructors.
 // TODO: should accept kwargs too
 STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {

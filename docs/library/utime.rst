@@ -146,8 +146,8 @@ Functions
    too distant inbetween, see below). The function returns **signed** value in the range
    [``-TICKS_PERIOD/2`` .. ``TICKS_PERIOD/2-1``] (that's a typical range definition for
    two's-complement signed binary integers). If the result is negative, it means that
-   ``ticks1`` occured earlier in time than ``ticks2``. Otherwise, it means that
-   ``ticks1`` occured after ``ticks2``. This holds ``only`` if ``ticks1`` and ``ticks2``
+   ``ticks1`` occurred earlier in time than ``ticks2``. Otherwise, it means that
+   ``ticks1`` occurred after ``ticks2``. This holds ``only`` if ``ticks1`` and ``ticks2``
    are apart from each other for no more than ``TICKS_PERIOD/2-1`` ticks. If that does
    not hold, incorrect result will be returned. Specifically, if two tick values are
    apart for ``TICKS_PERIOD/2-1`` ticks, that value will be returned by the function.

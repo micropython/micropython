@@ -95,7 +95,7 @@ print(uart1.read() == None)
 print(uart1.write(b'123') == 3)
 print(uart0.read() == b'123')
 
-# no pin assignemnt
+# no pin assignment
 uart0 = UART(0, 1000000, pins=(None, None))
 print(uart0.write(b'123456789') == 9)
 print(uart1.read() == None)

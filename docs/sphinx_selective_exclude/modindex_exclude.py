@@ -2,7 +2,7 @@
 # This is a Sphinx documentation tool extension which allows to
 # exclude some Python modules from the generated indexes. Modules
 # are excluded both from "modindex" and "genindex" index tables
-# (in the latter case, all members of a module are exlcuded).
+# (in the latter case, all members of a module are excluded).
 # To control exclusion, set "modindex_exclude" variable in Sphinx
 # conf.py to the list of modules to exclude. Note: these should be
 # modules (as defined by py:module directive, not just raw filenames).

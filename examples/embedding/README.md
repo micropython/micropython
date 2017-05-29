@@ -18,7 +18,7 @@ Building the example is as simple as running:
 It's worth to trace what's happening behind the scenes though:
 
 1. As a first step, a MicroPython library is built. This is handled by a
-seperate makefile, Makefile.upylib. It is more or less complex, but the
+separate makefile, Makefile.upylib. It is more or less complex, but the
 good news is that you won't need to change anything in it, just use it
 as is, the main Makefile shows how. What may require editing though is
 a MicroPython configuration file. MicroPython is highly configurable, so

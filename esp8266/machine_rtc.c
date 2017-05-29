@@ -93,7 +93,7 @@ void pyb_rtc_set_us_since_2000(uint64_t nowus) {
     int64_t delta = nowus - (((uint64_t)rtc_last_ticks * cal) >> 12);
 
     // As the calibration value jitters quite a bit, to make the
-    // clock at least somewhat practially usable, we need to store it
+    // clock at least somewhat practically usable, we need to store it
     system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
     system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
 };

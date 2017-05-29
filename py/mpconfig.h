@@ -32,7 +32,7 @@
 
 // mpconfigport.h is a file containing configuration settings for a
 // particular port. mpconfigport.h is actually a default name for
-// such config, and it can be overriden using MP_CONFIGFILE preprocessor
+// such config, and it can be overridden using MP_CONFIGFILE preprocessor
 // define (you can do that by passing CFLAGS_EXTRA='-DMP_CONFIGFILE="<file.h>"'
 // argument to make when using standard MicroPython makefiles).
 // This is useful to have more than one config per port, for example,

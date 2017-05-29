@@ -165,7 +165,7 @@ mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
     //
     // tm_tomorrow = list(time.localtime())
     // tm_tomorrow[2] += 1 # Adds 1 to mday
-    // tomorrow = time.mktime(tm_tommorrow)
+    // tomorrow = time.mktime(tm_tomorrow)
     //
     // And not have to worry about all the weird overflows.
     //
