@@ -26,6 +26,8 @@
 MicroPython Seeedstudio TFT Shield V2 driver, SPI interfaces, Analog GPIO
 Contains SD-card reader, LCD and Touch sensor
 
+The pca10040 pin layout is used as reference.
+
 Example usage of LCD:
 
     from seeedstudio_tft_shield_v2 import ILI9341
