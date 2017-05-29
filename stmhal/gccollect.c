@@ -39,7 +39,7 @@ mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
 void gc_collect(void) {
     // get current time, in case we want to time the GC
     #if 0
-    uint32_t start = sys_tick_get_microseconds();
+    uint32_t start = mp_hal_ticks_us();
     #endif
 
     // start the GC
@@ -66,7 +66,7 @@ void gc_collect(void) {
 
     #if 0
     // print GC info
-    uint32_t ticks = sys_tick_get_microseconds() - start;
+    uint32_t ticks = mp_hal_ticks_us() - start;
     gc_info_t info;
     gc_info(&info);
     printf("GC@%lu %lums\n", start, ticks);

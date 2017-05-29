@@ -143,6 +143,8 @@ STATIC mp_obj_t mod_thread_stack_size(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_stack_size_obj, 0, 1, mod_thread_stack_size);
 
 typedef struct _thread_entry_args_t {
+    mp_obj_dict_t *dict_locals;
+    mp_obj_dict_t *dict_globals;
     size_t stack_size;
     mp_obj_t fun;
     size_t n_args;
@@ -161,6 +163,10 @@ STATIC void *thread_entry(void *args_in) {
     mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
     mp_stack_set_limit(args->stack_size);
 
+    // set locals and globals from the calling context
+    mp_locals_set(args->dict_locals);
+    mp_globals_set(args->dict_globals);
+
     MP_THREAD_GIL_ENTER();
 
     // signal that we are set up and running
@@ -169,7 +175,6 @@ STATIC void *thread_entry(void *args_in) {
     // TODO set more thread-specific state here:
     //  mp_pending_exception? (root pointer)
     //  cur_exception (root pointer)
-    //  dict_locals? (root pointer) uPy doesn't make a new locals dict for functions, just for classes, so it's different to CPy
 
     DEBUG_printf("[thread] start ts=%p args=%p stack=%p\n", &ts, &args, MP_STATE_THREAD(stack_top));
 
@@ -210,7 +215,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     thread_entry_args_t *th_args;
 
     // get positional arguments
-    mp_uint_t pos_args_len;
+    size_t pos_args_len;
     mp_obj_t *pos_args_items;
     mp_obj_get_array(args[1], &pos_args_len, &pos_args_items);
 
@@ -222,7 +227,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     } else {
         // positional and keyword arguments
         if (mp_obj_get_type(args[2]) != &mp_type_dict) {
-            mp_raise_msg(&mp_type_TypeError, "expecting a dict for keyword args");
+            mp_raise_TypeError("expecting a dict for keyword args");
         }
         mp_map_t *map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[2]))->map;
         th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
@@ -239,6 +244,10 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     // copy agross the positional arguments
     th_args->n_args = pos_args_len;
     memcpy(th_args->args, pos_args_items, pos_args_len * sizeof(mp_obj_t));
+
+    // pass our locals and globals into the new thread
+    th_args->dict_locals = mp_locals_get();
+    th_args->dict_globals = mp_globals_get();
 
     // set the stack size to use
     th_args->stack_size = thread_stack_size;

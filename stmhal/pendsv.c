@@ -29,6 +29,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
+#include "lib/utils/interrupt_char.h"
 #include "pendsv.h"
 #include "irq.h"
 
@@ -52,12 +53,12 @@ void pendsv_init(void) {
 // PENDSV feature.  This will wait until all interrupts are finished then raise
 // the given exception object using nlr_jump in the context of the top-level
 // thread.
-void pendsv_nlr_jump(void *o) {
+void pendsv_kbd_intr(void) {
     if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
-        MP_STATE_VM(mp_pending_exception) = o;
+        mp_keyboard_interrupt();
     } else {
         MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        pendsv_object = o;
+        pendsv_object = &MP_STATE_VM(mp_kbd_exception);
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }
 }
@@ -105,11 +106,14 @@ void pendsv_isr_handler(void) {
         ".no_obj:\n"                    // pendsv_object==NULL
         "push {r4-r11, lr}\n"
         "vpush {s16-s31}\n"
+        "mrs r5, primask\n"             // save PRIMASK in r5
+        "cpsid i\n"                     // disable interrupts while we change stacks
         "mov r0, sp\n"                  // pass sp to save
         "mov r4, lr\n"                  // save lr because we are making a call
         "bl pyb_thread_next\n"          // get next thread to execute
         "mov lr, r4\n"                  // restore lr
         "mov sp, r0\n"                  // switch stacks
+        "msr primask, r5\n"             // reenable interrupts
         "vpop {s16-s31}\n"
         "pop {r4-r11, lr}\n"
         "bx lr\n"                       // return from interrupt; will return to new thread

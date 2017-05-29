@@ -51,16 +51,6 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
-// The STM32F7 uses a TIMINGR register which is configured using an Excel
-// Spreadsheet from AN4235: http://www.st.com/web/en/catalog/tools/PF258335
-// We use an array of baudrates and corresponding TIMINGR values.
-//
-// The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
-// defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
-
 // SPI
 #define MICROPY_HW_SPI2_NSS         (pin_I0)
 #define MICROPY_HW_SPI2_SCK         (pin_I1)

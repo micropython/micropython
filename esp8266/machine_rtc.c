@@ -30,7 +30,7 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
 #include "user_interface.h"
 #include "modmachine.h"
 

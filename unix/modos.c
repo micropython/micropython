@@ -46,8 +46,7 @@
 
 STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     struct stat sb;
-    mp_uint_t len;
-    const char *path = mp_obj_str_get_data(path_in, &len);
+    const char *path = mp_obj_str_get_str(path_in);
 
     int res = stat(path, &sb);
     RAISE_ERRNO(res, errno);
@@ -87,8 +86,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_stat_obj, mod_os_stat);
 
 STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
     STRUCT_STATVFS sb;
-    mp_uint_t len;
-    const char *path = mp_obj_str_get_data(path_in, &len);
+    const char *path = mp_obj_str_get_str(path_in);
 
     int res = STATVFS(path, &sb);
     RAISE_ERRNO(res, errno);
@@ -110,8 +108,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_statvfs_obj, mod_os_statvfs);
 #endif
 
 STATIC mp_obj_t mod_os_unlink(mp_obj_t path_in) {
-    mp_uint_t len;
-    const char *path = mp_obj_str_get_data(path_in, &len);
+    const char *path = mp_obj_str_get_str(path_in);
 
     int r = unlink(path);
 

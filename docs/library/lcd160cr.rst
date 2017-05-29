@@ -103,7 +103,8 @@ Setup commands
 
 .. method:: LCD160CR.set_power(on)
 
-    Turn the display on or off, depending on the given value.
+    Turn the display on or off, depending on the given value of `on`: 0 or `False`
+    will turn the display off, and 1 or `True` will turn it on.
 
 .. method:: LCD160CR.set_orient(orient)
 
@@ -149,11 +150,19 @@ The following methods manipulate individual pixels on the display.
 
 .. method:: LCD160CR.get_line(x, y, buf)
 
-    Get a line of pixels into the given buffer.
+    Low-level method to get a line of pixels into the given buffer.
+    To read `n` pixels `buf` should be `2*n+1` bytes in length.  The first byte
+    is a dummy byte and should be ignored, and subsequent bytes represent the
+    pixels in the line starting at coordinate `(x, y)`.
 
-.. method:: LCD160CR.screen_dump(buf)
+.. method:: LCD160CR.screen_dump(buf, x=0, y=0, w=None, h=None)
 
-    Dump the entire screen to the given buffer.
+    Dump the contents of the screen to the given buffer.  The parameters `x` and `y`
+    specify the starting coordinate, and `w` and `h` the size of the region.  If `w`
+    or `h` are `None` then they will take on their maximum values, set by the size
+    of the screen minus the given `x` and `y` values.  `buf` should be large enough
+    to hold `2*w*h` bytes.  If it's smaller then only the initial horizontal lines
+    will be stored.
 
 .. method:: LCD160CR.screen_load(buf)
 
@@ -303,6 +312,10 @@ Advanced commands
     the 16-bit RGB values for the pixels, and they will be written to the area
     specified by :meth:`LCD160CR.set_spi_win`, starting from the top-left corner.
 
+    The `framebuf <framebuf.html>`_ module can be used to construct frame buffers
+    and provides drawing primitives. Using a frame buffer will improve 
+    performance of animations when compared to drawing directly to the screen.
+
 .. method:: LCD160CR.set_scroll(on)
 
     Turn scrolling on or off.  This controls globally whether any window regions will
@@ -340,7 +353,9 @@ Advanced commands
 
 .. method:: LCD160CR.jpeg(buf)
 
-    Display a JPEG.  `buf` should contain the entire JPEG data.
+    Display a JPEG.  `buf` should contain the entire JPEG data. JPEG data should
+    not include EXIF information. The following encodings are supported: Baseline
+    DCT, Huffman coding, 8 bits per sample, 3 color components, YCbCr4:2:2.
     The origin of the JPEG is set by :meth:`LCD160CR.set_pos`.
 
 .. method:: LCD160CR.jpeg_start(total_len)

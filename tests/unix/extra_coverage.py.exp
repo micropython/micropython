@@ -43,6 +43,20 @@ Warning: test
 ?
 +1e+00
 +1e+00
+# binary
+122
+456
+# scheduler
+sched(0)=1
+sched(1)=1
+sched(2)=1
+sched(3)=1
+sched(4)=0
+unlocked
+3
+2
+1
+0
 0123456789 b'0123456789'
 7300
 7300

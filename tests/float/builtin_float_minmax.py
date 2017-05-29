@@ -1,4 +1,11 @@
 # test builtin min and max functions with float args
+try:
+    min
+    max
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 print(min(0,1.0))
 print(min(1.0,0))

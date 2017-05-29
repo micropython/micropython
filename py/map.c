@@ -178,8 +178,14 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
                 if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {
-                    elem->key = MP_OBJ_SENTINEL;
-                    // keep elem->value so that caller can access it if needed
+                    // remove the found element by moving the rest of the array down
+                    mp_obj_t value = elem->value;
+                    --map->used;
+                    memmove(elem, elem + 1, (top - elem - 1) * sizeof(*elem));
+                    // put the found element after the end so the caller can access it if needed
+                    elem = &map->table[map->used];
+                    elem->key = MP_OBJ_NULL;
+                    elem->value = value;
                 }
                 return elem;
             }
@@ -187,7 +193,6 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         if (MP_LIKELY(lookup_kind != MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
             return NULL;
         }
-        // TODO shrink array down over any previously-freed slots
         if (map->used == map->alloc) {
             // TODO: Alloc policy
             map->alloc += 4;

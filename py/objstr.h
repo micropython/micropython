@@ -32,7 +32,7 @@ typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
     mp_uint_t hash;
     // len == number of bytes used in data, alloc = len + 1 because (at the moment) we also append a null byte
-    mp_uint_t len;
+    size_t len;
     const byte *data;
 } mp_obj_str_t;
 
@@ -72,7 +72,7 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
 
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice);
-const byte *find_subbytes(const byte *haystack, mp_uint_t hlen, const byte *needle, mp_uint_t nlen, mp_int_t direction);
+const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj);

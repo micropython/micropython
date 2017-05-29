@@ -20,9 +20,12 @@ characteristic of a board is how much flash it has, how the GPIO pins are
 connected to the outside world, and whether it includes a built-in USB-serial
 convertor to make the UART available to your PC.
 
-The minimum requirement for flash size is 512k.  A board with this amount of
-flash will not have room for a filesystem, but otherwise is fully functional.
-If your board has 1Mbyte or more of flash then it will support a filesystem.
+The minimum requirement for flash size is 1Mbyte. There is also a special
+build for boards with 512KB, but it is highly limited comparing to the
+normal build: there is no support for filesystem, and thus features which
+depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
+be more interesting for users who build from source and fine-tune parameters
+for their particular application.
 
 Names of pins will be given in this tutorial using the chip names (eg GPIO0)
 and it should be straightforward to find which pin this corresponds to on your
@@ -72,15 +75,17 @@ For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
 Currently we only support esptool.py to copy across the firmware.  You can find
-this tool here: `<https://github.com/themadinventor/esptool/>`__, or install it
-using pip (at least version 1.2.1 is required)::
+this tool here: `<https://github.com/espressif/esptool/>`__, or install it
+using pip::
 
     pip install esptool
 
-It requires Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in
-the command above.  Any other
-flashing program should work, so feel free to try them out, or refer to the
-documentation for your board to see its recommendations.
+Versions starting with 1.3 support both Python 2.7 and Python 3.4 (or newer).
+An older version (at least 1.2.1 is needed) works fine but will require Python
+2.7.
+
+Any other flashing program should work, so feel free to try them out or refer
+to the documentation for your board to see its recommendations.
 
 Using esptool.py you can erase the flash with the command::
 
@@ -88,7 +93,7 @@ Using esptool.py you can erase the flash with the command::
 
 And then deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-2016-05-03-v1.8.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
 
 You might need to change the "port" setting to something else relevant for your
 PC.  You may also need to reduce the baudrate if you get errors when flashing
@@ -99,7 +104,7 @@ For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to use the following command to deploy
 the firmware (note the ``-fm dio`` option)::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-2016-05-03-v1.8.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
@@ -158,7 +163,9 @@ after it, here are troubleshooting recommendations:
   esptool.py, which had a different programming algorithm::
     pip install esptool==1.0.1
   This version doesn't support ``--flash_size=detect`` option, so you will
-  need to specify FlashROM size explicitly (in megabits).
+  need to specify FlashROM size explicitly (in megabits). It also requires
+  Python 2.7, so you may need to use ``pip2`` instead of ``pip`` in the
+  command above.
 
 * The ``--flash_size`` option in the commands above is mandatory. Omitting
   it will lead to a corrupted firmware.
@@ -179,7 +186,7 @@ after it, here are troubleshooting recommendations:
   application in the ESP8266 community.
 
 * If you still experience problems with even flashing the firmware, please
-  refer to esptool.py project page, https://github.com/themadinventor/esptool
+  refer to esptool.py project page, https://github.com/espressif/esptool
   for additional documentation and bug tracker where you can report problems.
 
 * If you are able to flash firmware, but ``--verify`` option or

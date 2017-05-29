@@ -1,4 +1,5 @@
 .. currentmodule:: machine
+.. _machine.Timer:
 
 class Timer -- control hardware timers
 ======================================

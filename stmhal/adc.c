@@ -439,9 +439,9 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
 
-STATIC const mp_map_elem_t adc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&adc_read_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_timed), (mp_obj_t)&adc_read_timed_obj},
+STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&adc_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_timed), MP_ROM_PTR(&adc_read_timed_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
@@ -451,7 +451,7 @@ const mp_obj_type_t pyb_adc_type = {
     .name = MP_QSTR_ADC,
     .print = adc_print,
     .make_new = adc_make_new,
-    .locals_dict = (mp_obj_t)&adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&adc_locals_dict,
 };
 
 /******************************************************************************/
@@ -658,13 +658,13 @@ STATIC mp_obj_t adc_all_read_vref(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_all_read_vref_obj, adc_all_read_vref);
 #endif
 
-STATIC const mp_map_elem_t adc_all_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_channel),   (mp_obj_t)&adc_all_read_channel_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_temp), (mp_obj_t)&adc_all_read_core_temp_obj},
+STATIC const mp_rom_map_elem_t adc_all_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read_channel), MP_ROM_PTR(&adc_all_read_channel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_core_temp), MP_ROM_PTR(&adc_all_read_core_temp_obj) },
 #if MICROPY_PY_BUILTINS_FLOAT
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vbat), (mp_obj_t)&adc_all_read_core_vbat_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_core_vref), (mp_obj_t)&adc_all_read_core_vref_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read_vref), (mp_obj_t)&adc_all_read_vref_obj},
+    { MP_ROM_QSTR(MP_QSTR_read_core_vbat), MP_ROM_PTR(&adc_all_read_core_vbat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_core_vref), MP_ROM_PTR(&adc_all_read_core_vref_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_vref), MP_ROM_PTR(&adc_all_read_vref_obj) },
 #endif
 };
 
@@ -674,5 +674,5 @@ const mp_obj_type_t pyb_adc_all_type = {
     { &mp_type_type },
     .name = MP_QSTR_ADCAll,
     .make_new = adc_all_make_new,
-    .locals_dict = (mp_obj_t)&adc_all_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&adc_all_locals_dict,
 };

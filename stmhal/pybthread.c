@@ -37,6 +37,11 @@
 #define PYB_MUTEX_UNLOCKED ((void*)0)
 #define PYB_MUTEX_LOCKED ((void*)1)
 
+// These macros are used when we only need to protect against a thread
+// switch; other interrupts are still allowed to proceed.
+#define RAISE_IRQ_PRI() raise_irq_pri(IRQ_PRI_PENDSV)
+#define RESTORE_IRQ_PRI(state) restore_irq_pri(state)
+
 extern void __fatal_error(const char*);
 
 volatile int pyb_thread_enabled;
@@ -176,15 +181,15 @@ void pyb_mutex_init(pyb_mutex_t *m) {
 }
 
 int pyb_mutex_lock(pyb_mutex_t *m, int wait) {
-    uint32_t irq_state = disable_irq();
+    uint32_t irq_state = RAISE_IRQ_PRI();
     if (*m == PYB_MUTEX_UNLOCKED) {
         // mutex is available
         *m = PYB_MUTEX_LOCKED;
-        enable_irq(irq_state);
+        RESTORE_IRQ_PRI(irq_state);
     } else {
         // mutex is locked
         if (!wait) {
-            enable_irq(irq_state);
+            RESTORE_IRQ_PRI(irq_state);
             return 0; // failed to lock mutex
         }
         if (*m == PYB_MUTEX_LOCKED) {
@@ -202,14 +207,14 @@ int pyb_mutex_lock(pyb_mutex_t *m, int wait) {
         pyb_thread_remove_from_runable(pyb_thread_cur);
         // thread switch will occur after we enable irqs
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-        enable_irq(irq_state);
+        RESTORE_IRQ_PRI(irq_state);
         // when we come back we have the mutex
     }
     return 1; // have mutex
 }
 
 void pyb_mutex_unlock(pyb_mutex_t *m) {
-    uint32_t irq_state = disable_irq();
+    uint32_t irq_state = RAISE_IRQ_PRI();
     if (*m == PYB_MUTEX_LOCKED) {
         // no threads are blocked on the mutex
         *m = PYB_MUTEX_UNLOCKED;
@@ -226,7 +231,7 @@ void pyb_mutex_unlock(pyb_mutex_t *m) {
         // put unblocked thread on runable list
         pyb_thread_add_to_runable(th);
     }
-    enable_irq(irq_state);
+    RESTORE_IRQ_PRI(irq_state);
 }
 
 #endif // MICROPY_PY_THREAD

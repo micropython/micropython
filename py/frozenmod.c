@@ -43,21 +43,34 @@ extern const char mp_frozen_str_names[];
 extern const uint32_t mp_frozen_str_sizes[];
 extern const char mp_frozen_str_content[];
 
-STATIC mp_lexer_t *mp_find_frozen_str(const char *str, size_t len) {
+// On input, *len contains size of name, on output - size of content
+const char *mp_find_frozen_str(const char *str, size_t *len) {
     const char *name = mp_frozen_str_names;
 
     size_t offset = 0;
     for (int i = 0; *name != 0; i++) {
         size_t l = strlen(name);
-        if (l == len && !memcmp(str, name, l)) {
-            qstr source = qstr_from_strn(name, l);
-            mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, mp_frozen_str_content + offset, mp_frozen_str_sizes[i], 0);
-            return lex;
+        if (l == *len && !memcmp(str, name, l)) {
+            *len = mp_frozen_str_sizes[i];
+            return mp_frozen_str_content + offset;
         }
         name += l + 1;
         offset += mp_frozen_str_sizes[i] + 1;
     }
     return NULL;
+}
+
+STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
+    size_t name_len = len;
+    const char *content = mp_find_frozen_str(str, &len);
+
+    if (content == NULL) {
+        return NULL;
+    }
+
+    qstr source = qstr_from_strn(str, name_len);
+    mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, len, 0);
+    return lex;
 }
 
 #endif
@@ -124,7 +137,7 @@ mp_import_stat_t mp_frozen_stat(const char *str) {
 
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
     #if MICROPY_MODULE_FROZEN_STR
-    mp_lexer_t *lex = mp_find_frozen_str(str, len);
+    mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
     if (lex != NULL) {
         *data = lex;
         return MP_FROZEN_STR;

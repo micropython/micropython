@@ -108,9 +108,7 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
         if (res != -1 || errno != EINTR) {
             break;
         }
-        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-            return mp_const_none;
-        }
+        mp_handle_pending();
         //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;

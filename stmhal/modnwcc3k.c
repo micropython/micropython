@@ -36,7 +36,8 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "netutils.h"
+#include "py/mphal.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -120,7 +121,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
         if (retry == 0 || CC3000_EXPORT(errno) != -95) {
             return CC3000_EXPORT(errno);
         }
-        HAL_Delay(50);
+        mp_hal_delay_ms(50);
     }
 
     if (ip == 0) {
@@ -476,11 +477,11 @@ STATIC mp_obj_t cc3k_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get ssid
-    mp_uint_t ssid_len;
+    size_t ssid_len;
     const char *ssid = mp_obj_str_get_data(args[0].u_obj, &ssid_len);
 
     // get key and sec
-    mp_uint_t key_len = 0;
+    size_t key_len = 0;
     const char *key = NULL;
     mp_uint_t sec = WLAN_SEC_UNSEC;
     if (args[1].u_obj != mp_const_none) {
@@ -561,18 +562,18 @@ STATIC mp_obj_t cc3k_patch_program(mp_obj_t self_in, mp_obj_t key_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc3k_patch_program_obj, cc3k_patch_program);
 
-STATIC const mp_map_elem_t cc3k_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&cc3k_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&cc3k_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&cc3k_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&cc3k_ifconfig_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_patch_version), (mp_obj_t)&cc3k_patch_version_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_patch_program), (mp_obj_t)&cc3k_patch_program_obj },
+STATIC const mp_rom_map_elem_t cc3k_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&cc3k_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&cc3k_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&cc3k_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&cc3k_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_patch_version), MP_ROM_PTR(&cc3k_patch_version_obj) },
+    { MP_ROM_QSTR(MP_QSTR_patch_program), MP_ROM_PTR(&cc3k_patch_program_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WEP), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WPA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2), MP_OBJ_NEW_SMALL_INT(WLAN_SEC_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_WEP), MP_ROM_INT(WLAN_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_WPA), MP_ROM_INT(WLAN_SEC_WPA) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2), MP_ROM_INT(WLAN_SEC_WPA2) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(cc3k_locals_dict, cc3k_locals_dict_table);
@@ -582,7 +583,7 @@ const mod_network_nic_type_t mod_network_nic_type_cc3k = {
         { &mp_type_type },
         .name = MP_QSTR_CC3K,
         .make_new = cc3k_make_new,
-        .locals_dict = (mp_obj_t)&cc3k_locals_dict,
+        .locals_dict = (mp_obj_dict_t*)&cc3k_locals_dict,
     },
     .gethostbyname = cc3k_gethostbyname,
     .socket = cc3k_socket_socket,

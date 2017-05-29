@@ -1,4 +1,5 @@
 .. currentmodule:: machine
+.. _machine.I2C:
 
 class I2C -- a two-wire serial protocol
 =======================================
@@ -9,86 +10,55 @@ level it consists of 2 wires: SCL and SDA, the clock and data lines respectively
 I2C objects are created attached to a specific bus.  They can be initialised
 when created, or initialised later on.
 
-.. only:: port_wipy
+Printing the I2C object gives you information about its configuration.
 
-    Example::
+Example usage::
 
-        from machine import I2C
+    from machine import I2C
 
-        i2c = I2C(0)                         # create on bus 0
-        i2c = I2C(0, I2C.MASTER)             # create and init as a master
-        i2c.init(I2C.MASTER, baudrate=20000) # init as a master
-        i2c.deinit()                         # turn off the peripheral
+    i2c = I2C(freq=400000)          # create I2C peripheral at frequency of 400kHz
+                                    # depending on the port, extra parameters may be required
+                                    # to select the peripheral and/or pins to use
 
-Printing the i2c object gives you information about its configuration.
+    i2c.scan()                      # scan for slaves, returning a list of 7-bit addresses
 
-.. only:: port_wipy
+    i2c.writeto(42, b'123')         # write 3 bytes to slave with 7-bit address 42
+    i2c.readfrom(42, 4)             # read 4 bytes from slave with 7-bit address 42
 
-    A master must specify the recipient's address::
-
-        i2c.init(I2C.MASTER)
-        i2c.writeto(0x42, '123')        # send 3 bytes to slave with address 0x42
-        i2c.writeto(addr=0x42, b'456')  # keyword for address
-
-    Master also has other methods::
-
-        i2c.scan()                          # scan for slaves on the bus, returning
-                                            #   a list of valid addresses
-        i2c.readfrom_mem(0x42, 2, 3)        # read 3 bytes from memory of slave 0x42,
-                                            #   starting at address 2 in the slave
-        i2c.writeto_mem(0x42, 2, 'abc')     # write 'abc' (3 bytes) to memory of slave 0x42
-                                            # starting at address 2 in the slave, timeout after 1 second
+    i2c.readfrom_mem(42, 8, 3)      # read 3 bytes from memory of slave 42,
+                                    #   starting at memory-address 8 in the slave
+    i2c.writeto_mem(42, 2, b'\x10') # write 1 byte to memory of slave 42
+                                    #   starting at address 2 in the slave
 
 Constructors
 ------------
 
-.. only:: port_wipy
+.. class:: I2C(id=-1, \*, scl, sda, freq=400000)
 
-    .. class:: I2C(bus, ...)
+   Construct and return a new I2C object using the following parameters:
 
-       Construct an I2C object on the given bus.  `bus` can only be 0.
-       If the bus is not given, the default one will be selected (0).
-
-.. only:: not port_wipy
-
-    .. class:: I2C(id=-1, \*, scl, sda, freq=400000)
-
-       Construct and return a new I2C object using the following parameters:
-
-          - `id` identifies the particular I2C peripheral.  The default
-            value of -1 selects a software implementation of I2C which can
-            work (in most cases) with arbitrary pins for SCL and SDA.
-            If `id` is -1 then `scl` and `sda` must be specified.  Other
-            allowed values for `id` depend on the particular port/board,
-            and specifying `scl` and `sda` may or may not be required or
-            allowed in this case.
-          - `scl` should be a pin object specifying the pin to use for SCL.
-          - `sda` should be a pin object specifying the pin to use for SDA.
-          - `freq` should be an integer which sets the maximum frequency
-            for SCL.
+      - `id` identifies the particular I2C peripheral.  The default
+        value of -1 selects a software implementation of I2C which can
+        work (in most cases) with arbitrary pins for SCL and SDA.
+        If `id` is -1 then `scl` and `sda` must be specified.  Other
+        allowed values for `id` depend on the particular port/board,
+        and specifying `scl` and `sda` may or may not be required or
+        allowed in this case.
+      - `scl` should be a pin object specifying the pin to use for SCL.
+      - `sda` should be a pin object specifying the pin to use for SDA.
+      - `freq` should be an integer which sets the maximum frequency
+        for SCL.
 
 General Methods
 ---------------
 
-.. only:: port_wipy
+.. method:: I2C.init(scl, sda, \*, freq=400000)
 
-    .. method:: I2C.init(mode, \*, baudrate=100000, pins=(SDA, SCL))
+  Initialise the I2C bus with the given arguments:
 
-      Initialise the I2C bus with the given parameters:
-
-         - ``mode`` must be ``I2C.MASTER``
-         - ``baudrate`` is the SCL clock rate
-         - ``pins`` is an optional tuple with the pins to assign to the I2C bus.
-
-.. only:: port_esp8266
-
-    .. method:: I2C.init(scl, sda, \*, freq=400000)
-
-      Initialise the I2C bus with the given arguments:
-
-         - `scl` is a pin object for the SCL line
-         - `sda` is a pin object for the SDA line
-         - `freq` is the SCL clock rate
+     - `scl` is a pin object for the SCL line
+     - `sda` is a pin object for the SDA line
+     - `freq` is the SCL clock rate
 
 .. method:: I2C.deinit()
 
@@ -100,9 +70,7 @@ General Methods
 
    Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
    those that respond.  A device responds if it pulls the SDA line low after
-   its address (including a read bit) is sent on the bus.
-
-   Note: on WiPy the I2C object must be in master mode for this method to be valid.
+   its address (including a write bit) is sent on the bus.
 
 Primitive I2C operations
 ------------------------
@@ -192,8 +160,7 @@ methods are convenience functions to communicate with such devices.
    The argument `addrsize` specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).
 
-   On WiPy the return value is the number of bytes read.  Otherwise the
-   return value is `None`.
+   The method returns `None`.
 
 .. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
 
@@ -202,14 +169,4 @@ methods are convenience functions to communicate with such devices.
    The argument `addrsize` specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).
 
-   On WiPy the return value is the number of bytes written.  Otherwise the
-   return value is `None`.
-
-Constants
----------
-
-.. data:: I2C.MASTER
-
-   for initialising the bus to master mode
-
-   Availability: WiPy.
+   The method returns `None`.

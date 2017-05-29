@@ -39,8 +39,8 @@ typedef struct _mp_reader_t {
     void (*close)(void *data);
 } mp_reader_t;
 
-bool mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);
-int mp_reader_new_file(mp_reader_t *reader, const char *filename);
-int mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd);
+void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);
+void mp_reader_new_file(mp_reader_t *reader, const char *filename);
+void mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd);
 
 #endif // MICROPY_INCLUDED_PY_READER_H

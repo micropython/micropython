@@ -1,7 +1,12 @@
 try:
-    from collections import namedtuple
+    try:
+        from collections import namedtuple
+    except ImportError:
+        from ucollections import namedtuple
 except ImportError:
-    from ucollections import namedtuple
+    import sys
+    print("SKIP")
+    sys.exit()
 
 T = namedtuple("Tup", ["foo", "bar"])
 # CPython prints fully qualified name, what we don't bother to do so far

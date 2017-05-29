@@ -31,7 +31,7 @@
 #include "py/mpstate.h"
 #include "py/repl.h"
 #include "py/mphal.h"
-#include "readline.h"
+#include "lib/mp-readline/readline.h"
 
 #if 0 // print debugging info
 #define DEBUG_PRINT (1)

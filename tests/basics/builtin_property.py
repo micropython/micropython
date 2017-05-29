@@ -1,4 +1,10 @@
 # test builtin property
+try:
+    property
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # create a property object explicitly
 property()

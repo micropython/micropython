@@ -203,7 +203,7 @@ class LCD160CR:
     #### SETUP COMMANDS ####
 
     def set_power(self, on):
-        self.pwr(value)
+        self.pwr(on)
         sleep_ms(15)
 
     def set_orient(self, orient):
@@ -235,7 +235,7 @@ class LCD160CR:
         self._fcmd2('<BBB', 0x19, value)
 
     def save_to_flash(self):
-        self._fcmd2('<BBB', 0x66, 'n')
+        self._send(b'\x02fn')
 
     #### PIXEL ACCESS ####
 
@@ -243,13 +243,13 @@ class LCD160CR:
         self._fcmd2b('<BBBBH', 0x41, x, y, c)
 
     def get_pixel(self, x, y):
-        self._fcmd2b('<BBBB', 0x61, x, y)
+        self._fcmd2('<BBBB', 0x61, x, y)
         t = 1000
         while t:
             self.i2c.readfrom_into(self.i2c_addr, self.buf1)
             if self.buf1[0] >= 2:
                 self.i2c.readfrom_into(self.i2c_addr, self.buf[3])
-                return self.buf[3][1] + self.buf[3][2] << 8
+                return self.buf[3][1] | self.buf[3][2] << 8
             t -= 1
             sleep_ms(1)
         raise OSError(uerrno.ETIMEDOUT)
@@ -257,6 +257,7 @@ class LCD160CR:
     def get_line(self, x, y, buf):
         l = len(buf) // 2
         self._fcmd2b('<BBBBB', 0x10, l, x, y)
+        l *= 2
         t = 1000
         while t:
             self.i2c.readfrom_into(self.i2c_addr, self.buf1)
@@ -267,21 +268,28 @@ class LCD160CR:
             sleep_ms(1)
         raise OSError(uerrno.ETIMEDOUT)
 
-    def screen_dump(self, buf):
-        line = bytearray(self.w + 1)
-        h = len(buf) // (2 * self.w)
-        if h > self.h:
-            h = self.h
-        for i in range(h):
-            ix = i * self.w * 2
-            self.get_line(0, i, line)
-            for j in range(1, len(line)):
-                buf[ix] = line[j]
-                ix += 1
-            self.get_line(self.w // 2, i, line)
-            for j in range(1, len(line)):
-                buf[ix] = line[j]
-                ix += 1
+    def screen_dump(self, buf, x=0, y=0, w=None, h=None):
+        if w is None:
+            w = self.w - x
+        if h is None:
+            h = self.h - y
+        if w <= 127:
+            line = bytearray(2 * w + 1)
+            line2 = None
+        else:
+            # split line if more than 254 bytes needed
+            buflen = (w + 1) // 2
+            line = bytearray(2 * buflen + 1)
+            line2 = memoryview(line)[:2 * (w - buflen) + 1]
+        for i in range(min(len(buf) // (2 * w), h)):
+            ix = i * w * 2
+            self.get_line(x, y + i, line)
+            buf[ix:ix + len(line) - 1] = memoryview(line)[1:]
+            ix += len(line) - 1
+            if line2:
+                self.get_line(x + buflen, y + i, line2)
+                buf[ix:ix + len(line2) - 1] = memoryview(line2)[1:]
+                ix += len(line2) - 1
 
     def screen_load(self, buf):
         l = self.w * self.h * 2+2
@@ -446,6 +454,8 @@ class LCD160CR:
         self._send(s)
 
     def jpeg_start(self, l):
+        if l > 0xffff:
+            raise ValueError('length must be 65535 or less')
         self.oflush()
         self._fcmd2('<BBH', 0x6a, l)
 

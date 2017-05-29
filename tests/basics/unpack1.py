@@ -41,7 +41,7 @@ a, *b, c = 24, 25, 26, 27   ; print(a, b)
 
 a = [28, 29]
 *b, = a
-print(a, b, a == b)
+print(a, b, a == b, a is b)
 
 [*a] = [1, 2, 3]
 print(a)

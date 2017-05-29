@@ -245,6 +245,11 @@ const byte *mp_bytecode_print_str(const byte *ip) {
             printf("LOAD_METHOD %s", qstr_str(qst));
             break;
 
+        case MP_BC_LOAD_SUPER_METHOD:
+            DECODE_QSTR;
+            printf("LOAD_SUPER_METHOD %s", qstr_str(qst));
+            break;
+
         case MP_BC_LOAD_BUILD_CLASS:
             printf("LOAD_BUILD_CLASS");
             break;
@@ -385,6 +390,10 @@ const byte *mp_bytecode_print_str(const byte *ip) {
 
         case MP_BC_GET_ITER:
             printf("GET_ITER");
+            break;
+
+        case MP_BC_GET_ITER_STACK:
+            printf("GET_ITER_STACK");
             break;
 
         case MP_BC_FOR_ITER:

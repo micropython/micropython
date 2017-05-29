@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/reader.h"
 
@@ -54,11 +55,8 @@ STATIC void mp_reader_mem_close(void *data) {
     m_del_obj(mp_reader_mem_t, reader);
 }
 
-bool mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len) {
-    mp_reader_mem_t *rm = m_new_obj_maybe(mp_reader_mem_t);
-    if (rm == NULL) {
-        return false;
-    }
+void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len) {
+    mp_reader_mem_t *rm = m_new_obj(mp_reader_mem_t);
     rm->free_len = free_len;
     rm->beg = buf;
     rm->cur = buf;
@@ -66,7 +64,6 @@ bool mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t 
     reader->data = rm;
     reader->readbyte = mp_reader_mem_readbyte;
     reader->close = mp_reader_mem_close;
-    return true;
 }
 
 #if MICROPY_READER_POSIX
@@ -110,14 +107,8 @@ STATIC void mp_reader_posix_close(void *data) {
     m_del_obj(mp_reader_posix_t, reader);
 }
 
-int mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd) {
-    mp_reader_posix_t *rp = m_new_obj_maybe(mp_reader_posix_t);
-    if (rp == NULL) {
-        if (close_fd) {
-            close(fd);
-        }
-        return MP_ENOMEM;
-    }
+void mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd) {
+    mp_reader_posix_t *rp = m_new_obj(mp_reader_posix_t);
     rp->close_fd = close_fd;
     rp->fd = fd;
     int n = read(rp->fd, rp->buf, sizeof(rp->buf));
@@ -125,22 +116,21 @@ int mp_reader_new_file_from_fd(mp_reader_t *reader, int fd, bool close_fd) {
         if (close_fd) {
             close(fd);
         }
-        return errno;
+        mp_raise_OSError(errno);
     }
     rp->len = n;
     rp->pos = 0;
     reader->data = rp;
     reader->readbyte = mp_reader_posix_readbyte;
     reader->close = mp_reader_posix_close;
-    return 0; // success
 }
 
-int mp_reader_new_file(mp_reader_t *reader, const char *filename) {
+void mp_reader_new_file(mp_reader_t *reader, const char *filename) {
     int fd = open(filename, O_RDONLY, 0644);
     if (fd < 0) {
-        return errno;
+        mp_raise_OSError(errno);
     }
-    return mp_reader_new_file_from_fd(reader, fd, true);
+    mp_reader_new_file_from_fd(reader, fd, true);
 }
 
 #endif

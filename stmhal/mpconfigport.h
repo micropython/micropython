@@ -45,6 +45,7 @@
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_RETURN_IF_EXPR (1)
 
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
@@ -69,6 +70,8 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 
@@ -121,6 +124,7 @@
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI      (1)
@@ -262,8 +266,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 
 // type definitions for the specific machine
 
-#define BYTES_PER_WORD (4)
-
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)
@@ -303,6 +305,8 @@ static inline mp_uint_t disable_irq(void) {
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
+        extern void mp_handle_pending(void); \
+        mp_handle_pending(); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
@@ -312,7 +316,12 @@ static inline mp_uint_t disable_irq(void) {
         } \
     } while (0);
 #else
-#define MICROPY_EVENT_POLL_HOOK            __WFI();
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(void); \
+        mp_handle_pending(); \
+        __WFI(); \
+    } while (0);
 #endif
 
 // There is no classical C heap in bare-metal ports, only Python

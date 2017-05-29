@@ -253,8 +253,9 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
 
     self->iter_cnt--;
 
-    struct pollfd *entries = self->entries;
+    struct pollfd *entries = self->entries + self->iter_idx;
     for (int i = self->iter_idx; i < self->len; i++, entries++) {
+        self->iter_idx++;
         if (entries->revents != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->ret_tuple);
             // If there's an object stored, return it, otherwise raw fd
@@ -288,7 +289,7 @@ STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 STATIC const mp_obj_type_t mp_type_poll = {
     { &mp_type_type },
     .name = MP_QSTR_poll,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = poll_iternext,
     .locals_dict = (void*)&poll_locals_dict,
 };

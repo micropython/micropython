@@ -1,4 +1,10 @@
-import uio
+try:
+    import uio
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
+
 import micropython
 
 data = b"1234" * 16

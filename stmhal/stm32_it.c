@@ -298,7 +298,7 @@ void SysTick_Handler(void) {
     uwTick += 1;
 
     // Read the systick control regster. This has the side effect of clearing
-    // the COUNTFLAG bit, which makes the logic in sys_tick_get_microseconds
+    // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
     // work properly.
     SysTick->CTRL;
 

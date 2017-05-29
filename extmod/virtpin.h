@@ -38,3 +38,6 @@ typedef struct _mp_pin_p_t {
 
 int mp_virtual_pin_read(mp_obj_t pin);
 void mp_virtual_pin_write(mp_obj_t pin, int value);
+
+// If a port exposes a Pin object, it's constructor should be like this
+mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);

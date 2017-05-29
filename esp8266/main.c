@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "lib/mp-readline/readline.h"
@@ -51,8 +52,8 @@ STATIC void mp_reset(void) {
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_init(mp_sys_argv, 0);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     MP_STATE_PORT(dupterm_arr_obj) = MP_OBJ_NULL;
@@ -67,7 +68,9 @@ STATIC void mp_reset(void) {
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
-    pyexec_file("main.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        pyexec_file("main.py");
+    }
 #endif
 }
 
@@ -114,7 +117,7 @@ void user_init(void) {
 
 #if !MICROPY_VFS
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(MP_ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {

@@ -26,7 +26,6 @@
  */
 
 #include <stdint.h>
-#include "std.h"
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
@@ -112,10 +111,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info)
 #endif
 
 STATIC mp_obj_t machine_freq(void) {
-    mp_obj_t tuple[1] = {
-       mp_obj_new_int(HAL_FCPU_HZ),
-    };
-    return mp_obj_new_tuple(1, tuple);
+    return mp_obj_new_int(HAL_FCPU_HZ);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
 

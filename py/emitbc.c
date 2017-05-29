@@ -448,7 +448,19 @@ bool mp_emit_bc_last_emit_was_return_value(emit_t *emit) {
 }
 
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
+    if (emit->pass == MP_PASS_SCOPE) {
+        return;
+    }
+    assert((mp_int_t)emit->stack_size + delta >= 0);
     emit->stack_size += delta;
+    if (emit->stack_size > emit->scope->stack_size) {
+        emit->scope->stack_size = emit->stack_size;
+    }
+    emit->last_emit_was_return_value = false;
+}
+
+static inline void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
+    mp_emit_bc_adjust_stack_size(emit, stack_size_delta);
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
@@ -469,18 +481,6 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
     (void)emit;
     (void)source_line;
 #endif
-}
-
-STATIC void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
-    if (emit->pass == MP_PASS_SCOPE) {
-        return;
-    }
-    assert((mp_int_t)emit->stack_size + stack_size_delta >= 0);
-    emit->stack_size += stack_size_delta;
-    if (emit->stack_size > emit->scope->stack_size) {
-        emit->scope->stack_size = emit->stack_size;
-    }
-    emit->last_emit_was_return_value = false;
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
@@ -594,9 +594,9 @@ void mp_emit_bc_load_attr(emit_t *emit, qstr qst) {
     }
 }
 
-void mp_emit_bc_load_method(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_METHOD, qst);
+void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super) {
+    emit_bc_pre(emit, 1 - 2 * is_super);
+    emit_write_bytecode_byte_qstr(emit, is_super ? MP_BC_LOAD_SUPER_METHOD : MP_BC_LOAD_METHOD, qst);
 }
 
 void mp_emit_bc_load_build_class(emit_t *emit) {
@@ -734,6 +734,10 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
         if (label & MP_EMIT_BREAK_FROM_FOR) {
             // need to pop the iterator if we are breaking out of a for loop
             emit_write_bytecode_byte(emit, MP_BC_POP_TOP);
+            // also pop the iter_buf
+            for (size_t i = 0; i < MP_OBJ_ITER_BUF_NSLOTS - 1; ++i) {
+                emit_write_bytecode_byte(emit, MP_BC_POP_TOP);
+            }
         }
         emit_write_bytecode_byte_signed_label(emit, MP_BC_JUMP, label & ~MP_EMIT_BREAK_FROM_FOR);
     } else {
@@ -773,9 +777,9 @@ void mp_emit_bc_end_finally(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_END_FINALLY);
 }
 
-void mp_emit_bc_get_iter(emit_t *emit) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte(emit, MP_BC_GET_ITER);
+void mp_emit_bc_get_iter(emit_t *emit, bool use_stack) {
+    emit_bc_pre(emit, use_stack ? MP_OBJ_ITER_BUF_NSLOTS - 1 : 0);
+    emit_write_bytecode_byte(emit, use_stack ? MP_BC_GET_ITER_STACK : MP_BC_GET_ITER);
 }
 
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label) {
@@ -784,7 +788,7 @@ void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label) {
 }
 
 void mp_emit_bc_for_iter_end(emit_t *emit) {
-    emit_bc_pre(emit, -1);
+    emit_bc_pre(emit, -MP_OBJ_ITER_BUF_NSLOTS);
 }
 
 void mp_emit_bc_pop_block(emit_t *emit) {

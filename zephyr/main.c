@@ -31,7 +31,6 @@
 #include <zephyr.h>
 #ifdef CONFIG_NETWORKING
 #include <net/net_context.h>
-#include <net/nbuf.h>
 #endif
 
 #include "py/nlr.h"
@@ -44,14 +43,9 @@
 #include "lib/mp-readline/readline.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-    if (lex == NULL) {
-        printf("MemoryError: lexer could not allocate memory\n");
-        return;
-    }
-
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
@@ -68,9 +62,20 @@ static char heap[MICROPY_HEAP_SIZE];
 
 void init_zephyr(void) {
     // TODO: Make addresses configurable
+    #ifdef CONFIG_NETWORKING
+    if (net_if_get_default() == NULL) {
+        // If there's no default networking interface,
+        // there's nothing to configure.
+        return;
+    }
+    #endif
     #ifdef CONFIG_NET_IPV4
     static struct in_addr in4addr_my = {{{192, 0, 2, 1}}};
     net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);
+    static struct in_addr in4netmask_my = {{{255, 255, 255, 0}}};
+    net_if_ipv4_set_netmask(net_if_get_default(), &in4netmask_my);
+    static struct in_addr in4gw_my = {{{192, 0, 2, 2}}};
+    net_if_ipv4_set_gw(net_if_get_default(), &in4gw_my);
     #endif
     #ifdef CONFIG_NET_IPV6
     // 2001:db8::1
@@ -130,7 +135,7 @@ void gc_collect(void) {
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
@@ -142,10 +147,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
-void nlr_jump_fail(void *val) {
-}
-
-void NORETURN __fatal_error(const char *msg) {
+NORETURN void nlr_jump_fail(void *val) {
     while (1);
 }
 

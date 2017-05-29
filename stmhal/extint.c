@@ -28,7 +28,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
@@ -369,23 +368,23 @@ STATIC void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print
     mp_printf(print, "<ExtInt line=%u>", self->line);
 }
 
-STATIC const mp_map_elem_t extint_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_line),    (mp_obj_t)&extint_obj_line_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable),  (mp_obj_t)&extint_obj_enable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable), (mp_obj_t)&extint_obj_disable_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_swint),   (mp_obj_t)&extint_obj_swint_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_regs),    (mp_obj_t)&extint_regs_obj },
+STATIC const mp_rom_map_elem_t extint_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_line),    MP_ROM_PTR(&extint_obj_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable),  MP_ROM_PTR(&extint_obj_enable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable), MP_ROM_PTR(&extint_obj_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_swint),   MP_ROM_PTR(&extint_obj_swint_obj) },
+    { MP_ROM_QSTR(MP_QSTR_regs),    MP_ROM_PTR(&extint_regs_obj) },
 
     // class constants
     /// \constant IRQ_RISING - interrupt on a rising edge
     /// \constant IRQ_FALLING - interrupt on a falling edge
     /// \constant IRQ_RISING_FALLING - interrupt on a rising or falling edge
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING),         MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_RISING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_FALLING),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_FALLING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_IT_RISING_FALLING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_EVT_RISING),         MP_OBJ_NEW_SMALL_INT(GPIO_MODE_EVT_RISING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_EVT_FALLING),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_EVT_FALLING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_EVT_RISING_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_EVT_RISING_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),         MP_ROM_INT(GPIO_MODE_IT_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),        MP_ROM_INT(GPIO_MODE_IT_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING_FALLING), MP_ROM_INT(GPIO_MODE_IT_RISING_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_EVT_RISING),         MP_ROM_INT(GPIO_MODE_EVT_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_EVT_FALLING),        MP_ROM_INT(GPIO_MODE_EVT_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_EVT_RISING_FALLING), MP_ROM_INT(GPIO_MODE_EVT_RISING_FALLING) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(extint_locals_dict, extint_locals_dict_table);
@@ -395,7 +394,7 @@ const mp_obj_type_t extint_type = {
     .name = MP_QSTR_ExtInt,
     .print = extint_obj_print,
     .make_new = extint_make_new,
-    .locals_dict = (mp_obj_t)&extint_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&extint_locals_dict,
 };
 
 void extint_init0(void) {
@@ -412,6 +411,7 @@ void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
             if (*cb != mp_const_none) {
+                mp_sched_lock();
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
@@ -427,6 +427,7 @@ void Handle_EXTI_Irq(uint32_t line) {
                     mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();
+                mp_sched_unlock();
             }
         }
     }

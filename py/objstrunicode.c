@@ -36,7 +36,7 @@
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 /* str                                                                        */
@@ -120,7 +120,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     // so it must handle bytes.
     if (type == &mp_type_bytes) {
         // Taken from objstr.c:str_index_to_ptr()
-        mp_uint_t index_val = mp_get_index(type, self_len, index, is_slice);
+        size_t index_val = mp_get_index(type, self_len, index, is_slice);
         return self_data + index_val;
     }
 
@@ -284,7 +284,7 @@ typedef struct _mp_obj_str_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_t str;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_str_it_t;
 
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
@@ -301,8 +301,9 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str) {
-    mp_obj_str_it_t *o = m_new_obj(mp_obj_str_it_t);
+STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_str_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_str_it_t *o = (mp_obj_str_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = str_it_iternext;
     o->str = str;

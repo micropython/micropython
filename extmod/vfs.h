@@ -35,6 +35,10 @@
 #define MP_VFS_NONE ((mp_vfs_mount_t*)1)
 #define MP_VFS_ROOT ((mp_vfs_mount_t*)0)
 
+// MicroPython's port-standardized versions of stat constants
+#define MP_S_IFDIR (0x4000)
+#define MP_S_IFREG (0x8000)
+
 // constants for block protocol ioctl
 #define BP_IOCTL_INIT           (1)
 #define BP_IOCTL_DEINIT         (2)
@@ -56,6 +60,7 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in);
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 mp_obj_t mp_vfs_chdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_getcwd(void);
+mp_obj_t mp_vfs_ilistdir(size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_remove(mp_obj_t path_in);
@@ -69,6 +74,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_umount_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_open_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_chdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_ilistdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_mkdir_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_remove_obj);

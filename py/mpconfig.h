@@ -353,6 +353,12 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #endif
 
+// Whether to enable optimisation of: return a if b else c
+// Costs about 80 bytes (Thumb2) and saves 2 bytes of bytecode for each use
+#ifndef MICROPY_COMP_RETURN_IF_EXPR
+#define MICROPY_COMP_RETURN_IF_EXPR (0)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
@@ -445,7 +451,7 @@
 #   endif
 #endif
 
-// Whether to provide the mp_kbd_exception object
+// Whether to provide the mp_kbd_exception object, and micropython.kbd_intr function
 #ifndef MICROPY_KBD_EXCEPTION
 #define MICROPY_KBD_EXCEPTION (0)
 #endif
@@ -548,12 +554,27 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
 #endif
 
+// Whether to provide a high-quality hash for float and complex numbers.
+// Otherwise the default is a very simple but correct hashing function.
+#ifndef MICROPY_FLOAT_HIGH_QUALITY_HASH
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (0)
+#endif
+
 // Enable features which improve CPython compatibility
 // but may lead to more code size/memory usage.
 // TODO: Originally intended as generic category to not
 // add bunch of once-off options. May need refactoring later
 #ifndef MICROPY_CPYTHON_COMPAT
 #define MICROPY_CPYTHON_COMPAT (1)
+#endif
+
+// Perform full checks as done by CPython. Disabling this
+// may produce incorrect results, if incorrect data is fed,
+// but should not lead to MicroPython crashes or similar
+// grave issues (in other words, only user app should be,
+// affected, not system).
+#ifndef MICROPY_FULL_CHECKS
+#define MICROPY_FULL_CHECKS (1)
 #endif
 
 // Whether POSIX-semantics non-blocking streams are supported
@@ -614,6 +635,16 @@ typedef double mp_float_t;
 // Whether to use internally defined *printf() functions (otherwise external ones)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
 #define MICROPY_USE_INTERNAL_PRINTF (1)
+#endif
+
+// Support for internal scheduler
+#ifndef MICROPY_ENABLE_SCHEDULER
+#define MICROPY_ENABLE_SCHEDULER (0)
+#endif
+
+// Maximum number of entries in the scheduler
+#ifndef MICROPY_SCHEDULER_DEPTH
+#define MICROPY_SCHEDULER_DEPTH (4)
 #endif
 
 // Support for generic VFS sub-system
@@ -855,6 +886,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_IO (1)
 #endif
 
+// Whether to provide "uio.resource_stream()" function with
+// the semantics of CPython's pkg_resources.resource_stream()
+// (allows to access resources in frozen packages).
+#ifndef MICROPY_PY_IO_RESOURCE_STREAM
+#define MICROPY_PY_IO_RESOURCE_STREAM (0)
+#endif
+
 // Whether to provide "io.FileIO" class
 #ifndef MICROPY_PY_IO_FILEIO
 #define MICROPY_PY_IO_FILEIO (0)
@@ -915,6 +953,11 @@ typedef double mp_float_t;
 // Whether to provide "uerrno" module
 #ifndef MICROPY_PY_UERRNO
 #define MICROPY_PY_UERRNO (0)
+#endif
+
+// Whether to provide the uerrno.errorcode dict
+#ifndef MICROPY_PY_UERRNO_ERRORCODE
+#define MICROPY_PY_UERRNO_ERRORCODE (1)
 #endif
 
 // Whether to provide "uselect" module (baremetal implementation)
@@ -1088,6 +1131,11 @@ typedef double mp_float_t;
 // object code analysis tools which don't support static symbols.
 #ifndef STATIC
 #define STATIC static
+#endif
+
+// Number of bytes in a word
+#ifndef BYTES_PER_WORD
+#define BYTES_PER_WORD (sizeof(mp_uint_t))
 #endif
 
 #define BITS_PER_BYTE (8)

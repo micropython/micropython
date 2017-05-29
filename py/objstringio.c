@@ -39,7 +39,7 @@
 #if MICROPY_CPYTHON_COMPAT
 STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
     if (o->vstr == NULL) {
-        mp_raise_msg(&mp_type_ValueError, "I/O operation on closed file");
+        mp_raise_ValueError("I/O operation on closed file");
     }
 }
 #else
@@ -56,6 +56,9 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
+    if (o->vstr->len <= o->pos) {  // read to EOF, or seeked to EOF or beyond
+        return 0;
+    }
     mp_uint_t remaining = o->vstr->len - o->pos;
     if (size > remaining) {
         size = remaining;
@@ -69,22 +72,27 @@ STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, 
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
-    mp_int_t remaining = o->vstr->alloc - o->pos;
+    mp_uint_t new_pos = o->pos + size;
+    if (new_pos < size) {
+        // Writing <size> bytes will overflow o->pos beyond limit of mp_uint_t.
+        *errcode = MP_EFBIG;
+        return MP_STREAM_ERROR;
+    }
     mp_uint_t org_len = o->vstr->len;
-    if ((mp_int_t)size > remaining) {
+    if (new_pos > o->vstr->alloc) {
         // Take all what's already allocated...
         o->vstr->len = o->vstr->alloc;
         // ... and add more
-        vstr_add_len(o->vstr, size - remaining);
+        vstr_add_len(o->vstr, new_pos - o->vstr->alloc);
     }
     // If there was a seek past EOF, clear the hole
     if (o->pos > org_len) {
         memset(o->vstr->buf + org_len, 0, o->pos - org_len);
     }
     memcpy(o->vstr->buf + o->pos, buf, size);
-    o->pos += size;
-    if (o->pos > o->vstr->len) {
-        o->vstr->len = o->pos;
+    o->pos = new_pos;
+    if (new_pos > o->vstr->len) {
+        o->vstr->len = new_pos;
     }
     return size;
 }
@@ -215,7 +223,7 @@ const mp_obj_type_t mp_type_stringio = {
     .name = MP_QSTR_StringIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stringio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
@@ -227,7 +235,7 @@ const mp_obj_type_t mp_type_bytesio = {
     .name = MP_QSTR_BytesIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &bytesio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,

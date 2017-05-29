@@ -25,11 +25,11 @@
  */
 
 #include <stdint.h>
-#include <ctype.h>
-#include "std.h"
+#include <stdio.h>
 
 #include "py/mpstate.h"
 #include "py/obj.h"
+#include "lib/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
@@ -49,7 +49,6 @@
 #include "fifo.h"
 #include "socketfifo.h"
 #include "updater.h"
-#include "timeutils.h"
 #include "moduos.h"
 
 /******************************************************************************
@@ -500,12 +499,12 @@ static void ftp_wait_for_enabled (void) {
 
 static bool ftp_create_listening_socket (_i16 *sd, _u16 port, _u8 backlog) {
     SlSockNonblocking_t nonBlockingOption;
-    sockaddr_in         sServerAddress;
+    SlSockAddrIn_t sServerAddress;
     _i16 _sd;
     _i16 result;
 
     // Open a socket for ftp data listen
-    ASSERT ((*sd = sl_Socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) > 0);
+    ASSERT ((*sd = sl_Socket(SL_AF_INET, SL_SOCK_STREAM, SL_IPPROTO_IP)) > 0);
     _sd = *sd;
 
     if (_sd > 0) {
@@ -514,12 +513,12 @@ static bool ftp_create_listening_socket (_i16 *sd, _u16 port, _u8 backlog) {
 
         // Enable non-blocking mode
         nonBlockingOption.NonblockingEnabled = 1;
-        ASSERT ((result = sl_SetSockOpt(_sd, SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption))) == SL_SOC_OK);
+        ASSERT ((result = sl_SetSockOpt(_sd, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &nonBlockingOption, sizeof(nonBlockingOption))) == SL_SOC_OK);
 
         // Bind the socket to a port number
-        sServerAddress.sin_family = AF_INET;
-        sServerAddress.sin_addr.s_addr = INADDR_ANY;
-        sServerAddress.sin_port = htons(port);
+        sServerAddress.sin_family = SL_AF_INET;
+        sServerAddress.sin_addr.s_addr = SL_INADDR_ANY;
+        sServerAddress.sin_port = sl_Htons(port);
 
         ASSERT ((result |= sl_Bind(_sd, (const SlSockAddr_t *)&sServerAddress, sizeof(sServerAddress))) == SL_SOC_OK);
 
@@ -535,7 +534,7 @@ static bool ftp_create_listening_socket (_i16 *sd, _u16 port, _u8 backlog) {
 }
 
 static ftp_result_t ftp_wait_for_connection (_i16 l_sd, _i16 *n_sd) {
-    sockaddr_in  sClientAddress;
+    SlSockAddrIn_t sClientAddress;
     SlSocklen_t  in_addrSize;
 
     // accepts a connection from a TCP client, if there is any, otherwise returns SL_EAGAIN
@@ -930,6 +929,13 @@ static void ftp_close_cmd_data (void) {
     servers_close_socket(&ftp_data.c_sd);
     servers_close_socket(&ftp_data.d_sd);
     ftp_close_filesystem_on_error ();
+}
+
+static void stoupper (char *str) {
+    while (str && *str != '\0') {
+        *str = (char)unichar_toupper((int)(*str));
+        str++;
+    }
 }
 
 static ftp_cmd_index_t ftp_pop_command (char **str) {

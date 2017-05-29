@@ -2,6 +2,7 @@
 include ../py/mkenv.mk
 
 FROZEN_DIR = scripts
+FROZEN_MPY_DIR = modules
 
 # define main target
 PROG = micropython
@@ -17,13 +18,12 @@ include ../py/py.mk
 
 INC +=  -I.
 INC +=  -I..
-INC += -I../lib/timeutils
 INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -211,10 +211,10 @@ fast:
 # build a minimal interpreter
 minimal:
 	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
-	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= \
+	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= FROZEN_MPY_DIR= \
 	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
 	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
-	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
+	    MICROPY_USE_READLINE=0
 
 # build interpreter with nan-boxing as object model
 nanbox:
