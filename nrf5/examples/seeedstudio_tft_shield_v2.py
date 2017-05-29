@@ -59,7 +59,7 @@ class ILI9341:
         self.height = height
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
-        self.framebuf = framebuf.FrameBuffer1(self.buffer, self.width, self.height)
+        self.framebuf = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
 
         self.spi = SPI(0)
         # chip select
