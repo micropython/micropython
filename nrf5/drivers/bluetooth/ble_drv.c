@@ -90,7 +90,6 @@ static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
 static mp_obj_t mp_gattc_char_data_observer;
-static mp_obj_t mp_gattc_char_data_observer;
 #endif
 
 #if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
