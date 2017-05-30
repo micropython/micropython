@@ -111,11 +111,20 @@ STATIC mp_obj_t char_read(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
 
-/// \method write(data)
+/// \method write(data, [with_response=False])
 /// Write Characteristic value.
 ///
-STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
-    ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t char_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    ubluepy_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_obj_t data                      = pos_args[1];
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_with_response, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
@@ -137,16 +146,18 @@ STATIC mp_obj_t char_write(mp_obj_t self_in, mp_obj_t data) {
         }
     } else {
 #if MICROPY_PY_UBLUEPY_CENTRAL
+        bool with_response = args[0].u_bool;
+
         ble_drv_attr_c_write(self->p_service->p_periph->conn_handle,
                              self->handle,
                              bufinfo.len,
-                             bufinfo.buf);
+                             bufinfo.buf,
+                             with_response);
 #endif
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_characteristic_write_obj, char_write);
-
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_characteristic_write_obj, 2, char_write);
 
 /// \method properties()
 /// Read Characteristic value properties.
