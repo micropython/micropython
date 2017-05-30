@@ -107,8 +107,8 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     from machine import Pin
 
     p0 = Pin(0, Pin.OUT)    # create output pin on GPIO0
-    p0.high()               # set pin to high
-    p0.low()                # set pin to low
+    p0.on()                 # turn on pin, set to high
+    p0.off()                # turn off pin, set to low
     p0.value(1)             # set pin to high
 
     p2 = Pin(2, Pin.IN)     # create input pin on GPIO2
