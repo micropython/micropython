@@ -77,6 +77,7 @@ static mp_obj_t mp_gatts_observer;
 #if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
 static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
+static volatile bool m_write_done;
 
 static volatile ble_drv_adv_evt_callback_t          adv_event_handler;
 static volatile ble_drv_gattc_evt_callback_t        gattc_event_handler;
@@ -88,6 +89,7 @@ static mp_obj_t mp_adv_observer;
 static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
+static mp_obj_t mp_gattc_char_data_observer;
 static mp_obj_t mp_gattc_char_data_observer;
 #endif
 
@@ -679,23 +681,34 @@ void ble_drv_attr_c_read(uint16_t conn_handle, uint16_t handle, mp_obj_t obj, bl
     }
 }
 
-void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data) {
+void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, uint8_t * p_data, bool w_response) {
 
-	ble_gattc_write_params_t write_params;
+    ble_gattc_write_params_t write_params;
 
-	write_params.write_op = BLE_GATT_OP_WRITE_CMD;
-	write_params.flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL;
-	write_params.handle   = handle;
-	write_params.offset   = 0;
-	write_params.len      = len;
-	write_params.p_value  = p_data;
+    if (w_response) {
+            write_params.write_op = BLE_GATT_OP_WRITE_REQ;
+    } else {
+        write_params.write_op = BLE_GATT_OP_WRITE_CMD;
+    }
 
-	uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+    write_params.flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_CANCEL;
+    write_params.handle   = handle;
+    write_params.offset   = 0;
+    write_params.len      = len;
+    write_params.p_value  = p_data;
 
-	if (err_code != 0) {
+    uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
+
+    m_write_done = !w_response;
+
+    if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
             "Can not write attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
-	}
+    }
+
+    while (m_write_done != true) {
+        ;
+    }
 }
 
 void ble_drv_scan_start(void) {
@@ -1007,6 +1020,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 
         case BLE_GATTC_EVT_WRITE_RSP:
             BLE_DRIVER_LOG("BLE EVT WRITE RESPONSE\n");
+            m_write_done = true;
             break;
 
         case BLE_GATTC_EVT_HVX:
