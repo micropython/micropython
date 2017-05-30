@@ -696,9 +696,9 @@ void ble_drv_attr_c_write(uint16_t conn_handle, uint16_t handle, uint16_t len, u
     write_params.len      = len;
     write_params.p_value  = p_data;
 
-    uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
-
     m_write_done = !w_response;
+
+    uint32_t err_code = sd_ble_gattc_write(conn_handle, &write_params);
 
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
