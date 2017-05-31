@@ -54,13 +54,18 @@
 #define TIMER_BASE(x) ((NRF_TIMER_Type *)TIMER_BASE_POINTERS[x])
 #define TIMER_IRQ_NUM(x) (TIMER_IRQ_VALUES[x])
 
+typedef void (*hal_timer_app_callback)(uint8_t id);
+
 /**
   * @brief  Timer Configuration Structure definition
   */
 typedef struct {
     uint8_t  id;
+    uint32_t period;
     uint8_t  irq_priority;
 } hal_timer_conf_t;
+
+void hal_timer_callback_set(hal_timer_app_callback callback);
 
 void hal_timer_init(hal_timer_conf_t const * p_timer_config);
 
