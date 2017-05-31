@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "uart.h"
+#include <uart.h>
+#include <timer.h>
 
 #include "irq.h"
 
@@ -28,7 +29,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind, const char* srcna
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        qstr source_name = srcname;
+        qstr source_name = *srcname;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
         mp_call_function_0(module_fun);
@@ -47,22 +48,12 @@ int main(int argc, char **argv) {
     setSP ( SP_START );
     heap_end = HEAP_START;
     
-    uart_init();
-    timer_init();
-    enable_timer_irq ();
-    
+    pios_uart_init();
+    pios_arm_timer_setLoad ( 0x4000 );
+    pios_arm_timer_init ( true, PIOS_ARM_TIMER_PRESCALE_256, true );
+    enable_timer_irq();
+        
     printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
-
-    int i =0;
-    while (1)
-    {
-        if ( b == 1 )
-        {
-            printf ("%d\n", i);
-            i++;
-            b = 0;
-        }    
-    }
 
     printf ( " ! -- My Source: \n" );
     int line = 1;
@@ -79,11 +70,11 @@ int main(int argc, char **argv) {
         }
         else
         {
-            uart_send( interactive_py[i] );
+            pios_uart_putchar( interactive_py[i] );
         }
     }
     
-    uart_send('\n');
+    pios_uart_putchar('\n');
 
     //heap_start = HEAP_START;
 
@@ -145,7 +136,7 @@ res = gpio_write ( 16, 1 );\n\
 print ('BOAH');\n\
 ", MP_PARSE_FILE_INPUT);*/
 
-    do_str ( interactive_py, MP_PARSE_FILE_INPUT, "interactive.py", (size_t) interactive_py_len );
+    do_str ( (char*) interactive_py, MP_PARSE_FILE_INPUT, "interactive.py", (size_t) interactive_py_len );
 
     unsigned int sp = getSP();
     printf ("SP: %08x\n", sp );

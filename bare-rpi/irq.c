@@ -40,7 +40,7 @@ void __attribute__((interrupt("IRQ"))) irq_vector(void)
                    "mov %1, sp\n"
                    : "=r" (lr), "=r" ( sp ) );*/
     //printf (" -> ! IRQ :( \n");
-    b = 1;
+    //b = 1;
     rpiArmTimer->IRQClear = 1;
     //rpiArmTimer->Load = 0x4000;
     //printf ("SP: 0x%08x\nLR: 0x%08x\n", sp, lr);

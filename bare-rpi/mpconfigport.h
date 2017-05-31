@@ -75,7 +75,7 @@ typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
 // dummy print
-#define MP_PLAT_PRINT_STRN(str, len) uart_puts(str, len)
+#define MP_PLAT_PRINT_STRN(str, len) pios_uart_write(str, len)
 
 extern const struct _mp_obj_module_t cmodule;
 extern const struct _mp_obj_module_t mp_module_cdebug, mp_module_cio;

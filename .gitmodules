@@ -11,6 +11,9 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
-[submodule "bare-rpi/newlib-cygwin"]
-	path = bare-rpi/newlib-cygwin
+[submodule "bare-rpi/lib/newlib-cygwin"]
+	path = bare-rpi/lib/newlib-cygwin
 	url = git://sourceware.org/git/newlib-cygwin.git
+[submodule "bare-rpi/lib/PiOS"]
+	path = bare-rpi/lib/PiOS
+	url = https://github.com/naums/PiOS

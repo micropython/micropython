@@ -16,7 +16,7 @@ STATIC mp_obj_t cio_read () {
 }
 
 STATIC mp_obj_t cio_getchar () {
-    return mp_obj_new_int_from_uint ( uart_recv() );
+    return mp_obj_new_int_from_uint ( pios_uart_getchar() );
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(cio_write_obj, cio_write);

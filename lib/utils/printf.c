@@ -76,7 +76,7 @@ int DEBUG_printf(const char *fmt, ...) {
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;
-    MP_PLAT_PRINT_STRN(&c, 1);
+    MP_PLAT_PRINT_STRN(&chr, 1);
     return chr;
 }
 
@@ -84,7 +84,7 @@ int putchar(int c) {
 int puts(const char *s) {
     MP_PLAT_PRINT_STRN(s, strlen(s));
     char chr = '\n';
-    MP_PLAT_PRINT_STRN("\n", 1);
+    MP_PLAT_PRINT_STRN(&chr, 1);
     return 1;
 }
 

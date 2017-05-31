@@ -80,7 +80,7 @@ void    initialise_monitor_handles _PARAMS ((void));
 
 int _write ( int fd, char* ptr, int size )
 {
-    uart_puts ( ptr );
+    pios_uart_write ( ptr, size );
 }
 
 #if 1
