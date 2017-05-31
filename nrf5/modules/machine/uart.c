@@ -43,9 +43,6 @@
 #include "mphalport.h"
 #include "hal_uart.h"
 
-#define CHAR_WIDTH_8BIT (0)
-#define CHAR_WIDTH_9BIT (1)
-
 typedef struct _machine_hard_uart_obj_t {
     mp_obj_base_t base;
     UART_HandleTypeDef * uart;
@@ -72,11 +69,6 @@ void uart_init0(void) {
     memset(&UARTHandle1, 0, sizeof(UART_HandleTypeDef));
     UARTHandle0.p_instance = UART_BASE(1);
 #endif
-#if 0
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-        MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
-    }
-#endif
 }
 
 STATIC int uart_find(mp_obj_t id) {
@@ -98,15 +90,6 @@ bool uart_rx_any(machine_hard_uart_obj_t *uart_obj) {
     // TODO: uart will block for now.
     return true;
 }
-
-#if 0
-// Waits at most timeout milliseconds for at least 1 char to become ready for
-// reading (from buf or for direct reading).
-// Returns true if something available, false if not.
-STATIC bool uart_rx_wait(machine_hard_uart_obj_t * self, uint32_t timeout) {
-    return false;
-}
-#endif
 
 int uart_rx_char(machine_hard_uart_obj_t * self) {
     uint8_t ch;
@@ -178,33 +161,6 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
 
     // flow control
     init->flow_control = args[5].u_int;
-#if 0
-    // init UART (if it fails, it's because the port doesn't exist)
-    if (!uart_init2(self)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", self->uart_id));
-    }
-
-    // set timeouts
-    self->timeout = args[6].u_int;
-    self->timeout_char = args[7].u_int;
-
-    // setup the read buffer
-    m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
-
-    self->read_buf_head = 0;
-    self->read_buf_tail = 0;
-
-    if (args[8].u_int <= 0) {
-        // no read buffer
-        self->read_buf_len = 0;
-        self->read_buf = NULL;
-    } else {
-        // read buffer using interrupts
-        self->read_buf_len = args[8].u_int;
-        self->read_buf = m_new(byte, args[8].u_int << self->char_width);
-    }
-
-#endif // 0
 
 #if MICROPY_HW_UART1_HWFC
     init->flow_control = true;
@@ -312,16 +268,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hard_uart_writechar_obj, machine_hard_u
 /// Return value: The character read, as an integer.  Returns -1 on timeout.
 STATIC mp_obj_t machine_hard_uart_readchar(mp_obj_t self_in) {
     machine_hard_uart_obj_t *self = self_in;
-#if 0
-    if (uart_rx_wait(self, self->timeout)) {
-#endif
         return MP_OBJ_NEW_SMALL_INT(uart_rx_char(self));
-#if 0
-    } else {
-        // return -1 on timeout
-        return MP_OBJ_NEW_SMALL_INT(-1);
-    }
-#endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_readchar_obj, machine_hard_uart_readchar);
 
