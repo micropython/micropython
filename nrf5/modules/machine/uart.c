@@ -268,7 +268,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hard_uart_writechar_obj, machine_hard_u
 /// Return value: The character read, as an integer.  Returns -1 on timeout.
 STATIC mp_obj_t machine_hard_uart_readchar(mp_obj_t self_in) {
     machine_hard_uart_obj_t *self = self_in;
-        return MP_OBJ_NEW_SMALL_INT(uart_rx_char(self));
+    return MP_OBJ_NEW_SMALL_INT(uart_rx_char(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_readchar_obj, machine_hard_uart_readchar);
 
