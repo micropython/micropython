@@ -113,6 +113,13 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     // get static peripheral object
     int timer_id = timer_find(args[0].u_obj);
 
+#if BLUETOOTH_SD
+    if (timer_id == 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                  "Timer(%d) reserved by Bluetooth LE stack.", timer_id));
+    }
+#endif
+
 #if MICROPY_PY_MACHINE_SOFT_PWM
     if (timer_id == 1) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
