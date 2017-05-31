@@ -46,7 +46,6 @@ MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
-INC += -I./device
 INC += -I./../lib/cmsis/inc
 INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
@@ -100,7 +99,6 @@ SRC_LIB = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	oofatfs/ff.c \
 	oofatfs/option/unicode.c \
-	netutils/netutils.c \
 	)
 
 SRC_HAL = $(addprefix hal/,\
