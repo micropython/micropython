@@ -38,6 +38,9 @@
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t      base;
     hal_timer_conf_t * p_config;
+    mp_obj_t callback;
+    mp_int_t period;
+    mp_int_t mode;
 } machine_timer_obj_t;
 
 static hal_timer_conf_t timer_config0 = {.id = 0};
@@ -49,7 +52,7 @@ static hal_timer_conf_t timer_config3 = {.id = 3};
 static hal_timer_conf_t timer_config4 = {.id = 4};
 #endif
 
-STATIC const machine_timer_obj_t machine_timer_obj[] = {
+STATIC machine_timer_obj_t machine_timer_obj[] = {
     {{&machine_timer_type}, &timer_config0},
     {{&machine_timer_type}, &timer_config1},
     {{&machine_timer_type}, &timer_config2},
@@ -59,7 +62,21 @@ STATIC const machine_timer_obj_t machine_timer_obj[] = {
 #endif
 };
 
+STATIC void hal_interrupt_handle(uint8_t id) {
+    machine_timer_obj_t * self = &machine_timer_obj[id];
+
+    mp_call_function_1(self->callback, self);
+
+    if (self != NULL) {
+        hal_timer_stop(id);
+        if (self->mode == 1) {
+            hal_timer_start(id);
+        }
+    }
+}
+
 void timer_init0(void) {
+    hal_timer_callback_set(hal_interrupt_handle);
 }
 
 STATIC int timer_find(mp_obj_t id) {
@@ -81,14 +98,12 @@ STATIC void timer_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kin
 /******************************************************************************/
 /* MicroPython bindings for machine API                                       */
 
-// for make_new
-enum {
-    ARG_NEW_id,
-};
-
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
+        { MP_QSTR_period,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_callback, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -96,7 +111,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get static peripheral object
-    int timer_id = timer_find(args[ARG_NEW_id].u_obj);
+    int timer_id = timer_find(args[0].u_obj);
 
 #if MICROPY_PY_MACHINE_SOFT_PWM
     if (timer_id == 1) {
@@ -105,7 +120,15 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     }
 #endif
 
-    const machine_timer_obj_t *self = &machine_timer_obj[timer_id];
+    machine_timer_obj_t *self = &machine_timer_obj[timer_id];
+
+    self->p_config->period = args[1].u_int;
+
+    self->mode = args[2].u_int;
+
+    if (args[3].u_obj != mp_const_none) {
+        self->callback = args[3].u_obj;
+    }
 
     hal_timer_init(self->p_config);
 
@@ -115,22 +138,22 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 /// \method start(period)
 /// Start the timer.
 ///
-STATIC mp_obj_t machine_timer_start(mp_obj_t self_in, mp_obj_t period_in) {
+STATIC mp_obj_t machine_timer_start(mp_obj_t self_in) {
     machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    // hal_timer_start(id);
+
+    hal_timer_start(self->p_config->id);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_timer_start_obj, machine_timer_start);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_start_obj, machine_timer_start);
 
 /// \method stop()
 /// Stop the timer.
 ///
 STATIC mp_obj_t machine_timer_stop(mp_obj_t self_in) {
     machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
-    (void)self;
-    // hal_timer_stop(id);
+
+    hal_timer_stop(self->p_config->id);
 
     return mp_const_none;
 }
