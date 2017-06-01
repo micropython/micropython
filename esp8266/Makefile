@@ -94,7 +94,6 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
-	input.c \
 	)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\

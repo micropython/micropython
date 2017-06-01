@@ -151,7 +151,6 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\
 	bufhelper.c \
-	input.c \
 	irq.c \
 	pybstdio.c \
 	)
