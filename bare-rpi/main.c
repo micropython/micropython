@@ -21,15 +21,11 @@ unsigned int getSP ();
 extern unsigned char interactive_py[];
 extern unsigned int interactive_py_len;
 
-void do_str(const char *src, mp_parse_input_kind_t input_kind, const char* srcname, size_t len) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, len, 0);
-    if (lex == NULL) {
-        return;
-    }
-
+void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        qstr source_name = *srcname;
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
+        qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
         mp_call_function_0(module_fun);
@@ -49,12 +45,17 @@ int main(int argc, char **argv) {
     heap_end = HEAP_START;
     
     pios_uart_init();
-    pios_arm_timer_setLoad ( 0x4000 );
+   /* pios_arm_timer_setLoad ( 0x4000 );
     pios_arm_timer_init ( true, PIOS_ARM_TIMER_PRESCALE_256, true );
-    enable_timer_irq();
+    enable_timer_irq();*/
         
     printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
+    mp_init();
 
+    do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
+    do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
+    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
+    
     printf ( " ! -- My Source: \n" );
     int line = 1;
     printf ("%02d: ", line );
@@ -75,17 +76,9 @@ int main(int argc, char **argv) {
     }
     
     pios_uart_putchar('\n');
-
-    //heap_start = HEAP_START;
-
-    int x = 0x800000;
-    while ( x > 0 )
-        x--;
-
-    mp_init();
     
     printf ("Starting Python-code\n");
-            
+
 /*    do_str("\n\
 import C;\n\
 import Cdebug;\n\
@@ -136,7 +129,7 @@ res = gpio_write ( 16, 1 );\n\
 print ('BOAH');\n\
 ", MP_PARSE_FILE_INPUT);*/
 
-    do_str ( (char*) interactive_py, MP_PARSE_FILE_INPUT, "interactive.py", (size_t) interactive_py_len );
+    do_str ( (char*) interactive_py, MP_PARSE_FILE_INPUT );
 
     unsigned int sp = getSP();
     printf ("SP: %08x\n", sp );
@@ -148,7 +141,21 @@ print ('BOAH');\n\
     return 0;
 }
 
+mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
 void gc_collect(void) {
+    #if MICROPY_ENABLE_GC==1
+    gc_collect_start();
+
+    // get the registers and the sp
+    mp_uint_t regs[10];
+    mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
+
+    // trace the stack, including the registers (since they live on the stack in this function)
+    gc_collect_root((void**)sp, ((uint32_t)HEAP_START - sp) / sizeof(uint32_t));
+
+    // end the GC
+    gc_collect_end();
+    #endif
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {

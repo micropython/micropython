@@ -42,11 +42,6 @@ void free ( void* m )
 
 */
 
-
-
-void uart_putc ( unsigned int c );
-
-
 extern unsigned int heap_end;
 unsigned int prev_heap_end;
 
