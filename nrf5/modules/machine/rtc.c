@@ -120,9 +120,9 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
 #ifdef NRF51
-    self->p_config.irq_priority = 3;
+    self->p_config->irq_priority = 3;
 #else
-    self->p_config.irq_priority = 6;
+    self->p_config->irq_priority = 6;
 #endif
 
     hal_rtc_init(self->p_config);
