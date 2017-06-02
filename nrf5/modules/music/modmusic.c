@@ -337,7 +337,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     // get the pin to play on
     const pin_obj_t *pin;
-    if (n_args >= 2) {
+    if (args[1].u_obj == MP_OBJ_NULL) {
 #ifdef MICROPY_HW_MUSIC_PIN
         pin = &MICROPY_HW_MUSIC_PIN;
 #else
