@@ -602,6 +602,11 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], s, len);
 
     mp_int_t splits = mp_obj_get_int(args[2]);
+    if (splits < 0) {
+        // Negative limit means no limit, so delegate to split().
+        return mp_obj_str_split(n_args, args);
+    }
+
     mp_int_t org_splits = splits;
     // Preallocate list to the max expected # of elements, as we
     // will fill it from the end.
