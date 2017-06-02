@@ -47,7 +47,7 @@ void hal_timer_init(hal_timer_conf_t const * p_timer_conf) {
     p_timer->SHORTS      = (TIMER_SHORTS_COMPARE0_CLEAR_Enabled << TIMER_SHORTS_COMPARE0_CLEAR_Pos);
     p_timer->TASKS_CLEAR = 1;
 
-    hal_irq_priority(TIMER_IRQ_NUM(p_timer_conf->id), 3);
+    hal_irq_priority(TIMER_IRQ_NUM(p_timer_conf->id), p_timer_conf->irq_priority);
 }
 
 void hal_timer_start(uint8_t id) {
