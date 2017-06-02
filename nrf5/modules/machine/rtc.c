@@ -119,6 +119,12 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
         self->callback = args[3].u_obj;
     }
 
+#ifdef NRF51
+    self->p_config.irq_priority = 3;
+#else
+    self->p_config.irq_priority = 6;
+#endif
+
     hal_rtc_init(self->p_config);
 
     return MP_OBJ_FROM_PTR(self);
