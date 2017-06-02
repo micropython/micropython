@@ -74,8 +74,9 @@ int mp_hal_stdin_rx_chr(void) {
 
 void mp_hal_stdout_tx_char(char c) {
     mp_obj_t term = MP_STATE_PORT(term_obj);
-    if (term == NULL || term == MP_OBJ_NULL)
+    if (term == NULL || term == MP_OBJ_NULL) {
         uart_tx_one_char(UART0, c);
+    }
     mp_uos_dupterm_tx_strn(&c, 1);
 }
 
@@ -151,11 +152,12 @@ void mp_hal_signal_input(void) {
 void mp_hal_uart_rx_intr(int uart_no) {
     int ch;
     mp_obj_t term = MP_STATE_PORT(term_obj);
-    bool uart_term=(term == NULL || term == MP_STATE_PORT(pyb_uart_objs)[uart_no]);
+    bool uart_term = (term == NULL || term == MP_STATE_PORT(pyb_uart_objs)[uart_no]);
 
     for (;;) {
-        if ((ch = uart_rx_one_char(uart_no))==-1)
+        if ((ch = uart_rx_one_char(uart_no)) == -1) {
             break;
+        }
         if (uart_term) {
             if (ch == mp_interrupt_char)
                 mp_keyboard_interrupt();
@@ -166,8 +168,9 @@ void mp_hal_uart_rx_intr(int uart_no) {
             mp_uart_stuff_rx(MP_STATE_PORT(pyb_uart_objs)[uart_no],ch);
         }
     }
-    if (uart_term)
+    if (uart_term) {
         mp_hal_signal_input();
+    }
 }
 
 
