@@ -173,9 +173,9 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
     }
 
     self->rxbuflen = args[ARG_rxbuflen].u_int;
-    if (self->uart_id == 0 && self->rxbuflen < 16)
-      self->rxbuflen=16;        /* probably too restrictive */
-
+    if (self->uart_id == 0 && self->rxbuflen < 16) {
+      self->rxbuflen = 16;        /* probably too restrictive */
+    }
     // setup
     uart_setup(self->uart_id);
 }
@@ -207,14 +207,15 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     if (self->rxbuflen) {
-      if (self->buf)
+      if (self->buf) {
         m_free(self->buf);
+      }
       self->buf = m_malloc(self->rxbuflen);
     }
 
-    self->rxbuf.buf=self->buf;
-    self->rxbuf.size=self->rxbuflen;
-    self->rxbuf.iget=self->rxbuf.iput=0;
+    self->rxbuf.buf = self->buf;
+    self->rxbuf.size = self->rxbuflen;
+    self->rxbuf.iget = self->rxbuf.iput=0;
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -287,8 +288,8 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     // read the data
     uint8_t *buf = buf_in;
     for (;;) {
-        char ch=ringbuf_get(&self->rxbuf);
-        int avail=uart_rx_wait(self, self->timeout_char * 1000);
+        char ch = ringbuf_get(&self->rxbuf);
+        int avail = uart_rx_wait(self, self->timeout_char * 1000);
         *buf++ = ch;
         if (--size == 0 || !avail) {
             // return number of bytes read
