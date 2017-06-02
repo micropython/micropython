@@ -30,6 +30,10 @@
 
 #ifdef HAL_RTC_MODULE_ENABLED
 
+#define HAL_LFCLK_FREQ (32768UL)
+#define HAL_RTC_FREQ (10UL)
+#define HAL_RTC_COUNTER_PRESCALER ((HAL_LFCLK_FREQ/HAL_RTC_FREQ)-1)
+
 static hal_rtc_app_callback m_callback;
 
 static uint32_t m_period[sizeof(RTC_BASE_POINTERS) / sizeof(uint32_t)];
@@ -50,14 +54,14 @@ void hal_rtc_init(hal_rtc_conf_t const * p_rtc_conf) {
 
     m_period[p_rtc_conf->id] = p_rtc_conf->period;
 
-    p_rtc->PRESCALER = (32768 / 32) - 1; // approx ms ticks.
+    p_rtc->PRESCALER = HAL_RTC_COUNTER_PRESCALER;
     hal_irq_priority(RTC_IRQ_NUM(p_rtc_conf->id), p_rtc_conf->irq_priority);
 }
 
 void hal_rtc_start(uint8_t id) {
     NRF_RTC_Type * p_rtc = RTC_BASE(id);
 
-    uint32_t period  = m_period[id];
+    uint32_t period  = HAL_RTC_FREQ * m_period[id];
     uint32_t counter = p_rtc->COUNTER;
 
     p_rtc->CC[0] = counter + period;
