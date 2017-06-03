@@ -307,7 +307,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_music_stop_obj, 0, 1, microbit_musi
 STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_music, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-// TODO:{ MP_QSTR_pin,   MP_ARG_OBJ, {.u_obj = (mp_obj_t)&microbit_p0_obj} },
         { MP_QSTR_pin,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_wait,  MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_loop,  MP_ARG_BOOL, {.u_bool = false} },
@@ -337,7 +336,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
 
     // get the pin to play on
     const pin_obj_t *pin;
-    if (n_args >= 2) {
+    if (args[1].u_obj == MP_OBJ_NULL) {
 #ifdef MICROPY_HW_MUSIC_PIN
         pin = &MICROPY_HW_MUSIC_PIN;
 #else
@@ -378,7 +377,6 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_duration, MP_ARG_INT, {.u_int = -1} },
-//TODO: { MP_QSTR_pin,    MP_ARG_OBJ, {.u_obj = (mp_obj_t)&microbit_p0_obj} },
         { MP_QSTR_pin,    MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_wait,   MP_ARG_BOOL, {.u_bool = true} },
     };
@@ -390,8 +388,19 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
     // get the parameters
     mp_uint_t frequency = args[0].u_int;
     mp_int_t duration = args[1].u_int;
-    const pin_obj_t *pin = args[2].u_obj;
-    (void)pin;
+
+    // get the pin to play on
+    const pin_obj_t *pin;
+    if (args[2].u_obj == MP_OBJ_NULL) {
+#ifdef MICROPY_HW_MUSIC_PIN
+        pin = &MICROPY_HW_MUSIC_PIN;
+#else
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin parameter not given"));
+#endif
+    } else {
+        pin = (pin_obj_t *)args[2].u_obj;
+    }
+
     // Update pin modes
 //TODO: microbit_obj_pin_free(music_data->async_pin);
     music_data->async_pin = NULL;
