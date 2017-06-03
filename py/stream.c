@@ -51,7 +51,7 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in);
 #define STREAM_CONTENT_TYPE(stream) (((stream)->is_text) ? &mp_type_str : &mp_type_bytes)
 
 // Returns error condition in *errcode, if non-zero, return value is number of bytes written
-// before error condition occured. If *errcode == 0, returns total bytes written (which will
+// before error condition occurred. If *errcode == 0, returns total bytes written (which will
 // be equal to input size).
 mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode, byte flags) {
     byte *buf = buf_;

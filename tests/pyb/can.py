@@ -158,7 +158,7 @@ print(can.recv(1))
 
 del can
 
-# Testing asyncronous send
+# Testing asynchronous send
 can = CAN(1, CAN.LOOPBACK)
 can.setfilter(0, CAN.MASK16, 0, (0, 0, 0, 0))
 

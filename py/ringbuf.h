@@ -33,7 +33,7 @@ typedef struct _ringbuf_t {
     uint16_t iput;
 } ringbuf_t;
 
-// Static initalization:
+// Static initialization:
 // byte buf_array[N];
 // ringbuf_t buf = {buf_array, sizeof(buf_array)};
 

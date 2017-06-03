@@ -53,7 +53,7 @@ which is stored within the external serial flash memory.  If a micro SD card
 is hooked-up and mounted, it will be available as well.
 
 When the WiPy starts up, it always boots from the ``boot.py`` located in the
-``/flash`` file system.
+``/flash`` file system. On boot up, the current directory is ``/flash``.
 
 The file system is accessible via the native FTP server running in the WiPy.
 Open your FTP client of choice and connect to:
@@ -323,3 +323,63 @@ Unrelated function in machine module
     this function is not called then the default file main.py will be executed.
 
     It only makes sense to call this function from within boot.py.
+
+Adhoc way to control telnet/FTP server via network module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``Server`` class controls the behaviour and the configuration of the FTP and telnet
+services running on the WiPy. Any changes performed using this class' methods will
+affect both.
+
+Example::
+
+    import network
+    server = network.Server()
+    server.deinit() # disable the server
+    # enable the server again with new settings
+    server.init(login=('user', 'password'), timeout=600)
+
+.. class:: network.Server(id, ...)
+
+   Create a server instance, see ``init`` for parameters of initialization.
+
+.. method:: server.init(\*, login=('micro', 'python'), timeout=300)
+
+   Init (and effectively start the server). Optionally a new ``user``, ``password``
+   and ``timeout`` (in seconds) can be passed.
+
+.. method:: server.deinit()
+
+   Stop the server
+
+.. method:: server.timeout([timeout_in_seconds])
+
+   Get or set the server timeout.
+
+.. method:: server.isrunning()
+
+   Returns ``True`` if the server is running, ``False`` otherwise.
+
+Adhoc VFS-like support
+~~~~~~~~~~~~~~~~~~~~~~
+
+WiPy doesn't implement full MicroPython VFS support, instead following
+functions are defined in ``uos`` module:
+
+.. function:: mount(block_device, mount_point, \*, readonly=False)
+
+   Mounts a block device (like an ``SD`` object) in the specified mount
+   point. Example::
+
+      os.mount(sd, '/sd')
+
+.. function:: unmount(path)
+
+   Unmounts a previously mounted block device from the given path.
+
+.. function:: mkfs(block_device or path)
+
+   Formats the specified path, must be either ``/flash`` or ``/sd``.
+   A block device can also be passed like an ``SD`` object before
+   being mounted.
+

@@ -132,7 +132,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
                 self->buf_pos = 0;
                 self->to_recv = to_recv;
-                self->msg_sz = sz; // May be overriden by FRAME_OPT
+                self->msg_sz = sz; // May be overridden by FRAME_OPT
                 if (to_recv != 0) {
                     self->state = FRAME_OPT;
                 } else {

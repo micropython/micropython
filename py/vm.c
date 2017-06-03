@@ -947,7 +947,7 @@ unwind_jump:;
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
-                    // We have folowing stack layout here:
+                    // We have following stack layout here:
                     // fun arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 2;
                     #if MICROPY_STACKLESS
@@ -1018,7 +1018,7 @@ unwind_jump:;
                     DECODE_UINT;
                     // unum & 0xff == n_positional
                     // (unum >> 8) & 0xff == n_keyword
-                    // We have folowing stack layout here:
+                    // We have following stack layout here:
                     // fun self arg0 arg1 ... kw0 val0 kw1 val1 ... seq dict <- TOS
                     sp -= (unum & 0xff) + ((unum >> 7) & 0x1fe) + 3;
                     #if MICROPY_STACKLESS

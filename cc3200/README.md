@@ -138,7 +138,7 @@ If `WIPY_IP`, `WIPY_USER` or `WIPY_PWD` are omitted the default values (the ones
 ## Regarding old revisions of the CC3200-LAUNCHXL
 
 First silicon (pre-release) revisions of the CC3200 had issues with the ram blocks, and MicroPython cannot run
-there. Make sure to use a **v4.1 (or higer) LAUNCHXL board** when trying this port, otherwise it won't work.
+there. Make sure to use a **v4.1 (or higher) LAUNCHXL board** when trying this port, otherwise it won't work.
 
 ### Note regarding FileZilla
 

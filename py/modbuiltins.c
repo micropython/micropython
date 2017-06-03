@@ -259,6 +259,35 @@ STATIC mp_obj_t mp_builtin_hex(mp_obj_t o_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
 
+#if MICROPY_PY_BUILTINS_INPUT
+
+#include "py/mphal.h"
+#include "lib/mp-readline/readline.h"
+
+// A port can define mp_hal_readline if they want to use a custom function here
+#ifndef mp_hal_readline
+#define mp_hal_readline readline
+#endif
+
+STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        mp_obj_print(args[0], PRINT_STR);
+    }
+    vstr_t line;
+    vstr_init(&line, 16);
+    int ret = mp_hal_readline(&line, "");
+    if (ret == CHAR_CTRL_C) {
+        nlr_raise(mp_obj_new_exception(&mp_type_KeyboardInterrupt));
+    }
+    if (line.len == 0 && ret == CHAR_CTRL_D) {
+        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+    }
+    return mp_obj_new_str_from_vstr(&mp_type_str, &line);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 1, mp_builtin_input);
+
+#endif
+
 STATIC mp_obj_t mp_builtin_iter(mp_obj_t o_in) {
     return mp_getiter(o_in, NULL);
 }
@@ -676,6 +705,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&mp_builtin_hex_obj) },
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&mp_builtin_id_obj) },
+    #if MICROPY_PY_BUILTINS_INPUT
+    { MP_ROM_QSTR(MP_QSTR_input), MP_ROM_PTR(&mp_builtin_input_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_isinstance), MP_ROM_PTR(&mp_builtin_isinstance_obj) },
     { MP_ROM_QSTR(MP_QSTR_issubclass), MP_ROM_PTR(&mp_builtin_issubclass_obj) },
     { MP_ROM_QSTR(MP_QSTR_iter), MP_ROM_PTR(&mp_builtin_iter_obj) },

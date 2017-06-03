@@ -100,7 +100,7 @@ programming).
 
 __WiFi__
 
-Initally, the device configures itself as a WiFi access point (AP).
+Initially, the device configures itself as a WiFi access point (AP).
 - ESSID: MicroPython-xxxxxx (x’s are replaced with part of the MAC address).
 - Password: micropythoN (note the upper-case N).
 - IP address of the board: 192.168.4.1.

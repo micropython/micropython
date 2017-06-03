@@ -401,7 +401,7 @@ mp_obj_t mp_obj_id(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(id);
     } else {
         // If that didn't work, well, let's return long int, just as
-        // a (big) positve value, so it will never clash with the range
+        // a (big) positive value, so it will never clash with the range
         // of small int returned in previous case.
         return mp_obj_new_int_from_uint((mp_uint_t)id);
     }

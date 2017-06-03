@@ -32,7 +32,7 @@ ifeq ($(BUILD_VERBOSE),0)
 $(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
 endif
 
-# default settings; can be overriden in main Makefile
+# default settings; can be overridden in main Makefile
 
 PY_SRC ?= $(TOP)/py
 BUILD ?= build

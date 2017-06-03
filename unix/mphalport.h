@@ -34,6 +34,19 @@ void mp_hal_set_interrupt_char(char c);
 void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);
 
+#if MICROPY_USE_READLINE == 1 && MICROPY_PY_BUILTINS_INPUT
+#include "py/misc.h"
+#include "lib/mp-readline/readline.h"
+// For built-in input() we need to wrap the standard readline() to enable raw mode
+#define mp_hal_readline mp_hal_readline
+static inline int mp_hal_readline(vstr_t *vstr, const char *p) {
+    mp_hal_stdio_mode_raw();
+    int ret = readline(vstr, p);
+    mp_hal_stdio_mode_orig();
+    return ret;
+}
+#endif
+
 // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
 // "The useconds argument shall be less than one million."
 static inline void mp_hal_delay_ms(mp_uint_t ms) { usleep((ms) * 1000); }

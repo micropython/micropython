@@ -939,7 +939,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
             }
         }
     } else {
-        // some arbitrary statment that we can't delete (eg del 1)
+        // some arbitrary statement that we can't delete (eg del 1)
         goto cannot_delete;
     }
 
@@ -1090,7 +1090,7 @@ STATIC void compile_import_name(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     mp_parse_node_t pn_import_source = pns->nodes[0];
 
-    // extract the preceeding .'s (if any) for a relative import, to compute the import level
+    // extract the preceding .'s (if any) for a relative import, to compute the import level
     uint import_level = 0;
     do {
         mp_parse_node_t pn_rel;

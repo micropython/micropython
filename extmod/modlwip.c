@@ -373,7 +373,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 }
 
 /*******************************************************************************/
-// Functions for socket send/recieve operations. Socket send/recv and friends call
+// Functions for socket send/receive operations. Socket send/recv and friends call
 // these to do the work.
 
 // Helper function for send/sendto to handle UDP packets.
@@ -805,7 +805,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                     mp_raise_OSError(MP_EINPROGRESS);
                 }
             }
-            // Register our recieve callback.
+            // Register our receive callback.
             tcp_recv(socket->pcb.tcp, _lwip_tcp_recv);
             socket->state = STATE_CONNECTING;
             err = tcp_connect(socket->pcb.tcp, &dest, port, _lwip_tcp_connected);
@@ -822,7 +822,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                     if (socket->state != STATE_CONNECTING) break;
                 }
                 if (socket->state == STATE_CONNECTING) {
-                    mp_raise_OSError(MP_ETIMEDOUT);
+                    mp_raise_OSError(MP_EINPROGRESS);
                 }
             } else {
                 while (socket->state == STATE_CONNECTING) {
