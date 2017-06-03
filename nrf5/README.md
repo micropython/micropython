@@ -37,19 +37,19 @@ This is a port of MicroPython to the Nordic nRF5 series of chips.
 
 ## Compile and Flash
 
-Before any compilation of any targets some basic operatons needs to be done:
+Prerequisite steps for building the nrf5 port:
 
     git clone <URL>.git micropython
     cd micropython
     git submodule update --init
     make -C mpy-cross
 
-By default PCA10040 (nrf52832) is used as compile target. To build issue the following command inside the nrf5/ folder:
+By default PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the nrf5/ folder:
 
     make
     make flash
 
-Alternativly the target board could be defined:
+Alternatively the target board could be defined:
 
      make BOARD=pca10040
      make flash
