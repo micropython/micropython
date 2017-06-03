@@ -360,3 +360,26 @@ Example::
 
    Returns ``True`` if the server is running, ``False`` otherwise.
 
+Adhoc VFS-like support
+~~~~~~~~~~~~~~~~~~~~~~
+
+WiPy doesn't implement full MicroPython VFS support, instead following
+functions are defined in ``uos`` module:
+
+.. function:: mount(block_device, mount_point, \*, readonly=False)
+
+   Mounts a block device (like an ``SD`` object) in the specified mount
+   point. Example::
+
+      os.mount(sd, '/sd')
+
+.. function:: unmount(path)
+
+   Unmounts a previously mounted block device from the given path.
+
+.. function:: mkfs(block_device or path)
+
+   Formats the specified path, must be either ``/flash`` or ``/sd``.
+   A block device can also be passed like an ``SD`` object before
+   being mounted.
+
