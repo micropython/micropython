@@ -822,7 +822,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                     if (socket->state != STATE_CONNECTING) break;
                 }
                 if (socket->state == STATE_CONNECTING) {
-                    mp_raise_OSError(MP_ETIMEDOUT);
+                    mp_raise_OSError(MP_EINPROGRESS);
                 }
             } else {
                 while (socket->state == STATE_CONNECTING) {
