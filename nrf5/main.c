@@ -83,6 +83,7 @@ extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
     
+soft_reset:
     mp_stack_set_top(&_ram_end);
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -197,9 +198,15 @@ pin_init0();
 #endif
 
     for (;;) {
-        ret_code = pyexec_friendly_repl();
-        if (ret_code != 0) {
-            break;
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            ret_code = pyexec_friendly_repl();
+            if (ret_code != 0) {
+                break;
+            }
         }
     }
 
@@ -207,6 +214,8 @@ pin_init0();
 
     if (ret_code == PYEXEC_FORCED_EXIT) {
         NVIC_SystemReset();
+    } else {
+        goto soft_reset;
     }
 
     return 0;
