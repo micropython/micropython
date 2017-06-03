@@ -30,15 +30,20 @@
 
 #ifdef HAL_RTC_MODULE_ENABLED
 
+#define HAL_LFCLK_FREQ (32768UL)
+#define HAL_RTC_FREQ (10UL)
+#define HAL_RTC_COUNTER_PRESCALER ((HAL_LFCLK_FREQ/HAL_RTC_FREQ)-1)
+
 static hal_rtc_app_callback m_callback;
+
+static uint32_t m_period[sizeof(RTC_BASE_POINTERS) / sizeof(uint32_t)];
 
 void hal_rtc_callback_set(hal_rtc_app_callback callback) {
     m_callback = callback;
 }
 
 void hal_rtc_init(hal_rtc_conf_t const * p_rtc_conf) {
-    p_rtc_conf->p_instance->PRESCALER = (32768 / p_rtc_conf->frequency) - 1; // approx correct.
-    hal_irq_priority(p_rtc_conf->irq_num, p_rtc_conf->irq_priority);
+    NRF_RTC_Type * p_rtc = RTC_BASE(p_rtc_conf->id);
 
     // start LFCLK if not already started
     if (NRF_CLOCK->LFCLKSTAT == 0) {
@@ -46,70 +51,70 @@ void hal_rtc_init(hal_rtc_conf_t const * p_rtc_conf) {
         while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0);
         NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
     }
+
+    m_period[p_rtc_conf->id] = p_rtc_conf->period;
+
+    p_rtc->PRESCALER = HAL_RTC_COUNTER_PRESCALER;
+    hal_irq_priority(RTC_IRQ_NUM(p_rtc_conf->id), p_rtc_conf->irq_priority);
 }
 
-void hal_rtc_start(hal_rtc_conf_t const * p_rtc_conf, uint16_t period) {
-    uint32_t counter = p_rtc_conf->p_instance->COUNTER;
+void hal_rtc_start(uint8_t id) {
+    NRF_RTC_Type * p_rtc = RTC_BASE(id);
 
-    p_rtc_conf->p_instance->CC[0] = counter + period;
+    uint32_t period  = HAL_RTC_FREQ * m_period[id];
+    uint32_t counter = p_rtc->COUNTER;
 
-    p_rtc_conf->p_instance->EVTENSET = RTC_EVTEN_COMPARE0_Msk;
-    p_rtc_conf->p_instance->INTENSET = RTC_INTENSET_COMPARE0_Msk;
+    p_rtc->CC[0] = counter + period;
 
-    hal_irq_clear(p_rtc_conf->irq_num);
-    hal_irq_enable(p_rtc_conf->irq_num);
+    p_rtc->EVTENSET = RTC_EVTEN_COMPARE0_Msk;
+    p_rtc->INTENSET = RTC_INTENSET_COMPARE0_Msk;
 
-    p_rtc_conf->p_instance->TASKS_START = 1;
+    hal_irq_clear(RTC_IRQ_NUM(id));
+    hal_irq_enable(RTC_IRQ_NUM(id));
+
+    p_rtc->TASKS_START = 1;
 }
 
-void hal_rtc_stop(hal_rtc_conf_t const * p_rtc_conf) {
-    p_rtc_conf->p_instance->EVTENCLR = RTC_EVTEN_COMPARE0_Msk;
-    p_rtc_conf->p_instance->INTENCLR = RTC_INTENSET_COMPARE0_Msk;
+void hal_rtc_stop(uint8_t id) {
+    NRF_RTC_Type * p_rtc = RTC_BASE(id);
 
-    hal_irq_disable(p_rtc_conf->irq_num);
+    p_rtc->EVTENCLR = RTC_EVTEN_COMPARE0_Msk;
+    p_rtc->INTENCLR = RTC_INTENSET_COMPARE0_Msk;
 
-    p_rtc_conf->p_instance->TASKS_STOP = 1;
+    hal_irq_disable(RTC_IRQ_NUM(id));
+
+    p_rtc->TASKS_STOP = 1;
+}
+
+static void common_irq_handler(uint8_t id) {
+    NRF_RTC_Type * p_rtc = RTC_BASE(id);
+
+    // clear all events
+    p_rtc->EVENTS_COMPARE[0] = 0;
+    p_rtc->EVENTS_COMPARE[1] = 0;
+    p_rtc->EVENTS_COMPARE[2] = 0;
+    p_rtc->EVENTS_COMPARE[3] = 0;
+    p_rtc->EVENTS_TICK       = 0;
+    p_rtc->EVENTS_OVRFLW     = 0;
+
+    m_callback(id);
 }
 
 void RTC0_IRQHandler(void)
 {
-    // clear all events
-    NRF_RTC0->EVENTS_COMPARE[0] = 0;
-    NRF_RTC0->EVENTS_COMPARE[1] = 0;
-    NRF_RTC0->EVENTS_COMPARE[2] = 0;
-    NRF_RTC0->EVENTS_COMPARE[3] = 0;
-    NRF_RTC0->EVENTS_TICK       = 0;
-    NRF_RTC0->EVENTS_OVRFLW     = 0;
-
-    m_callback(NRF_RTC0);
+    common_irq_handler(0);
 }
 
 void RTC1_IRQHandler(void)
 {
-    // clear all events
-    NRF_RTC1->EVENTS_COMPARE[0] = 0;
-    NRF_RTC1->EVENTS_COMPARE[1] = 0;
-    NRF_RTC1->EVENTS_COMPARE[2] = 0;
-    NRF_RTC1->EVENTS_COMPARE[3] = 0;
-    NRF_RTC1->EVENTS_TICK       = 0;
-    NRF_RTC1->EVENTS_OVRFLW     = 0;
-
-    m_callback(NRF_RTC1);
+    common_irq_handler(1);
 }
 
 #if NRF52
 
 void RTC2_IRQHandler(void)
 {
-    // clear all events
-    NRF_RTC2->EVENTS_COMPARE[0] = 0;
-    NRF_RTC2->EVENTS_COMPARE[1] = 0;
-    NRF_RTC2->EVENTS_COMPARE[2] = 0;
-    NRF_RTC2->EVENTS_COMPARE[3] = 0;
-    NRF_RTC2->EVENTS_TICK       = 0;
-    NRF_RTC2->EVENTS_OVRFLW     = 0;
-
-    m_callback(NRF_RTC2);
+    common_irq_handler(2);
 }
 
 #endif // NRF52
