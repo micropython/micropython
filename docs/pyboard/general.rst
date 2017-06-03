@@ -10,7 +10,9 @@ is inserted into the slot, it is available as ``/sd``.
 
 When the pyboard boots up, it needs to choose a filesystem to boot from.  If
 there is no SD card, then it uses the internal filesystem ``/flash`` as the boot
-filesystem, otherwise, it uses the SD card ``/sd``.
+filesystem, otherwise, it uses the SD card ``/sd``. After the boot, the current
+directory is set to one of the directories above.
+
 If needed, you can prevent the use of the SD card by creating an empty file
 called ``/flash/SKIPSD``.  If this file exists when the pyboard boots
 up then the SD card will be skipped and the pyboard will always boot from the

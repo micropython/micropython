@@ -4,27 +4,8 @@
 .. module:: uos
    :synopsis: basic "operating system" services
 
-The ``os`` module contains functions for filesystem access and ``urandom``
+The ``uos`` module contains functions for filesystem access and ``urandom``
 function.
-
-Port specifics
---------------
-
-The filesystem has ``/`` as the root directory and the
-available physical drives are accessible from here.  They are currently:
-
-    ``/flash``      -- the internal flash filesystem
-
-    ``/sd``         -- the SD card (if it exists)
-
-.. only:: port_pyboard
-
-    On boot up, the current directory is ``/flash`` if no SD card is inserted,
-    otherwise it is ``/sd``.
-
-.. only:: port_wipy
-
-    On boot up, the current directory is ``/flash``.
 
 Functions
 ---------

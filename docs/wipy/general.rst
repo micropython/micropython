@@ -53,7 +53,7 @@ which is stored within the external serial flash memory.  If a micro SD card
 is hooked-up and mounted, it will be available as well.
 
 When the WiPy starts up, it always boots from the ``boot.py`` located in the
-``/flash`` file system.
+``/flash`` file system. On boot up, the current directory is ``/flash``.
 
 The file system is accessible via the native FTP server running in the WiPy.
 Open your FTP client of choice and connect to:
