@@ -183,8 +183,6 @@ extern const struct _mp_obj_module_t onewire_module;
     mp_obj_t pin_irq_handler[16]; \
     struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
 
-
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
