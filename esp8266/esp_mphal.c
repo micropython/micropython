@@ -159,10 +159,11 @@ void mp_hal_uart_rx_intr(int uart_no) {
             break;
         }
         if (uart_term) {
-            if (ch == mp_interrupt_char)
+            if (ch == mp_interrupt_char) {
                 mp_keyboard_interrupt();
-            else
+            } else {
                 ringbuf_put(&input_buf, ch);
+            }
         } else {
             void mp_uart_stuff_rx(mp_obj_t self_in, byte ch);
             mp_uart_stuff_rx(MP_STATE_PORT(pyb_uart_objs)[uart_no],ch);
