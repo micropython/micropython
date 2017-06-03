@@ -42,8 +42,6 @@
 // UartDev is defined and initialized in rom code.
 extern UartDevice UartDev;
 
-#define RXBUF_SIZE 16
-
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     uint8_t uart_id;
@@ -207,10 +205,10 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     if (self->rxbuflen) {
-      if (self->buf) {
-        m_free(self->buf);
-      }
-      self->buf = m_malloc(self->rxbuflen);
+        if (self->buf) {
+            m_free(self->buf);
+        }
+        self->buf = m_malloc(self->rxbuflen);
     }
 
     self->rxbuf.buf = self->buf;
@@ -243,8 +241,6 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
-
-
 
 void mp_uart_stuff_rx(mp_obj_t self_in, byte ch) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
