@@ -732,7 +732,9 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
 
     // accept incoming connection
     if (socket->incoming.connection == NULL) {
-        if (socket->timeout != -1) {
+        if (socket->timeout == 0) {
+            mp_raise_OSError(MP_EAGAIN);
+        } else if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
                 mp_hal_delay_ms(100);
                 if (socket->incoming.connection != NULL) break;
