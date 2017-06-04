@@ -800,9 +800,9 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         case MOD_NETWORK_SOCK_STREAM: {
             if (socket->state != STATE_NEW) {
                 if (socket->state == STATE_CONNECTED) {
-                    mp_raise_OSError(MP_EALREADY);
+                    mp_raise_OSError(MP_EISCONN);
                 } else {
-                    mp_raise_OSError(MP_EINPROGRESS);
+                    mp_raise_OSError(MP_EALREADY);
                 }
             }
             // Register our receive callback.

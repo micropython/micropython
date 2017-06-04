@@ -73,6 +73,7 @@
 #define MP_ECONNABORTED     (103) // Software caused connection abort
 #define MP_ECONNRESET       (104) // Connection reset by peer
 #define MP_ENOBUFS          (105) // No buffer space available
+#define MP_EISCONN          (106) // Transport endpoint is already connected
 #define MP_ENOTCONN         (107) // Transport endpoint is not connected
 #define MP_ETIMEDOUT        (110) // Connection timed out
 #define MP_ECONNREFUSED     (111) // Connection refused
@@ -127,6 +128,7 @@
 #define MP_ECONNABORTED     ECONNABORTED
 #define MP_ECONNRESET       ECONNRESET
 #define MP_ENOBUFS          ENOBUFS
+#define MP_EISCONN          EISCONN
 #define MP_ENOTCONN         ENOTCONN
 #define MP_ETIMEDOUT        ETIMEDOUT
 #define MP_ECONNREFUSED     ECONNREFUSED
