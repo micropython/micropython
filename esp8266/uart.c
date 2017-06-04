@@ -141,6 +141,7 @@ uart_os_config(int uart) {
     uart_os = uart;
 }
 
+
 /******************************************************************************
  * FunctionName : uart0_rx_intr_handler
  * Description  : Internal used function
@@ -170,7 +171,7 @@ static void uart0_rx_intr_handler(void *para) {
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == mp_interrupt_char) {
+            if (RcvChar == mp_interrupt_char && !UartDev.stdio_disable) {
                 mp_keyboard_interrupt();
             } else {
                 ringbuf_put(&input_buf, RcvChar);
@@ -199,6 +200,7 @@ bool uart_rx_wait(uint32_t timeout_us) {
         ets_event_poll();
     }
 }
+
 
 int uart_rx_any(uint8 uart) {
     if (input_buf.iget != input_buf.iput) {

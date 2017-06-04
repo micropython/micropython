@@ -39,6 +39,10 @@
 
 STATIC byte input_buf_array[256];
 ringbuf_t input_buf = {input_buf_array, sizeof(input_buf_array)};
+// Separate buffer for duplicate terminal (WebREPL) so that UART can be detached from REPL
+STATIC byte dupterm_buf_array[256];
+ringbuf_t dupterm_buf = {dupterm_buf_array, sizeof(dupterm_buf_array)};
+
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
 const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 
@@ -55,12 +59,43 @@ void mp_hal_delay_us(uint32_t us) {
     }
 }
 
+extern UartDevice UartDev;
+
+void uart_std_putc(uint8 c)
+{
+  if (UartDev.stdio_disable) {
+    return;
+  }
+  uart_tx_one_char(UART0, c);
+}
+
+// Returns char from the input buffer, else -1 if buffer is empty.
+int uart_std_getc(void) {
+  // DBE - Disconnect REPL
+  if (UartDev.stdio_disable) {
+    return -1;
+  }
+  return ringbuf_get(&input_buf);
+}
+
+void
+uart_os_nostdio(int dis) {
+  UartDev.stdio_disable = dis;
+}
+
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        int c = ringbuf_get(&input_buf);
+        //int c = ringbuf_get(&input_buf);
+        int c = uart_std_getc();
         if (c != -1) {
             return c;
         }
+        // Read next char from duplicate terminal (WebREPL) - note that UART has priority when enabled
+        c = ringbuf_get(&dupterm_buf);
+        if (c != -1) {
+            return c;
+        }
+
         #if 0
         // Idles CPU but need more testing before enabling
         if (!ets_loop_iter()) {
@@ -73,7 +108,8 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_char(char c) {
-    uart_tx_one_char(UART0, c);
+    //uart_tx_one_char(UART0, c);
+    uart_std_putc(c);
     mp_uos_dupterm_tx_strn(&c, 1);
 }
 
@@ -192,7 +228,7 @@ STATIC void dupterm_task_handler(os_event_t *evt) {
         if (c < 0) {
             break;
         }
-        ringbuf_put(&input_buf, c);
+        ringbuf_put(&dupterm_buf, c);
     }
     mp_hal_signal_input();
     lock = 0;

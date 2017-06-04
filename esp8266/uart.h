@@ -89,6 +89,7 @@ typedef struct {
     RcvMsgState       rcv_state;
     int               received;
     int               buff_uart_no;  //indicate which uart use tx/rx buffer
+    int               stdio_disable;
 } UartDevice;
 
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
