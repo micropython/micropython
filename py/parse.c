@@ -27,7 +27,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <unistd.h> // for ssize_t
 #include <assert.h>
 #include <string.h>
 
@@ -331,8 +330,8 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
 /*
 STATIC void result_stack_show(parser_t *parser) {
     printf("result stack, most recent first\n");
-    for (ssize_t i = parser->result_stack_top - 1; i >= 0; i--) {
-        mp_parse_node_print(parser->result_stack[i], 0);
+    for (size_t i = parser->result_stack_top; i >= 1; i--) {
+        mp_parse_node_print(parser->result_stack[i - 1], 0);
     }
 }
 */
@@ -525,8 +524,8 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
         } else {
             op = MP_BINARY_OP_AND;
         }
-        for (ssize_t i = num_args - 2; i >= 0; --i) {
-            pn = peek_result(parser, i);
+        for (size_t i = num_args; i >= 2; --i) {
+            pn = peek_result(parser, i - 2);
             mp_obj_t arg1;
             if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
                 return false;
@@ -541,13 +540,13 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
         }
-        for (ssize_t i = num_args - 2; i >= 1; i -= 2) {
-            pn = peek_result(parser, i - 1);
+        for (size_t i = num_args; i >= 3; i -= 2) {
+            pn = peek_result(parser, i - 3);
             mp_obj_t arg1;
             if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
                 return false;
             }
-            mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
+            mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i - 2));
             static const uint8_t token_to_op[] = {
                 MP_BINARY_OP_ADD,
                 MP_BINARY_OP_SUBTRACT,
