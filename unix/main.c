@@ -236,6 +236,11 @@ STATIC int do_repl(void) {
             if (ret != 0) {
                 printf("\n");
             }
+            if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+                mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                handle_uncaught_exception(obj);
+            }
             goto input_restart;
         } else {
             // got a line with non-zero length, see if it needs continuing
