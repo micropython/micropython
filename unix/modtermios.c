@@ -133,6 +133,9 @@ STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
     C(TCSANOW),
 
     C(B9600),
+    #ifdef B19200
+    C(B19200),
+    #endif
     #ifdef B57600
     C(B57600),
     #endif
