@@ -39,6 +39,7 @@
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
 
+#define MICROPY_HW_HAS_LED          (0)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
 #define MICROPY_HW_HAS_SDCARD       (0)
@@ -51,13 +52,6 @@
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
-
-#define MICROPY_HW_LED_PULLUP       (1)
-
-#define MICROPY_HW_LED1             (21) // LED1
-#define MICROPY_HW_LED2             (22) // LED2
-#define MICROPY_HW_LED3             (23) // LED3
-#define MICROPY_HW_LED4             (24) // LED4
 
 // UART config
 #define MICROPY_HW_UART1_RX         (pin_A25)
@@ -72,5 +66,3 @@
 
 // micro:bit music pin
 #define MICROPY_HW_MUSIC_PIN        (pin_A3)
-
-#define HELP_TEXT_BOARD_LED         "1,2,3,4"
