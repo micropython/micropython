@@ -30,6 +30,10 @@
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
 #include <math.h>
+// Depending on standards conformance, M_PI may not be defined
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // M_PI is not part of the math.h standard and may not be defined
 // And by defining our own we can ensure it uses the correct const format.

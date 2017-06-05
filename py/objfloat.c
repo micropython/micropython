@@ -37,6 +37,13 @@
 #if MICROPY_PY_BUILTINS_FLOAT
 
 #include <math.h>
+// Depending on standards conformance, M_E and M_PI may not be defined
+#ifndef M_E
+#define M_E 2.7182818284590452354
+#endif
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 #include "py/formatfloat.h"
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
