@@ -5,7 +5,6 @@
 *.exe
 *.pdb
 *.ilk
-*.filters
 /build/*
 .vs/*
 *.VC.*db
