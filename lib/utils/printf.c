@@ -55,6 +55,19 @@ int printf(const char *fmt, ...) {
     return ret;
 }
 
+#ifdef __GLIBC__
+int __printf_chk(int flag, const char *fmt, ...) {
+    (void)flag;
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = mp_vprintf(&mp_plat_print, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+#endif
+
+
+
 int vprintf(const char *fmt, va_list ap) {
     return mp_vprintf(&mp_plat_print, fmt, ap);
 }
