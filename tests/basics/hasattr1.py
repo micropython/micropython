@@ -25,8 +25,7 @@ class C:
 
 c = C()
 print(hasattr(c, "exists"))
-# TODO
-#print(hasattr(c, "doesnt_exist"))
+print(hasattr(c, "doesnt_exist"))
 
 try:
     hasattr(1, b'123')
