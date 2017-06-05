@@ -31,6 +31,8 @@
 #include "led.h"
 #include "mpconfigboard.h"
 
+#if MICROPY_HW_HAS_LED
+
 #define LED_OFF(led) {(MICROPY_HW_LED_PULLUP) ? hal_gpio_pin_set(0, led) : hal_gpio_pin_clear(0, led); }
 #define LED_ON(led) {(MICROPY_HW_LED_PULLUP) ? hal_gpio_pin_clear(0, led) : hal_gpio_pin_set(0, led); }
 
@@ -154,3 +156,4 @@ const mp_obj_type_t pyb_led_type = {
     .locals_dict = (mp_obj_dict_t*)&led_locals_dict,
 };
 
+#endif // MICROPY_HW_HAS_LED

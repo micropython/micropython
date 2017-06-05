@@ -90,7 +90,6 @@ soft_reset:
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_set_limit((char*)&_ram_end - (char*)&_heap_end - 400);
 
-    led_init();
     machine_init();
 
     gc_init(&_heap_start, &_heap_end);
@@ -171,11 +170,9 @@ pin_init0();
     }
 #endif
 
-#if MICROPY_HW_LED_TRICOLOR
-    do_str("import pyb\r\n" \
-           "pyb.LED(1).on()",
-           MP_PARSE_FILE_INPUT);
-#elif (MICROPY_HW_LED_COUNT > 0)
+#if (MICROPY_HW_HAS_LED)
+    led_init();
+
     do_str("import pyb\r\n" \
            "pyb.LED(1).on()",
            MP_PARSE_FILE_INPUT);
