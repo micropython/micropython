@@ -127,6 +127,14 @@ LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
 SRC_MOD += modffi.c
 endif
 
+ifeq ($(MICROPY_PY_UBUS),1)
+LIBUBUS_LDFLAGS_MOD := "-lubus"
+
+CFLAGS_MOD += $(LIBUBUS_CFLAGS_MOD) -DMICROPY_PY_UBUS=1
+LDFLAGS_MOD += $(LIBUBUS_LDFLAGS_MOD)
+SRC_MOD += modubus.c
+endif
+
 ifeq ($(MICROPY_PY_JNI),1)
 # Path for 64-bit OpenJDK, should be adjusted for other JDKs
 CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
