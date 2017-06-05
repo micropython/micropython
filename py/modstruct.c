@@ -108,7 +108,7 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
             cnt = get_fmt_num(&fmt);
         }
 
-        if (*fmt == 's') {
+        if (*fmt == 's' || *fmt == 'c') {
             size += cnt;
         } else {
             mp_uint_t align;
@@ -165,6 +165,12 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             item = mp_obj_new_bytes(p, sz);
             p += sz;
             res->items[i++] = item;
+        } else if (*fmt == 'c') {
+            while (sz--) {
+                item = mp_obj_new_bytes(p, 1);
+                ++p;
+                res->items[i++] = item;
+            }
         } else {
             while (sz--) {
                 item = mp_binary_get_val(fmt_type, *fmt, &p);
@@ -180,6 +186,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_
 STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
+    mp_buffer_info_t bufinfo;
 
     size_t i;
     for (i = 0; i < n_args;) {
@@ -196,7 +203,6 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, siz
         }
 
         if (*fmt == 's') {
-            mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
             mp_uint_t to_copy = sz;
             if (bufinfo.len < to_copy) {
@@ -205,6 +211,16 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, siz
             memcpy(p, bufinfo.buf, to_copy);
             memset(p + to_copy, 0, sz - to_copy);
             p += sz;
+        } else if (*fmt == 'c') {
+            while (sz--) {
+                mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
+                if (bufinfo.len != 1 || bufinfo.typecode != 'B') {
+                    // Should we allow a typecode of BYTEARRAY_TYPECODE as well?
+                    // TODO: raise a struct.error instead of ValueError.
+                    mp_raise_ValueError("char format requires a bytes object of length 1");
+                }
+                *p++ = *(byte *)(bufinfo.buf);
+            }
         } else {
             while (sz--) {
                 mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
