@@ -758,6 +758,12 @@ void mp_obj_list_set_len(mp_obj_t self_in, size_t len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+// bytearray
+void mp_obj_bytearray_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
+void mp_obj_bytearray_del(mp_obj_t self_in);
+#endif
+
 // dict
 typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;

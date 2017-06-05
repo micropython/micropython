@@ -587,6 +587,19 @@ mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items) {
     o->items = items;
     return MP_OBJ_FROM_PTR(o);
 }
+
+void mp_obj_bytearray_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
+    mp_obj_array_t *self = self_in;
+    *len = self->len;
+    *items = self->items;
+}
+
+void mp_obj_bytearray_del(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_bytearray));
+    mp_obj_array_t *self = self_in;
+    m_del_var(mp_obj_array_t, mp_obj_t, self->len, self);
+}
 #endif
 
 /******************************************************************************/
