@@ -38,7 +38,7 @@ LIS3DSH_CTRL_REG5_ADDR = const(0x24)
 LIS3DSH_CTRL_REG4_CONF = const(0b01100111)
 LIS3DSH_CTRL_REG5_CONF = const(0b00000000)
 
-class STAccel:
+class STAccel():
     def __init__(self):
         self.cs_pin = Pin('PE3', Pin.OUT_PP, Pin.PULL_NONE)
         self.cs_pin.high()
