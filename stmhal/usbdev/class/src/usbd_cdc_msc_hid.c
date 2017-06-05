@@ -307,7 +307,7 @@ static const uint8_t cdc_hid_template_config_desc[CDC_HID_TEMPLATE_CONFIG_DESC_S
     0x03,                           // bmAttributes: Interrupt endpoint type
     LOBYTE(USBD_HID_MOUSE_MAX_PACKET), // wMaxPacketSize
     HIBYTE(USBD_HID_MOUSE_MAX_PACKET),
-    0x08,                           // bInterval: Polling interval
+    0x01,                           // bInterval: Polling interval
 
     // Endpoint OUT descriptor
     0x07,                           // bLength: Endpoint descriptor length
