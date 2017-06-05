@@ -1,0 +1,3 @@
+# basic help
+
+print(help)

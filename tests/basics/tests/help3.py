@@ -1,0 +1,3 @@
+# object help
+
+help(int)
