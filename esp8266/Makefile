@@ -83,6 +83,7 @@ SRC_C = \
 	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
+	moduselect.c \
 	modutime.c \
 	moduos.c \
 	modonewire.c \

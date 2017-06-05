@@ -270,12 +270,22 @@ static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     }
 }
 
+
+bool lwip_has_incoming(lwip_socket_obj_t *socket) {
+    return socket->incoming.pbuf != NULL;
+}
+
+bool lwip_is_closed(lwip_socket_obj_t *socket) {
+    return socket->state == STATE_PEER_CLOSED;
+}
+
+
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
 STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port) {
     lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
-    if (socket->incoming.pbuf != NULL) {
+    if (lwip_has_incoming(socket)) {
         // That's why they call it "unreliable". No room in the inn, drop the packet.
         pbuf_free(p);
     } else {
@@ -357,7 +367,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
         return ERR_OK;
     }
 
-    if (socket->incoming.pbuf == NULL) {
+    if (!lwip_has_incoming(socket)) {
         socket->incoming.pbuf = p;
     } else {
         #ifdef SOCKET_SINGLE_PBUF
@@ -417,18 +427,18 @@ STATIC mp_uint_t lwip_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
 // Helper function for recv/recvfrom to handle UDP packets
 STATIC mp_uint_t lwip_udp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
 
-    if (socket->incoming.pbuf == NULL) {
+    if (!lwip_has_incoming(socket)) {
         if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
                 mp_hal_delay_ms(100);
-                if (socket->incoming.pbuf != NULL) break;
+                if (lwip_has_incoming(socket)) break;
             }
-            if (socket->incoming.pbuf == NULL) {
+            if (!lwip_has_incoming(socket)) {
                 *_errno = MP_ETIMEDOUT;
                 return -1;
             }
         } else {
-            while (socket->incoming.pbuf == NULL) {
+            while (!lwip_has_incoming(socket)) {
                 poll_sockets();
             }
         }
@@ -507,11 +517,11 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
     // Check for any pending errors
     STREAM_ERROR_CHECK(socket);
 
-    if (socket->incoming.pbuf == NULL) {
+    if (!lwip_has_incoming(socket)) {
 
         // Non-blocking socket
         if (socket->timeout == 0) {
-            if (socket->state == STATE_PEER_CLOSED) {
+            if (lwip_is_closed(socket)) {
                 return 0;
             }
             *_errno = MP_EAGAIN;
@@ -519,7 +529,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
         }
 
         mp_uint_t start = mp_hal_ticks_ms();
-        while (socket->state == STATE_CONNECTED && socket->incoming.pbuf == NULL) {
+        while (socket->state == STATE_CONNECTED && !lwip_has_incoming(socket)) {
             if (socket->timeout != -1 && mp_hal_ticks_ms() - start > socket->timeout) {
                 *_errno = MP_ETIMEDOUT;
                 return -1;
@@ -527,8 +537,8 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
             poll_sockets();
         }
 
-        if (socket->state == STATE_PEER_CLOSED) {
-            if (socket->incoming.pbuf == NULL) {
+        if (lwip_is_closed(socket)) {
+            if (!lwip_has_incoming(socket)) {
                 // socket closed and no data left in buffer
                 return 0;
             }
@@ -569,8 +579,7 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
 /*******************************************************************************/
 // The socket functions provided by lwip.socket.
-
-STATIC const mp_obj_type_t lwip_socket_type;
+const mp_obj_type_t lwip_socket_type;
 
 STATIC void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     lwip_socket_obj_t *self = self_in;
@@ -651,7 +660,7 @@ STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
     }
     socket->pcb.tcp = NULL;
     socket->state = _ERR_BADF;
-    if (socket->incoming.pbuf != NULL) {
+    if (lwip_has_incoming(socket)) {
         if (!socket_is_listener) {
             pbuf_free(socket->incoming.pbuf);
         } else {
@@ -1190,7 +1199,7 @@ STATIC const mp_stream_p_t lwip_socket_stream_p = {
     .ioctl = lwip_socket_ioctl,
 };
 
-STATIC const mp_obj_type_t lwip_socket_type = {
+const mp_obj_type_t lwip_socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
     .print = lwip_socket_print,
