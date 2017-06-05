@@ -349,15 +349,18 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_min_obj, 1, mp_builtin_min);
 
 #endif
 
-STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
-    mp_obj_t ret = mp_iternext_allow_raise(o);
+STATIC mp_obj_t mp_builtin_next(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t ret = mp_iternext_allow_raise(args[0]);
     if (ret == MP_OBJ_STOP_ITERATION) {
+        if( n_args > 1 ) {
+            return args[1];
+        }
         nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
     } else {
         return ret;
     }
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_next_obj, mp_builtin_next);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_next_obj, 1, 2, mp_builtin_next);
 
 STATIC mp_obj_t mp_builtin_oct(mp_obj_t o_in) {
     return mp_binary_op(MP_BINARY_OP_MODULO, MP_OBJ_NEW_QSTR(MP_QSTR__percent__hash_o), o_in);
