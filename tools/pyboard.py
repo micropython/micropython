@@ -211,7 +211,10 @@ class Pyboard:
             delayed = False
             for attempt in range(wait + 1):
                 try:
-                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    if serial.VERSION == '3.0':
+                        self.serial = serial.Serial(device, baudrate=baudrate, inter_byte_timeout=1)
+                    else:
+                        self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
                     break
                 except (OSError, IOError): # Py2 and Py3 have different errors
                     if wait == 0:
