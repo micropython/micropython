@@ -30,6 +30,7 @@ $(BUILD)/%.o: %.s
 	$(ECHO) "AS $<"
 	$(Q)$(AS) -o $@ $<
 
+ifndef compile_c
 define compile_c
 $(ECHO) "CC $<"
 $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
@@ -41,6 +42,7 @@ $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
       -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
   $(RM) -f $(@:.o=.d)
 endef
+endif
 
 vpath %.c . $(TOP)
 $(BUILD)/%.o: %.c
