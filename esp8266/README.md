@@ -132,3 +132,25 @@ experience strange bootloops, crashes, lockups, here's a list to check against:
 
 Please consult dedicated ESP8266 forums/resources for hardware-related
 problems.
+
+__OSX build issues__
+
+- all dependencies were available via homebrew (e.g., autogen, libffi)
+- `pkg-config`'s .pc file for libffi required manually linking
+  `/usr/local/opt/libffi/lib/pkgconfig/libffi.pc` into
+  `/usr/local/lib/pkgconfig`
+- libffi required a symlink from `/usr/local/lib/ffi.h` to 
+  `/usr/local/opt/libffi/lib/libffi-3.0.13/include/ffi.h`
+- likewise, missing `endian.h` required a symlink from 
+  `/usr/local/include/endian.h` to `/usr/include/machine/endian.h`
+
+__OS X connection issues__
+
+- Connecting via serial over USB cable required installing a driver;
+  <https://github.com/nodemcu/nodemcu-devkit/wiki/Getting-Started-on-OSX> links to
+  one at the top, SiLabs serial driver:
+  <https://www.silabs.com/Support%20Documents/Software/Mac_OSX_VCP_Driver.zip>.
+  This can be installed but will not be loaded on El Capitan without disabling
+  SIP protection: see <http://farazmemon.com/category/nodemcu/> for directions.
+  On pluging in an ESP8266 device, this will present via the SiLabs driver as a
+  serial device `/dev/cu.SLAB_USBtoUART`.
