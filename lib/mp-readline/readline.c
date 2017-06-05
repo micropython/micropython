@@ -156,8 +156,8 @@ int readline_process_char(int c) {
         } else if (c == 27) {
             // escape sequence
             rl.escape_seq = ESEQ_ESC;
-        } else if (c == 8 || c == 127) {
-            // backspace/delete
+        } else if (c == 8) {
+            // backspace
             if (rl.cursor_pos > rl.orig_line_len) {
                 // work out how many chars to backspace
                 #if MICROPY_REPL_AUTO_INDENT
@@ -183,6 +183,16 @@ int readline_process_char(int c) {
                 // set redraw parameters
                 redraw_step_back = nspace;
                 redraw_from_cursor = true;
+            }           
+        } else if (c == 127) {
+            // delete
+            if (rl.cursor_pos > rl.orig_line_len) {
+                int nspace = 1;
+                // do delete
+                vstr_cut_out_bytes(rl.line, rl.cursor_pos, nspace);
+                // set redraw parameters
+                redraw_from_cursor = true;
+                redraw_step_forward = 0;
             }
         #if MICROPY_HELPER_REPL
         } else if (c == 9) {
