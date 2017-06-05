@@ -68,10 +68,23 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     return size;
 }
 
+STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
+    const void *buf = o->vstr->buf;
+    o->vstr->buf = m_new(char, o->vstr->len);
+    memcpy(o->vstr->buf, buf, o->vstr->len);
+    o->vstr->fixed_buf = false;
+    o->ref_obj = MP_OBJ_NULL;
+}
+
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
+
+    if (o->vstr->fixed_buf) {
+        stringio_copy_on_write(o);
+    }
+
     mp_uint_t new_pos = o->pos + size;
     if (new_pos < size) {
         // Writing <size> bytes will overflow o->pos beyond limit of mp_uint_t.
@@ -155,11 +168,11 @@ STATIC mp_obj_t stringio___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
 
-STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type, mp_uint_t alloc) {
+STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
     o->base.type = type;
-    o->vstr = vstr_new(alloc);
     o->pos = 0;
+    o->ref_obj = MP_OBJ_NULL;
     return o;
 }
 
@@ -170,17 +183,28 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
     bool initdata = false;
     mp_buffer_info_t bufinfo;
 
+    mp_obj_stringio_t *o = stringio_new(type_in);
+
     if (n_args > 0) {
         if (MP_OBJ_IS_INT(args[0])) {
             sz = mp_obj_get_int(args[0]);
         } else {
             mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+
+            if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
+                o->vstr = m_new_obj(vstr_t);
+                vstr_init_fixed_buf(o->vstr, bufinfo.len, bufinfo.buf);
+                o->vstr->len = bufinfo.len;
+                o->ref_obj = args[0];
+                return MP_OBJ_FROM_PTR(o);
+            }
+
             sz = bufinfo.len;
             initdata = true;
         }
     }
 
-    mp_obj_stringio_t *o = stringio_new(type_in, sz);
+    o->vstr = vstr_new(sz);
 
     if (initdata) {
         stringio_write(MP_OBJ_FROM_PTR(o), bufinfo.buf, bufinfo.len, NULL);
