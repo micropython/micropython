@@ -271,14 +271,13 @@ bool ble_drv_service_add(ubluepy_service_obj_t * p_service_obj) {
                       "Can not add Service."));
         }
     } else if (p_service_obj->p_uuid->type == BLE_UUID_TYPE_BLE) {
-        printf("adding service\n");
+        BLE_DRIVER_LOG("adding service\n");
 
         ble_uuid_t uuid;
         uuid.type  = p_service_obj->p_uuid->type;
         uuid.uuid  = p_service_obj->p_uuid->value[0];
         uuid.uuid += p_service_obj->p_uuid->value[1] << 8;
 
-        printf("adding service\n");
         if (sd_ble_gatts_service_add(p_service_obj->type,
                                      &uuid,
                                      &p_service_obj->handle) != 0) {
