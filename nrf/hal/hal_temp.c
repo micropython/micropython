@@ -25,8 +25,16 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include "mphalport.h"
 #include "hal_temp.h"
+
+#if BLUETOOTH_SD
+#include "py/nlr.h"
+#include "ble_drv.h"
+#include "nrf_soc.h"
+#define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
+#endif // BLUETOOTH_SD
 
 #ifdef HAL_TEMP_MODULE_ENABLED
 
@@ -35,8 +43,18 @@ void hal_temp_init(void) {
     *(uint32_t *) 0x4000C504 = 0;
 }
 
-int32_t hal_temp_read(void) {   
-    int32_t volatile temp; 
+
+
+int32_t hal_temp_read(void) {
+#if BLUETOOTH_SD
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        int32_t temp;
+        (void)sd_temp_get(&temp);
+        return temp / 4; // resolution of 0.25 degree celsius
+    }
+#endif // BLUETOOTH_SD
+
+    int32_t volatile temp;
     hal_temp_init();
 
     NRF_TEMP->TASKS_START = 1; // Start the temperature measurement.
