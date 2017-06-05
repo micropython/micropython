@@ -175,14 +175,9 @@ pin_init0();
     do_str("import pyb\r\n" \
            "pyb.LED(1).on()",
            MP_PARSE_FILE_INPUT);
-#elif (MICROPY_HW_LED_COUNT == 2)
+#elif (MICROPY_HW_LED_COUNT > 0)
     do_str("import pyb\r\n" \
            "pyb.LED(1).on()",
-           MP_PARSE_FILE_INPUT);
-#else
-    do_str("import pyb\r\n" \
-           "pyb.LED(1).on()\r\n" \
-           "pyb.LED(3).on()",
            MP_PARSE_FILE_INPUT);
 #endif
 
