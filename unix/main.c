@@ -379,6 +379,9 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
+                    if (word_adjust) {
+                        heap_size = heap_size * BYTES_PER_WORD / 4;
+                    }
 #endif
                 } else {
 invalid_arg:
