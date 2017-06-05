@@ -345,13 +345,9 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
             }
             mp_raise_OSError(error);
         }
-        if (out_sz == 0) {
-            break;
-        }
         total_size += out_sz;
         if (out_sz < current_read) {
-            current_read -= out_sz;
-            p += out_sz;
+            break;
         } else {
             p = vstr_extend(&vstr, DEFAULT_BUFFER_SIZE);
             current_read = DEFAULT_BUFFER_SIZE;
