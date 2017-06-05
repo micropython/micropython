@@ -817,6 +817,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_deinit_obj, pyb_timer_deinit);
 ///   - Read the encoder value using the timer.counter() method.
 ///   - Only works on CH1 and CH2 (and not on CH1N or CH2N)
 ///   - The channel number is ignored when setting the encoder mode.
+///   - The channel callback is ignored in encoder modes.
 ///
 /// PWM Example:
 ///
