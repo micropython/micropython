@@ -1,0 +1,78 @@
+Controlling APA102 LEDs
+=======================
+
+APA102 LEDs, also known as DotStar LEDs, are individually addressable
+full-colour RGB LEDs, generally in a string formation. They differ from
+NeoPixels in that they require two pins to control - both a Clock and Data pin.
+They can operate at a much higher data and PWM frequencies than NeoPixels and
+are more suitable for persistence-of-vision effects.
+
+To create an APA102 object do the following::
+
+    >>> import machine, apa102
+    >>> strip = apa102.APA102(machine.Pin(5), machine.Pin(4), 60)
+
+This configures an APA102 strip on GPIO5 and GPIO4 with 60 pixels. You can
+adjust the pin numbers and the number of pixel (60) to suit your needs.
+
+To set the colour of pixels use::
+
+    >>> strip[0] = (255, 0, 0) # set to white, full brightness
+    >>> strip[1] = (255, 0, 0) # set to red, full brightness
+    >>> strip[2] = (0, 128, 0) # set to green, half brightness
+    >>> strip[3] = (0, 0, 64)  # set to blue, quarter brightness
+
+Then use the ``write()`` method to output the colours to the LEDs::
+
+    >>> strip.write()
+
+Demonstration::
+
+    import time
+    import machine, apa102
+
+    # 1M strip with 60 LEDs
+    strip = apa102.APA102(machine.Pin(5), machine.Pin(4), 60)
+
+    # Helper for converting 0-255 offset to a colour tuple
+    def wheel(offset):
+        # The colours are a transition r - g - b - back to r
+        offset = 255 - offset
+        if offset < 85:
+            return (255 - offset * 3, 0, offset * 3)
+        if offset < 170:
+            offset -= 85
+            return (0, offset * 3, 255 - offset * 3)
+        offset -= 170
+        return (offset * 3, 255 - offset * 3, 0)
+
+    # Demo 1: RGB
+    red = 0xff0000
+    green = red >> 8
+    blue = red >> 16
+    for i in range(strip.n):
+        color = red >> (i % 3) * 8
+        strip[i] = ((color & red) >> 16, (color & green) >> 8, (color & blue))
+
+    time.sleep_ms(2000)
+
+    # Demo 2: Show all colours of the rainbow
+    for i in range(strip.n):
+        strip[i] = wheel((i * 256 // strip.n) % 255)
+
+    time.sleep_ms(2000)
+
+    # Demo 3: Fade all pixels together through rainbow colours, offset each pixel
+    for r in range(5):
+        for n in range(256):
+            for i in range(strip.n):
+                strip[i] = wheel(((i * 256 // strip.n) + n) & 255)
+            strip.write()
+        time.sleep_ms(25)
+
+    time.sleep_ms(2000)
+
+    # End: Turn off all pixels
+    for i in range(strip.n):
+        strip[i] = (0, 0, 0)
+    strip.write()
