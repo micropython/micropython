@@ -140,6 +140,21 @@ STATIC mp_obj_t range_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
+STATIC mp_obj_t range_equal(mp_obj_t self_in, mp_obj_t other_in) {
+    mp_obj_range_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_range_t *other = MP_OBJ_TO_PTR(other_in);
+    return (self->start == other->start) && (self->stop == other->stop) && (self->step == other->step) ? mp_const_true : mp_const_false;
+}
+
+STATIC mp_obj_t range_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
+    switch (op) {
+        case MP_BINARY_OP_EQUAL:
+            return range_equal(lhs, rhs);
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
@@ -197,6 +212,7 @@ const mp_obj_type_t mp_type_range = {
     .print = range_print,
     .make_new = range_make_new,
     .unary_op = range_unary_op,
+    .binary_op = range_binary_op,
     .subscr = range_subscr,
     .getiter = range_getiter,
 #if MICROPY_PY_BUILTINS_RANGE_ATTRS
