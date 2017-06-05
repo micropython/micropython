@@ -285,9 +285,12 @@ Use the ``neopixel`` module::
 
     pin = Pin(0, Pin.OUT)   # set GPIO0 to output to drive NeoPixels
     np = NeoPixel(pin, 8)   # create NeoPixel driver on GPIO0 for 8 pixels
-    np[0] = (255, 255, 255) # set the first pixel to white
+    np[0] = (255, 255, 255) # set the first pixel to white, full brightness
+    np[1] = (255, 0, 0)     # set the second pixel to red, full brightness
+    np[2] = (0, 128, 0)     # set the third pixel to green, half brightness
+    np[3] = (0, 0, 64)      # set the fourth pixel to blue, quarter brightness
     np.write()              # write data to all pixels
-    r, g, b = np[0]         # get first pixel colour
+    r, g, b = np[0]         # get first pixel colour (white)
 
 For low-level driving of a NeoPixel::
 
