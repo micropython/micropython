@@ -91,13 +91,11 @@ static inline void hal_gpio_pin_clear(uint8_t port, uint32_t pin) {
 }
 
 static inline void hal_gpio_pin_toggle(uint8_t port, uint32_t pin) {
-    uint32_t pin_mask = (1 << pin);
+    uint32_t pin_mask   = (1 << pin);
+    uint32_t pins_state = NRF_GPIO->OUT;
 
-    if (GPIO_BASE(port)->OUT ^ pin_mask) {
-        GPIO_BASE(port)->OUTSET = pin_mask;
-    } else {
-        GPIO_BASE(port)->OUTCLR = pin_mask;
-    }
+    GPIO_BASE(port)->OUTSET = (~pins_state) & pin_mask;
+    GPIO_BASE(port)->OUTCLR = pins_state & pin_mask;
 }
 
 typedef enum {
