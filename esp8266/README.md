@@ -47,6 +47,12 @@ built-in scripts to bytecode.  This can be done using:
 $ make -C mpy-cross
 ```
 
+Export the toolchain path:
+e.g.
+```bash
+$ export PATH=${HOME}/esp-open-sdk/xtensa-lx106-elf/bin:$PATH
+```
+
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ cd esp8266
