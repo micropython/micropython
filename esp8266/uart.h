@@ -81,7 +81,7 @@ typedef struct {
     UartBautRate      baut_rate;
     UartBitsNum4Char  data_bits;
     UartExistParity   exist_parity;
-    UartParityMode    parity;    // chip size in byte
+    UartParityMode    parity;    // even/odd
     UartStopBitsNum   stop_bits;
     UartFlowCtrl      flow_ctrl;
     RcvMsgBuff        rcv_buff;
@@ -92,12 +92,12 @@ typedef struct {
 } UartDevice;
 
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
-int uart0_rx(void);
 bool uart_rx_wait(uint32_t timeout_us);
 int uart_rx_char(void);
 void uart_tx_one_char(uint8 uart, uint8 TxChar);
 void uart_flush(uint8 uart);
 void uart_os_config(int uart);
+void uart_os_input(int uart);
 void uart_setup(uint8 uart);
 // check status of rx/tx
 int uart_rx_any(uint8 uart);
