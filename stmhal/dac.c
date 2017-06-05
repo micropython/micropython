@@ -302,7 +302,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_noise_obj, pyb_dac_noise);
 /// \method triangle(freq)
 /// Generate a triangle wave.  The value on the DAC output changes at
 /// the given frequency, and the frequence of the repeating triangle wave
-/// itself is 256 (or 1024, need to check) times smaller.
+/// itself is 2048 times smaller.
 STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
     pyb_dac_obj_t *self = self_in;
 
