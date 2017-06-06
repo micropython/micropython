@@ -38,6 +38,7 @@ typedef struct {
     const mcu_pin_obj_t *pin;
     const pin_timer_t* timer;
     bool variable_frequency;
+    uint32_t period;
     union {
         struct tc_module tc_instance;
         struct tcc_module tcc_instance;

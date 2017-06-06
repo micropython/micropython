@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -104,10 +105,10 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     const pin_timer_t* t = NULL;
     uint8_t index = 0;
     if (!variable_frequency &&
-        primary_timer_index != 0xff &&
-        target_timer_frequencies[primary_timer_index] == frequency &&
-        pin->primary_timer.tcc->CTRLA.bit.ENABLE == 1 &&
-        channel_ok(&pin->primary_timer, primary_timer_index)) {
+            primary_timer_index != 0xff &&
+            target_timer_frequencies[primary_timer_index] == frequency &&
+            pin->primary_timer.tcc->CTRLA.bit.ENABLE == 1 &&
+            channel_ok(&pin->primary_timer, primary_timer_index)) {
         t = &pin->primary_timer;
         index = primary_timer_index;
     } else if (!variable_frequency &&
@@ -153,6 +154,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 break;
             }
         }
+        self->period = top;
         if (t->is_tc) {
             struct tc_config config_tc;
             tc_get_config_defaults(&config_tc);
@@ -228,12 +230,10 @@ extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
-        uint32_t top = ((uint32_t) t->tc->COUNT16.CC[0].reg + 1);
-        uint16_t adjusted_duty = top * duty / 0xffff;
+        uint16_t adjusted_duty = self->period * duty / 0xffff;
         tc_set_compare_value(&self->tc_instance, t->channel, adjusted_duty);
     } else {
-        uint32_t top = t->tcc->PER.reg + 1;
-        uint32_t adjusted_duty = ((uint64_t) top) * duty / 0xffff;
+        uint32_t adjusted_duty = ((uint64_t) self->period) * duty / 0xffff;
         tcc_set_compare_value(&self->tcc_instance, t->channel, adjusted_duty);
     }
 }
@@ -241,21 +241,22 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
 uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
-        uint16_t top = t->tc->COUNT16.CC[0].reg;
         while (tc_is_syncing(&self->tc_instance)) {
             /* Wait for sync */
         }
         uint16_t cv = t->tc->COUNT16.CC[t->channel].reg;
-        return cv * 0xffff / top;
+        return cv * 0xffff / self->period;
     } else {
-        uint32_t top = t->tcc->PER.reg;
         uint32_t cv = 0;
         if ((t->tcc->STATUS.vec.CCBV & (1 << t->channel)) != 0) {
             cv = t->tcc->CCB[t->channel].reg;
         } else {
             cv = t->tcc->CC[t->channel].reg;
         }
-        return cv * 0xffff / top;
+
+        uint32_t duty_cycle = ((uint64_t) cv) * 0xffff / self->period;
+
+        return duty_cycle;
     }
 }
 
@@ -299,6 +300,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
             tcc_enable(&self->tcc_instance);
         }
     }
+    self->period = new_top;
     if (t->is_tc) {
         while (tc_is_syncing(&self->tc_instance)) {
             /* Wait for sync */
@@ -321,6 +323,9 @@ uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
         divisor = t->tc->COUNT16.CTRLA.bit.PRESCALER;
     } else {
         top = t->tcc->PER.reg;
+        if (t->tcc->STATUS.bit.PERBV) {
+            top = t->tcc->PERB.reg;
+        }
         divisor = t->tcc->CTRLA.bit.PRESCALER;
     }
     return (system_clock / prescaler[divisor]) / (top + 1);
