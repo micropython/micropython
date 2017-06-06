@@ -51,7 +51,7 @@
 //|     fixed outputs first.
 //|
 //|   :param ~microcontroller.Pin pin: The pin to output to
-//|   :param int duty: The fraction of each pulse which is high. 16-bit
+//|   :param int duty_cycle: The fraction of each pulse which is high. 16-bit
 //|   :param int frequency: The target frequency in Hertz (32-bit)
 //|   :param bool variable_frequency: True if the frequency will change over time
 //|
@@ -155,7 +155,7 @@ STATIC mp_obj_t pulseio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t dut
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
     if (duty < 0 || duty > 0xffff) {
-        mp_raise_ValueError("PWM duty must be between 0 and 65536 (16 bit resolution)");
+        mp_raise_ValueError("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)");
     }
    common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
    return mp_const_none;
