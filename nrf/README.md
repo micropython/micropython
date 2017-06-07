@@ -1,8 +1,8 @@
-# MicroPython port to the NRF5
+# MicroPython Port To The Nordic Semiconductor nRF Series
 
-This is a port of MicroPython to the Nordic nRF5 series of chips. 
+This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
 
-## Supported features
+## Supported Features
 
 * UART
 * SPI
@@ -16,10 +16,11 @@ This is a port of MicroPython to the Nordic nRF5 series of chips.
 * BLE support including:
   * Peripheral role on nrf51 targets
   * Central role and Peripheral role on nrf52 targets
-   * _REPL over Bluetooth LE_ (optionally using WebBluetooth)
-   * ubluepy: Bluetooth LE module for micropython
+  * _REPL over Bluetooth LE_ (optionally using WebBluetooth)
+  * ubluepy: Bluetooth LE module for micropython
+  * 1 non-connectable advertiser while in connection
 
-## Tested hardware
+## Tested Hardware
 
 * nRF51
   * [micro:bit](http://microbit.org/)
@@ -44,7 +45,7 @@ Prerequisite steps for building the nrf port:
     git submodule update --init
     make -C mpy-cross
 
-By default PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the nrf/ folder:
+By default, the PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the nrf/ folder:
 
     make
     make flash
@@ -54,16 +55,6 @@ Alternatively the target board could be defined:
      make BOARD=pca10040
      make flash
      
-Available board target names:
-* microbit
-* feather52 
-* pca10000
-* pca10001
-* pca10028
-* pca10031
-* pca10040
-* pca10056
-
 ## Compile and Flash with Bluetooth Stack
 
 First prepare the bluetooth folder by downloading Bluetooth LE stacks and headers:
@@ -79,47 +70,42 @@ The **make sd** will trigger a flash of the bluetooth stack before that applicat
 
 Note: further tuning of features to include in bluetooth or even setting up the device to use REPL over Bluetooth can be configured in the bluetooth_conf.h.
 
-Board       | SD param    | Support
-------------|-------------|----------
-microbit    | s110        | Peripheral
-pca10000    | s110        | Peripheral
-pca10001    | s110        | Peripheral
-pca10028    | s110        | Peripheral 
-pca10031    | s110        | Peripheral
-pca10040    | s132        | Peripheral and Central
-feather52   | s132        | Peripheral and Central
-pca10056    |             |
+## Target Boards and Make Flags
 
-## Segger targets
+Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
+---------------------|-------------------------|------------------------|-------------------------------
+microbit             | s110                    | Peripheral             | [PyOCD](#pyocdopenocd-targets)
+pca10000             | s110                    | Peripheral             | [Segger](#segger-targets)
+pca10001             | s110                    | Peripheral             | [Segger](#segger-targets)
+pca10028             | s110                    | Peripheral             | [Segger](#segger-targets)
+pca10031             | s110                    | Peripheral             | [Segger](#segger-targets)
+pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
+feather52            | s132                    | Peripheral and Central | [UART DFU](#dfu-targets)
+pca10056             |                         |                        | [Segger](#segger-targets)
+
+## Segger Targets
 
 Install the necessary tools to flash and debug using Segger:
 
-[JLink](https://www.segger.com/downloads/jlink#)
+[JLink Download](https://www.segger.com/downloads/jlink#)
 
-[nrfjprog linux-32bit](https://www.nordicsemi.com/eng/nordic/download_resource/52615/16/95882111/97746)
-[nrfjprog linux-64bit](https://www.nordicsemi.com/eng/nordic/download_resource/51386/21/77886419/94917)
-[nrfjprog osx](https://www.nordicsemi.com/eng/nordic/download_resource/53402/12/97293750/99977)
-[nrfjprog win32](https://www.nordicsemi.com/eng/nordic/download_resource/33444/40/22191727/53210)
+[nrfjprog linux-32bit Download](https://www.nordicsemi.com/eng/nordic/download_resource/52615/16/95882111/97746)
 
-Boards that would need JLink/nrfjprog:
-* PCA10000
-* PCA10001
-* PCA10028
-* PCA10031
-* PCA10040
-* PCA10056
+[nrfjprog linux-64bit Download](https://www.nordicsemi.com/eng/nordic/download_resource/51386/21/77886419/94917)
 
-## PyOCD/OpenOCD targets
+[nrfjprog osx Download](https://www.nordicsemi.com/eng/nordic/download_resource/53402/12/97293750/99977)
+
+[nrfjprog win32 Download](https://www.nordicsemi.com/eng/nordic/download_resource/33444/40/22191727/53210)
+
+
+## PyOCD/OpenOCD Targets
 
 Install the necessary tools to flash and debug using OpenOCD:
 
     sudo apt-get install openocd
     sudo pip install pyOCD
 
-Boards that would need PyOCD:
-* micro:bit
-
-## DFU targets
+## DFU Targets
 
     sudo apt-get install build-essential libffi-dev pkg-config gcc-arm-none-eabi git python python-pip
     git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git
@@ -133,9 +119,6 @@ Boards that would need PyOCD:
 
 Example on how to generate and flash feather52 target:
 
-    make BOARD=feather52
-    make BOARD=feather52 dfu-gen
-    make BOARD=feather52 dfu-flash
-
-Boards that would need DFU flash utilities:
-* feather52 (Adafruit Feather nRF52)
+    make BOARD=feather52 SD=s132
+    make BOARD=feather52 SD=s132 dfu-gen
+    make BOARD=feather52 SD=s132 dfu-flash
