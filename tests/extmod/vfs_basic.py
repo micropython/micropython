@@ -57,6 +57,9 @@ for path in uos.listdir('/'):
 # stat root dir
 print(uos.stat('/'))
 
+# statvfs root dir
+print(uos.statvfs('/'))
+
 # getcwd when in root dir
 print(uos.getcwd())
 
@@ -128,6 +131,8 @@ except OSError:
 
 # root dir
 uos.mount(Filesystem(3), '/')
+print(uos.stat('/'))
+print(uos.statvfs('/'))
 print(uos.listdir())
 open('test')
 
