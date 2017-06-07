@@ -52,6 +52,8 @@ typedef struct _fs_user_mount_t {
 
 extern const byte fresult_to_errno_table[20];
 extern const mp_obj_type_t mp_fat_vfs_type;
+extern const mp_obj_type_t mp_vfs_fat_fileio_type;
+extern const mp_obj_type_t mp_vfs_fat_textio_type;
 
 mp_import_stat_t fat_vfs_import_stat(struct _fs_user_mount_t *vfs, const char *path);
 mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode);
