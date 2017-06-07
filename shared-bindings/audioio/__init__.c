@@ -34,7 +34,7 @@
 #include "shared-bindings/audioio/AudioOut.h"
 
 //| :mod:`audioio` --- Support for audio input and output
-//| =================================================
+//| ======================================================
 //|
 //| .. module:: audioio
 //|   :synopsis: Support for audio input and output

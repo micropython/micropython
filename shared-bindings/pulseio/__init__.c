@@ -36,7 +36,7 @@
 #include "shared-bindings/pulseio/PWMOut.h"
 
 //| :mod:`pulseio` --- Support for pulse based protocols
-//| =================================================
+//| =====================================================
 //|
 //| .. module:: pulseio
 //|   :synopsis: Support for pulse based protocols
