@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-// This file contains pin definitions that are specific to the nrf5 port.
+// This file contains pin definitions that are specific to the nrf port.
 // This file should only ever be #included by pin.h and not directly.
 
 enum {

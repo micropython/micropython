@@ -1,4 +1,4 @@
-# NOTE: Modified version to align with implemented I2C API in nrf5 port.
+# NOTE: Modified version to align with implemented I2C API in nrf port.
 #
 # Examples usage of SSD1306_SPI on pca10040
 #
