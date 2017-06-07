@@ -2135,7 +2135,7 @@ typedef struct _mp_obj_str8_it_t {
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
-    mp_obj_str8_it_t *self = self_in;
+    mp_obj_str8_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
         mp_obj_t o_out = mp_obj_new_str((const char*)str + self->cur, 1, true);
@@ -2153,7 +2153,7 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_bu
     o->iternext = str_it_iternext;
     o->str = str;
     o->cur = 0;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 #endif
 
