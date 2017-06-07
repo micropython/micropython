@@ -60,16 +60,16 @@
 //|     import pulseio
 //|     import board
 //|
-//|     with pulseio.PWMOut(board.D13) as pwm:     # output on D13
-//|       pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
+//|     pwm = pulseio.PWMOut(board.D13)     # output on D13
+//|     pwm.duty_cycle = 2 ** 15            # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
 //|
 //|   PWM at specific frequency (servos and motors)::
 //|
 //|     import pulseio
 //|     import board
 //|
-//|     with pulseio.PWMOut(board.D13, frequency=50) as pwm:
-//|       pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
+//|     pwm = pulseio.PWMOut(board.D13, frequency=50)
+//|     pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
 //|
 //|   Variable frequency (usually tones)::
 //|
@@ -77,10 +77,10 @@
 //|     import board
 //|     import time
 //|
-//|     with pulseio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True) as pwm:
-//|       time.sleep(0.2)
-//|       pwm.frequency = 880
-//|       time.sleep(0.1)
+//|     pwm = pulseio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True)
+//|     time.sleep(0.2)
+//|     pwm.frequency = 880
+//|     time.sleep(0.1)
 //|
 STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -131,7 +131,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_deinit_obj, pulseio_pwmout_deini
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t pulseio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

@@ -53,9 +53,15 @@
 //|     PulseOut
 //|     PWMOut
 //|
-//| All libraries change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+
+//| .. warning:: This module is not available in some SAMD21 builds. See the
+//|   :ref:`module-support-matrix` for more info.
+//|
+
+//| All classes change hardware state and should be deinitialized when they
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| For example::
 //|
@@ -63,13 +69,15 @@
 //|   import time
 //|   from board import *
 //|
-//|   with pulseio.PWMOut(D13) as pin:
-//|     pin.duty_cycle = 2 ** 15
-//|     time.sleep(0.1)
+//|   pwm = pulseio.PWMOut(D13)
+//|   pwm.duty_cycle = 2 ** 15
+//|   time.sleep(0.1)
 //|
 //| This example will initialize the the device, set
-//| :py:data:`~pulseio.PWMOut.duty_cycle`, sleep 0.1 seconds and then
-//| :py:meth:`~pulseio.PWMOut.deinit` the hardware.
+//| :py:data:`~pulseio.PWMOut.duty_cycle`, and then sleep 0.1 seconds.
+//| CircuitPython will automatically turn off the PWM when it resets all
+//| hardware after program completion. Use ``deinit()`` or a ``with`` statement
+//| to do it yourself.
 //|
 
 STATIC const mp_rom_map_elem_t pulseio_module_globals_table[] = {

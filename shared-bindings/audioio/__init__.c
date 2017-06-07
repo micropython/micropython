@@ -49,9 +49,10 @@
 //|
 //|     AudioOut
 //|
-//| All libraries change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| All classes change hardware state and should be deinitialized when they
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {

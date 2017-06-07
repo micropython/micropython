@@ -41,10 +41,6 @@
 //| The `usb_hid` module allows you to output data as a HID device.
 //|
 
-//| .. warning:: This module may be dropped from builds without external flash
-//|   in the future. Please file an issue if this a problem and explain why.
-//|
-
 //| .. attribute:: usb_hid.devices
 //|
 //|   Tuple of all active HID device interfaces.

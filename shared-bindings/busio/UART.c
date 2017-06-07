@@ -63,54 +63,54 @@ extern const busio_uart_parity_obj_t busio_uart_parity_even_obj;
 extern const busio_uart_parity_obj_t busio_uart_parity_odd_obj;
 
 STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-   mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-   busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
-   self->base.type = &busio_uart_type;
-   mp_map_t kw_args;
-   mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
-   enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size};
-   static const mp_arg_t allowed_args[] = {
-       { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
-       { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 9600} },
-       { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
-       { MP_QSTR_parity, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-       { MP_QSTR_stop, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-       { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
-       { MP_QSTR_receiver_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
-   };
-   mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-   mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+    busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
+    self->base.type = &busio_uart_type;
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 9600} },
+        { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_parity, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_stop, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
+        { MP_QSTR_receiver_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-   assert_pin(args[ARG_rx].u_obj, true);
-   const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(args[ARG_rx].u_obj);
-   assert_pin_free(rx);
+    assert_pin(args[ARG_rx].u_obj, true);
+    const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(args[ARG_rx].u_obj);
+    assert_pin_free(rx);
 
-   assert_pin(args[ARG_tx].u_obj, true);
-   const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(args[ARG_tx].u_obj);
-   assert_pin_free(tx);
+    assert_pin(args[ARG_tx].u_obj, true);
+    const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(args[ARG_tx].u_obj);
+    assert_pin_free(tx);
 
-   uint8_t bits = args[ARG_bits].u_int;
-   if (bits < 7 || bits > 9) {
-       mp_raise_ValueError("bits must be 7, 8 or 9");
-   }
+    uint8_t bits = args[ARG_bits].u_int;
+    if (bits < 7 || bits > 9) {
+        mp_raise_ValueError("bits must be 7, 8 or 9");
+    }
 
-   uart_parity_t parity = PARITY_NONE;
-   if (args[ARG_parity].u_obj == &busio_uart_parity_even_obj) {
-       parity = PARITY_EVEN;
-   } else if (args[ARG_parity].u_obj == &busio_uart_parity_odd_obj) {
-       parity = PARITY_ODD;
-   }
+    uart_parity_t parity = PARITY_NONE;
+    if (args[ARG_parity].u_obj == &busio_uart_parity_even_obj) {
+        parity = PARITY_EVEN;
+    } else if (args[ARG_parity].u_obj == &busio_uart_parity_odd_obj) {
+        parity = PARITY_ODD;
+    }
 
-   uint8_t stop = args[ARG_stop].u_int;
-   if (stop != 1 && stop != 2) {
-       mp_raise_ValueError("stop must be 1 or 2");
-   }
+    uint8_t stop = args[ARG_stop].u_int;
+    if (stop != 1 && stop != 2) {
+        mp_raise_ValueError("stop must be 1 or 2");
+    }
 
-   common_hal_busio_uart_construct(self, tx, rx,
-       args[ARG_baudrate].u_int, bits, parity, stop, args[ARG_timeout].u_int,
-       args[ARG_receiver_buffer_size].u_int);
-   return (mp_obj_t)self;
+    common_hal_busio_uart_construct(self, tx, rx,
+        args[ARG_baudrate].u_int, bits, parity, stop, args[ARG_timeout].u_int,
+        args[ARG_receiver_buffer_size].u_int);
+    return (mp_obj_t)self;
 }
 
 //|   .. method:: deinit()
@@ -118,9 +118,9 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 //|      Deinitialises the UART and releases any hardware resources for reuse.
 //|
 STATIC mp_obj_t busio_uart_obj_deinit(mp_obj_t self_in) {
-   busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   common_hal_busio_uart_deinit(self);
-   return mp_const_none;
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_busio_uart_deinit(self);
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_deinit_obj, busio_uart_obj_deinit);
 
@@ -132,7 +132,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_deinit_obj, busio_uart_obj_deinit);
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t busio_uart_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

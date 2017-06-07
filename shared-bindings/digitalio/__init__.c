@@ -52,16 +52,17 @@
 //|     DigitalInOut
 //|
 //| All classes change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| For example::
 //|
 //|   import digitalio
 //|   from board import *
 //|
-//|   with digitalio.DigitalInOut(D13) as pin:
-//|     print(pin.value)
+//|   pin = digitalio.DigitalInOut(D13)
+//|   print(pin.value)
 //|
 //| This example will initialize the the device, read
 //| :py:data:`~digitalio.DigitalInOut.value` and then
@@ -73,9 +74,9 @@
 //|   from board import *
 //|   import time
 //|
-//|   with digitalio.DigitalInOut(D13) as led:
-//|     led.switch_to_output()
-//|     while True:
+//|   led = digitalio.DigitalInOut(D13)
+//|   led.direction = digitalio.DigitalInOut.Direction.OUT
+//|   while True:
 //|       led.value = True
 //|       time.sleep(0.1)
 //|       led.value = False

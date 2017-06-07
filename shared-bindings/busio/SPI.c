@@ -115,7 +115,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 
 //|   .. method:: SPI.__exit__()
 //|
-//|     Automatically deinitializes the hardware when exiting a context.
+//|     Automatically deinitializes the hardware when exiting a context. See
+//|     :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

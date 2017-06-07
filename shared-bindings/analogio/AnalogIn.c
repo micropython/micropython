@@ -45,8 +45,8 @@
 //|    import analogio
 //|    from board import *
 //|
-//|    with analogio.AnalogIn(A1) as adc:
-//|      val = adc.value
+//|    adc = analogio.AnalogIn(A1)
+//|    val = adc.value
 //|
 
 //| .. class:: AnalogIn(pin)
@@ -93,7 +93,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_deinit_obj, analogio_analogin_deinit
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t analogio_analogin___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

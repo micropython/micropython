@@ -61,22 +61,23 @@
 //|     import pulseio
 //|     import board
 //|
-//|     with pulseio.PulseIn(board.D7) as pulses:
-//|         # Wait for an active pulse
-//|         while len(pulses) == 0:
-//|             pass
-//|         # Pause while we do something with the pulses
-//|         pulses.pause()
+//|     pulses = pulseio.PulseIn(board.D7)
 //|
-//|         # Print the pulses. pulses[0] is an active pulse unless the length
-//|         # reached max length and idle pulses are recorded.
-//|         print(pulses)
+//|     # Wait for an active pulse
+//|     while len(pulses) == 0:
+//|         pass
+//|     # Pause while we do something with the pulses
+//|     pulses.pause()
 //|
-//|         # Clear the rest
-//|         pulse_in.clear()
+//|     # Print the pulses. pulses[0] is an active pulse unless the length
+//|     # reached max length and idle pulses are recorded.
+//|     print(pulses)
 //|
-//|         # Resume with an 80 microsecond active pulse
-//|         pulse_in.resume(80)
+//|     # Clear the rest
+//|     pulse_in.clear()
+//|
+//|     # Resume with an 80 microsecond active pulse
+//|     pulse_in.resume(80)
 //|
 STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -122,7 +123,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_deinit_obj, pulseio_pulsein_dei
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t pulseio_pulsein_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

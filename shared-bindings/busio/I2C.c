@@ -85,9 +85,9 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
 //|     Releases control of the underlying hardware so other classes can use it.
 //|
 STATIC mp_obj_t busio_i2c_obj_deinit(mp_obj_t self_in) {
-   busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   common_hal_busio_i2c_deinit(self);
-   return mp_const_none;
+    busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_busio_i2c_deinit(self);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_deinit_obj, busio_i2c_obj_deinit);
 
@@ -99,7 +99,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_deinit_obj, busio_i2c_obj_deinit);
 
 //|   .. method:: I2C.__exit__()
 //|
-//|     Automatically deinitializes the hardware on context exit.
+//|     Automatically deinitializes the hardware on context exit. See
+//|     :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t busio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -123,17 +124,17 @@ static void check_lock(busio_i2c_obj_t *self) {
 //|      :rtype: list
 //|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
-   busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   check_lock(self);
-   mp_obj_t list = mp_obj_new_list(0, NULL);
-   // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
-   for (int addr = 0x08; addr < 0x78; ++addr) {
-       bool success = common_hal_busio_i2c_probe(self, addr);
-       if (success) {
-           mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
-       }
-   }
-   return list;
+    busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_lock(self);
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
+    for (int addr = 0x08; addr < 0x78; ++addr) {
+        bool success = common_hal_busio_i2c_probe(self, addr);
+        if (success) {
+            mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
+        }
+    }
+    return list;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 

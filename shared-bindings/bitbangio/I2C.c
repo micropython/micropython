@@ -90,7 +90,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_deinit_obj, bitbangio_i2c_obj_deinit);
 
 //|   .. method:: I2C.__exit__()
 //|
-//|     Automatically deinitializes the hardware on context exit.
+//|     Automatically deinitializes the hardware on context exit. See
+//|     :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t bitbangio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

@@ -33,6 +33,8 @@ not have the ``adafruit_`` module or package prefix.
 
 Both should have the CircuitPython repository topic on GitHub.
 
+.. _lifetime-and-contextmanagers:
+
 Lifetime and ContextManagers
 --------------------------------------------------------------------------------
 
@@ -40,6 +42,49 @@ A driver should be initialized and ready to use after construction. If the
 device requires deinitialization, then provide it through ``deinit()`` and also
 provide ``__enter__`` and ``__exit__`` to create a context manager usable with
 ``with``.
+
+For example, a user can then use ``deinit()```::
+
+    import digitalio
+    import board
+
+    led = digitalio.DigitalInOut(board.D13)
+    led.direction = digitalio.DigitalInOut.Direction.OUT
+
+    for i in range(10):
+        led.value = True
+        time.sleep(0.5)
+
+        led.value = False
+        time.sleep(0.5)
+    led.deinit()
+
+This will deinit the underlying hardware at the end of the program as long as no
+exceptions occur.
+
+Alternatively, using a ``with`` statement ensures that the hardware is deinitialized::
+
+    import digitalio
+    import board
+
+    with digitalio.DigitalInOut(board.D13) as led:
+        led.direction = digitalio.DigitalInOut.Direction.OUT
+
+        for i in range(10):
+            led.value = True
+            time.sleep(0.5)
+
+            led.value = False
+            time.sleep(0.5)
+
+Python's ``with`` statement ensures that the deinit code is run regardless of
+whether the code within the with statement executes without exceptions.
+
+For small programs like the examples this isn't a major concern because all
+user usable hardware is reset after programs are run or the REPL is run. However,
+for more complex programs that may use hardware intermittently and may also
+handle exceptions on their own, deinitializing the hardware using a with
+statement will ensure hardware isn't enabled longer than needed.
 
 Verify your device
 --------------------------------------------------------------------------------

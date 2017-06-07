@@ -39,7 +39,7 @@
 //|   :synopsis: time and timing related functions
 //|   :platform: SAMD21
 //|
-//| The `time` module is a strict subset of the CPython `time` module. So, code
+//| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
 //| written in MicroPython will work in CPython but not necessarily the other
 //| way around.
 //|

@@ -66,10 +66,10 @@
 //|     for i in range(length):
 //|         b[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|     with audioio.AudioOut(board.SPEAKER, sin_wave) as sample:
-//|         sample.play(loop=True)
-//|         time.sleep(1)
-//|         sample.stop()
+//|     sample = audioio.AudioOut(board.SPEAKER, sin_wave)
+//|     sample.play(loop=True)
+//|     time.sleep(1)
+//|     sample.stop()
 //|
 //|   Playing a wave file from flash::
 //|
@@ -136,7 +136,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_deinit_obj, audioio_audioout_d
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

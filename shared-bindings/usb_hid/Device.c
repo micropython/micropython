@@ -55,13 +55,13 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type,
 //|     Send a HID report.
 //|
 STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
-   usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-   mp_buffer_info_t bufinfo;
-   mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
 
-   common_hal_usb_hid_device_send_report(self, ((uint8_t*) bufinfo.buf), bufinfo.len);
-   return mp_const_none;
+    common_hal_usb_hid_device_send_report(self, ((uint8_t*) bufinfo.buf), bufinfo.len);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
 
@@ -73,8 +73,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_re
 //|     :rtype: int
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
-   usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage_page(self));
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage_page(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_page_obj, usb_hid_device_obj_get_usage_page);
 
@@ -95,8 +95,8 @@ const mp_obj_property_t usb_hid_device_usage_page_obj = {
 //|     :rtype: int
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
-   usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage(self));
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_usb_hid_device_get_usage(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_obj,
                           usb_hid_device_obj_get_usage);

@@ -45,8 +45,8 @@
 //|     import analogio
 //|     from microcontroller import pin
 //|
-//|     with analogio.AnalogOut(pin.PA02) as dac:     # output on pin PA02
-//|       dac.value = 32768                           # makes PA02 1.65V
+//|     dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
+//|     dac.value = 32768                           # makes PA02 1.65V
 //|
 
 //| .. class:: AnalogOut(pin)
@@ -91,7 +91,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogo
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

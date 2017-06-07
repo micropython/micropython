@@ -64,21 +64,24 @@
 //|     OneWire
 //|     SPI
 //|
-//| All libraries change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| All classes change hardware state and should be deinitialized when they
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| For example::
 //|
 //|   import bitbangio
 //|   from board import *
 //|
-//|   with bitbangio.I2C(SCL, SDA) as i2c:
-//|     i2c.scan()
+//|   i2c = bitbangio.I2C(SCL, SDA)
+//|   print(i2c.scan())
+//|   i2c.deinit()
 //|
 //| This example will initialize the the device, run
 //| :py:meth:`~bitbangio.I2C.scan` and then :py:meth:`~bitbangio.I2C.deinit` the
-//| hardware.
+//| hardware. The last step is optional because CircuitPython automatically
+//| resets hardware after a program finishes.
 //|
 
 STATIC const mp_rom_map_elem_t bitbangio_module_globals_table[] = {

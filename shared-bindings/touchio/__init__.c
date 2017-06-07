@@ -52,21 +52,21 @@
 //|
 //|     TouchIn
 //|
-//| All libraries change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| All classes change hardware state and should be deinitialized when they
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| For example::
 //|
 //|   import touchio
 //|   from board import *
 //|
-//|   with touchio.TouchIn(D6) as touch_pin:
-//|     print(touch_pin.value)
+//|   touch_pin = touchio.TouchIn(D6)
+//|   print(touch_pin.value)
 //|
-//| This example will initialize the the device, run
-//| :py:data:`~touchio.TouchIn.value` and then :py:meth:`~touchio.TouchIn.deinit`
-//| the hardware.
+//| This example will initialize the the device, and print the
+//| :py:data:`~touchio.TouchIn.value`.
 //|
 
 STATIC const mp_rom_map_elem_t touchio_module_globals_table[] = {

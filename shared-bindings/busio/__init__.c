@@ -65,21 +65,24 @@
 //|     SPI
 //|     UART
 //|
-//| All libraries change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| All classes change hardware state and should be deinitialized when they
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| For example::
 //|
 //|   import busio
 //|   from board import *
 //|
-//|   with busio.I2C(SCL, SDA) as i2c:
-//|     i2c.scan()
+//|   i2c = busio.I2C(SCL, SDA)
+//|   print(i2c.scan())
+//|   i2c.deinit()
 //|
 //| This example will initialize the the device, run
 //| :py:meth:`~busio.I2C.scan` and then :py:meth:`~busio.I2C.deinit` the
-//| hardware.
+//| hardware. The last step is optional because CircuitPython automatically
+//| resets hardware after a program finishes.
 //|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {

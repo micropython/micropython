@@ -7,6 +7,8 @@ in a port if no underlying hardware support is present or if flash space is
 limited. For example, a microcontroller without analog features will not have
 `analogio`.
 
+.. _module-support-matrix:
+
 Support Matrix
 ---------------
 

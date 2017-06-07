@@ -53,21 +53,24 @@
 //|     AnalogIn
 //|     AnalogOut
 //|
-//| All libraries change hardware state and should be deinitialized when they
-//| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| All classes change hardware state and should be deinitialized when they
+//| are no longer needed if the program continues after use. To do so, either
+//| call :py:meth:`!deinit` or use a context manager. See
+//| :ref:`lifetime-and-contextmanagers` for more info.
 //|
 //| For example::
 //|
 //|   import analogio
 //|   from board import *
 //|
-//|   with analogio.AnalogIn(A0) as pin:
-//|     print(pin.value)
+//|   pin = analogio.AnalogIn(A0)
+//|   print(pin.value)
+//|   pin.deinit()
 //|
 //| This example will initialize the the device, read
 //| :py:data:`~analogio.AnalogIn.value` and then
-//| :py:meth:`~analogio.AnalogIn.deinit` the hardware.
+//| :py:meth:`~analogio.AnalogIn.deinit` the hardware. The last step is optional
+//| because CircuitPython will do it automatically after the program finishes.
 //|
 
 STATIC const mp_rom_map_elem_t analogio_module_globals_table[] = {

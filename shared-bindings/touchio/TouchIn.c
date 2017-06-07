@@ -45,9 +45,10 @@
 //|    import touchio
 //|    from board import *
 //|
-//|    with touchio.TouchIn(A1) as touch:
-//|      if touch.value:
-//|        print("touched!")
+//|    touch = touchio.TouchIn(A1)
+//|    while True:
+//|        if touch.value:
+//|            print("touched!")
 //|
 
 //| .. class:: TouchIn(pin)
@@ -92,7 +93,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_deinit_obj, touchio_touchin_dei
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t touchio_touchin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

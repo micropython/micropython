@@ -55,11 +55,11 @@
 //|     import bitbangio
 //|     import board
 //|
-//|     with bitbangio.OneWire(board.D7) as onewire:
-//|       onewire.reset()
-//|       onewire.write_bit(True)
-//|       onewire.write_bit(False)
-//|       print(onewire.read_bit())
+//|     onewire = bitbangio.OneWire(board.D7)
+//|     onewire.reset()
+//|     onewire.write_bit(True)
+//|     onewire.write_bit(False)
+//|     print(onewire.read_bit())
 //|
 STATIC mp_obj_t bitbangio_onewire_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -101,7 +101,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_onewire_deinit_obj, bitbangio_onewire
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t bitbangio_onewire_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

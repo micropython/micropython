@@ -54,15 +54,15 @@
 //|     import pulseio
 //|     import board
 //|
-//|     with pulseio.PWMOut(board.D13, duty_cycle=2 ** 15) as pwm:
-//|         pulse = pulseio.PulseOut(pwm)
-//|         #                             on   off     on     off   on
-//|         pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
-//|         pulse.send(pulses)
+//|     pwm = pulseio.PWMOut(board.D13, duty_cycle=2 ** 15)
+//|     pulse = pulseio.PulseOut(pwm)
+//|     #                             on   off     on     off   on
+//|     pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
+//|     pulse.send(pulses)
 //|
-//|         # Modify the array of pulses.
-//|         pulses[0] = 200
-//|         pulse.send(pulses)
+//|     # Modify the array of pulses.
+//|     pulses[0] = 200
+//|     pulse.send(pulses)
 //|
 STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
@@ -100,7 +100,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_d
 
 //|   .. method:: __exit__()
 //|
-//|      Automatically deinitializes the hardware when exiting a context.
+//|      Automatically deinitializes the hardware when exiting a context. See
+//|      :ref:`lifetime-and-contextmanagers` for more info.
 //|
 STATIC mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
