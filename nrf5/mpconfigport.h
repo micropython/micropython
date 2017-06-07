@@ -116,6 +116,14 @@
 #define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
 #define MICROPY_PY_FRAMEBUF         (0)
 
+#ifndef MICROPY_HW_LED_COUNT
+#define MICROPY_HW_LED_COUNT        (0)
+#endif
+
+#ifndef MICROPY_HW_LED_PULLUP
+#define MICROPY_HW_LED_PULLUP       (0)
+#endif
+
 #ifndef MICROPY_PY_MUSIC
 #define MICROPY_PY_MUSIC            (0)
 #endif

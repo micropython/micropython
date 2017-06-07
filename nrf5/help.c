@@ -37,8 +37,10 @@ const char * nrf5_help_text =
 "For online help please visit http://micropython.org/help/.\n"
 "\n"
 "Quick overview of commands for the board:\n"
+#if MICROPY_HW_HAS_LED
 "  pyb.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
 "\n"
+#endif
 #if BLUETOOTH_SD
 HELP_TEXT_SD
 #endif

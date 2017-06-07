@@ -38,6 +38,7 @@
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
 
+#define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_HAS_SWITCH       (0)
 #define MICROPY_HW_HAS_FLASH        (0)
 #define MICROPY_HW_HAS_SDCARD       (0)
@@ -51,6 +52,7 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
+#define MICROPY_HW_LED_COUNT        (4)
 #define MICROPY_HW_LED_PULLUP       (1)
 
 #define MICROPY_HW_LED1             (17) // LED1
