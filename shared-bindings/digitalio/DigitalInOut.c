@@ -102,7 +102,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(digitalio_digitalinout_obj___exit___o
 //|
 //|   .. method:: switch_to_output(value=False, drive_mode=DriveMode.PUSH_PULL)
 //|
-//|       Switch to writing out digital values.
+//|       Set the drive mode and value and then switch to writing out digital
+//|       values.
 //|
 //|       :param bool value: default value to set upon switching
 //|       :param DriveMode drive_mode: drive mode for the output
@@ -135,7 +136,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_output_obj, 1, digit
 
 //|   .. method:: switch_to_input(pull=None)
 //|
-//|     Switch to read in digital values.
+//|     Set the pull and then switch to read in digital values.
 //|
 //|     :param Pull pull: pull configuration for the input
 //|
@@ -179,9 +180,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_input_obj, 1, digita
 
 //|   .. attribute:: direction
 //|
-//|       Get the direction of the pin.
+//|       The direction of the pin.
 //|
-//|       :raises AttributeError: when set. Use :py:meth:`switch_to_input` and :py:meth:`switch_to_output` to change the direction.
+//|       Setting this will use the defaults from the corresponding
+//|       :py:meth:`switch_to_input` or :py:meth:`switch_to_output` method. If
+//|       you want to set pull, value or drive mode prior to switching, then use
+//|       those methods instead.
 //|
 typedef struct {
     mp_obj_base_t base;
@@ -199,10 +203,23 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_direction(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_direction_obj, digitalio_digitalinout_obj_get_direction);
 
+STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_obj_t value) {
+    digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (value == &digitalio_digitalinout_direction_in_obj) {
+        common_hal_digitalio_digitalinout_switch_to_input(self, PULL_NONE);
+    } else if (value == &digitalio_digitalinout_direction_out_obj) {
+        common_hal_digitalio_digitalinout_switch_to_output(self, false, DRIVE_MODE_PUSH_PULL);
+    } else {
+        mp_raise_ValueError("Invalid direction.");
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_direction_obj, digitalio_digitalinout_obj_set_direction);
+
 const mp_obj_property_t digitalio_digitalinout_direction_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&digitalio_digitalinout_get_direction_obj,
-              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&digitalio_digitalinout_set_direction_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
