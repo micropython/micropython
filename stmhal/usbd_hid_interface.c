@@ -101,7 +101,7 @@ int USBD_HID_RxNum(void) {
 
 // timout in milliseconds.
 // Returns number of bytes read from the device.
-int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
+int USBD_HID_Rx(USBD_HandleTypeDef *pdev, uint8_t *buf, uint32_t len, uint32_t timeout) {
     // Wait until we have buffer to read
     uint32_t start = HAL_GetTick();
     while (current_read_buffer == current_write_buffer) {
@@ -127,7 +127,7 @@ int USBD_HID_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     current_read_buffer = !current_read_buffer;
 
     // Clear NAK to indicate we are ready to read more data
-    USBD_HID_ClearNAK(&hUSBDDevice);
+    USBD_HID_ClearNAK(pdev);
 
     // Success, return number of bytes read
     return last_read_len;
