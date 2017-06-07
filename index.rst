@@ -35,7 +35,7 @@ through the `Adafruit Learning System <https://learn.adafruit.com/>`_. These
 docs are low-level API docs and may link out to separate getting started guides.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     shared-bindings/index.rst
     docs/drivers.rst
