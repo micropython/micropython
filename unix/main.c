@@ -655,10 +655,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     return ret & 0xff;
 }
 
+#if !MICROPY_VFS_POSIX
 uint mp_import_stat(const char *path) {
-    #if MICROPY_VFS_POSIX
-    return mp_vfs_import_stat(path);
-    #else
     struct stat st;
     if (stat(path, &st) == 0) {
         if (S_ISDIR(st.st_mode)) {
@@ -668,8 +666,8 @@ uint mp_import_stat(const char *path) {
         }
     }
     return MP_IMPORT_STAT_NO_EXIST;
-    #endif
 }
+#endif
 
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught NLR %p\n", val);

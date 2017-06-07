@@ -29,7 +29,6 @@ endif
 # source files
 SRC_C = \
 	unix/main.c \
-	unix/file.c \
 	unix/input.c \
 	unix/modos.c \
 	unix/modmachine.c \

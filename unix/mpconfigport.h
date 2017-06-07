@@ -284,6 +284,15 @@ void mp_unix_mark_exec(void);
 #endif
 #endif
 
+// TODO these should be generic, not bound to POSIX VFS
+#define mp_type_fileio mp_vfs_posix_fileio_type
+#define mp_type_textio mp_vfs_posix_textio_type
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
+
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 

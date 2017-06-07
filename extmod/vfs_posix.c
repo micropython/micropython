@@ -131,10 +131,10 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
         && (strchr(mode, 'w') != NULL || strchr(mode, 'a') != NULL || strchr(mode, '+') != NULL)) {
         mp_raise_OSError(MP_EROFS);
     }
-    path_in = vfs_posix_get_path_obj(self, path_in);
-    mp_obj_t args[2] = {path_in, mode_in};
-    extern mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-    return mp_builtin_open(2, &args[0], (mp_map_t*)&mp_const_empty_map);
+    if (!MP_OBJ_IS_SMALL_INT(path_in)) {
+        path_in = vfs_posix_get_path_obj(self, path_in);
+    }
+    return mp_vfs_posix_file_open(&mp_type_textio, path_in, mode_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_posix_open_obj, vfs_posix_open);
 

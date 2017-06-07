@@ -38,7 +38,7 @@
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
-#include "fdfile.h"
+#include "extmod/vfs_posix.h"
 
 #if MICROPY_PY_SOCKET
 extern const mp_obj_type_t mp_type_socket;
