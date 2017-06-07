@@ -74,12 +74,12 @@ STATIC MP_DEFINE_ATTRTUPLE(
         MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
 );
 #else
-STATIC const mp_obj_tuple_t mp_sys_implementation_obj = {
+STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
     2,
     {
-        MP_OBJ_NEW_QSTR(MP_QSTR_micropython),
-        (mp_obj_t)&mp_sys_implementation_version_info_obj,
+        MP_ROM_QSTR(MP_QSTR_micropython),
+        MP_ROM_PTR(&mp_sys_implementation_version_info_obj),
     }
 };
 #endif
