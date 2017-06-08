@@ -5,11 +5,16 @@
     <ClCompile Include="$(PyBaseDir)py\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\*.c" />
     <ClCompile Include="$(PyBaseDir)windows\msvc\*.c" />
+    <ClCompile Include="$(PyBaseDir)windows\dlfcn_win32\*.c" />
+    <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\*.c" Exclude="$(PyBaseDir)windows\libffi_msvc\win32.c" />
+    <ClCompile Include="$(PyBaseDir)windows\libffi_msvc\win32.c" Condition="'$(Platform)'=='Win32'" />
+    <MASM Include="$(PyBaseDir)windows\libffi_msvc\win64.asm" Condition="'$(Platform)'=='x64'" />
     <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
     <ClCompile Include="$(PyBaseDir)unix\file.c"/>
     <ClCompile Include="$(PyBaseDir)unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)unix\input.c"/>
     <ClCompile Include="$(PyBaseDir)unix\main.c"/>
+    <ClCompile Include="$(PyBaseDir)unix\modffi.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modos.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modtime.c"/>
     <ClCompile Include="$(PyBaseDir)unix\modmachine.c" />
@@ -33,5 +38,7 @@
     <ClInclude Include="$(PyBaseDir)py\*.h" />
     <ClInclude Include="$(PyBaseDir)windows\*.h" />
     <ClInclude Include="$(PyBaseDir)windows\msvc\*.h" />
+    <ClInclude Include="$(PyBaseDir)windows\dlfcn_win32\*.h" />
+    <ClInclude Include="$(PyBaseDir)windows\libffi_msvc\*.h" />
   </ItemGroup>
 </Project>

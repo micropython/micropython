@@ -53,7 +53,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'basics/builtin_help.py', 'thread/thread_exc2.py')
     if pyb is None:
         # run on PC
-        if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
+        if test_file.startswith(('cmdline/', 'feature_check/', 'windows/')) or test_file in special_tests:
             # special handling for tests of the unix cmdline program
             is_special = True
 
@@ -307,6 +307,8 @@ def run_tests(pyb, tests, args, base_path="."):
     # Some tests use unsupported features on Windows
     if os.name == 'nt':
         skip_tests.add('import/import_file.py') # works but CPython prints forward slashes
+    else:
+        skip_tests.add('windows/ffi_getversion.py')
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
@@ -460,7 +462,7 @@ def main():
                 test_dirs = ('basics', 'micropython', 'misc', 'extmod', 'wipy')
             else:
                 # run PC tests
-                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'stress', 'unicode', 'extmod', 'unix', 'cmdline')
+                test_dirs = ('basics', 'micropython', 'float', 'import', 'io', 'misc', 'stress', 'unicode', 'extmod', 'unix', 'windows', 'cmdline')
         else:
             # run tests from these directories
             test_dirs = args.test_dirs

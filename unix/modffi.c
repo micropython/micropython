@@ -229,7 +229,7 @@ STATIC mp_obj_t mod_ffi_func(mp_obj_t rettype, mp_obj_t addr_in, mp_obj_t argtyp
 MP_DEFINE_CONST_FUN_OBJ_3(mod_ffi_func_obj, mod_ffi_func);
 
 STATIC void call_py_func(ffi_cif *cif, void *ret, void** args, void *func) {
-    mp_obj_t pyargs[cif->nargs];
+    mp_obj_t *pyargs = alloca(sizeof(mp_obj_t) * cif->nargs);
     for (uint i = 0; i < cif->nargs; i++) {
         pyargs[i] = mp_obj_new_int(*(mp_int_t*)args[i]);
     }
@@ -352,8 +352,8 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     assert(n_kw == 0);
     assert(n_args == self->cif.nargs);
 
-    ffi_arg values[n_args];
-    void *valueptrs[n_args];
+    ffi_arg *values = alloca(sizeof(ffi_arg) * n_args);
+    void **valueptrs = alloca(sizeof(void *) * n_args);
     const char *argtype = self->argtypes;
     for (uint i = 0; i < n_args; i++, argtype++) {
         mp_obj_t a = args[i];

@@ -16,9 +16,12 @@ def ffi_open(names):
             err = e
     raise err
 
-libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6', 'libc.dylib'))
+libc = ffi_open(('libc.so', 'libc.so.0', 'libc.so.6', 'libc.dylib',
+ 'MSVCR120.DLL', 'API-MS-WIN-CRT-UTILITY-L1-1-0.DLL', 'ucrtbase.dll'))
 
-qsort = libc.func("v", "qsort", "piip")
+qsort_params = (
+    "pllp" if sys.maxsize > 2147483647 and sys.platform == 'win32' else "piip")
+qsort = libc.func("v", "qsort", qsort_params)
 
 def cmp(pa, pb):
     a = ffi.as_bytearray(pa, 1)
