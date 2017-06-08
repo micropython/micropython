@@ -4,8 +4,7 @@ try:
     from cmath import *
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # make sure these constants exist in cmath
 print("%.5g" % e)

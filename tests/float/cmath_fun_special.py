@@ -5,8 +5,7 @@ try:
     log10
 except (ImportError, NameError):
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 test_values_non_zero = []
 base_values = (0.0, 0.5, 1.2345, 10.)

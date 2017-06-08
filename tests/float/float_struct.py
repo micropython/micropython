@@ -5,9 +5,8 @@ try:
     except:
         import struct
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 i = 1. + 1/2
 # TODO: it looks like '=' format modifier is not yet supported

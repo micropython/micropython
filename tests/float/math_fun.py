@@ -4,8 +4,7 @@ try:
     from math import *
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 test_values = [-100., -1.23456, -1, -0.5, 0.0, 0.5, 1.23456, 100.]
 test_values_small = [-10., -1.23456, -1, -0.5, 0.0, 0.5, 1.23456, 10.] # so we don't overflow 32-bit precision

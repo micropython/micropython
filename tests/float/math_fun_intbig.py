@@ -4,8 +4,7 @@ try:
     import math
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 for fun in (math.ceil, math.floor, math.trunc):
     for x in (-1e25, 1e25):
