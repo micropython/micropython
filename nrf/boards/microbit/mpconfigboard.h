@@ -60,9 +60,9 @@
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_A13)
-#define MICROPY_HW_SPI0_MOSI        (pin_A15)
-#define MICROPY_HW_SPI0_MISO        (pin_A14)
+#define MICROPY_HW_SPI0_SCK         (pin_A23)
+#define MICROPY_HW_SPI0_MOSI        (pin_A21)
+#define MICROPY_HW_SPI0_MISO        (pin_A22)
 
 // micro:bit music pin
 #define MICROPY_HW_MUSIC_PIN        (pin_A3)
