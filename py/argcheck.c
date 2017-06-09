@@ -31,43 +31,46 @@
 #include "py/runtime.h"
 
 void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+    // NOTE(tannewt): This prevents this function from being optimized away.
+    // Without it, functions can crash when reading invalid args.
+    asm ("");
     // TODO maybe take the function name as an argument so we can print nicer error messages
 
     if (n_kw && !takes_kw) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
-        } else {
+        #else
             mp_raise_TypeError("function does not take keyword arguments");
-        }
+        #endif
     }
 
     if (n_args_min == n_args_max) {
         if (n_args != n_args_min) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_arg_error_terse_mismatch();
-            } else {
+            #else
                 mp_raise_TypeError_varg(
                     "function takes %d positional arguments but %d were given",
                     n_args_min, n_args);
-            }
+            #endif
         }
     } else {
         if (n_args < n_args_min) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_arg_error_terse_mismatch();
-            } else {
+            #else
                 mp_raise_TypeError_varg(
                     "function missing %d required positional arguments",
                     n_args_min - n_args);
-            }
+            #endif
         } else if (n_args > n_args_max) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_arg_error_terse_mismatch();
-            } else {
+            #else
                 mp_raise_TypeError_varg(
                     "function expected at most %d arguments, got %d",
                     n_args_max, n_args);
-            }
+            #endif
         }
     }
 }
