@@ -54,12 +54,9 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t*)self->fun;
     assert(self_fun->base.type == &mp_type_fun_bc);
 
-    // get start of bytecode
-    const byte *ip = self_fun->bytecode;
-
     // bytecode prelude: get state size and exception stack size
-    mp_uint_t n_state = mp_decode_uint(&ip);
-    mp_uint_t n_exc_stack = mp_decode_uint(&ip);
+    size_t n_state = mp_decode_uint_value(self_fun->bytecode);
+    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self_fun->bytecode));
 
     // allocate the generator object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,

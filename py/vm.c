@@ -1363,22 +1363,25 @@ unwind_loop:
             // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
             if (nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
                 const byte *ip = code_state->fun_bc->bytecode;
-                mp_decode_uint(&ip); // skip n_state
-                mp_decode_uint(&ip); // skip n_exc_stack
+                ip = mp_decode_uint_skip(ip); // skip n_state
+                ip = mp_decode_uint_skip(ip); // skip n_exc_stack
                 ip++; // skip scope_params
                 ip++; // skip n_pos_args
                 ip++; // skip n_kwonly_args
                 ip++; // skip n_def_pos_args
                 size_t bc = code_state->ip - ip;
-                size_t code_info_size = mp_decode_uint(&ip);
+                size_t code_info_size = mp_decode_uint_value(ip);
+                ip = mp_decode_uint_skip(ip); // skip code_info_size
                 bc -= code_info_size;
                 #if MICROPY_PERSISTENT_CODE
                 qstr block_name = ip[0] | (ip[1] << 8);
                 qstr source_file = ip[2] | (ip[3] << 8);
                 ip += 4;
                 #else
-                qstr block_name = mp_decode_uint(&ip);
-                qstr source_file = mp_decode_uint(&ip);
+                qstr block_name = mp_decode_uint_value(ip);
+                ip = mp_decode_uint_skip(ip);
+                qstr source_file = mp_decode_uint_value(ip);
+                ip = mp_decode_uint_skip(ip);
                 #endif
                 size_t source_line = 1;
                 size_t c;
