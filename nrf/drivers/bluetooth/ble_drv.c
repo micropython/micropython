@@ -123,13 +123,21 @@ uint32_t ble_drv_stack_enable(void) {
                                              softdevice_assert_handler);
 #endif // BLUETOOTH_LFCLK_RC
 #else
+#if BLUETOOTH_LFCLK_RC
+    nrf_clock_lf_cfg_t clock_config = {
+        .source = NRF_CLOCK_LF_SRC_RC,
+        .rc_ctiv = 16,
+        .rc_temp_ctiv = 2,
+        .xtal_accuracy = 0
+    };
+#else
     nrf_clock_lf_cfg_t clock_config = {
         .source = NRF_CLOCK_LF_SRC_XTAL,
         .rc_ctiv = 0,
         .rc_temp_ctiv = 0,
         .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
     };
-
+#endif
     uint32_t err_code = sd_softdevice_enable(&clock_config,
                                              softdevice_assert_handler);
 #endif
