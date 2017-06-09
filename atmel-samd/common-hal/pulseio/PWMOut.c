@@ -35,6 +35,9 @@
 
 #undef ENABLE
 
+#  define _TCC_SIZE(n,unused)              TPASTE3(TCC,n,_SIZE),
+#  define TCC_SIZES         { MREPEAT(TCC_INST_NUM, _TCC_SIZE, 0) }
+
 uint32_t target_timer_frequencies[TC_INST_NUM + TCC_INST_NUM];
 uint8_t timer_refcount[TC_INST_NUM + TCC_INST_NUM];
 const uint16_t prescaler[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
@@ -55,6 +58,12 @@ void pwmout_reset(void) {
     }
     Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
     for (int i = 0; i < TCC_INST_NUM; i++) {
+        // Disable the module before resetting it.
+        if (tccs[i]->CTRLA.bit.ENABLE == 1) {
+            tccs[i]->CTRLA.bit.ENABLE = 0;
+            while (tccs[i]->SYNCBUSY.bit.ENABLE == 1) {
+            }
+        }
         tccs[i]->CTRLA.bit.SWRST = 1;
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
@@ -63,6 +72,8 @@ void pwmout_reset(void) {
             continue;
         }
         tcs[i]->COUNT16.CTRLA.bit.SWRST = 1;
+        while (tcs[i]->COUNT16.CTRLA.bit.SWRST == 1) {
+        }
     }
 }
 
@@ -142,7 +153,9 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         if (t->is_tc) {
             resolution = 16;
         } else {
-            resolution = 24;
+            // TCC resolution varies so look it up.
+            const uint8_t _tcc_sizes[TCC_INST_NUM] = TCC_SIZES;
+            resolution = _tcc_sizes[index];
         }
         // First determine the divisor that gets us the highest resolution.
         uint32_t system_clock = system_cpu_clock_get_hz();
@@ -164,7 +177,10 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_PWM;
             config_tc.counter_16_bit.compare_capture_channel[0] = top;
 
-            tc_init(&self->tc_instance, t->tc, &config_tc);
+            enum status_code status = tc_init(&self->tc_instance, t->tc, &config_tc);
+            if (status != STATUS_OK) {
+                mp_raise_RuntimeError("Failed to init timer");
+            }
             tc_enable(&self->tc_instance);
         } else {
             struct tcc_config config_tcc;
@@ -174,7 +190,10 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             config_tcc.counter.period = top;
             config_tcc.compare.wave_generation = TCC_WAVE_GENERATION_SINGLE_SLOPE_PWM;
 
-            tcc_init(&self->tcc_instance, t->tcc, &config_tcc);
+            enum status_code status = tcc_init(&self->tcc_instance, t->tcc, &config_tcc);
+            if (status != STATUS_OK) {
+                mp_raise_RuntimeError("Failed to init timer");
+            }
             tcc_enable(&self->tcc_instance);
         }
 
