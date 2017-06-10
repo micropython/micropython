@@ -449,7 +449,7 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
         int cx1 = x1;
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
             color = getpixel(source, cx1, y1);
-            if (color != key) {
+            if (color != (uint32_t)key) {
                 setpixel(self, cx0, y0, color);
             }
             ++cx1;
