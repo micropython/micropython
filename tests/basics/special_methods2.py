@@ -100,9 +100,8 @@ cud2 = Cud()
 try:
     +cud1
 except TypeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # the following require MICROPY_PY_ALL_SPECIAL_METHODS
 +cud1

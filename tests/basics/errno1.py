@@ -4,8 +4,7 @@ try:
     import uerrno
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # check that constants exist and are integers
 print(type(uerrno.EIO))

@@ -5,8 +5,7 @@ except ImportError:
         from ucollections import OrderedDict
     except ImportError:
         print("SKIP")
-        import sys
-        sys.exit()
+        raise SystemExit
 
 d = OrderedDict([(10, 20), ("b", 100), (1, 2)])
 print(len(d))

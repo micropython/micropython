@@ -3,9 +3,8 @@
 try:
     from array import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(array('L', [0, 2**32-1]))
 print(array('l', [-2**31, 0, 2**31-1]))

@@ -8,9 +8,8 @@ t = sys.implementation
 try:
     t.name
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 # test printing of attrtuple

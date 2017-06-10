@@ -5,9 +5,8 @@
 try:
     set
 except NameError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(set)
 

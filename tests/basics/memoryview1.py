@@ -2,9 +2,8 @@
 try:
     memoryview
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # test reading from bytes
 b = b'1234'

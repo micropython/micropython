@@ -1,4 +1,3 @@
-import sys
 
 class Foo:
 
@@ -9,6 +8,6 @@ class Foo:
 o = Foo()
 if not hasattr(o, "__dict__"):
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(o.__dict__ == {'a': 1, 'b': 'bar'})
