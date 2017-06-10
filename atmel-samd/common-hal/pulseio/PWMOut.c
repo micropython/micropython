@@ -64,6 +64,12 @@ void pwmout_reset(void) {
             while (tccs[i]->SYNCBUSY.bit.ENABLE == 1) {
             }
         }
+        // TODO(tannewt): Make this depend on the CMSIS.
+        if (i == 0) {
+            tcc_channels[i] = 0xf0;
+        } else {
+            tcc_channels[i] = 0xfc;
+        }
         tccs[i]->CTRLA.bit.SWRST = 1;
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
