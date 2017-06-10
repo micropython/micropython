@@ -236,3 +236,7 @@ $(BUILD)/libaxtls.a:
 	cd ../lib/axtls; $(MAKE) clean
 	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
 	cp ../lib/axtls/_stage/libaxtls.a $@
+
+clean-modules:
+	git clean -f -d modules
+	rm -f build/frozen*.c
