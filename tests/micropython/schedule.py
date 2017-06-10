@@ -6,8 +6,7 @@ try:
     micropython.schedule
 except AttributeError:
     print('SKIP')
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # Basic test of scheduling a function.
 

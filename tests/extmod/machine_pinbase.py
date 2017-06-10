@@ -6,8 +6,7 @@ try:
     machine.PinBase
 except AttributeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 
 class MyPin(machine.PinBase):

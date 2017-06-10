@@ -9,8 +9,7 @@ try:
     machine.Signal
 except AttributeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 class Pin(machine.PinBase):
     def __init__(self):

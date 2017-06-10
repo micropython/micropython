@@ -5,8 +5,7 @@ try:
     from utimeq import utimeq
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 DEBUG = 0
 

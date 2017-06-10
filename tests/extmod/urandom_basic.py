@@ -4,9 +4,8 @@ except ImportError:
     try:
         import random
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 # check getrandbits returns a value within the bit range
 for b in (1, 2, 3, 4, 16, 32):

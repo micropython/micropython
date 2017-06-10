@@ -2,9 +2,8 @@
 try:
     import uio as io
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 l = [1, 2, 3, None]
 l[-1] = l

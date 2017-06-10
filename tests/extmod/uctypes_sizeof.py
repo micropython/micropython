@@ -1,9 +1,8 @@
 try:
     import uctypes
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 desc = {
     # arr is array at offset 0, of UINT8 elements, array size is 2

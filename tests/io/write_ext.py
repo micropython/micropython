@@ -5,9 +5,8 @@ import uio
 try:
     uio.BytesIO
 except AttributeError:
-    import sys
     print('SKIP')
-    sys.exit()
+    raise SystemExit
 
 buf = uio.BytesIO()
 

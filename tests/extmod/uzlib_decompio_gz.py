@@ -2,9 +2,8 @@ try:
     import uzlib as zlib
     import uio as io
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 # gzip bitstream

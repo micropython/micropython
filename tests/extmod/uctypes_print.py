@@ -2,9 +2,8 @@
 try:
     import uctypes
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # we use an address of "0" because we just want to print something deterministic
 # and don't actually need to set/get any values in the struct

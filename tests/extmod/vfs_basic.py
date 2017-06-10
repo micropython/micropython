@@ -9,8 +9,7 @@ try:
     uos.mount
 except (ImportError, AttributeError):
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 
 class Filesystem:
