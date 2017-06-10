@@ -128,6 +128,8 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             channel_ok(&pin->primary_timer, primary_timer_index)) {
         t = &pin->primary_timer;
         index = primary_timer_index;
+        self->tcc_instance.hw = t->tcc;
+        self->tcc_instance.double_buffering_enabled = true;
     } else if (!variable_frequency &&
                secondary_timer_index != 0xff &&
                target_timer_frequencies[secondary_timer_index] == frequency &&
@@ -135,6 +137,8 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                channel_ok(&pin->secondary_timer, secondary_timer_index)) {
         t = &pin->secondary_timer;
         index = secondary_timer_index;
+        self->tcc_instance.hw = t->tcc;
+        self->tcc_instance.double_buffering_enabled = true;
     } else {
         // Pick an unused timer if available.
 
