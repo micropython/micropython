@@ -18,6 +18,8 @@ For compilation do:
 
 For testing reasons it may be good to run on QEMU-based virtual hardware instead of the real Raspberry Pi hardware. The problems of real hardware are many, with a working QEMU-demo it might be possible for others to work without a stable and working Raspberry Pi port.
 
+If you want to build for QEMU go into the Makefile in the bare-rpi folder and change the variable ```PIOS_BOARD``` to ```qemu```. Otherwise see lib/PiOS/boards for reference on possible values.
+
 To run the kernel in QEMU after building do:
 
 ```
