@@ -6,11 +6,11 @@
 #ifndef RPI_IRQ
 #define RPI_IRQ
 
-#include "platform.h"
+#include "pios_port_config.h"
 #include <stdint.h>
 #include <stdio.h>
 
-#define IRQ_BASE ( PBASE + 0xB200 ) 
+#define IRQ_BASE ( PIOS_IO_BASE + 0xB200 ) 
 
 struct rpi_irq_controller_t 
 {
@@ -42,7 +42,7 @@ struct rpi_irq_controller_t
  **/
   /** @brief See the documentation for the ARM side timer (Section 14 of the
         BCM2835 Peripherals PDF) */
-    #define RPI_ARMTIMER_BASE               ( PBASE + 0xB400 )
+    #define RPI_ARMTIMER_BASE               ( PIOS_IO_BASE + 0xB400 )
 
     /** @brief 0 : 16-bit counters - 1 : 23-bit counter */
     #define RPI_ARMTIMER_CTRL_23BIT         ( 1 << 1 )

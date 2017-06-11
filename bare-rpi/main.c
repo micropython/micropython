@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <uart.h>
-#include <timer.h>
+#include <pios/uart.h>
+//#include <pios/timer.h>
 
 #include "irq.h"
 
@@ -17,6 +17,8 @@
 
 void setSP ( int );
 unsigned int getSP ();
+
+void* stack_top;
 
 extern unsigned char interactive_py[];
 extern unsigned int interactive_py_len;
@@ -41,8 +43,8 @@ unsigned int heap_end;
 extern volatile int b;
 
 int main(int argc, char **argv) {
-    setSP ( SP_START );
-    heap_end = HEAP_START;
+    /*setSP ( SP_START );*/
+    heap_end = stack_top + 0x00040000;
     
     pios_uart_init();
    /* pios_arm_timer_setLoad ( 0x4000 );
