@@ -23,7 +23,13 @@ Example::
     # First, we need to open a stream which holds a database
     # This is usually a file, but can be in-memory database
     # using uio.BytesIO, a raw flash section, etc.
-    f = open("mydb", "w+b")
+    # Oftentimes, you want to create a database file if it doesn't
+    # exist and open if it exists. Idiom below takes care of this.
+    # DO NOT open database with "a+b" access mode.
+    try:
+        f = open("mydb", "r+b")
+    except OSError:
+        f = open("mydb", "w+b")
 
     # Now open a database itself
     db = btree.open(f)
@@ -32,6 +38,11 @@ Example::
     db[b"3"] = b"three"
     db[b"1"] = b"one"
     db[b"2"] = b"two"
+
+    # Assume that any changes are cached in memory unless
+    # explicitly flushed (or database closed). Flush database
+    # at the end of each "transaction".
+    db.flush()
 
     # Prints b'two'
     print(db[b"2"])
