@@ -8,17 +8,36 @@ This port uses newlib as a libc, to deliver some essential functions like ```mem
 
 For compilation do:
 - init the submodule for newlib
-- build newlib
+- decide whether to build for QEMU or real Raspberry Pi hardware
+- build newlib and build libpios
 - build the kernel
 - transfer the kernel.img over to the Raspberry Pi (either via Raspbootin or by copying it to the flash card)
 - start the Pi, see the output coming through the UART-interface (using a TTL-USB-adapter)
 
-### Building newlib
+### QEMU Builds?
 
-After inititation of the git submodule do:
+For testing reasons it may be good to run on QEMU-based virtual hardware instead of the real Raspberry Pi hardware. The problems of real hardware are many, with a working QEMU-demo it might be possible for others to work without a stable and working Raspberry Pi port.
+
+To run the kernel in QEMU after building do:
+
+```
+qemu-system-arm -M versatilepb -m 128M -nographic -kernel build/kernel.img
+```
+
+For arm-none-eabi-gdb support you may add ```-s -S``` then connect with gdb to port 1234 in localhost for debugging session.
+
+### Building newlib and libpios
+
+After inititation of the git submodule do (to speed things up you may do want to add ```-j 4```):
 
 ```
 make newlib
+```
+
+To build libpios you may run:
+
+```
+make pios
 ```
 
 ### Building the Rapberry Pi Port
