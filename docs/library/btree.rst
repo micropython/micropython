@@ -22,7 +22,7 @@ Example::
 
     # First, we need to open a stream which holds a database
     # This is usually a file, but can be in-memory database
-    # using uio.BytesIO, a raw flash section, etc.
+    # using uio.BytesIO, a raw flash partition, etc.
     # Oftentimes, you want to create a database file if it doesn't
     # exist and open if it exists. Idiom below takes care of this.
     # DO NOT open database with "a+b" access mode.
@@ -103,7 +103,7 @@ Methods
 
    Close the database. It's mandatory to close the database at the end of
    processing, as some unwritten data may be still in the cache. Note that
-   this does not close underlying streamw with which the database was opened,
+   this does not close underlying stream with which the database was opened,
    it should be closed separately (which is also mandatory to make sure that
    data flushed from buffer to the underlying storage).
 
