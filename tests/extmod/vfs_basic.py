@@ -56,8 +56,8 @@ for path in uos.listdir('/'):
 # stat root dir
 print(uos.stat('/'))
 
-# statvfs root dir
-print(uos.statvfs('/'))
+# statvfs root dir; verify that f_namemax has a sensible size
+print(uos.statvfs('/')[9] >= 32)
 
 # getcwd when in root dir
 print(uos.getcwd())
