@@ -1,7 +1,9 @@
 include ../py/mkenv.mk
 
+SRC=source/
+
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
+QSTR_DEFS = $(SRC)qstrdefsport.h
 PIOS_BOARD ?= boards/qemu
 
 # include py core make definitions
@@ -19,7 +21,7 @@ INC += -I$(BUILD)
 SHELL := /bin/bash
 ## find the version number of gcc (I think this is a bit too complicated :/)
 CCVERSION:=$(shell $(CC) --version | sed 's/[ ]/\n/g' | grep "\." | xargs | awk '{ print $$1 }')
-ARMGCCLIBPATH=/usr/lib/gcc/arm-none-eabi/$(CCVERSION)/fpu
+ARMGCCLIBPATH=/usr/lib/gcc/arm-none-eabi/$(CCVERSION)/hard
 
 #CFLAGS_CORTEX_M4 = -marm -mtune=cortex-m4 -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_BUILD = -mcpu=$(CPU) -marm -mfpu=vfp -mfloat-abi=hard
@@ -33,17 +35,17 @@ LDFLAGS = -nostdlib -Map=$@.map --no-undefined -T $(LDSCRIPT) #--cref -T kernel.
 LIBS = -L. -lc -lm -lpios -L$(ARMGCCLIBPATH) -lgcc
 
 SRC_C = \
-	main.c \
-	irq.c \
-	syscalls.c 	\
-	module_rawptr.c \
-	module_cdebug.c \
-	module_cio.c \
-	interactive.c 
+	$(SRC)main.c \
+	$(SRC)irq.c \
+	$(SRC)syscalls.c 	\
+	$(SRC)module_rawptr.c \
+	$(SRC)module_cdebug.c \
+	$(SRC)module_cio.c \
+	$(SRC)interactive.c 
 
 
 SRC_S = \
-	qemu_start.s 
+	$(SRC)qemu_start.s 
 #	gchelper.s
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
@@ -55,7 +57,6 @@ LIBM=./libm.a
 LIBPIOS=./libpios.a
 NEWLIB_PATH=newlib-cygwin
 LIB=lib/
-
 
 NEWLIB_CFLAGS?=$(CPUINFO) $(CCPU)
 NEWLIB_OPTS?=--target=arm-none-eabi --enable-newlib-hw-fp --with-float=hard --with-cpu=arm1176jzf-s --with-fpu=vfp --disable-multilib --disable-shared --enable-target-optspace  --disable-newlib-supplied-syscalls
