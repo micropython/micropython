@@ -129,9 +129,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    for (uint8_t i = 0; i < len; i++) {
-        mp_hal_stdout_tx_strn(&str[i], 1);
-    }
+    mp_hal_stdout_tx_strn(str, len);
 }
 
 STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
