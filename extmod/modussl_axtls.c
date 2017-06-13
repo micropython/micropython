@@ -62,7 +62,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
     if (server_side) {
         o->ssl_sock = ssl_server_new(o->ssl_ctx, (long)sock);
     } else {
-        o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0);
+        o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, NULL);
 
         int res;
         /* check the return status */
