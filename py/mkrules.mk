@@ -150,8 +150,8 @@ LIBMICROPYTHON = libmicropython.a
 lib $(LIBMICROPYTHON): $(OBJ)
 	$(AR) rcs $(LIBMICROPYTHON) $^
 
-clean:
-	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
+clean::
+	-$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
 print-cfg:

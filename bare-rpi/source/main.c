@@ -18,10 +18,8 @@
 void setSP ( int );
 unsigned int getSP ();
 
-void* stack_top;
-
-extern unsigned char interactive_py[];
-extern unsigned int interactive_py_len;
+extern unsigned char source_interactive_py[];
+extern unsigned int source_interactive_py_len;
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
@@ -42,10 +40,7 @@ unsigned int heap_end;
 
 extern volatile int b;
 
-int main(int argc, char **argv) {
-    /*setSP ( SP_START );*/
-    heap_end = stack_top + 0x00040000;
-    
+int main(int argc, char **argv) {    
     pios_uart_init();
    /* pios_arm_timer_setLoad ( 0x4000 );
     pios_arm_timer_init ( true, PIOS_ARM_TIMER_PRESCALE_256, true );
@@ -54,26 +49,26 @@ int main(int argc, char **argv) {
     printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
     mp_init();
 
-    do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
+    /*do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
     do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
+    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);*/
     
     printf ( " ! -- My Source: \n" );
     int line = 1;
     printf ("%02d: ", line );
-    for ( int i=0; i<interactive_py_len; i++)
+    for ( int i=0; i<source_interactive_py_len; i++)
     {
-        if ( interactive_py[i] == '\n' )
+        if ( source_interactive_py[i] == '\n' )
         {
             line ++;
             printf ("\n%02d: ", line );
         }
-        else if (interactive_py[i] == '\r')
+        else if (source_interactive_py[i] == '\r')
         {
         }
         else
         {
-            pios_uart_putchar( interactive_py[i] );
+            pios_uart_putchar( source_interactive_py[i] );
         }
     }
     
@@ -131,7 +126,7 @@ res = gpio_write ( 16, 1 );\n\
 print ('BOAH');\n\
 ", MP_PARSE_FILE_INPUT);*/
 
-    do_str ( (char*) interactive_py, MP_PARSE_FILE_INPUT );
+    do_str ( (char*) source_interactive_py, MP_PARSE_FILE_INPUT );
 
     unsigned int sp = getSP();
     printf ("SP: %08x\n", sp );

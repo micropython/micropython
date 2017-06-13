@@ -5,10 +5,13 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "pios/uart.h"
+
+
 STATIC mp_obj_t cio_write( mp_obj_t str ) {
     size_t len;
     const char* ptr = mp_obj_str_get_str  ( str);
-    printf ("%s : %s\n" , mp_obj_get_type_str ( str ), ptr );
+    pios_uart_write ( ptr, strlen(ptr) );
     return mp_const_none;
 }
 STATIC mp_obj_t cio_read () {

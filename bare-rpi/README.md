@@ -30,7 +30,7 @@ For arm-none-eabi-gdb support you may add ```-s -S``` then connect with gdb to p
 
 ### Building newlib and libpios
 
-After inititation of the git submodule do (to speed things up you may do want to add ```-j 4```):
+After inititation of the git submodule do (to speed things up you may do want to add ```-j 4```). Note: PiOS is built automatically with ```make```. 
 
 ```
 make newlib

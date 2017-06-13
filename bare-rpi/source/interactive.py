@@ -6,6 +6,7 @@ def getchar ():
     return cio.getchar();
 
 s=""
+cio.write ("Hello World!")
 while (1):
     rc = getchar()
     #print ( rc );

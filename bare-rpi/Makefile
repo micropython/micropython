@@ -4,7 +4,8 @@ SRC=source/
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = $(SRC)qstrdefsport.h
-PIOS_BOARD ?= boards/qemu
+BOARD?=qemu
+PIOS_BOARD ?= boards/$(BOARD)
 
 # include py core make definitions
 include ../py/py.mk
@@ -45,7 +46,7 @@ SRC_C = \
 
 
 SRC_S = \
-	$(SRC)qemu_start.s 
+	$(SRC)$(BOARD)_start.s 
 #	gchelper.s
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
@@ -61,26 +62,28 @@ LIB=lib/
 NEWLIB_CFLAGS?=$(CPUINFO) $(CCPU)
 NEWLIB_OPTS?=--target=arm-none-eabi --enable-newlib-hw-fp --with-float=hard --with-cpu=arm1176jzf-s --with-fpu=vfp --disable-multilib --disable-shared --enable-target-optspace  --disable-newlib-supplied-syscalls
 
+CLEAN_EXTRA = libpios.a
+
 dump: $(BUILD)/firmware.elf
 	$(CROSS_COMPILE)objdump -d $(BUILD)/firmware.elf > $(LIST)
 
 newlib: $(BUILD) $(LIBC)
-build/arm-none-eabi/newlib/libc.a: 
+$(BUILD)/arm-none-eabi/newlib/libc.a: $(BUILD)
 	cd build && \
 		CFLAGS_FOR_TARGET="$(NEWLIB_CFLAGS)"\
 		../$(LIB)$(NEWLIB_PATH)/configure $(NEWLIB_OPTS) && \
 		$(MAKE) 
 		
 newlib_clean:
-	rm -r build
-	mkdir build
-	rm $(LIBC) $(LIBM)
+	-rm -r $(BUILD)
+	-rm $(LIBC) $(LIBM)
 	
-$(LIBC): build/arm-none-eabi/newlib/libc.a
-	cp build/arm-none-eabi/newlib/libc.a $(LIBC)
-	cp build/arm-none-eabi/newlib/libm.a $(LIBM)
+$(LIBC): $(BUILD)/arm-none-eabi/newlib/libc.a
+	cp $(BUILD)/arm-none-eabi/newlib/libc.a $(LIBC)
+	cp $(BUILD)/arm-none-eabi/newlib/libm.a $(LIBM)
 
-pios: 
+pios: libpios.a
+libpios.a:
 	cd $(LIB)PiOS/ &&\
         cp $(PIOS_BOARD)/board.mk . &&\
         cp $(PIOS_BOARD)/pios_port_config.h . &&\
@@ -91,10 +94,18 @@ pios:
 %.c: %.py
 	xxd -i $< > $@
 
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD):
+	mkdir $(BUILD)
+
+$(BUILD)/firmware.elf: libpios.a $(OBJ) 
 	$(ECHO) "LINK $@"
 	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(OBJCPY) $(BUILD)/firmware.elf -O binary $(BUILD)/kernel.img
 	$(Q)$(SIZE) $@
+	
+clean::
+	cd lib/PiOS && \
+		$(MAKE) clean
+	#$(MAKE) newlib_clean
 
 include ../py/mkrules.mk
