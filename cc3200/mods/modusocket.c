@@ -643,17 +643,8 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
-    // TODO: CPython explicitly says that closing the returned object doesn't
-    // close the original socket (Python2 at all says that fd is dup()ed). But
-    // we save on the bloat.
-    mod_network_socket_obj_t *self = args[0];
-    if (n_args > 1) {
-        const char *mode = mp_obj_str_get_str(args[1]);
-        if (strcmp(mode, "rb") && strcmp(mode, "wb")) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
-        }
-    }
-    return self;
+    (void)n_args;
+    return args[0];
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 6, socket_makefile);
 
