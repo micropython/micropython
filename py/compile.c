@@ -2308,6 +2308,10 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             }
         } else {
             normal_argument:
+            if (star_flags) {
+                compile_syntax_error(comp, args[i], "non-keyword arg after */**");
+                return;
+            }
             if (n_keyword > 0) {
                 compile_syntax_error(comp, args[i], "non-keyword arg after keyword arg");
                 return;

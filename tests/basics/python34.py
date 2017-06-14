@@ -20,6 +20,8 @@ def test_syntax(code):
         print("SyntaxError")
 test_syntax("f(*a, *b)") # can't have multiple * (in 3.5 we can)
 test_syntax("f(**a, **b)") # can't have multiple ** (in 3.5 we can)
+test_syntax("f(*a, b)") # can't have positional after *
+test_syntax("f(**a, b)") # can't have positional after **
 test_syntax("() = []") # can't assign to empty tuple (in 3.6 we can)
 test_syntax("del ()") # can't delete empty tuple (in 3.6 we can)
 
