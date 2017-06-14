@@ -108,7 +108,6 @@
 #endif
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_THREAD           (0)
-#define MICROPY_PY_THREAD_GIL       (0)
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
