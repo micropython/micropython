@@ -86,6 +86,16 @@
 
 #else
 
+// These are definitions for F4 MCUs so there is a common macro across all MCUs.
+
+#define SDMMC_CLK_ENABLE() __SDIO_CLK_ENABLE()
+#define SDMMC_CLK_DISABLE() __SDIO_CLK_DISABLE()
+#define SDMMC_IRQn SDIO_IRQn
+#define SDMMC_TX_DMA dma_SDIO_0_TX
+#define SDMMC_RX_DMA dma_SDIO_0_RX
+
+#endif
+
 //If no custom SDIO pins defined, use the default ones
 #ifndef MICROPY_HW_SDMMC_D0
     #define MICROPY_HW_SDMMC_D0 (pin_C8)
@@ -106,15 +116,6 @@
     #define MICROPY_HW_SDMMC_CMD (pin_D2)
 #endif
 
-// These are definitions for F4 MCUs so there is a common macro across all MCUs.
-
-#define SDMMC_CLK_ENABLE() __SDIO_CLK_ENABLE()
-#define SDMMC_CLK_DISABLE() __SDIO_CLK_DISABLE()
-#define SDMMC_IRQn SDIO_IRQn
-#define SDMMC_TX_DMA dma_SDIO_0_TX
-#define SDMMC_RX_DMA dma_SDIO_0_RX
-
-#endif
 
 // TODO: Since SDIO is fundamentally half-duplex, we really only need to
 //       tie up one DMA channel. However, the HAL DMA API doesn't
