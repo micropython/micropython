@@ -8,8 +8,8 @@ MICROPY_SSL_AXTLS = 1
 MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
 
-FROZEN_DIR = scripts
-FROZEN_MPY_DIR = modules
+FROZEN_DIR ?= scripts
+FROZEN_MPY_DIR ?= modules
 
 # include py core make definitions
 include ../py/py.mk
