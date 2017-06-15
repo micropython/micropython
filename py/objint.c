@@ -435,7 +435,10 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False)
     (void)n_args;
 
-    mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    mp_int_t len = mp_obj_get_int(args[1]);
+    if (len < 0) {
+        mp_raise_ValueError(NULL);
+    }
     bool big_endian = args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
 
     vstr_t vstr;

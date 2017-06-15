@@ -14,3 +14,9 @@ print((10).to_bytes(1, "big"))
 print((100).to_bytes(10, "big"))
 print(int.from_bytes(b"\0\0\0\0\0\0\0\0\0\x01", "big"))
 print(int.from_bytes(b"\x01\0", "big"))
+
+# negative number of bytes should raise an error
+try:
+    (1).to_bytes(-1, "little")
+except ValueError:
+    print("ValueError")
