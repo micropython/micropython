@@ -110,6 +110,7 @@ SRC_LIB = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
+	utils/sys_stdio_mphal.c \
 	)
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
@@ -145,7 +146,6 @@ SRC_C = \
 	usb.c \
 	wdt.c \
 	gccollect.c \
-	pybstdio.c \
 	help.c \
 	machine_i2c.c \
 	modmachine.c \

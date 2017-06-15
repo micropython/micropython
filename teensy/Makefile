@@ -96,7 +96,6 @@ STM_SRC_C = $(addprefix stmhal/,\
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
-	pybstdio.c \
 	)
 
 STM_SRC_S = $(addprefix stmhal/,\
@@ -107,6 +106,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
+	utils/sys_stdio_mphal.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\
