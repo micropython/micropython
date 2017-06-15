@@ -473,7 +473,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     if (bufinfo.len > 8) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN data field too long"));
+        mp_raise_ValueError("CAN data field too long");
     }
 
     // send the data
@@ -738,7 +738,7 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     return mp_const_none;
 
 error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN filter parameter error"));
+    mp_raise_ValueError("CAN filter parameter error");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_setfilter_obj, 1, pyb_can_setfilter);
 

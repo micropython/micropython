@@ -230,8 +230,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #endif
 
     // If we get here then the file was not frozen and we can't compile scripts.
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-        "script compilation not supported"));
+    mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
 }
 
 STATIC void chop_component(const char *start, const char **end) {

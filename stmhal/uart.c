@@ -597,7 +597,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     } else if (bits == 9) {
         init->WordLength = UART_WORDLENGTH_9B;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "unsupported combination of bits and parity"));
+        mp_raise_ValueError("unsupported combination of bits and parity");
     }
 
     // stop bits

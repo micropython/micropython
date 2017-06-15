@@ -90,7 +90,7 @@ STATIC void accel_start(void) {
     }
 
     if (status != HAL_OK) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "accelerometer not found"));
+        mp_raise_msg(&mp_type_OSError, "accelerometer not found");
     }
 
     // set MMA to active mode

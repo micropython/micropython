@@ -244,8 +244,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
             o->stride = (o->stride + 7) & ~7;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "invalid format"));
+            mp_raise_ValueError("invalid format");
     }
 
     return MP_OBJ_FROM_PTR(o);

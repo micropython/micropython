@@ -25,7 +25,7 @@
  */
 
 #include "py/builtin.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
@@ -41,7 +41,7 @@
 /// working with floating-point numbers.
 
 STATIC NORETURN void math_error(void) {
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "math domain error"));
+    mp_raise_ValueError("math domain error");
 }
 
 #define MATH_FUN_1(py_name, c_name) \

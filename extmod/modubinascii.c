@@ -75,7 +75,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     if ((bufinfo.len & 1) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "odd-length string"));
+        mp_raise_ValueError("odd-length string");
     }
     vstr_t vstr;
     vstr_init_len(&vstr, bufinfo.len / 2);
@@ -86,7 +86,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
         if (unichar_isxdigit(hex_ch)) {
             hex_byte += unichar_xdigit_value(hex_ch);
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "non-hex digit found"));
+            mp_raise_ValueError("non-hex digit found");
         }
         if (i & 1) {
             hex_byte <<= 4;

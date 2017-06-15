@@ -142,7 +142,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+                mp_raise_msg(&mp_type_IndexError, "string index out of range");
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -161,7 +161,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_IndexError, "string index out of range"));
+                mp_raise_msg(&mp_type_IndexError, "string index out of range");
             }
             // Then check completion
             if (i-- == 0) {

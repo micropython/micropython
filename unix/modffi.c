@@ -134,7 +134,7 @@ STATIC ffi_type *get_ffi_type(mp_obj_t o_in)
     }
     // TODO: Support actual libffi type objects
 
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "Unknown type"));
+    mp_raise_TypeError("Unknown type");
 }
 
 STATIC mp_obj_t return_ffi_value(ffi_arg val, char type)
@@ -203,7 +203,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error in ffi_prep_cif"));
+        mp_raise_ValueError("Error in ffi_prep_cif");
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -261,12 +261,12 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Error in ffi_prep_cif"));
+        mp_raise_ValueError("Error in ffi_prep_cif");
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, MP_OBJ_TO_PTR(func_in), o->func);
     if (res != FFI_OK) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ffi_prep_closure_loc"));
+        mp_raise_ValueError("ffi_prep_closure_loc");
     }
 
     return MP_OBJ_FROM_PTR(o);

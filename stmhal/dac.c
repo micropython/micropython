@@ -189,7 +189,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, mp_uint_t n_args, const
     if (args[0].u_int == 8 || args[0].u_int == 12) {
         self->bits = args[0].u_int;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "unsupported bits"));
+        mp_raise_ValueError("unsupported bits");
     }
 
     // reset state of DAC

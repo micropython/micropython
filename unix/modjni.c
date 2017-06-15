@@ -159,7 +159,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
 
 STATIC mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "kwargs not supported"));
+        mp_raise_TypeError("kwargs not supported");
     }
     mp_obj_jclass_t *self = self_in;
 
@@ -433,7 +433,7 @@ STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
         }
         out->l = NULL;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "arg type not supported"));
+        mp_raise_TypeError("arg type not supported");
     }
 
     *jtypesig = arg_type;
@@ -534,7 +534,7 @@ STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool 
                     ret = new_jobject(res);
                 } else {
                     JJ(ReleaseStringUTFChars, name_o, decl);
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "cannot handle return type"));
+                    mp_raise_TypeError("cannot handle return type");
                 }
 
                 JJ(ReleaseStringUTFChars, name_o, decl);
@@ -550,13 +550,13 @@ next_method:
         JJ(DeleteLocalRef, meth);
     }
 
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "method not found"));
+    mp_raise_TypeError("method not found");
 }
 
 
 STATIC mp_obj_t jmethod_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (n_kw != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "kwargs not supported"));
+        mp_raise_TypeError("kwargs not supported");
     }
     mp_obj_jmethod_t *self = self_in;
 
@@ -602,13 +602,13 @@ STATIC void create_jvm() {
 
     void *libjvm = dlopen(LIBJVM_SO, RTLD_NOW | RTLD_GLOBAL);
     if (!libjvm) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "unable to load libjvm.so, use LD_LIBRARY_PATH"));
+        mp_raise_msg(&mp_type_OSError, "unable to load libjvm.so, use LD_LIBRARY_PATH");
     }
     int (*_JNI_CreateJavaVM)(void*, void**, void*) = dlsym(libjvm, "JNI_CreateJavaVM");
 
     int st = _JNI_CreateJavaVM(&jvm, (void**)&env, &args);
     if (st < 0 || !env) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "unable to create JVM"));
+        mp_raise_msg(&mp_type_OSError, "unable to create JVM");
     }
 
     Class_class = JJ(FindClass, "java/lang/Class");
