@@ -82,7 +82,7 @@ OBJ_TEST += $(BUILD)/tinytest.o
 OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C)
+SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
 
 all: run
 
