@@ -328,20 +328,31 @@ void SystemClock_Config(void)
      clocked below the maximum system frequency, to update the voltage scaling value
      regarding system frequency refer to product datasheet.  */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-    #elif defined(MCU_SERIES_L4)
-    /* Enable the LSE Oscillator */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
+    #endif 
+    #if (MICROPY_HW_CLK_USE_LSE)
+    /* Enable the  external Low Speed Oscillator for RTC functionalities */
+    RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         __fatal_error("HAL_RCC_OscConfig");
     }
     #endif
 
-    /* Enable HSE Oscillator and activate PLL with HSE as source */
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    /* Enable Oscillator set up the different clock sources */
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)    
+    /* Select the oscillator source by the given defines */
+    #if (MICROPY_HW_CLK_USE_HSI)
+    RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_HSI;
+    RCC_OscInitStruct.HSEState = RCC_HSE_OFF;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.HSICalibrationValue = 16;
+    #else      
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE; 
+    #endif 
     #elif defined(MCU_SERIES_L4)
     RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -409,8 +420,16 @@ void SystemClock_Config(void)
 
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+    
+    /*Set up the peripheral bus clocks*/
+    #if !defined MICROPY_HW_CLK_ABP1DIV
+        #define MICROPY_HW_CLK_ABP1DIV RCC_HCLK_DIV4
+    #endif
+    #if !defined MICROPY_HW_CLK_ABP2DIV
+        #define MICROPY_HW_CLK_ABP2DIV RCC_HCLK_DIV2
+    #endif
+    RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_ABP1DIV;
+    RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_ABP2DIV;
     #elif defined(MCU_SERIES_L4)
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
