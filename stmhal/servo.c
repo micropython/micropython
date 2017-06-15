@@ -194,7 +194,7 @@ STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // check servo number
     if (!(0 <= servo_id && servo_id < PYB_SERVO_NUM)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo %d does not exist", servo_id + 1));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Servo(%d) doesn't exist", servo_id + 1));
     }
 
     // get and init servo object

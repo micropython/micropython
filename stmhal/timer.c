@@ -702,7 +702,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         #if defined(TIM17)
         case 17: tim->tim.Instance = TIM17; tim->irqn = TIM1_TRG_COM_TIM17_IRQn; break;
         #endif
-        default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d does not exist", tim->tim_id));
+        default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer(%d) doesn't exist", tim->tim_id));
     }
 
     // set the global variable for interrupt callbacks
@@ -896,7 +896,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q doesn't have an af for TIM%d", pin->name, self->tim_id));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have an af for Timer(%d)", pin->name, self->tim_id));
         }
         // pin.init(mode=AF_PP, af=idx)
         const mp_obj_t args2[6] = {
