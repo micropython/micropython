@@ -1,18 +1,11 @@
-:mod:`select` -- wait for events on a set of streams
+:mod:`uselect` -- wait for events on a set of streams
 ========================================================================
 
-.. module:: select
+.. module:: uselect
    :synopsis: wait for events on a set of streams
 
-This module provides functions to wait for events on streams (select streams
-which are ready for operations).
-
-Pyboard specifics
------------------
-
-Polling is an efficient way of waiting for read/write activity on multiple
-objects.  Current objects that support polling are: :class:`pyb.UART`,
-:class:`pyb.USB_VCP`.
+This module provides functions to efficiently wait for events on multiple
+streams (select streams which are ready for operations).
 
 Functions
 ---------
@@ -25,8 +18,8 @@ Functions
 
    Wait for activity on a set of objects.
 
-   This function is provided for compatibility and is not efficient. Usage
-   of :class:`Poll` is recommended instead.
+   This function is provided by some MicroPython ports for compatibility
+   and is not efficient. Usage of :class:`Poll` is recommended instead.
 
 .. _class: Poll
 
@@ -38,22 +31,22 @@ Methods
 
 .. method:: poll.register(obj[, eventmask])
 
-   Register ``obj`` for polling. ``eventmask`` is logical OR of:
+   Register *obj* for polling. *eventmask* is logical OR of:
 
    * ``select.POLLIN``  - data available for reading
    * ``select.POLLOUT`` - more data can be written
    * ``select.POLLERR`` - error occurred
    * ``select.POLLHUP`` - end of stream/connection termination detected
 
-   ``eventmask`` defaults to ``select.POLLIN | select.POLLOUT``.
+   *eventmask* defaults to ``select.POLLIN | select.POLLOUT``.
 
 .. method:: poll.unregister(obj)
 
-   Unregister ``obj`` from polling.
+   Unregister *obj* from polling.
 
 .. method:: poll.modify(obj, eventmask)
 
-   Modify the ``eventmask`` for ``obj``.
+   Modify the *eventmask* for *obj*.
 
 .. method:: poll.poll([timeout])
 
@@ -65,3 +58,19 @@ Methods
    timeout, an empty list is returned.
 
    Timeout is in milliseconds.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      Tuples returned may contain more than 2 elements as described above.
+
+.. method:: poll.ipoll([timeout])
+
+   Like :meth:`poll.poll`, but instead returns an iterator which yields
+   callee-owned tuples. This function provides efficient, allocation-free
+   way to poll on streams.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      This function is a MicroPython extension.
