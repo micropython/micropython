@@ -24,6 +24,8 @@
 #include "asf/sam0/drivers/system/system.h"
 #include <board.h>
 
+#include "boards/board.h"
+
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/audioio/AudioOut.h"
 #include "common-hal/pulseio/PulseIn.h"
@@ -51,6 +53,7 @@ typedef enum {
     NO_SAFE_MODE = 0,
     BROWNOUT,
     HARD_CRASH,
+    USER_SAFE_MODE,
 } safe_mode_t;
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -331,6 +334,16 @@ bool start_mp(safe_mode_t safe_mode) {
                     mp_hal_stdout_tx_str("Auto-reload is off.\r\n");
                 }
             }
+            // Output a user safe mode string if its set.
+            #ifdef BOARD_USER_SAFE_MODE
+            if (safe_mode == USER_SAFE_MODE) {
+                mp_hal_stdout_tx_str("\r\nYou requested starting safe mode by ");
+                mp_hal_stdout_tx_str(BOARD_USER_SAFE_MODE);
+                mp_hal_stdout_tx_str(".\r\nTo exit, please reset the board without ");
+                mp_hal_stdout_tx_str(BOARD_USER_SAFE_MODE);
+                mp_hal_stdout_tx_str(".\r\n");
+            } else
+            #endif
             if (safe_mode != NO_SAFE_MODE) {
                 mp_hal_stdout_tx_str("\r\nYou are running in safe mode which means something really bad happened.\r\n");
                 if (safe_mode == HARD_CRASH) {
@@ -553,6 +566,10 @@ safe_mode_t samd21_init(void) {
 
     if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
         return BROWNOUT;
+    }
+
+    if (board_requests_safe_mode()) {
+        return USER_SAFE_MODE;
     }
 
     return NO_SAFE_MODE;

@@ -210,7 +210,7 @@ SRC_C = \
 	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
 	asf/sam0/utils/cmsis/samd21/source/system_samd21.c \
 	asf/sam0/utils/syscalls/gcc/syscalls.c \
-	boards/$(BOARD)/init.c \
+	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	freetouch/adafruit_ptc.c \
 	lib/fatfs/ff.c \

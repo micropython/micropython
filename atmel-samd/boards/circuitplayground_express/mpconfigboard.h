@@ -39,3 +39,6 @@
 #include "flash_S25FL216K.h"
 
 #define CALIBRATE_CRYSTALLESS 1
+
+// Explanation of how a user got into safe mode.
+#define BOARD_USER_SAFE_MODE "pressing both buttons at start up"
