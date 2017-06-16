@@ -39,4 +39,7 @@ void board_init(void);
 // way.
 bool board_requests_safe_mode(void);
 
+// Reset the state of off MCU components such as neopixels.
+void reset_board(void);
+
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H__

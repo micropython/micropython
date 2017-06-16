@@ -594,6 +594,7 @@ int main(void) {
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_samd21();
+    reset_board();
     reset_mp();
 
     // Turn on autoreload by default but before boot.py in case it wants to change it.
@@ -656,6 +657,7 @@ int main(void) {
                 autoreload_enable();
             }
             reset_samd21();
+            reset_board();
             reset_mp();
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
@@ -665,6 +667,7 @@ int main(void) {
             first_run = false;
             skip_repl = start_mp(safe_mode);
             reset_samd21();
+            reset_board();
             reset_mp();
         } else if (exit_code != 0) {
             break;
