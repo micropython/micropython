@@ -26,6 +26,27 @@ require such detailed description.
 To get good practical examples of good commits and their messages, browse
 the `git log` of the project.
 
+MicroPython doesn't require explicit sign-off for patches ("Signed-off-by"
+lines and similar). Instead, the commit message, and your name and email
+address on it construes your sign-off of the following:
+
+* That you wrote the change yourself, or took it from a project with
+  a compatible license (in the latter case the commit message, and possibly
+  source code should provide reference where the implementation was taken
+  from and give credit to the original author, as required by the license).
+* That you are allowed to release these changes to an open-source project
+  (for example, changes done during paid work for a third party may require
+  explicit approval from that third party).
+* That you (or your employer) agree to release the changes under
+  MicroPython's license, which is the MIT license. Note that you retain
+  copyright for your changes (for smaller changes, the commit message
+  conveys your copyright; if you make significant changes to a particular
+  source module, you're welcome to add your name to the file header).
+* Your signature for all of the above, which is the 'Author' line in
+  the commit message, and which should include your full real name and
+  a valid and active email address by which you can be contacted in the
+  foreseeable future.
+
 Python code conventions
 =======================
 
