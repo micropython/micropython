@@ -230,7 +230,7 @@ STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
 	)
 
-SRC_BINDINGS = \
+SRC_COMMON_HAL = \
 	board/__init__.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
@@ -256,8 +256,16 @@ SRC_BINDINGS = \
 	usb_hid/__init__.c \
 	usb_hid/Device.c
 
-SRC_BINDINGS_EXPANDED = $(addprefix shared-bindings/, $(SRC_BINDINGS)) \
-                        $(addprefix common-hal/, $(SRC_BINDINGS))
+# These don't have corresponding files in each port but are still located in
+# shared-bindings to make it clear what the contents of the modules are.
+SRC_BINDINGS_ENUMS = \
+	digitalio/Direction.c \
+	digitalio/DriveMode.c \
+	digitalio/Pull.c
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE = \
 	help.c \
@@ -274,10 +282,10 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_BINDINGS_EXPANDED:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 

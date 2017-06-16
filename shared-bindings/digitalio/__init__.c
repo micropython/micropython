@@ -32,6 +32,9 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/digitalio/Direction.h"
+#include "shared-bindings/digitalio/DriveMode.h"
+#include "shared-bindings/digitalio/Pull.h"
 
 #include "py/runtime.h"
 
@@ -50,6 +53,9 @@
 //|     :maxdepth: 3
 //|
 //|     DigitalInOut
+//|     Direction
+//|     DriveMode
+//|     Pull
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -75,7 +81,7 @@
 //|   import time
 //|
 //|   led = digitalio.DigitalInOut(D13)
-//|   led.direction = digitalio.DigitalInOut.Direction.OUT
+//|   led.direction = digitalio.Direction.OUT
 //|   while True:
 //|       led.value = True
 //|       time.sleep(0.1)
@@ -86,6 +92,11 @@
 STATIC const mp_rom_map_elem_t digitalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_digitalio) },
     { MP_ROM_QSTR(MP_QSTR_DigitalInOut),  MP_ROM_PTR(&digitalio_digitalinout_type) },
+
+    // Enum-like Classes.
+    { MP_ROM_QSTR(MP_QSTR_Direction),          MP_ROM_PTR(&digitalio_direction_type) },
+    { MP_ROM_QSTR(MP_QSTR_DriveMode),          MP_ROM_PTR(&digitalio_drive_mode_type) },
+    { MP_ROM_QSTR(MP_QSTR_Pull),               MP_ROM_PTR(&digitalio_pull_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(digitalio_module_globals, digitalio_module_globals_table);

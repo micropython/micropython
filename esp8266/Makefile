@@ -125,9 +125,16 @@ SRC_COMMON_HAL = \
 	time/__init__.c \
 	board/__init__.c
 
-SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+# These don't have corresponding files in each port but are still located in
+# shared-bindings to make it clear what the contents of the modules are.
+SRC_BINDINGS_ENUMS = \
+	digitalio/Direction.c \
+	digitalio/DriveMode.c \
+	digitalio/Pull.c
 
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 SRC_SHARED_MODULE = \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \

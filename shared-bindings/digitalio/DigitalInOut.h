@@ -29,24 +29,11 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/digitalio/DigitalInOut.h"
+#include "shared-bindings/digitalio/Direction.h"
+#include "shared-bindings/digitalio/DriveMode.h"
+#include "shared-bindings/digitalio/Pull.h"
 
 extern const mp_obj_type_t digitalio_digitalinout_type;
-
-enum digitalinout_direction_t {
-    DIRECTION_IN,
-    DIRECTION_OUT
-};
-
-enum digitalinout_pull_t {
-    PULL_NONE,
-    PULL_UP,
-    PULL_DOWN
-};
-
-enum digitalinout_drive_mode_t {
-    DRIVE_MODE_PUSH_PULL,
-    DRIVE_MODE_OPEN_DRAIN
-};
 
 typedef enum {
     DIGITALINOUT_OK,
@@ -55,14 +42,14 @@ typedef enum {
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t* self, const mcu_pin_obj_t* pin);
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self);
-void common_hal_digitalio_digitalinout_switch_to_input(digitalio_digitalinout_obj_t* self, enum digitalinout_pull_t pull);
-void common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t* self, bool value, enum digitalinout_drive_mode_t drive_mode);
-enum digitalinout_direction_t common_hal_digitalio_digitalinout_get_direction(digitalio_digitalinout_obj_t* self);
+void common_hal_digitalio_digitalinout_switch_to_input(digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull);
+void common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t* self, bool value, enum digitalio_drive_mode_t drive_mode);
+enum digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(digitalio_digitalinout_obj_t* self);
 void common_hal_digitalio_digitalinout_set_value(digitalio_digitalinout_obj_t* self, bool value);
 bool common_hal_digitalio_digitalinout_get_value(digitalio_digitalinout_obj_t* self);
-void common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj_t* self, enum digitalinout_drive_mode_t drive_mode);
-enum digitalinout_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(digitalio_digitalinout_obj_t* self);
-void common_hal_digitalio_digitalinout_set_pull(digitalio_digitalinout_obj_t* self, enum digitalinout_pull_t pull);
-enum digitalinout_pull_t common_hal_digitalio_digitalinout_get_pull(digitalio_digitalinout_obj_t* self);
+void common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj_t* self, enum digitalio_drive_mode_t drive_mode);
+enum digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(digitalio_digitalinout_obj_t* self);
+void common_hal_digitalio_digitalinout_set_pull(digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull);
+enum digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(digitalio_digitalinout_obj_t* self);
 
 #endif // __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H__

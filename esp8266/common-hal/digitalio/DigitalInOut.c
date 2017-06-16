@@ -51,7 +51,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(
-        digitalio_digitalinout_obj_t* self, enum digitalinout_pull_t pull) {
+        digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull) {
     self->output = false;
 
     if (self->pin->gpio_number == 16) {
@@ -67,7 +67,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
 
 void common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
-        enum digitalinout_drive_mode_t drive_mode) {
+        enum digitalio_drive_mode_t drive_mode) {
     self->output = true;
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
     if (self->pin->gpio_number == 16) {
@@ -81,9 +81,9 @@ void common_hal_digitalio_digitalinout_switch_to_output(
     common_hal_digitalio_digitalinout_set_value(self, value);
 }
 
-enum digitalinout_direction_t common_hal_digitalio_digitalinout_get_direction(
+enum digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
         digitalio_digitalinout_obj_t* self) {
-    return self->output? DIRECTION_OUT : DIRECTION_IN;
+    return self->output? DIRECTION_OUTPUT : DIRECTION_INPUT;
 }
 
 void common_hal_digitalio_digitalinout_set_value(
@@ -128,7 +128,7 @@ bool common_hal_digitalio_digitalinout_get_value(
 
 void common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_digitalinout_obj_t* self,
-        enum digitalinout_drive_mode_t drive_mode) {
+        enum digitalio_drive_mode_t drive_mode) {
     bool value = common_hal_digitalio_digitalinout_get_value(self);
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
     // True is implemented differently between modes so reset the value to make
@@ -138,7 +138,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
     }
 }
 
-enum digitalinout_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
+enum digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
         digitalio_digitalinout_obj_t* self) {
     if (self->open_drain) {
         return DRIVE_MODE_OPEN_DRAIN;
@@ -148,7 +148,7 @@ enum digitalinout_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
 }
 
 void common_hal_digitalio_digitalinout_set_pull(
-        digitalio_digitalinout_obj_t* self, enum digitalinout_pull_t pull) {
+        digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull) {
     if (pull == PULL_DOWN) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
             "ESP8266 does not support pull down."));
@@ -166,7 +166,7 @@ void common_hal_digitalio_digitalinout_set_pull(
     }
 }
 
-enum digitalinout_pull_t common_hal_digitalio_digitalinout_get_pull(
+enum digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         digitalio_digitalinout_obj_t* self) {
     if (self->pin->gpio_number < 16 &&
         (READ_PERI_REG(self->pin->peripheral) & PERIPHS_IO_MUX_PULLUP) != 0) {
