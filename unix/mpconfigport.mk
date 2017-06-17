@@ -4,7 +4,7 @@
 MICROPY_FORCE_32BIT = 0
 
 # This variable can take the following values:
-#  0 - no readline, just simple input
+#  0 - no readline, just simple stdin input
 #  1 - use MicroPython version of readline
 MICROPY_USE_READLINE = 1
 
@@ -23,9 +23,15 @@ MICROPY_PY_SOCKET = 1
 # ffi module requires libffi (libffi-dev Debian package)
 MICROPY_PY_FFI = 1
 
-# ussl module requires axtls
+# ussl module requires one of the TLS libraries below
 MICROPY_PY_USSL = 1
+# axTLS has minimal size and fully integrated with MicroPython, but
+# implements only a subset of modern TLS functionality, so may have
+# problems with some servers.
 MICROPY_SSL_AXTLS = 1
+# mbedTLS is more up to date and complete implementation, but also
+# more bloated. Configuring and building of mbedTLS should be done
+# outside of MicroPython, it can just link with mbedTLS library.
 MICROPY_SSL_MBEDTLS = 0
 
 # jni module requires JVM/JNI
