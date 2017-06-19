@@ -49,7 +49,7 @@ For example, a user can then use ``deinit()```::
     import board
 
     led = digitalio.DigitalInOut(board.D13)
-    led.direction = digitalio.DigitalInOut.Direction.OUT
+    led.direction = digitalio.Direction.OUTPUT
 
     for i in range(10):
         led.value = True
@@ -68,7 +68,7 @@ Alternatively, using a ``with`` statement ensures that the hardware is deinitial
     import board
 
     with digitalio.DigitalInOut(board.D13) as led:
-        led.direction = digitalio.DigitalInOut.Direction.OUT
+        led.direction = digitalio.Direction.OUTPUT
 
         for i in range(10):
             led.value = True
