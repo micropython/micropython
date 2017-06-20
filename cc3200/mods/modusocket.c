@@ -264,7 +264,7 @@ STATIC int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout
 
     int ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &option, sizeof(option));
     if (ret != 0) {
-        *_errno = ret;
+        *_errno = convert_sl_errno(ret);
         return -1;
     }
 
@@ -661,9 +661,9 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     } else {
         timeout = mp_obj_get_int(timeout_in);
     }
-    int _errno;
+    int _errno = 0;
     if (wlan_socket_settimeout(self, timeout, &_errno) != 0) {
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_const_none;
 }
