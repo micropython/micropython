@@ -104,6 +104,7 @@ void audioout_reset(void) {
 void audioout_background(void) {
     if (MP_STATE_VM(audioout_block_counter) != NULL &&
             active_audioout != NULL &&
+            active_audioout->second_buffer != NULL &&
             active_audioout->last_loaded_block < tc_get_count_value(MP_STATE_VM(audioout_block_counter))) {
         uint8_t* buffer;
         if (tc_get_count_value(MP_STATE_VM(audioout_block_counter)) % 2 == 1) {
@@ -133,6 +134,7 @@ void audioout_background(void) {
                     descriptor = active_audioout->second_descriptor;
                 }
                 descriptor->BTCNT.reg = length_read / active_audioout->bytes_per_sample;
+                descriptor->SRCADDR.reg = ((uint32_t) buffer) + length_read;
                 descriptor->DESCADDR.reg = 0;
             }
         }
@@ -349,7 +351,8 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
 void common_hal_audioio_audioout_construct_from_buffer(audioio_audioout_obj_t* self,
                                                        const mcu_pin_obj_t* pin,
                                                        uint16_t* buffer,
-                                                       uint32_t len) {
+                                                       uint32_t len,
+                                                       uint8_t bytes_per_sample) {
     self->pin = pin;
     if (pin != &pin_PA02) {
         mp_raise_ValueError("Invalid pin");
@@ -361,8 +364,8 @@ void common_hal_audioio_audioout_construct_from_buffer(audioio_audioout_obj_t* s
 
     self->buffer = (uint8_t*) buffer;
     self->second_buffer = NULL;
-    // Input len is a count. Internal len is in bytes.
-    self->len = 2 * len;
+    self->bytes_per_sample = bytes_per_sample;
+    self->len = len;
     self->frequency = 8000;
 }
 

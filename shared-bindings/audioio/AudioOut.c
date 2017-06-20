@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "lib/utils/context_manager_helpers.h"
+#include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -62,11 +63,11 @@
 //|
 //|     # Generate one period of sine wav.
 //|     length = 8000 // 440
-//|     b = array.array("H", [0] * length)
+//|     sine_wave = array.array("H", [0] * length)
 //|     for i in range(length):
-//|         b[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
+//|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|     sample = audioio.AudioOut(board.SPEAKER, sin_wave)
+//|     sample = audioio.AudioOut(board.SPEAKER, sine_wave)
 //|     sample.play(loop=True)
 //|     time.sleep(1)
 //|     sample.stop()
@@ -106,12 +107,15 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     if (MP_OBJ_IS_TYPE(args[1], &fatfs_type_fileio)) {
         common_hal_audioio_audioout_construct_from_file(self, pin, MP_OBJ_TO_PTR(args[1]));
     } else if (mp_get_buffer(args[1], &bufinfo, MP_BUFFER_READ)) {
-        if (bufinfo.len % 2 == 1) {
-            mp_raise_ValueError("sample_source must be an even number of bytes (two per sample)");
+        uint8_t bytes_per_sample = 1;
+        if (bufinfo.typecode == 'H') {
+            bytes_per_sample = 2;
+        } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
+            mp_raise_ValueError("sample_source buffer must be a bytearray or array of type 'H' or 'B'");
         }
-        common_hal_audioio_audioout_construct_from_buffer(self, pin, ((uint16_t*)bufinfo.buf), bufinfo.len / 2);
+        common_hal_audioio_audioout_construct_from_buffer(self, pin, ((uint16_t*)bufinfo.buf), bufinfo.len, bytes_per_sample);
     } else {
-        mp_raise_TypeError("sample_source must be a file or bytes-like object.");
+        mp_raise_TypeError("sample_source must be a file or bytes-like object");
     }
 
     return MP_OBJ_FROM_PTR(self);

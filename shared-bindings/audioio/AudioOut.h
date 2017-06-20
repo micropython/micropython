@@ -33,8 +33,10 @@
 
 extern const mp_obj_type_t audioio_audioout_type;
 
-void common_hal_audioio_audioout_construct_from_buffer(audioio_audioout_obj_t* self, const mcu_pin_obj_t* pin, uint16_t* buffer, uint32_t len);
-void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* self, const mcu_pin_obj_t* pin, pyb_file_obj_t* file);
+void common_hal_audioio_audioout_construct_from_buffer(audioio_audioout_obj_t* self,
+    const mcu_pin_obj_t* pin, uint16_t* buffer, uint32_t len, uint8_t bytes_per_sample);
+void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* self,
+    const mcu_pin_obj_t* pin, pyb_file_obj_t* file);
 
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self);
 void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop);
