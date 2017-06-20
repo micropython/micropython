@@ -27,10 +27,12 @@
 #ifndef __MICROPY_INCLUDED_ESP8266_ESPONEWIRE_H__
 #define __MICROPY_INCLUDED_ESP8266_ESPONEWIRE_H__
 
+#include "py/mphal.h"
+
 extern uint16_t esp_onewire_timings[9];
 
-int esp_onewire_reset(uint pin);
-int esp_onewire_readbit(uint pin);
-void esp_onewire_writebit(uint pin, int value);
+int esp_onewire_reset(mp_hal_pin_obj_t pin);
+int esp_onewire_readbit(mp_hal_pin_obj_t pin);
+void esp_onewire_writebit(mp_hal_pin_obj_t pin, int value);
 
 #endif // __MICROPY_INCLUDED_ESP8266_ESPONEWIRE_H__

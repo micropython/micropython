@@ -24,11 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
-#include "etshal.h"
-#include "user_interface.h"
-#include "modmachine.h"
 #include "esponewire.h"
 
 #define TIMING_RESET1 (0)
@@ -43,57 +38,40 @@
 
 uint16_t esp_onewire_timings[9] = {480, 40, 420, 5, 5, 40, 10, 50, 10};
 
-static uint32_t disable_irq(void) {
-    ets_intr_lock();
-    return 0;
-}
-
-static void enable_irq(uint32_t i) {
-    ets_intr_unlock();
-}
-
-static void mp_hal_delay_us_no_irq(uint32_t us) {
-    uint32_t start = system_get_time();
-    while (system_get_time() - start < us) {
-    }
-}
-
-#define DELAY_US mp_hal_delay_us_no_irq
-
-int esp_onewire_reset(uint pin) {
-    pin_set(pin, 0);
-    DELAY_US(esp_onewire_timings[TIMING_RESET1]);
-    uint32_t i = disable_irq();
-    pin_set(pin, 1);
-    DELAY_US(esp_onewire_timings[TIMING_RESET2]);
-    int status = !pin_get(pin);
-    enable_irq(i);
-    DELAY_US(esp_onewire_timings[TIMING_RESET3]);
+int esp_onewire_reset(mp_hal_pin_obj_t pin) {
+    mp_hal_pin_write(pin, 0);
+    mp_hal_delay_us(esp_onewire_timings[TIMING_RESET1]);
+    uint32_t i = mp_hal_quiet_timing_enter();
+    mp_hal_pin_write(pin, 1);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_RESET2]);
+    int status = !mp_hal_pin_read(pin);
+    mp_hal_quiet_timing_exit(i);
+    mp_hal_delay_us(esp_onewire_timings[TIMING_RESET3]);
     return status;
 }
 
-int esp_onewire_readbit(uint pin) {
-    pin_set(pin, 1);
-    uint32_t i = disable_irq();
-    pin_set(pin, 0);
-    DELAY_US(esp_onewire_timings[TIMING_READ1]);
-    pin_set(pin, 1);
-    DELAY_US(esp_onewire_timings[TIMING_READ2]);
-    int value = pin_get(pin);
-    enable_irq(i);
-    DELAY_US(esp_onewire_timings[TIMING_READ3]);
+int esp_onewire_readbit(mp_hal_pin_obj_t pin) {
+    mp_hal_pin_write(pin, 1);
+    uint32_t i = mp_hal_quiet_timing_enter();
+    mp_hal_pin_write(pin, 0);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_READ1]);
+    mp_hal_pin_write(pin, 1);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_READ2]);
+    int value = mp_hal_pin_read(pin);
+    mp_hal_quiet_timing_exit(i);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_READ3]);
     return value;
 }
 
-void esp_onewire_writebit(uint pin, int value) {
-    uint32_t i = disable_irq();
-    pin_set(pin, 0);
-    DELAY_US(esp_onewire_timings[TIMING_WRITE1]);
+void esp_onewire_writebit(mp_hal_pin_obj_t pin, int value) {
+    uint32_t i = mp_hal_quiet_timing_enter();
+    mp_hal_pin_write(pin, 0);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_WRITE1]);
     if (value) {
-        pin_set(pin, 1);
+        mp_hal_pin_write(pin, 1);
     }
-    DELAY_US(esp_onewire_timings[TIMING_WRITE2]);
-    pin_set(pin, 1);
-    DELAY_US(esp_onewire_timings[TIMING_WRITE3]);
-    enable_irq(i);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_WRITE2]);
+    mp_hal_pin_write(pin, 1);
+    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_WRITE3]);
+    mp_hal_quiet_timing_exit(i);
 }

@@ -43,17 +43,17 @@ STATIC mp_obj_t onewire_timings(mp_obj_t timings_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_timings_obj, onewire_timings);
 
 STATIC mp_obj_t onewire_reset(mp_obj_t pin_in) {
-    return mp_obj_new_bool(esp_onewire_reset(mp_obj_get_pin(pin_in)));
+    return mp_obj_new_bool(esp_onewire_reset(mp_hal_get_pin_obj(pin_in)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_reset_obj, onewire_reset);
 
 STATIC mp_obj_t onewire_readbit(mp_obj_t pin_in) {
-    return MP_OBJ_NEW_SMALL_INT(esp_onewire_readbit(mp_obj_get_pin(pin_in)));
+    return MP_OBJ_NEW_SMALL_INT(esp_onewire_readbit(mp_hal_get_pin_obj(pin_in)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbit_obj, onewire_readbit);
 
 STATIC mp_obj_t onewire_readbyte(mp_obj_t pin_in) {
-    uint pin = mp_obj_get_pin(pin_in);
+    mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     uint8_t value = 0;
     for (int i = 0; i < 8; ++i) {
         value |= esp_onewire_readbit(pin) << i;
@@ -63,13 +63,13 @@ STATIC mp_obj_t onewire_readbyte(mp_obj_t pin_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbyte_obj, onewire_readbyte);
 
 STATIC mp_obj_t onewire_writebit(mp_obj_t pin_in, mp_obj_t value_in) {
-    esp_onewire_writebit(mp_obj_get_pin(pin_in), mp_obj_get_int(value_in));
+    esp_onewire_writebit(mp_hal_get_pin_obj(pin_in), mp_obj_get_int(value_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(onewire_writebit_obj, onewire_writebit);
 
 STATIC mp_obj_t onewire_writebyte(mp_obj_t pin_in, mp_obj_t value_in) {
-    uint pin = mp_obj_get_pin(pin_in);
+    mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     int value = mp_obj_get_int(value_in);
     for (int i = 0; i < 8; ++i) {
         esp_onewire_writebit(pin, value & 1);
