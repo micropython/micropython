@@ -32,7 +32,7 @@
 
 typedef struct _mp_obj_zip_t {
     mp_obj_base_t base;
-    mp_uint_t n_iters;
+    size_t n_iters;
     mp_obj_t iters[];
 } mp_obj_zip_t;
 
@@ -42,8 +42,8 @@ STATIC mp_obj_t zip_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     mp_obj_zip_t *o = m_new_obj_var(mp_obj_zip_t, mp_obj_t, n_args);
     o->base.type = type;
     o->n_iters = n_args;
-    for (mp_uint_t i = 0; i < n_args; i++) {
-        o->iters[i] = mp_getiter(args[i]);
+    for (size_t i = 0; i < n_args; i++) {
+        o->iters[i] = mp_getiter(args[i], NULL);
     }
     return MP_OBJ_FROM_PTR(o);
 }
@@ -56,7 +56,7 @@ STATIC mp_obj_t zip_iternext(mp_obj_t self_in) {
     }
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->n_iters, NULL));
 
-    for (mp_uint_t i = 0; i < self->n_iters; i++) {
+    for (size_t i = 0; i < self->n_iters; i++) {
         mp_obj_t next = mp_iternext(self->iters[i]);
         if (next == MP_OBJ_STOP_ITERATION) {
             mp_obj_tuple_del(MP_OBJ_FROM_PTR(tuple));
@@ -71,6 +71,6 @@ const mp_obj_type_t mp_type_zip = {
     { &mp_type_type },
     .name = MP_QSTR_zip,
     .make_new = zip_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = zip_iternext,
 };

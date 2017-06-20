@@ -30,11 +30,12 @@
 
 #include "asf/sam0/drivers/sercom/spi/spi.h"
 
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 #include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/fsusermount.h"
+#include "lib/oofatfs/ff.h"
 
 #include "rgb_led_status.h"
 #include "shared_dma.h"

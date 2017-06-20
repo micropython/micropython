@@ -1,4 +1,5 @@
-//This board is only confirmed to operate using openocd.
+// This board is confirmed to operate using stlink and openocd.
+// REPL is on UART(1) and is available through the stlink USB-UART device.
 // To use openocd run "OPENOCD_CONFIG=boards/openocd_stm32f7.cfg" in
 // the make command.
 #define MICROPY_HW_BOARD_NAME       "F769DISC"
@@ -42,11 +43,6 @@
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
-// TODO These should go in i2c.c
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
-
 // SPI
 #define MICROPY_HW_SPI2_NSS         (pin_A11)
 #define MICROPY_HW_SPI2_SCK         (pin_A12)
@@ -54,7 +50,7 @@
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
-#define MICROPY_HW_USRSW_PIN        (pin_I11)
+#define MICROPY_HW_USRSW_PIN        (pin_A0)
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
 #define MICROPY_HW_USRSW_EXTI_MODE  (GPIO_MODE_IT_RISING)
 #define MICROPY_HW_USRSW_PRESSED    (1)
@@ -67,6 +63,12 @@
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // SD card detect switch
+#define MICROPY_HW_SDMMC2_CK                (pin_D6)
+#define MICROPY_HW_SDMMC2_CMD               (pin_D7)
+#define MICROPY_HW_SDMMC2_D0                (pin_G9)
+#define MICROPY_HW_SDMMC2_D1                (pin_G10)
+#define MICROPY_HW_SDMMC2_D2                (pin_B3)
+#define MICROPY_HW_SDMMC2_D3                (pin_B4)
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_I15)
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)

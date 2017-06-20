@@ -38,6 +38,10 @@
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE (1)
+#define MICROPY_PY_BUILTINS_HELP    (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT circuitpython_help_text
+#define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_FILTER  (1)
 #define MICROPY_PY_BUILTINS_SET     (1)
 #define MICROPY_PY_BUILTINS_SLICE   (1)
@@ -69,13 +73,13 @@
 #define MICROPY_FATFS_VOLUMES          (4)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
 #define MICROPY_FATFS_NUM_PERSISTENT   (1)
-#define MICROPY_FSUSERMOUNT            (1)
 // Only enable this if you really need it. It allocates a byte cache of this
 // size.
 // #define MICROPY_FATFS_MAX_SS           (4096)
 
 #define FILESYSTEM_BLOCK_SIZE       (512)
 
+#define MICROPY_VFS                 (1)
 #define MICROPY_VFS_FAT             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_MODULE_WEAK_LINKS   (0)
@@ -85,7 +89,7 @@
 #define MICROPY_USE_INTERNAL_PRINTF (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_IO_FILEIO        (1)
-#define MICROPY_READER_FATFS        (1)
+#define MICROPY_READER_VFS        (1)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
@@ -111,6 +115,9 @@ typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open_obj mp_vfs_open_obj
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

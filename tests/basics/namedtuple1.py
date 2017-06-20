@@ -1,7 +1,11 @@
 try:
-    from collections import namedtuple
+    try:
+        from collections import namedtuple
+    except ImportError:
+        from ucollections import namedtuple
 except ImportError:
-    from ucollections import namedtuple
+    print("SKIP")
+    raise SystemExit
 
 T = namedtuple("Tup", ["foo", "bar"])
 # CPython prints fully qualified name, what we don't bother to do so far
@@ -71,7 +75,7 @@ T4 = namedtuple("TupTuple", ("foo", "bar"))
 t = T4(1, 2)
 print(t.foo, t.bar)
 
-# Try single string with comma field seperator
+# Try single string with comma field separator
 # Not implemented so far
 #T2 = namedtuple("TupComma", "foo,bar")
 #t = T2(1, 2)

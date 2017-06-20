@@ -25,12 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <std.h>
-
 #include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "modnetwork.h"
 #include "mpexception.h"
@@ -101,7 +100,7 @@ STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, size_t n_args
     // check the server id
     if (args[0].u_obj != MP_OBJ_NULL) {
         if (mp_obj_get_int(args[0].u_obj) != 0) {
-            mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+            mp_raise_OSError(MP_ENODEV);
         }
     }
 

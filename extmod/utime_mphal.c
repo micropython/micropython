@@ -37,13 +37,11 @@
 #include "extmod/utime_mphal.h"
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
-    MP_THREAD_GIL_EXIT();
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_hal_delay_ms(1000 * mp_obj_get_float(seconds_o));
     #else
     mp_hal_delay_ms(1000 * mp_obj_get_int(seconds_o));
     #endif
-    MP_THREAD_GIL_ENTER();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_obj, time_sleep);
@@ -51,9 +49,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_obj, time_sleep);
 STATIC mp_obj_t time_sleep_ms(mp_obj_t arg) {
     mp_int_t ms = mp_obj_get_int(arg);
     if (ms > 0) {
-        MP_THREAD_GIL_EXIT();
         mp_hal_delay_ms(ms);
-        MP_THREAD_GIL_ENTER();
     }
     return mp_const_none;
 }
@@ -62,9 +58,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_utime_sleep_ms_obj, time_sleep_ms);
 STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
     mp_int_t us = mp_obj_get_int(arg);
     if (us > 0) {
-        MP_THREAD_GIL_EXIT();
         mp_hal_delay_us(us);
-        MP_THREAD_GIL_ENTER();
     }
     return mp_const_none;
 }

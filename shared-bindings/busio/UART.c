@@ -284,7 +284,7 @@ const mp_obj_type_t busio_uart_type = {
     { &mp_type_type },
     .name = MP_QSTR_UART,
     .make_new = busio_uart_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_dict_t*)&busio_uart_locals_dict,

@@ -72,19 +72,19 @@ void mp_hal_stdio_mode_orig(void) {
 // Previous versions of the mp_hal code would install a handler whenever Ctrl-C input is
 // allowed and remove the handler again when it is not. That is not necessary though (1),
 // and it might introduce problems (2) because console notifications are delivered to the
-// application in a seperate thread. 
+// application in a separate thread.
 // (1) mp_hal_set_interrupt_char effectively enables/disables processing of Ctrl-C via the
 // ENABLE_PROCESSED_INPUT flag so in raw mode console_sighandler won't be called.
 // (2) if mp_hal_set_interrupt_char would remove the handler while Ctrl-C was issued earlier,
 // the thread created for handling it might not be running yet so we'd miss the notification.
 BOOL WINAPI console_sighandler(DWORD evt) {
     if (evt == CTRL_C_EVENT) {
-        if (MP_STATE_VM(mp_pending_exception) == MP_STATE_VM(keyboard_interrupt_obj)) {
+        if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_obj_exception_clear_traceback(MP_STATE_VM(keyboard_interrupt_obj));
-        MP_STATE_VM(mp_pending_exception) = MP_STATE_VM(keyboard_interrupt_obj);
+        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
+        MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
         return TRUE;
     }
     return FALSE;

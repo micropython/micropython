@@ -58,7 +58,7 @@
   from socket_more_funcs2 import *
   -------------------
   I.e. this module should stay lean, and more functions (if needed)
-  should be add to seperate modules (C or Python level).
+  should be add to separate modules (C or Python level).
  */
 
 #define MICROPY_SOCKET_EXTRA (0)

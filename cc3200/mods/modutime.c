@@ -33,7 +33,8 @@
 #include "py/obj.h"
 #include "py/smallint.h"
 #include "py/mphal.h"
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
+#include "extmod/utime_mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"
@@ -41,7 +42,6 @@
 #include "prcm.h"
 #include "systick.h"
 #include "pybrtc.h"
-#include "mpsystick.h"
 #include "mpexception.h"
 #include "utils.h"
 
@@ -102,7 +102,7 @@ STATIC mp_obj_t time_localtime(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
 STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *elem;
 
     mp_obj_get_array(tuple, &len, &elem);
@@ -131,50 +131,6 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
-STATIC mp_obj_t time_sleep_ms (mp_obj_t ms_in) {
-    mp_int_t ms = mp_obj_get_int(ms_in);
-    if (ms > 0) {
-        mp_hal_delay_ms(ms);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_ms_obj, time_sleep_ms);
-
-STATIC mp_obj_t time_sleep_us (mp_obj_t usec_in) {
-    mp_int_t usec = mp_obj_get_int(usec_in);
-    if (usec > 0) {
-        UtilsDelay(UTILS_DELAY_US_TO_COUNT(usec));
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_us_obj, time_sleep_us);
-
-STATIC mp_obj_t time_ticks_ms(void) {
-    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_ms_obj, time_ticks_ms);
-
-STATIC mp_obj_t time_ticks_us(void) {
-    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
-    return MP_OBJ_NEW_SMALL_INT(sys_tick_get_microseconds() & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_us_obj, time_ticks_us);
-
-STATIC mp_obj_t time_ticks_cpu(void) {
-    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
-    return MP_OBJ_NEW_SMALL_INT((SysTickPeriodGet() - SysTickValueGet()) & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_ticks_cpu_obj, time_ticks_cpu);
-
-STATIC mp_obj_t time_ticks_diff(mp_obj_t t0, mp_obj_t t1) {
-    // We want to "cast" the 32 bit unsigned into a 30-bit small-int
-    uint32_t start = mp_obj_get_int(t0);
-    uint32_t end = mp_obj_get_int(t1);
-    return MP_OBJ_NEW_SMALL_INT((end - start) & MP_SMALL_INT_POSITIVE_MASK);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(time_ticks_diff_obj, time_ticks_diff);
-
 STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_utime) },
 
@@ -184,12 +140,13 @@ STATIC const mp_map_elem_t time_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),           (mp_obj_t)&time_sleep_obj },
 
     // MicroPython additions
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms),        (mp_obj_t)&time_sleep_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us),        (mp_obj_t)&time_sleep_us_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms),        (mp_obj_t)&time_ticks_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_us),        (mp_obj_t)&time_ticks_us_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_cpu),       (mp_obj_t)&time_ticks_cpu_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_diff),      (mp_obj_t)&time_ticks_diff_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_ms),        (mp_obj_t)&mp_utime_sleep_ms_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep_us),        (mp_obj_t)&mp_utime_sleep_us_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_ms),        (mp_obj_t)&mp_utime_ticks_ms_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_us),        (mp_obj_t)&mp_utime_ticks_us_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_cpu),       (mp_obj_t)&mp_utime_ticks_cpu_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_add),       (mp_obj_t)&mp_utime_ticks_add_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ticks_diff),      (mp_obj_t)&mp_utime_ticks_diff_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);

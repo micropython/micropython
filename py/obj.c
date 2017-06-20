@@ -321,7 +321,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 #endif
 
 // note: returned value in *items may point to the interior of a GC block
-void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
+void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
     if (MP_OBJ_IS_TYPE(o, &mp_type_tuple)) {
         mp_obj_tuple_get(o, len, items);
     } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
@@ -337,8 +337,8 @@ void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items) {
 }
 
 // note: returned value in *items may point to the interior of a GC block
-void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
-    mp_uint_t seq_len;
+void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
+    size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -351,7 +351,7 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items) {
 }
 
 // is_slice determines whether the index is a slice index
-mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice) {
+size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool is_slice) {
     mp_int_t i;
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
@@ -384,7 +384,9 @@ mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index,
             }
         }
     }
-    return i;
+
+    // By this point 0 <= i <= len and so fits in a size_t
+    return (size_t)i;
 }
 
 mp_obj_t mp_obj_id(mp_obj_t o_in) {
@@ -399,7 +401,7 @@ mp_obj_t mp_obj_id(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(id);
     } else {
         // If that didn't work, well, let's return long int, just as
-        // a (big) positve value, so it will never clash with the range
+        // a (big) positive value, so it will never clash with the range
         // of small int returned in previous case.
         return mp_obj_new_int_from_uint((mp_uint_t)id);
     }
@@ -479,6 +481,11 @@ mp_obj_t mp_identity(mp_obj_t self) {
     return self;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
+
+mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
+    (void)iter_buf;
+    return self;
+}
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_type_t *type = mp_obj_get_type(obj);

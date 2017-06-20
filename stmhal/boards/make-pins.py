@@ -14,7 +14,8 @@ SUPPORTED_FN = {
     'I2S'   : ['CK', 'MCK', 'SD', 'WS', 'EXTSD'],
     'USART' : ['RX', 'TX', 'CTS', 'RTS', 'CK'],
     'UART'  : ['RX', 'TX', 'CTS', 'RTS'],
-    'SPI'   : ['NSS', 'SCK', 'MISO', 'MOSI']
+    'SPI'   : ['NSS', 'SCK', 'MISO', 'MOSI'],
+    'SDMMC' : ['CK', 'CMD', 'D0', 'D1', 'D2', 'D3'],
 }
 
 CONDITIONAL_VAR = {
@@ -23,6 +24,7 @@ CONDITIONAL_VAR = {
     'SPI'   : 'MICROPY_HW_SPI{num}_SCK',
     'UART'  : 'MICROPY_HW_UART{num}_TX',
     'USART' : 'MICROPY_HW_UART{num}_TX',
+    'SDMMC' : 'MICROPY_HW_SDMMC{num}_CK',
 }
 
 def parse_port_pin(name_str):
@@ -281,11 +283,11 @@ class Pins(object):
                     self.board_pins.append(NamedPin(row[0], pin))
 
     def print_named(self, label, named_pins):
-        print('STATIC const mp_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
+        print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
         for named_pin in named_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                print('  {{ MP_OBJ_NEW_QSTR(MP_QSTR_{:s}), (mp_obj_t)&pin_{:s} }},'.format(named_pin.name(),  pin.cpu_pin_name()))
+                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
         print('};')
         print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
 

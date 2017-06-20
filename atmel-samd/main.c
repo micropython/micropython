@@ -9,11 +9,11 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 
-#include "lib/fatfs/ff.h"
-#include "lib/fatfs/diskio.h"
+#include "extmod/vfs_fat.h"
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
-#include "extmod/fsusermount.h"
 
 #include "asf/common/services/sleepmgr/sleepmgr.h"
 #include "asf/common/services/usb/udc/udc.h"
@@ -48,6 +48,7 @@
 #include "tick.h"
 
 fs_user_mount_t fs_user_mount_flash;
+mp_vfs_mount_t mp_vfs_mount_flash;
 
 typedef enum {
     NO_SAFE_MODE = 0,
@@ -80,39 +81,42 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 // want it to be executed without using stack within main() function
 void init_flash_fs(void) {
     // init the vfs object
-    fs_user_mount_t *vfs = &fs_user_mount_flash;
-    vfs->str = "/flash";
-    vfs->len = 6;
-    vfs->flags = 0;
-    flash_init_vfs(vfs);
-
-    // put the flash device in slot 0 (it will be unused at this point)
-    MP_STATE_PORT(fs_user_mount)[0] = vfs;
+    fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
+    vfs_fat->flags = 0;
+    flash_init_vfs(vfs_fat);
 
     // try to mount the flash
-    FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
+    FRESULT res = f_mount(&vfs_fat->fatfs);
 
     if (res == FR_NO_FILESYSTEM) {
         // no filesystem so create a fresh one
 
-        res = f_mkfs("/flash", 0, 0);
+        uint8_t working_buf[_MAX_SS];
+        res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
         // Flush the new file system to make sure its repaired immediately.
         flash_flush();
         if (res != FR_OK) {
-            MP_STATE_PORT(fs_user_mount)[0] = NULL;
             return;
         }
 
         // set label
-        f_setlabel("CIRCUITPY");
+        f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
     } else if (res != FR_OK) {
-        MP_STATE_PORT(fs_user_mount)[0] = NULL;
         return;
     }
+    mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
+    if (vfs == NULL) {
+        return;
+    }
+    vfs->str = "/";
+    vfs->len = 1;
+    vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+    vfs->next = NULL;
+    MP_STATE_VM(vfs_mount_table) = vfs;
 
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
-    f_chdrive("/flash");
+    MP_STATE_PORT(vfs_cur) = vfs;
 }
 
 static char heap[16384];
@@ -124,9 +128,7 @@ void reset_mp(void) {
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
     // as we re-init the GC all bets are off on the cache.
-    disk_ioctl(0, CTRL_SYNC, NULL);
-    disk_ioctl(1, CTRL_SYNC, NULL);
-    disk_ioctl(2, CTRL_SYNC, NULL);
+    flash_flush();
 
     // Clear the readline history. It references the heap we're about to destroy.
     readline_init0();
@@ -230,13 +232,8 @@ void reset_samd21(void) {
 }
 
 bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
-    FILINFO fno;
-#if _USE_LFN
-    fno.lfname = NULL;
-    fno.lfsize = 0;
-#endif
-    FRESULT res = f_stat(filename, &fno);
-    if (res != FR_OK || fno.fattrib & AM_DIR) {
+    mp_import_stat_t stat = mp_import_stat(filename);
+    if (stat != MP_IMPORT_STAT_FILE) {
         return false;
     }
     mp_hal_stdout_tx_str(filename);
@@ -607,7 +604,8 @@ int main(void) {
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         FIL file_pointer;
         boot_output_file = &file_pointer;
-        f_open(boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+        f_open(&((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs,
+            boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
@@ -688,17 +686,8 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-mp_import_stat_t fat_vfs_import_stat(const char *path);
-mp_import_stat_t mp_import_stat(const char *path) {
-    #if MICROPY_VFS_FAT
-    return fat_vfs_import_stat(path);
-    #else
-    (void)path;
-    return MP_IMPORT_STAT_NO_EXIST;
-    #endif
-}
-
-void nlr_jump_fail(void *val) {
+void NORETURN nlr_jump_fail(void *val) {
+    while (1);
 }
 
 void NORETURN __fatal_error(const char *msg) {

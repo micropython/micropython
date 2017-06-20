@@ -18,6 +18,12 @@ class Main:
     Forward = Descriptor()
 
 m = Main()
+try:
+    m.__class__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
 r = m.Forward
 if 'Descriptor' in repr(r.__class__):
     print('SKIP')

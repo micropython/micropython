@@ -30,8 +30,11 @@
 #include "autoreload.h"
 
 #include "asf/common/services/usb/class/msc/device/udi_msc.h"
-#include "extmod/fsusermount.h"
-#include "lib/fatfs/diskio.h"
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+#include "lib/oofatfs/ff.h"
+#include "lib/oofatfs/diskio.h"
+#include "lib/oofatfs/ffconf.h"
 #include "py/mpconfig.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
@@ -47,15 +50,14 @@
 //!   An error occurred          ->    CTRL_FAIL
 Ctrl_status vfs_test_unit_ready(void)
 {
-    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
-        return CTRL_FAIL;
+    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
+    for (uint8_t i = 0; current_mount != NULL; i++) {
+        if (i == VFS_INDEX) {
+            return CTRL_GOOD;
+        }
+        current_mount = current_mount->next;
     }
-    DSTATUS status = disk_status(VFS_INDEX);
-    if (status == STA_NOINIT) {
-        return CTRL_NO_PRESENT;
-    }
-
-    return CTRL_GOOD;
+    return CTRL_NO_PRESENT;
 }
 
 //! This function returns the address of the last valid sector
@@ -81,13 +83,17 @@ Ctrl_status vfs_read_capacity(uint32_t *last_valid_sector)
 //!
 bool vfs_wr_protect(void)
 {
-    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
+    for (uint8_t i = 0; current_mount != NULL; i++) {
+        if (i == VFS_INDEX) {
+            break;
+        }
+        current_mount = current_mount->next;
+    }
+    if (current_mount == NULL) {
         return true;
     }
-    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
-    if (vfs == NULL) {
-        return true;
-    }
+    fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
 
     // This is used to determine the writeability of the disk from USB.
     if (vfs->writeblocks[0] == MP_OBJ_NULL ||
@@ -170,9 +176,18 @@ Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
         }
         // Since by getting here we assume the mount is read-only to MicroPython
         // lets update the cached FatFs sector if its the one we just wrote.
-        fs_user_mount_t *vfs =  MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
-        volatile uint16_t x = addr;
-        (void) x;
+        mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
+        for (uint8_t i = 0; current_mount != NULL; i++) {
+            if (i == VFS_INDEX) {
+                break;
+            }
+            current_mount = current_mount->next;
+        }
+        if (current_mount == NULL) {
+            return CTRL_NO_PRESENT;
+        }
+        fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
+
         #if _MAX_SS != _MIN_SS
         if (vfs->ssize == FILESYSTEM_BLOCK_SIZE) {
         #else

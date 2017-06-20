@@ -15,7 +15,7 @@ INC += -I$(BUILD)
 INC += -I../tools/tinytest/
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
 	 -ffunction-sections -fdata-sections
 
 #Debugging/Optimization
@@ -34,7 +34,11 @@ endif
 ## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/qemu/Makefile
 LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
 
-SRC_C = \
+SRC_COMMON_C = \
+	moduos.c \
+	modmachine.c \
+
+SRC_RUN_C = \
 	main.c \
 
 SRC_TEST_C = \
@@ -43,7 +47,7 @@ SRC_TEST_C = \
 LIB_SRC_C = $(addprefix lib/,\
 	libm/math.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \
@@ -65,25 +69,24 @@ STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
 	)
 
-SRC_S = \
+OBJ_COMMON =
+OBJ_COMMON += $(PY_O)
+OBJ_COMMON += $(addprefix $(BUILD)/, $(SRC_COMMON_C:.c=.o))
+OBJ_COMMON += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ_COMMON += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 
-OBJ =
-OBJ += $(PY_O)
-OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ_RUN =
+OBJ_RUN += $(addprefix $(BUILD)/, $(SRC_RUN_C:.c=.o))
 
 OBJ_TEST =
-OBJ_TEST += $(PY_O)
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
-OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ_TEST += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ_TEST += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ_TEST += $(BUILD)/tinytest.o
 
+# All object files, needed to get dependencies correct
+OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
+
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C)
+SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(STM_SRC_C)
 
 all: run
 
@@ -105,11 +108,11 @@ $(BUILD)/tinytest.o:
 	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c ../tools/tinytest/tinytest.c
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ_COMMON) $(OBJ_RUN)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/firmware-test.elf: $(OBJ_TEST)
+$(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 

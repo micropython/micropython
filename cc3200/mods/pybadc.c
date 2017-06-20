@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 #include "bufhelper.h"
 #include "inc/hw_types.h"
 #include "inc/hw_adc.h"
@@ -104,7 +105,7 @@ STATIC void pyb_adc_init (pyb_adc_obj_t *self) {
 STATIC void pyb_adc_check_init(void) {
     // not initialized
     if (!pyb_adc_obj.enabled) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
 }
 
@@ -149,7 +150,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     // check the number of bits
@@ -206,7 +207,7 @@ STATIC mp_obj_t adc_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t
     if (args[0].u_obj != MP_OBJ_NULL) {
         ch_id = mp_obj_get_int(args[0].u_obj);
         if (ch_id >= PYB_ADC_NUM_CHANNELS) {
-            mp_raise_ValueError(mpexception_os_resource_not_avaliable);
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         } else if (args[1].u_obj != mp_const_none) {
             uint pin_ch_id = pin_find_peripheral_type (args[1].u_obj, PIN_FN_ADC, 0);
             if (ch_id != pin_ch_id) {
@@ -277,7 +278,7 @@ STATIC mp_obj_t adc_channel_value(mp_obj_t self_in) {
 
     // the channel must be enabled
     if (!self->enabled) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
 
     // wait until a new value is available

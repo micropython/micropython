@@ -1,7 +1,11 @@
 try:
     import ujson as json
-except:
-    import json
+except ImportError:
+    try:
+        import json
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 def my_print(o):
     print('%.3f' % o)

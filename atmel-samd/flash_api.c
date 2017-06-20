@@ -31,13 +31,17 @@
 #define VFS_INDEX 0
 
 void flash_set_usb_writeable(bool usb_writeable) {
-    if (VFS_INDEX >= MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
+    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
+    for (uint8_t i = 0; current_mount != NULL; i++) {
+        if (i == VFS_INDEX) {
+            break;
+        }
+        current_mount = current_mount->next;
+    }
+    if (current_mount == NULL) {
         return;
     }
-    fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[VFS_INDEX];
-    if (vfs == NULL) {
-        return;
-    }
+    fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
 
     if (usb_writeable) {
         vfs->flags |= FSUSER_USB_WRITEABLE;

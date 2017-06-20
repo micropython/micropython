@@ -53,8 +53,6 @@ void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
 mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
-const mp_rom_obj_tuple1_t namedtuple_base_tuple;
-
 #endif // MICROPY_PY_COLLECTIONS
 
 #endif  // __MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H__

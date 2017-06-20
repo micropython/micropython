@@ -1,4 +1,9 @@
 # test memoryview retains pointer to original object/buffer
+try:
+    memoryview
+except:
+    print("SKIP")
+    raise SystemExit
 
 b = bytearray(10)
 m = memoryview(b)[1:]

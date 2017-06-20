@@ -44,7 +44,8 @@ See :ref:`machine.Pin <machine.Pin>`. ::
 Timers
 ------
 
-See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`. ::
+See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`.
+Timer ``id``'s take values from 0 to 3.::
 
     from machine import Timer
     from machine import Pin
@@ -102,7 +103,7 @@ See :ref:`machine.SPI <machine.SPI>`. ::
     spi.write('hello')
     spi.read(5) # receive 5 bytes on the bus
     rbuf = bytearray(5)
-    spi.write_readinto('hello', rbuf) # send a receive 5 bytes
+    spi.write_readinto('hello', rbuf) # send and receive 5 bytes
 
 I2C bus
 -------
@@ -111,7 +112,7 @@ See :ref:`machine.I2C <machine.I2C>`. ::
 
     from machine import I2C
     # configure the I2C bus
-    i2c = I2C(0, I2C.MASTER, baudrate=100000)
+    i2c = I2C(baudrate=100000)
     i2c.scan() # returns list of slave addresses
     i2c.writeto(0x42, 'hello') # send 5 bytes to slave with address 0x42
     i2c.readfrom(0x42, 5) # receive 5 bytes from slave

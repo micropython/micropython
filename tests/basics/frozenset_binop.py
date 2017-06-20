@@ -2,8 +2,7 @@ try:
     frozenset
 except NameError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 sets = [
     frozenset(), frozenset({1}), frozenset({1, 2}), frozenset({1, 2, 3}), frozenset({2, 3}),

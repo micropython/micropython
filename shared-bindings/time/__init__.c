@@ -116,7 +116,7 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
         .attr = namedtuple_attr,
         .subscr = mp_obj_tuple_subscr,
         .getiter = mp_obj_tuple_getiter,
-        .bases_tuple = (mp_obj_tuple_t*)(mp_rom_obj_tuple_t*)&namedtuple_base_tuple,
+        .parent = &mp_type_tuple,
     },
     .n_fields = 9,
     .fields = {

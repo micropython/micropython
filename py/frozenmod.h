@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/lexer.h"
+
 enum {
     MP_FROZEN_NONE,
     MP_FROZEN_STR,
@@ -31,4 +33,5 @@ enum {
 };
 
 int mp_find_frozen_module(const char *str, size_t len, void **data);
+const char *mp_find_frozen_str(const char *str, size_t *len);
 mp_import_stat_t mp_frozen_stat(const char *str);

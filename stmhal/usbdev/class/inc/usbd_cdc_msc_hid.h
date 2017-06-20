@@ -28,10 +28,10 @@ typedef struct {
 } USBD_CDC_LineCodingTypeDef;
 
 typedef struct _USBD_CDC_Itf {
-  int8_t (* Init)          (void);
+  int8_t (* Init)          (USBD_HandleTypeDef *pdev);
   int8_t (* DeInit)        (void);
   int8_t (* Control)       (uint8_t, uint8_t * , uint16_t);   
-  int8_t (* Receive)       (uint8_t *, uint32_t *);  
+  int8_t (* Receive)       (USBD_HandleTypeDef *pdev, uint8_t *, uint32_t *);
 } USBD_CDC_ItfTypeDef;
 
 typedef struct {
@@ -48,7 +48,8 @@ typedef struct {
 } USBD_CDC_HandleTypeDef;
 
 typedef struct _USBD_HID_Itf {
-  int8_t (* Receive)(uint8_t *, uint32_t);
+  int8_t (* Init)   (USBD_HandleTypeDef *pdev);
+  int8_t (* Receive)(USBD_HandleTypeDef *pdev, uint8_t *, uint32_t);
 } USBD_HID_ItfTypeDef;
 
 typedef struct _USBD_STORAGE {
@@ -115,5 +116,7 @@ uint8_t USBD_HID_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff);
 uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev);
 int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev);
 uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
+uint8_t USBD_HID_SetNAK(USBD_HandleTypeDef *pdev);
+uint8_t USBD_HID_ClearNAK(USBD_HandleTypeDef *pdev);
 
 #endif // _USB_CDC_MSC_CORE_H_

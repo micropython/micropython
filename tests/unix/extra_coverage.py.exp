@@ -43,11 +43,39 @@ Warning: test
 ?
 +1e+00
 +1e+00
-('0123456789', b'0123456789')
+# binary
+122
+456
+# scheduler
+sched(0)=1
+sched(1)=1
+sched(2)=1
+sched(3)=1
+sched(4)=0
+unlocked
+3
+2
+1
+0
+0123456789 b'0123456789'
 7300
 7300
 7300
 7300
+None
+None
+None
+None
+None
+None
+b'123'
+b'123'
+b'123'
+OSError
+0
+OSError
+None
+None
 frzstr1
 frzmpy1
 frzstr_pkg1.__init__
@@ -58,3 +86,4 @@ frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod
 1
+ZeroDivisionError

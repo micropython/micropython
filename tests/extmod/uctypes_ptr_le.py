@@ -1,9 +1,13 @@
 import sys
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 if sys.byteorder != "little":
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 desc = {
     "ptr": (uctypes.PTR | 0, uctypes.UINT8),

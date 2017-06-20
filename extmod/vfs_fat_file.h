@@ -27,18 +27,15 @@
 #ifndef __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
 #define __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
 
-#include "lib/fatfs/ff.h"
 #include "py/mpconfig.h"
+
+#if MICROPY_VFS && MICROPY_VFS_FAT
+
+#include "lib/oofatfs/ff.h"
 #include "py/obj.h"
 
-#if MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
-
-extern const byte fresult_to_errno_table[20];
-
-#if MICROPY_VFS_FAT
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
-#endif
 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
@@ -48,11 +45,6 @@ typedef struct _pyb_file_obj_t {
     FIL fp;
 } pyb_file_obj_t;
 
-mp_obj_t fatfs_builtin_open(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
-MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
-
-mp_obj_t fat_vfs_listdir(const char *path, bool is_str_type);
-
-#endif  // MICROPY_FSUSERMOUNT || MICROPY_FSUSERMOUNT_ADHOC
+#endif  // MICROPY_VFS && MICROPY_VFS_FAT
 
 #endif  // __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__

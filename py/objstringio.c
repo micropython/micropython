@@ -56,6 +56,9 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
+    if (o->vstr->len <= o->pos) {  // read to EOF, or seeked to EOF or beyond
+        return 0;
+    }
     mp_uint_t remaining = o->vstr->len - o->pos;
     if (size > remaining) {
         size = remaining;
@@ -65,26 +68,44 @@ STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     return size;
 }
 
+STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
+    const void *buf = o->vstr->buf;
+    o->vstr->buf = m_new(char, o->vstr->len);
+    memcpy(o->vstr->buf, buf, o->vstr->len);
+    o->vstr->fixed_buf = false;
+    o->ref_obj = MP_OBJ_NULL;
+}
+
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
     mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
     check_stringio_is_open(o);
-    mp_int_t remaining = o->vstr->alloc - o->pos;
+
+    if (o->vstr->fixed_buf) {
+        stringio_copy_on_write(o);
+    }
+
+    mp_uint_t new_pos = o->pos + size;
+    if (new_pos < size) {
+        // Writing <size> bytes will overflow o->pos beyond limit of mp_uint_t.
+        *errcode = MP_EFBIG;
+        return MP_STREAM_ERROR;
+    }
     mp_uint_t org_len = o->vstr->len;
-    if ((mp_int_t)size > remaining) {
+    if (new_pos > o->vstr->alloc) {
         // Take all what's already allocated...
         o->vstr->len = o->vstr->alloc;
         // ... and add more
-        vstr_add_len(o->vstr, size - remaining);
+        vstr_add_len(o->vstr, new_pos - o->vstr->alloc);
     }
     // If there was a seek past EOF, clear the hole
     if (o->pos > org_len) {
         memset(o->vstr->buf + org_len, 0, o->pos - org_len);
     }
     memcpy(o->vstr->buf + o->pos, buf, size);
-    o->pos += size;
-    if (o->pos > o->vstr->len) {
-        o->vstr->len = o->pos;
+    o->pos = new_pos;
+    if (new_pos > o->vstr->len) {
+        o->vstr->len = new_pos;
     }
     return size;
 }
@@ -150,18 +171,42 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio
 STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
     o->base.type = type;
-    o->vstr = vstr_new(16);
     o->pos = 0;
+    o->ref_obj = MP_OBJ_NULL;
     return o;
 }
 
 STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)n_kw; // TODO check n_kw==0
+
+    mp_uint_t sz = 16;
+    bool initdata = false;
+    mp_buffer_info_t bufinfo;
+
     mp_obj_stringio_t *o = stringio_new(type_in);
 
     if (n_args > 0) {
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+        if (MP_OBJ_IS_INT(args[0])) {
+            sz = mp_obj_get_int(args[0]);
+        } else {
+            mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+
+            if (MP_OBJ_IS_STR_OR_BYTES(args[0])) {
+                o->vstr = m_new_obj(vstr_t);
+                vstr_init_fixed_buf(o->vstr, bufinfo.len, bufinfo.buf);
+                o->vstr->len = bufinfo.len;
+                o->ref_obj = args[0];
+                return MP_OBJ_FROM_PTR(o);
+            }
+
+            sz = bufinfo.len;
+            initdata = true;
+        }
+    }
+
+    o->vstr = vstr_new(sz);
+
+    if (initdata) {
         stringio_write(MP_OBJ_FROM_PTR(o), bufinfo.buf, bufinfo.len, NULL);
         // Cur ptr is always at the beginning of buffer at the construction
         o->pos = 0;
@@ -202,7 +247,7 @@ const mp_obj_type_t mp_type_stringio = {
     .name = MP_QSTR_StringIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stringio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
@@ -214,7 +259,7 @@ const mp_obj_type_t mp_type_bytesio = {
     .name = MP_QSTR_BytesIO,
     .print = stringio_print,
     .make_new = stringio_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &bytesio_stream_p,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,

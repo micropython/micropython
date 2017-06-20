@@ -1,7 +1,11 @@
 try:
     import ure as re
 except ImportError:
-    import re
+    try:
+        import re
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 r = re.compile(" ")
 s = r.split("a b c foobar")

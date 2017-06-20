@@ -4,9 +4,8 @@ try:
     io.BytesIO
     io.BufferedWriter
 except AttributeError:
-    import sys
     print('SKIP')
-    sys.exit()
+    raise SystemExit
 
 bts = io.BytesIO()
 buf = io.BufferedWriter(bts, 8)
@@ -19,4 +18,10 @@ print(bts.getvalue())
 buf.flush()
 print(bts.getvalue())
 buf.flush()
+print(bts.getvalue())
+
+# special case when alloc is a factor of total buffer length
+bts = io.BytesIO()
+buf = io.BufferedWriter(bts, 1)
+buf.write(b"foo")
 print(bts.getvalue())

@@ -43,8 +43,13 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </Task>
   </UsingTask>
 
+  <!-- If any of these changed we'll force all qstrs to be generated again-->
+  <ItemGroup>
+    <QstrDependencies Include="$(PyWinDir)mpconfigport.h;$(PySrcDir)mpconfig.h;$(PySrcDir)makeqstrdata.py"/>
+  </ItemGroup>
+
   <!-- Preprocess changed files, concatenate and feed into makeqstrdefs.py split/cat-->
-  <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir" Inputs="@(ClCompile)" Outputs="$(QstrDefsCollected)">
+  <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
     <ItemGroup>
       <PyIncDirs Include="$(PyIncDirs)"/>
       <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR;N_X64;N_X86;N_THUMB;N_ARM"/>
@@ -56,15 +61,22 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
         <OutDir>$([System.IO.Path]::GetDirectoryName('%(OutFile)'))</OutDir>
       </PyQstrSourceFiles>
       <PyQstrSourceFiles>
-        <Changed>$([System.DateTime]::Compare($([System.IO.File]::GetLastWriteTime('%(FullPath)')), $([System.IO.File]::GetLastWriteTime('%(OutFile)'))))</Changed>
+        <Changed Condition="$([System.DateTime]::Compare($([System.IO.File]::GetLastWriteTime('%(FullPath)')), $([System.IO.File]::GetLastWriteTime('%(OutFile)')))) &gt; 0">True</Changed>
       </PyQstrSourceFiles>
+      <QstrDependencies>
+        <Changed Condition="$([System.DateTime]::Compare($([System.IO.File]::GetLastWriteTime('%(FullPath)')), $([System.IO.File]::GetLastWriteTime('$(DestDir)qstr.i.last')))) &gt; 0">True</Changed>
+      </QstrDependencies>
     </ItemGroup>
+    <PropertyGroup>
+      <ForceQstrRebuild>@(QstrDependencies->AnyHaveMetadataValue('Changed', 'True'))</ForceQstrRebuild>
+      <RunPreProcConcat>@(PyQstrSourceFiles->AnyHaveMetadataValue('Changed', 'True'))</RunPreProcConcat>
+    </PropertyGroup>
 
     <MakeDir Directories="@(PyQstrSourceFiles->'%(OutDir)')"/>
     <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
-          Condition="%(PyQstrSourceFiles.Changed) &gt; 0"/>
+          Condition="'%(PyQstrSourceFiles.Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <ConcatPreProcFiles InputFiles="@(PyQstrSourceFiles->'%(OutFile)')" OutputFile="$(DestDir)qstr.i.last"
-                        Condition="%(PyQstrSourceFiles.Changed) &gt; 0"/>
+                        Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
   </Target>
@@ -85,6 +97,10 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </PropertyGroup>
     <Exec Command="$(PyPython) $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <Target Name="RemoveGeneratedFiles" AfterTargets="Clean">
+    <RemoveDir Directories="$(DestDir)"/>
   </Target>
 
   <!--Copies SourceFile to DestFile only if SourceFile's content differs from DestFile's.

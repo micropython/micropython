@@ -2,8 +2,7 @@ try:
     frozenset
 except NameError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 l = [1, 2, 3, 4]
 s = frozenset(l)

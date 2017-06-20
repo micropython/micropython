@@ -23,7 +23,7 @@
 extern int mp_interrupt_char;
 void mp_keyboard_interrupt(void);
 
-static struct nano_sem uart_sem;
+static struct k_sem uart_sem;
 #define UART_BUFSIZE 256
 static uint8_t uart_ringbuf[UART_BUFSIZE];
 static uint8_t i_get, i_put;
@@ -44,6 +44,7 @@ static int console_irq_input_hook(uint8_t ch)
     }
     //printk("%x\n", ch);
     k_sem_give(&uart_sem);
+    k_yield();
     return 1;
 }
 

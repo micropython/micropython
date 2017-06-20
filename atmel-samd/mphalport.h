@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-#include "lib/fatfs/ff.h"
+#include "lib/oofatfs/ff.h"
 
 #define USB_RX_BUF_SIZE 128
 

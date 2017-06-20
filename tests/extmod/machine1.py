@@ -5,10 +5,10 @@ try:
         import umachine as machine
     except ImportError:
         import machine
-except ImportError:
+    machine.mem8
+except:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print(machine.mem8)
 

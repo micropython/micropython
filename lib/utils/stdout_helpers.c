@@ -9,7 +9,7 @@
  * implementation below can be used.
  */
 
-// Send "cooked" string of given length, where every occurance of
+// Send "cooked" string of given length, where every occurrence of
 // LF character is replaced with CR LF.
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     while (len--) {

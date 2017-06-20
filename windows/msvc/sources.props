@@ -15,6 +15,8 @@
     <ClCompile Include="$(PyBaseDir)unix\modmachine.c" />
     <ClCompile Include="$(PyBaseDir)extmod\machine_mem.c" />
     <ClCompile Include="$(PyBaseDir)extmod\machine_pinbase.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\machine_pulse.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\machine_signal.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modubinascii.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moductypes.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduhashlib.c" />
@@ -22,8 +24,10 @@
     <ClCompile Include="$(PyBaseDir)extmod\modujson.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modurandom.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modure.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\modutimeq.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduzlib.c" />
     <ClCompile Include="$(PyBaseDir)extmod\utime_mphal.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\virtpin.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(PyBaseDir)py\*.h" />

@@ -125,7 +125,7 @@ CFLAGS_CORTEX_M0 = \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
-CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(COPT)
+CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(CFLAGS_MOD) $(COPT)
 
 #Debugging/Optimization
 # TODO(tannewt): Figure out what NDEBUG does. Adding it to the debug build
@@ -184,7 +184,6 @@ SRC_C = \
 	access_vfs.c \
 	autoreload.c \
 	background.c \
-	builtin_open.c \
 	fatfs_port.c \
 	flash_api.c \
 	main.c \
@@ -213,17 +212,15 @@ SRC_C = \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	freetouch/adafruit_ptc.c \
-	lib/fatfs/ff.c \
-	lib/fatfs/option/ccsbcs.c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
 	lib/utils/buffer_helper.c \
 	lib/utils/context_manager_helpers.c \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
-	lib/utils/pyhelp.c \
 	lib/utils/stdout_helpers.c \
 	lib/libc/string0.c \
-	lib/mp-readline/builtin_input.c \
 	lib/mp-readline/readline.c
 
 STM_SRC_C = $(addprefix stmhal/,\
@@ -261,14 +258,14 @@ SRC_COMMON_HAL = \
 SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
-	digitalio/Pull.c
+	digitalio/Pull.c \
+	help.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE = \
-	help.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \

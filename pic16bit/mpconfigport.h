@@ -68,7 +68,6 @@
 // type definitions for the specific machine
 
 #define MP_ENDIANNESS_LITTLE        (1)
-#define BYTES_PER_WORD              (2)
 #define MPZ_DIG_SIZE                (8)
 
 // The xc16 compiler doesn't seem to respect alignment (!!) so we

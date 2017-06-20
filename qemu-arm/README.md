@@ -4,7 +4,7 @@ provided by QEMU (http://qemu.org).
 The purposes of this port are to enable:
 
 1. Continuous integration
-    - run tests agains architecture-specific parts of code base
+    - run tests against architecture-specific parts of code base
 2. Experimentation
     - simulation & prototyping of anything that has architecture-specific
       code

@@ -32,7 +32,7 @@
 	float value; int exp;
 #endif
 {
-	if(!finitef(value)||value==(float)0.0) return value;
+	if(!isfinite(value)||value==(float)0.0) return value;
 	value = scalbnf(value,exp);
 	//if(!finitef(value)||value==(float)0.0) errno = ERANGE;
 	return value;

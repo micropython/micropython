@@ -1,4 +1,13 @@
 # This tests that recursion with iternext doesn't lead to segfault.
+try:
+    enumerate
+    filter
+    map
+    max
+    zip
+except:
+    print("SKIP")
+    raise SystemExit
 
 # We need to pick an N that is large enough to hit the recursion
 # limit, but not too large that we run out of heap memory.

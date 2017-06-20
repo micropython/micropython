@@ -156,13 +156,13 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
     if (args->key.u_obj != MP_OBJ_NULL) {
-        mp_uint_t key_len;
+        size_t key_len;
         const byte *key = (const byte*)mp_obj_str_get_data(args->key.u_obj, &key_len);
         // len should include terminating null
         ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
         assert(ret == 0);
 
-        mp_uint_t cert_len;
+        size_t cert_len;
         const byte *cert = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
         // len should include terminating null
         ret = mbedtls_x509_crt_parse(&o->cert, cert, cert_len + 1);

@@ -52,3 +52,7 @@ print("/*10/*11/*12/*".rsplit("/*", 4))
 print("/*10/*11/*12/*".rsplit("/*", 5))
 
 print(b"abcabc".rsplit(b"bc", 2))
+
+# negative "maxsplit" should delegate to .split()
+print('abaca'.rsplit('a', -1))
+print('abaca'.rsplit('a', -2))

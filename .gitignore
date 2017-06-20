@@ -10,7 +10,7 @@
 *.dis
 *.exe
 
-# Packages 
+# Packages
 ############
 
 # Logs and Databases
@@ -44,3 +44,7 @@ user.props
 # Sphinx output
 ###############
 _build
+
+# Generated rst files
+######################
+genrst/

@@ -1,4 +1,9 @@
-from pyb import CAN
+try:
+    from pyb import CAN
+except ImportError:
+    print('SKIP')
+    raise SystemExit
+
 import pyb
 
 # test we can correctly create by id or name
@@ -152,7 +157,7 @@ print(can.recv(1))
 
 del can
 
-# Testing asyncronous send
+# Testing asynchronous send
 can = CAN(1, CAN.LOOPBACK)
 can.setfilter(0, CAN.MASK16, 0, (0, 0, 0, 0))
 

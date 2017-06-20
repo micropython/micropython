@@ -3,9 +3,8 @@
 try:
     from array import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # raw copy from bytes, bytearray
 print(array('h', b'12'))

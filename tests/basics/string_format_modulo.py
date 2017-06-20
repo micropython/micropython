@@ -33,38 +33,11 @@ print("%c" % 48)
 print("%c" % 'a')
 print("%10s" % 'abc')
 print("%-10s" % 'abc')
-print("%d" % 10)
-print("%+d" % 10)
-print("% d" % 10)
-print("%d" % -10)
-print("%d" % True)
-print("%i" % -10)
-print("%i" % True)
-print("%u" % -10)
-print("%u" % True)
-print("%x" % 18)
-print("%o" % 18)
-print("%X" % 18)
-print("%#x" % 18)
-print("%#X" % 18)
-print("%#6o" % 18)
-print("%#6x" % 18)
-print("%#06x" % 18)
 
-print("%*d" % (5, 10))
-print("%*.*d" % (2, 2, 20))
-print("%*.*d" % (5, 8, 20))
-
-print(">%8.4d<" % -12)
-print(">% 8.4d<" % -12)
-print(">%+8.4d<" %  12)
-print(">%+8.4d<" % -12)
-print(">%08.4d<" % -12)
-print(">%08.4d<" % 12)
-print(">%-8.4d<" % -12)
-print(">%-08.4d<" % -12)
-print(">%-+08.4d<" % -12)
-print(">%-+08.4d<" %  12)
+# Should be able to print dicts; in this case they aren't used
+# to lookup keywords in formats like %(foo)s
+print('%s' % {})
+print('%s' % ({},))
 
 # Cases when "*" used and there's not enough values total
 try:
@@ -77,6 +50,7 @@ except TypeError:
     print("TypeError")
 
 print("%(foo)s" % {"foo": "bar", "baz": False})
+print("%s %(foo)s %(foo)s" % {"foo": 1})
 try:
     print("%(foo)s" % {})
 except KeyError:
@@ -86,6 +60,16 @@ try:
     print("%(foo)*s" % {"foo": "bar"})
 except TypeError:
     print("TypeError")
+
+# When using %(foo)s format the single argument must be a dict
+try:
+    '%(foo)s' % 1
+except TypeError:
+    print('TypeError')
+try:
+    '%(foo)s' % ({},)
+except TypeError:
+    print('TypeError')
 
 try:
     '%(a' % {'a':1}

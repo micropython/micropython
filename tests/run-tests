@@ -23,7 +23,6 @@ MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
 
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
-os.environ['MICROPYPATH'] = ''
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -50,15 +49,15 @@ def convert_regex_escapes(line):
     return bytes(''.join(cs), 'utf8')
 
 
-def run_micropython(pyb, args, test_file):
-    special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'thread/thread_exc2.py')
-    is_special = False
+def run_micropython(pyb, args, test_file, is_special=False):
+    special_tests = ('micropython/meminfo.py', 'basics/bytes_compare3.py', 'basics/builtin_help.py', 'thread/thread_exc2.py')
     if pyb is None:
         # run on PC
         if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
             # special handling for tests of the unix cmdline program
             is_special = True
 
+        if is_special:
             # check for any cmdline options needed for this test
             args = [MICROPYTHON]
             with open(test_file, 'rb') as f:
@@ -145,6 +144,10 @@ def run_micropython(pyb, args, test_file):
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
+    # don't try to convert the output if we should skip this test
+    if output_mupy in (b'SKIP\n', b'CRASH'):
+        return output_mupy
+
     if is_special or test_file in special_tests:
         # convert parts of the output that are not stable across runs
         with open(test_file + '.exp', 'rb') as f:
@@ -186,7 +189,12 @@ def run_micropython(pyb, args, test_file):
 
     return output_mupy
 
-def run_tests(pyb, tests, args):
+
+def run_feature_check(pyb, args, base_path, test_file):
+    return run_micropython(pyb, args, base_path + "/feature_check/" + test_file, is_special=True)
+
+
+def run_tests(pyb, tests, args, base_path="."):
     test_count = 0
     testcase_count = 0
     passed_count = 0
@@ -195,27 +203,45 @@ def run_tests(pyb, tests, args):
 
     skip_tests = set()
     skip_native = False
+    skip_int_big = False
     skip_set_type = False
+    skip_async = False
+    skip_const = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/native_check.py')
+    native = run_feature_check(pyb, args, base_path, 'native_check.py')
     if native == b'CRASH':
         skip_native = True
 
+    # Check if arbitrary-precision integers are supported, and skip such tests if it's not
+    native = run_feature_check(pyb, args, base_path, 'int_big.py')
+    if native != b'1000000000000000000000000000000000000000000000\n':
+        skip_int_big = True
+
     # Check if set type (and set literals) is supported, and skip such tests if it's not
-    native = run_micropython(pyb, args, 'feature_check/set_check.py')
+    native = run_feature_check(pyb, args, base_path, 'set_check.py')
     if native == b'CRASH':
         skip_set_type = True
 
+    # Check if async/await keywords are supported, and skip such tests if it's not
+    native = run_feature_check(pyb, args, base_path, 'async_check.py')
+    if native == b'CRASH':
+        skip_async = True
+
+    # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
+    native = run_feature_check(pyb, args, base_path, 'const.py')
+    if native == b'CRASH':
+        skip_const = True
+
     # Check if emacs repl is supported, and skip such tests if it's not
-    t = run_micropython(pyb, args, 'feature_check/repl_emacs_check.py')
+    t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
     if not 'True' in str(t, 'ascii'):
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
-    upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
-    has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
-    has_coverage = run_micropython(pyb, args, 'feature_check/coverage.py') == b'coverage\n'
-    cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
+    upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
+    has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
+    has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
+    cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
     skip_endian = (upy_byteorder != cpy_byteorder)
 
     # Some tests shouldn't be run under Travis CI
@@ -228,6 +254,7 @@ def run_tests(pyb, tests, args):
 
     if not has_complex:
         skip_tests.add('float/complex1.py')
+        skip_tests.add('float/complex1_intbig.py')
         skip_tests.add('float/int_big_float.py')
         skip_tests.add('float/true_value.py')
         skip_tests.add('float/types.py')
@@ -246,7 +273,7 @@ def run_tests(pyb, tests, args):
     if pyb is not None:
         skip_tests.add('basics/exception_chain.py') # warning is not printed
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
-        skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
+        skip_tests.add('float/float2int_doubleprec_intbig.py') # requires double precision floating point to work
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
         skip_tests.add('extmod/machine_mem.py') # raw memory access not supported
 
@@ -264,11 +291,14 @@ def run_tests(pyb, tests, args):
             skip_tests.add('extmod/urandom_basic.py')       # requires urandom
             skip_tests.add('extmod/urandom_extra.py')       # requires urandom
         elif args.target == 'esp8266':
-            skip_tests.add('float/float2int.py')            # requires at least fp32, there's float2int_fp30.py instead
+            skip_tests.add('float/float2int_intbig.py')     # requires at least fp32, there's float2int_fp30_intbig.py instead
             skip_tests.add('float/string_format.py')        # requires at least fp32, there's string_format_fp30.py instead
             skip_tests.add('float/bytes_construct.py')      # requires fp32
             skip_tests.add('float/bytearray_construct.py')  # requires fp32
             skip_tests.add('misc/rge_sm.py')                # too large
+        elif args.target == 'minimal':
+            skip_tests.add('misc/rge_sm.py')                # too large
+            skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -281,7 +311,7 @@ def run_tests(pyb, tests, args):
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
     if args.emit == 'native':
-        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
+        skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 gen_yield_from_throw3 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
         skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
@@ -303,6 +333,8 @@ def run_tests(pyb, tests, args):
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
+        skip_tests.add('micropython/heapalloc_iter.py') # requires generators
+        skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
@@ -310,12 +342,18 @@ def run_tests(pyb, tests, args):
         test_name = os.path.splitext(test_basename)[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
-        is_set_type = test_name.startswith("set_")
+        is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
+        is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_async = test_name.startswith("async_")
+        is_const = test_name.startswith("const")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
+        skip_it |= skip_int_big and is_int_big
         skip_it |= skip_set_type and is_set_type
+        skip_it |= skip_async and is_async
+        skip_it |= skip_const and is_const
 
         if skip_it:
             print("skip ", test_file)
@@ -396,10 +434,11 @@ def main():
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
+    cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal')
     if args.target in EXTERNAL_TARGETS:
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
@@ -414,7 +453,7 @@ def main():
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            elif args.target == 'esp8266':
+            elif args.target in ('esp8266', 'minimal'):
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests
@@ -430,7 +469,18 @@ def main():
         # tests explicitly given
         tests = args.files
 
-    if not run_tests(pyb, tests, args):
+    if not args.keep_path:
+        # clear search path to make sure tests use only builtin modules
+        os.environ['MICROPYPATH'] = ''
+
+    # Even if we run completely different tests in a different directory,
+    # we need to access feature_check's from the same directory as the
+    # run-tests script itself.
+    base_path = os.path.dirname(sys.argv[0]) or "."
+    res = run_tests(pyb, tests, args, base_path)
+    if pyb:
+        pyb.close()
+    if not res:
         sys.exit(1)
 
 if __name__ == "__main__":

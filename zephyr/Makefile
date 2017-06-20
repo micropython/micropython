@@ -5,12 +5,10 @@
 # recursively Makefile.zephyr to build complete application binary
 # using Zephyr build system.
 #
+# To build a "minimal" configuration, use "make-minimal" wrapper.
 
 BOARD ?= qemu_x86
 CONF_FILE = prj.conf
-# Zephyr 1.5.0
-#OUTDIR_PREFIX =
-# Zephyr 1.6.0
 OUTDIR_PREFIX = $(BOARD)
 
 # Default heap size is 16KB, which is on conservative side, to let
@@ -20,7 +18,6 @@ MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
 # Zephyr (generated) config files - must be defined before include below
-Z_SYSGEN_H = outdir/$(OUTDIR_PREFIX)/misc/generated/sysgen/sysgen.h
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
 include $(Z_EXPORTS)
 
@@ -36,7 +33,9 @@ INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 
 SRC_C = main.c \
 	help.c \
+	modusocket.c \
 	modutime.c \
+	modzephyr.c \
 	modmachine.c \
 	machine_pin.c \
 	uart_core.c \
@@ -44,7 +43,6 @@ SRC_C = main.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/interrupt_char.c \
-	lib/utils/pyhelp.c \
 	lib/mp-readline/readline.c \
 	$(SRC_MOD)
 
@@ -58,10 +56,15 @@ CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 
 include ../py/mkrules.mk
 
-$(Z_EXPORTS):
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports
+$(Z_EXPORTS): $(CONF_FILE)
+	# We use single target here ($(Z_EXPORTS)) for simplicity, but actually
+	# number of things get generated here: 'initconfig' generates C header for
+	# Kconfig configuration, 'outputexports' generates make environment with CC,
+	# etc., and 'lib' generates other headers which may be included by zephyr.h,
+	# e.g. DTS-related.
+	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports lib
 
-GENERIC_TARGETS = all zephyr qemu qemugdb flash debug
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
 KCONFIG_TARGETS = \
 	initconfig config nconfig menuconfig xconfig gconfig \
 	oldconfig silentoldconfig defconfig savedefconfig \
@@ -73,21 +76,23 @@ $(GENERIC_TARGETS): $(LIBMICROPYTHON)
 $(CLEAN_TARGETS):  clean
 
 $(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
-	$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) $@
 
-$(LIBMICROPYTHON): $(Z_SYSGEN_H)
-build/genhdr/qstr.i.last: $(Z_SYSGEN_H)
+$(LIBMICROPYTHON): | $(Z_EXPORTS)
+build/genhdr/qstr.i.last: | $(Z_EXPORTS)
 
-$(Z_SYSGEN_H):
-	rm -f $(LIBMICROPYTHON)
-	-$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE)
-
-minimal:
-	$(MAKE) BOARD=$(BOARD) CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' FROZEN_DIR=
+# If we recreate libmicropython, also cause zephyr.bin relink
+LIBMICROPYTHON_EXTRA_CMD = -$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 
 # Clean Zephyr things too
 clean: z_clean
 
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
+
+.PHONY: prj.conf
+prj.conf: prj_base.conf
+	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
+
+test:
+	cd ../tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"

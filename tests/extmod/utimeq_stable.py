@@ -2,8 +2,7 @@ try:
     from utimeq import utimeq
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 h = utimeq(10)
 

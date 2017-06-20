@@ -6,7 +6,8 @@
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
-#define MICROPY_MEM_STATS           (0)
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
+#define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -21,6 +22,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
+#define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
@@ -33,11 +35,12 @@
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
+#define MICROPY_VFS                 (1)
 
 // type definitions for the specific machine
-
-#define BYTES_PER_WORD (4)
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 
@@ -56,6 +59,13 @@ typedef long mp_off_t;
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+
+// extra built-in modules to add to the list of known ones
+extern const struct _mp_obj_module_t mp_module_uos;
+
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
+    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

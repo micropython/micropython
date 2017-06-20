@@ -1,5 +1,9 @@
 # This tests that printing recursive data structure doesn't lead to segfault.
-import uio as io
+try:
+    import uio as io
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 l = [1, 2, 3, None]
 l[-1] = l

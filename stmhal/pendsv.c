@@ -29,6 +29,7 @@
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
+#include "lib/utils/interrupt_char.h"
 #include "pendsv.h"
 #include "irq.h"
 
@@ -52,12 +53,12 @@ void pendsv_init(void) {
 // PENDSV feature.  This will wait until all interrupts are finished then raise
 // the given exception object using nlr_jump in the context of the top-level
 // thread.
-void pendsv_nlr_jump(void *o) {
+void pendsv_kbd_intr(void) {
     if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
-        MP_STATE_VM(mp_pending_exception) = o;
+        mp_keyboard_interrupt();
     } else {
         MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        pendsv_object = o;
+        pendsv_object = &MP_STATE_VM(mp_kbd_exception);
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }
 }
@@ -70,25 +71,57 @@ void pendsv_isr_handler(void) {
     // on entry to this (naked) function, stack has the following layout:
     //
     // stack layout with DEBUG disabled:
-    //   sp[6]: pc
-    //   sp[5]: ?
-    //   sp[4]: ?
-    //   sp[3]: ?
-    //   sp[2]: ?
-    //   sp[1]: ?
+    //   sp[6]: pc=r15
+    //   sp[5]: lr=r14
+    //   sp[4]: r12
+    //   sp[3]: r3
+    //   sp[2]: r2
+    //   sp[1]: r1
     //   sp[0]: r0
     //
     // stack layout with DEBUG enabled:
-    //   sp[8]: pc
-    //   sp[7]: lr
-    //   sp[6]: ?
-    //   sp[5]: ?
-    //   sp[4]: ?
-    //   sp[3]: ?
+    //   sp[8]: pc=r15
+    //   sp[7]: lr=r14
+    //   sp[6]: r12
+    //   sp[5]: r3
+    //   sp[4]: r2
+    //   sp[3]: r1
     //   sp[2]: r0
     //   sp[1]: 0xfffffff9
     //   sp[0]: ?
 
+#if MICROPY_PY_THREAD
+    __asm volatile (
+        "ldr r1, pendsv_object_ptr\n"
+        "ldr r0, [r1]\n"
+        "cmp r0, 0\n"
+        "beq .no_obj\n"
+        "str r0, [sp, #0]\n"            // store to r0 on stack
+        "mov r0, #0\n"
+        "str r0, [r1]\n"                // clear pendsv_object
+        "ldr r0, nlr_jump_ptr\n"
+        "str r0, [sp, #24]\n"           // store to pc on stack
+        "bx lr\n"                       // return from interrupt; will return to nlr_jump
+
+        ".no_obj:\n"                    // pendsv_object==NULL
+        "push {r4-r11, lr}\n"
+        "vpush {s16-s31}\n"
+        "mrs r5, primask\n"             // save PRIMASK in r5
+        "cpsid i\n"                     // disable interrupts while we change stacks
+        "mov r0, sp\n"                  // pass sp to save
+        "mov r4, lr\n"                  // save lr because we are making a call
+        "bl pyb_thread_next\n"          // get next thread to execute
+        "mov lr, r4\n"                  // restore lr
+        "mov sp, r0\n"                  // switch stacks
+        "msr primask, r5\n"             // reenable interrupts
+        "vpop {s16-s31}\n"
+        "pop {r4-r11, lr}\n"
+        "bx lr\n"                       // return from interrupt; will return to new thread
+        ".align 2\n"
+        "pendsv_object_ptr: .word pendsv_object\n"
+        "nlr_jump_ptr: .word nlr_jump\n"
+    );
+#else
     __asm volatile (
         "ldr r0, pendsv_object_ptr\n"
         "ldr r0, [r0]\n"
@@ -108,6 +141,7 @@ void pendsv_isr_handler(void) {
         "pendsv_object_ptr: .word pendsv_object\n"
         "nlr_jump_ptr: .word nlr_jump\n"
     );
+#endif
 
     /*
     uint32_t x[2] = {0x424242, 0xdeaddead};

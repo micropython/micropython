@@ -34,11 +34,253 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
-#include "modwlan.h"
 #include "modusocket.h"
 #include "mpexception.h"
+
+/******************************************************************************/
+// The following set of macros and functions provide a glue between the CC3100
+// simplelink layer and the functions/methods provided by the usocket module.
+// They were historically in a separate file because usocket was designed to
+// work with multiple NICs, and the wlan_XXX functions just provided one
+// particular NIC implementation (that of the CC3100).  But the CC3200 port only
+// supports a single NIC (being the CC3100) so it's unnecessary and inefficient
+// to provide an intermediate wrapper layer.  Hence the wlan_XXX functions
+// are provided below as static functions so they can be inlined directly by
+// the corresponding usocket calls.
+
+#define WLAN_MAX_RX_SIZE                16000
+#define WLAN_MAX_TX_SIZE                1476
+
+#define MAKE_SOCKADDR(addr, ip, port)       SlSockAddr_t addr; \
+                                            addr.sa_family = SL_AF_INET; \
+                                            addr.sa_data[0] = port >> 8; \
+                                            addr.sa_data[1] = port; \
+                                            addr.sa_data[2] = ip[3]; \
+                                            addr.sa_data[3] = ip[2]; \
+                                            addr.sa_data[4] = ip[1]; \
+                                            addr.sa_data[5] = ip[0];
+
+#define UNPACK_SOCKADDR(addr, ip, port)     port = (addr.sa_data[0] << 8) | addr.sa_data[1]; \
+                                            ip[0] = addr.sa_data[5]; \
+                                            ip[1] = addr.sa_data[4]; \
+                                            ip[2] = addr.sa_data[3]; \
+                                            ip[3] = addr.sa_data[2];
+
+STATIC int wlan_gethostbyname(const char *name, mp_uint_t len, uint8_t *out_ip, uint8_t family) {
+    uint32_t ip;
+    int result = sl_NetAppDnsGetHostByName((_i8 *)name, (_u16)len, (_u32*)&ip, (_u8)family);
+    out_ip[0] = ip;
+    out_ip[1] = ip >> 8;
+    out_ip[2] = ip >> 16;
+    out_ip[3] = ip >> 24;
+    return result;
+}
+
+STATIC int wlan_socket_socket(mod_network_socket_obj_t *s, int *_errno) {
+    int16_t sd = sl_Socket(s->sock_base.u_param.domain, s->sock_base.u_param.type, s->sock_base.u_param.proto);
+    if (sd < 0) {
+        *_errno = sd;
+        return -1;
+    }
+    s->sock_base.sd = sd;
+    return 0;
+}
+
+STATIC void wlan_socket_close(mod_network_socket_obj_t *s) {
+    // this is to prevent the finalizer to close a socket that failed when being created
+    if (s->sock_base.sd >= 0) {
+        modusocket_socket_delete(s->sock_base.sd);
+        sl_Close(s->sock_base.sd);
+        s->sock_base.sd = -1;
+    }
+}
+
+STATIC int wlan_socket_bind(mod_network_socket_obj_t *s, byte *ip, mp_uint_t port, int *_errno) {
+    MAKE_SOCKADDR(addr, ip, port)
+    int ret = sl_Bind(s->sock_base.sd, &addr, sizeof(addr));
+    if (ret != 0) {
+        *_errno = ret;
+        return -1;
+    }
+    return 0;
+}
+
+STATIC int wlan_socket_listen(mod_network_socket_obj_t *s, mp_int_t backlog, int *_errno) {
+    int ret = sl_Listen(s->sock_base.sd, backlog);
+    if (ret != 0) {
+        *_errno = ret;
+        return -1;
+    }
+    return 0;
+}
+
+STATIC int wlan_socket_accept(mod_network_socket_obj_t *s, mod_network_socket_obj_t *s2, byte *ip, mp_uint_t *port, int *_errno) {
+    // accept incoming connection
+    int16_t sd;
+    SlSockAddr_t addr;
+    SlSocklen_t addr_len = sizeof(addr);
+
+    sd = sl_Accept(s->sock_base.sd, &addr, &addr_len);
+    // save the socket descriptor
+    s2->sock_base.sd = sd;
+    if (sd < 0) {
+        *_errno = sd;
+        return -1;
+    }
+
+    // return ip and port
+    UNPACK_SOCKADDR(addr, ip, *port);
+    return 0;
+}
+
+STATIC int wlan_socket_connect(mod_network_socket_obj_t *s, byte *ip, mp_uint_t port, int *_errno) {
+    MAKE_SOCKADDR(addr, ip, port)
+    int ret = sl_Connect(s->sock_base.sd, &addr, sizeof(addr));
+    if (ret != 0) {
+        *_errno = ret;
+        return -1;
+    }
+    return 0;
+}
+
+STATIC int wlan_socket_send(mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, int *_errno) {
+    mp_int_t bytes = 0;
+    if (len > 0) {
+        bytes = sl_Send(s->sock_base.sd, (const void *)buf, len, 0);
+    }
+    if (bytes <= 0) {
+        *_errno = bytes;
+        return -1;
+    }
+    return bytes;
+}
+
+STATIC int wlan_socket_recv(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, int *_errno) {
+    int ret = sl_Recv(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0);
+    if (ret < 0) {
+        *_errno = ret;
+        return -1;
+    }
+    return ret;
+}
+
+STATIC int wlan_socket_sendto( mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
+    MAKE_SOCKADDR(addr, ip, port)
+    int ret = sl_SendTo(s->sock_base.sd, (byte*)buf, len, 0, (SlSockAddr_t*)&addr, sizeof(addr));
+    if (ret < 0) {
+        *_errno = ret;
+        return -1;
+    }
+    return ret;
+}
+
+STATIC int wlan_socket_recvfrom(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
+    SlSockAddr_t addr;
+    SlSocklen_t addr_len = sizeof(addr);
+    mp_int_t ret = sl_RecvFrom(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0, &addr, &addr_len);
+    if (ret < 0) {
+        *_errno = ret;
+        return -1;
+    }
+    UNPACK_SOCKADDR(addr, ip, *port);
+    return ret;
+}
+
+STATIC int wlan_socket_setsockopt(mod_network_socket_obj_t *s, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
+    int ret = sl_SetSockOpt(s->sock_base.sd, level, opt, optval, optlen);
+    if (ret < 0) {
+        *_errno = ret;
+        return -1;
+    }
+    return 0;
+}
+
+STATIC int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int *_errno) {
+    int ret;
+    bool has_timeout;
+    if (timeout_s == 0 || timeout_s == -1) {
+        SlSockNonblocking_t option;
+        if (timeout_s == 0) {
+            // set non-blocking mode
+            option.NonblockingEnabled = 1;
+        } else {
+            // set blocking mode
+            option.NonblockingEnabled = 0;
+        }
+        ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &option, sizeof(option));
+        has_timeout = false;
+    } else {
+        // set timeout
+        struct SlTimeval_t timeVal;
+        timeVal.tv_sec = timeout_s;       // seconds
+        timeVal.tv_usec = 0;              // microseconds. 10000 microseconds resolution
+        ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_RCVTIMEO, &timeVal, sizeof(timeVal));
+        has_timeout = true;
+    }
+
+    if (ret != 0) {
+        *_errno = ret;
+        return -1;
+    }
+
+    s->sock_base.has_timeout = has_timeout;
+    return 0;
+}
+
+STATIC int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp_uint_t arg, int *_errno) {
+    mp_int_t ret;
+    if (request == MP_STREAM_POLL) {
+        mp_uint_t flags = arg;
+        ret = 0;
+        int32_t sd = s->sock_base.sd;
+
+        // init fds
+        SlFdSet_t rfds, wfds, xfds;
+        SL_FD_ZERO(&rfds);
+        SL_FD_ZERO(&wfds);
+        SL_FD_ZERO(&xfds);
+
+        // set fds if needed
+        if (flags & MP_STREAM_POLL_RD) {
+            SL_FD_SET(sd, &rfds);
+        }
+        if (flags & MP_STREAM_POLL_WR) {
+            SL_FD_SET(sd, &wfds);
+        }
+        if (flags & MP_STREAM_POLL_HUP) {
+            SL_FD_SET(sd, &xfds);
+        }
+
+        // call simplelink's select with minimum timeout
+        SlTimeval_t tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 1;
+        int32_t nfds = sl_Select(sd + 1, &rfds, &wfds, &xfds, &tv);
+
+        // check for errors
+        if (nfds == -1) {
+            *_errno = nfds;
+            return -1;
+        }
+
+        // check return of select
+        if (SL_FD_ISSET(sd, &rfds)) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if (SL_FD_ISSET(sd, &wfds)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+        if (SL_FD_ISSET(sd, &xfds)) {
+            ret |= MP_STREAM_POLL_HUP;
+        }
+    } else {
+        *_errno = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
+}
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS
@@ -95,13 +337,13 @@ void modusocket_socket_delete (int16_t sd) {
 }
 
 void modusocket_enter_sleep (void) {
-    fd_set socketset;
+    SlFdSet_t socketset;
     int16_t maxfd = 0;
 
     for (int i = 0; i < MOD_NETWORK_MAX_SOCKETS; i++) {
         int16_t sd;
         if ((sd = modusocket_sockets[i].sd) >= 0) {
-            FD_SET(sd, &socketset);
+            SL_FD_SET(sd, &socketset);
             maxfd = (maxfd > sd) ? maxfd : sd;
         }
     }
@@ -133,9 +375,9 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     // create socket object
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
     s->base.type = (mp_obj_t)&socket_type;
-    s->sock_base.u_param.domain = AF_INET;
-    s->sock_base.u_param.type = SOCK_STREAM;
-    s->sock_base.u_param.proto = IPPROTO_TCP;
+    s->sock_base.u_param.domain = SL_AF_INET;
+    s->sock_base.u_param.type = SL_SOCK_STREAM;
+    s->sock_base.u_param.proto = SL_IPPROTO_TCP;
     s->sock_base.u_param.fileno = -1;
     s->sock_base.has_timeout = false;
     s->sock_base.cert_req = false;
@@ -180,7 +422,7 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_LITTLE);
 
     // call the NIC to bind the socket
-    int _errno;
+    int _errno = 0;
     if (wlan_socket_bind(self, ip, port, &_errno) != 0) {
         mp_raise_OSError(-_errno);
     }
@@ -217,8 +459,8 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 
     // accept the incoming connection
     uint8_t ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
-    mp_uint_t port;
-    int _errno;
+    mp_uint_t port = 0;
+    int _errno = 0;
     if (wlan_socket_accept(self, socket2, ip, &port, &_errno) != 0) {
         mp_raise_OSError(-_errno);
     }
@@ -277,8 +519,8 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     int _errno;
     mp_int_t ret = wlan_socket_recv(self, (byte*)vstr.buf, len, &_errno);
     if (ret < 0) {
-        if (_errno == EAGAIN && self->sock_base.has_timeout) {
-            mp_raise_msg(&mp_type_TimeoutError, "timed out");
+        if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
         mp_raise_OSError(-_errno);
     }
@@ -304,7 +546,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
     mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_LITTLE);
 
     // call the nic to sendto
-    int _errno;
+    int _errno = 0;
     mp_int_t ret = wlan_socket_sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
     if (ret < 0) {
         mp_raise_OSError(-_errno);
@@ -319,12 +561,12 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(len_in));
     byte ip[4];
-    mp_uint_t port;
-    int _errno;
+    mp_uint_t port = 0;
+    int _errno = 0;
     mp_int_t ret = wlan_socket_recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret < 0) {
-        if (_errno == EAGAIN && self->sock_base.has_timeout) {
-            mp_raise_msg(&mp_type_TimeoutError, "timed out");
+        if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
         mp_raise_OSError(-_errno);
     }
@@ -495,19 +737,19 @@ STATIC const mp_obj_type_t socket_type = {
 // function usocket.getaddrinfo(host, port)
 /// \function getaddrinfo(host, port)
 STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
-    mp_uint_t hlen;
+    size_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
     mp_int_t port = mp_obj_get_int(port_in);
 
     // ipv4 only
     uint8_t out_ip[MOD_NETWORK_IPV4ADDR_BUF_SIZE];
-    int32_t result = wlan_gethostbyname(host, hlen, out_ip, AF_INET);
+    int32_t result = wlan_gethostbyname(host, hlen, out_ip, SL_AF_INET);
     if (result < 0) {
         mp_raise_OSError(-result);
     }
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
-    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(AF_INET);
-    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SOCK_STREAM);
+    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(SL_AF_INET);
+    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(SL_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_LITTLE);
@@ -521,19 +763,15 @@ STATIC const mp_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket),          (mp_obj_t)&socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo),     (mp_obj_t)&mod_usocket_getaddrinfo_obj },
 
-    // class exceptions
-    { MP_OBJ_NEW_QSTR(MP_QSTR_error),           (mp_obj_t)&mp_type_OSError },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),         (mp_obj_t)&mp_type_TimeoutError },
-
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET),         MP_OBJ_NEW_SMALL_INT(AF_INET) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET),         MP_OBJ_NEW_SMALL_INT(SL_AF_INET) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM),     MP_OBJ_NEW_SMALL_INT(SOCK_STREAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM),      MP_OBJ_NEW_SMALL_INT(SOCK_DGRAM) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM),     MP_OBJ_NEW_SMALL_INT(SL_SOCK_STREAM) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM),      MP_OBJ_NEW_SMALL_INT(SL_SOCK_DGRAM) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_SEC),     MP_OBJ_NEW_SMALL_INT(SL_SEC_SOCKET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP),     MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP),     MP_OBJ_NEW_SMALL_INT(IPPROTO_UDP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP),     MP_OBJ_NEW_SMALL_INT(SL_IPPROTO_TCP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP),     MP_OBJ_NEW_SMALL_INT(SL_IPPROTO_UDP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals_table);

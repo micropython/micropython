@@ -274,7 +274,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 
 STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
-    mp_uint_t len;
+    size_t len;
     const char *buf = mp_obj_str_get_data(obj, &len);
     vstr_t vstr = {len, len, (char*)buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0};

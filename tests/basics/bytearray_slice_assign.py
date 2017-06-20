@@ -2,8 +2,7 @@ try:
     bytearray()[:] = bytearray()
 except TypeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # test slices; only 2 argument version supported by Micro Python at the moment
 x = bytearray(range(10))
@@ -50,6 +49,11 @@ print(b)
 b = bytearray(10)
 b[:-1] = bytearray(500)
 print(len(b), b[0], b[-1])
+
+# extension with self on RHS
+b = bytearray(x)
+b[4:] = b
+print(b)
 
 # Assignment of bytes to array slice
 b = bytearray(2)

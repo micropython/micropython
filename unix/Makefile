@@ -2,6 +2,7 @@
 include ../py/mkenv.mk
 
 FROZEN_DIR = scripts
+FROZEN_MPY_DIR = modules
 
 # define main target
 PROG = micropython
@@ -17,13 +18,12 @@ include ../py/py.mk
 
 INC +=  -I.
 INC +=  -I..
-INC += -I../lib/timeutils
 INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -143,6 +143,7 @@ SRC_C = \
 	file.c \
 	modmachine.c \
 	modos.c \
+	moduos_vfs.c \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
@@ -157,8 +158,8 @@ LIB_SRC_C = $(addprefix lib/,\
 
 # FatFS VFS support
 LIB_SRC_C += $(addprefix lib/,\
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	)
 
 OBJ = $(PY_O)
@@ -210,10 +211,10 @@ fast:
 # build a minimal interpreter
 minimal:
 	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
-	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= \
+	    BUILD=build-minimal PROG=micropython_minimal FROZEN_DIR= FROZEN_MPY_DIR= \
 	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
 	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
-	    MICROPY_USE_READLINE=0 MICROPY_FATFS=0
+	    MICROPY_USE_READLINE=0
 
 # build interpreter with nan-boxing as object model
 nanbox:
@@ -234,7 +235,10 @@ freedos:
 	PROG=micropython_freedos \
 	MICROPY_PY_SOCKET=0 \
 	MICROPY_PY_FFI=0 \
-	MICROPY_PY_JNI=0
+	MICROPY_PY_JNI=0 \
+	MICROPY_PY_BTREE=0 \
+	MICROPY_PY_THREAD=0 \
+	MICROPY_PY_USSL=0
 
 # build an interpreter for coverage testing and do the testing
 coverage:
@@ -258,7 +262,7 @@ coverage_test: coverage
 	gcov -o build-coverage/extmod ../extmod/*.c
 
 # Value of configure's --host= option (required for cross-compilation).
-# Deduce it from CROSS_COMPILE by default, but can be overriden.
+# Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)
 CROSS_COMPILE_HOST = --host=$(patsubst %-,%,$(CROSS_COMPILE))
 else
@@ -274,15 +278,15 @@ libffi:
 	cd ../lib/libffi; ./autogen.sh
 	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
-	make install-exec-recursive; make -C include install-data-am
+	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
 axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a: ../lib/axtls/README | $(OBJ_DIRS)
 	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+	cd ../lib/axtls; $(MAKE) oldconfig -B
+	cd ../lib/axtls; $(MAKE) clean
+	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
 	cp ../lib/axtls/_stage/libaxtls.a $@
 
 ../lib/axtls/README:

@@ -28,8 +28,9 @@
 
 #include "py/obj.h"
 
-void mp_module_init(void);
-void mp_module_deinit(void);
+extern const mp_map_t mp_builtin_module_map;
+extern const mp_map_t mp_builtin_module_weak_links_map;
+
 mp_obj_t mp_module_get(qstr module_name);
 void mp_module_register(qstr qstr, mp_obj_t module);
 

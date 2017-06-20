@@ -26,7 +26,7 @@
 #ifndef __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
 #define __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
 
-#include "extmod/fsusermount.h"
+#include "extmod/vfs_fat.h"
 
 extern void flash_init_vfs(fs_user_mount_t *vfs);
 extern void flash_flush(void);

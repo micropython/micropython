@@ -1,0 +1,28 @@
+/
+['test.txt']
+['test.txt']
+(16384, 0, 0, 0, 0, 0, 0)
+(16384, 0, 0, 0, 0, 0, 0)
+(32768, 0, 0, 0, 0, 0, 5)
+(32768, 0, 0, 0, 0, 0, 5)
+hello
+['test2.txt']
+['test3.txt']
+['test4.txt']
+['test5.txt']
+['test5.txt', 'dir']
+['test5.txt', 'dir', 'dir2']
+['subdir']
+mkdir OSError True
+mkdir OSError True
+mkdir OSError True
+mkdir OSError True
+mkdir OSError True
+(32768, 0, 0, 0, 0, 0, 5)
+['sys', 'test5.txt', 'dir', 'dir2']
+[]
+[]
+['sys', 'dir']
+/
+['sys']
+[]

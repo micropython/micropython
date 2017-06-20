@@ -1,4 +1,9 @@
 # test builtin delattr
+try:
+    delattr
+except:
+    print("SKIP")
+    raise SystemExit
 
 class A: pass
 a = A()

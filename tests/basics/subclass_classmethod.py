@@ -5,6 +5,12 @@ class Base:
     def foo(cls):
         print(cls.__name__)
 
+try:
+    Base.__name__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
 class Sub(Base):
     pass
 

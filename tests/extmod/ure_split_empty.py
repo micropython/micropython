@@ -4,7 +4,11 @@
 # behaviour will change in a future version.  MicroPython just stops
 # splitting as soon as an empty match is found.
 
-import ure as re
+try:
+    import ure as re
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 r = re.compile(" *")
 s = r.split("a b    c   foobar")

@@ -78,7 +78,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     // get the source
-    mp_uint_t str_len;
+    size_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // get the filename
@@ -128,7 +128,7 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     }
     #endif
 
-    mp_uint_t str_len;
+    size_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // create the lexer
@@ -136,9 +136,6 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     mp_lexer_t *lex;
     if (MICROPY_PY_BUILTINS_EXECFILE && parse_input_kind == MP_PARSE_SINGLE_INPUT) {
         lex = mp_lexer_new_from_file(str);
-        if (lex == NULL) {
-            mp_raise_msg_varg(&mp_type_OSError, "could not open file '%s'", str);
-        }
         parse_input_kind = MP_PARSE_FILE_INPUT;
     } else {
         lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);

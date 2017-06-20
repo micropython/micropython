@@ -28,11 +28,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/fatfs/ff.h"
-#include "extmod/fsusermount.h"
+#include "lib/oofatfs/ff.h"
 
 #include "asf/sam0/drivers/nvm/nvm.h"
 #include "asf/sam0/drivers/port/port.h"
