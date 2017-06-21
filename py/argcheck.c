@@ -33,7 +33,7 @@
 void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
     // NOTE(tannewt): This prevents this function from being optimized away.
     // Without it, functions can crash when reading invalid args.
-    asm ("");
+    __asm volatile ("");
     // TODO maybe take the function name as an argument so we can print nicer error messages
 
     if (n_kw && !takes_kw) {
