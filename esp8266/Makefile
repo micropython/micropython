@@ -68,7 +68,6 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
-	esponewire.c \
 	espneopixel.c \
 	espapa102.c \
 	intr.c \
