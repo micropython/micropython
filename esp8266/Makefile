@@ -84,7 +84,6 @@ SRC_C = \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
-	modonewire.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	axtls_helpers.c \
@@ -93,6 +92,7 @@ SRC_C = \
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
 	modlwip.c \
+	modonewire.c \
         )
 
 LIB_SRC_C = $(addprefix lib/,\
