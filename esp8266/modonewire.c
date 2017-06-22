@@ -33,27 +33,25 @@
 /******************************************************************************/
 // Low-level 1-Wire routines
 
-#define TIMING_RESET1 (0)
-#define TIMING_RESET2 (1)
-#define TIMING_RESET3 (2)
-#define TIMING_READ1 (3)
-#define TIMING_READ2 (4)
-#define TIMING_READ3 (5)
-#define TIMING_WRITE1 (6)
-#define TIMING_WRITE2 (7)
-#define TIMING_WRITE3 (8)
-
-STATIC uint16_t esp_onewire_timings[9] = {480, 40, 420, 5, 5, 40, 10, 50, 10};
+#define TIMING_RESET1 (480)
+#define TIMING_RESET2 (40)
+#define TIMING_RESET3 (420)
+#define TIMING_READ1 (5)
+#define TIMING_READ2 (5)
+#define TIMING_READ3 (40)
+#define TIMING_WRITE1 (10)
+#define TIMING_WRITE2 (50)
+#define TIMING_WRITE3 (10)
 
 STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
     mp_hal_pin_write(pin, 0);
-    mp_hal_delay_us(esp_onewire_timings[TIMING_RESET1]);
+    mp_hal_delay_us(TIMING_RESET1);
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_write(pin, 1);
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_RESET2]);
+    mp_hal_delay_us_fast(TIMING_RESET2);
     int status = !mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
-    mp_hal_delay_us(esp_onewire_timings[TIMING_RESET3]);
+    mp_hal_delay_us(TIMING_RESET3);
     return status;
 }
 
@@ -61,40 +59,30 @@ STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
     mp_hal_pin_write(pin, 1);
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_write(pin, 0);
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_READ1]);
+    mp_hal_delay_us_fast(TIMING_READ1);
     mp_hal_pin_write(pin, 1);
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_READ2]);
+    mp_hal_delay_us_fast(TIMING_READ2);
     int value = mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_READ3]);
+    mp_hal_delay_us_fast(TIMING_READ3);
     return value;
 }
 
 STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
     uint32_t i = mp_hal_quiet_timing_enter();
     mp_hal_pin_write(pin, 0);
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_WRITE1]);
+    mp_hal_delay_us_fast(TIMING_WRITE1);
     if (value) {
         mp_hal_pin_write(pin, 1);
     }
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_WRITE2]);
+    mp_hal_delay_us_fast(TIMING_WRITE2);
     mp_hal_pin_write(pin, 1);
-    mp_hal_delay_us_fast(esp_onewire_timings[TIMING_WRITE3]);
+    mp_hal_delay_us_fast(TIMING_WRITE3);
     mp_hal_quiet_timing_exit(i);
 }
 
 /******************************************************************************/
 // MicroPython bindings
-
-STATIC mp_obj_t onewire_timings(mp_obj_t timings_in) {
-    mp_obj_t *items;
-    mp_obj_get_array_fixed_n(timings_in, 9, &items);
-    for (int i = 0; i < 9; ++i) {
-        esp_onewire_timings[i] = mp_obj_get_int(items[i]);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_timings_obj, onewire_timings);
 
 STATIC mp_obj_t onewire_reset(mp_obj_t pin_in) {
     return mp_obj_new_bool(onewire_bus_reset(mp_hal_get_pin_obj(pin_in)));
@@ -158,7 +146,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_crc8_obj, onewire_crc8);
 STATIC const mp_map_elem_t onewire_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_onewire) },
 
-    { MP_ROM_QSTR(MP_QSTR_timings), MP_ROM_PTR((mp_obj_t)&onewire_timings_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR((mp_obj_t)&onewire_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_readbit), MP_ROM_PTR((mp_obj_t)&onewire_readbit_obj) },
     { MP_ROM_QSTR(MP_QSTR_readbyte), MP_ROM_PTR((mp_obj_t)&onewire_readbyte_obj) },
