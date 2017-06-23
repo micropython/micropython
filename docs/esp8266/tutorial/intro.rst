@@ -50,12 +50,16 @@ From here, you have 3 main choices
 * Daily firmware builds for 1024kb modules and above.
 * Daily firmware builds for 512kb modules.
 
-The best bet is nearly always to go for the Stable firmware builds.
-An exception to this though is if you have an ESP8266 module with only 512kb
-of onboard storage. You can easily tell by trying to load a Stable firmware 
-build and if you get the error below, then you may have to use the Daily 
-firmware builds for 512kb modules.
-    WARNING: Unlikely to work as data goes beyond end of flash.
+If you just start with MicroPython, the best bet is to go for the Stable
+firmware builds. If you are advanced, experienced MicroPython ESP8266 user
+who would like to follow development closely and help with testing new
+features, there are daily builds (note: you actually may need some
+development experience, e.g. being ready to follow git history to know
+what new changes and features were introduced).
+
+Support for 512kb modules is provided on a feature preview basis. For end
+users, it's recommended to use modules with flash of 1024kb or more. As
+such, only daily builds for 512kb modules are provided.
 
 Deploying the firmware
 ----------------------
