@@ -40,7 +40,7 @@ script:
   - make -C qemu-arm test
   - make -C stmhal
   - make -C stmhal BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
-  - make -C stmhal BOARD=STM32F7DISC
+  - make -C stmhal BOARD=STM32F769DISC
   - make -C stmhal BOARD=STM32L476DISC
   - make -C teensy
   - make -C cc3200 BTARGET=application BTYPE=release
