@@ -48,7 +48,17 @@ INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 
-CFLAGS_CORTEX_M = -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+# Basic Cortex-M flags
+CFLAGS_CORTEX_M = -mthumb
+
+# Select hardware floating-point support
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx))
+CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
+else
+CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+endif
+
+# Options for particular MCU series
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
