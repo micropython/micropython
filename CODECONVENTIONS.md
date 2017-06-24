@@ -184,6 +184,16 @@ This is :ref:`reference <xref_target>`.
 :ref:`xref_target`).
 ~~~
 
+* Linking to external URL:
+```
+`link text <http://foo.com/...>`_
+```
+
+* Referencing builtin singleton objects:
+```
+``None``, ``True``, ``False``
+```
+
 * Use following syntax to create common description for more than one element:
 ~~~
 .. function:: foo(x)
@@ -192,10 +202,6 @@ This is :ref:`reference <xref_target>`.
    Description common to foo() and bar().
 ~~~
 
-* Linking to external URL:
-```
-`link text <http://foo.com/...>`_
-```
 
 More detailed guides and quickrefs:
 
