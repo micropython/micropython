@@ -132,6 +132,32 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
+int utf8_chk(uint8_t *p, int len) {
+    uint8_t need = 0;
+    uint8_t *end = p+len;
+    for (uint8_t ch; p < end; p++) {
+        ch = *p;
+        if (need) {
+            if (ch >= 0x80) {
+                need--;
+            } else {
+                // mismatch
+                return 0;
+            }
+        } else {
+            if (ch >= 0xc0) {
+                if (ch >= 0xf8) {
+                    return 0;
+                }
+                need = (0xe5 >> ((ch >> 3) & 0x6)) & 3;
+            } else if (ch >= 0x80) {
+                // mismatch
+                return 0;
+            }
+        }
+    }
+    return (need == 0); // no pending fragments allowed
+}
 mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
 #if MICROPY_CPYTHON_COMPAT
     if (n_kw != 0) {
@@ -161,6 +187,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
+                if(!utf8_chk((uint8_t *)str_data, str_len)) mp_raise_ValueError("Not a valid UTF-8 string");
                 mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
