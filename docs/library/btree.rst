@@ -82,18 +82,18 @@ Functions
    other parameters are optional and keyword-only, and allow to tweak advanced
    parameters of the database operation (most users will not need them):
 
-   * `flags` - Currently unused.
-   * `cachesize` - Suggested maximum memory cache size in bytes. For a
+   * *flags* - Currently unused.
+   * *cachesize* - Suggested maximum memory cache size in bytes. For a
      board with enough memory using larger values may improve performance.
      The value is only a recommendation, the module may use more memory if
      values set too low.
-   * `pagesize` - Page size used for the nodes in BTree. Acceptable range
+   * *pagesize* - Page size used for the nodes in BTree. Acceptable range
      is 512-65536. If 0, underlying I/O block size will be used (the best
      compromise between memory usage and performance).
-   * `minkeypage` - Minimum number of keys to store per page. Default value
+   * *minkeypage* - Minimum number of keys to store per page. Default value
      of 0 equivalent to 2.
 
-   Returns a `BTree` object, which implements a dictionary protocol (set
+   Returns a BTree object, which implements a dictionary protocol (set
    of methods), and some additional methods described below.
 
 Methods
@@ -112,10 +112,10 @@ Methods
    Flush any data in cache to the underlying stream.
 
 .. method:: btree.__getitem__(key)
-.. method:: btree.get(key, default=None)
-.. method:: btree.__setitem__(key, val)
-.. method:: btree.__detitem__(key)
-.. method:: btree.__contains__(key)
+            btree.get(key, default=None)
+            btree.__setitem__(key, val)
+            btree.__detitem__(key)
+            btree.__contains__(key)
 
    Standard dictionary methods.
 
@@ -125,20 +125,20 @@ Methods
    to get access to all keys in order.
 
 .. method:: btree.keys([start_key, [end_key, [flags]]])
-.. method:: btree.values([start_key, [end_key, [flags]]])
-.. method:: btree.items([start_key, [end_key, [flags]]])
+            btree.values([start_key, [end_key, [flags]]])
+            btree.items([start_key, [end_key, [flags]]])
 
    These methods are similar to standard dictionary methods, but also can
    take optional parameters to iterate over a key sub-range, instead of
-   the entire database. Note that for all 3 methods, `start_key` and
-   `end_key` arguments represent key values. For example, ``values()``
+   the entire database. Note that for all 3 methods, *start_key* and
+   *end_key* arguments represent key values. For example, `values()`
    method will iterate over values corresponding to they key range
-   given. None values for `start_key` means "from the first key", no
-   `end_key` or its value of None means "until the end of database".
-   By default, range is inclusive of `start_key` and exclusive of
-   `end_key`, you can include `end_key` in iteration by passing `flags`
+   given. None values for *start_key* means "from the first key", no
+   *end_key* or its value of None means "until the end of database".
+   By default, range is inclusive of *start_key* and exclusive of
+   *end_key*, you can include *end_key* in iteration by passing *flags*
    of `btree.INCL`. You can iterate in descending key direction
-   by passing `flags` of `btree.DESC`. The flags values can be ORed
+   by passing *flags* of `btree.DESC`. The flags values can be ORed
    together.
 
 Constants
