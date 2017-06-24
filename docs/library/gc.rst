@@ -24,6 +24,17 @@ Functions
 
    Return the number of bytes of heap RAM that are allocated.
 
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      This function is MicroPython extension.
+
 .. function:: mem_free()
 
-   Return the number of bytes of available heap RAM.
+   Return the number of bytes of available heap RAM, or -1 if this amount
+   is not known.
+
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      This function is MicroPython extension.
