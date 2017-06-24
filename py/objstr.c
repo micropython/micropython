@@ -161,6 +161,11 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
+                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+                if (!utf8_check(str_data, str_len)) {
+                    mp_raise_msg(&mp_type_UnicodeError, NULL);
+                }
+                #endif
                 mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
@@ -168,6 +173,11 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+                if (!utf8_check(bufinfo.buf, bufinfo.len)) {
+                    mp_raise_msg(&mp_type_UnicodeError, NULL);
+                }
+                #endif
                 return mp_obj_new_str(bufinfo.buf, bufinfo.len, false);
             }
     }

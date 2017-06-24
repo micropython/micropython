@@ -691,6 +691,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
 #endif
 
+// Whether to check for valid UTF-8 when converting bytes to str
+#ifndef MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+#define MICROPY_PY_BUILTINS_STR_UNICODE_CHECK (MICROPY_PY_BUILTINS_STR_UNICODE)
+#endif
+
 // Whether str.center() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_CENTER
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
