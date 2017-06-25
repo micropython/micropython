@@ -380,15 +380,15 @@ Constants
 ---------
 
 .. data:: lcd160cr.PORTRAIT
-.. data:: lcd160cr.LANDSCAPE
-.. data:: lcd160cr.PORTRAIT_UPSIDEDOWN
-.. data:: lcd160cr.LANDSCAPE_UPSIDEDOWN
+          lcd160cr.LANDSCAPE
+          lcd160cr.PORTRAIT_UPSIDEDOWN
+          lcd160cr.LANDSCAPE_UPSIDEDOWN
 
-   orientation of the display, used by :meth:`LCD160CR.set_orient`
+   Orientations of the display, used by :meth:`LCD160CR.set_orient`.
 
 .. data:: lcd160cr.STARTUP_DECO_NONE
-.. data:: lcd160cr.STARTUP_DECO_MLOGO
-.. data:: lcd160cr.STARTUP_DECO_INFO
+          lcd160cr.STARTUP_DECO_MLOGO
+          lcd160cr.STARTUP_DECO_INFO
 
-   type of start-up decoration, can be or'd together, used by
-   :meth:`LCD160CR.set_startup_deco`
+   Types of start-up decoration, can be OR'ed together, used by
+   :meth:`LCD160CR.set_startup_deco`.
