@@ -104,10 +104,7 @@ void init_flash_fs(void) {
     } else if (res != FR_OK) {
         return;
     }
-    mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
-    if (vfs == NULL) {
-        return;
-    }
+    mp_vfs_mount_t *vfs = &mp_vfs_mount_flash;
     vfs->str = "/";
     vfs->len = 1;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
@@ -584,9 +581,6 @@ int main(void) {
     mp_stack_ctrl_init();
     mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
 
-    // Initialise the local flash filesystem after the gc in case we need to
-    // grab memory from it. Create it if needed, mount in on /flash, and set it
-    // as current dir.
     init_flash_fs();
 
     // Reset everything and prep MicroPython to run boot.py.
@@ -599,7 +593,7 @@ int main(void) {
 
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
-    if (safe_mode == NO_SAFE_MODE) {
+    if (safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
         new_status_color(BOOT_RUNNING);
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         FIL file_pointer;
@@ -680,6 +674,10 @@ void gc_collect(void) {
     // pointers from CPU registers, and thus may function incorrectly.
     void *dummy;
     gc_collect_start();
+    // This collects root pointers from the first VFS entry which is statically
+    // allocated. This way we can do VFS operations prior to setting up the heap.
+    // This also means it can be done once on boot and not repeatedly.
+    gc_collect_root((void**)&mp_vfs_mount_flash, sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
     // This naively collects all object references from an approximate stack
     // range.
     gc_collect_root(&dummy, ((mp_uint_t)&_estack - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
@@ -687,11 +685,13 @@ void gc_collect(void) {
 }
 
 void NORETURN nlr_jump_fail(void *val) {
-    while (1);
+    HardFault_Handler();
+    while (true) {}
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    HardFault_Handler();
+    while (true) {}
 }
 
 #ifndef NDEBUG

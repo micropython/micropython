@@ -29,6 +29,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "extmod/vfs.h"
+
 #include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/parsenum.h"
@@ -114,9 +116,24 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_VFS
+    #if MICROPY_FATFS_NUM_PERSISTENT > 0
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+    if (vfs != NULL) {
+        MP_STATE_VM(vfs_cur) = vfs;
+    }
+    // Skip forward until the vfs->next pointer is the first vfs that shouldn't
+    // persist.
+    uint8_t i = 1;
+    while (vfs != NULL && i < MICROPY_FATFS_NUM_PERSISTENT) {
+        vfs = vfs->next;
+        i++;
+    }
+    vfs->next = NULL;
+    #else
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
     MP_STATE_VM(vfs_mount_table) = NULL;
+    #endif
     #endif
 
     #if MICROPY_PY_THREAD_GIL

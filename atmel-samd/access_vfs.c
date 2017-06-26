@@ -42,6 +42,17 @@
 
 #define VFS_INDEX 0
 
+static fs_user_mount_t* get_vfs(int index) {
+    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
+    for (uint8_t i = 0; current_mount != NULL; i++) {
+        if (i == VFS_INDEX) {
+            return (fs_user_mount_t *) current_mount->obj;
+        }
+        current_mount = current_mount->next;
+    }
+    return NULL;
+}
+
 //! This function tests memory state, and starts memory initialization
 //! @return                            Ctrl_status
 //!   It is ready                ->    CTRL_GOOD
@@ -50,12 +61,9 @@
 //!   An error occurred          ->    CTRL_FAIL
 Ctrl_status vfs_test_unit_ready(void)
 {
-    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
-    for (uint8_t i = 0; current_mount != NULL; i++) {
-        if (i == VFS_INDEX) {
-            return CTRL_GOOD;
-        }
-        current_mount = current_mount->next;
+    fs_user_mount_t* current_mount = get_vfs(VFS_INDEX);
+    if (current_mount != NULL) {
+        return CTRL_GOOD;
     }
     return CTRL_NO_PRESENT;
 }
@@ -69,7 +77,9 @@ Ctrl_status vfs_test_unit_ready(void)
 //!   An error occurred          ->    CTRL_FAIL
 Ctrl_status vfs_read_capacity(uint32_t *last_valid_sector)
 {
-    if (disk_ioctl(VFS_INDEX, GET_SECTOR_COUNT, last_valid_sector) != RES_OK) {
+    fs_user_mount_t * vfs = get_vfs(VFS_INDEX);
+    if (vfs == NULL ||
+        disk_ioctl(vfs, GET_SECTOR_COUNT, last_valid_sector) != RES_OK) {
         return CTRL_FAIL;
     }
     // Subtract one from the sector count to get the last valid sector.
@@ -83,20 +93,9 @@ Ctrl_status vfs_read_capacity(uint32_t *last_valid_sector)
 //!
 bool vfs_wr_protect(void)
 {
-    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
-    for (uint8_t i = 0; current_mount != NULL; i++) {
-        if (i == VFS_INDEX) {
-            break;
-        }
-        current_mount = current_mount->next;
-    }
-    if (current_mount == NULL) {
-        return true;
-    }
-    fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
-
+    fs_user_mount_t * vfs = get_vfs(VFS_INDEX);
     // This is used to determine the writeability of the disk from USB.
-    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
+    if (vfs == NULL || vfs->writeblocks[0] == MP_OBJ_NULL ||
         (vfs->flags & FSUSER_USB_WRITEABLE) == 0) {
         return true;
     }
@@ -110,11 +109,6 @@ bool vfs_wr_protect(void)
 bool vfs_removal(void)
 {
 	return true;
-}
-
-bool vfs_unload(bool unload)
-{
-	return unload;
 }
 
 // TODO(tannewt): Transfer more than a single sector at a time if we need more
@@ -132,9 +126,10 @@ bool vfs_unload(bool unload)
 //!
 Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 {
+    fs_user_mount_t * vfs = get_vfs(VFS_INDEX);
     uint8_t sector_buffer[FILESYSTEM_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
-        DRESULT result = disk_read(VFS_INDEX, sector_buffer, addr + sector, 1);
+        DRESULT result = disk_read(vfs, sector_buffer, addr + sector, 1);
         if (result == RES_PARERR) {
             return CTRL_NO_PRESENT;
         }
@@ -161,13 +156,17 @@ Ctrl_status vfs_usb_read_10(uint32_t addr, volatile uint16_t nb_sector)
 //!
 Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
 {
+    if (vfs_wr_protect()) {
+        return CTRL_FAIL;
+    }
+    fs_user_mount_t * vfs = get_vfs(VFS_INDEX);
     uint8_t sector_buffer[FILESYSTEM_BLOCK_SIZE];
     for (uint16_t sector = 0; sector < nb_sector; sector++) {
         if (!udi_msc_trans_block(false, sector_buffer, FILESYSTEM_BLOCK_SIZE, NULL)) {
             return CTRL_FAIL; // transfer aborted
         }
         uint32_t sector_address = addr + sector;
-        DRESULT result = disk_write(VFS_INDEX, sector_buffer, sector_address, 1);
+        DRESULT result = disk_write(vfs, sector_buffer, sector_address, 1);
         if (result == RES_PARERR) {
             return CTRL_NO_PRESENT;
         }
@@ -176,18 +175,6 @@ Ctrl_status vfs_usb_write_10(uint32_t addr, volatile uint16_t nb_sector)
         }
         // Since by getting here we assume the mount is read-only to MicroPython
         // lets update the cached FatFs sector if its the one we just wrote.
-        mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
-        for (uint8_t i = 0; current_mount != NULL; i++) {
-            if (i == VFS_INDEX) {
-                break;
-            }
-            current_mount = current_mount->next;
-        }
-        if (current_mount == NULL) {
-            return CTRL_NO_PRESENT;
-        }
-        fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
-
         #if _MAX_SS != _MIN_SS
         if (vfs->ssize == FILESYSTEM_BLOCK_SIZE) {
         #else

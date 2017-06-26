@@ -36,7 +36,6 @@ Ctrl_status vfs_test_unit_ready(void);
 Ctrl_status vfs_read_capacity(uint32_t *u32_nb_sector);
 bool        vfs_wr_protect(void);
 bool        vfs_removal(void);
-bool        vfs_unload(bool);
 Ctrl_status vfs_usb_read_10(uint32_t addr, uint16_t nb_sector);
 Ctrl_status vfs_usb_write_10(uint32_t addr, uint16_t nb_sector);
 
