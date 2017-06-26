@@ -329,14 +329,6 @@ void SystemClock_Config(void)
      regarding system frequency refer to product datasheet.  */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
     #endif 
-    #if (MICROPY_HW_CLK_USE_LSE)
-    /* Enable the  external Low Speed Oscillator for RTC functionalities */
-    RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_LSE;
-    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-        __fatal_error("HAL_RCC_OscConfig");
-    }
-    #endif
 
     /* Enable Oscillator set up the different clock sources */
     #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)    
