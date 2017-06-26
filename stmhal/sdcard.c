@@ -96,26 +96,17 @@
 
 #endif
 
-//If no custom SDIO pins defined, use the default ones
-#ifndef MICROPY_HW_SDMMC_D0
-    #define MICROPY_HW_SDMMC_D0 (pin_C8)
-#endif
-#ifndef MICROPY_HW_SDMMC_D1
-    #define MICROPY_HW_SDMMC_D1 (pin_C9)
-#endif
-#ifndef MICROPY_HW_SDMMC_D2
-    #define MICROPY_HW_SDMMC_D2 (pin_C10)
-#endif
-#ifndef MICROPY_HW_SDMMC_D3
-    #define MICROPY_HW_SDMMC_D3 (pin_C11)
-#endif
+// If no custom SDIO pins defined, use the default ones
 #ifndef MICROPY_HW_SDMMC_CK
-    #define MICROPY_HW_SDMMC_CK (pin_C12)
-#endif
-#ifndef MICROPY_HW_SDMMC_CMD
-    #define MICROPY_HW_SDMMC_CMD (pin_D2)
-#endif
 
+#define MICROPY_HW_SDMMC_D0 (pin_C8)
+#define MICROPY_HW_SDMMC_D1 (pin_C9)
+#define MICROPY_HW_SDMMC_D2 (pin_C10)
+#define MICROPY_HW_SDMMC_D3 (pin_C11)
+#define MICROPY_HW_SDMMC_CK (pin_C12)
+#define MICROPY_HW_SDMMC_CMD (pin_D2)
+
+#endif
 
 // TODO: Since SDIO is fundamentally half-duplex, we really only need to
 //       tie up one DMA channel. However, the HAL DMA API doesn't
