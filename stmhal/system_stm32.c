@@ -114,6 +114,14 @@ void __fatal_error(const char *msg);
 #define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x24003010)
 
+#if !defined MICROPY_HW_CLK_ABP1DIV
+#define MICROPY_HW_CLK_ABP1DIV RCC_HCLK_DIV4
+#endif
+
+#if !defined MICROPY_HW_CLK_ABP2DIV
+#define MICROPY_HW_CLK_ABP2DIV RCC_HCLK_DIV2
+#endif
+
 #if defined(MCU_SERIES_F7)
 const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
@@ -124,6 +132,15 @@ const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
 #define CONFIG_RCC_CR_1ST (RCC_CR_MSION)
 #define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_HSION || RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x00001000)
+
+#if !defined MICROPY_HW_CLK_ABP1DIV
+#define MICROPY_HW_CLK_ABP1DIV RCC_HCLK_DIV1
+#endif
+
+#if !defined MICROPY_HW_CLK_ABP2DIV
+#define MICROPY_HW_CLK_ABP2DIV RCC_HCLK_DIV1
+#endif
+
 /*
  * FIXME Do not know why I have to define these arrays here! they should be defined in the
  * hal_rcc-file!!
@@ -413,19 +430,10 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
     #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
     
-    /*Set up the peripheral bus clocks*/
-    #if !defined MICROPY_HW_CLK_ABP1DIV
-        #define MICROPY_HW_CLK_ABP1DIV RCC_HCLK_DIV4
-    #endif
-    #if !defined MICROPY_HW_CLK_ABP2DIV
-        #define MICROPY_HW_CLK_ABP2DIV RCC_HCLK_DIV2
-    #endif
+    // Set up the peripheral bus clocks
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_ABP1DIV;
     RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_ABP2DIV;
-    #elif defined(MCU_SERIES_L4)
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-    #endif
+
 #endif
   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
