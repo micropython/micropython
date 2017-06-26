@@ -50,8 +50,8 @@ From here, you have 3 main choices
 * Daily firmware builds for 1024kb modules and above.
 * Daily firmware builds for 512kb modules.
 
-If you just start with MicroPython, the best bet is to go for the Stable
-firmware builds. If you are advanced, experienced MicroPython ESP8266 user
+If you are just starting with MicroPython, the best bet is to go for the Stable
+firmware builds. If you are an advanced, experienced MicroPython ESP8266 user
 who would like to follow development closely and help with testing new
 features, there are daily builds (note: you actually may need some
 development experience, e.g. being ready to follow git history to know
