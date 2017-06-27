@@ -25,6 +25,7 @@
  */
 
 // options to control how Micro Python is built
+#define MICROPY_PY_IO_BUFFEREDWRITER (1)
 
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (64)
 #define MICROPY_ALLOC_PARSE_RULE_INIT (8)
@@ -40,6 +41,8 @@
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_HELPER_REPL         (1)
+#define MICROPY_REPL_EMACS_KEYS     (1)
+#define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
@@ -64,13 +67,13 @@
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
 #define MICROPY_PY_BUILTINS_PROPERTY (0)
 #define MICROPY_PY_BUILTINS_MIN_MAX (0)
-#define MICROPY_PY___FILE__         (0)
+#define MICROPY_PY___FILE__         (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_PY_GC               (0)
 #define MICROPY_PY_GC_COLLECT_RETVAL (0)
 #define MICROPY_PY_ARRAY            (0)
-#define MICROPY_PY_COLLECTIONS      (0)
+#define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
@@ -79,8 +82,8 @@
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_PLATFORM     "frosted"
-#define MICROPY_PY_SYS_MAXSIZE      (0)
-#define MICROPY_PY_SYS_STDFILES     (0)
+#define MICROPY_PY_SYS_MAXSIZE      (1)
+#define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UERRNO           (1)
@@ -91,6 +94,8 @@
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UHASHLIB         (0)
 #define MICROPY_PY_UBINASCII        (0)
+#define MICROPY_PY_MACHINE          (0)
+#define MICROPY_PY_MACHINE_PULSE    (0)
 
 
 #define MICROPY_PORT_ROOT_POINTERS \
@@ -111,6 +116,7 @@
 #endif
 
 extern const struct _mp_obj_module_t mp_module_os;
+extern const struct _mp_obj_module_t mp_module_uos_vfs;
 extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_termios;
@@ -118,6 +124,11 @@ extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 extern const struct _mp_obj_module_t mp_module_jni;
 
+#if MICROPY_PY_UOS_VFS
+#define MICROPY_PY_UOS_VFS_DEF { MP_ROM_QSTR(MP_QSTR_uos_vfs), MP_ROM_PTR(&mp_module_uos_vfs) },
+#else
+#define MICROPY_PY_UOS_VFS_DEF
+#endif
 #if MICROPY_PY_FFI
 #define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
 #else
@@ -155,19 +166,23 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_SOCKET_DEF \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
+    MICROPY_PY_UOS_VFS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
 
+// assume that if we already defined the obj repr then we also defined types
+#ifndef MICROPY_OBJ_REPR
 #ifdef __LP64__
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless for actual size.
+// regardless of actual size.
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
+#endif
 #endif
 
 #define BYTES_PER_WORD sizeof(mp_int_t)
@@ -178,6 +193,33 @@ typedef long long mp_off_t;
 #else
 typedef long mp_off_t;
 #endif
+
+void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
+void mp_unix_free_exec(void *ptr, mp_uint_t size);
+void mp_unix_mark_exec(void);
+#define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
+#define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
+#ifndef MICROPY_FORCE_PLAT_ALLOC_EXEC
+// Use MP_PLAT_ALLOC_EXEC for any executable memory allocation, including for FFI
+// (overriding libffi own implementation)
+#define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
+#endif
+
+#if MICROPY_PY_OS_DUPTERM
+#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+#else
+#include <unistd.h>
+#define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
+#endif
+
+
+
+
+#define MICROPY_PORT_BUILTINS \
+    { MP_ROM_QSTR(MP_QSTR_input), MP_ROM_PTR(&mp_builtin_input_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+
+#define MP_STATE_PORT MP_STATE_VM
 
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__

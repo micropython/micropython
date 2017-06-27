@@ -32,6 +32,7 @@
 #include "py/objstr.h"
 #include "py/objint.h"
 #include "py/stream.h"
+#include <stdio.h>
 
 #if MICROPY_PY_SYS
 
