@@ -113,9 +113,9 @@ Methods
    Sockets are automatically closed when they are garbage-collected, but it is recommended 
    to close() them explicitly, or to use a with statement around them.
 
-.. method:: socket.bind(address)
+.. method:: socket.bind((address, port))
 
-   Bind the socket to address. The socket must not already be bound.
+   Bind the socket to address and port. The socket must not already be bound.
 
 .. method:: socket.listen([backlog])
 
@@ -157,9 +157,9 @@ Methods
    Receive data from the socket. The return value is a bytes object representing the data
    received. The maximum amount of data to be received at once is specified by bufsize.
 
-.. method:: socket.sendto(bytes, address)
+.. method:: socket.sendto(bytes, (address, port))
 
-   Send data to the socket. The socket should not be connected to a remote socket, since the
+   Send data to the socket on 'port'. The socket should not be connected to a remote socket, since the
    destination socket is specified by `address`.
 
 .. method:: socket.recvfrom(bufsize)
