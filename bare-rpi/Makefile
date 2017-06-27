@@ -4,7 +4,7 @@ SRC=source/
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = $(SRC)qstrdefsport.h
-BOARD?=qemu
+BOARD?=rpi
 PIOS_BOARD ?= boards/$(BOARD)
 
 # include py core make definitions
@@ -27,18 +27,45 @@ ARMGCCLIBPATH=/usr/lib/gcc/arm-none-eabi/$(CCVERSION)/hard
 #CFLAGS_CORTEX_M4 = -marm -mtune=cortex-m4 -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_BUILD = -mcpu=$(CPU) -marm -mfpu=vfp -mfloat-abi=hard
 CCPU = $(CFLAGS_BUILD)
-CFLAGS = $(INC) -I$(LIB)PiOS -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_BUILD) $(COPT) -I$(LIB)PiOS/include/
-CFLAGS += -Os 
+CFLAGS += $(INC) -I$(LIB)PiOS -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_BUILD) $(COPT) -I$(LIB)PiOS/include/ -Os 
 
 LIST=kernel.list
 
 LDFLAGS = -nostdlib -Map=$@.map --no-undefined -T $(LDSCRIPT) #--cref -T kernel.ld
-LIBS = -L. -lc -lm -lpios -L$(ARMGCCLIBPATH) -lgcc
+LIBS = -L. -lpios -L$(ARMGCCLIBPATH) -lgcc #-lc -lm
+
+SRC_LIB = $(addprefix lib/,\
+	libc/string0.c \
+	libm/math.c \
+	libm/thumb_vfp_sqrtf.c \
+	libm/asinfacosf.c \
+	libm/atanf.c \
+	libm/atan2f.c \
+	libm/fmodf.c \
+	libm/roundf.c \
+	libm/log1pf.c \
+	libm/acoshf.c \
+	libm/asinhf.c \
+	libm/atanhf.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/erf_lgamma.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
+	libm/sf_frexp.c \
+	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/sf_erf.c \
+	libm/wf_lgamma.c \
+	libm/wf_tgamma.c)
 
 SRC_C = \
 	$(SRC)main.c \
 	$(SRC)irq.c \
-	$(SRC)syscalls.c 	\
 	$(SRC)module_rawptr.c \
 	$(SRC)module_cdebug.c \
 	$(SRC)module_cio.c \
@@ -49,9 +76,20 @@ SRC_S = \
 	$(SRC)$(BOARD)_start.s 
 #	gchelper.s
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
+OBJ = $(PY_O) 
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 
-all: $(BUILD)/firmware.elf
+all: 
+	$(MAKE) debug
+	$(MAKE) clean
+	$(MAKE) release
+
+release: $(BUILD)/firmware.elf
+
+debug: CFLAGS += -ggdb
+debug: release
+	mv $(BUILD)/firmware.elf firmware_debug.elf
 
 LIBC=./libc.a
 LIBM=./libm.a

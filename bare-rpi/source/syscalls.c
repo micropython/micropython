@@ -157,6 +157,7 @@ _sbrk (int incr)
 {
     prev_heap_end = heap_end;
     heap_end += incr;
+    printf ("_SBRK ( %d ), HEAP_END: 0x%08x, STACK_TOP: 0x%08x\n", incr, heap_end, getSP());
     return (caddr_t) prev_heap_end;
 }
 

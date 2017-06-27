@@ -9,9 +9,9 @@
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_EMIT_ARM            (0)
 
-#define MICROPY_ENABLE_GC (0)
-//#define MICROPY_ENABLE_FINALISER (0)
-//#define MICROPY_STACK_CHECK (0)
+#define MICROPY_ENABLE_GC (1)
+#define MICROPY_ENABLE_FINALISER (1)
+#define MICROPY_STACK_CHECK (1)
 
 //#ifdef MICROPY_ERROR_REPORTING
 //#undef MICROPY_ERROR_REPORTING
@@ -25,6 +25,10 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
+
+// debug output is more verbose
+#define MICROPY_DEBUG_VERBOSE       (1)
+
 #define MICROPY_HELPER_REPL         (0)
 #define MICROPY_HELPER_LEXER_UNIX   (0)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
@@ -46,7 +50,7 @@
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY___FILE__         (0)
-#define MICROPY_PY_GC               (0)
+#define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (0)
@@ -56,7 +60,7 @@
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_CPYTHON_COMPAT      (1)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_LONGLONG)
+#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 
 // type definitions for the specific machine
@@ -64,6 +68,10 @@
 #define BYTES_PER_WORD (4)
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) BOOTUP(p)
+
+#define malloc(n) m_malloc(n)
+#define free(p) m_free(p)
+#define realloc(p, n) m_realloc(p, n)
 
 #define UINT_FMT "%lu"
 #define INT_FMT "%ld"

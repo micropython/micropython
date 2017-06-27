@@ -12,14 +12,63 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 
-#define SP_START 0xe000000
-#define HEAP_START 0x1000000
-
 void setSP ( int );
 unsigned int getSP ();
 
 extern unsigned char source_interactive_py[];
 extern unsigned int source_interactive_py_len;
+
+#define pc pios_uart_putchar
+
+uint32_t printNum ( uint32_t num, uint32_t base, uint32_t length )
+{
+    if ( base == 16 )
+    {
+        pc('0');
+        pc('x');
+    }
+    uint32_t count=0;
+    uint32_t veryold=num;
+    do 
+    {
+        count++;
+        num /= base;
+    }
+    while ( num > 0 );
+    
+    uint32_t i=0;
+    for (; i<(length-count); i++)
+    {
+        pc('0');
+    }
+
+    uint32_t b = 1;
+    for (uint32_t j = 1; j<count; j++)   
+    {
+        b *= base;      
+    }
+
+    num=veryold;
+    for (; i<length; i++)
+    {
+        uint32_t old=num;
+        uint32_t a = num / b;
+        num = old - (a * b);;
+        b /= base;
+        uint32_t res = a;
+
+        if (res <= 9)
+        {
+            pc(('0'+res));
+        }
+        else
+        {
+            pc(('A'+(res-10)));
+        }
+    }
+    pc('\n');
+    return length;
+}
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
@@ -36,9 +85,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
-unsigned int heap_end;
-
-extern volatile int b;
+extern char heap_end, heap_start;
 
 int main(int argc, char **argv) {    
     pios_uart_init();
@@ -46,12 +93,20 @@ int main(int argc, char **argv) {
     pios_arm_timer_init ( true, PIOS_ARM_TIMER_PRESCALE_256, true );
     enable_timer_irq();*/
         
-    printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
+    pc ( '\n' );
+    printNum ( &heap_end, 16, 8 );
+    printNum ( &heap_start, 16, 8 );
+        
+    pios_jtag_init();
+        
+    printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%08x, 0x%08x --!\n", getSP(), &heap_start, &heap_end );
+    gc_init ( &heap_start, &heap_end );
     mp_init();
+    printf ("Hello!\n");
 
-    /*do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
+    do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
     do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);*/
+    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
     
     printf ( " ! -- My Source: \n" );
     int line = 1;
@@ -138,9 +193,9 @@ print ('BOAH');\n\
     return 0;
 }
 
-mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
+//mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
 void gc_collect(void) {
-    #if MICROPY_ENABLE_GC==1
+    /*#if MICROPY_ENABLE_GC==1
     gc_collect_start();
 
     // get the registers and the sp
@@ -152,7 +207,7 @@ void gc_collect(void) {
 
     // end the GC
     gc_collect_end();
-    #endif
+    #endif*/
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
