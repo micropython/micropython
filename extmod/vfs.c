@@ -289,18 +289,7 @@ mp_obj_t mp_vfs_getcwd(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj, mp_vfs_getcwd);
 
-typedef struct _mp_vfs_ilistdir_it_t {
-    mp_obj_base_t base;
-    mp_fun_1_t iternext;
-    union {
-        mp_vfs_mount_t *vfs;
-        mp_obj_t iter;
-    } cur;
-    bool is_str;
-    bool is_iter;
-} mp_vfs_ilistdir_it_t;
-
-STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
+mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
     mp_vfs_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->is_iter) {
         // continue delegating to root dir

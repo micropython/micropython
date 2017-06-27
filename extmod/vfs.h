@@ -53,6 +53,17 @@ typedef struct _mp_vfs_mount_t {
     struct _mp_vfs_mount_t *next;
 } mp_vfs_mount_t;
 
+typedef struct _mp_vfs_ilistdir_it_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    union {
+        mp_vfs_mount_t *vfs;
+        mp_obj_t iter;
+    } cur;
+    bool is_str;
+    bool is_iter;
+} mp_vfs_ilistdir_it_t;
+
 mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out);
 mp_import_stat_t mp_vfs_import_stat(const char *path);
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
@@ -68,6 +79,8 @@ mp_obj_t mp_vfs_rename(mp_obj_t old_path_in, mp_obj_t new_path_in);
 mp_obj_t mp_vfs_rmdir(mp_obj_t path_in);
 mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
+
+mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in);
 
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_umount_obj);

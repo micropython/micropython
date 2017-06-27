@@ -1,11 +1,11 @@
-Adafruit's MicroPython Documentation
+Adafruit's CircuitPython Documentation
 =========================
 
 The latest documentation can be found at:
-http://adafruit-micropython.readthedocs.io/en/latest/
+http://circuitpython.readthedocs.io/en/latest/
 
 The documentation you see there is generated from the files in the whole tree:
-https://github.com/adafruit/micropython/tree/master
+https://github.com/adafruit/circuitpython/tree/master
 
 Building the documentation locally
 ----------------------------------
@@ -19,8 +19,8 @@ preferably in a virtualenv:
      pip install sphinx
      pip install sphinx_rtd_theme
 
-In `micropython/`, build the docs:
+In `circuitpython/`, build the docs:
 
     sphinx-build -v -b html . _build/html
 
-You'll find the index page at `micropython/docs/_build/html/index.html`.
+You'll find the index page at `_build/html/index.html`.

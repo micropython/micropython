@@ -93,8 +93,6 @@ SRC_C = \
 	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
-	modutime.c \
-	moduos.c \
 	modonewire.c \
 	ets_alt_task.c \
 	fatfs_port.c \
@@ -119,6 +117,7 @@ SRC_COMMON_HAL = \
 	busio/SPI.c \
 	busio/UART.c \
 	neopixel_write/__init__.c \
+	os/__init__.c \
 	time/__init__.c \
 	board/__init__.c
 
@@ -139,6 +138,8 @@ SRC_SHARED_MODULE = \
 	bitbangio/SPI.c \
 	busio/I2C.c \
 	busio/OneWire.c \
+	os/__init__.c \
+	storage/__init__.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

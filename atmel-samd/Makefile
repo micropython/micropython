@@ -187,7 +187,6 @@ SRC_C = \
 	fatfs_port.c \
 	flash_api.c \
 	main.c \
-	moduos.c \
 	mphalport.c \
 	samd21_pins.c \
 	shared_dma.c \
@@ -228,25 +227,26 @@ STM_SRC_C = $(addprefix stmhal/,\
 	)
 
 SRC_COMMON_HAL = \
-	board/__init__.c \
-	microcontroller/__init__.c \
-	microcontroller/Pin.c \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	digitalio/__init__.c \
-	digitalio/DigitalInOut.c \
-	pulseio/__init__.c \
-	pulseio/PulseIn.c \
-	pulseio/PulseOut.c \
-	pulseio/PWMOut.c \
+	board/__init__.c \
 	busio/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
 	neopixel_write/__init__.c \
+	os/__init__.c \
+	pulseio/__init__.c \
+	pulseio/PulseIn.c \
+	pulseio/PulseOut.c \
+	pulseio/PWMOut.c \
 	time/__init__.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
@@ -271,6 +271,8 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	os/__init__.c \
+	storage/__init__.c \
 	uheap/__init__.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
