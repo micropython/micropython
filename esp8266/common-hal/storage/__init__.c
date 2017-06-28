@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,15 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H__
+#include <string.h>
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "py/runtime.h"
+#include "shared-bindings/storage/__init__.h"
 
-void common_hal_storage_mount(mp_obj_t vfs_obj, const char* path, bool readonly);
-void common_hal_storage_umount_path(const char* path);
-void common_hal_storage_umount_object(mp_obj_t vfs_obj);
-void common_hal_storage_remount(const char* path, bool readonly);
-
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H__
+void common_hal_storage_remount(const char* mount_path, bool readonly) {
+    mp_raise_NotImplementedError("");
+}

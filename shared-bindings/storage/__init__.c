@@ -101,11 +101,28 @@ mp_obj_t storage_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 
+//| .. function:: remount(mount_path, readonly)
+//|
+//|   Remounts the given path with new parameters.
+//|
+mp_obj_t storage_remount(mp_obj_t mount_path, mp_obj_t readonly) {
+    if (!MP_OBJ_IS_STR(mount_path)) {
+        mp_raise_ValueError("mount_path must be string");
+    }
+
+    common_hal_storage_remount(mp_obj_str_get_str(mount_path),
+                               mp_obj_is_true(readonly));
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(storage_remount_obj, storage_remount);
+
 STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_storage) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_mount), MP_ROM_PTR(&storage_mount_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_umount), MP_ROM_PTR(&storage_umount_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_remount), MP_ROM_PTR(&storage_remount_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 

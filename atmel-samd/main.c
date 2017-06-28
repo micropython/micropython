@@ -591,15 +591,23 @@ int main(void) {
     // Turn on autoreload by default but before boot.py in case it wants to change it.
     autoreload_enable();
 
+    // By default our internal flash is readonly to local python code and
+    // writeable over USB. Set it here so that boot.py can change it.
+    flash_set_usb_writeable(true);
+
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
         new_status_color(BOOT_RUNNING);
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        // Since USB isn't up yet we can cheat and let ourselves write the boot
+        // output file.
+        flash_set_usb_writeable(false);
         FIL file_pointer;
         boot_output_file = &file_pointer;
         f_open(&((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs,
             boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+        flash_set_usb_writeable(true);
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
@@ -611,6 +619,7 @@ int main(void) {
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         f_close(boot_output_file);
+        flash_flush();
         boot_output_file = NULL;
         #endif
 
@@ -619,9 +628,6 @@ int main(void) {
         reset_samd21();
         reset_mp();
     }
-
-    // Turn off local writing in favor of USB writing prior to initializing USB.
-    flash_set_usb_writeable(true);
 
     usb_hid_init();
 
@@ -674,10 +680,9 @@ void gc_collect(void) {
     // pointers from CPU registers, and thus may function incorrectly.
     void *dummy;
     gc_collect_start();
-    // This collects root pointers from the first VFS entry which is statically
-    // allocated. This way we can do VFS operations prior to setting up the heap.
-    // This also means it can be done once on boot and not repeatedly.
-    gc_collect_root((void**)&mp_vfs_mount_flash, sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+    // This collects root pointers from the VFS mount table. Some of them may
+    // have lost their references in the VM even though they are mounted.
+    gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
     // This naively collects all object references from an approximate stack
     // range.
     gc_collect_root(&dummy, ((mp_uint_t)&_estack - (mp_uint_t)&dummy) / sizeof(mp_uint_t));

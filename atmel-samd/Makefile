@@ -247,6 +247,7 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
+	storage/__init__.c \
 	time/__init__.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
