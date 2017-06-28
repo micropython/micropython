@@ -21,7 +21,7 @@ The bundles are available `on GitHub <https://github.com/adafruit/Adafruit_Circu
 To install them:
 
 #. `Download <https://github.com/adafruit/Adafruit_CircuitPython_Bundle/releases>`_ and unzip the latest zip thats not a source zip.
-#. Copy the ``lib`` folder to the ``CIRCUIPY`` or ``MICROPYTHON``.
+#. Copy the ``lib`` folder to the ``CIRCUITPY`` or ``MICROPYTHON``.
 
 Foundational Libraries
 ----------------------
