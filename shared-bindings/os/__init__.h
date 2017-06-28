@@ -45,4 +45,7 @@ void common_hal_os_rmdir(const char* path);
 mp_obj_t common_hal_os_stat(const char* path);
 mp_obj_t common_hal_os_statvfs(const char* path);
 
+// Returns true if data was correctly sourced from a true random number generator.
+bool common_hal_os_urandom(uint8_t* buffer, mp_uint_t length);
+
 #endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H__

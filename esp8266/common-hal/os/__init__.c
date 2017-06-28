@@ -27,6 +27,7 @@
 
 #include <string.h>
 
+#include "etshal.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "genhdr/mpversion.h"
@@ -59,4 +60,21 @@ mp_obj_t common_hal_os_uname(void) {
     const char *ver = system_get_sdk_version();
     os_uname_info_obj.items[2] = mp_obj_new_str(ver, strlen(ver), false);
     return (mp_obj_t)&os_uname_info_obj;
+}
+
+static uint32_t last_random;
+bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
+    uint32_t i = 0;
+    while (i < length) {
+        uint32_t new_random = last_random;
+        while (new_random == last_random) {
+            new_random = *WDEV_HWRNG;
+        }
+        for (int j = 0; j < 4 && i < length; j++) {
+            buffer[i] = new_random & 0xff;
+            i++;
+            new_random >>= 8;
+        }
+    }
+    return true;
 }

@@ -139,6 +139,7 @@ SRC_SHARED_MODULE = \
 	busio/I2C.c \
 	busio/OneWire.c \
 	os/__init__.c \
+	random/__init__.c \
 	storage/__init__.c \
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \

@@ -68,7 +68,7 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UJSON            (1)
-#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM          (0)
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
@@ -155,8 +155,8 @@ void *esp_native_code_commit(void*, size_t);
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t esp_module;
 extern const struct _mp_obj_module_t network_module;
-extern const struct _mp_obj_module_t utime_module;
 extern const struct _mp_obj_module_t os_module;
+extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
 extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_machine;
@@ -186,6 +186,7 @@ extern const struct _mp_obj_module_t time_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \

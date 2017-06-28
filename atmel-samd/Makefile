@@ -272,6 +272,7 @@ SRC_SHARED_MODULE = \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
 	os/__init__.c \
+	random/__init__.c \
 	storage/__init__.c \
 	uheap/__init__.c \
 

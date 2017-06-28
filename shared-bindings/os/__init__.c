@@ -33,6 +33,7 @@
 #include "lib/oofatfs/diskio.h"
 #include "py/mpstate.h"
 #include "py/obj.h"
+#include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
 
 //| :mod:`os` --- functions that an OS normally provides
@@ -187,6 +188,20 @@ STATIC mp_obj_t os_sync(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
+//| .. function:: urandom(size)
+//|
+//|   Returns a string of *size* random bytes based on a hardware True Random
+//|   Number Generator. When not available, it will raise a NotImplementedError.
+//|
+STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
+    mp_int_t size = mp_obj_get_int(size_in);
+    uint8_t tmp[size];
+    if (!common_hal_os_urandom(tmp, size)) {
+        mp_raise_NotImplementedError("");
+    }
+    return mp_obj_new_bytes(tmp, size);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_os) },
@@ -205,6 +220,8 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&os_remove_obj) }, // unlink aliases to remove
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), MP_ROM_PTR(&os_sync_obj) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
 
 //| .. data:: sep
 //|
