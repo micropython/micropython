@@ -78,16 +78,10 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool rea
         }
     }
 
-    // insert the vfs into the mount table
+    // Insert the vfs into the mount table by pushing it onto the front of the
+    // mount table.
     mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table);
-    while (*vfsp != NULL) {
-        if ((*vfsp)->len == 1) {
-            // make sure anything mounted at the root stays at the end of the list
-            vfs->next = *vfsp;
-            break;
-        }
-        vfsp = &(*vfsp)->next;
-    }
+    vfs->next = *vfsp;
     *vfsp = vfs;
 }
 

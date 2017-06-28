@@ -117,18 +117,22 @@ void mp_init(void) {
 
     #if MICROPY_VFS
     #if MICROPY_FATFS_NUM_PERSISTENT > 0
+    // We preserve the last MICROPY_FATFS_NUM_PERSISTENT mounts because newer
+    // mounts are put at the front of the list.
     mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
-    if (vfs != NULL) {
-        MP_STATE_VM(vfs_cur) = vfs;
-    }
-    // Skip forward until the vfs->next pointer is the first vfs that shouldn't
-    // persist.
-    uint8_t i = 1;
-    while (vfs != NULL && i < MICROPY_FATFS_NUM_PERSISTENT) {
+    // Count how many mounts we have.
+    uint8_t count = 0;
+    while (vfs != NULL) {
         vfs = vfs->next;
-        i++;
+        count++;
     }
-    vfs->next = NULL;
+    // Find the vfs MICROPY_FATFS_NUM_PERSISTENT mounts from the end.
+    vfs = MP_STATE_VM(vfs_mount_table);
+    for (uint8_t j = 0; j < count - MICROPY_FATFS_NUM_PERSISTENT; j++) {
+        vfs = vfs->next;
+    }
+    MP_STATE_VM(vfs_mount_table) = vfs;
+    MP_STATE_VM(vfs_cur) = vfs;
     #else
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
