@@ -223,6 +223,6 @@ void run_background_tasks(void);
 #define MICROPY_VM_HOOK_RETURN run_background_tasks();
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-#define CIRCUITPY_BOOT_OUTPUT_FILE "/flash/boot_out.txt"
+#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #endif  // __INCLUDED_MPCONFIGPORT_H
