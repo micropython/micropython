@@ -2,7 +2,7 @@ ValueError -1
 ValueError 0
 SPI 1
 SPI 2
-ValueError 3
+ValueError 4
 SPI X
 SPI Y
 ValueError Z

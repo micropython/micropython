@@ -301,10 +301,12 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('extmod/urandom_extra.py')       # requires urandom
         elif args.target == 'esp8266':
             skip_tests.add('misc/rge_sm.py')                # too large
+        elif args.target == 'hydrabus':
+            skip_tests.add('pyb/accel.py')                  # No accelerometer on Hydrabus board.
         elif args.target == 'minimal':
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
-
+    
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
         pass
@@ -443,7 +445,7 @@ def main():
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal', 'hydrabus')
     if args.target in EXTERNAL_TARGETS:
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
@@ -455,7 +457,7 @@ def main():
 
     if len(args.files) == 0:
         if args.test_dirs is None:
-            if args.target == 'pyboard':
+            if args.target in ('pyboard', 'hydrabus'):
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
             elif args.target in ('esp8266', 'minimal'):

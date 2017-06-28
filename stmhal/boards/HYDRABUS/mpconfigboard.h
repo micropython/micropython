@@ -23,18 +23,22 @@
 #define MICROPY_HW_CLK_PLLQ (7)
 
 // UART config
+#define MICROPY_HW_UART1_NAME   "XB"
 #define MICROPY_HW_UART1_TX     (pin_A9)
 #define MICROPY_HW_UART1_RX     (pin_A10)
 #define MICROPY_HW_UART2_TX     (pin_A2)
 #define MICROPY_HW_UART2_RX     (pin_A3)
 #define MICROPY_HW_UART2_RTS    (pin_A1)
 #define MICROPY_HW_UART2_CTS    (pin_A0)
+#define MICROPY_HW_UART3_NAME   "YB"
 #define MICROPY_HW_UART3_TX     (pin_D8)
 #define MICROPY_HW_UART3_RX     (pin_D9)
 #define MICROPY_HW_UART3_RTS    (pin_D12)
 #define MICROPY_HW_UART3_CTS    (pin_D11)
+#define MICROPY_HW_UART4_NAME   "XA"
 #define MICROPY_HW_UART4_TX     (pin_A0)
 #define MICROPY_HW_UART4_RX     (pin_A1)
+#define MICROPY_HW_UART6_NAME   "YA"
 #define MICROPY_HW_UART6_TX     (pin_C6)
 #define MICROPY_HW_UART6_RX     (pin_C7)
 
@@ -45,10 +49,12 @@
 #define MICROPY_HW_I2C2_SDA (pin_B11)
 
 // SPI busses
+#define MICROPY_HW_SPI1_NAME "X"
 #define MICROPY_HW_SPI1_NSS  (pin_A4)
 #define MICROPY_HW_SPI1_SCK  (pin_A5)
 #define MICROPY_HW_SPI1_MISO (pin_A6)
 #define MICROPY_HW_SPI1_MOSI (pin_A7)
+#define MICROPY_HW_SPI2_NAME "Y"
 #define MICROPY_HW_SPI2_NSS  (pin_B12)
 #define MICROPY_HW_SPI2_SCK  (pin_B13)
 #define MICROPY_HW_SPI2_MISO (pin_B14)
