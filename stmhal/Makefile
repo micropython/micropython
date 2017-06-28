@@ -70,7 +70,7 @@ CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
-ifeq ($(FLOAT_IMPL),double)
+ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
 else
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
@@ -104,7 +104,7 @@ SRC_LIB = $(addprefix lib/,\
 	utils/sys_stdio_mphal.c \
 	)
 
-ifeq ($(FLOAT_IMPL),double)
+ifeq ($(MICROPY_FLOAT_IMPL),double)
 SRC_LIBM = $(addprefix lib/libm_dbl/,\
 	__cos.c \
 	__expo2.c \
