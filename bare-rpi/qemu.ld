@@ -12,7 +12,9 @@ SECTIONS
     . = . + 0x1000;
     fiq_stack_top = .;
     . = . + 0x1000;
+    heap_start = .;
+    . = . + 0x800000;
     heap_end = .;
-    . = . + 0xf00000;
+    . = . + 0x800000;
     stack_top = .;
 }

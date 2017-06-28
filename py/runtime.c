@@ -59,13 +59,10 @@ const mp_obj_module_t mp_module___main__ = {
 };
 
 void mp_init(void) {
-    DEBUG_printf("mp_init\n");
     qstr_init();
 
     // no pending exceptions to start with
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-
-    DEBUG_printf ("After 66\n");
     
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
     mp_init_emergency_exception_buf();
@@ -84,20 +81,15 @@ void mp_init(void) {
 #ifdef MICROPY_PORT_INIT_FUNC
     MICROPY_PORT_INIT_FUNC;
 #endif
-    DEBUG_printf ("After 85\n");
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
 
     // init global module stuff
     mp_module_init();
 
-    DEBUG_printf ("After MOdule INit\n");
-
     // initialise the __main__ module
     mp_obj_dict_init(&MP_STATE_VM(dict_main), 1);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(dict_main)), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
-
-    DEBUG_printf ("After dict init\n");
 
     // locals = globals for outer module (see Objects/frameobject.c/PyFrame_New())
     MP_STATE_CTX(dict_locals) = MP_STATE_CTX(dict_globals) = &MP_STATE_VM(dict_main);
@@ -116,11 +108,7 @@ void mp_init(void) {
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
 
-    DEBUG_printf ("Nearly there 66\n");
-
     MP_THREAD_GIL_ENTER();
-    
-    DEBUG_printf ("Should return now\n");
 }
 
 void mp_deinit(void) {
@@ -598,6 +586,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, mp_uint_t n_args, mp_uint_t n_kw
 
     // do the call
     if (type->call != NULL) {
+        DEBUG_printf ("Trying to call address: %8p\n", type->call );
         return type->call(fun_in, n_args, n_kw, args);
     }
 

@@ -11,7 +11,9 @@
 
 #define MICROPY_ENABLE_GC (1)
 #define MICROPY_ENABLE_FINALISER (1)
-#define MICROPY_STACK_CHECK (1)
+
+// we will probably want to enable this as soon as possible (when we finally understand it)
+#define MICROPY_STACK_CHECK (0)
 
 //#ifdef MICROPY_ERROR_REPORTING
 //#undef MICROPY_ERROR_REPORTING
@@ -27,7 +29,9 @@
 #define MICROPY_DEBUG_PRINTERS      (1)
 
 // debug output is more verbose
-#define MICROPY_DEBUG_VERBOSE       (1)
+#define MICROPY_DEBUG_VERBOSE       (0)
+
+#define MICROPY_PY_THREAD ( 0 )
 
 #define MICROPY_HELPER_REPL         (0)
 #define MICROPY_HELPER_LEXER_UNIX   (0)

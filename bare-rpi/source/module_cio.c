@@ -5,18 +5,18 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "pios/uart.h"
+#include <pios/uart.h>
 
+#include <string.h>
 
 STATIC mp_obj_t cio_write( mp_obj_t str ) {
-    size_t len;
     const char* ptr = mp_obj_str_get_str  ( str);
     pios_uart_write ( ptr, strlen(ptr) );
     return mp_const_none;
-}
+}/*
 STATIC mp_obj_t cio_read () {
     return mp_const_none;
-}
+}*/
 
 STATIC mp_obj_t cio_getchar () {
     return mp_obj_new_int_from_uint ( pios_uart_getchar() );

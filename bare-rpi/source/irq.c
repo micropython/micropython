@@ -64,7 +64,7 @@ void __attribute__((interrupt("SWI"))) swi_vector(void)
                    "mov %1, sp\n"
                    : "=r" (lr), "=r" ( sp ) );
     printf (" -> ! SWI :( \n");
-    printf ("SP: 0x%08x\nLR: 0x%08x\n", sp, lr);
+    printf ("SP: 0x%8p\nLR: 0x%8p\n", sp, lr);
     while( 1 )
     {
         /* Do Nothing! */

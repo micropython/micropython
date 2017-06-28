@@ -5,11 +5,13 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include <stdio.h>
+
 extern unsigned int getSP();
 extern unsigned int heap_end;
 
 STATIC mp_obj_t cdebug_bsod(void) {
-    printf (" !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
+    //printf (" !-- Stack: 0x%08x\t Heap: 0x%08x --!\n", getSP(), heap_end );
     /*uint32_t* ptr = 0x8000;
     printf ("MEMAP\n");
     for (; ptr < 0x9000; ptr+=4)
