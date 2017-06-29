@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPCONFIG_H__
-#define __MICROPY_INCLUDED_PY_MPCONFIG_H__
+#ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
+#define MICROPY_INCLUDED_PY_MPCONFIG_H
 
 // This file contains default configuration settings for MicroPython.
 // You can override any of the options below using mpconfigport.h file
@@ -1253,4 +1253,4 @@ typedef double mp_float_t;
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_MPCONFIG_H__
+#endif // MICROPY_INCLUDED_PY_MPCONFIG_H

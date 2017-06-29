@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPZ_H__
-#define __MICROPY_INCLUDED_PY_MPZ_H__
+#ifndef MICROPY_INCLUDED_PY_MPZ_H
+#define MICROPY_INCLUDED_PY_MPZ_H
 
 #include <stdint.h>
 
@@ -139,4 +139,4 @@ mp_float_t mpz_as_float(const mpz_t *z);
 #endif
 size_t mpz_as_str_inpl(const mpz_t *z, unsigned int base, const char *prefix, char base_char, char comma, char *str);
 
-#endif // __MICROPY_INCLUDED_PY_MPZ_H__
+#endif // MICROPY_INCLUDED_PY_MPZ_H

@@ -27,10 +27,6 @@
 // Options to control how MicroPython is built for this port,
 // overriding defaults in py/mpconfig.h.
 
-#pragma once
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
-
 // board specific definitions
 #include "mpconfigboard.h"
 
@@ -350,5 +346,3 @@ static inline mp_uint_t disable_irq(void) {
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
-
-#endif // __INCLUDED_MPCONFIGPORT_H

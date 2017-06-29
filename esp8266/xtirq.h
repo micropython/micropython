@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_ESP8266_XTIRQ_H__
-#define __MICROPY_INCLUDED_ESP8266_XTIRQ_H__
+#ifndef MICROPY_INCLUDED_ESP8266_XTIRQ_H
+#define MICROPY_INCLUDED_ESP8266_XTIRQ_H
 
 #include <stdint.h>
 
@@ -57,4 +56,4 @@ static inline void enable_irq(uint32_t irq_state) {
     restore_irq_pri(irq_state);
 }
 
-#endif // __MICROPY_INCLUDED_ESP8266_XTIRQ_H__
+#endif // MICROPY_INCLUDED_ESP8266_XTIRQ_H

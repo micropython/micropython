@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MISC_H__
-#define __MICROPY_INCLUDED_PY_MISC_H__
+#ifndef MICROPY_INCLUDED_PY_MISC_H
+#define MICROPY_INCLUDED_PY_MISC_H
 
 // a mini library of useful types and functions
 
@@ -223,4 +223,4 @@ static inline mp_uint_t count_lead_ones(byte val) {
 #define MP_FLOAT_EXP_BIAS ((1 << (MP_FLOAT_EXP_BITS - 1)) - 1)
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
-#endif // __MICROPY_INCLUDED_PY_MISC_H__
+#endif // MICROPY_INCLUDED_PY_MISC_H

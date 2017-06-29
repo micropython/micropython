@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_ADC_H
+#define MICROPY_INCLUDED_STMHAL_ADC_H
 
 extern const mp_obj_type_t pyb_adc_type;
 extern const mp_obj_type_t pyb_adc_all_type;
+
+#endif // MICROPY_INCLUDED_STMHAL_ADC_H

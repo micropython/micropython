@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __BOOTMGR_H__
-#define __BOOTMGR_H__
+#ifndef MICROPY_INCLUDED_CC3200_BOOTMGR_BOOTMGR_H
+#define MICROPY_INCLUDED_CC3200_BOOTMGR_BOOTMGR_H
 
 //****************************************************************************
 //
@@ -66,4 +65,4 @@ extern void Run(unsigned long);
 }
 #endif
 
-#endif //__BOOTMGR_H__
+#endif // MICROPY_INCLUDED_CC3200_BOOTMGR_BOOTMGR_H

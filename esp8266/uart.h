@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_UART_H_
-#define _INCLUDED_UART_H_
+#ifndef MICROPY_INCLUDED_ESP8266_UART_H
+#define MICROPY_INCLUDED_ESP8266_UART_H
 
 #include <eagle_soc.h>
 
@@ -103,4 +103,4 @@ void uart_setup(uint8 uart);
 int uart_rx_any(uint8 uart);
 int uart_tx_any_room(uint8 uart);
 
-#endif // _INCLUDED_UART_H_
+#endif // MICROPY_INCLUDED_ESP8266_UART_H
