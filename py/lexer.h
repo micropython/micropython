@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_LEXER_H__
-#define __MICROPY_INCLUDED_PY_LEXER_H__
+#ifndef MICROPY_INCLUDED_PY_LEXER_H
+#define MICROPY_INCLUDED_PY_LEXER_H
 
 #include <stdint.h>
 
@@ -192,4 +192,4 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename);
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_LEXER_H__
+#endif // MICROPY_INCLUDED_PY_LEXER_H

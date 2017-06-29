@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_UNIX_MPTHREADPORT_H__
-#define __MICROPY_INCLUDED_UNIX_MPTHREADPORT_H__
+#ifndef MICROPY_INCLUDED_UNIX_MPTHREADPORT_H
+#define MICROPY_INCLUDED_UNIX_MPTHREADPORT_H
 
 #include <pthread.h>
 
@@ -33,4 +33,4 @@ typedef pthread_mutex_t mp_thread_mutex_t;
 void mp_thread_init(void);
 void mp_thread_gc_others(void);
 
-#endif // __MICROPY_INCLUDED_UNIX_MPTHREADPORT_H__
+#endif // MICROPY_INCLUDED_UNIX_MPTHREADPORT_H

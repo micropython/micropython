@@ -24,11 +24,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef GC_HELPER_H_
-#define GC_HELPER_H_
+#ifndef MICROPY_INCLUDED_CC3200_UTIL_GCHELPER_H
+#define MICROPY_INCLUDED_CC3200_UTIL_GCHELPER_H
 
 extern mp_uint_t gc_helper_get_sp(void);
 extern mp_uint_t gc_helper_get_regs_and_sp(mp_uint_t *regs);
 
-#endif /* GC_HELPER_H_ */
+#endif // MICROPY_INCLUDED_CC3200_UTIL_GCHELPER_H

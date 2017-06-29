@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_STREAM_H__
-#define __MICROPY_INCLUDED_PY_STREAM_H__
+#ifndef MICROPY_INCLUDED_PY_STREAM_H
+#define MICROPY_INCLUDED_PY_STREAM_H
 
 #include "py/obj.h"
 #include "py/mperrno.h"
@@ -103,4 +103,4 @@ int mp_stream_posix_fsync(mp_obj_t stream);
 #define mp_is_nonblocking_error(errno) (0)
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_STREAM_H__
+#endif // MICROPY_INCLUDED_PY_STREAM_H

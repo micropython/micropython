@@ -25,6 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_STM32_IT_H
+#define MICROPY_INCLUDED_STMHAL_STM32_IT_H
 
 /**
   ******************************************************************************
@@ -80,3 +82,5 @@ void OTG_FS_IRQHandler(void);
 #ifdef USE_USB_HS
 void OTG_HS_IRQHandler(void);
 #endif
+
+#endif // MICROPY_INCLUDED_STMHAL_STM32_IT_H

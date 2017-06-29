@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_BINARY_H__
-#define __MICROPY_INCLUDED_PY_BINARY_H__
+#ifndef MICROPY_INCLUDED_PY_BINARY_H
+#define MICROPY_INCLUDED_PY_BINARY_H
 
 #include "py/obj.h"
 
@@ -41,4 +41,4 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, const byte *src);
 void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *dest, mp_uint_t val);
 
-#endif // __MICROPY_INCLUDED_PY_BINARY_H__
+#endif // MICROPY_INCLUDED_PY_BINARY_H

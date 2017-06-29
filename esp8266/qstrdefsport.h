@@ -23,9 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_ESP8266_QSTRDEFSPORT_H
+#define MICROPY_INCLUDED_ESP8266_QSTRDEFSPORT_H
 
 // qstrs specific to this port, only needed if they aren't auto-generated
 
 // Entries for sys.path
 Q(/)
 Q(/lib)
+
+#endif // MICROPY_INCLUDED_ESP8266_QSTRDEFSPORT_H

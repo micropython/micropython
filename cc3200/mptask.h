@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MPTASK_H_
-#define MPTASK_H_
+#ifndef MICROPY_INCLUDED_CC3200_MPTASK_H
+#define MICROPY_INCLUDED_CC3200_MPTASK_H
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -44,4 +43,4 @@ extern StackType_t mpTaskStack[];
  ******************************************************************************/
 extern void TASK_Micropython (void *pvParameters);
 
-#endif /* MPTASK_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MPTASK_H

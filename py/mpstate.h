@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPSTATE_H__
-#define __MICROPY_INCLUDED_PY_MPSTATE_H__
+#ifndef MICROPY_INCLUDED_PY_MPSTATE_H
+#define MICROPY_INCLUDED_PY_MPSTATE_H
 
 #include <stdint.h>
 
@@ -248,4 +248,4 @@ extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_state_ctx.thread.x)
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_MPSTATE_H__
+#endif // MICROPY_INCLUDED_PY_MPSTATE_H
