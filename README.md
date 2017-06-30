@@ -60,10 +60,10 @@ project admins. Please join the [Gitter chat](https://gitter.im/adafruit/circuit
 * Unified hardware APIs:
 [`audioio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html), [`analogio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html), [`busio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html), [`digitalio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html), [`pulseio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html), [`touchio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html), [`microcontroller`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html), [`board`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html), [`bitbangio`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html) (Only available on atmel-samd21 and ESP8266 currently.)
 * Tracks MicroPython's releases (not master).
-* No module aliasing. (`uos` and `utime` are not available as `os` and `time` respectively.)
-* Modules with a CPython counterpart, such as `time`, are strict [subsets](https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html) of their [CPython version](https://docs.python.org/3.4/library/time.html?highlight=time#module-time). Therefore, code from CircuitPython is runnable on CPython but not necessarily the reverse.
+* No module aliasing. (`uos` and `utime` are not available as `os` and `time` respectively.) Instead `os`, `time`, and `random` are CPython compatible.
+* New `storage` module which manages file system mounts. (Functionality from `uos` in MicroPython.)
+* Modules with a CPython counterpart, such as `time`, `os` and `random`, are strict [subsets](https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html) of their [CPython version](https://docs.python.org/3.4/library/time.html?highlight=time#module-time). Therefore, code from CircuitPython is runnable on CPython but not necessarily the reverse.
 * tick count is available as [`time.monotonic()`](https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic)
-* `os` only available as `uos`
 * atmel-samd21 features
     * RGB status LED
     * Auto-reload after file write over mass storage. (Disable with `samd.disable_autoreload()`)
