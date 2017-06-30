@@ -1,6 +1,8 @@
 General information about the pyboard
 =====================================
 
+.. contents::
+
 Local filesystem and SD card
 ----------------------------
 
@@ -67,3 +69,4 @@ There are currently 2 kinds of errors that you might see:
 2. If all 4 LEDs cycle on and off slowly, then there was a hard fault.
    This cannot be recovered from and you need to do a hard reset.
 
+.. include:: hardware/index.rst
