@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-// options to control how Micro Python is built
+// options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_EMIT_X64            (0)

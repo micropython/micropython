@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -57,7 +57,7 @@ typedef struct _mp_obj_ssl_socket_t {
 STATIC const mp_obj_type_t ssl_socket_type;
 
 /******************************************************************************/
-// Micro Python bindings; SSL class
+// MicroPython bindings; SSL class
 
 // ssl sockets inherit from normal socket, so we take its
 // locals and stream methods

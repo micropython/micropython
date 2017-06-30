@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -147,7 +147,7 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     int p = mp_obj_get_int(port);

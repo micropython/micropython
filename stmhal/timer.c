@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -247,7 +247,7 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* MicroPython bindings                                                       */
 
 STATIC const mp_obj_type_t pyb_timer_channel_type;
 

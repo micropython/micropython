@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -763,7 +763,7 @@ STATIC bool wlan_scan_result_is_unique (const mp_obj_list_t *nets, _u8 *bssid) {
 }
 
 /******************************************************************************/
-// Micro Python bindings; WLAN class
+// MicroPython bindings; WLAN class
 
 /// \class WLAN - WiFi driver
 

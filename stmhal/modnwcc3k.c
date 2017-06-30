@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -412,7 +412,7 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
 }
 
 /******************************************************************************/
-// Micro Python bindings; CC3K class
+// MicroPython bindings; CC3K class
 
 typedef struct _cc3k_obj_t {
     mp_obj_base_t base;

@@ -388,7 +388,7 @@ def run_tests(pyb, tests, args, base_path="."):
         if args.write_exp:
             continue
 
-        # run Micro Python
+        # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
 
         if output_mupy == b'SKIP\n':

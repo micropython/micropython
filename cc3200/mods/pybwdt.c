@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -87,7 +87,7 @@ void pybwdt_sl_alive (void) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC const mp_arg_t pyb_wdt_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
