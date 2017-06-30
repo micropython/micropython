@@ -109,10 +109,10 @@ STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
 #endif
 #endif
-    } else {
-        // this will raise a TypeError if the argument is not integral
-        return mp_obj_int_abs(o_in);
     }
+
+    // this will raise a TypeError if the argument is not integral
+    return mp_obj_int_abs(o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 
