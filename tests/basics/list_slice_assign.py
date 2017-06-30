@@ -1,4 +1,4 @@
-# test slices; only 2 argument version supported by Micro Python at the moment
+# test slices; only 2 argument version supported by MicroPython at the moment
 x = list(range(10))
 
 # Assignment

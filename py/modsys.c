@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -87,7 +87,7 @@ STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
 #undef I
 
 #ifdef MICROPY_PY_SYS_PLATFORM
-/// \constant platform - the platform that Micro Python is running on
+/// \constant platform - the platform that MicroPython is running on
 STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 #endif
 

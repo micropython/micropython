@@ -28,7 +28,7 @@
 /*
 Wrapper to setup HSPI/SPI GPIO pins and default SPI clock
     spi_no - SPI (0) or HSPI (1)
-Not used in Micropython.
+Not used in MicroPython.
 */
 void spi_init(uint8_t spi_no) {
     spi_init_gpio(spi_no, SPI_CLK_USE_DIV);
@@ -48,7 +48,7 @@ Configures SPI mode parameters for clock edge and clock polarity.
                (1) Data is valid on clock trailing edge
     spi_cpol - (0) Clock is low when inactive
                (1) Clock is high when inactive
-For Micropython this version is different from original.
+For MicroPython this version is different from original.
 */
 void spi_mode(uint8_t spi_no, uint8_t spi_cpha, uint8_t spi_cpol) {
     if (spi_cpol) {
@@ -99,7 +99,7 @@ void spi_init_gpio(uint8_t spi_no, uint8_t sysclk_as_spiclk) {
         // GPIO14 is HSPI CLK pin (Clock)
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 2);
         // GPIO15 is HSPI CS pin (Chip Select / Slave Select)
-        // In Micropython, we are handling CS ourself in drivers.
+        // In MicroPython, we are handling CS ourself in drivers.
         // PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDO_U, 2);
     }
 }

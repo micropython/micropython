@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -78,7 +78,7 @@ void osmount_unmount_all (void) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 //
 
 STATIC const qstr os_uname_info_fields[] = {

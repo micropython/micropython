@@ -33,7 +33,7 @@ import time
 import re
 from collections import namedtuple
 
-# Micropython supports syntax of CPython 3.4 with some features from 3.5, and
+# MicroPython supports syntax of CPython 3.4 with some features from 3.5, and
 # such version should be used to test for differences. If your default python3
 # executable is of lower version, you can point MICROPY_CPYTHON3 environment var
 # to the correct executable.

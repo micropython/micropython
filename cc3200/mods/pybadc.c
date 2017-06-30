@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -126,7 +126,7 @@ STATIC void pyb_adc_deinit_all_channels (void) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings : adc object                                         */
+/* MicroPython bindings : adc object                                         */
 
 STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_adc_obj_t *self = self_in;

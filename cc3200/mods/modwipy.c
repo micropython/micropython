@@ -5,7 +5,7 @@
 
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC mp_obj_t mod_wipy_heartbeat (mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args) {

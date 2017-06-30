@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  */
 #ifndef MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
 #define MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H

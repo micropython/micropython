@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -37,7 +37,7 @@ ENTRY(ResetISR)
 
 SECTIONS
 {  
-    /* place the FreeRTOS heap (the micropython stack will live here) */
+    /* place the FreeRTOS heap (the MicroPython stack will live here) */
     .rtos_heap (NOLOAD) :
     {
         . = ALIGN(8);
@@ -83,7 +83,7 @@ SECTIONS
     } > SRAM
 
     /* place here functions that are only called during boot up, */
-    /* that way, we can re-use this area for the micropython heap */
+    /* that way, we can re-use this area for the MicroPython heap */
     .boot :
     {
         . = ALIGN(8);
@@ -93,7 +93,7 @@ SECTIONS
         _eboot = .;
     } > SRAM
      
-    /* allocate the micropython heap */
+    /* allocate the MicroPython heap */
     .heap :
     {
         . = ALIGN(8);

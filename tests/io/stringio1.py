@@ -36,7 +36,7 @@ print(a.read())
 a = io.StringIO()
 a.close()
 for f in [a.read, a.getvalue, lambda:a.write("")]:
-    # CPython throws for operations on closed I/O, micropython makes
+    # CPython throws for operations on closed I/O, MicroPython makes
     # the underlying string empty unless MICROPY_CPYTHON_COMPAT defined
     try:
         f()

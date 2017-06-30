@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -412,7 +412,7 @@ STATIC void RTC_CalendarConfig(void) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 typedef struct _pyb_rtc_obj_t {
     mp_obj_base_t base;

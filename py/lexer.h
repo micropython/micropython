@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -32,7 +32,7 @@
 #include "py/qstr.h"
 #include "py/reader.h"
 
-/* lexer.h -- simple tokeniser for Micro Python
+/* lexer.h -- simple tokeniser for MicroPython
  *
  * Uses (byte) length instead of null termination.
  * Tokens are the same - UTF-8 with (byte) length.

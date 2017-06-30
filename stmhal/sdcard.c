@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -356,7 +356,7 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 //
 // Expose the SD card as an object with the block protocol.
 

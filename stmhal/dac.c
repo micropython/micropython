@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -124,7 +124,7 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 typedef enum {
     DAC_STATE_RESET,

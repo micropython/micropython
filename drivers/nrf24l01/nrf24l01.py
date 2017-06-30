@@ -1,4 +1,4 @@
-"""NRF24L01 driver for Micro Python
+"""NRF24L01 driver for MicroPython
 """
 
 from micropython import const
