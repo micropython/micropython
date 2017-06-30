@@ -1,6 +1,7 @@
 # Adafruit CircuitPython
 
 [![Build Status](https://travis-ci.org/adafruit/circuitpython.svg?branch=master)](https://travis-ci.org/adafruit/circuitpython) [![Doc Status](https://readthedocs.org/projects/circuitpython/badge/?version=latest)](http://circuitpython.readthedocs.io/) [![Gitter](https://badges.gitter.im/adafruit/circuitpython.svg)](https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Discord](https://img.shields.io/discord/327254708534116352.svg)](https://discord.gg/nBQh6qu)
 
 This is an open source derivative of [MicroPython](http://www.micropython.org)
 for use on educational development boards designed and sold by [Adafruit](https://www.adafruit.com).
@@ -43,7 +44,7 @@ are agreeing to the
 Contributors who follow the
 [Code of Conduct](https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md)
 are welcome to submit pull requests and they will be promptly reviewed by
-project admins. Please join the [Gitter chat](https://gitter.im/adafruit/circuitpython) too.
+project admins. Please join the [Gitter chat](https://gitter.im/adafruit/circuitpython) or [Discord](https://discord.gg/nBQh6qu) too.
 
 ## Differences from [MicroPython](https://github.com/micropython/micropython)
 
