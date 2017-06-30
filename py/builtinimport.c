@@ -227,10 +227,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
         do_load_from_lexer(module_obj, lex);
         return;
     }
-    #endif
+    #else
 
     // If we get here then the file was not frozen and we can't compile scripts.
     mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
+    #endif
 }
 
 STATIC void chop_component(const char *start, const char **end) {

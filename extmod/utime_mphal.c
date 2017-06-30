@@ -38,7 +38,7 @@
 
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    mp_hal_delay_ms(1000 * mp_obj_get_float(seconds_o));
+    mp_hal_delay_ms((mp_uint_t)(1000 * mp_obj_get_float(seconds_o)));
     #else
     mp_hal_delay_ms(1000 * mp_obj_get_int(seconds_o));
     #endif
