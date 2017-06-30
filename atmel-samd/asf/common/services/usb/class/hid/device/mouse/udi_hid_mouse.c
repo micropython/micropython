@@ -66,6 +66,7 @@ bool udi_hid_mouse_setup(void);
 uint8_t udi_hid_mouse_getsetting(void);
 
 //! Global structure which contains standard UDI interface for UDC
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udi_api_t udi_api_hid_mouse = {
 	.enable = (bool(*)(void))udi_hid_mouse_enable,
 	.disable = (void (*)(void))udi_hid_mouse_disable,

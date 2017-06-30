@@ -134,6 +134,7 @@ struct udc_string_desc_t {
 	le16_t string[Max(Max(USB_DEVICE_MANUFACTURE_NAME_SIZE, \
 		USB_DEVICE_PRODUCT_NAME_SIZE), USB_DEVICE_SERIAL_NAME_SIZE)];
 };
+COMPILER_WORD_ALIGNED
 static UDC_DESC_STORAGE struct udc_string_desc_t udc_string_desc = {
 	.header.bDescriptorType = USB_DT_STRING
 };
@@ -141,6 +142,7 @@ static UDC_DESC_STORAGE struct udc_string_desc_t udc_string_desc = {
 /**
  * \brief Language ID of USB device (US ID by default)
  */
+COMPILER_WORD_ALIGNED
 static UDC_DESC_STORAGE usb_str_lgid_desc_t udc_string_desc_languageid = {
 	.desc.bLength = sizeof(usb_str_lgid_desc_t),
 	.desc.bDescriptorType = USB_DT_STRING,

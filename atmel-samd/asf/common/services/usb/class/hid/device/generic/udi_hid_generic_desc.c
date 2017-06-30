@@ -154,6 +154,7 @@ UDC_DESC_STORAGE udc_config_speed_t udc_config_fshs[1] = { {
 }};
 
 //! Add all information about USB Device in global structure for UDC
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udc_config_t udc_config = {
 	.confdev_lsfs = &udc_device_desc,
 	.conf_lsfs = udc_config_fshs,

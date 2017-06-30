@@ -67,6 +67,8 @@ bool udi_hid_kbd_setup(void);
 uint8_t udi_hid_kbd_getsetting(void);
 
 //! Global structure which contains standard UDI interface for UDC
+// CircuitPython fix: UDC_DESC_STORAGE must be COMPILER_WORD_ALIGNED
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udi_api_t udi_api_hid_kbd = {
 	.enable = (bool(*)(void))udi_hid_kbd_enable,
 	.disable = (void (*)(void))udi_hid_kbd_disable,
@@ -117,6 +119,8 @@ COMPILER_WORD_ALIGNED
 //@}
 
 //! HID report descriptor for standard HID keyboard
+// CircuitPython fix: UDC_DESC_STORAGE must be COMPILER_WORD_ALIGNED
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udi_hid_kbd_report_desc_t udi_hid_kbd_report_desc = {
 	{
 				0x05, 0x01,	/* Usage Page (Generic Desktop)      */

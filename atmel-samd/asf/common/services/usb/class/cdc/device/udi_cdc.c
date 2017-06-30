@@ -90,12 +90,14 @@ void udi_cdc_data_disable(void);
 bool udi_cdc_data_setup(void);
 uint8_t udi_cdc_getsetting(void);
 void udi_cdc_data_sof_notify(void);
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udi_api_t udi_api_cdc_comm = {
 	.enable = udi_cdc_comm_enable,
 	.disable = udi_cdc_comm_disable,
 	.setup = udi_cdc_comm_setup,
 	.getsetting = udi_cdc_getsetting,
 };
+COMPILER_WORD_ALIGNED
 UDC_DESC_STORAGE udi_api_t udi_api_cdc_data = {
 	.enable = udi_cdc_data_enable,
 	.disable = udi_cdc_data_disable,
