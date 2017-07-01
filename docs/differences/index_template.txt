@@ -1,4 +1,4 @@
-MicroPython Differences from CPython
+MicroPython differences from CPython
 ====================================
 
 The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
