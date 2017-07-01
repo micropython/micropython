@@ -4,8 +4,8 @@ Builtin functions and exceptions
 All builtin functions and exceptions are described here. They are also
 available via ``builtins`` module.
 
-Functions and classes
----------------------
+Functions and types
+-------------------
 
 .. function:: abs()
 
@@ -152,6 +152,8 @@ Functions and classes
 Exceptions
 ----------
 
+.. exception:: AssertionError
+
 .. exception:: AttributeError
 
 .. exception:: Exception
@@ -176,8 +178,12 @@ Exceptions
 
 .. exception:: StopIteration
 
+.. exception:: SyntaxError
+
 .. exception:: SystemExit
 
 .. exception:: TypeError
 
 .. exception:: ValueError
+
+.. exception:: ZeroDivisionError
