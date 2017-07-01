@@ -82,8 +82,10 @@ Functions
    other parameters are optional and keyword-only, and allow to tweak advanced
    parameters of the database operation (most users will not need them):
 
-   * *flags* - Currently unused.
-   * *cachesize* - Suggested maximum memory cache size in bytes. For a
+   * `flags` - 1 to allow duplicate keys (similar to list insertion). 
+               the insertion order of duplicated keys is not specified.
+               0 to disable duplicated keys.
+   * `cachesize` - Suggested maximum memory cache size in bytes. For a
      board with enough memory using larger values may improve performance.
      The value is only a recommendation, the module may use more memory if
      values set too low.
@@ -95,6 +97,9 @@ Functions
 
    Returns a BTree object, which implements a dictionary protocol (set
    of methods), and some additional methods described below.
+   when duplicated keys are allowed (flags=btree.DUPLICATE_KEY), several call 
+   to __setitem__ with the same key will insert instead of replace the item. 
+   The del operation removes all items corresponding to the specified key.
 
 Methods
 -------
@@ -153,3 +158,7 @@ Constants
 
    A flag for `keys()`, `values()`, `items()` methods to specify that
    scanning should be in descending direction of keys.
+
+.. data:: DUPLICATE_KEY
+
+   A flag for `open` method to allow duplicated keys in the btree.

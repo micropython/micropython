@@ -46,6 +46,7 @@ typedef struct _mp_obj_btree_t {
     mp_obj_t end_key;
     #define FLAG_END_KEY_INCL 1
     #define FLAG_DESC 2
+    #define FLAG_DUPLICATE_KEY 1
     #define FLAG_ITER_TYPE_MASK 0xc0
     #define FLAG_ITER_KEYS   0x40
     #define FLAG_ITER_VALUES 0x80
@@ -367,6 +368,7 @@ STATIC const mp_rom_map_elem_t mp_module_btree_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mod_btree_open_obj) },
     { MP_ROM_QSTR(MP_QSTR_INCL), MP_ROM_INT(FLAG_END_KEY_INCL) },
     { MP_ROM_QSTR(MP_QSTR_DESC), MP_ROM_INT(FLAG_DESC) },
+    { MP_ROM_QSTR(MP_QSTR_DUPLICATE_KEY), MP_ROM_INT(FLAG_DUPLICATE_KEY) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_btree_globals, mp_module_btree_globals_table);
