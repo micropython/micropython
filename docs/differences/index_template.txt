@@ -1,3 +1,5 @@
+.. _cpython_diffs:
+
 MicroPython differences from CPython
 ====================================
 
