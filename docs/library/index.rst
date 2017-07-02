@@ -77,6 +77,7 @@ it will fallback to loading the built-in ``ujson`` module.
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
@@ -102,6 +103,7 @@ it will fallback to loading the built-in ``ujson`` module.
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
@@ -144,6 +146,7 @@ it will fallback to loading the built-in ``ujson`` module.
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
