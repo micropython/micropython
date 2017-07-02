@@ -4,6 +4,8 @@
 .. module:: ussl
    :synopsis: TLS/SSL wrapper for socket objects
 
+|see_cpython_module| :mod:`python:ssl`.
+
 This module provides access to Transport Layer Security (previously and
 widely known as “Secure Sockets Layer”) encryption and peer authentication
 facilities for network sockets, both client-side and server-side.

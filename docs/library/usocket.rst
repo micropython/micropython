@@ -5,10 +5,9 @@
 .. module:: usocket
    :synopsis: socket module
 
-This module provides access to the BSD socket interface.
+|see_cpython_module| :mod:`python:socket`.
 
-See the corresponding `CPython module <https://docs.python.org/3/library/socket.html>`_
-for comparison.
+This module provides access to the BSD socket interface.
 
 .. admonition:: Difference to CPython
    :class: attention

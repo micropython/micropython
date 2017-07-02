@@ -4,6 +4,8 @@
 .. module:: uos
    :synopsis: basic "operating system" services
 
+|see_cpython_module| :mod:`python:os`.
+
 The ``uos`` module contains functions for filesystem access and ``urandom``
 function.
 

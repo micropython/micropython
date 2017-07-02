@@ -4,6 +4,8 @@
 .. module:: utime
    :synopsis: time related functions
 
+|see_cpython_module| :mod:`python:time`.
+
 The ``utime`` module provides functions for getting the current time and date,
 measuring time intervals, and for delays.
 

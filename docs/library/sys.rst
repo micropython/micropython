@@ -4,6 +4,8 @@
 .. module:: sys
    :synopsis: system specific functions
 
+|see_cpython_module| :mod:`python:sys`.
+
 Functions
 ---------
 
