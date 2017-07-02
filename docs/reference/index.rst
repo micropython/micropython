@@ -19,6 +19,7 @@ implementation and the best practices to use them.
 .. toctree::
    :maxdepth: 1
 
+   glossary.rst
    repl.rst
    isr_rules.rst
    speed_python.rst

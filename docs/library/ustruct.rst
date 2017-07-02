@@ -4,8 +4,7 @@
 .. module:: ustruct
    :synopsis: pack and unpack primitive data types
 
-See `Python struct <https://docs.python.org/3/library/struct.html>`_ for more
-information.
+|see_cpython_module| :mod:`python:struct`.
 
 Supported size/byte order prefixes: ``@``, ``<``, ``>``, ``!``.
 

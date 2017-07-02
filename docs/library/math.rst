@@ -4,6 +4,8 @@
 .. module:: math
    :synopsis: mathematical functions
 
+|see_cpython_module| :mod:`python:math`.
+
 The ``math`` module provides some basic mathematical functions for
 working with floating-point numbers.
 

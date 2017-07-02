@@ -4,6 +4,8 @@
 .. module:: uselect
    :synopsis: wait for events on a set of streams
 
+|see_cpython_module| :mod:`python:select`.
+
 This module provides functions to efficiently wait for events on multiple
 streams (select streams which are ready for operations).
 

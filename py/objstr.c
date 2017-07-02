@@ -474,6 +474,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     // return joined string
     return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
+MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
 
 mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -549,6 +550,7 @@ mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args) {
 
     return res;
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, mp_obj_str_split);
 
 #if MICROPY_PY_BUILTINS_STR_SPLITLINES
 STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -594,6 +596,7 @@ STATIC mp_obj_t str_splitlines(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     return res;
 }
+MP_DEFINE_CONST_FUN_OBJ_KW(str_splitlines_obj, 1, str_splitlines);
 #endif
 
 STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
@@ -661,6 +664,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
 
     return MP_OBJ_FROM_PTR(res);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
 
 STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, bool is_index) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -705,18 +709,22 @@ STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
 STATIC mp_obj_t str_find(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, 1, false);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
 
 STATIC mp_obj_t str_rfind(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, -1, false);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
 
 STATIC mp_obj_t str_index(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, 1, true);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
 
 STATIC mp_obj_t str_rindex(size_t n_args, const mp_obj_t *args) {
     return str_finder(n_args, args, -1, true);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
 
 // TODO: (Much) more variety in args
 STATIC mp_obj_t str_startswith(size_t n_args, const mp_obj_t *args) {
@@ -732,6 +740,7 @@ STATIC mp_obj_t str_startswith(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(memcmp(start, prefix, prefix_len) == 0);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
 
 STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], str, str_len);
@@ -745,6 +754,7 @@ STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(memcmp(str + (str_len - suffix_len), suffix, suffix_len) == 0);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
 
 enum { LSTRIP, RSTRIP, STRIP };
 
@@ -822,14 +832,17 @@ STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
 STATIC mp_obj_t str_strip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(STRIP, n_args, args);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
 
 STATIC mp_obj_t str_lstrip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(LSTRIP, n_args, args);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
 
 STATIC mp_obj_t str_rstrip(size_t n_args, const mp_obj_t *args) {
     return str_uni_strip(RSTRIP, n_args, args);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
 
 #if MICROPY_PY_BUILTINS_STR_CENTER
 STATIC mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
@@ -846,6 +859,7 @@ STATIC mp_obj_t str_center(mp_obj_t str_in, mp_obj_t width_in) {
     memcpy(vstr.buf + left, str, str_len);
     return mp_obj_new_str_from_vstr(mp_obj_get_type(str_in), &vstr);
 }
+MP_DEFINE_CONST_FUN_OBJ_2(str_center_obj, str_center);
 #endif
 
 // Takes an int arg, but only parses unsigned numbers, and only changes
@@ -1351,6 +1365,7 @@ mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     vstr_t vstr = mp_obj_str_format_helper((const char*)str, (const char*)str + len, &arg_i, n_args, args, kwargs);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
+MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict) {
     mp_check_self(MP_OBJ_IS_STR_OR_BYTES(pattern));
@@ -1654,6 +1669,7 @@ STATIC mp_obj_t str_replace(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_str_from_vstr(self_type, &vstr);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 
 STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -1694,6 +1710,7 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
 
     return MP_OBJ_NEW_SMALL_INT(num_occurrences);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
 
 #if MICROPY_PY_BUILTINS_STR_PARTITION
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
@@ -1741,10 +1758,12 @@ STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, int direction) {
 STATIC mp_obj_t str_partition(mp_obj_t self_in, mp_obj_t arg) {
     return str_partitioner(self_in, arg, 1);
 }
+MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 
 STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
     return str_partitioner(self_in, arg, -1);
 }
+MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
 #endif
 
 // Supposedly not too critical operations, so optimize for code size
@@ -1762,10 +1781,12 @@ STATIC mp_obj_t str_caseconv(unichar (*op)(unichar), mp_obj_t self_in) {
 STATIC mp_obj_t str_lower(mp_obj_t self_in) {
     return str_caseconv(unichar_tolower, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_lower_obj, str_lower);
 
 STATIC mp_obj_t str_upper(mp_obj_t self_in) {
     return str_caseconv(unichar_toupper, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
 
 STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
@@ -1803,22 +1824,27 @@ STATIC mp_obj_t str_uni_istype(bool (*f)(unichar), mp_obj_t self_in) {
 STATIC mp_obj_t str_isspace(mp_obj_t self_in) {
     return str_uni_istype(unichar_isspace, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_isspace_obj, str_isspace);
 
 STATIC mp_obj_t str_isalpha(mp_obj_t self_in) {
     return str_uni_istype(unichar_isalpha, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_isalpha_obj, str_isalpha);
 
 STATIC mp_obj_t str_isdigit(mp_obj_t self_in) {
     return str_uni_istype(unichar_isdigit, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_isdigit_obj, str_isdigit);
 
 STATIC mp_obj_t str_isupper(mp_obj_t self_in) {
     return str_uni_istype(unichar_isupper, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_isupper_obj, str_isupper);
 
 STATIC mp_obj_t str_islower(mp_obj_t self_in) {
     return str_uni_istype(unichar_islower, self_in);
 }
+MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 
 #if MICROPY_CPYTHON_COMPAT
 // These methods are superfluous in the presence of str() and bytes()
@@ -1834,6 +1860,7 @@ STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
 
 // TODO: should accept kwargs too
 STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
@@ -1846,6 +1873,7 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
     }
     return bytes_make_new(NULL, n_args, 0, args);
 }
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
 #endif
 
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
@@ -1863,43 +1891,6 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
         return 1;
     }
 }
-
-#if MICROPY_CPYTHON_COMPAT
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
-#endif
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj, 2, 4, str_find);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rfind_obj, 2, 4, str_rfind);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_index_obj, 2, 4, str_index);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
-MP_DEFINE_CONST_FUN_OBJ_2(str_join_obj, str_join);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_split_obj, 1, 3, mp_obj_str_split);
-#if MICROPY_PY_BUILTINS_STR_SPLITLINES
-MP_DEFINE_CONST_FUN_OBJ_KW(str_splitlines_obj, 1, str_splitlines);
-#endif
-#if MICROPY_PY_BUILTINS_STR_CENTER
-MP_DEFINE_CONST_FUN_OBJ_2(str_center_obj, str_center);
-#endif
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rsplit_obj, 1, 3, str_rsplit);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_endswith_obj, 2, 3, str_endswith);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_strip_obj, 1, 2, str_strip);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_lstrip_obj, 1, 2, str_lstrip);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
-MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
-#if MICROPY_PY_BUILTINS_STR_PARTITION
-MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
-MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
-#endif
-MP_DEFINE_CONST_FUN_OBJ_1(str_lower_obj, str_lower);
-MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
-MP_DEFINE_CONST_FUN_OBJ_1(str_isspace_obj, str_isspace);
-MP_DEFINE_CONST_FUN_OBJ_1(str_isalpha_obj, str_isalpha);
-MP_DEFINE_CONST_FUN_OBJ_1(str_isdigit_obj, str_isdigit);
-MP_DEFINE_CONST_FUN_OBJ_1(str_isupper_obj, str_isupper);
-MP_DEFINE_CONST_FUN_OBJ_1(str_islower_obj, str_islower);
 
 STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
 #if MICROPY_CPYTHON_COMPAT

@@ -4,6 +4,8 @@
 .. module:: gc
    :synopsis: control the garbage collector
 
+|see_cpython_module| :mod:`python:gc`.
+
 Functions
 ---------
 

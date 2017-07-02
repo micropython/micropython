@@ -21,6 +21,8 @@ Functions and types
 
 .. class:: bytes()
 
+    |see_cpython| `python:bytes`.
+
 .. function:: callable()
 
 .. function:: chr()
@@ -174,6 +176,10 @@ Exceptions
 
 .. exception:: OSError
 
+    |see_cpython| `python:OSError`. MicroPython doesn't implement ``errno``
+    attribute, instead use the standard way to access exception arguments:
+    ``exc.args[0]``.
+
 .. exception:: RuntimeError
 
 .. exception:: StopIteration
@@ -182,7 +188,11 @@ Exceptions
 
 .. exception:: SystemExit
 
+    |see_cpython| `python:SystemExit`.
+
 .. exception:: TypeError
+
+    |see_cpython| `python:TypeError`.
 
 .. exception:: ValueError
 

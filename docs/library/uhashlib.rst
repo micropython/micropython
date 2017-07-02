@@ -4,6 +4,8 @@
 .. module:: uhashlib
    :synopsis: hashing algorithms
 
+|see_cpython_module| :mod:`python:hashlib`.
+
 This module implements binary data hashing algorithms. The exact inventory
 of available algorithms depends on a board. Among the algorithms which may
 be implemented:
