@@ -182,7 +182,7 @@ mp_uint_t unichar_xdigit_value(unichar c) {
     }
     return n;
 }
-
+#if MICROPY_PY_BUILTINS_STR_UNICODE
 int utf8_chk(uint8_t *p, int len) {
     uint8_t need = 0;
     uint8_t *end = p+len;
@@ -209,3 +209,4 @@ int utf8_chk(uint8_t *p, int len) {
     }
     return (need == 0); // no pending fragments allowed
 }
+#endif
