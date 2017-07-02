@@ -11,10 +11,3 @@ MicroPython documentation and references
     reference/index.rst
     genrst/index.rst
     license.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
