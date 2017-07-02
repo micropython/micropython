@@ -37,16 +37,16 @@ Constructors
 
    Construct and return a new I2C object using the following parameters:
 
-      - `id` identifies the particular I2C peripheral.  The default
+      - *id* identifies a particular I2C peripheral.  The default
         value of -1 selects a software implementation of I2C which can
         work (in most cases) with arbitrary pins for SCL and SDA.
-        If `id` is -1 then `scl` and `sda` must be specified.  Other
-        allowed values for `id` depend on the particular port/board,
-        and specifying `scl` and `sda` may or may not be required or
+        If *id* is -1 then *scl* and *sda* must be specified.  Other
+        allowed values for *id* depend on the particular port/board,
+        and specifying *scl* and *sda* may or may not be required or
         allowed in this case.
-      - `scl` should be a pin object specifying the pin to use for SCL.
-      - `sda` should be a pin object specifying the pin to use for SDA.
-      - `freq` should be an integer which sets the maximum frequency
+      - *scl* should be a pin object specifying the pin to use for SCL.
+      - *sda* should be a pin object specifying the pin to use for SDA.
+      - *freq* should be an integer which sets the maximum frequency
         for SCL.
 
 General Methods
@@ -56,9 +56,9 @@ General Methods
 
   Initialise the I2C bus with the given arguments:
 
-     - `scl` is a pin object for the SCL line
-     - `sda` is a pin object for the SDA line
-     - `freq` is the SCL clock rate
+     - *scl* is a pin object for the SCL line
+     - *sda* is a pin object for the SDA line
+     - *freq* is the SCL clock rate
 
 .. method:: I2C.deinit()
 
@@ -93,9 +93,9 @@ control over the bus, otherwise the standard methods (see below) can be used.
 
 .. method:: I2C.readinto(buf, nack=True)
 
-   Reads bytes from the bus and stores them into `buf`.  The number of bytes
-   read is the length of `buf`.  An ACK will be sent on the bus after
-   receiving all but the last byte.  After the last byte is received, if `nack`
+   Reads bytes from the bus and stores them into *buf*.  The number of bytes
+   read is the length of *buf*.  An ACK will be sent on the bus after
+   receiving all but the last byte.  After the last byte is received, if *nack*
    is true then a NACK will be sent, otherwise an ACK will be sent (and in this
    case the slave assumes more bytes are going to be read in a later call).
 
@@ -103,7 +103,7 @@ control over the bus, otherwise the standard methods (see below) can be used.
 
 .. method:: I2C.write(buf)
 
-   Write the bytes from `buf` to the bus.  Checks that an ACK is received
+   Write the bytes from *buf* to the bus.  Checks that an ACK is received
    after each byte and stops transmitting the remaining bytes if a NACK is
    received.  The function returns the number of ACKs that were received.
 
@@ -117,23 +117,23 @@ operations that target a given slave device.
 
 .. method:: I2C.readfrom(addr, nbytes, stop=True)
 
-   Read `nbytes` from the slave specified by `addr`.
-   If `stop` is true then a STOP condition is generated at the end of the transfer.
+   Read *nbytes* from the slave specified by *addr*.
+   If *stop* is true then a STOP condition is generated at the end of the transfer.
    Returns a `bytes` object with the data read.
 
 .. method:: I2C.readfrom_into(addr, buf, stop=True)
 
-   Read into `buf` from the slave specified by `addr`.
-   The number of bytes read will be the length of `buf`.
-   If `stop` is true then a STOP condition is generated at the end of the transfer.
+   Read into *buf* from the slave specified by *addr*.
+   The number of bytes read will be the length of *buf*.
+   If *stop* is true then a STOP condition is generated at the end of the transfer.
 
-   The method returns `None`.
+   The method returns ``None``.
 
 .. method:: I2C.writeto(addr, buf, stop=True)
 
-   Write the bytes from `buf` to the slave specified by `addr`.  If a
-   NACK is received following the write of a byte from `buf` then the
-   remaining bytes are not sent.  If `stop` is true then a STOP condition is
+   Write the bytes from *buf* to the slave specified by *addr*.  If a
+   NACK is received following the write of a byte from *buf* then the
+   remaining bytes are not sent.  If *stop* is true then a STOP condition is
    generated at the end of the transfer, even if a NACK is received.
    The function returns the number of ACKs that were received.
 
@@ -147,26 +147,26 @@ methods are convenience functions to communicate with such devices.
 
 .. method:: I2C.readfrom_mem(addr, memaddr, nbytes, \*, addrsize=8)
 
-   Read `nbytes` from the slave specified by `addr` starting from the memory
-   address specified by `memaddr`.
-   The argument `addrsize` specifies the address size in bits.
+   Read *nbytes* from the slave specified by *addr* starting from the memory
+   address specified by *memaddr*.
+   The argument *addrsize* specifies the address size in bits.
    Returns a `bytes` object with the data read.
 
 .. method:: I2C.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
 
-   Read into `buf` from the slave specified by `addr` starting from the
-   memory address specified by `memaddr`.  The number of bytes read is the
-   length of `buf`.
-   The argument `addrsize` specifies the address size in bits (on ESP8266
+   Read into *buf* from the slave specified by *addr* starting from the
+   memory address specified by *memaddr*.  The number of bytes read is the
+   length of *buf*.
+   The argument *addrsize* specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).
 
-   The method returns `None`.
+   The method returns ``None``.
 
 .. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
 
-   Write `buf` to the slave specified by `addr` starting from the
-   memory address specified by `memaddr`.
-   The argument `addrsize` specifies the address size in bits (on ESP8266
+   Write *buf* to the slave specified by *addr* starting from the
+   memory address specified by *memaddr*.
+   The argument *addrsize* specifies the address size in bits (on ESP8266
    this argument is not recognised and the address size is always 8 bits).
 
-   The method returns `None`.
+   The method returns ``None``.

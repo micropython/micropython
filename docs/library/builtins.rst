@@ -1,8 +1,11 @@
-Builtin Functions
-=================
+Builtin functions and exceptions
+================================
 
-All builtin functions are described here. They are also available via
-``builtins`` module.
+All builtin functions and exceptions are described here. They are also
+available via ``builtins`` module.
+
+Functions and types
+-------------------
 
 .. function:: abs()
 
@@ -144,3 +147,43 @@ All builtin functions are described here. They are also available via
 .. function:: type()
 
 .. function:: zip()
+
+
+Exceptions
+----------
+
+.. exception:: AssertionError
+
+.. exception:: AttributeError
+
+.. exception:: Exception
+
+.. exception:: ImportError
+
+.. exception:: IndexError
+
+.. exception:: KeyboardInterrupt
+
+.. exception:: KeyError
+
+.. exception:: MemoryError
+
+.. exception:: NameError
+
+.. exception:: NotImplementedError
+
+.. exception:: OSError
+
+.. exception:: RuntimeError
+
+.. exception:: StopIteration
+
+.. exception:: SyntaxError
+
+.. exception:: SystemExit
+
+.. exception:: TypeError
+
+.. exception:: ValueError
+
+.. exception:: ZeroDivisionError

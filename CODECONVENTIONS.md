@@ -135,3 +135,76 @@ Type declarations:
         int member;
         void *data;
     } my_struct_t;
+
+Documentation conventions
+=========================
+
+MicroPython generally follows CPython in documentation process and
+conventions. reStructuredText syntax is used for the documention.
+
+Specific conventions/suggestions:
+
+* Use `*` markup to refer to arguments of a function, e.g.:
+
+```
+.. method:: poll.unregister(obj)
+
+   Unregister *obj* from polling.
+```
+
+* Use following syntax for cross-references/cross-links:
+
+```
+:func:`foo` - function foo in current module
+:func:`module1.foo` - function foo in module "module1"
+    (similarly for other referent types)
+:class:`Foo` - class Foo
+:meth:`Class.method1` - method1 in Class
+:meth:`~Class.method1` - method1 in Class, but rendered just as "method1()",
+    not "Class.method1()"
+:meth:`title <method1>` - reference method1, but render as "title" (use only
+    if really needed)
+:mod:`module1` - module module1
+
+`symbol` - generic xref syntax which can replace any of the above in case
+    the xref is unambiguous. If there's ambiguity, there will be a warning
+    during docs generation, which need to be fixed using one of the syntaxes
+    above
+```
+
+* Cross-referencing arbitrary locations
+~~~
+.. _xref_target:
+
+Normal non-indented text.
+
+This is :ref:`reference <xref_target>`.
+
+(If xref target is followed by section title, can be just
+:ref:`xref_target`).
+~~~
+
+* Linking to external URL:
+```
+`link text <http://foo.com/...>`_
+```
+
+* Referencing builtin singleton objects:
+```
+``None``, ``True``, ``False``
+```
+
+* Use following syntax to create common description for more than one element:
+~~~
+.. function:: foo(x)
+              bar(y)
+
+   Description common to foo() and bar().
+~~~
+
+
+More detailed guides and quickrefs:
+
+* http://www.sphinx-doc.org/en/stable/rest.html
+* http://www.sphinx-doc.org/en/stable/markup/inline.html
+* http://docutils.sourceforge.net/docs/user/rst/quickref.html

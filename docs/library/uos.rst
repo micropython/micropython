@@ -22,15 +22,15 @@ Functions
 
    This function returns an iterator which then yields 3-tuples corresponding to
    the entries in the directory that it is listing.  With no argument it lists the
-   current directory, otherwise it lists the directory given by `dir`.
+   current directory, otherwise it lists the directory given by *dir*.
 
-   The 3-tuples have the form `(name, type, inode)`:
+   The 3-tuples have the form *(name, type, inode)*:
 
-    - `name` is a string (or bytes if `dir` is a bytes object) and is the name of
+    - *name* is a string (or bytes if *dir* is a bytes object) and is the name of
       the entry;
-    - `type` is an integer that specifies the type of the entry, with 0x4000 for
+    - *type* is an integer that specifies the type of the entry, with 0x4000 for
       directories and 0x8000 for regular files;
-    - `inode` is an integer corresponding to the inode of the file, and may be 0
+    - *inode* is an integer corresponding to the inode of the file, and may be 0
       for filesystems that don't have such a notion.
 
 .. function:: listdir([dir])
@@ -90,5 +90,5 @@ Functions
 .. function:: dupterm(stream_object)
 
    Duplicate or switch MicroPython terminal (the REPL) on the passed stream-like
-   object. The given object must implement the `.readinto()` and `.write()`
+   object. The given object must implement the ``readinto()`` and ``write()``
    methods. If ``None`` is passed, previously set redirection is cancelled.

@@ -173,7 +173,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         // read RTC memory
 
         system_rtc_mem_read(MEM_USER_LEN_ADDR, &len, sizeof(len));
-        system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
+        system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_obj_new_bytes(rtcram, len);
     } else {
@@ -195,7 +195,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
             rtcram[i] = ((uint8_t *)bufinfo.buf)[i];
         }
 
-        system_rtc_mem_write(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
+        system_rtc_mem_write(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_const_none;
     }

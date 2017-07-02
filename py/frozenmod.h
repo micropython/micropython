@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef __MICROPY_INCLUDED_PY_FROZENMOD_H__
+#define __MICROPY_INCLUDED_PY_FROZENMOD_H__
 
 #include "py/lexer.h"
 
@@ -35,3 +37,5 @@ enum {
 int mp_find_frozen_module(const char *str, size_t len, void **data);
 const char *mp_find_frozen_str(const char *str, size_t *len);
 mp_import_stat_t mp_frozen_stat(const char *str);
+
+#endif // __MICROPY_INCLUDED_PY_FROZENMOD_H__

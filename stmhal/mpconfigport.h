@@ -65,7 +65,9 @@
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
+#ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#endif
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
@@ -107,7 +109,9 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
 #define MICROPY_PY_UERRNO           (1)
+#ifndef MICROPY_PY_THREAD
 #define MICROPY_PY_THREAD           (0)
+#endif
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
