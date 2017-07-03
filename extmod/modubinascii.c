@@ -42,6 +42,12 @@ mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
+    // Code below assumes non-zero buffer length when computing size with
+    // separator, so handle the zero-length case here.
+    if (bufinfo.len == 0) {
+        return mp_const_empty_bytes;
+    }
+
     vstr_t vstr;
     size_t out_len = bufinfo.len * 2;
     if (n_args > 1) {
