@@ -1159,8 +1159,7 @@ yield:
                         ip--;
                         PUSH(ret_value);
                         goto yield;
-                    }
-                    if (ret_kind == MP_VM_RETURN_NORMAL) {
+                    } else if (ret_kind == MP_VM_RETURN_NORMAL) {
                         // Pop exhausted gen
                         sp--;
                         // TODO: When ret_value can be MP_OBJ_NULL here??
@@ -1176,8 +1175,8 @@ yield:
                         // if it was swallowed, we re-raise GeneratorExit
                         GENERATOR_EXIT_IF_NEEDED(t_exc);
                         DISPATCH();
-                    }
-                    if (ret_kind == MP_VM_RETURN_EXCEPTION) {
+                    } else {
+                        assert(ret_kind == MP_VM_RETURN_EXCEPTION);
                         // Pop exhausted gen
                         sp--;
                         if (EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
