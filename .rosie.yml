@@ -1,0 +1,13 @@
+# This configuration file tells Rosie where to find prebuilt .bin files (Travis
+# builds them) and where to find the tests.
+
+binaries:
+    prebuilt_s3: adafruit-circuit-python
+    file_pattern: bin/{board}/adafruit-circuitpython-{board}-*-{short_sha}.{extension}
+
+circuitpython_tests:
+    test_directories:
+        - tests/basics
+        - tests/circuitpython
+    test_helper:
+        - tests/skip_if.py

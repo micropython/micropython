@@ -33,7 +33,6 @@
 #define MICROPY_ENABLE_DOC_STRING   (0)
 //#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_NORMAL)
-#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
 #define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
@@ -61,7 +60,6 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
-#define MICROPY_CPYTHON_COMPAT      (0)
 // If you change MICROPY_LONGINT_IMPL, also change MPY_TOOL_LONGINT_IMPL in mpconfigport.mk.
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
@@ -166,6 +164,13 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #define MICROPY_PY_FRAMEBUF         (1)
+
+    #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
+    #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
+    #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
+    #define MICROPY_PY_SYS_MAXSIZE      (1)
+    #define MICROPY_CPYTHON_COMPAT      (1)
+
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module }, \
@@ -177,6 +182,9 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
     #define MICROPY_PY_FRAMEBUF         (0)
     #define EXTRA_BUILTIN_MODULES
+
+    #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+    #define MICROPY_CPYTHON_COMPAT      (0)
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \

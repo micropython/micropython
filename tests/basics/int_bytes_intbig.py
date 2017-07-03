@@ -1,3 +1,6 @@
+import skip_if
+skip_if.no_bigint()
+
 print((2**64).to_bytes(9, "little"))
 
 b = bytes(range(20))

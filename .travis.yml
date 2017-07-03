@@ -20,6 +20,14 @@ notifications:
     on_success: change  # options: [always|never|change] default: always
     on_failure: always  # options: [always|never|change] default: always
     on_start: never     # options: [always|never|change] default: always
+  webhooks:
+    urls:
+      - https://rosie-ci.ngrok.io/travis
+    on_success: always
+    on_failure: always
+    on_start: always
+    on_cancel: always
+    on_error: always
 
 before_script:
   - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa

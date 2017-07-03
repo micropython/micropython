@@ -1,4 +1,6 @@
 # test array types QqLl that require big-ints
+import skip_if
+skip_if.no_bigint()
 
 try:
     from array import array

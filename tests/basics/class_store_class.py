@@ -11,6 +11,9 @@ except ImportError:
         print("SKIP")
         raise SystemExit
 
+import skip_if
+skip_if.no_cpython_compat()
+
 _DefragResultBase = namedtuple('DefragResult', [ 'foo', 'bar' ])
 
 class _ResultMixinStr(object):

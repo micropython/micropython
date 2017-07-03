@@ -72,7 +72,6 @@ STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t str_len) {
     mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, file_len, 0);
     return lex;
 }
-
 #endif
 
 #if MICROPY_MODULE_FROZEN_MPY

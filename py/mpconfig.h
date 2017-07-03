@@ -40,7 +40,7 @@
 // to another, you must rebuild from scratch using "-B" switch to make.
 
 #ifdef MP_CONFIGFILE
-#include MP_CONFIGFILE
+#include "mpconfigport_coverage.h"
 #else
 #include <mpconfigport.h>
 #endif

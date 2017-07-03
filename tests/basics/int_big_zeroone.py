@@ -1,5 +1,16 @@
 # test [0,-0,1,-1] edge cases of bignum
 
+# Skip if long ints are not supported.
+try:
+    # We have to use variables because 1 << 40 causes an exception on parse and
+    # cannot be caught.
+    x = 40
+    x = 1 << x
+except OverflowError:
+    print("SKIP")
+    import sys
+    sys.exit(1)
+
 long_zero = (2**64) >> 65
 long_neg_zero = -long_zero
 long_one = long_zero + 1

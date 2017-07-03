@@ -242,8 +242,8 @@ freedos:
 
 # build an interpreter for coverage testing and do the testing
 coverage:
-	$(MAKE) \
-	    COPT="-O0" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_coverage.h>" \
+	$(MAKE) V=2 \
+	    COPT="-O0" CFLAGS_EXTRA='-DMP_CONFIGFILE="\"mpconfigport_coverage.h\"" \
 	    -fprofile-arcs -ftest-coverage \
 	    -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wsign-compare \
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \

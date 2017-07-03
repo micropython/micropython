@@ -13,6 +13,10 @@ Adafruit CircuitPython API Reference
     :target: https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
     :alt: Gitter
 
+.. image :: https://img.shields.io/discord/327254708534116352.svg
+    :target: https://adafru.it/discord
+    :alt: Discord
+
 Welcome! This is the documentation for Adafruit CircuitPython. It is an open
 source derivative of `MicroPython <https://micropython.org>`_ for use on
 educational development boards designed and sold by `Adafruit

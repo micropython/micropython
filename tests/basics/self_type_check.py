@@ -1,4 +1,6 @@
 # make sure type of first arg (self) to a builtin method is checked
+import skip_if
+skip_if.board_in("gemma_m0", "trinket_m0")
 
 list.append
 

@@ -115,6 +115,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
             vstr_reset(dest);
             size_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
+            DEBUG_printf("Looking in path: %d =%s=\n", i, p);
             if (p_len > 0) {
                 vstr_add_strn(dest, p, p_len);
                 vstr_add_char(dest, PATH_SEP_CHAR);
@@ -386,6 +387,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             mp_import_stat_t stat;
             if (vstr_len(&path) == 0) {
                 // first module in the dotted-name; search for a directory or file
+                DEBUG_printf("Find file =%.*s=\n", vstr_len(&path), vstr_str(&path));
                 stat = find_file(mod_str, i, &path);
             } else {
                 // latter module in the dotted-name; append to path

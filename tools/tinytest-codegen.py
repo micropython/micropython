@@ -20,7 +20,23 @@ def chew_filename(t):
 
 def script_to_map(t):
   r = { 'name': chew_filename(t)['func'] }
-  with open(t) as f: r['script'] = escape(''.join(f.readlines()))
+  with open(t) as test:
+    script = test.readlines()
+
+    # Test for import skip_if and inject it into the test as needed.
+    if "import skip_if\n" in script:
+      index = script.index("import skip_if\n")
+      script.pop(index)
+      script.insert(index, "class skip_if:\n")
+      with open("../tests/skip_if.py") as skip_if:
+        total_lines = 1
+        for line in skip_if:
+          stripped = line.strip()
+          if not stripped or stripped.startswith(("#", "\"\"\"")):
+            continue
+          script.insert(index + total_lines, "\t" + line)
+          total_lines += 1
+    r['script'] = escape(''.join(script))
   return r
 
 test_function = (

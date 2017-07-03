@@ -9,4 +9,7 @@ except OverflowError:
     import sys
     sys.exit(1)
 
-print(bytearray(2**65 - (2**65 - 1)))
+print((2**64).to_bytes(9, "little"))
+print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))
+print(int.from_bytes(b"\x01\0\0\0\0\0\0\0", "little"))
+print(int.from_bytes(b"\x00\x01\0\0\0\0\0\0", "little"))
