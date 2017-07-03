@@ -26,12 +26,9 @@
 
 #include <stdio.h>
 
-#include STM32_HAL_H
-
 #include "py/runtime.h"
 #include "rtc.h"
 #include "irq.h"
-#include "mphalport.h"
 
 /// \moduleref pyb
 /// \class RTC - real time clock

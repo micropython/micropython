@@ -34,7 +34,6 @@
 #define __USBD_CONF_H
 
 /* Includes ------------------------------------------------------------------*/
-#include STM32_HAL_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

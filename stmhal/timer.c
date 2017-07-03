@@ -28,11 +28,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include STM32_HAL_H
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "timer.h"

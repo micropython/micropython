@@ -87,8 +87,7 @@
   * @{
   */
 
-#include "mpconfigboard.h"
-#include STM32_HAL_H
+#include "py/mphal.h"
 
 void __fatal_error(const char *msg);
 

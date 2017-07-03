@@ -67,12 +67,10 @@
 
 #include <stdio.h>
 
-#include "stm32_it.h"
-#include STM32_HAL_H
-
 #include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "stm32_it.h"
 #include "pendsv.h"
 #include "irq.h"
 #include "pybthread.h"

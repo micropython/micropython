@@ -28,9 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include STM32_HAL_H
-
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "timer.h"
 #include "dac.h"

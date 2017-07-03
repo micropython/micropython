@@ -27,8 +27,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include STM32_HAL_H
-
 #include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/obj.h"
