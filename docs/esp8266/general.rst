@@ -116,7 +116,7 @@ Real-time clock
 RTC in ESP8266 has very bad accuracy, drift may be seconds per minute. As
 a workaround, to measure short enough intervals you can use
 ``utime.time()``, etc. functions, and for wall clock time, synchronize from
-the net using included ``ntpdate.py`` module.
+the net using included ``ntptime.py`` module.
 
 Due to limitations of the ESP8266 chip the internal real-time clock (RTC)
 will overflow every 7:45h.  If a long-term working RTC time is required then
