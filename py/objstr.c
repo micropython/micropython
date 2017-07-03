@@ -1078,7 +1078,6 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             arg = mp_obj_new_str_from_vstr(&mp_type_str, &arg_vstr);
         }
 
-        char sign = '\0';
         char fill = '\0';
         char align = '\0';
         int width = -1;
@@ -1114,7 +1113,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 } else if (*s == ' ') {
                     flags |= PF_FLAG_SPACE_SIGN;
                 }
-                sign = *s++;
+                s++;
             }
             if (*s == '#') {
                 flags |= PF_FLAG_SHOW_PREFIX;
@@ -1160,7 +1159,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             fill = ' ';
         }
 
-        if (sign) {
+        if (flags & (PF_FLAG_SHOW_SIGN | PF_FLAG_SPACE_SIGN)) {
             if (type == 's') {
                 if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                     terse_str_format_value_error();
@@ -1176,8 +1175,6 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         "sign not allowed with integer format specifier 'c'");
                 }
             }
-        } else {
-            sign = '-';
         }
 
         switch (align) {
