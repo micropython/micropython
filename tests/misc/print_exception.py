@@ -6,7 +6,7 @@ try:
         import io
 except ImportError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 if hasattr(sys, 'print_exception'):
     print_exception = sys.print_exception

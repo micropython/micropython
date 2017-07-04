@@ -4,8 +4,7 @@ try:
     help
 except NameError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 help() # no args
 help(help) # help for a function

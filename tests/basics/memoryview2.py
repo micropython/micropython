@@ -3,9 +3,8 @@ try:
     from array import array
     memoryview
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(list(memoryview(b'\x7f\x80\x81\xff')))
 print(list(memoryview(array('b', [0x7f, -0x80]))))

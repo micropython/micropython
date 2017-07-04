@@ -4,9 +4,8 @@ except:
     try:
         import heapq
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 try:
     heapq.heappop([])

@@ -5,8 +5,7 @@ try:
     import ussl as ssl
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # create in client mode
 try:

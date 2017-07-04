@@ -25,7 +25,6 @@
  */
 
 #include <stdlib.h>
-#include STM32_HAL_H
 
 #include "py/mpstate.h"
 #include "py/runtime.h"

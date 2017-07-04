@@ -3,11 +3,11 @@ try:
     import uctypes
 except ImportError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 if sys.byteorder != "little":
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 desc = {

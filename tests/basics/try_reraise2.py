@@ -1,4 +1,4 @@
-# Reraise not the latest occured exception
+# Reraise not the latest occurred exception
 def f():
     try:
         raise ValueError("val", 3)

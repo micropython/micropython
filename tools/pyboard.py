@@ -69,7 +69,7 @@ class TelnetToSerial:
                 self.tn.write(bytes(password, 'ascii') + b"\r\n")
 
                 if b'for more information.' in self.tn.read_until(b'Type "help()" for more information.', timeout=read_timeout):
-                    # login succesful
+                    # login successful
                     from collections import deque
                     self.fifo = deque()
                     return

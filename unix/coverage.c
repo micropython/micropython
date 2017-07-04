@@ -154,6 +154,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
+        mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
     }
 
     // vstr

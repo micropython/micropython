@@ -1,9 +1,8 @@
 try:
     enumerate
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(list(enumerate([])))
 print(list(enumerate([1, 2, 3])))

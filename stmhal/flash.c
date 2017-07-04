@@ -24,11 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include STM32_HAL_H
-
-#include "flash.h"
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "py/misc.h"
+#include "flash.h"
 
 typedef struct {
     uint32_t base_address;

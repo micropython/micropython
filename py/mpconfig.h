@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -32,7 +32,7 @@
 
 // mpconfigport.h is a file containing configuration settings for a
 // particular port. mpconfigport.h is actually a default name for
-// such config, and it can be overriden using MP_CONFIGFILE preprocessor
+// such config, and it can be overridden using MP_CONFIGFILE preprocessor
 // define (you can do that by passing CFLAGS_EXTRA='-DMP_CONFIGFILE="<file.h>"'
 // argument to make when using standard MicroPython makefiles).
 // This is useful to have more than one config per port, for example,
@@ -51,13 +51,13 @@
 /*****************************************************************************/
 /* Object representation                                                     */
 
-// A Micro Python object is a machine word having the following form:
+// A MicroPython object is a machine word having the following form:
 //  - xxxx...xxx1 : a small int, bits 1 and above are the value
 //  - xxxx...xx10 : a qstr, bits 2 and above are the value
 //  - xxxx...xx00 : a pointer to an mp_obj_base_t (unless a fake object)
 #define MICROPY_OBJ_REPR_A (0)
 
-// A Micro Python object is a machine word having the following form:
+// A MicroPython object is a machine word having the following form:
 //  - xxxx...xx01 : a small int, bits 2 and above are the value
 //  - xxxx...xx11 : a qstr, bits 2 and above are the value
 //  - xxxx...xxx0 : a pointer to an mp_obj_base_t (unless a fake object)
@@ -73,7 +73,6 @@
 // Str and float stored as O = R + 0x80800000, retrieved as R = O - 0x80800000.
 // This makes strs easier to encode/decode as they have zeros in the top 9 bits.
 // This scheme only works with 32-bit word size and float enabled.
-
 #define MICROPY_OBJ_REPR_C (2)
 
 // A MicroPython object is a 64-bit word having the following form (called R):
@@ -235,7 +234,7 @@
 #endif
 
 /*****************************************************************************/
-/* Micro Python emitters                                                     */
+/* MicroPython emitters                                                     */
 
 // Whether to support loading of persistent code
 #ifndef MICROPY_PERSISTENT_CODE_LOAD
@@ -789,6 +788,12 @@ typedef double mp_float_t;
 // Whether to define "NotImplemented" special constant
 #ifndef MICROPY_PY_BUILTINS_NOTIMPLEMENTED
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (0)
+#endif
+
+// Whether to provide the built-in input() function. The implementation of this
+// uses mp-readline, so can only be enabled if the port uses this readline.
+#ifndef MICROPY_PY_BUILTINS_INPUT
+#define MICROPY_PY_BUILTINS_INPUT (0)
 #endif
 
 // Whether to support min/max functions

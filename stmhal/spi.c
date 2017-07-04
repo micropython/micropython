@@ -182,7 +182,7 @@ STATIC int spi_find(mp_obj_t id) {
         #endif
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%s) does not exist", port));
+            "SPI(%s) doesn't exist", port));
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
@@ -191,7 +191,7 @@ STATIC int spi_find(mp_obj_t id) {
             return spi_id;
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%d) does not exist", spi_id));
+            "SPI(%d) doesn't exist", spi_id));
     }
 }
 

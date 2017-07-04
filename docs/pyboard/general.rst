@@ -1,6 +1,8 @@
 General information about the pyboard
 =====================================
 
+.. contents::
+
 Local filesystem and SD card
 ----------------------------
 
@@ -10,7 +12,9 @@ is inserted into the slot, it is available as ``/sd``.
 
 When the pyboard boots up, it needs to choose a filesystem to boot from.  If
 there is no SD card, then it uses the internal filesystem ``/flash`` as the boot
-filesystem, otherwise, it uses the SD card ``/sd``.
+filesystem, otherwise, it uses the SD card ``/sd``. After the boot, the current
+directory is set to one of the directories above.
+
 If needed, you can prevent the use of the SD card by creating an empty file
 called ``/flash/SKIPSD``.  If this file exists when the pyboard boots
 up then the SD card will be skipped and the pyboard will always boot from the
@@ -65,3 +69,12 @@ There are currently 2 kinds of errors that you might see:
 2. If all 4 LEDs cycle on and off slowly, then there was a hard fault.
    This cannot be recovered from and you need to do a hard reset.
 
+Guide for using the pyboard with Windows
+----------------------------------------
+
+The following PDF guide gives information about using the pyboard with Windows,
+including setting up the serial prompt and downloading new firmware using
+DFU programming:
+`PDF guide <http://micropython.org/resources/Micro-Python-Windows-setup.pdf>`__.
+
+.. include:: hardware/index.rst

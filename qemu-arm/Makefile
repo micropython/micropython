@@ -34,15 +34,15 @@ endif
 ## - gcc-arm-none-eabi-4_8-2014q1/share/gcc-arm-none-eabi/samples/src/qemu/Makefile
 LDFLAGS= --specs=nano.specs --specs=rdimon.specs -Wl,--gc-sections -Wl,-Map=$(@:.elf=.map)
 
-SRC_C = \
-	main.c \
+SRC_COMMON_C = \
 	moduos.c \
 	modmachine.c \
 
+SRC_RUN_C = \
+	main.c \
+
 SRC_TEST_C = \
 	test_main.c \
-	moduos.c \
-	modmachine.c \
 
 LIB_SRC_C = $(addprefix lib/,\
 	libm/math.c \
@@ -63,31 +63,26 @@ LIB_SRC_C = $(addprefix lib/,\
 	libm/asinfacosf.c \
 	libm/atanf.c \
 	libm/atan2f.c \
+	utils/sys_stdio_mphal.c \
 	)
 
-STM_SRC_C = $(addprefix stmhal/,\
-	pybstdio.c \
-	)
+OBJ_COMMON =
+OBJ_COMMON += $(PY_O)
+OBJ_COMMON += $(addprefix $(BUILD)/, $(SRC_COMMON_C:.c=.o))
+OBJ_COMMON += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
-SRC_S = \
-
-OBJ =
-OBJ += $(PY_O)
-OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
+OBJ_RUN =
+OBJ_RUN += $(addprefix $(BUILD)/, $(SRC_RUN_C:.c=.o))
 
 OBJ_TEST =
-OBJ_TEST += $(PY_O)
 OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_TEST_C:.c=.o))
-OBJ_TEST += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ_TEST += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ_TEST += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ_TEST += $(BUILD)/tinytest.o
 
+# All object files, needed to get dependencies correct
+OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
+
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C)
+SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
 
 all: run
 
@@ -109,11 +104,11 @@ $(BUILD)/tinytest.o:
 	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c ../tools/tinytest/tinytest.c
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
-$(BUILD)/firmware.elf: $(OBJ)
+$(BUILD)/firmware.elf: $(OBJ_COMMON) $(OBJ_RUN)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-$(BUILD)/firmware-test.elf: $(OBJ_TEST)
+$(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 

@@ -21,9 +21,8 @@ m = Main()
 try:
     m.__class__
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 r = m.Forward
 if 'Descriptor' in repr(r.__class__):

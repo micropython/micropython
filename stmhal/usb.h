@@ -47,7 +47,6 @@ typedef enum {
 } USB_PHY_ID;
 
 extern mp_uint_t pyb_usb_flags;
-extern struct _USBD_HandleTypeDef hUSBDDevice;
 extern pyb_usb_storage_medium_t pyb_usb_storage_medium;
 extern const struct _mp_obj_tuple_t pyb_usb_hid_mouse_obj;
 extern const struct _mp_obj_tuple_t pyb_usb_hid_keyboard_obj;

@@ -1,101 +1,51 @@
-"""
-DS18x20 temperature sensor driver for MicroPython.
+# DS18x20 temperature sensor driver for MicroPython.
+# MIT license; Copyright (c) 2016 Damien P. George
 
-This driver uses the OneWire driver to control DS18S20 and DS18B20
-temperature sensors.  It supports multiple devices on the same 1-wire bus.
+from micropython import const
 
-The following example assumes the ground of your DS18x20 is connected to
-Y11, vcc is connected to Y9 and the data pin is connected to Y10.
+_CONVERT = const(0x44)
+_RD_SCRATCH = const(0xbe)
+_WR_SCRATCH = const(0x4e)
 
->>> from machine import Pin
->>> gnd = Pin('Y11', Pin.OUT_PP)
->>> gnd.off()
->>> vcc = Pin('Y9', Pin.OUT_PP)
->>> vcc.on()
+class DS18X20:
+    def __init__(self, onewire):
+        self.ow = onewire
+        self.buf = bytearray(9)
 
->>> from ds18x20 import DS18X20
->>> d = DS18X20(Pin('Y10'))
+    def scan(self):
+        return [rom for rom in self.ow.scan() if rom[0] == 0x10 or rom[0] == 0x28]
 
-Call read_temps to read all sensors:
+    def convert_temp(self):
+        self.ow.reset(True)
+        self.ow.writebyte(self.ow.SKIP_ROM)
+        self.ow.writebyte(_CONVERT)
 
->>> result = d.read_temps()
->>> print(result)
-[20.875, 20.8125]
+    def read_scratch(self, rom):
+        self.ow.reset(True)
+        self.ow.select_rom(rom)
+        self.ow.writebyte(_RD_SCRATCH)
+        self.ow.readinto(self.buf)
+        if self.ow.crc8(self.buf):
+            raise Exception('CRC error')
+        return self.buf
 
-Call read_temp to read the temperature of a specific sensor:
+    def write_scratch(self, rom, buf):
+        self.ow.reset(True)
+        self.ow.select_rom(rom)
+        self.ow.writebyte(_WR_SCRATCH)
+        self.ow.write(buf)
 
->>> result = d.read_temp(d.roms[0])
->>> print(result)
-20.25
-
-If only one DS18x20 is attached to the bus, then you don't need to 
-pass a ROM to read_temp:
-
->>> result = d.read_temp()
->>> print(result)
-20.25
-
-"""
-
-from onewire import OneWire
-
-class DS18X20(object):
-    def __init__(self, pin):
-        self.ow = OneWire(pin)
-        # Scan the 1-wire devices, but only keep those which have the
-        # correct # first byte in their rom for a DS18x20 device.
-        self.roms = [rom for rom in self.ow.scan() if rom[0] == 0x10 or rom[0] == 0x28]
-
-    def read_temp(self, rom=None):
-        """
-        Read and return the temperature of one DS18x20 device.
-        Pass the 8-byte bytes object with the ROM of the specific device you want to read.
-        If only one DS18x20 device is attached to the bus you may omit the rom parameter.
-        """
-        rom = rom or self.roms[0]
-        ow = self.ow
-        ow.reset()
-        ow.select_rom(rom)
-        ow.write_byte(0x44)  # Convert Temp
-        while True:
-            if ow.read_bit():
-                break
-        ow.reset()
-        ow.select_rom(rom)
-        ow.write_byte(0xbe)  # Read scratch
-        data = ow.read_bytes(9)
-        return self.convert_temp(rom[0], data)
-
-    def read_temps(self):
-        """
-        Read and return the temperatures of all attached DS18x20 devices.
-        """
-        temps = []
-        for rom in self.roms:
-            temps.append(self.read_temp(rom))
-        return temps
-
-    def convert_temp(self, rom0, data):
-        """
-        Convert the raw temperature data into degrees celsius and return as a float.
-        """
-        temp_lsb = data[0]
-        temp_msb = data[1]
-        if rom0 == 0x10:
-            if temp_msb != 0:
-                # convert negative number
-                temp_read = temp_lsb >> 1 | 0x80  # truncate bit 0 by shifting, fill high bit with 1.
-                temp_read = -((~temp_read + 1) & 0xff) # now convert from two's complement
+    def read_temp(self, rom):
+        buf = self.read_scratch(rom)
+        if rom[0] == 0x10:
+            if buf[1]:
+                t = buf[0] >> 1 | 0x80
+                t = -((~t + 1) & 0xff)
             else:
-                temp_read = temp_lsb >> 1  # truncate bit 0 by shifting
-            count_remain = data[6]
-            count_per_c = data[7]
-            temp = temp_read - 0.25 + (count_per_c - count_remain) / count_per_c
-            return temp
-        elif rom0 == 0x28:
-            temp = (temp_msb << 8 | temp_lsb) / 16
-            if (temp_msb & 0xf8) == 0xf8: # for negative temperature
-                temp -= 0x1000
-            return temp
+                t = buf[0] >> 1
+            return t - 0.25 + (buf[7] - buf[6]) / buf[7]
         else:
-            assert False
+            t = buf[1] << 8 | buf[0]
+            if t & 0x8000: # sign bit set
+                t = -((t ^ 0xffff) + 1)
+            return t / 16

@@ -1,4 +1,3 @@
-import sys
 import uerrno
 try:
     try:
@@ -8,13 +7,13 @@ try:
         import uos
 except ImportError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 try:
     uos.VfsFat
 except AttributeError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 class RAMFS:
@@ -47,7 +46,7 @@ try:
     bdev2 = RAMFS(50)
 except MemoryError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # first we umount any existing mount points the target may have
 try:

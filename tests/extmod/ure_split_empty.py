@@ -7,9 +7,8 @@
 try:
     import ure as re
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 r = re.compile(" *")
 s = r.split("a b    c   foobar")

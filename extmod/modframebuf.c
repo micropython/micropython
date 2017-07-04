@@ -244,8 +244,7 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
             o->stride = (o->stride + 7) & ~7;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "invalid format"));
+            mp_raise_ValueError("invalid format");
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -449,7 +448,7 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
         int cx1 = x1;
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
             color = getpixel(source, cx1, y1);
-            if (color != key) {
+            if (color != (uint32_t)key) {
                 setpixel(self, cx0, y0, color);
             }
             ++cx1;

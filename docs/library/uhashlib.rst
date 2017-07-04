@@ -4,6 +4,8 @@
 .. module:: uhashlib
    :synopsis: hashing algorithms
 
+|see_cpython_module| :mod:`python:hashlib`.
+
 This module implements binary data hashing algorithms. The exact inventory
 of available algorithms depends on a board. Among the algorithms which may
 be implemented:
@@ -15,11 +17,11 @@ be implemented:
 
 * SHA1 - A previous generation algorithm. Not recommended for new usages,
   but SHA1 is a part of number of Internet standards and existing
-  applications, so boards targetting network connectivity and
+  applications, so boards targeting network connectivity and
   interoperatiability will try to provide this.
 
 * MD5 - A legacy algorithm, not considered cryptographically secure. Only
-  selected boards, targetting interoperatibility with legacy applications,
+  selected boards, targeting interoperatibility with legacy applications,
   will offer this.
 
 Constructors

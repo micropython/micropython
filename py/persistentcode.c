@@ -286,11 +286,13 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         byte obj_type;
         if (MP_OBJ_IS_TYPE(o, &mp_type_int)) {
             obj_type = 'i';
-        } else if (mp_obj_is_float(o)) {
-            obj_type = 'f';
-        } else {
-            assert(MP_OBJ_IS_TYPE(o, &mp_type_complex));
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        } else if (MP_OBJ_IS_TYPE(o, &mp_type_complex)) {
             obj_type = 'c';
+        #endif
+        } else {
+            assert(mp_obj_is_float(o));
+            obj_type = 'f';
         }
         vstr_t vstr;
         mp_print_t pr;

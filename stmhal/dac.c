@@ -28,9 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include STM32_HAL_H
-
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "timer.h"
 #include "dac.h"
@@ -189,7 +186,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, mp_uint_t n_args, const
     if (args[0].u_int == 8 || args[0].u_int == 12) {
         self->bits = args[0].u_int;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "unsupported bits"));
+        mp_raise_ValueError("unsupported bits");
     }
 
     // reset state of DAC
@@ -221,7 +218,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         } else if (pin == &pin_A5) {
             dac_id = 2;
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q does not have DAC capabilities", pin->name));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name));
         }
     }
 
@@ -237,7 +234,7 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         dac->dac_channel = DAC_CHANNEL_2;
         dac->tx_dma_descr = &dma_DAC_2_TX;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC %d does not exist", dac_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "DAC(%d) doesn't exist", dac_id));
     }
 
     // configure the peripheral

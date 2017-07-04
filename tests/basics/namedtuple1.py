@@ -4,9 +4,8 @@ try:
     except ImportError:
         from ucollections import namedtuple
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 T = namedtuple("Tup", ["foo", "bar"])
 # CPython prints fully qualified name, what we don't bother to do so far
@@ -24,6 +23,9 @@ for t in T(1, 2), T(bar=1, foo=2):
     print([f for f in t])
 
     print(isinstance(t, tuple))
+
+# Create using positional and keyword args
+print(T(3, bar=4))
 
 try:
     t[0] = 200
@@ -76,7 +78,7 @@ T4 = namedtuple("TupTuple", ("foo", "bar"))
 t = T4(1, 2)
 print(t.foo, t.bar)
 
-# Try single string with comma field seperator
+# Try single string with comma field separator
 # Not implemented so far
 #T2 = namedtuple("TupComma", "foo,bar")
 #t = T2(1, 2)

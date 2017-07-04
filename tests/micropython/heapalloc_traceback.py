@@ -5,9 +5,8 @@ import sys
 try:
     import uio
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # preallocate exception instance with some room for a traceback
 global_exc = StopIteration()

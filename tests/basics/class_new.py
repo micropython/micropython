@@ -3,9 +3,8 @@ try:
     # nothing to test.
     object.__new__
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 class A:
     def __new__(cls):
         print("A.__new__")

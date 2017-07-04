@@ -1,4 +1,5 @@
 (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+True
 /
 1 mount False False
 ['test_mnt']
@@ -36,6 +37,9 @@ OSError
 2 umount
 OSError
 3 mount False False
+(16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+3 statvfs /
+(3,)
 3 ilistdir /
 ['a3']
 3 open test r

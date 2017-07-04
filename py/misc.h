@@ -92,7 +92,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
 #endif
-void *m_malloc_fail(size_t num_bytes);
+NORETURN void *m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_MEM_STATS
 size_t m_get_total_bytes_allocated(void);
@@ -197,7 +197,7 @@ int DEBUG_printf(const char *fmt, ...);
 extern mp_uint_t mp_verbose_flag;
 
 // This is useful for unicode handling. Some CPU archs has
-// special instructions for efficient implentation of this
+// special instructions for efficient implementation of this
 // function (e.g. CLZ on ARM).
 // NOTE: this function is unused at the moment
 #ifndef count_lead_ones

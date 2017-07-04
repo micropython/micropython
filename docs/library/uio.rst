@@ -4,6 +4,8 @@
 .. module:: uio
    :synopsis: input/output streams
 
+|see_cpython_module| :mod:`python:io`.
+
 This module contains additional types of stream (file-like) objects
 and helper functions.
 

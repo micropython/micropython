@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2015-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +45,14 @@ typedef struct _mp_obj_ssl_socket_t {
     uint32_t bytes_left;
 } mp_obj_ssl_socket_t;
 
+struct ssl_args {
+    mp_arg_val_t server_side;
+    mp_arg_val_t server_hostname;
+};
+
 STATIC const mp_obj_type_t ussl_socket_type;
 
-STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
+STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
     o->base.type = &ussl_socket_type;
     o->buf = NULL;
@@ -59,18 +64,30 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, bool server_side) {
         mp_raise_OSError(MP_EINVAL);
     }
 
-    if (server_side) {
+    if (args->server_side.u_bool) {
         o->ssl_sock = ssl_server_new(o->ssl_ctx, (long)sock);
     } else {
-        o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0);
+        SSL_EXTENSIONS *ext = ssl_ext_new();
 
-        int res;
-        /* check the return status */
-        if ((res = ssl_handshake_status(o->ssl_sock)) != SSL_OK) {
+        if (args->server_hostname.u_obj != mp_const_none) {
+            ext->host_name = (char*)mp_obj_str_get_str(args->server_hostname.u_obj);
+        }
+
+        o->ssl_sock = ssl_client_new(o->ssl_ctx, (long)sock, NULL, 0, ext);
+
+        int res = ssl_handshake_status(o->ssl_sock);
+        // Pointer to SSL_EXTENSIONS as being passed to ssl_client_new()
+        // is saved in ssl_sock->extensions.
+        // As of axTLS 2.1.3, extensions aren't used beyond the initial
+        // handshake, and that's pretty much how it's expected to be. So
+        // we allocate them on stack and reset the pointer after handshake.
+
+        if (res != SSL_OK) {
             printf("ssl_handshake_status: %d\n", res);
             ssl_display_error(res);
             mp_raise_OSError(MP_EIO);
         }
+
     }
 
     return o;
@@ -171,18 +188,17 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
     // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // TODO: Check that sock implements stream protocol
     mp_obj_t sock = pos_args[0];
 
-    struct {
-        mp_arg_val_t server_side;
-    } args;
+    struct ssl_args args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
 
-    return MP_OBJ_FROM_PTR(socket_new(sock, args.server_side.u_bool));
+    return MP_OBJ_FROM_PTR(socket_new(sock, &args));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 

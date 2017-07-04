@@ -17,6 +17,7 @@
 #define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
+#define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_KBD_EXCEPTION       (1)
@@ -39,6 +40,7 @@
 #define MICROPY_PY_BUILTINS_SLICE   (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
+#define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT esp_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
@@ -147,7 +149,6 @@ void *esp_native_code_commit(void*, size_t);
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
@@ -157,18 +158,17 @@ extern const struct _mp_obj_module_t utime_module;
 extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_machine;
-extern const struct _mp_obj_module_t onewire_module;
+extern const struct _mp_obj_module_t mp_module_onewire;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&network_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&onewire_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&utime_module }, \

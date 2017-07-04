@@ -4,6 +4,8 @@
 .. module:: uheapq
    :synopsis: heap queue algorithm
 
+|see_cpython_module| :mod:`python:heapq`.
+
 This module implements the heap queue algorithm.
 
 A heap queue is simply a list that has its elements stored in a certain way.

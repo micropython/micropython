@@ -6,9 +6,8 @@ try:
         def __delattr__(self, attr): pass
     del Test().noexist
 except AttributeError:
-    import sys
     print('SKIP')
-    sys.exit()
+    raise SystemExit
 
 # this class just prints the calls to see if they were executed
 class A():

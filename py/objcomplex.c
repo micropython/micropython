@@ -196,7 +196,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
         }
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't do truncated division of a complex number"));
+            mp_raise_TypeError("can't do truncated division of a complex number");
 
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:

@@ -368,6 +368,7 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         case 'q':
             ((long long*)p)[index] = val;
+            break;
         case 'Q':
             ((unsigned long long*)p)[index] = val;
             break;
@@ -383,5 +384,6 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         // Extension to CPython: array of pointers
         case 'P':
             ((void**)p)[index] = (void*)(uintptr_t)val;
+            break;
     }
 }

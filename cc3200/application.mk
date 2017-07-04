@@ -147,13 +147,12 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/sys_stdio_mphal.c \
 	)
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\
 	bufhelper.c \
-	input.c \
 	irq.c \
-	pybstdio.c \
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))

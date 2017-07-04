@@ -34,6 +34,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/mphal.h"
 #include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "modusocket.h"
@@ -67,6 +68,31 @@
                                             ip[1] = addr.sa_data[4]; \
                                             ip[2] = addr.sa_data[3]; \
                                             ip[3] = addr.sa_data[2];
+
+#define SOCKET_TIMEOUT_QUANTA_MS (20)
+
+STATIC int convert_sl_errno(int sl_errno) {
+    return -sl_errno;
+}
+
+// This function is left as non-static so it's not inlined.
+int check_timedout(mod_network_socket_obj_t *s, int ret, uint32_t *timeout_ms, int *_errno) {
+    if (*timeout_ms == 0 || ret != SL_EAGAIN) {
+        if (s->sock_base.timeout_ms > 0 && ret == SL_EAGAIN) {
+            *_errno = MP_ETIMEDOUT;
+        } else {
+            *_errno = convert_sl_errno(ret);
+        }
+        return -1;
+    }
+    mp_hal_delay_ms(SOCKET_TIMEOUT_QUANTA_MS);
+    if (*timeout_ms < SOCKET_TIMEOUT_QUANTA_MS) {
+        *timeout_ms = 0;
+    } else {
+        *timeout_ms -= SOCKET_TIMEOUT_QUANTA_MS;
+    }
+    return 0;
+}
 
 STATIC int wlan_gethostbyname(const char *name, mp_uint_t len, uint8_t *out_ip, uint8_t family) {
     uint32_t ip;
@@ -122,70 +148,93 @@ STATIC int wlan_socket_accept(mod_network_socket_obj_t *s, mod_network_socket_ob
     SlSockAddr_t addr;
     SlSocklen_t addr_len = sizeof(addr);
 
-    sd = sl_Accept(s->sock_base.sd, &addr, &addr_len);
-    // save the socket descriptor
-    s2->sock_base.sd = sd;
-    if (sd < 0) {
-        *_errno = sd;
-        return -1;
+    uint32_t timeout_ms = s->sock_base.timeout_ms;
+    for (;;) {
+        sd = sl_Accept(s->sock_base.sd, &addr, &addr_len);
+        if (sd >= 0) {
+            // save the socket descriptor
+            s2->sock_base.sd = sd;
+            // return ip and port
+            UNPACK_SOCKADDR(addr, ip, *port);
+            return 0;
+        }
+        if (check_timedout(s, sd, &timeout_ms, _errno)) {
+            return -1;
+        }
     }
-
-    // return ip and port
-    UNPACK_SOCKADDR(addr, ip, *port);
-    return 0;
 }
 
 STATIC int wlan_socket_connect(mod_network_socket_obj_t *s, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
-    int ret = sl_Connect(s->sock_base.sd, &addr, sizeof(addr));
-    if (ret != 0) {
-        *_errno = ret;
-        return -1;
+    uint32_t timeout_ms = s->sock_base.timeout_ms;
+    for (;;) {
+        int ret = sl_Connect(s->sock_base.sd, &addr, sizeof(addr));
+        if (ret == 0) {
+            return 0;
+        }
+        if (check_timedout(s, ret, &timeout_ms, _errno)) {
+            return -1;
+        }
     }
-    return 0;
 }
 
 STATIC int wlan_socket_send(mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, int *_errno) {
-    mp_int_t bytes = 0;
-    if (len > 0) {
-        bytes = sl_Send(s->sock_base.sd, (const void *)buf, len, 0);
+    if (len == 0) {
+        return 0;
     }
-    if (bytes <= 0) {
-        *_errno = bytes;
-        return -1;
+    uint32_t timeout_ms = s->sock_base.timeout_ms;
+    for (;;) {
+        int ret = sl_Send(s->sock_base.sd, (const void *)buf, len, 0);
+        if (ret > 0) {
+            return ret;
+        }
+        if (check_timedout(s, ret, &timeout_ms, _errno)) {
+            return -1;
+        }
     }
-    return bytes;
 }
 
 STATIC int wlan_socket_recv(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, int *_errno) {
-    int ret = sl_Recv(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0);
-    if (ret < 0) {
-        *_errno = ret;
-        return -1;
+    uint32_t timeout_ms = s->sock_base.timeout_ms;
+    for (;;) {
+        int ret = sl_Recv(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0);
+        if (ret >= 0) {
+            return ret;
+        }
+        if (check_timedout(s, ret, &timeout_ms, _errno)) {
+            return -1;
+        }
     }
-    return ret;
 }
 
 STATIC int wlan_socket_sendto( mod_network_socket_obj_t *s, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
-    int ret = sl_SendTo(s->sock_base.sd, (byte*)buf, len, 0, (SlSockAddr_t*)&addr, sizeof(addr));
-    if (ret < 0) {
-        *_errno = ret;
-        return -1;
+    uint32_t timeout_ms = s->sock_base.timeout_ms;
+    for (;;) {
+        int ret = sl_SendTo(s->sock_base.sd, (byte*)buf, len, 0, (SlSockAddr_t*)&addr, sizeof(addr));
+        if (ret >= 0) {
+            return ret;
+        }
+        if (check_timedout(s, ret, &timeout_ms, _errno)) {
+            return -1;
+        }
     }
-    return ret;
 }
 
 STATIC int wlan_socket_recvfrom(mod_network_socket_obj_t *s, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     SlSockAddr_t addr;
     SlSocklen_t addr_len = sizeof(addr);
-    mp_int_t ret = sl_RecvFrom(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0, &addr, &addr_len);
-    if (ret < 0) {
-        *_errno = ret;
-        return -1;
+    uint32_t timeout_ms = s->sock_base.timeout_ms;
+    for (;;) {
+        int ret = sl_RecvFrom(s->sock_base.sd, buf, MIN(len, WLAN_MAX_RX_SIZE), 0, &addr, &addr_len);
+        if (ret >= 0) {
+            UNPACK_SOCKADDR(addr, ip, *port);
+            return ret;
+        }
+        if (check_timedout(s, ret, &timeout_ms, _errno)) {
+            return -1;
+        }
     }
-    UNPACK_SOCKADDR(addr, ip, *port);
-    return ret;
 }
 
 STATIC int wlan_socket_setsockopt(mod_network_socket_obj_t *s, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
@@ -198,10 +247,8 @@ STATIC int wlan_socket_setsockopt(mod_network_socket_obj_t *s, mp_uint_t level, 
 }
 
 STATIC int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout_s, int *_errno) {
-    int ret;
-    bool has_timeout;
+    SlSockNonblocking_t option;
     if (timeout_s == 0 || timeout_s == -1) {
-        SlSockNonblocking_t option;
         if (timeout_s == 0) {
             // set non-blocking mode
             option.NonblockingEnabled = 1;
@@ -209,23 +256,19 @@ STATIC int wlan_socket_settimeout(mod_network_socket_obj_t *s, mp_uint_t timeout
             // set blocking mode
             option.NonblockingEnabled = 0;
         }
-        ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &option, sizeof(option));
-        has_timeout = false;
+        timeout_s = 0;
     } else {
-        // set timeout
-        struct SlTimeval_t timeVal;
-        timeVal.tv_sec = timeout_s;       // seconds
-        timeVal.tv_usec = 0;              // microseconds. 10000 microseconds resolution
-        ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_RCVTIMEO, &timeVal, sizeof(timeVal));
-        has_timeout = true;
+        // synthesize timeout via non-blocking behaviour with a loop
+        option.NonblockingEnabled = 1;
     }
 
+    int ret = sl_SetSockOpt(s->sock_base.sd, SL_SOL_SOCKET, SL_SO_NONBLOCKING, &option, sizeof(option));
     if (ret != 0) {
-        *_errno = ret;
+        *_errno = convert_sl_errno(ret);
         return -1;
     }
 
-    s->sock_base.has_timeout = has_timeout;
+    s->sock_base.timeout_ms = timeout_s * 1000;
     return 0;
 }
 
@@ -379,7 +422,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     s->sock_base.u_param.type = SL_SOCK_STREAM;
     s->sock_base.u_param.proto = SL_IPPROTO_TCP;
     s->sock_base.u_param.fileno = -1;
-    s->sock_base.has_timeout = false;
+    s->sock_base.timeout_ms = 0;
     s->sock_base.cert_req = false;
 
     if (n_args > 0) {
@@ -462,7 +505,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mp_uint_t port = 0;
     int _errno = 0;
     if (wlan_socket_accept(self, socket2, ip, &port, &_errno) != 0) {
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
 
     // add the socket to the list
@@ -490,7 +533,7 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         if (!self->sock_base.cert_req && _errno == SL_ESECSNOVERIFY) {
             return mp_const_none;
         }
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_const_none;
 }
@@ -504,7 +547,7 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     int _errno;
     mp_int_t ret = wlan_socket_send(self, bufinfo.buf, bufinfo.len, &_errno);
     if (ret < 0) {
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_obj_new_int_from_uint(ret);
 }
@@ -519,10 +562,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     int _errno;
     mp_int_t ret = wlan_socket_recv(self, (byte*)vstr.buf, len, &_errno);
     if (ret < 0) {
-        if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
-            mp_raise_OSError(MP_ETIMEDOUT);
-        }
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     if (ret == 0) {
         return mp_const_empty_bytes;
@@ -549,7 +589,7 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
     int _errno = 0;
     mp_int_t ret = wlan_socket_sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
     if (ret < 0) {
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_obj_new_int(ret);
 }
@@ -565,10 +605,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     int _errno = 0;
     mp_int_t ret = wlan_socket_recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
     if (ret < 0) {
-        if (_errno == MP_EAGAIN && self->sock_base.has_timeout) {
-            mp_raise_OSError(MP_ETIMEDOUT);
-        }
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     mp_obj_t tuple[2];
     if (ret == 0) {
@@ -624,9 +661,9 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     } else {
         timeout = mp_obj_get_int(timeout_in);
     }
-    int _errno;
+    int _errno = 0;
     if (wlan_socket_settimeout(self, timeout, &_errno) != 0) {
-        mp_raise_OSError(-_errno);
+        mp_raise_OSError(_errno);
     }
     return mp_const_none;
 }
@@ -643,17 +680,8 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
-    // TODO: CPython explicitly says that closing the returned object doesn't
-    // close the original socket (Python2 at all says that fd is dup()ed). But
-    // we save on the bloat.
-    mod_network_socket_obj_t *self = args[0];
-    if (n_args > 1) {
-        const char *mode = mp_obj_str_get_str(args[1]);
-        if (strcmp(mode, "rb") && strcmp(mode, "wb")) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
-        }
-    }
-    return self;
+    (void)n_args;
+    return args[0];
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 6, socket_makefile);
 
@@ -675,7 +703,7 @@ STATIC const mp_map_elem_t socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_makefile),        (mp_obj_t)&socket_makefile_obj },
 
     // stream methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read1_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),        (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline),        (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),           (mp_obj_t)&mp_stream_write_obj },
@@ -689,10 +717,8 @@ STATIC mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *e
     if (ret < 0) {
         // we need to ignore the socket closed error here because a read() without params
         // only returns when the socket is closed by the other end
-        if (*errcode != SL_ESECCLOSED) {
+        if (*errcode != -SL_ESECCLOSED) {
             ret = MP_STREAM_ERROR;
-            // needed to convert simplelink's negative error codes to POSIX
-            (*errcode) *= -1;
         } else {
             ret = 0;
         }
@@ -705,8 +731,6 @@ STATIC mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size,
     mp_int_t ret = wlan_socket_send(self, buf, size, errcode);
     if (ret < 0) {
         ret = MP_STREAM_ERROR;
-        // needed to convert simplelink's negative error codes to POSIX
-        (*errcode) *= -1;
     }
     return ret;
 }

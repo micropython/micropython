@@ -8,8 +8,8 @@ MICROPY_SSL_AXTLS = 1
 MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
 
-FROZEN_DIR = scripts
-FROZEN_MPY_DIR = modules
+FROZEN_DIR ?= scripts
+FROZEN_MPY_DIR ?= modules
 
 # include py core make definitions
 include ../py/py.mk
@@ -68,7 +68,6 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
-	esponewire.c \
 	espneopixel.c \
 	espapa102.c \
 	intr.c \
@@ -85,20 +84,15 @@ SRC_C = \
 	modnetwork.c \
 	modutime.c \
 	moduos.c \
-	modonewire.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	axtls_helpers.c \
 	hspi.c \
 	$(SRC_MOD)
 
-STM_SRC_C = $(addprefix stmhal/,\
-	pybstdio.c \
-	input.c \
-	)
-
 EXTMOD_SRC_C = $(addprefix extmod/,\
 	modlwip.c \
+	modonewire.c \
         )
 
 LIB_SRC_C = $(addprefix lib/,\
@@ -126,6 +120,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
+	utils/sys_stdio_mphal.c \
 	)
 
 ifeq ($(MICROPY_FATFS), 1)
@@ -145,14 +140,13 @@ OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
@@ -233,7 +227,11 @@ axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a:
 	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
+	cd ../lib/axtls; $(MAKE) oldconfig -B
+	cd ../lib/axtls; $(MAKE) clean
+	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096"
 	cp ../lib/axtls/_stage/libaxtls.a $@
+
+clean-modules:
+	git clean -f -d modules
+	rm -f build/frozen*.c

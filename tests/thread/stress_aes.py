@@ -8,7 +8,7 @@
 #
 # The AES code comes first (code originates from a C version authored by D.P.George)
 # and then the test harness at the bottom.  It can be tuned to be more/less
-# agressive by changing the amount of data to encrypt, the number of loops and
+# aggressive by changing the amount of data to encrypt, the number of loops and
 # the number of threads.
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd

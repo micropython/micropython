@@ -64,6 +64,14 @@ mp_uint_t mp_decode_uint_value(const byte *ptr) {
     return mp_decode_uint(&ptr);
 }
 
+// This function is used to help reduce stack usage at the caller, for the case when
+// the caller doesn't need the actual value and just wants to skip over it.
+const byte *mp_decode_uint_skip(const byte *ptr) {
+    while ((*ptr++) & 0x80) {
+    }
+    return ptr;
+}
+
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
@@ -115,7 +123,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
 
     // get params
     size_t n_state = mp_decode_uint(&code_state->ip);
-    mp_decode_uint(&code_state->ip); // skip n_exc_stack
+    code_state->ip = mp_decode_uint_skip(code_state->ip); // skip n_exc_stack
     size_t scope_flags = *code_state->ip++;
     size_t n_pos_args = *code_state->ip++;
     size_t n_kwonly_args = *code_state->ip++;

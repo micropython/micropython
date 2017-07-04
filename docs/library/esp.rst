@@ -14,7 +14,7 @@ Functions
 
     Get or set the sleep type.
 
-    If the ``sleep_type`` parameter is provided, sets the sleep type to its
+    If the *sleep_type* parameter is provided, sets the sleep type to its
     value. If the function is called without parameters, returns the current
     sleep type.
 
@@ -55,23 +55,23 @@ Functions
     1MByte of flash (which is memory mapped), and this function controls the
     location.
 
-    If `start` and `length` are both `None` then the native code location is
+    If *start* and *length* are both ``None`` then the native code location is
     set to the unused portion of memory at the end of the iRAM1 region.  The
     size of this unused portion depends on the firmware and is typically quite
     small (around 500 bytes), and is enough to store a few very small
     functions.  The advantage of using this iRAM1 region is that it does not
     get worn out by writing to it.
 
-    If neither `start` nor `length` are `None` then they should be integers.
-    `start` should specify the byte offset from the beginning of the flash at
-    which native code should be stored.  `length` specifies how many bytes of
-    flash from `start` can be used to store native code.  `start` and `length`
+    If neither *start* nor *length* are ``None`` then they should be integers.
+    *start* should specify the byte offset from the beginning of the flash at
+    which native code should be stored.  *length* specifies how many bytes of
+    flash from *start* can be used to store native code.  *start* and *length*
     should be multiples of the sector size (being 4096 bytes).  The flash will
     be automatically erased before writing to it so be sure to use a region of
     flash that is not otherwise used, for example by the firmware or the
     filesystem.
 
-    When using the flash to store native code `start+length` must be less
+    When using the flash to store native code *start+length* must be less
     than or equal to 1MByte.  Note that the flash can be worn out if repeated
     erasures (and writes) are made so use this feature sparingly.
     In particular, native code needs to be recompiled and rewritten to flash

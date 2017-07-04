@@ -27,10 +27,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include STM32_HAL_H
 
-#include "dma.h"
 #include "py/obj.h"
+#include "dma.h"
 #include "irq.h"
 
 typedef enum {

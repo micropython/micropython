@@ -1,4 +1,4 @@
-# Reads the USB VID and PID from the file specifed by sys.arg[1] and then
+# Reads the USB VID and PID from the file specified by sys.argv[1] and then
 # inserts those values into the template file specified by sys.argv[2],
 # printing the result to stdout
 

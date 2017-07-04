@@ -3,8 +3,7 @@
 try:
     import ujson
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(ujson.dumps(b'1234'))

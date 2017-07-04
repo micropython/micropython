@@ -6,9 +6,8 @@ except ImportError:
     try:
         import re
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 def print_groups(match):
     print('----')

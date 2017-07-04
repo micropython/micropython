@@ -4,16 +4,14 @@ try:
     except ImportError:
         import binascii
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 try:
     binascii.crc32
 except AttributeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print(hex(binascii.crc32(b'The quick brown fox jumps over the lazy dog')))
 print(hex(binascii.crc32(b'\x00' * 32)))

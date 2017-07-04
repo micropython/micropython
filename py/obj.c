@@ -401,7 +401,7 @@ mp_obj_t mp_obj_id(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(id);
     } else {
         // If that didn't work, well, let's return long int, just as
-        // a (big) positve value, so it will never clash with the range
+        // a (big) positive value, so it will never clash with the range
         // of small int returned in previous case.
         return mp_obj_new_int_from_uint((mp_uint_t)id);
     }
@@ -460,8 +460,7 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "object is not subscriptable"));
+            mp_raise_TypeError("object is not subscriptable");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                 "'%s' object is not subscriptable", mp_obj_get_type_str(base)));

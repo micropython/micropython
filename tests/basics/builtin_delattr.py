@@ -2,9 +2,8 @@
 try:
     delattr
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 class A: pass
 a = A()

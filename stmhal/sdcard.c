@@ -96,6 +96,18 @@
 
 #endif
 
+// If no custom SDIO pins defined, use the default ones
+#ifndef MICROPY_HW_SDMMC_CK
+
+#define MICROPY_HW_SDMMC_D0 (pin_C8)
+#define MICROPY_HW_SDMMC_D1 (pin_C9)
+#define MICROPY_HW_SDMMC_D2 (pin_C10)
+#define MICROPY_HW_SDMMC_D3 (pin_C11)
+#define MICROPY_HW_SDMMC_CK (pin_C12)
+#define MICROPY_HW_SDMMC_CMD (pin_D2)
+
+#endif
+
 // TODO: Since SDIO is fundamentally half-duplex, we really only need to
 //       tie up one DMA channel. However, the HAL DMA API doesn't
 // seem to provide a convenient way to change the direction. I believe that
@@ -128,12 +140,12 @@ void sdcard_init(void) {
     mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
     #else
     // Default SDIO/SDMMC1 config
-    mp_hal_pin_config(&pin_C8, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&pin_C9, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&pin_C10, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&pin_C11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&pin_C12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&pin_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(&MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
     #endif
 
     // configure the SD card detect pin

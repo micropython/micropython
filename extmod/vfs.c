@@ -228,11 +228,14 @@ mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_umount_obj, mp_vfs_umount);
 
+// Note: buffering and encoding args are currently ignored
 mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_file, ARG_mode, ARG_encoding };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },
+        { MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
 
     // parse args
@@ -421,6 +424,32 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_stat_obj, mp_vfs_stat);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in) {
     mp_obj_t path_out;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
+    if (vfs == MP_VFS_ROOT) {
+        // statvfs called on the root directory, see if there's anything mounted there
+        for (vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+            if (vfs->len == 1) {
+                break;
+            }
+        }
+
+        // If there's nothing mounted at root then return a mostly-empty tuple
+        if (vfs == NULL) {
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
+
+            // fill in: bsize, frsize, blocks, bfree, bavail, files, ffree, favail, flags
+            for (int i = 0; i <= 8; ++i) {
+                t->items[i] = MP_OBJ_NEW_SMALL_INT(0);
+            }
+
+            // Put something sensible in f_namemax
+            t->items[9] = MP_OBJ_NEW_SMALL_INT(MICROPY_ALLOC_PATH_MAX);
+
+            return MP_OBJ_FROM_PTR(t);
+        }
+
+        // VFS mounted at root so delegate the call to it
+        path_out = MP_OBJ_NEW_QSTR(MP_QSTR__slash_);
+    }
     return mp_vfs_proxy_call(vfs, MP_QSTR_statvfs, 1, &path_out);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_statvfs_obj, mp_vfs_statvfs);

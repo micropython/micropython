@@ -65,7 +65,9 @@
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
+#ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#endif
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
@@ -87,6 +89,7 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_BUILTINS_EXECFILE (1)
+#define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT stmhal_help_text
@@ -106,8 +109,9 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
 #define MICROPY_PY_UERRNO           (1)
+#ifndef MICROPY_PY_THREAD
 #define MICROPY_PY_THREAD           (0)
-#define MICROPY_PY_THREAD_GIL       (0)
+#endif
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
@@ -159,7 +163,6 @@
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
@@ -176,6 +179,7 @@ extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
+extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_PY_USOCKET
 #define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
@@ -199,6 +203,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \

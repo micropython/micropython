@@ -125,8 +125,6 @@ SECTIONS
         *lib/timeutils/*.o*(.literal*, .text*)
         *lib/utils/*.o*(.literal*, .text*)
 
-        *stmhal/pybstdio.o(.literal*, .text*)
-
         build/main.o(.literal* .text*)
         *gccollect.o(.literal* .text*)
         *gchelper.o(.literal* .text*)

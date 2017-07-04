@@ -3,9 +3,8 @@ try:
     import uerrno
     import websocket
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # put raw data in the stream and do a websocket read
 def ws_read(msg, sz):

@@ -40,6 +40,8 @@
 
 // TODO need to mangle __attr names
 
+#define INVALID_LABEL (0xffff)
+
 typedef enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
@@ -939,7 +941,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
             }
         }
     } else {
-        // some arbitrary statment that we can't delete (eg del 1)
+        // some arbitrary statement that we can't delete (eg del 1)
         goto cannot_delete;
     }
 
@@ -954,7 +956,7 @@ STATIC void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->break_label == 0) {
+    if (comp->break_label == INVALID_LABEL) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'break' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
@@ -962,7 +964,7 @@ STATIC void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 }
 
 STATIC void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->continue_label == 0) {
+    if (comp->continue_label == INVALID_LABEL) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'continue' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
@@ -1090,7 +1092,7 @@ STATIC void compile_import_name(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     mp_parse_node_t pn_import_source = pns->nodes[0];
 
-    // extract the preceeding .'s (if any) for a relative import, to compute the import level
+    // extract the preceding .'s (if any) for a relative import, to compute the import level
     uint import_level = 0;
     do {
         mp_parse_node_t pn_rel;
@@ -1406,7 +1408,20 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
 
-    compile_node(comp, pn_else);
+    // Compile the else block.  We must pop the iterator variables before
+    // executing the else code because it may contain break/continue statements.
+    uint end_label = 0;
+    if (!MP_PARSE_NODE_IS_NULL(pn_else)) {
+        // discard final value of "var", and possible "end" value
+        EMIT(pop_top);
+        if (end_on_stack) {
+            EMIT(pop_top);
+        }
+        compile_node(comp, pn_else);
+        end_label = comp_next_label(comp);
+        EMIT_ARG(jump, end_label);
+        EMIT_ARG(adjust_stack_size, 1 + end_on_stack);
+    }
 
     EMIT_ARG(label_assign, break_label);
 
@@ -1416,6 +1431,10 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, mp_parse_node_t p
     // discard <end> value if it's on the stack
     if (end_on_stack) {
         EMIT(pop_top);
+    }
+
+    if (!MP_PARSE_NODE_IS_NULL(pn_else)) {
+        EMIT_ARG(label_assign, end_label);
     }
 }
 
@@ -1496,7 +1515,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
 
-    compile_node(comp, pns->nodes[3]); // else (not tested)
+    compile_node(comp, pns->nodes[3]); // else (may be empty)
 
     EMIT_ARG(label_assign, break_label);
 }
@@ -2308,6 +2327,10 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
             }
         } else {
             normal_argument:
+            if (star_flags) {
+                compile_syntax_error(comp, args[i], "non-keyword arg after */**");
+                return;
+            }
             if (n_keyword > 0) {
                 compile_syntax_error(comp, args[i], "non-keyword arg after keyword arg");
                 return;
@@ -2939,7 +2962,7 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
 STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
-    comp->next_label = 1;
+    comp->next_label = 0;
     EMIT_ARG(start_pass, pass, scope);
 
     if (comp->pass == MP_PASS_SCOPE) {
@@ -3114,7 +3137,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
-    comp->next_label = 1;
+    comp->next_label = 0;
 
     if (scope->kind != SCOPE_FUNCTION) {
         compile_syntax_error(comp, MP_PARSE_NODE_NULL, "inline assembler must be a function");
@@ -3360,6 +3383,8 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 
     comp->source_file = source_file;
     comp->is_repl = is_repl;
+    comp->break_label = INVALID_LABEL;
+    comp->continue_label = INVALID_LABEL;
 
     // create the module scope
     scope_t *module_scope = scope_new_and_link(comp, SCOPE_MODULE, parse_tree->root, emit_opt);

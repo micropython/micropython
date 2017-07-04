@@ -2,9 +2,8 @@
 try:
     property
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # create a property object explicitly
 property()

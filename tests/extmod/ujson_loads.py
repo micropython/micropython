@@ -4,9 +4,8 @@ except ImportError:
     try:
         import json
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 def my_print(o):
     if isinstance(o, dict):

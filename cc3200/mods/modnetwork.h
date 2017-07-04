@@ -52,7 +52,7 @@ typedef struct _mod_network_socket_base_t {
         } u_param;
         int16_t sd;
     };
-    bool has_timeout;
+    uint32_t timeout_ms; // 0 for no timeout
     bool cert_req;
 } mod_network_socket_base_t;
 

@@ -4,8 +4,7 @@ try:
     frozenset
 except NameError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 s = frozenset()
 print(s)

@@ -1,3 +1,5 @@
+.. _micropython_lib:
+
 MicroPython libraries
 =====================
 
@@ -72,16 +74,17 @@ it will fallback to loading the built-in ``ujson`` module.
        cmath.rst
        gc.rst
        math.rst
-       select.rst
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ustruct.rst
        utime.rst
@@ -97,16 +100,17 @@ it will fallback to loading the built-in ``ujson`` module.
        cmath.rst
        gc.rst
        math.rst
-       select.rst
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ustruct.rst
        utime.rst
@@ -120,12 +124,12 @@ it will fallback to loading the built-in ``ujson`` module.
        builtins.rst
        array.rst
        gc.rst
-       select.rst
        sys.rst
        ubinascii.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ussl.rst
        utime.rst
@@ -142,12 +146,14 @@ it will fallback to loading the built-in ``ujson`` module.
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ussl.rst
        ustruct.rst

@@ -376,11 +376,16 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 rs[1] = '0';
                 if (e_sign == '-') {
                     e--;
+                    if (e == 0) {
+                        e_sign = '+';
+                    }
                 } else {
                     e++; 
                 }
+            } else {
+                // Need at extra digit at the end to make room for the leading '1'
+                s++;
             }
-            s++;
             char *ss = s; 
             while (ss > rs) {
                 *ss = ss[-1];

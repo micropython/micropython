@@ -1,9 +1,8 @@
 try:
     import uctypes
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 desc = {
     "f32": uctypes.FLOAT32 | 0,

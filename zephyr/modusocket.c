@@ -38,8 +38,8 @@
 #include <net/net_pkt.h>
 #include <net/dns_resolve.h>
 
-#define DEBUG 0
-#if DEBUG // print debugging info
+#define DEBUG_PRINT 0
+#if DEBUG_PRINT // print debugging info
 #define DEBUG_printf printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
@@ -165,7 +165,7 @@ static void sock_received_cb(struct net_context *context, struct net_pkt *pkt, i
         DEBUG_printf(" (appdatalen=%d), token: %p", pkt->appdatalen, net_pkt_token(pkt));
     }
     DEBUG_printf("\n");
-    #if DEBUG > 1
+    #if DEBUG_PRINT > 1
     net_pkt_print_frags(pkt);
     #endif
 
@@ -533,12 +533,18 @@ typedef struct _getaddrinfo_state_t {
     mp_obj_t result;
     struct k_sem sem;
     mp_obj_t port;
+    int status;
 } getaddrinfo_state_t;
 
 void dns_resolve_cb(enum dns_resolve_status status, struct dns_addrinfo *info, void *user_data) {
     getaddrinfo_state_t *state = user_data;
+    DEBUG_printf("dns status: %d\n", status);
 
     if (info == NULL) {
+        if (status == DNS_EAI_ALLDONE) {
+            status = 0;
+        }
+        state->status = status;
         k_sem_give(&state->sem);
         return;
     }
@@ -569,7 +575,6 @@ STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     state.result = mp_obj_new_list(0, NULL);
     k_sem_init(&state.sem, 0, UINT_MAX);
 
-    int status;
     for (int i = 2; i--;) {
         int type = (family != AF_INET6 ? DNS_QUERY_TYPE_A : DNS_QUERY_TYPE_AAAA);
         RAISE_ERRNO(dns_get_addr_info(host, type, NULL, dns_resolve_cb, &state, 3000));
@@ -578,6 +583,13 @@ STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
             break;
         }
         family = AF_INET6;
+    }
+
+    // Raise error only if there's nothing to return, otherwise
+    // it may be IPv4 vs IPv6 differences.
+    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(state.result));
+    if (state.status != 0 && len == 0) {
+        mp_raise_OSError(state.status);
     }
 
     return state.result;

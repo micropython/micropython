@@ -93,7 +93,7 @@ void pyb_rtc_set_us_since_2000(uint64_t nowus) {
     int64_t delta = nowus - (((uint64_t)rtc_last_ticks * cal) >> 12);
 
     // As the calibration value jitters quite a bit, to make the
-    // clock at least somewhat practially usable, we need to store it
+    // clock at least somewhat practically usable, we need to store it
     system_rtc_mem_write(MEM_CAL_ADDR, &cal, sizeof(cal));
     system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
 };
@@ -173,7 +173,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         // read RTC memory
 
         system_rtc_mem_read(MEM_USER_LEN_ADDR, &len, sizeof(len));
-        system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
+        system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_obj_new_bytes(rtcram, len);
     } else {
@@ -195,7 +195,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
             rtcram[i] = ((uint8_t *)bufinfo.buf)[i];
         }
 
-        system_rtc_mem_write(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
+        system_rtc_mem_write(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_const_none;
     }

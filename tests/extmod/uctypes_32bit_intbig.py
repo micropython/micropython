@@ -3,9 +3,8 @@
 try:
     import uctypes
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 buf = b"12345678abcd"
 struct = uctypes.struct(

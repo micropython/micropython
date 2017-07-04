@@ -6,7 +6,8 @@
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (1)
 #define MICROPY_EMIT_INLINE_THUMB   (1)
-#define MICROPY_MEM_STATS           (0)
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
+#define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -34,6 +35,7 @@
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
 #define MICROPY_VFS                 (1)
 
