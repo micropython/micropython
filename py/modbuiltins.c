@@ -226,14 +226,14 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
     if (dict != NULL) {
-        for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+        for (size_t i = 0; i < dict->map.alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
                 mp_obj_list_append(dir, dict->map.table[i].key);
             }
         }
     }
     if (members != NULL) {
-        for (mp_uint_t i = 0; i < members->alloc; i++) {
+        for (size_t i = 0; i < members->alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(members, i)) {
                 mp_obj_list_append(dir, members->table[i].key);
             }
@@ -326,7 +326,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
         // given many args
         mp_obj_t best_key = MP_OBJ_NULL;
         mp_obj_t best_obj = MP_OBJ_NULL;
-        for (mp_uint_t i = 0; i < n_args; i++) {
+        for (size_t i = 0; i < n_args; i++) {
             mp_obj_t key = key_fn == MP_OBJ_NULL ? args[i] : mp_call_function_1(key_fn, args[i]);
             if (best_obj == MP_OBJ_NULL || (mp_binary_op(op, key, best_key) == mp_const_true)) {
                 best_key = key;
@@ -443,7 +443,7 @@ STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *args, mp_map_t *
 
     mp_print_t print = {stream_obj, mp_stream_write_adaptor};
     #endif
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (size_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
             mp_stream_write_adaptor(stream_obj, sep_data, sep_len);
