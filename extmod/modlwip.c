@@ -219,19 +219,10 @@ static const int error_lookup_table[] = {
 #endif
 
 /*******************************************************************************/
-// The socket object provided by lwip.socket.
-
-/*
- * Level number for (get/set)sockopt() to apply to socket itself.
- */
-#define  SOL_SOCKET  0xfff    /* options for socket level */
-
-#define IPPROTO_IP      0
 
 #if LWIP_IGMP
-/*
- * Options and types for UDP multicast traffic handling
- */
+// Options and types for UDP multicast traffic handling
+
 #define IP_ADD_MEMBERSHIP  3
 #define IP_DROP_MEMBERSHIP 4
 #define IP_MULTICAST_TTL   5
@@ -240,10 +231,12 @@ static const int error_lookup_table[] = {
 
 
 typedef struct ip_mreq {
-    struct in_addr imr_multiaddr; /* IP multicast address of group */
-    struct in_addr imr_interface; /* local IP address of interface */
+    struct in_addr imr_multiaddr; // IP multicast address of group
+    struct in_addr imr_interface; // local IP address of interface
 } ip_mreq;
 #endif /* LWIP_IGMP */
+
+// The socket object provided by lwip.socket.
 
 #define MOD_NETWORK_AF_INET (2)
 #define MOD_NETWORK_AF_INET6 (10)
@@ -1220,7 +1213,6 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 
 return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
 
 STATIC mp_obj_t lwip_socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
