@@ -2132,62 +2132,43 @@ STATIC void compile_and_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     c_binary_op(comp, pns, MP_BINARY_OP_AND);
 }
 
-STATIC void compile_shift_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i + 1 < num_nodes; i += 2) {
-        compile_node(comp, pns->nodes[i + 1]);
-        if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_LESS)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_LSHIFT);
-        } else {
-            assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_MORE)); // should be
-            EMIT_ARG(binary_op, MP_BINARY_OP_RSHIFT);
-        }
-    }
-}
-
-STATIC void compile_arith_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i + 1 < num_nodes; i += 2) {
-        compile_node(comp, pns->nodes[i + 1]);
-        if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PLUS)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_ADD);
-        } else {
-            assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_MINUS)); // should be
-            EMIT_ARG(binary_op, MP_BINARY_OP_SUBTRACT);
-        }
-    }
-}
-
 STATIC void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
-        if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_STAR)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_MULTIPLY);
-        } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_DBL_SLASH)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_FLOOR_DIVIDE);
-        } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_SLASH)) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_TRUE_DIVIDE);
-        } else {
-            assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[i], MP_TOKEN_OP_PERCENT)); // should be
-            EMIT_ARG(binary_op, MP_BINARY_OP_MODULO);
+        mp_binary_op_t op;
+        mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]);
+        switch (tok) {
+            case MP_TOKEN_OP_PLUS:      op = MP_BINARY_OP_ADD; break;
+            case MP_TOKEN_OP_MINUS:     op = MP_BINARY_OP_SUBTRACT; break;
+            case MP_TOKEN_OP_STAR:      op = MP_BINARY_OP_MULTIPLY; break;
+            case MP_TOKEN_OP_DBL_SLASH: op = MP_BINARY_OP_FLOOR_DIVIDE; break;
+            case MP_TOKEN_OP_SLASH:     op = MP_BINARY_OP_TRUE_DIVIDE; break;
+            case MP_TOKEN_OP_PERCENT:   op = MP_BINARY_OP_MODULO; break;
+            case MP_TOKEN_OP_DBL_LESS:  op = MP_BINARY_OP_LSHIFT; break;
+            case MP_TOKEN_OP_DBL_MORE: default:
+                assert(tok == MP_TOKEN_OP_DBL_MORE);
+                op = MP_BINARY_OP_RSHIFT;
+                break;
         }
+        EMIT_ARG(binary_op, op);
     }
 }
 
 STATIC void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[1]);
-    if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_PLUS)) {
-        EMIT_ARG(unary_op, MP_UNARY_OP_POSITIVE);
-    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_MINUS)) {
-        EMIT_ARG(unary_op, MP_UNARY_OP_NEGATIVE);
-    } else {
-        assert(MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[0], MP_TOKEN_OP_TILDE)); // should be
-        EMIT_ARG(unary_op, MP_UNARY_OP_INVERT);
+    mp_binary_op_t op;
+    mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+    switch (tok) {
+        case MP_TOKEN_OP_PLUS:  op = MP_UNARY_OP_POSITIVE; break;
+        case MP_TOKEN_OP_MINUS: op = MP_UNARY_OP_NEGATIVE; break;
+        case MP_TOKEN_OP_TILDE: default:
+            assert(tok == MP_TOKEN_OP_TILDE);
+            op = MP_UNARY_OP_INVERT;
+            break;
     }
+    EMIT_ARG(unary_op, op);
 }
 
 STATIC void compile_atom_expr_normal(compiler_t *comp, mp_parse_node_struct_t *pns) {
