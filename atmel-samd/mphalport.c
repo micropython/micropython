@@ -39,38 +39,42 @@ extern struct usart_module usart_instance;
 
 // Read by main to know when USB is connected.
 volatile bool mp_msc_enabled = false;
-bool mp_msc_enable()
-{
-	mp_msc_enabled = true;
-	return true;
+bool mp_msc_enable() {
+    mp_msc_enabled = true;
+    return true;
 }
 
-void mp_msc_disable()
-{
-	mp_msc_enabled = false;
+void mp_msc_disable() {
+    mp_msc_enabled = false;
 }
 
-bool mp_cdc_enable(uint8_t port)
-{
-	mp_cdc_enabled = false;
-	return true;
+bool mp_cdc_enable(uint8_t port) {
+    mp_cdc_enabled = false;
+    return true;
 }
 
-void mp_cdc_disable(uint8_t port)
-{
-	mp_cdc_enabled = false;
+void mp_cdc_disable(uint8_t port) {
+    mp_cdc_enabled = false;
 }
+
+volatile bool reset_on_disconnect = false;
 
 void usb_dtr_notify(uint8_t port, bool set) {
-	mp_cdc_enabled = set;
+    mp_cdc_enabled = set;
+    if (!set && reset_on_disconnect) {
+        reset_to_bootloader();
+    }
 }
 
 void usb_rts_notify(uint8_t port, bool set) {
     return;
 }
 
-void usb_rx_notify(void)
-{
+void usb_coding_notify(uint8_t port, usb_cdc_line_coding_t* coding) {
+    reset_on_disconnect = coding->dwDTERate == 1200;
+}
+
+void usb_rx_notify(void) {
     irqflags_t flags;
     if (mp_cdc_enabled) {
         while (udi_cdc_is_rx_ready()) {

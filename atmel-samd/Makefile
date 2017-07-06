@@ -188,6 +188,7 @@ SRC_C = \
 	flash_api.c \
 	main.c \
 	mphalport.c \
+	reset.c \
 	samd21_pins.c \
 	shared_dma.c \
 	rgb_led_status.c \

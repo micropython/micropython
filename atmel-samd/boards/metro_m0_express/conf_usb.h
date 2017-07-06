@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "asf/common/services/usb/class/cdc/usb_protocol_cdc.h"
+
 #ifndef CONF_USB_H_INCLUDED
 #define CONF_USB_H_INCLUDED
 
@@ -19,7 +21,7 @@
 #endif
 
 #ifndef USB_DEVICE_PRODUCT_NAME
-#  define USB_DEVICE_PRODUCT_NAME "Metro M0 with Flash (Experimental)"
+#  define USB_DEVICE_PRODUCT_NAME "Metro M0 Express"
 #endif
 // #define  USB_DEVICE_SERIAL_NAME           "12...EF"
 #define  USB_DEVICE_GET_SERIAL_NAME_POINTER  serial_number
@@ -55,7 +57,8 @@ extern void mp_cdc_disable(uint8_t port);
 
 #define  UDI_CDC_RX_NOTIFY(port)           usb_rx_notify()
 void usb_rx_notify(void);
-#define  UDI_CDC_SET_CODING_EXT(port,cfg)
+#define  UDI_CDC_SET_CODING_EXT(port,cfg) usb_coding_notify(port, cfg)
+void usb_coding_notify(uint8_t port, usb_cdc_line_coding_t* coding);
 #define  UDI_CDC_SET_DTR_EXT(port,set) usb_dtr_notify(port, set)
 void usb_dtr_notify(uint8_t port, bool set);
 #define  UDI_CDC_SET_RTS_EXT(port,set) usb_rts_notify(port, set)
