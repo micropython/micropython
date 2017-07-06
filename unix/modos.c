@@ -171,6 +171,36 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
         return MP_OBJ_STOP_ITERATION;
     }
 
+    return mp_obj_new_str(dirent->d_name, strlen(dirent->d_name), false);;
+}
+
+STATIC mp_obj_t mod_os_listdir(size_t n_args, const mp_obj_t *args) {
+    const char *path = ".";
+    if (n_args > 0) {
+        path = mp_obj_str_get_str(args[0]);
+    }
+    mp_obj_listdir_t *o = m_new_obj(mp_obj_listdir_t);
+    o->base.type = &mp_type_polymorph_iter;
+    o->dir = opendir(path);
+    o->iternext = listdir_next;
+    return MP_OBJ_FROM_PTR(o);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_listdir_obj, 0, 1, mod_os_listdir);
+
+STATIC mp_obj_t ilistdir_next(mp_obj_t self_in) {
+    mp_obj_listdir_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->dir == NULL) {
+        goto done;
+    }
+    struct dirent *dirent = readdir(self->dir);
+    if (dirent == NULL) {
+        closedir(self->dir);
+        self->dir = NULL;
+    done:
+        return MP_OBJ_STOP_ITERATION;
+    }
+
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
     t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name), false);
     #ifdef _DIRENT_HAVE_D_TYPE
@@ -195,7 +225,7 @@ STATIC mp_obj_t mod_os_ilistdir(size_t n_args, const mp_obj_t *args) {
     mp_obj_listdir_t *o = m_new_obj(mp_obj_listdir_t);
     o->base.type = &mp_type_polymorph_iter;
     o->dir = opendir(path);
-    o->iternext = listdir_next;
+    o->iternext = ilistdir_next;
     return MP_OBJ_FROM_PTR(o);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_ilistdir_obj, 0, 1, mod_os_ilistdir);
@@ -221,6 +251,7 @@ STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mod_os_unlink_obj) },
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mod_os_getenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mod_os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mod_os_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mod_os_ilistdir_obj) },
     #if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
