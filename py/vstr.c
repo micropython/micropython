@@ -34,7 +34,7 @@
 #include "py/mpprint.h"
 
 // returned value is always at least 1 greater than argument
-#define ROUND_ALLOC(a) (((a) & ((~0) - 7)) + 8)
+#define ROUND_ALLOC(a) (((a) & ((~0U) - 7)) + 8)
 
 // Init the vstr so it allocs exactly given number of bytes.  Set length to zero.
 void vstr_init(vstr_t *vstr, size_t alloc) {
