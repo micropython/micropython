@@ -14,6 +14,8 @@
 #include "py/repl.h"
 #include "py/gc.h"
 
+#include "py/misc.h"
+
 void setSP ( int );
 unsigned int getSP ();
 
@@ -24,11 +26,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
-        mp_call_function_0(module_fun);
-        nlr_pop();
+        mp_parse_compile_execute ( lex, input_kind, mp_globals_get(), mp_locals_get() );
     } else {
         // uncaught exception
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
@@ -42,33 +40,46 @@ int main(int argc, char **argv) {
    /* pios_arm_timer_setLoad ( 0x4000 );
     pios_arm_timer_init ( true, PIOS_ARM_TIMER_PRESCALE_256, true );
     enable_timer_irq();*/
-                
-    pios_jtag_init();
-    
+                    
     /*mp_stack_ctrl_init();
     mp_stack_set_top ( &heap_end );
     mp_stack_set_limit ( 0x700000 ); */
+    
+    mp_verbose_flag = 2000;
+    
+    pios_jtag_init();
+    
+    
+    //volatile int b=0;
+    //while ( b == 0 );
         
     printf ("INIT !-- Stack: 0x%08x\t Heap: 0x%8p, 0x%8p --!\n", getSP(), &heap_start, &heap_end );
     gc_init ( &heap_start, &heap_end );
     mp_init();
-
+/*
     do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
-    
-    mp_deinit();
-    gc_init ( &heap_start, &heap_end );
-    mp_init();
-    do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')", MP_PARSE_SINGLE_INPUT);
-    
-    mp_deinit();
-    gc_init ( &heap_start, &heap_end );
-    mp_init();
-    do_str("for i in range(10):\n  print(i)", MP_PARSE_FILE_INPUT);
-    
-    mp_deinit();
-    gc_init ( &heap_start, &heap_end );
-    mp_init();
-    
+    do_str("x=1", MP_PARSE_FILE_INPUT);
+    do_str("x=1\nprint(x)", MP_PARSE_FILE_INPUT);
+    do_str("l=list()", MP_PARSE_FILE_INPUT);
+    do_str("l=list()\nprint(l)", MP_PARSE_FILE_INPUT);
+    do_str("l=[1,2,3]", MP_PARSE_FILE_INPUT);
+    do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
+    do_str("x=1\ny=2\nprint (x<y)", MP_PARSE_FILE_INPUT);
+    do_str("x=1\ny=2\nprint (x&y)", MP_PARSE_FILE_INPUT);
+    do_str("x=1\ny=2\nprint ((x<y) && (y<x))", MP_PARSE_FILE_INPUT);
+    do_str("x=1\nif (x<2) : \n    print (x)", MP_PARSE_FILE_INPUT);
+    do_str("x=1\nif (x<2) : \n    print (x)\nelse:\n    print (2)", MP_PARSE_FILE_INPUT);
+    do_str("x=1\nif (x>2) : \n    print (x)\nelse:\n    print (2)", MP_PARSE_FILE_INPUT);*/
+    /*do_str("i = 1\nwhile (i < 5) : \n    pass\n    i=i+1", MP_PARSE_FILE_INPUT);
+    do_str("i = 1\nwhile (i < 5) : \n    print (i)\n    i=i+1", MP_PARSE_FILE_INPUT);
+    do_str("k=range(10)", MP_PARSE_FILE_INPUT);
+    do_str("k=range(10)\nprint(k)", MP_PARSE_FILE_INPUT);
+    do_str("for i in [1,2,3]:\n    pass", MP_PARSE_FILE_INPUT);
+    do_str("for i in [1,2,3]:\n    print(i)", MP_PARSE_FILE_INPUT);
+    do_str("for i in range(10):\n    pass", MP_PARSE_FILE_INPUT);*/
+    do_str("for i in range(10):\n    print(i)", MP_PARSE_FILE_INPUT);
+    //do_str("for i in range(10):\n    print(i,eol='')", MP_PARSE_FILE_INPUT);
+   /* 
     printf ( " ! -- My Source: \n" );
     int line = 1;
     printf ("%02d: ", line );
@@ -90,7 +101,7 @@ int main(int argc, char **argv) {
     
     pios_uart_putchar('\n');
     
-    printf ("Starting Python-code\n");
+    printf ("Starting Python-code\n");*/
 
 /*    do_str("\n\
 import C;\n\
@@ -141,13 +152,13 @@ Cdebug.bsod();\n\
 res = gpio_write ( 16, 1 );\n\
 print ('BOAH');\n\
 ", MP_PARSE_FILE_INPUT);*/
-
+/*
     do_str ( (char*) source_interactive_py, MP_PARSE_FILE_INPUT );
 
     unsigned int sp = getSP();
     printf ("SP: %08x\n", sp );
 
-    mp_deinit();
+    mp_deinit();*/
     
     printf ("Finished, exiting!\n");
     while (1);

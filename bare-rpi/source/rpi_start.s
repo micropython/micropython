@@ -51,6 +51,12 @@ _reset_:
     
     bic r0, r0, #0x80       /// enable interrupts and return to supervisor mode
     msr cpsr, r0
+    
+   /* 
+    mov r0, #0
+rs:
+    cmp r0, #0
+    beq rs*/
         
     bl main
 

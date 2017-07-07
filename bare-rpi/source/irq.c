@@ -45,9 +45,10 @@ void __attribute__((interrupt("IRQ"))) irq_vector(void)
     //rpiArmTimer->Load = 0x4000;
     //printf ("SP: 0x%08x\nLR: 0x%08x\n", sp, lr);
  
-    /**while( 1 )
+    printf ("IRQ\n");
+    while( 1 )
     {
-    }*/
+    }
 }
 void __attribute__((interrupt("FIQ"))) fiq_vector(void)
 {

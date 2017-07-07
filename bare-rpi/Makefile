@@ -4,7 +4,7 @@ SRC=source/
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = $(SRC)qstrdefsport.h
-BOARD?=rpi
+BOARD?=qemu
 PIOS_BOARD ?= boards/$(BOARD)
 
 # include py core make definitions
@@ -69,7 +69,9 @@ SRC_C = \
 	$(SRC)module_rawptr.c \
 	$(SRC)module_cdebug.c \
 	$(SRC)module_cio.c \
-	$(SRC)interactive.c 
+	
+SRC_PY = \
+    $(SRC)interactive.c 
 
 
 SRC_S = \
@@ -77,8 +79,7 @@ SRC_S = \
 #	gchelper.s
 
 OBJ = $(PY_O) 
-OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_LIB:.c=.o) $(SRC_PY:.c=.o))
 
 all: 
 	$(MAKE) debug
