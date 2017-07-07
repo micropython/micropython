@@ -323,6 +323,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.update({'basics/%s.py' % t for t in 'with_break with_continue with_return'.split()}) # require complete with support
         skip_tests.add('basics/array_construct2.py') # requires generators
         skip_tests.add('basics/bool1.py') # seems to randomly fail
+        skip_tests.add('basics/builtin_hash_gen.py') # requires yield
         skip_tests.add('basics/class_bind_self.py') # requires yield
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
