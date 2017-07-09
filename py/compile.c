@@ -2158,7 +2158,7 @@ STATIC void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[1]);
-    mp_binary_op_t op;
+    mp_unary_op_t op;
     mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
     switch (tok) {
         case MP_TOKEN_OP_PLUS:  op = MP_UNARY_OP_POSITIVE; break;
