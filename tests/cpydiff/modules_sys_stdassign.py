@@ -1,7 +1,7 @@
 """
 categories: Modules,sys
-description: Override sys.stdin, sys.stdout and sys.stderr. Impossible as they are stored in read-only memory.
-cause: Unknown
+description: Overriding sys.stdin, sys.stdout and sys.stderr not possible
+cause: They are stored in read-only memory.
 workaround: Unknown
 """
 import sys
