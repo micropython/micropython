@@ -185,7 +185,9 @@ def gen_rst(results):
                     rst.write(RSTCHARS[min(i, len(RSTCHARS)-1)] * len(section[i]))
                     rst.write('\n\n')
         class_ = section
-        rst.write('**' + output.desc + '**\n\n')
+        rst.write('.. _cpydiff_%s:\n\n' % output.name.rsplit('.', 1)[0])
+        rst.write(output.desc + '\n')
+        rst.write('~' * len(output.desc) + '\n\n')
         if output.cause != 'Unknown':
             rst.write('**Cause:** ' + output.cause + '\n\n')
         if output.workaround != 'Unknown':
