@@ -93,7 +93,9 @@ CLEAN_EXTRA = outdir
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
 
-$(CONF_FILE): prj_base.conf prj_$(BOARD).conf
+# This rule is for prj_$(BOARD)_merged.conf, not $(CONF_FILE), which
+# can be overriden
+prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
