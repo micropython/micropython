@@ -32,7 +32,7 @@ mp_obj_t rawptr_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const
 STATIC void rawptr_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) 
 {
     rawptr_t *self = MP_OBJ_TO_PTR(self_in);
-    printf("0x%08lx", (uint32_t)self->address);
+    printf ("RawPtr-Type: { .address = 0x%lu }\n", self->address );
 }
 
 STATIC mp_obj_t rawptr_increment(mp_obj_t self_in) 
@@ -53,7 +53,6 @@ STATIC mp_obj_t rawptr_offset ( mp_obj_t self_in, mp_obj_t off )
 {
     rawptr_t* self = MP_OBJ_TO_PTR ( self_in );
     int offset = mp_obj_get_int( off );
-    printf ("Ptr-offset %d\n", offset);
     self->address = (void*) ((uint32_t) self->address) + ((int) offset);
     return mp_const_none;
 }
@@ -61,7 +60,6 @@ STATIC mp_obj_t rawptr_offset ( mp_obj_t self_in, mp_obj_t off )
 STATIC mp_obj_t rawptr_setAddr ( mp_obj_t self_in, mp_obj_t addr )
 {
     rawptr_t* self = MP_OBJ_TO_PTR ( self_in );
-    printf("setADDR %8p\n", addr );
     self->address = (void*) mp_obj_get_int( addr );
     return mp_const_none;
 }
@@ -69,7 +67,6 @@ STATIC mp_obj_t rawptr_setAddr ( mp_obj_t self_in, mp_obj_t addr )
 STATIC mp_obj_t rawptr_getAddr ( mp_obj_t self_in )
 {
     rawptr_t* self = MP_OBJ_TO_PTR ( self_in );
-    printf ("getADDR\n");
     return mp_obj_new_int( (uint32_t) self->address ); 
 }
 
@@ -77,7 +74,6 @@ STATIC mp_obj_t rawptr_read ( mp_obj_t self_in )
 {
     rawptr_t* self = MP_OBJ_TO_PTR ( self_in );
     uint32_t val = *((uint32_t*) self->address);
-    printf ("READ FROM 0x%8p -> %lu\n", self->address, val );
     return mp_obj_new_int( val ); 
 }
 
@@ -86,7 +82,7 @@ STATIC mp_obj_t rawptr_write ( mp_obj_t self_in, mp_obj_t val )
     rawptr_t* self = MP_OBJ_TO_PTR ( self_in );
     uint32_t v = mp_obj_get_int( val );
     *((uint32_t*)self->address) = v;
-    printf ("WRITE TO 0x%8p -> %lu\n", self->address, v );
+    printf ("WRITE TO 0x%8p -> value: 0x%lx\n", self->address, v );
     return mp_const_none; 
 }
 

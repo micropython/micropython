@@ -103,18 +103,16 @@ int main(int argc, char **argv) {
     
     printf ("Starting Python-code\n");*/
 
-/*    do_str("\n\
+    do_str("\n\
 import C;\n\
 import Cdebug;\n\
 \n\
 def gpio_pinmode ( pin, mode ): \n\
-    print (\"gpio_pinmode (\" + str(pin) + \" ,\" + str(mode) + \")\");\n\
     if ( mode >= 0 and mode <= 3 and pin >= 0 and pin <= 53 ):\n\
         ptr = C.RawPtr ( 0x20200000 );\n\
         while (pin >= 10) :\n\
             pin = pin - 10;\n\
             ptr.offset(4);\n\
-            print ('b')\n\
         \n\
         pin = pin * 3;\n\
         mode = mode << pin;\n\
@@ -127,31 +125,29 @@ def gpio_pinmode ( pin, mode ): \n\
         ptr.write ( val );\n\
 \n\
 def gpio_write ( pin, val ):\n\
-    print ('gpio_write (' + str(pin) + ', ' + str(val) +')');\n\
     ptr = C.RawPtr ( 0x20200000 );\n\
     if ((val==0 or val==1) and (pin>=0 and pin<=53)) :\n\
-        print ('after ifs (' + str(pin) + ')');\n\
         if (pin > 31) :\n\
             pin=pin-32;\n\
             ptr.offset(4);\n\
         if (val == 0) :\n\
             ptr.offset(40);\n\
-            print ( ptr );\n\
         else :\n\
-            ptr.offset(24);\n\
-            print ( ptr ); \n\
+            ptr.offset(28);\n\
         v = 1 << pin;\n\
         ptr.write ( v );\n\
-        print ('Hello');\n\
 \n\
 gpio_pinmode ( 16, 1 );\n\
-\
-res = gpio_write ( 16, 0 );\n\
-print ('after write');\n\
-Cdebug.bsod();\n\
-res = gpio_write ( 16, 1 );\n\
-print ('BOAH');\n\
-", MP_PARSE_FILE_INPUT);*/
+while (1):\n\
+    res = gpio_write ( 16, 0 );\n\
+    x = 0x8000\n\
+    while ( x > 0 ):\n\
+        x = x - 1\n\
+    res = gpio_write ( 16, 1 );\n\
+    x = 0x8000\n\
+    while ( x > 0 ):\n\
+        x = x - 1\n\
+", MP_PARSE_FILE_INPUT);
 /*
     do_str ( (char*) source_interactive_py, MP_PARSE_FILE_INPUT );
 
