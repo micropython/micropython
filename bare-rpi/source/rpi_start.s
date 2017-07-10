@@ -21,7 +21,7 @@ _reset_h:                           .word   _reset_
 _undefined_instruction_vector_h:    .word   undef_vector
 _software_interrupt_vector_h:       .word   swi_vector
 _prefetch_abort_vector_h:           .word   abort_vector
-_data_abort_vector_h:               .word   abort_vector
+_data_abort_vector_h:               .word   data_abort_vector
 _unused_handler_h:                  .word   _reset_
 _interrupt_vector_h:                .word   irq_vector
 _fast_interrupt_vector_h:           .word   fiq_vector
@@ -51,6 +51,12 @@ _reset_:
     
     bic r0, r0, #0x80       /// enable interrupts and return to supervisor mode
     msr cpsr, r0
+    
+    /// load C15 control register c1-c1,0,0 (c1 Control Register) into r0
+    mrc p15, 0, r0, c1, c0, 0
+    ldr r1, =0x00400000     /// set bit 22 (U-bit)
+    orr r0, r1
+    mcr p15, 0, r0, c1, c0, 0
     
    /* 
     mov r0, #0

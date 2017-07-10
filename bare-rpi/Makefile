@@ -4,7 +4,7 @@ SRC=source/
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = $(SRC)qstrdefsport.h
-BOARD?=qemu
+BOARD?=rpi
 PIOS_BOARD ?= boards/$(BOARD)
 
 # include py core make definitions

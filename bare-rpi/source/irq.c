@@ -80,6 +80,15 @@ void __attribute__((interrupt("ABORT"))) abort_vector(void)
     }
 }
 
+void __attribute__((interrupt("ABORT"))) data_abort_vector (void)
+{
+    printf ("Data Abort!\n");
+    while (1)
+    {
+        
+    }
+}
+
 void timer_init () 
 {
     /** TIMER INIT **/
