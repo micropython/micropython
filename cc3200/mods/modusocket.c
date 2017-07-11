@@ -167,12 +167,30 @@ STATIC int wlan_socket_accept(mod_network_socket_obj_t *s, mod_network_socket_ob
 STATIC int wlan_socket_connect(mod_network_socket_obj_t *s, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
     uint32_t timeout_ms = s->sock_base.timeout_ms;
+
+    // For a non-blocking connect the CC3100 will return SL_EALREADY while the
+    // connection is in progress.
+
     for (;;) {
         int ret = sl_Connect(s->sock_base.sd, &addr, sizeof(addr));
         if (ret == 0) {
             return 0;
         }
-        if (check_timedout(s, ret, &timeout_ms, _errno)) {
+
+        // Check if we are in non-blocking mode and the connection is in progress
+        if (s->sock_base.timeout_ms == 0 && ret == SL_EALREADY) {
+            // To match BSD we return EINPROGRESS here
+            *_errno = MP_EINPROGRESS;
+            return -1;
+        }
+
+        // We are in blocking mode, so if the connection isn't in progress then error out
+        if (ret != SL_EALREADY) {
+            *_errno = convert_sl_errno(ret);
+            return -1;
+        }
+
+        if (check_timedout(s, SL_EAGAIN, &timeout_ms, _errno)) {
             return -1;
         }
     }
