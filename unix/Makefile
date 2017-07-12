@@ -30,7 +30,7 @@ ifdef DEBUG
 CFLAGS += -g
 COPT = -O0
 else
-COPT = -Os -fdata-sections -ffunction-sections #-DNDEBUG
+COPT = -Os -fdata-sections -ffunction-sections -DNDEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
