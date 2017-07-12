@@ -51,9 +51,9 @@
 //|   import digitalio
 //|
 //|   pin = digitalio.DigitalInOut(board.NEOPIXEL)
-//|   pin.direction = digitalio.Direction.output
+//|   pin.direction = digitalio.Direction.OUTPUT
 //|   pixel_off = bytearray([0, 0, 0])
-//|   neopixel_write(pin, pixel_off)
+//|   neopixel_write.neopixel_write(pin, pixel_off)
 //|
 //| .. method:: neopixel_write.neopixel_write(digitalinout, buf)
 //|
