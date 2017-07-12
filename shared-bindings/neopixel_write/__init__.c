@@ -41,6 +41,20 @@
 //| The `neopixel_write` module contains a helper method to write out bytes in
 //| the 800khz neopixel protocol.
 //|
+//| For example, to turn off a single neopixel (like the status pixel on Express
+//| boards.)
+//|
+//| .. code-block:: python
+//|
+//|   import board
+//|   import neopixel_write
+//|   import digitalio
+//|
+//|   pin = digitalio.DigitalInOut(board.NEOPIXEL)
+//|   pin.direction = digitalio.Direction.output
+//|   pixel_off = bytearray([0, 0, 0])
+//|   neopixel_write(pin, pixel_off)
+//|
 //| .. method:: neopixel_write.neopixel_write(digitalinout, buf)
 //|
 //|   Write buf out on the given DigitalInOut.
