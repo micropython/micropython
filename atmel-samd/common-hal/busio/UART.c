@@ -105,8 +105,9 @@ static void _busio_uart_interrupt_handler(uint8_t instance)
             self->buffer_size++;
 
             if (module->character_size == USART_CHARACTER_SIZE_9BIT) {
+                buffer_end = (self->buffer_start + self->buffer_size) % self->buffer_length;
                 /* 9-bit data, write next received byte to the buffer */
-                self->buffer[buffer_end + 1] = (received_data >> 8);
+                self->buffer[buffer_end] = (received_data >> 8);
                 self->buffer_size++;
             }
 
