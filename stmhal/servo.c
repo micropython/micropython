@@ -33,6 +33,8 @@
 #include "timer.h"
 #include "servo.h"
 
+#if MICROPY_HW_ENABLE_SERVO
+
 // This file implements the pyb.Servo class which controls standard hobby servo
 // motors that have 3-wires (ground, power, signal).
 //
@@ -328,3 +330,5 @@ const mp_obj_type_t pyb_servo_type = {
     .make_new = pyb_servo_make_new,
     .locals_dict = (mp_obj_dict_t*)&pyb_servo_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_SERVO
