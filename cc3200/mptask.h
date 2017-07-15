@@ -42,6 +42,6 @@ extern StackType_t mpTaskStack[];
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-extern void TASK_Micropython (void *pvParameters);
+extern void TASK_MicroPython (void *pvParameters);
 
 #endif /* MPTASK_H_ */
