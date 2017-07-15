@@ -21,7 +21,7 @@ Time related functions
 
    Returns the number of milliseconds since the board was last reset.
    
-   The result is always a micropython smallint (31-bit signed number), so
+   The result is always a MicroPython smallint (31-bit signed number), so
    after 2^30 milliseconds (about 12.4 days) this will start to return
    negative numbers.
 
@@ -33,7 +33,7 @@ Time related functions
 
    Returns the number of microseconds since the board was last reset.
    
-   The result is always a micropython smallint (31-bit signed number), so
+   The result is always a MicroPython smallint (31-bit signed number), so
    after 2^30 microseconds (about 17.8 minutes) this will start to return
    negative numbers.
 
