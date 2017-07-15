@@ -335,7 +335,7 @@ void ftp_run (void) {
                     ftp_data.loggin.uservalid = false;
                     ftp_data.loggin.passvalid = false;
                     strcpy (ftp_path, "/");
-                    ftp_send_reply (220, "Micropython FTP Server");
+                    ftp_send_reply (220, "MicroPython FTP Server");
                     break;
                 }
             }
