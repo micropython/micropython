@@ -25,7 +25,8 @@ ame__
 __name__        path            argv            version
 version_info    implementation  platform        byteorder
 maxsize         exit            stdin           stdout
-stderr          modules         exc_info        print_exception
+stderr          modules         exc_info        getsizeof
+print_exception
 ementation
 # attrtuple
 (start=1, stop=2, step=3)

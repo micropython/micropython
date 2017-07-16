@@ -944,6 +944,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_EXIT (1)
 #endif
 
+// Whether to provide "sys.getsizeof" function
+#ifndef MICROPY_PY_SYS_GETSIZEOF
+#define MICROPY_PY_SYS_GETSIZEOF (0)
+#endif
+
 // Whether to provide sys.{stdin,stdout,stderr} objects
 #ifndef MICROPY_PY_SYS_STDFILES
 #define MICROPY_PY_SYS_STDFILES (0)
