@@ -108,6 +108,11 @@
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
+#define MICROPY_READER_VFS             (1)
+#define MICROPY_VFS                    (1)
+#define MICROPY_VFS_POSIX              (1)
+#define MICROPY_PY_UOS_VFS             (1)
+
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
@@ -162,6 +167,15 @@ void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 #define MP_PLAT_PRINT_STRN(str, len) do { int ret = write(1, str, len); (void)ret; } while (0)
 #define mp_hal_dupterm_tx_strn(s, l)
 #endif
+
+// TODO these should be generic, not bound to POSIX VFS
+#define mp_type_fileio mp_vfs_posix_fileio_type
+#define mp_type_textio mp_vfs_posix_textio_type
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
 
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },

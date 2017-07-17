@@ -133,8 +133,8 @@
     X(ETIMEDOUT) \
 
 // TODO these should be generic, not bound to fatfs
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
+#define mp_type_fileio mp_vfs_fat_fileio_type
+#define mp_type_textio mp_vfs_fat_textio_type
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

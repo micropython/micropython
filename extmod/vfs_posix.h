@@ -1,10 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +25,19 @@
  * THE SOFTWARE.
  */
 
+#include "py/lexer.h"
 #include "py/obj.h"
 
-#ifndef __MICROPY_INCLUDED_UNIX_FILE_H__
-#define __MICROPY_INCLUDED_UNIX_FILE_H__
+struct _mp_vfs_posix_obj_t;
 
 typedef struct _mp_obj_fdfile_t {
     mp_obj_base_t base;
     int fd;
 } mp_obj_fdfile_t;
 
-extern const mp_obj_type_t mp_type_fileio;
-extern const mp_obj_type_t mp_type_textio;
+extern const mp_obj_type_t mp_vfs_posix_type;
+extern const mp_obj_type_t mp_vfs_posix_fileio_type;
+extern const mp_obj_type_t mp_vfs_posix_textio_type;
 
-#endif // __MICROPY_INCLUDED_UNIX_FILE_H__
+mp_import_stat_t mp_vfs_posix_import_stat(struct _mp_vfs_posix_obj_t *self, const char *path_in);
+mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in);
