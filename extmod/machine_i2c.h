@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H__
-#define __MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H__
+#ifndef MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H
+#define MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H
 
 #include "py/obj.h"
 
@@ -54,4 +53,4 @@ extern const mp_obj_dict_t mp_machine_soft_i2c_locals_dict;
 int mp_machine_soft_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop);
 int mp_machine_soft_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop);
 
-#endif // __MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H__
+#endif // MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H

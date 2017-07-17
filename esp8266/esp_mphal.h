@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef _INCLUDED_MPHAL_H_
-#define _INCLUDED_MPHAL_H_
-
 #include "py/ringbuf.h"
 #include "lib/utils/interrupt_char.h"
 #include "xtirq.h"
@@ -96,5 +93,3 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
 
 void *ets_get_esf_buf_ctlblk(void);
 int ets_esf_free_bufs(int idx);
-
-#endif // _INCLUDED_MPHAL_H_

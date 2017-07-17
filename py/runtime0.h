@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_RUNTIME0_H__
-#define __MICROPY_INCLUDED_PY_RUNTIME0_H__
+#ifndef MICROPY_INCLUDED_PY_RUNTIME0_H
+#define MICROPY_INCLUDED_PY_RUNTIME0_H
 
 // These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_VARARGS      (0x01)
@@ -151,4 +151,4 @@ typedef enum {
 
 extern void *const mp_fun_table[MP_F_NUMBER_OF];
 
-#endif // __MICROPY_INCLUDED_PY_RUNTIME0_H__
+#endif // MICROPY_INCLUDED_PY_RUNTIME0_H

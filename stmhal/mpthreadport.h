@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_STMHAL_MPTHREADPORT_H__
-#define __MICROPY_INCLUDED_STMHAL_MPTHREADPORT_H__
+#ifndef MICROPY_INCLUDED_STMHAL_MPTHREADPORT_H
+#define MICROPY_INCLUDED_STMHAL_MPTHREADPORT_H
 
 #include "py/mpthread.h"
 #include "pybthread.h"
@@ -54,4 +54,4 @@ static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *m) {
     pyb_mutex_unlock(m);
 }
 
-#endif // __MICROPY_INCLUDED_STMHAL_MPTHREADPORT_H__
+#endif // MICROPY_INCLUDED_STMHAL_MPTHREADPORT_H

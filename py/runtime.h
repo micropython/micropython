@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_RUNTIME_H__
-#define __MICROPY_INCLUDED_PY_RUNTIME_H__
+#ifndef MICROPY_INCLUDED_PY_RUNTIME_H
+#define MICROPY_INCLUDED_PY_RUNTIME_H
 
 #include "py/mpstate.h"
 #include "py/obj.h"
@@ -178,4 +178,4 @@ void mp_warning(const char *msg, ...);
 #define mp_warning(msg, ...)
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_RUNTIME_H__
+#endif // MICROPY_INCLUDED_PY_RUNTIME_H
