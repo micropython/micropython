@@ -90,7 +90,17 @@ CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif
 
-LIBS += \
+LIBS = \
+
+ifeq ($(MCU_VARIANT), nrf52)
+LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
+LIBC_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
+LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+
+LIBS += -L $(dir $(LIBM_FILE_NAME)) -lm
+LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
+LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
+endif
 
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
