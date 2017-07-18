@@ -162,9 +162,13 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 run_code_state: ;
 #endif
     // Pointers which are constant for particular invocation of mp_execute_bytecode()
-    size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
-    mp_obj_t * /*const*/ fastn = &code_state->state[n_state - 1];
-    mp_exc_stack_t * /*const*/ exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
+    mp_obj_t * /*const*/ fastn;
+    mp_exc_stack_t * /*const*/ exc_stack;
+    {
+        size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
+        fastn = &code_state->state[n_state - 1];
+        exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);
+    }
 
     // variables that are visible to the exception handler (declared volatile)
     volatile bool currently_in_except_block = MP_TAGPTR_TAG0(code_state->exc_sp); // 0 or 1, to detect nested exceptions
