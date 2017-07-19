@@ -283,7 +283,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     const pyb_i2c_obj_t *self = &pyb_i2c_obj[i2c_unit - 1];
     dma_invalidate_channel(self->tx_dma_descr);
     dma_invalidate_channel(self->rx_dma_descr);
-    
+
     if (0) {
     #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c->Instance == I2C1) {

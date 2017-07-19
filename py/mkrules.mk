@@ -6,7 +6,7 @@ endif
 
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
-# and should not contain any ..'s but rather be relative to the top of the 
+# and should not contain any ..'s but rather be relative to the top of the
 # tree.
 #
 # So for example, py/map.c would have an object file name py/map.o

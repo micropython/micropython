@@ -161,7 +161,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     if (fmt == 'g' && prec == 0) {
         prec = 1;
     }
-    int e, e1; 
+    int e, e1;
     int dec = 0;
     char e_sign = '\0';
     int num_digits = 0;
@@ -209,7 +209,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 e_sign_char = '+';
             }
         } else if (fp_isless1(f)) {
-            e++; 
+            e++;
             f *= FPCONST(10.0);
         }
 
@@ -232,7 +232,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
 
             num_digits = prec;
             if (num_digits) {
-                *s++ = '.'; 
+                *s++ = '.';
                 while (--e && num_digits) {
                     *s++ = '0';
                     num_digits--;
@@ -266,7 +266,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             f *= FPCONST(0.1);
         }
 
-        // If the user specified fixed format (fmt == 'f') and e makes the 
+        // If the user specified fixed format (fmt == 'f') and e makes the
         // number too big to fit into the available buffer, then we'll
         // switch to the 'e' format.
 
@@ -327,7 +327,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         if (prec == 0) {
             prec = 1;
         }
-        num_digits = prec; 
+        num_digits = prec;
     }
 
     // Print the digits of the mantissa
@@ -365,7 +365,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             if (rs == buf) {
                 break;
             }
-            rs--; 
+            rs--;
         }
         if (*rs == '0') {
             // We need to insert a 1
@@ -380,13 +380,13 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                         e_sign = '+';
                     }
                 } else {
-                    e++; 
+                    e++;
                 }
             } else {
                 // Need at extra digit at the end to make room for the leading '1'
                 s++;
             }
-            char *ss = s; 
+            char *ss = s;
             while (ss > rs) {
                 *ss = ss[-1];
                 ss--;

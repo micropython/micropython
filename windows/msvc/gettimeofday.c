@@ -43,7 +43,7 @@ int gettimeofday(struct timeval *tp, struct timezone *tz) {
 
     // to microseconds
     ft.tm /= 10;
-        
+
     // convert to unix format
     // number of microseconds intervals between the 1st january 1601 and the 1st january 1970 (369 years + 89 leap days)
     const unsigned __int64 deltaEpoch = 11644473600000000ull;

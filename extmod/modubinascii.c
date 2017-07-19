@@ -118,7 +118,7 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
         vstr_init_len(&vstr, 0);
     }
     else {
-        vstr_init_len(&vstr, ((bufinfo.len / 4) * 3) - ((in[bufinfo.len-1] == '=') ? ((in[bufinfo.len-2] == '=') ? 2 : 1 ) : 0)); 
+        vstr_init_len(&vstr, ((bufinfo.len / 4) * 3) - ((in[bufinfo.len-1] == '=') ? ((in[bufinfo.len-2] == '=') ? 2 : 1 ) : 0));
     }
     byte *out = (byte*)vstr.buf;
     for (mp_uint_t i = bufinfo.len; i; i -= 4) {

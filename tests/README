@@ -13,6 +13,6 @@ condition a test. The run-tests script uses small scripts in the
 feature_check directory to check whether each such feature is present,
 and skips the relevant tests if not.
 
-When creating new tests, anything that relies on float support should go in the 
+When creating new tests, anything that relies on float support should go in the
 float/ subdirectory.  Anything that relies on import x, where x is not a built-in
 module, should go in the import/ subdirectory.

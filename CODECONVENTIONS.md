@@ -73,7 +73,7 @@ White space:
   keyword and the opening parenthesis.
 - Put 1 space after a comma, and 1 space around operators.
 
-Braces: 
+Braces:
 - Use braces for all blocks, even no-line and single-line pieces of
   code.
 - Put opening braces on the end of the line it belongs to, not on

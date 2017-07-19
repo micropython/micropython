@@ -375,7 +375,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
             if (member[0] == MP_OBJ_NULL) {
                 // https://docs.python.org/3/reference/datamodel.html#object.__hash__
                 // "User-defined classes have __eq__() and __hash__() methods by default;
-                // with them, all objects compare unequal (except with themselves) and 
+                // with them, all objects compare unequal (except with themselves) and
                 // x.__hash__() returns an appropriate value such that x == y implies
                 // both that x is y and hash(x) == hash(y)."
                 return MP_OBJ_NEW_SMALL_INT((mp_uint_t)self_in);
