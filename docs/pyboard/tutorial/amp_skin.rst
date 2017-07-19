@@ -69,4 +69,4 @@ Then you can do::
     >>> f = wave.open('test.wav')
     >>> dac.write_timed(f.readframes(f.getnframes()), f.getframerate())
 
-This should play the WAV file.
+This should play the WAV file. Note that this will read the whole file into RAM so it has to be small enough to fit in it.
