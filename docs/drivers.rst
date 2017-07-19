@@ -38,7 +38,7 @@ the ``lib/`` directory. Some drivers may not work without them.
 Helper Libraries
 -------
 
-These libraries build on top of the low level APIS to simplify common tasks.
+These libraries build on top of the low level APIs to simplify common tasks.
 
 .. toctree::
     USB Human Interface Device (Keyboard and Mouse) <https://circuitpython.readthedocs.io/projects/hid/en/latest/>

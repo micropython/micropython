@@ -83,4 +83,5 @@ The last step is actually implementing each function in a port specific way. I c
 ### Testing
 Woohoo! You are almost done. After you implement everything, lots of drivers and sample code should just work. There are a number of drivers and examples written for Adafruit's Feather ecosystem. Here are places to start:
 
-* https://github.com/adafruit?utf8=%E2%9C%93&q=Adafruit_MicroPython&type=&language=
+* [Adafruit repos with CircuitPython topic](https://github.com/search?q=topic%3Acircuitpython+org%3Aadafruit+fork%3Atrue)
+* [Adafruit driver bundle](https://github.com/adafruit/Adafruit_CircuitPython_Bundle)

@@ -132,7 +132,7 @@ When adding extra functionality to CircuitPython to mimic what a normal
 operating system would do, either copy an existing CPython API (for example file
 writing) or create a separate module to achieve what you want. For example,
 mounting and unmount drives is not a part of CPython so it should be done in a
-module, such as a new ``filesystem``, that is only available in CircuitPython.
+module, such as a new ``storage`` module, that is only available in CircuitPython.
 That way when someone moves the code to CPython they know what parts need to be
 adapted.
 
@@ -235,12 +235,13 @@ Renders as:
 Use BusDevice
 --------------------------------------------------------------------------------
 
-BusDevice is an awesome foundational library that manages talking on a shared
-I2C or SPI device for you. The devices manage locking which ensures that a
-transfer is done as a single unit despite CircuitPython internals and, in the
-future, other Python threads. For I2C, the device also manages the device
-address. The SPI device, manages baudrate settings, chip select line and extra
-post-transaction clock cycles.
+[BusDevice](https://github.com/adafruit/Adafruit_CircuitPython_BusDevice) is an
+awesome foundational library that manages talking on a shared I2C or SPI device
+for you. The devices manage locking which ensures that a transfer is done as a
+single unit despite CircuitPython internals and, in the future, other Python
+threads. For I2C, the device also manages the device address. The SPI device,
+manages baudrate settings, chip select line and extra post-transaction clock
+cycles.
 
 I2C Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
