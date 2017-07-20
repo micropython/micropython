@@ -129,14 +129,20 @@ Sockets
 Socket instances remain active until they are explicitly closed. This has two
 consequences. Firstly they occupy RAM, so an application which opens sockets
 without closing them will eventually fail. Secondly an open socket can cause
-the low-level part of the WiFi stack to emit ``Lmac`` errors. This occurs if
-data comes in for a socket and gets blocked in a full queue without being
-processed. If a program terminates without closing sockets and sufficient data
-arrives these messages are repeatedly issued at the REPL. The only recovery is
-by a hard reset.
+the low-level part of the vendor WiFi stack to emit ``Lmac`` errors. This
+occurs if data comes in for a socket and is not processed in a timely manner.
+This can overflow the WiFi stack input queue and lead to a deadlock. The only
+recovery is by a hard reset.
 
-To avoid this disrupting development, errors (including ``KeyboardInterrupt``)
-should be trapped and the socket closed.
+The above may happen after an application terminates and quits to the REPL for
+any reason including an exception. Subsequent arrival of data provokes the
+failure with the error message repeatedly being issued. To cover every case all
+errors should be trapped and any sockets closed.::
 
-These errors can also occur sporadically at runtime if socket throughput is
-excessive.
+    try:
+        my_app.main()
+    except:
+        pass
+    finally:
+        my_app.sock.close()
+        raise  # Provide debug traceback
