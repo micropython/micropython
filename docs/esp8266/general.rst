@@ -144,4 +144,4 @@ or by an exeption, for example using try/finally::
     try:
         # Use sock
     finally:
-        s.close()
+        sock.close()
