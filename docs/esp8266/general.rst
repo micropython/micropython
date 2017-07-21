@@ -122,3 +122,27 @@ Due to limitations of the ESP8266 chip the internal real-time clock (RTC)
 will overflow every 7:45h.  If a long-term working RTC time is required then
 ``time()`` or ``localtime()`` must be called at least once within 7 hours.
 MicroPython will then handle the overflow.
+
+Sockets
+~~~~~~~
+
+Socket instances remain active until they are explicitly closed. This has two
+consequences. Firstly they occupy RAM, so an application which opens sockets
+without closing them will eventually fail. Secondly an open socket can cause
+the low-level part of the vendor WiFi stack to emit ``Lmac`` errors. This
+occurs if data comes in for a socket and is not processed in a timely manner.
+This can overflow the WiFi stack input queue and lead to a deadlock. The only
+recovery is by a hard reset.
+
+The above may happen after an application terminates and quits to the REPL for
+any reason including an exception. Subsequent arrival of data provokes the
+failure with the error message repeatedly being issued. To cover every case all
+errors should be trapped and any sockets closed.::
+
+    try:
+        my_app.main()
+    except:
+        pass
+    finally:
+        my_app.sock.close()
+        raise  # Provide debug traceback
