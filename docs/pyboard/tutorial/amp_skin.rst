@@ -69,4 +69,29 @@ Then you can do::
     >>> f = wave.open('test.wav')
     >>> dac.write_timed(f.readframes(f.getnframes()), f.getframerate())
 
-This should play the WAV file.
+This should play the WAV file. Note that this will read the whole file into RAM so it has to be small
+enough to fit in it.
+
+To play larger wave files you will have to use the microSD card to store it. Also the file must be read
+and sent in small chunks that will fit the RAM limit of the microcontroller. Here is an example function
+that can play 8 bit wave files with up to 16 kHz sampling::
+
+    import wave
+    from pyb import DAC
+    from pyb import delay
+    dac = DAC(1)
+
+
+    def play(filename):
+        f = wave.open(filename, 'r')
+        total_frames = f.getnframes()
+        framerate = f.getframerate()
+
+        for position in range(0, total_frames, framerate):
+            f.setpos(position)
+            dac.write_timed(f.readframes(framerate), framerate)
+            delay(1000)
+
+This function reads one second worth of data (which is the sample rate), sends it to DAC, waits one
+second and moves the file cursor to new position to read next second of data in the next for-loop run.
+It plays one second of audio at a time every one second.
