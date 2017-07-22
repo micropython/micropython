@@ -1,5 +1,4 @@
 import sys
-#import uos as os
 import os
 import machine
 

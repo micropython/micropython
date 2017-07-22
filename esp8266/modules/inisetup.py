@@ -1,6 +1,6 @@
-import uos
-import network
 from flashbdev import bdev
+import network
+import storage
 
 def wifi():
     import ubinascii
@@ -36,9 +36,9 @@ def setup():
     check_bootsec()
     print("Performing initial setup")
     wifi()
-    uos.VfsFat.mkfs(bdev)
-    vfs = uos.VfsFat(bdev)
-    uos.mount(vfs, '/')
+    storage.VfsFat.mkfs(bdev)
+    vfs = storage.VfsFat(bdev)
+    storage.mount(vfs, '/')
     with open("boot.py", "w") as f:
         f.write("""\
 # This file is executed on every boot (including wake-boot from deepsleep)
