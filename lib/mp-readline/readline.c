@@ -84,6 +84,14 @@ STATIC void mp_hal_erase_line_from_cursor(uint n_chars_to_erase) {
     (void)n_chars_to_erase;
     mp_hal_stdout_tx_strn("\x1b[K", 3);
 }
+
+#if MICROPY_REPL_EMACS_KEYS
+STATIC void mp_hal_clear_screen(void) {
+    mp_hal_stdout_tx_strn("\x1b[H", 3); // Move cursor home
+    mp_hal_stdout_tx_strn("\x1b[J", 3); // Clear screen
+}
+#endif
+
 #endif
 
 typedef struct _readline_t {
@@ -134,6 +142,12 @@ int readline_process_char(int c) {
             // CTRL-K is kill from cursor to end-of-line, inclusive
             vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
             // set redraw parameters
+            redraw_from_cursor = true;
+        } else if (c == CHAR_CTRL_L) {
+            // CTRL-L is clear screen
+            mp_hal_clear_screen();
+            mp_hal_stdout_tx_str(rl.prompt);
+            mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
             redraw_from_cursor = true;
         } else if (c == CHAR_CTRL_N) {
             // CTRL-N is go to next line in history
