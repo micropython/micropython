@@ -66,3 +66,28 @@ void mp_stack_check(void) {
 }
 
 #endif // MICROPY_STACK_CHECK
+
+#if MICROPY_MAX_STACK_USAGE
+
+// Fill stack space with this unusual value.
+const char MP_MAX_STACK_USAGE_SENTINEL_BYTE = 0xEE;
+
+// Record absolute bottom (logical limit) of stack.
+void mp_stack_set_bottom(void* stack_bottom) {
+    MP_STATE_THREAD(stack_bottom) = stack_bottom;
+}
+
+// Fill stack space down toward the stack limit with a known unusual value.
+void mp_stack_fill_with_sentinel(void) {
+    // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
+    __asm volatile ("");
+    volatile char* volatile p;
+    // Start filling stack just below the last variable in the current stack frame, which is p.
+    // Continue until we've hit the bottom of the stack (lowest address, logical "ceiling" of stack).
+    p = (char *) (&p - 1);
+    while(p >= MP_STATE_THREAD(stack_bottom)) {
+	*p-- = MP_MAX_STACK_USAGE_SENTINEL_BYTE;
+    }
+}
+
+#endif // MICROPY_MAX_STACK_USAGE

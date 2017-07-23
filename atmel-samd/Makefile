@@ -128,10 +128,10 @@ CFLAGS_CORTEX_M0 = \
 CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(CFLAGS_MOD) $(COPT)
 
 #Debugging/Optimization
-# TODO(tannewt): Figure out what NDEBUG does. Adding it to the debug build
-# reduces code size pretty dramatically.
 ifeq ($(DEBUG), 1)
-CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER
+# NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
+# Turn on Python modules useful for debugging (e.g. uheap, ustack).
+CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
 else
 CFLAGS += -Os -DNDEBUG -flto
 endif
@@ -279,6 +279,7 @@ SRC_SHARED_MODULE = \
 	random/__init__.c \
 	storage/__init__.c \
 	uheap/__init__.c \
+	ustack/__init__.c
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

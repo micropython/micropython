@@ -105,6 +105,11 @@
 
 #define MICROPY_STACK_CHECK         (1)
 
+// Track stack usage on a debug build. Expose results via ustack module.
+#ifdef MICROPY_DEBUG_MODULES
+#define MICROPY_MAX_STACK_USAGE       (1)
+#endif
+
 // This port is intended to be 32-bit, but unfortunately, int32_t for
 // different targets may be defined in different ways - either as int
 // or as long. This requires different printf formatting specifiers
@@ -145,6 +150,7 @@ extern const struct _mp_obj_module_t storage_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t uheap_module;
+extern const struct _mp_obj_module_t ustack_module;
 extern const struct _mp_obj_module_t samd_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
@@ -188,7 +194,8 @@ extern const struct _mp_obj_module_t usb_hid_module;
     EXTRA_BUILTIN_MODULES
 
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ustack),(mp_obj_t)&ustack_module }
 
 #ifndef MICROPY_PIN_DEFS_PORT_H
 #define MICROPY_PIN_DEFS_PORT_H "pins.h"

@@ -226,7 +226,7 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
 
-#if defined(DEBUG) && defined(MICROPY_PORT_BUILTIN_DEBUG_MODULES)
+#if defined(MICROPY_DEBUG_MODULES) && defined(MICROPY_PORT_BUILTIN_DEBUG_MODULES)
     , MICROPY_PORT_BUILTIN_DEBUG_MODULES
 #endif
 };

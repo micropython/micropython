@@ -446,6 +446,11 @@
 #define MICROPY_STACK_CHECK (0)
 #endif
 
+// Whether to measure maximum stack excursion
+#ifndef MICROPY_MAX_STACK_USAGE
+#define MICROPY_MAX_STACK_USAGE (0)
+#endif
+
 // Whether to have an emergency exception buffer
 #ifndef MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)

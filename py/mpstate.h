@@ -221,6 +221,10 @@ typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
 
+    #if MICROPY_MAX_STACK_USAGE
+    char* stack_bottom;
+    #endif
+
     #if MICROPY_STACK_CHECK
     size_t stack_limit;
     #endif

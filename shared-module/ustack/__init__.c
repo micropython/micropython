@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2017 Dan Halbert
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_STACKCTRL_H__
-#define __MICROPY_INCLUDED_PY_STACKCTRL_H__
 
-#include "py/mpconfig.h"
+#include <stdint.h>
 
-void mp_stack_ctrl_init(void);
-void mp_stack_set_top(void *top);
-mp_uint_t mp_stack_usage(void);
+#include "py/mpstate.h"
+#include "py/stackctrl.h"
 
-#if MICROPY_STACK_CHECK
-
-void mp_stack_set_limit(mp_uint_t limit);
-void mp_stack_check(void);
-#define MP_STACK_CHECK() mp_stack_check()
-
-#else
-
-#define mp_stack_set_limit(limit)
-#define MP_STACK_CHECK()
-
-#endif
+#include "shared-bindings/ustack/__init__.h"
 
 #if MICROPY_MAX_STACK_USAGE
-
-const char MP_MAX_STACK_USAGE_SENTINEL_BYTE;
-void mp_stack_set_bottom(void* stack_bottom);
-void mp_stack_fill_with_sentinel(void);
-
+uint32_t shared_module_ustack_max_stack_usage(void) {
+    // Start at stack limit and move up.
+    // Untouched stack was filled with a sentinel value.
+    // Stop at first non-sentinel byte.
+    char* p = MP_STATE_THREAD(stack_bottom);
+    while (*p++ == MP_MAX_STACK_USAGE_SENTINEL_BYTE) { }
+    return MP_STATE_THREAD(stack_top) - p;
+}
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_STACKCTRL_H__
+uint32_t shared_module_ustack_stack_size() {
+    return MP_STATE_THREAD(stack_limit);
+}
+
+uint32_t shared_module_ustack_stack_usage() {
+  return mp_stack_usage();
+}
+
