@@ -44,6 +44,8 @@ int main(int argc, char **argv) {
     
     #if MICROPY_DEBUG_VERBOSE
     mp_verbose_flag = 2000;
+    #else
+    mp_verbose_flag=0;
     #endif
 
     // pios_jtag_init();

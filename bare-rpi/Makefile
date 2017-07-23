@@ -4,7 +4,7 @@ SRC=source/
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = $(SRC)qstrdefsport.h
-BOARD?=qemu
+BOARD?=rpi
 PIOS_BOARD ?= boards/$(BOARD)
 
 # include py core make definitions
@@ -81,7 +81,11 @@ SRC_S = \
 OBJ = $(PY_O) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_LIB:.c=.o) $(SRC_PY:.c=.o))
 
-all: 
+all:
+	## always rebuild libPIOS
+	cd $(LIB)PiOS && \
+		make clean 
+	-rm libpios.a
 #	$(MAKE) debug
 #	$(MAKE) clean
 	$(MAKE) release
