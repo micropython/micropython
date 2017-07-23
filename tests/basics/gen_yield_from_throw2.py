@@ -1,5 +1,5 @@
-# uPy differs from CPython for this test
-# generator ignored GeneratorExit
+# generator ignores a thrown GeneratorExit (this is allowed)
+
 def gen():
     try:
         yield 123
@@ -7,9 +7,12 @@ def gen():
         print('GeneratorExit')
     yield 456
         
+# thrown a class
 g = gen()
 print(next(g))
-try:
-    g.throw(GeneratorExit)
-except RuntimeError:
-    print('RuntimeError')
+print(g.throw(GeneratorExit))
+
+# thrown an instance
+g = gen()
+print(next(g))
+print(g.throw(GeneratorExit()))

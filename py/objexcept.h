@@ -23,18 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJEXCEPT_H__
-#define __MICROPY_INCLUDED_PY_OBJEXCEPT_H__
+#ifndef MICROPY_INCLUDED_PY_OBJEXCEPT_H
+#define MICROPY_INCLUDED_PY_OBJEXCEPT_H
 
 #include "py/obj.h"
 #include "py/objtuple.h"
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
-    mp_uint_t traceback_alloc : (BITS_PER_WORD / 2);
-    mp_uint_t traceback_len : (BITS_PER_WORD / 2);
+    size_t traceback_alloc : (8 * sizeof(size_t) / 2);
+    size_t traceback_len : (8 * sizeof(size_t) / 2);
     size_t *traceback_data;
     mp_obj_tuple_t *args;
 } mp_obj_exception_t;
 
-#endif // __MICROPY_INCLUDED_PY_OBJEXCEPT_H__
+#endif // MICROPY_INCLUDED_PY_OBJEXCEPT_H

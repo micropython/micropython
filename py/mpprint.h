@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPPRINT_H__
-#define __MICROPY_INCLUDED_PY_MPPRINT_H__
+#ifndef MICROPY_INCLUDED_PY_MPPRINT_H
+#define MICROPY_INCLUDED_PY_MPPRINT_H
 
 #include "py/mpconfig.h"
 
@@ -39,7 +39,7 @@
 #define PF_FLAG_ADD_PERCENT       (0x100)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
 
-#if MICROPY_PY_IO
+#if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 #    define MP_PYTHON_PRINTER &mp_sys_stdout_print
 #else
 #    define MP_PYTHON_PRINTER &mp_plat_print
@@ -55,7 +55,7 @@ typedef struct _mp_print_t {
 // All (non-debug) prints go through one of the two interfaces below.
 // 1) Wrapper for platform print function, which wraps MP_PLAT_PRINT_STRN.
 extern const mp_print_t mp_plat_print;
-#if MICROPY_PY_IO
+#if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 // 2) Wrapper for printing to sys.stdout.
 extern const mp_print_t mp_sys_stdout_print;
 #endif
@@ -71,4 +71,4 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_MPPRINT_H__
+#endif // MICROPY_INCLUDED_PY_MPPRINT_H

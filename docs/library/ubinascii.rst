@@ -4,6 +4,8 @@
 .. module:: ubinascii
    :synopsis: binary/ASCII conversions
 
+|see_cpython_module| :mod:`python:binascii`.
+
 This module implements conversions between binary data and various
 encodings of it in ASCII form (in both directions).
 
@@ -17,7 +19,7 @@ Functions
    .. admonition:: Difference to CPython
       :class: attention
 
-      If additional argument, `sep` is supplied, it is used as a separator
+      If additional argument, *sep* is supplied, it is used as a separator
       between hexadecimal values.
 
 .. function:: unhexlify(data)

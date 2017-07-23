@@ -3,7 +3,12 @@
 import builtins
 
 # override generic builtin
-builtins.abs = lambda x: x + 1
+try:
+    builtins.abs = lambda x: x + 1
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
 print(abs(1))
 
 # __build_class__ is handled in a special way

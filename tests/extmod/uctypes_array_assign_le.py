@@ -1,4 +1,8 @@
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 desc = {
     # arr is array at offset 0, of UINT8 elements, array size is 2

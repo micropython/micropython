@@ -34,6 +34,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -329,7 +330,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // create a new Timer object
     int32_t timer_idx = mp_obj_get_int(args[0]);
     if (timer_idx < 0 || timer_idx > (PYBTIMER_NUM_TIMERS - 1)) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
+        mp_raise_OSError(MP_ENODEV);
     }
 
     pyb_timer_obj_t *tim = &pyb_timer_obj[timer_idx];
@@ -370,7 +371,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
     // verify that the timer has been already initialized
     if (!tim->config) {
-        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
+        mp_raise_OSError(MP_EPERM);
     }
     if (channel_n != TIMER_A && channel_n != TIMER_B && channel_n != (TIMER_A | TIMER_B)) {
         // invalid channel

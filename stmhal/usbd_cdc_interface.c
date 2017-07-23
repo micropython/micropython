@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * Taken from ST Cube library and heavily modified.  See below for original
  * copyright header.
@@ -23,8 +23,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -43,6 +43,7 @@
 
 #include "py/mpstate.h"
 #include "py/obj.h"
+#include "lib/utils/interrupt_char.h"
 #include "irq.h"
 #include "timer.h"
 #include "usb.h"
@@ -60,7 +61,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define APP_RX_DATA_SIZE  1024 // I think this must be at least CDC_DATA_FS_OUT_PACKET_SIZE=64 (APP_RX_DATA_SIZE was 2048)
+#define APP_RX_DATA_SIZE  1024 // this must be 2 or greater, and a power of 2
 #define APP_TX_DATA_SIZE  1024 // I think this can be any value (was 2048)
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,9 +69,10 @@
 
 static __IO uint8_t dev_is_connected = 0; // indicates if we are connected
 
-static uint8_t UserRxBuffer[APP_RX_DATA_SIZE]; // received data from USB OUT endpoint is stored in this buffer
-static uint16_t UserRxBufCur = 0; // points to next available character in UserRxBuffer
-static uint16_t UserRxBufLen = 0; // counts number of valid characters in UserRxBuffer
+static uint8_t cdc_rx_packet_buf[CDC_DATA_FS_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
+static uint8_t cdc_rx_user_buf[APP_RX_DATA_SIZE]; // received data is buffered here until the user reads it
+static volatile uint16_t cdc_rx_buf_put = 0; // circular buffer index
+static uint16_t cdc_rx_buf_get = 0; // circular buffer index
 
 static uint8_t UserTxBuffer[APP_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
 static uint16_t UserTxBufPtrIn = 0; // increment this pointer modulo APP_TX_DATA_SIZE when new data is available
@@ -79,13 +81,11 @@ static uint16_t UserTxBufPtrOutShadow = 0; // shadow of above
 static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting for low-level USB driver
 static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
-static int user_interrupt_char = -1;
-
 /* Private function prototypes -----------------------------------------------*/
-static int8_t CDC_Itf_Init     (void);
+static int8_t CDC_Itf_Init     (USBD_HandleTypeDef *pdev);
 static int8_t CDC_Itf_DeInit   (void);
 static int8_t CDC_Itf_Control  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
-static int8_t CDC_Itf_Receive  (uint8_t* pbuf, uint32_t *Len);
+static int8_t CDC_Itf_Receive  (USBD_HandleTypeDef *pdev, uint8_t* pbuf, uint32_t *Len);
 
 const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
     CDC_Itf_Init,
@@ -102,59 +102,14 @@ const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
   * @param  None
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Itf_Init(void)
-{
-#if 0
-  /*##-1- Configure the UART peripheral ######################################*/
-  /* Put the USART peripheral in the Asynchronous mode (UART Mode) */
-  /* USART configured as follow:
-      - Word Length = 8 Bits
-      - Stop Bit    = One Stop bit
-      - Parity      = No parity
-      - BaudRate    = 115200 baud
-      - Hardware flow control disabled (RTS and CTS signals) */
-  UartHandle.Instance        = USARTx;
-  UartHandle.Init.BaudRate   = 115200;
-  UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-  UartHandle.Init.StopBits   = UART_STOPBITS_1;
-  UartHandle.Init.Parity     = UART_PARITY_NONE;
-  UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-  UartHandle.Init.Mode       = UART_MODE_TX_RX;
-  
-  if(HAL_UART_Init(&UartHandle) != HAL_OK)
-  {
-    /* Initialization Error */
-    Error_Handler();
-  }
-  
-  /*##-2- Put UART peripheral in IT reception process ########################*/
-  /* Any data received will be stored in "UserTxBuffer" buffer  */
-  if(HAL_UART_Receive_IT(&UartHandle, (uint8_t *)UserTxBuffer, 1) != HAL_OK)
-  {
-    /* Transfer error in reception process */
-    Error_Handler();
-  }
-  
-  /*##-3- Configure the TIM Base generation  #################################*/
-  now done in HAL_MspInit
-  TIM_Config();
-#endif
-  
-    /*##-5- Set Application Buffers ############################################*/
-    USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer);
+static int8_t CDC_Itf_Init(USBD_HandleTypeDef *pdev) {
+    USBD_CDC_SetTxBuffer(pdev, UserTxBuffer, 0);
+    USBD_CDC_SetRxBuffer(pdev, cdc_rx_packet_buf);
 
-    UserRxBufCur = 0;
-    UserRxBufLen = 0;
-  
-    /* NOTE: we cannot reset these here, because USBD_CDC_SetInterrupt
-     * may be called before this init function to set these values.
-     * This can happen if the USB enumeration occurs after the call to
-     * USBD_CDC_SetInterrupt.
-    user_interrupt_char = -1;
-    */
+    cdc_rx_buf_put = 0;
+    cdc_rx_buf_get = 0;
 
-    return (USBD_OK);
+    return USBD_OK;
 }
 
 /**
@@ -163,22 +118,14 @@ static int8_t CDC_Itf_Init(void)
   * @param  None
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Itf_DeInit(void)
-{
-#if 0
-  /* DeInitialize the UART peripheral */
-  if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
-  {
-    /* Initialization Error */
-  }
-#endif
-  return (USBD_OK);
+static int8_t CDC_Itf_DeInit(void) {
+    return USBD_OK;
 }
 
 /**
   * @brief  CDC_Itf_Control
   *         Manage the CDC class requests
-  * @param  Cmd: Command code            
+  * @param  Cmd: Command code
   * @param  Buf: Buffer containing command data (request parameters)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
@@ -217,16 +164,6 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
             break;
 
         case CDC_GET_LINE_CODING:
-            #if 0
-            pbuf[0] = (uint8_t)(LineCoding.bitrate);
-            pbuf[1] = (uint8_t)(LineCoding.bitrate >> 8);
-            pbuf[2] = (uint8_t)(LineCoding.bitrate >> 16);
-            pbuf[3] = (uint8_t)(LineCoding.bitrate >> 24);
-            pbuf[4] = LineCoding.format;
-            pbuf[5] = LineCoding.paritytype;
-            pbuf[6] = LineCoding.datatype;
-            #endif
-
             /* Add your code here */
             pbuf[0] = (uint8_t)(115200);
             pbuf[1] = (uint8_t)(115200 >> 8);
@@ -269,8 +206,10 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     if (UserTxBufPtrOut != UserTxBufPtrOutShadow) {
         // We have sent data and are waiting for the low-level USB driver to
         // finish sending it over the USB in-endpoint.
-        // SOF occurs every 1ms, so we have a 150 * 1ms = 150ms timeout
-        if (UserTxBufPtrWaitCount < 150) {
+        // SOF occurs every 1ms, so we have a 500 * 1ms = 500ms timeout
+        // We have a relatively large timeout because the USB host may be busy
+        // doing other things and we must give it a chance to read our data.
+        if (UserTxBufPtrWaitCount < 500) {
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
             if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
@@ -293,9 +232,9 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = UserTxBufPtrOutShadow;
 
-        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
+        USBD_CDC_SetTxBuffer(hpcd->pData, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
 
-        if (USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(hpcd->pData) == USBD_OK) {
             UserTxBufPtrOutShadow += buffsize;
             if (UserTxBufPtrOutShadow == APP_TX_DATA_SIZE) {
                 UserTxBufPtrOutShadow = 0;
@@ -319,74 +258,34 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
   * @param  Buf: Buffer of data received
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
-  * @note   The buffer we are passed here is just UserRxBuffer, so we are
+  * @note   The buffer we are passed here is just cdc_rx_packet_buf, so we are
   *         free to modify it.
   */
-static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
-#if 0
-    // this sends the data over the UART using DMA
-    HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
-#endif
-
-    // TODO improve this function to implement a circular buffer
-
-    // if we have processed all the characters, reset the buffer counters
-    if (UserRxBufCur > 0 && UserRxBufCur >= UserRxBufLen) {
-        memmove(UserRxBuffer, UserRxBuffer + UserRxBufLen, *Len);
-        UserRxBufCur = 0;
-        UserRxBufLen = 0;
-    }
-
-    uint32_t delta_len;
-
-    if (user_interrupt_char == -1) {
-        // no special interrupt character
-        delta_len = *Len;
-
-    } else {
-        // filter out special interrupt character from the buffer
-        bool char_found = false;
-        uint8_t *dest = Buf;
-        uint8_t *src = Buf;
-        uint8_t *buf_top = Buf + *Len;
-        for (; src < buf_top; src++) {
-            if (*src == user_interrupt_char) {
-                char_found = true;
-                // raise exception when interrupts are finished
-                pendsv_nlr_jump(&MP_STATE_VM(mp_kbd_exception));
-            } else {
-                if (char_found) {
-                    *dest = *src;
-                }
-                dest++;
+static int8_t CDC_Itf_Receive(USBD_HandleTypeDef *pdev, uint8_t* Buf, uint32_t *Len) {
+    // copy the incoming data into the circular buffer
+    for (uint8_t *src = Buf, *top = Buf + *Len; src < top; ++src) {
+        if (mp_interrupt_char != -1 && *src == mp_interrupt_char) {
+            pendsv_kbd_intr();
+        } else {
+            uint16_t next_put = (cdc_rx_buf_put + 1) & (APP_RX_DATA_SIZE - 1);
+            if (next_put == cdc_rx_buf_get) {
+                // overflow, we just discard the rest of the chars
+                break;
             }
+            cdc_rx_user_buf[cdc_rx_buf_put] = *src;
+            cdc_rx_buf_put = next_put;
         }
-
-        // length of remaining characters
-        delta_len = dest - Buf;
     }
 
-    if (UserRxBufLen + delta_len + CDC_DATA_FS_MAX_PACKET_SIZE > APP_RX_DATA_SIZE) {
-        // if we keep this data then the buffer can overflow on the next USB rx
-        // so we don't increment the length, and throw this data away
-    } else {
-        // data fits, leaving room for another CDC_DATA_FS_OUT_PACKET_SIZE
-        UserRxBufLen += delta_len;
-    }
-
-    // initiate next USB packet transfer, to append to existing data in buffer
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, UserRxBuffer + UserRxBufLen);
-    USBD_CDC_ReceivePacket(&hUSBDDevice);
+    // initiate next USB packet transfer
+    USBD_CDC_SetRxBuffer(pdev, cdc_rx_packet_buf);
+    USBD_CDC_ReceivePacket(pdev);
 
     return USBD_OK;
 }
 
 int USBD_CDC_IsConnected(void) {
     return dev_is_connected;
-}
-
-void USBD_CDC_SetInterrupt(int chr) {
-    user_interrupt_char = chr;
 }
 
 int USBD_CDC_TxHalfEmpty(void) {
@@ -473,7 +372,11 @@ void USBD_CDC_TxAlways(const uint8_t *buf, uint32_t len) {
 
 // Returns number of bytes in the rx buffer.
 int USBD_CDC_RxNum(void) {
-    return UserRxBufLen - UserRxBufCur;
+    int32_t rx_waiting = (int32_t)cdc_rx_buf_put - (int32_t)cdc_rx_buf_get;
+    if (rx_waiting < 0) {
+        rx_waiting += APP_RX_DATA_SIZE;
+    }
+    return rx_waiting;
 }
 
 // timout in milliseconds.
@@ -483,7 +386,7 @@ int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
     for (uint32_t i = 0; i < len; i++) {
         // Wait until we have at least 1 byte to read
         uint32_t start = HAL_GetTick();
-        while (UserRxBufLen == UserRxBufCur) {
+        while (cdc_rx_buf_put == cdc_rx_buf_get) {
             // Wraparound of tick is taken care of by 2's complement arithmetic.
             if (HAL_GetTick() - start >= timeout) {
                 // timeout
@@ -497,7 +400,8 @@ int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout) {
         }
 
         // Copy byte from device to user buffer
-        buf[i] = UserRxBuffer[UserRxBufCur++];
+        buf[i] = cdc_rx_user_buf[cdc_rx_buf_get];
+        cdc_rx_buf_get = (cdc_rx_buf_get + 1) & (APP_RX_DATA_SIZE - 1);
     }
 
     // Success, return number of bytes read

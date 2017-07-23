@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
 #include "genhdr/pins.h"
@@ -202,7 +202,7 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
             *_errno = MP_ENOTCONN; // ??
             return -1;
         }
-        HAL_Delay(1);
+        mp_hal_delay_ms(1);
     }
 }
 
@@ -348,9 +348,9 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_hal_pin_output(wiznet5k_obj.rst);
 
     mp_hal_pin_low(wiznet5k_obj.rst);
-    HAL_Delay(1); // datasheet says 2us
+    mp_hal_delay_ms(1); // datasheet says 2us
     mp_hal_pin_high(wiznet5k_obj.rst);
-    HAL_Delay(160); // datasheet says 150ms
+    mp_hal_delay_ms(160); // datasheet says 150ms
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
@@ -371,7 +371,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     ctlnetwork(CN_SET_NETINFO, (void*)&netinfo);
 
     // seems we need a small delay after init
-    HAL_Delay(250);
+    mp_hal_delay_ms(250);
 
     // register with network module
     mod_network_register_nic(&wiznet5k_obj);
@@ -433,9 +433,9 @@ STATIC mp_obj_t wiznet5k_ifconfig(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
 
-STATIC const mp_map_elem_t wiznet5k_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_regs), (mp_obj_t)&wiznet5k_regs_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&wiznet5k_ifconfig_obj },
+STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_regs), MP_ROM_PTR(&wiznet5k_regs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
@@ -445,7 +445,7 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
         { &mp_type_type },
         .name = MP_QSTR_WIZNET5K,
         .make_new = wiznet5k_make_new,
-        .locals_dict = (mp_obj_t)&wiznet5k_locals_dict,
+        .locals_dict = (mp_obj_dict_t*)&wiznet5k_locals_dict,
     },
     .gethostbyname = wiznet5k_gethostbyname,
     .socket = wiznet5k_socket_socket,

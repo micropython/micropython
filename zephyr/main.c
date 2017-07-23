@@ -28,6 +28,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <zephyr.h>
+#ifdef CONFIG_NETWORKING
+#include <net/net_context.h>
+#endif
+
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
@@ -38,14 +43,9 @@
 #include "lib/mp-readline/readline.h"
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-    if (lex == NULL) {
-        printf("MemoryError: lexer could not allocate memory\n");
-        return;
-    }
-
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
         qstr source_name = lex->source_name;
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
@@ -60,12 +60,38 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 
+void init_zephyr(void) {
+    // TODO: Make addresses configurable
+    #ifdef CONFIG_NETWORKING
+    if (net_if_get_default() == NULL) {
+        // If there's no default networking interface,
+        // there's nothing to configure.
+        return;
+    }
+    #endif
+    #ifdef CONFIG_NET_IPV4
+    static struct in_addr in4addr_my = {{{192, 0, 2, 1}}};
+    net_if_ipv4_addr_add(net_if_get_default(), &in4addr_my, NET_ADDR_MANUAL, 0);
+    static struct in_addr in4netmask_my = {{{255, 255, 255, 0}}};
+    net_if_ipv4_set_netmask(net_if_get_default(), &in4netmask_my);
+    static struct in_addr in4gw_my = {{{192, 0, 2, 2}}};
+    net_if_ipv4_set_gw(net_if_get_default(), &in4gw_my);
+    #endif
+    #ifdef CONFIG_NET_IPV6
+    // 2001:db8::1
+    static struct in6_addr in6addr_my = {{{0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}}};
+    net_if_ipv6_addr_add(net_if_get_default(), &in6addr_my, NET_ADDR_MANUAL, 0);
+    #endif
+}
+
 int real_main(void) {
     int stack_dummy;
     stack_top = (char*)&stack_dummy;
     mp_stack_set_top(stack_top);
-    // Should be set to stack size in prj.mdef minus fuzz factor
-    mp_stack_set_limit(3584);
+    // Make MicroPython's stack limit somewhat smaller than full stack available
+    mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
+
+    init_zephyr();
 
 soft_reset:
     #if MICROPY_ENABLE_GC
@@ -105,11 +131,11 @@ void gc_collect(void) {
     gc_collect_start();
     gc_collect_root(&dummy, ((mp_uint_t)stack_top - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
-    gc_dump_info();
+    //gc_dump_info();
 }
 
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(ENOENT);
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
@@ -121,10 +147,7 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
-void nlr_jump_fail(void *val) {
-}
-
-void NORETURN __fatal_error(const char *msg) {
+NORETURN void nlr_jump_fail(void *val) {
     while (1);
 }
 

@@ -74,7 +74,7 @@ const mp_obj_type_t mp_type_reversed = {
     { &mp_type_type },
     .name = MP_QSTR_reversed,
     .make_new = reversed_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = reversed_iternext,
 };
 

@@ -33,6 +33,8 @@ typedef struct _mp_obj_stringio_t {
     vstr_t *vstr;
     // StringIO has single pointer used for both reading and writing
     mp_uint_t pos;
+    // Underlying object buffered by this StringIO
+    mp_obj_t ref_obj;
 } mp_obj_stringio_t;
 
 #endif // MICROPY_INCLUDED_PY_OBJSTRINGIO_H

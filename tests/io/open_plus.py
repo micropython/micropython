@@ -1,4 +1,3 @@
-import sys
 try:
     import uos as os
 except ImportError:
@@ -6,7 +5,7 @@ except ImportError:
 
 if not hasattr(os, "unlink"):
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # cleanup in case testfile exists
 try:

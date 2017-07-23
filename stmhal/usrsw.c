@@ -97,6 +97,12 @@ mp_obj_t pyb_switch_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
     return switch_get() ? mp_const_true : mp_const_false;
 }
 
+mp_obj_t pyb_switch_value(mp_obj_t self_in) {
+    (void)self_in;
+    return mp_obj_new_bool(switch_get());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
+
 STATIC mp_obj_t switch_callback(mp_obj_t line) {
     if (MP_STATE_PORT(pyb_switch_callback) != mp_const_none) {
         mp_call_function_0(MP_STATE_PORT(pyb_switch_callback));
@@ -122,8 +128,9 @@ mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
 
-STATIC const mp_map_elem_t pyb_switch_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_switch_callback_obj },
+STATIC const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pyb_switch_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_switch_callback_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
@@ -134,7 +141,7 @@ const mp_obj_type_t pyb_switch_type = {
     .print = pyb_switch_print,
     .make_new = pyb_switch_make_new,
     .call = pyb_switch_call,
-    .locals_dict = (mp_obj_t)&pyb_switch_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_switch_locals_dict,
 };
 
 #endif // MICROPY_HW_HAS_SWITCH

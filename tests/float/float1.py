@@ -75,6 +75,11 @@ try:
 except ZeroDivisionError:
     print("ZeroDivisionError")
 
+try:
+    0.0 ** -1
+except ZeroDivisionError:
+    print("ZeroDivisionError")
+
 # unsupported unary ops
 
 try:

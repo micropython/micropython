@@ -78,7 +78,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
 
     // get the source
-    mp_uint_t str_len;
+    size_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // get the filename
@@ -95,7 +95,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
         case MP_QSTR_exec: parse_input_kind = MP_PARSE_FILE_INPUT; break;
         case MP_QSTR_eval: parse_input_kind = MP_PARSE_EVAL_INPUT; break;
         default:
-            mp_raise_msg(&mp_type_ValueError, "bad compile mode");
+            mp_raise_ValueError("bad compile mode");
     }
 
     mp_obj_code_t *code = m_new_obj(mp_obj_code_t);
@@ -113,12 +113,15 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     // work out the context
     mp_obj_dict_t *globals = mp_globals_get();
     mp_obj_dict_t *locals = mp_locals_get();
-    if (n_args > 1) {
-        globals = MP_OBJ_TO_PTR(args[1]);
-        if (n_args > 2) {
-            locals = MP_OBJ_TO_PTR(args[2]);
-        } else {
-            locals = globals;
+    for (size_t i = 1; i < 3 && i < n_args; ++i) {
+        if (args[i] != mp_const_none) {
+            if (!MP_OBJ_IS_TYPE(args[i], &mp_type_dict)) {
+                mp_raise_TypeError(NULL);
+            }
+            locals = MP_OBJ_TO_PTR(args[i]);
+            if (i == 1) {
+                globals = locals;
+            }
         }
     }
 
@@ -128,7 +131,7 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     }
     #endif
 
-    mp_uint_t str_len;
+    size_t str_len;
     const char *str = mp_obj_str_get_data(args[0], &str_len);
 
     // create the lexer
@@ -136,9 +139,6 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     mp_lexer_t *lex;
     if (MICROPY_PY_BUILTINS_EXECFILE && parse_input_kind == MP_PARSE_SINGLE_INPUT) {
         lex = mp_lexer_new_from_file(str);
-        if (lex == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "could not open file '%s'", str));
-        }
         parse_input_kind = MP_PARSE_FILE_INPUT;
     } else {
         lex = mp_lexer_new_from_str_len(MP_QSTR__lt_string_gt_, str, str_len, 0);

@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_BC0_H__
-#define __MICROPY_INCLUDED_PY_BC0_H__
+#ifndef MICROPY_INCLUDED_PY_BC0_H
+#define MICROPY_INCLUDED_PY_BC0_H
 
 // Micro Python byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
@@ -37,12 +37,13 @@
 #define MP_BC_LOAD_CONST_OBJ     (0x17) // ptr
 #define MP_BC_LOAD_NULL          (0x18)
 
-#define MP_BC_LOAD_FAST_N        (0x1a) // uint
-#define MP_BC_LOAD_DEREF         (0x1b) // uint
-#define MP_BC_LOAD_NAME          (0x1c) // qstr
-#define MP_BC_LOAD_GLOBAL        (0x1d) // qstr
-#define MP_BC_LOAD_ATTR          (0x1e) // qstr
-#define MP_BC_LOAD_METHOD        (0x1f) // qstr
+#define MP_BC_LOAD_FAST_N        (0x19) // uint
+#define MP_BC_LOAD_DEREF         (0x1a) // uint
+#define MP_BC_LOAD_NAME          (0x1b) // qstr
+#define MP_BC_LOAD_GLOBAL        (0x1c) // qstr
+#define MP_BC_LOAD_ATTR          (0x1d) // qstr
+#define MP_BC_LOAD_METHOD        (0x1e) // qstr
+#define MP_BC_LOAD_SUPER_METHOD  (0x1f) // qstr
 #define MP_BC_LOAD_BUILD_CLASS   (0x20)
 #define MP_BC_LOAD_SUBSCR        (0x21)
 
@@ -79,6 +80,7 @@
 #define MP_BC_POP_BLOCK          (0x44)
 #define MP_BC_POP_EXCEPT         (0x45)
 #define MP_BC_UNWIND_JUMP        (0x46) // rel byte code offset, 16-bit signed, in excess; then a byte
+#define MP_BC_GET_ITER_STACK     (0x47)
 
 #define MP_BC_BUILD_TUPLE        (0x50) // uint
 #define MP_BC_BUILD_LIST         (0x51) // uint
@@ -114,4 +116,4 @@
 #define MP_BC_UNARY_OP_MULTI             (0xd0) // + op(7)
 #define MP_BC_BINARY_OP_MULTI            (0xd7) // + op(36)
 
-#endif // __MICROPY_INCLUDED_PY_BC0_H__
+#endif // MICROPY_INCLUDED_PY_BC0_H

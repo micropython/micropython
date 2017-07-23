@@ -35,9 +35,10 @@
 
 static char heap[16384];
 
-mp_obj_t execute_from_lexer(mp_lexer_t *lex) {
+mp_obj_t execute_from_str(const char *str) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(0/*MP_QSTR_*/, str, strlen(str), false);
         mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);
         mp_obj_t module_fun = mp_compile(&pt, lex->source_name, MP_EMIT_OPT_NONE, false);
         mp_call_function_0(module_fun);
@@ -58,8 +59,7 @@ int main() {
     mp_init();
 
     const char str[] = "print('Hello world of easy embedding!')";
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(0/*MP_QSTR_*/, str, strlen(str), false);
-    if (execute_from_lexer(lex)) {
+    if (execute_from_str(str)) {
         printf("Error\n");
     }
 }

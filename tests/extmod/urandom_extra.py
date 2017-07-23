@@ -1,14 +1,17 @@
 try:
     import urandom as random
 except ImportError:
-    import random
+    try:
+        import random
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 try:
     random.randint
 except AttributeError:
-    import sys
     print('SKIP')
-    sys.exit()
+    raise SystemExit
 
 print('randrange')
 for i in range(50):

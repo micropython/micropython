@@ -1,4 +1,8 @@
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 desc = {
     "s0": uctypes.UINT16 | 0,

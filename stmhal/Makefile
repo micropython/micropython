@@ -15,6 +15,9 @@ include boards/$(BOARD)/mpconfigboard.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
+# directory containing scripts to be frozen as bytecode
+FROZEN_MPY_DIR ?= modules
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -23,7 +26,7 @@ CMSIS_DIR=cmsis
 HAL_DIR=hal/$(MCU_SERIES)
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
-FATFS_DIR=lib/fatfs
+FATFS_DIR=lib/oofatfs
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 1
@@ -44,24 +47,38 @@ INC += -I$(CMSIS_DIR)/
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
-INC += -I../lib/mp-readline
-INC += -I../lib/netutils
-INC += -I../lib/timeutils
 
-CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
+# Basic Cortex-M flags
+CFLAGS_CORTEX_M = -mthumb
+
+# Select hardware floating-point support
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx))
+CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
+else
+CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+endif
+
+# Options for particular MCU series
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
+ifeq ($(MICROPY_FLOAT_IMPL),double)
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
+else
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
+CFLAGS += -fsingle-precision-constant -Wdouble-promotion
+endif
+
 LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
-LIBS =
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -75,44 +92,99 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-# uncomment this if you want libgcc
-#LIBS += $(shell $(CC) -print-libgcc-file-name)
-
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
-	libm/math.c \
-	libm/thumb_vfp_sqrtf.c \
-	libm/asinfacosf.c \
-	libm/atanf.c \
-	libm/atan2f.c \
-	libm/fmodf.c \
-	libm/roundf.c \
-	libm/log1pf.c \
-	libm/acoshf.c \
-	libm/asinhf.c \
-	libm/atanhf.c \
-	libm/kf_rem_pio2.c \
-	libm/kf_sin.c \
-	libm/kf_cos.c \
-	libm/kf_tan.c \
-	libm/ef_rem_pio2.c \
-	libm/erf_lgamma.c \
-	libm/sf_sin.c \
-	libm/sf_cos.c \
-	libm/sf_tan.c \
-	libm/sf_frexp.c \
-	libm/sf_modf.c \
-	libm/sf_ldexp.c \
-	libm/sf_erf.c \
-	libm/wf_lgamma.c \
-	libm/wf_tgamma.c \
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
+	utils/interrupt_char.c \
+	utils/sys_stdio_mphal.c \
+	)
+
+ifeq ($(MICROPY_FLOAT_IMPL),double)
+SRC_LIBM = $(addprefix lib/libm_dbl/,\
+	__cos.c \
+	__expo2.c \
+	__fpclassify.c \
+	__rem_pio2.c \
+	__rem_pio2_large.c \
+	__signbit.c \
+	__sin.c \
+	__tan.c \
+	acos.c \
+	acosh.c \
+	asin.c \
+	asinh.c \
+	atan.c \
+	atan2.c \
+	atanh.c \
+	ceil.c \
+	cos.c \
+	cosh.c \
+	erf.c \
+	exp.c \
+	expm1.c \
+	floor.c \
+	fmod.c \
+	frexp.c \
+	ldexp.c \
+	lgamma.c \
+	log.c \
+	log10.c \
+	log1p.c \
+	modf.c \
+	nearbyint.c \
+	pow.c \
+	rint.c \
+	scalbn.c \
+	sin.c \
+	sinh.c \
+	sqrt.c \
+	tan.c \
+	tanh.c \
+	tgamma.c \
+	trunc.c \
+	)
+else
+SRC_LIBM = $(addprefix lib/libm/,\
+	math.c \
+	thumb_vfp_sqrtf.c \
+	acoshf.c \
+	asinfacosf.c \
+	asinhf.c \
+	atan2f.c \
+	atanf.c \
+	atanhf.c \
+	ef_rem_pio2.c \
+	erf_lgamma.c \
+	fmodf.c \
+	kf_cos.c \
+	kf_rem_pio2.c \
+	kf_sin.c \
+	kf_tan.c \
+	log1pf.c \
+	nearbyintf.c \
+	sf_cos.c \
+	sf_erf.c \
+	sf_frexp.c \
+	sf_ldexp.c \
+	sf_modf.c \
+	sf_sin.c \
+	sf_tan.c \
+	wf_lgamma.c \
+	wf_tgamma.c \
+	)
+endif
+
+EXTMOD_SRC_C = $(addprefix extmod/,\
+	modonewire.c \
+        )
+
+DRIVERS_SRC_C = $(addprefix drivers/,\
+	memory/spiflash.c \
 	)
 
 SRC_C = \
@@ -125,9 +197,11 @@ SRC_C = \
 	usbd_hid_interface.c \
 	usbd_msc_storage.c \
 	mphalport.c \
+	mpthreadport.c \
 	irq.c \
 	pendsv.c \
 	systick.c  \
+	pybthread.c \
 	timer.c \
 	led.c \
 	pin.c \
@@ -142,9 +216,7 @@ SRC_C = \
 	usb.c \
 	wdt.c \
 	gccollect.c \
-	pybstdio.c \
 	help.c \
-	input.c \
 	machine_i2c.c \
 	modmachine.c \
 	modpyb.c \
@@ -153,14 +225,12 @@ SRC_C = \
 	modutime.c \
 	modusocket.c \
 	modnetwork.c \
-	import.c \
 	extint.c \
 	usrsw.c \
 	rng.c \
 	rtc.c \
 	flash.c \
 	storage.c \
-	builtin_open.c \
 	sdcard.c \
 	fatfs_port.c \
 	lcd.c \
@@ -254,6 +324,9 @@ endif
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
@@ -342,7 +415,7 @@ GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB)
+SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)

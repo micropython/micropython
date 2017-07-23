@@ -135,7 +135,7 @@ STATIC uint asm_arm_op_orr_reg(uint rd, uint rn, uint rm) {
 
 void asm_arm_bkpt(asm_arm_t *as) {
     // bkpt #0
-    emit_al(as, 0x1200070); 
+    emit_al(as, 0x1200070);
 }
 
 // locals:

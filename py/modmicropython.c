@@ -29,7 +29,9 @@
 #include "py/mpstate.h"
 #include "py/builtin.h"
 #include "py/stackctrl.h"
+#include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
@@ -70,7 +72,8 @@ mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
         (mp_uint_t)m_get_total_bytes_allocated(), (mp_uint_t)m_get_current_bytes_allocated(), (mp_uint_t)m_get_peak_bytes_allocated());
 #endif
 #if MICROPY_STACK_CHECK
-    mp_printf(&mp_plat_print, "stack: " UINT_FMT " out of " INT_FMT "\n", mp_stack_usage(), MP_STATE_THREAD(stack_limit));
+    mp_printf(&mp_plat_print, "stack: " UINT_FMT " out of " UINT_FMT "\n",
+        mp_stack_usage(), (mp_uint_t)MP_STATE_THREAD(stack_limit));
 #else
     mp_printf(&mp_plat_print, "stack: " UINT_FMT "\n", mp_stack_usage());
 #endif
@@ -128,6 +131,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_unlock_obj, mp_micropython_
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
 #endif
 
+#if MICROPY_KBD_EXCEPTION
+STATIC mp_obj_t mp_micropython_kbd_intr(mp_obj_t int_chr_in) {
+    mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd_intr);
+#endif
+
+#if MICROPY_ENABLE_SCHEDULER
+STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
+    if (!mp_sched_schedule(function, arg)) {
+        mp_raise_msg(&mp_type_RuntimeError, "schedule stack full");
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
     { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
@@ -150,6 +171,12 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #if MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_heap_lock), MP_ROM_PTR(&mp_micropython_heap_lock_obj) },
     { MP_ROM_QSTR(MP_QSTR_heap_unlock), MP_ROM_PTR(&mp_micropython_heap_unlock_obj) },
+    #endif
+    #if MICROPY_KBD_EXCEPTION
+    { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },
+    #endif
+    #if MICROPY_ENABLE_SCHEDULER
+    { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
     #endif
 };
 

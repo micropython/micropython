@@ -1,3 +1,16 @@
+# The following is a temporary hack to forefully undefine vars that might have
+# be defined by a calling Makefile (from recursive make).
+# TODO: Find a better way to be able to call this Makefile recursively.
+ifneq ($(findstring undefine,$(.FEATURES)),)
+override undefine COPT
+override undefine CFLAGS_EXTRA
+override undefine LDFLAGS_EXTRA
+override undefine FROZEN_DIR
+override undefine FROZEN_MPY_DIR
+override undefine BUILD
+override undefine PROG
+endif
+
 include ../py/mkenv.mk
 
 # define main target
@@ -19,7 +32,7 @@ INC += -I$(BUILD)
 # compiler settings
 CWARN = -Wall -Werror
 CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -ansi -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
 
 # Debugging/Optimization
@@ -32,7 +45,7 @@ endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
 # The unix port of micropython on OSX must be compiled with clang,
-# while cross-compile ports require gcc, so we test here for OSX and 
+# while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
 CC = clang
@@ -49,10 +62,10 @@ SRC_C = \
 	main.c \
 	gccollect.c \
 
-ifeq ($(OS),Windows_NT)
-    ifeq (,$(findstring MSYS,$(UNAME_S)))
-        SRC_C += windows/fmode.c
-    endif
+# Add fmode when compiling with mingw gcc
+COMPILER_TARGET := $(shell $(CC) -dumpmachine)
+ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
+	SRC_C += windows/fmode.c
 endif
 
 OBJ = $(PY_O)

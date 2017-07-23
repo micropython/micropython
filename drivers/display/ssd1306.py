@@ -139,23 +139,23 @@ class SSD1306_SPI(SSD1306):
 
     def write_cmd(self, cmd):
         self.spi.init(baudrate=self.rate, polarity=0, phase=0)
-        self.cs.high()
-        self.dc.low()
-        self.cs.low()
+        self.cs(1)
+        self.dc(0)
+        self.cs(0)
         self.spi.write(bytearray([cmd]))
-        self.cs.high()
+        self.cs(1)
 
     def write_data(self, buf):
         self.spi.init(baudrate=self.rate, polarity=0, phase=0)
-        self.cs.high()
-        self.dc.high()
-        self.cs.low()
+        self.cs(1)
+        self.dc(1)
+        self.cs(0)
         self.spi.write(buf)
-        self.cs.high()
+        self.cs(1)
 
     def poweron(self):
-        self.res.high()
+        self.res(1)
         time.sleep_ms(1)
-        self.res.low()
+        self.res(0)
         time.sleep_ms(10)
-        self.res.high()
+        self.res(1)

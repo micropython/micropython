@@ -16,7 +16,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
+#define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
 
 // HSE is 25MHz
@@ -51,11 +51,6 @@
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
-
-// TODO These should go in i2c.c
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
 
 // SPI
 #define MICROPY_HW_SPI3_NSS         (pin_A4)

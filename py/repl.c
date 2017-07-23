@@ -32,7 +32,7 @@
 #if MICROPY_HELPER_REPL
 
 STATIC bool str_startswith_word(const char *str, const char *head) {
-    mp_uint_t i;
+    size_t i;
     for (i = 0; str[i] && head[i]; i++) {
         if (str[i] != head[i]) {
             return false;
@@ -124,7 +124,7 @@ bool mp_repl_continue_with_input(const char *input) {
     return false;
 }
 
-mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t *print, const char **compl_str) {
+size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print, const char **compl_str) {
     // scan backwards to find start of "a.b.c" chain
     const char *org_str = str;
     const char *top = str + len;
@@ -145,15 +145,15 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
         while (str < top && *str != '.') {
             ++str;
         }
-        mp_uint_t s_len = str - s_start;
+        size_t s_len = str - s_start;
 
         if (str < top) {
             // a complete word, lookup in current dict
 
             mp_obj_t obj = MP_OBJ_NULL;
-            for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+            for (size_t i = 0; i < dict->map.alloc; i++) {
                 if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                    mp_uint_t d_len;
+                    size_t d_len;
                     const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
                     if (s_len == d_len && strncmp(s_start, d_str, d_len) == 0) {
                         obj = dict->map.table[i].value;
@@ -194,10 +194,10 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             // look for matches
             int n_found = 0;
             const char *match_str = NULL;
-            mp_uint_t match_len = 0;
-            for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+            size_t match_len = 0;
+            for (size_t i = 0; i < dict->map.alloc; i++) {
                 if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                    mp_uint_t d_len;
+                    size_t d_len;
                     const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
                     if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                         if (match_str == NULL) {
@@ -206,7 +206,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
                         } else {
                             // search for longest common prefix of match_str and d_str
                             // (assumes these strings are null-terminated)
-                            for (mp_uint_t j = s_len; j <= match_len && j <= d_len; ++j) {
+                            for (size_t j = s_len; j <= match_len && j <= d_len; ++j) {
                                 if (match_str[j] != d_str[j]) {
                                     match_len = j;
                                     break;
@@ -245,9 +245,9 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             #define MAX_LINE_LEN  (4 * WORD_SLOT_LEN)
 
             int line_len = MAX_LINE_LEN; // force a newline for first word
-            for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+            for (size_t i = 0; i < dict->map.alloc; i++) {
                 if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
-                    mp_uint_t d_len;
+                    size_t d_len;
                     const char *d_str = mp_obj_str_get_data(dict->map.table[i].key, &d_len);
                     if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
                         int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
@@ -270,7 +270,7 @@ mp_uint_t mp_repl_autocomplete(const char *str, mp_uint_t len, const mp_print_t 
             }
             mp_print_str(print, "\n");
 
-            return (mp_uint_t)(-1); // indicate many matches
+            return (size_t)(-1); // indicate many matches
         }
     }
 }

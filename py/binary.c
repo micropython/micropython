@@ -33,6 +33,7 @@
 #include "py/binary.h"
 #include "py/smallint.h"
 #include "py/objint.h"
+#include "py/runtime.h"
 
 // Helpers to work with binary-encoded data
 
@@ -100,6 +101,11 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
             }
         }
     }
+
+    if (size == 0) {
+        mp_raise_ValueError("bad typecode");
+    }
+
     if (palign != NULL) {
         *palign = align;
     }
@@ -321,9 +327,10 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
             break;
         default:
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if ((typecode | 0x20) == 'q' && MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+            if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+                size_t size = mp_binary_get_size('@', typecode, NULL);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
-                    sizeof(long long), (byte*)&((long long*)p)[index]);
+                    size, (uint8_t*)p + index * size);
                 return;
             }
             #endif
@@ -361,6 +368,7 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         case 'q':
             ((long long*)p)[index] = val;
+            break;
         case 'Q':
             ((unsigned long long*)p)[index] = val;
             break;
@@ -376,5 +384,6 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         // Extension to CPython: array of pointers
         case 'P':
             ((void**)p)[index] = (void*)(uintptr_t)val;
+            break;
     }
 }

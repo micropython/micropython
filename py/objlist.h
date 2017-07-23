@@ -23,16 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJLIST_H__
-#define __MICROPY_INCLUDED_PY_OBJLIST_H__
+#ifndef MICROPY_INCLUDED_PY_OBJLIST_H
+#define MICROPY_INCLUDED_PY_OBJLIST_H
 
 #include "py/obj.h"
 
 typedef struct _mp_obj_list_t {
     mp_obj_base_t base;
-    mp_uint_t alloc;
-    mp_uint_t len;
+    size_t alloc;
+    size_t len;
     mp_obj_t *items;
 } mp_obj_list_t;
 
-#endif // __MICROPY_INCLUDED_PY_OBJLIST_H__
+#endif // MICROPY_INCLUDED_PY_OBJLIST_H

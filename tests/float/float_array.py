@@ -1,4 +1,8 @@
-from array import array
+try:
+    from array import array
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 def test(a):
     print(a)

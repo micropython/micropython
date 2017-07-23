@@ -4,6 +4,8 @@
 .. module:: ujson
    :synopsis: JSON encoding and decoding
 
+|see_cpython_module| :mod:`python:json`.
+
 This modules allows to convert between Python objects and the JSON
 data format.
 

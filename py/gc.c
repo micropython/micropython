@@ -258,18 +258,20 @@ STATIC void gc_sweep(void) {
             case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
-                    #if MICROPY_PY_THREAD
-                    // TODO need to think about reentrancy with finaliser code
-                    assert(!"finaliser with threading not implemented");
-                    #endif
                     mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
                     if (obj->type != NULL) {
                         // if the object has a type then see if it has a __del__ method
                         mp_obj_t dest[2];
                         mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
                         if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
+                            // load_method returned a method, execute it in a protected environment
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_lock();
+                            #endif
+                            mp_call_function_1_protected(dest[0], dest[1]);
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_unlock();
+                            #endif
                         }
                     }
                     // clear finaliser flag
@@ -534,37 +536,34 @@ void gc_free(void *ptr) {
 
     DEBUG_printf("gc_free(%p)\n", ptr);
 
-    if (VERIFY_PTR(ptr)) {
-        size_t block = BLOCK_FROM_PTR(ptr);
-        if (ATB_GET_KIND(block) == AT_HEAD) {
-            #if MICROPY_ENABLE_FINALISER
-            FTB_CLEAR(block);
-            #endif
-            // set the last_free pointer to this block if it's earlier in the heap
-            if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
-                MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
-            }
-
-            // free head and all of its tail blocks
-            do {
-                ATB_ANY_TO_FREE(block);
-                block += 1;
-            } while (ATB_GET_KIND(block) == AT_TAIL);
-
-            GC_EXIT();
-
-            #if EXTENSIVE_HEAP_PROFILING
-            gc_dump_alloc_table();
-            #endif
-        } else {
-            GC_EXIT();
-            assert(!"bad free");
-        }
-    } else if (ptr != NULL) {
+    if (ptr == NULL) {
         GC_EXIT();
-        assert(!"bad free");
     } else {
+        // get the GC block number corresponding to this pointer
+        assert(VERIFY_PTR(ptr));
+        size_t block = BLOCK_FROM_PTR(ptr);
+        assert(ATB_GET_KIND(block) == AT_HEAD);
+
+        #if MICROPY_ENABLE_FINALISER
+        FTB_CLEAR(block);
+        #endif
+
+        // set the last_free pointer to this block if it's earlier in the heap
+        if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+            MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
+        }
+
+        // free head and all of its tail blocks
+        do {
+            ATB_ANY_TO_FREE(block);
+            block += 1;
+        } while (ATB_GET_KIND(block) == AT_TAIL);
+
         GC_EXIT();
+
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
     }
 }
 

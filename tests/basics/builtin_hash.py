@@ -4,8 +4,6 @@ print(hash(False))
 print(hash(True))
 print({():1}) # hash tuple
 print({(1,):1}) # hash non-empty tuple
-print({1 << 66:1}) # hash big int
-print({-(1 << 66):2}) # hash negative big int
 print(hash in {hash:1}) # hash function
 
 try:
@@ -50,9 +48,3 @@ class E:
     def __hash__(self):
         return True
 print(hash(E()))
-
-# __hash__ returning a large number should be truncated
-class F:
-    def __hash__(self):
-        return 1 << 70 | 1
-print(hash(F()) != 0)

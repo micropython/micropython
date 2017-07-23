@@ -143,7 +143,6 @@ STATIC const mp_obj_type_t decompio_type = {
 };
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
     mp_obj_t data = args[0];
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);

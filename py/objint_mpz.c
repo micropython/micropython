@@ -74,7 +74,7 @@ const mp_obj_int_t mp_maxsize_obj = {
 #undef NUM_DIG
 #endif
 
-STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
+mp_obj_int_t *mp_obj_int_new_mpz(void) {
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
     mpz_init_zero(&o->mpz);
@@ -107,9 +107,16 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     return str;
 }
 
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+    mp_obj_int_t *o = mp_obj_int_new_mpz();
+    mpz_set_from_bytes(&o->mpz, big_endian, len, buf);
+    return MP_OBJ_FROM_PTR(o);
+}
+
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+    memset(buf, 0, len);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
 }
 
@@ -271,7 +278,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
-                    mp_raise_msg(&mp_type_ValueError, "negative shift count");
+                    mp_raise_ValueError("negative shift count");
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -286,7 +293,8 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
-            case MP_BINARY_OP_DIVMOD: {
+            default: {
+                assert(op == MP_BINARY_OP_DIVMOD);
                 if (mpz_is_zero(zrhs)) {
                     goto zero_division_error;
                 }
@@ -295,9 +303,6 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                 mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
-
-            default:
-                return MP_OBJ_NULL; // op not supported
         }
 
         return MP_OBJ_FROM_PTR(res);
@@ -321,6 +326,39 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         }
     }
 }
+
+#if MICROPY_PY_BUILTINS_POW3
+STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
+    if (MP_OBJ_IS_SMALL_INT(arg)) {
+        mpz_init_from_int(temp, MP_OBJ_SMALL_INT_VALUE(arg));
+        return temp;
+    } else {
+        mp_obj_int_t *arp_p = MP_OBJ_TO_PTR(arg);
+        return &(arp_p->mpz);
+    }
+}
+
+mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
+    if (!MP_OBJ_IS_INT(base) || !MP_OBJ_IS_INT(exponent) || !MP_OBJ_IS_INT(modulus)) {
+        mp_raise_TypeError("pow() with 3 arguments requires integers");
+    } else {
+        mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
+        mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
+
+        mpz_t l_temp, r_temp, m_temp;
+        mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);
+        mpz_t *rhs = mp_mpz_for_int(exponent, &r_temp);
+        mpz_t *mod = mp_mpz_for_int(modulus,  &m_temp);
+
+        mpz_pow3_inpl(&(res_p->mpz), lhs, rhs, mod);
+
+        if (lhs == &l_temp) { mpz_deinit(lhs); }
+        if (rhs == &r_temp) { mpz_deinit(rhs); }
+        if (mod == &m_temp) { mpz_deinit(mod); }
+        return result;
+    }
+}
+#endif
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
@@ -350,29 +388,9 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     return mp_obj_new_int_from_ull(value);
 }
 
-#if MICROPY_PY_BUILTINS_FLOAT
-mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    int cl = fpclassify(val);
-    if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
-    } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
-    } else {
-        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
-        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
-        } else {
-            mp_obj_int_t *o = mp_obj_int_new_mpz();
-            mpz_set_from_float(&o->mpz, val);
-            return MP_OBJ_FROM_PTR(o);
-        }
-    }
-}
-#endif
-
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
-    mp_uint_t n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
+    size_t n = mpz_set_from_str(&o->mpz, *str, len, neg, base);
     *str += n;
     return MP_OBJ_FROM_PTR(o);
 }

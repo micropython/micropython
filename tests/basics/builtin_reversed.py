@@ -1,4 +1,9 @@
 # test the builtin reverse() function
+try:
+    reversed
+except:
+    print("SKIP")
+    raise SystemExit
 
 # list
 print(list(reversed([])))

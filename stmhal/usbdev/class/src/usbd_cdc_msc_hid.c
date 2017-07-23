@@ -669,7 +669,7 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        CDC_CMD_PACKET_SIZE);
 
         // Init physical Interface components
-        CDC_fops->Init();
+        CDC_fops->Init(pdev);
 
         // Init Xfer states
         CDC_ClassData.TxState =0;
@@ -723,6 +723,8 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        hid_out_ep,
                        USBD_EP_TYPE_INTR,
                        mps_out);
+
+        HID_fops->Init(pdev);
 
         // Prepare Out endpoint to receive next packet
         USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
@@ -961,7 +963,7 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
 
         /* USB data will be immediately processed, this allow next USB traffic being
         NAKed till the end of the application Xfer */
-        CDC_fops->Receive(CDC_ClassData.RxBuffer, &CDC_ClassData.RxLength);
+        CDC_fops->Receive(pdev, CDC_ClassData.RxBuffer, &CDC_ClassData.RxLength);
 
         return USBD_OK;
     } else if ((usbd_mode & USBD_MODE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
@@ -969,7 +971,7 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
         return USBD_OK;
     } else if ((usbd_mode & USBD_MODE_HID) && epnum == (hid_out_ep & 0x7f)) {
         HID_ClassData.RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
-        HID_fops->Receive(HID_ClassData.RxBuffer, HID_ClassData.RxLength);
+        HID_fops->Receive(pdev, HID_ClassData.RxBuffer, HID_ClassData.RxLength);
     }
 
     return USBD_OK;
@@ -1088,6 +1090,24 @@ uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t 
             USBD_LL_Transmit(pdev, hid_in_ep, report, len);
         }
     }
+    return USBD_OK;
+}
+
+uint8_t USBD_HID_SetNAK(USBD_HandleTypeDef *pdev) {
+    // get USBx object from pdev (needed for USBx_OUTEP macro below)
+    PCD_HandleTypeDef *hpcd = pdev->pData;
+    USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
+    // set NAK on HID OUT endpoint
+    USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_SNAK;
+    return USBD_OK;
+}
+
+uint8_t USBD_HID_ClearNAK(USBD_HandleTypeDef *pdev) {
+    // get USBx object from pdev (needed for USBx_OUTEP macro below)
+    PCD_HandleTypeDef *hpcd = pdev->pData;
+    USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
+    // clear NAK on HID OUT endpoint
+    USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
     return USBD_OK;
 }
 

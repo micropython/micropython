@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef CC3200_LAUNCHXL_HAL_CC3200_HAL_H_
-#define CC3200_LAUNCHXL_HAL_CC3200_HAL_H_
-
 #include <stdint.h>
 #include <stdbool.h>
+
+#include "hal/utils.h"
+#include "hal/systick.h"
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -64,4 +64,5 @@ extern void HAL_SystemDeInit (void);
 extern void HAL_IncrementTick(void);
 extern void mp_hal_set_interrupt_char (int c);
 
-#endif /* CC3200_LAUNCHXL_HAL_CC3200_HAL_H_ */
+#define mp_hal_delay_us(usec) UtilsDelay(UTILS_DELAY_US_TO_COUNT(usec))
+#define mp_hal_ticks_cpu() (SysTickPeriodGet() - SysTickValueGet())

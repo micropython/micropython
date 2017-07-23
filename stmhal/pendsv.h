@@ -23,10 +23,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_PENDSV_H
+#define MICROPY_INCLUDED_STMHAL_PENDSV_H
 
 void pendsv_init(void);
-void pendsv_nlr_jump(void *val);
+void pendsv_kbd_intr(void);
 
 // since we play tricks with the stack, the compiler must not generate a
 // prelude for this function
 void pendsv_isr_handler(void) __attribute__((naked));
+
+#endif // MICROPY_INCLUDED_STMHAL_PENDSV_H

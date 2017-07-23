@@ -1,4 +1,10 @@
 # test builtin min and max functions
+try:
+    min
+    max
+except:
+    print("SKIP")
+    raise SystemExit
 
 print(min(0,1))
 print(min(1,0))

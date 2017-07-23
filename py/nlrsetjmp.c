@@ -29,10 +29,14 @@
 #if MICROPY_NLR_SETJMP
 
 void nlr_setjmp_jump(void *val) {
-    nlr_buf_t *buf = MP_STATE_THREAD(nlr_top);
-    MP_STATE_THREAD(nlr_top) = buf->prev;
-    buf->ret_val = val;
-    longjmp(buf->jmpbuf, 1);
+    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
+    nlr_buf_t *top = *top_ptr;
+    if (top == NULL) {
+        nlr_jump_fail(val);
+    }
+    top->ret_val = val;
+    *top_ptr = top->prev;
+    longjmp(top->jmpbuf, 1);
 }
 
 #endif

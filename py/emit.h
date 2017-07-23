@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_PY_EMIT_H__
-#define __MICROPY_INCLUDED_PY_EMIT_H__
+#ifndef MICROPY_INCLUDED_PY_EMIT_H
+#define MICROPY_INCLUDED_PY_EMIT_H
 
 #include "py/lexer.h"
 #include "py/scope.h"
@@ -88,7 +87,7 @@ typedef struct _emit_method_table_t {
     void (*load_const_obj)(emit_t *emit, mp_obj_t obj);
     void (*load_null)(emit_t *emit);
     void (*load_attr)(emit_t *emit, qstr qst);
-    void (*load_method)(emit_t *emit, qstr qst);
+    void (*load_method)(emit_t *emit, qstr qst, bool is_super);
     void (*load_build_class)(emit_t *emit);
     void (*load_subscr)(emit_t *emit);
     void (*store_attr)(emit_t *emit, qstr qst);
@@ -110,7 +109,7 @@ typedef struct _emit_method_table_t {
     void (*setup_except)(emit_t *emit, mp_uint_t label);
     void (*setup_finally)(emit_t *emit, mp_uint_t label);
     void (*end_finally)(emit_t *emit);
-    void (*get_iter)(emit_t *emit);
+    void (*get_iter)(emit_t *emit, bool use_stack);
     void (*for_iter)(emit_t *emit, mp_uint_t label);
     void (*for_iter_end)(emit_t *emit);
     void (*pop_block)(emit_t *emit);
@@ -205,7 +204,7 @@ void mp_emit_bc_load_const_str(emit_t *emit, qstr qst);
 void mp_emit_bc_load_const_obj(emit_t *emit, mp_obj_t obj);
 void mp_emit_bc_load_null(emit_t *emit);
 void mp_emit_bc_load_attr(emit_t *emit, qstr qst);
-void mp_emit_bc_load_method(emit_t *emit, qstr qst);
+void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super);
 void mp_emit_bc_load_build_class(emit_t *emit);
 void mp_emit_bc_load_subscr(emit_t *emit);
 void mp_emit_bc_store_attr(emit_t *emit, qstr qst);
@@ -228,7 +227,7 @@ void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_end_finally(emit_t *emit);
-void mp_emit_bc_get_iter(emit_t *emit);
+void mp_emit_bc_get_iter(emit_t *emit, bool use_stack);
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_for_iter_end(emit_t *emit);
 void mp_emit_bc_pop_block(emit_t *emit);
@@ -284,4 +283,4 @@ void mp_emitter_warning(pass_kind_t pass, const char *msg);
 #define mp_emitter_warning(pass, msg)
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_EMIT_H__
+#endif // MICROPY_INCLUDED_PY_EMIT_H

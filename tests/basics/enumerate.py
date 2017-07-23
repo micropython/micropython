@@ -1,3 +1,9 @@
+try:
+    enumerate
+except:
+    print("SKIP")
+    raise SystemExit
+
 print(list(enumerate([])))
 print(list(enumerate([1, 2, 3])))
 print(list(enumerate([1, 2, 3], 5)))

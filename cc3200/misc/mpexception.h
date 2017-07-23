@@ -24,13 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_CC3200_MISC_MPEXCEPTION_H
+#define MICROPY_INCLUDED_CC3200_MISC_MPEXCEPTION_H
 
-#ifndef MPEXCEPTION_H_
-#define MPEXCEPTION_H_
-
-extern const char mpexception_os_resource_not_avaliable[];
-extern const char mpexception_os_operation_failed[];
-extern const char mpexception_os_request_not_possible[];
 extern const char mpexception_value_invalid_arguments[];
 extern const char mpexception_num_type_invalid_arguments[];
 extern const char mpexception_uncaught[];
@@ -43,4 +39,4 @@ extern void mpexception_set_interrupt_char (int c);
 extern void mpexception_nlr_jump (void *o);
 extern void mpexception_keyboard_nlr_jump (void);
 
-#endif /* MPEXCEPTION_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MISC_MPEXCEPTION_H

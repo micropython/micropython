@@ -2,7 +2,11 @@
 
 import micropython
 import sys
-import uio
+try:
+    import uio
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 # preallocate exception instance with some room for a traceback
 global_exc = StopIteration()

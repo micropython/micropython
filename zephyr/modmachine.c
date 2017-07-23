@@ -28,10 +28,12 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <misc/reboot.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
@@ -39,7 +41,8 @@
 #if MICROPY_PY_MACHINE
 
 STATIC mp_obj_t machine_reset(void) {
-    printf("Warning: %s is not implemented\n", __func__);
+    sys_reboot(SYS_REBOOT_COLD);
+    // Won't get here, Zephyr has infiniloop on its side
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
@@ -52,10 +55,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
+    #ifdef CONFIG_REBOOT
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
+    { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
 
     // reset causes
     /*{ MP_ROM_QSTR(MP_QSTR_PWRON_RESET), MP_ROM_INT(REASON_DEFAULT_RST) },*/

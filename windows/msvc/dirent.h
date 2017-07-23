@@ -23,6 +23,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
+#ifndef MICROPY_INCLUDED_WINDOWS_MSVC_DIRENT_H
+#define MICROPY_INCLUDED_WINDOWS_MSVC_DIRENT_H
 
 // dirent.h implementation for msvc
 
@@ -42,3 +44,5 @@ typedef struct dirent {
 DIR *opendir(const char *name);
 int closedir(DIR *dir);
 struct dirent *readdir(DIR *dir);
+
+#endif // MICROPY_INCLUDED_WINDOWS_MSVC_DIRENT_H

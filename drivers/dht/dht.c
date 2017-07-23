@@ -65,7 +65,7 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
 
     // time pulse, should be 80us
     ticks = machine_time_pulse_us(pin, 1, 150);
-    if (ticks == (mp_uint_t)-1) {
+    if ((mp_int_t)ticks < 0) {
         goto timeout;
     }
 
@@ -73,7 +73,7 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     uint8_t *buf = bufinfo.buf;
     for (int i = 0; i < 40; ++i) {
         ticks = machine_time_pulse_us(pin, 1, 100);
-        if (ticks == (mp_uint_t)-1) {
+        if ((mp_int_t)ticks < 0) {
             goto timeout;
         }
         buf[i / 8] = (buf[i / 8] << 1) | (ticks > 48);

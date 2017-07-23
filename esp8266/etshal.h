@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_ETSHAL_H_
-#define _INCLUDED_ETSHAL_H_
+#ifndef MICROPY_INCLUDED_ESP8266_ETSHAL_H
+#define MICROPY_INCLUDED_ESP8266_ETSHAL_H
 
 #include <os_type.h>
 
@@ -42,4 +42,4 @@ uint32_t SPIRead(uint32_t offset, void *buf, uint32_t len);
 uint32_t SPIWrite(uint32_t offset, const void *buf, uint32_t len);
 uint32_t SPIEraseSector(int sector);
 
-#endif // _INCLUDED_ETSHAL_H_
+#endif // MICROPY_INCLUDED_ESP8266_ETSHAL_H

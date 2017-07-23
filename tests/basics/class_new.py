@@ -1,3 +1,10 @@
+try:
+    # If we don't expose object.__new__ (small ports), there's
+    # nothing to test.
+    object.__new__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
 class A:
     def __new__(cls):
         print("A.__new__")

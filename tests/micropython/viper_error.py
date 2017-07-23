@@ -3,12 +3,18 @@
 def test(code):
     try:
         exec(code)
-    except (SyntaxError, ViperTypeError) as e:
+    except (SyntaxError, ViperTypeError, NotImplementedError) as e:
         print(repr(e))
 
 # viper: annotations must be identifiers
 test("@micropython.viper\ndef f(a:1): pass")
 test("@micropython.viper\ndef f() -> 1: pass")
+
+# unknown type
+test("@micropython.viper\ndef f(x:unknown_type): pass")
+
+# too many arguments
+test("@micropython.viper\ndef f(a, b, c, d, e): pass")
 
 # local used before type known
 test("""
@@ -49,6 +55,9 @@ test("@micropython.viper\ndef f(): 1[x]")
 # can't store
 test("@micropython.viper\ndef f(): 1[0] = 1")
 test("@micropython.viper\ndef f(): 1[x] = 1")
+test("@micropython.viper\ndef f(x:int): x[0] = x")
+test("@micropython.viper\ndef f(x:ptr32): x[0] = None")
+test("@micropython.viper\ndef f(x:ptr32): x[x] = None")
 
 # must raise an object
 test("@micropython.viper\ndef f(): raise 1")
@@ -57,3 +66,16 @@ test("@micropython.viper\ndef f(): raise 1")
 test("@micropython.viper\ndef f(x:int): +x")
 test("@micropython.viper\ndef f(x:int): -x")
 test("@micropython.viper\ndef f(x:int): ~x")
+
+# binary op not implemented
+test("@micropython.viper\ndef f(x:int): res = x in x")
+
+# yield (from) not implemented
+test("@micropython.viper\ndef f(): yield")
+test("@micropython.viper\ndef f(): yield from f")
+
+# passing a ptr to a Python function not implemented
+test("@micropython.viper\ndef f(): print(ptr(1))")
+
+# cast of a casting identifier not implemented
+test("@micropython.viper\ndef f(): int(int)")

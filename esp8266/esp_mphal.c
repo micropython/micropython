@@ -33,6 +33,7 @@
 #include "ets_alt_task.h"
 #include "py/obj.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"
 
@@ -130,11 +131,7 @@ void mp_hal_delay_ms(uint32_t delay) {
 
 void ets_event_poll(void) {
     ets_loop_iter();
-    if (MP_STATE_VM(mp_pending_exception) != NULL) {
-        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        nlr_raise(obj);
-    }
+    mp_handle_pending();
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
@@ -209,28 +206,6 @@ void dupterm_task_init() {
 
 void mp_hal_signal_dupterm_input(void) {
     system_os_post(DUPTERM_TASK_ID, 0, 0);
-}
-
-void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
-    const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
-
-    if (pin->phys_port == 16) {
-        // configure GPIO16 as input with output register holding 0
-        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
-        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
-        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); // input
-        WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1)); // out=0
-        return;
-    }
-
-    ETS_GPIO_INTR_DISABLE();
-    PIN_FUNC_SELECT(pin->periph, pin->func);
-    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
-        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
-        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
-    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
-        GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
-    ETS_GPIO_INTR_ENABLE();
 }
 
 // Get pointer to esf_buf bookkeeping structure

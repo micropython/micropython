@@ -32,11 +32,10 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat
 INC += -I.
 INC += -I..
 INC += -I../stmhal
-INC += -I../lib/mp-readline
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
+CFLAGS = $(INC) -Wall -Wpointer-arith -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
@@ -94,11 +93,9 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	gccollect.c \
-	input.c \
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
-	pybstdio.c \
 	)
 
 STM_SRC_S = $(addprefix stmhal/,\
@@ -109,7 +106,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
+	utils/sys_stdio_mphal.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\
@@ -210,7 +207,7 @@ GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C)
+SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(LIB_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=

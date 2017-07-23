@@ -14,4 +14,5 @@ for instructions see :ref:`OTA How-To <wipy_firmware_upgrade>`.
    repl.rst
    blynk.rst
    wlan.rst
+   timer.rst
    reset.rst

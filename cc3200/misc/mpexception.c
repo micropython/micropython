@@ -40,9 +40,6 @@ STATIC void mpexception_set_user_interrupt (int chr, void *data);
 /******************************************************************************
 DECLARE EXPORTED DATA
  ******************************************************************************/
-const char mpexception_os_resource_not_avaliable[]  = "resource not available";
-const char mpexception_os_operation_failed[]        = "the requested operation failed";
-const char mpexception_os_request_not_possible[]    = "the requested operation is not possible";
 const char mpexception_value_invalid_arguments[]    = "invalid argument(s) value";
 const char mpexception_num_type_invalid_arguments[] = "invalid argument(s) num/type";
 const char mpexception_uncaught[]                   = "uncaught exception";

@@ -1,4 +1,9 @@
 # test builtin property
+try:
+    property
+except:
+    print("SKIP")
+    raise SystemExit
 
 # create a property object explicitly
 property()

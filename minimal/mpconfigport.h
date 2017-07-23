@@ -2,6 +2,11 @@
 
 // options to control how Micro Python is built
 
+// You can disable the built-in MicroPython compiler by setting the following
+// config option to 0.  If you do this then you won't get a REPL prompt, but you
+// will still be able to execute pre-compiled scripts, compiled with mpy-cross.
+#define MICROPY_ENABLE_COMPILER     (1)
+
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 #define MICROPY_ALLOC_PATH_MAX      (256)
@@ -51,8 +56,6 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 
 // type definitions for the specific machine
-
-#define BYTES_PER_WORD (4)
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
 

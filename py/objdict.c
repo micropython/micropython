@@ -41,11 +41,11 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
 // This is a helper function to iterate through a dictionary.  The state of
 // the iteration is held in *cur and should be initialised with zero for the
 // first call.  Will return NULL when no more elements are available.
-STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, mp_uint_t *cur) {
-    mp_uint_t max = dict->map.alloc;
+STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
+    size_t max = dict->map.alloc;
     mp_map_t *map = &dict->map;
 
-    for (mp_uint_t i = *cur; i < max; i++) {
+    for (size_t i = *cur; i < max; i++) {
         if (MP_MAP_SLOT_IS_FILLED(map, i)) {
             *cur = i + 1;
             return &(map->table[i]);
@@ -65,7 +65,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
         mp_printf(print, "%q(", self->base.type->name);
     }
     mp_print_str(print, "{");
-    mp_uint_t cur = 0;
+    size_t cur = 0;
     mp_map_elem_t *next = NULL;
     while ((next = dict_iter_next(self, &cur)) != NULL) {
         if (!first) {
@@ -121,7 +121,7 @@ STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             if (MP_UNLIKELY(MP_OBJ_IS_TYPE(lhs_in, &mp_type_ordereddict) && MP_OBJ_IS_TYPE(rhs_in, &mp_type_ordereddict))) {
                 // Iterate through both dictionaries simultaneously and compare keys and values.
                 mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
-                mp_uint_t c1 = 0, c2 = 0;
+                size_t c1 = 0, c2 = 0;
                 mp_map_elem_t *e1 = dict_iter_next(o, &c1), *e2 = dict_iter_next(rhs, &c2);
                 for (; e1 != NULL && e2 != NULL; e1 = dict_iter_next(o, &c1), e2 = dict_iter_next(rhs, &c2)) {
                     if (!mp_obj_equal(e1->key, e2->key) || !mp_obj_equal(e1->value, e2->value)) {
@@ -137,7 +137,7 @@ STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
                     return mp_const_false;
                 }
 
-                mp_uint_t cur = 0;
+                size_t cur = 0;
                 mp_map_elem_t *next = NULL;
                 while ((next = dict_iter_next(o, &cur)) != NULL) {
                     mp_map_elem_t *elem = mp_map_lookup(&rhs->map, next->key, MP_MAP_LOOKUP);
@@ -196,7 +196,7 @@ typedef struct _mp_obj_dict_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_t dict;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_dict_it_t;
 
 STATIC mp_obj_t dict_it_iternext(mp_obj_t self_in) {
@@ -210,8 +210,9 @@ STATIC mp_obj_t dict_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t dict_getiter(mp_obj_t self_in) {
-    mp_obj_dict_it_t *o = m_new_obj(mp_obj_dict_it_t);
+STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_dict_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_dict_it_t *o = (mp_obj_dict_it_t*)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = dict_it_iternext;
     o->dict = self_in;
@@ -249,7 +250,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t iter = mp_getiter(args[1]);
+    mp_obj_t iter = mp_getiter(args[1], NULL);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = MP_OBJ_NULL;
 
@@ -277,18 +278,20 @@ STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_fromkeys_fun_obj, 2, 3, dict_fromkeys);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, MP_ROM_PTR(&dict_fromkeys_fun_obj));
 
-STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp_map_lookup_kind_t lookup_kind) {
-    mp_map_elem_t *elem = mp_map_lookup(self, key, lookup_kind);
+STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_lookup_kind_t lookup_kind) {
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
+    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_map_elem_t *elem = mp_map_lookup(&self->map, args[1], lookup_kind);
     mp_obj_t value;
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
-        if (deflt == MP_OBJ_NULL) {
+        if (n_args == 2) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, key));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, args[1]));
             } else {
                 value = mp_const_none;
             }
         } else {
-            value = deflt;
+            value = args[2];
         }
         if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             elem->value = value;
@@ -303,44 +306,24 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
 }
 
 STATIC mp_obj_t dict_get(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    return dict_get_helper(&self->map,
-                           args[1],
-                           n_args == 3 ? args[2] : MP_OBJ_NULL,
-                           MP_MAP_LOOKUP);
+    return dict_get_helper(n_args, args, MP_MAP_LOOKUP);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
 STATIC mp_obj_t dict_pop(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    return dict_get_helper(&self->map,
-                           args[1],
-                           n_args == 3 ? args[2] : MP_OBJ_NULL,
-                           MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    return dict_get_helper(n_args, args, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
-
 STATIC mp_obj_t dict_setdefault(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    return dict_get_helper(&self->map,
-                           args[1],
-                           n_args == 3 ? args[2] : MP_OBJ_NULL,
-                           MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    return dict_get_helper(n_args, args, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setdefault);
-
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t cur = 0;
+    size_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     if (next == NULL) {
         mp_raise_msg(&mp_type_KeyError, "popitem(): dictionary is empty");
@@ -367,7 +350,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
         if (MP_OBJ_IS_DICT_TYPE(args[1])) {
             // update from other dictionary (make sure other is not self)
             if (args[1] != args[0]) {
-                mp_uint_t cur = 0;
+                size_t cur = 0;
                 mp_map_elem_t *elem = NULL;
                 while ((elem = dict_iter_next((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[1]), &cur)) != NULL) {
                     mp_map_lookup(&self->map, elem->key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = elem->value;
@@ -375,17 +358,17 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
             }
         } else {
             // update from a generic iterable of pairs
-            mp_obj_t iter = mp_getiter(args[1]);
+            mp_obj_t iter = mp_getiter(args[1], NULL);
             mp_obj_t next = MP_OBJ_NULL;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-                mp_obj_t inneriter = mp_getiter(next);
+                mp_obj_t inneriter = mp_getiter(next, NULL);
                 mp_obj_t key = mp_iternext(inneriter);
                 mp_obj_t value = mp_iternext(inneriter);
                 mp_obj_t stop = mp_iternext(inneriter);
                 if (key == MP_OBJ_STOP_ITERATION
                     || value == MP_OBJ_STOP_ITERATION
                     || stop != MP_OBJ_STOP_ITERATION) {
-                    mp_raise_msg(&mp_type_ValueError, "dictionary update sequence has the wrong length");
+                    mp_raise_ValueError("dict update sequence has wrong length");
                 } else {
                     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
                 }
@@ -394,7 +377,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     }
 
     // update the dict with any keyword args
-    for (mp_uint_t i = 0; i < kwargs->alloc; i++) {
+    for (size_t i = 0; i < kwargs->alloc; i++) {
         if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
             mp_map_lookup(&self->map, kwargs->table[i].key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = kwargs->table[i].value;
         }
@@ -423,7 +406,7 @@ typedef struct _mp_obj_dict_view_it_t {
     mp_obj_base_t base;
     mp_dict_view_kind_t kind;
     mp_obj_t dict;
-    mp_uint_t cur;
+    size_t cur;
 } mp_obj_dict_view_it_t;
 
 typedef struct _mp_obj_dict_view_t {
@@ -457,14 +440,15 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
 STATIC const mp_obj_type_t dict_view_it_type = {
     { &mp_type_type },
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = dict_view_it_iternext,
 };
 
-STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
+STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_check_self(MP_OBJ_IS_TYPE(view_in, &dict_view_type));
     mp_obj_dict_view_t *view = MP_OBJ_TO_PTR(view_in);
-    mp_obj_dict_view_it_t *o = m_new_obj(mp_obj_dict_view_it_t);
+    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t*)iter_buf;
     o->base.type = &dict_view_it_type;
     o->kind = view->kind;
     o->dict = view->dict;
@@ -479,7 +463,8 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     bool first = true;
     mp_print_str(print, mp_dict_view_names[self->kind]);
     mp_print_str(print, "([");
-    mp_obj_t self_iter = dict_view_getiter(self_in);
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t self_iter = dict_view_getiter(self_in, &iter_buf);
     mp_obj_t next = MP_OBJ_NULL;
     while ((next = dict_view_it_iternext(self_iter)) != MP_OBJ_STOP_ITERATION) {
         if (!first) {
@@ -574,8 +559,6 @@ const mp_obj_type_t mp_type_dict = {
 };
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
-STATIC const mp_rom_obj_tuple_t ordereddict_base_tuple = {{&mp_type_tuple}, 1, {MP_ROM_PTR(&mp_type_dict)}};
-
 const mp_obj_type_t mp_type_ordereddict = {
     { &mp_type_type },
     .name = MP_QSTR_OrderedDict,
@@ -585,23 +568,23 @@ const mp_obj_type_t mp_type_ordereddict = {
     .binary_op = dict_binary_op,
     .subscr = dict_subscr,
     .getiter = dict_getiter,
-    .bases_tuple = (mp_obj_tuple_t*)(mp_rom_obj_tuple_t*)&ordereddict_base_tuple,
+    .parent = &mp_type_dict,
     .locals_dict = (mp_obj_dict_t*)&dict_locals_dict,
 };
 #endif
 
-void mp_obj_dict_init(mp_obj_dict_t *dict, mp_uint_t n_args) {
+void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args) {
     dict->base.type = &mp_type_dict;
     mp_map_init(&dict->map, n_args);
 }
 
-mp_obj_t mp_obj_new_dict(mp_uint_t n_args) {
+mp_obj_t mp_obj_new_dict(size_t n_args) {
     mp_obj_dict_t *o = m_new_obj(mp_obj_dict_t);
     mp_obj_dict_init(o, n_args);
     return MP_OBJ_FROM_PTR(o);
 }
 
-mp_uint_t mp_obj_dict_len(mp_obj_t self_in) {
+size_t mp_obj_dict_len(mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     return self->map.used;
 }
@@ -614,9 +597,8 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
 }
 
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
-    dict_get_helper(&self->map, key, MP_OBJ_NULL, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_obj_t args[2] = {self_in, key};
+    dict_get_helper(2, args, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     return self_in;
 }
 

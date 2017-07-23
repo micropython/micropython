@@ -27,5 +27,5 @@ async def fade_in_out(LED):
 
 loop = uasyncio.get_event_loop()
 loop.create_task(fade_in_out(LED))
-loop.call_later_ms_(800, fade_in_out(LED2))
+loop.call_later_ms(800, fade_in_out(LED2))
 loop.run_forever()

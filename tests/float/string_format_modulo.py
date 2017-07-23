@@ -44,3 +44,6 @@ print(('%.40g' % 1e-3)[:2])
 print(('%.40g' % 1e-4)[:2])
 
 print("%.0g" % 1) # 0 precision 'g'
+
+print('%.1e' % 9.99) # round up with positive exponent
+print('%.1e' % 0.999) # round up with negative exponent

@@ -42,6 +42,12 @@ mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
+    // Code below assumes non-zero buffer length when computing size with
+    // separator, so handle the zero-length case here.
+    if (bufinfo.len == 0) {
+        return mp_const_empty_bytes;
+    }
+
     vstr_t vstr;
     size_t out_len = bufinfo.len * 2;
     if (n_args > 1) {
@@ -75,7 +81,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     if ((bufinfo.len & 1) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "odd-length string"));
+        mp_raise_ValueError("odd-length string");
     }
     vstr_t vstr;
     vstr_init_len(&vstr, bufinfo.len / 2);
@@ -86,7 +92,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
         if (unichar_isxdigit(hex_ch)) {
             hex_byte += unichar_xdigit_value(hex_ch);
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "non-hex digit found"));
+            mp_raise_ValueError("non-hex digit found");
         }
         if (i & 1) {
             hex_byte <<= 4;
@@ -112,7 +118,7 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
         vstr_init_len(&vstr, 0);
     }
     else {
-        vstr_init_len(&vstr, ((bufinfo.len / 4) * 3) - ((in[bufinfo.len-1] == '=') ? ((in[bufinfo.len-2] == '=') ? 2 : 1 ) : 0)); 
+        vstr_init_len(&vstr, ((bufinfo.len / 4) * 3) - ((in[bufinfo.len-1] == '=') ? ((in[bufinfo.len-2] == '=') ? 2 : 1 ) : 0));
     }
     byte *out = (byte*)vstr.buf;
     for (mp_uint_t i = bufinfo.len; i; i -= 4) {

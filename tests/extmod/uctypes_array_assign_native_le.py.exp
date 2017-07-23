@@ -6,8 +6,6 @@ True
 0x11
 0x1122
 0x11223344
-0x11223344
-0x11223344
 IndexError
 TypeError
 TypeError

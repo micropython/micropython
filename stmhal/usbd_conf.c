@@ -30,7 +30,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include STM32_HAL_H
 #include "usbd_core.h"
 #include "py/obj.h"
 #include "irq.h"

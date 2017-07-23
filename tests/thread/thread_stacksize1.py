@@ -38,6 +38,9 @@ _thread.stack_size(sz)
 for i in range(n_thread):
     _thread.start_new_thread(thread_entry, ())
 
+# reset stack size to default (for subsequent scripts on baremetal)
+_thread.stack_size()
+
 # busy wait for threads to finish
 while n_finished < n_thread:
     pass

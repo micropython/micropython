@@ -23,13 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
-#define __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__
 
 #include "py/mpstate.h"
 
 void mp_hal_init(void);
 
 void mp_hal_set_interrupt_char(int c);
-
-#endif // __MICROPY_INCLUDED_PIC16BIT_PIC16BIT_MPHAL_H__

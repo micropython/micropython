@@ -1,7 +1,11 @@
 try:
-    import ubinascii as binascii
+    try:
+        import ubinascii as binascii
+    except ImportError:
+        import binascii
 except ImportError:
-    import binascii
+    print("SKIP")
+    raise SystemExit
 
 print(binascii.b2a_base64(b''))
 print(binascii.b2a_base64(b'f'))

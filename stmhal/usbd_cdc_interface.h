@@ -1,6 +1,8 @@
 /*
  * This file is part of the Micro Python project, http://micropython.org/
  */
+#ifndef MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
+#define MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
 
 /**
   ******************************************************************************
@@ -32,7 +34,6 @@
 extern const USBD_CDC_ItfTypeDef USBD_CDC_fops;
 
 int USBD_CDC_IsConnected(void);
-void USBD_CDC_SetInterrupt(int chr);
 
 int USBD_CDC_TxHalfEmpty(void);
 int USBD_CDC_Tx(const uint8_t *buf, uint32_t len, uint32_t timeout);
@@ -40,3 +41,5 @@ void USBD_CDC_TxAlways(const uint8_t *buf, uint32_t len);
 
 int USBD_CDC_RxNum(void);
 int USBD_CDC_Rx(uint8_t *buf, uint32_t len, uint32_t timeout);
+
+#endif // MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H

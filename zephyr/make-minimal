@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# This is a wrapper for make to build a "minimal" Zephyr port.
+# It should be run just like make (i.e. extra vars can be passed on the
+# command line, etc.), e.g.:
+#
+# ./make-minimal BOARD=qemu_cortex_m3
+# ./make-minimal BOARD=qemu_cortex_m3 run
+#
+
+make \
+    CONF_FILE=prj_minimal.conf \
+    CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
+    FROZEN_DIR= \
+    QEMU_NET=0 \
+    "$@"

@@ -5,9 +5,9 @@ from flashbdev import bdev
 
 try:
     if bdev:
-        vfs = uos.VfsFat(bdev, "")
+        uos.mount(bdev, '/')
 except OSError:
     import inisetup
-    vfs = inisetup.setup()
+    inisetup.setup()
 
 gc.collect()

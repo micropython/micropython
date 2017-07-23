@@ -222,7 +222,7 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     char prefix_buf[4];
     char *prefix = prefix_buf;
 
-    if (mp_obj_int_sign(x) > 0) {
+    if (mp_obj_int_sign(x) >= 0) {
         if (flags & PF_FLAG_SHOW_SIGN) {
             *prefix++ = '+';
         } else if (flags & PF_FLAG_SPACE_SIGN) {
@@ -354,9 +354,6 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
     }
 
     int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
-    if (len < 0) {
-        len = 0;
-    }
 
     char *s = buf;
 

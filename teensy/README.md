@@ -18,7 +18,7 @@ cd teensy
 ARDUINO=~/arduino-1.0.5 make
 ```
 
-To upload micropython to the Teensy 3.1.
+To upload MicroPython to the Teensy 3.1.
 
 Press the Program button on the Teensy 3.1
 ```bash

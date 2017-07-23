@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_URE
 
@@ -69,7 +70,8 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
         // no match for this group
         return mp_const_none;
     }
-    return mp_obj_new_str(start, self->caps[no * 2 + 1] - start, false);
+    return mp_obj_new_str_of_type(mp_obj_get_type(self->str),
+        (const byte*)start, self->caps[no * 2 + 1] - start);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
@@ -96,7 +98,7 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
-    mp_uint_t len;
+    size_t len;
     subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
@@ -128,7 +130,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
-    mp_uint_t len;
+    size_t len;
+    const mp_obj_type_t *str_type = mp_obj_get_type(args[1]);
     subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
@@ -150,7 +153,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
-        mp_obj_t s = mp_obj_new_str(subj.begin, caps[0] - subj.begin, false);
+        mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, caps[0] - subj.begin);
         mp_obj_list_append(retval, s);
         if (self->re.sub > 0) {
             mp_not_implemented("Splitting with sub-captures");
@@ -161,7 +164,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_obj_t s = mp_obj_new_str(subj.begin, subj.end - subj.begin, false);
+    mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, subj.end - subj.begin);
     mp_obj_list_append(retval, s);
     return retval;
 }

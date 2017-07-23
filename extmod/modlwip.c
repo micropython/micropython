@@ -1,10 +1,11 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Galen Hazelwood
+ * Copyright (c) 2015-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +36,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 
 #include "lwip/init.h"
 #include "lwip/timers.h"
@@ -372,7 +373,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 }
 
 /*******************************************************************************/
-// Functions for socket send/recieve operations. Socket send/recv and friends call
+// Functions for socket send/receive operations. Socket send/recv and friends call
 // these to do the work.
 
 // Helper function for send/sendto to handle UDP packets.
@@ -731,7 +732,9 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
 
     // accept incoming connection
     if (socket->incoming.connection == NULL) {
-        if (socket->timeout != -1) {
+        if (socket->timeout == 0) {
+            mp_raise_OSError(MP_EAGAIN);
+        } else if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
                 mp_hal_delay_ms(100);
                 if (socket->incoming.connection != NULL) break;
@@ -799,12 +802,12 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         case MOD_NETWORK_SOCK_STREAM: {
             if (socket->state != STATE_NEW) {
                 if (socket->state == STATE_CONNECTED) {
-                    mp_raise_OSError(MP_EALREADY);
+                    mp_raise_OSError(MP_EISCONN);
                 } else {
-                    mp_raise_OSError(MP_EINPROGRESS);
+                    mp_raise_OSError(MP_EALREADY);
                 }
             }
-            // Register our recieve callback.
+            // Register our receive callback.
             tcp_recv(socket->pcb.tcp, _lwip_tcp_recv);
             socket->state = STATE_CONNECTING;
             err = tcp_connect(socket->pcb.tcp, &dest, port, _lwip_tcp_connected);
@@ -821,7 +824,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                     if (socket->state != STATE_CONNECTING) break;
                 }
                 if (socket->state == STATE_CONNECTING) {
-                    mp_raise_OSError(MP_ETIMEDOUT);
+                    mp_raise_OSError(MP_EINPROGRESS);
                 }
             } else {
                 while (socket->state == STATE_CONNECTING) {
@@ -1142,8 +1145,11 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= MP_STREAM_POLL_WR;
         }
 
-        if (flags & MP_STREAM_POLL_HUP && socket->state == STATE_PEER_CLOSED) {
-            ret |= MP_STREAM_POLL_HUP;
+        if (socket->state == STATE_PEER_CLOSED) {
+            // Peer-closed socket is both readable and writable: read will
+            // return EOF, write - error. Without this poll will hang on a
+            // socket which was closed by peer.
+            ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
         }
 
     } else {
@@ -1172,6 +1178,7 @@ STATIC const mp_map_elem_t lwip_socket_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&lwip_socket_makefile_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
 };
@@ -1261,9 +1268,13 @@ STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) 
 }
 
 // lwip.getaddrinfo
-STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
-    mp_uint_t hlen;
-    const char *host = mp_obj_str_get_data(host_in, &hlen);
+STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
+    if (n_args > 2) {
+        mp_warning("getaddrinfo constraints not supported");
+    }
+
+    mp_obj_t host_in = args[0], port_in = args[1];
+    const char *host = mp_obj_str_get_str(host_in);
     mp_int_t port = mp_obj_get_int(port_in);
 
     getaddrinfo_state_t state;
@@ -1298,7 +1309,7 @@ STATIC mp_obj_t lwip_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     tuple->items[4] = netutils_format_inet_addr((uint8_t*)&state.ipaddr, port, NETUTILS_BIG);
     return mp_obj_new_list(1, (mp_obj_t*)&tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_getaddrinfo_obj, lwip_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_getaddrinfo_obj, 2, 6, lwip_getaddrinfo);
 
 // Debug functions
 

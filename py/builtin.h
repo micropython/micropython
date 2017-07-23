@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_BUILTIN_H__
-#define __MICROPY_INCLUDED_PY_BUILTIN_H__
+#ifndef MICROPY_INCLUDED_PY_BUILTIN_H
+#define MICROPY_INCLUDED_PY_BUILTIN_H
 
 #include "py/obj.h"
 
@@ -53,6 +53,7 @@ MP_DECLARE_CONST_FUN_OBJ_3(mp_builtin_setattr_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(mp_builtin_globals_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_hash_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_hex_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_id_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_builtin_isinstance_obj);
@@ -72,7 +73,6 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
 // Defined by a port, but declared here for simplicity
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
@@ -118,4 +118,6 @@ extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
 
-#endif // __MICROPY_INCLUDED_PY_BUILTIN_H__
+extern const char *MICROPY_PY_BUILTINS_HELP_TEXT;
+
+#endif // MICROPY_INCLUDED_PY_BUILTIN_H

@@ -26,8 +26,6 @@
 
 #include <string.h>
 
-#include STM32_HAL_H
-
 #include "py/obj.h"
 #include "rng.h"
 

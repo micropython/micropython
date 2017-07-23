@@ -1,7 +1,7 @@
 .. _tutorial-index:
 
-MicroPython tutorial
-====================
+MicroPython tutorial for the pyboard
+====================================
 
 This tutorial is intended to get you started with your pyboard.
 All you need is a pyboard and a micro-USB cable to connect it to
@@ -35,6 +35,7 @@ Tutorials requiring extra components
    fading_led.rst
    lcd_skin.rst
    amp_skin.rst
+   lcd160cr_skin.rst
 
 Tips, tricks and useful things to know
 --------------------------------------

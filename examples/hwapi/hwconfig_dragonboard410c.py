@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import Pin, Signal
 
 # 96Boards/Qualcomm DragonBoard 410c
 #
@@ -13,10 +13,10 @@ from machine import Pin
 # echo -n "gpio_keys" >/sys/class/input/input1/device/driver/unbind
 
 # User LED 1 on gpio21
-LED = Pin(21, Pin.OUT)
+LED = Signal(Pin(21, Pin.OUT))
 
 # User LED 2 on gpio120
-LED2 = Pin(120, Pin.OUT)
+LED2 = Signal(Pin(120, Pin.OUT))
 
 # Button S3 on gpio107
 BUTTON = Pin(107, Pin.IN)

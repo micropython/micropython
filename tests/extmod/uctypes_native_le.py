@@ -2,11 +2,15 @@
 # Codepaths for packed vs native structures are different. This test only works
 # on little-endian machine (no matter if 32 or 64 bit).
 import sys
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 if sys.byteorder != "little":
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 desc = {

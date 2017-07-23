@@ -66,7 +66,7 @@ index for PDF, just the same as for HTML.
 search_auto_exclude
 -------------------
 
-Even if you exclude soem documents from toctree:: using only::
+Even if you exclude some documents from toctree:: using only::
 directive, they will be indexed for full-text search, so user may
 find them and get confused. This plugin follows very simple idea
 that if you didn't include some documents in the toctree, then

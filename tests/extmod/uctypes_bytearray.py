@@ -1,4 +1,8 @@
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 desc = {
     "arr": (uctypes.ARRAY | 0, uctypes.UINT8 | 2),

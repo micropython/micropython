@@ -14,7 +14,6 @@ def f():
     print(d[0], d[1], d[2], d[3], d[4])
 
     # set comprehension
-
-    print({a for a in range(5)})
+    # see set_comprehension.py
 
 f()

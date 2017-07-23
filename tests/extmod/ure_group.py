@@ -2,8 +2,12 @@
 
 try:
     import ure as re
-except:
-    import re
+except ImportError:
+    try:
+        import re
+    except ImportError:
+        print("SKIP")
+        raise SystemExit
 
 def print_groups(match):
     print('----')

@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_STMHAL_DMA_H__
-#define __MICROPY_INCLUDED_STMHAL_DMA_H__
+#ifndef MICROPY_INCLUDED_STMHAL_DMA_H
+#define MICROPY_INCLUDED_STMHAL_DMA_H
 
 typedef struct _dma_descr_t dma_descr_t;
 
@@ -45,6 +44,7 @@ extern const dma_descr_t dma_DAC_2_TX;
 extern const dma_descr_t dma_SPI_3_TX;
 extern const dma_descr_t dma_I2C_1_TX;
 extern const dma_descr_t dma_I2C_2_TX;
+extern const dma_descr_t dma_SDMMC_2_RX;
 extern const dma_descr_t dma_SPI_1_RX;
 extern const dma_descr_t dma_SPI_5_RX;
 extern const dma_descr_t dma_SDIO_0_RX;
@@ -53,6 +53,7 @@ extern const dma_descr_t dma_SPI_5_TX;
 extern const dma_descr_t dma_SPI_4_TX;
 extern const dma_descr_t dma_SPI_6_TX;
 extern const dma_descr_t dma_SPI_1_TX;
+extern const dma_descr_t dma_SDMMC_2_TX;
 extern const dma_descr_t dma_SPI_6_RX;
 extern const dma_descr_t dma_SDIO_0_TX;
 
@@ -99,4 +100,4 @@ void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
 void dma_idle_handler(int controller);
 
-#endif //__MICROPY_INCLUDED_STMHAL_DMA_H__
+#endif // MICROPY_INCLUDED_STMHAL_DMA_H

@@ -1,13 +1,17 @@
 try:
-    import ubinascii as binascii
+    try:
+        import ubinascii as binascii
+    except ImportError:
+        import binascii
 except ImportError:
-    import binascii
+    print("SKIP")
+    raise SystemExit
+
 try:
     binascii.crc32
 except AttributeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print(hex(binascii.crc32(b'The quick brown fox jumps over the lazy dog')))
 print(hex(binascii.crc32(b'\x00' * 32)))
