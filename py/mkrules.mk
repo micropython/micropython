@@ -156,7 +156,7 @@ lib $(LIBMICROPYTHON): $(OBJ)
 	$(AR) rcs $(LIBMICROPYTHON) $^
 	$(LIBMICROPYTHON_EXTRA_CMD)
 
-clean::
+clean:
 	-$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
