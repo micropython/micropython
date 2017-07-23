@@ -22,7 +22,7 @@ processing power, at the expense of current consumption::
     160000000
 
 You can change to the higher frequency just while your code does the heavy
-processing and then change back when its finished.
+processing and then change back when it's finished.
 
 Deep-sleep mode
 ---------------
