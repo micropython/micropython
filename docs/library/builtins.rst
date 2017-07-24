@@ -29,7 +29,14 @@ Functions and types
 
 .. function:: classmethod()
 
-.. function:: compile()
+.. function:: compile(source, filename, mode[, flags[, dont_inherit]])
+
+   Enable it in ```mpconfigport.h``` by adding the following. This will built the compile-function into the micropython interpreter:
+   
+   .. code-block:: c
+      #define MICROPY_PY_BUILTINS_COMPILE (1)
+      
+   ```source``` is the string of python-code you want to compile, ```filename``` a string of an arbitrary filename (to be used for error-output), ```mode``` can be "eval", "exec" or "single" and determines the compilation-mode (used this way in CPython, please confirm for micropython).
 
 .. class:: complex()
 

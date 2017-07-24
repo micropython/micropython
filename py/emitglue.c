@@ -35,7 +35,7 @@
 #include "py/runtime0.h"
 #include "py/bc.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define WRITE_CODE (1)
 #define DEBUG_printf DEBUG_printf
@@ -46,7 +46,7 @@
 #endif
 
 #if MICROPY_DEBUG_PRINTERS
-mp_uint_t mp_verbose_flag = 0;
+mp_uint_t mp_verbose_flag __attribute__ ((aligned(4))) = 0;
 #endif
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void) {

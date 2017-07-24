@@ -157,7 +157,7 @@ lib $(LIBMICROPYTHON): $(OBJ)
 	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:
-	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
+	-$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
 print-cfg:

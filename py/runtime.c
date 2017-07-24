@@ -44,7 +44,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #define DEBUG_OP_printf(...) DEBUG_printf(__VA_ARGS__)
@@ -63,6 +63,7 @@ void mp_init(void) {
 
     // no pending exceptions to start with
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+
     #if MICROPY_ENABLE_SCHEDULER
     MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
     MP_STATE_VM(sched_sp) = 0;
@@ -85,7 +86,6 @@ void mp_init(void) {
 #ifdef MICROPY_PORT_INIT_FUNC
     MICROPY_PORT_INIT_FUNC;
 #endif
-
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
 
@@ -597,6 +597,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
 
     // do the call
     if (type->call != NULL) {
+        DEBUG_printf ("Trying to call address: %8p\n", type->call );
         return type->call(fun_in, n_args, n_kw, args);
     }
 

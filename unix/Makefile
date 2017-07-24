@@ -114,8 +114,13 @@ LIBFFI_CFLAGS_MOD := -I$(shell ls -1d ../lib/libffi/build_dir/out/lib/libffi-*/i
   LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib/libffi.a
  endif
 else
-LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
-LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
+  ifeq ($(UNAME_S),Darwin)
+    LIBFFI_CFLAGS_MOD := $(shell export PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig/;pkg-config --cflags libffi)
+    LIBFFI_LDFLAGS_MOD := $(shell export PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig/;pkg-config --libs libffi)
+  else
+    LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
+    LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
+  endif
 endif
 
 ifeq ($(UNAME_S),Linux)
