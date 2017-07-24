@@ -28,6 +28,19 @@ try:
 except IndexError:
     print("IndexError")
 
+r = re.compile(r"\n")
+m = r.match("\n")
+print(m.group(0))
+m = r.match("\\")
+print(m)
+r = re.compile(r"[\n-\r]")
+m = r.match("\n")
+print(m.group(0))
+r = re.compile(r"[\]]")
+m = r.match("]")
+print(m.group(0))
+print("===")
+
 r = re.compile("[a-cu-z]")
 m = r.match("a")
 print(m.group(0))
