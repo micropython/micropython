@@ -44,7 +44,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #define DEBUG_OP_printf(...) DEBUG_printf(__VA_ARGS__)
