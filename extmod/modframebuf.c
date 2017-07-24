@@ -415,14 +415,30 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
 
-STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_framebuf_t *source = MP_OBJ_TO_PTR(args[1]);
-    mp_int_t x = mp_obj_get_int(args[2]);
-    mp_int_t y = mp_obj_get_int(args[3]);
-    mp_int_t key = -1;
-    if (n_args > 4) {
-        key = mp_obj_get_int(args[4]);
+STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_self, ARG_source, ARG_x, ARG_y, ARG_key, ARG_remap };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_self, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_source, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_x, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_y, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_key, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_remap, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_framebuf_t *self = args[ARG_self].u_obj;
+    mp_obj_framebuf_t *source = args[ARG_source].u_obj;
+    mp_int_t x = args[ARG_x].u_int;
+    mp_int_t y = args[ARG_y].u_int;
+    mp_int_t key = args[ARG_key].u_int;
+
+    size_t remap_size = 0;
+    mp_obj_t *remap;
+    if (args[ARG_remap].u_obj != MP_OBJ_NULL) {
+        mp_obj_get_array(args[ARG_remap].u_obj, &remap_size, &remap);
     }
 
     if (
@@ -449,6 +465,9 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
             color = getpixel(source, cx1, y1);
             if (color != (uint32_t)key) {
+                if (color < remap_size) {
+                    color = mp_obj_get_int(remap[color]);
+                }
                 setpixel(self, cx0, y0, color);
             }
             ++cx1;
@@ -457,7 +476,7 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_blit_obj, 4, 5, framebuf_blit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(framebuf_blit_obj, 4, framebuf_blit);
 
 STATIC mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ystep_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
