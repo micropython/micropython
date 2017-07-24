@@ -128,7 +128,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     }
 
     ret = mbedtls_ssl_config_defaults(&o->conf,
-                    MBEDTLS_SSL_IS_CLIENT,
+                    args->server_side.u_bool ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
                     MBEDTLS_SSL_TRANSPORT_STREAM,
                     MBEDTLS_SSL_PRESET_DEFAULT);
     if (ret != 0) {
@@ -172,15 +172,11 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         assert(ret == 0);
     }
 
-    if (args->server_side.u_bool) {
-        assert(0);
-    } else {
-        while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
-            if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-                //assert(0);
-                printf("mbedtls_ssl_handshake error: -%x\n", -ret);
-                mp_raise_OSError(MP_EIO);
-            }
+    while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
+        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+            //assert(0);
+            printf("mbedtls_ssl_handshake error: -%x\n", -ret);
+            mp_raise_OSError(MP_EIO);
         }
     }
 
