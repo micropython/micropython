@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/obj.h"

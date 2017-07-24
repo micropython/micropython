@@ -28,7 +28,6 @@
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
