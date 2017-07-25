@@ -77,8 +77,7 @@ int null_entropy_func(void *data, unsigned char *output, size_t len) {
 }
 
 int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
-    mp_obj_ssl_socket_t *o = (mp_obj_ssl_socket_t*)ctx;
-    mp_obj_t sock = o->sock;
+    mp_obj_t sock = *(mp_obj_t*)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_WRITE);
     int err;
@@ -95,8 +94,7 @@ int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 }
 
 int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
-    mp_obj_ssl_socket_t *o = (mp_obj_ssl_socket_t*)ctx;
-    mp_obj_t sock = o->sock;
+    mp_obj_t sock = *(mp_obj_t*)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_READ);
     int err;
@@ -161,7 +159,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     }
 
     o->sock = sock;
-    mbedtls_ssl_set_bio(&o->ssl, o, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
+    mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
     if (args->key.u_obj != MP_OBJ_NULL) {
         size_t key_len;
@@ -210,8 +208,8 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         return 0;
     }
     if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
-        *errcode = EWOULDBLOCK;
-        return 0;
+        *errcode = MP_EWOULDBLOCK;
+        return MP_STREAM_ERROR;
     }
     if (ret >= 0) {
         return ret;
@@ -228,8 +226,7 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
         return ret;
     }
     if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
-        *errcode = EWOULDBLOCK;
-        return 0;
+        ret = MP_EWOULDBLOCK;
     }
     *errcode = ret;
     return MP_STREAM_ERROR;
