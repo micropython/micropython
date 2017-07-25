@@ -237,11 +237,13 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
     switch (o->format) {
         case FRAMEBUF_MVLSB:
         case FRAMEBUF_RGB565:
-        case FRAMEBUF_GS4_HMSB:
             break;
         case FRAMEBUF_MHLSB:
         case FRAMEBUF_MHMSB:
             o->stride = (o->stride + 7) & ~7;
+            break;
+        case FRAMEBUF_GS4_HMSB:
+            o->stride = (o->stride + 1) & ~1;
             break;
         default:
             mp_raise_ValueError("invalid format");
