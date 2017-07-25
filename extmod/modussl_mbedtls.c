@@ -207,12 +207,11 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         // end of stream
         return 0;
     }
-    if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
-        *errcode = MP_EWOULDBLOCK;
-        return MP_STREAM_ERROR;
-    }
     if (ret >= 0) {
         return ret;
+    }
+    if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
+        ret = MP_EWOULDBLOCK;
     }
     *errcode = ret;
     return MP_STREAM_ERROR;
