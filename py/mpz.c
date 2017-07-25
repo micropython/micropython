@@ -946,10 +946,6 @@ bool mpz_is_pos(const mpz_t *z) {
     return z->len > 0 && z->neg == 0;
 }
 
-bool mpz_is_neg(const mpz_t *z) {
-    return z->len > 0 && z->neg != 0;
-}
-
 bool mpz_is_odd(const mpz_t *z) {
     return z->len > 0 && (z->dig[0] & 1) != 0;
 }

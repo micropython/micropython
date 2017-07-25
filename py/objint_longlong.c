@@ -191,6 +191,13 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
         case MP_BINARY_OP_POWER:
         case MP_BINARY_OP_INPLACE_POWER: {
+            if (rhs_val < 0) {
+                #if MICROPY_PY_BUILTINS_FLOAT
+                return mp_obj_float_binary_op(op, lhs_val, rhs_in);
+                #else
+                mp_raise_ValueError("negative power with no float support");
+                #endif
+            }
             long long ans = 1;
             while (rhs_val > 0) {
                 if (rhs_val & 1) {

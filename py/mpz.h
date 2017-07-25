@@ -112,6 +112,7 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
 void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf);
 
 static inline bool mpz_is_zero(const mpz_t *z) { return z->len == 0; }
+static inline bool mpz_is_neg(const mpz_t *z) { return z->len != 0 && z->neg != 0; }
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
 
 void mpz_abs_inpl(mpz_t *dest, const mpz_t *z);
