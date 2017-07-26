@@ -74,10 +74,10 @@
 //|     print(pulses)
 //|
 //|     # Clear the rest
-//|     pulse_in.clear()
+//|     pulses.clear()
 //|
 //|     # Resume with an 80 microsecond active pulse
-//|     pulse_in.resume(80)
+//|     pulses.resume(80)
 //|
 STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
