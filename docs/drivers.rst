@@ -50,6 +50,8 @@ Drivers provide easy access to sensors and other chips without requiring a
 knowledge of the interface details of the chip itself.
 
 .. toctree::
+    NeoPixel <https://circuitpython.readthedocs.io/projects/neopixel/en/latest/>
+    SimpleIO <https://circuitpython.readthedocs.io/projects/simpleio/en/latest/>
     RGB Displays <http://micropython-rgb.readthedocs.io/>
     Analog-to-digital converters: ADS1015 and ADS1115 <http://micropython-ads1015.readthedocs.io/>
     DS3231 Real-time Clock (Precision RTC) <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>
