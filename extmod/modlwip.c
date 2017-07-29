@@ -35,6 +35,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/objstr.h"
 
 #include "lib/netutils/netutils.h"
 
@@ -45,6 +46,8 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 #include "lwip/tcp_impl.h"
+#include "lwip/inet.h"
+#include "lwip/igmp.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -216,6 +219,23 @@ static const int error_lookup_table[] = {
 #endif
 
 /*******************************************************************************/
+
+#if LWIP_IGMP
+// Options and types for UDP multicast traffic handling
+
+#define IP_ADD_MEMBERSHIP  3
+#define IP_DROP_MEMBERSHIP 4
+#define IP_MULTICAST_TTL   5
+#define IP_MULTICAST_IF    6
+#define IP_MULTICAST_LOOP  7
+
+
+typedef struct ip_mreq {
+    struct in_addr imr_multiaddr; // IP multicast address of group
+    struct in_addr imr_interface; // local IP address of interface
+} ip_mreq;
+#endif /* LWIP_IGMP */
+
 // The socket object provided by lwip.socket.
 
 #define MOD_NETWORK_AF_INET (2)
@@ -1066,12 +1086,28 @@ STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblocking);
 
 STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
+
+    // To realize behaviour close to regular lwip / sockets.c,
+    // options passed as args are assigned as follows:
+    //
+    // level (int) - protocol level at which the option resides
+    // opt (int) - specifies the option to be set
+    // optval (int/struct) - the value of the option to be set. May be of type
+    //                       int or string of byte(s), depending on option.
+    //
+    // To support passing of IP addresses as optval,
+    // a lwip_inet_aton(mp_obj_t addr_in) function has been added.
+
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
 
+    int level = mp_obj_get_int(args[1]);
     int opt = mp_obj_get_int(args[2]);
+    mp_obj_t optval = args[3];
+    size_t optval_len;
+
     if (opt == 20) {
-        if (args[3] == mp_const_none) {
+        if (optval == mp_const_none) {
             socket->callback = MP_OBJ_NULL;
         } else {
             socket->callback = args[3];
@@ -1079,21 +1115,103 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
-    // Integer options
-    mp_int_t val = mp_obj_get_int(args[3]);
-    switch (opt) {
+    // Switch through option levels
+    // Right now, only SOL_SOCKET and IPPROTO_IP are implemented
+    switch (level) {
+
+      case SOL_SOCKET:
+      // Switch through SOL_SOCKET options
+      // Only SOF_REUSEADDR is implemented yet
+        switch (opt) {
         case SOF_REUSEADDR:
-            // Options are common for UDP and TCP pcb's.
-            if (val) {
-                ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
-            } else {
-                ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
-            }
-            break;
+
+          if (mp_obj_get_int(optval)) {
+              ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+          } else {
+              printf("SOF_REUSEADDR NOT TRUE \n");
+              ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
+          }
+          break;
+
+          break;
         default:
-            printf("Warning: lwip.setsockopt() not implemented\n");
-    }
-    return mp_const_none;
+          printf("Warning: lwip.setsockopt() SOL_SOCKET option not implemented\n");
+
+        }  /* switch (opt) */
+        break;
+
+      case IPPROTO_IP:
+      // Switch through IPPROTO_IP options
+      // Only IGMP cases are implemented yet
+        switch (opt) {
+#if LWIP_IGMP
+        case IP_MULTICAST_TTL:
+          socket->pcb.udp->ttl = mp_obj_get_int(optval);
+          break;
+
+        case IP_MULTICAST_LOOP:
+          if (mp_obj_get_int(optval)) {
+            udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) | UDP_FLAGS_MULTICAST_LOOP);
+          } else {
+            udp_setflags(socket->pcb.udp, udp_flags(socket->pcb.udp) & ~UDP_FLAGS_MULTICAST_LOOP);
+          }
+          break;
+
+        case IP_MULTICAST_IF:;
+          const char *mif_ip = mp_obj_str_get_data(optval, &optval_len);
+          struct in_addr *mif_ip_struct = (struct in_addr *)mif_ip;
+          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, mif_ip_struct);
+          break;
+
+        case IP_ADD_MEMBERSHIP:;
+
+          // optval is a string of 8 bytes that carry the multicast IP and the interface
+          // IP to be set. In order to stay close to lwip's syntax, optval is cast to
+          // an ip_mreq struct that can hold 2 separate IPs.
+
+          const char *ips_add = mp_obj_str_get_data(optval, &optval_len);
+          struct ip_mreq *imr_add = (struct ip_mreq *)ips_add;
+
+          ip_addr_t if_addr_add;
+          ip_addr_t multi_addr_add;
+          inet_addr_to_ipaddr(&if_addr_add, &imr_add->imr_interface);
+          inet_addr_to_ipaddr(&multi_addr_add, &imr_add->imr_multiaddr);
+
+          if (igmp_joingroup(&if_addr_add, &multi_addr_add) != 0) {
+              mp_raise_OSError(MP_EIO);
+          }
+
+          inet_addr_to_ipaddr(&socket->pcb.udp->multicast_ip, &imr_add->imr_multiaddr);
+
+          break;
+
+        case IP_DROP_MEMBERSHIP:;
+          const char *ips_drop = mp_obj_str_get_data(optval, &optval_len);
+          struct ip_mreq *imr_drop = (struct ip_mreq *)ips_drop;
+
+          ip_addr_t if_addr_drop;
+          ip_addr_t multi_addr_drop;
+          inet_addr_to_ipaddr(&if_addr_drop, &imr_drop->imr_interface);
+          inet_addr_to_ipaddr(&multi_addr_drop, &imr_drop->imr_multiaddr);
+
+          if (igmp_leavegroup(&if_addr_drop, &multi_addr_drop) != 0) {
+            mp_raise_OSError(MP_EIO);
+          }
+          break;
+
+        default:
+          printf("Warning: lwip.setsockopt() IPPROTO_IP option not implemented\n");
+
+        } /* switch (opt) */
+        break;
+
+      default:
+        printf("Warning: lwip.setsockopt() level not implemented\n");
+
+#endif /* LWIP_IGMP */
+        }
+
+return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
 
@@ -1311,6 +1429,18 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_getaddrinfo_obj, 2, 6, lwip_getaddrinfo);
 
+// Function that enables passing IP addresses from python,
+// e.g. to be used in socket.setsockopt()
+STATIC mp_obj_t lwip_inet_aton(mp_obj_t addr_in) {
+    vstr_t vstr;
+    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
+    netutils_parse_ipv4_addr(addr_in, ip, NETUTILS_BIG);
+    vstr_init_len(&vstr, 4);
+    vstr.buf = (char *)ip;
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(lwip_inet_aton_obj, lwip_inet_aton);
+
 // Debug functions
 
 STATIC mp_obj_t lwip_print_pcbs() {
@@ -1327,6 +1457,7 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&mod_lwip_callback_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&lwip_getaddrinfo_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_print_pcbs), (mp_obj_t)&lwip_print_pcbs_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_inet_aton), (mp_obj_t)&lwip_inet_aton_obj },
     // objects
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&lwip_socket_type },
 #ifdef MICROPY_PY_LWIP_SLIP
@@ -1340,8 +1471,15 @@ STATIC const mp_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_DGRAM) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_RAW) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(1) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SOL_SOCKET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SOF_REUSEADDR) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
+  	{ MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_TTL) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_LOOP), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_LOOP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_MULTICAST_IF), MP_OBJ_NEW_SMALL_INT(IP_MULTICAST_IF) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_DROP_MEMBERSHIP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_INADDR_ANY), MP_OBJ_NEW_SMALL_INT(INADDR_ANY) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);
