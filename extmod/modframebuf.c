@@ -549,7 +549,7 @@ STATIC const mp_obj_type_t mp_type_framebuf = {
     .name = MP_QSTR_FrameBuffer,
     .make_new = framebuf_make_new,
     .buffer_p = { .get_buffer = framebuf_get_buffer },
-    .locals_dict = (mp_obj_t)&framebuf_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&framebuf_locals_dict,
 };
 
 // this factory function is provided for backwards compatibility with old FrameBuffer1 class
