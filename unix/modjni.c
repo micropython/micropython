@@ -168,9 +168,9 @@ STATIC mp_obj_t jclass_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     return call_method(self->cls, NULL, methods, true, n_args, args);
 }
 
-STATIC const mp_map_elem_t jclass_locals_dict_table[] = {
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_get), (mp_obj_t)&ffivar_get_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_set), (mp_obj_t)&ffivar_set_obj },
+STATIC const mp_rom_map_elem_t jclass_locals_dict_table[] = {
+//    { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&ffivar_get_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&ffivar_set_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(jclass_locals_dict, jclass_locals_dict_table);
@@ -181,7 +181,7 @@ STATIC const mp_obj_type_t jclass_type = {
     .print = jclass_print,
     .attr = jclass_attr,
     .call = jclass_call,
-    .locals_dict = (mp_obj_t)&jclass_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&jclass_locals_dict,
 };
 
 STATIC mp_obj_t new_jclass(jclass jc) {
@@ -331,7 +331,7 @@ STATIC const mp_obj_type_t jobject_type = {
     .attr = jobject_attr,
     .subscr = jobject_subscr,
     .getiter = subscr_getiter,
-//    .locals_dict = (mp_obj_t)&jobject_locals_dict,
+//    .locals_dict = (mp_obj_dict_t*)&jobject_locals_dict,
 };
 
 STATIC mp_obj_t new_jobject(jobject jo) {
@@ -578,7 +578,7 @@ STATIC const mp_obj_type_t jmethod_type = {
     .print = jmethod_print,
     .call = jmethod_call,
 //    .attr = jobject_attr,
-//    .locals_dict = (mp_obj_t)&jobject_locals_dict,
+//    .locals_dict = (mp_obj_dict_t*)&jobject_locals_dict,
 };
 
 #ifdef __ANDROID__
@@ -707,11 +707,11 @@ STATIC mp_obj_t mod_jni_env() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_jni_env_obj, mod_jni_env);
 
-STATIC const mp_map_elem_t mp_module_jni_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_jni) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_cls), (mp_obj_t)&mod_jni_cls_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&mod_jni_array_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_env), (mp_obj_t)&mod_jni_env_obj },
+STATIC const mp_rom_map_elem_t mp_module_jni_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jni) },
+    { MP_ROM_QSTR(MP_QSTR_cls), MP_ROM_PTR(&mod_jni_cls_obj) },
+    { MP_ROM_QSTR(MP_QSTR_array), MP_ROM_PTR(&mod_jni_array_obj) },
+    { MP_ROM_QSTR(MP_QSTR_env), MP_ROM_PTR(&mod_jni_env_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
