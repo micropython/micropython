@@ -29,7 +29,6 @@
 // non-local return
 // exception handling, basically a stack of setjmp/longjmp buffers
 
-#include <limits.h>
 #include <setjmp.h>
 #include <assert.h>
 
