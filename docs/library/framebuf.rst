@@ -103,15 +103,19 @@ Other methods
     Shift the contents of the FrameBuffer by the given vector. This may
     leave a footprint of the previous colors in the FrameBuffer.
 
-.. method:: FrameBuffer.blit(fbuf, x, y[, key])
+.. method:: FrameBuffer.blit(fbuf, x, y[, key][, remap])
 
     Draw another FrameBuffer on top of the current one at the given coordinates.
-    If *key* is specified then it should be a color integer and the
+    If ``key`` is specified then it should be a color integer and the
     corresponding color will be considered transparent: all pixels with that
     color value will not be drawn.
+    The ``remap`` parameter can provide a sequence of integers, specifying
+    how the colors from the first framebuffer should map to the second
+    framebuffer. If the sequence is shorter than the total number of colors,
+    the remaining colors are copied as it, without remapping.
 
-    This method works between FrameBuffer's utilising different formats, but the
-    resulting colors may be unexpected due to the mismatch in color formats.
+    This method works between FrameBuffer's utilising different formats. You
+    can use the ``remap`` parameter to make the colors match as desired.
 
 Constants
 ---------
