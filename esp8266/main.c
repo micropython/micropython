@@ -92,6 +92,8 @@ void init_done(void) {
 
     #if !MICROPY_REPL_EVENT_DRIVEN
 soft_reset:
+    pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
             if (pyexec_raw_repl() != 0) {
