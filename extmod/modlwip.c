@@ -45,12 +45,17 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 #include "lwip/tcp_impl.h"
+#include "lwip/igmp.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif
+
+// All socket options should be globally distinct,
+// because we ignore option levels for efficiency.
+#define IP_ADD_MEMBERSHIP 0x400
 
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
@@ -1079,10 +1084,10 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
-    // Integer options
-    mp_int_t val = mp_obj_get_int(args[3]);
     switch (opt) {
-        case SOF_REUSEADDR:
+        // level: SOL_SOCKET
+        case SOF_REUSEADDR: {
+            mp_int_t val = mp_obj_get_int(args[3]);
             // Options are common for UDP and TCP pcb's.
             if (val) {
                 ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
@@ -1090,6 +1095,24 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
                 ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
             }
             break;
+        }
+
+        // level: IPPROTO_IP
+        case IP_ADD_MEMBERSHIP: {
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+            if (bufinfo.len != sizeof(ip_addr_t) * 2) {
+                mp_raise_ValueError(NULL);
+            }
+
+            // POSIX setsockopt has order: group addr, if addr, lwIP has it vice-versa
+            err_t err = igmp_joingroup((ip_addr_t*)bufinfo.buf + 1, bufinfo.buf);
+            if (err != ERR_OK) {
+                mp_raise_OSError(error_lookup_table[-err]);
+            }
+            break;
+        }
+
         default:
             printf("Warning: lwip.setsockopt() not implemented\n");
     }
@@ -1342,6 +1365,9 @@ STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SOF_REUSEADDR) },
+
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);
