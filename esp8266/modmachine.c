@@ -140,7 +140,7 @@ typedef struct _esp_timer_obj_t {
     os_timer_t timer;
     uint32_t period;
     bool mode;
-    mp_obj_t callback;
+    mp_obj_t irq;
 } esp_timer_obj_t;
 
 const mp_obj_type_t esp_timer_type;
@@ -157,16 +157,16 @@ STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return tim;
 }
 
-STATIC void esp_timer_cb(void *arg) {
+STATIC void esp_timer_irq_helper(void *arg) {
     esp_timer_obj_t *self = arg;
-    mp_sched_schedule(self->callback, self);
+    mp_sched_schedule(self->irq, self);
 }
 
 STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_irq,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     // parse args
@@ -175,7 +175,7 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, mp_uint_t n_args, c
 
     self->period = args[0].u_int;
     self->mode = args[1].u_int;
-    self->callback = args[2].u_obj;
+    self->irq = args[2].u_obj;
 
     return mp_const_none;
 }
@@ -197,7 +197,7 @@ STATIC mp_obj_t esp_timer_start(mp_obj_t self_in) {
 
     // Be sure to disarm timer before making any changes
     os_timer_disarm(&self->timer);
-    os_timer_setfn(&self->timer, esp_timer_cb, self);
+    os_timer_setfn(&self->timer, esp_timer_irq_helper, self);
     os_timer_arm(&self->timer, self->period, self->mode);
 
     return mp_const_none;
@@ -235,7 +235,6 @@ STATIC const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&esp_timer_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&esp_timer_stop_obj) },
     { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&esp_timer_period_obj) },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), MP_ROM_PTR(&esp_timer_callback_obj) },
     { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
     { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
 };
