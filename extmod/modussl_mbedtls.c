@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h> // needed because mp_is_nonblocking_error uses system error codes
 
 #include "py/nlr.h"
 #include "py/runtime.h"
@@ -83,6 +84,9 @@ int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 
     int out_sz = sock_stream->write(sock, buf, len, &err);
     if (out_sz == MP_STREAM_ERROR) {
+        if (mp_is_nonblocking_error(err)) {
+            return MBEDTLS_ERR_SSL_WANT_WRITE;
+        }
         return -err;
     } else {
         return out_sz;
@@ -97,6 +101,9 @@ int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 
     int out_sz = sock_stream->read(sock, buf, len, &err);
     if (out_sz == MP_STREAM_ERROR) {
+        if (mp_is_nonblocking_error(err)) {
+            return MBEDTLS_ERR_SSL_WANT_READ;
+        }
         return -err;
     } else {
         return out_sz;
@@ -192,8 +199,15 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     int ret = mbedtls_ssl_read(&o->ssl, buf, size);
+    if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+        // end of stream
+        return 0;
+    }
     if (ret >= 0) {
         return ret;
+    }
+    if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
+        ret = MP_EWOULDBLOCK;
     }
     *errcode = ret;
     return MP_STREAM_ERROR;
@@ -206,32 +220,35 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     if (ret >= 0) {
         return ret;
     }
+    if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+        ret = MP_EWOULDBLOCK;
+    }
     *errcode = ret;
     return MP_STREAM_ERROR;
 }
 
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
-    // Currently supports only blocking mode
-    (void)self_in;
-    if (!mp_obj_is_true(flag_in)) {
-        mp_not_implemented("");
-    }
-    return mp_const_none;
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t sock = o->sock;
+    mp_obj_t dest[3];
+    mp_load_method(sock, MP_QSTR_setblocking, dest);
+    dest[2] = flag_in;
+    return mp_call_method_n_kw(1, 0, dest);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
 
+    mbedtls_pk_free(&self->pkey);
+    mbedtls_x509_crt_free(&self->cert);
     mbedtls_x509_crt_free(&self->cacert);
     mbedtls_ssl_free(&self->ssl);
     mbedtls_ssl_config_free(&self->conf);
     mbedtls_ctr_drbg_free(&self->ctr_drbg);
     mbedtls_entropy_free(&self->entropy);
 
-    mp_obj_t dest[2];
-    mp_load_method(self->sock, MP_QSTR_close, dest);
-    return mp_call_method_n_kw(0, 0, dest);
+    return mp_stream_close(self->sock);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
