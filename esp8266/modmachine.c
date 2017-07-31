@@ -185,13 +185,6 @@ STATIC mp_obj_t esp_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_timer_init_obj, 1, esp_timer_init);
 
-STATIC mp_obj_t esp_timer_deinit(mp_obj_t self_in) {
-    esp_timer_obj_t *self = self_in;
-    os_timer_disarm(&self->timer);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_timer_deinit_obj, esp_timer_deinit);
-
 STATIC mp_obj_t esp_timer_start(mp_obj_t self_in) {
     esp_timer_obj_t *self = self_in;
 
@@ -230,7 +223,6 @@ STATIC mp_obj_t esp_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_timer_period_obj, 1, 2, esp_timer_period);
 
 STATIC const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&esp_timer_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&esp_timer_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&esp_timer_stop_obj) },
