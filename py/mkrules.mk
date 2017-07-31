@@ -47,7 +47,7 @@ $(BUILD)/%.o: %.c
 	$(call compile_c)
 
 # List all native flags since the current build system doesn't have
-# the micropython configuration available. However, these flags are
+# the MicroPython configuration available. However, these flags are
 # needed to extract all qstrings
 QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM -DN_XTENSA
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp

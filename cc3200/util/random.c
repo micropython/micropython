@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -67,7 +67,7 @@ STATIC uint32_t lfsr (uint32_t input) {
 }
 
 /******************************************************************************/
-// Micro Python bindings;
+// MicroPython bindings;
 
 STATIC mp_obj_t machine_rng_get(void) {
     return mp_obj_new_int(rng_get());

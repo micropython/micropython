@@ -4,7 +4,7 @@ except TypeError:
     print("SKIP")
     raise SystemExit
 
-# test slices; only 2 argument version supported by Micro Python at the moment
+# test slices; only 2 argument version supported by MicroPython at the moment
 x = bytearray(range(10))
 
 # Assignment

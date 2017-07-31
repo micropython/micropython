@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -143,7 +143,7 @@ void mp_irq_handler (mp_obj_t self_in) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC mp_obj_t mp_irq_init (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_irq_obj_t *self = pos_args[0];

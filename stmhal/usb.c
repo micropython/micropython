@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -169,7 +169,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 }
 
 /******************************************************************************/
-// Micro Python bindings for USB
+// MicroPython bindings for USB
 
 /*
   Philosophy of USB driver and Python API: pyb.usb_mode(...) configures the USB
@@ -324,7 +324,7 @@ bad_mode:
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj, 0, pyb_usb_mode);
 
 /******************************************************************************/
-// Micro Python bindings for USB VCP
+// MicroPython bindings for USB VCP
 
 /// \moduleref pyb
 /// \class USB_VCP - USB virtual comm port
@@ -525,7 +525,7 @@ const mp_obj_type_t pyb_usb_vcp_type = {
 };
 
 /******************************************************************************/
-// Micro Python bindings for USB HID
+// MicroPython bindings for USB HID
 
 typedef struct _pyb_usb_hid_obj_t {
     mp_obj_base_t base;

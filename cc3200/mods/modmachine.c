@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -72,7 +72,7 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 ///
 
 /******************************************************************************/
-// Micro Python bindings;
+// MicroPython bindings;
 
 STATIC mp_obj_t machine_reset(void) {
     // disable wlan

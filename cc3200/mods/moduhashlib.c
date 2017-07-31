@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -117,7 +117,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 /// \classmethod \constructor([data[, block_size]])
 /// initial data must be given if block_size wants to be passed

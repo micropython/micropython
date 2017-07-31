@@ -6,7 +6,7 @@ Light up some leds when the USR switch on the pyboard is pressed.
 
 Example Usage::
 
-    Micro Python v1.0.1 on 2014-05-12; PYBv1.0 with STM32F405RG
+    MicroPython v1.0.1 on 2014-05-12; PYBv1.0 with STM32F405RG
     Type "help()" for more information.
     >>> import switch
     >>> switch.run_loop()

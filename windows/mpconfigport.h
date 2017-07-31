@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-// options to control how Micro Python is built
+// options to control how MicroPython is built
 
 // Linking with GNU readline (MICROPY_USE_READLINE == 2) causes binary to be licensed under GPL
 #ifndef MICROPY_USE_READLINE

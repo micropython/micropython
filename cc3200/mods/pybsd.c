@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -118,7 +118,7 @@ STATIC mp_obj_t pyb_sd_init_helper (pybsd_obj_t *self, const mp_arg_val_t *args)
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 //
 
 STATIC const mp_arg_t pyb_sd_init_args[] = {
