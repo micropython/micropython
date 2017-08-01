@@ -18,6 +18,7 @@ This project is in beta. Most APIs should be stable going forward.
 * [Adafruit CircuitPlayground Express](https://www.adafruit.com/product/3333)
 * [Adafruit Feather M0 Express](https://www.adafruit.com/product/3403)
 * [Adafruit Metro M0 Express](https://www.adafruit.com/product/3505)
+* [Adafruit Gemma M0](https://www.adafruit.com/product/3501)
 
 #### Other
 * [Adafruit Feather HUZZAH](https://www.adafruit.com/products/2821)
