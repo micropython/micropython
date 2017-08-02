@@ -135,6 +135,8 @@ $(PROG): $(OBJ)
 ifndef DEBUG
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
+	$(Q)if [ -f $(BUILD)/build/frozen.o ]; then $(SIZE) $(BUILD)/build/frozen.o; fi
+	$(Q)if [ -f $(BUILD)/build/frozen_mpy.o ]; then $(SIZE) $(BUILD)/build/frozen_mpy.o; fi
 	$(Q)$(SIZE) $(PROG)
 
 clean: clean-prog
