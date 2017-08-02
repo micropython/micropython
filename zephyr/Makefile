@@ -17,6 +17,9 @@ OUTDIR_PREFIX = $(BOARD)
 MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
+# Default target
+all:
+
 # Zephyr (generated) config files - must be defined before include below
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
 ifneq ($(MAKECMDGOALS), clean)
