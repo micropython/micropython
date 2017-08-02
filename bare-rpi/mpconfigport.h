@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "pios/uart.h"
+#include "source/uart.h"
 
 // options to control how Micro Python is built
 #define MICROPY_ENABLE_COMPILER (1)

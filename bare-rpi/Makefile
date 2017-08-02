@@ -9,7 +9,7 @@ PIOS_BOARD ?= boards/$(BOARD)
 
 # include py core make definitions
 include ../py/py.mk
-include lib/PiOS/$(PIOS_BOARD)/board.mk
+include $(PIOS_BOARD)/board.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -18,21 +18,20 @@ OBJCPY=$(CROSS_COMPILE)objcopy
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
+INC += -I$(PIOS_BOARD)
 
 SHELL := /bin/bash
-## find the version number of gcc (I think this is a bit too complicated :/)
 CCVERSION:=$(shell $(CC) --version | sed 's/[ ]/\n/g' | grep "\." | xargs | awk '{ print $$1 }')
-ARMGCCLIBPATH=/usr/lib/gcc/arm-none-eabi/$(CCVERSION)#/hard
+ARMGCCLIBPATH=/usr/lib/gcc/$(CROSS_COMPILE)/$(CCVERSION)#/hard
 
-#CFLAGS_CORTEX_M4 = -marm -mtune=cortex-m4 -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_BUILD = -mcpu=$(CPU) -marm -mfpu=vfp -mfloat-abi=hard
 CCPU = $(CFLAGS_BUILD)
-CFLAGS += $(INC) -I$(LIB)PiOS -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_BUILD) $(COPT) -I$(LIB)PiOS/include/ -Os 
+CFLAGS += $(INC) -Wall -ansi -std=gnu99 -nostdlib $(CFLAGS_BUILD) $(COPT) -Os 
 
 LIST=kernel.list
 
 LDFLAGS = -nostdlib -Map=$@.map --no-undefined -T $(LDSCRIPT) #--cref -T kernel.ld
-LIBS = -L. -lpios -L$(ARMGCCLIBPATH) -lgcc #-lc -lm
+LIBS = -L. -L$(ARMGCCLIBPATH) -lgcc #-lc -lm
 
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
@@ -64,7 +63,9 @@ SRC_LIB = $(addprefix lib/,\
 	libm/wf_tgamma.c)
 
 SRC_C = \
-	$(SRC)main.c 
+	$(SRC)main.c \
+	$(SRC)uart.c \
+	$(SRC)gpio.c
 	
 SRC_PY = 
 
@@ -76,10 +77,6 @@ OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o) $(SRC_LIB:.c=.o) $(SRC_PY:.c=.o))
 
 all: 
-	## always rebuild libPIOS
-	-cd $(LIB)PiOS && \
-		make clean 
-	-rm libpios.a
 #	$(MAKE) debug
 #	$(MAKE) clean
 	$(MAKE) release
@@ -90,21 +87,8 @@ debug: CFLAGS += -ggdb
 debug: release
 	mv $(BUILD)/firmware.elf firmware_debug.elf
 
-LIBPIOS=./libpios.a
-LIB=lib/
-
-CLEAN_EXTRA = libpios.a
 dump: $(BUILD)/firmware.elf
 	$(CROSS_COMPILE)objdump -d $(BUILD)/firmware.elf > $(LIST)
-
-pios: libpios.a
-libpios.a:
-	cd $(LIB)PiOS/ &&\
-        cp $(PIOS_BOARD)/board.mk . &&\
-        cp $(PIOS_BOARD)/pios_port_config.h . &&\
-		$(MAKE) lib &&\
-		cd ../../ &&\
-		cp $(LIB)PiOS/lib/libpios.a .
 
 %.c: %.py
 	xxd -i $< > $@
@@ -112,7 +96,7 @@ libpios.a:
 $(BUILD):
 	mkdir $(BUILD)
 
-$(BUILD)/firmware.elf: libpios.a $(OBJ) 
+$(BUILD)/firmware.elf: $(OBJ) 
 	$(ECHO) "LINK $@"
 	$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(OBJCPY) $(BUILD)/firmware.elf -O binary $(BUILD)/kernel.img
