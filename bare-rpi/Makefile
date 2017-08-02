@@ -11,7 +11,8 @@ PIOS_BOARD ?= boards/$(BOARD)
 include ../py/py.mk
 include $(PIOS_BOARD)/board.mk
 
-CROSS_COMPILE = arm-none-eabi-
+LDSCRIPT=$(PIOS_BOARD)/kernel.ld
+CROSS_COMPILE = $(PLATFORM)-
 
 OBJCPY=$(CROSS_COMPILE)objcopy
 
@@ -22,7 +23,7 @@ INC += -I$(PIOS_BOARD)
 
 SHELL := /bin/bash
 CCVERSION:=$(shell $(CC) --version | sed 's/[ ]/\n/g' | grep "\." | xargs | awk '{ print $$1 }')
-ARMGCCLIBPATH=/usr/lib/gcc/$(CROSS_COMPILE)/$(CCVERSION)#/hard
+ARMGCCLIBPATH=/usr/lib/gcc/$(PLATFORM)/$(CCVERSION)#/hard
 
 CFLAGS_BUILD = -mcpu=$(CPU) -marm -mfpu=vfp -mfloat-abi=hard
 CCPU = $(CFLAGS_BUILD)
@@ -64,6 +65,7 @@ SRC_LIB = $(addprefix lib/,\
 
 SRC_C = \
 	$(SRC)main.c \
+    $(SRC)qemu_uart.c \
 	$(SRC)uart.c \
 	$(SRC)gpio.c
 	

@@ -1,5 +1,0 @@
-#define PIOS_PLATFORM_RPI
-#define PIOS_PLATFORM_RPI2
-#define PIOS_PLATFORM_NAME "Raspberry Pi 2"
-#define PIOS_IO_BASE 0x3F000000
-#define PIOS_IO_ACT_LED 16
