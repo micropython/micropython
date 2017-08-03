@@ -145,18 +145,6 @@ typedef struct _esp_timer_obj_t {
 
 const mp_obj_type_t esp_timer_type;
 
-STATIC void esp_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    esp_timer_obj_t *self = self_in;
-    mp_printf(print, "Timer(%p)", &self->timer);
-}
-
-STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    esp_timer_obj_t *tim = m_new_obj(esp_timer_obj_t);
-    tim->base.type = &esp_timer_type;
-    return tim;
-}
-
 STATIC void esp_timer_irq_helper(void *arg) {
     esp_timer_obj_t *self = arg;
     mp_sched_schedule(self->irq, self);
@@ -178,6 +166,26 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, mp_uint_t n_args, c
     self->irq = args[2].u_obj;
 
     return mp_const_none;
+}
+
+STATIC void esp_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    esp_timer_obj_t *self = self_in;
+    mp_printf(print, "Timer(%p)", &self->timer);
+}
+
+STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, true);
+    esp_timer_obj_t *self = m_new_obj(esp_timer_obj_t);
+    self->base.type = &esp_timer_type;
+
+    if (n_kw > 0) {
+        // init the peripheral
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        esp_timer_init_helper(self, n_args-1, args+1, &kw_args);
+    }
+
+    return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC mp_obj_t esp_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
