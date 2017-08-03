@@ -131,6 +131,7 @@ enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_
         sercom->SPI.DATA.reg;
     }
     sercom->SPI.STATUS.bit.BUFOVF = 1;
+    sercom->SPI.INTFLAG.reg = SERCOM_SPI_INTFLAG_ERROR;
 
     return general_dma_tx.job_status;
 }
@@ -148,6 +149,7 @@ enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t lengt
     dma_descriptor_get_config_defaults(&descriptor_config);
     descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
     descriptor_config.src_increment_enable = false;
+    descriptor_config.dst_increment_enable = true;
     descriptor_config.block_transfer_count = length;
     // DATA register is consistently addressed across all SERCOM modes.
     descriptor_config.source_address = ((uint32_t)&sercom->SPI.DATA.reg);
