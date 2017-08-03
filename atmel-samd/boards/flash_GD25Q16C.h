@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H__
 
-// Settings for the Cypress (was Spansion) S25FL216K 2MiB SPI flash.
-// Datasheet: http://www.cypress.com/file/197346/download
+// Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
+// Datasheet: http://www.gigadevice.com/product/download/410.html?locale=en_US
 
 // The total flash size in bytes.
 #define SPI_FLASH_TOTAL_SIZE  (1 << 21) // 2 MiB
@@ -39,16 +39,17 @@
 // The size of a page that is programmed with page program command 0x02.
 #define SPI_FLASH_PAGE_SIZE   (256)     // 256 bytes
 
+#ifndef SPI_FLASH_JEDEC_MANUFACTURER
 // These are the first three response bytes to the JEDEC ID command 0x9f that is
 // used to confirm we're talking to the flash we expect.
-#ifndef SPI_FLASH_JEDEC_MANUFACTURER
-#define SPI_FLASH_JEDEC_MANUFACTURER 0x01
-#define SPI_FLASH_SECTOR_PROTECTION false
+#define SPI_FLASH_JEDEC_MANUFACTURER 0xc8
+#define SPI_FLASH_SECTOR_PROTECTION true
 #else
-#define SPI_FLASH_JEDEC_MANUFACTURER_2 0x01
-#define SPI_FLASH_SECTOR_PROTECTION_2 false
+#define SPI_FLASH_JEDEC_MANUFACTURER_2 0xc8
+#define SPI_FLASH_SECTOR_PROTECTION_2 true
 #endif
 #define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
 #define SPI_FLASH_JEDEC_CAPACITY     0x15
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
+
+#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H__

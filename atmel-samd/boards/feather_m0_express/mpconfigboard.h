@@ -26,3 +26,4 @@
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000)
 
 #include "flash_S25FL216K.h"
+#include "flash_GD25Q16C.h"

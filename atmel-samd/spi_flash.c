@@ -275,7 +275,12 @@ void spi_flash_init(void) {
         flash_enable();
         spi_transceive_buffer_wait(&spi_flash_instance, jedec_id_request, response, 4);
         flash_disable();
-        if (response[1] == SPI_FLASH_JEDEC_MANUFACTURER &&
+        uint8_t manufacturer = response[1];
+        if ((response[1] == SPI_FLASH_JEDEC_MANUFACTURER
+            #ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
+             || response[1] == SPI_FLASH_JEDEC_MANUFACTURER_2
+            #endif
+            ) &&
             response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
             response[3] == SPI_FLASH_JEDEC_CAPACITY) {
             spi_flash_is_initialised = true;
@@ -285,16 +290,20 @@ void spi_flash_init(void) {
             return;
         }
 
-        #ifdef SPI_FLASH_SECTOR_PROTECTION
-        write_enable();
+        if ((manufacturer == SPI_FLASH_JEDEC_MANUFACTURER && SPI_FLASH_SECTOR_PROTECTION)
+           #ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
+           || (manufacturer == SPI_FLASH_JEDEC_MANUFACTURER_2 && SPI_FLASH_SECTOR_PROTECTION_2)
+           #endif
+            )  {
+            write_enable();
 
-        // Turn off sector protection
-        uint8_t disable_protect_request[2] = {CMD_WRITE_STATUS_BYTE1, 0x00};
-        uint8_t disable_protect_response[2] = {0x00, 0x00};
-        flash_enable();
-        spi_transceive_buffer_wait(&spi_flash_instance, disable_protect_request, disable_protect_response, 2);
-        flash_disable();
-        #endif
+            // Turn off sector protection
+            uint8_t disable_protect_request[2] = {CMD_WRITE_STATUS_BYTE1, 0x00};
+            uint8_t disable_protect_response[2] = {0x00, 0x00};
+            flash_enable();
+            spi_transceive_buffer_wait(&spi_flash_instance, disable_protect_request, disable_protect_response, 2);
+            flash_disable();
+        }
 
         // Turn off writes in case this is a microcontroller only reset.
         uint8_t disable_write_request[1] = {CMD_DISABLE_WRITE};
