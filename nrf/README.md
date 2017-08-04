@@ -17,7 +17,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * Peripheral role on nrf51 targets
   * Central role and Peripheral role on nrf52 targets
   * _REPL over Bluetooth LE_ (optionally using WebBluetooth)
-  * ubluepy: Bluetooth LE module for micropython
+  * ubluepy: Bluetooth LE module for MicroPython
   * 1 non-connectable advertiser while in connection
 
 ## Tested Hardware

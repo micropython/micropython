@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -29,7 +29,7 @@
 
 #include <mpconfigboard.h>
 
-// options to control how Micro Python is built
+// options to control how MicroPython is built
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_EMIT_THUMB          (0)

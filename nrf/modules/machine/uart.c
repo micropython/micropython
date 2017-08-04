@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -118,7 +118,7 @@ void uart_tx_strn_cooked(machine_hard_uart_obj_t *uart_obj, const char *str, uin
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* MicroPython bindings                                                      */
 
 STATIC void machine_hard_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
 }
