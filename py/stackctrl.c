@@ -77,14 +77,27 @@ void mp_stack_set_bottom(void* stack_bottom) {
     MP_STATE_THREAD(stack_bottom) = stack_bottom;
 }
 
+// Return the current frame pointer. This can be used as an
+// approximation for the stack pointer of the _calling_ function.
+// This routine must not be inlined.  This method is
+// architecture-independent, as opposed to using asm("sp") or similar.
+//
+// The stack_dummy approach used elsewhere in this file is not safe in
+// all cases. That value may be below the actual top of the stack.
+static void* approx_stack_pointer(void){ 
+     __asm volatile ("");
+    return __builtin_frame_address(0);
+}
+
 // Fill stack space down toward the stack limit with a known unusual value.
 void mp_stack_fill_with_sentinel(void) {
     // Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
-    volatile char* volatile p;
-    // Start filling stack just below the last variable in the current stack frame, which is p.
-    // Continue until we've hit the bottom of the stack (lowest address, logical "ceiling" of stack).
-    p = (char *) (&p - 1);
+    // Start filling stack just below the current stack frame.
+    // Continue until we've hit the bottom of the stack (lowest address,
+    // logical "ceiling" of stack).
+    char* p = (char *) approx_stack_pointer() - 1;
+    
     while(p >= MP_STATE_THREAD(stack_bottom)) {
 	*p-- = MP_MAX_STACK_USAGE_SENTINEL_BYTE;
     }

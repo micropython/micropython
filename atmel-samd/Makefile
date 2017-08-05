@@ -132,6 +132,7 @@ CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(CFLAGS_
 ifeq ($(DEBUG), 1)
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 # Turn on Python modules useful for debugging (e.g. uheap, ustack).
+# -DMICROPY_DEBUG_MODULES may also be added to an -flto build, if you wish.
 CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
 else
 CFLAGS += -Os -DNDEBUG -flto
