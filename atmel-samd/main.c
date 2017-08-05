@@ -117,7 +117,7 @@ void init_flash_fs(void) {
     MP_STATE_PORT(vfs_cur) = vfs;
 }
 
-static char heap[16384];
+static char heap[16384 + 4096];
 
 void reset_mp(void) {
     reset_status_led();
