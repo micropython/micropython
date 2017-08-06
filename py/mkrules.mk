@@ -135,7 +135,7 @@ $(PROG): $(OBJ)
 ifndef DEBUG
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
-	$(Q)$(SIZE) $(PROG)
+	$(Q)$(SIZE) $$(find $(BUILD)/build -name "frozen*.o") $(PROG)
 
 clean: clean-prog
 clean-prog:
