@@ -37,6 +37,9 @@
 #include <net/net_context.h>
 #include <net/net_pkt.h>
 #include <net/dns_resolve.h>
+#ifdef CONFIG_NET_SOCKETS
+#include <net/socket.h>
+#endif
 
 #define DEBUG_PRINT 0
 #if DEBUG_PRINT // print debugging info
@@ -103,6 +106,7 @@ static inline void _k_fifo_wait_non_empty(struct k_fifo *fifo, int32_t timeout)
 // Helper functions
 
 #define RAISE_ERRNO(x) { int _err = x; if (_err < 0) mp_raise_OSError(-_err); }
+#define RAISE_SOCK_ERRNO(x) { if ((int)(x) == -1) mp_raise_OSError(errno); }
 
 STATIC void socket_check_closed(socket_obj_t *socket) {
     if (socket->ctx == NULL) {
@@ -256,8 +260,13 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         }
     }
 
+    #ifdef CONFIG_NET_SOCKETS
+    socket->ctx = (void*)zsock_socket(family, socktype, proto);
+    RAISE_SOCK_ERRNO(socket->ctx);
+    #else
     RAISE_ERRNO(net_context_get(family, socktype, proto, &socket->ctx));
     k_fifo_init(&SOCK_FIELD(socket, recv_q));
+    #endif
 
     return MP_OBJ_FROM_PTR(socket);
 }
@@ -491,9 +500,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_mak
 
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
-    if (socket->ctx != NULL) {
-        RAISE_ERRNO(net_context_put(socket->ctx));
-        socket->ctx = NULL;
+    if (socket->ctx != -1) {
+        int res = zsock_close(socket->ctx);
+        RAISE_SOCK_ERRNO(res);
+        socket->ctx = -1;
     }
     return mp_const_none;
 }
