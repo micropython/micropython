@@ -12,13 +12,13 @@ limited. For example, a microcontroller without analog features will not have
 Support Matrix
 ---------------
 
-===============  ==========  =========  ===========  =======  =======  ===========  =================  ================  =======  =========  ========  =========  ========  =========  =======  =========
-Port             `analogio`  `audioio`  `bitbangio`  `board`  `busio`  `digitalio`  `microcontroller`  `neopixel_write`  `os`     `pulseio`  `random`  `storage`  `time`    `touchio`  `uheap`  `usb_hid`
-===============  ==========  =========  ===========  =======  =======  ===========  =================  ================  =======  =========  ========  =========  ========  =========  =======  =========
-SAMD21           **Yes**     No         No           **Yes**  **Yes**  **Yes**      **Yes**            **Yes**           **Yes**  No         **Yes**   **Yes**    **Yes**   **Yes**    Debug    **Yes**
-SAMD21 Express   **Yes**     **Yes**    **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            **Yes**           **Yes**  **Yes**    **Yes**   **Yes**    **Yes**   **Yes**    Debug    **Yes**
-ESP8266          **Yes**     No         **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            **Yes**           **Yes**  No         **Yes**   **Yes**    **Yes**   No         Debug    No
-===============  ==========  =========  ===========  =======  =======  ===========  =================  ================  =======  =========  ========  =========  ========  =========  =======  =========
+===============  ==========  =========  ===========  =======  =======  ===========  =================  ===============  ================  =======  =========  ========  =========  ========  =========  =======  =========
+Port             `analogio`  `audioio`  `bitbangio`  `board`  `busio`  `digitalio`  `microcontroller`  `multiterminal`  `neopixel_write`  `os`     `pulseio`  `random`  `storage`  `time`    `touchio`  `uheap`  `usb_hid`
+===============  ==========  =========  ===========  =======  =======  ===========  =================  ===============  ================  =======  =========  ========  =========  ========  =========  =======  =========
+SAMD21           **Yes**     No         No           **Yes**  **Yes**  **Yes**      **Yes**            No               **Yes**           **Yes**  No         **Yes**   **Yes**    **Yes**   **Yes**    Debug    **Yes**
+SAMD21 Express   **Yes**     **Yes**    **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            No               **Yes**           **Yes**  **Yes**    **Yes**   **Yes**    **Yes**   **Yes**    Debug    **Yes**
+ESP8266          **Yes**     No         **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            **Yes**          **Yes**           **Yes**  No         **Yes**   **Yes**    **Yes**   No         Debug    No
+===============  ==========  =========  ===========  =======  =======  ===========  =================  ===============  ================  =======  =========  ========  =========  ========  =========  =======  =========
 
 Modules
 ---------

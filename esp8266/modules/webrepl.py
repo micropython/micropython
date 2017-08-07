@@ -1,6 +1,6 @@
 # This module should be imported from REPL, not run from command line.
 import socket
-import uos
+import multiterminal
 import network
 import websocket
 import websocket_helper
@@ -31,7 +31,7 @@ def setup_conn(port, accept_handler):
 def accept_conn(listen_sock):
     global client_s
     cl, remote_addr = listen_sock.accept()
-    if uos.dupterm():
+    if multiterminal.get_secondary_terminal():
         print("\nConcurrent WebREPL connection from", remote_addr, "rejected")
         cl.close()
         return
@@ -42,13 +42,13 @@ def accept_conn(listen_sock):
     ws = _webrepl._webrepl(ws)
     cl.setblocking(False)
     # notify REPL on socket incoming data
-    cl.setsockopt(socket.SOL_SOCKET, 20, uos.dupterm_notify)
-    uos.dupterm(ws)
+    cl.setsockopt(socket.SOL_SOCKET, 20, multiterminal.schedule_secondary_terminal_read)
+    multiterminal.set_secondary_terminal(ws)
 
 
 def stop():
     global listen_s, client_s
-    uos.dupterm(None)
+    multiterminal.clear_secondary_terminal()
     if client_s:
         client_s.close()
     if listen_s:

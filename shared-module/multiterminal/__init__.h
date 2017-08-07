@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,52 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_RINGBUF_H__
-#define __MICROPY_INCLUDED_PY_RINGBUF_H__
 
-#include <stdint.h>
+#ifndef SHARED_MODULE_MULTITERMINAL___INIT___H
+#define SHARED_MODULE_MULTITERMINAL___INIT___H
 
-typedef struct _ringbuf_t {
-    uint8_t *buf;
-    uint16_t size;
-    uint16_t iget;
-    uint16_t iput;
-} ringbuf_t;
+mp_obj_t shared_module_multiterminal_get_secondary_terminal();
+void shared_module_multiterminal_set_secondary_terminal(mp_obj_t secondary_terminal);
+void shared_module_multiterminal_clear_secondary_terminal();
 
-// Static initialization:
-// byte buf_array[N];
-// ringbuf_t buf = {buf_array, sizeof(buf_array)};
-
-// Dynamic initialization. This creates root pointer!
-#define ringbuf_alloc(r, sz) \
-{ \
-    (r)->buf = m_new(uint8_t, sz); \
-    (r)->size = sz; \
-    (r)->iget = (r)->iput = 0; \
-}
-
-static inline int ringbuf_get(ringbuf_t *r) {
-    if (r->iget == r->iput) {
-        return -1;
-    }
-    uint8_t v = r->buf[r->iget++];
-    if (r->iget >= r->size) {
-        r->iget = 0;
-    }
-    return v;
-}
-
-static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
-    uint32_t iput_new = r->iput + 1;
-    if (iput_new >= r->size) {
-        iput_new = 0;
-    }
-    if (iput_new == r->iget) {
-        return -1;
-    }
-    r->buf[r->iput] = v;
-    r->iput = iput_new;
-    return 0;
-}
-
-#endif // __MICROPY_INCLUDED_PY_RINGBUF_H__
+#endif  // SHARED_MODULE_MULTITERMINAL___INIT___H

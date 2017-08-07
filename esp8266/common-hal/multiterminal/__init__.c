@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Paul Sokolovsky
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,52 +24,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_RINGBUF_H__
-#define __MICROPY_INCLUDED_PY_RINGBUF_H__
 
-#include <stdint.h>
+#include "esp_mphal.h"
 
-typedef struct _ringbuf_t {
-    uint8_t *buf;
-    uint16_t size;
-    uint16_t iget;
-    uint16_t iput;
-} ringbuf_t;
+#include "shared-bindings/multiterminal/__init__.h"
+#include "shared-module/multiterminal/__init__.h"
 
-// Static initialization:
-// byte buf_array[N];
-// ringbuf_t buf = {buf_array, sizeof(buf_array)};
-
-// Dynamic initialization. This creates root pointer!
-#define ringbuf_alloc(r, sz) \
-{ \
-    (r)->buf = m_new(uint8_t, sz); \
-    (r)->size = sz; \
-    (r)->iget = (r)->iput = 0; \
+void common_hal_multiterminal_schedule_secondary_terminal_read(mp_obj_t socket) {
+    (void) socket;
+    mp_hal_signal_dupterm_input();
 }
 
-static inline int ringbuf_get(ringbuf_t *r) {
-    if (r->iget == r->iput) {
-        return -1;
-    }
-    uint8_t v = r->buf[r->iget++];
-    if (r->iget >= r->size) {
-        r->iget = 0;
-    }
-    return v;
+mp_obj_t common_hal_multiterminal_get_secondary_terminal() {
+    return shared_module_multiterminal_get_secondary_terminal();
 }
 
-static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
-    uint32_t iput_new = r->iput + 1;
-    if (iput_new >= r->size) {
-        iput_new = 0;
-    }
-    if (iput_new == r->iget) {
-        return -1;
-    }
-    r->buf[r->iput] = v;
-    r->iput = iput_new;
-    return 0;
+void common_hal_multiterminal_set_secondary_terminal(mp_obj_t secondary_terminal) {
+    shared_module_multiterminal_set_secondary_terminal(secondary_terminal);
 }
 
-#endif // __MICROPY_INCLUDED_PY_RINGBUF_H__
+void common_hal_multiterminal_clear_secondary_terminal() {
+    shared_module_multiterminal_clear_secondary_terminal();
+}

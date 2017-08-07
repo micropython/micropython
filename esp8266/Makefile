@@ -116,6 +116,7 @@ SRC_COMMON_HAL = \
 	busio/__init__.c \
 	busio/SPI.c \
 	busio/UART.c \
+	multiterminal/__init__.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
 	storage/__init__.c \
@@ -139,6 +140,7 @@ SRC_SHARED_MODULE = \
 	bitbangio/SPI.c \
 	busio/I2C.c \
 	busio/OneWire.c \
+	multiterminal/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	storage/__init__.c \
