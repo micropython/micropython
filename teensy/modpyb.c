@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -154,7 +154,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_sync_obj, pyb_sync);
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
 ///
-/// The result is always a micropython smallint (31-bit signed number), so
+/// The result is always a MicroPython smallint (31-bit signed number), so
 /// after 2^30 milliseconds (about 12.4 days) this will start to return
 /// negative numbers.
 STATIC mp_obj_t pyb_millis(void) {
@@ -185,7 +185,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
 /// \function micros()
 /// Returns the number of microseconds since the board was last reset.
 ///
-/// The result is always a micropython smallint (31-bit signed number), so
+/// The result is always a MicroPython smallint (31-bit signed number), so
 /// after 2^30 microseconds (about 17.8 minutes) this will start to return
 /// negative numbers.
 STATIC mp_obj_t pyb_micros(void) {

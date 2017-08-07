@@ -6,9 +6,8 @@ import builtins
 try:
     builtins.abs = lambda x: x + 1
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(abs(1))
 

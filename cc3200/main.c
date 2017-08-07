@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -89,7 +89,7 @@ int main (void) {
 #ifndef DEBUG
     OsiTaskHandle mpTaskHandle;
 #endif
-    mpTaskHandle = xTaskCreateStatic(TASK_Micropython, "MicroPy",
+    mpTaskHandle = xTaskCreateStatic(TASK_MicroPython, "MicroPy",
         MICROPY_TASK_STACK_LEN, NULL, MICROPY_TASK_PRIORITY, mpTaskStack, &mpTaskTCB);
     ASSERT(mpTaskHandle != NULL);
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef SERVERSTASK_H_
-#define SERVERSTASK_H_
+#ifndef MICROPY_INCLUDED_CC3200_SERVERSTASK_H
+#define MICROPY_INCLUDED_CC3200_SERVERSTASK_H
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -73,4 +72,4 @@ extern void server_sleep_sockets (void);
 extern void servers_set_timeout (uint32_t timeout);
 extern uint32_t servers_get_timeout (void);
 
-#endif /* SERVERSTASK_H_ */
+#endif // MICROPY_INCLUDED_CC3200_SERVERSTASK_H

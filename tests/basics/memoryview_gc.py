@@ -2,9 +2,8 @@
 try:
     memoryview
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 b = bytearray(10)
 m = memoryview(b)[1:]

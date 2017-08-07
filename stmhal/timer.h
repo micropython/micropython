@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_TIMER_H
+#define MICROPY_INCLUDED_STMHAL_TIMER_H
 
 extern TIM_HandleTypeDef TIM5_Handle;
 
@@ -36,3 +38,5 @@ uint32_t timer_get_source_freq(uint32_t tim_id);
 void timer_irq_handler(uint tim_id);
 
 TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer);
+
+#endif // MICROPY_INCLUDED_STMHAL_TIMER_H

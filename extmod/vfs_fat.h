@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_EXTMOD_VFS_FAT_H
+#define MICROPY_INCLUDED_EXTMOD_VFS_FAT_H
 
 #include "py/lexer.h"
 #include "py/obj.h"
@@ -58,3 +60,5 @@ mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode)
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
 mp_obj_t fat_vfs_ilistdir2(struct _fs_user_mount_t *vfs, const char *path, bool is_str_type);
+
+#endif // MICROPY_INCLUDED_EXTMOD_VFS_FAT_H

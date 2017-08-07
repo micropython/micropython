@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,10 +27,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include STM32_HAL_H
 
-#include "dma.h"
 #include "py/obj.h"
+#include "dma.h"
 #include "irq.h"
 
 typedef enum {

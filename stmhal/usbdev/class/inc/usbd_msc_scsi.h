@@ -55,6 +55,8 @@
 #define SCSI_MODE_SENSE6                            0x1A
 #define SCSI_MODE_SENSE10                           0x5A
 #define SCSI_ALLOW_MEDIUM_REMOVAL                   0x1E
+#define SCSI_SYNCHRONIZE_CACHE10                    0x35
+#define SCSI_SYNCHRONIZE_CACHE16                    0x91
 #define SCSI_READ6                                  0x08
 #define SCSI_READ10                                 0x28
 #define SCSI_READ12                                 0xA8

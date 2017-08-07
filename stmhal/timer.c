@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -28,11 +28,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include STM32_HAL_H
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_cdc_interface.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "timer.h"
@@ -218,9 +216,11 @@ TIM_HandleTypeDef *timer_tim6_init(uint freq) {
 
 // Interrupt dispatch
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+    #if MICROPY_HW_ENABLE_SERVO
     if (htim == &TIM5_Handle) {
         servo_timer_irq_callback();
     }
+    #endif
 }
 
 // Get the frequency (in Hz) of the source clock for the given timer.
@@ -247,7 +247,7 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* MicroPython bindings                                                       */
 
 STATIC const mp_obj_type_t pyb_timer_channel_type;
 
@@ -702,7 +702,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         #if defined(TIM17)
         case 17: tim->tim.Instance = TIM17; tim->irqn = TIM1_TRG_COM_TIM17_IRQn; break;
         #endif
-        default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer %d does not exist", tim->tim_id));
+        default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer(%d) doesn't exist", tim->tim_id));
     }
 
     // set the global variable for interrupt callbacks
@@ -896,7 +896,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %q doesn't have an af for TIM%d", pin->name, self->tim_id));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have an af for Timer(%d)", pin->name, self->tim_id));
         }
         // pin.init(mode=AF_PP, af=idx)
         const mp_obj_t args2[6] = {
@@ -1149,7 +1149,7 @@ STATIC mp_obj_t pyb_timer_period(mp_uint_t n_args, const mp_obj_t *args) {
         // Reset the counter to zero. Otherwise, if counter >= period it will
         // continue counting until it wraps (at either 16 or 32 bits depending
         // on the timer).
-        __HAL_TIM_SetCounter(&self->tim, 0); 
+        __HAL_TIM_SetCounter(&self->tim, 0);
         return mp_const_none;
     }
 }

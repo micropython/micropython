@@ -1,9 +1,8 @@
 try:
     import uctypes
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 desc = {
     "s0": uctypes.UINT16 | 0,

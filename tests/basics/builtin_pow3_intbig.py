@@ -4,9 +4,8 @@
 try:
     print(pow(3, 4, 7))
 except NotImplementedError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(pow(555557, 1000002, 1000003))
 

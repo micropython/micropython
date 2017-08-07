@@ -2,8 +2,7 @@ try:
     extra_coverage
 except NameError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 import uerrno
 import uio

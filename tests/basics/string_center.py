@@ -1,9 +1,8 @@
 try:
     str.center
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print("foo".center(0))
 print("foo".center(1))

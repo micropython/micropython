@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MICROPY_EXTMOD_MODUBINASCII
-#define MICROPY_EXTMOD_MODUBINASCII
+#ifndef MICROPY_INCLUDED_EXTMOD_MODUBINASCII_H
+#define MICROPY_INCLUDED_EXTMOD_MODUBINASCII_H
 
 extern mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args);
 extern mp_obj_t mod_binascii_unhexlify(mp_obj_t data);
@@ -39,4 +38,4 @@ MP_DECLARE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj);
 
-#endif /* MICROPY_EXTMOD_MODUBINASCII */
+#endif // MICROPY_INCLUDED_EXTMOD_MODUBINASCII_H

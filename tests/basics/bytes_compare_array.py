@@ -1,9 +1,8 @@
 try:
     import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(array.array('b', [1, 2]) in b'\x01\x02\x03')
 # CPython gives False here

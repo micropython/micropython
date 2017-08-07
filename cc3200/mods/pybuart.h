@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBUART_H_
-#define PYBUART_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBUART_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBUART_H
 
 typedef enum {
     PYB_UART_0      =  0,
@@ -43,4 +42,4 @@ int uart_rx_char(pyb_uart_obj_t *uart_obj);
 bool uart_tx_char(pyb_uart_obj_t *self, int c);
 bool uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
-#endif  // PYBUART_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBUART_H

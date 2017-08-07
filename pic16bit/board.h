@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PIC16BIT_BOARD_H__
-#define __MICROPY_INCLUDED_PIC16BIT_BOARD_H__
+#ifndef MICROPY_INCLUDED_PIC16BIT_BOARD_H
+#define MICROPY_INCLUDED_PIC16BIT_BOARD_H
 
 void cpu_init(void);
 
@@ -40,4 +40,4 @@ int uart_rx_any(void);
 int uart_rx_char(void);
 void uart_tx_char(int chr);
 
-#endif // __MICROPY_INCLUDED_PIC16BIT_BOARD_H__
+#endif // MICROPY_INCLUDED_PIC16BIT_BOARD_H

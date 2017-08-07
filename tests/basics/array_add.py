@@ -2,9 +2,8 @@
 try:
     import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 a1 = array.array('I', [1])
 a2 = array.array('I', [2])

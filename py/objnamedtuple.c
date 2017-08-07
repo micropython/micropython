@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -94,43 +94,37 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         }
     }
 
-    mp_obj_t *arg_objects;
-    if (n_args == num_fields) {
-        arg_objects = (mp_obj_t*)args;
-    } else {
-        size_t alloc_size = sizeof(mp_obj_t) * num_fields;
-        arg_objects = alloca(alloc_size);
-        memset(arg_objects, 0, alloc_size);
+    // Create a tuple and set the type to this namedtuple
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_fields, NULL));
+    tuple->base.type = type_in;
 
-        for (size_t i = 0; i < n_args; i++) {
-            arg_objects[i] = args[i];
-        }
+    // Copy the positional args into the first slots of the namedtuple
+    memcpy(&tuple->items[0], args, sizeof(mp_obj_t) * n_args);
 
-        for (size_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
-            qstr kw = mp_obj_str_get_qstr(args[i]);
-            size_t id = namedtuple_find_field(type, kw);
-            if (id == (size_t)-1) {
-                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                    mp_arg_error_terse_mismatch();
-                } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "unexpected keyword argument '%q'", kw));
-                }
+    // Fill in the remaining slots with the keyword args
+    memset(&tuple->items[n_args], 0, sizeof(mp_obj_t) * n_kw);
+    for (size_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
+        qstr kw = mp_obj_str_get_qstr(args[i]);
+        size_t id = namedtuple_find_field(type, kw);
+        if (id == (size_t)-1) {
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                mp_arg_error_terse_mismatch();
+            } else {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "unexpected keyword argument '%q'", kw));
             }
-            if (arg_objects[id] != MP_OBJ_NULL) {
-                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                    mp_arg_error_terse_mismatch();
-                } else {
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        "function got multiple values for argument '%q'", kw));
-                }
-            }
-            arg_objects[id] = args[i + 1];
         }
+        if (tuple->items[id] != MP_OBJ_NULL) {
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                mp_arg_error_terse_mismatch();
+            } else {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                    "function got multiple values for argument '%q'", kw));
+            }
+        }
+        tuple->items[id] = args[i + 1];
     }
 
-    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_fields, arg_objects));
-    tuple->base.type = type_in;
     return MP_OBJ_FROM_PTR(tuple);
 }
 

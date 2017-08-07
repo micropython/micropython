@@ -89,6 +89,7 @@ static int8_t SCSI_StartStopUnit(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t
 static int8_t SCSI_AllowMediumRemoval(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_ModeSense6 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
+static int8_t SCSI_SynchronizeCache(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
 static int8_t SCSI_Write10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *params);
 static int8_t SCSI_Read10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *params);
 static int8_t SCSI_Verify10(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params);
@@ -151,6 +152,10 @@ int8_t SCSI_ProcessCmd(USBD_HandleTypeDef  *pdev,
   case SCSI_MODE_SENSE10:
     return SCSI_ModeSense10 (pdev, lun, params);
     
+  case SCSI_SYNCHRONIZE_CACHE10:
+  case SCSI_SYNCHRONIZE_CACHE16:
+    return SCSI_SynchronizeCache(pdev, lun, params);
+
   case SCSI_READ_FORMAT_CAPACITIES:
     return SCSI_ReadFormatCapacity(pdev, lun, params);
     
@@ -372,6 +377,13 @@ static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t 
     hmsc->bot_data[len] = MSC_Mode_Sense10_data[len];
   }
   return 0;
+}
+
+static int8_t SCSI_SynchronizeCache(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params) {
+    // nothing to synchronize, so just return "success"
+    USBD_MSC_BOT_HandleTypeDef *hmsc = pdev->pClassData;
+    hmsc->bot_data_length = 0;
+    return 0;
 }
 
 /**

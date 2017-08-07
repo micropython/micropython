@@ -7,8 +7,7 @@ try:
     machine.time_pulse_us
 except AttributeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 
 class ConstPin(machine.PinBase):

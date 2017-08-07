@@ -3,9 +3,8 @@
 try:
     from array import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # arrays
 print(bytes(array('h', [1, 2])))

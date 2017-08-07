@@ -59,8 +59,8 @@ def get_version_info_from_git():
 def get_version_info_from_docs_conf():
     with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "docs", "conf.py")) as f:
         for line in f:
-            if line.startswith("release = '"):
-                ver = line.strip()[10:].strip("'")
+            if line.startswith("version = release = '"):
+                ver = line.strip().split(" = ")[2].strip("'")
                 git_tag = "v" + ver
                 ver = ver.split(".")
                 if len(ver) == 2:

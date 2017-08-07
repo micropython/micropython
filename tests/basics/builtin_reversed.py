@@ -2,9 +2,8 @@
 try:
     reversed
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # list
 print(list(reversed([])))

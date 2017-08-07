@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -87,7 +87,7 @@ STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
 #undef I
 
 #ifdef MICROPY_PY_SYS_PLATFORM
-/// \constant platform - the platform that Micro Python is running on
+/// \constant platform - the platform that MicroPython is running on
 STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 #endif
 
@@ -168,7 +168,7 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     // to not try to compare sys.maxsize to some literal number (as this
     // number might not fit in available int size), but instead count number
     // of "one" bits in sys.maxsize.
-    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(MP_SMALL_INT_MAX) },
+    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_INT(MP_SMALL_INT_MAX) },
     #else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_maxsize_obj) },
     #endif

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,7 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_FLASH_H
+#define MICROPY_INCLUDED_STMHAL_FLASH_H
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size);
 void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32);
 void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32);
+
+#endif // MICROPY_INCLUDED_STMHAL_FLASH_H

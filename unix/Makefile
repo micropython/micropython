@@ -30,7 +30,7 @@ ifdef DEBUG
 CFLAGS += -g
 COPT = -O0
 else
-COPT = -Os -fdata-sections -ffunction-sections #-DNDEBUG
+COPT = -Os -fdata-sections -ffunction-sections -DNDEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
@@ -59,7 +59,7 @@ CFLAGS += -U _FORTIFY_SOURCE
 endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
-# The unix port of micropython on OSX must be compiled with clang,
+# The unix port of MicroPython on OSX must be compiled with clang,
 # while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
@@ -278,15 +278,15 @@ libffi:
 	cd ../lib/libffi; ./autogen.sh
 	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
-	make install-exec-recursive; make -C include install-data-am
+	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
 axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a: ../lib/axtls/README | $(OBJ_DIRS)
 	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+	cd ../lib/axtls; $(MAKE) oldconfig -B
+	cd ../lib/axtls; $(MAKE) clean
+	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
 	cp ../lib/axtls/_stage/libaxtls.a $@
 
 ../lib/axtls/README:

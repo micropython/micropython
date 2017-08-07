@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJINT_H__
-#define __MICROPY_INCLUDED_PY_OBJINT_H__
+#ifndef MICROPY_INCLUDED_PY_OBJINT_H
+#define MICROPY_INCLUDED_PY_OBJINT_H
 
 #include "py/mpz.h"
 #include "py/obj.h"
@@ -63,4 +63,4 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus);
 
-#endif // __MICROPY_INCLUDED_PY_OBJINT_H__
+#endif // MICROPY_INCLUDED_PY_OBJINT_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -72,7 +72,8 @@ mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
         (mp_uint_t)m_get_total_bytes_allocated(), (mp_uint_t)m_get_current_bytes_allocated(), (mp_uint_t)m_get_peak_bytes_allocated());
 #endif
 #if MICROPY_STACK_CHECK
-    mp_printf(&mp_plat_print, "stack: " UINT_FMT " out of " INT_FMT "\n", mp_stack_usage(), MP_STATE_THREAD(stack_limit));
+    mp_printf(&mp_plat_print, "stack: " UINT_FMT " out of " UINT_FMT "\n",
+        mp_stack_usage(), (mp_uint_t)MP_STATE_THREAD(stack_limit));
 #else
     mp_printf(&mp_plat_print, "stack: " UINT_FMT "\n", mp_stack_usage());
 #endif

@@ -2,9 +2,8 @@
 try:
     import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # should be byteorder-neutral
 print(b"123" + array.array('h', [0x1515]))

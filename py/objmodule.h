@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJMODULE_H__
-#define __MICROPY_INCLUDED_PY_OBJMODULE_H__
+#ifndef MICROPY_INCLUDED_PY_OBJMODULE_H
+#define MICROPY_INCLUDED_PY_OBJMODULE_H
 
 #include "py/obj.h"
 
@@ -34,4 +34,4 @@ extern const mp_map_t mp_builtin_module_weak_links_map;
 mp_obj_t mp_module_get(qstr module_name);
 void mp_module_register(qstr qstr, mp_obj_t module);
 
-#endif // __MICROPY_INCLUDED_PY_OBJMODULE_H__
+#endif // MICROPY_INCLUDED_PY_OBJMODULE_H

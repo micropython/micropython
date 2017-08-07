@@ -15,11 +15,17 @@ the name ``pyb`` does not exist.
 
 With the switch object you can get its status::
 
-    >>> sw()
+    >>> sw.value()
     False
 
 This will print ``False`` if the switch is not held, or ``True`` if it is held.
 Try holding the USR switch down while running the above command.
+
+There is also a shorthand notation to get the switch status, by "calling" the
+switch object::
+
+    >>> sw()
+    False
 
 Switch callbacks
 ----------------

@@ -193,12 +193,12 @@ STATIC mp_obj_t esp_timer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_timer_deinit_obj, esp_timer_deinit);
 
-STATIC const mp_map_elem_t esp_timer_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&esp_timer_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&esp_timer_init_obj },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&esp_timer_callback_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ONE_SHOT), MP_OBJ_NEW_SMALL_INT(false) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PERIODIC), MP_OBJ_NEW_SMALL_INT(true) },
+STATIC const mp_rom_map_elem_t esp_timer_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&esp_timer_init_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&esp_timer_callback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
+    { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
 };
 STATIC MP_DEFINE_CONST_DICT(esp_timer_locals_dict, esp_timer_locals_dict_table);
 
@@ -207,7 +207,7 @@ const mp_obj_type_t esp_timer_type = {
     .name = MP_QSTR_Timer,
     .print = esp_timer_print,
     .make_new = esp_timer_make_new,
-    .locals_dict = (mp_obj_t)&esp_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&esp_timer_locals_dict,
 };
 
 // this bit is unused in the Xtensa PS register

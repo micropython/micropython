@@ -38,3 +38,9 @@ try:
 except KeyError:
     print('KeyError')
     print(lock.locked())
+
+# test that we can't release an unlocked lock
+try:
+    lock.release()
+except RuntimeError:
+    print('RuntimeError')

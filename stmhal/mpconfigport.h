@@ -27,10 +27,6 @@
 // Options to control how MicroPython is built for this port,
 // overriding defaults in py/mpconfig.h.
 
-#pragma once
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
-
 // board specific definitions
 #include "mpconfigboard.h"
 
@@ -39,8 +35,12 @@
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
+#ifndef MICROPY_EMIT_THUMB
 #define MICROPY_EMIT_THUMB          (1)
+#endif
+#ifndef MICROPY_EMIT_INLINE_THUMB
 #define MICROPY_EMIT_INLINE_THUMB   (1)
+#endif
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST   (1)
@@ -65,7 +65,9 @@
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
+#ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#endif
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
@@ -107,8 +109,9 @@
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
 #define MICROPY_PY_UERRNO           (1)
+#ifndef MICROPY_PY_THREAD
 #define MICROPY_PY_THREAD           (0)
-#define MICROPY_PY_THREAD_GIL       (0)
+#endif
 
 // extended modules
 #define MICROPY_PY_UCTYPES          (1)
@@ -176,6 +179,7 @@ extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
+extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_PY_USOCKET
 #define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
@@ -199,6 +203,7 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&mp_module_utime }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_binascii), (mp_obj_t)&mp_module_ubinascii }, \
@@ -341,5 +346,3 @@ static inline mp_uint_t disable_irq(void) {
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
-
-#endif // __INCLUDED_MPCONFIGPORT_H

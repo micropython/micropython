@@ -2,9 +2,8 @@
 try:
     import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 try:
     from micropython import heap_lock, heap_unlock

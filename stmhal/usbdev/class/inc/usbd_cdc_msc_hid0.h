@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_STMHAL_USB_CDC_MSC_HID0_H__
-#define __MICROPY_INCLUDED_STMHAL_USB_CDC_MSC_HID0_H__
+#ifndef MICROPY_INCLUDED_STMHAL_USBDEV_CLASS_INC_USBD_CDC_MSC_HID0_H
+#define MICROPY_INCLUDED_STMHAL_USBDEV_CLASS_INC_USBD_CDC_MSC_HID0_H
 
 // these are exports for the CDC/MSC/HID interface that are independent
 // from any other definitions/declarations
@@ -49,4 +48,4 @@ typedef struct _USBD_HID_ModeInfoTypeDef {
     const uint8_t *report_desc;
 } USBD_HID_ModeInfoTypeDef;
 
-#endif // __MICROPY_INCLUDED_STMHAL_USB_CDC_MSC_HID0_H__
+#endif // MICROPY_INCLUDED_STMHAL_USBDEV_CLASS_INC_USBD_CDC_MSC_HID0_H

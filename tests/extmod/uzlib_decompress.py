@@ -4,9 +4,8 @@ except ImportError:
     try:
         import uzlib as zlib
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 PATTERNS = [
     # Packed results produced by CPy's zlib.compress()

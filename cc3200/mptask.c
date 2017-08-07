@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -112,7 +112,7 @@ static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 
-void TASK_Micropython (void *pvParameters) {
+void TASK_MicroPython (void *pvParameters) {
     // get the top of the stack to initialize the garbage collector
     uint32_t sp = gc_helper_get_sp();
 

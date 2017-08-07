@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -281,13 +281,13 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
 
-STATIC inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
+static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
     static const char type2char[16] = "BbHhIiQq------fd";
     return mp_binary_get_val(struct_type, type2char[val_type], &p);
 }
 
-STATIC inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
+static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
     char struct_type = big_endian ? '>' : '<';
     static const char type2char[16] = "BbHhIiQq------fd";
     mp_binary_set_val(struct_type, type2char[val_type], val, &p);

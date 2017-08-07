@@ -119,10 +119,10 @@ symbols that have already been defined, e.g. ``1 << BIT``.
 
 Where there is a substantial volume of constant data and the platform supports
 execution from Flash, RAM may be saved as follows. The data should be located in
-Python modules and frozen as bytecode. The data must be defined as ``bytes``
-objects. The compiler 'knows' that ``bytes`` objects are immutable and ensures
+Python modules and frozen as bytecode. The data must be defined as `bytes`
+objects. The compiler 'knows' that `bytes` objects are immutable and ensures
 that the objects remain in flash memory rather than being copied to RAM. The
-``ustruct`` module can assist in converting between ``bytes`` types and other
+`ustruct` module can assist in converting between `bytes` types and other
 Python built-in types.
 
 When considering the implications of frozen bytecode, note that in Python
@@ -185,7 +185,7 @@ a file it will save RAM if this is done in a piecemeal fashion. Rather than
 creating a large string object, create a substring and feed it to the stream
 before dealing with the next.
 
-The best way to create dynamic strings is by means of the string ``format``
+The best way to create dynamic strings is by means of the string `format`
 method:
 
 .. code::
@@ -226,26 +226,26 @@ function ``foo()``:
     foo(b'\1\2\xff')
 
 In the first call a tuple of integers is created in RAM. The second efficiently
-creates a ``bytes`` object consuming the minimum amount of RAM. If the module
-were frozen as bytecode, the ``bytes`` object would reside in flash.
+creates a `bytes` object consuming the minimum amount of RAM. If the module
+were frozen as bytecode, the `bytes` object would reside in flash.
 
 **Strings Versus Bytes**
 
 Python3 introduced Unicode support. This introduced a distinction between a
 string and an array of bytes. MicroPython ensures that Unicode strings take no
 additional space so long as all characters in the string are ASCII (i.e. have
-a value < 126). If values in the full 8-bit range are required ``bytes`` and
-``bytearray`` objects can be used to ensure that no additional space will be
-required. Note that most string methods (e.g. ``strip()``) apply also to ``bytes``
+a value < 126). If values in the full 8-bit range are required `bytes` and
+`bytearray` objects can be used to ensure that no additional space will be
+required. Note that most string methods (e.g. :meth:`str.strip()`) apply also to `bytes`
 instances so the process of eliminating Unicode can be painless.
 
 .. code::
 
-    s = 'the quick brown fox'  # A string instance
-    b = b'the quick brown fox'  # a bytes instance
+    s = 'the quick brown fox'   # A string instance
+    b = b'the quick brown fox'  # A bytes instance
 
-Where it is necessary to convert between strings and bytes the string ``encode``
-and the bytes ``decode`` methods can be used. Note that both strings and bytes
+Where it is necessary to convert between strings and bytes the :meth:`str.encode`
+and the :meth:`bytes.decode` methods can be used. Note that both strings and bytes
 are immutable. Any operation which takes as input such an object and produces
 another implies at least one RAM allocation to produce the result. In the
 second line below a new bytes object is allocated. This would also occur if ``foo``
@@ -258,10 +258,10 @@ were a string.
 
 **Runtime compiler execution**
 
-The Python keywords ``eval`` and ``exec`` invoke the compiler at runtime, which
-requires significant amounts of RAM. Note that the ``pickle`` library employs
-``exec``. It may be more RAM efficient to use the ``json`` library for object
-serialisation.
+The Python funcitons `eval` and `exec` invoke the compiler at runtime, which
+requires significant amounts of RAM. Note that the `pickle` library from
+`micropython-lib` employs `exec`. It may be more RAM efficient to use the
+`ujson` library for object serialisation.
 
 **Storing strings in flash**
 
@@ -300,7 +300,7 @@ from a fixed size pool known as the heap. When the object goes out of scope (in
 other words becomes inaccessible to code) the redundant object is known as
 "garbage". A process known as "garbage collection" (GC) reclaims that memory,
 returning it to the free heap. This process runs automatically, however it can
-be invoked directly by issuing ``gc.collect()``.
+be invoked directly by issuing `gc.collect()`.
 
 The discourse on this is somewhat involved. For a 'quick fix' issue the
 following periodically:
@@ -332,7 +332,7 @@ Reporting
 ~~~~~~~~~
 
 A number of library functions are available to report on memory allocation and
-to control GC. These are to be found in the ``gc`` and ``micropython`` modules.
+to control GC. These are to be found in the `gc` and `micropython` modules.
 The following example may be pasted at the REPL (``ctrl e`` to enter paste mode,
 ``ctrl d`` to run it).
 
@@ -357,17 +357,17 @@ The following example may be pasted at the REPL (``ctrl e`` to enter paste mode,
 
 Methods employed above:
 
-* ``gc.collect()`` Force a garbage collection. See footnote.
-* ``micropython.mem_info()`` Print a summary of RAM utilisation.
-* ``gc.mem_free()`` Return the free heap size in bytes.
-* ``gc.mem_alloc()`` Return the number of bytes currently allocated.
+* `gc.collect()` Force a garbage collection. See footnote.
+* `micropython.mem_info()` Print a summary of RAM utilisation.
+* `gc.mem_free()` Return the free heap size in bytes.
+* `gc.mem_alloc()` Return the number of bytes currently allocated.
 * ``micropython.mem_info(1)`` Print a table of heap utilisation (detailed below).
 
 The numbers produced are dependent on the platform, but it can be seen that
 declaring the function uses a small amount of RAM in the form of bytecode
 emitted by the compiler (the RAM used by the compiler has been reclaimed).
 Running the function uses over 10KiB, but on return ``a`` is garbage because it
-is out of scope and cannot be referenced. The final ``gc.collect()`` recovers
+is out of scope and cannot be referenced. The final `gc.collect()` recovers
 that memory.
 
 The final output produced by ``micropython.mem_info(1)`` will vary in detail but
@@ -394,7 +394,7 @@ line of the heap dump represents 0x400 bytes or 1KiB of RAM.
 Control of Garbage Collection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A GC can be demanded at any time by issuing ``gc.collect()``. It is advantageous
+A GC can be demanded at any time by issuing `gc.collect()`. It is advantageous
 to do this at intervals, firstly to pre-empt fragmentation and secondly for
 performance. A GC can take several milliseconds but is quicker when there is
 little work to do (about 1ms on the Pyboard). An explicit call can minimise that
@@ -417,7 +417,7 @@ occupied.
 In general modules should instantiate data objects at runtime using constructors
 or other initialisation functions. The reason is that if this occurs on
 initialisation the compiler may be starved of RAM when subsequent modules are
-imported. If modules do instantiate data on import then ``gc.collect()`` issued
+imported. If modules do instantiate data on import then `gc.collect()` issued
 after the import will ameliorate the problem.
 
 String Operations
@@ -444,13 +444,13 @@ RAM usage and speed.
 
 Where variables are required whose size is neither a byte nor a machine word
 there are standard libraries which can assist in storing these efficiently and
-in performing conversions. See the ``array``, ``ustruct`` and ``uctypes``
+in performing conversions. See the `array`, `ustruct` and `uctypes`
 modules.
 
 Footnote: gc.collect() return value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On Unix and Windows platforms the ``gc.collect()`` method returns an integer
+On Unix and Windows platforms the `gc.collect()` method returns an integer
 which signifies the number of distinct memory regions that were reclaimed in the
 collection (more precisely, the number of heads that were turned into frees). For
 efficiency reasons bare metal ports do not return this value.

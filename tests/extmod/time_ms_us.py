@@ -1,10 +1,9 @@
-import sys
 import utime
 try:
     utime.sleep_ms
 except AttributeError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 utime.sleep_ms(1)
 utime.sleep_us(1)

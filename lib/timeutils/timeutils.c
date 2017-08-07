@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -67,7 +67,7 @@ mp_uint_t timeutils_year_day(mp_uint_t year, mp_uint_t month, mp_uint_t date) {
 
 void timeutils_seconds_since_2000_to_struct_time(mp_uint_t t, timeutils_struct_time_t *tm) {
     // The following algorithm was adapted from musl's __secs_to_tm and adapted
-    // for differences in Micro Python's timebase.
+    // for differences in MicroPython's timebase.
 
     mp_int_t seconds = t - LEAPOCH;
 

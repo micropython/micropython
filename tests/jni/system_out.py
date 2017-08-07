@@ -1,9 +1,8 @@
-import sys
 try:
     import jni
     System = jni.cls("java/lang/System")
 except:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 System.out.println("Hello, Java!")

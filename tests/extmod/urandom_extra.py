@@ -4,16 +4,14 @@ except ImportError:
     try:
         import random
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 try:
     random.randint
 except AttributeError:
-    import sys
     print('SKIP')
-    sys.exit()
+    raise SystemExit
 
 print('randrange')
 for i in range(50):

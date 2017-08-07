@@ -22,23 +22,21 @@ DFU = ../tools/dfu.py
 PYDFU = ../tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
 else
+LD = gcc
 CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
+LDFLAGS = -m32 -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 
-#Debugging/Optimization
+# Tune for Debugging or Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -ggdb
 else
 CFLAGS += -Os -DNDEBUG
+CFLAGS += -fdata-sections -ffunction-sections
 endif
 
-ifeq ($(CROSS), 1)
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref
-else
-LD = gcc
-LDFLAGS = -m32 -Wl,-Map=$@.map,--cref
-endif
 LIBS =
 
 SRC_C = \

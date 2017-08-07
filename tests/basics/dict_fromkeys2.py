@@ -1,9 +1,8 @@
 try:
     reversed
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # argument to fromkeys has no __len__
 d = dict.fromkeys(reversed(range(1)))

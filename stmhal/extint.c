@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -95,9 +95,13 @@
 // The USB_FS_WAKUP event is a direct type and there is no support for it.
 #define EXTI_Mode_Interrupt offsetof(EXTI_TypeDef, IMR1)
 #define EXTI_Mode_Event     offsetof(EXTI_TypeDef, EMR1)
+#define EXTI_RTSR EXTI->RTSR1
+#define EXTI_FTSR EXTI->FTSR1
 #else
 #define EXTI_Mode_Interrupt offsetof(EXTI_TypeDef, IMR)
 #define EXTI_Mode_Event     offsetof(EXTI_TypeDef, EMR)
+#define EXTI_RTSR EXTI->RTSR
+#define EXTI_FTSR EXTI->FTSR
 #endif
 
 #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
@@ -107,7 +111,11 @@ typedef struct {
     mp_int_t line;
 } extint_obj_t;
 
-STATIC uint32_t pyb_extint_mode[EXTI_NUM_VECTORS];
+STATIC uint8_t pyb_extint_mode[EXTI_NUM_VECTORS];
+STATIC bool pyb_extint_hard_irq[EXTI_NUM_VECTORS];
+
+// The callback arg is a small-int or a ROM Pin object, so no need to scan by GC
+STATIC mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
 
 #if !defined(ETH)
 #define ETH_WKUP_IRQn   62  // Some MCUs don't have ETH, but we want a value to put in our table
@@ -187,6 +195,8 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         EXTI_Mode_Interrupt : EXTI_Mode_Event;
 
     if (*cb != mp_const_none) {
+        pyb_extint_hard_irq[v_line] = true;
+        pyb_extint_callback_arg[v_line] = MP_OBJ_NEW_SMALL_INT(v_line);
 
         mp_hal_gpio_clock_enable(pin->gpio);
         GPIO_InitTypeDef exti;
@@ -203,6 +213,64 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         HAL_NVIC_EnableIRQ(nvic_irq_channel[v_line]);
     }
     return v_line;
+}
+
+// This function is intended to be used by the Pin.irq() method
+void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj) {
+    uint32_t line = pin->pin;
+
+    // Check if the ExtInt line is already in use by another Pin/ExtInt
+    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+    if (*cb != mp_const_none && MP_OBJ_FROM_PTR(pin) != pyb_extint_callback_arg[line]) {
+        if (MP_OBJ_IS_SMALL_INT(pyb_extint_callback_arg[line])) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                "ExtInt vector %d is already in use", line));
+        } else {
+            const pin_obj_t *other_pin = (const pin_obj_t*)pyb_extint_callback_arg[line];
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                "IRQ resource already taken by Pin('%q')", other_pin->name));
+        }
+    }
+
+    extint_disable(line);
+
+    *cb = callback_obj;
+    pyb_extint_mode[line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
+        EXTI_Mode_Interrupt : EXTI_Mode_Event;
+
+    if (*cb != mp_const_none) {
+        // Configure and enable the callback
+
+        pyb_extint_hard_irq[line] = hard_irq;
+        pyb_extint_callback_arg[line] = MP_OBJ_FROM_PTR(pin);
+
+        // Route the GPIO to EXTI
+        __HAL_RCC_SYSCFG_CLK_ENABLE();
+        SYSCFG->EXTICR[line >> 2] =
+            (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
+            | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+
+        // Enable or disable the rising detector
+        if ((mode & GPIO_MODE_IT_RISING) == GPIO_MODE_IT_RISING) {
+            EXTI_RTSR |= 1 << line;
+        } else {
+            EXTI_RTSR &= ~(1 << line);
+        }
+
+        // Enable or disable the falling detector
+        if ((mode & GPIO_MODE_IT_FALLING) == GPIO_MODE_IT_FALLING) {
+            EXTI_FTSR |= 1 << line;
+        } else {
+            EXTI_FTSR &= ~(1 << line);
+        }
+
+        // Configure the NVIC
+        HAL_NVIC_SetPriority(nvic_irq_channel[line], IRQ_PRI_EXTINT, IRQ_SUBPRI_EXTINT);
+        HAL_NVIC_EnableIRQ(nvic_irq_channel[line]);
+
+        // Enable the interrupt
+        extint_enable(line);
+    }
 }
 
 void extint_enable(uint line) {
@@ -411,13 +479,19 @@ void Handle_EXTI_Irq(uint32_t line) {
         if (line < EXTI_NUM_VECTORS) {
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
             if (*cb != mp_const_none) {
+                // If it's a soft IRQ handler then just schedule callback for later
+                if (!pyb_extint_hard_irq[line]) {
+                    mp_sched_schedule(*cb, pyb_extint_callback_arg[line]);
+                    return;
+                }
+
                 mp_sched_lock();
                 // When executing code within a handler we must lock the GC to prevent
                 // any memory allocations.  We must also catch any exceptions.
                 gc_lock();
                 nlr_buf_t nlr;
                 if (nlr_push(&nlr) == 0) {
-                    mp_call_function_1(*cb, MP_OBJ_NEW_SMALL_INT(line));
+                    mp_call_function_1(*cb, pyb_extint_callback_arg[line]);
                     nlr_pop();
                 } else {
                     // Uncaught exception; disable the callback so it doesn't run again.

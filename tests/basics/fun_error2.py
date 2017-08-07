@@ -3,8 +3,7 @@ try:
     enumerate
 except:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 def test_exc(code, exc):
     try:

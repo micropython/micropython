@@ -2,9 +2,8 @@
 try:
     memoryview
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 def test_exc(code, exc):
     try:

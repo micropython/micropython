@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBRTC_H_
-#define PYBRTC_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBRTC_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBRTC_H
 
 // RTC triggers
 #define PYB_RTC_ALARM0                      (0x01)
@@ -56,4 +55,4 @@ extern void pyb_rtc_calc_future_time (uint32_t a_mseconds, uint32_t *f_seconds, 
 extern void pyb_rtc_repeat_alarm (pyb_rtc_obj_t *self);
 extern void pyb_rtc_disable_alarm (void);
 
-#endif  // PYBRTC_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBRTC_H

@@ -2,8 +2,7 @@ try:
     import framebuf
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 w = 5
 h = 16

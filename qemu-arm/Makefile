@@ -63,17 +63,13 @@ LIB_SRC_C = $(addprefix lib/,\
 	libm/asinfacosf.c \
 	libm/atanf.c \
 	libm/atan2f.c \
-	)
-
-STM_SRC_C = $(addprefix stmhal/,\
-	pybstdio.c \
+	utils/sys_stdio_mphal.c \
 	)
 
 OBJ_COMMON =
 OBJ_COMMON += $(PY_O)
 OBJ_COMMON += $(addprefix $(BUILD)/, $(SRC_COMMON_C:.c=.o))
 OBJ_COMMON += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ_COMMON += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 
 OBJ_RUN =
 OBJ_RUN += $(addprefix $(BUILD)/, $(SRC_RUN_C:.c=.o))
@@ -86,7 +82,7 @@ OBJ_TEST += $(BUILD)/tinytest.o
 OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(STM_SRC_C)
+SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
 
 all: run
 

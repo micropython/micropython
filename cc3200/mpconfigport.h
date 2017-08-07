@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -25,9 +25,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
-
 #include <stdint.h>
 
 #ifndef BOOTLOADER
@@ -35,7 +32,7 @@
 #include "semphr.h"
 #endif
 
-// options to control how Micro Python is built
+// options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX                      (128)
 #define MICROPY_PERSISTENT_CODE_LOAD                (1)
@@ -235,5 +232,3 @@ typedef long            mp_off_t;
 #define MICROPY_PORT_WLAN_AP_KEY                    "www.wipy.io"
 #define MICROPY_PORT_WLAN_AP_SECURITY               SL_SEC_TYPE_WPA_WPA2
 #define MICROPY_PORT_WLAN_AP_CHANNEL                5
-
-#endif // __INCLUDED_MPCONFIGPORT_H

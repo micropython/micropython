@@ -1,9 +1,8 @@
 try:
     import ure as re
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 r = re.compile('( )')
 try:

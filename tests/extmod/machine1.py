@@ -8,8 +8,7 @@ try:
     machine.mem8
 except:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print(machine.mem8)
 

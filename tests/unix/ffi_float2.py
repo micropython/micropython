@@ -1,10 +1,9 @@
 # test ffi float support
-import sys
 try:
     import ffi
 except ImportError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 def ffi_open(names):
@@ -25,7 +24,7 @@ try:
     tgammaf = libm.func('f', 'tgammaf', 'f')
 except OSError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 for fun in (tgammaf,):
     for val in (0.5, 1, 1.0, 1.5, 4, 4.0):

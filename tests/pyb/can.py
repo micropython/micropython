@@ -2,8 +2,7 @@ try:
     from pyb import CAN
 except ImportError:
     print('SKIP')
-    import sys
-    sys.exit()
+    raise SystemExit
 
 import pyb
 

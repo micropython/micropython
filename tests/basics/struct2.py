@@ -6,9 +6,8 @@ except:
     try:
         import struct
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 print(struct.calcsize('0s'))
 print(struct.unpack('0s', b''))

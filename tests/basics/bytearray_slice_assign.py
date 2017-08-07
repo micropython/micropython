@@ -2,10 +2,9 @@ try:
     bytearray()[:] = bytearray()
 except TypeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
-# test slices; only 2 argument version supported by Micro Python at the moment
+# test slices; only 2 argument version supported by MicroPython at the moment
 x = bytearray(range(10))
 
 # Assignment

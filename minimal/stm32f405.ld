@@ -9,7 +9,7 @@ MEMORY
     CCMRAM (xrw)    : ORIGIN = 0x10000000, LENGTH = 0x010000 /* 64 KiB */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x020000 /* 128 KiB */
 }
- 
+
 /* top end of the stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
@@ -45,7 +45,7 @@ SECTIONS
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
-            
+
     /* Uninitialized data section */
     .bss :
     {

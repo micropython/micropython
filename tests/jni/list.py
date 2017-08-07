@@ -1,10 +1,9 @@
-import sys
 import jni
 try:
     ArrayList = jni.cls("java/util/ArrayList")
 except:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 l = ArrayList()
 print(l)

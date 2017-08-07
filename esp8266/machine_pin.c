@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -161,6 +161,28 @@ void mp_hal_pin_output(mp_hal_pin_obj_t pin_id) {
         PIN_PULLUP_DIS(self->periph);
         gpio_output_set(0, 0, 1 << self->phys_port, 0);
     }
+}
+
+void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin_id) {
+    const pyb_pin_obj_t *pin = &pyb_pin_obj[pin_id];
+
+    if (pin->phys_port == 16) {
+        // configure GPIO16 as input with output register holding 0
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); // input
+        WRITE_PERI_REG(RTC_GPIO_OUT, (READ_PERI_REG(RTC_GPIO_OUT) & ~1)); // out=0
+        return;
+    }
+
+    ETS_GPIO_INTR_DISABLE();
+    PIN_FUNC_SELECT(pin->periph, pin->func);
+    GPIO_REG_WRITE(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)),
+        GPIO_REG_READ(GPIO_PIN_ADDR(GPIO_ID_PIN(pin->phys_port)))
+        | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_ENABLE)); // open drain
+    GPIO_REG_WRITE(GPIO_ENABLE_ADDRESS,
+        GPIO_REG_READ(GPIO_ENABLE_ADDRESS) | (1 << pin->phys_port));
+    ETS_GPIO_INTR_ENABLE();
 }
 
 int pin_get(uint pin) {
@@ -404,24 +426,24 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     return -1;
 }
 
-STATIC const mp_map_elem_t pyb_pin_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_pin_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),    (mp_obj_t)&pyb_pin_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value),   (mp_obj_t)&pyb_pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_off),     (mp_obj_t)&pyb_pin_off_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_on),      (mp_obj_t)&pyb_pin_on_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),     (mp_obj_t)&pyb_pin_irq_obj },
+    { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&pyb_pin_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&pyb_pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&pyb_pin_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pyb_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pyb_pin_irq_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IN),        MP_OBJ_NEW_SMALL_INT(GPIO_MODE_INPUT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OUT),       MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OUTPUT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN), MP_OBJ_NEW_SMALL_INT(GPIO_MODE_OPEN_DRAIN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),   MP_OBJ_NEW_SMALL_INT(GPIO_PULL_UP) },
-    //{ MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN), MP_OBJ_NEW_SMALL_INT(GPIO_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_MODE_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_MODE_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
+    //{ MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
 
-    // IRG triggers, can be or'd together
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING), MP_OBJ_NEW_SMALL_INT(GPIO_PIN_INTR_POSEDGE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_FALLING), MP_OBJ_NEW_SMALL_INT(GPIO_PIN_INTR_NEGEDGE) },
+    // IRQ triggers, can be or'd together
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_pin_locals_dict, pyb_pin_locals_dict_table);
@@ -437,7 +459,7 @@ const mp_obj_type_t pyb_pin_type = {
     .make_new = mp_pin_make_new,
     .call = pyb_pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_t)&pyb_pin_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_pin_locals_dict,
 };
 
 /******************************************************************************/

@@ -1,5 +1,3 @@
-#include STM32_HAL_H
-
 #define MICROPY_HW_BOARD_NAME       "LIMIFROG"
 #define MICROPY_HW_MCU_NAME         "STM32L476"
 

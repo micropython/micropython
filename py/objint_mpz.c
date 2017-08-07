@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -290,6 +290,13 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
             case MP_BINARY_OP_POWER:
             case MP_BINARY_OP_INPLACE_POWER:
+                if (mpz_is_neg(zrhs)) {
+                    #if MICROPY_PY_BUILTINS_FLOAT
+                    return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
+                    #else
+                    mp_raise_ValueError("negative power with no float support");
+                    #endif
+                }
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 

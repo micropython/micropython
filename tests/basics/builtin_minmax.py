@@ -3,9 +3,8 @@ try:
     min
     max
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(min(0,1))
 print(min(1,0))

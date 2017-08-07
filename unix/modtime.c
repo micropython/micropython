@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -125,21 +125,40 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
-STATIC mp_obj_t mod_time_strftime(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_time_localtime(size_t n_args, const mp_obj_t *args) {
     time_t t;
-    if (n_args == 1) {
+    if (n_args == 0) {
         t = time(NULL);
     } else {
-        // CPython requires passing struct tm, but we allow to pass time_t
-        // (and don't support struct tm so far).
-        t = mp_obj_get_int(args[1]);
+        #if MICROPY_PY_BUILTINS_FLOAT
+        mp_float_t val = mp_obj_get_float(args[0]);
+        t = (time_t)MICROPY_FLOAT_C_FUN(trunc)(val);
+        #else
+        t = mp_obj_get_int(args[0]);
+        #endif
     }
     struct tm *tm = localtime(&t);
-    char buf[32];
-    size_t sz = strftime(buf, sizeof(buf), mp_obj_str_get_str(args[0]), tm);
-    return mp_obj_new_str(buf, sz, false);
+
+    mp_obj_t ret = mp_obj_new_tuple(9, NULL);
+
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(ret);
+    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(tm->tm_year + 1900);
+    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(tm->tm_mon + 1);
+    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(tm->tm_mday);
+    tuple->items[3] = MP_OBJ_NEW_SMALL_INT(tm->tm_hour);
+    tuple->items[4] = MP_OBJ_NEW_SMALL_INT(tm->tm_min);
+    tuple->items[5] = MP_OBJ_NEW_SMALL_INT(tm->tm_sec);
+    int wday = tm->tm_wday - 1;
+    if (wday < 0) {
+        wday = 6;
+    }
+    tuple->items[6] = MP_OBJ_NEW_SMALL_INT(wday);
+    tuple->items[7] = MP_OBJ_NEW_SMALL_INT(tm->tm_yday + 1);
+    tuple->items[8] = MP_OBJ_NEW_SMALL_INT(tm->tm_isdst);
+
+    return ret;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_strftime_obj, 1, 2, mod_time_strftime);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_localtime_obj, 0, 1, mod_time_localtime);
 
 STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
@@ -153,7 +172,7 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
-    { MP_ROM_QSTR(MP_QSTR_strftime), MP_ROM_PTR(&mod_time_strftime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);

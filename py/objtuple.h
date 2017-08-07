@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJTUPLE_H__
-#define __MICROPY_INCLUDED_PY_OBJTUPLE_H__
+#ifndef MICROPY_INCLUDED_PY_OBJTUPLE_H
+#define MICROPY_INCLUDED_PY_OBJTUPLE_H
 
 #include "py/obj.h"
 
@@ -61,4 +61,4 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
 
 mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *items);
 
-#endif // __MICROPY_INCLUDED_PY_OBJTUPLE_H__
+#endif // MICROPY_INCLUDED_PY_OBJTUPLE_H

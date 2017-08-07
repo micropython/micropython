@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -51,7 +51,7 @@
 /// and for sleeping.
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 /// \function localtime([secs])
 /// Convert a time expressed in seconds since Jan 1, 2000 into an 8-tuple which

@@ -1,5 +1,5 @@
-#ifndef __CC_H__
-#define __CC_H__
+#ifndef MICROPY_INCLUDED_EXTMOD_LWIP_INCLUDE_ARCH_CC_H
+#define MICROPY_INCLUDED_EXTMOD_LWIP_INCLUDE_ARCH_CC_H
 
 #include <stdint.h>
 
@@ -38,4 +38,4 @@ typedef u32_t mem_ptr_t;
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_END
 
-#endif /* __ARCH_CC_H__ */
+#endif // MICROPY_INCLUDED_EXTMOD_LWIP_INCLUDE_ARCH_CC_H

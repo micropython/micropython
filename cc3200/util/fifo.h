@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef FIFO_H_
-#define FIFO_H_
+#ifndef MICROPY_INCLUDED_CC3200_UTIL_FIFO_H
+#define MICROPY_INCLUDED_CC3200_UTIL_FIFO_H
 
 typedef struct {
     void *pvElements;
@@ -47,4 +46,4 @@ extern bool FIFO_IsEmpty (FIFO_t *fifo);
 extern bool FIFO_IsFull (FIFO_t *fifo);
 extern void FIFO_Flush (FIFO_t *fifo);
 
-#endif /* FIFO_H_ */
+#endif // MICROPY_INCLUDED_CC3200_UTIL_FIFO_H

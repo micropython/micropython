@@ -4,9 +4,8 @@ try:
     # nothing to test.
     object.__init__
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 class Test(object):
     def __init__(self):

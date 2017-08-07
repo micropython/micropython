@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_LEXER_H__
-#define __MICROPY_INCLUDED_PY_LEXER_H__
+#ifndef MICROPY_INCLUDED_PY_LEXER_H
+#define MICROPY_INCLUDED_PY_LEXER_H
 
 #include <stdint.h>
 
@@ -32,7 +32,7 @@
 #include "py/qstr.h"
 #include "py/reader.h"
 
-/* lexer.h -- simple tokeniser for Micro Python
+/* lexer.h -- simple tokeniser for MicroPython
  *
  * Uses (byte) length instead of null termination.
  * Tokens are the same - UTF-8 with (byte) length.
@@ -192,4 +192,4 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename);
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_LEXER_H__
+#endif // MICROPY_INCLUDED_PY_LEXER_H

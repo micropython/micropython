@@ -5,8 +5,7 @@ try:
     import ussl as ssl
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # create in client mode
 try:
@@ -44,6 +43,14 @@ except OSError as er:
 
 # close
 ss.close()
+# close 2nd time
+ss.close()
+
+# read on closed socket
+try:
+    ss.read(10)
+except OSError as er:
+    print('read:', repr(er))
 
 # write on closed socket
 try:

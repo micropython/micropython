@@ -1,4 +1,3 @@
-import sys
 try:
     import uerrno
     try:
@@ -7,13 +6,13 @@ try:
         import uos
 except ImportError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 try:
     uos.VfsFat
 except AttributeError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 class RAMFS_OLD:
 
@@ -43,7 +42,7 @@ try:
     bdev = RAMFS_OLD(50)
 except MemoryError:
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 uos.VfsFat.mkfs(bdev)
 vfs = uos.VfsFat(bdev)

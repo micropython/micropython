@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_ASMTHUMB_H__
-#define __MICROPY_INCLUDED_PY_ASMTHUMB_H__
+#ifndef MICROPY_INCLUDED_PY_ASMTHUMB_H
+#define MICROPY_INCLUDED_PY_ASMTHUMB_H
 
 #include "py/misc.h"
 #include "py/asmbase.h"
@@ -318,4 +318,4 @@ void asm_thumb_bl_ind(asm_thumb_t *as, void *fun_ptr, uint fun_id, uint reg_temp
 
 #endif // GENERIC_ASM_API
 
-#endif // __MICROPY_INCLUDED_PY_ASMTHUMB_H__
+#endif // MICROPY_INCLUDED_PY_ASMTHUMB_H

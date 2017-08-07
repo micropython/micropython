@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,11 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef SLEEPRESTORE_H_
-#define SLEEPRESTORE_H_
+#ifndef MICROPY_INCLUDED_CC3200_UTIL_SLEEPRESTORE_H
+#define MICROPY_INCLUDED_CC3200_UTIL_SLEEPRESTORE_H
 
 extern void sleep_store(void);
 extern void sleep_restore(void);
 
-#endif /* SLEEPRESTORE_H_ */
+#endif // MICROPY_INCLUDED_CC3200_UTIL_SLEEPRESTORE_H

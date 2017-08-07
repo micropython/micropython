@@ -2,8 +2,7 @@ try:
     str.partition
 except AttributeError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print("asdf".rpartition('g'))
 print("asdf".rpartition('a'))

@@ -1370,7 +1370,7 @@ void UART_AdvFeatureConfig(UART_HandleTypeDef *huart);
 /**
   * @}
   */
-/* Functions added by micropython */
+/* Functions added by MicroPython */
 uint32_t HAL_UART_CalcBrr(uint32_t fck, uint32_t baud);
 
 #ifdef __cplusplus

@@ -3,9 +3,8 @@
 try:
     range(0).start
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # attrs
 print(range(1, 2, 3).start)

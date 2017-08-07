@@ -4,9 +4,8 @@ try:
     except ImportError:
         import binascii
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(binascii.unhexlify(b'0001020304050607'))
 print(binascii.unhexlify(b'08090a0b0c0d0e0f'))

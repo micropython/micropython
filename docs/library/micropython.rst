@@ -23,30 +23,30 @@ Functions
    variable, and does not take up any memory during execution.
 
    This `const` function is recognised directly by the MicroPython parser and is
-   provided as part of the `micropython` module mainly so that scripts can be
+   provided as part of the :mod:`micropython` module mainly so that scripts can be
    written which run under both CPython and MicroPython, by following the above
    pattern.
 
 .. function:: opt_level([level])
 
-   If `level` is given then this function sets the optimisation level for subsequent
-   compilation of scripts, and returns `None`.  Otherwise it returns the current
+   If *level* is given then this function sets the optimisation level for subsequent
+   compilation of scripts, and returns ``None``.  Otherwise it returns the current
    optimisation level.
 
 .. function:: alloc_emergency_exception_buf(size)
 
-   Allocate ``size`` bytes of RAM for the emergency exception buffer (a good
+   Allocate *size* bytes of RAM for the emergency exception buffer (a good
    size is around 100 bytes).  The buffer is used to create exceptions in cases
    when normal RAM allocation would fail (eg within an interrupt handler) and
    therefore give useful traceback information in these situations.
 
    A good way to use this function is to put it at the start of your main script
-   (eg boot.py or main.py) and then the emergency exception buffer will be active
+   (eg ``boot.py`` or ``main.py``) and then the emergency exception buffer will be active
    for all the code following it.
 
 .. function:: mem_info([verbose])
 
-   Print information about currently used memory.  If the ``verbose`` argument
+   Print information about currently used memory.  If the *verbose`* argument
    is given then extra information is printed.
 
    The information that is printed is implementation dependent, but currently
@@ -55,7 +55,7 @@ Functions
 
 .. function:: qstr_info([verbose])
 
-   Print information about currently interned strings.  If the ``verbose``
+   Print information about currently interned strings.  If the *verbose*
    argument is given then extra information is printed.
 
    The information that is printed is implementation dependent, but currently
@@ -89,10 +89,10 @@ Functions
    incoming stream of characters that is usually used for the REPL, in case
    that stream is used for other purposes.
 
-.. function:: schedule(fun, arg)
+.. function:: schedule(func, arg)
 
-   Schedule the function `fun` to be executed "very soon".  The function
-   is passed the value `arg` as its single argument.  "very soon" means that
+   Schedule the function *func* to be executed "very soon".  The function
+   is passed the value *arg* as its single argument.  "Very soon" means that
    the MicroPython runtime will do its best to execute the function at the
    earliest possible time, given that it is also trying to be efficient, and
    that the following conditions hold:
