@@ -48,10 +48,12 @@
 typedef struct _socket_obj_t {
     mp_obj_base_t base;
     struct net_context *ctx;
+    #ifndef CONFIG_NET_SOCKETS
     union {
         struct k_fifo recv_q;
         struct k_fifo accept_q;
     };
+    #endif
 
     #define STATE_NEW 0
     #define STATE_CONNECTING 1
@@ -61,6 +63,12 @@ typedef struct _socket_obj_t {
 } socket_obj_t;
 
 STATIC const mp_obj_type_t socket_type;
+
+#ifdef CONFIG_NET_SOCKETS
+#define SOCK_FIELD(ptr, field) ((ptr)->ctx->field)
+#else
+#define SOCK_FIELD(ptr, field) ((ptr)->field)
+#endif
 
 // k_fifo extended API
 
@@ -171,10 +179,10 @@ static void sock_received_cb(struct net_context *context, struct net_pkt *pkt, i
 
     // if net_buf == NULL, EOF
     if (pkt == NULL) {
-        struct net_pkt *last_pkt = _k_fifo_peek_tail(&socket->recv_q);
+        struct net_pkt *last_pkt = _k_fifo_peek_tail(&SOCK_FIELD(socket, recv_q));
         if (last_pkt == NULL) {
             socket->state = STATE_PEER_CLOSED;
-            k_fifo_cancel_wait(&socket->recv_q);
+            k_fifo_cancel_wait(&SOCK_FIELD(socket, recv_q));
             DEBUG_printf("Marked socket %p as peer-closed\n", socket);
         } else {
             // We abuse "buf_sent" flag to store EOF flag
@@ -191,7 +199,7 @@ static void sock_received_cb(struct net_context *context, struct net_pkt *pkt, i
     unsigned header_len = net_pkt_appdata(pkt) - pkt->frags->data;
     net_buf_pull(pkt->frags, header_len);
 
-    k_fifo_put(&socket->recv_q, pkt);
+    k_fifo_put(&SOCK_FIELD(socket, recv_q), pkt);
 }
 
 // Callback for incoming connections.
@@ -200,13 +208,12 @@ static void sock_accepted_cb(struct net_context *new_ctx, struct sockaddr *addr,
     DEBUG_printf("accept cb: context: %p, status: %d, new ctx: %p\n", socket->ctx, status, new_ctx);
     DEBUG_printf("new_ctx ref_cnt: %d\n", new_ctx->refcount);
 
-    k_fifo_put(&socket->accept_q, new_ctx);
+    k_fifo_put(&SOCK_FIELD(socket, accept_q), new_ctx);
 }
 
 socket_obj_t *socket_new(void) {
     socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
     socket->base.type = (mp_obj_t)&socket_type;
-    k_fifo_init(&socket->recv_q);
     socket->state = STATE_NEW;
     return socket;
 }
@@ -250,6 +257,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
 
     RAISE_ERRNO(net_context_get(family, socktype, proto, &socket->ctx));
+    k_fifo_init(&SOCK_FIELD(socket, recv_q));
 
     return MP_OBJ_FROM_PTR(socket);
 }
@@ -302,7 +310,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
     socket_check_closed(socket);
 
-    struct net_context *ctx = k_fifo_get(&socket->accept_q, K_FOREVER);
+    struct net_context *ctx = k_fifo_get(&SOCK_FIELD(socket, accept_q), K_FOREVER);
     // Was overwritten by fifo
     ctx->refcount = 1;
 
@@ -375,7 +383,7 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
 
     if (sock_type == SOCK_DGRAM) {
 
-        struct net_pkt *pkt = k_fifo_get(&socket->recv_q, K_FOREVER);
+        struct net_pkt *pkt = k_fifo_get(&SOCK_FIELD(socket, recv_q), K_FOREVER);
 
         recv_len = net_pkt_appdatalen(pkt);
         DEBUG_printf("recv: pkt=%p, appdatalen: %d\n", pkt, recv_len);
@@ -395,8 +403,8 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
                 return 0;
             }
 
-            _k_fifo_wait_non_empty(&socket->recv_q, K_FOREVER);
-            struct net_pkt *pkt = _k_fifo_peek_head(&socket->recv_q);
+            _k_fifo_wait_non_empty(&SOCK_FIELD(socket, recv_q), K_FOREVER);
+            struct net_pkt *pkt = _k_fifo_peek_head(&SOCK_FIELD(socket, recv_q));
             if (pkt == NULL) {
                 DEBUG_printf("TCP recv: NULL return from fifo\n");
                 continue;
@@ -426,7 +434,7 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
                 if (frag == NULL) {
                     DEBUG_printf("Finished processing pkt %p\n", pkt);
                     // Drop head packet from queue
-                    k_fifo_get(&socket->recv_q, K_NO_WAIT);
+                    k_fifo_get(&SOCK_FIELD(socket, recv_q), K_NO_WAIT);
 
                     // If "sent" flag was set, it's last packet and we reached EOF
                     if (net_pkt_sent(pkt)) {
