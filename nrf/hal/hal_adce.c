@@ -43,7 +43,7 @@ static const uint32_t hal_adc_input_lookup_pos[] = {
 #define HAL_ADCE_PSELP_NOT_CONNECTED (SAADC_CH_PSELP_PSELP_NC << SAADC_CH_PSELP_PSELP_Pos)
 #define HAL_ADCE_PSELP_VDD           (SAADC_CH_PSELP_PSELP_VDD << SAADC_CH_PSELP_PSELP_Pos)
 
-static const uint32_t hal_adc_input_lookup_neg[] = {
+/*static const uint32_t hal_adc_input_lookup_neg[] = {
     SAADC_CH_PSELN_PSELN_AnalogInput0 << SAADC_CH_PSELN_PSELN_Pos,
     SAADC_CH_PSELN_PSELN_AnalogInput1 << SAADC_CH_PSELN_PSELN_Pos,
     SAADC_CH_PSELN_PSELN_AnalogInput2 << SAADC_CH_PSELN_PSELN_Pos,
@@ -52,7 +52,7 @@ static const uint32_t hal_adc_input_lookup_neg[] = {
     SAADC_CH_PSELN_PSELN_AnalogInput5 << SAADC_CH_PSELN_PSELN_Pos,
     SAADC_CH_PSELN_PSELN_AnalogInput6 << SAADC_CH_PSELN_PSELN_Pos,
     SAADC_CH_PSELN_PSELN_AnalogInput7 << SAADC_CH_PSELN_PSELN_Pos
-};
+};*/
 
 #define HAL_ADCE_PSELN_NOT_CONNECTED (SAADC_CH_PSELN_PSELN_NC << SAADC_CH_PSELN_PSELN_Pos)
 #define HAL_ADCE_PSELN_VDD           (SAADC_CH_PSELN_PSELN_VDD << SAADC_CH_PSELN_PSELN_Pos)
