@@ -294,7 +294,10 @@ const mp_obj_type_t internal_flash_type = {
 };
 
 void flash_init_vfs(fs_user_mount_t *vfs) {
+    vfs->base.type = &mp_fat_vfs_type;
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->fatfs.drv = vfs;
+    vfs->fatfs.part = 1; // flash filesystem lives on first partition
     vfs->readblocks[0] = (mp_obj_t)&internal_flash_obj_readblocks_obj;
     vfs->readblocks[1] = (mp_obj_t)&internal_flash_obj;
     vfs->readblocks[2] = (mp_obj_t)internal_flash_read_blocks; // native version

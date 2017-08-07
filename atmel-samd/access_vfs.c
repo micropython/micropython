@@ -45,6 +45,9 @@
 // The root FS is always at the end of the list.
 static fs_user_mount_t* get_vfs(int index) {
     mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
+    if (current_mount == NULL) {
+        return NULL;
+    }
     while (current_mount->next != NULL) {
         current_mount = current_mount->next;
     }
