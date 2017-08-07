@@ -123,6 +123,13 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_mount), MP_ROM_PTR(&storage_mount_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_umount), MP_ROM_PTR(&storage_umount_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_remount), MP_ROM_PTR(&storage_remount_obj) },
+
+    //| .. class:: VfsFat(block_device)
+    //|
+    //|   Create a new VfsFat filesystem around the given block device.
+    //|
+    //|   :param block_device: Block device the the filesystem lives on
+    //|
     { MP_OBJ_NEW_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 
