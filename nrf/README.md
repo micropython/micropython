@@ -64,9 +64,10 @@ First prepare the bluetooth folder by downloading Bluetooth LE stacks and header
 If the Bluetooth stacks has been downloaded, compile the target with the following command:
 
     make BOARD=pca10040 SD=s132
-    make sd
 
 The **make sd** will trigger a flash of the bluetooth stack before that application is flashed. Note that **make sd** will perform a full erase of the chip, which could cause 3rd party bootloaders to also be wiped.
+
+    make BOARD=pca10040 SD=s132 sd
 
 Note: further tuning of features to include in bluetooth or even setting up the device to use REPL over Bluetooth can be configured in the `bluetooth_conf.h`.
 
@@ -97,6 +98,7 @@ Install the necessary tools to flash and debug using Segger:
 
 [nrfjprog win32 Download](https://www.nordicsemi.com/eng/nordic/download_resource/33444/40/22191727/53210)
 
+note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrfjprog's folder.
 
 ## PyOCD/OpenOCD Targets
 
