@@ -53,6 +53,7 @@ knowledge of the interface details of the chip itself.
     NeoPixel <https://circuitpython.readthedocs.io/projects/neopixel/en/latest/>
     SimpleIO <https://circuitpython.readthedocs.io/projects/simpleio/en/latest/>
     RGB Displays <http://micropython-rgb.readthedocs.io/>
+    SD Card <https://circuitpython.readthedocs.io/projects/sdcard/en/latest/>
     Analog-to-digital converters: ADS1015 and ADS1115 <http://micropython-ads1015.readthedocs.io/>
     DS3231 Real-time Clock (Precision RTC) <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>
     DS1307 Real-time Clock (5V RTC Breakout) <https://circuitpython.readthedocs.io/projects/ds1307/en/latest/>
