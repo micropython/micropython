@@ -278,7 +278,9 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     struct sockaddr sockaddr;
     parse_inet_addr(socket, addr_in, &sockaddr);
 
-    RAISE_ERRNO(net_context_bind(socket->ctx, &sockaddr, sizeof(sockaddr)));
+    int res = zsock_bind(socket->ctx, &sockaddr, sizeof(sockaddr));
+    RAISE_SOCK_ERRNO(res);
+
     // For DGRAM socket, we expect to receive packets after call to bind(),
     // but for STREAM socket, next expected operation is listen(), which
     // doesn't work if recv callback is set.
@@ -297,7 +299,9 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     struct sockaddr sockaddr;
     parse_inet_addr(socket, addr_in, &sockaddr);
 
-    RAISE_ERRNO(net_context_connect(socket->ctx, &sockaddr, sizeof(sockaddr), NULL, K_FOREVER, NULL));
+    int res = zsock_connect(socket->ctx, &sockaddr, sizeof(sockaddr));
+    RAISE_SOCK_ERRNO(res);
+
     DEBUG_printf("Setting recv cb after connect()\n");
     RAISE_ERRNO(net_context_recv(socket->ctx, sock_received_cb, K_NO_WAIT, socket));
     return mp_const_none;
@@ -309,8 +313,9 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     socket_check_closed(socket);
 
     mp_int_t backlog = mp_obj_get_int(backlog_in);
-    RAISE_ERRNO(net_context_listen(socket->ctx, backlog));
-    RAISE_ERRNO(net_context_accept(socket->ctx, sock_accepted_cb, K_NO_WAIT, socket));
+    int res = zsock_listen(socket->ctx, backlog);
+    RAISE_SOCK_ERRNO(res);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
@@ -319,9 +324,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
     socket_check_closed(socket);
 
-    struct net_context *ctx = k_fifo_get(&SOCK_FIELD(socket, accept_q), K_FOREVER);
-    // Was overwritten by fifo
-    ctx->refcount = 1;
+    struct sockaddr sockaddr;
+    socklen_t addrlen = sizeof(sockaddr);
+    void *ctx = zsock_accept(socket->ctx, &sockaddr, &addrlen);
 
     socket_obj_t *socket2 = socket_new();
     socket2->ctx = ctx;
