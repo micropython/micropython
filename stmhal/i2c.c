@@ -670,7 +670,7 @@ STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
     pyb_i2c_obj_t *self = self_in;
 
     if (!in_master_mode(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "I2C must be a master"));
+        mp_raise_TypeError("I2C must be a master");
     }
 
     mp_uint_t i2c_addr = mp_obj_get_int(i2c_addr_o) << 1;
@@ -693,7 +693,7 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     pyb_i2c_obj_t *self = self_in;
 
     if (!in_master_mode(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "I2C must be a master"));
+        mp_raise_TypeError("I2C must be a master");
     }
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
@@ -754,7 +754,7 @@ STATIC mp_obj_t pyb_i2c_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
             if (use_dma) {
                 dma_deinit(self->tx_dma_descr);
             }
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "addr argument required"));
+            mp_raise_TypeError("addr argument required");
         }
         mp_uint_t i2c_addr = args[1].u_int << 1;
         if (!use_dma) {
@@ -830,7 +830,7 @@ STATIC mp_obj_t pyb_i2c_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     HAL_StatusTypeDef status;
     if (in_master_mode(self)) {
         if (args[1].u_int == PYB_I2C_MASTER_ADDRESS) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "addr argument required"));
+            mp_raise_TypeError("addr argument required");
         }
         mp_uint_t i2c_addr = args[1].u_int << 1;
         if (!use_dma) {
@@ -897,7 +897,7 @@ STATIC mp_obj_t pyb_i2c_mem_read(mp_uint_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_mem_read_allowed_args), pyb_i2c_mem_read_allowed_args, args);
 
     if (!in_master_mode(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "I2C must be a master"));
+        mp_raise_TypeError("I2C must be a master");
     }
 
     // get the buffer to read into
@@ -965,7 +965,7 @@ STATIC mp_obj_t pyb_i2c_mem_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(pyb_i2c_mem_read_allowed_args), pyb_i2c_mem_read_allowed_args, args);
 
     if (!in_master_mode(self)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "I2C must be a master"));
+        mp_raise_TypeError("I2C must be a master");
     }
 
     // get the buffer to write from

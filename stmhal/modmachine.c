@@ -258,7 +258,7 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
 
         #if defined(MCU_SERIES_L4)
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, "machine.freq set not supported yet"));
+        mp_raise_NotImplementedError("machine.freq set not supported yet");
         #endif
 
         // default PLL parameters that give 48MHz on PLL48CK
@@ -318,7 +318,7 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
                     goto set_clk;
                 }
             }
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't make valid freq"));
+            mp_raise_ValueError("can't make valid freq");
         }
 
     set_clk:

@@ -217,7 +217,7 @@ mp_obj_t pyb_Servo(void) {
         self->servo_id++;
     }
     m_del_obj(pyb_servo_obj_t, self);
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "No available servo ids"));
+    mp_raise_ValueError("No available servo ids");
     return mp_const_none;
 }
 
