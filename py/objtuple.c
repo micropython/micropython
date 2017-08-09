@@ -148,7 +148,8 @@ mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
             mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(s);
         }
-        case MP_BINARY_OP_MULTIPLY: {
+        case MP_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_INPLACE_MULTIPLY: {
             mp_int_t n;
             if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return MP_OBJ_NULL; // op not supported
