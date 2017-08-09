@@ -379,75 +379,10 @@ STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *
         return MP_STREAM_ERROR;
     }
 
-    enum net_sock_type sock_type = net_context_get_type(socket->ctx);
-    unsigned recv_len;
-
-    if (sock_type == SOCK_DGRAM) {
-
-        struct net_pkt *pkt = k_fifo_get(&SOCK_FIELD(socket, recv_q), K_FOREVER);
-
-        recv_len = net_pkt_appdatalen(pkt);
-        DEBUG_printf("recv: pkt=%p, appdatalen: %d\n", pkt, recv_len);
-
-        if (recv_len > max_len) {
-            recv_len = max_len;
-        }
-
-        net_pkt_gather(pkt, buf, recv_len);
-        net_pkt_unref(pkt);
-
-    } else if (sock_type == SOCK_STREAM) {
-
-        do {
-
-            if (socket->state == STATE_PEER_CLOSED) {
-                return 0;
-            }
-
-            _k_fifo_wait_non_empty(&SOCK_FIELD(socket, recv_q), K_FOREVER);
-            struct net_pkt *pkt = _k_fifo_peek_head(&SOCK_FIELD(socket, recv_q));
-            if (pkt == NULL) {
-                DEBUG_printf("TCP recv: NULL return from fifo\n");
-                continue;
-            }
-
-            DEBUG_printf("TCP recv: cur_pkt: %p\n", pkt);
-
-            struct net_buf *frag = pkt->frags;
-            if (frag == NULL) {
-                printf("net_pkt has empty fragments on start!\n");
-                assert(0);
-            }
-
-            unsigned frag_len = frag->len;
-            recv_len = frag_len;
-            if (recv_len > max_len) {
-                recv_len = max_len;
-            }
-            DEBUG_printf("%d data bytes in head frag, going to read %d\n", frag_len, recv_len);
-
-            memcpy(buf, frag->data, recv_len);
-
-            if (recv_len != frag_len) {
-                net_buf_pull(frag, recv_len);
-            } else {
-                frag = net_pkt_frag_del(pkt, NULL, frag);
-                if (frag == NULL) {
-                    DEBUG_printf("Finished processing pkt %p\n", pkt);
-                    // Drop head packet from queue
-                    k_fifo_get(&SOCK_FIELD(socket, recv_q), K_NO_WAIT);
-
-                    // If "sent" flag was set, it's last packet and we reached EOF
-                    if (net_pkt_sent(pkt)) {
-                        socket->state = STATE_PEER_CLOSED;
-                    }
-                    net_pkt_unref(pkt);
-                }
-            }
-        // Keep repeating while we're getting empty fragments
-        // Zephyr IP stack appears to have fed empty net_buf's with empty
-        // frags for various TCP control packets - in previous versions.
-        } while (recv_len == 0);
+    ssize_t recv_len = zsock_recv(socket->ctx, buf, max_len, 0);
+    if (recv_len == -1) {
+        *errcode = errno;
+        return MP_STREAM_ERROR;
     }
 
     return recv_len;
