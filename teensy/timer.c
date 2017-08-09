@@ -255,7 +255,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
         // set prescaler and period from frequency
 
         if (vals[0].u_int == 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't have 0 frequency"));
+            mp_raise_ValueError("can't have 0 frequency");
         }
 
         uint32_t period = MAX(1, F_BUS / vals[0].u_int);
@@ -277,7 +277,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "period must be between 0 and 65535, not %d", init->Period));
         }
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "must specify either freq, or prescaler and period"));
+        mp_raise_TypeError("must specify either freq, or prescaler and period");
     }
 
     init->CounterMode = vals[3].u_int;
@@ -498,7 +498,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
     mp_obj_t pin_obj = vals[1].u_obj;
     if (pin_obj != mp_const_none) {
         if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin argument needs to be be a Pin type"));
+            mp_raise_ValueError("pin argument needs to be be a Pin type");
         }
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_FTM, self->tim_id);
@@ -668,7 +668,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         // start timer, so that it interrupts on overflow
         HAL_FTM_Base_Start_IT(&self->ftm);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+        mp_raise_ValueError("callback must be None or a callable object");
     }
     return mp_const_none;
 }
@@ -846,7 +846,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
                 break;
         }
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+        mp_raise_ValueError("callback must be None or a callable object");
     }
     return mp_const_none;
 }

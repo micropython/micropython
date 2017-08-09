@@ -409,7 +409,7 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     }
 
 error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Don't know how to pass object to native function"));
+    mp_raise_TypeError("Don't know how to pass object to native function");
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {
