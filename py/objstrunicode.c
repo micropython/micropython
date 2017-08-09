@@ -188,7 +188,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_t ostart, ostop, ostep;
             mp_obj_slice_get(index, &ostart, &ostop, &ostep);
             if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-                mp_not_implemented("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
             }
 
             const byte *pstart, *pstop;

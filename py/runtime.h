@@ -149,8 +149,8 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
 //NORETURN void nlr_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...);
 NORETURN void mp_raise_ValueError(const char *msg);
 NORETURN void mp_raise_TypeError(const char *msg);
+NORETURN void mp_raise_NotImplementedError(const char *msg);
 NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_not_implemented(const char *msg); // Raise NotImplementedError with given message
 NORETURN void mp_exc_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

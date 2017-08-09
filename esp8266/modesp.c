@@ -118,7 +118,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len & 0x3) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "len must be multiple of 4"));
+        mp_raise_ValueError("len must be multiple of 4");
     }
     SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
     if (res == SPI_FLASH_RESULT_OK) {

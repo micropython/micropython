@@ -278,7 +278,7 @@ STATIC uint32_t compute_prescaler_period_from_freq(pyb_timer_obj_t *self, mp_obj
         if (freq <= 0) {
             goto bad_freq;
             bad_freq:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "must have positive freq"));
+            mp_raise_ValueError("must have positive freq");
         }
         period = source_freq / freq;
     }
@@ -429,7 +429,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks) {
 
 TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer) {
     if (mp_obj_get_type(timer) != &pyb_timer_type) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "need a Timer object"));
+        mp_raise_ValueError("need a Timer object");
     }
     pyb_timer_obj_t *self = timer;
     return &self->tim;
@@ -541,7 +541,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, mp_uint_t n_args, c
         init->Prescaler = args[1].u_int;
         init->Period = args[2].u_int;
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "must specify either freq, or prescaler and period"));
+        mp_raise_TypeError("must specify either freq, or prescaler and period");
     }
 
     init->CounterMode = args[3].u_int;
@@ -891,7 +891,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     mp_obj_t pin_obj = args[2].u_obj;
     if (pin_obj != mp_const_none) {
         if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin argument needs to be be a Pin type"));
+            mp_raise_ValueError("pin argument needs to be be a Pin type");
         }
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
@@ -1174,7 +1174,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
         HAL_NVIC_EnableIRQ(self->irqn);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+        mp_raise_ValueError("callback must be None or a callable object");
     }
     return mp_const_none;
 }
@@ -1331,7 +1331,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
                 break;
         }
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+        mp_raise_ValueError("callback must be None or a callable object");
     }
     return mp_const_none;
 }

@@ -119,7 +119,7 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
         return DAC_TRIGGER_T8_TRGO;
     #endif
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Timer does not support DAC triggering"));
+        mp_raise_ValueError("Timer does not support DAC triggering");
     }
 }
 

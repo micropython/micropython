@@ -275,8 +275,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig)
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-            "either pos or kw args are allowed"));
+        mp_raise_TypeError("either pos or kw args are allowed");
     }
 
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -303,8 +302,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
-                            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                                "invalid buffer length"));
+                            mp_raise_ValueError("invalid buffer length");
                         }
                         wifi_set_macaddr(self->if_id, bufinfo.buf);
                         break;
@@ -374,8 +372,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     // Get config
 
     if (n_args != 2) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-            "can query only one param"));
+        mp_raise_TypeError("can query only one param");
     }
 
     mp_obj_t val;
@@ -422,8 +419,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     return val;
 
 unknown:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-        "unknown config param"));
+    mp_raise_ValueError("unknown config param");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 

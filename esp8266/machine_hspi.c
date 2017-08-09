@@ -122,15 +122,13 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
         spi_init_gpio(HSPI, SPI_CLK_80MHZ_NODIV);
         spi_clock(HSPI, 0, 0);
     } else if (self->baudrate > 40000000L) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-            "impossible baudrate"));
+        mp_raise_ValueError("impossible baudrate");
     } else {
         uint32_t divider = 40000000L / self->baudrate;
         uint16_t prediv = MIN(divider, SPI_CLKDIV_PRE + 1);
         uint16_t cntdiv = (divider / prediv) * 2; // cntdiv has to be even
         if (cntdiv > SPI_CLKCNT_N + 1 || cntdiv == 0 || prediv == 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "impossible baudrate"));
+            mp_raise_ValueError("impossible baudrate");
         }
         self->baudrate = 80000000L / (prediv * cntdiv);
         spi_init_gpio(HSPI, SPI_CLK_USE_DIV);

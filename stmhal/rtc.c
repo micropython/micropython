@@ -575,7 +575,7 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
                     wut -= 0x10000;
                     if (wut > 0x10000) {
                         // wut still too large
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "wakeup value too large"));
+                        mp_raise_ValueError("wakeup value too large");
                     }
                 }
             }
@@ -685,12 +685,10 @@ mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
                 }
                 return mp_obj_new_int(cal & 1);
             } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                               "calibration value out of range"));
+                mp_raise_ValueError("calibration value out of range");
             }
 #else
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "calibration value out of range"));
+            mp_raise_ValueError("calibration value out of range");
 #endif
         }
         if (cal > 0) {
