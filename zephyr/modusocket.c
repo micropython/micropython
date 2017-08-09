@@ -344,28 +344,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
 STATIC mp_uint_t sock_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     socket_obj_t *socket = self_in;
-    if (socket->ctx == NULL) {
+    if (socket->ctx == -1) {
         // already closed
         *errcode = EBADF;
         return MP_STREAM_ERROR;
     }
 
-    struct net_pkt *send_pkt = net_pkt_get_tx(socket->ctx, K_FOREVER);
-
-    unsigned len = net_if_get_mtu(net_context_get_iface(socket->ctx));
-    // Arbitrary value to account for protocol headers
-    len -= 64;
-    if (len > size) {
-        len = size;
-    }
-
-    // TODO: Return value of 0 is a hard case (as we wait forever, should
-    // not happen).
-    len = net_pkt_append(send_pkt, len, buf, K_FOREVER);
-
-    int err = net_context_send(send_pkt, /*cb*/NULL, K_FOREVER, NULL, NULL);
-    if (err < 0) {
-        *errcode = -err;
+    ssize_t len = zsock_send(socket->ctx, buf, size, 0);
+    if (len == -1) {
+        *errcode = errno;
         return MP_STREAM_ERROR;
     }
 
