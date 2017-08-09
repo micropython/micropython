@@ -347,8 +347,9 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         rhs_data = bufinfo.buf;
         rhs_len = bufinfo.len;
     } else {
-        // incompatible types
-        return MP_OBJ_NULL; // op not supported
+        // LHS is str and RHS has an incompatible type
+        // (except if operation is EQUAL, but that's handled by mp_obj_equal)
+        bad_implicit_conversion(rhs_in);
     }
 
     switch (op) {
