@@ -109,7 +109,7 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len % 4 != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incorrect padding"));
+        mp_raise_ValueError("incorrect padding");
     }
 
     vstr_t vstr;
@@ -136,11 +136,11 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
                 hold[j] = 63;
             } else if (in[j] == '=') {
                 if (j < 2 || i > 4) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incorrect padding"));
+                    mp_raise_ValueError("incorrect padding");
                 }
                 hold[j] = 64;
             } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid character"));
+                mp_raise_ValueError("invalid character");
             }
         }
         in += 4;
