@@ -50,13 +50,7 @@
 
 typedef struct _socket_obj_t {
     mp_obj_base_t base;
-    struct net_context *ctx;
-    #ifndef CONFIG_NET_SOCKETS
-    union {
-        struct k_fifo recv_q;
-        struct k_fifo accept_q;
-    };
-    #endif
+    int ctx;
 
     #define STATE_NEW 0
     #define STATE_CONNECTING 1
@@ -67,49 +61,13 @@ typedef struct _socket_obj_t {
 
 STATIC const mp_obj_type_t socket_type;
 
-#ifdef CONFIG_NET_SOCKETS
-#define SOCK_FIELD(ptr, field) ((ptr)->ctx->field)
-#else
-#define SOCK_FIELD(ptr, field) ((ptr)->field)
-#endif
-
-// k_fifo extended API
-
-static inline void *_k_fifo_peek_head(struct k_fifo *fifo)
-{
-#if KERNEL_VERSION_NUMBER < 0x010763 /* 1.7.99 */
-    return sys_slist_peek_head(&fifo->data_q);
-#else
-    return sys_slist_peek_head(&fifo->_queue.data_q);
-#endif
-}
-
-static inline void *_k_fifo_peek_tail(struct k_fifo *fifo)
-{
-#if KERNEL_VERSION_NUMBER < 0x010763 /* 1.7.99 */
-    return sys_slist_peek_tail(&fifo->data_q);
-#else
-    return sys_slist_peek_tail(&fifo->_queue.data_q);
-#endif
-}
-
-static inline void _k_fifo_wait_non_empty(struct k_fifo *fifo, int32_t timeout)
-{
-    struct k_poll_event events[] = {
-        K_POLL_EVENT_INITIALIZER(K_POLL_TYPE_FIFO_DATA_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, fifo),
-    };
-
-    k_poll(events, MP_ARRAY_SIZE(events), timeout);
-    DEBUG_printf("poll res: %d\n", events[0].state);
-}
-
 // Helper functions
 
 #define RAISE_ERRNO(x) { int _err = x; if (_err < 0) mp_raise_OSError(-_err); }
 #define RAISE_SOCK_ERRNO(x) { if ((int)(x) == -1) mp_raise_OSError(errno); }
 
 STATIC void socket_check_closed(socket_obj_t *socket) {
-    if (socket->ctx == NULL) {
+    if (socket->ctx == -1) {
         // already closed
         mp_raise_OSError(EBADF);
     }
@@ -121,7 +79,7 @@ STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct socka
 
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-    sockaddr_in->sin_family = net_context_get_family(socket->ctx);
+    sockaddr_in->sin_family = net_context_get_family((void*)socket->ctx);
     RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
 }
@@ -147,74 +105,6 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-// Copy data from Zephyr net_buf chain into linear buffer.
-// We don't use net_pkt_read(), because it's weird (e.g., we'd like to
-// free processed data fragment ASAP, while net_pkt_read() holds onto
-// the whole fragment chain to do its deeds, and that's minor comparing
-// to the fact that it copies data byte by byte).
-static char *net_pkt_gather(struct net_pkt *pkt, char *to, unsigned max_len) {
-    struct net_buf *tmp = pkt->frags;
-
-    while (tmp && max_len) {
-        unsigned len = tmp->len;
-        if (len > max_len) {
-            len = max_len;
-        }
-        memcpy(to, tmp->data, len);
-        to += len;
-        max_len -= len;
-        tmp = net_pkt_frag_del(pkt, NULL, tmp);
-    }
-
-    return to;
-}
-
-// Callback for incoming packets.
-static void sock_received_cb(struct net_context *context, struct net_pkt *pkt, int status, void *user_data) {
-    socket_obj_t *socket = (socket_obj_t*)user_data;
-    DEBUG_printf("recv cb: context: %p, status: %d, pkt: %p", context, status, pkt);
-    if (pkt) {
-        DEBUG_printf(" (appdatalen=%d), token: %p", pkt->appdatalen, net_pkt_token(pkt));
-    }
-    DEBUG_printf("\n");
-    #if DEBUG_PRINT > 1
-    net_pkt_print_frags(pkt);
-    #endif
-
-    // if net_buf == NULL, EOF
-    if (pkt == NULL) {
-        struct net_pkt *last_pkt = _k_fifo_peek_tail(&SOCK_FIELD(socket, recv_q));
-        if (last_pkt == NULL) {
-            socket->state = STATE_PEER_CLOSED;
-            k_fifo_cancel_wait(&SOCK_FIELD(socket, recv_q));
-            DEBUG_printf("Marked socket %p as peer-closed\n", socket);
-        } else {
-            // We abuse "buf_sent" flag to store EOF flag
-            net_pkt_set_sent(last_pkt, true);
-            DEBUG_printf("Set EOF flag on %p\n", last_pkt);
-        }
-        return;
-    }
-
-    // Make sure that "EOF flag" is not set
-    net_pkt_set_sent(pkt, false);
-
-    // We don't care about packet header, so get rid of it asap
-    unsigned header_len = net_pkt_appdata(pkt) - pkt->frags->data;
-    net_buf_pull(pkt->frags, header_len);
-
-    k_fifo_put(&SOCK_FIELD(socket, recv_q), pkt);
-}
-
-// Callback for incoming connections.
-static void sock_accepted_cb(struct net_context *new_ctx, struct sockaddr *addr, socklen_t addrlen, int status, void *user_data) {
-    socket_obj_t *socket = (socket_obj_t*)user_data;
-    DEBUG_printf("accept cb: context: %p, status: %d, new ctx: %p\n", socket->ctx, status, new_ctx);
-    DEBUG_printf("new_ctx ref_cnt: %d\n", new_ctx->refcount);
-
-    k_fifo_put(&SOCK_FIELD(socket, accept_q), new_ctx);
-}
-
 socket_obj_t *socket_new(void) {
     socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
     socket->base.type = (mp_obj_t)&socket_type;
@@ -226,10 +116,10 @@ socket_obj_t *socket_new(void) {
 
 STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     socket_obj_t *self = self_in;
-    if (self->ctx == NULL) {
+    if (self->ctx == -1) {
         mp_printf(print, "<socket NULL>");
     } else {
-        struct net_context *ctx = self->ctx;
+        struct net_context *ctx = (void*)self->ctx;
         mp_printf(print, "<socket %p type=%d>", ctx, net_context_get_type(ctx));
     }
 }
@@ -260,13 +150,8 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         }
     }
 
-    #ifdef CONFIG_NET_SOCKETS
-    socket->ctx = (void*)zsock_socket(family, socktype, proto);
+    socket->ctx = zsock_socket(family, socktype, proto);
     RAISE_SOCK_ERRNO(socket->ctx);
-    #else
-    RAISE_ERRNO(net_context_get(family, socktype, proto, &socket->ctx));
-    k_fifo_init(&SOCK_FIELD(socket, recv_q));
-    #endif
 
     return MP_OBJ_FROM_PTR(socket);
 }
@@ -281,13 +166,6 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     int res = zsock_bind(socket->ctx, &sockaddr, sizeof(sockaddr));
     RAISE_SOCK_ERRNO(res);
 
-    // For DGRAM socket, we expect to receive packets after call to bind(),
-    // but for STREAM socket, next expected operation is listen(), which
-    // doesn't work if recv callback is set.
-    if (net_context_get_type(socket->ctx) == SOCK_DGRAM) {
-        DEBUG_printf("Setting recv cb after bind\n");
-        RAISE_ERRNO(net_context_recv(socket->ctx, sock_received_cb, K_NO_WAIT, socket));
-    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
@@ -302,8 +180,6 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     int res = zsock_connect(socket->ctx, &sockaddr, sizeof(sockaddr));
     RAISE_SOCK_ERRNO(res);
 
-    DEBUG_printf("Setting recv cb after connect()\n");
-    RAISE_ERRNO(net_context_recv(socket->ctx, sock_received_cb, K_NO_WAIT, socket));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
@@ -326,12 +202,10 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 
     struct sockaddr sockaddr;
     socklen_t addrlen = sizeof(sockaddr);
-    void *ctx = zsock_accept(socket->ctx, &sockaddr, &addrlen);
+    int ctx = zsock_accept(socket->ctx, &sockaddr, &addrlen);
 
     socket_obj_t *socket2 = socket_new();
     socket2->ctx = ctx;
-    DEBUG_printf("Setting recv cb after accept()\n");
-    RAISE_ERRNO(net_context_recv(ctx, sock_received_cb, K_NO_WAIT, socket2));
 
     mp_obj_tuple_t *client = mp_obj_new_tuple(2, NULL);
     client->items[0] = MP_OBJ_FROM_PTR(socket2);
@@ -373,7 +247,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
 STATIC mp_uint_t sock_read(mp_obj_t self_in, void *buf, mp_uint_t max_len, int *errcode) {
     socket_obj_t *socket = self_in;
-    if (socket->ctx == NULL) {
+    if (socket->ctx == -1) {
         // already closed
         *errcode = EBADF;
         return MP_STREAM_ERROR;
