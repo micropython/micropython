@@ -200,7 +200,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
 error:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error in regex"));
+        mp_raise_ValueError("Error in regex");
     }
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);

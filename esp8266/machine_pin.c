@@ -125,7 +125,7 @@ void pin_intr_handler(uint32_t status) {
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
     if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "expecting a pin"));
+        mp_raise_ValueError("expecting a pin");
     }
     pyb_pin_obj_t *self = pin_in;
     return self;
@@ -280,7 +280,7 @@ STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, c
         // only pull-down seems to be supported by the hardware, and
         // we only expose pull-up behaviour in software
         if (pull != GPIO_PULL_NONE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Pin(16) doesn't support pull"));
+            mp_raise_ValueError("Pin(16) doesn't support pull");
         }
     } else {
         PIN_FUNC_SELECT(self->periph, self->func);
@@ -319,7 +319,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         pin = (pyb_pin_obj_t*)&pyb_pin_obj[wanted_pin];
     }
     if (pin == NULL || pin->base.type == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid pin"));
+        mp_raise_ValueError("invalid pin");
     }
 
     if (n_args > 1 || n_kw > 0) {

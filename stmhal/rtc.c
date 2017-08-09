@@ -575,7 +575,7 @@ mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
                     wut -= 0x10000;
                     if (wut > 0x10000) {
                         // wut still too large
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "wakeup value too large"));
+                        mp_raise_ValueError("wakeup value too large");
                     }
                 }
             }
