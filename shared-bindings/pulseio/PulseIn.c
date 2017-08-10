@@ -159,7 +159,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_pause_obj, pulseio_pulsein_obj_pause);
 STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger_duration };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_trigger_duration, MP_ARG_OBJ, {.u_int = 0} },
+        { MP_QSTR_trigger_duration, MP_ARG_INT, {.u_int = 0} },
     };
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

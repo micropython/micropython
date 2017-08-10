@@ -172,9 +172,19 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
         pin_conf.input_pull = PORT_PIN_PULL_NONE;
         port_pin_set_config(self->pin, &pin_conf);
+
+        // TODO(tannewt): delay_us isn't exactly correct so we adjust the value
+        // here before calling it. Find out why its not exact and fix it instead
+        // of hacking around it here.
+        uint32_t adjusted_duration = trigger_duration;
+        adjusted_duration *= 4;
+        adjusted_duration /= 5;
+
+        common_hal_mcu_disable_interrupts();
         port_pin_set_output_level(self->pin, !self->idle_state);
-        delay_us(trigger_duration);
+        common_hal_mcu_delay_us(adjusted_duration);
         port_pin_set_output_level(self->pin, self->idle_state);
+        common_hal_mcu_enable_interrupts();
     }
 
     // Reconfigure the pin and make sure its set to detect the first edge.
