@@ -44,13 +44,13 @@ extern const uint32_t mp_frozen_str_sizes[];
 extern const char mp_frozen_str_content[];
 
 // On input, *len contains size of name, on output - size of content
-const char *mp_find_frozen_str(const char *str, size_t *len) {
+const char *mp_find_frozen_str(const char *str, size_t str_len, size_t *len) {
     const char *name = mp_frozen_str_names;
 
     size_t offset = 0;
     for (int i = 0; *name != 0; i++) {
         size_t l = strlen(name);
-        if (l == *len && !memcmp(str, name, l)) {
+        if (l == str_len && !memcmp(str, name, l)) {
             *len = mp_frozen_str_sizes[i];
             return mp_frozen_str_content + offset;
         }
@@ -60,16 +60,16 @@ const char *mp_find_frozen_str(const char *str, size_t *len) {
     return NULL;
 }
 
-STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
-    size_t name_len = len;
-    const char *content = mp_find_frozen_str(str, &len);
+STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t str_len) {
+    size_t file_len;
+    const char *content = mp_find_frozen_str(str, str_len, &file_len);
 
     if (content == NULL) {
         return NULL;
     }
 
-    qstr source = qstr_from_strn(str, name_len);
-    mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, len, 0);
+    qstr source = qstr_from_strn(str, str_len);
+    mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, file_len, 0);
     return lex;
 }
 
@@ -82,11 +82,11 @@ STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
 extern const char mp_frozen_mpy_names[];
 extern const mp_raw_code_t *const mp_frozen_mpy_content[];
 
-STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t len) {
+STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t str_len) {
     const char *name = mp_frozen_mpy_names;
     for (size_t i = 0; *name != 0; i++) {
         size_t l = strlen(name);
-        if (l == len && !memcmp(str, name, l)) {
+        if (l == str_len && !memcmp(str, name, l)) {
             return mp_frozen_mpy_content[i];
         }
         name += l + 1;
@@ -136,15 +136,16 @@ mp_import_stat_t mp_frozen_stat(const char *str) {
 }
 
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
+    // The +8/-8 account for the .frozen/ path prefix used on frozen modules.
     #if MICROPY_MODULE_FROZEN_STR
-    mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
+    mp_lexer_t *lex = mp_lexer_frozen_str(str + 8, len - 8);
     if (lex != NULL) {
         *data = lex;
         return MP_FROZEN_STR;
     }
     #endif
     #if MICROPY_MODULE_FROZEN_MPY
-    const mp_raw_code_t *rc = mp_find_frozen_mpy(str, len);
+    const mp_raw_code_t *rc = mp_find_frozen_mpy(str + 8, len - 8);
     if (rc != NULL) {
         *data = (void*)rc;
         return MP_FROZEN_MPY;

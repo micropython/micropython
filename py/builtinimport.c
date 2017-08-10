@@ -57,9 +57,11 @@ bool mp_obj_is_package(mp_obj_t module) {
 // (whatever is available, if at all).
 STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
     #if MICROPY_MODULE_FROZEN
-    mp_import_stat_t st = mp_frozen_stat(path);
-    if (st != MP_IMPORT_STAT_NO_EXIST) {
-        return st;
+    if (strlen(path) > 8 && strncmp(".frozen/", path, 8) == 0) {
+        mp_import_stat_t st = mp_frozen_stat(path + 8);
+        if (st != MP_IMPORT_STAT_NO_EXIST) {
+            return st;
+        }
     }
     #endif
     return mp_import_stat(path);

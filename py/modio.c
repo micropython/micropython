@@ -164,14 +164,14 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     const char *path = mp_obj_str_get_data(path_in, &len);
     vstr_add_strn(&path_buf, path, len);
 
-    len = path_buf.len;
-    const char *data = mp_find_frozen_str(path_buf.buf, &len);
+    size_t file_len;
+    const char *data = mp_find_frozen_str(path_buf.buf, path_buf.len, &file_len);
     if (data != NULL) {
         mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
         o->base.type = &mp_type_bytesio;
         o->vstr = m_new_obj(vstr_t);
-        vstr_init_fixed_buf(o->vstr, len + 1, (char*)data);
-        o->vstr->len = len;
+        vstr_init_fixed_buf(o->vstr, file_len + 1, (char*)data);
+        o->vstr->len = file_len;
         o->pos = 0;
         return MP_OBJ_FROM_PTR(o);
     }
