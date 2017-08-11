@@ -1,5 +1,5 @@
 APP_INC =  -I.
-APP_INC += -I..
+APP_INC += -I$(TOP)
 APP_INC += -Ifatfs/src
 APP_INC += -Ifatfs/src/drivers
 APP_INC += -IFreeRTOS
@@ -10,7 +10,7 @@ APP_INC += -Ihal
 APP_INC += -Ihal/inc
 APP_INC += -Imisc
 APP_INC += -Imods
-APP_INC += -I../drivers/cc3100/inc
+APP_INC += -I$(TOP)/drivers/cc3100/inc
 APP_INC += -Isimplelink
 APP_INC += -Isimplelink/oslib
 APP_INC += -Itelnet
@@ -18,7 +18,7 @@ APP_INC += -Iutil
 APP_INC += -Ibootmgr
 APP_INC += -I$(BUILD)
 APP_INC += -I$(BUILD)/genhdr
-APP_INC += -I../stmhal
+APP_INC += -I$(TOP)/stmhal
 
 APP_CPPDEFINES = -Dgcc -DTARGET_IS_CC3200 -DSL_FULL -DUSE_FREERTOS
 

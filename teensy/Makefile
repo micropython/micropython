@@ -4,7 +4,7 @@ include ../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 # If you set USE_ARDUINO_TOOLCHAIN=1 then this makefile will attempt to use
 # the toolchain that comes with Teensyduino
@@ -30,8 +30,8 @@ CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
 
 INC += -I.
-INC += -I..
-INC += -I../stmhal
+INC += -I$(TOP)
+INC += -I$(TOP)/stmhal
 INC += -I$(BUILD)
 INC += -Icore
 
@@ -135,7 +135,7 @@ SRC_C += \
 
 OBJ += $(BUILD)/memzip-files.o
 
-MAKE_MEMZIP = ../lib/memzip/make-memzip.py
+MAKE_MEMZIP = $(TOP)/lib/memzip/make-memzip.py
 ifeq ($(MEMZIP_DIR),)
 MEMZIP_DIR = memzip_files
 endif
@@ -232,4 +232,4 @@ $(BUILD)/%.pp: $(BUILD)/%.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

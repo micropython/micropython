@@ -4,7 +4,7 @@ include ../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 XC16 = /opt/microchip/xc16/v1.24
 CROSS_COMPILE = $(XC16)/bin/xc16-
@@ -13,7 +13,7 @@ PARTFAMILY = dsPIC33F
 PART = 33FJ256GP506
 
 INC += -I.
-INC += -I..
+INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(XC16)/include
 INC += -I$(XC16)/support/$(PARTFAMILY)/h
@@ -67,4 +67,4 @@ $(BUILD)/firmware.elf: $(OBJ)
 $(PY_BUILD)/gc.o: CFLAGS += -O1
 $(PY_BUILD)/vm.o: CFLAGS += -O1
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

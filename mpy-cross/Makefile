@@ -23,10 +23,10 @@ QSTR_DEFS = qstrdefsport.h
 UNAME_S := $(shell uname -s)
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC +=  -I.
-INC +=  -I..
+INC +=  -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
@@ -71,4 +71,4 @@ endif
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

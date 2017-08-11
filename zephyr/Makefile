@@ -27,10 +27,10 @@ include $(Z_EXPORTS)
 endif
 
 include ../py/mkenv.mk
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC += -I.
-INC += -I..
+INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(ZEPHYR_BASE)/net/ip
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki
@@ -59,7 +59,7 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk
 
 # We use single target here ($(Z_EXPORTS)) for simplicity, but actually
 # number of things get generated here: 'initconfig' generates C header for
@@ -102,4 +102,4 @@ prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
-	cd ../tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"
+	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"

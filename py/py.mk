@@ -22,13 +22,13 @@ CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
 ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
-CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I../lib/axtls/ssl -I../lib/axtls/crypto -I../lib/axtls/config
+CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I$(TOP)/lib/axtls/ssl -I$(TOP)/lib/axtls/crypto -I$(TOP)/lib/axtls/config
 LDFLAGS_MOD += -Lbuild -laxtls
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 # Can be overridden by ports which have "builtin" mbedTLS
-MICROPY_SSL_MBEDTLS_INCLUDE ?= ../lib/mbedtls/include
+MICROPY_SSL_MBEDTLS_INCLUDE ?= $(TOP)/lib/mbedtls/include
 CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(MICROPY_SSL_MBEDTLS_INCLUDE)
-LDFLAGS_MOD += -L../lib/mbedtls/library -lmbedx509 -lmbedtls -lmbedcrypto
+LDFLAGS_MOD += -L$(TOP)/lib/mbedtls/library -lmbedx509 -lmbedtls -lmbedcrypto
 endif
 endif
 
@@ -38,7 +38,7 @@ endif
 
 ifeq ($(MICROPY_PY_LWIP),1)
 LWIP_DIR = lib/lwip/src
-INC += -I../lib/lwip/src/include -I../lib/lwip/src/include/ipv4 -I../extmod/lwip-include
+INC += -I$(TOP)/lib/lwip/src/include -I$(TOP)/lib/lwip/src/include/ipv4 -I$(TOP)/extmod/lwip-include
 CFLAGS_MOD += -DMICROPY_PY_LWIP=1
 SRC_MOD += extmod/modlwip.c lib/netutils/netutils.c
 SRC_MOD += $(addprefix $(LWIP_DIR)/,\
@@ -75,7 +75,7 @@ endif
 ifeq ($(MICROPY_PY_BTREE),1)
 BTREE_DIR = lib/berkeley-db-1.xx
 BTREE_DEFS = -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ -Dvirt_fd_t=mp_obj_t "-DVIRT_FD_T_HEADER=<py/obj.h>"
-INC += -I../$(BTREE_DIR)/PORT/include
+INC += -I$(TOP)/$(BTREE_DIR)/PORT/include
 SRC_MOD += extmod/modbtree.c
 SRC_MOD += $(addprefix $(BTREE_DIR)/,\
 btree/bt_close.c \

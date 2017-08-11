@@ -19,7 +19,7 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 FROZEN_MPY_DIR ?= modules
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 LD_DIR=boards
 CMSIS_DIR=cmsis
@@ -27,10 +27,10 @@ HAL_DIR=hal/$(MCU_SERIES)
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 FATFS_DIR=lib/oofatfs
-DFU=../tools/dfu.py
+DFU=$(TOP)/tools/dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 1
-PYDFU ?= ../tools/pydfu.py
+PYDFU ?= $(TOP)/tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 STFLASH ?= st-flash
@@ -40,9 +40,9 @@ OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 CROSS_COMPILE = arm-none-eabi-
 
 INC += -I.
-INC += -I..
+INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I../lib/cmsis/inc
+INC += -I$(TOP)/lib/cmsis/inc
 INC += -I$(CMSIS_DIR)/
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
@@ -406,8 +406,8 @@ GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
-INSERT_USB_IDS = ../tools/insert-usb-ids.py
-FILE2H = ../tools/file2h.py
+INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
+FILE2H = $(TOP)/tools/file2h.py
 
 USB_IDS_FILE = usb.h
 CDCINF_TEMPLATE = pybcdc.inf_template
@@ -464,4 +464,4 @@ $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE) | $(HEA
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

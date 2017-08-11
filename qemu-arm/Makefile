@@ -5,14 +5,14 @@ include ../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
 INC += -I.
-INC += -I..
+INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I../tools/tinytest/
+INC += -I$(TOP)/tools/tinytest/
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
@@ -98,10 +98,10 @@ test: $(BUILD)/firmware-test.elf
 
 $(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
 $(BUILD)/genhdr/tests.h:
-	$(Q)echo "Generating $@";(cd ../tests; ../tools/tinytest-codegen.py) > $@
+	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
 
 $(BUILD)/tinytest.o:
-	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c ../tools/tinytest/tinytest.c
+	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TOP)/tools/tinytest/tinytest.c
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(OBJ_COMMON) $(OBJ_RUN)
@@ -112,4 +112,4 @@ $(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk
