@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +32,11 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/objint.h"
+#include "py/objtype.h"
 #include "py/stream.h"
 #include "py/smallint.h"
+#include "py/runtime0.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_SYS
 
@@ -143,6 +147,11 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
 #endif
 
+STATIC mp_obj_t mp_sys_getsizeof(mp_obj_t obj) {
+    return mp_unary_op(MP_UNARY_OP_SIZEOF, obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -191,6 +200,9 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #endif
     #if MICROPY_PY_SYS_EXC_INFO
     { MP_ROM_QSTR(MP_QSTR_exc_info), MP_ROM_PTR(&mp_sys_exc_info_obj) },
+    #endif
+    #if MICROPY_PY_SYS_GETSIZEOF
+    { MP_ROM_QSTR(MP_QSTR_getsizeof), MP_ROM_PTR(&mp_sys_getsizeof_obj) },
     #endif
 
     /*
