@@ -8,6 +8,7 @@
     <OutDir>$(PyOutDir)</OutDir>
     <IntDir>$(PyIntDir)</IntDir>
     <PyFileCopyCookie>$(PyBuildDir)copycookie$(Configuration)$(Platform)</PyFileCopyCookie>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
