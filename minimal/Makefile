@@ -14,7 +14,6 @@ endif
 
 INC += -I.
 INC += -I..
-INC += -I../stmhal
 INC += -I$(BUILD)
 
 ifeq ($(CROSS), 1)

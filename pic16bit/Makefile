@@ -14,7 +14,6 @@ PART = 33FJ256GP506
 
 INC += -I.
 INC += -I..
-INC += -I../stmhal
 INC += -I$(BUILD)
 INC += -I$(XC16)/include
 INC += -I$(XC16)/support/$(PARTFAMILY)/h
