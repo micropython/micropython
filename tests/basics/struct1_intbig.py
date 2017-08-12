@@ -12,6 +12,8 @@ print(struct.pack("<I", 2**32 - 1))
 print(struct.pack("<I", 0xffffffff))
 
 # long long ints
+print(struct.pack("<Q", 1))
+print(struct.pack(">Q", 1))
 print(struct.pack("<Q", 2**64 - 1))
 print(struct.pack(">Q", 2**64 - 1))
 print(struct.pack("<Q", 0xffffffffffffffff))
