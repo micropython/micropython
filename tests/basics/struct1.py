@@ -23,8 +23,6 @@ print(struct.pack("<h", 1))
 print(struct.pack(">h", 1))
 print(struct.pack("<b", 1))
 print(struct.pack(">b", 1))
-print(struct.pack("<Q", 1))
-print(struct.pack(">Q", 1))
 
 print(struct.pack("<bI", -128, 256))
 print(struct.pack(">bI", -128, 256))
