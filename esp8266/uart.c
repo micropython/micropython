@@ -38,6 +38,7 @@ static void uart0_rx_intr_handler(void *para);
 
 void soft_reset(void);
 void mp_keyboard_interrupt(void);
+void uart_handle_rx();
 
 /******************************************************************************
  * FunctionName : uart_config
@@ -167,7 +168,9 @@ static void uart0_rx_intr_handler(void *para) {
     } else if (UART_RXFIFO_TOUT_INT_ST == (READ_PERI_REG(UART_INT_ST(uart_no)) & UART_RXFIFO_TOUT_INT_ST)) {
         read_chars:
         ETS_UART_INTR_DISABLE();
-        mp_hal_uart_rx_intr(uart_no);
+
+        uart_handle_rx();
+
         // Clear pending FIFO interrupts
         WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
         ETS_UART_INTR_ENABLE();

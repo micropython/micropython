@@ -248,6 +248,30 @@ void mp_uart_stuff_rx(mp_obj_t self_in, byte ch) {
     ringbuf_put(&self->rxbuf,ch);
 }
 
+void uart_handle_rx() {
+    int ch;
+    mp_obj_t term = MP_STATE_PORT(term_obj);
+    bool uart_term = (term == NULL || term == MP_STATE_PORT(pyb_uart_objs)[0]);
+
+    for (;;) {
+        if ((ch = uart_rx_one_char(0)) == -1) {
+            break;
+        }
+        if (uart_term) {
+            if (ch == mp_interrupt_char) {
+                mp_keyboard_interrupt();
+            } else {
+                ringbuf_put(&input_buf, ch);
+            }
+        } else {
+            mp_uart_stuff_rx(MP_STATE_PORT(pyb_uart_objs)[0], ch);
+        }
+    }
+    if (uart_term) {
+        mp_hal_signal_input();
+    }
+}
+
 // Waits at most timeout microseconds for at least 1 char to become ready for reading.
 // Returns true if something available, false if not.
 STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout_us) {
