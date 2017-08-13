@@ -13,7 +13,7 @@ class OneWire:
 
     def __init__(self, pin):
         self.pin = pin
-        self.pin.init(pin.OPEN_DRAIN, pin.PULL_NONE)
+        self.pin.init(pin.OPEN_DRAIN)
 
     def reset(self):
         return _ow.reset(self.pin)

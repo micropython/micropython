@@ -6,8 +6,8 @@ ESP8266 is a popular WiFi-enabled System-on-Chip (SoC) by Espressif Systems.
 Multitude of boards
 -------------------
 
-There are multitude of modules and boards from different sources which carry
-ESP8266 chip. MicroPython tries to provide a generic port which would run on
+There are a multitude of modules and boards from different sources which carry
+the ESP8266 chip. MicroPython tries to provide a generic port which would run on
 as many boards/modules as possible, but there may be limitations. Adafruit
 Feather HUZZAH board is taken as a reference board for the port (for example,
 testing is performed on it). If you have another board, please make sure you
@@ -18,13 +18,13 @@ To make a generic ESP8266 port and support as many boards as possible,
 following design and implementation decision were made:
 
 * GPIO pin numbering is based on ESP8266 chip numbering, not some "logical"
-  numbering of a particular board. Please have manual/pin diagram of your board
-  handy to find correspondce between your board pins and actual ESP8266 pins.
+  numbering of a particular board. Please have the manual/pin diagram of your board
+  at hand to find correspondence between your board pins and actual ESP8266 pins.
   We also encourage users of various boards to share this mapping via MicroPython
   forum, with the idea to collect community-maintained reference materials
   eventually.
 * All pins which make sense to support, are supported by MicroPython
-  (for example, we don't expose pins which are used to connect SPI flash
+  (for example, pins which are used to connect SPI flash
   are not exposed, as they're unlikely useful for anything else, and
   operating on them will lead to board lock-up). However, any particular
   board may expose only subset of pins. Consult your board reference manual.
@@ -37,10 +37,10 @@ Technical specifications and SoC datasheets
 
 The datasheets and other reference material for ESP8266 chip are available
 from the vendor site: http://bbs.espressif.com/viewtopic.php?f=67&t=225 .
-The are primary reference for the chip technical specifications, capabilities,
+They are the primary reference for the chip technical specifications, capabilities,
 operating modes, internal functioning, etc.
 
-For your convinience, some of technical specifications are provided below:
+For your convenience, some of technical specifications are provided below:
 
 * Architecture: Xtensa lx106
 * CPU frequency: 80MHz overclockable to 160MHz
@@ -64,18 +64,18 @@ Boot process
 On boot, MicroPython EPS8266 port executes ``_boot.py`` script from internal
 frozen modules. It mounts filesystem in FlashROM, or if it's not available,
 performs first-time setup of the module and creates the filesystem. This
-part of boot process is considered fixed, and not available for customization
+part of the boot process is considered fixed, and not available for customization
 for end users (even if you build from source, please refrain from changes to
 it; customization of early boot process is available only to advanced users
 and developers, who can diagnose themselves any issues arising from
 modifying the standard process).
 
-Once filesystem is mounted, ``boot.py`` is executed from it. The standard
+Once the filesystem is mounted, ``boot.py`` is executed from it. The standard
 version of this file is created during first-time module set up and by
-defaults starts up a WebREPL daemon to handle incoming connections. This
+default starts up a WebREPL daemon to handle incoming connections. This
 file is customizable by end users (for example, you may want to disable
 WebREPL for extra security, or add other services which should be run on
-module start-up). But keep in mind that incorrect modifications to boot.py
+a module start-up). But keep in mind that incorrect modifications to boot.py
 may still lead to boot loops or lock ups, requiring to reflash a module
 from scratch.
 
@@ -89,5 +89,14 @@ the following in ``main.py``::
     import my_app
     my_app.main()
 
-This will allow to keep structure of your application clear, as well as
+This will allow to keep the structure of your application clear, as well as
 allow to install multiple applications on a board, and switch among them.
+
+
+Real-time clock
+---------------
+
+Due to limitations of the ESP8266 chip the internal real-time clock (RTC)
+will overflow every 7:45h.  If a long-term working RTC time is required then
+``time()`` or ``localtime()`` must be called at least once within 7 hours.
+MicroPython will then handle the overflow.

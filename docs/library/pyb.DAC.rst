@@ -66,6 +66,10 @@ Methods
 
    Reinitialise the DAC.  ``bits`` can be 8 or 12.
 
+.. method:: dac.deinit()
+
+   De-initialise the DAC making its pin available for other uses.
+
 .. method:: dac.noise(freq)
 
    Generate a pseudo-random noise signal.  A new random sample is written

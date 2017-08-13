@@ -450,6 +450,23 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print('#include "py/emitglue.h"')
     print()
 
+    print('#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE')
+    print('#error "MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE not supported with frozen mpy files"')
+    print('#endif')
+    print()
+
+    print('#if MICROPY_LONGINT_IMPL != %u' % config.MICROPY_LONGINT_IMPL)
+    print('#error "incompatible MICROPY_LONGINT_IMPL"')
+    print('#endif')
+    print()
+
+    if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
+        print('#if MPZ_DIG_SIZE != %u' % config.MPZ_DIG_SIZE)
+        print('#error "incompatible MPZ_DIG_SIZE"')
+        print('#endif')
+        print()
+
+
     print('#if MICROPY_PY_BUILTINS_FLOAT')
     print('typedef struct _mp_obj_float_t {')
     print('    mp_obj_base_t base;')
@@ -485,10 +502,7 @@ def freeze_mpy(qcfgs, base_qstrs, raw_codes):
     print()
     print('const char mp_frozen_mpy_names[] = {')
     for rc in raw_codes:
-        module_name = rc.source_file.str[:-len(".py")]
-        slash = module_name.rfind('/')
-        if slash != -1:
-            module_name = module_name[slash + 1:]
+        module_name = rc.source_file.str
         print('"%s\\0"' % module_name)
     print('"\\0"};')
 

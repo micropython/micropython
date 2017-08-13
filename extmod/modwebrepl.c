@@ -250,8 +250,8 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
 
         DEBUG_printf("webrepl: Writing %lu bytes to file\n", buf_sz);
         int err;
-        mp_uint_t res = mp_stream_writeall(self->cur_file, filebuf, buf_sz, &err);
-        if(res == MP_STREAM_ERROR) {
+        mp_uint_t res = mp_stream_write_exactly(self->cur_file, filebuf, buf_sz, &err);
+        if (err != 0 || res != buf_sz) {
             assert(0);
         }
 
@@ -284,6 +284,13 @@ STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size
     return stream_p->write(self->sock, buf, size, errcode);
 }
 
+STATIC mp_obj_t webrepl_close(mp_obj_t self_in) {
+    mp_obj_webrepl_t *self = MP_OBJ_TO_PTR(self_in);
+    // TODO: This is a place to do cleanup
+    return mp_stream_close(self->sock);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_close_obj, webrepl_close);
+
 STATIC mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
     mp_uint_t len;
     const char *passwd = mp_obj_str_get_data(passwd_in, &len);
@@ -297,6 +304,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_set_password_obj, webrepl_set_password)
 STATIC const mp_map_elem_t webrepl_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&webrepl_close_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(webrepl_locals_dict, webrepl_locals_dict_table);
 

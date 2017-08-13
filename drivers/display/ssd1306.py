@@ -3,6 +3,7 @@
 import time
 import framebuf
 
+
 # register definitions
 SET_CONTRAST        = const(0x81)
 SET_ENTIRE_ON       = const(0xa4)
@@ -21,6 +22,7 @@ SET_DISP_CLK_DIV    = const(0xd5)
 SET_PRECHARGE       = const(0xd9)
 SET_VCOM_DESEL      = const(0xdb)
 SET_CHARGE_PUMP     = const(0x8d)
+
 
 class SSD1306:
     def __init__(self, height, external_vcc):
@@ -91,6 +93,7 @@ class SSD1306:
     def text(self, string, x, y, col=1):
         self.framebuf.text(string, x, y, col)
 
+
 class SSD1306_I2C(SSD1306):
     def __init__(self, height, i2c, addr=0x3c, external_vcc=False):
         self.i2c = i2c
@@ -114,27 +117,34 @@ class SSD1306_I2C(SSD1306):
     def poweron(self):
         pass
 
-# TODO convert this class to use the new hardware API
+
 class SSD1306_SPI(SSD1306):
-    def __init__(self, height, spi, dc, res, cs=None, external_vcc=False):
-        rate = 10 * 1024 * 1024
-        spi.init(spi.MASTER, baudrate=rate, polarity=0, phase=0)
-        dc.init(dc.OUT, dc.PULL_NONE, value=0)
-        res.init(res.OUT, dc.PULL_NONE, value=0)
-        if cs is not None:
-            cs.init(cs.OUT, cs.PULL_NONE, value=0)
+    def __init__(self, height, spi, dc, res, cs, external_vcc=False):
+        self.rate = 10 * 1024 * 1024
+        dc.init(dc.OUT, value=0)
+        res.init(res.OUT, value=0)
+        cs.init(cs.OUT, value=1)
         self.spi = spi
         self.dc = dc
         self.res = res
+        self.cs = cs
         super().__init__(height, external_vcc)
 
     def write_cmd(self, cmd):
+        self.spi.init(baudrate=self.rate, polarity=0, phase=0)
+        self.cs.high()
         self.dc.low()
-        self.spi.send(cmd)
+        self.cs.low()
+        self.spi.write(bytearray([cmd]))
+        self.cs.high()
 
     def write_data(self, buf):
+        self.spi.init(baudrate=self.rate, polarity=0, phase=0)
+        self.cs.high()
         self.dc.high()
-        self.spi.send(buf)
+        self.cs.low()
+        self.spi.write(buf)
+        self.cs.high()
 
     def poweron(self):
         self.res.high()
@@ -142,4 +152,3 @@ class SSD1306_SPI(SSD1306):
         self.res.low()
         time.sleep_ms(10)
         self.res.high()
-        time.sleep_ms(10)

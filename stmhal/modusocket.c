@@ -26,12 +26,12 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "netutils.h"
 #include "modnetwork.h"
 
@@ -116,7 +116,7 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
     if (self->nic == MP_OBJ_NULL) {
         // not connected
         // TODO I think we can listen even if not bound...
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOTCONN)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENOTCONN)));
     }
 
     int _errno;
@@ -186,7 +186,7 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     mod_network_socket_obj_t *self = self_in;
     if (self->nic == MP_OBJ_NULL) {
         // not connected
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EPIPE)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE)));
     }
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -204,7 +204,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = self_in;
     if (self->nic == MP_OBJ_NULL) {
         // not connected
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOTCONN)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENOTCONN)));
     }
     mp_int_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
@@ -253,7 +253,7 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = self_in;
     if (self->nic == MP_OBJ_NULL) {
         // not connected
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOTCONN)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENOTCONN)));
     }
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(len_in));
@@ -314,7 +314,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mod_network_socket_obj_t *self = self_in;
     if (self->nic == MP_OBJ_NULL) {
         // not connected
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENOTCONN)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENOTCONN)));
     }
     mp_uint_t timeout;
     if (timeout_in == mp_const_none) {

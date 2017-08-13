@@ -414,7 +414,7 @@ typedef enum _mp_dict_view_kind_t {
     MP_DICT_VIEW_VALUES,
 } mp_dict_view_kind_t;
 
-STATIC char *mp_dict_view_names[] = {"dict_items", "dict_keys", "dict_values"};
+STATIC const char *const mp_dict_view_names[] = {"dict_items", "dict_keys", "dict_values"};
 
 typedef struct _mp_obj_dict_view_it_t {
     mp_obj_base_t base;

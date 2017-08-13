@@ -31,8 +31,19 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
+#include "py/stream.h"
 
 #if MICROPY_PY_OS_DUPTERM
+
+void mp_uos_deactivate(const char *msg, mp_obj_t exc) {
+    mp_obj_t term = MP_STATE_PORT(term_obj);
+    MP_STATE_PORT(term_obj) = NULL;
+    mp_printf(&mp_plat_print, msg);
+    if (exc != MP_OBJ_NULL) {
+        mp_obj_print_exception(&mp_plat_print, exc);
+    }
+    mp_stream_close(term);
+}
 
 void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
     if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
@@ -44,9 +55,7 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
             mp_call_method_n_kw(1, 0, write_m);
             nlr_pop();
         } else {
-            MP_STATE_PORT(term_obj) = NULL;
-            mp_printf(&mp_plat_print, "dupterm: Exception in write() method, deactivating: ");
-            mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
+            mp_uos_deactivate("dupterm: Exception in write() method, deactivating: ", nlr.ret_val);
         }
     }
 }

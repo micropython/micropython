@@ -36,6 +36,7 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mperrno.h"
 
 // Instance of MemoryError exception - needed by mp_malloc_fail
 const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
@@ -107,6 +108,16 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
             mp_print_str(print, "");
             return;
         } else if (o->args->len == 1) {
+            #if MICROPY_PY_UERRNO
+            // try to provide a nice OSError error message
+            if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
+                qstr qst = mp_errno_to_str(o->args->items[0]);
+                if (qst != MP_QSTR_NULL) {
+                    mp_printf(print, "[Errno %d] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                    return;
+                }
+            }
+            #endif
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }

@@ -36,7 +36,7 @@ information they hold.
 Using the IP address we can make a socket and connect to the server::
 
     >>> s = socket.socket()
-    >>> s.connect(addr[0][-1])
+    >>> s.connect(addr)
 
 Now that we are connected we can download and display the data::
 

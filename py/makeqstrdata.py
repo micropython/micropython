@@ -116,7 +116,7 @@ def parse_input_headers(infiles):
 
 def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     qhash = compute_hash(qstr, cfg_bytes_hash)
-    if all(32 <= ord(c) <= 126 and c != '\\' for c in qstr):
+    if all(32 <= ord(c) <= 126 and c != '\\' and c != '"' for c in qstr):
         # qstr is all printable ASCII so render it as-is (for easier debugging)
         qlen = len(qstr)
         qdata = qstr

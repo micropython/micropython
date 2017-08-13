@@ -26,7 +26,7 @@ def getpass(stream, prompt):
             stream.write("\r\n")
             return passwd
         passwd += c
-#        stream.write("*")
+        stream.write("*")
 
 def handle_conn(listen_sock):
     cl, remote_addr = listen_sock.accept()
@@ -59,6 +59,9 @@ some boards, you may need to press reset button or reconnect power.\r
         passwd1 = getpass(ws, "New password: ")
         if len(passwd1) < 4:
             ws.write("Password too short\r\n")
+            continue
+        elif len(passwd1) > 9:
+            ws.write("Password too long\r\n")
             continue
         passwd2 = getpass(ws, "Confirm password: ")
         if passwd1 == passwd2:

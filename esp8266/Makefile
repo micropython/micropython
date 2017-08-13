@@ -26,7 +26,7 @@ INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
 # UART for "os" messages. 0 is normal UART as used by MicroPython REPL,
-# 1 is debug UART (tx only).
+# 1 is debug UART (tx only), -1 to disable.
 UART_OS = 0
 
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
@@ -65,6 +65,7 @@ SRC_C = \
 	esppwm.c \
 	esponewire.c \
 	espneopixel.c \
+	espapa102.c \
 	intr.c \
 	modpyb.c \
 	modpybpin.c \
@@ -123,6 +124,10 @@ LIB_SRC_C = $(addprefix lib/,\
 	fatfs/option/ccsbcs.c \
 	)
 
+DRIVERS_SRC_C = $(addprefix drivers/,\
+	dht/dht.c \
+        )
+
 SRC_S = \
 	gchelper.s \
 
@@ -133,10 +138,11 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 

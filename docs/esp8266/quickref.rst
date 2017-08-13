@@ -3,7 +3,7 @@
 Quick reference for the ESP8266
 ===============================
 
-.. image:: https://learn.adafruit.com/system/assets/assets/000/028/689/medium640/adafruit_products_pinoutstop.jpg
+.. image:: img/adafruit_products_pinoutstop.jpg
     :alt: Adafruit Feather HUZZAH board
     :width: 640px
 
@@ -43,7 +43,7 @@ The ``network`` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.mac()              # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC adddress
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
@@ -199,9 +199,6 @@ The I2C driver is implemented in software and works on all pins::
     buf = bytearray(10)     # create a buffer with 10 bytes
     i2c.writeto(0x3a, buf)  # write the given buffer to the slave
 
-    i2c.readfrom(0x3a, 4, stop=False) # don't send a stop bit after reading
-    i2c.writeto(0x3a, buf, stop=False) # don't send a stop bit after writing
-
 Deep-sleep mode
 ---------------
 
@@ -274,31 +271,55 @@ For low-level driving of a NeoPixel::
     import esp
     esp.neopixel_write(pin, grb_buf, is800khz)
 
+APA102 driver
+-------------
+
+Use the ``apa102`` module::
+
+    from machine import Pin
+    from apa102 import APA102
+
+    clock = Pin(14, Pin.OUT)     # set GPIO14 to output to drive the clock
+    data = Pin(13, Pin.OUT)      # set GPIO13 to output to drive the data
+    apa = APA102(clock, data, 8) # create APA102 driver on the clock and the data pin for 8 pixels
+    apa[0] = (255, 255, 255, 31) # set the first pixel to white with a maximum brightness of 31
+    apa.write()                  # write data to all pixels
+    r, g, b, brightness = apa[0] # get first pixel colour
+
+For low-level driving of an APA102::
+
+    import esp
+    esp.apa102_write(clock_pin, data_pin, rgbi_buf)
+
 WebREPL (web browser interactive prompt)
 ----------------------------------------
 
 WebREPL (REPL over WebSockets, accessible via a web browser) is an
 experimental feature available in ESP8266 port. Download web client
-from https://github.com/micropython/webrepl , and start daemon using::
+from https://github.com/micropython/webrepl (hosted version available
+at http://micropython.org/webrepl), and start the daemon on a device
+using::
 
     import webrepl
     webrepl.start()
 
-(Release version will have it started on boot by default.)
+(Release versions have it started on boot by default.)
 
 On a first connection, you will be prompted to set password for future
 sessions to use.
 
 The supported way to use WebREPL is by connecting to ESP8266 access point,
 but the daemon is also started on STA interface if it is active, so if your
-routers is set up and works correctly, you may also use it while connecting
-to your normal Internet access point (use ESP8266 AP connection method if
-face any issues).
+router is set up and works correctly, you may also use WebREPL while connected
+to your normal Internet access point (use the ESP8266 AP connection method
+if you face any issues).
 
 WebREPL is an experimental feature and a work in progress, and has known
-issues. There's also provision to transfer (both upload and download)
-files over WebREPL connection, but it has unstable status (be ready to
-reboot a module in case of issues). It still may be a practical way to
+issues.
+
+There's also provision to transfer (both upload and download)
+files over WebREPL connection, but it has even more experimental status
+than the WebREPL terminal mode. It is still a practical way to
 get script files onto ESP8266, so give it a try using ``webrepl_cli.py``
-from the repository above. See forum for other community-supported
-alternatives to transfer files to ESP8266.
+from the repository above. See the MicroPython forum for other
+community-supported alternatives to transfer files to ESP8266.

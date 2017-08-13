@@ -27,11 +27,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "uart.h"
 #include "pybioctl.h"
@@ -579,11 +579,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, mp_uint_t n_args, con
     } else {
         actual_baudrate = HAL_RCC_GetPCLK1Freq();
     }
-    #if defined(MCU_SERIES_L4)
-    actual_baudrate = (actual_baudrate << 5) / (self->uart.Instance->BRR >> 3);
-    #else
     actual_baudrate /= self->uart.Instance->BRR;
-    #endif
 
     // check we could set the baudrate within 5%
     uint32_t baudrate_diff;
@@ -829,7 +825,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
 
     // check that size is a multiple of character width
     if (size & self->char_width) {
-        *errcode = EIO;
+        *errcode = MP_EIO;
         return MP_STREAM_ERROR;
     }
 
@@ -844,7 +840,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     // wait for first char to become available
     if (!uart_rx_wait(self, self->timeout)) {
         // return EAGAIN error to indicate non-blocking (then read() method returns None)
-        *errcode = EAGAIN;
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
 
@@ -871,13 +867,13 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
 
     // check that size is a multiple of character width
     if (size & self->char_width) {
-        *errcode = EIO;
+        *errcode = MP_EIO;
         return MP_STREAM_ERROR;
     }
 
     // wait to be able to write the first character. EAGAIN causes write to return None
     if (!uart_tx_wait(self, self->timeout)) {
-        *errcode = EAGAIN;
+        *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
 
@@ -917,7 +913,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
             ret |= MP_IOCTL_POLL_WR;
         }
     } else {
-        *errcode = EINVAL;
+        *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
     }
     return ret;

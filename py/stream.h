@@ -48,11 +48,13 @@ struct mp_stream_seek_t {
 };
 
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_read1_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readlines_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_write1_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_ioctl_obj);
@@ -63,14 +65,20 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_ioctl_obj);
 #define MP_STREAM_OP_IOCTL (4)
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
+mp_obj_t mp_stream_close(mp_obj_t stream);
 
 // Iterator which uses mp_stream_unbuffered_readline_obj
 mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
 
-mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len);
+mp_obj_t mp_stream_write(mp_obj_t self_in, const void *buf, size_t len, byte flags);
 
-// Helper function to write entire buf to *blocking* stream
-mp_uint_t mp_stream_writeall(mp_obj_t stream, const byte *buf, mp_uint_t size, int *errcode);
+// C-level helper functions
+#define MP_STREAM_RW_READ  0
+#define MP_STREAM_RW_WRITE 2
+#define MP_STREAM_RW_ONCE  1
+mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode, byte flags);
+#define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte*)buf, size, err, MP_STREAM_RW_WRITE)
+#define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 #if MICROPY_STREAMS_NON_BLOCK
 // TODO: This is POSIX-specific (but then POSIX is the only real thing,

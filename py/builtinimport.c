@@ -60,22 +60,34 @@ bool mp_obj_is_package(mp_obj_t module) {
     return dest[0] != MP_OBJ_NULL;
 }
 
+// Stat either frozen or normal module by a given path
+// (whatever is available, if at all).
+STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
+    #if MICROPY_MODULE_FROZEN
+    mp_import_stat_t st = mp_frozen_stat(path);
+    if (st != MP_IMPORT_STAT_NO_EXIST) {
+        return st;
+    }
+    #endif
+    return mp_import_stat(path);
+}
+
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
-    mp_import_stat_t stat = mp_import_stat(vstr_null_terminated_str(path));
+    mp_import_stat_t stat = mp_import_stat_any(vstr_null_terminated_str(path));
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
     }
 
     vstr_add_str(path, ".py");
-    stat = mp_import_stat(vstr_null_terminated_str(path));
+    stat = mp_import_stat_any(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
 
     #if MICROPY_PERSISTENT_CODE_LOAD
     vstr_ins_byte(path, path->len - 2, 'm');
-    stat = mp_import_stat(vstr_null_terminated_str(path));
+    stat = mp_import_stat_any(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -182,10 +194,37 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
 #endif
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
-    #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
+    #if MICROPY_MODULE_FROZEN || MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
     char *file_str = vstr_null_terminated_str(file);
     #endif
 
+    // If we support frozen modules (either as str or mpy) then try to find the
+    // requested filename in the list of frozen module filenames.
+    #if MICROPY_MODULE_FROZEN
+    void *modref;
+    int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
+    #endif
+
+    // If we support frozen str modules and the compiler is enabled, and we
+    // found the filename in the list of frozen files, then load and execute it.
+    #if MICROPY_MODULE_FROZEN_STR
+    if (frozen_type == MP_FROZEN_STR) {
+        do_load_from_lexer(module_obj, modref, file_str);
+        return;
+    }
+    #endif
+
+    // If we support frozen mpy modules and we found a corresponding file (and
+    // its data) in the list of frozen files, execute it.
+    #if MICROPY_MODULE_FROZEN_MPY
+    if (frozen_type == MP_FROZEN_MPY) {
+        do_execute_raw_code(module_obj, modref);
+        return;
+    }
+    #endif
+
+    // If we support loading .mpy files then check if the file extension is of
+    // the correct format and, if so, load and execute the file.
     #if MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
@@ -194,15 +233,18 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     }
     #endif
 
+    // If we can compile scripts then load the file and compile and execute it.
     #if MICROPY_ENABLE_COMPILER
     {
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
         do_load_from_lexer(module_obj, lex, file_str);
+        return;
     }
-    #else
+    #endif
+
+    // If we get here then the file was not frozen and we can't compile scripts.
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
         "script compilation not supported"));
-    #endif
 }
 
 STATIC void chop_component(const char *start, const char **end) {
@@ -340,33 +382,6 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     }
     DEBUG_printf("Module not yet loaded\n");
 
-    #if MICROPY_MODULE_FROZEN
-    void *frozen_data;
-    int frozen_type = mp_find_frozen_module(mod_str, mod_len, &frozen_data);
-    if (frozen_type != MP_FROZEN_NONE) {
-        module_obj = mp_obj_new_module(module_name_qstr);
-        // if args[3] (fromtuple) has magic value False, set up
-        // this module for command-line "-m" option (set module's
-        // name to __main__ instead of real name).
-        // TODO: Duplicated below too.
-        if (fromtuple == mp_const_false) {
-            mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
-            mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
-        }
-        #if MICROPY_MODULE_FROZEN_STR
-        if (frozen_type == MP_FROZEN_STR) {
-            do_load_from_lexer(module_obj, frozen_data, mod_str);
-        }
-        #endif
-        #if MICROPY_MODULE_FROZEN_MPY
-        if (frozen_type == MP_FROZEN_MPY) {
-            do_execute_raw_code(module_obj, frozen_data);
-        }
-        #endif
-        return module_obj;
-    }
-    #endif
-
     uint last = 0;
     VSTR_FIXED(path, MICROPY_ALLOC_PATH_MAX)
     module_obj = MP_OBJ_NULL;
@@ -445,7 +460,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");
-                    if (mp_import_stat(vstr_null_terminated_str(&path)) != MP_IMPORT_STAT_FILE) {
+                    if (mp_import_stat_any(vstr_null_terminated_str(&path)) != MP_IMPORT_STAT_FILE) {
                         vstr_cut_tail_bytes(&path, sizeof("/__init__.py") - 1); // cut off /__init__.py
                         mp_warning("%s is imported as namespace package", vstr_str(&path));
                     } else {

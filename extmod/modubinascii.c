@@ -31,7 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
-#include "modubinascii.h"
+#include "extmod/modubinascii.h"
 
 
 mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {

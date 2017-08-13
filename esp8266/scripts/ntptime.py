@@ -10,10 +10,12 @@ except:
 # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
 NTP_DELTA = 3155673600
 
+host = "pool.ntp.org"
+
 def time():
     NTP_QUERY = bytearray(48)
     NTP_QUERY[0] = 0x1b
-    addr = socket.getaddrinfo('pool.ntp.org', 123)[0][-1]
+    addr = socket.getaddrinfo(host, 123)[0][-1]
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(1)
     res = s.sendto(NTP_QUERY, addr)

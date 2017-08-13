@@ -1,7 +1,7 @@
-#include <errno.h>
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "usb.h"
 #include "uart.h"
@@ -9,9 +9,9 @@
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
-    [HAL_ERROR] = EIO,
-    [HAL_BUSY] = EBUSY,
-    [HAL_TIMEOUT] = ETIMEDOUT,
+    [HAL_ERROR] = MP_EIO,
+    [HAL_BUSY] = MP_EBUSY,
+    [HAL_TIMEOUT] = MP_ETIMEDOUT,
 };
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {

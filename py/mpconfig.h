@@ -555,6 +555,11 @@ typedef double mp_float_t;
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
 #endif
 
+// Whether to use internally defined errno's (otherwise system provided ones)
+#ifndef MICROPY_USE_INTERNAL_ERRNO
+#define MICROPY_USE_INTERNAL_ERRNO (0)
+#endif
+
 // Support for user-space VFS mount (selected ports)
 #ifndef MICROPY_FSUSERMOUNT
 #define MICROPY_FSUSERMOUNT (0)
@@ -582,6 +587,11 @@ typedef double mp_float_t;
 // Whether str object is proper unicode
 #ifndef MICROPY_PY_BUILTINS_STR_UNICODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
+#endif
+
+// Whether str.center() method provided
+#ifndef MICROPY_PY_BUILTINS_STR_CENTER
+#define MICROPY_PY_BUILTINS_STR_CENTER (0)
 #endif
 
 // Whether str.splitlines() method provided
@@ -809,6 +819,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_STDIO_BUFFER (0)
 #endif
 
+// Whether to provide "uerrno" module
+#ifndef MICROPY_PY_UERRNO
+#define MICROPY_PY_UERRNO (0)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_UCTYPES
@@ -850,6 +865,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE (0)
+#endif
+
+// Whether to include: time_pulse_us
+#ifndef MICROPY_PY_MACHINE_PULSE
+#define MICROPY_PY_MACHINE_PULSE (0)
 #endif
 
 #ifndef MICROPY_PY_MACHINE_I2C

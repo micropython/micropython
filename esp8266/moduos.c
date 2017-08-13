@@ -25,7 +25,6 @@
  */
 
 #include <string.h>
-#include <errno.h>
 
 #include "py/mpconfig.h"
 #include "py/nlr.h"
@@ -33,6 +32,7 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "extmod/misc.h"
 #include "genhdr/mpversion.h"
 #include "esp_mphal.h"
@@ -74,12 +74,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 #if MICROPY_VFS_FAT
 mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args) {
     if (MP_STATE_PORT(fs_user_mount)[0] == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ENODEV)));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENODEV)));
     }
 
     mp_obj_t meth[n_args + 2];
     mp_load_method(MP_STATE_PORT(fs_user_mount)[0], method_name, meth);
-    memcpy(meth + 2, args, n_args * sizeof(*args));
+    if (args != NULL) {
+        memcpy(meth + 2, args, n_args * sizeof(*args));
+    }
     return mp_call_method_n_kw(n_args, 0, meth);
 }
 
@@ -93,10 +95,29 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
+STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_chdir, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
+
+STATIC mp_obj_t os_getcwd(void) {
+    return vfs_proxy_call(MP_QSTR_getcwd, 0, NULL);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
+
 STATIC mp_obj_t os_remove(mp_obj_t path_in) {
     return vfs_proxy_call(MP_QSTR_remove, 1, &path_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
+
+STATIC mp_obj_t os_rename(mp_obj_t path_old, mp_obj_t path_new) {
+    mp_obj_t args[2];
+    args[0] = path_old;
+    args[1] = path_new;
+    return vfs_proxy_call(MP_QSTR_rename, 2, args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
+
 #endif
 
 STATIC mp_obj_t os_urandom(mp_obj_t num) {
@@ -117,6 +138,11 @@ STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_dupterm_notify_obj, os_dupterm_notify);
 
+STATIC mp_obj_t os_stat(mp_obj_t path_in) {
+    return vfs_proxy_call(MP_QSTR_stat, 1, &path_in);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
+
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
@@ -129,7 +155,11 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&os_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&os_getcwd_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&os_rename_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_stat_obj) },
     #endif
 };
 

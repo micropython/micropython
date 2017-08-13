@@ -38,7 +38,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-STATIC char heap[24 * 1024];
+STATIC char heap[28 * 1024];
 
 STATIC void mp_reset(void) {
     mp_stack_set_top((void*)0x40000000);
@@ -58,7 +58,7 @@ STATIC void mp_reset(void) {
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     pin_init0();
 #if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("_boot");
+    pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
     pyexec_file("main.py");
 #endif

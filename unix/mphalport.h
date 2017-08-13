@@ -35,6 +35,7 @@ void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);
 
 static inline void mp_hal_delay_ms(mp_uint_t ms) { usleep((ms) * 1000); }
+static inline void mp_hal_delay_us(mp_uint_t us) { usleep(us); }
 
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \

@@ -104,7 +104,7 @@ enum {
 #undef one_or_more
 #undef DEF_RULE
 
-STATIC const rule_t *rules[] = {
+STATIC const rule_t *const rules[] = {
 #define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
 #include "py/grammar.h"
 #undef DEF_RULE
@@ -449,6 +449,9 @@ STATIC void push_result_token(parser_t *parser) {
 
 #if MICROPY_COMP_MODULE_CONST
 STATIC const mp_rom_map_elem_t mp_constants_table[] = {
+    #if MICROPY_PY_UERRNO
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+    #endif
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
     #endif

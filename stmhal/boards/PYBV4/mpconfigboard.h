@@ -79,8 +79,8 @@
 #define MICROPY_HW_LED2             (pin_A14) // green
 #define MICROPY_HW_LED3             (pin_A15) // yellow
 #define MICROPY_HW_LED4             (pin_B4)  // blue
-#define MICROPY_HW_LED3_PWM         { TIM2, 2, GPIO_AF1_TIM2 }
-#define MICROPY_HW_LED4_PWM         { TIM3, 3, GPIO_AF2_TIM3 }
+#define MICROPY_HW_LED3_PWM         { TIM2, 2, TIM_CHANNEL_1, GPIO_AF1_TIM2 }
+#define MICROPY_HW_LED4_PWM         { TIM3, 3, TIM_CHANNEL_1, GPIO_AF2_TIM3 }
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
 #define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRRL = pin->pin_mask)
 #define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRRH = pin->pin_mask)

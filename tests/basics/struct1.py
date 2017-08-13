@@ -62,6 +62,12 @@ try:
 except TypeError:
     print('TypeError')
 
+# make sure that unknown types are detected
+try:
+    struct.pack("z", 1)
+except:
+    print("Unknown type")
+
 # Initially repitition counters were supported only for strings,
 # but later were implemented for all.
 print(struct.unpack("<3B2h", b"foo\x12\x34\xff\xff"))

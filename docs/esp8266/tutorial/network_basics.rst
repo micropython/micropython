@@ -62,7 +62,7 @@ connect to your WiFi network::
             print('connecting to network...')
             sta_if.active(True)
             sta_if.connect('<essid>', '<password>')
-            while not network.isconnected():
+            while not sta_if.isconnected():
                 pass
         print('network config:', sta_if.ifconfig())
 

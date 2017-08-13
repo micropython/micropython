@@ -28,6 +28,10 @@
 #define _INCLUDED_MPHAL_H_
 
 #include "py/ringbuf.h"
+#include "xtirq.h"
+
+void mp_keyboard_interrupt(void);
+extern int interrupt_char;
 
 struct _mp_print_t;
 // Structure for UART-only output via mp_printf()
@@ -59,14 +63,19 @@ void ets_event_poll(void);
 #include "osapi.h"
 #define mp_hal_delay_us_fast(us) os_delay_us(us)
 
+#define mp_hal_quiet_timing_enter() disable_irq()
+#define mp_hal_quiet_timing_exit(irq_state) enable_irq(irq_state)
+
 // C-level pin HAL
 #include "etshal.h"
 #include "gpio.h"
 #include "esp8266/modpyb.h"
 #define mp_hal_pin_obj_t uint32_t
 #define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
-void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
-#define mp_hal_pin_low(p) do { \
+void mp_hal_pin_input(mp_hal_pin_obj_t pin);
+void mp_hal_pin_output(mp_hal_pin_obj_t pin);
+void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
+#define mp_hal_pin_od_low(p) do { \
         if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); } \
         else { gpio_output_set(0, 1 << (p), 1 << (p), 0); } \
     } while (0)

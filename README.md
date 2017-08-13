@@ -54,6 +54,8 @@ Additional components:
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
 
+The subdirectories above may include READMEs with additional info.
+
 "make" is used to build the components, or "gmake" on BSD-based systems.
 You will also need bash and Python (at least 2.7 or 3.3).
 
@@ -69,6 +71,7 @@ Alternatively, fallback implementation based on setjmp/longjmp can be used.
 To build (see section below for required dependencies):
 
     $ cd unix
+    $ make axtls
     $ make
 
 Then to give it a try:

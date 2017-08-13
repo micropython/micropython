@@ -1,10 +1,19 @@
 # This tests that recursion with iternext doesn't lead to segfault.
 
+# We need to pick an N that is large enough to hit the recursion
+# limit, but not too large that we run out of heap memory.
 try:
-    [0] * 10000
-    N = 1000
+    # large stack/heap, eg unix
+    [0] * 80000
+    N = 2000
 except:
-    N = 100
+    try:
+        # medium, eg pyboard
+        [0] * 10000
+        N = 1000
+    except:
+        # small, eg esp8266
+        N = 100
 
 try:
     x = (1, 2)

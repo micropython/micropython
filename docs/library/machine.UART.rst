@@ -86,13 +86,15 @@ Methods
            When no pins are given, then the default set of TX and RX pins is taken, and hardware 
            flow control will be disabled. If pins=None, no pin assignment will be made.
 
-.. method:: uart.deinit()
+.. only:: not port_esp8266
 
-   Turn off the UART bus.
+    .. method:: uart.deinit()
 
-.. method:: uart.any()
+       Turn off the UART bus.
 
-   Return the number of characters available for reading.
+    .. method:: uart.any()
+
+       Return the number of characters available for reading.
 
 .. method:: uart.read([nbytes])
 
@@ -127,11 +129,13 @@ Methods
 
    Return value: number of bytes written or ``None`` on timeout.
 
-.. method:: uart.sendbreak()
+.. only:: not port_esp8266
 
-   Send a break condition on the bus.  This drives the bus low for a duration
-   of 13 bits.
-   Return value: ``None``.
+    .. method:: uart.sendbreak()
+
+       Send a break condition on the bus.  This drives the bus low for a duration
+       of 13 bits.
+       Return value: ``None``.
 
 .. only:: port_wipy
 
@@ -158,14 +162,16 @@ Methods
 
        Returns an irq object.
 
-Constants
----------
+.. only:: not port_esp8266
 
-.. data:: UART.EVEN
-.. data:: UART.ODD
+    Constants
+    ---------
 
-    parity types (anlong with ``None``)
+    .. data:: UART.EVEN
+    .. data:: UART.ODD
 
-.. data:: UART.RX_ANY
+        parity types (anlong with ``None``)
 
-    IRQ trigger sources
+    .. data:: UART.RX_ANY
+
+        IRQ trigger sources

@@ -18,25 +18,23 @@ Reset related functions
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
 
-.. only:: port_wipy
+Interrupt related functions
+---------------------------
 
-    Interrupt related functions
-    ---------------------------
+.. function:: disable_irq()
 
-    .. function:: disable_irq()
+   Disable interrupt requests.
+   Returns the previous IRQ state: ``False``/``True`` for disabled/enabled IRQs
+   respectively.  This return value can be passed to enable_irq to restore
+   the IRQ to its original state.
 
-       Disable interrupt requests.
-       Returns the previous IRQ state: ``False``/``True`` for disabled/enabled IRQs
-       respectively.  This return value can be passed to enable_irq to restore
-       the IRQ to its original state.
+.. function:: enable_irq(state=True)
 
-    .. function:: enable_irq(state=True)
-
-       Enable interrupt requests.
-       If ``state`` is ``True`` (the default value) then IRQs are enabled.
-       If ``state`` is ``False`` then IRQs are disabled.  The most common use of
-       this function is to pass it the value returned by ``disable_irq`` to
-       exit a critical section.
+   Enable interrupt requests.
+   If ``state`` is ``True`` (the default value) then IRQs are enabled.
+   If ``state`` is ``False`` then IRQs are disabled.  The most common use of
+   this function is to pass it the value returned by ``disable_irq`` to
+   exit a critical section.
 
 Power related functions
 -----------------------
@@ -102,6 +100,19 @@ Miscellaneous functions
    from a board/SoC instance to another, if underlying hardware allows. Length
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.
+
+.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000)
+
+   Time a pulse on the given `pin`, and return the duration of the pulse in
+   microseconds.  The `pulse_level` argument should be 0 to time a low pulse
+   or 1 to time a high pulse.
+
+   The function first waits while the pin input is different to the `pulse_level`
+   parameter, then times the duration that the pin is equal to `pulse_level`.
+   If the pin is already equal to `pulse_level` then timing starts straight away.
+
+   The function will raise an OSError with ETIMEDOUT if either of the waits is
+   longer than the given timeout value (which is in microseconds).
 
 .. _machine_constants:
 

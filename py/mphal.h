@@ -54,8 +54,25 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
 void mp_hal_delay_ms(mp_uint_t ms);
 #endif
 
+#ifndef mp_hal_delay_us
+void mp_hal_delay_us(mp_uint_t us);
+#endif
+
 #ifndef mp_hal_ticks_ms
 mp_uint_t mp_hal_ticks_ms(void);
+#endif
+
+#ifndef mp_hal_ticks_us
+mp_uint_t mp_hal_ticks_us(void);
+#endif
+
+// If port HAL didn't define its own pin API, use generic
+// "virtual pin" API from the core.
+#ifndef mp_hal_pin_obj_t
+#define mp_hal_pin_obj_t mp_obj_t
+#define mp_hal_get_pin_obj(pin) (pin)
+#define mp_hal_pin_read(pin) mp_virtual_pin_read(pin)
+#define mp_hal_pin_write(pin, v) mp_virtual_pin_write(pin, v)
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_MPHAL_H__

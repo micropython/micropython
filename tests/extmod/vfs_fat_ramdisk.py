@@ -45,6 +45,8 @@ assert b"hello!" not in bdev.data
 
 vfs = uos.VfsFat(bdev, "/ramdisk")
 
+print("getcwd:", vfs.getcwd())
+
 f = vfs.open("foo_file.txt", "w")
 f.write("hello!")
 f.close()
@@ -71,3 +73,14 @@ assert vfs.listdir("foo_dir") == ['file-in-dir.txt']
 
 vfs.rename("foo_dir/file-in-dir.txt", "moved-to-root.txt")
 assert vfs.listdir() == ['foo_dir', 'moved-to-root.txt']
+
+vfs.chdir("foo_dir")
+print("getcwd:", vfs.getcwd())
+assert vfs.listdir() == []
+
+with vfs.open("sub_file.txt", "w") as f:
+    f.write("test2")
+assert vfs.listdir() == ["sub_file.txt"]
+
+vfs.chdir("..")
+print("getcwd:", vfs.getcwd())
