@@ -61,5 +61,5 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
 }
 
 void extint_register_pin(const void *pin, uint32_t mode, int hard_irq, mp_obj_t callback_obj) {
-    mp_not_implemented(NULL);
+    mp_raise_NotImplementedError(NULL);
 }

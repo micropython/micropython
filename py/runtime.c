@@ -1439,6 +1439,6 @@ NORETURN void mp_raise_OSError(int errno_) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
 }
 
-NORETURN void mp_not_implemented(const char *msg) {
+NORETURN void mp_raise_NotImplementedError(const char *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }

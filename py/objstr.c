@@ -404,7 +404,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self_len, index, &slice)) {
-                mp_not_implemented("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
             }
             return mp_obj_new_str_of_type(type, self_data + slice.start, slice.stop - slice.start);
         }
@@ -618,7 +618,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     mp_int_t idx = splits;
 
     if (sep == mp_const_none) {
-        mp_not_implemented("rsplit(None,n)");
+        mp_raise_NotImplementedError("rsplit(None,n)");
     } else {
         size_t sep_len;
         const char *sep_str = mp_obj_str_get_data(sep, &sep_len);
@@ -742,7 +742,7 @@ STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], str, str_len);
     GET_STR_DATA_LEN(args[1], suffix, suffix_len);
     if (n_args > 2) {
-        mp_not_implemented("start/end indices");
+        mp_raise_NotImplementedError("start/end indices");
     }
 
     if (suffix_len > str_len) {
@@ -1044,7 +1044,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 arg = key_elem->value;
             }
             if (field_name < field_name_top) {
-                mp_not_implemented("attributes not supported yet");
+                mp_raise_NotImplementedError("attributes not supported yet");
             }
         } else {
             if (*arg_i < 0) {

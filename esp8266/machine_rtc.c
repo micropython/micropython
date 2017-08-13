@@ -183,8 +183,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
         if (bufinfo.len > MEM_USER_MAXLEN) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "buffer too long"));
+            mp_raise_ValueError("buffer too long");
         }
 
         len = bufinfo.len;
@@ -208,7 +207,7 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
 
     // check we want alarm0
     if (mp_obj_get_int(alarm_id) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid alarm"));
+        mp_raise_ValueError("invalid alarm");
     }
 
     // set expiry time (in microseconds)
@@ -245,7 +244,7 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     // check we want alarm0
     if (args[ARG_trigger].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid alarm"));
+        mp_raise_ValueError("invalid alarm");
     }
 
     // set the wake value

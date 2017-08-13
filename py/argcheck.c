@@ -142,6 +142,6 @@ NORETURN void mp_arg_error_terse_mismatch(void) {
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_not_implemented("keyword argument(s) not yet implemented - use normal args instead");
+    mp_raise_NotImplementedError("keyword argument(s) not yet implemented - use normal args instead");
 }
 #endif

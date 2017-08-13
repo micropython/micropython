@@ -268,7 +268,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
                 return mp_const_none;
             }
         }
-        mp_not_implemented("");
+        mp_raise_NotImplementedError("");
     }
 
     if (!JJ(IsInstanceOf, self->obj, List_class)) {
