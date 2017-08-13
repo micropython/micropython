@@ -71,10 +71,10 @@ enum {
     RULE_maximum_number_of,
 };
 
-#define ident                   (RULE_ACT_ALLOW_IDENT)
-#define blank                   (RULE_ACT_ADD_BLANK)
 #define or(n)                   (RULE_ACT_OR | n)
 #define and(n)                  (RULE_ACT_AND | n)
+#define and_ident(n)            (RULE_ACT_AND | n | RULE_ACT_ALLOW_IDENT)
+#define and_blank(n)            (RULE_ACT_AND | n | RULE_ACT_ADD_BLANK)
 #define one_or_more             (RULE_ACT_LIST | 2)
 #define list                    (RULE_ACT_LIST | 1)
 #define list_with_end           (RULE_ACT_LIST | 3)

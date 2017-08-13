@@ -37,6 +37,10 @@
 
 #if MICROPY_ENABLE_COMPILER
 
+#if MICROPY_PY_ASYNC_AWAIT
+#error "async/await syntax not implemented with this parser/compiler"
+#endif
+
 // TODO need to mangle __attr names
 
 typedef enum {
@@ -304,7 +308,7 @@ STATIC const byte *c_if_cond(compiler_t *comp, const byte *p, bool jump_if, int 
 typedef enum { ASSIGN_STORE, ASSIGN_AUG_LOAD, ASSIGN_AUG_STORE } assign_kind_t;
 STATIC void c_assign(compiler_t *comp, const byte *p, assign_kind_t kind);
 
-STATIC void c_assign_power(compiler_t *comp, const byte *p_orig, assign_kind_t assign_kind) {
+STATIC void c_assign_atom_expr(compiler_t *comp, const byte *p_orig, assign_kind_t assign_kind) {
     const byte *ptop;
     const byte *p0 = pt_rule_extract_top(p_orig, &ptop);
 
@@ -320,7 +324,7 @@ STATIC void c_assign_power(compiler_t *comp, const byte *p_orig, assign_kind_t a
         return;
     }
 
-    if (pt_is_rule(p1, PN_power_trailers)) {
+    if (pt_is_rule(p1, PN_atom_expr_trailers)) {
         const byte *p1top;
         p1 = pt_rule_extract_top(p1, &p1top);
         for (;;) {
@@ -432,9 +436,9 @@ STATIC void c_assign(compiler_t *comp, const byte *p, assign_kind_t assign_kind)
         compile_syntax_error(comp, p, "can't assign to literal");
     } else {
         switch (pt_rule_extract_rule_id(p)) {
-            case PN_power:
+            case PN_atom_expr_normal:
                 // lhs is an index or attribute
-                c_assign_power(comp, p, assign_kind);
+                c_assign_atom_expr(comp, p, assign_kind);
                 break;
 
             case PN_testlist_star_expr:
@@ -867,13 +871,13 @@ STATIC void c_del_stmt(compiler_t *comp, const byte *p) {
         qstr id;
         pt_extract_id(p, &id);
         compile_delete_id(comp, id);
-    } else if (pt_is_rule(p, PN_power)) {
+    } else if (pt_is_rule(p, PN_atom_expr_normal)) {
         const byte *ptop;
         const byte *p0 = pt_rule_extract_top(p, &ptop);
 
         const byte *p1 = compile_node(comp, p0); // base of the power node
 
-        if (pt_is_rule(p1, PN_power_trailers)) {
+        if (pt_is_rule(p1, PN_atom_expr_trailers)) {
             const byte *p1top;
             p1 = pt_rule_extract_top(p1, &p1top);
             for (;;) {
@@ -1466,7 +1470,7 @@ STATIC void compile_for_stmt(compiler_t *comp, const byte *p, const byte *ptop) 
     // this is actually slower, but uses no heap memory
     // for viper it will be much, much faster
     if (/*comp->scope_cur->emit_options == MP_EMIT_OPT_VIPER &&*/ pt_is_any_id(p)
-        && pt_is_rule(pt_next(p), PN_power)) {
+        && pt_is_rule(pt_next(p), PN_atom_expr_normal)) {
         const byte *p_it_top;
         const byte *p_it0 = pt_rule_extract_top(pt_next(p), &p_it_top);
         if (!pt_is_id(p_it0, MP_QSTR_range)) {
@@ -2072,15 +2076,16 @@ STATIC void compile_factor_2(compiler_t *comp, const byte *p, const byte *ptop) 
     }
 }
 
-STATIC void compile_power(compiler_t *comp, const byte *p, const byte *ptop) {
+STATIC void compile_atom_expr_normal(compiler_t *comp, const byte *p, const byte *ptop) {
     // this is to handle special super() call
     comp->func_arg_is_super = pt_is_id(p, MP_QSTR_super);
 
     compile_generic_all_nodes(comp, p, ptop);
+}
 
-    if (pt_num_nodes(p, ptop) == 3) {
-        EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
-    }
+STATIC void compile_power(compiler_t *comp, const byte *p, const byte *ptop) {
+    compile_generic_all_nodes(comp, p, ptop); // 2 nodes, arguments of power
+    EMIT_ARG(binary_op, MP_BINARY_OP_POWER);
 }
 
 // if p_arglist==NULL then there are no arguments
@@ -2189,7 +2194,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, const byte *p_arglist
     }
 }
 
-STATIC void compile_power_trailers(compiler_t *comp, const byte *p, const byte *ptop) {
+STATIC void compile_atom_expr_trailers(compiler_t *comp, const byte *p, const byte *ptop) {
     while (p != ptop) {
         const byte *p_next = pt_next(p);
         if (p_next != ptop && pt_is_rule(p, PN_trailer_period) && pt_is_rule(p_next, PN_trailer_paren)) {
@@ -3028,7 +3033,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
         // check structure of parse node
         const byte *p_expr_top;
         const byte *p_expr = pt_rule_extract_top(p, &p_expr_top);
-        if (!pt_is_rule(p_expr, PN_power)) {
+        if (!pt_is_rule(p_expr, PN_atom_expr_normal)) {
             goto not_an_instruction;
         }
         if (pt_next(p_expr) != p_expr_top) {
