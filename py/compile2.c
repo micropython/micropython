@@ -1649,6 +1649,8 @@ STATIC void compile_try_except(compiler_t *comp, const byte *p_body, const byte 
 }
 
 STATIC void compile_try_finally(compiler_t *comp, const byte *p_body, const byte *p_except, const byte *p_except_top, const byte *p_else, const byte *p_finally) {
+    assert(pt_is_rule(p_finally, PN_try_stmt_finally));
+
     uint l_finally_block = comp_next_label(comp);
 
     EMIT_ARG(setup_finally, l_finally_block);
@@ -1665,7 +1667,7 @@ STATIC void compile_try_finally(compiler_t *comp, const byte *p_body, const byte
     EMIT(pop_block);
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
     EMIT_ARG(label_assign, l_finally_block);
-    compile_node(comp, p_finally);
+    compile_node(comp, pt_rule_first(p_finally));
 
     compile_decrease_except_level(comp);
     EMIT(end_finally);
@@ -2412,7 +2414,9 @@ STATIC void compile_subscript_3_helper(compiler_t *comp, const byte *p, const by
     } else if (pt_is_rule(p, PN_subscript_3d)) {
         p = pt_rule_first(p);
         p = compile_node(comp, p);
-        if (pt_is_rule(p, PN_sliceop)) {
+        assert(pt_is_rule(p, PN_sliceop)); // should always be
+        p = pt_rule_first(p);
+        if (p == ptop) {
             // [?:x:]
             EMIT_ARG(build_slice, 2);
         } else {

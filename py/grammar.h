@@ -180,7 +180,7 @@ DEF_RULE(try_stmt_except_and_more, nc, and(3), rule(try_stmt_except_list), opt_r
 DEF_RULE(try_stmt_except, nc, and(4), tok(KW_EXCEPT), opt_rule(try_stmt_as_name), tok(DEL_COLON), rule(suite))
 DEF_RULE(try_stmt_as_name, nc, and(2), rule(test), opt_rule(as_name))
 DEF_RULE(try_stmt_except_list, nc, one_or_more, rule(try_stmt_except))
-DEF_RULE(try_stmt_finally, nc, ident | and(3), tok(KW_FINALLY), tok(DEL_COLON), rule(suite))
+DEF_RULE(try_stmt_finally, nc, and(3), tok(KW_FINALLY), tok(DEL_COLON), rule(suite))
 DEF_RULE(else_stmt, nc, ident | and(3), tok(KW_ELSE), tok(DEL_COLON), rule(suite))
 DEF_RULE(with_stmt, c(with_stmt), and(4), tok(KW_WITH), rule(with_stmt_list), tok(DEL_COLON), rule(suite))
 DEF_RULE(with_stmt_list, nc, list, rule(with_item), tok(DEL_COMMA))
@@ -275,7 +275,7 @@ DEF_RULE(subscript_3, c(subscript_3), and(2), tok(DEL_COLON), opt_rule(subscript
 DEF_RULE(subscript_3b, nc, or(2), rule(subscript_3c), rule(subscript_3d))
 DEF_RULE(subscript_3c, nc, and(2), tok(DEL_COLON), opt_rule(test))
 DEF_RULE(subscript_3d, nc, and(2), rule(test), opt_rule(sliceop))
-DEF_RULE(sliceop, nc, ident | and(2), tok(DEL_COLON), opt_rule(test))
+DEF_RULE(sliceop, nc, and(2), tok(DEL_COLON), opt_rule(test))
 #else
 DEF_RULE(subscriptlist, c(generic_tuple), list_with_end, rule(test), tok(DEL_COMMA))
 #endif
