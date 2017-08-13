@@ -27,80 +27,28 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "etshal.h"
-#include "user_interface.h"
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "modpyb.h"
-
-STATIC uint32_t disable_irq(void) {
-    ets_intr_lock();
-    return 0;
-}
-
-STATIC void enable_irq(uint32_t i) {
-    ets_intr_unlock();
-}
-
-STATIC void mp_hal_delay_us_no_irq(uint32_t us) {
-    uint32_t start = system_get_time();
-    while (system_get_time() - start < us) {
-    }
-}
-
-#define DELAY_US mp_hal_delay_us_no_irq
-
-#define TIMING_RESET1 (0)
-#define TIMING_RESET2 (1)
-#define TIMING_RESET3 (2)
-#define TIMING_READ1 (3)
-#define TIMING_READ2 (4)
-#define TIMING_READ3 (5)
-#define TIMING_WRITE1 (6)
-#define TIMING_WRITE2 (7)
-#define TIMING_WRITE3 (8)
-
-static int timings[] = {480, 40, 420, 5, 5, 40, 10, 50, 10};
+#include "esponewire.h"
 
 STATIC mp_obj_t onewire_timings(mp_obj_t timings_in) {
     mp_obj_t *items;
     mp_obj_get_array_fixed_n(timings_in, 9, &items);
     for (int i = 0; i < 9; ++i) {
-        timings[i] = mp_obj_get_int(items[i]);
+        esp_onewire_timings[i] = mp_obj_get_int(items[i]);
     }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_timings_obj, onewire_timings);
 
 STATIC mp_obj_t onewire_reset(mp_obj_t pin_in) {
-    uint pin = mp_obj_get_pin(pin_in);
-    pin_set(pin, 0);
-    DELAY_US(timings[TIMING_RESET1]);
-    uint32_t i = disable_irq();
-    pin_set(pin, 1);
-    DELAY_US(timings[TIMING_RESET2]);
-    int status = !pin_get(pin);
-    enable_irq(i);
-    DELAY_US(timings[TIMING_RESET3]);
-    return mp_obj_new_bool(status);
+    return mp_obj_new_bool(esp_onewire_reset(mp_obj_get_pin(pin_in)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_reset_obj, onewire_reset);
 
-STATIC int _onewire_readbit(uint pin) {
-    pin_set(pin, 1);
-    uint32_t i = disable_irq();
-    pin_set(pin, 0);
-    DELAY_US(timings[TIMING_READ1]);
-    pin_set(pin, 1);
-    DELAY_US(timings[TIMING_READ2]);
-    int value = pin_get(pin);
-    enable_irq(i);
-    DELAY_US(timings[TIMING_READ3]);
-    return value;
-}
-
 STATIC mp_obj_t onewire_readbit(mp_obj_t pin_in) {
-    return MP_OBJ_NEW_SMALL_INT(_onewire_readbit(mp_obj_get_pin(pin_in)));
+    return MP_OBJ_NEW_SMALL_INT(esp_onewire_readbit(mp_obj_get_pin(pin_in)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbit_obj, onewire_readbit);
 
@@ -108,25 +56,14 @@ STATIC mp_obj_t onewire_readbyte(mp_obj_t pin_in) {
     uint pin = mp_obj_get_pin(pin_in);
     uint8_t value = 0;
     for (int i = 0; i < 8; ++i) {
-        value |= _onewire_readbit(pin) << i;
+        value |= esp_onewire_readbit(pin) << i;
     }
     return MP_OBJ_NEW_SMALL_INT(value);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(onewire_readbyte_obj, onewire_readbyte);
 
-STATIC void _onewire_writebit(uint pin, int value) {
-    uint32_t i = disable_irq();
-    pin_set(pin, 0);
-    DELAY_US(timings[TIMING_WRITE1]);
-    pin_set(pin, value);
-    DELAY_US(timings[TIMING_WRITE2]);
-    pin_set(pin, 1);
-    DELAY_US(timings[TIMING_WRITE3]);
-    enable_irq(i);
-}
-
 STATIC mp_obj_t onewire_writebit(mp_obj_t pin_in, mp_obj_t value_in) {
-    _onewire_writebit(mp_obj_get_pin(pin_in), mp_obj_get_int(value_in));
+    esp_onewire_writebit(mp_obj_get_pin(pin_in), mp_obj_get_int(value_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(onewire_writebit_obj, onewire_writebit);
@@ -135,7 +72,7 @@ STATIC mp_obj_t onewire_writebyte(mp_obj_t pin_in, mp_obj_t value_in) {
     uint pin = mp_obj_get_pin(pin_in);
     int value = mp_obj_get_int(value_in);
     for (int i = 0; i < 8; ++i) {
-        _onewire_writebit(pin, value & 1);
+        esp_onewire_writebit(pin, value & 1);
         value >>= 1;
     }
     return mp_const_none;

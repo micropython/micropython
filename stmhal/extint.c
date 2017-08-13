@@ -90,8 +90,16 @@
 // register in an atomic fashion by using bitband addressing.
 #define EXTI_MODE_BB(mode, line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + (mode)) * 32) + ((line) * 4)))
 
+#if defined(MCU_SERIES_L4)
+// The L4 MCU supports 40 Events/IRQs lines of the type configurable and direct.
+// Here we only support configurable line types.  Details, see page 330 of RM0351, Rev 1.
+// The USB_FS_WAKUP event is a direct type and there is no support for it.
+#define EXTI_Mode_Interrupt offsetof(EXTI_TypeDef, IMR1)
+#define EXTI_Mode_Event     offsetof(EXTI_TypeDef, EMR1)
+#else
 #define EXTI_Mode_Interrupt offsetof(EXTI_TypeDef, IMR)
 #define EXTI_Mode_Event     offsetof(EXTI_TypeDef, EMR)
+#endif
 
 #define EXTI_SWIER_BB(line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + offsetof(EXTI_TypeDef, SWIER)) * 32) + ((line) * 4)))
 
@@ -108,13 +116,26 @@ STATIC uint32_t pyb_extint_mode[EXTI_NUM_VECTORS];
 #if !defined(OTG_HS_WKUP_IRQn)
 #define OTG_HS_WKUP_IRQn 76  // Some MCUs don't have HS, but we want a value to put in our table
 #endif
+#if !defined(OTG_FS_WKUP_IRQn)
+#define OTG_FS_WKUP_IRQn 42  // Some MCUs don't have FS IRQ, but we want a value to put in our table
+#endif
 
 STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     EXTI0_IRQn,     EXTI1_IRQn,     EXTI2_IRQn,     EXTI3_IRQn,     EXTI4_IRQn,
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,
-    EXTI15_10_IRQn, PVD_IRQn,       RTC_Alarm_IRQn, OTG_FS_WKUP_IRQn, ETH_WKUP_IRQn,
-    OTG_HS_WKUP_IRQn, TAMP_STAMP_IRQn, RTC_WKUP_IRQn
+    EXTI15_10_IRQn,
+    #if defined(MCU_SERIES_L4)
+    PVD_PVM_IRQn,
+    #else
+    PVD_IRQn,
+    #endif
+    RTC_Alarm_IRQn,
+    OTG_FS_WKUP_IRQn,
+    ETH_WKUP_IRQn,
+    OTG_HS_WKUP_IRQn,
+    TAMP_STAMP_IRQn,
+    RTC_WKUP_IRQn,
 };
 
 // Set override_callback_obj to true if you want to unconditionally set the
@@ -230,7 +251,11 @@ void extint_swint(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
+#if defined(MCU_SERIES_L4)
+    EXTI->SWIER1 = (1 << line);
+#else
     EXTI->SWIER = (1 << line);
+#endif
 }
 
 /// \method line()
@@ -273,12 +298,27 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// \classmethod regs()
 /// Dump the values of the EXTI registers.
 STATIC mp_obj_t extint_regs(void) {
+    #if defined(MCU_SERIES_L4)
+    printf("EXTI_IMR1   %08lx\n", EXTI->IMR1);
+    printf("EXTI_IMR2   %08lx\n", EXTI->IMR2);
+    printf("EXTI_EMR1   %08lx\n", EXTI->EMR1);
+    printf("EXTI_EMR2   %08lx\n", EXTI->EMR2);
+    printf("EXTI_RTSR1  %08lx\n", EXTI->RTSR1);
+    printf("EXTI_RTSR2  %08lx\n", EXTI->RTSR2);
+    printf("EXTI_FTSR1  %08lx\n", EXTI->FTSR1);
+    printf("EXTI_FTSR2  %08lx\n", EXTI->FTSR2);
+    printf("EXTI_SWIER1 %08lx\n", EXTI->SWIER1);
+    printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
+    printf("EXTI_PR1    %08lx\n", EXTI->PR1);
+    printf("EXTI_PR2    %08lx\n", EXTI->PR2);
+    #else
     printf("EXTI_IMR   %08lx\n", EXTI->IMR);
     printf("EXTI_EMR   %08lx\n", EXTI->EMR);
     printf("EXTI_RTSR  %08lx\n", EXTI->RTSR);
     printf("EXTI_FTSR  %08lx\n", EXTI->FTSR);
     printf("EXTI_SWIER %08lx\n", EXTI->SWIER);
     printf("EXTI_PR    %08lx\n", EXTI->PR);
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(extint_regs_fun_obj, extint_regs);

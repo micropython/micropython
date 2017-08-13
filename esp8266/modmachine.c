@@ -30,15 +30,21 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
-#include "utils.h"
+#include "extmod/machine_i2c.h"
 #include "modpyb.h"
+#include "modpybrtc.h"
 
 #include "os_type.h"
 #include "osapi.h"
 #include "etshal.h"
+#include "ets_alt_task.h"
 #include "user_interface.h"
 
 #if MICROPY_PY_MACHINE
+
+//#define MACHINE_WAKE_IDLE (0x01)
+//#define MACHINE_WAKE_SLEEP (0x02)
+#define MACHINE_WAKE_DEEPSLEEP (0x04)
 
 STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -63,11 +69,50 @@ STATIC mp_obj_t machine_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
+STATIC mp_obj_t machine_reset_cause(void) {
+    return MP_OBJ_NEW_SMALL_INT(system_get_rst_info()->reason);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
 STATIC mp_obj_t machine_unique_id(void) {
     uint32_t id = system_get_chip_id();
     return mp_obj_new_bytes((byte*)&id, sizeof(id));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
+
+STATIC mp_obj_t machine_deepsleep(void) {
+    // default to sleep forever
+    uint32_t sleep_us = 0;
+
+    // see if RTC.ALARM0 should wake the device
+    if (pyb_rtc_alarm0_wake & MACHINE_WAKE_DEEPSLEEP) {
+        uint64_t t = pyb_rtc_get_us_since_2000();
+        if (pyb_rtc_alarm0_expiry <= t) {
+            sleep_us = 1; // alarm already expired so wake immediately
+        } else {
+            uint64_t delta = pyb_rtc_alarm0_expiry - t;
+            if (delta <= 0xffffffff) {
+                // sleep for the desired time
+                sleep_us = delta;
+            } else {
+                // overflow, just set to maximum sleep time
+                sleep_us = 0xffffffff;
+            }
+        }
+    }
+
+    // put the device in a deep-sleep state
+    system_deep_sleep_set_option(0); // default power down mode; TODO check this
+    system_deep_sleep(sleep_us);
+
+    for (;;) {
+        // we must not return
+        ets_loop_iter();
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
 
 typedef struct _esp_timer_obj_t {
     mp_obj_base_t base;
@@ -91,7 +136,7 @@ STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, 
 
 STATIC void esp_timer_cb(void *arg) {
     esp_timer_obj_t *self = arg;
-    call_function_1_protected(self->callback, self);
+    mp_call_function_1_protected(self->callback, self);
 }
 
 STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -152,15 +197,26 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pyb_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&pyb_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pyb_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&pyb_uart_type) },
-    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&pyb_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_spi_type) },
+
+    // wake abilities
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
+
+    // reset causes
+    { MP_ROM_QSTR(MP_QSTR_PWR_ON_RESET), MP_ROM_INT(REASON_EXT_SYS_RST) },
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET), MP_ROM_INT(REASON_EXT_SYS_RST) },
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET), MP_ROM_INT(REASON_DEEP_SLEEP_AWAKE) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);

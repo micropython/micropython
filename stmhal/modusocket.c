@@ -320,7 +320,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     if (timeout_in == mp_const_none) {
         timeout = -1;
     } else {
-        #if MICROPY_PY_BUILTIN_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         timeout = 1000 * mp_obj_get_float(timeout_in);
         #else
         timeout = 1000 * mp_obj_get_int(timeout_in);

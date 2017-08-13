@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+extern uint32_t pyb_rtc_alarm0_wake;
+extern uint64_t pyb_rtc_alarm0_expiry;
+
 void pyb_rtc_set_us_since_2000(uint64_t nowus);
 
 uint64_t pyb_rtc_get_us_since_2000();

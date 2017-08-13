@@ -51,7 +51,9 @@
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
-#define MICROPY_DEBUG_STDERR        (1)
+// Printing debug to stderr may give tests which
+// check stdout a chance to pass, etc.
+#define MICROPY_DEBUG_PRINTER_DEST  mp_stderr_print
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
@@ -92,7 +94,7 @@
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
-#define MICROPY_MODULE_FROZEN       (1)
+#define MICROPY_MODULE_FROZEN_STR   (1)
 
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
@@ -104,6 +106,9 @@
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
+#if MICROPY_PY_USSL
+#define MICROPY_PY_UHASHLIB_SHA1    (1)
+#endif
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_URANDOM          (1)
 #ifndef MICROPY_PY_USELECT
@@ -254,8 +259,6 @@ void mp_unix_mark_exec(void);
 #endif
 #endif
 
-extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
-extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_input), MP_ROM_PTR(&mp_builtin_input_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },

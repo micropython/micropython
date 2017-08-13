@@ -1,73 +1,13 @@
 MicroPython libraries
 =====================
 
-Functionality specific to the MicroPython implementation is available in
-the following library.
-
-.. toctree::
-   :maxdepth: 1
-
-   micropython.rst
-
-Python standard libraries
--------------------------
-
 The following standard Python libraries are built in to MicroPython.
 
 For additional libraries, please download them from the `micropython-lib repository
 <https://github.com/micropython/micropython-lib>`_.
 
-.. only:: port_unix
-
-    .. toctree::
-       :maxdepth: 1
-    
-       cmath.rst
-       gc.rst
-       math.rst
-       os.rst
-       struct.rst
-       sys.rst
-       time.rst
-
-.. only:: port_pyboard
-
-    .. toctree::
-       :maxdepth: 1
-    
-       cmath.rst
-       gc.rst
-       math.rst
-       os.rst
-       select.rst
-       struct.rst
-       sys.rst
-       time.rst
-
-.. only:: port_wipy
-
-    .. toctree::
-       :maxdepth: 1
-    
-       gc.rst
-       os.rst
-       select.rst
-       sys.rst
-       time.rst
-
-.. only:: port_esp8266
-
-    .. toctree::
-       :maxdepth: 1
-
-       gc.rst
-       math.rst
-       struct.rst
-       sys.rst
-       time.rst
-
-Python micro-libraries
-----------------------
+Python standard libraries and micro-libraries
+---------------------------------------------
 
 The following standard Python libraries have been "micro-ified" to fit in with
 the philosophy of MicroPython.  They provide the core functionality of that
@@ -82,32 +22,104 @@ library.
     directory ``json`` and load that package if it is found.  If nothing is found,
     it will fallback to loading the built-in ``ujson`` module.
 
-.. only:: port_pyboard or port_unix
+.. only:: port_unix
 
-   .. toctree::
-      :maxdepth: 1
-    
-      ubinascii.rst
-      uctypes.rst
-      uhashlib.rst
-      uheapq.rst
-      ujson.rst
-      ure.rst
-      usocket.rst
-      uzlib.rst
+    .. toctree::
+       :maxdepth: 1
+
+       cmath.rst
+       gc.rst
+       math.rst
+       select.rst
+       sys.rst
+       ubinascii.rst
+       ucollections.rst
+       uhashlib.rst
+       uheapq.rst
+       uio.rst
+       ujson.rst
+       uos.rst
+       ure.rst
+       usocket.rst
+       ustruct.rst
+       utime.rst
+       uzlib.rst
+
+.. only:: port_pyboard
+
+    .. toctree::
+       :maxdepth: 1
+
+       cmath.rst
+       gc.rst
+       math.rst
+       select.rst
+       sys.rst
+       ubinascii.rst
+       ucollections.rst
+       uhashlib.rst
+       uheapq.rst
+       uio.rst
+       ujson.rst
+       uos.rst
+       ure.rst
+       usocket.rst
+       ustruct.rst
+       utime.rst
+       uzlib.rst
+
+.. only:: port_wipy
+
+    .. toctree::
+       :maxdepth: 1
+
+       gc.rst
+       select.rst
+       sys.rst
+       ubinascii.rst
+       ujson.rst
+       uos.rst
+       ure.rst
+       usocket.rst
+       ussl.rst
+       utime.rst
 
 .. only:: port_esp8266
 
-   .. toctree::
-      :maxdepth: 1
+    .. toctree::
+       :maxdepth: 1
 
-      ubinascii.rst
-      uctypes.rst
-      uhashlib.rst
-      uheapq.rst
-      ujson.rst
-      ure.rst
-      uzlib.rst
+       gc.rst
+       math.rst
+       sys.rst
+       ubinascii.rst
+       ucollections.rst
+       uhashlib.rst
+       uheapq.rst
+       uio.rst
+       ujson.rst
+       uos.rst
+       ure.rst
+       usocket.rst
+       ustruct.rst
+       utime.rst
+       uzlib.rst
+
+
+MicroPython-specific libraries
+------------------------------
+
+Functionality specific to the MicroPython implementation is available in
+the following libraries.
+
+.. toctree::
+   :maxdepth: 1
+
+   machine.rst
+   micropython.rst
+   network.rst
+   uctypes.rst
+
 
 .. only:: port_pyboard
 
@@ -120,18 +132,6 @@ library.
       :maxdepth: 2
 
       pyb.rst
-      network.rst
-
-.. only:: port_wipy
-
-   .. toctree::
-      :maxdepth: 1
-
-      ubinascii.rst
-      ujson.rst
-      ure.rst
-      usocket.rst
-      ussl.rst
 
 .. only:: port_wipy
 
@@ -143,8 +143,6 @@ library.
    .. toctree::
       :maxdepth: 2
 
-      machine.rst
-      network.rst
       wipy.rst
 
 
@@ -158,6 +156,4 @@ library.
    .. toctree::
       :maxdepth: 2
 
-      network.rst
       esp.rst
-      machine.rst

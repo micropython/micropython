@@ -13,15 +13,12 @@ Currently implemented features include:
 - Builtin modules: gc, array, collections, io, struct, sys, esp, network,
   many more.
 - Arbitrary-precision long integers and 30-bit precision floats.
-- Basic WiFi support.
+- WiFi support.
 - Sockets using modlwip.
 - GPIO and bit-banging I2C, SPI support.
 - 1-Wire and WS2812 (aka Neopixel) protocols support.
-
-On the TODO list:
-- Full wifi support.
 - Internal filesystem using the flash.
-- ...
+- WebREPL over WiFi from a browser (clients at https://github.com/micropython/webrepl).
 
 Work-in-progress documentation is available at
 http://docs.micropython.org/en/latest/esp8266/ .
@@ -45,6 +42,7 @@ dependencies.
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ cd esp8266
+$ make axtls
 $ make
 ```
 This will produce binary images in the `build/` subdirectory. If you install
@@ -52,7 +50,7 @@ MicroPython to your module for the first time, or after installing any other
 firmware, you should erase flash completely:
 
 ```
-esptool.py --port /dev//ttyXXX erase_flash
+esptool.py --port /dev/ttyXXX erase_flash
 ```
 
 Erase flash also as a troubleshooting measure, if a module doesn't behave as

@@ -170,6 +170,13 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(STMHAL_SRC_C:.c=.o))
 
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
+
+
 include ../py/mkrules.mk
 
 .PHONY: test
@@ -186,8 +193,9 @@ PIPSRC = ../tools/pip-micropython
 PIPTARGET = pip-micropython
 
 install: micropython
-	install -D $(TARGET) $(BINDIR)/$(TARGET)
-	install -D $(PIPSRC) $(BINDIR)/$(PIPTARGET)
+	install -d $(BINDIR)
+	install $(TARGET) $(BINDIR)/$(TARGET)
+	install $(PIPSRC) $(BINDIR)/$(PIPTARGET)
 
 # uninstall micropython
 uninstall:
@@ -241,6 +249,7 @@ UPIP_TARBALL := $(shell ls -1 -v ../tools/micropython-upip-*.tar.gz | tail -n1)
 
 $(BUILD)/frozen_upip/upip.py: $(UPIP_TARBALL)
 	$(ECHO) "MISC Preparing upip as frozen module"
+	$(Q)mkdir -p $(BUILD)
 	$(Q)rm -rf $(BUILD)/micropython-upip-*
 	$(Q)tar -C $(BUILD) -xz -f $^
 	$(Q)rm -rf $(dir $@)

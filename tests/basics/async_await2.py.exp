@@ -1,0 +1,5 @@
+wait value: 1
+return from send: message from wait(1)
+wait got back: message from main
+x = 100
+got StopIteration

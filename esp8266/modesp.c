@@ -33,6 +33,7 @@
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "netutils.h"
 #include "queue.h"
 #include "ets_sys.h"
@@ -40,7 +41,7 @@
 #include "user_interface.h"
 #include "espconn.h"
 #include "spi_flash.h"
-#include "utils.h"
+#include "mem.h"
 #include "espneopixel.h"
 #include "modpyb.h"
 
@@ -537,10 +538,11 @@ STATIC mp_obj_t esp_sleep_type(mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_sleep_type_obj, 0, 1, esp_sleep_type);
 
 STATIC mp_obj_t esp_deepsleep(mp_uint_t n_args, const mp_obj_t *args) {
+    system_deep_sleep_set_option(n_args > 1 ? mp_obj_get_int(args[1]) : 0);
     system_deep_sleep(n_args > 0 ? mp_obj_get_int(args[0]) : 0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 1, esp_deepsleep);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 2, esp_deepsleep);
 
 STATIC mp_obj_t esp_flash_id() {
     return mp_obj_new_int(spi_flash_get_id());
@@ -608,6 +610,23 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
+STATIC mp_obj_t esp_flash_size(void) {
+    extern char flashchip;
+    // For SDK 1.5.2, either address has shifted and not mirrored in
+    // eagle.rom.addr.v6.ld, or extra initial member was added.
+    SpiFlashChip *flash = (SpiFlashChip*)(&flashchip + 4);
+    #if 0
+    printf("deviceId: %x\n", flash->deviceId);
+    printf("chip_size: %u\n", flash->chip_size);
+    printf("block_size: %u\n", flash->block_size);
+    printf("sector_size: %u\n", flash->sector_size);
+    printf("page_size: %u\n", flash->page_size);
+    printf("status_mask: %u\n", flash->status_mask);
+    #endif
+    return mp_obj_new_int_from_uint(flash->chip_size);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
+
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -628,6 +647,22 @@ STATIC mp_obj_t esp_meminfo() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_meminfo_obj, esp_meminfo);
 
+STATIC mp_obj_t esp_malloc(mp_obj_t size_in) {
+    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)os_malloc(mp_obj_get_int(size_in)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_malloc_obj, esp_malloc);
+
+STATIC mp_obj_t esp_free(mp_obj_t addr_in) {
+    os_free((void*)mp_obj_get_int(addr_in));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_free_obj, esp_free);
+
+STATIC mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
+    return MP_OBJ_NEW_SMALL_INT(ets_esf_free_bufs(mp_obj_get_int(idx_in)));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
+
 STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_esp) },
 
@@ -638,6 +673,7 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_read), (mp_obj_t)&esp_flash_read_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_write), (mp_obj_t)&esp_flash_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_flash_erase), (mp_obj_t)&esp_flash_erase_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_flash_size), (mp_obj_t)&esp_flash_size_obj },
     #if MODESP_ESPCONN
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&esp_socket_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
@@ -645,6 +681,10 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&esp_neopixel_write_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freemem), (mp_obj_t)&esp_freemem_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_meminfo), (mp_obj_t)&esp_meminfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj }, // TODO delete/rename/move elsewhere
+    { MP_OBJ_NEW_QSTR(MP_QSTR_malloc), (mp_obj_t)&esp_malloc_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_free), (mp_obj_t)&esp_free_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_esf_free_bufs), (mp_obj_t)&esp_esf_free_bufs_obj },
 
 #if MODESP_INCLUDE_CONSTANTS
     { MP_OBJ_NEW_QSTR(MP_QSTR_SLEEP_NONE),

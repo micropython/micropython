@@ -7,6 +7,18 @@
 
 This module provides access to the BSD socket interface.
 
+See corresponding `CPython module <https://docs.python.org/3/library/socket.html>`_ for
+comparison.
+
+Socket address format(s)
+------------------------
+
+Functions below which expect a network address, accept it in the format of
+`(ipv4_address, port)`, where `ipv4_address` is a string with dot-notation numeric
+IPv4 address, e.g. ``"8.8.8.8"``, and port is integer port number in the range
+1-65535. Note the domain names are not accepted as `ipv4_address`, they should be
+resolved first using ``socket.getaddrinfo()``.
+
 Functions
 ---------
 
@@ -37,13 +49,15 @@ Functions
    The following example shows how to connect to a given url::
 
       s = socket.socket()
-      s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][4])
+      s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][-1])
 
-Exceptions
-----------
+.. only:: port_wipy
 
-.. data:: socket.error
-.. data:: socket.timeout
+    Exceptions
+    ----------
+
+    .. data:: socket.error
+    .. data:: socket.timeout
 
 Constants
 ---------
@@ -59,9 +73,10 @@ Constants
 
 .. data:: socket.IPPROTO_UDP
 .. data:: socket.IPPROTO_TCP
-.. data:: socket.IPPROTO_SEC
+.. only:: port_wipy
+   .. data:: socket.IPPROTO_SEC
 
-   protocol numbers
+      protocol numbers
 
 class socket
 ============
@@ -79,8 +94,7 @@ Methods
 
     .. method:: socket.bind(address)
 
-       Bind the socket to address. The socket must not already be bound. The format of ``address``
-       is: ``(ipv4 address, port)``
+       Bind the socket to address. The socket must not already be bound.
 
     .. method:: socket.listen([backlog])
 
@@ -98,7 +112,7 @@ Methods
 
     .. method:: socket.connect(address)
 
-       Connect to a remote socket at address. The format of address is: ``(ipv4 address, port)``
+       Connect to a remote socket at address.
 
     .. method:: socket.send(bytes)
 
@@ -116,8 +130,7 @@ Methods
     .. method:: socket.sendto(bytes, address)
 
        Send data to the socket. The socket should not be connected to a remote socket, since the
-       destination socket is specified by address. The ``address`` has the same format as the
-       rest of the methods, see above.
+       destination socket is specified by `address`.
 
     .. method:: socket.recvfrom(bufsize)
 
@@ -158,9 +171,10 @@ Methods
        The socket must be in blocking mode; it can have a timeout, but the file object’s internal buffer
        may end up in a inconsistent state if a timeout occurs.
 
-       .. note::
+       .. admonition:: Difference to CPython
+          :class: attention
 
-          **CPython difference:** closing the file object returned by makefile() WILL close the 
+          Closing the file object returned by makefile() WILL close the
           original socket as well.
 
     .. method:: socket.read(size)

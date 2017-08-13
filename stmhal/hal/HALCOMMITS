@@ -4,6 +4,15 @@ should be separate from any other changes and should be listed here, most
 recent commit at the top of the list.  This makes it easier to upgrade to
 a new HAL version.
 
+d4c33499579eb8f4febec2f5f01f5021f719fdaf
+stmhal: L4: Adapt UART HAL to avoid 64-bit integer division.
+
+f4942db044e9f614a9fc7254bb72b3441a2362a2
+stmhal: L4: Add basic STM32L4xx HAL files.
+
+2ba6677775b8704723435dc07e7b619f4c85c43d
+stmhal: L4: Add CMSIS files to support STM32L476.
+
 ea040a4f9ace1c50abc22ab755415305fd2bda41
 stmhal: In HAL I2C driver, move DMA setup to after sending I2C address.
 

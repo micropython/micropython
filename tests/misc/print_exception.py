@@ -1,4 +1,7 @@
-import _io as io # uPy does not have io module builtin
+try:
+    import uio as io
+except ImportError:
+    import io
 import sys
 if hasattr(sys, 'print_exception'):
     print_exception = sys.print_exception

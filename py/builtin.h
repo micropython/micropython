@@ -71,6 +71,10 @@ MP_DECLARE_CONST_FUN_OBJ(mp_builtin_repr_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_builtin_sum_obj);
+// Defined by a port, but declared here for simplicity
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_help_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_input_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_builtin_open_obj);
 
 MP_DECLARE_CONST_FUN_OBJ(mp_namedtuple_obj);
 
@@ -106,6 +110,8 @@ extern const mp_obj_module_t mp_module_ussl;
 extern const mp_obj_module_t mp_module_machine;
 extern const mp_obj_module_t mp_module_lwip;
 extern const mp_obj_module_t mp_module_websocket;
+extern const mp_obj_module_t mp_module_webrepl;
+extern const mp_obj_module_t mp_module_framebuf;
 
 // extmod functions
 MP_DECLARE_CONST_FUN_OBJ(pyb_mount_obj);

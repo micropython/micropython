@@ -41,7 +41,6 @@ void mp_hal_signal_dupterm_input(void);
 
 void mp_hal_init(void);
 void mp_hal_rtc_init(void);
-void mp_hal_feed_watchdog(void);
 
 uint32_t mp_hal_ticks_us(void);
 void mp_hal_delay_us(uint32_t);
@@ -55,5 +54,30 @@ void dupterm_task_init();
 
 void ets_event_poll(void);
 #define ETS_POLL_WHILE(cond) { while (cond) ets_event_poll(); }
+
+// needed for machine.I2C
+#include "osapi.h"
+#define mp_hal_delay_us_fast(us) os_delay_us(us)
+
+// C-level pin HAL
+#include "etshal.h"
+#include "gpio.h"
+#include "esp8266/modpyb.h"
+#define mp_hal_pin_obj_t uint32_t
+#define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
+void mp_hal_pin_config_od(mp_hal_pin_obj_t pin);
+#define mp_hal_pin_low(p) do { \
+        if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1) | 1); } \
+        else { gpio_output_set(0, 1 << (p), 1 << (p), 0); } \
+    } while (0)
+#define mp_hal_pin_od_high(p) do { \
+        if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); } \
+        else { gpio_output_set(1 << (p), 0, 1 << (p), 0); } \
+    } while (0)
+#define mp_hal_pin_read(p) pin_get(p)
+#define mp_hal_pin_write(p, v) pin_set((p), (v))
+
+void *ets_get_esf_buf_ctlblk(void);
+int ets_esf_free_bufs(int idx);
 
 #endif // _INCLUDED_MPHAL_H_

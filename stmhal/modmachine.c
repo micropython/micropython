@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_i2c.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "gccollect.h"
@@ -114,7 +115,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 // Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
 STATIC mp_obj_t machine_unique_id(void) {
-    byte *id = (byte*)0x1fff7a10;
+    byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
     return mp_obj_new_bytes(id, 12);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
@@ -449,7 +450,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
 #endif
     // TODO: Per new API, both types below, if called with 1 arg (ID), should still
     // initialize master mode on the peripheral.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&pyb_i2c_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&machine_i2c_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&pyb_spi_type },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },

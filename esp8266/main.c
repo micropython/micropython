@@ -47,12 +47,16 @@ STATIC void mp_reset(void) {
     gc_init(heap, heap + sizeof(heap));
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     mp_obj_list_init(mp_sys_argv, 0);
     #if MICROPY_VFS_FAT
     memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
     #endif
     MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
+    pin_init0();
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot");
     pyexec_file("boot.py");

@@ -475,7 +475,7 @@ STATIC mp_obj_t pyb_i2c_is_ready(mp_obj_t self_in, mp_obj_t i2c_addr_o) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_i2c_is_ready_obj, pyb_i2c_is_ready);
 
 /// \method scan()
-/// Scan all I2C addresses from 0x01 to 0x7f and return a list of those that respond.
+/// Scan all I2C addresses from 0x08 to 0x77 and return a list of those that respond.
 /// Only valid when in master mode.
 STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     pyb_i2c_obj_t *self = self_in;
@@ -486,7 +486,7 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
 
-    for (uint addr = 1; addr <= 127; addr++) {
+    for (uint addr = 0x08; addr <= 0x77; addr++) {
         for (int i = 0; i < 10; i++) {
             HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(self->i2c, addr << 1, 10, 200);
             if (status == HAL_OK) {

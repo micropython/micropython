@@ -3,6 +3,8 @@ include ../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
+MICROPY_PY_USSL = 1
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -30,14 +32,14 @@ UART_OS = 0
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
 	-fno-inline-functions \
-	-Wl,-EL -mlongcalls -mtext-section-literals \
+	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
-	$(CFLAGS_XTENSA) $(COPT) $(CFLAGS_EXTRA)
+	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 LDFLAGS = -nostdlib -T esp8266.ld -Map=$(@:.elf=.map) --cref
-LIBS = -L$(ESP_SDK)/lib -lmain -ljson -lssl -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
+LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
@@ -48,26 +50,28 @@ CFLAGS += -g
 COPT = -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -mforce-l32 -DNDEBUG
+COPT += -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 
 SRC_C = \
 	strtoll.c \
 	main.c \
+	help.c \
 	esp_mphal.c \
 	gccollect.c \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
+	esponewire.c \
 	espneopixel.c \
+	intr.c \
 	modpyb.c \
 	modpybpin.c \
 	modpybpwm.c \
 	modpybrtc.c \
 	modpybadc.c \
 	modpybuart.c \
-	modpybi2c.c \
 	modpybspi.c \
 	modesp.c \
 	modnetwork.c \
@@ -75,17 +79,18 @@ SRC_C = \
 	moduos.c \
 	modmachine.c \
 	modonewire.c \
-	utils.c \
 	ets_alt_task.c \
 	$(BUILD)/frozen.c \
-	fatfs_port.o \
+	fatfs_port.c \
+	axtls_helpers.c \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
+	input.c \
 	)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
-	modlwip.o \
+	modlwip.c \
         )
 
 LIB_SRC_C = $(addprefix lib/,\
@@ -112,6 +117,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/pyhelp.c \
 	utils/printf.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
@@ -128,6 +134,11 @@ OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 #OBJ += $(BUILD)/pins_$(BOARD).o
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C)
+# Append any auto-generated sources that are needed by sources listed in SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
 
 all: $(BUILD)/firmware-combined.bin
 
@@ -154,7 +165,7 @@ deploy: $(BUILD)/firmware-combined.bin
 	#$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --flash_size=8m 0 $(BUILD)/firmware.elf-0x00000.bin 0x9000 $(BUILD)/firmware.elf-0x0[1-f]000.bin
 
 reset:
-	echo -e "\r\nimport pyb; pyb.hard_reset()\r\n" >$(PORT)
+	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
 $(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -193,3 +204,9 @@ $(BUILD)/firmware.elf: $(OBJ)
 #	$(call compile_c)
 
 include ../py/mkrules.mk
+
+axtls:
+	cd ../lib/axtls; cp config/upyconfig config/.config
+	cd ../lib/axtls; make oldconfig -B
+	cd ../lib/axtls; make clean
+	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"

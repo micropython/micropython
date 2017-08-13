@@ -234,6 +234,10 @@ STATIC const char *tok_kw[] = {
     "and",
     "as",
     "assert",
+    #if MICROPY_PY_ASYNC_AWAIT
+    "async",
+    "await",
+    #endif
     "break",
     "class",
     "continue",

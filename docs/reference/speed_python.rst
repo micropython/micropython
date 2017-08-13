@@ -59,20 +59,21 @@ An example of the above is the common case where a buffer is required, such as o
 used for communication with a device. A typical driver will create the buffer in the
 constructor and use it in its I/O methods which will be called repeatedly.
 
-The MicroPython libraries typically provide optional support for pre-allocated buffers.
-For example the ``uart.readinto()`` method allows two options for its argument, an integer
-or a buffer. If an integer is supplied it will read up to that number of bytes and
-return the outcome: this implies that a buffer is created with a corresponding
-memory allocation. Providing a pre-allocated buffer as the argument avoids this. See
-the code fragment in :ref:`Caching object references <Caching>` below.
+The MicroPython libraries typically provide support for pre-allocated buffers. For
+example, objects which support stream interface (e.g., file or UART) provide ``read()``
+method which allocate new buffer for read data, but also a ``readinto()`` method
+to read data into an existing buffer.
 
 Floating Point
 ~~~~~~~~~~~~~~
 
-For the most speed critical sections of code it is worth noting that performing
-any kind of floating point operation involves heap allocation. Where possible use
-integer operations and restrict the use of floating point to sections of the code
-where performance is not paramount.
+Some MicroPython ports allocate floating point numbers on heap. Some other ports
+may lack dedicated floating-point coprocessor, and perform arithmetic operations
+on them in "software" at considerably lower speed than on integers. Where
+performance is important, use integer operations and restrict the use of floating
+point to sections of the code where performance is not paramount. For example,
+capture ADC readings as integers values to an array in one quick go, and only then
+convert them to floating-point numbers for signal processing.
 
 Arrays
 ~~~~~~
@@ -84,18 +85,31 @@ elements in contiguous memory locations. Once again to avoid memory allocation i
 code these should be pre-allocated and passed as arguments or as bound objects.
 
 When passing slices of objects such as ``bytearray`` instances, Python creates
-a copy which involves allocation. This can be avoided using a ``memoryview``
-object:
+a copy which involves allocation of the size proportional to the size of slice.
+This can be alleviated using a ``memoryview`` object. ``memoryview`` itself
+is allocated on heap, but is a small, fixed-size object, regardless of the size
+of slice it points too.
 
 .. code:: python
 
-    ba = bytearray(100)
-    func(ba[3:10]) # a copy is passed
-    mv = memoryview(ba)
-    func(mv[3:10]) # a pointer to memory is passed
+    ba = bytearray(10000)  # big array
+    func(ba[30:2000])      # a copy is passed, ~2K new allocation
+    mv = memoryview(ba)    # small object is allocated
+    func(mv[30:2000])      # a pointer to memory is passed
 
 A ``memoryview`` can only be applied to objects supporting the buffer protocol - this
-includes arrays but not lists.
+includes arrays but not lists. Small caveat is that while memoryview object is live,
+it also keeps alive the original buffer object. So, a memoryview isn't a universal
+panacea. For instance, in the example above, if you are done with 10K buffer and
+just need those bytes 30:2000 from it, it may be better to make a slice, and let
+the 10K buffer go (be ready for garbage collection), instead of making a
+long-living memoryview and keeping 10K blocked for GC.
+
+Nonetheless, ``memoryview`` is indispensable for advanced preallocated buffer
+management. ``.readinto()`` method discussed above puts data at the beginning
+of buffer and fills in entire buffer. What if you need to put data in the
+middle of existing buffer? Just create a memoryview into the needed section
+of buffer and pass it to ``.readinto()``.
 
 Identifying the slowest section of code
 ---------------------------------------

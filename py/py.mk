@@ -7,6 +7,12 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+# If qstr autogeneration is not disabled we specify the output header
+# for all collected qstrings.
+ifneq ($(QSTR_AUTOGEN_DISABLE),1)
+QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
+endif
+
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
@@ -94,6 +100,7 @@ PY_O_BASENAME = \
 	parsenum.o \
 	emitglue.o \
 	runtime.o \
+	runtime_utils.o \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \
@@ -167,9 +174,12 @@ PY_O_BASENAME = \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
 	../extmod/machine_mem.o \
+	../extmod/machine_i2c.o \
 	../extmod/modussl.o \
 	../extmod/modurandom.o \
 	../extmod/modwebsocket.o \
+	../extmod/modwebrepl.o \
+	../extmod/modframebuf.o \
 	../extmod/fsusermount.o \
 	../extmod/vfs_fat.o \
 	../extmod/vfs_fat_ffconf.o \
@@ -181,6 +191,10 @@ PY_O_BASENAME = \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
+
+# Sources that may contain qstrings
+SRC_QSTR_IGNORE = nlr% emitnx% emitnthumb% emitnarm%
+SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
@@ -194,14 +208,13 @@ $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
 # qstr data
-
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
 # Note: we need to protect the qstr names from the preprocessor, so we wrap
 # the lines in "" and then unwrap after the preprocessor is finished.
-$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
+$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | sed 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | sed 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 # emitters

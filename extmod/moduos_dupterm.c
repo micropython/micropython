@@ -44,12 +44,9 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
             mp_call_method_n_kw(1, 0, write_m);
             nlr_pop();
         } else {
-            // Temporarily disable dupterm to avoid infinite recursion
-            mp_obj_t save_term = MP_STATE_PORT(term_obj);
             MP_STATE_PORT(term_obj) = NULL;
-            mp_printf(&mp_plat_print, "dupterm: ");
+            mp_printf(&mp_plat_print, "dupterm: Exception in write() method, deactivating: ");
             mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
-            MP_STATE_PORT(term_obj) = save_term;
         }
     }
 }

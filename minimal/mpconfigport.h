@@ -3,6 +3,7 @@
 // options to control how Micro Python is built
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
+#define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 #define MICROPY_ALLOC_PATH_MAX      (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
 #define MICROPY_EMIT_X64            (0)
@@ -22,6 +23,7 @@
 #define MICROPY_ENABLE_DOC_STRING   (0)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+#define MICROPY_PY_ASYNC_AWAIT      (0)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
 #define MICROPY_PY_BUILTINS_ENUMERATE (0)
@@ -42,7 +44,7 @@
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_STRUCT           (0)
 #define MICROPY_PY_SYS              (0)
-#define MICROPY_MODULE_FROZEN       (0)
+#define MICROPY_MODULE_FROZEN_MPY   (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)

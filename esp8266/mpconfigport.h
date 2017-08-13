@@ -9,6 +9,7 @@
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
+#define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (0)
@@ -50,6 +51,11 @@
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_WEBSOCKET        (1)
+#define MICROPY_PY_WEBREPL          (1)
+#define MICROPY_PY_WEBREPL_DELAY    (20)
+#define MICROPY_PY_FRAMEBUF         (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_OS_DUPTERM       (1)
 #define MICROPY_CPYTHON_COMPAT      (1)
@@ -57,7 +63,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
-#define MICROPY_MODULE_FROZEN       (1)
+#define MICROPY_MODULE_FROZEN_STR   (1)
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
 
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -100,12 +106,12 @@ typedef uint32_t sys_prot_t; // for modlwip
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // extra built in names to add to the global namespace
-extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t esp_module;
 extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t utime_module;
@@ -115,7 +121,6 @@ extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t onewire_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pyb), (mp_obj_t)&pyb_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_lwip), (mp_obj_t)&mp_module_lwip }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_lwip }, \
@@ -137,6 +142,7 @@ extern const struct _mp_obj_module_t onewire_module;
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t mp_kbd_exception; \
+    mp_obj_t pin_irq_handler[16]; \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -146,6 +152,6 @@ extern const struct _mp_obj_module_t onewire_module;
 #define MICROPY_MPHALPORT_H "esp_mphal.h"
 #define MICROPY_HW_BOARD_NAME "ESP module"
 #define MICROPY_HW_MCU_NAME "ESP8266"
-#define MICROPY_PY_SYS_PLATFORM "ESP8266"
+#define MICROPY_PY_SYS_PLATFORM "esp8266"
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))

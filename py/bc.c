@@ -171,6 +171,7 @@ void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, size_
         const mp_obj_t *arg_names = (const mp_obj_t*)code_state->const_table;
 
         for (size_t i = 0; i < n_kw; i++) {
+            // the keys in kwargs are expected to be qstr objects
             mp_obj_t wanted_arg_name = kwargs[2 * i];
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
                 if (wanted_arg_name == arg_names[j]) {

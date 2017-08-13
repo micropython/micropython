@@ -45,19 +45,26 @@ const mp_map_t mp_const_empty_map = {
     .table = NULL,
 };
 
-// approximatelly doubling primes; made with Mathematica command: Table[Prime[Floor[(1.7)^n]], {n, 3, 24}]
-// prefixed with zero for the empty case.
-STATIC uint32_t doubling_primes[] = {0, 7, 19, 43, 89, 179, 347, 647, 1229, 2297, 4243, 7829, 14347, 26017, 47149, 84947, 152443, 273253, 488399, 869927, 1547173, 2745121, 4861607};
+// This table of sizes is used to control the growth of hash tables.
+// The first set of sizes are chosen so the allocation fits exactly in a
+// 4-word GC block, and it's not so important for these small values to be
+// prime.  The latter sizes are prime and increase at an increasing rate.
+STATIC uint16_t hash_allocation_sizes[] = {
+    0, 2, 4, 6, 8, 10, 12, // +2
+    17, 23, 29, 37, 47, 59, 73, // *1.25
+    97, 127, 167, 223, 293, 389, 521, 691, 919, 1223, 1627, 2161, // *1.33
+    3229, 4831, 7243, 10861, 16273, 24407, 36607, 54907, // *1.5
+};
 
-STATIC mp_uint_t get_doubling_prime_greater_or_equal_to(mp_uint_t x) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(doubling_primes); i++) {
-        if (doubling_primes[i] >= x) {
-            return doubling_primes[i];
+STATIC mp_uint_t get_hash_alloc_greater_or_equal_to(mp_uint_t x) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(hash_allocation_sizes); i++) {
+        if (hash_allocation_sizes[i] >= x) {
+            return hash_allocation_sizes[i];
         }
     }
     // ran out of primes in the table!
     // return something sensible, at least make it odd
-    return x | 1;
+    return (x + x / 2) | 1;
 }
 
 /******************************************************************************/
@@ -118,7 +125,7 @@ void mp_map_clear(mp_map_t *map) {
 
 STATIC void mp_map_rehash(mp_map_t *map) {
     mp_uint_t old_alloc = map->alloc;
-    mp_uint_t new_alloc = get_doubling_prime_greater_or_equal_to(map->alloc + 1);
+    mp_uint_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
     // If we reach this point, table resizing succeeded, now we can edit the old map.
@@ -298,7 +305,7 @@ void mp_set_init(mp_set_t *set, mp_uint_t n) {
 STATIC void mp_set_rehash(mp_set_t *set) {
     mp_uint_t old_alloc = set->alloc;
     mp_obj_t *old_table = set->table;
-    set->alloc = get_doubling_prime_greater_or_equal_to(set->alloc + 1);
+    set->alloc = get_hash_alloc_greater_or_equal_to(set->alloc + 1);
     set->used = 0;
     set->table = m_new0(mp_obj_t, set->alloc);
     for (mp_uint_t i = 0; i < old_alloc; i++) {

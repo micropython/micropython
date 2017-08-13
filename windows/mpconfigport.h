@@ -77,7 +77,7 @@
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
-#define MICROPY_MODULE_FROZEN       (0)
+#define MICROPY_MODULE_FROZEN_STR   (0)
 
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
@@ -149,8 +149,6 @@ void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 #define mp_hal_dupterm_tx_strn(s, l)
 #endif
 
-extern const struct _mp_obj_fun_builtin_t mp_builtin_input_obj;
-extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },

@@ -36,9 +36,14 @@
 #include "py/stream.h"
 #include "modpyb.h"
 
+// baudrate is currently fixed to this value
+#define UART_BAUDRATE (115200)
+
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     uint8_t uart_id;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } pyb_uart_obj_t;
 
 /******************************************************************************/
@@ -46,24 +51,35 @@ typedef struct _pyb_uart_obj_t {
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u)", self->uart_id);
+    mp_printf(print, "UART(%u, baudrate=%u, timeout=%u, timeout_char=%u)",
+        self->uart_id, UART_BAUDRATE, self->timeout, self->timeout_char);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    /*
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop };
+    enum { ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        //{ MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
+        //{ MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
+        //{ MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        //{ MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
+        //{ MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    */
-    // not implemented
+
+    // set timeout
+    self->timeout = args[ARG_timeout].u_int;
+
+    // set timeout_char
+    // make sure it is at least as long as a whole character (13 bits to be safe)
+    self->timeout_char = args[ARG_timeout_char].u_int;
+    uint32_t min_timeout_char = 13000 / UART_BAUDRATE + 1;
+    if (self->timeout_char < min_timeout_char) {
+        self->timeout_char = min_timeout_char;
+    }
 }
 
 STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -80,12 +96,10 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
 
-    if (n_args > 1 || n_kw > 0) {
-        // init the peripheral
-        mp_map_t kw_args;
-        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
-    }
+    // init the peripheral
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -109,7 +123,32 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
 STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    mp_not_implemented("reading from UART");
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (self->uart_id == 1) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "UART(1) can't read"));
+    }
+
+    // make sure we want at least 1 char
+    if (size == 0) {
+        return 0;
+    }
+
+    // wait for first char to become available
+    if (!uart_rx_wait(self->timeout * 1000)) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
+    // read the data
+    uint8_t *buf = buf_in;
+    for (;;) {
+        *buf++ = uart_rx_char();
+        if (--size == 0 || !uart_rx_wait(self->timeout_char * 1000)) {
+            // return number of bytes read
+            return buf - (uint8_t*)buf_in;
+        }
+    }
 }
 
 STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {

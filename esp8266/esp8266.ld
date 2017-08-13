@@ -120,6 +120,7 @@ SECTIONS
         *extmod/*.o*(.literal* .text*)
 
         *lib/fatfs/*.o*(.literal*, .text*)
+        */libaxtls.a:(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)
         *lib/netutils/*.o*(.literal*, .text*)
@@ -146,6 +147,7 @@ SECTIONS
         *modutime.o(.literal* .text*)
         *modlwip.o(.literal* .text*)
         *modsocket.o(.literal* .text*)
+        *modonewire.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */

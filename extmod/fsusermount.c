@@ -81,8 +81,7 @@ fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp
         }
 
         // create new object
-        fs_user_mount_t *vfs;
-        MP_STATE_PORT(fs_user_mount)[i] = vfs = m_new_obj(fs_user_mount_t);
+        fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
         vfs->str = mnt_str;
         vfs->len = mnt_len;
         vfs->flags = FSUSER_FREE_OBJ;
@@ -108,6 +107,11 @@ fs_user_mount_t *fatfs_mount_mkfs(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             vfs->writeblocks[0] = MP_OBJ_NULL;
         }
 
+        // Register the vfs object so that it can be found by the FatFS driver using
+        // ff_get_ldnumber.  We don't register it any earlier than this point in case there
+        // is an exception, in which case there would remain a partially mounted device.
+        MP_STATE_PORT(fs_user_mount)[i] = vfs;
+
         // mount the block device (if mkfs, only pre-mount)
         FRESULT res = f_mount(&vfs->fatfs, vfs->str, !mkfs);
         // check the result
@@ -120,6 +124,7 @@ mkfs:
             res = f_mkfs(vfs->str, 1, 0);
             if (res != FR_OK) {
 mkfs_error:
+                MP_STATE_PORT(fs_user_mount)[i] = NULL;
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mkfs"));
             }
             if (mkfs) {
@@ -132,6 +137,7 @@ mkfs_error:
                 return NULL;
             }
         } else {
+            MP_STATE_PORT(fs_user_mount)[i] = NULL;
             nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't mount"));
         }
 

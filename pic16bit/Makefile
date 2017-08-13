@@ -49,6 +49,12 @@ SRC_S = \
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(SRC_S:.s=.o))
 
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
+
 all: $(BUILD)/firmware.hex
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf

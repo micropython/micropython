@@ -46,20 +46,46 @@ vpath %.c . $(TOP)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
+# List all native flags since the current build system doesn't have
+# the micropython configuration available. However, these flags are
+# needed to extract all qstrings
+QSTR_GEN_EXTRA_CFLAGS += -D__QSTR_EXTRACT -DN_X64 -DN_X86 -DN_THUMB -DN_ARM
+QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
+
+vpath %.c . $(TOP)
+
 $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
 
-# The following rule uses | to create an order only prereuisite. Order only
+# The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
 # checking to be performed.
 #
 # We don't know which source files actually need the generated.h (since
 # it is #included from str.h). The compiler generated dependencies will cause
 # the right .o's to get recompiled if the generated.h file changes. Adding
-# an order-only dependendency to all of the .o's will cause the generated .h
+# an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
+
+$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) | $(HEADER_BUILD)/mpversion.h
+	$(ECHO) "GEN $@"
+	$(Q)if [ "$?" = "" ]; then \
+	    echo "QSTR Looks like -B used, trying to emulate"; \
+	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $^ >$(HEADER_BUILD)/qstr.i.last; \
+	else \
+	    $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $? >$(HEADER_BUILD)/qstr.i.last; \
+	fi
+
+$(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)touch $@
+
+$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 
 # $(sort $(var)) removes duplicates
 #
