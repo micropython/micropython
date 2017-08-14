@@ -83,6 +83,7 @@ STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = self_in;
     if (self->nic != MP_OBJ_NULL) {
         self->nic_type->close(self);
+        self->nic = MP_OBJ_NULL;
     }
     return mp_const_none;
 }

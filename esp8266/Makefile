@@ -78,7 +78,9 @@ SRC_C = \
 	modpybrtc.c \
 	modpybadc.c \
 	modpybuart.c \
+	modmachinewdt.c \
 	modpybspi.c \
+	modpybhspi.c \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
@@ -89,6 +91,7 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
 	axtls_helpers.c \
+	hspi.c \
 	$(SRC_MOD)
 
 STM_SRC_C = $(addprefix stmhal/,\
@@ -125,7 +128,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/pyhelp.c \
-	utils/printf.c \
 	fatfs/ff.c \
 	fatfs/option/ccsbcs.c \
 	)
@@ -137,7 +139,7 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 SRC_S = \
 	gchelper.s \
 
-FROZEN_MPY_PY_FILES := $(shell find $(FROZEN_MPY_DIR)/ -type f -name '*.py')
+FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 OBJ =

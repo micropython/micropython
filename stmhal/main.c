@@ -44,6 +44,7 @@
 #include "pendsv.h"
 #include "gccollect.h"
 #include "readline.h"
+#include "modmachine.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
@@ -137,8 +138,8 @@ static const char fresh_boot_py[] =
 "import machine\r\n"
 "import pyb\r\n"
 "#pyb.main('main.py') # main script to run after this one\r\n"
-"#pyb.usb_mode('CDC+MSC') # act as a serial and a storage device\r\n"
-"#pyb.usb_mode('CDC+HID') # act as a serial device and a mouse\r\n"
+"#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
+"#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
 ;
 
 static const char fresh_main_py[] =
@@ -409,6 +410,8 @@ soft_reset:
     led_state(3, 0);
     led_state(4, 0);
     uint reset_mode = update_reset_mode(1);
+
+    machine_init();
 
 #if MICROPY_HW_ENABLE_RTC
     if (first_soft_reset) {

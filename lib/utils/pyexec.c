@@ -112,7 +112,7 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         printf("took " UINT_FMT " ms\n", ticks);
         // qstr info
         {
-            mp_uint_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
+            size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
             qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
             printf("qstr:\n  n_pool=" UINT_FMT "\n  n_qstr=" UINT_FMT "\n  n_str_data_bytes=" UINT_FMT "\n  n_total_bytes=" UINT_FMT "\n", n_pool, n_qstr, n_str_data_bytes, n_total_bytes);
         }

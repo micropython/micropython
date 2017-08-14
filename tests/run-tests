@@ -200,6 +200,10 @@ def run_tests(pyb, tests, args):
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
         skip_tests.add('basics/memoryerror.py')
+        skip_tests.add('thread/thread_gc1.py') # has reliability issues
+        skip_tests.add('thread/thread_lock4.py') # has reliability issues
+        skip_tests.add('thread/stress_heap.py') # has reliability issues
+        skip_tests.add('thread/stress_recurse.py') # has reliability issues
 
     if not has_complex:
         skip_tests.add('float/complex1.py')

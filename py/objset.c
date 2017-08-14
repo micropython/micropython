@@ -224,8 +224,6 @@ STATIC mp_obj_t set_discard(mp_obj_t self_in, mp_obj_t item) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_discard_obj, set_discard);
 
 STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
-    assert(n_args > 0);
-
     mp_obj_t self;
     if (update) {
         check_set(args[0]);
@@ -443,8 +441,6 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
 }
 
 STATIC mp_obj_t set_update(size_t n_args, const mp_obj_t *args) {
-    assert(n_args > 0);
-
     for (mp_uint_t i = 1; i < n_args; i++) {
         set_update_int(MP_OBJ_TO_PTR(args[0]), args[i]);
     }
@@ -587,7 +583,7 @@ mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items) {
 }
 
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }

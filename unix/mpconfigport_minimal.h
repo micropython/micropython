@@ -135,9 +135,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
-
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__
 #include <stdlib.h>

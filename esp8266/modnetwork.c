@@ -130,17 +130,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_status_obj, esp_status);
 
 STATIC mp_obj_t *esp_scan_list = NULL;
 
-STATIC void esp_scan_cb(scaninfo *si, STATUS status) {
+STATIC void esp_scan_cb(void *result, STATUS status) {
     if (esp_scan_list == NULL) {
         // called unexpectedly
         return;
     }
-    if (si->pbss && status == 0) {
+    if (result && status == 0) {
         // we need to catch any memory errors
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            struct bss_info *bs;
-            STAILQ_FOREACH(bs, si->pbss, next) {
+            for (struct bss_info *bs = result; bs; bs = STAILQ_NEXT(bs, next)) {
                 mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
                 #if 1
                 // struct bss_info::ssid_len is not documented in SDK API Guide,

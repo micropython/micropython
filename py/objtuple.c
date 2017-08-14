@@ -104,10 +104,8 @@ STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_arg
 
 // Don't pass MP_BINARY_OP_NOT_EQUAL here
 STATIC bool tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
-    mp_obj_type_t *self_type = mp_obj_get_type(self_in);
-    if (self_type->getiter != mp_obj_tuple_getiter) {
-        assert(0);
-    }
+    // type check is done on getiter method to allow tuple, namedtuple, attrtuple
+    mp_check_self(mp_obj_get_type(self_in)->getiter == mp_obj_tuple_getiter);
     mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     if (another_type->getiter != mp_obj_tuple_getiter) {
@@ -202,14 +200,14 @@ mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in) {
 }
 
 STATIC mp_obj_t tuple_count(mp_obj_t self_in, mp_obj_t value) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_seq_count_obj(self->items, self->len, value);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tuple_count_obj, tuple_count);
 
 STATIC mp_obj_t tuple_index(size_t n_args, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple));
+    mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(args[0]);
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }

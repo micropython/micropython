@@ -94,8 +94,8 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
-    mp_obj_base_t *o = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_stream_p_t *stream_p = type->protocol;
     if (stream_p == NULL
         || ((flags & MP_STREAM_OP_READ) && stream_p->read == NULL)
         || ((flags & MP_STREAM_OP_WRITE) && stream_p->write == NULL)
@@ -167,7 +167,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
                 // TODO what if we have read only half a non-ASCII char?
                 vstr_cut_tail_bytes(&vstr, more_bytes - out_sz);
                 if (out_sz == 0) {
-                    break; 
+                    break;
                 }
             }
 

@@ -199,15 +199,15 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         if (mode == GPIO_MODE_INPUT) {
             mode_qst = MP_QSTR_IN;
         } else if (mode == GPIO_MODE_OUTPUT_PP) {
-            mode_qst = MP_QSTR_OUT_PP;
+            mode_qst = MP_QSTR_OUT;
         } else if (mode == GPIO_MODE_OUTPUT_OD) {
-            mode_qst = MP_QSTR_OUT_OD;
+            mode_qst = MP_QSTR_OPEN_DRAIN;
         } else {
             af = true;
             if (mode == GPIO_MODE_AF_PP) {
-                mode_qst = MP_QSTR_AF_PP;
+                mode_qst = MP_QSTR_ALT;
             } else {
-                mode_qst = MP_QSTR_AF_OD;
+                mode_qst = MP_QSTR_ALT_OPEN_DRAIN;
             }
         }
         mp_print_str(print, qstr_str(mode_qst));

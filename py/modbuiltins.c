@@ -376,7 +376,6 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
 STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
-    assert(2 <= n_args && n_args <= 3);
     switch (n_args) {
         case 2: return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
         default: return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]); // TODO optimise...
@@ -492,7 +491,6 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj, 1, 2, mp_builtin_round);
 
 STATIC mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
-    assert(1 <= n_args && n_args <= 2);
     mp_obj_t value;
     switch (n_args) {
         case 1: value = MP_OBJ_NEW_SMALL_INT(0); break;
@@ -508,7 +506,6 @@ STATIC mp_obj_t mp_builtin_sum(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
 STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    assert(n_args >= 1);
     if (n_args > 1) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
                                           "must use keyword argument for key function"));

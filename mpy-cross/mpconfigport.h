@@ -59,6 +59,7 @@
 
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_CPYTHON_COMPAT      (1)
+#define MICROPY_USE_INTERNAL_PRINTF (0)
 
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
@@ -106,9 +107,6 @@ typedef long long mp_off_t;
 #else
 typedef long mp_off_t;
 #endif
-
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
 
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 

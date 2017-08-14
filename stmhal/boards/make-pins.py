@@ -303,7 +303,9 @@ class Pins(object):
     def print_adc(self, adc_num):
         print('');
         print('const pin_obj_t * const pin_adc{:d}[] = {{'.format(adc_num))
-        for channel in range(16):
+        for channel in range(17):
+            if channel == 16:
+                print('#if defined(MCU_SERIES_L4)')
             adc_found = False
             for named_pin in self.cpu_pins:
                 pin = named_pin.pin()
@@ -314,6 +316,8 @@ class Pins(object):
                     break
             if not adc_found:
                 print('  NULL,    // {:d}'.format(channel))
+            if channel == 16:
+                print('#endif')
         print('};')
 
 

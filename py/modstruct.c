@@ -114,7 +114,7 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
             mp_uint_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
             if (sz == 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "unsupported format"));
+                mp_raise_ValueError("unsupported format");
             }
             while (cnt--) {
                 // Apply alignment
@@ -149,7 +149,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             // negative offsets are relative to the end of the buffer
             offset = bufinfo.len + offset;
             if (offset < 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+                mp_raise_ValueError("buffer too small");
             }
         }
         p += offset;
@@ -164,7 +164,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             sz = get_fmt_num(&fmt);
         }
         if (p + sz > end_p) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+            mp_raise_ValueError("buffer too small");
         }
         mp_obj_t item;
         if (*fmt == 's') {
@@ -197,7 +197,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, siz
             sz = get_fmt_num(&fmt);
         }
         if (p + sz > end_p) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+            mp_raise_ValueError("buffer too small");
         }
 
         if (*fmt == 's') {
@@ -240,7 +240,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         // negative offsets are relative to the end of the buffer
         offset = (mp_int_t)bufinfo.len + offset;
         if (offset < 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "buffer too small"));
+            mp_raise_ValueError("buffer too small");
         }
     }
     byte *p = (byte *)bufinfo.buf;

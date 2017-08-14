@@ -1200,6 +1200,11 @@ STATIC void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns)
 }
 
 STATIC void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    // with optimisations enabled we don't compile assertions
+    if (MP_STATE_VM(mp_optimise_value) != 0) {
+        return;
+    }
+
     uint l_end = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], true, l_end);
     EMIT_LOAD_GLOBAL(MP_QSTR_AssertionError); // we load_global instead of load_id, to be consistent with CPython

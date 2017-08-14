@@ -154,7 +154,6 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	utils/pyexec.c \
 	utils/pyhelp.c \
-	utils/printf.c \
 	)
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\

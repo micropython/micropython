@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
+#include "extmod/machine_spi.h"
 
 typedef struct _pyb_spi_obj_t {
     mp_obj_base_t base;
@@ -46,7 +47,8 @@ typedef struct _pyb_spi_obj_t {
     mp_hal_pin_obj_t miso;
 } pyb_spi_obj_t;
 
-STATIC void mp_hal_spi_transfer(pyb_spi_obj_t *self, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
+STATIC void mp_hal_spi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
+    pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
     // only MSB transfer is implemented
     uint32_t delay_half = 500000 / self->baudrate + 1;
     for (size_t i = 0; i < src_len || i < dest_len; ++i) {
@@ -131,7 +133,7 @@ STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj
     mp_hal_pin_input(self->miso);
 }
 
-STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
     pyb_spi_obj_t *self = m_new_obj(pyb_spi_obj_t);
     self->base.type = &pyb_spi_type;
@@ -154,69 +156,25 @@ STATIC mp_obj_t pyb_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_init_obj, 1, pyb_spi_init);
 
-STATIC mp_obj_t pyb_spi_read(size_t n_args, const mp_obj_t *args) {
-    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint8_t write_byte = 0;
-    if (n_args == 3) {
-        write_byte = mp_obj_get_int(args[2]);
-    }
-    vstr_t vstr;
-    vstr_init_len(&vstr, mp_obj_get_int(args[1]));
-    mp_hal_spi_transfer(self, 1, &write_byte, vstr.len, (uint8_t*)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_spi_read_obj, 2, 3, pyb_spi_read);
-
-STATIC mp_obj_t pyb_spi_readinto(size_t n_args, const mp_obj_t *args) {
-    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    uint8_t write_byte = 0;
-    if (n_args == 3) {
-        write_byte = mp_obj_get_int(args[2]);
-    }
-    mp_hal_spi_transfer(self, 1, &write_byte, bufinfo.len, (uint8_t*)bufinfo.buf);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_spi_readinto_obj, 2, 3, pyb_spi_readinto);
-
-STATIC mp_obj_t pyb_spi_write(mp_obj_t self_in, mp_obj_t wr_buf_in) {
-    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_buffer_info_t src_buf;
-    mp_get_buffer_raise(wr_buf_in, &src_buf, MP_BUFFER_READ);
-    mp_hal_spi_transfer(self, src_buf.len, (const uint8_t*)src_buf.buf, 0, NULL);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_write_obj, pyb_spi_write);
-
-STATIC mp_obj_t pyb_spi_write_readinto(mp_obj_t self_in, mp_obj_t wr_buf_in, mp_obj_t rd_buf_in) {
-    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_buffer_info_t src_buf;
-    mp_get_buffer_raise(wr_buf_in, &src_buf, MP_BUFFER_READ);
-    mp_buffer_info_t dest_buf;
-    mp_get_buffer_raise(rd_buf_in, &dest_buf, MP_BUFFER_WRITE);
-    if (src_buf.len != dest_buf.len) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "buffers must be the same length"));
-    }
-    mp_hal_spi_transfer(self, src_buf.len, (const uint8_t*)src_buf.buf, dest_buf.len, (uint8_t*)dest_buf.buf);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_3(pyb_spi_write_readinto_obj, pyb_spi_write_readinto);
-
 STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_spi_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&pyb_spi_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&pyb_spi_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_spi_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&pyb_spi_write_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_machine_spi_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_machine_spi_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_machine_spi_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&mp_machine_spi_write_readinto_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
+STATIC const mp_machine_spi_p_t pyb_spi_p = {
+    .transfer = mp_hal_spi_transfer,
+};
+
 const mp_obj_type_t pyb_spi_type = {
     { &mp_type_type },
-    .name = MP_QSTR_SPI,
+    .name = MP_QSTR_SoftSPI,
     .print = pyb_spi_print,
     .make_new = pyb_spi_make_new,
+    .protocol = &pyb_spi_p,
     .locals_dict = (mp_obj_dict_t*)&pyb_spi_locals_dict,
 };

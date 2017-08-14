@@ -110,6 +110,19 @@ the flag. The memory allocation occurs in the main program code when the object 
 The MicroPython library I/O methods usually provide an option to use a pre-allocated buffer. For
 example ``pyb.i2c.recv()`` can accept a mutable buffer as its first argument: this enables its use in an ISR.
 
+A means of creating an object without employing a class or globals is as follows:
+
+.. code:: python
+
+    def set_volume(t, buf=bytearray(3)):
+        buf[0] = 0xa5
+        buf[1] = t >> 4
+        buf[2] = 0x5a
+        return buf
+
+The compiler instantiates the default ``buf`` argument when the function is
+loaded for the first time (usually when the module it's in is imported).
+
 Use of Python objects
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -300,3 +313,20 @@ that access to the critical variables is denied. A simple example of a mutex may
 but only for the duration of eight machine instructions: the benefit of this approach is that other interrupts are
 virtually unaffected.
 
+Interrupts and the REPL
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Interrupt handlers, such as those associated with timers, can continue to run
+after a program terminates.  This may produce unexpected results where you might
+have expected the object raising the callback to have gone out of scope.  For
+example on the Pyboard:
+
+.. code:: python
+
+    def bar():
+        foo = pyb.Timer(2, freq=4, callback=lambda t: print('.', end=''))
+
+    bar()
+
+This continues to run until the timer is explicitly disabled or the board is
+reset with ``ctrl D``.

@@ -89,7 +89,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 //    - code_state->ip should contain the offset in bytes from the start of
 //      the bytecode chunk to just after n_state and n_exc_stack
 //    - code_state->n_state should be set to the state size (locals plus stack)
-void mp_setup_code_state(mp_code_state *code_state, mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
     size_t n_state = code_state->n_state;

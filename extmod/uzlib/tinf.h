@@ -5,7 +5,7 @@
  * All Rights Reserved
  * http://www.ibsensoftware.com/
  *
- * Copyright (c) 2014 by Paul Sokolovsky
+ * Copyright (c) 2014-2016 by Paul Sokolovsky
  */
 
 #ifndef TINF_H_INCLUDED
@@ -26,9 +26,17 @@
 extern "C" {
 #endif
 
+/* ok status, more data produced */
 #define TINF_OK             0
+/* end of compressed stream reached */
+#define TINF_DONE           1
 #define TINF_DATA_ERROR    (-3)
-#define TINF_DEST_OVERFLOW (-4)
+#define TINF_CHKSUM_ERROR  (-4)
+
+/* checksum types */
+#define TINF_CHKSUM_NONE  0
+#define TINF_CHKSUM_ADLER 1
+#define TINF_CHKSUM_CRC   2
 
 /* data structures */
 
@@ -40,6 +48,10 @@ typedef struct {
 struct TINF_DATA;
 typedef struct TINF_DATA {
    const unsigned char *source;
+   /* If source above is NULL, this function will be used to read
+      next byte from source stream */
+   unsigned char (*readSource)(struct TINF_DATA *data);
+
    unsigned int tag;
    unsigned int bitcount;
 
@@ -51,49 +63,51 @@ typedef struct TINF_DATA {
     unsigned char *dest;
     /* Remaining bytes in buffer */
     unsigned int destRemaining;
-    /* Argument is the allocation size which didn't fit into buffer. Note that
-       exact mimumum size to grow buffer by is lastAlloc - destRemaining. But
-       growing by this exact size is ineficient, as the next allocation will
-       fail again. */
-    int (*destGrow)(struct TINF_DATA *data, unsigned int lastAlloc);
+
+    /* Accumulating checksum */
+    unsigned int checksum;
+    char checksum_type;
+
+    int btype;
+    int bfinal;
+    unsigned int curlen;
+    int lzOff;
+    unsigned char *dict_ring;
+    unsigned int dict_size;
+    unsigned int dict_idx;
 
    TINF_TREE ltree; /* dynamic length/symbol tree */
    TINF_TREE dtree; /* dynamic distance tree */
 } TINF_DATA;
 
+#define TINF_PUT(d, c) \
+    { \
+        *d->dest++ = c; \
+        if (d->dict_ring) { d->dict_ring[d->dict_idx++] = c; if (d->dict_idx == d->dict_size) d->dict_idx = 0; } \
+    }
 
-/* low-level API */
+unsigned char TINFCC uzlib_get_byte(TINF_DATA *d);
 
-/* Step 1: Allocate TINF_DATA structure */
-/* Step 2: Set destStart, destSize, and destGrow fields */
-/* Step 3: Set source field */
-/* Step 4: Call tinf_uncompress_dyn() */
-/* Step 5: In response to destGrow callback, update destStart and destSize fields */
-/* Step 6: When tinf_uncompress_dyn() returns, buf.dest points to a byte past last uncompressed byte */
+/* Decompression API */
 
-int TINFCC tinf_uncompress_dyn(TINF_DATA *d);
-int TINFCC tinf_zlib_uncompress_dyn(TINF_DATA *d, unsigned int sourceLen);
+void TINFCC uzlib_init(void);
+void TINFCC uzlib_uncompress_init(TINF_DATA *d, void *dict, unsigned int dictLen);
+int  TINFCC uzlib_uncompress(TINF_DATA *d);
+int  TINFCC uzlib_uncompress_chksum(TINF_DATA *d);
 
-/* high-level API */
+int TINFCC uzlib_zlib_parse_header(TINF_DATA *d);
+int TINFCC uzlib_gzip_parse_header(TINF_DATA *d);
 
-void TINFCC tinf_init(void);
+/* Compression API */
 
-int TINFCC tinf_uncompress(void *dest, unsigned int *destLen,
-                           const void *source, unsigned int sourceLen);
+void TINFCC uzlib_compress(void *data, const uint8_t *src, unsigned slen);
 
-int TINFCC tinf_gzip_uncompress(void *dest, unsigned int *destLen,
-                                const void *source, unsigned int sourceLen);
+/* Checksum API */
 
-int TINFCC tinf_zlib_uncompress(void *dest, unsigned int *destLen,
-                                const void *source, unsigned int sourceLen);
-
-unsigned int TINFCC tinf_adler32(const void *data, unsigned int length);
-
-unsigned int TINFCC tinf_crc32(const void *data, unsigned int length);
-
-/* compression API */
-
-void TINFCC tinf_compress(void *data, const uint8_t *src, unsigned slen);
+/* prev_sum is previous value for incremental computation, 1 initially */
+uint32_t TINFCC uzlib_adler32(const void *data, unsigned int length, uint32_t prev_sum);
+/* crc is previous value for incremental computation, 0xffffffff initially */
+uint32_t TINFCC uzlib_crc32(const void *data, unsigned int length, uint32_t crc);
 
 #ifdef __cplusplus
 } /* extern "C" */

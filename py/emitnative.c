@@ -628,7 +628,7 @@ STATIC void emit_post_push_reg(emit_t *emit, vtype_kind_t vtype, int reg);
 STATIC void emit_native_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 STATIC void emit_native_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
 
-#define STATE_START (sizeof(mp_code_state) / sizeof(mp_uint_t))
+#define STATE_START (sizeof(mp_code_state_t) / sizeof(mp_uint_t))
 
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
@@ -775,10 +775,10 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
         // set code_state.ip (offset from start of this function to prelude info)
         // XXX this encoding may change size
-        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state, ip) / sizeof(mp_uint_t), REG_ARG_1);
+        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->prelude_offset, offsetof(mp_code_state_t, ip) / sizeof(mp_uint_t), REG_ARG_1);
 
         // set code_state.n_state
-        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->n_state, offsetof(mp_code_state, n_state) / sizeof(mp_uint_t), REG_ARG_1);
+        ASM_MOV_IMM_TO_LOCAL_USING(emit->as, emit->n_state, offsetof(mp_code_state_t, n_state) / sizeof(mp_uint_t), REG_ARG_1);
 
         // put address of code_state into first arg
         ASM_MOV_LOCAL_ADDR_TO_REG(emit->as, 0, REG_ARG_1);

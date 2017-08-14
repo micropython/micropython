@@ -223,7 +223,7 @@ STATIC mp_obj_t dict_getiter(mp_obj_t self_in) {
 /* dict methods                                                               */
 
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_map_clear(&self->map);
@@ -233,7 +233,7 @@ STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
     mp_obj_dict_t *other = MP_OBJ_TO_PTR(other_out);
@@ -249,7 +249,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
 
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
-    assert(2 <= n_args && n_args <= 3);
     mp_obj_t iter = mp_getiter(args[1]);
     mp_obj_t len = mp_obj_len_maybe(iter);
     mp_obj_t value = mp_const_none;
@@ -303,8 +302,7 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
 }
 
 STATIC mp_obj_t dict_get(size_t n_args, const mp_obj_t *args) {
-    assert(2 <= n_args && n_args <= 3);
-    assert(MP_OBJ_IS_DICT_TYPE(args[0]));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
 
     return dict_get_helper(&self->map,
@@ -315,8 +313,7 @@ STATIC mp_obj_t dict_get(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
 STATIC mp_obj_t dict_pop(size_t n_args, const mp_obj_t *args) {
-    assert(2 <= n_args && n_args <= 3);
-    assert(MP_OBJ_IS_DICT_TYPE(args[0]));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
 
     return dict_get_helper(&self->map,
@@ -328,8 +325,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
 
 STATIC mp_obj_t dict_setdefault(size_t n_args, const mp_obj_t *args) {
-    assert(2 <= n_args && n_args <= 3);
-    assert(MP_OBJ_IS_DICT_TYPE(args[0]));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
 
     return dict_get_helper(&self->map,
@@ -341,7 +337,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setde
 
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
@@ -359,7 +355,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    assert(MP_OBJ_IS_DICT_TYPE(args[0]));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
 
     mp_arg_check_num(n_args, kwargs->used, 1, 2, true);
@@ -438,7 +434,7 @@ typedef struct _mp_obj_dict_view_t {
 } mp_obj_dict_view_t;
 
 STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_view_it_type));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &dict_view_it_type));
     mp_obj_dict_view_it_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *next = dict_iter_next(MP_OBJ_TO_PTR(self->dict), &self->cur);
 
@@ -467,7 +463,7 @@ STATIC const mp_obj_type_t dict_view_it_type = {
 };
 
 STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
-    assert(MP_OBJ_IS_TYPE(view_in, &dict_view_type));
+    mp_check_self(MP_OBJ_IS_TYPE(view_in, &dict_view_type));
     mp_obj_dict_view_t *view = MP_OBJ_TO_PTR(view_in);
     mp_obj_dict_view_it_t *o = m_new_obj(mp_obj_dict_view_it_t);
     o->base.type = &dict_view_it_type;
@@ -479,7 +475,7 @@ STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in) {
 
 STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    assert(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &dict_view_type));
     mp_obj_dict_view_t *self = MP_OBJ_TO_PTR(self_in);
     bool first = true;
     mp_print_str(print, mp_dict_view_names[self->kind]);
@@ -525,7 +521,7 @@ STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
 }
 
 STATIC mp_obj_t dict_view(mp_obj_t self_in, mp_dict_view_kind_t kind) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     return mp_obj_new_dict_view(self_in, kind);
 }
 
@@ -612,21 +608,21 @@ mp_uint_t mp_obj_dict_len(mp_obj_t self_in) {
 }
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return self_in;
 }
 
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     dict_get_helper(&self->map, key, MP_OBJ_NULL, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     return self_in;
 }
 
 mp_map_t *mp_obj_dict_get_map(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     return &self->map;
 }

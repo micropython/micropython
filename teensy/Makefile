@@ -110,7 +110,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	mp-readline/readline.c \
 	utils/pyexec.c \
 	utils/pyhelp.c \
-	utils/printf.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\

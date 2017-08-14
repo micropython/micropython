@@ -217,6 +217,10 @@ mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
     } else if (op == MP_UNARY_OP_HASH && MP_OBJ_IS_STR_OR_BYTES(arg)) {
         // fast path for hashing str/bytes
         GET_STR_HASH(arg, h);
+        if (h == 0) {
+            GET_STR_DATA_LEN(arg, data, len);
+            h = qstr_compute_hash(data, len);
+        }
         return MP_OBJ_NEW_SMALL_INT(h);
     } else {
         mp_obj_type_t *type = mp_obj_get_type(arg);
@@ -1390,6 +1394,18 @@ void *m_malloc_fail(size_t num_bytes) {
     }
 }
 
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg) {
+    nlr_raise(mp_obj_new_exception_msg(exc_type, msg));
+}
+
+NORETURN void mp_raise_ValueError(const char *msg) {
+    mp_raise_msg(&mp_type_ValueError, msg);
+}
+
+NORETURN void mp_raise_TypeError(const char *msg) {
+    mp_raise_msg(&mp_type_TypeError, msg);
+}
+
 NORETURN void mp_not_implemented(const char *msg) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_NotImplementedError, msg));
+    mp_raise_msg(&mp_type_NotImplementedError, msg);
 }

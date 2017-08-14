@@ -31,6 +31,8 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 
+void machine_init(void);
+
 MP_DECLARE_CONST_FUN_OBJ(machine_info_obj);
 MP_DECLARE_CONST_FUN_OBJ(machine_unique_id_obj);
 MP_DECLARE_CONST_FUN_OBJ(machine_reset_obj);

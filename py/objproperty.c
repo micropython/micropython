@@ -100,7 +100,7 @@ const mp_obj_type_t mp_type_property = {
 };
 
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_property));
+    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_property));
     mp_obj_property_t *self = MP_OBJ_TO_PTR(self_in);
     return self->proxy;
 }
