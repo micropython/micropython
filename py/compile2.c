@@ -1249,6 +1249,11 @@ STATIC void compile_nonlocal_stmt(compiler_t *comp, const byte *p, const byte *p
 }
 
 STATIC void compile_assert_stmt(compiler_t *comp, const byte *p, const byte *ptop) {
+    // with optimisations enabled we don't compile assertions
+    if (MP_STATE_VM(mp_optimise_value) != 0) {
+        return;
+    }
+
     uint l_end = comp_next_label(comp);
     p = c_if_cond(comp, p, true, l_end);
     EMIT_LOAD_GLOBAL(MP_QSTR_AssertionError); // we load_global instead of load_id, to be consistent with CPython
