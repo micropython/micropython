@@ -139,7 +139,6 @@ typedef struct _vstr_t {
     size_t alloc;
     size_t len;
     char *buf;
-    bool had_error : 1;
     bool fixed_buf : 1;
 } vstr_t;
 
@@ -152,13 +151,11 @@ void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf);
 struct _mp_print_t;
 void vstr_init_print(vstr_t *vstr, size_t alloc, struct _mp_print_t *print);
 void vstr_clear(vstr_t *vstr);
-vstr_t *vstr_new(void);
-vstr_t *vstr_new_size(size_t alloc);
+vstr_t *vstr_new(size_t alloc);
 void vstr_free(vstr_t *vstr);
-void vstr_reset(vstr_t *vstr);
-bool vstr_had_error(vstr_t *vstr);
-char *vstr_str(vstr_t *vstr);
-size_t vstr_len(vstr_t *vstr);
+static inline void vstr_reset(vstr_t *vstr) { vstr->len = 0; }
+static inline char *vstr_str(vstr_t *vstr) { return vstr->buf; }
+static inline size_t vstr_len(vstr_t *vstr) { return vstr->len; }
 void vstr_hint_size(vstr_t *vstr, size_t size);
 char *vstr_extend(vstr_t *vstr, size_t size);
 char *vstr_add_len(vstr_t *vstr, size_t len);

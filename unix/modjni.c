@@ -65,6 +65,7 @@ STATIC const mp_obj_type_t jmethod_type;
 STATIC mp_obj_t new_jobject(jobject jo);
 STATIC mp_obj_t new_jclass(jclass jc);
 STATIC mp_obj_t call_method(jobject obj, const char *name, jarray methods, bool is_constr, mp_uint_t n_args, const mp_obj_t *args);
+STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out);
 
 typedef struct _mp_obj_jclass_t {
     mp_obj_base_t base;
@@ -244,11 +245,36 @@ STATIC void get_jclass_name(jobject obj, char *buf) {
 
 STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_jobject_t *self = self_in;
+    mp_uint_t idx = mp_obj_get_int(index);
+    char class_name[64];
+    get_jclass_name(self->obj, class_name);
+    //printf("class: %s\n", class_name);
+
+    if (class_name[0] == '[') {
+        if (class_name[1] == 'L' || class_name[1] == '[') {
+            if (value == MP_OBJ_NULL) {
+                // delete
+                assert(0);
+            } else if (value == MP_OBJ_SENTINEL) {
+                // load
+                jobject el = JJ(GetObjectArrayElement, self->obj, idx);
+                return new_jobject(el);
+            } else {
+                // store
+                jvalue jval;
+                const char *t = class_name + 1;
+                py2jvalue(&t, value, &jval);
+                JJ(SetObjectArrayElement, self->obj, idx, jval.l);
+                return mp_const_none;
+            }
+        }
+        mp_not_implemented("");
+    }
+
     if (!JJ(IsInstanceOf, self->obj, List_class)) {
         return MP_OBJ_NULL;
     }
 
-    mp_uint_t idx = mp_obj_get_int(index);
 
     if (value == MP_OBJ_NULL) {
         // delete
@@ -628,6 +654,54 @@ STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_jni_cls_obj, mod_jni_cls);
 
+STATIC mp_obj_t mod_jni_array(mp_obj_t type_in, mp_obj_t size_in) {
+    if (!env) {
+        create_jvm();
+    }
+    mp_int_t size = mp_obj_get_int(size_in);
+    jobject res = NULL;
+
+    if (MP_OBJ_IS_TYPE(type_in, &jclass_type)) {
+
+        mp_obj_jclass_t *jcls = type_in;
+        res = JJ(NewObjectArray, size, jcls->cls, NULL);
+
+    } else if (MP_OBJ_IS_STR(type_in)) {
+        const char *type = mp_obj_str_get_str(type_in);
+        switch (*type) {
+            case 'Z':
+                res = JJ(NewBooleanArray, size);
+                break;
+            case 'B':
+                res = JJ(NewByteArray, size);
+                break;
+            case 'C':
+                res = JJ(NewCharArray, size);
+                break;
+            case 'S':
+                res = JJ(NewShortArray, size);
+                break;
+            case 'I':
+                res = JJ(NewIntArray, size);
+                break;
+            case 'J':
+                res = JJ(NewLongArray, size);
+                break;
+            case 'F':
+                res = JJ(NewFloatArray, size);
+                break;
+            case 'D':
+                res = JJ(NewDoubleArray, size);
+                break;
+        }
+
+    }
+
+    return new_jobject(res);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mod_jni_array_obj, mod_jni_array);
+
+
 STATIC mp_obj_t mod_jni_env() {
     return mp_obj_new_int((mp_int_t)env);
 }
@@ -636,6 +710,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(mod_jni_env_obj, mod_jni_env);
 STATIC const mp_map_elem_t mp_module_jni_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_jni) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_cls), (mp_obj_t)&mod_jni_cls_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_array), (mp_obj_t)&mod_jni_array_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_env), (mp_obj_t)&mod_jni_env_obj },
 };
 
@@ -643,6 +718,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_jni_globals, mp_module_jni_globals_table);
 
 const mp_obj_module_t mp_module_jni = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_jni,
     .globals = (mp_obj_dict_t*)&mp_module_jni_globals,
 };

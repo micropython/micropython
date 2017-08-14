@@ -100,6 +100,12 @@ $(OBJ_DIRS):
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
+ifneq ($(FROZEN_DIR),)
+$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
+	$(ECHO) "Generating $@"
+	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
+endif
+
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 

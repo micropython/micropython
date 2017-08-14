@@ -426,7 +426,7 @@ mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
     return rc;
 }
 
-#elif defined(__thumb2__)
+#elif defined(__thumb2__) || defined(__xtensa__)
 // fatfs file reader (assume thumb2 arch uses fatfs...)
 
 #include "lib/fatfs/ff.h"

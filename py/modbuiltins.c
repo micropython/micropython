@@ -178,7 +178,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         str[3] = (c & 0x3F) | 0x80;
         len = 4;
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)"));
+        mp_raise_msg(&mp_type_ValueError, "chr() arg not in range(0x110000)");
     }
     return mp_obj_new_str(str, len, true);
     #else
@@ -187,7 +187,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         char str[1] = {ord};
         return mp_obj_new_str(str, 1, true);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "chr() arg not in range(256)"));
+        mp_raise_msg(&mp_type_ValueError, "chr() arg not in range(256)");
     }
     #endif
 }
@@ -286,7 +286,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
             if (default_elem != NULL) {
                 best_obj = default_elem->value;
             } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "arg is an empty sequence"));
+                mp_raise_msg(&mp_type_ValueError, "arg is an empty sequence");
             }
         }
         return best_obj;
@@ -507,8 +507,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
 STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args > 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                                          "must use keyword argument for key function"));
+        mp_raise_msg(&mp_type_TypeError, "must use keyword argument for key function");
     }
     mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
@@ -577,6 +576,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_id_obj, mp_obj_id);
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_len_obj, mp_obj_len);
 
 STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_builtins) },
+
     // built-in core functions
     { MP_ROM_QSTR(MP_QSTR___build_class__), MP_ROM_PTR(&mp_builtin___build_class___obj) },
     { MP_ROM_QSTR(MP_QSTR___import__), MP_ROM_PTR(&mp_builtin___import___obj) },
@@ -727,6 +728,5 @@ MP_DEFINE_CONST_DICT(mp_module_builtins_globals, mp_module_builtins_globals_tabl
 
 const mp_obj_module_t mp_module_builtins = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_builtins,
     .globals = (mp_obj_dict_t*)&mp_module_builtins_globals,
 };

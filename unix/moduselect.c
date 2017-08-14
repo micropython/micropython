@@ -33,14 +33,16 @@
 #include <errno.h>
 #include <poll.h>
 
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
 #include "fdfile.h"
 
+#if MICROPY_PY_SOCKET
 extern const mp_obj_type_t mp_type_socket;
+#endif
 
 // Flags for poll()
 #define FLAG_ONESHOT (1)
@@ -57,7 +59,11 @@ typedef struct _mp_obj_poll_t {
 STATIC int get_fd(mp_obj_t fdlike) {
     int fd;
     // Shortcut for fdfile compatible types
-    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio) || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)) {
+    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio)
+        #if MICROPY_PY_SOCKET
+        || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)
+        #endif
+        ) {
         mp_obj_fdfile_t *fdfile = MP_OBJ_TO_PTR(fdlike);
         fd = fdfile->fd;
     } else {
@@ -229,7 +235,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_t
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uselect,
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 

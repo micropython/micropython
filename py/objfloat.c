@@ -198,7 +198,7 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
                 zero_division_error:
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "division by zero"));
+                mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
             }
             // Python specs require that x == (x//y)*y + (x%y) so we must
             // call divmod to compute the correct floor division, which

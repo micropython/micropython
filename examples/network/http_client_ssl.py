@@ -24,12 +24,12 @@ def main(use_stream=True):
     if use_stream:
         # Both CPython and MicroPython SSLSocket objects support read() and
         # write() methods.
-        s.write(b"GET / HTTP/1.0\n\n")
+        s.write(b"GET / HTTP/1.0\r\n\r\n")
         print(s.read(4096))
     else:
         # MicroPython SSLSocket objects implement only stream interface, not
         # socket interface
-        s.send(b"GET / HTTP/1.0\n\n")
+        s.send(b"GET / HTTP/1.0\r\n\r\n")
         print(s.recv(4096))
 
     s.close()

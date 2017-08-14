@@ -50,23 +50,23 @@ typedef struct _pyb_hspi_obj_t {
 } pyb_hspi_obj_t;
 
 
-STATIC void hspi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
+STATIC void hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     (void)self_in;
 
-    if (dest_len == 0) {
+    if (dest == NULL) {
         // fast case when we only need to write data
         size_t chunk_size = 1024;
-        size_t count = src_len / chunk_size;
+        size_t count = len / chunk_size;
         size_t i = 0;
         for (size_t j = 0; j < count; ++j) {
             for (size_t k = 0; k < chunk_size; ++k) {
-                spi_tx8fast(HSPI, src_buf[i]);
+                spi_tx8fast(HSPI, src[i]);
                 ++i;
             }
             ets_loop_iter();
         }
-        while (i < src_len) {
-            spi_tx8fast(HSPI, src_buf[i]);
+        while (i < len) {
+            spi_tx8fast(HSPI, src[i]);
             ++i;
         }
     } else {
@@ -74,29 +74,17 @@ STATIC void hspi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t 
 
         // Process data in chunks, let the pending tasks run in between
         size_t chunk_size = 1024; // TODO this should depend on baudrate
-        size_t count = dest_len / chunk_size;
+        size_t count = len / chunk_size;
         size_t i = 0;
         for (size_t j = 0; j < count; ++j) {
             for (size_t k = 0; k < chunk_size; ++k) {
-                uint32_t data_out;
-                if (src_len == 1) {
-                    data_out = src_buf[0];
-                } else {
-                    data_out = src_buf[i];
-                }
-                dest_buf[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, data_out, 8, 0);
+                dest[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, src[i], 8, 0);
                 ++i;
             }
             ets_loop_iter();
         }
-        while (i < dest_len) {
-            uint32_t data_out;
-            if (src_len == 1) {
-                data_out = src_buf[0];
-            } else {
-                data_out = src_buf[i];
-            }
-            dest_buf[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, data_out, 8, 0);
+        while (i < len) {
+            dest[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, src[i], 8, 0);
             ++i;
         }
     }

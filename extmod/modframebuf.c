@@ -213,7 +213,6 @@ STATIC MP_DEFINE_CONST_DICT(framebuf_module_globals, framebuf_module_globals_tab
 
 const mp_obj_module_t mp_module_framebuf = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_framebuf,
     .globals = (mp_obj_dict_t*)&framebuf_module_globals,
 };
 

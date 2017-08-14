@@ -59,7 +59,7 @@ STATIC unsigned char read_src_stream(TINF_DATA *data) {
     byte c;
     mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
     if (out_sz == MP_STREAM_ERROR) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+        mp_raise_OSError(err);
     }
     if (out_sz == 0) {
         nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
@@ -81,10 +81,18 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
     if (n_args > 1) {
         dict_opt = mp_obj_get_int(args[1]);
     }
-    if (dict_opt >= 0) {
+
+    if (dict_opt >= 16) {
+        int st = uzlib_gzip_parse_header(&o->decomp);
+        if (st != TINF_OK) {
+            goto header_error;
+        }
+        dict_sz = 1 << (dict_opt - 16);
+    } else if (dict_opt >= 0) {
         dict_opt = uzlib_zlib_parse_header(&o->decomp);
         if (dict_opt < 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "zlib header"));
+header_error:
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "compression header"));
         }
         dict_sz = 1 << dict_opt;
     } else {
@@ -204,7 +212,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_uzlib_globals, mp_module_uzlib_globals_tab
 
 const mp_obj_module_t mp_module_uzlib = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uzlib,
     .globals = (mp_obj_dict_t*)&mp_module_uzlib_globals,
 };
 
@@ -213,6 +220,7 @@ const mp_obj_module_t mp_module_uzlib = {
 
 #include "uzlib/tinflate.c"
 #include "uzlib/tinfzlib.c"
+#include "uzlib/tinfgzip.c"
 #include "uzlib/adler32.c"
 #include "uzlib/crc32.c"
 

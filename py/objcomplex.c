@@ -197,7 +197,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
             if (rhs_imag == 0) {
                 if (rhs_real == 0) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "complex division by zero"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "complex division by zero");
                 }
                 lhs_real /= rhs_real;
                 lhs_imag /= rhs_real;
@@ -226,7 +226,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
                     lhs_real = 1;
                     rhs_real = 0;
                 } else {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power");
                 }
             } else {
                 mp_float_t ln1 = MICROPY_FLOAT_C_FUN(log)(abs1);

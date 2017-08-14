@@ -24,6 +24,11 @@ CFLAGS_MOD += -DMICROPY_PY_USSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I../lib/axtls/ssl -I../lib/axtls/crypto -I../lib/axtls/config
 LDFLAGS_MOD += -Lbuild -laxtls
+else ifeq ($(MICROPY_SSL_MBEDTLS),1)
+# Can be overriden by ports which have "builtin" mbedTLS
+MICROPY_SSL_MBEDTLS_INCLUDE ?= ../lib/mbedtls/include
+CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(MICROPY_SSL_MBEDTLS_INCLUDE)
+LDFLAGS_MOD += -L../lib/mbedtls/library -lmbedx509 -lmbedtls -lmbedcrypto
 endif
 endif
 
@@ -89,6 +94,8 @@ btree/bt_utils.c \
 mpool/mpool.c \
 	)
 CFLAGS_MOD += -DMICROPY_PY_BTREE=1
+# we need to suppress certain warnings to get berkeley-db to compile cleanly
+$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter
 endif
 
 # py object files
@@ -210,6 +217,7 @@ PY_O_BASENAME = \
 	../extmod/machine_i2c.o \
 	../extmod/machine_spi.o \
 	../extmod/modussl_axtls.o \
+	../extmod/modussl_mbedtls.o \
 	../extmod/modurandom.o \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
@@ -221,6 +229,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_file.o \
 	../extmod/vfs_fat_lexer.o \
 	../extmod/vfs_fat_misc.o \
+	../extmod/utime_mphal.o \
 	../extmod/moduos_dupterm.o \
 	../lib/embed/abort_.o \
 	../lib/utils/printf.o \

@@ -10,3 +10,8 @@ try:
     print(s.add(5))
 except AttributeError:
     print("AttributeError")
+
+try:
+    print(s.update([5]))
+except AttributeError:
+    print("AttributeError")

@@ -29,6 +29,7 @@
 #include <errno.h>
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mpthread.h"
 #include "py/gc.h"
 
@@ -182,7 +183,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     return;
 
 er:
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(ret)));
+    mp_raise_OSError(ret);
 }
 
 void mp_thread_finish(void) {

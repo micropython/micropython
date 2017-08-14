@@ -185,7 +185,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, siz
             }
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "function does not take keyword arguments"));
+                mp_raise_msg(&mp_type_TypeError, "function does not take keyword arguments");
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
 continue2:;
@@ -234,8 +234,7 @@ continue2:;
     } else {
         // no keyword arguments given
         if (n_kwonly_args != 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "function missing keyword-only argument"));
+            mp_raise_msg(&mp_type_TypeError, "function missing keyword-only argument");
         }
         if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
             *var_pos_kw_args = mp_obj_new_dict(0);
@@ -308,8 +307,8 @@ STATIC const byte opcode_format_table[64] = {
     OC4(B, B, O, U), // 0x44-0x47
     OC4(U, U, U, U), // 0x48-0x4b
     OC4(U, U, U, U), // 0x4c-0x4f
-    OC4(V, V, V, V), // 0x50-0x53
-    OC4(B, V, V, V), // 0x54-0x57
+    OC4(V, V, U, V), // 0x50-0x53
+    OC4(B, U, V, V), // 0x54-0x57
     OC4(V, V, V, B), // 0x58-0x5b
     OC4(B, B, B, U), // 0x5c-0x5f
     OC4(V, V, V, V), // 0x60-0x63

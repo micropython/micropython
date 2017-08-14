@@ -251,10 +251,13 @@ void extint_swint(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
+    // we need 0 to 1 transition to trigger the interrupt
 #if defined(MCU_SERIES_L4)
-    EXTI->SWIER1 = (1 << line);
+    EXTI->SWIER1 &= ~(1 << line);
+    EXTI->SWIER1 |= (1 << line);
 #else
-    EXTI->SWIER = (1 << line);
+    EXTI->SWIER &= ~(1 << line);
+    EXTI->SWIER |= (1 << line);
 #endif
 }
 

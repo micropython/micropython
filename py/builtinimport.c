@@ -138,7 +138,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex, const char 
     if (lex == NULL) {
         // we verified the file exists using stat, but lexer could still fail
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "module not found"));
+            mp_raise_msg(&mp_type_ImportError, "module not found");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
                 "no module named '%s'", fname));
@@ -340,7 +340,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             DEBUG_printf("Warning: no dots in current module name and level>0\n");
             p = this_name + this_name_l;
         } else if (level != -1) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "Invalid relative import"));
+            mp_raise_msg(&mp_type_ImportError, "invalid relative import");
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
@@ -355,7 +355,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         DEBUG_printf("Resolved base name for relative import: '%s'\n", qstr_str(new_mod_q));
         if (new_mod_q == MP_QSTR_) {
             // CPython raises SystemError
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "cannot perform relative import"));
+            mp_raise_msg(&mp_type_ImportError, "cannot perform relative import");
         }
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
         mod_str = new_mod;
@@ -425,7 +425,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 #endif
                     // couldn't find the file, so fail
                     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ImportError, "module not found"));
+                        mp_raise_msg(&mp_type_ImportError, "module not found");
                     } else {
                         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
                             "no module named '%q'", mod_name));
@@ -448,6 +448,8 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_obj_module_t *o = MP_OBJ_TO_PTR(module_obj);
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR___main__));
                     #if MICROPY_CPYTHON_COMPAT
+                    // Store module as "__main__" in the dictionary of loaded modules (returned by sys.modules).
+                    mp_obj_dict_store(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_loaded_modules_dict)), MP_OBJ_NEW_QSTR(MP_QSTR___main__), module_obj);
                     // Store real name in "__main__" attribute. Choosen semi-randonly, to reuse existing qstr's.
                     mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___main__), MP_OBJ_NEW_QSTR(mod_name));
                     #endif

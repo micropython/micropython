@@ -18,6 +18,9 @@ else:
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
     MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../unix/micropython')
 
+# mpy-cross is only needed if --via-mpy command-line arg is passed
+MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
+
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 os.environ['MICROPYPATH'] = ''
@@ -105,15 +108,30 @@ def run_micropython(pyb, args, test_file):
                 return b'CRASH'
 
         else:
-            # a standard test
-            try:
-                cmdlist = [MICROPYTHON, '-X', 'emit=' + args.emit]
-                if args.heapsize is not None:
-                    cmdlist.extend(['-X', 'heapsize=' + args.heapsize])
+            # a standard test run on PC
+
+            # create system command
+            cmdlist = [MICROPYTHON, '-X', 'emit=' + args.emit]
+            if args.heapsize is not None:
+                cmdlist.extend(['-X', 'heapsize=' + args.heapsize])
+
+            # if running via .mpy, first compile the .py file
+            if args.via_mpy:
+                subprocess.check_output([MPYCROSS, '-mcache-lookup-bc', '-o', 'mpytest.mpy', test_file])
+                cmdlist.extend(['-m', 'mpytest'])
+            else:
                 cmdlist.append(test_file)
+
+            # run the actual test
+            try:
                 output_mupy = subprocess.check_output(cmdlist)
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
+
+            # clean up if we had an intermediate .mpy file
+            if args.via_mpy:
+                rm_f('mpytest.mpy')
+
     else:
         # run on pyboard
         import pyboard
@@ -187,11 +205,6 @@ def run_tests(pyb, tests, args):
     if not 'True' in str(t, 'ascii'):
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
-    # These tests are now broken because showbc uses buffered printf
-    if True:
-        skip_tests.add('cmdline/cmd_verbose.py')
-        skip_tests.add('cmdline/cmd_showbc.py')
-
     upy_byteorder = run_micropython(pyb, args, 'feature_check/byteorder.py')
     has_complex = run_micropython(pyb, args, 'feature_check/complex.py') == b'complex\n'
     cpy_byteorder = subprocess.check_output([CPYTHON3, 'feature_check/byteorder.py'])
@@ -224,7 +237,6 @@ def run_tests(pyb, tests, args):
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
         skip_tests.add('float/float2int_doubleprec.py') # requires double precision floating point to work
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
-        skip_tests.add('extmod/machine1.py') # raw memory access not supported
         skip_tests.add('extmod/machine_mem.py') # raw memory access not supported
 
         if args.target == 'wipy':
@@ -260,7 +272,7 @@ def run_tests(pyb, tests, args):
     if args.emit == 'native':
         skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw generator1 generator2 generator_args generator_close generator_closure generator_exc generator_return generator_send'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join'.split()}) # require yield
-        skip_tests.update({'basics/async_%s.py' % t for t in 'await await2 for for2 with with2'.split()}) # require yield
+        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
         skip_tests.update({'basics/%s.py' % t for t in 'with_break with_continue with_return'.split()}) # require complete with support
         skip_tests.add('basics/array_construct2.py') # requires generators
@@ -365,6 +377,7 @@ def main():
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
+    cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 

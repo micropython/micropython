@@ -95,7 +95,7 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 STATIC mp_obj_array_t *array_new(char typecode, mp_uint_t n) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     if (typecode_size == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad typecode"));
+        mp_raise_msg(&mp_type_ValueError, "bad typecode");
     }
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
@@ -395,7 +395,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
                     compat_error:
-                        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "lhs and rhs should be compatible"));
+                        mp_raise_msg(&mp_type_ValueError, "lhs and rhs should be compatible");
                     }
                     src_len = src_slice->len;
                     src_items = src_slice->items;

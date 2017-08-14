@@ -102,7 +102,7 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
         assert(out_sz == self->len);
         self->len = 0;
         if (err != 0) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(err)));
+            mp_raise_OSError(err);
         }
     }
 
@@ -153,7 +153,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_io_globals, mp_module_io_globals_table);
 
 const mp_obj_module_t mp_module_io = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uio,
     .globals = (mp_obj_dict_t*)&mp_module_io_globals,
 };
 

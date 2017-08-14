@@ -34,6 +34,16 @@
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
 
+STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(MP_STATE_VM(mp_optimise_value));
+    } else {
+        MP_STATE_VM(mp_optimise_value) = mp_obj_get_int(args[0]);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_opt_level_obj, 0, 1, mp_micropython_opt_level);
+
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 
 #if MICROPY_MEM_STATS
@@ -120,6 +130,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_
 
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
+    { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR_opt_level), MP_ROM_PTR(&mp_micropython_opt_level_obj) },
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 #if MICROPY_MEM_STATS
     { MP_ROM_QSTR(MP_QSTR_mem_total), MP_ROM_PTR(&mp_micropython_mem_total_obj) },
@@ -145,6 +157,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_micropython_globals, mp_module_micropython
 
 const mp_obj_module_t mp_module_micropython = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_micropython,
     .globals = (mp_obj_dict_t*)&mp_module_micropython_globals,
 };

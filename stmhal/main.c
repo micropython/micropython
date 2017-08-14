@@ -165,9 +165,8 @@ static const char fresh_readme_txt[] =
 "Please visit http://micropython.org/help/ for further help.\r\n"
 ;
 
-// we don't make this function static because it needs a lot of stack and we
-// want it to be executed without using stack within main() function
-void init_flash_fs(uint reset_mode) {
+// avoid inlining to avoid stack usage within main()
+MP_NOINLINE STATIC void init_flash_fs(uint reset_mode) {
     // init the vfs object
     fs_user_mount_t *vfs = &fs_user_mount_flash;
     vfs->str = "/flash";
@@ -587,7 +586,9 @@ soft_reset:
     dac_init();
 #endif
 
+#if MICROPY_PY_NETWORK
     mod_network_init();
+#endif
 
     // At this point everything is fully configured and initialised.
 

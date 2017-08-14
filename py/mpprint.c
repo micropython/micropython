@@ -252,8 +252,8 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     // enough, a dynamic one will be allocated.
     char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
-    mp_uint_t buf_size = sizeof(stack_buf);
-    mp_uint_t fmt_size = 0;
+    size_t buf_size = sizeof(stack_buf);
+    size_t fmt_size = 0;
     char *str;
 
     if (prec > 1) {

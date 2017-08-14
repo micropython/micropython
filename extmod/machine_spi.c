@@ -25,26 +25,85 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/runtime.h"
 #include "extmod/machine_spi.h"
 
 #if MICROPY_PY_MACHINE_SPI
 
-STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t slen, const uint8_t *src, size_t dlen, uint8_t *dest) {
+void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
+    uint32_t delay_half = self->delay_half;
+
+    // only MSB transfer is implemented
+
+    // If a port defines MICROPY_PY_MACHINE_SPI_MIN_DELAY, and the configured
+    // delay_half is equal to this value, then the software SPI implementation
+    // will run as fast as possible, limited only by CPU speed and GPIO time.
+    #ifdef MICROPY_PY_MACHINE_SPI_MIN_DELAY
+    if (delay_half == MICROPY_PY_MACHINE_SPI_MIN_DELAY) {
+        for (size_t i = 0; i < len; ++i) {
+            uint8_t data_out = src[i];
+            uint8_t data_in = 0;
+            for (int j = 0; j < 8; ++j, data_out <<= 1) {
+                mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+                mp_hal_pin_write(self->sck, 1 - self->polarity);
+                data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
+                mp_hal_pin_write(self->sck, self->polarity);
+            }
+            if (dest != NULL) {
+                dest[i] = data_in;
+            }
+        }
+        return;
+    }
+    #endif
+
+    for (size_t i = 0; i < len; ++i) {
+        uint8_t data_out = src[i];
+        uint8_t data_in = 0;
+        for (int j = 0; j < 8; ++j, data_out <<= 1) {
+            mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
+            if (self->phase == 0) {
+                mp_hal_delay_us_fast(delay_half);
+                mp_hal_pin_write(self->sck, 1 - self->polarity);
+            } else {
+                mp_hal_pin_write(self->sck, 1 - self->polarity);
+                mp_hal_delay_us_fast(delay_half);
+            }
+            data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
+            if (self->phase == 0) {
+                mp_hal_delay_us_fast(delay_half);
+                mp_hal_pin_write(self->sck, self->polarity);
+            } else {
+                mp_hal_pin_write(self->sck, self->polarity);
+                mp_hal_delay_us_fast(delay_half);
+            }
+        }
+        if (dest != NULL) {
+            dest[i] = data_in;
+        }
+
+        // Some ports need a regular callback, but probably we don't need
+        // to do this every byte, or even at all.
+        #ifdef MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK;
+        #endif
+    }
+}
+
+STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
     mp_obj_base_t *s = (mp_obj_base_t*)MP_OBJ_TO_PTR(self);
     mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t*)s->type->protocol;
-    spi_p->transfer(s, slen, src, dlen, dest);
+    spi_p->transfer(s, len, src, dest);
 }
 
 STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
-    uint8_t write_byte = 0;
-    if (n_args == 3) {
-        write_byte = mp_obj_get_int(args[2]);
-    }
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(args[1]));
-    mp_machine_spi_transfer(args[0], 1, &write_byte, vstr.len, (uint8_t*)vstr.buf);
+    memset(vstr.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, vstr.len);
+    mp_machine_spi_transfer(args[0], vstr.len, vstr.buf, vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_spi_read);
@@ -52,11 +111,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_sp
 STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    uint8_t write_byte = 0;
-    if (n_args == 3) {
-        write_byte = mp_obj_get_int(args[2]);
-    }
-    mp_machine_spi_transfer(args[0], 1, &write_byte, bufinfo.len, (uint8_t*)bufinfo.buf);
+    memset(bufinfo.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, bufinfo.len);
+    mp_machine_spi_transfer(args[0], bufinfo.len, bufinfo.buf, bufinfo.buf);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machine_spi_readinto);
@@ -64,7 +120,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machin
 STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf) {
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    mp_machine_spi_transfer(self, src.len, (const uint8_t*)src.buf, 0, NULL);
+    mp_machine_spi_transfer(self, src.len, (const uint8_t*)src.buf, NULL);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
@@ -75,9 +131,9 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp
     mp_buffer_info_t dest;
     mp_get_buffer_raise(rd_buf, &dest, MP_BUFFER_WRITE);
     if (src.len != dest.len) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "buffers must be the same length"));
+        mp_raise_ValueError("buffers must be the same length");
     }
-    mp_machine_spi_transfer(self, src.len, (const uint8_t*)src.buf, dest.len, (uint8_t*)dest.buf);
+    mp_machine_spi_transfer(self, src.len, src.buf, dest.buf);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj, mp_machine_spi_write_readinto);

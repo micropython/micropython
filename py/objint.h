@@ -50,13 +50,15 @@ typedef enum {
 mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val);
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
+size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma);
+
 void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
-char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma);
-char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma);
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf);
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);
 int mp_obj_int_sign(mp_obj_t self_in);
 mp_obj_t mp_obj_int_abs(mp_obj_t self_in);
 mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in);

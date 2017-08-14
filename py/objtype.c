@@ -311,8 +311,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
         }
         if (init_ret != mp_const_none) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                    "__init__() should return None"));
+                mp_raise_msg(&mp_type_TypeError, "__init__() should return None");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                     "__init__() should return None, not '%s'", mp_obj_get_type_str(init_ret)));
@@ -508,7 +507,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
             // the code.
             const mp_obj_t *proxy = mp_obj_property_get(member);
             if (proxy[0] == mp_const_none) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "unreadable attribute"));
+                mp_raise_msg(&mp_type_AttributeError, "unreadable attribute");
             } else {
                 dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
             }
@@ -710,8 +709,7 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_t call = mp_obj_instance_get_call(self_in);
     if (call == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                "object not callable"));
+            mp_raise_msg(&mp_type_TypeError, "object not callable");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                 "'%s' object is not callable", mp_obj_get_type_str(self_in)));
@@ -793,7 +791,7 @@ STATIC mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
             return mp_obj_new_type(mp_obj_str_get_qstr(args[0]), args[1], args[2]);
 
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "type takes 1 or 3 arguments"));
+            mp_raise_msg(&mp_type_TypeError, "type takes 1 or 3 arguments");
     }
 }
 
@@ -804,7 +802,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
 
     if (self->make_new == NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "cannot create instance"));
+            mp_raise_msg(&mp_type_TypeError, "cannot create instance");
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                 "cannot create '%q' instances", self->name));
@@ -892,8 +890,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-                    "type is not an acceptable base type"));
+                mp_raise_msg(&mp_type_TypeError, "type is not an acceptable base type");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
                     "type '%q' is not an acceptable base type", t->name));
@@ -927,7 +924,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     const mp_obj_type_t *native_base;
     uint num_native_bases = instance_count_native_bases(o, &native_base);
     if (num_native_bases > 1) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "multiple bases have instance lay-out conflict"));
+        mp_raise_msg(&mp_type_TypeError, "multiple bases have instance lay-out conflict");
     }
 
     mp_map_t *locals_map = &o->locals_dict->map;
@@ -1074,7 +1071,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
     } else if (MP_OBJ_IS_TYPE(classinfo, &mp_type_tuple)) {
         mp_obj_tuple_get(classinfo, &len, &items);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes"));
+        mp_raise_msg(&mp_type_TypeError, "issubclass() arg 2 must be a class or a tuple of classes");
     }
 
     for (uint i = 0; i < len; i++) {
@@ -1088,7 +1085,7 @@ STATIC mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo) {
 
 STATIC mp_obj_t mp_builtin_issubclass(mp_obj_t object, mp_obj_t classinfo) {
     if (!MP_OBJ_IS_TYPE(object, &mp_type_type)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class"));
+        mp_raise_msg(&mp_type_TypeError, "issubclass() arg 1 must be a class");
     }
     return mp_obj_is_subclass(object, classinfo);
 }

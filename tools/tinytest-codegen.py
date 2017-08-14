@@ -46,8 +46,15 @@ testgroup_member = (
 
 ## XXX: may be we could have `--without <groups>` argument...
 # currently these tests are selected because they pass on qemu-arm
-test_dirs = ('basics', 'micropython', 'inlineasm') # 'float', 'import', 'io', 'misc')
-exclude_tests = ('inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py', 'inlineasm/asmfpmuldiv.py', 'inlineasm/asmfpsqrt.py',)
+test_dirs = ('basics', 'micropython', 'extmod', 'inlineasm') # 'float', 'import', 'io', 'misc')
+exclude_tests = (
+    'inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py', 'inlineasm/asmfpmuldiv.py', 'inlineasm/asmfpsqrt.py',
+    'extmod/time_ms_us.py',
+    'extmod/ujson_dumps_float.py', 'extmod/ujson_loads_float.py',
+    'extmod/uctypes_native_float.py', 'extmod/uctypes_le_float.py',
+    'extmod/machine_pinbase.py', 'extmod/machine_pulse.py',
+    'extmod/vfs_fat_ramdisk.py',
+)
 
 output = []
 

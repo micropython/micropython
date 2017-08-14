@@ -302,15 +302,6 @@ STATIC void emit_write_bytecode_byte_signed_label(emit_t *emit, byte b1, mp_uint
     c[2] = bytecode_offset >> 8;
 }
 
-#if MICROPY_EMIT_NATIVE
-STATIC void mp_emit_bc_set_native_type(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2) {
-    (void)emit;
-    (void)op;
-    (void)arg1;
-    (void)arg2;
-}
-#endif
-
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->stack_size = 0;
@@ -408,9 +399,7 @@ void mp_emit_bc_end_pass(emit_t *emit) {
     }
 
     // check stack is back to zero size
-    if (emit->stack_size != 0) {
-        mp_printf(&mp_plat_print, "ERROR: stack size not back to zero; got %d\n", emit->stack_size);
-    }
+    assert(emit->stack_size == 0);
 
     emit_write_code_info_byte(emit, 0); // end of line number info
 
@@ -528,9 +517,10 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
         case MP_TOKEN_KW_FALSE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_FALSE); break;
         case MP_TOKEN_KW_NONE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_NONE); break;
         case MP_TOKEN_KW_TRUE: emit_write_bytecode_byte(emit, MP_BC_LOAD_CONST_TRUE); break;
-        no_other_choice:
-        case MP_TOKEN_ELLIPSIS: emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj)); break;
-        default: assert(0); goto no_other_choice; // to help flow control analysis
+        default:
+            assert(tok == MP_TOKEN_ELLIPSIS);
+            emit_write_bytecode_byte_obj(emit, MP_BC_LOAD_CONST_OBJ, MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj));
+            break;
     }
 }
 
@@ -751,10 +741,9 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
 }
 
 void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label) {
-    // TODO We can probably optimise the amount of needed stack space, since
-    // we don't actually need 4 slots during the entire with block, only in
-    // the cleanup handler in certain cases.  It needs some thinking.
-    emit_bc_pre(emit, 4);
+    // The SETUP_WITH opcode pops ctx_mgr from the top of the stack
+    // and then pushes 3 entries: __exit__, ctx_mgr, as_value.
+    emit_bc_pre(emit, 2);
     emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
 }
 
@@ -762,8 +751,9 @@ void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
     mp_emit_bc_pop_block(emit);
     mp_emit_bc_load_const_tok(emit, MP_TOKEN_KW_NONE);
     mp_emit_bc_label_assign(emit, label);
-    emit_bc_pre(emit, -4);
+    emit_bc_pre(emit, 2); // ensure we have enough stack space to call the __exit__ method
     emit_write_bytecode_byte(emit, MP_BC_WITH_CLEANUP);
+    emit_bc_pre(emit, -4); // cancel the 2 above, plus the 2 from mp_emit_bc_setup_with
 }
 
 void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label) {
@@ -837,11 +827,6 @@ void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args) {
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_LIST, n_args);
 }
 
-void mp_emit_bc_list_append(emit_t *emit, mp_uint_t list_stack_index) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_LIST_APPEND, list_stack_index);
-}
-
 void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_MAP, n_args);
@@ -852,20 +837,10 @@ void mp_emit_bc_store_map(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_STORE_MAP);
 }
 
-void mp_emit_bc_map_add(emit_t *emit, mp_uint_t map_stack_index) {
-    emit_bc_pre(emit, -2);
-    emit_write_bytecode_byte_uint(emit, MP_BC_MAP_ADD, map_stack_index);
-}
-
 #if MICROPY_PY_BUILTINS_SET
 void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, 1 - n_args);
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SET, n_args);
-}
-
-void mp_emit_bc_set_add(emit_t *emit, mp_uint_t set_stack_index) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_SET_ADD, set_stack_index);
 }
 #endif
 
@@ -875,6 +850,24 @@ void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args) {
     emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SLICE, n_args);
 }
 #endif
+
+void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t collection_stack_index) {
+    int t;
+    int n;
+    if (kind == SCOPE_LIST_COMP) {
+        n = 0;
+        t = 0;
+    } else if (!MICROPY_PY_BUILTINS_SET || kind == SCOPE_DICT_COMP) {
+        n = 1;
+        t = 1;
+    } else if (MICROPY_PY_BUILTINS_SET) {
+        n = 0;
+        t = 2;
+    }
+    emit_bc_pre(emit, -1 - n);
+    // the lower 2 bits of the opcode argument indicate the collection type
+    emit_write_bytecode_byte_uint(emit, MP_BC_STORE_COMP, ((collection_stack_index + n) << 2) | t);
+}
 
 void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args) {
     emit_bc_pre(emit, -1 + n_args);
@@ -952,16 +945,16 @@ void mp_emit_bc_yield_from(emit_t *emit) {
 }
 
 void mp_emit_bc_start_except_handler(emit_t *emit) {
-    mp_emit_bc_adjust_stack_size(emit, 6); // stack adjust for the 3 exception items, +3 for possible UNWIND_JUMP state
+    mp_emit_bc_adjust_stack_size(emit, 4); // stack adjust for the exception instance, +3 for possible UNWIND_JUMP state
 }
 
 void mp_emit_bc_end_except_handler(emit_t *emit) {
-    mp_emit_bc_adjust_stack_size(emit, -5); // stack adjust
+    mp_emit_bc_adjust_stack_size(emit, -3); // stack adjust
 }
 
 #if MICROPY_EMIT_NATIVE
 const emit_method_table_t emit_bc_method_table = {
-    mp_emit_bc_set_native_type,
+    NULL, // set_native_type is never called when emitting bytecode
     mp_emit_bc_start_pass,
     mp_emit_bc_end_pass,
     mp_emit_bc_last_emit_was_return_value,
@@ -1028,17 +1021,15 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_binary_op,
     mp_emit_bc_build_tuple,
     mp_emit_bc_build_list,
-    mp_emit_bc_list_append,
     mp_emit_bc_build_map,
     mp_emit_bc_store_map,
-    mp_emit_bc_map_add,
     #if MICROPY_PY_BUILTINS_SET
     mp_emit_bc_build_set,
-    mp_emit_bc_set_add,
     #endif
     #if MICROPY_PY_BUILTINS_SLICE
     mp_emit_bc_build_slice,
     #endif
+    mp_emit_bc_store_comp,
     mp_emit_bc_unpack_sequence,
     mp_emit_bc_unpack_ex,
     mp_emit_bc_make_function,

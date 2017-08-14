@@ -275,7 +275,6 @@ size_t qstr_len(qstr q) {
     return Q_GET_LENGTH(qd);
 }
 
-// XXX to remove!
 const char *qstr_str(qstr q) {
     const byte *qd = find_qstr(q);
     return (const char*)Q_GET_DATA(qd);

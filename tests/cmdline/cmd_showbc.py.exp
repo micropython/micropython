@@ -5,10 +5,12 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 3)
 (N_EXC_STACK 0)
-  bc=-3 line=1
+  bc=-1 line=1
 ########
-  bc=\\d\+ line=134
+  bc=\\d\+ line=152
 00 MAKE_FUNCTION \.\+
+\\d\+ STORE_NAME f
+\\d\+ MAKE_FUNCTION \.\+
 \\d\+ STORE_NAME f
 \\d\+ LOAD_CONST_SMALL_INT 1
 \\d\+ BUILD_TUPLE 1
@@ -22,21 +24,21 @@ arg names:
 \\d\+ LOAD_CONST_STRING 'Class'
 \\d\+ CALL_FUNCTION n=2 nkw=0
 \\d\+ STORE_NAME Class
+\\d\+ DELETE_NAME Class
 \\d\+ LOAD_CONST_NONE
 \\d\+ RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
-\.\+5b
-arg names:
+\.\+rg names:
 (N_STATE 22)
 (N_EXC_STACK 2)
 (INIT_CELL 14)
 (INIT_CELL 15)
 (INIT_CELL 16)
-  bc=-6 line=1
+  bc=-4 line=1
 ########
-  bc=\\d\+ line=118
+  bc=\\d\+ line=126
 00 LOAD_CONST_NONE
 01 LOAD_CONST_FALSE
 02 BINARY_OP 5 __add__
@@ -86,8 +88,7 @@ arg names:
 \\d\+ UNARY_OP 4
 \\d\+ STORE_FAST 9
 \\d\+ LOAD_FAST 0
-\\d\+ UNARY_OP 0
-\\d\+ NOT
+\\d\+ UNARY_OP 6
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_FAST 0
 \\d\+ LOAD_DEREF 14
@@ -108,8 +109,7 @@ arg names:
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_FAST 1
 \\d\+ BINARY_OP 27 __eq__
-\\d\+ UNARY_OP 0
-\\d\+ NOT
+\\d\+ UNARY_OP 6
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_ATTR c (cache=0)
@@ -126,6 +126,14 @@ arg names:
 \\d\+ LOAD_CONST_SMALL_INT 0
 \\d\+ STORE_SUBSCR
 \\d\+ LOAD_DEREF 14
+\\d\+ LOAD_CONST_SMALL_INT 0
+\\d\+ DUP_TOP_TWO
+\\d\+ LOAD_SUBSCR
+\\d\+ LOAD_FAST 12
+\\d\+ BINARY_OP 18 __iadd__
+\\d\+ ROT_THREE
+\\d\+ STORE_SUBSCR
+\\d\+ LOAD_DEREF 14
 \\d\+ LOAD_CONST_NONE
 \\d\+ LOAD_CONST_NONE
 \\d\+ BUILD_SLICE 2
@@ -135,6 +143,10 @@ arg names:
 \\d\+ UNPACK_SEQUENCE 2
 \\d\+ STORE_FAST 0
 \\d\+ STORE_DEREF 14
+\\d\+ LOAD_FAST 0
+\\d\+ UNPACK_EX 1
+\\d\+ STORE_FAST 0
+\\d\+ STORE_FAST 0
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_FAST 0
 \\d\+ ROT_TWO
@@ -228,6 +240,10 @@ arg names:
 \\d\+ POP_TOP
 \\d\+ LOAD_FAST 0
 \\d\+ POP_JUMP_IF_FALSE \\d\+
+\\d\+ LOAD_FAST 0
+\\d\+ JUMP_IF_TRUE_OR_POP \\d\+
+\\d\+ LOAD_FAST 0
+\\d\+ STORE_FAST 0
 \\d\+ LOAD_DEREF 14
 \\d\+ GET_ITER
 \\d\+ FOR_ITER \\d\+
@@ -244,8 +260,6 @@ arg names:
 \\d\+ POP_BLOCK
 \\d\+ JUMP \\d\+
 \\d\+ POP_TOP
-\\d\+ POP_TOP
-\\d\+ POP_TOP
 \\d\+ LOAD_DEREF 14
 \\d\+ POP_TOP
 \\d\+ POP_EXCEPT
@@ -256,6 +270,17 @@ arg names:
 \\d\+ LOAD_FAST 1
 \\d\+ POP_TOP
 \\d\+ END_FINALLY
+\\d\+ JUMP \\d\+
+\\d\+ SETUP_EXCEPT \\d\+
+\\d\+ UNWIND_JUMP \\d\+ 1
+\\d\+ POP_BLOCK
+\\d\+ JUMP \\d\+
+\\d\+ POP_TOP
+\\d\+ POP_EXCEPT
+\\d\+ JUMP \\d\+
+\\d\+ END_FINALLY
+\\d\+ LOAD_FAST 0
+\\d\+ POP_JUMP_IF_TRUE \\d\+
 \\d\+ LOAD_FAST 0
 \\d\+ SETUP_WITH \\d\+
 \\d\+ POP_TOP
@@ -296,13 +321,68 @@ arg names:
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
+\.\+rg names:
+(N_STATE 22)
+(N_EXC_STACK 0)
+  bc=-1 line=1
+########
+  bc=\\d\+ line=132
+00 LOAD_CONST_SMALL_INT 1
+01 DUP_TOP
+02 STORE_FAST 0
+03 DUP_TOP
+04 STORE_FAST 1
+05 DUP_TOP
+06 STORE_FAST 2
+07 DUP_TOP
+08 STORE_FAST 3
+09 DUP_TOP
+10 STORE_FAST 4
+11 DUP_TOP
+12 STORE_FAST 5
+13 DUP_TOP
+14 STORE_FAST 6
+15 DUP_TOP
+16 STORE_FAST 7
+17 DUP_TOP
+18 STORE_FAST 8
+19 STORE_FAST 9
+20 LOAD_CONST_SMALL_INT 2
+21 DUP_TOP
+22 STORE_FAST 10
+23 DUP_TOP
+24 STORE_FAST 11
+25 DUP_TOP
+26 STORE_FAST 12
+27 DUP_TOP
+28 STORE_FAST 13
+29 DUP_TOP
+30 STORE_FAST 14
+31 DUP_TOP
+32 STORE_FAST 15
+33 DUP_TOP
+34 STORE_FAST_N 16
+36 DUP_TOP
+37 STORE_FAST_N 17
+39 DUP_TOP
+40 STORE_FAST_N 18
+42 STORE_FAST_N 19
+44 LOAD_FAST 9
+45 LOAD_FAST_N 19
+47 BINARY_OP 5 __add__
+48 POP_TOP
+49 LOAD_CONST_NONE
+50 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
+Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
+########
 \.\+5b
 arg names: a
 (N_STATE 5)
 (N_EXC_STACK 0)
 (INIT_CELL 0)
 ########
-  bc=\\d\+ line=124
+  bc=\\d\+ line=138
 00 LOAD_CONST_SMALL_INT 2
 01 BUILD_TUPLE 1
 03 LOAD_NULL
@@ -318,10 +398,10 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
-  bc=-3 line=1
-  bc=0 line=129
-  bc=3 line=130
-  bc=6 line=131
+  bc=-1 line=1
+  bc=0 line=143
+  bc=3 line=144
+  bc=6 line=145
 00 LOAD_CONST_NONE
 01 YIELD_VALUE
 02 POP_TOP
@@ -342,14 +422,14 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
-  bc=-3 line=1
-  bc=10 line=135
+  bc=-1 line=1
+  bc=13 line=149
 00 LOAD_NAME __name__ (cache=0)
-03 STORE_NAME __module__
-05 LOAD_CONST_STRING 'Class'
-08 STORE_NAME __qualname__
-10 LOAD_CONST_NONE
-11 RETURN_VALUE
+04 STORE_NAME __module__
+07 LOAD_CONST_STRING 'Class'
+10 STORE_NAME __qualname__
+13 LOAD_CONST_NONE
+14 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
@@ -384,7 +464,7 @@ arg names: * * *
 07 LOAD_DEREF 1
 09 POP_JUMP_IF_FALSE 3
 12 LOAD_DEREF 0
-14 LIST_APPEND 2
+14 STORE_COMP 8
 16 JUMP 3
 19 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
@@ -404,7 +484,7 @@ arg names: * * *
 09 POP_JUMP_IF_FALSE 3
 12 LOAD_DEREF 0
 14 LOAD_DEREF 0
-16 MAP_ADD 2
+16 STORE_COMP 13
 18 JUMP 3
 21 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ bytes)
@@ -416,7 +496,7 @@ arg names: *
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
 ########
-  bc=\\d\+ line=105
+  bc=\\d\+ line=113
 00 LOAD_DEREF 0
 02 LOAD_CONST_SMALL_INT 1
 03 BINARY_OP 5 __add__
@@ -435,7 +515,7 @@ arg names: * b
 (N_EXC_STACK 0)
   bc=-\\d\+ line=1
 ########
-  bc=\\d\+ line=125
+  bc=\\d\+ line=139
 00 LOAD_FAST 1
 01 LOAD_DEREF 0
 03 BINARY_OP 5 __add__
@@ -443,4 +523,4 @@ arg names: * b
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+
- No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+

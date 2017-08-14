@@ -30,22 +30,16 @@
 
 #include "py/nlr.h"
 #include "py/objstr.h"
+#include "py/objstringio.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_IO
 
-typedef struct _mp_obj_stringio_t {
-    mp_obj_base_t base;
-    vstr_t *vstr;
-    // StringIO has single pointer used for both reading and writing
-    mp_uint_t pos;
-} mp_obj_stringio_t;
-
 #if MICROPY_CPYTHON_COMPAT
 STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
     if (o->vstr == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
+        mp_raise_msg(&mp_type_ValueError, "I/O operation on closed file");
     }
 }
 #else
@@ -156,7 +150,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio
 STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
     o->base.type = type;
-    o->vstr = vstr_new();
+    o->vstr = vstr_new(16);
     o->pos = 0;
     return o;
 }
@@ -177,7 +171,7 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
 
 STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readall), MP_ROM_PTR(&mp_stream_readall_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },

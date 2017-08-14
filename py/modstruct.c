@@ -156,9 +156,6 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
     }
 
     for (uint i = 0; i < num_items;) {
-        if (*fmt == '\0') {
-            break;
-        }
         mp_uint_t sz = 1;
         if (unichar_isdigit(*fmt)) {
             sz = get_fmt_num(&fmt);
@@ -191,6 +188,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, siz
     for (i = 0; i < n_args;) {
         mp_uint_t sz = 1;
         if (*fmt == '\0') {
+            // more arguments given than used by format string; CPython raises struct.error here
             break;
         }
         if (unichar_isdigit(*fmt)) {
@@ -265,7 +263,6 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_t
 
 const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_ustruct,
     .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
 };
 

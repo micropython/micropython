@@ -5,6 +5,9 @@
 // ESP8266 work for the NeoPixelBus library: github.com/Makuna/NeoPixelBus
 // Needs to be a separate .c file to enforce ICACHE_RAM_ATTR execution.
 
+#include "py/mpconfig.h"
+#if MICROPY_ESP8266_NEOPIXEL
+
 #include "c_types.h"
 #include "eagle_soc.h"
 #include "user_interface.h"
@@ -58,3 +61,5 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
   while((mp_hal_ticks_cpu() - startTime) < period); // Wait for last bit
   mp_hal_quiet_timing_exit(irq_state);
 }
+
+#endif // MICROPY_ESP8266_NEOPIXEL

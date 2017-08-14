@@ -105,7 +105,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     }
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator"));
+            mp_raise_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator");
         }
     } else {
         *self->code_state.sp = send_value;
@@ -157,7 +157,7 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
 
         case MP_VM_RETURN_YIELD:
             if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
+                mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
             }
             return ret;
 
@@ -209,7 +209,7 @@ STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, mp_const_none, MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj), &ret)) {
         case MP_VM_RETURN_YIELD:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit"));
+            mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
 
         // Swallow StopIteration & GeneratorExit (== successful close), and re-raise any other
         case MP_VM_RETURN_EXCEPTION:

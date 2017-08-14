@@ -235,7 +235,7 @@ mp_obj_t mp_seq_index_obj(const mp_obj_t *items, mp_uint_t len, mp_uint_t n_args
         }
     }
 
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "object not in sequence"));
+    mp_raise_msg(&mp_type_ValueError, "object not in sequence");
 }
 
 mp_obj_t mp_seq_count_obj(const mp_obj_t *items, mp_uint_t len, mp_obj_t value) {

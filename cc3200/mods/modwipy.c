@@ -26,6 +26,5 @@ STATIC MP_DEFINE_CONST_DICT(wipy_module_globals, wipy_module_globals_table);
 
 const mp_obj_module_t wipy_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_wipy,
     .globals = (mp_obj_dict_t*)&wipy_module_globals,
 };

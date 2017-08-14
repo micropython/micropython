@@ -12,7 +12,7 @@ before_script:
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
   - sudo dpkg --add-architecture i386
   - sudo apt-get update -qq || true
-  - sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system mingw32
+  - sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system gcc-mingw-w64
   - sudo apt-get install -y --force-yes gcc-arm-none-eabi
   # For teensy build
   - sudo apt-get install realpath
@@ -36,7 +36,7 @@ script:
   - make -C teensy
   - make -C cc3200 BTARGET=application BTYPE=release
   - make -C cc3200 BTARGET=bootloader  BTYPE=release
-  - make -C windows CROSS_COMPILE=i586-mingw32msvc-
+  - make -C windows CROSS_COMPILE=i686-w64-mingw32-
 
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
@@ -47,6 +47,7 @@ script:
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests -d thread)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --via-mpy -d basics)
 
 after_success:
   - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)

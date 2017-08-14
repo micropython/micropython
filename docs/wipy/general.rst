@@ -14,18 +14,18 @@ all divisions must be performed using '//' instead of '/'. Example::
 Before applying power
 ---------------------
 
-.. warning:: 
+.. warning::
 
    The GPIO pins of the WiPy are NOT 5V tolerant, connecting them to voltages higher
-   than 3.6V will cause irreparable damage to the board. ADC pins, when configured 
+   than 3.6V will cause irreparable damage to the board. ADC pins, when configured
    in analog mode cannot withstand voltages above 1.8V. Keep these considerations in
    mind when wiring your electronics.
 
 WLAN default behaviour
 ----------------------
 
-When the WiPy boots with the default factory configuration starts in Access Point 
-mode with ``ssid`` that starts with: ``wipy-wlan`` and ``key: www.wipy.io``. 
+When the WiPy boots with the default factory configuration starts in Access Point
+mode with ``ssid`` that starts with: ``wipy-wlan`` and ``key: www.wipy.io``.
 Connect to this network and the WiPy will be reachable at ``192.168.1.1``. In order
 to gain access to the interactive prompt, open a telnet session to that IP address on
 the default port (23). You will be asked for credentials:
@@ -98,7 +98,7 @@ the WiPy by pressing the switch on the board, or by typing::
     >>> import machine
     >>> machine.reset()
 
-Software updates can be found in: https://github.com/wipy/wipy/releases (**Binaries.zip**). 
+Software updates can be found in: https://github.com/wipy/wipy/releases (**Binaries.zip**).
 It's always recommended to update to the latest software, but make sure to
 read the **release notes** before.
 
@@ -122,7 +122,7 @@ Boot modes and safe boot
 ------------------------
 
 If you power up normally, or press the reset button, the WiPy will boot
-into standard mode; the ``boot.py`` file will be executed first, then 
+into standard mode; the ``boot.py`` file will be executed first, then
 ``main.py`` will run.
 
 You can override this boot sequence by pulling ``GP28`` **up** (connect
@@ -178,4 +178,4 @@ Details on sleep modes
   configuration required.
 * ``machine.sleep()``: 950uA (in WLAN STA mode). Wake sources are ``Pin``, ``RTC``
   and ``WLAN``
-* ``machine.deepsleep()``: ~5uA. Wake sources are ``Pin`` and ``RTC``.
+* ``machine.deepsleep()``: ~350uA. Wake sources are ``Pin`` and ``RTC``.

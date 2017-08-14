@@ -18,6 +18,7 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 # include py core make definitions
 include ../py/py.mk
 
+LD_DIR=boards
 CMSIS_DIR=cmsis
 HAL_DIR=hal/$(MCU_SERIES)
 USBDEV_DIR=usbdev
@@ -38,8 +39,8 @@ CROSS_COMPILE = arm-none-eabi-
 INC += -I.
 INC += -I..
 INC += -I$(BUILD)
-INC += -I$(CMSIS_DIR)/inc
-INC += -I$(CMSIS_DIR)/devinc
+INC += -I../lib/cmsis/inc
+INC += -I$(CMSIS_DIR)/
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
@@ -59,7 +60,7 @@ CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
-LDFLAGS = -nostdlib -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
 LIBS =
 
 # Remove uncalled code from the final image.
@@ -120,6 +121,7 @@ SRC_C = \
 	usbd_conf.c \
 	usbd_desc.c \
 	usbd_cdc_interface.c \
+	usbd_hid_interface.c \
 	usbd_msc_storage.c \
 	mphalport.c \
 	irq.c \
@@ -259,19 +261,21 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
-# We put ff.o and stm32f4xx_hal_sd.o into the first 16K section with the ISRs.
+# We put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
-# to be compiled with -O0, then edit stm32f405.ld (in the .isr_vector section)
-# and comment out the following 2 lines.
+# to be compiled with -O0, then edit boards/common.ld (in the .isr_vector section)
+# and comment out the following lines.
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
-$(BUILD)/$(HAL_DIR)/src/stm32$(MCU_SERIES)xx_hal_sd.o: COPT += -Os
+$(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
+$(PY_BUILD)/formatfloat.o: COPT += -Os
+$(PY_BUILD)/parsenum.o: COPT += -Os
+$(PY_BUILD)/mpprint.o: COPT += -Os
 
 all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 ifneq ($(FROZEN_DIR),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 OBJ += $(BUILD)/frozen-files.o
-MAKE_FROZEN = ../tools/make-frozen.py
 
 $(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
 	$(call compile_c)
@@ -312,11 +316,13 @@ else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
 
+TEXT_ADDR ?= 0x08020000
+
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
 	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin 0x08000000
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin 0x08020000
+	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT_ADDR)
 
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
@@ -326,7 +332,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b 0x08020000:$(BUILD)/firmware1.bin $@
+	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -387,7 +393,7 @@ GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
 GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
-CMSIS_MCU_HDR = cmsis/devinc/$(CMSIS_MCU_LOWER).h
+CMSIS_MCU_HDR = cmsis/$(CMSIS_MCU_LOWER).h
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to

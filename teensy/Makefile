@@ -154,24 +154,15 @@ endif # USE_MEMZIP
 
 ifeq ($(USE_FROZEN),1)
 
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-
-SRC_C += \
-	lexerfrozen.c
-
-OBJ += $(BUILD)/frozen-files.o
-
-MAKE_FROZEN = ../tools/make-frozen.py
 ifeq ($(FROZEN_DIR),)
 FROZEN_DIR = memzip_files
 endif
 
-$(BUILD)/frozen-files.o: $(BUILD)/frozen-files.c
-	$(call compile_c)
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 
-$(BUILD)/frozen-files.c: $(shell find ${FROZEN_DIR} -type f)
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MAKE_FROZEN) $(FROZEN_DIR) > $@
+SRC_C += \
+	lexerfrozen.c \
+	$(BUILD)/frozen.c
 
 endif # USE_FROZEN
 

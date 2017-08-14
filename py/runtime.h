@@ -52,8 +52,8 @@ typedef union _mp_arg_val_t {
 } mp_arg_val_t;
 
 typedef struct _mp_arg_t {
-    qstr qst;
-    mp_uint_t flags;
+    uint16_t qst;
+    uint16_t flags;
     mp_arg_val_t defval;
 } mp_arg_t;
 
@@ -137,6 +137,7 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
 //NORETURN void nlr_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...);
 NORETURN void mp_raise_ValueError(const char *msg);
 NORETURN void mp_raise_TypeError(const char *msg);
+NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_not_implemented(const char *msg); // Raise NotImplementedError with given message
 NORETURN void mp_exc_recursion_depth(void);
 

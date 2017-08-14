@@ -58,6 +58,8 @@ CXX += -m32
 LD += -m32
 endif
 
+MAKE_FROZEN = ../tools/make-frozen.py
+
 all:
 .PHONY: all
 

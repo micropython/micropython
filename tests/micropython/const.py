@@ -1,5 +1,7 @@
 # test constant optimisation
 
+from micropython import const
+
 X = const(123)
 Y = const(X + 456)
 

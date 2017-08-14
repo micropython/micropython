@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "genhdr/mpversion.h"
@@ -107,7 +108,7 @@ STATIC mp_obj_t os_getcwd(void) {
     FRESULT res = f_getcwd(buf, sizeof buf);
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     return mp_obj_new_str(buf, strlen(buf), false);
@@ -258,8 +259,7 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
             res = f_stat(path, &fno);
         }
         if (res != FR_OK) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError,
-                MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+            mp_raise_OSError(fresult_to_errno_table[res]);
         }
     }
 
@@ -307,7 +307,7 @@ STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
 
     t->items[0] = MP_OBJ_NEW_SMALL_INT(fatfs->csize * 512); // f_bsize - block size
     t->items[1] = t->items[0];                  // f_frsize - fragment size
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);      // f_blocks - total number of blocks
+    t->items[2] = MP_OBJ_NEW_SMALL_INT((fatfs->n_fatent - 2) * fatfs->csize); // f_blocks - total number of blocks
     t->items[3] = MP_OBJ_NEW_SMALL_INT(nclst);  // f_bfree  - number of free blocks
     t->items[4] = t->items[3];                  // f_bavail - free blocks avail to unpriviledged users
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0);      // f_files - # inodes
@@ -319,7 +319,7 @@ STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
     return t;
 
 error:
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+    mp_raise_OSError(fresult_to_errno_table[res]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
 
@@ -407,6 +407,5 @@ STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uos,
     .globals = (mp_obj_dict_t*)&os_module_globals,
 };

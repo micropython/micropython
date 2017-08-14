@@ -119,17 +119,15 @@ typedef struct _emit_method_table_t {
     void (*binary_op)(emit_t *emit, mp_binary_op_t op);
     void (*build_tuple)(emit_t *emit, mp_uint_t n_args);
     void (*build_list)(emit_t *emit, mp_uint_t n_args);
-    void (*list_append)(emit_t *emit, mp_uint_t list_stack_index);
     void (*build_map)(emit_t *emit, mp_uint_t n_args);
     void (*store_map)(emit_t *emit);
-    void (*map_add)(emit_t *emit, mp_uint_t map_stack_index);
     #if MICROPY_PY_BUILTINS_SET
     void (*build_set)(emit_t *emit, mp_uint_t n_args);
-    void (*set_add)(emit_t *emit, mp_uint_t set_stack_index);
     #endif
     #if MICROPY_PY_BUILTINS_SLICE
     void (*build_slice)(emit_t *emit, mp_uint_t n_args);
     #endif
+    void (*store_comp)(emit_t *emit, scope_kind_t kind, mp_uint_t set_stack_index);
     void (*unpack_sequence)(emit_t *emit, mp_uint_t n_args);
     void (*unpack_ex)(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
     void (*make_function)(emit_t *emit, scope_t *scope, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults);
@@ -240,17 +238,15 @@ void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op);
 void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op);
 void mp_emit_bc_build_tuple(emit_t *emit, mp_uint_t n_args);
 void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_list_append(emit_t *emit, mp_uint_t list_stack_index);
 void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args);
 void mp_emit_bc_store_map(emit_t *emit);
-void mp_emit_bc_map_add(emit_t *emit, mp_uint_t map_stack_index);
 #if MICROPY_PY_BUILTINS_SET
 void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_set_add(emit_t *emit, mp_uint_t set_stack_index);
 #endif
 #if MICROPY_PY_BUILTINS_SLICE
 void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args);
 #endif
+void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t list_stack_index);
 void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args);
 void mp_emit_bc_unpack_ex(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
 void mp_emit_bc_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_pos_defaults, mp_uint_t n_kw_defaults);

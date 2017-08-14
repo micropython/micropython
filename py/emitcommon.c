@@ -35,13 +35,7 @@ void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
     bool added;
     id_info_t *id = scope_find_or_add_id(scope, qst, &added);
     if (added) {
-        id_info_t *id2 = scope_find_local_in_parent(scope, qst);
-        if (id2 != NULL && (id2->kind == ID_INFO_KIND_LOCAL || id2->kind == ID_INFO_KIND_CELL || id2->kind == ID_INFO_KIND_FREE)) {
-            id->kind = ID_INFO_KIND_FREE;
-            scope_close_over_in_parents(scope, qst);
-        } else {
-            id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
-        }
+        scope_find_local_and_close_over(scope, id, qst);
     }
 }
 
@@ -50,12 +44,12 @@ void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
     bool added;
     id_info_t *id = scope_find_or_add_id(scope, qst, &added);
     if (added) {
-        if (scope->kind == SCOPE_MODULE || scope->kind == SCOPE_CLASS) {
-            id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
-        } else {
+        if (SCOPE_IS_FUNC_LIKE(scope->kind)) {
             id->kind = ID_INFO_KIND_LOCAL;
+        } else {
+            id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
         }
-    } else if (scope->kind >= SCOPE_FUNCTION && scope->kind <= SCOPE_GEN_EXPR && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+    } else if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
         // rebind as a local variable
         id->kind = ID_INFO_KIND_LOCAL;
     }

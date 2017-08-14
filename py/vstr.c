@@ -44,11 +44,6 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
     vstr->alloc = alloc;
     vstr->len = 0;
     vstr->buf = m_new(char, vstr->alloc);
-    if (vstr->buf == NULL) {
-        vstr->had_error = true;
-        return;
-    }
-    vstr->had_error = false;
     vstr->fixed_buf = false;
 }
 
@@ -63,7 +58,6 @@ void vstr_init_fixed_buf(vstr_t *vstr, size_t alloc, char *buf) {
     vstr->alloc = alloc;
     vstr->len = 0;
     vstr->buf = buf;
-    vstr->had_error = false;
     vstr->fixed_buf = true;
 }
 
@@ -80,20 +74,8 @@ void vstr_clear(vstr_t *vstr) {
     vstr->buf = NULL;
 }
 
-vstr_t *vstr_new(void) {
+vstr_t *vstr_new(size_t alloc) {
     vstr_t *vstr = m_new_obj(vstr_t);
-    if (vstr == NULL) {
-        return NULL;
-    }
-    vstr_init(vstr, 16);
-    return vstr;
-}
-
-vstr_t *vstr_new_size(size_t alloc) {
-    vstr_t *vstr = m_new_obj(vstr_t);
-    if (vstr == NULL) {
-        return NULL;
-    }
     vstr_init(vstr, alloc);
     return vstr;
 }
@@ -107,39 +89,12 @@ void vstr_free(vstr_t *vstr) {
     }
 }
 
-void vstr_reset(vstr_t *vstr) {
-    vstr->len = 0;
-    vstr->had_error = false;
-}
-
-bool vstr_had_error(vstr_t *vstr) {
-    return vstr->had_error;
-}
-
-char *vstr_str(vstr_t *vstr) {
-    if (vstr->had_error) {
-        return NULL;
-    }
-    return vstr->buf;
-}
-
-size_t vstr_len(vstr_t *vstr) {
-    if (vstr->had_error) {
-        return 0;
-    }
-    return vstr->len;
-}
-
 // Extend vstr strictly by requested size, return pointer to newly added chunk.
 char *vstr_extend(vstr_t *vstr, size_t size) {
     if (vstr->fixed_buf) {
         return NULL;
     }
     char *new_buf = m_renew(char, vstr->buf, vstr->alloc, vstr->alloc + size);
-    if (new_buf == NULL) {
-        vstr->had_error = true;
-        return NULL;
-    }
     char *p = new_buf + vstr->alloc;
     vstr->alloc += size;
     vstr->buf = new_buf;
@@ -153,10 +108,6 @@ STATIC bool vstr_ensure_extra(vstr_t *vstr, size_t size) {
         }
         size_t new_alloc = ROUND_ALLOC((vstr->len + size) + 16);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
-        if (new_buf == NULL) {
-            vstr->had_error = true;
-            return false;
-        }
         vstr->alloc = new_alloc;
         vstr->buf = new_buf;
     }
@@ -164,14 +115,11 @@ STATIC bool vstr_ensure_extra(vstr_t *vstr, size_t size) {
 }
 
 void vstr_hint_size(vstr_t *vstr, size_t size) {
-    // it's not an error if we fail to allocate for the size hint
-    bool er = vstr->had_error;
     vstr_ensure_extra(vstr, size);
-    vstr->had_error = er;
 }
 
 char *vstr_add_len(vstr_t *vstr, size_t len) {
-    if (vstr->had_error || !vstr_ensure_extra(vstr, len)) {
+    if (!vstr_ensure_extra(vstr, len)) {
         return NULL;
     }
     char *buf = vstr->buf + vstr->len;
@@ -181,9 +129,6 @@ char *vstr_add_len(vstr_t *vstr, size_t len) {
 
 // Doesn't increase len, just makes sure there is a null byte at the end
 char *vstr_null_terminated_str(vstr_t *vstr) {
-    if (vstr->had_error) {
-        return NULL;
-    }
     // If there's no more room, add single byte
     if (vstr->alloc == vstr->len) {
         if (vstr_extend(vstr, 1) == NULL) {
@@ -248,7 +193,7 @@ void vstr_add_str(vstr_t *vstr, const char *str) {
 }
 
 void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
-    if (vstr->had_error || !vstr_ensure_extra(vstr, len)) {
+    if (!vstr_ensure_extra(vstr, len)) {
         // if buf is fixed, we got here because there isn't enough room left
         // so just try to copy as much as we can, with room for a possible null byte
         if (vstr->fixed_buf && vstr->len < vstr->alloc) {
@@ -263,9 +208,6 @@ copy:
 }
 
 char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
-    if (vstr->had_error) {
-        return NULL;
-    }
     size_t l = vstr->len;
     if (byte_pos > l) {
         byte_pos = l;
@@ -303,9 +245,6 @@ void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {
 }
 
 void vstr_cut_tail_bytes(vstr_t *vstr, size_t len) {
-    if (vstr->had_error) {
-        return;
-    }
     if (len > vstr->len) {
         vstr->len = 0;
     } else {
@@ -314,7 +253,7 @@ void vstr_cut_tail_bytes(vstr_t *vstr, size_t len) {
 }
 
 void vstr_cut_out_bytes(vstr_t *vstr, size_t byte_pos, size_t bytes_to_cut) {
-    if (vstr->had_error || byte_pos >= vstr->len) {
+    if (byte_pos >= vstr->len) {
         return;
     } else if (byte_pos + bytes_to_cut >= vstr->len) {
         vstr->len = byte_pos;

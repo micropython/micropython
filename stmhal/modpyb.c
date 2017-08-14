@@ -62,6 +62,7 @@
 #include "portmodules.h"
 #include "modmachine.h"
 #include "extmod/fsusermount.h"
+#include "extmod/utime_mphal.h"
 
 /// \function millis()
 /// Returns the number of milliseconds since the board was last reset.
@@ -162,8 +163,8 @@ STATIC const mp_map_elem_t pyb_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_millis), (mp_obj_t)&pyb_elapsed_millis_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_micros), (mp_obj_t)&pyb_micros_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_elapsed_micros), (mp_obj_t)&pyb_elapsed_micros_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&time_sleep_ms_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&time_sleep_us_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_delay), (mp_obj_t)&mp_utime_sleep_ms_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_udelay), (mp_obj_t)&mp_utime_sleep_us_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sync), (mp_obj_t)&mod_os_sync_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_mount), (mp_obj_t)&fsuser_mount_obj },
 
@@ -229,6 +230,5 @@ STATIC MP_DEFINE_CONST_DICT(pyb_module_globals, pyb_module_globals_table);
 
 const mp_obj_module_t pyb_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_pyb,
     .globals = (mp_obj_dict_t*)&pyb_module_globals,
 };

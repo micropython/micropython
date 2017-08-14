@@ -28,73 +28,35 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "ets_sys.h"
-#include "etshal.h"
-#include "ets_alt_task.h"
-
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 
-typedef struct _pyb_spi_obj_t {
-    mp_obj_base_t base;
-    uint32_t baudrate;
-    uint8_t polarity;
-    uint8_t phase;
-    mp_hal_pin_obj_t sck;
-    mp_hal_pin_obj_t mosi;
-    mp_hal_pin_obj_t miso;
-} pyb_spi_obj_t;
-
-STATIC void mp_hal_spi_transfer(mp_obj_base_t *self_in, size_t src_len, const uint8_t *src_buf, size_t dest_len, uint8_t *dest_buf) {
-    pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
-    // only MSB transfer is implemented
-    uint32_t delay_half = 500000 / self->baudrate + 1;
-    for (size_t i = 0; i < src_len || i < dest_len; ++i) {
-        uint8_t data_out;
-        if (src_len == 1) {
-            data_out = src_buf[0];
-        } else {
-            data_out = src_buf[i];
-        }
-        uint8_t data_in = 0;
-        for (int j = 0; j < 8; ++j, data_out <<= 1) {
-            mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
-            if (self->phase == 0) {
-                ets_delay_us(delay_half);
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-            } else {
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-                ets_delay_us(delay_half);
-            }
-            data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
-            if (self->phase == 0) {
-                ets_delay_us(delay_half);
-                mp_hal_pin_write(self->sck, self->polarity);
-            } else {
-                mp_hal_pin_write(self->sck, self->polarity);
-                ets_delay_us(delay_half);
-            }
-        }
-        if (dest_len != 0) {
-            dest_buf[i] = data_in;
-        }
-        // make sure pending tasks have a chance to run
-        ets_loop_iter();
-    }
-}
-
 /******************************************************************************/
 // MicroPython bindings for SPI
 
-STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "SPI(baudrate=%u, polarity=%u, phase=%u, sck=%u, mosi=%u, miso=%u)",
-        self->baudrate, self->polarity, self->phase, self->sck, self->mosi, self->miso);
+STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
+    return 500000 / delay_half;
 }
 
-STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC uint32_t baudrate_to_delay_half(uint32_t baudrate) {
+    uint32_t delay_half = 500000 / baudrate;
+    // round delay_half up so that: actual_baudrate <= requested_baudrate
+    if (500000 % baudrate != 0) {
+        delay_half += 1;
+    }
+    return delay_half;
+}
+
+STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_machine_soft_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "SPI(baudrate=%u, polarity=%u, phase=%u, sck=%u, mosi=%u, miso=%u)",
+        baudrate_from_delay_half(self->delay_half),
+        self->polarity, self->phase, self->sck, self->mosi, self->miso);
+}
+
+STATIC void pyb_spi_init_helper(mp_machine_soft_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
@@ -108,7 +70,7 @@ STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_baudrate].u_int != -1) {
-        self->baudrate = args[ARG_baudrate].u_int;
+        self->delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
     }
     if (args[ARG_polarity].u_int != -1) {
         self->polarity = args[ARG_polarity].u_int;
@@ -135,10 +97,10 @@ STATIC void pyb_spi_init_helper(pyb_spi_obj_t *self, size_t n_args, const mp_obj
 
 mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
-    pyb_spi_obj_t *self = m_new_obj(pyb_spi_obj_t);
+    mp_machine_soft_spi_obj_t *self = m_new_obj(mp_machine_soft_spi_obj_t);
     self->base.type = &pyb_spi_type;
     // set defaults
-    self->baudrate = 500000;
+    self->delay_half = baudrate_to_delay_half(500000);
     self->polarity = 0;
     self->phase = 0;
     self->sck = 14;
@@ -167,7 +129,7 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 STATIC const mp_machine_spi_p_t pyb_spi_p = {
-    .transfer = mp_hal_spi_transfer,
+    .transfer = mp_machine_soft_spi_transfer,
 };
 
 const mp_obj_type_t pyb_spi_type = {

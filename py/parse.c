@@ -398,21 +398,24 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line,
     return (mp_parse_node_t)pn;
 }
 
-STATIC void push_result_token(parser_t *parser) {
+STATIC void push_result_token(parser_t *parser, const rule_t *rule) {
     mp_parse_node_t pn;
     mp_lexer_t *lex = parser->lexer;
     if (lex->tok_kind == MP_TOKEN_NAME) {
         qstr id = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
         #if MICROPY_COMP_CONST
-        // lookup identifier in table of dynamic constants
-        mp_map_elem_t *elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP);
-        if (elem != NULL) {
+        // if name is a standalone identifier, look it up in the table of dynamic constants
+        mp_map_elem_t *elem;
+        if (rule->rule_id == RULE_atom
+            && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_SMALL_INT, MP_OBJ_SMALL_INT_VALUE(elem->value));
-        } else
-        #endif
-        {
+        } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
         }
+        #else
+        (void)rule;
+        pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
+        #endif
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
         if (MP_OBJ_IS_SMALL_INT(o)) {
@@ -765,7 +768,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     uint16_t kind = rule->arg[i] & RULE_ARG_KIND_MASK;
                     if (kind == RULE_ARG_TOK) {
                         if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
-                            push_result_token(&parser);
+                            push_result_token(&parser, rule);
                             mp_lexer_to_next(lex);
                             goto next_rule;
                         }
@@ -810,7 +813,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             if (lex->tok_kind == tok_kind) {
                                 // matched token
                                 if (tok_kind == MP_TOKEN_NAME) {
-                                    push_result_token(&parser);
+                                    push_result_token(&parser, rule);
                                 }
                                 mp_lexer_to_next(lex);
                             } else {
@@ -950,7 +953,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                                     if (i & 1 & n) {
                                         // separators which are tokens are not pushed to result stack
                                     } else {
-                                        push_result_token(&parser);
+                                        push_result_token(&parser, rule);
                                     }
                                     mp_lexer_to_next(lex);
                                     // got element of list, so continue parsing list

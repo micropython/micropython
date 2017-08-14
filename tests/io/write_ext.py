@@ -1,3 +1,5 @@
+# This tests extended (MicroPython-specific) form of write:
+# write(buf, len) and write(buf, offset, len)
 import uio
 
 try:

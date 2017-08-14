@@ -343,7 +343,6 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
         lex->tok_kind = MP_TOKEN_NEWLINE;
 
         mp_uint_t num_spaces = lex->column - 1;
-        lex->emit_dent = 0;
         if (num_spaces == indent_top(lex)) {
         } else if (num_spaces > indent_top(lex)) {
             indent_push(lex, num_spaces);
@@ -359,16 +358,7 @@ STATIC void mp_lexer_next_token_into(mp_lexer_t *lex, bool first_token) {
         }
 
     } else if (is_end(lex)) {
-        if (indent_top(lex) > 0) {
-            lex->tok_kind = MP_TOKEN_NEWLINE;
-            lex->emit_dent = 0;
-            while (indent_top(lex) > 0) {
-                indent_pop(lex);
-                lex->emit_dent -= 1;
-            }
-        } else {
-            lex->tok_kind = MP_TOKEN_END;
-        }
+        lex->tok_kind = MP_TOKEN_END;
 
     } else if (is_char_or(lex, '\'', '\"')
                || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
@@ -723,7 +713,8 @@ mp_lexer_t *mp_lexer_new(qstr src_name, void *stream_data, mp_lexer_stream_next_
     vstr_init(&lex->vstr, 32);
 
     // check for memory allocation error
-    if (lex->indent_level == NULL || vstr_had_error(&lex->vstr)) {
+    // note: vstr_init above may fail on malloc, but so may mp_lexer_next_token_into below
+    if (lex->indent_level == NULL) {
         mp_lexer_free(lex);
         return NULL;
     }

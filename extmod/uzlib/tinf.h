@@ -32,6 +32,7 @@ extern "C" {
 #define TINF_DONE           1
 #define TINF_DATA_ERROR    (-3)
 #define TINF_CHKSUM_ERROR  (-4)
+#define TINF_DICT_ERROR    (-5)
 
 /* checksum types */
 #define TINF_CHKSUM_NONE  0

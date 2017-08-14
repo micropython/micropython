@@ -60,7 +60,14 @@ int mp_hal_stdin_rx_chr(void) {
         if (c != -1) {
             return c;
         }
+        #if 0
+        // Idles CPU but need more testing before enabling
+        if (!ets_loop_iter()) {
+            asm("waiti 0");
+        }
+        #else
         mp_hal_delay_us(1);
+        #endif
     }
 }
 
@@ -110,7 +117,7 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
 }
 
 uint32_t mp_hal_ticks_ms(void) {
-    return system_get_time() / 1000;
+    return ((uint64_t)system_time_high_word << 32 | (uint64_t)system_get_time()) / 1000;
 }
 
 uint32_t mp_hal_ticks_us(void) {
@@ -119,14 +126,6 @@ uint32_t mp_hal_ticks_us(void) {
 
 void mp_hal_delay_ms(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
-}
-
-void mp_hal_set_interrupt_char(int c) {
-    if (c != -1) {
-        mp_obj_exception_clear_traceback(MP_STATE_PORT(mp_kbd_exception));
-    }
-    extern int interrupt_char;
-    interrupt_char = c;
 }
 
 void ets_event_poll(void) {
@@ -173,7 +172,7 @@ static int call_dupterm_read(void) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(MP_STATE_PORT(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
         nlr_pop();
-        if (*(byte*)bufinfo.buf == interrupt_char) {
+        if (*(byte*)bufinfo.buf == mp_interrupt_char) {
             mp_keyboard_interrupt();
             return -2;
         }

@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "lib/fatfs/ff.h"
 #include "extmod/fsusermount.h"
 
@@ -183,7 +184,7 @@ mp_obj_t fatfs_umount(mp_obj_t bdev_or_path_in) {
     }
 
     if (i == MP_ARRAY_SIZE(MP_STATE_PORT(fs_user_mount))) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
+        mp_raise_OSError(MP_EINVAL);
     }
 
     fs_user_mount_t *vfs = MP_STATE_PORT(fs_user_mount)[i];

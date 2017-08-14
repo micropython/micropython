@@ -645,18 +645,6 @@ STATIC void mpn_div(mpz_dig_t *num_dig, mp_uint_t *num_len, const mpz_dig_t *den
 
 #define MIN_ALLOC (2)
 
-STATIC const uint8_t log_base2_floor[] = {
-    0,
-    0, 1, 1, 2,
-    2, 2, 2, 3,
-    3, 3, 3, 3,
-    3, 3, 3, 4,
-    4, 4, 4, 4,
-    4, 4, 4, 4,
-    4, 4, 4, 4,
-    4, 4, 4, 5
-};
-
 void mpz_init_zero(mpz_t *z) {
     z->neg = 0;
     z->fixed_dig = 0;
@@ -734,11 +722,9 @@ STATIC void mpz_need_dig(mpz_t *z, mp_uint_t need) {
     }
 
     if (z->dig == NULL || z->alloc < need) {
-        if (z->fixed_dig) {
-            // cannot reallocate fixed buffers
-            assert(0);
-            return;
-        }
+        // if z has fixed digit buffer there's not much we can do as the caller will
+        // be expecting a buffer with at least "need" bytes (but it shouldn't happen)
+        assert(!z->fixed_dig);
         z->dig = m_renew(mpz_dig_t, z->dig, z->alloc, need);
         z->alloc = need;
     }
@@ -1497,13 +1483,10 @@ mpz_t *mpz_lcm(const mpz_t *z1, const mpz_t *z2) {
        quo * rhs + rem = lhs
        0 <= rem < rhs
    can have lhs, rhs the same
+   assumes rhs != 0 (undefined behaviour if it is)
 */
 void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs) {
-    if (rhs->len == 0) {
-        mpz_set_from_int(dest_quo, 0);
-        mpz_set_from_int(dest_rem, 0);
-        return;
-    }
+    assert(!mpz_is_zero(rhs));
 
     mpz_need_dig(dest_quo, lhs->len + 1); // +1 necessary?
     memset(dest_quo->dig, 0, (lhs->len + 1) * sizeof(mpz_dig_t));
@@ -1657,18 +1640,6 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 }
 #endif
 
-mp_uint_t mpz_as_str_size(const mpz_t *i, mp_uint_t base, const char *prefix, char comma) {
-    if (base < 2 || base > 32) {
-        return 0;
-    }
-
-    mp_uint_t num_digits = i->len * DIG_SIZE / log_base2_floor[base] + 1;
-    mp_uint_t num_commas = comma ? num_digits / 3: 0;
-    mp_uint_t prefix_len = prefix ? strlen(prefix) : 0;
-
-    return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
-}
-
 #if 0
 this function is unused
 char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
@@ -1678,7 +1649,7 @@ char *mpz_as_str(const mpz_t *i, mp_uint_t base) {
 }
 #endif
 
-// assumes enough space as calculated by mpz_as_str_size
+// assumes enough space as calculated by mp_int_format_size
 // returns length of string, not including null byte
 mp_uint_t mpz_as_str_inpl(const mpz_t *i, mp_uint_t base, const char *prefix, char base_char, char comma, char *str) {
     if (str == NULL || base < 2 || base > 32) {

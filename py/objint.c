@@ -133,8 +133,8 @@ void mp_obj_int_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     // enough, a dynamic one will be allocated.
     char stack_buf[sizeof(mp_int_t) * 4];
     char *buf = stack_buf;
-    mp_uint_t buf_size = sizeof(stack_buf);
-    mp_uint_t fmt_size;
+    size_t buf_size = sizeof(stack_buf);
+    size_t fmt_size;
 
     char *str = mp_obj_int_formatted(&buf, &buf_size, &fmt_size, self_in, 10, NULL, '\0', '\0');
     mp_print_str(print, str);
@@ -162,14 +162,14 @@ STATIC const uint8_t log_base2_floor[] = {
     4, 4, 4, 5
 };
 
-STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma) {
+size_t mp_int_format_size(size_t num_bits, int base, const char *prefix, char comma) {
     if (base < 2 || base > 32) {
         return 0;
     }
 
-    uint num_digits = sizeof(fmt_int_t) * 8 / log_base2_floor[base] + 1;
-    uint num_commas = comma ? num_digits / 3: 0;
-    uint prefix_len = prefix ? strlen(prefix) : 0;
+    size_t num_digits = num_bits / log_base2_floor[base] + 1;
+    size_t num_commas = comma ? num_digits / 3 : 0;
+    size_t prefix_len = prefix ? strlen(prefix) : 0;
     return num_digits + num_commas + prefix_len + 2; // +1 for sign, +1 for null byte
 }
 
@@ -180,7 +180,7 @@ STATIC uint int_as_str_size_formatted(uint base, const char *prefix, char comma)
 //
 // The resulting formatted string will be returned from this function and the
 // formatted size will be in *fmt_size.
-char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                            int base, const char *prefix, char base_char, char comma) {
     fmt_int_t num;
     if (MP_OBJ_IS_SMALL_INT(self_in)) {
@@ -211,7 +211,7 @@ char *mp_obj_int_formatted(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size,
         sign = '-';
     }
 
-    uint needed_size = int_as_str_size_formatted(base, prefix, comma);
+    size_t needed_size = mp_int_format_size(sizeof(fmt_int_t) * 8, base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;
@@ -294,19 +294,19 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "long int not supported in this build"));
+    mp_raise_msg(&mp_type_OverflowError, "long int not supported in this build");
     return mp_const_none;
 }
 
 // This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 
 // This is called when an integer larger than a SMALL_INT is needed (although val might still fit in a SMALL_INT)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 
@@ -316,7 +316,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
     if ((value & ~MP_SMALL_INT_POSITIVE_MASK) == 0) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 
@@ -342,7 +342,7 @@ mp_obj_t mp_obj_new_int(mp_int_t value) {
     if (MP_SMALL_INT_FITS(value)) {
         return MP_OBJ_NEW_SMALL_INT(value);
     }
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "small int overflow"));
+    mp_raise_msg(&mp_type_OverflowError, "small int overflow");
     return mp_const_none;
 }
 

@@ -57,27 +57,21 @@ STATIC bool is_set_or_frozenset(mp_obj_t o) {
     ;
 }
 
-#if MICROPY_PY_BUILTINS_FROZENSET
-STATIC void check_set_or_frozenset(mp_obj_t o) {
-    if (!is_set_or_frozenset(o)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
-    }
-}
-#else
-#define check_set_or_frozenset(o) check_set(o)
-#endif
+// This macro is shorthand for mp_check_self to verify the argument is a
+// set or frozenset for methods that operate on both of these types.
+#define check_set_or_frozenset(o) mp_check_self(is_set_or_frozenset(o))
 
+// This function is used to verify the argument for methods that modify
+// the set object, and raises an exception if the arg is a frozenset.
 STATIC void check_set(mp_obj_t o) {
-    if (!MP_OBJ_IS_TYPE(o, &mp_type_set)) {
-        // Emulate CPython behavior
+    #if MICROPY_PY_BUILTINS_FROZENSET
+    if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
+        // Mutable method called on frozenset; emulate CPython behavior, eg:
         // AttributeError: 'frozenset' object has no attribute 'add'
-        #if MICROPY_PY_BUILTINS_FROZENSET
-        if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_AttributeError, "'frozenset' has no such attribute"));
-        }
-        #endif
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "'set' object required"));
+        mp_raise_msg(&mp_type_AttributeError, "'frozenset' has no such attribute");
     }
+    #endif
+    mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set));
 }
 
 STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -395,7 +389,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_KeyError, "pop from an empty set"));
+        mp_raise_msg(&mp_type_KeyError, "pop from an empty set");
     }
     return obj;
 }
@@ -441,6 +435,7 @@ STATIC void set_update_int(mp_obj_set_t *self, mp_obj_t other_in) {
 }
 
 STATIC mp_obj_t set_update(size_t n_args, const mp_obj_t *args) {
+    check_set(args[0]);
     for (mp_uint_t i = 1; i < n_args; i++) {
         set_update_int(MP_OBJ_TO_PTR(args[0]), args[i]);
     }

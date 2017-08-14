@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"
 #include "py/mperrno.h"
@@ -89,7 +89,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, mp_uint_t *rwx_num) {
 
         if (ret == -1) {
             // error doing ioctl
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errcode)));
+            mp_raise_OSError(errcode);
         }
 
         if (ret != 0) {
@@ -213,7 +213,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
     mp_obj_poll_t *self = self_in;
     mp_map_elem_t *elem = mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
     if (elem == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(MP_ENOENT)));
+        mp_raise_OSError(MP_ENOENT);
     }
     ((poll_obj_t*)elem->value)->flags = mp_obj_get_int(eventmask_in);
     return mp_const_none;
@@ -307,6 +307,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_t
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_uselect,
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };

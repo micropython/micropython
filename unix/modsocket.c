@@ -44,6 +44,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/builtin.h"
+#include "py/mphal.h"
 
 /*
   The idea of this module is to implement reasonable minimum of
@@ -72,10 +73,6 @@ typedef struct _mp_obj_socket_t {
 const mp_obj_type_t mp_type_socket;
 
 // Helper functions
-#define RAISE_ERRNO(err_flag, error_val) \
-    { if (err_flag == -1) \
-        { nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error_val))); } }
-
 static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen_t len) {
     return mp_obj_new_bytes((const byte *)addr, len);
 }
@@ -400,7 +397,7 @@ STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
     struct hostent *h = gethostbyname(s);
     if (h == NULL) {
         // CPython: socket.herror
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(h_errno)));
+        mp_raise_OSError(h_errno);
     }
     assert(h->h_length == 4);
     return mp_obj_new_int(*(int*)*h->h_addr_list);
@@ -415,7 +412,7 @@ STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {
     int r = inet_pton(family, mp_obj_str_get_str(addr_in), binaddr);
     RAISE_ERRNO(r, errno);
     if (r == 0) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(EINVAL)));
+        mp_raise_OSError(MP_EINVAL);
     }
     int binaddr_len = 0;
     switch (family) {
@@ -437,7 +434,7 @@ STATIC mp_obj_t mod_socket_inet_ntop(mp_obj_t family_in, mp_obj_t binaddr_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, family == AF_INET ? INET_ADDRSTRLEN : INET6_ADDRSTRLEN);
     if (inet_ntop(family, bufinfo.buf, vstr.buf, vstr.len) == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+        mp_raise_OSError(errno);
     }
     vstr.len = strlen(vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
@@ -586,6 +583,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_t
 
 const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_usocket,
     .globals = (mp_obj_dict_t*)&mp_module_socket_globals,
 };

@@ -90,12 +90,12 @@ STATIC mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // formatted size will be in *fmt_size.
 //
 // This particular routine should only be called for the mpz representation of the int.
-char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_size, mp_const_obj_t self_in,
+char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
                                 int base, const char *prefix, char base_char, char comma) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_uint_t needed_size = mpz_as_str_size(&self->mpz, base, prefix, comma);
+    size_t needed_size = mp_int_format_size(mpz_max_num_bits(&self->mpz), base, prefix, comma);
     if (needed_size > *buf_size) {
         *buf = m_new(char, needed_size);
         *buf_size = needed_size;
@@ -107,7 +107,7 @@ char *mp_obj_int_formatted_impl(char **buf, mp_uint_t *buf_size, mp_uint_t *fmt_
     return str;
 }
 
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, mp_uint_t len, byte *buf) {
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
@@ -234,8 +234,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                     zero_division_error:
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ZeroDivisionError,
-                        "division by zero"));
+                    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
                 }
                 mpz_t rem; mpz_init_zero(&rem);
                 mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
@@ -272,7 +271,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "negative shift count"));
+                    mp_raise_msg(&mp_type_ValueError, "negative shift count");
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -398,7 +397,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
             return value;
         } else {
             // overflow
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "overflow converting long int to machine word"));
+            mp_raise_msg(&mp_type_OverflowError, "overflow converting long int to machine word");
         }
     }
 }

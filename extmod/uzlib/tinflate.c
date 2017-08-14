@@ -361,6 +361,9 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
         /* possibly get more bits from distance code */
         offs = tinf_read_bits(d, dist_bits[dist], dist_base[dist]);
         if (d->dict_ring) {
+            if (offs > d->dict_size) {
+                return TINF_DICT_ERROR;
+            }
             d->lzOff = d->dict_idx - offs;
             if (d->lzOff < 0) {
                 d->lzOff += d->dict_size;

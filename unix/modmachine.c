@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/obj.h"
 
 #include "extmod/machine_mem.h"
@@ -58,7 +58,7 @@ uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
         if (!fd) {
             fd = open("/dev/mem", O_RDWR | O_SYNC);
             if (fd == -1) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno)));
+                mp_raise_OSError(errno);
             }
         }
 
@@ -91,7 +91,6 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_umachine,
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
 

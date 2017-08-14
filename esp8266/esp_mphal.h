@@ -28,10 +28,10 @@
 #define _INCLUDED_MPHAL_H_
 
 #include "py/ringbuf.h"
+#include "lib/utils/interrupt_char.h"
 #include "xtirq.h"
 
 void mp_keyboard_interrupt(void);
-extern int interrupt_char;
 
 struct _mp_print_t;
 // Structure for UART-only output via mp_printf()

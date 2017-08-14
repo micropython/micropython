@@ -31,7 +31,9 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
+#include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
+#include "lib/utils/pyexec.h"
 #include "lib/fatfs/ff.h"
 #include "lib/fatfs/diskio.h"
 #include "gccollect.h"
@@ -68,7 +70,7 @@ void machine_init(void) {
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
-        PWR->CR = PWR_CR_CSBF;
+        PWR->CR |= PWR_CR_CSBF;
     } else
     #endif
     {
@@ -86,7 +88,7 @@ void machine_init(void) {
         }
     }
     // clear RCC reset flags
-    RCC->CSR = RCC_CSR_RMVF;
+    RCC->CSR |= RCC_CSR_RMVF;
 }
 
 // machine.info([dump_alloc_table])
@@ -170,6 +172,12 @@ STATIC mp_obj_t machine_reset(void) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
+
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t machine_bootloader(void) {
@@ -501,6 +509,7 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_info),                (mp_obj_t)&machine_info_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_unique_id),           (mp_obj_t)&machine_unique_id_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_reset),               (mp_obj_t)&machine_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_soft_reset),          (mp_obj_t)&machine_soft_reset_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_bootloader),          (mp_obj_t)&machine_bootloader_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                (mp_obj_t)&machine_freq_obj },
 #if MICROPY_HW_ENABLE_RNG
@@ -517,6 +526,8 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_irq),         (mp_obj_t)&pyb_disable_irq_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_irq),          (mp_obj_t)&pyb_enable_irq_obj },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time_pulse_us),       (mp_obj_t)&machine_time_pulse_us_obj },
+
     { MP_ROM_QSTR(MP_QSTR_mem8),                    (mp_obj_t)&machine_mem8_obj },
     { MP_ROM_QSTR(MP_QSTR_mem16),                   (mp_obj_t)&machine_mem16_obj },
     { MP_ROM_QSTR(MP_QSTR_mem32),                   (mp_obj_t)&machine_mem32_obj },
@@ -527,10 +538,10 @@ STATIC const mp_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTC),                 (mp_obj_t)&pyb_rtc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                 (mp_obj_t)&pyb_adc_type },
 #endif
-    // TODO: Per new API, both types below, if called with 1 arg (ID), should still
+    // TODO: Per new API, I2C types below, if called with 1 arg (ID), should still
     // initialize master mode on the peripheral.
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                 (mp_obj_t)&machine_i2c_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&pyb_spi_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                 (mp_obj_t)&machine_hard_spi_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WDT),                 (mp_obj_t)&pyb_wdt_type },
 #if 0
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                (mp_obj_t)&pyb_uart_type },
@@ -559,7 +570,6 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_umachine,
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
 
