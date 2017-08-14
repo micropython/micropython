@@ -409,12 +409,12 @@ found:
     void *ret_ptr = (void*)(MP_STATE_MEM(gc_pool_start) + start_block * BYTES_PER_BLOCK);
     DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
 
-    // Zero out all the bytes of the newly allocated blocks.
+    // zero out the additional bytes of the newly allocated blocks
     // This is needed because the blocks may have previously held pointers
     // to the heap and will not be set to something else if the caller
     // doesn't actually use the entire block.  As such they will continue
     // to point to the heap and may prevent other blocks from being reclaimed.
-    memset((byte*)ret_ptr, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK);
+    memset((byte*)ret_ptr + n_bytes, 0, (end_block - start_block + 1) * BYTES_PER_BLOCK - n_bytes);
 
     #if MICROPY_ENABLE_FINALISER
     if (has_finaliser) {
@@ -620,8 +620,8 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
             ATB_FREE_TO_TAIL(bl);
         }
 
-        // zero out the bytes of the newly allocated blocks (see comment above in gc_alloc)
-        memset((byte*)ptr_in + n_blocks * BYTES_PER_BLOCK, 0, (new_blocks - n_blocks) * BYTES_PER_BLOCK);
+        // zero out the additional bytes of the newly allocated blocks (see comment above in gc_alloc)
+        memset((byte*)ptr_in + n_bytes, 0, new_blocks * BYTES_PER_BLOCK - n_bytes);
 
         #if EXTENSIVE_HEAP_PROFILING
         gc_dump_alloc_table();

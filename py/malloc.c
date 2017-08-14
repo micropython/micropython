@@ -114,7 +114,10 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 
 void *m_malloc0(size_t num_bytes) {
     void *ptr = m_malloc(num_bytes);
-    // memory is already cleared by gc_alloc
+    if (ptr == NULL && num_bytes != 0) {
+        return m_malloc_fail(num_bytes);
+    }
+    memset(ptr, 0, num_bytes);
     return ptr;
 }
 
