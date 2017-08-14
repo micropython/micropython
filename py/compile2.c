@@ -44,10 +44,19 @@
 // TODO need to mangle __attr names
 
 typedef enum {
+// define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
-    PN_maximum_number_of,
+#undef DEF_RULE_NC
+    PN_const_object, // special node for a constant, generic Python object
+// define rules without a compile function
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) PN_##rule,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
 } pn_kind_t;
 
 #define NEED_METHOD_TABLE MICROPY_EMIT_NATIVE
@@ -79,7 +88,6 @@ typedef struct _compiler_t {
 
     uint8_t is_repl;
     uint8_t pass; // holds enum type pass_kind_t
-    uint8_t func_arg_is_super; // used to compile special case of super() function call
     uint8_t have_star;
 
     // try to keep compiler clean from nlr
@@ -751,7 +759,6 @@ STATIC qstr compile_classdef_helper(compiler_t *comp, const byte *p, uint emit_o
     if (pt_is_rule(p_parents, PN_classdef_2)) {
         p_parents = NULL;
     }
-    comp->func_arg_is_super = false;
     compile_trailer_paren_helper(comp, p_parents, false, 2);
 
     // return its name (the 'C' in class C(...):")
@@ -831,7 +838,6 @@ STATIC void compile_decorated(compiler_t *comp, const byte *p, const byte *ptop)
             // nodes[1] contains arguments to the decorator function, if any
             if (!pt_is_null_with_top(p, ptop_decorator)) {
                 // call the decorator function with the arguments in nodes[1]
-                comp->func_arg_is_super = false;
                 compile_node(comp, p);
             }
         }
@@ -1498,6 +1504,10 @@ STATIC void compile_for_stmt(compiler_t *comp, const byte *p, const byte *ptop) 
                         goto optimise_fail;
                     }
                     p_range_args = pt_get_small_int(p_range_args, &step);
+                    // the step must be non-zero
+                    if (step == 0) {
+                        goto optimise_fail;
+                    }
                     if (p_range_args != p_range_args_top) {
                         // range has at least 4 args, so don't know how to optimise it
                         goto optimise_fail;
@@ -1536,7 +1546,7 @@ optimise_fail:;
 
     const byte *p_it = pt_next(p);
     const byte *p_body = compile_node(comp, p_it); // iterator
-    EMIT(get_iter);
+    EMIT_ARG(get_iter, true);
     EMIT_ARG(label_assign, continue_label);
     EMIT_ARG(for_iter, pop_label);
     c_assign(comp, p, ASSIGN_STORE); // variable
@@ -2075,10 +2085,89 @@ STATIC void compile_factor_2(compiler_t *comp, const byte *p, const byte *ptop) 
 }
 
 STATIC void compile_atom_expr_normal(compiler_t *comp, const byte *p, const byte *ptop) {
-    // this is to handle special super() call
-    comp->func_arg_is_super = pt_is_id(p, MP_QSTR_super);
+    const byte *p_start = p;
 
-    compile_generic_all_nodes(comp, p, ptop);
+    // compile the subject of the expression
+    p = compile_node(comp, p);
+
+    // get the array of trailers, it may be a single item or a list
+    if (pt_is_rule(p, PN_atom_expr_trailers)) {
+        p = pt_rule_extract_top(p, &ptop);
+    }
+
+    // handle special super() call
+    if (comp->scope_cur->kind == SCOPE_FUNCTION
+        && pt_is_id(p_start, MP_QSTR_super)
+        && pt_is_rule(p, PN_trailer_paren)
+        && pt_is_rule_empty(p)) {
+        // at this point we have matched "super()" within a function
+
+        // load the class for super to search for a parent
+        compile_load_id(comp, MP_QSTR___class__);
+
+        // look for first argument to function (assumes it's "self")
+        bool found = false;
+        id_info_t *id = &comp->scope_cur->id_info[0];
+        for (size_t n = comp->scope_cur->id_info_len; n > 0; --n, ++id) {
+            if (id->flags & ID_FLAG_IS_PARAM) {
+                // first argument found; load it
+                compile_load_id(comp, id->qst);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            compile_syntax_error(comp, p,
+                "super() can't find self"); // really a TypeError
+            return;
+        }
+
+        if (pt_num_nodes(p, ptop) >= 3
+            && pt_is_rule(pt_next(p), PN_trailer_period)
+            && pt_is_rule(pt_next(pt_next(p)), PN_trailer_paren)) {
+            // optimisation for method calls super().f(...), to eliminate heap allocation
+            const byte *p_period = pt_next(p);
+            const byte *p_paren = pt_next(p_period);
+            qstr method_name;
+            pt_extract_id(pt_rule_first(p_period), &method_name);
+            EMIT_ARG(load_method, method_name, true);
+            if (pt_is_rule_empty(p_paren)) {
+                p_paren = NULL;
+            } else {
+                p_paren = pt_rule_first(p_paren);
+            }
+            compile_trailer_paren_helper(comp, p_paren, true, 0);
+            p = pt_next(p);
+            p = pt_next(p);
+            p = pt_next(p);
+        } else {
+            // a super() call
+            EMIT_ARG(call_function, 2, 0, 0);
+            p = pt_next(p);
+        }
+    }
+
+    while (p != ptop) {
+        const byte *p_next = pt_next(p);
+        if (p_next != ptop && pt_is_rule(p, PN_trailer_period) && pt_is_rule(p_next, PN_trailer_paren)) {
+            // optimisation for method calls a.f(...), following PyPy
+            const byte *p_period = pt_rule_first(p);
+            const byte *p_paren;
+            if (pt_is_rule_empty(p_next)) {
+                p_paren = NULL;
+            } else {
+                p_paren = pt_rule_first(p_next);
+            }
+            qstr method_name;
+            pt_extract_id(p_period, &method_name);
+            EMIT_ARG(load_method, method_name, false);
+            compile_trailer_paren_helper(comp, p_paren, true, 0);
+            p = pt_next(p_next);
+        } else {
+            // node is one of: trailer_paren, trailer_bracket, trailer_period
+            p = compile_node(comp, p);
+        }
+    }
 }
 
 STATIC void compile_power(compiler_t *comp, const byte *p, const byte *ptop) {
@@ -2089,22 +2178,6 @@ STATIC void compile_power(compiler_t *comp, const byte *p, const byte *ptop) {
 // if p_arglist==NULL then there are no arguments
 STATIC void compile_trailer_paren_helper(compiler_t *comp, const byte *p_arglist, bool is_method_call, int n_positional_extra) {
     // function to call is on top of stack
-
-    // this is to handle special super() call
-    if (p_arglist == NULL && comp->func_arg_is_super && comp->scope_cur->kind == SCOPE_FUNCTION) {
-        compile_load_id(comp, MP_QSTR___class__);
-        // look for first argument to function (assumes it's "self")
-        for (int i = 0; i < comp->scope_cur->id_info_len; i++) {
-            if (comp->scope_cur->id_info[i].flags & ID_FLAG_IS_PARAM) {
-                // first argument found; load it and call super
-                EMIT_LOAD_FAST(MP_QSTR_, comp->scope_cur->id_info[i].local_num);
-                EMIT_ARG(call_function, 2, 0, 0);
-                return;
-            }
-        }
-        compile_syntax_error(comp, NULL, "super() call cannot find self"); // really a TypeError
-        return;
-    }
 
     // get the list of arguments
     const byte *ptop;
@@ -2192,30 +2265,6 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, const byte *p_arglist
     }
 }
 
-STATIC void compile_atom_expr_trailers(compiler_t *comp, const byte *p, const byte *ptop) {
-    while (p != ptop) {
-        const byte *p_next = pt_next(p);
-        if (p_next != ptop && pt_is_rule(p, PN_trailer_period) && pt_is_rule(p_next, PN_trailer_paren)) {
-            // optimisation for method calls a.f(...), following PyPy
-            const byte *p_period = pt_rule_first(p);
-            const byte *p_paren;
-            if (pt_is_rule_empty(p_next)) {
-                p_paren = NULL;
-            } else {
-                p_paren = pt_rule_first(p_next);
-            }
-            qstr method_name;
-            pt_extract_id(p_period, &method_name);
-            EMIT_ARG(load_method, method_name);
-            compile_trailer_paren_helper(comp, p_paren, true, 0);
-            p = pt_next(p_next);
-        } else {
-            p = compile_node(comp, p);
-        }
-        comp->func_arg_is_super = false;
-    }
-}
-
 // p needs to point to 2 successive nodes, first is lhs of comprehension, second is PN_comp_for node
 STATIC void compile_comprehension(compiler_t *comp, const byte *p, scope_kind_t kind) {
     const byte *p_comp_for = pt_next(p);
@@ -2237,7 +2286,9 @@ STATIC void compile_comprehension(compiler_t *comp, const byte *p, scope_kind_t 
     close_over_variables_etc(comp, this_scope, 0, 0);
 
     compile_node(comp, pt_next(p_comp_for)); // source of the iterator
-    EMIT(get_iter);
+    if (kind == SCOPE_GEN_EXPR) {
+        EMIT_ARG(get_iter, false);
+    }
     EMIT_ARG(call_function, 1, 0, 0);
 }
 
@@ -2471,7 +2522,7 @@ STATIC void compile_yield_expr(compiler_t *comp, const byte *p, const byte *ptop
     } else if (pt_is_rule(p, PN_yield_arg_from)) {
         p = pt_rule_first(p);
         compile_node(comp, p);
-        EMIT(get_iter);
+        EMIT_ARG(get_iter, false);
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
         EMIT(yield_from);
     } else {
@@ -2480,16 +2531,27 @@ STATIC void compile_yield_expr(compiler_t *comp, const byte *p, const byte *ptop
     }
 }
 
+STATIC mp_obj_t get_const_object(compiler_t *comp, const byte *p) {
+    size_t idx;
+    p = pt_extract_const_obj(p, &idx);
+    return (mp_obj_t)comp->co_data[idx];
+}
+
+STATIC void compile_const_object(compiler_t *comp, const byte *p, const byte *ptop) {
+    EMIT_ARG(load_const_obj, get_const_object(comp, p));
+}
+
 typedef void (*compile_function_t)(compiler_t*, const byte*, const byte*);
 STATIC compile_function_t compile_function[] = {
 #define nc NULL
 #define c(f) compile_##f
 #define DEF_RULE(rule, comp, kind, ...) comp,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
-#undef nc
 #undef c
 #undef DEF_RULE
-    NULL,
+#undef DEF_RULE_NC
+    compile_const_object,
 };
 
 STATIC const byte *compile_node(compiler_t *comp, const byte *p) {
@@ -2712,7 +2774,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_comp_for, co
             EMIT(yield_value);
             EMIT(pop_top);
         } else {
-            EMIT_ARG(store_comp, comp->scope_cur->kind, for_depth + 2);
+            EMIT_ARG(store_comp, comp->scope_cur->kind, 4 * for_depth + 5);
         }
     } else if (pt_is_rule(p_iter, PN_comp_if)) {
         // if condition
@@ -2726,7 +2788,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_comp_for, co
         const byte *p0 = pt_rule_extract_top(p_iter, &ptop);
         p0 = pt_next(p0); // skip scope index
         compile_node(comp, pt_next(p0));
-        EMIT(get_iter);
+        EMIT_ARG(get_iter, true);
         compile_scope_comp_iter(comp, p0, ptop, p_inner_expr, for_depth + 1);
     }
 
@@ -2899,7 +2961,19 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         #endif
         }
 
-        compile_load_id(comp, qstr_arg);
+        // There are 4 slots on the stack for the iterator, and the first one is
+        // NULL to indicate that the second one points to the iterator object.
+        if (scope->kind == SCOPE_GEN_EXPR) {
+            // TODO static assert that MP_OBJ_ITER_BUF_NSLOTS == 4
+            EMIT(load_null);
+            compile_load_id(comp, qstr_arg);
+            EMIT(load_null);
+            EMIT(load_null);
+        } else {
+            compile_load_id(comp, qstr_arg);
+            EMIT_ARG(get_iter, true);
+        }
+
         compile_scope_comp_iter(comp, p_comp_for, p_comp_for_top, p, 0);
 
         if (scope->kind == SCOPE_GEN_EXPR) {
