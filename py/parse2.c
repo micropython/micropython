@@ -378,19 +378,10 @@ const byte *pt_rule_first(const byte *p) {
 }
 
 #if 0
-void pt_show(pt_t *pt) {
-    const byte *top = (byte*)pt->vv.buf + pt->vv.len;
-    /*
-    for (const byte *p = (byte*)pt->buf; p < top; ++p) {
-        if ((p - (byte*)pt->buf) % 20 == 0) {
-            printf("\n");
-        }
-        printf("%02x ", *p);
-    }
-    printf("\n");
-    */
-    for (const byte *p = (byte*)pt->vv.buf; p < top;) {
-        printf("%04u  ", (uint)(p - (byte*)pt->vv.buf));
+void pt_show(const byte *p, const byte *ptop) {
+    const byte *start = p;
+    while (p < ptop) {
+        printf("%04u  ", (uint)(p - (byte*)start));
         const byte *p2 = pt_advance(p, false);
         for (const byte *p3 = p; p3 < p2; ++p3) {
             printf("%02x ", *p3);
@@ -1365,7 +1356,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     #endif
 
     #if 0
-    pt_show(pt);
+    pt_show((const byte*)pt->vv.buf, (const byte*)pt->vv.buf + pt->vv.len);
 
     {
         size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
