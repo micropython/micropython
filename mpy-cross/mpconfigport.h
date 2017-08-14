@@ -94,6 +94,9 @@ typedef unsigned long mp_uint_t; // must be pointer size
 #include <stdint.h>
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
+#elif defined ( _MSC_VER ) && defined( _WIN64 )
+typedef __int64 mp_int_t;
+typedef unsigned __int64 mp_uint_t;
 #else
 // These are definitions for machines where sizeof(int) == sizeof(void*),
 // regardless for actual size.
@@ -124,3 +127,33 @@ typedef long mp_off_t;
 #endif
 
 #include <stdint.h>
+
+// MSVC specifics - see windows/mpconfigport.h for explanation
+#ifdef _MSC_VER
+
+#define NORETURN                    __declspec(noreturn)
+#undef MP_NOINLINE
+#define MP_NOINLINE                 __declspec(noinline)
+#define MP_LIKELY(x)                (x)
+#define MP_UNLIKELY(x)              (x)
+#define MICROPY_PORT_CONSTANTS      { "dummy", 0 }
+#ifdef _WIN64
+#define MP_SSIZE_MAX                _I64_MAX
+#else
+#define MP_SSIZE_MAX                _I32_MAX
+#endif
+#define restrict
+#define inline                      __inline
+#define alignof(t)                  __alignof(t)
+#undef MICROPY_ALLOC_PATH_MAX
+#define MICROPY_ALLOC_PATH_MAX      260
+#ifdef _WIN64
+#define SSIZE_MAX                   _I64_MAX
+typedef __int64                     ssize_t;
+#else
+#define SSIZE_MAX                   _I32_MAX
+typedef int                         ssize_t;
+#endif
+#define MP_ENDIANNESS_LITTLE        (1)
+
+#endif
