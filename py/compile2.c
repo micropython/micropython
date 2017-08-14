@@ -510,7 +510,6 @@ STATIC void c_assign(compiler_t *comp, const byte *p, assign_kind_t assign_kind)
             p1 = pt_rule_extract_top(p1, &ptop);
             c_assign_tuple(comp, p0, p1, ptop);
         } else if (pt_is_rule(p1, PN_comp_for)) {
-            // TODO can we ever get here? can it be compiled?
             goto cannot_assign;
         } else {
             // sequence with 2 items
@@ -930,7 +929,6 @@ STATIC void c_del_stmt(compiler_t *comp, const byte *p) {
                     p1 = pt_next(p1);
                 }
             } else if (pt_is_rule(p1, PN_comp_for)) {
-                // TODO not implemented; can't del comprehension? can we get here?
                 goto cannot_delete;
             } else {
                 // sequence with 2 items
@@ -1218,18 +1216,14 @@ STATIC void compile_global_stmt(compiler_t *comp, const byte *p, const byte *pto
 STATIC void compile_declare_nonlocal(compiler_t *comp, const byte *p_for_err, qstr qst) {
     bool added;
     id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
-    if (!added && id_info->kind != ID_INFO_KIND_FREE) {
+    if (added) {
+        scope_find_local_and_close_over(comp->scope_cur, id_info, qst);
+        if (id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+            compile_syntax_error(comp, p_for_err, "no binding for nonlocal found");
+        }
+    } else if (id_info->kind != ID_INFO_KIND_FREE) {
         compile_syntax_error(comp, p_for_err, "identifier redefined as nonlocal");
-        return;
     }
-    id_info_t *id_info2 = scope_find_local_in_parent(comp->scope_cur, qst);
-    if (id_info2 == NULL || !(id_info2->kind == ID_INFO_KIND_LOCAL
-        || id_info2->kind == ID_INFO_KIND_CELL || id_info2->kind == ID_INFO_KIND_FREE)) {
-        compile_syntax_error(comp, p_for_err, "no binding for nonlocal found");
-        return;
-    }
-    id_info->kind = ID_INFO_KIND_FREE;
-    scope_close_over_in_parents(comp->scope_cur, qst);
 }
 
 STATIC void compile_nonlocal_stmt(compiler_t *comp, const byte *p, const byte *ptop) {
@@ -1578,6 +1572,8 @@ STATIC void compile_try_except(compiler_t *comp, const byte *p_body, const byte 
     EMIT_ARG(label_assign, l1); // start of exception handler
     EMIT(start_except_handler);
 
+    // at this point the top of the stack contains the exception instance that was raised
+
     uint l2 = comp_next_label(comp);
 
     while (p_except != p_except_top) {
@@ -1610,15 +1606,12 @@ STATIC void compile_try_except(compiler_t *comp, const byte *p_body, const byte 
 
         p_except = pt_next(p_except);
 
-        EMIT(pop_top);
-
+        // either discard or store the exception instance
         if (qstr_exception_local == 0) {
             EMIT(pop_top);
         } else {
             compile_store_id(comp, qstr_exception_local);
         }
-
-        EMIT(pop_top);
 
         uint l3 = 0;
         if (qstr_exception_local != 0) {
@@ -1643,7 +1636,7 @@ STATIC void compile_try_except(compiler_t *comp, const byte *p_body, const byte 
         }
         EMIT_ARG(jump, l2);
         EMIT_ARG(label_assign, end_finally_label);
-        EMIT_ARG(adjust_stack_size, 3); // stack adjust for the 3 exception items
+        EMIT_ARG(adjust_stack_size, 1); // stack adjust for the exception instance
     }
 
     compile_decrease_except_level(comp);
@@ -2568,22 +2561,13 @@ STATIC const byte *compile_node(compiler_t *comp, const byte *p) {
         p = pt_rule_extract(p, &rule_id, &src_line, &ptop);
         EMIT_ARG(set_source_line, src_line);
         compile_function_t f = compile_function[rule_id];
-        if (f == NULL) {
-            #if MICROPY_DEBUG_PRINTERS
-            printf("node %u cannot be compiled\n", (uint)rule_id);
-            //mp_parse_node_print(pn, 0);
-            #endif
-            compile_syntax_error(comp, p, "internal compiler error");
-            assert(0);
-            return ptop;
-        } else {
-            f(comp, p, ptop);
-            if (comp->compile_error != MP_OBJ_NULL && comp->compile_error_line == 0) {
-                // add line info for the error in case it didn't have a line number
-                comp->compile_error_line = src_line;
-            }
-            return ptop;
+        assert(f != NULL);
+        f(comp, p, ptop);
+        if (comp->compile_error != MP_OBJ_NULL && comp->compile_error_line == 0) {
+            // add line info for the error in case it didn't have a line number
+            comp->compile_error_line = src_line;
         }
+        return ptop;
     }
 }
 
@@ -2724,17 +2708,11 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, const byte *p_comp_for, co
     if (p_iter == p_comp_for_top) {
         // no more nested if/for; compile inner expression
         compile_node(comp, p_inner_expr);
-        if (comp->scope_cur->kind == SCOPE_LIST_COMP) {
-            EMIT_ARG(list_append, for_depth + 2);
-        } else if (comp->scope_cur->kind == SCOPE_DICT_COMP) {
-            EMIT_ARG(map_add, for_depth + 2);
-        #if MICROPY_PY_BUILTINS_SET
-        } else if (comp->scope_cur->kind == SCOPE_SET_COMP) {
-            EMIT_ARG(set_add, for_depth + 2);
-        #endif
-        } else {
+        if (comp->scope_cur->kind == SCOPE_GEN_EXPR) {
             EMIT(yield_value);
             EMIT(pop_top);
+        } else {
+            EMIT_ARG(store_comp, comp->scope_cur->kind, for_depth + 2);
         }
     } else if (pt_is_rule(p_iter, PN_comp_if)) {
         // if condition
@@ -3163,7 +3141,7 @@ STATIC void scope_compute_things(scope_t *scope) {
             // __class__ is not counted as a local; if it's used then it becomes a ID_INFO_KIND_CELL
             continue;
         }
-        if (scope->kind >= SCOPE_FUNCTION && scope->kind <= SCOPE_GEN_EXPR && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+        if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
             id->kind = ID_INFO_KIND_GLOBAL_EXPLICIT;
         }
         // params always count for 1 local, even if they are a cell
