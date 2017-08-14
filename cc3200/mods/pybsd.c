@@ -107,7 +107,7 @@ STATIC mp_obj_t pyb_sd_init_helper (pybsd_obj_t *self, const mp_arg_val_t *args)
 
     pyb_sd_hw_init (self);
     if (sd_disk_init() != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
 
     // register it with the sleep module
@@ -132,7 +132,7 @@ STATIC mp_obj_t pyb_sd_make_new (const mp_obj_type_t *type, mp_uint_t n_args, mp
 
     // check the peripheral id
     if (args[0].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     // setup and initialize the object

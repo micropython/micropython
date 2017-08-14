@@ -29,11 +29,11 @@
 #include "lib/utils/pyhelp.h"
 
 STATIC void pyhelp_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
-    printf("  ");
+    mp_printf(MP_PYTHON_PRINTER, "  ");
     mp_obj_print(name_o, PRINT_STR);
-    printf(" -- ");
+    mp_printf(MP_PYTHON_PRINTER, " -- ");
     mp_obj_print(value, PRINT_STR);
-    printf("\n");
+    mp_printf(MP_PYTHON_PRINTER, "\n");
 }
 
 // Helper for 1-argument form of builtin help
@@ -57,9 +57,9 @@ STATIC void pyhelp_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
 //
 void pyhelp_print_obj(const mp_obj_t obj) {
     // try to print something sensible about the given object
-    printf("object ");
+    mp_printf(MP_PYTHON_PRINTER, "object ");
     mp_obj_print(obj, PRINT_STR);
-    printf(" is of type %s\n", mp_obj_get_type_str(obj));
+    mp_printf(MP_PYTHON_PRINTER, " is of type %s\n", mp_obj_get_type_str(obj));
 
     mp_map_t *map = NULL;
     if (MP_OBJ_IS_TYPE(obj, &mp_type_module)) {

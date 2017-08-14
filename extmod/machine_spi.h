@@ -47,9 +47,9 @@ typedef struct _mp_machine_soft_spi_obj_t {
 
 void mp_machine_soft_spi_transfer(mp_obj_base_t *self, size_t len, const uint8_t *src, uint8_t *dest);
 
-MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_read_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_readinto_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_write_obj);
-MP_DECLARE_CONST_FUN_OBJ(mp_machine_spi_write_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj);
+MP_DECLARE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MACHINE_SPI_H

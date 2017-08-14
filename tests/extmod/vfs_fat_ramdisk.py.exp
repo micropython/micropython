@@ -1,23 +1,19 @@
 True
 True
+True
 statvfs: (512, 512, 14, 14, 14, 0, 0, 0, 0, 255)
 getcwd: /ramdisk
-hello!
-True
 True
 ['foo_file.txt']
+stat root: (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+stat disk: (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+stat file: (32768, 0, 0, 0, 0, 0, 6, -631238400, -631238400, -631238400)
 True
-[]
-['foo_dir']
 True
-['file-in-dir.txt']
-['foo_dir', 'moved-to-root.txt']
 getcwd: /ramdisk/foo_dir
 []
-['sub_file.txt']
 True
 getcwd: /ramdisk
 True
-['moved-to-root.txt']
 True
-['moved-to-root.txt']
+[b'foo_file.txt', b'foo_dir']

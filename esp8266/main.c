@@ -39,7 +39,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-STATIC char heap[28 * 1024];
+STATIC char heap[36 * 1024];
 
 STATIC void mp_reset(void) {
     mp_stack_set_top((void*)0x40000000);
@@ -141,7 +141,7 @@ mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
-void nlr_jump_fail(void *val) {
+void MP_FASTCODE(nlr_jump_fail)(void *val) {
     printf("NLR jump failed\n");
     for (;;) {
     }

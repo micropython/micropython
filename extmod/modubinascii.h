@@ -33,10 +33,10 @@ extern mp_obj_t mod_binascii_a2b_base64(mp_obj_t data);
 extern mp_obj_t mod_binascii_b2a_base64(mp_obj_t data);
 extern mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args);
 
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_hexlify_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_unhexlify_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_a2b_base64_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_b2a_base64_obj);
-MP_DECLARE_CONST_FUN_OBJ(mod_binascii_crc32_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_hexlify_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj);
 
 #endif /* MICROPY_EXTMOD_MODUBINASCII */

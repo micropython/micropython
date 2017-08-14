@@ -23,6 +23,7 @@
     <ClCompile Include="$(PyBaseDir)extmod\modurandom.c" />
     <ClCompile Include="$(PyBaseDir)extmod\modure.c" />
     <ClCompile Include="$(PyBaseDir)extmod\moduzlib.c" />
+    <ClCompile Include="$(PyBaseDir)extmod\utime_mphal.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(PyBaseDir)py\*.h" />

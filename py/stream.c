@@ -391,7 +391,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
             if (mp_is_nonblocking_error(error)) {
                 if (vstr.len == 1) {
                     // We just incremented it, but otherwise we read nothing
-                    // and immediately got EAGAIN. This is case is not well
+                    // and immediately got EAGAIN. This case is not well
                     // specified in
                     // https://docs.python.org/3/library/io.html#io.IOBase.readline
                     // unlike similar case for read(). But we follow the latter's

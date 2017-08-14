@@ -28,7 +28,7 @@ static struct nano_sem uart_sem;
 static uint8_t uart_ringbuf[UART_BUFSIZE];
 static uint8_t i_get, i_put;
 
-static int console_irq_input_hook(struct device *dev, uint8_t ch)
+static int console_irq_input_hook(uint8_t ch)
 {
     int i_next = (i_put + 1) & (UART_BUFSIZE - 1);
     if (i_next == i_get) {
@@ -58,8 +58,7 @@ uint8_t zephyr_getchar(void) {
 
 void zephyr_getchar_init(void) {
     nano_sem_init(&uart_sem);
-    struct device *uart_console_dev = device_get_binding(CONFIG_UART_CONSOLE_ON_DEV_NAME);
-    uart_irq_input_hook_set(uart_console_dev, console_irq_input_hook);
+    uart_console_in_debug_hook_install(console_irq_input_hook);
     // All NULLs because we're interested only in the callback above
     uart_register_input(NULL, NULL, NULL);
 }

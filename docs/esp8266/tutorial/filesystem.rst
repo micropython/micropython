@@ -64,7 +64,6 @@ device starts up.
 Accessing the filesystem via WebREPL
 ------------------------------------
 
-You can access the filesystem over WebREPL using the provided command-line
-tool.  This tool is found at `<https://github.com/micropython/webrepl>`__
-and is called webrepl_cli.py.  Please refer to that program for information
-on how to use it.
+You can access the filesystem over WebREPL using the web client in a browser
+or via the command-line tool. Please refer to Quick Reference and Tutorial
+sections for more information about WebREPL.

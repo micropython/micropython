@@ -1010,9 +1010,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     // truncate final chunk and link into chain of chunks
     if (parser.cur_chunk != NULL) {
-        (void)m_renew(byte, parser.cur_chunk,
+        (void)m_renew_maybe(byte, parser.cur_chunk,
             sizeof(mp_parse_chunk_t) + parser.cur_chunk->alloc,
-            sizeof(mp_parse_chunk_t) + parser.cur_chunk->union_.used);
+            sizeof(mp_parse_chunk_t) + parser.cur_chunk->union_.used,
+            false);
         parser.cur_chunk->alloc = parser.cur_chunk->union_.used;
         parser.cur_chunk->union_.next = parser.tree.chunk;
         parser.tree.chunk = parser.cur_chunk;

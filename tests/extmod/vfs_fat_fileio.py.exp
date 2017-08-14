@@ -1,0 +1,22 @@
+<io.TextIOWrapper >
+True
+True
+True
+True
+hello!world!
+12
+h
+e
+True
+d
+True
+True
+True
+True
+True
+b'data in file'
+True
+['sub_file.txt', 'file.txt']
+['foo_file.txt', 'foo_dir', 'moved-to-root.txt']
+['moved-to-root.txt']
+ENOSPC: True

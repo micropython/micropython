@@ -33,8 +33,7 @@
 #include "extmod/machine_mem.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
-#include "modpyb.h"
-#include "modpybrtc.h"
+#include "modmachine.h"
 
 #include "xtirq.h"
 #include "os_type.h"

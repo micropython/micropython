@@ -110,14 +110,23 @@ STATIC mp_uint_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t siz
 
 STATIC mp_obj_t file_obj_flush(mp_obj_t self_in) {
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    f_sync(&self->fp);
+    FRESULT res = f_sync(&self->fp);
+    if (res != FR_OK) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_flush_obj, file_obj_flush);
 
 STATIC mp_obj_t file_obj_close(mp_obj_t self_in) {
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    f_close(&self->fp);
+    // if fs==NULL then the file is closed and in that case this method is a no-op
+    if (self->fp.fs != NULL) {
+        FRESULT res = f_close(&self->fp);
+        if (res != FR_OK) {
+            mp_raise_OSError(fresult_to_errno_table[res]);
+        }
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);

@@ -79,9 +79,8 @@ void STM32F7DISC_board_early_init(void);
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_I1) // green
-#define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
-#define MICROPY_HW_LED_ON(pin)      (pin->gpio->BSRR = pin->pin_mask)
-#define MICROPY_HW_LED_OFF(pin)     (pin->gpio->BSRR = (pin->pin_mask << 16))
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // SD card detect switch
 #define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C13)

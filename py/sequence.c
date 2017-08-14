@@ -53,15 +53,35 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
     mp_int_t start, stop;
     mp_obj_slice_get(slice, &ostart, &ostop, &ostep);
 
+    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
+        indexes->step = mp_obj_get_int(ostep);
+        if (indexes->step == 0) {
+            mp_raise_ValueError("slice step cannot be zero");
+        }
+    } else {
+        indexes->step = 1;
+    }
+
     if (ostart == mp_const_none) {
-        start = 0;
+        if (indexes->step > 0) {
+            start = 0;
+        } else {
+            start = len - 1;
+        }
     } else {
         start = mp_obj_get_int(ostart);
     }
     if (ostop == mp_const_none) {
-        stop = len;
+        if (indexes->step > 0) {
+            stop = len;
+        } else {
+            stop = 0;
+        }
     } else {
         stop = mp_obj_get_int(ostop);
+        if (stop >= 0 && indexes->step < 0) {
+            stop += 1;
+        }
     }
 
     // Unlike subscription, out-of-bounds slice indexes are never error
@@ -70,29 +90,31 @@ bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice
         if (start < 0) {
             start = 0;
         }
-    } else if ((mp_uint_t)start > len) {
+    } else if (indexes->step > 0 && (mp_uint_t)start > len) {
         start = len;
+    } else if (indexes->step < 0 && (mp_uint_t)start > len - 1) {
+        start = len - 1;
     }
     if (stop < 0) {
         stop = len + stop;
+        if (indexes->step < 0) {
+            stop += 1;
+        }
     } else if ((mp_uint_t)stop > len) {
         stop = len;
     }
 
     // CPython returns empty sequence in such case, or point for assignment is at start
-    if (start > stop) {
+    if (indexes->step > 0 && start > stop) {
         stop = start;
+    } else if (indexes->step < 0 && start < stop) {
+        stop = start + 1;
     }
 
     indexes->start = start;
     indexes->stop = stop;
 
-    if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-        indexes->step = mp_obj_get_int(ostep);
-        return false;
-    }
-    indexes->step = 1;
-    return true;
+    return indexes->step == 1;
 }
 
 #endif
@@ -106,10 +128,9 @@ mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice
     mp_obj_t res = mp_obj_new_list(0, NULL);
 
     if (step < 0) {
-        stop--;
-        while (start <= stop) {
-            mp_obj_list_append(res, seq[stop]);
-            stop += step;
+        while (start >= stop) {
+            mp_obj_list_append(res, seq[start]);
+            start += step;
         }
     } else {
         while (start < stop) {

@@ -3,29 +3,30 @@
 
 from esp import neopixel_write
 
+
 class NeoPixel:
-    def __init__(self, pin, n):
+    ORDER = (1, 0, 2, 3)
+
+    def __init__(self, pin, n, bpp=3):
         self.pin = pin
         self.n = n
-        self.buf = bytearray(n * 3)
+        self.bpp = bpp
+        self.buf = bytearray(n * bpp)
         self.pin.init(pin.OUT)
 
     def __setitem__(self, index, val):
-        r, g, b = val
-        self.buf[index * 3] = g
-        self.buf[index * 3 + 1] = r
-        self.buf[index * 3 + 2] = b
+        offset = index * self.bpp
+        for i in range(self.bpp):
+            self.buf[offset + self.ORDER[i]] = val[i]
 
     def __getitem__(self, index):
-        i = index * 3
-        return self.buf[i + 1], self.buf[i], self.buf[i + 2]
+        offset = index * self.bpp
+        return tuple(self.buf[offset + self.ORDER[i]]
+                     for i in range(self.bpp))
 
     def fill(self, color):
-        r, g, b = color
-        for i in range(len(self.buf) / 3):
-            self.buf[i * 3] = g
-            self.buf[i * 3 + 1] = r
-            self.buf[i * 3 + 2] = b
+        for i in range(self.n):
+            self[i] = color
 
     def write(self):
         neopixel_write(self.pin, self.buf, True)

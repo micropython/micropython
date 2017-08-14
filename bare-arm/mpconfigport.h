@@ -61,7 +61,6 @@ typedef long mp_off_t;
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
 // extra built in names to add to the global namespace
-extern const struct _mp_obj_fun_builtin_t mp_builtin_open_obj;
 #define MICROPY_PORT_BUILTINS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 

@@ -75,7 +75,7 @@ void ets_event_poll(void);
 // C-level pin HAL
 #include "etshal.h"
 #include "gpio.h"
-#include "esp8266/modpyb.h"
+#include "esp8266/modmachine.h"
 #define mp_hal_pin_obj_t uint32_t
 #define mp_hal_get_pin_obj(o) mp_obj_get_pin(o)
 void mp_hal_pin_input(mp_hal_pin_obj_t pin);

@@ -50,11 +50,66 @@
 /******************************************************************************/
 /* builtin functions                                                          */
 
-// mp_obj_fun_builtin_t defined in obj.h
+STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void)args;
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_0));
+    mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    return self->fun._0();
+}
 
-STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin));
-    mp_obj_fun_builtin_t *self = MP_OBJ_TO_PTR(self_in);
+const mp_obj_type_t mp_type_fun_builtin_0 = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_builtin_0_call,
+    .unary_op = mp_generic_unary_op,
+};
+
+STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_1));
+    mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    return self->fun._1(args[0]);
+}
+
+const mp_obj_type_t mp_type_fun_builtin_1 = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_builtin_1_call,
+    .unary_op = mp_generic_unary_op,
+};
+
+STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_2));
+    mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    return self->fun._2(args[0], args[1]);
+}
+
+const mp_obj_type_t mp_type_fun_builtin_2 = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_builtin_2_call,
+    .unary_op = mp_generic_unary_op,
+};
+
+STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_3));
+    mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_arg_check_num(n_args, n_kw, 3, 3, false);
+    return self->fun._3(args[0], args[1], args[2]);
+}
+
+const mp_obj_type_t mp_type_fun_builtin_3 = {
+    { &mp_type_type },
+    .name = MP_QSTR_function,
+    .call = fun_builtin_3_call,
+    .unary_op = mp_generic_unary_op,
+};
+
+STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_var));
+    mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
@@ -68,25 +123,6 @@ STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 
         return self->fun.kw(n_args, args, &kw_args);
 
-    } else if (self->n_args_min <= 3 && self->n_args_min == self->n_args_max) {
-        // function requires a fixed number of arguments
-
-        // dispatch function call
-        switch (self->n_args_min) {
-            case 0:
-                return self->fun._0();
-
-            case 1:
-                return self->fun._1(args[0]);
-
-            case 2:
-                return self->fun._2(args[0], args[1]);
-
-            case 3:
-            default:
-                return self->fun._3(args[0], args[1], args[2]);
-        }
-
     } else {
         // function takes a variable number of arguments, but no keywords
 
@@ -94,10 +130,10 @@ STATIC mp_obj_t fun_builtin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     }
 }
 
-const mp_obj_type_t mp_type_fun_builtin = {
+const mp_obj_type_t mp_type_fun_builtin_var = {
     { &mp_type_type },
     .name = MP_QSTR_function,
-    .call = fun_builtin_call,
+    .call = fun_builtin_var_call,
     .unary_op = mp_generic_unary_op,
 };
 

@@ -130,7 +130,7 @@ STATIC mp_obj_t machine_main(mp_obj_t main) {
     if (MP_OBJ_IS_STR(main)) {
         MP_STATE_PORT(machine_config_main) = main;
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_ValueError(mpexception_value_invalid_arguments);
     }
     return mp_const_none;
 }

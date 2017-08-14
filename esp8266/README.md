@@ -70,13 +70,14 @@ $ make deploy
 ```
 This will use the `esptool.py` script to download the images.  You must have
 your ESP module in the bootloader mode, and connected to a serial port on your PC.
-The default serial port is `/dev/ttyACM0`, flash mode is `qio` and flash size is `8m`.
-To specify other values, use, eg:
+The default serial port is `/dev/ttyACM0`, flash mode is `qio` and flash size is
+`detect` (auto-detect based on Flash ID). To specify other values, use, eg (note
+that flash size is in megabits):
 ```bash
-$ make PORT=/dev/ttyUSB0 FLASH_MODE=qio FLASH_SIZE=8m deploy
+$ make PORT=/dev/ttyUSB0 FLASH_MODE=qio FLASH_SIZE=32m deploy
 ```
 
-The image produced is `firmware-combined.bin`, to be flashed at 0x00000.
+The image produced is `build/firmware-combined.bin`, to be flashed at 0x00000.
 
 First start
 -----------

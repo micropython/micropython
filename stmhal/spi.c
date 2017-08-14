@@ -332,7 +332,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     }
 
     for (uint i = (enable_nss_pin && pins[0] ? 0 : 1); i < 4; i++) {
-        mp_hal_gpio_set_af(pins[i], &GPIO_InitStructure, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
+        mp_hal_pin_set_af(pins[i], &GPIO_InitStructure, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
     }
 
     // init the SPI device

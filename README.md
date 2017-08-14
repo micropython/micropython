@@ -26,15 +26,15 @@ time, and struct, etc. Select ports have support for _thread module
 (multithreading). Note that only subset of Python 3.4 functionality
 implemented for the data types and modules.
 
-See the repository www.github.com/micropython/pyboard for the Micro
-Python board, the officially supported reference electronic circuit board.
+See the repository www.github.com/micropython/pyboard for the MicroPython
+board (PyBoard), the officially supported reference electronic circuit board.
 
 Major components in this repository:
 - py/ -- the core Python implementation, including compiler, runtime, and
   core library.
 - unix/ -- a version of MicroPython that runs on Unix.
-- stmhal/ -- a version of MicroPython that runs on the MicroPython board
-  with an STM32F405RG (using ST's Cube HAL drivers).
+- stmhal/ -- a version of MicroPython that runs on the PyBoard and similar
+  STM32 boards (using ST's Cube HAL drivers).
 - minimal/ -- a minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.

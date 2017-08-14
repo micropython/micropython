@@ -49,6 +49,6 @@ void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;
 
-MP_DECLARE_CONST_FUN_OBJ(pyb_set_repl_info_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
 
 #endif // __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__

@@ -2,27 +2,16 @@
 # MIT license; Copyright (c) 2016 Robert Foss, Daniel Busch
 
 from esp import apa102_write
+from neopixel import NeoPixel
 
-class APA102:
-    def __init__(self, clock_pin, data_pin, n):
+
+class APA102(NeoPixel):
+    ORDER = (0, 1, 2, 3)
+
+    def __init__(self, clock_pin, data_pin, n, bpp=4):
+        super().__init__(data_pin, n, bpp)
         self.clock_pin = clock_pin
-        self.data_pin = data_pin
-        self.n = n
-        self.buf = bytearray(n * 4)
-
         self.clock_pin.init(clock_pin.OUT)
-        self.data_pin.init(data_pin.OUT)
-
-    def __setitem__(self, index, val):
-        r, g, b, brightness = val
-        self.buf[index * 4] = r
-        self.buf[index * 4 + 1] = g
-        self.buf[index * 4 + 2] = b
-        self.buf[index * 4 + 3] = brightness
-
-    def __getitem__(self, index):
-        i = index * 4
-        return self.buf[i], self.buf[i + 1], self.buf[i + 2], self.buf[i + 3]
 
     def write(self):
-        apa102_write(self.clock_pin, self.data_pin, self.buf)
+        apa102_write(self.clock_pin, self.pin, self.buf)

@@ -21,6 +21,7 @@ Example usage on ESP8266:
 
 """
 
+from micropython import const
 import time
 
 

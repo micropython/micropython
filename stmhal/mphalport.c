@@ -7,6 +7,8 @@
 #include "usb.h"
 #include "uart.h"
 
+bool mp_hal_ticks_cpu_enabled = false;
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
@@ -71,6 +73,15 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
 }
 
+void mp_hal_ticks_cpu_enable(void) {
+    if (!mp_hal_ticks_cpu_enabled) {
+        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+        DWT->CYCCNT = 0;
+        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        mp_hal_ticks_cpu_enabled = true;
+    }
+}
+
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     if (0) {
     #ifdef __GPIOA_CLK_ENABLE
@@ -120,7 +131,9 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     }
 }
 
-void mp_hal_gpio_config(GPIO_TypeDef *gpio, uint32_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
+void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
+    GPIO_TypeDef *gpio = pin_obj->gpio;
+    uint32_t pin = pin_obj->pin;
     mp_hal_gpio_clock_enable(gpio);
     gpio->MODER = (gpio->MODER & ~(3 << (2 * pin))) | ((mode & 3) << (2 * pin));
     gpio->OTYPER = (gpio->OTYPER & ~(1 << pin)) | ((mode >> 2) << pin);
@@ -129,7 +142,7 @@ void mp_hal_gpio_config(GPIO_TypeDef *gpio, uint32_t pin, uint32_t mode, uint32_
     gpio->AFR[pin >> 3] = (gpio->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
 }
 
-bool mp_hal_gpio_set_af(const pin_obj_t *pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit) {
+bool mp_hal_pin_set_af(mp_hal_pin_obj_t pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit) {
     mp_hal_gpio_clock_enable(pin->gpio);
 
     const pin_af_obj_t *af = pin_find_af(pin, fn, unit);

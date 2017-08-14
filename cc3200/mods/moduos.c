@@ -158,7 +158,7 @@ STATIC void mount (mp_obj_t device, const char *path, uint pathlen, bool readonl
 #endif
     // cannot mount twice or on existing paths
     if (f_stat(path, &fno) == FR_OK || osmount_find_by_device(device)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
 
     // create a new object
@@ -196,7 +196,7 @@ STATIC void mount (mp_obj_t device, const char *path, uint pathlen, bool readonl
     if (f_mount(&self->fatfs, self->path, 1) != FR_OK) {
         // remove it and raise
         mp_obj_list_remove(&MP_STATE_PORT(mount_obj_list), self);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
 
     // mount succeeded, increment the count
@@ -252,7 +252,7 @@ STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
     }
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
 
     return mp_const_none;
@@ -263,7 +263,7 @@ STATIC mp_obj_t os_getcwd(void) {
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
     FRESULT res = f_getcwd(buf, sizeof buf);
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
     return mp_obj_new_str(buf, strlen(buf), false);
 }
@@ -303,7 +303,7 @@ STATIC mp_obj_t os_listdir(mp_uint_t n_args, const mp_obj_t *args) {
 
         res = f_opendir(&dir, path);                       /* Open the directory */
         if (res != FR_OK) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
         }
 
         for ( ; ; ) {
@@ -335,10 +335,10 @@ STATIC mp_obj_t os_mkdir(mp_obj_t path_o) {
         case FR_OK:
             return mp_const_none;
         case FR_EXIST:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
@@ -351,7 +351,7 @@ STATIC mp_obj_t os_rename(mp_obj_t path_in, mp_obj_t path_out) {
         case FR_OK:
             return mp_const_none;
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
@@ -363,7 +363,7 @@ STATIC mp_obj_t os_remove(mp_obj_t path_o) {
         case FR_OK:
             return mp_const_none;
         default:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+            mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
@@ -394,7 +394,7 @@ STATIC mp_obj_t os_stat(mp_obj_t path_in) {
         fno.ftime = 0;
         fno.fattrib = AM_DIR;
     } else if ((res = f_stat(path, &fno)) != FR_OK) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(fresult_to_errno_table[res])));
+        mp_raise_OSError(fresult_to_errno_table[res]);
     }
 
     mp_obj_tuple_t *t = mp_obj_new_tuple(10, NULL);
@@ -481,7 +481,7 @@ STATIC mp_obj_t os_mount(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     return mp_const_none;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_value_invalid_arguments));
+    mp_raise_msg(&mp_type_OSError, mpexception_value_invalid_arguments);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(os_mount_obj, 2, os_mount);
 
@@ -490,7 +490,7 @@ STATIC mp_obj_t os_unmount(mp_obj_t path_o) {
 
     // '/flash' cannot be unmounted, also not the current working directory
     if (path_equal(path, "/flash")) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
 
     // now unmount it
@@ -498,7 +498,7 @@ STATIC mp_obj_t os_unmount(mp_obj_t path_o) {
     if ((mount_obj = osmount_find_by_path(path))) {
         unmount (mount_obj);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+        mp_raise_msg(&mp_type_ValueError, mpexception_value_invalid_arguments);
     }
 
     return mp_const_none;
@@ -515,7 +515,7 @@ STATIC mp_obj_t os_mkfs(mp_obj_t device) {
         path = mp_obj_str_get_str(device);
         // otherwise the relative path check will pass...
         if (path[0] != '/') {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_value_invalid_arguments));
+            mp_raise_msg(&mp_type_OSError, mpexception_value_invalid_arguments);
         }
     } else {
         // mount it briefly
@@ -541,7 +541,7 @@ STATIC mp_obj_t os_mkfs(mp_obj_t device) {
     }
 
     if (res != FR_OK) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_operation_failed));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_operation_failed);
     }
     return mp_const_none;
 }

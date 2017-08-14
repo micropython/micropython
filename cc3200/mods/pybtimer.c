@@ -223,7 +223,7 @@ STATIC uint32_t compute_prescaler_period_and_match_value(pyb_timer_channel_obj_t
     return prescaler;
 
 error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 STATIC void timer_init (pyb_timer_obj_t *tim) {
@@ -319,7 +319,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, mp_uint_t n_args, co
     return mp_const_none;
 
 error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 
 STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
@@ -329,7 +329,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, mp_uint_t n_args, 
     // create a new Timer object
     int32_t timer_idx = mp_obj_get_int(args[0]);
     if (timer_idx < 0 || timer_idx > (PYBTIMER_NUM_TIMERS - 1)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_resource_not_avaliable);
     }
 
     pyb_timer_obj_t *tim = &pyb_timer_obj[timer_idx];
@@ -370,7 +370,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
 
     // verify that the timer has been already initialized
     if (!tim->config) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, mpexception_os_request_not_possible));
+        mp_raise_msg(&mp_type_OSError, mpexception_os_request_not_possible);
     }
     if (channel_n != TIMER_A && channel_n != TIMER_B && channel_n != (TIMER_A | TIMER_B)) {
         // invalid channel
@@ -440,7 +440,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     return ch;
 
 error:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 2, pyb_timer_channel);
 
@@ -560,7 +560,7 @@ STATIC mp_obj_t pyb_timer_channel_freq(mp_uint_t n_args, const mp_obj_t *args) {
         // set
         int32_t _frequency = mp_obj_get_int(args[1]);
         if (_frequency <= 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
         ch->frequency = _frequency;
         ch->period = 1000000 / _frequency;
@@ -579,7 +579,7 @@ STATIC mp_obj_t pyb_timer_channel_period(mp_uint_t n_args, const mp_obj_t *args)
         // set
         int32_t _period = mp_obj_get_int(args[1]);
         if (_period <= 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+            mp_raise_ValueError(mpexception_value_invalid_arguments);
         }
         ch->period = _period;
         ch->frequency = 1000000 / _period;
@@ -712,7 +712,7 @@ STATIC mp_obj_t pyb_timer_channel_irq (mp_uint_t n_args, const mp_obj_t *pos_arg
     return _irq;
 
 invalid_args:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, mpexception_value_invalid_arguments));
+    mp_raise_ValueError(mpexception_value_invalid_arguments);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_irq_obj, 1, pyb_timer_channel_irq);
 

@@ -24,7 +24,9 @@ extern void ets_wdt_disable(void);
 extern void wdt_feed(void);
 
 // Opaque structure
-typedef char MD5_CTX[64];
+#ifndef MD5_CTX
+typedef char MD5_CTX[88];
+#endif
 
 void MD5Init(MD5_CTX *context);
 void MD5Update(MD5_CTX *context, const void *data, unsigned int len);
@@ -32,6 +34,12 @@ void MD5Final(unsigned char digest[16], MD5_CTX *context);
 
 // These prototypes are for recent SDKs with "malloc tracking"
 void *pvPortMalloc(unsigned sz, const char *fname, int line);
+void *pvPortZalloc(unsigned sz, const char *fname, int line);
+void *pvPortRealloc(void *p, unsigned sz, const char *fname, int line);
 void vPortFree(void *p, const char *fname, int line);
+
+uint32_t SPIRead(uint32_t offset, void *buf, uint32_t len);
+uint32_t SPIWrite(uint32_t offset, const void *buf, uint32_t len);
+uint32_t SPIEraseSector(int sector);
 
 #endif // _INCLUDED_ETSHAL_H_

@@ -3,6 +3,9 @@ dist: trusty
 language: c
 compiler:
   - gcc
+cache:
+  directories:
+    - "${HOME}/persist"
 
 before_script:
 # Extra CPython versions
@@ -24,7 +27,12 @@ before_script:
 
 script:
   - make -C mpy-cross
-  - make -C minimal test
+  - make -C minimal CROSS=1 build/firmware.bin
+  - ls -l minimal/build/firmware.bin
+  - tools/check_code_size.sh
+  - mkdir -p ${HOME}/persist
+  # Save new firmware for reference, but only if building a main branch, not a pull request
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp minimal/build/firmware.bin ${HOME}/persist/; fi'
   - make -C unix deplibs
   - make -C unix
   - make -C unix nanbox
