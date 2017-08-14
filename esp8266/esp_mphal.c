@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include "ets_sys.h"
 #include "etshal.h"
-#include "uart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
@@ -45,7 +44,7 @@ const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 void mp_hal_init(void) {
     //ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
-    uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
+    machine_uart_init();
 }
 
 void mp_hal_delay_us(uint32_t us) {

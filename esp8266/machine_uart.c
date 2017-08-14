@@ -64,7 +64,9 @@ STATIC const char *_parity_name[] = {"None", "1", "0"};
 /******************************************************************************/
 // MicroPython bindings for UART
 
-void uart_init0 (void) {
+void machine_uart_init (void) {
+    uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
+
     // save references of the UART objects, to prevent the read buffers from being trashed by the gc
     MP_STATE_PORT(pyb_uart_objs)[0] = &pyb_uart_objs[0];
     MP_STATE_PORT(pyb_uart_objs)[1] = &pyb_uart_objs[1];
