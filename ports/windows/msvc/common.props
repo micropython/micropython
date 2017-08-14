@@ -28,7 +28,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <PyOutputFiles Include="$(TargetPath)">
-      <Destination>$(PyWinDir)%(FileName)%(Extension)</Destination>
+      <Destination>$(PyTargetDir)%(FileName)%(Extension)</Destination>
     </PyOutputFiles>
     <PyCookieFiles Include="$(PyBuildDir)copycookie*" Exclude="$(PyFileCopyCookie)"/>
   </ItemGroup>
