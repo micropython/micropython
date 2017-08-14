@@ -1,7 +1,12 @@
 # tests for things that are not implemented, or have non-compliant behaviour
 
-import array
-import ustruct
+try:
+    import array
+    import ustruct
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 # when super can't find self
 try:
@@ -124,3 +129,11 @@ try:
     bytearray(4)[0:1] = [1, 2]
 except NotImplementedError:
     print('NotImplementedError')
+
+# can't assign attributes to a function
+def f():
+    pass
+try:
+    f.x = 1
+except AttributeError:
+    print('AttributeError')

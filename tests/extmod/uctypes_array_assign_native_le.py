@@ -1,5 +1,9 @@
 import sys
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    print("SKIP")
+    sys.exit()
 
 if sys.byteorder != "little":
     print("SKIP")
@@ -65,16 +69,6 @@ assert hex(S.arr9[0]) == "0x1122"
 S.arr10[0] = 0x11223344
 print(hex(S.arr10[0]))
 assert hex(S.arr10[0]) == "0x11223344"
-
-# assign int64
-S.arr11[0] = 0x11223344
-print(hex(S.arr11[0]))
-assert hex(S.arr11[0]) == "0x11223344"
-
-# assign uint64
-S.arr12[0] = 0x11223344
-print(hex(S.arr12[0]))
-assert hex(S.arr12[0]) == "0x11223344"
 
 # index out of range
 try:

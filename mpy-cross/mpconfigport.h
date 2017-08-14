@@ -44,6 +44,7 @@
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_RETURN_IF_EXPR (1)
 
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 
@@ -99,8 +100,6 @@ typedef unsigned __int64 mp_uint_t;
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
-
-#define BYTES_PER_WORD sizeof(mp_int_t)
 
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)

@@ -52,13 +52,15 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_ALLOW_DEBUGGING (2)
 #define EXEC_FLAG_IS_REPL (4)
 #define EXEC_FLAG_SOURCE_IS_RAW_CODE (8)
+#define EXEC_FLAG_SOURCE_IS_VSTR (16)
+#define EXEC_FLAG_SOURCE_IS_FILENAME (32)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
 // EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
-STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
+STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
     int ret = 0;
     uint32_t start = 0;
 
@@ -75,11 +77,23 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
         } else
         #endif
         {
+            #if MICROPY_ENABLE_COMPILER
+            mp_lexer_t *lex;
+            if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
+                const vstr_t *vstr = source;
+                lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
+            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
+                lex = mp_lexer_new_from_file(source);
+            } else {
+                lex = (mp_lexer_t*)source;
+            }
             // source is a lexer, parse and compile the script
-            mp_lexer_t *lex = source;
             qstr source_name = lex->source_name;
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
             module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
+            #else
+            mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
+            #endif
         }
 
         // execute code
@@ -137,6 +151,7 @@ STATIC int parse_compile_execute(void *source, mp_parse_input_kind_t input_kind,
     return ret;
 }
 
+#if MICROPY_ENABLE_COMPILER
 #if MICROPY_REPL_EVENT_DRIVEN
 
 typedef struct _repl_t {
@@ -156,7 +171,8 @@ STATIC int pyexec_friendly_repl_process_char(int c);
 void pyexec_event_repl_init(void) {
     MP_STATE_VM(repl_line) = vstr_new(32);
     repl.cont_line = false;
-    readline_init(MP_STATE_VM(repl_line), ">>> ");
+    // no prompt before printing friendly REPL banner or entering raw REPL
+    readline_init(MP_STATE_VM(repl_line), "");
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
         pyexec_raw_repl_process_char(CHAR_CTRL_A);
     } else {
@@ -172,6 +188,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
     } else if (c == CHAR_CTRL_B) {
         // change to friendly REPL
         pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
+        vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
         pyexec_friendly_repl_process_char(CHAR_CTRL_B);
         return 0;
@@ -197,14 +214,9 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         return PYEXEC_FORCED_EXIT;
     }
 
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, MP_STATE_VM(repl_line)->buf, MP_STATE_VM(repl_line)->len, 0);
-    if (lex == NULL) {
-        mp_hal_stdout_tx_str("\x04MemoryError\r\n\x04");
-    } else {
-        int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF);
-        if (ret & PYEXEC_FORCED_EXIT) {
-            return ret;
-        }
+    int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+    if (ret & PYEXEC_FORCED_EXIT) {
+        return ret;
     }
 
 reset:
@@ -229,7 +241,9 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
             mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+            #if MICROPY_PY_BUILTINS_HELP
             mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+            #endif
             goto input_restart;
         } else if (ret == CHAR_CTRL_C) {
             // break
@@ -278,14 +292,9 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         }
 
 exec: ;
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(MP_STATE_VM(repl_line)), vstr_len(MP_STATE_VM(repl_line)), 0);
-        if (lex == NULL) {
-            printf("MemoryError\n");
-        } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                return ret;
-            }
+        int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        if (ret & PYEXEC_FORCED_EXIT) {
+            return ret;
         }
 
 input_restart:
@@ -354,14 +363,9 @@ raw_repl_reset:
             return PYEXEC_FORCED_EXIT;
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line.buf, line.len, 0);
-        if (lex == NULL) {
-            printf("\x04MemoryError\n\x04");
-        } else {
-            int ret = parse_compile_execute(lex, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                return ret;
-            }
+        int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+        if (ret & PYEXEC_FORCED_EXIT) {
+            return ret;
         }
     }
 }
@@ -378,7 +382,9 @@ int pyexec_friendly_repl(void) {
 
 friendly_repl_reset:
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    #if MICROPY_PY_BUILTINS_HELP
     mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+    #endif
 
     // to test ctrl-C
     /*
@@ -480,29 +486,18 @@ friendly_repl_reset:
             }
         }
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr_str(&line), vstr_len(&line), 0);
-        if (lex == NULL) {
-            printf("MemoryError\n");
-        } else {
-            ret = parse_compile_execute(lex, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL);
-            if (ret & PYEXEC_FORCED_EXIT) {
-                return ret;
-            }
+        ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        if (ret & PYEXEC_FORCED_EXIT) {
+            return ret;
         }
     }
 }
 
 #endif // MICROPY_REPL_EVENT_DRIVEN
+#endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
-    mp_lexer_t *lex = mp_lexer_new_from_file(filename);
-
-    if (lex == NULL) {
-        printf("could not open file '%s' for reading\n", filename);
-        return false;
-    }
-
-    return parse_compile_execute(lex, MP_PARSE_FILE_INPUT, 0);
+    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
 }
 
 #if MICROPY_MODULE_FROZEN

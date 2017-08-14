@@ -55,7 +55,7 @@
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
-#define MICROPY_READER_FATFS                        (1)
+#define MICROPY_READER_VFS                          (1)
 #ifndef DEBUG // we need ram on the launchxl while debugging
 #define MICROPY_CPYTHON_COMPAT                      (1)
 #else
@@ -68,18 +68,20 @@
 #define MICROPY_FATFS_MAX_LFN                       (MICROPY_ALLOC_PATH_MAX)
 #define MICROPY_FATFS_LFN_CODE_PAGE                 (437) // 1=SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_FATFS_RPATH                         (2)
-#define MICROPY_FATFS_VOLUMES                       (2)
 #define MICROPY_FATFS_REENTRANT                     (1)
 #define MICROPY_FATFS_TIMEOUT                       (2500)
 #define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
-#define MICROPY_FSUSERMOUNT_ADHOC                   (1)
 
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
 #define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
+#define MICROPY_USE_INTERNAL_ERRNO                  (1)
+#define MICROPY_VFS                                 (1)
+#define MICROPY_VFS_FAT                             (1)
 #define MICROPY_PY_ASYNC_AWAIT (0)
-#define MICROPY_PY_BUILTINS_TIMEOUTERROR            (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS              (1)
+#define MICROPY_PY_BUILTINS_HELP                    (1)
+#define MICROPY_PY_BUILTINS_HELP_TEXT               cc3200_help_text
 #ifndef DEBUG
 #define MICROPY_PY_BUILTINS_STR_UNICODE             (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES          (1)
@@ -104,6 +106,8 @@
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
+#define MICROPY_PY_UERRNO                           (1)
+#define MICROPY_PY_UERRNO_ERRORCODE                 (0)
 #define MICROPY_PY_THREAD                           (1)
 #define MICROPY_PY_THREAD_GIL                       (1)
 #define MICROPY_PY_UBINASCII                        (0)
@@ -114,13 +118,30 @@
 #define MICROPY_PY_UHEAPQ                           (0)
 #define MICROPY_PY_UHASHLIB                         (0)
 #define MICROPY_PY_USELECT                          (1)
+#define MICROPY_PY_UTIME_MP_HAL                     (1)
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
 
+// We define our own list of errno constants to include in uerrno module
+#define MICROPY_PY_UERRNO_LIST \
+    X(EPERM) \
+    X(EIO) \
+    X(ENODEV) \
+    X(EINVAL) \
+    X(ETIMEDOUT) \
+
+// TODO these should be generic, not bound to fatfs
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
+
+// use vfs's functions for import stat and builtin open
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
+
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_help),  (mp_obj_t)&mp_builtin_help_obj },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj },  \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open),  (mp_obj_t)&mp_builtin_open_obj },   \
 
@@ -149,6 +170,7 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     { MP_OBJ_NEW_QSTR(MP_QSTR_ussl),        (mp_obj_t)&mp_module_ussl },      \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_errno),       (mp_obj_t)&mp_module_uerrno },    \
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct),      (mp_obj_t)&mp_module_ustruct },   \
     { MP_OBJ_NEW_QSTR(MP_QSTR_re),          (mp_obj_t)&mp_module_ure },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json),        (mp_obj_t)&mp_module_ujson },     \
@@ -173,13 +195,11 @@ extern const struct _mp_obj_module_t mp_module_ussl;
     mp_obj_list_t pyb_sleep_obj_list;                                     \
     mp_obj_list_t mp_irq_obj_list;                                        \
     mp_obj_list_t pyb_timer_channel_obj_list;                             \
-    mp_obj_list_t mount_obj_list;                                         \
     struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
     struct _os_term_dup_obj_t *os_term_dup_obj;                           \
 
 
 // type definitions for the specific machine
-#define BYTES_PER_WORD                              (4)
 #define MICROPY_MAKE_POINTER_CALLABLE(p)            ((void*)((mp_uint_t)(p) | 1))
 #define MP_SSIZE_MAX                                (0x7FFFFFFF)
 

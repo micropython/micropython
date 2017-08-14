@@ -67,9 +67,9 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     o->base.type = &mp_type_gen_instance;
 
     o->globals = self_fun->globals;
-    o->code_state.n_state = n_state;
-    o->code_state.ip = (byte*)(ip - self_fun->bytecode); // offset to prelude
-    mp_setup_code_state(&o->code_state, self_fun, n_args, n_kw, args);
+    o->code_state.fun_bc = self_fun;
+    o->code_state.ip = 0;
+    mp_setup_code_state(&o->code_state, n_args, n_kw, args);
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -92,7 +92,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<generator object '%q' at %p>", mp_obj_code_get_name(self->code_state.code_info), self);
+    mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
@@ -105,7 +105,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     }
     if (self->code_state.sp == self->code_state.state - 1) {
         if (send_value != mp_const_none) {
-            mp_raise_msg(&mp_type_TypeError, "can't send non-None value to a just-started generator");
+            mp_raise_TypeError("can't send non-None value to a just-started generator");
         }
     } else {
         *self->code_state.sp = send_value;
@@ -134,10 +134,12 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             }
             break;
 
-        case MP_VM_RETURN_EXCEPTION:
+        case MP_VM_RETURN_EXCEPTION: {
+            size_t n_state = mp_decode_uint_value(self->code_state.fun_bc->bytecode);
             self->code_state.ip = 0;
-            *ret_val = self->code_state.state[self->code_state.n_state - 1];
+            *ret_val = self->code_state.state[n_state - 1];
             break;
+        }
     }
 
     return ret_kind;
@@ -156,9 +158,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
             }
 
         case MP_VM_RETURN_YIELD:
-            if (throw_value != MP_OBJ_NULL && mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type(throw_value)), MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
-                mp_raise_msg(&mp_type_RuntimeError, "generator ignored GeneratorExit");
-            }
             return ret;
 
         case MP_VM_RETURN_EXCEPTION:
@@ -193,7 +192,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
-    exc = mp_make_raise_obj(exc);
 
     mp_obj_t ret = gen_resume_and_raise(args[0], mp_const_none, exc);
     if (ret == MP_OBJ_STOP_ITERATION) {
@@ -240,7 +238,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,
 };

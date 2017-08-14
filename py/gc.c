@@ -258,18 +258,20 @@ STATIC void gc_sweep(void) {
             case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
                 if (FTB_GET(block)) {
-                    #if MICROPY_PY_THREAD
-                    // TODO need to think about reentrancy with finaliser code
-                    assert(!"finaliser with threading not implemented");
-                    #endif
                     mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
                     if (obj->type != NULL) {
                         // if the object has a type then see if it has a __del__ method
                         mp_obj_t dest[2];
                         mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
                         if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method
-                            mp_call_method_n_kw(0, 0, dest);
+                            // load_method returned a method, execute it in a protected environment
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_lock();
+                            #endif
+                            mp_call_function_1_protected(dest[0], dest[1]);
+                            #if MICROPY_ENABLE_SCHEDULER
+                            mp_sched_unlock();
+                            #endif
                         }
                     }
                     // clear finaliser flag

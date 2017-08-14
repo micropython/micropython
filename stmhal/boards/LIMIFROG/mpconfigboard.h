@@ -37,13 +37,6 @@ void LIMIFROG_board_early_init(void);
 #define MICROPY_HW_I2C1_SDA (pin_B9)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
-// We use an array of baudrates and corresponding TIMINGR values.
-//
-// The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
-// defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x90112626}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
 
 // SPI busses
 #define MICROPY_HW_SPI1_NSS     (pin_A4)

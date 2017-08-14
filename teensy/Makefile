@@ -32,11 +32,10 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat
 INC += -I.
 INC += -I..
 INC += -I../stmhal
-INC += -I../lib/mp-readline
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
+CFLAGS = $(INC) -Wall -Wpointer-arith -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
@@ -109,7 +108,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\

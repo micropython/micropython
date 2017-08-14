@@ -82,10 +82,10 @@ NORETURN void nlr_jump(void *val);
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
 // should bail out with a fatal error.
-void nlr_jump_fail(void *val);
+NORETURN void nlr_jump_fail(void *val);
 
 // use nlr_raise instead of nlr_jump so that debugging is easier
-#ifndef DEBUG
+#ifndef MICROPY_DEBUG_NLR
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
 #include "mpstate.h"

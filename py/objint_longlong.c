@@ -40,18 +40,24 @@
 
 #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
 
-// Python3 no longer has "l" suffix for long ints. We allow to use it
-// for debugging purpose though.
-#ifdef DEBUG
-#define SUFFIX "l"
-#else
-#define SUFFIX ""
-#endif
-
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
 const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
+
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+    int delta = 1;
+    if (!big_endian) {
+        buf += len - 1;
+        delta = -1;
+    }
+
+    mp_longint_impl_t value = 0;
+    for (; len--; buf += delta) {
+        value = (value << 8) | *buf;
+    }
+    return mp_obj_new_int_from_ll(value);
+}
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
@@ -249,27 +255,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     return o;
 }
 
-#if MICROPY_PY_BUILTINS_FLOAT
-mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
-    int cl = fpclassify(val);
-    if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "can't convert inf to int"));
-    } else if (cl == FP_NAN) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "can't convert NaN to int"));
-    } else {
-        mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
-        if (icl == MP_FP_CLASS_FIT_SMALLINT) {
-            return MP_OBJ_NEW_SMALL_INT((mp_int_t)val);
-        } else if (icl == MP_FP_CLASS_FIT_LONGINT) {
-            return mp_obj_new_int_from_ll((long long)val);
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "float too big"));
-        }
-    }
-}
-#endif
-
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base) {
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);

@@ -353,11 +353,11 @@ typedef struct _mp_rom_map_elem_t {
 // would also need a trucated dict structure
 
 typedef struct _mp_map_t {
-    mp_uint_t all_keys_are_qstrs : 1;
-    mp_uint_t is_fixed : 1;     // a fixed array that can't be modified; must also be ordered
-    mp_uint_t is_ordered : 1;   // an ordered array
-    mp_uint_t used : (8 * sizeof(mp_uint_t) - 3);
-    mp_uint_t alloc;
+    size_t all_keys_are_qstrs : 1;
+    size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
+    size_t is_ordered : 1;  // an ordered array
+    size_t used : (8 * sizeof(size_t) - 3);
+    size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
 
@@ -371,11 +371,11 @@ typedef enum _mp_map_lookup_kind_t {
 
 extern const mp_map_t mp_const_empty_map;
 
-static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, mp_uint_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
+static inline bool MP_MAP_SLOT_IS_FILLED(const mp_map_t *map, size_t pos) { return ((map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL); }
 
-void mp_map_init(mp_map_t *map, mp_uint_t n);
-void mp_map_init_fixed_table(mp_map_t *map, mp_uint_t n, const mp_obj_t *table);
-mp_map_t *mp_map_new(mp_uint_t n);
+void mp_map_init(mp_map_t *map, size_t n);
+void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
+mp_map_t *mp_map_new(size_t n);
 void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
@@ -385,14 +385,14 @@ void mp_map_dump(mp_map_t *map);
 // Underlying set implementation (not set object)
 
 typedef struct _mp_set_t {
-    mp_uint_t alloc;
-    mp_uint_t used;
+    size_t alloc;
+    size_t used;
     mp_obj_t *table;
 } mp_set_t;
 
-static inline bool MP_SET_SLOT_IS_FILLED(const mp_set_t *set, mp_uint_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
+static inline bool MP_SET_SLOT_IS_FILLED(const mp_set_t *set, size_t pos) { return ((set)->table[pos] != MP_OBJ_NULL && (set)->table[pos] != MP_OBJ_SENTINEL); }
 
-void mp_set_init(mp_set_t *set, mp_uint_t n);
+void mp_set_init(mp_set_t *set, size_t n);
 mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 mp_obj_t mp_set_remove_first(mp_set_t *set);
 void mp_set_clear(mp_set_t *set);
@@ -417,6 +417,15 @@ typedef enum {
     PRINT_EXC_SUBCLASS = 0x80, // Internal flag for printing exception subclasses
 } mp_print_kind_t;
 
+typedef struct _mp_obj_iter_buf_t {
+    mp_obj_base_t base;
+    mp_obj_t buf[3];
+} mp_obj_iter_buf_t;
+
+// The number of slots that an mp_obj_iter_buf_t needs on the Python value stack.
+// It's rounded up in case mp_obj_base_t is smaller than mp_obj_t (eg for OBJ_REPR_D).
+#define MP_OBJ_ITER_BUF_NSLOTS ((sizeof(mp_obj_iter_buf_t) + sizeof(mp_obj_t) - 1) / sizeof(mp_obj_t))
+
 typedef void (*mp_print_fun_t)(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
 typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -424,6 +433,7 @@ typedef mp_obj_t (*mp_unary_op_fun_t)(mp_uint_t op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(mp_uint_t op, mp_obj_t, mp_obj_t);
 typedef void (*mp_attr_fun_t)(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 typedef mp_obj_t (*mp_subscr_fun_t)(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
+typedef mp_obj_t (*mp_getiter_fun_t)(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 
 // Buffer protocol
 typedef struct _mp_buffer_info_t {
@@ -460,16 +470,27 @@ typedef struct _mp_stream_p_t {
 } mp_stream_p_t;
 
 struct _mp_obj_type_t {
+    // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
+
+    // The name of this type.
     qstr name;
+
+    // Corresponds to __repr__ and __str__ special methods.
     mp_print_fun_t print;
-    mp_make_new_fun_t make_new;     // to make an instance of the type
 
+    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
+    mp_make_new_fun_t make_new;
+
+    // Corresponds to __call__ special method, ie T(...).
     mp_call_fun_t call;
-    mp_unary_op_fun_t unary_op;     // can return MP_OBJ_NULL if op not supported
-    mp_binary_op_fun_t binary_op;   // can return MP_OBJ_NULL if op not supported
 
-    // implements load, store and delete attribute
+    // Implements unary and binary operations.
+    // Can return MP_OBJ_NULL if the operation is not supported.
+    mp_unary_op_fun_t unary_op;
+    mp_binary_op_fun_t binary_op;
+
+    // Implements load, store and delete attribute.
     //
     // dest[0] = MP_OBJ_NULL means load
     //  return: for fail, do nothing
@@ -482,31 +503,36 @@ struct _mp_obj_type_t {
     //          for success set dest[0] = MP_OBJ_NULL
     mp_attr_fun_t attr;
 
-    mp_subscr_fun_t subscr;         // implements load, store, delete subscripting
-                                    // value=MP_OBJ_NULL means delete, value=MP_OBJ_SENTINEL means load, else store
-                                    // can return MP_OBJ_NULL if op not supported
+    // Implements load, store and delete subscripting:
+    //  - value = MP_OBJ_SENTINEL means load
+    //  - value = MP_OBJ_NULL means delete
+    //  - all other values mean store the value
+    // Can return MP_OBJ_NULL if operation not supported.
+    mp_subscr_fun_t subscr;
 
-    mp_fun_1_t getiter;             // corresponds to __iter__ special method
-    mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
+    // Corresponds to __iter__ special method.
+    // Can use the given mp_obj_iter_buf_t to store iterator object,
+    // otherwise can return a pointer to an object on the heap.
+    mp_getiter_fun_t getiter;
 
+    // Corresponds to __next__ special method.  May return MP_OBJ_STOP_ITERATION
+    // as an optimisation instead of raising StopIteration() with no args.
+    mp_fun_1_t iternext;
+
+    // Implements the buffer protocol if supported by this type.
     mp_buffer_p_t buffer_p;
+
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
 
-    // these are for dynamically created types (classes)
-    struct _mp_obj_tuple_t *bases_tuple;
+    // A pointer to the parents of this type:
+    //  - 0 parents: pointer is NULL (object is implicitly the single parent)
+    //  - 1 parent: a pointer to the type of that parent
+    //  - 2 or more parents: pointer to a tuple object containing the parent types
+    const void *parent;
+
+    // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
-
-    /*
-    What we might need to add here:
-
-    len             str tuple list map
-    abs             float complex
-    hash            bool int none str
-    equal           int str
-
-    unpack seq      list tuple
-    */
 };
 
 // Constant types, globally accessible
@@ -607,39 +633,38 @@ static inline mp_obj_t mp_obj_new_bool(mp_int_t x) { return x ? mp_const_true : 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj);
 mp_obj_t mp_obj_new_int(mp_int_t value);
 mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
-mp_obj_t mp_obj_new_int_from_str_len(const char **str, mp_uint_t len, bool neg, mp_uint_t base);
+mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const char* data, mp_uint_t len, bool make_qstr_if_not_already);
+mp_obj_t mp_obj_new_str(const char* data, size_t len, bool make_qstr_if_not_already);
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
-mp_obj_t mp_obj_new_bytes(const byte* data, mp_uint_t len);
-mp_obj_t mp_obj_new_bytearray(mp_uint_t n, void *items);
-mp_obj_t mp_obj_new_bytearray_by_ref(mp_uint_t n, void *items);
+mp_obj_t mp_obj_new_bytes(const byte* data, size_t len);
+mp_obj_t mp_obj_new_bytearray(size_t n, void *items);
+mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
-mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, mp_uint_t n_args, const mp_obj_t *args);
+mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
-mp_obj_t mp_obj_new_fun_viper(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig);
-mp_obj_t mp_obj_new_fun_asm(mp_uint_t n_args, void *fun_data, mp_uint_t type_sig);
+mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig);
+mp_obj_t mp_obj_new_fun_asm(size_t n_args, void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
-mp_obj_t mp_obj_new_closure(mp_obj_t fun, mp_uint_t n_closed, const mp_obj_t *closed);
-mp_obj_t mp_obj_new_tuple(mp_uint_t n, const mp_obj_t *items);
-mp_obj_t mp_obj_new_list(mp_uint_t n, mp_obj_t *items);
-mp_obj_t mp_obj_new_dict(mp_uint_t n_args);
-mp_obj_t mp_obj_new_set(mp_uint_t n_args, mp_obj_t *items);
+mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
+mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
+mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
+mp_obj_t mp_obj_new_dict(size_t n_args);
+mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
-mp_obj_t mp_obj_new_super(mp_obj_t type, mp_obj_t obj);
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self);
-mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args);
+mp_obj_t mp_obj_new_getitem_iter(mp_obj_t *args, mp_obj_iter_buf_t *iter_buf);
 mp_obj_t mp_obj_new_module(qstr module_name);
-mp_obj_t mp_obj_new_memoryview(byte typecode, mp_uint_t nitems, void *items);
+mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
@@ -662,9 +687,9 @@ mp_float_t mp_obj_get_float(mp_obj_t self_in);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
 //qstr mp_obj_get_qstr(mp_obj_t arg);
-void mp_obj_get_array(mp_obj_t o, mp_uint_t *len, mp_obj_t **items); // *items may point inside a GC block
-void mp_obj_get_array_fixed_n(mp_obj_t o, mp_uint_t len, mp_obj_t **items); // *items may point inside a GC block
-mp_uint_t mp_get_index(const mp_obj_type_t *type, mp_uint_t len, mp_obj_t index, bool is_slice);
+void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items); // *items may point inside a GC block
+void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items); // *items may point inside a GC block
+size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool is_slice);
 mp_obj_t mp_obj_id(mp_obj_t o_in);
 mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); // may return MP_OBJ_NULL
@@ -698,12 +723,17 @@ void mp_init_emergency_exception_buf(void);
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
 qstr mp_obj_str_get_qstr(mp_obj_t self_in); // use this if you will anyway convert the string to a qstr
 const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need the string to be null terminated
-const char *mp_obj_str_get_data(mp_obj_t self_in, mp_uint_t *len);
+const char *mp_obj_str_get_data(mp_obj_t self_in, size_t *len);
 mp_obj_t mp_obj_str_intern(mp_obj_t str);
-void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, mp_uint_t str_len, bool is_bytes);
+void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t str_len, bool is_bytes);
 
 #if MICROPY_PY_BUILTINS_FLOAT
 // float
+#if MICROPY_FLOAT_HIGH_QUALITY_HASH
+mp_int_t mp_float_hash(mp_float_t val);
+#else
+static inline mp_int_t mp_float_hash(mp_float_t val) { return (mp_int_t)val; }
+#endif
 mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs); // can return MP_OBJ_NULL if op not supported
 
 // complex
@@ -714,17 +744,17 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
 #endif
 
 // tuple
-void mp_obj_tuple_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
+void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
 void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
 struct _mp_obj_list_t;
-void mp_obj_list_init(struct _mp_obj_list_t *o, mp_uint_t n);
+void mp_obj_list_init(struct _mp_obj_list_t *o, size_t n);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
-void mp_obj_list_get(mp_obj_t self_in, mp_uint_t *len, mp_obj_t **items);
-void mp_obj_list_set_len(mp_obj_t self_in, mp_uint_t len);
+void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
+void mp_obj_list_set_len(mp_obj_t self_in, size_t len);
 void mp_obj_list_store(mp_obj_t self_in, mp_obj_t index, mp_obj_t value);
 mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
@@ -733,8 +763,8 @@ typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
     mp_map_t map;
 } mp_obj_dict_t;
-void mp_obj_dict_init(mp_obj_dict_t *dict, mp_uint_t n_args);
-mp_uint_t mp_obj_dict_len(mp_obj_t self_in);
+void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args);
+size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
@@ -775,6 +805,7 @@ qstr mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
+mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
 // module
 typedef struct _mp_obj_module_t {
@@ -808,17 +839,17 @@ typedef struct {
     mp_int_t step;
 } mp_bound_slice_t;
 
-void mp_seq_multiply(const void *items, mp_uint_t item_sz, mp_uint_t len, mp_uint_t times, void *dest);
+void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest);
 #if MICROPY_PY_BUILTINS_SLICE
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
 #endif
 #define mp_seq_copy(dest, src, len, item_t) memcpy(dest, src, len * sizeof(item_t))
 #define mp_seq_cat(dest, src1, len1, src2, len2, item_t) { memcpy(dest, src1, (len1) * sizeof(item_t)); memcpy(dest + (len1), src2, (len2) * sizeof(item_t)); }
-bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, mp_uint_t len1, const byte *data2, mp_uint_t len2);
-bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, mp_uint_t len1, const mp_obj_t *items2, mp_uint_t len2);
-mp_obj_t mp_seq_index_obj(const mp_obj_t *items, mp_uint_t len, mp_uint_t n_args, const mp_obj_t *args);
-mp_obj_t mp_seq_count_obj(const mp_obj_t *items, mp_uint_t len, mp_obj_t value);
-mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes);
+bool mp_seq_cmp_bytes(mp_uint_t op, const byte *data1, size_t len1, const byte *data2, size_t len2);
+bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp_obj_t *items2, size_t len2);
+mp_obj_t mp_seq_index_obj(const mp_obj_t *items, size_t len, size_t n_args, const mp_obj_t *args);
+mp_obj_t mp_seq_count_obj(const mp_obj_t *items, size_t len, mp_obj_t value);
+mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t *indexes);
 // Helper to clear stale pointers from allocated, but unused memory, to preclude GC problems
 #define mp_seq_clear(start, len, alloc_len, item_sz) memset((byte*)(start) + (len) * (item_sz), 0, ((alloc_len) - (len)) * (item_sz))
 #define mp_seq_replace_slice_no_grow(dest, dest_len, beg, end, slice, slice_len, item_sz) \
@@ -827,9 +858,10 @@ mp_obj_t mp_seq_extract_slice(mp_uint_t len, const mp_obj_t *seq, mp_bound_slice
     /*printf("memmove(%p, %p, %d)\n", dest + (beg + slice_len), dest + end, (dest_len - end) * (item_sz));*/ \
     memmove(((char*)dest) + (beg + slice_len) * (item_sz), ((char*)dest) + (end) * (item_sz), (dest_len - end) * (item_sz));
 
+// Note: dest and slice regions may overlap
 #define mp_seq_replace_slice_grow_inplace(dest, dest_len, beg, end, slice, slice_len, len_adj, item_sz) \
     /*printf("memmove(%p, %p, %d)\n", dest + beg + len_adj, dest + beg, (dest_len - beg) * (item_sz));*/ \
-    memmove(((char*)dest) + (beg + len_adj) * (item_sz), ((char*)dest) + (beg) * (item_sz), (dest_len - beg) * (item_sz)); \
-    memcpy(((char*)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
+    memmove(((char*)dest) + (beg + slice_len) * (item_sz), ((char*)dest) + (end) * (item_sz), ((dest_len) + (len_adj) - ((beg) + (slice_len))) * (item_sz)); \
+    memmove(((char*)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
 
 #endif // __MICROPY_INCLUDED_PY_OBJ_H__

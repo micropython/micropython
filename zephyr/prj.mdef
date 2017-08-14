@@ -1,5 +1,0 @@
-% Application       : MicroPython
-
-% TASK NAME  PRIO ENTRY STACK GROUPS
-% ==================================
-  TASK MAIN  7    main  4096 [EXE]

@@ -1,0 +1,15 @@
+ 0: rsplit 5 (3)
+ 2: any
+ 3: jmp 0 (-5)
+ 5: save 0
+ 7: split 14 (5)
+ 9: assert bol
+10: char a
+12: jmp 23 (9)
+14: char b
+16: class 1 0x30-0x39
+20: namedclass w
+22: assert eol
+23: save 1
+25: match
+Bytes: 26, insts: 14

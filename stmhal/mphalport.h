@@ -10,8 +10,8 @@
 #define MP_HAL_CLEAN_DCACHE(addr, size)
 #elif defined(MCU_SERIES_F7)
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
-#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)(addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
-#define MP_HAL_CLEAN_DCACHE(addr, size) (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)(addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#define MP_HAL_CLEAN_DCACHE(addr, size) (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #elif defined(MCU_SERIES_L4)
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
@@ -27,13 +27,7 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // timing functions
 
-#include "stmhal/systick.h"
-
-#define mp_hal_delay_ms HAL_Delay
-#define mp_hal_delay_us(us) sys_tick_udelay(us)
-#define mp_hal_delay_us_fast(us) sys_tick_udelay(us)
-#define mp_hal_ticks_ms HAL_GetTick
-#define mp_hal_ticks_us() sys_tick_get_microseconds()
+#define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
 extern bool mp_hal_ticks_cpu_enabled;
 void mp_hal_ticks_cpu_enable(void);

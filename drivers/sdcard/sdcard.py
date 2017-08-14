@@ -130,7 +130,7 @@ class SDCard:
         raise OSError("timeout waiting for v2 card")
 
     def cmd(self, cmd, arg, crc, final=0, release=True):
-        self.cs.low()
+        self.cs(0)
 
         # create and send the command
         buf = self.cmdbuf
@@ -142,7 +142,7 @@ class SDCard:
         buf[5] = crc
         self.spi.write(buf)
 
-        # wait for the repsonse (response[7] == 0)
+        # wait for the response (response[7] == 0)
         for i in range(_CMD_TIMEOUT):
             response = self.spi.read(1, 0xff)[0]
             if not (response & 0x80):
@@ -150,12 +150,12 @@ class SDCard:
                 for j in range(final):
                     self.spi.write(b'\xff')
                 if release:
-                    self.cs.high()
+                    self.cs(1)
                     self.spi.write(b'\xff')
                 return response
 
         # timeout
-        self.cs.high()
+        self.cs(1)
         self.spi.write(b'\xff')
         return -1
 
@@ -164,15 +164,15 @@ class SDCard:
         self.spi.read(1, 0xff) # ignore stuff byte
         for _ in range(_CMD_TIMEOUT):
             if self.spi.read(1, 0xff)[0] == 0xff:
-                self.cs.high()
+                self.cs(1)
                 self.spi.write(b'\xff')
                 return 0    # OK
-        self.cs.high()
+        self.cs(1)
         self.spi.write(b'\xff')
         return 1 # timeout
 
     def readinto(self, buf):
-        self.cs.low()
+        self.cs(0)
 
         # read until start byte (0xff)
         while self.spi.read(1, 0xff)[0] != 0xfe:
@@ -186,11 +186,11 @@ class SDCard:
         self.spi.write(b'\xff')
         self.spi.write(b'\xff')
 
-        self.cs.high()
+        self.cs(1)
         self.spi.write(b'\xff')
 
     def write(self, token, buf):
-        self.cs.low()
+        self.cs(0)
 
         # send: start of block, data, checksum
         self.spi.read(1, token)
@@ -200,7 +200,7 @@ class SDCard:
 
         # check the response
         if (self.spi.read(1, 0xff)[0] & 0x1f) != 0x05:
-            self.cs.high()
+            self.cs(1)
             self.spi.write(b'\xff')
             return
 
@@ -208,18 +208,18 @@ class SDCard:
         while self.spi.read(1, 0xff)[0] == 0:
             pass
 
-        self.cs.high()
+        self.cs(1)
         self.spi.write(b'\xff')
 
     def write_token(self, token):
-        self.cs.low()
+        self.cs(0)
         self.spi.read(1, token)
         self.spi.write(b'\xff')
         # wait for write to finish
         while self.spi.read(1, 0xff)[0] == 0x00:
             pass
 
-        self.cs.high()
+        self.cs(1)
         self.spi.write(b'\xff')
 
     def count(self):

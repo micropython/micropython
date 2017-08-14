@@ -120,11 +120,13 @@ bool ets_loop_iter(void) {
     }
 
     // handle overflow of system microsecond counter
+    ets_intr_lock();
     uint32_t system_time_cur = system_get_time();
     if (system_time_cur < system_time_prev) {
         system_time_high_word += 1; // record overflow of low 32-bits
     }
     system_time_prev = system_time_cur;
+    ets_intr_unlock();
 
     //static unsigned cnt;
     bool progress = false;

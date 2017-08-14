@@ -24,11 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include "py/builtin.h"
 
-#include "lib/utils/pyhelp.h"
-
-STATIC const char *help_text =
+const char *zephyr_help_text =
 "Welcome to MicroPython!\n"
 "\n"
 "Control commands:\n"
@@ -40,17 +38,3 @@ STATIC const char *help_text =
 "\n"
 "For further help on a specific object, type help(obj)\n"
 ;
-
-STATIC mp_obj_t builtin_help(uint n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        // print a general help message
-        printf("%s", help_text);
-
-    } else {
-        // try to print something sensible about the given object
-        pyhelp_print_obj(args[0]);
-    }
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_help_obj, 0, 1, builtin_help);

@@ -7,5 +7,7 @@ b'lo'
 b''
 b''
 31
+b'hello'
+b'hello'
 ValueError
 OSError(22,)

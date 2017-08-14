@@ -1,4 +1,5 @@
 .. currentmodule:: machine
+.. _machine.Pin:
 
 class Pin -- control I/O pins
 =============================
@@ -37,58 +38,6 @@ Usage Model::
 
     # configure an irq callback
     p0.irq(lambda p:print(p))
-
-.. only:: port_wipy
-
-    On the WiPy board the pins are identified by their string id::
-
-        from machine import Pin
-        g = machine.Pin('GP9', mode=Pin.OUT, pull=None, drive=Pin.MED_POWER, alt=-1)
-
-    You can also configure the Pin to generate interrupts. For instance::
-
-        from machine import Pin
-
-        def pincb(pin):
-            print(pin.id())
-
-        pin_int = Pin('GP10', mode=Pin.IN, pull=Pin.PULL_DOWN)
-        pin_int.irq(trigger=Pin.IRQ_RISING, handler=pincb)
-        # the callback can be triggered manually
-        pin_int.irq()()
-        # to disable the callback
-        pin_int.irq().disable()
-
-    Now every time a falling edge is seen on the gpio pin, the callback will be
-    executed. Caution: mechanical push buttons have "bounce" and pushing or
-    releasing a switch will often generate multiple edges.
-    See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
-    explanation, along with various techniques for debouncing.
-
-    All pin objects go through the pin mapper to come up with one of the
-    gpio pins.
-
-    For the ``drive`` parameter the strengths are:
-
-      - ``Pin.LOW_POWER`` - 2mA drive capability.
-      - ``Pin.MED_POWER`` - 4mA drive capability.
-      - ``Pin.HIGH_POWER`` - 6mA drive capability.
-
-    For the ``alt`` parameter please refer to the pinout and alternate functions
-    table at <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_
-    for the specific alternate functions that each pin supports.
-
-    For interrupts, the ``priority`` can take values in the range 1-7.  And the
-    ``wake`` parameter has the following properties:
-
-      - If ``wake_from=machine.Sleep.ACTIVE`` any pin can wake the board.
-      - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
-        ``GP11``, GP17`` or ``GP24`` can wake the board. Note that only 1
-        of this pins can be enabled as a wake source at the same time, so, only
-        the last enabled pin as a ``machine.Sleep.SUSPENDED`` wake source will have effect.
-      - If ``wake_from=machine.Sleep.SUSPENDED`` pins ``GP2``, ``GP4``, ``GP10``,
-        ``GP11``, ``GP17`` and ``GP24`` can wake the board. In this case all of the
-        6 pins can be enabled as a ``machine.Sleep.HIBERNATE`` wake source at the same time.
 
 Constructors
 ------------
@@ -209,20 +158,6 @@ Methods
    and get the value of the pin.  It is equivalent to Pin.value([x]).
    See :meth:`Pin.value` for more details.
 
-.. method:: Pin.toggle()
-
-   Toggle the output value of the pin.  Equivalent to ``pin.value(not pin.out_value())``.
-   Returns ``None``.
-
-   Not all ports implement this method.
-
-   Availability: WiPy.
-
-.. method:: Pin.id()
-
-   Get the pin identifier.  This may return the ``id`` as specified in the
-   constructor.  Or it may return a canonical software-specific pin id.
-
 .. method:: Pin.mode([mode])
 
    Get or set the pin mode.
@@ -276,29 +211,6 @@ Methods
        more than one power mode.
 
    This method returns a callback object.
-
-.. only:: port_wipy
-
-    .. method:: Pin.alt_list()
-
-       Returns a list of the alternate functions supported by the pin. List items are
-       a tuple of the form: ``('ALT_FUN_NAME', ALT_FUN_INDEX)``
-
-       Availability: WiPy.
-
-
-Attributes
-----------
-
-.. class:: Pin.board
-
-    Contains all ``Pin`` objects supported by the board. Examples::
-
-        Pin.board.GP25
-        led = Pin(Pin.board.GP25, mode=Pin.OUT)
-        Pin.board.GP2.alt_list()
-
-    Availability: WiPy.
 
 Constants
 ---------

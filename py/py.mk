@@ -16,8 +16,8 @@ endif
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
-INC += -I../lib
-INC += -I../lib/netutils
+# this sets the config file for FatFs
+CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
 
 ifeq ($(MICROPY_PY_USSL),1)
 CFLAGS_MOD += -DMICROPY_PY_USSL=1
@@ -140,6 +140,7 @@ PY_O_BASENAME = \
 	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
+	scheduler.o \
 	nativeglue.o \
 	stackctrl.o \
 	argcheck.o \
@@ -189,6 +190,7 @@ PY_O_BASENAME = \
 	binary.o \
 	builtinimport.o \
 	builtinevex.o \
+	builtinhelp.o \
 	modarray.o \
 	modbuiltins.o \
 	modcollections.o \
@@ -218,6 +220,7 @@ PY_O_BASENAME = \
 	../extmod/virtpin.o \
 	../extmod/machine_mem.o \
 	../extmod/machine_pinbase.o \
+	../extmod/machine_signal.o \
 	../extmod/machine_pulse.o \
 	../extmod/machine_i2c.o \
 	../extmod/machine_spi.o \
@@ -228,12 +231,11 @@ PY_O_BASENAME = \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
-	../extmod/fsusermount.o \
+	../extmod/vfs.o \
+	../extmod/vfs_reader.o \
 	../extmod/vfs_fat.o \
-	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
 	../extmod/uos_dupterm.o \
@@ -277,6 +279,10 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_C
 	$(ECHO) "GEN $@"
 	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+
+# Force nlr code to always be compiled with space-saving optimisation so
+# that the function preludes are of a minimal and predictable form.
+$(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
 # emitters
 

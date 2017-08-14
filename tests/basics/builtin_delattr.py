@@ -1,4 +1,10 @@
 # test builtin delattr
+try:
+    delattr
+except:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 class A: pass
 a = A()

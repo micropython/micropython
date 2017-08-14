@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
 #include "lib/mp-readline/readline.h"
@@ -64,7 +65,9 @@ STATIC void mp_reset(void) {
 #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");
     pyexec_file("boot.py");
-    pyexec_file("main.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        pyexec_file("main.py");
+    }
 #endif
 }
 
@@ -109,33 +112,22 @@ void user_init(void) {
     system_init_done_cb(init_done);
 }
 
-mp_import_stat_t fat_vfs_import_stat(const char *path);
-
-#if !MICROPY_VFS_FAT
+#if !MICROPY_VFS
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return NULL;
+    mp_raise_OSError(MP_ENOENT);
 }
-#endif
 
 mp_import_stat_t mp_import_stat(const char *path) {
-    #if MICROPY_VFS_FAT
-    return fat_vfs_import_stat(path);
-    #else
     (void)path;
     return MP_IMPORT_STAT_NO_EXIST;
-    #endif
 }
 
-mp_obj_t vfs_proxy_call(qstr method_name, mp_uint_t n_args, const mp_obj_t *args);
 mp_obj_t mp_builtin_open(uint n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    #if MICROPY_VFS_FAT
-    // TODO: Handle kwargs!
-    return vfs_proxy_call(MP_QSTR_open, n_args, args);
-    #else
     return mp_const_none;
-    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+
+#endif
 
 void MP_FASTCODE(nlr_jump_fail)(void *val) {
     printf("NLR jump failed\n");

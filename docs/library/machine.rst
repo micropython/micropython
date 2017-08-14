@@ -1,10 +1,23 @@
-:mod:`machine` --- functions related to the board
-=================================================
+:mod:`machine` --- functions related to the hardware
+====================================================
 
 .. module:: machine
-   :synopsis: functions related to the board
+   :synopsis: functions related to the hardware
 
-The ``machine`` module contains specific functions related to the board.
+The ``machine`` module contains specific functions related to the hardware
+on a particular board. Most functions in this module allow to achieve direct
+and unrestricted access to and control of hardware blocks on a system
+(like CPU, timers, buses, etc.). Used incorrectly, this can lead to
+malfunction, lockups, crashes of your board, and in extreme cases, hardware
+damage.
+
+.. _machine_callbacks:
+
+A note of callbacks used by functions and class methods of ``machine`` module:
+all these callbacks should be considered as executing in an interrupt context.
+This is true for both physical devices with IDs >= 0 and "virtual" devices
+with negative IDs like -1 (these "virtual" devices are still thin shims on
+top of real hardware and real hardware interrupts). See :ref:`isr_rules`.
 
 Reset related functions
 -----------------------
@@ -39,16 +52,7 @@ Power related functions
 
 .. function:: freq()
 
-    .. only:: not port_wipy
-
-        Returns CPU frequency in hertz.
-
-    .. only:: port_wipy
-
-        Returns a tuple of clock frequencies: ``(sysclk,)``
-        These correspond to:
-
-        - sysclk: frequency of the CPU
+    Returns CPU frequency in hertz.
 
 .. function:: idle()
 
@@ -81,13 +85,6 @@ Miscellaneous functions
 
 .. only:: port_wipy
 
-    .. function:: main(filename)
-
-        Set the filename of the main script to run after boot.py is finished.  If
-        this function is not called then the default file main.py will be executed.
-
-        It only makes sense to call this function from within boot.py.
-
     .. function:: rng()
 
         Return a 24-bit software generated random number.
@@ -105,12 +102,15 @@ Miscellaneous functions
    microseconds.  The `pulse_level` argument should be 0 to time a low pulse
    or 1 to time a high pulse.
 
-   The function first waits while the pin input is different to the `pulse_level`
-   parameter, then times the duration that the pin is equal to `pulse_level`.
+   If the current input value of the pin is different to `pulse_level`,
+   the function first (*) waits until the pin input becomes equal to `pulse_level`,
+   then (**) times the duration that the pin is equal to `pulse_level`.
    If the pin is already equal to `pulse_level` then timing starts straight away.
 
-   The function will raise an OSError with ETIMEDOUT if either of the waits is
-   longer than the given timeout value (which is in microseconds).
+   The function will return -2 if there was timeout waiting for condition marked
+   (*) above, and -1 if there was timeout during the main measurement, marked (**)
+   above. The timeout is the same for both cases and given by `timeout_us` (which
+   is in microseconds).
 
 .. _machine_constants:
 
@@ -118,29 +118,45 @@ Constants
 ---------
 
 .. data:: machine.IDLE
-.. data:: machine.SLEEP
-.. data:: machine.DEEPSLEEP
+          machine.SLEEP
+          machine.DEEPSLEEP
 
-    irq wake values
+    IRQ wake values.
 
 .. data:: machine.PWRON_RESET
-.. data:: machine.HARD_RESET
-.. data:: machine.WDT_RESET
-.. data:: machine.DEEPSLEEP_RESET
-.. data:: machine.SOFT_RESET
+          machine.HARD_RESET
+          machine.WDT_RESET
+          machine.DEEPSLEEP_RESET
+          machine.SOFT_RESET
 
-    reset causes
+    Reset causes.
 
 .. data:: machine.WLAN_WAKE
-.. data:: machine.PIN_WAKE
-.. data:: machine.RTC_WAKE
+          machine.PIN_WAKE
+          machine.RTC_WAKE
 
-    wake reasons
+    Wake-up reasons.
 
 Classes
 -------
 
-.. toctree::
+.. only:: not port_wipy
+
+ .. toctree::
+   :maxdepth: 1
+
+   machine.I2C.rst
+   machine.Pin.rst
+   machine.Signal.rst
+   machine.RTC.rst
+   machine.SPI.rst
+   machine.Timer.rst
+   machine.UART.rst
+   machine.WDT.rst
+
+.. only:: port_wipy
+
+ .. toctree::
    :maxdepth: 1
 
    machine.ADC.rst

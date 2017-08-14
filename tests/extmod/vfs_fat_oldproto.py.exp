@@ -1,4 +1,3 @@
-['file.txt']
+[('file.txt', 32768, 0)]
 hello!
 []
-True

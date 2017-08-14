@@ -1,6 +1,17 @@
 MicroPython libraries
 =====================
 
+.. warning::
+
+   Important summary of this section
+
+   * MicroPython implements a subset of Python functionality for each module.
+   * To ease extensibility, MicroPython versions of standard Python modules
+     usually have ``u`` (micro) prefix.
+   * Any particular MicroPython variant or port may miss any feature/function
+     described in this general documentation, due to resource constraints.
+
+
 This chapter describes modules (function and class libraries) which are built
 into MicroPython. There are a few categories of modules:
 
@@ -153,6 +164,8 @@ the following libraries.
 .. toctree::
    :maxdepth: 1
 
+   btree.rst
+   framebuf.rst
    machine.rst
    micropython.rst
    network.rst
@@ -170,6 +183,7 @@ the following libraries.
       :maxdepth: 2
 
       pyb.rst
+      lcd160cr.rst
 
 .. only:: port_wipy
 

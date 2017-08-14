@@ -1,10 +1,16 @@
 import sys
-import uos
-import uerrno
+try:
+    import uerrno
+    try:
+        import uos_vfs as uos
+    except ImportError:
+        import uos
+except ImportError:
+    print("SKIP")
+    sys.exit()
+
 try:
     uos.VfsFat
-    uos.vfs_mkfs
-    uos.vfs_mount
 except AttributeError:
     print("SKIP")
     sys.exit()
@@ -34,30 +40,23 @@ class RAMFS_OLD:
 
 
 try:
-    bdev = RAMFS_OLD(48)
+    bdev = RAMFS_OLD(50)
 except MemoryError:
     print("SKIP")
     sys.exit()
 
-uos.vfs_mkfs(bdev, "/ramdisk")
-uos.vfs_mount(bdev, "/ramdisk")
+uos.VfsFat.mkfs(bdev)
+vfs = uos.VfsFat(bdev)
+uos.mount(vfs, "/ramdisk")
 
 # file io
-vfs = uos.VfsFat(bdev, "/ramdisk")
 with vfs.open("file.txt", "w") as f:
     f.write("hello!")
 
-print(vfs.listdir())
+print(list(vfs.ilistdir()))
 
 with vfs.open("file.txt", "r") as f:
     print(f.read())
 
 vfs.remove("file.txt")
-print(vfs.listdir())
-
-# umount by device
-uos.vfs_umount(bdev)
-try:
-    vfs.listdir()
-except OSError as e:
-    print(e.args[0] == uerrno.ENODEV)
+print(list(vfs.ilistdir()))

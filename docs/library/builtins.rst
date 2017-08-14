@@ -67,6 +67,16 @@ All builtin functions are described here. They are also available via
 
 .. class:: int()
 
+   .. classmethod:: from_bytes(bytes, byteorder)
+
+      In MicroPython, `byteorder` parameter must be positional (this is
+      compatible with CPython).
+
+   .. method:: to_bytes(size, byteorder)
+
+      In MicroPython, `byteorder` parameter must be positional (this is
+      compatible with CPython).
+
 .. function:: isinstance()
 
 .. function:: issubclass()

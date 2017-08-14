@@ -32,6 +32,7 @@
 #include "py/objstr.h"
 #include "py/objint.h"
 #include "py/stream.h"
+#include "py/smallint.h"
 
 #if MICROPY_PY_SYS
 
@@ -44,7 +45,7 @@ extern struct _mp_dummy_t mp_sys_stdin_obj;
 extern struct _mp_dummy_t mp_sys_stdout_obj;
 extern struct _mp_dummy_t mp_sys_stderr_obj;
 
-#if MICROPY_PY_IO
+#if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adaptor};
 #endif
 
@@ -105,7 +106,7 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 
 STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_PY_IO
+    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     void *stream_obj = &mp_sys_stdout_obj;
     if (n_args > 1) {
         stream_obj = MP_OBJ_TO_PTR(args[1]); // XXX may fail
@@ -162,12 +163,12 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
 
     #if MICROPY_PY_SYS_MAXSIZE
     #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
-    // INT_MAX is not representable as small int, as we know that small int
-    // takes one bit for tag. So, we have little choice but to provide this
-    // value. Apps also should be careful to not try to compare sys.maxsize
-    // with some number (which may not fit in available int size), but instead
-    // count number of significant bits in sys.maxsize.
-    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(INT_MAX >> 1) },
+    // Maximum mp_int_t value is not representable as small int, so we have
+    // little choice but to use MP_SMALL_INT_MAX. Apps also should be careful
+    // to not try to compare sys.maxsize to some literal number (as this
+    // number might not fit in available int size), but instead count number
+    // of "one" bits in sys.maxsize.
+    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(MP_SMALL_INT_MAX) },
     #else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_maxsize_obj) },
     #endif

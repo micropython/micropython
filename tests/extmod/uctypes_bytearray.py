@@ -1,4 +1,9 @@
-import uctypes
+try:
+    import uctypes
+except ImportError:
+    import sys
+    print("SKIP")
+    sys.exit()
 
 desc = {
     "arr": (uctypes.ARRAY | 0, uctypes.UINT8 | 2),

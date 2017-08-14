@@ -25,9 +25,6 @@ ESP_SDK = $(shell $(CC) -print-sysroot)/usr
 INC += -I.
 INC += -I..
 INC += -I../stmhal
-INC += -I../lib/mp-readline
-INC += -I../lib/netutils
-INC += -I../lib/timeutils
 INC += -I$(BUILD)
 INC += -I$(ESP_SDK)/include
 
@@ -41,7 +38,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-Wl,-EL -mlongcalls -mtext-section-literals -mforce-l32 \
 	-DLWIP_OPEN_SRC
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 
 LDSCRIPT = esp8266.ld
@@ -108,7 +105,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	libm/math.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \
@@ -128,14 +125,13 @@ LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
 	utils/interrupt_char.c \
 	)
 
 ifeq ($(MICROPY_FATFS), 1)
 LIB_SRC_C += \
-	lib/fatfs/ff.c \
-	lib/fatfs/option/ccsbcs.c
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/unicode.c
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\

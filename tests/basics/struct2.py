@@ -26,7 +26,17 @@ print(struct.calcsize('0s1s0H2H'))
 print(struct.unpack('<0s1s0H2H', b'01234'))
 print(struct.pack('<0s1s0H2H', b'abc', b'abc', 258, 515))
 
-# check that zero of an unknown type raises an exception
+# check that unknown types raise an exception
+try:
+    struct.unpack('z', b'1')
+except:
+    print('Exception')
+
+try:
+    struct.pack('z', (b'1',))
+except:
+    print('Exception')
+
 try:
     struct.calcsize('0z')
 except:

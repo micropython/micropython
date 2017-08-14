@@ -718,12 +718,12 @@ mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_calibration_obj, 1, 2, pyb_rtc_calibration);
 
-STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_rtc_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_rtc_info_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wakeup), (mp_obj_t)&pyb_rtc_wakeup_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_calibration), (mp_obj_t)&pyb_rtc_calibration_obj },
+STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_rtc_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&pyb_rtc_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&pyb_rtc_datetime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wakeup), MP_ROM_PTR(&pyb_rtc_wakeup_obj) },
+    { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&pyb_rtc_calibration_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
@@ -731,5 +731,5 @@ const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_rtc_locals_dict,
 };

@@ -150,3 +150,7 @@ class Class:
 
 # delete name
 del Class
+
+# load super method
+def f(self):
+    super().f()

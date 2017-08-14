@@ -38,6 +38,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "bufhelper.h"
 #include "usb.h"
 
@@ -96,7 +97,7 @@ const mp_obj_tuple_t pyb_usb_hid_keyboard_obj = {
 };
 
 void pyb_usb_init0(void) {
-    USBD_CDC_SetInterrupt(-1);
+    mp_hal_set_interrupt_char(-1);
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
 }
 
@@ -139,15 +140,6 @@ void pyb_usb_dev_deinit(void) {
 
 bool usb_vcp_is_enabled(void) {
     return (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) != 0;
-}
-
-void usb_vcp_set_interrupt_char(int c) {
-    if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
-        if (c != -1) {
-            mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        }
-        USBD_CDC_SetInterrupt(c);
-    }
 }
 
 int usb_vcp_recv_byte(uint8_t *c) {
@@ -364,7 +356,7 @@ STATIC mp_obj_t pyb_usb_vcp_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) {
-    usb_vcp_set_interrupt_char(mp_obj_get_int(int_chr_in));
+    mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
@@ -458,21 +450,21 @@ mp_obj_t pyb_usb_vcp___exit__(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);
 
-STATIC const mp_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setinterrupt), (mp_obj_t)&pyb_usb_vcp_setinterrupt_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&pyb_usb_vcp_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_any), (mp_obj_t)&pyb_usb_vcp_any_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_vcp_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_vcp_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readlines), (mp_obj_t)&mp_stream_unbuffered_readlines_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&mp_identity_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&mp_identity_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___enter__), (mp_obj_t)&mp_identity_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___exit__), (mp_obj_t)&pyb_usb_vcp___exit___obj },
+STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_setinterrupt), MP_ROM_PTR(&pyb_usb_vcp_setinterrupt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&pyb_usb_vcp_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_usb_vcp_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_usb_vcp_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_usb_vcp_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
+    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pyb_usb_vcp___exit___obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);
@@ -526,10 +518,10 @@ const mp_obj_type_t pyb_usb_vcp_type = {
     .name = MP_QSTR_USB_VCP,
     .print = pyb_usb_vcp_print,
     .make_new = pyb_usb_vcp_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &pyb_usb_vcp_stream_p,
-    .locals_dict = (mp_obj_t)&pyb_usb_vcp_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_usb_vcp_locals_dict,
 };
 
 /******************************************************************************/
@@ -607,7 +599,11 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
     }
 
     // send the data
-    USBD_HID_SendReport(&hUSBDDevice, bufinfo.buf, bufinfo.len);
+    if (USBD_OK == USBD_HID_SendReport(&hUSBDDevice, bufinfo.buf, bufinfo.len)) {
+        return mp_obj_new_int(bufinfo.len);
+    } else {
+        return mp_obj_new_int(0);
+    }
 #endif
 
     return mp_const_none;
@@ -620,9 +616,9 @@ STATIC mp_obj_t pyb_hid_send_report(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_hid_send_report_obj, pyb_hid_send_report);
 
-STATIC const mp_map_elem_t pyb_usb_hid_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&pyb_usb_hid_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&pyb_usb_hid_recv_obj },
+STATIC const mp_rom_map_elem_t pyb_usb_hid_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_usb_hid_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_usb_hid_recv_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_hid_locals_dict, pyb_usb_hid_locals_dict_table);
@@ -632,6 +628,9 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && USBD_HID_RxNum() > 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
         if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {
             ret |= MP_STREAM_POLL_WR;
         }
@@ -651,7 +650,7 @@ const mp_obj_type_t pyb_usb_hid_type = {
     .name = MP_QSTR_USB_HID,
     .make_new = pyb_usb_hid_make_new,
     .protocol = &pyb_usb_hid_stream_p,
-    .locals_dict = (mp_obj_t)&pyb_usb_hid_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_usb_hid_locals_dict,
 };
 
 /******************************************************************************/

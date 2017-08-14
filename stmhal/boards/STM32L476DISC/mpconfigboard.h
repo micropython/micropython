@@ -1,5 +1,8 @@
 #include STM32_HAL_H
 
+#define MICROPY_BOARD_EARLY_INIT    STM32L476DISC_board_early_init
+void STM32L476DISC_board_early_init(void);
+
 #define MICROPY_HW_BOARD_NAME       "L476-DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32L476"
 
@@ -15,6 +18,13 @@
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
+
+// use external SPI flash for storage
+#define MICROPY_HW_SPIFLASH_SIZE_BITS (128 * 1024 * 1024)
+#define MICROPY_HW_SPIFLASH_CS      (pin_E11)
+#define MICROPY_HW_SPIFLASH_SCK     (pin_E10)
+#define MICROPY_HW_SPIFLASH_MOSI    (pin_E12)
+#define MICROPY_HW_SPIFLASH_MISO    (pin_E13)
 
 // MSI is used and is 4MHz
 #define MICROPY_HW_CLK_PLLM (1)
@@ -37,13 +47,6 @@
 #define MICROPY_HW_I2C1_SDA (pin_B7)
 #define MICROPY_HW_I2C2_SCL (pin_B10)
 #define MICROPY_HW_I2C2_SDA (pin_B11)
-// We use an array of baudrates and corresponding TIMINGR values.
-//
-// The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
-// defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING  {{100000, 0x90112626}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT 100000
-#define MICROPY_HW_I2C_BAUDRATE_MAX     100000
 
 // SPI busses
 #define MICROPY_HW_SPI2_NSS     (pin_D0)

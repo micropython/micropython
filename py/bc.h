@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/obj.h"
+#include "py/objfun.h"
 
 // bytecode layout:
 //
@@ -70,9 +71,12 @@ typedef struct _mp_exc_stack_t {
 } mp_exc_stack_t;
 
 typedef struct _mp_code_state_t {
-    const byte *code_info;
+    // The fun_bc entry points to the underlying function object that is being executed.
+    // It is needed to access the start of bytecode and the const_table.
+    // It is also needed to prevent the GC from reclaiming the bytecode during execution,
+    // because the ip pointer below will always point to the interior of the bytecode.
+    mp_obj_fun_bc_t *fun_bc;
     const byte *ip;
-    const mp_uint_t *const_table;
     mp_obj_t *sp;
     // bit 0 is saved currently_in_except_block value
     mp_exc_stack_t *exc_sp;
@@ -80,7 +84,6 @@ typedef struct _mp_code_state_t {
     #if MICROPY_STACKLESS
     struct _mp_code_state_t *prev;
     #endif
-    size_t n_state;
     // Variable-length
     mp_obj_t state[0];
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
@@ -88,15 +91,15 @@ typedef struct _mp_code_state_t {
 } mp_code_state_t;
 
 mp_uint_t mp_decode_uint(const byte **ptr);
+mp_uint_t mp_decode_uint_value(const byte *ptr);
 
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc);
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);
-struct _mp_obj_fun_bc_t;
-void mp_setup_code_state(mp_code_state_t *code_state, struct _mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args);
+void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_bytecode_print(const void *descr, const byte *code, mp_uint_t len, const mp_uint_t *const_table);
-void mp_bytecode_print2(const byte *code, mp_uint_t len);
+void mp_bytecode_print2(const byte *code, size_t len, const mp_uint_t *const_table);
 const byte *mp_bytecode_print_str(const byte *ip);
-#define mp_bytecode_print_inst(code) mp_bytecode_print2(code, 1)
+#define mp_bytecode_print_inst(code, const_table) mp_bytecode_print2(code, 1, const_table)
 
 // Helper macros to access pointer with least significant bits holding flags
 #define MP_TAGPTR_PTR(x) ((void*)((uintptr_t)(x) & ~((uintptr_t)3)))

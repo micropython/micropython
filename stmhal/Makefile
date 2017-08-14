@@ -15,6 +15,9 @@ include boards/$(BOARD)/mpconfigboard.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
+# directory containing scripts to be frozen as bytecode
+FROZEN_MPY_DIR ?= modules
+
 # include py core make definitions
 include ../py/py.mk
 
@@ -23,7 +26,7 @@ CMSIS_DIR=cmsis
 HAL_DIR=hal/$(MCU_SERIES)
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
-FATFS_DIR=lib/fatfs
+FATFS_DIR=lib/oofatfs
 DFU=../tools/dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 1
@@ -44,16 +47,13 @@ INC += -I$(CMSIS_DIR)/
 INC += -I$(HAL_DIR)/inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
-INC += -I../lib/mp-readline
-INC += -I../lib/netutils
-INC += -I../lib/timeutils
 
-CFLAGS_CORTEX_M = -mthumb -mabi=aapcs-linux -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
+CFLAGS_CORTEX_M = -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_MOD)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -61,7 +61,7 @@ CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 
 LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
-LIBS =
+LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -75,9 +75,6 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-# uncomment this if you want libgcc
-#LIBS += $(shell $(CC) -print-libgcc-file-name)
-
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	libm/math.c \
@@ -86,7 +83,7 @@ SRC_LIB = $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	libm/fmodf.c \
-	libm/roundf.c \
+	libm/nearbyintf.c \
 	libm/log1pf.c \
 	libm/acoshf.c \
 	libm/asinhf.c \
@@ -106,13 +103,17 @@ SRC_LIB = $(addprefix lib/,\
 	libm/sf_erf.c \
 	libm/wf_lgamma.c \
 	libm/wf_tgamma.c \
-	fatfs/ff.c \
-	fatfs/option/ccsbcs.c \
+	oofatfs/ff.c \
+	oofatfs/option/unicode.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
-	utils/pyhelp.c \
+	utils/interrupt_char.c \
+	)
+
+DRIVERS_SRC_C = $(addprefix drivers/,\
+	memory/spiflash.c \
 	)
 
 SRC_C = \
@@ -125,9 +126,11 @@ SRC_C = \
 	usbd_hid_interface.c \
 	usbd_msc_storage.c \
 	mphalport.c \
+	mpthreadport.c \
 	irq.c \
 	pendsv.c \
 	systick.c  \
+	pybthread.c \
 	timer.c \
 	led.c \
 	pin.c \
@@ -153,14 +156,12 @@ SRC_C = \
 	modutime.c \
 	modusocket.c \
 	modnetwork.c \
-	import.c \
 	extint.c \
 	usrsw.c \
 	rng.c \
 	rtc.c \
 	flash.c \
 	storage.c \
-	builtin_open.c \
 	sdcard.c \
 	fatfs_port.c \
 	lcd.c \
@@ -254,6 +255,7 @@ endif
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))

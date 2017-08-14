@@ -27,7 +27,7 @@
 
 #include "py/obj.h"
 
-#include "timeutils.h"
+#include "lib/timeutils/timeutils.h"
 
 // LEAPOCH corresponds to 2000-03-01, which is a mod-400 year, immediately
 // after Feb 29. We calculate seconds as a signed integer relative to that.

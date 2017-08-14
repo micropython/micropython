@@ -25,7 +25,6 @@
  */
 
 #include <stdint.h>
-#include <std.h>
 
 #include "simplelink.h"
 #include "py/mpconfig.h"

@@ -39,7 +39,7 @@ script:
   - make -C bare-arm
   - make -C qemu-arm test
   - make -C stmhal
-  - make -C stmhal -B MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
+  - make -C stmhal BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
   - make -C stmhal BOARD=STM32F7DISC
   - make -C stmhal BOARD=STM32L476DISC
   - make -C teensy
@@ -58,7 +58,7 @@ script:
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --via-mpy -d basics float)
 
-after_success:
+  # run coveralls coverage analysis (try to, even if some builds/tests failed)
   - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
 
 after_failure:

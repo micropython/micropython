@@ -14,7 +14,6 @@ endif
 
 INC += -I.
 INC += -I..
-INC += -I../lib/mp-readline
 INC += -I../stmhal
 INC += -I$(BUILD)
 
@@ -22,9 +21,9 @@ ifeq ($(CROSS), 1)
 DFU = ../tools/dfu.py
 PYDFU = ../tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 else
-CFLAGS = -m32 $(INC) -Wall -Werror -ansi -std=gnu99 $(COPT)
+CFLAGS = -m32 $(INC) -Wall -Werror -std=c99 $(COPT)
 endif
 
 #Debugging/Optimization

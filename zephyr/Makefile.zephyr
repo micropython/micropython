@@ -18,10 +18,13 @@ KERNEL_TYPE = micro
 # BOARD must be passed on command line from main Makefile
 #BOARD =
 CONF_FILE = prj.conf
-MDEF_FILE = prj.mdef
+QEMU_NET = 1
 
 #export SOURCE_DIR = $(ZEPHYR_BASE)/samples/static_lib/hello_world
 export LDFLAGS_zephyr += -L$(CURDIR)
 export ALL_LIBS += micropython
 
 include ${ZEPHYR_BASE}/Makefile.inc
+ifeq ($(QEMU_NET), 1)
+include ${ZEPHYR_BASE}/samples/net/common/Makefile.ipstack
+endif

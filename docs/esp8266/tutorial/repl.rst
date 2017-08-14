@@ -24,7 +24,7 @@ terminal programs that will work, so pick your favourite!
 
 For example, on Linux you can try running::
 
-    picocom /dev/ttyUSB0
+    picocom /dev/ttyUSB0 -b115200
 
 Once you have made the connection over the serial port you can test if it is
 working by hitting enter a few times.  You should see the Python REPL prompt,

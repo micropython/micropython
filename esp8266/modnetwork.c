@@ -32,7 +32,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "netutils.h"
+#include "lib/netutils/netutils.h"
 #include "queue.h"
 #include "user_interface.h"
 #include "espconn.h"
@@ -97,18 +97,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
     require_if(args[0], STATION_IF);
     struct station_config config = {{0}};
-    mp_uint_t len;
+    size_t len;
     const char *p;
 
     if (n_args > 1) {
         p = mp_obj_str_get_data(args[1], &len);
+        len = MIN(len, sizeof(config.ssid));
         memcpy(config.ssid, p, len);
         if (n_args > 2) {
             p = mp_obj_str_get_data(args[2], &len);
-        } else {
-            p = "";
+            len = MIN(len, sizeof(config.password));
+            memcpy(config.password, p, len);
         }
-        memcpy(config.password, p, len);
 
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
@@ -311,7 +311,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     }
                     case QS(MP_QSTR_essid): {
                         req_if = SOFTAP_IF;
-                        mp_uint_t len;
+                        size_t len;
                         const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
                         len = MIN(len, sizeof(cfg.ap.ssid));
                         memcpy(cfg.ap.ssid, s, len);
@@ -330,7 +330,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     }
                     case QS(MP_QSTR_password): {
                         req_if = SOFTAP_IF;
-                        mp_uint_t len;
+                        size_t len;
                         const char *s = mp_obj_str_get_data(kwargs->table[i].value, &len);
                         len = MIN(len, sizeof(cfg.ap.password) - 1);
                         memcpy(cfg.ap.password, s, len);

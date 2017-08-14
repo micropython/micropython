@@ -193,9 +193,16 @@ STATIC mp_obj_t pyb_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
+STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(uart_rx_any(self->uart_id));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_uart_init_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -255,8 +262,22 @@ STATIC mp_uint_t pyb_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t 
 }
 
 STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    *errcode = MP_EINVAL;
-    return MP_STREAM_ERROR;
+    pyb_uart_obj_t *self = self_in;
+    mp_uint_t ret;
+    if (request == MP_STREAM_POLL) {
+        mp_uint_t flags = arg;
+        ret = 0;
+        if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self->uart_id)) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if ((flags & MP_STREAM_POLL_WR) && uart_tx_any_room(self->uart_id)) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *errcode = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
 }
 
 STATIC const mp_stream_p_t uart_stream_p = {
@@ -271,7 +292,7 @@ const mp_obj_type_t pyb_uart_type = {
     .name = MP_QSTR_UART,
     .print = pyb_uart_print,
     .make_new = pyb_uart_make_new,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,

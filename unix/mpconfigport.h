@@ -45,6 +45,7 @@
 #endif
 #define MICROPY_COMP_MODULE_CONST   (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_RETURN_IF_EXPR (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (1)
@@ -80,6 +81,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
+#define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
@@ -99,6 +101,7 @@
 #endif
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_FILEIO        (1)
+#define MICROPY_PY_IO_RESOURCE_STREAM (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 #define MICROPY_MODULE_FROZEN_STR   (1)
 
@@ -133,12 +136,8 @@
 
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
-// Can't have less than 3 values because diskio.h uses volume numbers
-// as volume types and PD_USER == 2.
-#define MICROPY_FATFS_VOLUMES          (3)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define MICROPY_FSUSERMOUNT            (0)
 #define MICROPY_VFS_FAT                (0)
 
 // Define to MICROPY_ERROR_REPORTING_DETAILED to get function, etc.
@@ -159,10 +158,12 @@
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_os;
+extern const struct _mp_obj_module_t mp_module_uos_vfs;
 extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_termios;
@@ -170,6 +171,11 @@ extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 extern const struct _mp_obj_module_t mp_module_jni;
 
+#if MICROPY_PY_UOS_VFS
+#define MICROPY_PY_UOS_VFS_DEF { MP_ROM_QSTR(MP_QSTR_uos_vfs), MP_ROM_PTR(&mp_module_uos_vfs) },
+#else
+#define MICROPY_PY_UOS_VFS_DEF
+#endif
 #if MICROPY_PY_FFI
 #define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
 #else
@@ -208,10 +214,14 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_SOCKET_DEF \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
+    MICROPY_PY_UOS_VFS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
+
+// For size_t and ssize_t
+#include <unistd.h>
 
 // assume that if we already defined the obj repr then we also defined types
 #ifndef MICROPY_OBJ_REPR
@@ -226,8 +236,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 #endif
 #endif
 
-#define BYTES_PER_WORD sizeof(mp_int_t)
-
 // Cannot include <sys/types.h>, as it may lead to symbol name clashes
 #if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
 typedef long long mp_off_t;
@@ -235,8 +243,8 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-void mp_unix_alloc_exec(mp_uint_t min_size, void** ptr, mp_uint_t *size);
-void mp_unix_free_exec(void *ptr, mp_uint_t size);
+void mp_unix_alloc_exec(size_t min_size, void** ptr, size_t *size);
+void mp_unix_free_exec(void *ptr, size_t size);
 void mp_unix_mark_exec(void);
 #define MP_PLAT_ALLOC_EXEC(min_size, ptr, size) mp_unix_alloc_exec(min_size, ptr, size)
 #define MP_PLAT_FREE_EXEC(ptr, size) mp_unix_free_exec(ptr, size)
@@ -249,7 +257,6 @@ void mp_unix_mark_exec(void);
 #if MICROPY_PY_OS_DUPTERM
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 #else
-#include <unistd.h>
 #define MP_PLAT_PRINT_STRN(str, len) do { ssize_t ret = write(1, str, len); (void)ret; } while (0)
 #endif
 
@@ -279,7 +286,6 @@ void mp_unix_mark_exec(void);
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[50]; \
-    mp_obj_t keyboard_interrupt_obj; \
     void *mmap_region_head; \
 
 // We need to provide a declaration/definition of alloca()

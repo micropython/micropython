@@ -26,7 +26,7 @@
 
 #include "py/nlr.h"
 #include "py/obj.h"
-#include "readline.h"
+#include "lib/mp-readline/readline.h"
 
 STATIC mp_obj_t mp_builtin_input(uint n_args, const mp_obj_t *args) {
     if (n_args == 1) {

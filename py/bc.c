@@ -54,6 +54,16 @@ mp_uint_t mp_decode_uint(const byte **ptr) {
     return unum;
 }
 
+// This function is used to help reduce stack usage at the caller, for the case when
+// the caller doesn't need to increase the ptr argument.  If ptr is a local variable
+// and the caller uses mp_decode_uint(&ptr) instead of this function, then the compiler
+// must allocate a slot on the stack for ptr, and this slot cannot be reused for
+// anything else in the function because the pointer may have been stored in a global
+// and reused later in the function.
+mp_uint_t mp_decode_uint_value(const byte *ptr) {
+    return mp_decode_uint(&ptr);
+}
+
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
@@ -86,25 +96,26 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
-//    - code_state->ip should contain the offset in bytes from the start of
-//      the bytecode chunk to just after n_state and n_exc_stack
-//    - code_state->n_state should be set to the state size (locals plus stack)
-void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->ip should contain the offset in bytes from the pointer
+//      code_state->fun_bc->bytecode to the entry n_state (0 for bytecode, non-zero for native)
+void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
-    size_t n_state = code_state->n_state;
+
+    // get the function object that we want to set up (could be bytecode or native code)
+    mp_obj_fun_bc_t *self = code_state->fun_bc;
 
     // ip comes in as an offset into bytecode, so turn it into a true pointer
     code_state->ip = self->bytecode + (size_t)code_state->ip;
-
-    // store pointer to constant table
-    code_state->const_table = self->const_table;
 
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
     #endif
 
     // get params
+    size_t n_state = mp_decode_uint(&code_state->ip);
+    mp_decode_uint(&code_state->ip); // skip n_exc_stack
     size_t scope_flags = *code_state->ip++;
     size_t n_pos_args = *code_state->ip++;
     size_t n_kwonly_args = *code_state->ip++;
@@ -168,7 +179,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, siz
         }
 
         // get pointer to arg_names array
-        const mp_obj_t *arg_names = (const mp_obj_t*)code_state->const_table;
+        const mp_obj_t *arg_names = (const mp_obj_t*)self->const_table;
 
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
@@ -185,7 +196,12 @@ void mp_setup_code_state(mp_code_state_t *code_state, mp_obj_fun_bc_t *self, siz
             }
             // Didn't find name match with positional args
             if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) == 0) {
-                mp_raise_msg(&mp_type_TypeError, "function does not take keyword arguments");
+                if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    mp_raise_TypeError("unexpected keyword argument");
+                } else {
+                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
+                        "unexpected keyword argument '%q'", MP_OBJ_QSTR_VALUE(wanted_arg_name)));
+                }
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);
 continue2:;
@@ -234,7 +250,7 @@ continue2:;
     } else {
         // no keyword arguments given
         if (n_kwonly_args != 0) {
-            mp_raise_msg(&mp_type_TypeError, "function missing keyword-only argument");
+            mp_raise_TypeError("function missing keyword-only argument");
         }
         if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
             *var_pos_kw_args = mp_obj_new_dict(0);
@@ -244,13 +260,8 @@ continue2:;
     // get the ip and skip argument names
     const byte *ip = code_state->ip;
 
-    // store pointer to code_info and jump over it
-    {
-        code_state->code_info = ip;
-        const byte *ip2 = ip;
-        size_t code_info_size = mp_decode_uint(&ip2);
-        ip += code_info_size;
-    }
+    // jump over code info (source file and line-number mapping)
+    ip += mp_decode_uint_value(ip);
 
     // bytecode prelude: initialise closed over variables
     size_t local_num;
@@ -293,7 +304,7 @@ STATIC const byte opcode_format_table[64] = {
     OC4(U, U, U, U), // 0x0c-0x0f
     OC4(B, B, B, U), // 0x10-0x13
     OC4(V, U, Q, V), // 0x14-0x17
-    OC4(B, U, V, V), // 0x18-0x1b
+    OC4(B, V, V, Q), // 0x18-0x1b
     OC4(Q, Q, Q, Q), // 0x1c-0x1f
     OC4(B, B, V, V), // 0x20-0x23
     OC4(Q, Q, Q, B), // 0x24-0x27
