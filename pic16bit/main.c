@@ -64,7 +64,7 @@ soft_reset:
 
     // init MicroPython runtime
     int stack_dummy;
-    MP_STATE_VM(stack_top) = (char*)&stack_dummy;
+    MP_STATE_THREAD(stack_top) = (char*)&stack_dummy;
     gc_init(heap, heap + sizeof(heap));
     mp_init();
     mp_hal_init();
@@ -93,7 +93,7 @@ void gc_collect(void) {
     void *dummy;
     gc_collect_start();
     // Node: stack is ascending
-    gc_collect_root(&dummy, ((mp_uint_t)&dummy - (mp_uint_t)MP_STATE_VM(stack_top)) / sizeof(mp_uint_t));
+    gc_collect_root(&dummy, ((mp_uint_t)&dummy - (mp_uint_t)MP_STATE_THREAD(stack_top)) / sizeof(mp_uint_t));
     gc_collect_end();
 }
 

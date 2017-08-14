@@ -67,7 +67,7 @@ STATIC const mp_obj_type_t ssl_socket_type = {
     .name = MP_QSTR_ussl,
     .getiter = NULL,
     .iternext = NULL,
-    .stream_p = &socket_stream_p,
+    .protocol = &socket_stream_p,
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
 

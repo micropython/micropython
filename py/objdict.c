@@ -119,8 +119,16 @@ STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_EQUAL: {
             #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
             if (MP_UNLIKELY(MP_OBJ_IS_TYPE(lhs_in, &mp_type_ordereddict) && MP_OBJ_IS_TYPE(rhs_in, &mp_type_ordereddict))) {
-                //TODO: implement
-                return MP_OBJ_NULL;
+                // Iterate through both dictionaries simultaneously and compare keys and values.
+                mp_obj_dict_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+                mp_uint_t c1 = 0, c2 = 0;
+                mp_map_elem_t *e1 = dict_iter_next(o, &c1), *e2 = dict_iter_next(rhs, &c2);
+                for (; e1 != NULL && e2 != NULL; e1 = dict_iter_next(o, &c1), e2 = dict_iter_next(rhs, &c2)) {
+                    if (!mp_obj_equal(e1->key, e2->key) || !mp_obj_equal(e1->value, e2->value)) {
+                        return mp_const_false;
+                    }
+                }
+                return e1 == NULL && e2 == NULL ? mp_const_true : mp_const_false;
             } else
             #endif
             if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_dict)) {

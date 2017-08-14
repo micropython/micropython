@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
+#include "py/objarray.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_OS_DUPTERM
@@ -51,8 +52,16 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
         if (nlr_push(&nlr) == 0) {
             mp_obj_t write_m[3];
             mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_write, write_m);
-            write_m[2] = mp_obj_new_bytearray_by_ref(len, (char*)str);
+
+            mp_obj_array_t *arr = MP_OBJ_TO_PTR(MP_STATE_PORT(dupterm_arr_obj));
+            void *org_items = arr->items;
+            arr->items = (void*)str;
+            arr->len = len;
+            write_m[2] = MP_STATE_PORT(dupterm_arr_obj);
             mp_call_method_n_kw(1, 0, write_m);
+            arr = MP_OBJ_TO_PTR(MP_STATE_PORT(dupterm_arr_obj));
+            arr->items = org_items;
+            arr->len = 1;
             nlr_pop();
         } else {
             mp_uos_deactivate("dupterm: Exception in write() method, deactivating: ", nlr.ret_val);
@@ -69,9 +78,12 @@ STATIC mp_obj_t mp_uos_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(term_obj) = NULL;
+            MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
         } else {
             MP_STATE_PORT(term_obj) = args[0];
+            if (MP_STATE_PORT(dupterm_arr_obj) == MP_OBJ_NULL) {
+                MP_STATE_PORT(dupterm_arr_obj) = mp_obj_new_bytearray(1, "");
+            }
         }
         return mp_const_none;
     }

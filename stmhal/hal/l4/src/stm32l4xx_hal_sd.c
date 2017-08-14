@@ -459,13 +459,13 @@ __weak void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd)
   *         is managed by polling mode.  
   * @param  hsd: SD handle
   * @param  pReadBuffer: pointer to the buffer that will contain the received data
-  * @param  ReadAddr: Address from where data is to be read  
+  * @param  BlockNumber: Block number from where data is to be read (byte address = BlockNumber * BlockSize)
   * @param  BlockSize: SD card Data block size 
   *   @note BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of SD blocks to read   
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint64_t ReadAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef  sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -475,10 +475,16 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint32_t *pReadBuff
   /* Initialize data control register */
   hsd->Instance->DCTRL = 0;
   
+  uint32_t ReadAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    ReadAddr /= 512;
+    ReadAddr = BlockNumber;
+  }
+  else
+  {
+    // should not overflow for standard-capacity cards
+    ReadAddr = BlockNumber * BlockSize;
   }
   
   /* Set Block Size for Card */ 
@@ -517,7 +523,7 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint32_t *pReadBuff
     sdmmc_cmdinitstructure.CmdIndex = SD_CMD_READ_SINGLE_BLOCK;    
   }
   
-  sdmmc_cmdinitstructure.Argument         = (uint32_t)ReadAddr;
+  sdmmc_cmdinitstructure.Argument         = ReadAddr;
   SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
   
   /* Read block(s) in polling mode */
@@ -635,13 +641,13 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks(SD_HandleTypeDef *hsd, uint32_t *pReadBuff
   *         transfer is managed by polling mode.  
   * @param  hsd: SD handle
   * @param  pWriteBuffer: pointer to the buffer that will contain the data to transmit
-  * @param  WriteAddr: Address from where data is to be written 
+  * @param  BlockNumber: Block number to where data is to be written (byte address = BlockNumber * BlockSize) 
   * @param  BlockSize: SD card Data block size 
   * @note   BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of SD blocks to write 
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint64_t WriteAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -653,10 +659,16 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBu
   /* Initialize data control register */
   hsd->Instance->DCTRL = 0;
   
+  uint32_t WriteAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    WriteAddr /= 512;
+    WriteAddr = BlockNumber;
+  }
+  else
+  {
+    // should not overflow for standard-capacity cards
+    WriteAddr = BlockNumber * BlockSize;
   }
   
   /* Set Block Size for Card */ 
@@ -686,7 +698,7 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBu
     sdmmc_cmdinitstructure.CmdIndex = SD_CMD_WRITE_SINGLE_BLOCK;
   }
   
-  sdmmc_cmdinitstructure.Argument         = (uint32_t)WriteAddr;
+  sdmmc_cmdinitstructure.Argument         = WriteAddr;
   SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
   
   /* Check for error conditions */
@@ -845,13 +857,13 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks(SD_HandleTypeDef *hsd, uint32_t *pWriteBu
   *         to check the completion of the read process   
   * @param  hsd: SD handle                 
   * @param  pReadBuffer: Pointer to the buffer that will contain the received data
-  * @param  ReadAddr: Address from where data is to be read  
+  * @param  BlockNumber: Block number from where data is to be read (byte address = BlockNumber * BlockSize)
   * @param  BlockSize: SD card Data block size 
   * @note   BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of blocks to read.
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint64_t ReadAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uint32_t *pReadBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -895,10 +907,16 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pRead
   /* Enable the DMA Channel */
   HAL_DMA_Start_IT(hsd->hdmarx, (uint32_t)&hsd->Instance->FIFO, (uint32_t)pReadBuffer, (uint32_t)(BlockSize * NumberOfBlocks)/4);
   
+  uint32_t ReadAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    ReadAddr /= 512;
+    ReadAddr = BlockNumber;
+  }
+  else
+  {
+    // should not overflow for standard-capacity cards
+    ReadAddr = BlockNumber * BlockSize;
   }
   
   /* Set Block Size for Card */ 
@@ -938,7 +956,7 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pRead
     sdmmc_cmdinitstructure.CmdIndex = SD_CMD_READ_SINGLE_BLOCK;
   }
   
-  sdmmc_cmdinitstructure.Argument         = (uint32_t)ReadAddr;
+  sdmmc_cmdinitstructure.Argument         = ReadAddr;
   SDMMC_SendCommand(hsd->Instance, &sdmmc_cmdinitstructure);
   
   /* Check for error conditions */
@@ -965,13 +983,13 @@ HAL_SD_ErrorTypedef HAL_SD_ReadBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pRead
   *         to check the completion of the write process (by SD current status polling).  
   * @param  hsd: SD handle
   * @param  pWriteBuffer: pointer to the buffer that will contain the data to transmit
-  * @param  WriteAddr: Address from where data is to be read   
+  * @param  @param  BlockNumber: Block number to where data is to be written (byte address = BlockNumber * BlockSize)
   * @param  BlockSize: the SD card Data block size 
   * @note   BlockSize must be 512 bytes.
   * @param  NumberOfBlocks: Number of blocks to write
   * @retval SD Card error state
   */
-HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint64_t WriteAddr, uint32_t BlockSize, uint32_t NumberOfBlocks)
+HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_BlockNumber_DMA(SD_HandleTypeDef *hsd, uint32_t *pWriteBuffer, uint32_t BlockNumber, uint32_t BlockSize, uint32_t NumberOfBlocks)
 {
   SDMMC_CmdInitTypeDef sdmmc_cmdinitstructure;
   SDMMC_DataInitTypeDef sdmmc_datainitstructure;
@@ -1015,10 +1033,16 @@ HAL_SD_ErrorTypedef HAL_SD_WriteBlocks_DMA(SD_HandleTypeDef *hsd, uint32_t *pWri
   /* Enable SDMMC DMA transfer */
   __HAL_SD_SDMMC_DMA_ENABLE(hsd);
   
+  uint32_t WriteAddr;
   if (hsd->CardType == HIGH_CAPACITY_SD_CARD)
   {
     BlockSize = 512;
-    WriteAddr /= 512;
+    WriteAddr = BlockNumber;
+  }
+  else
+  {
+    // should not overflow for standard-capacity cards
+    WriteAddr = BlockNumber * BlockSize;
   }
 
   /* Set Block Size for Card */ 

@@ -73,6 +73,7 @@ mp_uint_t mp_hal_ticks_us(void);
 #define mp_hal_get_pin_obj(pin) (pin)
 #define mp_hal_pin_read(pin) mp_virtual_pin_read(pin)
 #define mp_hal_pin_write(pin, v) mp_virtual_pin_write(pin, v)
+#include "extmod/virtpin.h"
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_MPHAL_H__

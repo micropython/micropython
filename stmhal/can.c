@@ -888,7 +888,7 @@ const mp_obj_type_t pyb_can_type = {
     .name = MP_QSTR_CAN,
     .print = pyb_can_print,
     .make_new = pyb_can_make_new,
-    .stream_p = &can_stream_p,
+    .protocol = &can_stream_p,
     .locals_dict = (mp_obj_t)&pyb_can_locals_dict,
 };
 

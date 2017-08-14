@@ -160,6 +160,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_GC && MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },
 #endif
+#if MICROPY_PY_THREAD
+    { MP_ROM_QSTR(MP_QSTR__thread), MP_ROM_PTR(&mp_module_thread) },
+#endif
 
     // extmod modules
 
@@ -204,6 +207,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #endif
 #if MICROPY_PY_FRAMEBUF
     { MP_ROM_QSTR(MP_QSTR_framebuf), MP_ROM_PTR(&mp_module_framebuf) },
+#endif
+#if MICROPY_PY_BTREE
+    { MP_ROM_QSTR(MP_QSTR_btree), MP_ROM_PTR(&mp_module_btree) },
 #endif
 
     // extra builtin modules as defined by a port

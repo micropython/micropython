@@ -1,60 +1,64 @@
 /*
-    FreeRTOS V8.1.2 - Copyright (C) 2014 Real Time Engineers Ltd.
+    FreeRTOS V9.0.0 - Copyright (C) 2016 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
-
-    ***************************************************************************
-     *                                                                       *
-     *    FreeRTOS provides completely free yet professionally developed,    *
-     *    robust, strictly quality controlled, supported, and cross          *
-     *    platform software that has become a de facto standard.             *
-     *                                                                       *
-     *    Help yourself get started quickly and support the FreeRTOS         *
-     *    project by purchasing a FreeRTOS tutorial book, reference          *
-     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
-     *                                                                       *
-     *    Thank you!                                                         *
-     *                                                                       *
-    ***************************************************************************
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+    Free Software Foundation >>>> AND MODIFIED BY <<<< the FreeRTOS exception.
 
+    ***************************************************************************
     >>!   NOTE: The modification to the GPL is included to allow you to     !<<
     >>!   distribute a combined work that includes FreeRTOS without being   !<<
     >>!   obliged to provide the source code for proprietary components     !<<
     >>!   outside of the FreeRTOS kernel.                                   !<<
+    ***************************************************************************
 
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    FOR A PARTICULAR PURPOSE.  Full license text is available on the following
     link: http://www.freertos.org/a00114.html
 
-    1 tab == 4 spaces!
-
     ***************************************************************************
      *                                                                       *
-     *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?"                                     *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that is more than just the market leader, it     *
+     *    is the industry's de facto standard.                               *
      *                                                                       *
-     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *    Help yourself get started quickly while simultaneously helping     *
+     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
+     *    tutorial book, reference manual, or both:                          *
+     *    http://www.FreeRTOS.org/Documentation                              *
      *                                                                       *
     ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
-    license and Real Time Engineers Ltd. contact details.
+    http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
+    the FAQ page "My application does not run, what could be wrong?".  Have you
+    defined configASSERT()?
+
+    http://www.FreeRTOS.org/support - In return for receiving this top quality
+    embedded software for free we request you assist our global community by
+    participating in the support forum.
+
+    http://www.FreeRTOS.org/training - Investing in training allows your team to
+    be as productive as possible as early as possible.  Now you can receive
+    FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
+    Ltd, and the world's leading authority on the world's leading RTOS.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool, a DOS
     compatible FAT file system, and our tiny thread aware UDP/IP stack.
 
-    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
-    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
-    licenses offer ticketed support, indemnification and middleware.
+    http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
+    Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
+    Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and commercial middleware.
 
     http://www.SafeRTOS.com - High Integrity Systems also provide a safety
     engineered and independently SIL3 certified version for use in safety and
@@ -119,8 +123,20 @@ typedef void * QueueSetMemberHandle_t;
 						  );
  * </pre>
  *
- * Creates a new queue instance.  This allocates the storage required by the
- * new queue and returns a handle for the queue.
+ * Creates a new queue instance, and returns a handle by which the new queue
+ * can be referenced.
+ *
+ * Internally, within the FreeRTOS implementation, queues use two blocks of
+ * memory.  The first block is used to hold the queue's data structures.  The
+ * second block is used to hold items placed into the queue.  If a queue is
+ * created using xQueueCreate() then both blocks of memory are automatically
+ * dynamically allocated inside the xQueueCreate() function.  (see
+ * http://www.freertos.org/a00111.html).  If a queue is created using
+ * xQueueCreateStatic() then the application writer must provide the memory that
+ * will get used by the queue.  xQueueCreateStatic() therefore allows a queue to
+ * be created without using any dynamic memory allocation.
+ *
+ * http://www.FreeRTOS.org/Embedded-RTOS-Queues.html
  *
  * @param uxQueueLength The maximum number of items that the queue can contain.
  *
@@ -166,7 +182,95 @@ typedef void * QueueSetMemberHandle_t;
  * \defgroup xQueueCreate xQueueCreate
  * \ingroup QueueManagement
  */
-#define xQueueCreate( uxQueueLength, uxItemSize ) xQueueGenericCreate( uxQueueLength, uxItemSize, queueQUEUE_TYPE_BASE )
+#if( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
+	#define xQueueCreate( uxQueueLength, uxItemSize ) xQueueGenericCreate( ( uxQueueLength ), ( uxItemSize ), ( queueQUEUE_TYPE_BASE ) )
+#endif
+
+/**
+ * queue. h
+ * <pre>
+ QueueHandle_t xQueueCreateStatic(
+							  UBaseType_t uxQueueLength,
+							  UBaseType_t uxItemSize,
+							  uint8_t *pucQueueStorageBuffer,
+							  StaticQueue_t *pxQueueBuffer
+						  );
+ * </pre>
+ *
+ * Creates a new queue instance, and returns a handle by which the new queue
+ * can be referenced.
+ *
+ * Internally, within the FreeRTOS implementation, queues use two blocks of
+ * memory.  The first block is used to hold the queue's data structures.  The
+ * second block is used to hold items placed into the queue.  If a queue is
+ * created using xQueueCreate() then both blocks of memory are automatically
+ * dynamically allocated inside the xQueueCreate() function.  (see
+ * http://www.freertos.org/a00111.html).  If a queue is created using
+ * xQueueCreateStatic() then the application writer must provide the memory that
+ * will get used by the queue.  xQueueCreateStatic() therefore allows a queue to
+ * be created without using any dynamic memory allocation.
+ *
+ * http://www.FreeRTOS.org/Embedded-RTOS-Queues.html
+ *
+ * @param uxQueueLength The maximum number of items that the queue can contain.
+ *
+ * @param uxItemSize The number of bytes each item in the queue will require.
+ * Items are queued by copy, not by reference, so this is the number of bytes
+ * that will be copied for each posted item.  Each item on the queue must be
+ * the same size.
+ *
+ * @param pucQueueStorageBuffer If uxItemSize is not zero then
+ * pucQueueStorageBuffer must point to a uint8_t array that is at least large
+ * enough to hold the maximum number of items that can be in the queue at any
+ * one time - which is ( uxQueueLength * uxItemsSize ) bytes.  If uxItemSize is
+ * zero then pucQueueStorageBuffer can be NULL.
+ *
+ * @param pxQueueBuffer Must point to a variable of type StaticQueue_t, which
+ * will be used to hold the queue's data structure.
+ *
+ * @return If the queue is created then a handle to the created queue is
+ * returned.  If pxQueueBuffer is NULL then NULL is returned.
+ *
+ * Example usage:
+   <pre>
+ struct AMessage
+ {
+	char ucMessageID;
+	char ucData[ 20 ];
+ };
+
+ #define QUEUE_LENGTH 10
+ #define ITEM_SIZE sizeof( uint32_t )
+
+ // xQueueBuffer will hold the queue structure.
+ StaticQueue_t xQueueBuffer;
+
+ // ucQueueStorage will hold the items posted to the queue.  Must be at least
+ // [(queue length) * ( queue item size)] bytes long.
+ uint8_t ucQueueStorage[ QUEUE_LENGTH * ITEM_SIZE ];
+
+ void vATask( void *pvParameters )
+ {
+ QueueHandle_t xQueue1;
+
+	// Create a queue capable of containing 10 uint32_t values.
+	xQueue1 = xQueueCreate( QUEUE_LENGTH, // The number of items the queue can hold.
+							ITEM_SIZE	  // The size of each item in the queue
+							&( ucQueueStorage[ 0 ] ), // The buffer that will hold the items in the queue.
+							&xQueueBuffer ); // The buffer that will hold the queue structure.
+
+	// The queue is guaranteed to be created successfully as no dynamic memory
+	// allocation is used.  Therefore xQueue1 is now a handle to a valid queue.
+
+	// ... Rest of task code.
+ }
+ </pre>
+ * \defgroup xQueueCreateStatic xQueueCreateStatic
+ * \ingroup QueueManagement
+ */
+#if( configSUPPORT_STATIC_ALLOCATION == 1 )
+	#define xQueueCreateStatic( uxQueueLength, uxItemSize, pucQueueStorage, pxQueueBuffer ) xQueueGenericCreateStatic( ( uxQueueLength ), ( uxItemSize ), ( pucQueueStorage ), ( pxQueueBuffer ), ( queueQUEUE_TYPE_BASE ) )
+#endif /* configSUPPORT_STATIC_ALLOCATION */
 
 /**
  * queue. h
@@ -1269,7 +1373,8 @@ uint32_t ulVarToSend, ulValReceived;
  *
  * It is preferred that the macros xQueueSendFromISR(),
  * xQueueSendToFrontFromISR() and xQueueSendToBackFromISR() be used in place
- * of calling this function directly.
+ * of calling this function directly.  xQueueGiveFromISR() is an
+ * equivalent for use by semaphores that don't actually copy any data.
  *
  * Post an item on a queue.  It is safe to use this function from within an
  * interrupt service routine.
@@ -1333,6 +1438,7 @@ uint32_t ulVarToSend, ulValReceived;
  * \ingroup QueueManagement
  */
 BaseType_t xQueueGenericSendFromISR( QueueHandle_t xQueue, const void * const pvItemToQueue, BaseType_t * const pxHigherPriorityTaskWoken, const BaseType_t xCopyPosition ) PRIVILEGED_FUNCTION;
+BaseType_t xQueueGiveFromISR( QueueHandle_t xQueue, BaseType_t * const pxHigherPriorityTaskWoken ) PRIVILEGED_FUNCTION;
 
 /**
  * queue. h
@@ -1431,28 +1537,6 @@ BaseType_t xQueueIsQueueEmptyFromISR( const QueueHandle_t xQueue ) PRIVILEGED_FU
 BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue ) PRIVILEGED_FUNCTION;
 UBaseType_t uxQueueMessagesWaitingFromISR( const QueueHandle_t xQueue ) PRIVILEGED_FUNCTION;
 
-
-/*
- * xQueueAltGenericSend() is an alternative version of xQueueGenericSend().
- * Likewise xQueueAltGenericReceive() is an alternative version of
- * xQueueGenericReceive().
- *
- * The source code that implements the alternative (Alt) API is much
- * simpler	because it executes everything from within a critical section.
- * This is	the approach taken by many other RTOSes, but FreeRTOS.org has the
- * preferred fully featured API too.  The fully featured API has more
- * complex	code that takes longer to execute, but makes much less use of
- * critical sections.  Therefore the alternative API sacrifices interrupt
- * responsiveness to gain execution speed, whereas the fully featured API
- * sacrifices execution speed to ensure better interrupt responsiveness.
- */
-BaseType_t xQueueAltGenericSend( QueueHandle_t xQueue, const void * const pvItemToQueue, TickType_t xTicksToWait, BaseType_t xCopyPosition );
-BaseType_t xQueueAltGenericReceive( QueueHandle_t xQueue, void * const pvBuffer, TickType_t xTicksToWait, BaseType_t xJustPeeking );
-#define xQueueAltSendToFront( xQueue, pvItemToQueue, xTicksToWait ) xQueueAltGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_FRONT )
-#define xQueueAltSendToBack( xQueue, pvItemToQueue, xTicksToWait ) xQueueAltGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )
-#define xQueueAltReceive( xQueue, pvBuffer, xTicksToWait ) xQueueAltGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdFALSE )
-#define xQueueAltPeek( xQueue, pvBuffer, xTicksToWait ) xQueueAltGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdTRUE )
-
 /*
  * The functions defined above are for passing data to and from tasks.  The
  * functions below are the equivalents for passing data to and from
@@ -1473,7 +1557,9 @@ BaseType_t xQueueCRReceive( QueueHandle_t xQueue, void *pvBuffer, TickType_t xTi
  * these functions directly.
  */
 QueueHandle_t xQueueCreateMutex( const uint8_t ucQueueType ) PRIVILEGED_FUNCTION;
+QueueHandle_t xQueueCreateMutexStatic( const uint8_t ucQueueType, StaticQueue_t *pxStaticQueue ) PRIVILEGED_FUNCTION;
 QueueHandle_t xQueueCreateCountingSemaphore( const UBaseType_t uxMaxCount, const UBaseType_t uxInitialCount ) PRIVILEGED_FUNCTION;
+QueueHandle_t xQueueCreateCountingSemaphoreStatic( const UBaseType_t uxMaxCount, const UBaseType_t uxInitialCount, StaticQueue_t *pxStaticQueue ) PRIVILEGED_FUNCTION;
 void* xQueueGetMutexHolder( QueueHandle_t xSemaphore ) PRIVILEGED_FUNCTION;
 
 /*
@@ -1484,10 +1570,8 @@ BaseType_t xQueueTakeMutexRecursive( QueueHandle_t xMutex, TickType_t xTicksToWa
 BaseType_t xQueueGiveMutexRecursive( QueueHandle_t pxMutex ) PRIVILEGED_FUNCTION;
 
 /*
- * Reset a queue back to its original empty state.  pdPASS is returned if the
- * queue is successfully reset.  pdFAIL is returned if the queue could not be
- * reset because there are tasks blocked on the queue waiting to either
- * receive from the queue or send to the queue.
+ * Reset a queue back to its original empty state.  The return value is now
+ * obsolete and is always set to pdPASS.
  */
 #define xQueueReset( xQueue ) xQueueGenericReset( xQueue, pdFALSE )
 
@@ -1513,7 +1597,7 @@ BaseType_t xQueueGiveMutexRecursive( QueueHandle_t pxMutex ) PRIVILEGED_FUNCTION
  * stores a pointer to the string - so the string must be persistent (global or
  * preferably in ROM/Flash), not on the stack.
  */
-#if configQUEUE_REGISTRY_SIZE > 0
+#if( configQUEUE_REGISTRY_SIZE > 0 )
 	void vQueueAddToRegistry( QueueHandle_t xQueue, const char *pcName ) PRIVILEGED_FUNCTION; /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
 #endif
 
@@ -1527,15 +1611,42 @@ BaseType_t xQueueGiveMutexRecursive( QueueHandle_t pxMutex ) PRIVILEGED_FUNCTION
  *
  * @param xQueue The handle of the queue being removed from the registry.
  */
-#if configQUEUE_REGISTRY_SIZE > 0
+#if( configQUEUE_REGISTRY_SIZE > 0 )
 	void vQueueUnregisterQueue( QueueHandle_t xQueue ) PRIVILEGED_FUNCTION;
 #endif
 
 /*
- * Generic version of the queue creation function, which is in turn called by
- * any queue, semaphore or mutex creation function or macro.
+ * The queue registry is provided as a means for kernel aware debuggers to
+ * locate queues, semaphores and mutexes.  Call pcQueueGetName() to look
+ * up and return the name of a queue in the queue registry from the queue's
+ * handle.
+ *
+ * @param xQueue The handle of the queue the name of which will be returned.
+ * @return If the queue is in the registry then a pointer to the name of the
+ * queue is returned.  If the queue is not in the registry then NULL is
+ * returned.
  */
-QueueHandle_t xQueueGenericCreate( const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize, const uint8_t ucQueueType ) PRIVILEGED_FUNCTION;
+#if( configQUEUE_REGISTRY_SIZE > 0 )
+	const char *pcQueueGetName( QueueHandle_t xQueue ) PRIVILEGED_FUNCTION; /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+#endif
+
+/*
+ * Generic version of the function used to creaet a queue using dynamic memory
+ * allocation.  This is called by other functions and macros that create other
+ * RTOS objects that use the queue structure as their base.
+ */
+#if( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
+	QueueHandle_t xQueueGenericCreate( const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize, const uint8_t ucQueueType ) PRIVILEGED_FUNCTION;
+#endif
+
+/*
+ * Generic version of the function used to creaet a queue using dynamic memory
+ * allocation.  This is called by other functions and macros that create other
+ * RTOS objects that use the queue structure as their base.
+ */
+#if( configSUPPORT_STATIC_ALLOCATION == 1 )
+	QueueHandle_t xQueueGenericCreateStatic( const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize, uint8_t *pucQueueStorage, StaticQueue_t *pxStaticQueue, const uint8_t ucQueueType ) PRIVILEGED_FUNCTION;
+#endif
 
 /*
  * Queue sets provide a mechanism to allow a task to block (pend) on a read
@@ -1672,7 +1783,7 @@ QueueSetMemberHandle_t xQueueSelectFromSet( QueueSetHandle_t xQueueSet, const Ti
 QueueSetMemberHandle_t xQueueSelectFromSetFromISR( QueueSetHandle_t xQueueSet ) PRIVILEGED_FUNCTION;
 
 /* Not public API functions. */
-void vQueueWaitForMessageRestricted( QueueHandle_t xQueue, TickType_t xTicksToWait ) PRIVILEGED_FUNCTION;
+void vQueueWaitForMessageRestricted( QueueHandle_t xQueue, TickType_t xTicksToWait, const BaseType_t xWaitIndefinitely ) PRIVILEGED_FUNCTION;
 BaseType_t xQueueGenericReset( QueueHandle_t xQueue, BaseType_t xNewQueue ) PRIVILEGED_FUNCTION;
 void vQueueSetQueueNumber( QueueHandle_t xQueue, UBaseType_t uxQueueNumber ) PRIVILEGED_FUNCTION;
 UBaseType_t uxQueueGetQueueNumber( QueueHandle_t xQueue ) PRIVILEGED_FUNCTION;

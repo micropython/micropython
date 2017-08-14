@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.ADC:
 
 class ADC -- analog to digital conversion
@@ -35,12 +36,12 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: adc.read()
+    .. method:: ADC.read()
 
        Read the value on the analog pin and return it.  The returned value
        will be between 0 and 4095.
 
-    .. method:: adc.read_timed(buf, timer)
+    .. method:: ADC.read_timed(buf, timer)
     
        Read analog values into ``buf`` at a rate set by the ``timer`` object.
 

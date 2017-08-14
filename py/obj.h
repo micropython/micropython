@@ -484,7 +484,8 @@ struct _mp_obj_type_t {
     mp_fun_1_t iternext; // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raising StopIteration() (with no args)
 
     mp_buffer_p_t buffer_p;
-    const mp_stream_p_t *stream_p;
+    // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
+    const void *protocol;
 
     // these are for dynamically created types (classes)
     struct _mp_obj_tuple_t *bases_tuple;

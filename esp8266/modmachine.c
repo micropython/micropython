@@ -103,6 +103,8 @@ STATIC mp_obj_t machine_deepsleep(void) {
         }
     }
 
+    // prepare for RTC reset at wake up
+    rtc_prepare_deepsleep(sleep_us);
     // put the device in a deep-sleep state
     system_deep_sleep_set_option(0); // default power down mode; TODO check this
     system_deep_sleep(sleep_us);

@@ -51,6 +51,7 @@ library.
     .. toctree::
        :maxdepth: 1
 
+       builtins.rst
        cmath.rst
        gc.rst
        math.rst
@@ -74,6 +75,7 @@ library.
     .. toctree::
        :maxdepth: 1
 
+       builtins.rst
        cmath.rst
        gc.rst
        math.rst
@@ -97,6 +99,7 @@ library.
     .. toctree::
        :maxdepth: 1
 
+       builtins.rst
        gc.rst
        select.rst
        sys.rst
@@ -113,6 +116,7 @@ library.
     .. toctree::
        :maxdepth: 1
 
+       builtins.rst
        gc.rst
        math.rst
        sys.rst

@@ -29,22 +29,15 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#include "py/mpstate.h"
 #include "py/gc.h"
+#include "py/mpthread.h"
 #include "gccollect.h"
 #include "gchelper.h"
 
 /******************************************************************************
-DECLARE PRIVATE DATA
- ******************************************************************************/
-static uint32_t stackend;
-
-
-/******************************************************************************
 DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-void gc_collect_init (uint32_t sp) {
-    stackend = sp;
-}
 
 void gc_collect(void) {
     // start the GC
@@ -55,7 +48,12 @@ void gc_collect(void) {
     mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, (stackend - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+
+    // trace root pointers from any threads
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
 
     // end the GC
     gc_collect_end();

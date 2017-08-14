@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#include "py/stackctrl.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -69,6 +70,7 @@
 #include "updater.h"
 #include "moduos.h"
 #include "antenna.h"
+#include "task.h"
 
 /******************************************************************************
  DECLARE PRIVATE CONSTANTS
@@ -103,9 +105,8 @@ static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
  ******************************************************************************/
 
 void TASK_Micropython (void *pvParameters) {
-    // initialize the garbage collector with the top of our stack
+    // get the top of the stack to initialize the garbage collector
     uint32_t sp = gc_helper_get_sp();
-    gc_collect_init (sp);
 
     bool safeboot = false;
     mptask_pre_init();
@@ -115,6 +116,14 @@ void TASK_Micropython (void *pvParameters) {
 #endif
 
 soft_reset:
+
+    // Thread init
+    #if MICROPY_PY_THREAD
+    mp_thread_init();
+    #endif
+
+    // initialise the stack pointer for the main thread (must be done after mp_thread_init)
+    mp_stack_set_top((void*)sp);
 
     // GC init
     gc_init(&_boot, &_eheap);
@@ -272,15 +281,12 @@ STATIC void mptask_pre_init (void) {
 
     //CRYPTOHASH_Init();
 
-#ifdef DEBUG
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, &svTaskHandle));
-#else
-    ASSERT (OSI_OK == osi_TaskCreate(TASK_Servers,
-                                     (const signed char *)"Servers",
-                                     SERVERS_STACK_SIZE, NULL, SERVERS_PRIORITY, NULL));
+#ifndef DEBUG
+    OsiTaskHandle svTaskHandle;
 #endif
+    svTaskHandle = xTaskCreateStatic(TASK_Servers, "Servers",
+        SERVERS_STACK_LEN, NULL, SERVERS_PRIORITY, svTaskStack, &svTaskTCB);
+    ASSERT(svTaskHandle != NULL);
 }
 
 STATIC void mptask_init_sflash_filesystem (void) {

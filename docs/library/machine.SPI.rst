@@ -1,4 +1,4 @@
-.. _machine.SPI:
+.. currentmodule:: machine
 
 class SPI -- a master-driven serial protocol
 ============================================
@@ -23,7 +23,7 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: machine.SPI(id, ...)
+    .. class:: SPI(id, ...)
 
        Construct an SPI object on the given bus.  ``id`` can be only 0.
        With no additional parameters, the SPI object is created but not
@@ -34,7 +34,7 @@ Constructors
 Methods
 -------
 
-.. method:: spi.init(mode, baudrate=1000000, \*, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, pins=(CLK, MOSI, MISO))
+.. method:: SPI.init(mode, baudrate=1000000, \*, polarity=0, phase=0, bits=8, firstbit=SPI.MSB, pins=(CLK, MOSI, MISO))
 
    Initialise the SPI bus with the given parameters:
 
@@ -47,27 +47,27 @@ Methods
      - ``firstbit`` can be ``SPI.MSB`` only.
      - ``pins`` is an optional tupple with the pins to assign to the SPI bus.
 
-.. method:: spi.deinit()
+.. method:: SPI.deinit()
 
    Turn off the SPI bus.
 
-.. method:: spi.write(buf)
+.. method:: SPI.write(buf)
 
     Write the data contained in ``buf``. 
     Returns the number of bytes written.
 
-.. method:: spi.read(nbytes, *, write=0x00)
+.. method:: SPI.read(nbytes, *, write=0x00)
 
     Read the ``nbytes`` while writing the data specified by ``write``.
     Return the number of bytes read.
 
-.. method:: spi.readinto(buf, *, write=0x00)
+.. method:: SPI.readinto(buf, *, write=0x00)
 
     Read into the buffer specified by ``buf`` while writing the data specified by
     ``write``.
     Return the number of bytes read.
 
-.. method:: spi.write_readinto(write_buf, read_buf)
+.. method:: SPI.write_readinto(write_buf, read_buf)
 
     Write from ``write_buf`` and read into ``read_buf``. Both buffers must have the
     same length.

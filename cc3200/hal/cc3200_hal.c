@@ -111,6 +111,7 @@ mp_uint_t mp_hal_ticks_ms(void) {
 void mp_hal_delay_ms(mp_uint_t delay) {
     // only if we are not within interrupt context and interrupts are enabled
     if ((HAL_NVIC_INT_CTRL_REG & HAL_VECTACTIVE_MASK) == 0 && query_irq() == IRQ_STATE_ENABLED) {
+        MP_THREAD_GIL_EXIT();
         #ifdef USE_FREERTOS
             vTaskDelay (delay / portTICK_PERIOD_MS);
         #else
@@ -121,6 +122,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
                 __WFI();
             }
         #endif
+        MP_THREAD_GIL_ENTER();
     } else {
         for (int ms = 0; ms < delay; ms++) {
             UtilsDelay(UTILS_DELAY_US_TO_COUNT(1000));

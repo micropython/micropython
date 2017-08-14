@@ -136,15 +136,25 @@ STATIC void gc_helper_get_regs(regs_t arr) {
 
 #endif // MICROPY_GCREGS_SETJMP
 
-void gc_collect(void) {
-    //gc_dump_info();
+// this function is used by mpthreadport.c
+void gc_collect_regs_and_stack(void);
 
-    gc_collect_start();
+void gc_collect_regs_and_stack(void) {
     regs_t regs;
     gc_helper_get_regs(regs);
     // GC stack (and regs because we captured them)
     void **regs_ptr = (void**)(void*)&regs;
-    gc_collect_root(regs_ptr, ((uintptr_t)MP_STATE_VM(stack_top) - (uintptr_t)&regs) / sizeof(uintptr_t));
+    gc_collect_root(regs_ptr, ((uintptr_t)MP_STATE_THREAD(stack_top) - (uintptr_t)&regs) / sizeof(uintptr_t));
+}
+
+void gc_collect(void) {
+    //gc_dump_info();
+
+    gc_collect_start();
+    gc_collect_regs_and_stack();
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
     #if MICROPY_EMIT_NATIVE
     mp_unix_mark_exec();
     #endif

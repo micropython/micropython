@@ -1,4 +1,4 @@
-.. _machine.I2C:
+.. currentmodule:: machine
 
 class I2C -- a two-wire serial protocol
 =======================================
@@ -44,14 +44,14 @@ Constructors
 
 .. only:: port_wipy
 
-    .. class:: machine.I2C(bus, ...)
+    .. class:: I2C(bus, ...)
 
        Construct an I2C object on the given bus.  `bus` can only be 0.
        If the bus is not given, the default one will be selected (0).
 
 .. only:: port_esp8266
 
-    .. class:: machine.I2C(scl, sda, \*, freq=400000)
+    .. class:: I2C(scl, sda, \*, freq=400000)
 
        Construct and return a new I2C object.
        See the init method below for a description of the arguments.
@@ -61,7 +61,7 @@ General Methods
 
 .. only:: port_wipy
 
-    .. method:: i2c.init(mode, \*, baudrate=100000, pins=(SDA, SCL))
+    .. method:: I2C.init(mode, \*, baudrate=100000, pins=(SDA, SCL))
 
       Initialise the I2C bus with the given parameters:
 
@@ -71,7 +71,7 @@ General Methods
 
 .. only:: port_esp8266
 
-    .. method:: i2c.init(scl, sda, \*, freq=400000)
+    .. method:: I2C.init(scl, sda, \*, freq=400000)
 
       Initialise the I2C bus with the given arguments:
 
@@ -79,13 +79,13 @@ General Methods
          - `sda` is a pin object for the SDA line
          - `freq` is the SCL clock rate
 
-.. method:: i2c.deinit()
+.. method:: I2C.deinit()
 
    Turn off the I2C bus.
 
    Availability: WiPy.
 
-.. method:: i2c.scan()
+.. method:: I2C.scan()
 
    Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
    those that respond.  A device responds if it pulls the SDA line low after
@@ -100,19 +100,19 @@ The following methods implement the primitive I2C master bus operations and can
 be combined to make any I2C transaction.  They are provided if you need more
 control over the bus, otherwise the standard methods (see below) can be used.
 
-.. method:: i2c.start()
+.. method:: I2C.start()
 
    Send a start bit on the bus (SDA transitions to low while SCL is high).
 
    Availability: ESP8266.
 
-.. method:: i2c.stop()
+.. method:: I2C.stop()
 
    Send a stop bit on the bus (SDA transitions to high while SCL is high).
 
    Availability: ESP8266.
 
-.. method:: i2c.readinto(buf)
+.. method:: I2C.readinto(buf)
 
    Reads bytes from the bus and stores them into `buf`.  The number of bytes
    read is the length of `buf`.  An ACK will be sent on the bus after
@@ -121,7 +121,7 @@ control over the bus, otherwise the standard methods (see below) can be used.
 
    Availability: ESP8266.
 
-.. method:: i2c.write(buf)
+.. method:: I2C.write(buf)
 
    Write all the bytes from `buf` to the bus.  Checks that an ACK is received
    after each byte and raises an OSError if not.
@@ -134,12 +134,12 @@ Standard bus operations
 The following methods implement the standard I2C master read and write
 operations that target a given slave device.
 
-.. method:: i2c.readfrom(addr, nbytes)
+.. method:: I2C.readfrom(addr, nbytes)
 
    Read `nbytes` from the slave specified by `addr`.
    Returns a `bytes` object with the data read.
 
-.. method:: i2c.readfrom_into(addr, buf)
+.. method:: I2C.readfrom_into(addr, buf)
 
    Read into `buf` from the slave specified by `addr`.
    The number of bytes read will be the length of `buf`.
@@ -147,7 +147,7 @@ operations that target a given slave device.
    On WiPy the return value is the number of bytes read.  Otherwise the
    return value is `None`.
 
-.. method:: i2c.writeto(addr, buf, \*, stop=True)
+.. method:: I2C.writeto(addr, buf, \*, stop=True)
 
    Write the bytes from `buf` to the slave specified by `addr`.
 
@@ -166,7 +166,7 @@ from and written to.  In this case there are two addresses associated with an
 I2C transaction: the slave address and the memory address.  The following
 methods are convenience functions to communicate with such devices.
 
-.. method:: i2c.readfrom_mem(addr, memaddr, nbytes, \*, addrsize=8)
+.. method:: I2C.readfrom_mem(addr, memaddr, nbytes, \*, addrsize=8)
 
    Read `nbytes` from the slave specified by `addr` starting from the memory
    address specified by `memaddr`.
@@ -174,7 +174,7 @@ methods are convenience functions to communicate with such devices.
    this argument is not recognised and the address size is always 8 bits).
    Returns a `bytes` object with the data read.
 
-.. method:: i2c.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
+.. method:: I2C.readfrom_mem_into(addr, memaddr, buf, \*, addrsize=8)
 
    Read into `buf` from the slave specified by `addr` starting from the
    memory address specified by `memaddr`.  The number of bytes read is the
@@ -185,7 +185,7 @@ methods are convenience functions to communicate with such devices.
    On WiPy the return value is the number of bytes read.  Otherwise the
    return value is `None`.
 
-.. method:: i2c.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
+.. method:: I2C.writeto_mem(addr, memaddr, buf, \*, addrsize=8)
 
    Write `buf` to the slave specified by `addr` starting from the
    memory address specified by `memaddr`.

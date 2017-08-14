@@ -239,7 +239,7 @@ typedef struct _lwip_socket_obj_t {
     byte peer[4];
     mp_uint_t peer_port;
     mp_uint_t timeout;
-    uint16_t leftover_count;
+    uint16_t recv_offset;
 
     uint8_t domain;
     uint8_t type;
@@ -354,11 +354,17 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
         socket->state = STATE_PEER_CLOSED;
         exec_user_callback(socket);
         return ERR_OK;
-    } else if (socket->incoming.pbuf != NULL) {
-        // No room in the inn, let LWIP know it's still responsible for delivery later
-        return ERR_BUF;
     }
-    socket->incoming.pbuf = p;
+
+    if (socket->incoming.pbuf == NULL) {
+        socket->incoming.pbuf = p;
+    } else {
+        #ifdef SOCKET_SINGLE_PBUF
+        return ERR_BUF;
+        #else
+        pbuf_cat(socket->incoming.pbuf, p);
+        #endif
+    }
 
     exec_user_callback(socket);
 
@@ -536,22 +542,28 @@ STATIC mp_uint_t lwip_tcp_receive(lwip_socket_obj_t *socket, byte *buf, mp_uint_
 
     struct pbuf *p = socket->incoming.pbuf;
 
-    if (socket->leftover_count == 0) {
-        socket->leftover_count = p->tot_len;
+    mp_uint_t remaining = p->len - socket->recv_offset;
+    if (len > remaining) {
+        len = remaining;
     }
 
-    u16_t result = pbuf_copy_partial(p, buf, ((socket->leftover_count >= len) ? len : socket->leftover_count), (p->tot_len - socket->leftover_count));
-    if (socket->leftover_count > len) {
-        // More left over...
-        socket->leftover_count -= len;
-    } else {
+    memcpy(buf, (byte*)p->payload + socket->recv_offset, len);
+
+    remaining -= len;
+    if (remaining == 0) {
+        socket->incoming.pbuf = p->next;
+        // If we don't ref here, free() will free the entire chain,
+        // if we ref, it does what we need: frees 1st buf, and decrements
+        // next buf's refcount back to 1.
+        pbuf_ref(p->next);
         pbuf_free(p);
-        socket->incoming.pbuf = NULL;
-        socket->leftover_count = 0;
+        socket->recv_offset = 0;
+    } else {
+        socket->recv_offset += len;
     }
+    tcp_recved(socket->pcb.tcp, len);
 
-    tcp_recved(socket->pcb.tcp, result);
-    return (mp_uint_t) result;
+    return len;
 }
 
 /*******************************************************************************/
@@ -561,8 +573,8 @@ STATIC const mp_obj_type_t lwip_socket_type;
 
 STATIC void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     lwip_socket_obj_t *self = self_in;
-    mp_printf(print, "<socket state=%d timeout=%d incoming=%p remaining=%d>", self->state, self->timeout,
-        self->incoming.pbuf, self->leftover_count);
+    mp_printf(print, "<socket state=%d timeout=%d incoming=%p off=%d>", self->state, self->timeout,
+        self->incoming.pbuf, self->recv_offset);
 }
 
 // FIXME: Only supports two arguments at present
@@ -612,7 +624,7 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, mp_uint_t n_args
     socket->incoming.pbuf = NULL;
     socket->timeout = -1;
     socket->state = STATE_NEW;
-    socket->leftover_count = 0;
+    socket->recv_offset = 0;
     return socket;
 }
 
@@ -749,7 +761,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     socket2->incoming.pbuf = NULL;
     socket2->timeout = socket->timeout;
     socket2->state = STATE_CONNECTED;
-    socket2->leftover_count = 0;
+    socket2->recv_offset = 0;
     socket2->callback = MP_OBJ_NULL;
     tcp_arg(socket2->pcb.tcp, (void*)socket2);
     tcp_err(socket2->pcb.tcp, _lwip_tcp_error);
@@ -1148,7 +1160,7 @@ STATIC const mp_obj_type_t lwip_socket_type = {
     .name = MP_QSTR_socket,
     .print = lwip_socket_print,
     .make_new = lwip_socket_make_new,
-    .stream_p = &lwip_socket_stream_p,
+    .protocol = &lwip_socket_stream_p,
     .locals_dict = (mp_obj_t)&lwip_socket_locals_dict,
 };
 

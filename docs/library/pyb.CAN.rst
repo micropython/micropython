@@ -1,3 +1,5 @@
+.. currentmodule:: pyb
+
 class CAN -- controller area network communication bus
 ======================================================
 
@@ -34,7 +36,7 @@ Constructors
 
 Class Methods
 -------------
-.. method:: CAN.initfilterbanks(nr)
+.. classmethod:: CAN.initfilterbanks(nr)
 
    Reset and disable all filter banks and assign how many banks should be available for CAN(1).
 
@@ -46,7 +48,7 @@ Class Methods
 Methods
 -------
 
-.. method:: can.init(mode, extframe=False, prescaler=100, \*, sjw=1, bs1=6, bs2=8)
+.. method:: CAN.init(mode, extframe=False, prescaler=100, \*, sjw=1, bs1=6, bs2=8)
 
    Initialise the CAN bus with the given parameters:
 
@@ -78,11 +80,11 @@ Methods
 
    See page 680 of the STM32F405 datasheet for more details.
 
-.. method:: can.deinit()
+.. method:: CAN.deinit()
 
    Turn off the CAN bus.
 
-.. method:: can.setfilter(bank, mode, fifo, params, \*, rtr)
+.. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr)
 
    Configure a filter bank:
 
@@ -124,17 +126,17 @@ Methods
    |CAN.MASK32 |1                     |
    +-----------+----------------------+
 
-.. method:: can.clearfilter(bank)
+.. method:: CAN.clearfilter(bank)
 
    Clear and disables a filter bank:
 
    - ``bank`` is the filter bank that is to be cleared.
 
-.. method:: can.any(fifo)
+.. method:: CAN.any(fifo)
 
    Return ``True`` if any message waiting on the FIFO, else ``False``.
 
-.. method:: can.recv(fifo, \*, timeout=5000)
+.. method:: CAN.recv(fifo, \*, timeout=5000)
 
    Receive data on the bus:
 
@@ -148,7 +150,7 @@ Methods
      - The FMI (Filter Match Index) value.
      - An array containing the data.
 
-.. method:: can.send(data, id, \*, timeout=0, rtr=False)
+.. method:: CAN.send(data, id, \*, timeout=0, rtr=False)
 
    Send a message on the bus:
 
@@ -168,7 +170,7 @@ Methods
 
    Return value: ``None``.
 
-.. method:: can.rxcallback(fifo, fun)
+.. method:: CAN.rxcallback(fifo, fun)
 
    Register a function to be called when a message is accepted into a empty fifo:
 

@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.Timer:
 
 class Timer -- control internal timers
@@ -67,7 +68,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.init(\*, freq, prescaler, period)
+    .. method:: Timer.init(\*, freq, prescaler, period)
     
        Initialise the timer.  Initialisation must be either by frequency (in Hz)
        or by prescaler and period::
@@ -114,7 +115,7 @@ Methods
        
         You must either specify freq or both of period and prescaler.
 
-.. method:: timer.deinit()
+.. method:: Timer.deinit()
 
    Deinitialises the timer.
    
@@ -127,7 +128,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.callback(fun)
+    .. method:: Timer.callback(fun)
     
        Set the function to be called when the timer triggers.
        ``fun`` is passed 1 argument, the timer object.
@@ -135,7 +136,7 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.channel(channel, mode, ...)
+    .. method:: Timer.channel(channel, mode, ...)
     
        If only a channel number is passed, then a previously initialized channel
        object is returned (or ``None`` if there is no previous channel).
@@ -211,27 +212,27 @@ Methods
 
 .. only:: port_pyboard
 
-    .. method:: timer.counter([value])
+    .. method:: Timer.counter([value])
 
        Get or set the timer counter.
 
 .. only:: port_pyboard
 
-    .. method:: timer.freq([value])
+    .. method:: Timer.freq([value])
     
        Get or set the frequency for the timer (changes prescaler and period if set).
 
 .. only:: port_pyboard
 
-    .. method:: timer.period([value])
+    .. method:: Timer.period([value])
     
        Get or set the period of the timer.
     
-    .. method:: timer.prescaler([value])
+    .. method:: Timer.prescaler([value])
     
        Get or set the prescaler for the timer.
     
-    .. method:: timer.source_freq()
+    .. method:: Timer.source_freq()
     
        Get the frequency of the source of the timer.
 

@@ -53,12 +53,13 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
         if (elem->value == NULL) {
             // object not found; get its ioctl and add it to the poll list
             mp_obj_type_t *type = mp_obj_get_type(obj[i]);
-            if (type->stream_p == NULL || type->stream_p->ioctl == NULL) {
+            const mp_stream_p_t *stream_p = type->protocol;
+            if (stream_p == NULL || stream_p->ioctl == NULL) {
                 nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "object with stream.ioctl required"));
             }
             poll_obj_t *poll_obj = m_new_obj(poll_obj_t);
             poll_obj->obj = obj[i];
-            poll_obj->ioctl = type->stream_p->ioctl;
+            poll_obj->ioctl = stream_p->ioctl;
             poll_obj->flags = flags;
             poll_obj->flags_ret = 0;
             elem->value = poll_obj;

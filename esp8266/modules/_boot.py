@@ -1,3 +1,4 @@
+import gc
 import uos
 from flashbdev import bdev
 
@@ -7,3 +8,5 @@ try:
 except OSError:
     import inisetup
     vfs = inisetup.setup()
+
+gc.collect()

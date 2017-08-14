@@ -91,6 +91,12 @@ void mp_init(void) {
     // start with no extensions to builtins
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
+
+    #if MICROPY_PY_THREAD_GIL
+    mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
+    #endif
+
+    MP_THREAD_GIL_ENTER();
 }
 
 void mp_deinit(void) {

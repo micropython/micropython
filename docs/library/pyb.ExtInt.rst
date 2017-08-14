@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.ExtInt:
 
 class ExtInt -- configure I/O pins to interrupt on external events
@@ -71,7 +72,7 @@ Constructors
 Class methods
 -------------
 
-.. method:: ExtInt.regs()
+.. classmethod:: ExtInt.regs()
 
    Dump the values of the EXTI registers.
 
@@ -79,20 +80,20 @@ Class methods
 Methods
 -------
 
-.. method:: extint.disable()
+.. method:: ExtInt.disable()
 
    Disable the interrupt associated with the ExtInt object.
    This could be useful for debouncing.
 
-.. method:: extint.enable()
+.. method:: ExtInt.enable()
 
    Enable a disabled interrupt.
 
-.. method:: extint.line()
+.. method:: ExtInt.line()
 
    Return the line number that the pin is mapped to.
 
-.. method:: extint.swint()
+.. method:: ExtInt.swint()
 
    Trigger the callback from software.
 

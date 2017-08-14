@@ -36,32 +36,39 @@
 #include "py/mperrno.h"
 #include "modpyb.h"
 
-// baudrate is currently fixed to this value
-#define UART_BAUDRATE (115200)
+// UartDev is defined and initialized in rom code.
+extern UartDevice UartDev;
 
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     uint8_t uart_id;
+    uint8_t bits;
+    uint8_t parity;
+    uint8_t stop;
+    uint32_t baudrate;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } pyb_uart_obj_t;
+
+STATIC const char *_parity_name[] = {"None", "1", "0"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, timeout=%u, timeout_char=%u)",
-        self->uart_id, UART_BAUDRATE, self->timeout, self->timeout_char);
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u)",
+        self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
+        self->stop, self->timeout, self->timeout_char);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
-        //{ MP_QSTR_baudrate, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 9600} },
-        //{ MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
-        //{ MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        //{ MP_QSTR_stop, MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
         //{ MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -70,16 +77,84 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // set baudrate
+    if (args[ARG_baudrate].u_int > 0) {
+        self->baudrate = args[ARG_baudrate].u_int;
+        UartDev.baut_rate = self->baudrate; // Sic!
+    }
+
+    // set data bits
+    switch (args[ARG_bits].u_int) {
+        case 0:
+            break;
+        case 5:
+            UartDev.data_bits = UART_FIVE_BITS;
+            self->bits = 5;
+            break;
+        case 6:
+            UartDev.data_bits = UART_SIX_BITS;
+            self->bits = 6;
+            break;
+        case 7:
+            UartDev.data_bits = UART_SEVEN_BITS;
+            self->bits = 7;
+            break;
+        case 8:
+            UartDev.data_bits = UART_EIGHT_BITS;
+            self->bits = 8;
+            break;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid data bits"));
+            break;
+    }
+
+    // set parity
+    if (args[ARG_parity].u_obj != MP_OBJ_NULL) {
+        if (args[ARG_parity].u_obj == mp_const_none) {
+            UartDev.parity = UART_NONE_BITS;
+            self->parity = 0;
+        } else {
+            mp_int_t parity = mp_obj_get_int(args[ARG_parity].u_obj);
+            if (parity & 1) {
+                UartDev.parity = UART_ODD_BITS;
+                self->parity = 1;
+            } else {
+                UartDev.parity = UART_EVEN_BITS;
+                self->parity = 2;
+            }
+        }
+    }
+
+    // set stop bits
+    switch (args[ARG_stop].u_int) {
+        case 0:
+            break;
+        case 1:
+            UartDev.stop_bits = UART_ONE_STOP_BIT;
+            self->stop = 1;
+            break;
+        case 2:
+            UartDev.stop_bits = UART_TWO_STOP_BIT;
+            self->stop = 2;
+            break;
+        default:
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid stop bits"));
+            break;
+    }
+
     // set timeout
     self->timeout = args[ARG_timeout].u_int;
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
     self->timeout_char = args[ARG_timeout_char].u_int;
-    uint32_t min_timeout_char = 13000 / UART_BAUDRATE + 1;
+    uint32_t min_timeout_char = 13000 / self->baudrate + 1;
     if (self->timeout_char < min_timeout_char) {
         self->timeout_char = min_timeout_char;
     }
+
+    // setup
+    uart_setup(self->uart_id);
 }
 
 STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -95,6 +170,12 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     pyb_uart_obj_t *self = m_new_obj(pyb_uart_obj_t);
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
+    self->baudrate = 115200;
+    self->bits = 8;
+    self->parity = 0;
+    self->stop = 1;
+    self->timeout = 0;
+    self->timeout_char = 0;
 
     // init the peripheral
     mp_map_t kw_args;
@@ -191,6 +272,6 @@ const mp_obj_type_t pyb_uart_type = {
     .make_new = pyb_uart_make_new,
     .getiter = mp_identity,
     .iternext = mp_stream_unbuffered_iter,
-    .stream_p = &uart_stream_p,
+    .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,
 };

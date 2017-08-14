@@ -1,3 +1,4 @@
+.. currentmodule:: pyb
 .. _pyb.DAC:
 
 class DAC -- digital to analog conversion
@@ -62,32 +63,32 @@ Constructors
 Methods
 -------
 
-.. method:: dac.init(bits=8)
+.. method:: DAC.init(bits=8)
 
    Reinitialise the DAC.  ``bits`` can be 8 or 12.
 
-.. method:: dac.deinit()
+.. method:: DAC.deinit()
 
    De-initialise the DAC making its pin available for other uses.
 
-.. method:: dac.noise(freq)
+.. method:: DAC.noise(freq)
 
    Generate a pseudo-random noise signal.  A new random sample is written
    to the DAC output at the given frequency.
 
-.. method:: dac.triangle(freq)
+.. method:: DAC.triangle(freq)
 
    Generate a triangle wave.  The value on the DAC output changes at
    the given frequency, and the frequence of the repeating triangle wave
    itself is 2048 times smaller.
 
-.. method:: dac.write(value)
+.. method:: DAC.write(value)
 
    Direct access to the DAC output.  The minimum value is 0.  The maximum
    value is 2\*\*``bits``-1, where ``bits`` is set when creating the DAC
    object or by using the ``init`` method.
 
-.. method:: dac.write_timed(data, freq, \*, mode=DAC.NORMAL)
+.. method:: DAC.write_timed(data, freq, \*, mode=DAC.NORMAL)
 
    Initiates a burst of RAM to DAC using a DMA transfer.
    The input data is treated as an array of bytes in 8-bit mode, and

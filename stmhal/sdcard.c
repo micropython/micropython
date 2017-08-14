@@ -40,9 +40,9 @@
 
 #if MICROPY_HW_HAS_SDCARD
 
-#if defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
 
-// The F7 series calls the peripheral SDMMC rather than SDIO, so provide some
+// The F7 & L4 series calls the peripheral SDMMC rather than SDIO, so provide some
 // #defines for backwards compatability.
 
 #define SDIO    SDMMC1
@@ -64,11 +64,6 @@
 #define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
 
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_TRANSFER_CLK_DIV
-
-#elif defined(MCU_SERIES_L4)
-
-// The L4 series is not supported
-#error Unsupported Processor
 
 #endif
 

@@ -1,12 +1,12 @@
 MicroPython port to ESP8266
 ===========================
 
-This is a highly experimental port of MicroPython for the WiFi modules based
+This is an experimental port of MicroPython for the WiFi modules based
 on Espressif ESP8266 chip.
 
-WARNING: The port is highly experimental and any APIs are subject to change.
+WARNING: The port is experimental and many APIs are subject to change.
 
-Currently implemented features include:
+Supported features include:
 - REPL (Python prompt) over UART0.
 - Garbage collector, exceptions.
 - Unicode support.
@@ -19,6 +19,8 @@ Currently implemented features include:
 - 1-Wire and WS2812 (aka Neopixel) protocols support.
 - Internal filesystem using the flash.
 - WebREPL over WiFi from a browser (clients at https://github.com/micropython/webrepl).
+- Modules for HTTP, MQTT, many other formats and protocols via
+  https://github.com/micropython/micropython-lib .
 
 Work-in-progress documentation is available at
 http://docs.micropython.org/en/latest/esp8266/ .
@@ -38,6 +40,12 @@ $ git submodule update --init
 ```
 See the README in the repository root for more information about external
 dependencies.
+
+The MicroPython cross-compiler must be built to pre-compile some of the
+built-in scripts to bytecode.  This can be done using:
+```bash
+$ make -C mpy-cross
+```
 
 Then, to build MicroPython for the ESP8266, just run:
 ```bash

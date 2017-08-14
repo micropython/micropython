@@ -32,7 +32,7 @@ Supported operators are:
 
 ``'+?'``
 
-Counted repetitions (``{m,n}``), more advanced assertions, names groups,
+Counted repetitions (``{m,n}``), more advanced assertions, named groups,
 etc. are not supported.
 
 

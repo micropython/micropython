@@ -26,6 +26,12 @@
 
 // options to control how Micro Python is built
 
+#define MICROPY_ALLOC_QSTR_CHUNK_INIT (64)
+#define MICROPY_ALLOC_PARSE_RULE_INIT (8)
+#define MICROPY_ALLOC_PARSE_RULE_INC  (8)
+#define MICROPY_ALLOC_PARSE_RESULT_INIT (8)
+#define MICROPY_ALLOC_PARSE_RESULT_INC (8)
+#define MICROPY_ALLOC_PARSE_CHUNK_INIT (64)
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (0)
@@ -38,6 +44,7 @@
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_WARNINGS            (0)
+#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (0)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_STREAMS_NON_BLOCK   (0)
@@ -76,12 +83,25 @@
 #define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_UCTYPES          (0)
+#define MICROPY_PY_UTIME            (0)
 #define MICROPY_PY_UZLIB            (0)
 #define MICROPY_PY_UJSON            (0)
 #define MICROPY_PY_URE              (0)
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UHASHLIB         (0)
 #define MICROPY_PY_UBINASCII        (0)
+
+extern const struct _mp_obj_module_t mp_module_os;
+
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_os }, \
+
+#define MICROPY_PORT_ROOT_POINTERS \
+    mp_obj_t keyboard_interrupt_obj;
+
+//////////////////////////////////////////
+// Do not change anything beyond this line
+//////////////////////////////////////////
 
 // Define to 1 to use undertested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
@@ -92,13 +112,6 @@
         #define MICROPY_GCREGS_SETJMP (0)
     #endif
 #endif
-
-#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (0)
-
-extern const struct _mp_obj_module_t mp_module_os;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&mp_module_os }, \
 
 // type definitions for the specific machine
 
@@ -123,9 +136,6 @@ typedef long mp_off_t;
 
 typedef void *machine_ptr_t; // must be of pointer size
 typedef const void *machine_const_ptr_t; // must be of pointer size
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t keyboard_interrupt_obj;
 
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__

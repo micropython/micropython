@@ -63,10 +63,6 @@
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-#ifndef BOOTLOADER
-STATIC const mp_obj_base_t pyb_heartbeat_obj = {&pyb_heartbeat_type};
-#endif
-
 struct mperror_heart_beat {
     uint32_t off_time;
     uint32_t on_time;

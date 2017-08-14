@@ -824,6 +824,17 @@ typedef double mp_float_t;
 #define MICROPY_PY_UERRNO (0)
 #endif
 
+// Whether to provide "_thread" module
+#ifndef MICROPY_PY_THREAD
+#define MICROPY_PY_THREAD (0)
+#endif
+
+// Whether to make the VM/runtime thread-safe using a global lock
+// If not enabled then thread safety must be provided at the Python level
+#ifndef MICROPY_PY_THREAD_GIL
+#define MICROPY_PY_THREAD_GIL (MICROPY_PY_THREAD)
+#endif
+
 // Extended modules
 
 #ifndef MICROPY_PY_UCTYPES
@@ -886,6 +897,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_FRAMEBUF
 #define MICROPY_PY_FRAMEBUF (0)
+#endif
+
+#ifndef MICROPY_PY_BTREE
+#define MICROPY_PY_BTREE (0)
 #endif
 
 /*****************************************************************************/
@@ -1029,6 +1044,11 @@ typedef double mp_float_t;
 // Modifier for weak functions
 #ifndef MP_WEAK
 #define MP_WEAK __attribute__((weak))
+#endif
+
+// Modifier for functions which should be never inlined
+#ifndef MP_NOINLINE
+#define MP_NOINLINE __attribute__((noinline))
 #endif
 
 // Condition is likely to be true, to help branch prediction

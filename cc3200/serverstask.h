@@ -31,7 +31,8 @@
  DEFINE CONSTANTS
  ******************************************************************************/
 #define SERVERS_PRIORITY                        2
-#define SERVERS_STACK_SIZE                      1024
+#define SERVERS_STACK_SIZE                      1024 // in bytes
+#define SERVERS_STACK_LEN                       (SERVERS_STACK_SIZE / sizeof(StackType_t))
 
 #define SERVERS_SSID_LEN_MAX                    16
 #define SERVERS_KEY_LEN_MAX                     16
@@ -52,6 +53,8 @@
 /******************************************************************************
  EXPORTED DATA
  ******************************************************************************/
+extern StaticTask_t svTaskTCB;
+extern StackType_t svTaskStack[];
 extern char servers_user[];
 extern char servers_pass[];
 

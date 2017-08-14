@@ -31,6 +31,8 @@
 #include "py/obj.h"
 
 #include "extmod/machine_mem.h"
+#include "extmod/machine_pinbase.h"
+#include "extmod/machine_pulse.h"
 
 #if MICROPY_PLAT_DEV_MEM
 #include <errno.h>
@@ -78,6 +80,11 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&machine_pinbase_type) },
+    #if MICROPY_PY_MACHINE_PULSE
+    { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);

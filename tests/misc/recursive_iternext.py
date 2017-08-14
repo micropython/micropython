@@ -5,7 +5,7 @@
 try:
     # large stack/heap, eg unix
     [0] * 80000
-    N = 2000
+    N = 2400
 except:
     try:
         # medium, eg pyboard
