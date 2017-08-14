@@ -73,17 +73,14 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_char(char c) {
-    mp_obj_t term = MP_STATE_PORT(term_obj);
-    if (term == NULL || term == MP_OBJ_NULL) {
-        uart_tx_one_char(UART0, c);
-    }
+    uart_maybe_repl_tx_one_char(c);
     mp_uos_dupterm_tx_strn(&c, 1);
 }
 
 #if 0
 void mp_hal_debug_str(const char *str) {
     while (*str) {
-        uart_tx_one_char(UART0, *str++);
+        uart_maybe_repl_tx_one_char(UART0, *str++);
     }
     uart_flush(UART0);
 }
@@ -114,9 +111,9 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
     (void)env;
     while (len--) {
         if (*str == '\n') {
-            uart_tx_one_char(UART0, '\r');
+            uart_maybe_repl_tx_one_char('\r');
         }
-        uart_tx_one_char(UART0, *str++);
+        uart_maybe_repl_tx_one_char(*str++);
     }
 }
 

@@ -273,6 +273,13 @@ void uart_handle_rx() {
     }
 }
 
+void uart_maybe_repl_tx_one_char(char c) {
+    pyb_uart_obj_t *uart = &pyb_uart_objs[0];
+    if (uart->use_repl) {
+        uart_tx_one_char(UART0, c);
+    }
+}
+
 // Waits at most timeout microseconds for at least 1 char to become ready for reading.
 // Returns true if something available, false if not.
 STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout_us) {
