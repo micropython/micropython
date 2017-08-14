@@ -54,6 +54,7 @@ typedef struct _pyb_uart_obj_t {
     uint16_t rxbuflen;
     ringbuf_t rxbuf;
     byte      *buf;
+    uint8_t use_repl;
 } pyb_uart_obj_t;
 
 pyb_uart_obj_t pyb_uart_objs[2];
@@ -71,13 +72,13 @@ void uart_init0 (void) {
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u, rxbuflen=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u, rxbuflen=%u, use_repl=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->timeout, self->timeout_char, self->rxbuflen);
+        self->stop, self->timeout, self->timeout_char, self->rxbuflen, self->use_repl);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char, ARG_rxbuflen };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char, ARG_rxbuflen, ARG_use_repl };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -88,6 +89,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_rxbuflen, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16} },
+        { MP_QSTR_use_repl, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -171,6 +173,13 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
     }
 
     self->rxbuflen = args[ARG_rxbuflen].u_int;
+
+    if (args[ARG_use_repl].u_int == 0) {
+        self->use_repl = 0;
+    } else {
+        self->use_repl = 1;
+    }
+
     // setup
     uart_setup(self->uart_id);
 }
@@ -243,31 +252,23 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
-void mp_uart_stuff_rx(mp_obj_t self_in, byte ch) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    ringbuf_put(&self->rxbuf,ch);
-}
-
 void uart_handle_rx() {
     int ch;
-    mp_obj_t term = MP_STATE_PORT(term_obj);
-    bool uart_term = (term == NULL || term == MP_STATE_PORT(pyb_uart_objs)[0]);
+    pyb_uart_obj_t *self = &pyb_uart_objs[0];
+    bool is_uart_repl = self->use_repl;
 
-    for (;;) {
-        if ((ch = uart_rx_one_char(0)) == -1) {
-            break;
-        }
-        if (uart_term) {
+    while (uart_rx_any(0)) {
+        ch = uart_rx_one_char(0);
+        ringbuf_put(&self->rxbuf, ch);
+        if (is_uart_repl) {
             if (ch == mp_interrupt_char) {
                 mp_keyboard_interrupt();
             } else {
                 ringbuf_put(&input_buf, ch);
             }
-        } else {
-            mp_uart_stuff_rx(MP_STATE_PORT(pyb_uart_objs)[0], ch);
         }
     }
-    if (uart_term) {
+    if (is_uart_repl) {
         mp_hal_signal_input();
     }
 }
