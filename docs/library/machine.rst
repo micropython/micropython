@@ -145,13 +145,13 @@ Classes
  .. toctree::
    :maxdepth: 1
 
-   machine.I2C.rst
    machine.Pin.rst
    machine.Signal.rst
-   machine.RTC.rst
-   machine.SPI.rst
-   machine.Timer.rst
    machine.UART.rst
+   machine.SPI.rst
+   machine.I2C.rst
+   machine.RTC.rst
+   machine.Timer.rst
    machine.WDT.rst
 
 .. only:: port_wipy
@@ -159,12 +159,12 @@ Classes
  .. toctree::
    :maxdepth: 1
 
-   machine.ADC.rst
-   machine.I2C.rst
    machine.Pin.rst
-   machine.RTC.rst
-   machine.SD.rst
-   machine.SPI.rst
-   machine.Timer.rst
    machine.UART.rst
+   machine.SPI.rst
+   machine.I2C.rst
+   machine.RTC.rst
+   machine.Timer.rst
    machine.WDT.rst
+   machine.ADC.rst
+   machine.SD.rst

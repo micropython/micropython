@@ -6,9 +6,8 @@ try:
     max
     zip
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # We need to pick an N that is large enough to hit the recursion
 # limit, but not too large that we run out of heap memory.

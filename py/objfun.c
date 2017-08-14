@@ -141,11 +141,11 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
 /* byte code functions                                                        */
 
 qstr mp_obj_code_get_name(const byte *code_info) {
-    mp_decode_uint(&code_info); // skip code_info_size entry
+    code_info = mp_decode_uint_skip(code_info); // skip code_info_size entry
     #if MICROPY_PERSISTENT_CODE
     return code_info[0] | (code_info[1] << 8);
     #else
-    return mp_decode_uint(&code_info);
+    return mp_decode_uint_value(code_info);
     #endif
 }
 
@@ -163,8 +163,8 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     #endif
 
     const byte *bc = fun->bytecode;
-    mp_decode_uint(&bc); // skip n_state
-    mp_decode_uint(&bc); // skip n_exc_stack
+    bc = mp_decode_uint_skip(bc); // skip n_state
+    bc = mp_decode_uint_skip(bc); // skip n_exc_stack
     bc++; // skip scope_params
     bc++; // skip n_pos_args
     bc++; // skip n_kwonly_args
@@ -205,12 +205,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // get start of bytecode
-    const byte *ip = self->bytecode;
-
     // bytecode prelude: state size and exception stack size
-    size_t n_state = mp_decode_uint(&ip);
-    size_t n_exc_stack = mp_decode_uint(&ip);
+    size_t n_state = mp_decode_uint_value(self->bytecode);
+    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self->bytecode));
 
     // allocate state for locals and stack
     size_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
@@ -243,12 +240,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
-    // get start of bytecode
-    const byte *ip = self->bytecode;
-
     // bytecode prelude: state size and exception stack size
-    size_t n_state = mp_decode_uint(&ip);
-    size_t n_exc_stack = mp_decode_uint(&ip);
+    size_t n_state = mp_decode_uint_value(self->bytecode);
+    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self->bytecode));
 
 #if VM_DETECT_STACK_OVERFLOW
     n_state += 1;

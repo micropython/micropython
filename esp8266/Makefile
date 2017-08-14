@@ -94,7 +94,6 @@ SRC_C = \
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
-	input.c \
 	)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -233,7 +232,11 @@ axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a:
 	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
+	cd ../lib/axtls; $(MAKE) oldconfig -B
+	cd ../lib/axtls; $(MAKE) clean
+	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
 	cp ../lib/axtls/_stage/libaxtls.a $@
+
+clean-modules:
+	git clean -f -d modules
+	rm -f build/frozen*.c

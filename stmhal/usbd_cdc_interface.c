@@ -82,10 +82,10 @@ static uint8_t UserTxBufPtrWaitCount = 0; // used to implement a timeout waiting
 static uint8_t UserTxNeedEmptyPacket = 0; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
 /* Private function prototypes -----------------------------------------------*/
-static int8_t CDC_Itf_Init     (void);
+static int8_t CDC_Itf_Init     (USBD_HandleTypeDef *pdev);
 static int8_t CDC_Itf_DeInit   (void);
 static int8_t CDC_Itf_Control  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
-static int8_t CDC_Itf_Receive  (uint8_t* pbuf, uint32_t *Len);
+static int8_t CDC_Itf_Receive  (USBD_HandleTypeDef *pdev, uint8_t* pbuf, uint32_t *Len);
 
 const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
     CDC_Itf_Init,
@@ -102,7 +102,7 @@ const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
   * @param  None
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Itf_Init(void)
+static int8_t CDC_Itf_Init(USBD_HandleTypeDef *pdev)
 {
 #if 0
   /*##-1- Configure the UART peripheral ######################################*/
@@ -141,8 +141,8 @@ static int8_t CDC_Itf_Init(void)
 #endif
   
     /*##-5- Set Application Buffers ############################################*/
-    USBD_CDC_SetTxBuffer(&hUSBDDevice, UserTxBuffer, 0);
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, cdc_rx_packet_buf);
+    USBD_CDC_SetTxBuffer(pdev, UserTxBuffer, 0);
+    USBD_CDC_SetRxBuffer(pdev, cdc_rx_packet_buf);
 
     cdc_rx_buf_put = 0;
     cdc_rx_buf_get = 0;
@@ -288,9 +288,9 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = UserTxBufPtrOutShadow;
 
-        USBD_CDC_SetTxBuffer(&hUSBDDevice, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
+        USBD_CDC_SetTxBuffer(hpcd->pData, (uint8_t*)&UserTxBuffer[buffptr], buffsize);
 
-        if (USBD_CDC_TransmitPacket(&hUSBDDevice) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(hpcd->pData) == USBD_OK) {
             UserTxBufPtrOutShadow += buffsize;
             if (UserTxBufPtrOutShadow == APP_TX_DATA_SIZE) {
                 UserTxBufPtrOutShadow = 0;
@@ -317,7 +317,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
   * @note   The buffer we are passed here is just cdc_rx_packet_buf, so we are
   *         free to modify it.
   */
-static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
+static int8_t CDC_Itf_Receive(USBD_HandleTypeDef *pdev, uint8_t* Buf, uint32_t *Len) {
 #if 0
     // this sends the data over the UART using DMA
     HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
@@ -339,8 +339,8 @@ static int8_t CDC_Itf_Receive(uint8_t* Buf, uint32_t *Len) {
     }
 
     // initiate next USB packet transfer
-    USBD_CDC_SetRxBuffer(&hUSBDDevice, cdc_rx_packet_buf);
-    USBD_CDC_ReceivePacket(&hUSBDDevice);
+    USBD_CDC_SetRxBuffer(pdev, cdc_rx_packet_buf);
+    USBD_CDC_ReceivePacket(pdev);
 
     return USBD_OK;
 }

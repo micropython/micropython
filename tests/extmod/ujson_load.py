@@ -6,9 +6,8 @@ except:
         from io import StringIO
         import json
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 print(json.load(StringIO('null')))
 print(json.load(StringIO('"abc\\u0064e"')))

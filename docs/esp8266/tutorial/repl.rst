@@ -101,11 +101,12 @@ turn it on and off using the following code::
 
     >>> import machine
     >>> pin = machine.Pin(2, machine.Pin.OUT)
-    >>> pin.high()
-    >>> pin.low()
+    >>> pin.on()
+    >>> pin.off()
 
-Note that ``high`` might turn the LED off and ``low`` might turn it on (or vice
-versa), depending on how the LED is wired on your board.
+Note that ``on`` method of a Pin might turn the LED off and ``off`` might
+turn it on (or vice versa), depending on how the LED is wired on your board.
+To resolve this, machine.Signal class is provided.
 
 Line editing
 ~~~~~~~~~~~~

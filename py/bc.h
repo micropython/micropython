@@ -92,6 +92,7 @@ typedef struct _mp_code_state_t {
 
 mp_uint_t mp_decode_uint(const byte **ptr);
 mp_uint_t mp_decode_uint_value(const byte *ptr);
+const byte *mp_decode_uint_skip(const byte *ptr);
 
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc);
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);

@@ -20,7 +20,7 @@ except AttributeError:
     print(True)
 
 try:
-    sys.exit()
+    raise SystemExit
 except SystemExit as e:
     print("SystemExit", e.args)
 

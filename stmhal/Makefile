@@ -147,7 +147,6 @@ SRC_C = \
 	gccollect.c \
 	pybstdio.c \
 	help.c \
-	input.c \
 	machine_i2c.c \
 	modmachine.c \
 	modpyb.c \

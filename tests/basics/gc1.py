@@ -4,8 +4,7 @@ try:
     import gc
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 print(gc.isenabled())
 gc.disable()

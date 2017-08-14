@@ -5,8 +5,10 @@ qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 This script works with Python 2.6, 2.7, 3.3 and 3.4.
 """
 
+from __future__ import print_function
+
 import re
-import argparse
+import sys
 import os
 
 # Blacklist of qstrings that are specially handled in further
@@ -84,18 +86,18 @@ def cat_together():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generates qstr definitions from a specified source')
+    if len(sys.argv) != 5:
+        print('usage: %s command input_filename output_dir output_file' % sys.argv[0])
+        sys.exit(2)
 
-    parser.add_argument('command',
-        help='Command (split/cat)')
-    parser.add_argument('input_filename',
-        help='Name of the input file (when not specified, the script reads standard input)')
-    parser.add_argument('output_dir',
-        help='Output directory to store individual qstr files')
-    parser.add_argument('output_file',
-        help='Name of the output file with collected qstrs')
+    class Args:
+        pass
+    args = Args()
+    args.command = sys.argv[1]
+    args.input_filename = sys.argv[2]
+    args.output_dir = sys.argv[3]
+    args.output_file = sys.argv[4]
 
-    args = parser.parse_args()
     try:
         os.makedirs(args.output_dir)
     except OSError:

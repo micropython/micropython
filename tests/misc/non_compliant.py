@@ -4,9 +4,8 @@ try:
     import array
     import ustruct
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # when super can't find self
 try:

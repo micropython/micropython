@@ -262,7 +262,7 @@ coverage_test: coverage
 	gcov -o build-coverage/extmod ../extmod/*.c
 
 # Value of configure's --host= option (required for cross-compilation).
-# Deduce it from CROSS_COMPILE by default, but can be overriden.
+# Deduce it from CROSS_COMPILE by default, but can be overridden.
 ifneq ($(CROSS_COMPILE),)
 CROSS_COMPILE_HOST = --host=$(patsubst %-,%,$(CROSS_COMPILE))
 else
@@ -278,15 +278,15 @@ libffi:
 	cd ../lib/libffi; ./autogen.sh
 	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
-	make install-exec-recursive; make -C include install-data-am
+	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
 axtls: $(BUILD)/libaxtls.a
 
 $(BUILD)/libaxtls.a: ../lib/axtls/README | $(OBJ_DIRS)
 	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+	cd ../lib/axtls; $(MAKE) oldconfig -B
+	cd ../lib/axtls; $(MAKE) clean
+	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
 	cp ../lib/axtls/_stage/libaxtls.a $@
 
 ../lib/axtls/README:

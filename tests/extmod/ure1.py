@@ -4,9 +4,8 @@ except ImportError:
     try:
         import re
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 r = re.compile(".+")
 m = r.match("abc")

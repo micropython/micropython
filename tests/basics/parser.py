@@ -4,8 +4,7 @@ try:
     compile
 except NameError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 # completely empty string
 # uPy and CPy differ for this case

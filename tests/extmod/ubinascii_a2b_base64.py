@@ -4,9 +4,8 @@ try:
     except ImportError:
         import binascii
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 print(binascii.a2b_base64(b''))
 print(binascii.a2b_base64(b'Zg=='))

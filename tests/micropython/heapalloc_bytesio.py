@@ -1,9 +1,8 @@
 try:
     import uio
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 import micropython
 

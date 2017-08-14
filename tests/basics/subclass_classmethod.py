@@ -8,9 +8,8 @@ class Base:
 try:
     Base.__name__
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 class Sub(Base):
     pass

@@ -28,10 +28,10 @@ typedef struct {
 } USBD_CDC_LineCodingTypeDef;
 
 typedef struct _USBD_CDC_Itf {
-  int8_t (* Init)          (void);
+  int8_t (* Init)          (USBD_HandleTypeDef *pdev);
   int8_t (* DeInit)        (void);
   int8_t (* Control)       (uint8_t, uint8_t * , uint16_t);   
-  int8_t (* Receive)       (uint8_t *, uint32_t *);  
+  int8_t (* Receive)       (USBD_HandleTypeDef *pdev, uint8_t *, uint32_t *);
 } USBD_CDC_ItfTypeDef;
 
 typedef struct {
@@ -48,8 +48,8 @@ typedef struct {
 } USBD_CDC_HandleTypeDef;
 
 typedef struct _USBD_HID_Itf {
-  int8_t (* Init)   (void);
-  int8_t (* Receive)(uint8_t *, uint32_t);
+  int8_t (* Init)   (USBD_HandleTypeDef *pdev);
+  int8_t (* Receive)(USBD_HandleTypeDef *pdev, uint8_t *, uint32_t);
 } USBD_HID_ItfTypeDef;
 
 typedef struct _USBD_STORAGE {

@@ -198,7 +198,7 @@ int DEBUG_printf(const char *fmt, ...);
 extern mp_uint_t mp_verbose_flag;
 
 // This is useful for unicode handling. Some CPU archs has
-// special instructions for efficient implentation of this
+// special instructions for efficient implementation of this
 // function (e.g. CLZ on ARM).
 // NOTE: this function is unused at the moment
 #ifndef count_lead_ones

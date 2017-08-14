@@ -2,8 +2,7 @@
 try:
     import ure
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 ure.compile('^a|b[0-9]\w$', ure.DEBUG)

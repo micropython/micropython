@@ -4,9 +4,8 @@ except:
     try:
         import struct
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 print(struct.calcsize("<bI"))
 print(struct.unpack("<bI", b"\x80\0\0\x01\0"))

@@ -8,9 +8,8 @@ class A:
 try:
     t = A()[1:2]
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 
 A()[1:2:3]

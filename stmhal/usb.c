@@ -54,7 +54,7 @@
 mp_uint_t pyb_usb_flags = 0;
 
 #ifdef USE_DEVICE_MODE
-USBD_HandleTypeDef hUSBDDevice;
+STATIC USBD_HandleTypeDef hUSBDDevice;
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 #endif
 
@@ -568,7 +568,7 @@ STATIC mp_obj_t pyb_usb_hid_recv(mp_uint_t n_args, const mp_obj_t *args, mp_map_
     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
 
     // receive the data
-    int ret = USBD_HID_Rx((uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
+    int ret = USBD_HID_Rx(&hUSBDDevice, (uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {

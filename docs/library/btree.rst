@@ -69,7 +69,7 @@ Functions
 
    Open a database from a random-access `stream` (like an open file). All
    other parameters are optional and keyword-only, and allow to tweak advanced
-   paramters of the database operation (most users will not need them):
+   parameters of the database operation (most users will not need them):
 
    * `flags` - Currently unused.
    * `cachesize` - Suggested maximum memory cache size in bytes. For a

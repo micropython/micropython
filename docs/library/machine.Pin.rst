@@ -146,17 +146,19 @@ Methods
 
    When setting the value this method returns ``None``.
 
-.. method:: Pin.out_value()
-
-   Return the value stored in the output buffer of a pin, regardless of its mode.
-
-   Not all ports implement this method.
-
 .. method:: Pin.__call__([x])
 
    Pin objects are callable.  The call method provides a (fast) shortcut to set
    and get the value of the pin.  It is equivalent to Pin.value([x]).
    See :meth:`Pin.value` for more details.
+
+.. method:: Pin.on()
+
+   Set pin to "1" output level.
+
+.. method:: Pin.off()
+
+   Set pin to "0" output level.
 
 .. method:: Pin.mode([mode])
 

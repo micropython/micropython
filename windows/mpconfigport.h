@@ -69,6 +69,7 @@
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
+#define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
@@ -163,7 +164,6 @@ void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 #endif
 
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
 extern const struct _mp_obj_module_t mp_module_os;

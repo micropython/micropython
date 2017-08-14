@@ -587,7 +587,8 @@ STATIC mp_obj_t mod_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 
     // Raise error only if there's nothing to return, otherwise
     // it may be IPv4 vs IPv6 differences.
-    if (state.status != 0 && mp_obj_len(state.result) == 0) {
+    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(state.result));
+    if (state.status != 0 && len == 0) {
         mp_raise_OSError(state.status);
     }
 

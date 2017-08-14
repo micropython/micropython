@@ -4,9 +4,8 @@ try:
     io.BytesIO
     io.BufferedWriter
 except AttributeError:
-    import sys
     print('SKIP')
-    sys.exit()
+    raise SystemExit
 
 bts = io.BytesIO()
 buf = io.BufferedWriter(bts, 8)

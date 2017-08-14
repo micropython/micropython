@@ -3,9 +3,8 @@
 try:
     str.splitlines
 except:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # test \n as newline
 print("foo\nbar".splitlines())

@@ -373,7 +373,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 }
 
 /*******************************************************************************/
-// Functions for socket send/recieve operations. Socket send/recv and friends call
+// Functions for socket send/receive operations. Socket send/recv and friends call
 // these to do the work.
 
 // Helper function for send/sendto to handle UDP packets.
@@ -732,7 +732,9 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
 
     // accept incoming connection
     if (socket->incoming.connection == NULL) {
-        if (socket->timeout != -1) {
+        if (socket->timeout == 0) {
+            mp_raise_OSError(MP_EAGAIN);
+        } else if (socket->timeout != -1) {
             for (mp_uint_t retries = socket->timeout / 100; retries--;) {
                 mp_hal_delay_ms(100);
                 if (socket->incoming.connection != NULL) break;
@@ -800,12 +802,12 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
         case MOD_NETWORK_SOCK_STREAM: {
             if (socket->state != STATE_NEW) {
                 if (socket->state == STATE_CONNECTED) {
-                    mp_raise_OSError(MP_EALREADY);
+                    mp_raise_OSError(MP_EISCONN);
                 } else {
-                    mp_raise_OSError(MP_EINPROGRESS);
+                    mp_raise_OSError(MP_EALREADY);
                 }
             }
-            // Register our recieve callback.
+            // Register our receive callback.
             tcp_recv(socket->pcb.tcp, _lwip_tcp_recv);
             socket->state = STATE_CONNECTING;
             err = tcp_connect(socket->pcb.tcp, &dest, port, _lwip_tcp_connected);
@@ -822,7 +824,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
                     if (socket->state != STATE_CONNECTING) break;
                 }
                 if (socket->state == STATE_CONNECTING) {
-                    mp_raise_OSError(MP_ETIMEDOUT);
+                    mp_raise_OSError(MP_EINPROGRESS);
                 }
             } else {
                 while (socket->state == STATE_CONNECTING) {

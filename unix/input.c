@@ -37,32 +37,8 @@
 #include "lib/mp-readline/readline.h"
 #endif
 
+#if MICROPY_USE_READLINE == 0
 char *prompt(char *p) {
-#if MICROPY_USE_READLINE == 1
-    // MicroPython supplied readline
-    vstr_t vstr;
-    vstr_init(&vstr, 16);
-    mp_hal_stdio_mode_raw();
-    int ret = readline(&vstr, p);
-    mp_hal_stdio_mode_orig();
-    if (ret != 0) {
-        vstr_clear(&vstr);
-        if (ret == CHAR_CTRL_D) {
-            // EOF
-            printf("\n");
-            return NULL;
-        } else {
-            printf("\n");
-            char *line = malloc(1);
-            line[0] = '\0';
-            return line;
-        }
-    }
-    vstr_null_terminated_str(&vstr);
-    char *line = malloc(vstr.len + 1);
-    memcpy(line, vstr.buf, vstr.len + 1);
-    vstr_clear(&vstr);
-#else
     // simple read string
     static char buf[256];
     fputs(p, stdout);
@@ -78,9 +54,9 @@ char *prompt(char *p) {
     }
     char *line = malloc(l);
     memcpy(line, buf, l);
-#endif
     return line;
 }
+#endif
 
 void prompt_read_history(void) {
 #if MICROPY_USE_READLINE_HISTORY
@@ -143,18 +119,3 @@ void prompt_write_history(void) {
     #endif
 #endif
 }
-
-STATIC mp_obj_t mp_builtin_input(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 1) {
-        mp_obj_print(args[0], PRINT_STR);
-    }
-
-    char *line = prompt("");
-    if (line == NULL) {
-        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
-    }
-    mp_obj_t o = mp_obj_new_str(line, strlen(line), false);
-    free(line);
-    return o;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj, 0, 1, mp_builtin_input);

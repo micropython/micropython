@@ -602,6 +602,11 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], s, len);
 
     mp_int_t splits = mp_obj_get_int(args[2]);
+    if (splits < 0) {
+        // Negative limit means no limit, so delegate to split().
+        return mp_obj_str_split(n_args, args);
+    }
+
     mp_int_t org_splits = splits;
     // Preallocate list to the max expected # of elements, as we
     // will fill it from the end.
@@ -798,7 +803,7 @@ STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
     }
 
     assert(last_good_char_pos >= first_good_char_pos);
-    //+1 to accomodate the last character
+    //+1 to accommodate the last character
     size_t stripped_len = last_good_char_pos - first_good_char_pos + 1;
     if (stripped_len == orig_str_len) {
         // If nothing was stripped, don't bother to dup original string
@@ -1811,7 +1816,7 @@ STATIC mp_obj_t str_islower(mp_obj_t self_in) {
 }
 
 #if MICROPY_CPYTHON_COMPAT
-// These methods are superfluous in the presense of str() and bytes()
+// These methods are superfluous in the presence of str() and bytes()
 // constructors.
 // TODO: should accept kwargs too
 STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
@@ -2130,7 +2135,7 @@ typedef struct _mp_obj_str8_it_t {
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
-    mp_obj_str8_it_t *self = self_in;
+    mp_obj_str8_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
         mp_obj_t o_out = mp_obj_new_str((const char*)str + self->cur, 1, true);
@@ -2148,7 +2153,7 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_bu
     o->iternext = str_it_iternext;
     o->str = str;
     o->cur = 0;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 #endif
 

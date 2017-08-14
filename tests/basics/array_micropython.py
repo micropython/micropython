@@ -2,9 +2,8 @@
 try:
     import array
 except ImportError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # arrays of objects
 a = array.array('O')

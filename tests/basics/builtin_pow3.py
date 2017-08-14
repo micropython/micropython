@@ -4,9 +4,8 @@
 try:
     print(pow(3, 4, 7))
 except NotImplementedError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 # 3 arg pow is defined to only work on integers
 try:

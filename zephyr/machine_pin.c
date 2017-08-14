@@ -117,7 +117,7 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
-        uint32_t pin_val;
+        u32_t pin_val;
         (void)gpio_pin_read(self->port, self->pin, &pin_val);
         return MP_OBJ_NEW_SMALL_INT(pin_val);
     } else {
@@ -158,7 +158,7 @@ STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 
     switch (request) {
         case MP_PIN_READ: {
-            uint32_t pin_val;
+            u32_t pin_val;
             gpio_pin_read(self->port, self->pin, &pin_val);
             return pin_val;
         }

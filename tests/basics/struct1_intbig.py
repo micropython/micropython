@@ -4,9 +4,8 @@ except:
     try:
         import struct
     except ImportError:
-        import sys
         print("SKIP")
-        sys.exit()
+        raise SystemExit
 
 # check maximum pack on 32-bit machine
 print(struct.pack("<I", 2**32 - 1))

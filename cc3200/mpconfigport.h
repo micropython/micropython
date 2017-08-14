@@ -80,6 +80,7 @@
 #define MICROPY_VFS_FAT                             (1)
 #define MICROPY_PY_ASYNC_AWAIT (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS              (1)
+#define MICROPY_PY_BUILTINS_INPUT                   (1)
 #define MICROPY_PY_BUILTINS_HELP                    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT               cc3200_help_text
 #ifndef DEBUG
@@ -142,7 +143,6 @@
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj },  \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open),  (mp_obj_t)&mp_builtin_open_obj },   \
 
 // extra built in modules to add to the list of known ones

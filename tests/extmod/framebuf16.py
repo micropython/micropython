@@ -2,8 +2,7 @@ try:
     import framebuf
 except ImportError:
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 def printbuf():
     print("--8<--")

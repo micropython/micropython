@@ -7,9 +7,8 @@ try:
     # nothing to test.
     object.__new__
 except AttributeError:
-    import sys
     print("SKIP")
-    sys.exit()
+    raise SystemExit
 
 class Foo:
 

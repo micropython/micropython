@@ -5,8 +5,7 @@ try:
     erf
 except (ImportError, NameError):
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 test_values = [-8., -2.5, -1, -0.5, 0.0, 0.5, 2.5, 8.,]
 pos_test_values = [0.001, 0.1, 0.5, 1.0, 1.5, 10.,]

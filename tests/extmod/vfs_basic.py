@@ -9,8 +9,7 @@ try:
     uos.mount
 except (ImportError, AttributeError):
     print("SKIP")
-    import sys
-    sys.exit()
+    raise SystemExit
 
 
 class Filesystem:
@@ -56,6 +55,9 @@ for path in uos.listdir('/'):
 
 # stat root dir
 print(uos.stat('/'))
+
+# statvfs root dir; verify that f_namemax has a sensible size
+print(uos.statvfs('/')[9] >= 32)
 
 # getcwd when in root dir
 print(uos.getcwd())
@@ -128,6 +130,8 @@ except OSError:
 
 # root dir
 uos.mount(Filesystem(3), '/')
+print(uos.stat('/'))
+print(uos.statvfs('/'))
 print(uos.listdir())
 open('test')
 

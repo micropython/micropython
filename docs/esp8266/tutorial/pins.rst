@@ -35,8 +35,8 @@ Then set its value using::
 
 Or::
 
-    >>> pin.low()
-    >>> pin.high()
+    >>> pin.off()
+    >>> pin.on()
 
 External interrupts
 -------------------

@@ -80,6 +80,8 @@
 #define MICROPY_COMP_CONST (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)
 
+#define MICROPY_PY_SYS_PLATFORM "zephyr"
+
 #ifdef CONFIG_BOARD
 #define MICROPY_HW_BOARD_NAME "zephyr-" CONFIG_BOARD
 #else
