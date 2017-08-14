@@ -113,11 +113,14 @@ STATIC int execute_from_lexer(mp_lexer_t *lex, mp_parse_input_kind_t input_kind,
 
         mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
 
-        /*
-        printf("----------------\n");
-        mp_parse_node_print(parse_tree.root, 0);
-        printf("----------------\n");
-        */
+        #if defined(MICROPY_UNIX_COVERAGE)
+        // allow to print the parse tree in the coverage build
+        if (mp_verbose_flag >= 3) {
+            printf("----------------\n");
+            mp_parse_node_print(parse_tree.root, 0);
+            printf("----------------\n");
+        }
+        #endif
 
         mp_obj_t module_fun = mp_compile(&parse_tree, source_name, emit_opt, is_repl);
 

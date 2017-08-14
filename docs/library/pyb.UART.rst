@@ -27,7 +27,7 @@ A UART object acts like a stream object and reading and writing is done
 using the standard stream methods::
 
     uart.read(10)       # read 10 characters, returns a bytes object
-    uart.readall()      # read all available characters
+    uart.read()         # read all available characters
     uart.readline()     # read a line
     uart.readinto(buf)  # read and store into the given buffer
     uart.write('abc')   # write the 3 characters
@@ -87,8 +87,8 @@ Methods
          - ``stop`` is the number of stop bits, 1 or 2.
          - ``flow`` sets the flow control type. Can be 0, ``UART.RTS``, ``UART.CTS``
            or ``UART.RTS | UART.CTS``.
-         - ``timeout`` is the timeout in milliseconds to wait for the first character.
-         - ``timeout_char`` is the timeout in milliseconds to wait between characters.
+         - ``timeout`` is the timeout in milliseconds to wait for writing/reading the first character.
+         - ``timeout_char`` is the timeout in milliseconds to wait between characters while writing or reading.
          - ``read_buf_len`` is the character length of the read buffer (0 to disable).
     
        This method will raise an exception if the baudrate could not be set within
@@ -111,16 +111,14 @@ Methods
 
        Returns the number of bytes waiting (may be 0).
 
-    .. method:: UART.writechar(char)
-
-      Write a single character on the bus.  ``char`` is an integer to write.
-      Return value: ``None``. See note below if CTS flow control is used.
-
 .. method:: UART.read([nbytes])
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes.
    If ``nbytes`` are available in the buffer, returns immediately, otherwise returns
    when sufficient characters arrive or the timeout elapses.
+
+   If ``nbytes`` is not given then the method reads as much data as possible.  It
+   returns after the timeout has elapsed.
 
    .. only:: port_pyboard
 
@@ -129,12 +127,6 @@ Methods
 
       Return value: a bytes object containing the bytes read in.  Returns ``None``
       on timeout.
-
-.. method:: UART.readall()
-
-   Read as much data as possible. Returns after the timeout has elapsed.
-
-   Return value: a bytes object or ``None`` if timeout prevents any data being read.
 
 .. method:: UART.readchar()
 
@@ -169,6 +161,13 @@ Methods
 
       Return value: number of bytes written. If a timeout occurs and no bytes
       were written returns ``None``.
+
+.. only:: port_pyboard
+
+    .. method:: UART.writechar(char)
+
+      Write a single character on the bus.  ``char`` is an integer to write.
+      Return value: ``None``. See note below if CTS flow control is used.
 
 .. method:: UART.sendbreak()
 

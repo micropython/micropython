@@ -19,7 +19,7 @@ def main(use_stream=False):
         # directly, but the line below is needed for CPython.
         s = s.makefile("rwb", 0)
         s.write(b"GET / HTTP/1.0\r\n\r\n")
-        print(s.readall())
+        print(s.read())
     else:
         s.send(b"GET / HTTP/1.0\r\n\r\n")
         print(s.recv(4096))

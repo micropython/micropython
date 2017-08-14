@@ -37,7 +37,7 @@ except OSError:
     print('OSError')
 f.close()
 
-# readall() error (call read() for compat with CPy)
+# read() w/o args error
 f = open('io/data/file1', 'ab')
 try:
     f.read()

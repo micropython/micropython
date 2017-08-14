@@ -68,6 +68,15 @@ void mp_init(void) {
     mp_init_emergency_exception_buf();
 #endif
 
+    #if MICROPY_KBD_EXCEPTION
+    // initialise the exception object for raising KeyboardInterrupt
+    MP_STATE_VM(mp_kbd_exception).base.type = &mp_type_KeyboardInterrupt;
+    MP_STATE_VM(mp_kbd_exception).traceback_alloc = 0;
+    MP_STATE_VM(mp_kbd_exception).traceback_len = 0;
+    MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+    MP_STATE_VM(mp_kbd_exception).args = mp_const_empty_tuple;
+    #endif
+
     // call port specific initialization if any
 #ifdef MICROPY_PORT_INIT_FUNC
     MICROPY_PORT_INIT_FUNC;
@@ -89,6 +98,11 @@ void mp_init(void) {
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     // start with no extensions to builtins
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
+    #endif
+
+    #if MICROPY_FSUSERMOUNT
+    // zero out the pointers to the user-mounted devices
+    memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
     #endif
 
     #if MICROPY_PY_THREAD_GIL
@@ -1191,17 +1205,31 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
 
     mp_obj_t dest[3]; // Reserve slot for send() arg
 
+    // Python instance iterator protocol
     if (send_value == mp_const_none) {
         mp_load_method_maybe(self_in, MP_QSTR___next__, dest);
         if (dest[0] != MP_OBJ_NULL) {
-            *ret_val = mp_call_method_n_kw(0, 0, dest);
-            return MP_VM_RETURN_YIELD;
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                *ret_val = mp_call_method_n_kw(0, 0, dest);
+                nlr_pop();
+                return MP_VM_RETURN_YIELD;
+            } else {
+                *ret_val = MP_OBJ_FROM_PTR(nlr.ret_val);
+                return MP_VM_RETURN_EXCEPTION;
+            }
         }
     }
 
+    // Either python instance generator protocol, or native object
+    // generator protocol.
     if (send_value != MP_OBJ_NULL) {
         mp_load_method(self_in, MP_QSTR_send, dest);
         dest[2] = send_value;
+        // TODO: This should have exception wrapping like __next__ case
+        // above. Not done right away to think how to optimize native
+        // generators better, see:
+        // https://github.com/micropython/micropython/issues/2628
         *ret_val = mp_call_method_n_kw(1, 0, dest);
         return MP_VM_RETURN_YIELD;
     }

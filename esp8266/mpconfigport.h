@@ -10,15 +10,16 @@
 #define MICROPY_ALLOC_PARSE_RESULT_INC  (8)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT  (64)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
-#define MICROPY_EMIT_X64            (0)
-#define MICROPY_EMIT_THUMB          (0)
-#define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_EMIT_XTENSA         (1)
+#define MICROPY_EMIT_INLINE_XTENSA  (1)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_DEBUG_PRINTER_DEST  mp_debug_print
+#define MICROPY_READER_FATFS        (MICROPY_VFS_FAT)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_STACK_CHECK         (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
+#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_REPL_EVENT_DRIVEN   (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -59,9 +60,11 @@
 #define MICROPY_PY_UHASHLIB         (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
 #define MICROPY_PY_UHEAPQ           (1)
+#define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UJSON            (1)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URE              (1)
+#define MICROPY_PY_USELECT          (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_LWIP             (1)
@@ -69,6 +72,7 @@
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hspi_make_new
 #define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
@@ -128,6 +132,8 @@ typedef uint32_t sys_prot_t; // for modlwip
 #include <sys/types.h>
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+void *esp_native_code_commit(void*, size_t);
+#define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
@@ -163,13 +169,13 @@ extern const struct _mp_obj_module_t onewire_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&uos_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_json), (mp_obj_t)&mp_module_ujson }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_errno), (mp_obj_t)&mp_module_uerrno }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_select), (mp_obj_t)&mp_module_uselect }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
-    mp_obj_t mp_kbd_exception; \
     mp_obj_t pin_irq_handler[16]; \
 
 // We need to provide a declaration/definition of alloca()

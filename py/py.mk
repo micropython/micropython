@@ -113,14 +113,14 @@ PY_O_BASENAME = \
 	mpprint.o \
 	unicode.o \
 	mpz.o \
+	reader.o \
 	lexer.o \
-	lexerstr.o \
-	lexerunix.o \
 	parse2.o \
 	scope.o \
 	compile2.o \
 	emitcommon.o \
 	emitbc.o \
+	asmbase.o \
 	asmx64.o \
 	emitnx64.o \
 	asmx86.o \
@@ -130,10 +130,14 @@ PY_O_BASENAME = \
 	emitinlinethumb.o \
 	asmarm.o \
 	emitnarm.o \
+	asmxtensa.o \
+	emitnxtensa.o \
+	emitinlinextensa.o \
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
 	emitglue.o \
+	persistentcode.o \
 	runtime.o \
 	runtime_utils.o \
 	nativeglue.o \
@@ -208,6 +212,7 @@ PY_O_BASENAME = \
 	../extmod/modure.o \
 	../extmod/moduzlib.o \
 	../extmod/moduheapq.o \
+	../extmod/modutimeq.o \
 	../extmod/moduhashlib.o \
 	../extmod/modubinascii.o \
 	../extmod/virtpin.o \
@@ -219,6 +224,7 @@ PY_O_BASENAME = \
 	../extmod/modussl_axtls.o \
 	../extmod/modussl_mbedtls.o \
 	../extmod/modurandom.o \
+	../extmod/moduselect.o \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
 	../extmod/modframebuf.o \
@@ -227,7 +233,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_ffconf.o \
 	../extmod/vfs_fat_diskio.o \
 	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_lexer.o \
+	../extmod/vfs_fat_reader.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/utime_mphal.o \
 	../extmod/uos_dupterm.o \
@@ -248,7 +254,7 @@ PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
-SRC_QSTR_IGNORE = nlr% emitnx% emitnthumb% emitnarm%
+SRC_QSTR_IGNORE = nlr% emitnx86% emitnx64% emitnthumb% emitnarm% emitnxtensa%
 SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)
 
 # Anything that depends on FORCE will be considered out-of-date
@@ -269,7 +275,7 @@ MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 # the lines in "" and then unwrap after the preprocessor is finished.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | sed 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 # emitters
@@ -288,6 +294,10 @@ $(PY_BUILD)/emitnthumb.o: py/emitnative.c
 
 $(PY_BUILD)/emitnarm.o: CFLAGS += -DN_ARM
 $(PY_BUILD)/emitnarm.o: py/emitnative.c
+	$(call compile_c)
+
+$(PY_BUILD)/emitnxtensa.o: CFLAGS += -DN_XTENSA
+$(PY_BUILD)/emitnxtensa.o: py/emitnative.c
 	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2

@@ -87,5 +87,4 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t mp_kbd_exception; \
     const char *readline_hist[8];

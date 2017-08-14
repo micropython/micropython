@@ -27,7 +27,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_PY_USELECT
+#if MICROPY_PY_USELECT_POSIX
 
 #include <stdio.h>
 #include <errno.h>
@@ -54,6 +54,7 @@ typedef struct _mp_obj_poll_t {
     unsigned short alloc;
     unsigned short len;
     struct pollfd *entries;
+    mp_obj_t *obj_map;
 } mp_obj_poll_t;
 
 STATIC int get_fd(mp_obj_t fdlike) {
@@ -75,6 +76,7 @@ STATIC int get_fd(mp_obj_t fdlike) {
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
+    bool is_fd = MP_OBJ_IS_INT(args[1]);
     int fd = get_fd(args[1]);
 
     mp_uint_t flags;
@@ -101,9 +103,19 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     if (free_slot == NULL) {
         if (self->len >= self->alloc) {
             self->entries = m_renew(struct pollfd, self->entries, self->alloc, self->alloc + 4);
+            if (self->obj_map) {
+                self->obj_map = m_renew(mp_obj_t, self->obj_map, self->alloc, self->alloc + 4);
+            }
             self->alloc += 4;
         }
         free_slot = &self->entries[self->len++];
+    }
+
+    if (!is_fd) {
+        if (self->obj_map == NULL) {
+            self->obj_map = m_new0(mp_obj_t, self->alloc);
+        }
+        self->obj_map[free_slot - self->entries] = args[1];
     }
 
     free_slot->fd = fd;
@@ -121,6 +133,9 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->fd = -1;
+            if (self->obj_map) {
+                self->obj_map[entries - self->entries] = MP_OBJ_NULL;
+            }
             break;
         }
         entries++;
@@ -181,7 +196,12 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     for (int i = 0; i < self->len; i++, entries++) {
         if (entries->revents != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-            t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            // If there's an object stored, return it, otherwise raw fd
+            if (self->obj_map && self->obj_map[i] != MP_OBJ_NULL) {
+                t->items[0] = self->obj_map[i];
+            } else {
+                t->items[0] = MP_OBJ_NEW_SMALL_INT(entries->fd);
+            }
             t->items[1] = MP_OBJ_NEW_SMALL_INT(entries->revents);
             ret_list->items[ret_i++] = MP_OBJ_FROM_PTR(t);
             if (flags & FLAG_ONESHOT) {
@@ -218,6 +238,7 @@ STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     poll->entries = m_new(struct pollfd, alloc);
     poll->alloc = alloc;
     poll->len = 0;
+    poll->obj_map = NULL;
     return MP_OBJ_FROM_PTR(poll);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_poll_obj, 0, 1, select_poll);
@@ -238,4 +259,4 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t*)&mp_module_select_globals,
 };
 
-#endif // MICROPY_PY_USELECT
+#endif // MICROPY_PY_USELECT_POSIX

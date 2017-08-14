@@ -149,33 +149,32 @@ void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst);
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst);
 void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emit_method_table, scope_t *scope, qstr qst);
 
-extern const emit_method_table_t emit_cpython_method_table;
 extern const emit_method_table_t emit_bc_method_table;
 extern const emit_method_table_t emit_native_x64_method_table;
 extern const emit_method_table_t emit_native_x86_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
 extern const emit_method_table_t emit_native_arm_method_table;
+extern const emit_method_table_t emit_native_xtensa_method_table;
 
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops;
 
-emit_t *emit_cpython_new(void);
 emit_t *emit_bc_new(void);
 emit_t *emit_native_x64_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_x86_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_thumb_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_arm_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
 
-void emit_cpython_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
 void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
 
-void emit_cpython_free(emit_t *emit);
 void emit_bc_free(emit_t *emit);
 void emit_native_x64_free(emit_t *emit);
 void emit_native_x86_free(emit_t *emit);
 void emit_native_thumb_free(emit_t *emit);
 void emit_native_arm_free(emit_t *emit);
+void emit_native_xtensa_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
 void mp_emit_bc_end_pass(emit_t *emit);
@@ -263,19 +262,21 @@ void mp_emit_bc_end_except_handler(emit_t *emit);
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 
 typedef struct _emit_inline_asm_method_table_t {
-    void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, scope_t *scope, mp_obj_t *error_slot);
+    void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot);
     void (*end_pass)(emit_inline_asm_t *emit, mp_uint_t type_sig);
     mp_uint_t (*count_params)(emit_inline_asm_t *emit, const byte *p, const byte *ptop);
     bool (*label)(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id);
-    void (*align)(emit_inline_asm_t *emit, mp_uint_t align);
-    void (*data)(emit_inline_asm_t *emit, mp_uint_t bytesize, mp_uint_t val);
     void (*op)(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, const byte **pn_args);
 } emit_inline_asm_method_table_t;
 
 extern const emit_inline_asm_method_table_t emit_inline_thumb_method_table;
+extern const emit_inline_asm_method_table_t emit_inline_xtensa_method_table;
 
 emit_inline_asm_t *emit_inline_thumb_new(mp_uint_t max_num_labels);
+emit_inline_asm_t *emit_inline_xtensa_new(mp_uint_t max_num_labels);
+
 void emit_inline_thumb_free(emit_inline_asm_t *emit);
+void emit_inline_xtensa_free(emit_inline_asm_t *emit);
 
 #if MICROPY_WARNINGS
 void mp_emitter_warning(pass_kind_t pass, const char *msg);

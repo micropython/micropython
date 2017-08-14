@@ -42,7 +42,7 @@ typedef struct _pyb_adc_obj_t {
 STATIC pyb_adc_obj_t pyb_adc_vdd3 = {{&pyb_adc_type}, true};
 STATIC pyb_adc_obj_t pyb_adc_adc = {{&pyb_adc_type}, false};
 
-STATIC mp_obj_t pyb_adc_make_new(const mp_obj_type_t *type_in, mp_uint_t n_args, mp_uint_t n_kw,
+STATIC mp_obj_t pyb_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw,
     const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

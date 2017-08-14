@@ -79,10 +79,12 @@
 #include "storage.h"
 #include "can.h"
 #include "dma.h"
+#include "i2c.h"
 
 extern void __fatal_error(const char*);
 extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
+
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
 /******************************************************************************/
@@ -675,6 +677,22 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
+#if defined(MICROPY_HW_UART7_TX)
+void UART7_IRQHandler(void) {
+    IRQ_ENTER(UART7_IRQn);
+    uart_irq_handler(7);
+    IRQ_EXIT(UART7_IRQn);
+}
+#endif
+
+#if defined(MICROPY_HW_UART8_TX)
+void UART8_IRQHandler(void) {
+    IRQ_ENTER(UART8_IRQn);
+    uart_irq_handler(8);
+    IRQ_EXIT(UART8_IRQn);
+}
+#endif
+
 #if MICROPY_HW_ENABLE_CAN
 void CAN1_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX0_IRQn);
@@ -700,3 +718,45 @@ void CAN2_RX1_IRQHandler(void) {
     IRQ_EXIT(CAN2_RX1_IRQn);
 }
 #endif // MICROPY_HW_ENABLE_CAN
+
+#if defined(MICROPY_HW_I2C1_SCL)
+void I2C1_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C1_EV_IRQn);
+    i2c_ev_irq_handler(1);
+    IRQ_EXIT(I2C1_EV_IRQn);
+}
+
+void I2C1_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C1_ER_IRQn);
+    i2c_er_irq_handler(1);
+    IRQ_EXIT(I2C1_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C1_SCL)
+
+#if defined(MICROPY_HW_I2C2_SCL)
+void I2C2_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C2_EV_IRQn);
+    i2c_ev_irq_handler(2);
+    IRQ_EXIT(I2C2_EV_IRQn);
+}
+
+void I2C2_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C2_ER_IRQn);
+    i2c_er_irq_handler(2);
+    IRQ_EXIT(I2C2_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C2_SCL)
+
+#if defined(MICROPY_HW_I2C3_SCL)
+void I2C3_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C3_EV_IRQn);
+    i2c_ev_irq_handler(3);
+    IRQ_EXIT(I2C3_EV_IRQn);
+}
+
+void I2C3_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C3_ER_IRQn);
+    i2c_er_irq_handler(3);
+    IRQ_EXIT(I2C3_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C3_SCL)

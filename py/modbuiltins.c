@@ -475,9 +475,6 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     } else if (val - rounded == -0.5) {
         r &= ~1;
     }
-    if (n_args > 1) {
-        return mp_obj_new_float(r);
-    }
 #else
     mp_int_t r = mp_obj_get_int(o_in);
 #endif

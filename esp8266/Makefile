@@ -14,6 +14,7 @@ FROZEN_MPY_DIR = modules
 # include py core make definitions
 include ../py/py.mk
 
+FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
@@ -82,7 +83,6 @@ SRC_C = \
 	machine_adc.c \
 	machine_uart.c \
 	machine_wdt.c \
-	machine_spi.c \
 	machine_hspi.c \
 	modesp.c \
 	modnetwork.c \
@@ -160,7 +160,7 @@ SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/libaxtls.a $(BUILD)/firmware-combined.bin
+all: $(BUILD)/libaxtls.a $(FWBIN)
 
 CONFVARS_FILE = $(BUILD)/confvars
 
@@ -181,13 +181,17 @@ deploy: $(BUILD)/firmware-combined.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
+erase:
+	$(ECHO) "Erase flash"
+	$(Q)esptool.py --port $(PORT) --baud $(BAUD) erase_flash
+
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
-$(BUILD)/firmware-combined.bin: $(BUILD)/firmware.elf
+$(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)esptool.py elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x0[1-f]000.bin $@
+	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
@@ -196,6 +200,10 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 512k:
 	$(MAKE) LDSCRIPT=esp8266_512k.ld CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_512k.h>"' MICROPY_FATFS=0 MICROPY_PY_BTREE=0
+
+ota:
+	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
+	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
 #MAKE_PINS = boards/make-pins.py
 #BOARD_PINS = boards/$(BOARD)/pins.csv

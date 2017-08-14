@@ -35,8 +35,26 @@ ementation
 12345678
 0
 0
+# runtime utils
+TypeError: can't convert str to int
+TypeError: unsupported types for : 'str', 'str'
+Warning: test
+# format float
+?
++1e+00
++1e+00
 ('0123456789', b'0123456789')
 7300
 7300
 7300
 7300
+frzstr1
+frzmpy1
+frzstr_pkg1.__init__
+1
+frzmpy_pkg1.__init__
+1
+frzstr_pkg2.mod
+1
+frzmpy_pkg2.mod
+1

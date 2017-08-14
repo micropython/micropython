@@ -5,6 +5,9 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/mpz.h"
+#include "py/builtin.h"
+#include "py/emit.h"
+#include "py/formatfloat.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -112,6 +115,46 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_set_from_int(&mpz, 1);
         mpz_shl_inpl(&mpz, &mpz, 70);
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
+    }
+
+    // runtime utils
+    {
+        mp_printf(&mp_plat_print, "# runtime utils\n");
+
+        // call mp_call_function_1_protected
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), MP_OBJ_NEW_SMALL_INT(1));
+        // call mp_call_function_1_protected with invalid args
+        mp_call_function_1_protected(MP_OBJ_FROM_PTR(&mp_builtin_abs_obj), mp_obj_new_str("abc", 3, false));
+
+        // call mp_call_function_2_protected
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
+        // call mp_call_function_2_protected with invalid args
+        mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3, false), mp_obj_new_str("abc", 3, false));
+    }
+
+    // warning
+    {
+        mp_emitter_warning(MP_PASS_CODE_SIZE, "test");
+    }
+
+    // format float
+    {
+        mp_printf(&mp_plat_print, "# format float\n");
+
+        // format with inadequate buffer size
+        char buf[5];
+        mp_format_float(1, buf, sizeof(buf), 'g', 0, '+');
+        mp_printf(&mp_plat_print, "%s\n", buf);
+
+        // format with just enough buffer so that precision must be
+        // set from 0 to 1 twice
+        char buf2[8];
+        mp_format_float(1, buf2, sizeof(buf2), 'g', 0, '+');
+        mp_printf(&mp_plat_print, "%s\n", buf2);
+
+        // format where precision is trimmed to avoid buffer overflow
+        mp_format_float(1, buf2, sizeof(buf2), 'e', 0, '+');
+        mp_printf(&mp_plat_print, "%s\n", buf2);
     }
 
     // return a tuple of data for testing on the Python side

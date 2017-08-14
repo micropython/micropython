@@ -104,11 +104,11 @@ void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     } else if (gpio == GPIOE) {
         __GPIOE_CLK_ENABLE();
     #endif
-    #ifdef __GPIOF_CLK_ENABLE
+    #if defined(GPIOF) && defined(__GPIOF_CLK_ENABLE)
     } else if (gpio == GPIOF) {
         __GPIOF_CLK_ENABLE();
     #endif
-    #ifdef __GPIOG_CLK_ENABLE
+    #if defined(GPIOG) && defined(__GPIOG_CLK_ENABLE)
     } else if (gpio == GPIOG) {
         __GPIOG_CLK_ENABLE();
     #endif
@@ -142,16 +142,11 @@ void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, u
     gpio->AFR[pin >> 3] = (gpio->AFR[pin >> 3] & ~(15 << (4 * (pin & 7)))) | (alt << (4 * (pin & 7)));
 }
 
-bool mp_hal_pin_set_af(mp_hal_pin_obj_t pin, GPIO_InitTypeDef *init, uint8_t fn, uint8_t unit) {
-    mp_hal_gpio_clock_enable(pin->gpio);
-
+bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit) {
     const pin_af_obj_t *af = pin_find_af(pin, fn, unit);
     if (af == NULL) {
         return false;
     }
-    init->Pin = pin->pin_mask;
-    init->Alternate = af->idx;
-    HAL_GPIO_Init(pin->gpio, init);
-
+    mp_hal_pin_config(pin, mode, pull, af->idx);
     return true;
 }

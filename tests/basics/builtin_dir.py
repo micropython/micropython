@@ -7,6 +7,9 @@ print('__name__' in dir())
 import sys
 print('platform' in dir(sys))
 
+# dir of type
+print('append' in dir(list))
+
 class Foo:
     def __init__(self):
         self.x = 1

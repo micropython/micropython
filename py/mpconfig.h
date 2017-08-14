@@ -288,8 +288,21 @@
 #define MICROPY_EMIT_ARM (0)
 #endif
 
+// Whether to emit Xtensa native code
+#ifndef MICROPY_EMIT_XTENSA
+#define MICROPY_EMIT_XTENSA (0)
+#endif
+
+// Whether to enable the Xtensa inline assembler
+#ifndef MICROPY_EMIT_INLINE_XTENSA
+#define MICROPY_EMIT_INLINE_XTENSA (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
-#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM)
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA)
+
+// Convenience definition for whether any inline assembler emitter is enabled
+#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)
 
 /*****************************************************************************/
 /* Compiler configuration                                                    */
@@ -349,7 +362,6 @@
 #endif
 
 // Whether to build functions that print debugging info:
-//   mp_lexer_show_token
 //   mp_bytecode_print
 //   mp_parse_node_print
 #ifndef MICROPY_DEBUG_PRINTERS
@@ -380,6 +392,16 @@
 
 /*****************************************************************************/
 /* Python internal features                                                  */
+
+// Whether to use the POSIX reader for importing files
+#ifndef MICROPY_READER_POSIX
+#define MICROPY_READER_POSIX (0)
+#endif
+
+// Whether to use the FatFS reader for importing files
+#ifndef MICROPY_READER_FATFS
+#define MICROPY_READER_FATFS (0)
+#endif
 
 // Hook for the VM at the start of the opcode loop (can contain variable
 // definitions usable by the other hook functions)
@@ -421,6 +443,11 @@
 #   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
 #   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
 #   endif
+#endif
+
+// Whether to provide the mp_kbd_exception object
+#ifndef MICROPY_KBD_EXCEPTION
+#define MICROPY_KBD_EXCEPTION (0)
 #endif
 
 // Prefer to raise KeyboardInterrupt asynchronously (from signal or interrupt
@@ -844,7 +871,7 @@ typedef double mp_float_t;
 
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
-#define MICROPY_PY_SYS_EXIT (0)
+#define MICROPY_PY_SYS_EXIT (1)
 #endif
 
 // Whether to provide sys.{stdin,stdout,stderr} objects
@@ -861,6 +888,11 @@ typedef double mp_float_t;
 // Whether to provide "uerrno" module
 #ifndef MICROPY_PY_UERRNO
 #define MICROPY_PY_UERRNO (0)
+#endif
+
+// Whether to provide "uselect" module (baremetal implementation)
+#ifndef MICROPY_PY_USELECT
+#define MICROPY_PY_USELECT (0)
 #endif
 
 // Whether to provide "utime" module functions implementation
@@ -910,6 +942,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UHEAPQ
 #define MICROPY_PY_UHEAPQ (0)
+#endif
+
+// Optimized heap queue for relative timestamps
+#ifndef MICROPY_PY_UTIMEQ
+#define MICROPY_PY_UTIMEQ (0)
 #endif
 
 #ifndef MICROPY_PY_UHASHLIB

@@ -4,6 +4,48 @@ should be separate from any other changes and should be listed here, most
 recent commit at the top of the list.  This makes it easier to upgrade to
 a new HAL version.
 
+44cb2ff7ab99edf91c95b9ef3d9fe3e119d71cf8
+stmhal: Port of f4 hal commit 1d7fb82 to updated f7 hal.
+
+821863751f942f54c140f80d5a92ad7046112331
+stmhal: Port of f4 hal commit 09de030 to updated f7 hal.
+
+e1c6ed634f4387a6c9d7e132ed7d0bb245a9618a
+stmhal: Port of f4 hal commit c568a2b to updated f7 hal.
+
+b9741cd8f84a2f49e3ea00382bfa71d994bc83ff
+stmhal/hal: Update ST32CubeF7 HAL files to V1.1.2.
+
+13400e13758f7e23fc17bae753030723046ba3aa
+stmhal/hal: do not include <stdio.h> in HAL headers
+
+63ca7a211ac832fb885753ad837a7b3de2aaa5da
+stmhal/dma: precalculate register base and bitshift on handle init
+
+6a8f6c119c249e52fbc4d4fd55b2bec65544c811
+stmhal/hal/sd: reapply HAL commit 09de030 for f4
+
+e2b48221892ca5445d9e255753e4ccfcd07a8171
+stmhal/hal/rcc: reapply HAL commit c568a2b for f4
+
+4f7c5fa64769f836b1cb3d357be4864807e10694
+stmhal/hal: reapply HAL commit 9db719b for f4
+
+c79ff9930aed2a91a888f8eb58f27946ca8287ca
+stmhal/hal/sd: reapply HAL commit 1d7fb82 for f4
+
+a9fb88e1dcc95e9c2a788549bca0bede6b2ee02c
+stmhal/hal/i2c: reapply HAL commit ea040a4 for f4
+
+e8b435d1f80a220a4f561b1e653ea33b69517513
+stmhal: apply STM32CubeF4 v1.13.1 patch - upgrade HAL driver to v1.5.2
+
+c1fa33b493db3f861c322c84da56aed0c1599339
+stmhal: upgrade to STM32CubeF4 v1.13.0 - HAL v1.5.1
+
+4f5c4fdd98c22991f79b4e58e5add28ad9f9c6c4
+stmhal: upgrade to STM32CubeF4 v1.13.0 - CMSIS/Device 2.5.1
+
 daa279a3a1b38bc7a8218e2c6186e63483c7cfc3
 stmhal: Port of f4 hal commit 1d7fb82 to l4 hal
 

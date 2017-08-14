@@ -152,11 +152,21 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
 }
 
 STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
-        // not load attribute
+        // store/delete attribute
+        if (attr == MP_QSTR___traceback__ && dest[1] == mp_const_none) {
+            // We allow 'exc.__traceback__ = None' assignment as low-level
+            // optimization of pre-allocating exception instance and raising
+            // it repeatedly - this avoids memory allocation during raise.
+            // However, uPy will keep adding traceback entries to such
+            // exception instance, so before throwing it, traceback should
+            // be cleared like above.
+            self->traceback_len = 0;
+            dest[0] = MP_OBJ_NULL; // indicate success
+        }
         return;
     }
-    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (attr == MP_QSTR_args) {
         dest[0] = MP_OBJ_FROM_PTR(self->args);
     } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {

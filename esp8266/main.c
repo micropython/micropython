@@ -52,12 +52,12 @@ STATIC void mp_reset(void) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_init(mp_sys_argv, 0);
-    #if MICROPY_VFS_FAT
-    memset(MP_STATE_PORT(fs_user_mount), 0, sizeof(MP_STATE_PORT(fs_user_mount)));
-    #endif
-    MP_STATE_PORT(mp_kbd_exception) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
     MP_STATE_PORT(dupterm_arr_obj) = MP_OBJ_NULL;
+    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+    extern void esp_native_code_init(void);
+    esp_native_code_init();
+    #endif
     pin_init0();
     readline_init0();
     dupterm_task_init();
@@ -109,17 +109,13 @@ void user_init(void) {
     system_init_done_cb(init_done);
 }
 
-mp_lexer_t *fat_vfs_lexer_new_from_file(const char *filename);
 mp_import_stat_t fat_vfs_import_stat(const char *path);
 
+#if !MICROPY_VFS_FAT
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    #if MICROPY_VFS_FAT
-    return fat_vfs_lexer_new_from_file(filename);
-    #else
-    (void)filename;
     return NULL;
-    #endif
 }
+#endif
 
 mp_import_stat_t mp_import_stat(const char *path) {
     #if MICROPY_VFS_FAT
