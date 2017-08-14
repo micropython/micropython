@@ -223,7 +223,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 
 STATIC mp_obj_t pyb_uart_any(mp_obj_t self_in) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(uart_rx_any(self->uart_id));
+    if (self->rxbuf.iput != self->rxbuf.iget) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_any_obj, pyb_uart_any);
 
@@ -250,7 +254,7 @@ STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout_us) {
     uint32_t start = system_get_time();
 
     for (;;) {
-        if (*( volatile uint16_t *)(&self->rxbuf.iput) != self->rxbuf.iget) {
+        if (self->rxbuf.iput != self->rxbuf.iget) {
             return true; // have at least 1 char ready for reading
         }
         if (timeout_us && system_get_time() - start >= timeout_us) {
