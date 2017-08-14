@@ -633,6 +633,24 @@ STATIC mp_obj_t esp_flash_size(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
+STATIC mp_obj_t esp_check_fw(void) {
+    MD5_CTX ctx;
+    uint32_t *sz_p = (uint32_t*)0x40208ffc;
+    printf("size: %d\n", *sz_p);
+    MD5Init(&ctx);
+    MD5Update(&ctx, (char*)0x40200004, *sz_p - 4);
+    unsigned char digest[16];
+    MD5Final(digest, &ctx);
+    printf("md5: ");
+    for (int i = 0; i < 16; i++) {
+        printf("%02x", digest[i]);
+    }
+    printf("\n");
+    return mp_obj_new_bool(memcmp(digest, (void*)(0x40200000 + *sz_p), sizeof(digest)) == 0);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
+
+
 STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -642,6 +660,7 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 
+#if MICROPY_ESP8266_APA102
 STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
@@ -651,6 +670,7 @@ STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
+#endif
 
 STATIC mp_obj_t esp_freemem() {
     return MP_OBJ_NEW_SMALL_INT(system_get_free_heap_size());
@@ -695,10 +715,13 @@ STATIC const mp_map_elem_t esp_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_getaddrinfo_obj },
     #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write), (mp_obj_t)&esp_neopixel_write_obj },
+    #if MICROPY_ESP8266_APA102
     { MP_OBJ_NEW_QSTR(MP_QSTR_apa102_write), (mp_obj_t)&esp_apa102_write_obj },
+    #endif
     { MP_OBJ_NEW_QSTR(MP_QSTR_dht_readinto), (mp_obj_t)&dht_readinto_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_freemem), (mp_obj_t)&esp_freemem_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_meminfo), (mp_obj_t)&esp_meminfo_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_check_fw), (mp_obj_t)&esp_check_fw_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_info), (mp_obj_t)&pyb_info_obj }, // TODO delete/rename/move elsewhere
     { MP_OBJ_NEW_QSTR(MP_QSTR_malloc), (mp_obj_t)&esp_malloc_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_free), (mp_obj_t)&esp_free_obj },

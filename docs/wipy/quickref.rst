@@ -205,7 +205,7 @@ See :ref:`network.Server <network.Server>` ::
     server = Server(login=('user', 'password'), timeout=60)
     server.timeout(300) # change the timeout
     server.timeout() # get the timeout
-    server.isrunning() # check wether the server is running or not
+    server.isrunning() # check whether the server is running or not
 
 Heart beat LED
 --------------

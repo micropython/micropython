@@ -27,6 +27,7 @@
 #define __MICROPY_INCLUDED_PY_STREAM_H__
 
 #include "py/obj.h"
+#include "py/mperrno.h"
 
 #define MP_STREAM_ERROR ((mp_uint_t)-1)
 
@@ -57,6 +58,7 @@ MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_write1_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_tell_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_flush_obj);
 MP_DECLARE_CONST_FUN_OBJ(mp_stream_ioctl_obj);
 
 // these are for mp_get_stream_raise and can be or'd together
@@ -80,13 +82,20 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_write_exactly(stream, buf, size, err) mp_stream_rw(stream, (byte*)buf, size, err, MP_STREAM_RW_WRITE)
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
+void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
+
+#if MICROPY_STREAMS_POSIX_API
+// Functions with POSIX-compatible signatures
+ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len);
+ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len);
+off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence);
+int mp_stream_posix_fsync(mp_obj_t stream);
+#endif
+
 #if MICROPY_STREAMS_NON_BLOCK
-// TODO: This is POSIX-specific (but then POSIX is the only real thing,
-// and anything else just emulates it, right?)
 #define mp_is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
 #else
 #define mp_is_nonblocking_error(errno) (0)
 #endif
 
 #endif // __MICROPY_INCLUDED_PY_STREAM_H__
-void mp_stream_write_adaptor(void *self, const char *buf, size_t len);

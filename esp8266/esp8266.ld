@@ -5,7 +5,7 @@ MEMORY
     dport0_0_seg : org = 0x3ff00000, len = 0x10
     dram0_0_seg :  org = 0x3ffe8000, len = 0x14000
     iram1_0_seg :  org = 0x40100000, len = 0x8000
-    irom0_0_seg :  org = 0x40209000, len = 0x80000
+    irom0_0_seg :  org = 0x40209000, len = 0x87000
 }
 
 /* define the top of RAM */
@@ -121,6 +121,7 @@ SECTIONS
 
         *lib/fatfs/*.o*(.literal*, .text*)
         */libaxtls.a:(.literal*, .text*)
+        *lib/berkeley-db-1.xx/*.o(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)
         *lib/netutils/*.o*(.literal*, .text*)

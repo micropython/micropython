@@ -1,5 +1,7 @@
-Introduction to MicroPython on the ESP8266
-==========================================
+.. _intro:
+
+Getting started with MicroPython on the ESP8266
+===============================================
 
 Using MicroPython is a great way to get the most of your ESP8266 board.  And
 vice versa, the ESP8266 chip is a great platform for using MicroPython.  This
@@ -74,8 +76,9 @@ PC.  You may also need to reduce the baudrate if you get errors when flashing
 (eg down to 115200).  The filename of the firmware should also match the file
 that you have.
 
-If you have a NodeMCU board, you may need to use the following command to deploy
-the firmware (note the "-fm dio" option)::
+For some boards with a particular FlashROM configuration (e.g. some variants of
+a NodeMCU board) you may need to use the following command to deploy
+the firmware (note the ``-fm dio`` option)::
 
     esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=8m -fm dio 0 esp8266-2016-05-03-v1.8.bin
 
@@ -100,3 +103,60 @@ be the same everytime, and most likely different for all ESP8266 chips).  The
 password for the WiFi is micropythoN (note the upper-case N).  Its IP address
 will be 192.168.4.1 once you connect to its network.  WiFi configuration will
 be discussed in more detail later in the tutorial.
+
+Troubleshooting installation problems
+-------------------------------------
+
+If you experience problems during flashing or with running firmware immediately
+after it, here are troubleshooting recommendations:
+
+* Be aware of and try to exclude hardware problems. There are 2 common problems:
+  bad power source quality and worn-out/defective FlashROM. Speaking of power
+  source, not just raw amperage is important, but also low ripple and noise/EMI
+  in general. If you experience issues with self-made or wall-wart style power
+  supply, try USB power from a computer. Unearthed power supplies are also known
+  to cause problems as they source of increased EMI (electromagnetic interference)
+  - at the very least, and may lead to electrical devices breakdown. So, you are
+  advised to avoid using unearthed power connections when working with ESP8266
+  and other boards. In regard to FlashROM hardware problems, there are independent
+  (not related to MicroPython in any way) reports
+  `(e.g.) <http://internetofhomethings.com/homethings/?p=538>`_
+  that on some ESP8266 modules, FlashROM can be programmed as little as 20 times
+  before programming errors occur. This is *much* less than 100,000 programming
+  cycles cited for FlashROM chips of a type used with ESP8266 by reputable
+  vendors, which points to either production rejects, or second-hand worn-out
+  flash chips to be used on some (apparently cheap) modules/boards. You may want
+  to use your best judgement about source, price, documentation, warranty,
+  post-sales support for the modules/boards you purchase.
+
+* The flashing instructions above use flashing speed of 460800 baud, which is
+  good compromise between speed and stability. However, depending on your
+  module/board, USB-UART convertor, cables, host OS, etc., the above baud
+  rate may be too high and lead to errors. Try a more common 115200 baud
+  rate instead in such cases.
+
+* The ``--flash_size`` option in the commands above is mandatory. Omitting
+  it will lead to a corrupted firmware.
+
+* To catch incorrect flash content (e.g. from a defective sector on a chip),
+  add ``--verify`` switch to the commands above.
+
+* Additionally, you can check the firmware integrity from a MicroPython REPL
+  prompt (assuming you were able to flash it and ``--verify`` option doesn't
+  report errors)::
+    import esp
+    esp.check_fw()
+  If the last output value is True, the firmware is OK. Otherwise, it's
+  corrupted and need to be reflashed correctly.
+
+* If you experience any issues with another flashing application (not
+  esptool.py), try esptool.py, it is a generally accepted flashing
+  application in the ESP8266 community.
+
+* If you still experience problems with even flashing the firmware, please
+  refer to esptool.py project page, https://github.com/themadinventor/esptool
+  for additional documentation and bug tracker where you can report problems.
+
+* If you are able to flash firmware, but ``--verify`` option or
+  ``esp.check_fw()`` return errors even after multiple retries, you
+  may have a defective FlashROM chip, as explained above.

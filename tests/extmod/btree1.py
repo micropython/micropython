@@ -1,11 +1,15 @@
 try:
     import btree
+    import uio
 except ImportError:
     print("SKIP")
     import sys
     sys.exit()
 
-db = btree.open(None)
+#f = open("_test.db", "w+b")
+f = uio.BytesIO()
+db = btree.open(f)
+
 db[b"foo3"] = b"bar3"
 db[b"foo1"] = b"bar1"
 db[b"foo2"] = b"bar2"
@@ -57,3 +61,9 @@ print(list(db.values()))
 
 for k in db:
     print(k)
+
+print("foo1", "foo1" in db)
+print("foo2", "foo2" in db)
+
+db.close()
+f.close()

@@ -21,3 +21,6 @@ print(b"0000".find(b'-1', 3))
 print(b"0000".find(b'1', 3))
 print(b"0000".find(b'1', 4))
 print(b"0000".find(b'1', 5))
+
+# Non-ascii values (make sure not treated as unicode-like)
+print(b"\x80abc".find(b"a", 1))

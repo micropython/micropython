@@ -20,8 +20,11 @@ INC += -I../lib
 INC += -I../lib/netutils
 
 ifeq ($(MICROPY_PY_USSL),1)
-CFLAGS_MOD += -DMICROPY_PY_USSL=1 -I../lib/axtls/ssl -I../lib/axtls/crypto -I../lib/axtls/config
-LDFLAGS_MOD += -L../lib/axtls/_stage -laxtls
+CFLAGS_MOD += -DMICROPY_PY_USSL=1
+ifeq ($(MICROPY_SSL_AXTLS),1)
+CFLAGS_MOD += -DMICROPY_SSL_AXTLS=1 -I../lib/axtls/ssl -I../lib/axtls/crypto -I../lib/axtls/config
+LDFLAGS_MOD += -Lbuild -laxtls
+endif
 endif
 
 #ifeq ($(MICROPY_PY_LWIP),1)
@@ -66,7 +69,7 @@ endif
 
 ifeq ($(MICROPY_PY_BTREE),1)
 BTREE_DIR = lib/berkeley-db-1.xx
-CFLAGS_MOD += -D__DBINTERFACE_PRIVATE=1
+CFLAGS_MOD += -D__DBINTERFACE_PRIVATE=1 -Dmpool_error=printf -Dabort=abort_ -Dvirt_fd_t=mp_obj_t "-DVIRT_FD_T_HEADER=<py/obj.h>"
 INC += -I../$(BTREE_DIR)/PORT/include
 SRC_MOD += extmod/modbtree.c
 SRC_MOD += $(addprefix $(BTREE_DIR)/,\
@@ -205,7 +208,7 @@ PY_O_BASENAME = \
 	../extmod/machine_pinbase.o \
 	../extmod/machine_pulse.o \
 	../extmod/machine_i2c.o \
-	../extmod/modussl.o \
+	../extmod/modussl_axtls.o \
 	../extmod/modurandom.o \
 	../extmod/modwebsocket.o \
 	../extmod/modwebrepl.o \
@@ -218,6 +221,7 @@ PY_O_BASENAME = \
 	../extmod/vfs_fat_lexer.o \
 	../extmod/vfs_fat_misc.o \
 	../extmod/moduos_dupterm.o \
+	../lib/embed/abort_.o \
 
 # prepend the build destination prefix to the py object files
 PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))

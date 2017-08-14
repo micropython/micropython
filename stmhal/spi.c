@@ -172,12 +172,15 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
 
     const pyb_spi_obj_t *self;
     const pin_obj_t *pins[4];
+    pins[0] = NULL;
 
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         self = &pyb_spi_obj[0];
+        #if defined(MICROPY_HW_SPI1_NSS)
         pins[0] = &MICROPY_HW_SPI1_NSS;
+        #endif
         pins[1] = &MICROPY_HW_SPI1_SCK;
         pins[2] = &MICROPY_HW_SPI1_MISO;
         pins[3] = &MICROPY_HW_SPI1_MOSI;
@@ -187,7 +190,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         self = &pyb_spi_obj[1];
+        #if defined(MICROPY_HW_SPI2_NSS)
         pins[0] = &MICROPY_HW_SPI2_NSS;
+        #endif
         pins[1] = &MICROPY_HW_SPI2_SCK;
         pins[2] = &MICROPY_HW_SPI2_MISO;
         pins[3] = &MICROPY_HW_SPI2_MOSI;
@@ -197,7 +202,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         self = &pyb_spi_obj[2];
+        #if defined(MICROPY_HW_SPI3_NSS)
         pins[0] = &MICROPY_HW_SPI3_NSS;
+        #endif
         pins[1] = &MICROPY_HW_SPI3_SCK;
         pins[2] = &MICROPY_HW_SPI3_MISO;
         pins[3] = &MICROPY_HW_SPI3_MOSI;
@@ -207,7 +214,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         self = &pyb_spi_obj[3];
+        #if defined(MICROPY_HW_SPI4_NSS)
         pins[0] = &MICROPY_HW_SPI4_NSS;
+        #endif
         pins[1] = &MICROPY_HW_SPI4_SCK;
         pins[2] = &MICROPY_HW_SPI4_MISO;
         pins[3] = &MICROPY_HW_SPI4_MOSI;
@@ -217,7 +226,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         self = &pyb_spi_obj[4];
+        #if defined(MICROPY_HW_SPI5_NSS)
         pins[0] = &MICROPY_HW_SPI5_NSS;
+        #endif
         pins[1] = &MICROPY_HW_SPI5_SCK;
         pins[2] = &MICROPY_HW_SPI5_MISO;
         pins[3] = &MICROPY_HW_SPI5_MOSI;
@@ -227,7 +238,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         self = &pyb_spi_obj[5];
+        #if defined(MICROPY_HW_SPI6_NSS)
         pins[0] = &MICROPY_HW_SPI6_NSS;
+        #endif
         pins[1] = &MICROPY_HW_SPI6_SCK;
         pins[2] = &MICROPY_HW_SPI6_MISO;
         pins[3] = &MICROPY_HW_SPI6_MOSI;
@@ -239,7 +252,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         return;
     }
 
-    for (uint i = (enable_nss_pin ? 0 : 1); i < 4; i++) {
+    for (uint i = (enable_nss_pin && pins[0] ? 0 : 1); i < 4; i++) {
         mp_hal_gpio_set_af(pins[i], &GPIO_InitStructure, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
     }
 

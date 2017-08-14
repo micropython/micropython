@@ -84,7 +84,7 @@ Methods
 
             - ``None`` - no pull up or down resistor.
             - ``Pin.PULL_UP`` - pull up resistor enabled.
-            - ``Pin.PULL_DOWN`` - pull down resitor enabled.
+            - ``Pin.PULL_DOWN`` - pull down resistor enabled.
 
          - ``drive`` can be one of:
 

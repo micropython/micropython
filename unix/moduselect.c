@@ -38,6 +38,9 @@
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
+#include "fdfile.h"
+
+extern const mp_obj_type_t mp_type_socket;
 
 // Flags for poll()
 #define FLAG_ONESHOT (1)
@@ -51,10 +54,23 @@ typedef struct _mp_obj_poll_t {
     struct pollfd *entries;
 } mp_obj_poll_t;
 
+STATIC int get_fd(mp_obj_t fdlike) {
+    int fd;
+    // Shortcut for fdfile compatible types
+    if (MP_OBJ_IS_TYPE(fdlike, &mp_type_fileio) || MP_OBJ_IS_TYPE(fdlike, &mp_type_socket)) {
+        mp_obj_fdfile_t *fdfile = MP_OBJ_TO_PTR(fdlike);
+        fd = fdfile->fd;
+    } else {
+        fd = mp_obj_get_int(fdlike);
+    }
+    return fd;
+}
+
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
-    int fd = mp_obj_get_int(args[1]);
+    int fd = get_fd(args[1]);
+
     mp_uint_t flags;
     if (n_args == 3) {
         flags = mp_obj_get_int(args[2]);
@@ -95,7 +111,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     struct pollfd *entries = self->entries;
-    int fd = mp_obj_get_int(obj_in);
+    int fd = get_fd(obj_in);
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->fd = -1;
@@ -113,7 +129,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
     struct pollfd *entries = self->entries;
-    int fd = mp_obj_get_int(obj_in);
+    int fd = get_fd(obj_in);
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->events = mp_obj_get_int(eventmask_in);

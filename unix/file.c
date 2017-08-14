@@ -36,17 +36,13 @@
 #include "py/stream.h"
 #include "py/builtin.h"
 #include "py/mphal.h"
+#include "fdfile.h"
 
 #if MICROPY_PY_IO
 
 #ifdef _WIN32
 #define fsync _commit
 #endif
-
-typedef struct _mp_obj_fdfile_t {
-    mp_obj_base_t base;
-    int fd;
-} mp_obj_fdfile_t;
 
 #ifdef MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_fdfile_t *o) {
@@ -105,28 +101,29 @@ STATIC mp_uint_t fdfile_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
 
 STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_fdfile_t *o = MP_OBJ_TO_PTR(o_in);
-    if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
-        off_t off = lseek(o->fd, s->offset, s->whence);
-        if (off == (off_t)-1) {
-            *errcode = errno;
-            return MP_STREAM_ERROR;
+    check_fd_is_open(o);
+    switch (request) {
+        case MP_STREAM_SEEK: {
+            struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
+            off_t off = lseek(o->fd, s->offset, s->whence);
+            if (off == (off_t)-1) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            s->offset = off;
+            return 0;
         }
-        s->offset = off;
-        return 0;
-    } else {
-        *errcode = EINVAL;
-        return MP_STREAM_ERROR;
+        case MP_STREAM_FLUSH:
+            if (fsync(o->fd) < 0) {
+                *errcode = errno;
+                return MP_STREAM_ERROR;
+            }
+            return 0;
+        default:
+            *errcode = EINVAL;
+            return MP_STREAM_ERROR;
     }
 }
-
-STATIC mp_obj_t fdfile_flush(mp_obj_t self_in) {
-    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
-    check_fd_is_open(self);
-    fsync(self->fd);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_flush_obj, fdfile_flush);
 
 STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
     mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
@@ -228,7 +225,7 @@ STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&fdfile_flush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&fdfile_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&fdfile___exit___obj) },

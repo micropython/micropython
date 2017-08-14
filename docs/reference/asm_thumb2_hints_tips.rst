@@ -129,7 +129,7 @@ Non-integer data types
 ~~~~~~~~~~~~~~~~~~~~~~
 
 These may be handled by means of arrays of the appropriate data type. For
-example, single precison floating point data may be processed as follows.
+example, single precision floating point data may be processed as follows.
 This code example takes an array of floats and replaces its contents with
 their squares.
 
@@ -172,7 +172,7 @@ thus:
 
 The const() construct causes MicroPython to replace the variable name
 with its value at compile time. If constants are declared in an outer
-Python scope they can be shared between mutiple assembler functions and
+Python scope they can be shared between multiple assembler functions and
 with Python code.
 
 Assembler code as class methods

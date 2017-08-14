@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#if MICROPY_PY_USSL
+#if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
 
 #include "ssl.h"
 
@@ -122,14 +122,21 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     return r;
 }
 
+STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+    // Currently supports only blocking mode
+    (void)self_in;
+    if (!mp_obj_is_true(flag_in)) {
+        mp_not_implemented("");
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
+
 STATIC mp_obj_t socket_close(mp_obj_t self_in) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
     ssl_free(self->ssl_sock);
     ssl_ctx_free(self->ssl_ctx);
-
-    mp_obj_t dest[2];
-    mp_load_method(self->sock, MP_QSTR_close, dest);
-    return mp_call_method_n_kw(0, 0, dest);
+    return mp_stream_close(self->sock);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
@@ -139,6 +146,7 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
 };
 
@@ -191,35 +199,5 @@ const mp_obj_module_t mp_module_ussl = {
     .name = MP_QSTR_ussl,
     .globals = (mp_obj_dict_t*)&mp_module_ssl_globals,
 };
-
-
-// These functions might be split to stream_posix.c. They are referenced by
-// axtls os_port.h .
-ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len);
-ssize_t mp_stream_posix_read(void *sock_obj, void *buf, size_t len);
-
-int mp_stream_errno;
-
-ssize_t mp_stream_posix_write(void *sock_obj, const void *buf, size_t len) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)sock_obj;
-    const mp_stream_p_t *stream_p = o->type->protocol;
-    mp_uint_t out_sz = stream_p->write(o, buf, len, &mp_stream_errno);
-    if (out_sz == MP_STREAM_ERROR) {
-        return -1;
-    } else {
-        return out_sz;
-    }
-}
-
-ssize_t mp_stream_posix_read(void *sock_obj, void *buf, size_t len) {
-    struct _mp_obj_base_t *o = (struct _mp_obj_base_t *)sock_obj;
-    const mp_stream_p_t *stream_p = o->type->protocol;
-    mp_uint_t out_sz = stream_p->read(o, buf, len, &mp_stream_errno);
-    if (out_sz == MP_STREAM_ERROR) {
-        return -1;
-    } else {
-        return out_sz;
-    }
-}
 
 #endif // MICROPY_PY_USSL

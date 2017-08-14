@@ -81,7 +81,7 @@ Functions
 
     .. function:: unmount(path)
 
-       Unmounts a prevoulsy mounted block device from the given path.
+       Unmounts a previously mounted block device from the given path.
 
     .. function:: mkfs(block_device or path)
 

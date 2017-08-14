@@ -1683,6 +1683,7 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
     return MP_OBJ_NEW_SMALL_INT(num_occurrences);
 }
 
+#if MICROPY_PY_BUILTINS_STR_PARTITION
 STATIC mp_obj_t str_partitioner(mp_obj_t self_in, mp_obj_t arg, mp_int_t direction) {
     assert(MP_OBJ_IS_STR_OR_BYTES(self_in));
     mp_obj_type_t *self_type = mp_obj_get_type(self_in);
@@ -1732,6 +1733,7 @@ STATIC mp_obj_t str_partition(mp_obj_t self_in, mp_obj_t arg) {
 STATIC mp_obj_t str_rpartition(mp_obj_t self_in, mp_obj_t arg) {
     return str_partitioner(self_in, arg, -1);
 }
+#endif
 
 // Supposedly not too critical operations, so optimize for code size
 STATIC mp_obj_t str_caseconv(unichar (*op)(unichar), mp_obj_t self_in) {
@@ -1875,8 +1877,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rstrip_obj, 1, 2, str_rstrip);
 MP_DEFINE_CONST_FUN_OBJ_KW(str_format_obj, 1, mp_obj_str_format);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_replace_obj, 3, 4, str_replace);
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_count_obj, 2, 4, str_count);
+#if MICROPY_PY_BUILTINS_STR_PARTITION
 MP_DEFINE_CONST_FUN_OBJ_2(str_partition_obj, str_partition);
 MP_DEFINE_CONST_FUN_OBJ_2(str_rpartition_obj, str_rpartition);
+#endif
 MP_DEFINE_CONST_FUN_OBJ_1(str_lower_obj, str_lower);
 MP_DEFINE_CONST_FUN_OBJ_1(str_upper_obj, str_upper);
 MP_DEFINE_CONST_FUN_OBJ_1(str_isspace_obj, str_isspace);
@@ -1915,11 +1919,13 @@ STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&str_format_obj) },
     { MP_ROM_QSTR(MP_QSTR_replace), MP_ROM_PTR(&str_replace_obj) },
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj) },
+    #if MICROPY_PY_BUILTINS_STR_PARTITION
     { MP_ROM_QSTR(MP_QSTR_partition), MP_ROM_PTR(&str_partition_obj) },
     { MP_ROM_QSTR(MP_QSTR_rpartition), MP_ROM_PTR(&str_rpartition_obj) },
-#if MICROPY_PY_BUILTINS_STR_CENTER
+    #endif
+    #if MICROPY_PY_BUILTINS_STR_CENTER
     { MP_ROM_QSTR(MP_QSTR_center), MP_ROM_PTR(&str_center_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj) },
     { MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj) },
     { MP_ROM_QSTR(MP_QSTR_isspace), MP_ROM_PTR(&str_isspace_obj) },

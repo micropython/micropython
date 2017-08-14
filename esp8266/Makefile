@@ -4,6 +4,8 @@ include ../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 
 MICROPY_PY_USSL = 1
+MICROPY_SSL_AXTLS = 1
+MICROPY_PY_BTREE = 1
 
 # include py core make definitions
 include ../py/py.mk
@@ -87,6 +89,7 @@ SRC_C = \
 	$(BUILD)/frozen.c \
 	fatfs_port.c \
 	axtls_helpers.c \
+	$(SRC_MOD)
 
 STM_SRC_C = $(addprefix stmhal/,\
 	pybstdio.c \
@@ -153,7 +156,7 @@ SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(EXTMOD_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-all: $(BUILD)/firmware-combined.bin
+all: $(BUILD)/libaxtls.a $(BUILD)/firmware-combined.bin
 
 CONFVARS_FILE = $(BUILD)/confvars
 
@@ -229,8 +232,11 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 include ../py/mkrules.mk
 
-axtls:
+axtls: $(BUILD)/libaxtls.a
+
+$(BUILD)/libaxtls.a:
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
 	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_XTENSA) -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=3072"
+	cp ../lib/axtls/_stage/libaxtls.a $@

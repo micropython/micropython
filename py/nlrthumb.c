@@ -29,6 +29,8 @@
 
 #if (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 
+#undef nlr_push
+
 // We only need the functions here if we are on arm/thumb, and we are not
 // using setjmp/longjmp.
 //
@@ -71,7 +73,7 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0; // needed to silence compiler warning
 }
 
-unsigned int nlr_push_tail(nlr_buf_t *nlr) {
+__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
     nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
     nlr->prev = *top;
     *top = nlr;

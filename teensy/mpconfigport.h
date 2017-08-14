@@ -100,14 +100,6 @@ __attribute__(( always_inline )) static inline mp_uint_t disable_irq(void) {
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
-// There is no classical C heap in bare-metal ports, only Python
-// garbage-collected heap. For completeness, emulate C heap via
-// GC heap. Note that MicroPython core never uses malloc() and friends,
-// so these defines are mostly to help extension module writers.
-#define malloc gc_alloc
-#define free gc_free
-#define realloc gc_realloc
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 

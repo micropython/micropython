@@ -263,6 +263,8 @@ freedos:
 	MICROPY_PY_JNI=0
 
 # build an interpreter for coverage testing and do the testing
+# btree module is disabled, because with extra warnings enabled,
+# building berkeleydb errors out
 coverage:
 	$(MAKE) COPT="-O0" MICROPY_PY_BTREE=0 CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_coverage.h>" -fprofile-arcs -ftest-coverage -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wold-style-definition -Wpointer-arith -Wshadow -Wsign-compare -Wuninitialized -Wunused-parameter -DMICROPY_UNIX_COVERAGE' LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' BUILD=build-coverage PROG=micropython_coverage
 
@@ -308,11 +310,14 @@ libffi:
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	make install-exec-recursive; make -C include install-data-am
 
-axtls: ../lib/axtls/README
+axtls: $(BUILD)/libaxtls.a
+
+$(BUILD)/libaxtls.a: ../lib/axtls/README | $(OBJ_DIRS)
 	cd ../lib/axtls; cp config/upyconfig config/.config
 	cd ../lib/axtls; make oldconfig -B
 	cd ../lib/axtls; make clean
 	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+	cp ../lib/axtls/_stage/libaxtls.a $@
 
 ../lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."

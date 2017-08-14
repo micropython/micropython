@@ -127,7 +127,7 @@ lib: $(OBJ)
 	$(AR) rcs libmicropython.a $^
 
 clean:
-	$(RM) -rf $(BUILD)
+	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
 print-cfg:

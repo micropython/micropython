@@ -9,6 +9,12 @@ Quick reference for the ESP8266
 
 The Adafruit Feather HUZZAH board (image attribution: Adafruit).
 
+Installing MicroPython
+----------------------
+
+See the corresponding section of tutorial: :ref:`intro`. It also includes
+a troubleshooting subsection.
+
 General board control
 ---------------------
 
@@ -290,6 +296,24 @@ For low-level driving of an APA102::
 
     import esp
     esp.apa102_write(clock_pin, data_pin, rgbi_buf)
+
+DHT driver
+----------
+
+The DHT driver is implemented in software and works on all pins::
+
+    import dht
+    import machine
+
+    d = dht.DHT11(machine.Pin(4))
+    d.measure()
+    d.temperature() # eg. 23 (°C)
+    d.humidity()    # eg. 41 (% RH)
+
+    d = dht.DHT22(machine.Pin(4))
+    d.measure()
+    d.temperature() # eg. 23.6 (°C)
+    d.humidity()    # eg. 41.3 (% RH)
 
 WebREPL (web browser interactive prompt)
 ----------------------------------------

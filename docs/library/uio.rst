@@ -12,7 +12,7 @@ Functions
 
 .. function:: open(name, mode='r', **kwargs)
 
-    Open a file. Builtin ``open()`` function is alised to this function.
+    Open a file. Builtin ``open()`` function is aliased to this function.
     All ports (which provide access to file system) are required to support
     `mode` parameter, but support for other arguments vary by port.
 
@@ -38,8 +38,9 @@ Classes
     opened with "b" modifier). Initial contents of file-like objects
     can be specified with `string` parameter (should be normal string
     for `StringIO` or bytes object for `BytesIO`). All the usual file
-    methods like ``read()``, ``write()``, ``close()`` are available on
-    these objects, and additionally, following method:
+    methods like ``read()``, ``write()``, ``seek()``, ``flush()``,
+    ``close()`` are available on these objects, and additionally, a
+    following method:
 
     .. method:: getvalue()
 

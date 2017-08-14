@@ -24,7 +24,7 @@ This summarises the points detailed below and lists the principal recommendation
 * Where an ISR returns multiple bytes use a pre-allocated ``bytearray``. If multiple integers are to be
   shared between an ISR and the main program consider an array (``array.array``).
 * Where data is shared between the main program and an ISR, consider disabling interrupts prior to accessing
-  the data in the main program and re-enabling them immediately afterwards (see Critcal Sections).
+  the data in the main program and re-enabling them immediately afterwards (see Critical Sections).
 * Allocate an emergency exception buffer (see below).
 
 

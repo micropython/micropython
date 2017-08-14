@@ -9,15 +9,9 @@
 #include "eagle_soc.h"
 #include "user_interface.h"
 #include "espneopixel.h"
+#include "esp_mphal.h"
 
 #define NEO_KHZ400 (1)
-
-static uint32_t _getCycleCount(void) __attribute__((always_inline));
-static inline uint32_t _getCycleCount(void) {
-  uint32_t ccount;
-  __asm__ __volatile__("rsr %0,ccount":"=a" (ccount));
-  return ccount;
-}
 
 void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numBytes, bool is800KHz) {
 
@@ -49,10 +43,10 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
 
   for(t = time0;; t = time0) {
     if(pix & mask) t = time1;                             // Bit high duration
-    while(((c = _getCycleCount()) - startTime) < period); // Wait for bit start
+    while(((c = mp_hal_ticks_cpu()) - startTime) < period); // Wait for bit start
     GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, pinMask);       // Set high
     startTime = c;                                        // Save start time
-    while(((c = _getCycleCount()) - startTime) < t);      // Wait high duration
+    while(((c = mp_hal_ticks_cpu()) - startTime) < t);      // Wait high duration
     GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, pinMask);       // Set low
     if(!(mask >>= 1)) {                                   // Next bit/byte
       if(p >= end) break;
@@ -60,5 +54,5 @@ void /*ICACHE_RAM_ATTR*/ esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32
       mask = 0x80;
     }
   }
-  while((_getCycleCount() - startTime) < period); // Wait for last bit
+  while((mp_hal_ticks_cpu() - startTime) < period); // Wait for last bit
 }

@@ -37,18 +37,23 @@ endif
 ifeq ($(UNAME_S),Darwin)
 CC = clang
 # Use clang syntax for map file
-LDFLAGS_ARCH = -Wl,-map,$@.map
+LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
 else
 # Use gcc syntax for map file
-LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref
+LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
-LDFLAGS += -Wl,--gc-sections
 
 # source files
 SRC_C = \
 	main.c \
 	gccollect.c \
+
+ifeq ($(OS),Windows_NT)
+    ifeq (,$(findstring MSYS,$(UNAME_S)))
+        SRC_C += windows/fmode.c
+    endif
+endif
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

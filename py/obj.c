@@ -192,10 +192,16 @@ bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
             return mp_obj_str_equal(o1, o2);
         } else {
             // a string is never equal to anything else
-            return false;
+            goto str_cmp_err;
         }
     } else if (MP_OBJ_IS_STR(o2)) {
         // o1 is not a string (else caught above), so the objects are not equal
+    str_cmp_err:
+        #if MICROPY_PY_STR_BYTES_CMP_WARN
+        if (MP_OBJ_IS_TYPE(o1, &mp_type_bytes) || MP_OBJ_IS_TYPE(o2, &mp_type_bytes)) {
+            mp_warning("Comparison between bytes and str");
+        }
+        #endif
         return false;
     }
 

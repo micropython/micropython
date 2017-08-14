@@ -38,6 +38,7 @@
 #include "py/mphal.h"
 #endif
 #include "extmod/modwebsocket.h"
+#include "genhdr/mpversion.h"
 
 #if MICROPY_PY_WEBREPL
 
@@ -57,7 +58,7 @@ struct webrepl_file {
     char fname[64];
 } __attribute__((packed));
 
-enum { PUT_FILE = 1, GET_FILE, LIST_DIR };
+enum { PUT_FILE = 1, GET_FILE, GET_VER };
 enum { STATE_PASSWD, STATE_NORMAL };
 
 typedef struct _mp_obj_webrepl_t {
@@ -76,12 +77,6 @@ STATIC char connected_prompt[] = "\r\nWebREPL connected\r\n>>> ";
 STATIC char denied_prompt[] = "\r\nAccess denied\r\n";
 
 STATIC char webrepl_passwd[10];
-
-static inline void close_meth(mp_obj_t stream) {
-    mp_obj_t dest[2];
-    mp_load_method(stream, MP_QSTR_close, dest);
-    mp_call_method_n_kw(0, 0, dest);
-}
 
 STATIC void write_webrepl(mp_obj_t websock, const void *buf, size_t len) {
     const mp_stream_p_t *sock_stream = mp_get_stream_raise(websock, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
@@ -117,7 +112,37 @@ STATIC mp_obj_t webrepl_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return o;
 }
 
+STATIC int write_file_chunk(mp_obj_webrepl_t *self) {
+    const mp_stream_p_t *file_stream =
+        mp_get_stream_raise(self->cur_file, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+    byte readbuf[2 + 256];
+    int err;
+    mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf + 2, sizeof(readbuf) - 2, &err);
+    if (out_sz == MP_STREAM_ERROR) {
+        return out_sz;
+    }
+    readbuf[0] = out_sz;
+    readbuf[1] = out_sz >> 8;
+    DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
+    write_webrepl(self->sock, readbuf, 2 + out_sz);
+    return out_sz;
+}
+
 STATIC void handle_op(mp_obj_webrepl_t *self) {
+
+    // Handle operations not requiring opened file
+
+    switch (self->hdr.type) {
+        case GET_VER: {
+            static char ver[] = {MICROPY_VERSION_MAJOR, MICROPY_VERSION_MINOR, MICROPY_VERSION_MICRO};
+            write_webrepl(self->sock, ver, sizeof(ver));
+            self->hdr_to_recv = sizeof(struct webrepl_file);
+            return;
+        }
+    }
+
+    // Handle operations requiring opened file
+
     mp_obj_t open_args[2] = {
         mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname), false),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb)
@@ -128,8 +153,6 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     }
 
     self->cur_file = mp_builtin_open(2, open_args, (mp_map_t*)&mp_const_empty_map);
-    const mp_stream_p_t *file_stream =
-        mp_get_stream_raise(self->cur_file, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
     #if 0
     struct mp_stream_seek_t seek = { .offset = self->hdr.offset, .whence = 0 };
@@ -143,24 +166,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     if (self->hdr.type == PUT_FILE) {
         self->data_to_recv = self->hdr.size;
     } else if (self->hdr.type == GET_FILE) {
-        byte readbuf[2 + 256];
-        int err;
-        // TODO: It's not ideal that we block connection while sending file
-        // and don't process any input.
-        while (1) {
-            mp_uint_t out_sz = file_stream->read(self->cur_file, readbuf + 2, sizeof(readbuf) - 2, &err);
-            assert(out_sz != MP_STREAM_ERROR);
-            readbuf[0] = out_sz;
-            readbuf[1] = out_sz >> 8;
-            DEBUG_printf("webrepl: Sending %d bytes of file\n", out_sz);
-            write_webrepl(self->sock, readbuf, 2 + out_sz);
-            if (out_sz == 0) {
-                break;
-            }
-        }
-
-        write_webrepl_resp(self->sock, 0);
-        self->hdr_to_recv = sizeof(struct webrepl_file);
+        self->data_to_recv = 1;
     }
 }
 
@@ -248,17 +254,27 @@ STATIC mp_uint_t _webrepl_read(mp_obj_t self_in, void *buf, mp_uint_t size, int 
             buf_sz += sz;
         }
 
-        DEBUG_printf("webrepl: Writing %lu bytes to file\n", buf_sz);
-        int err;
-        mp_uint_t res = mp_stream_write_exactly(self->cur_file, filebuf, buf_sz, &err);
-        if (err != 0 || res != buf_sz) {
-            assert(0);
+        if (self->hdr.type == PUT_FILE) {
+            DEBUG_printf("webrepl: Writing %lu bytes to file\n", buf_sz);
+            int err;
+            mp_uint_t res = mp_stream_write_exactly(self->cur_file, filebuf, buf_sz, &err);
+            if (err != 0 || res != buf_sz) {
+                assert(0);
+            }
+        } else if (self->hdr.type == GET_FILE) {
+            assert(buf_sz == 1);
+            assert(self->data_to_recv == 0);
+            assert(filebuf[0] == 0);
+            mp_uint_t out_sz = write_file_chunk(self);
+            if (out_sz != 0) {
+                self->data_to_recv = 1;
+            }
         }
 
         if (self->data_to_recv == 0) {
-            close_meth(self->cur_file);
+            mp_stream_close(self->cur_file);
             self->hdr_to_recv = sizeof(struct webrepl_file);
-            DEBUG_printf("webrepl: Finished writing file\n");
+            DEBUG_printf("webrepl: Finished file operation %d\n", self->hdr.type);
             write_webrepl_resp(self->sock, 0);
         }
 

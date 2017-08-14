@@ -23,7 +23,7 @@ specifiers:
 * ne Not equal
 * cs Carry set
 * cc Carry clear
-* mi Minus (negaive)
+* mi Minus (negative)
 * pl Plus (positive)
 * vs Overflow set
 * vc Overflow clear

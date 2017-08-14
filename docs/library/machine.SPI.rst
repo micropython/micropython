@@ -45,7 +45,7 @@ Methods
        respectively.
      - ``bits`` is the width of each transfer, accepted values are 8, 16 and 32.
      - ``firstbit`` can be ``SPI.MSB`` only.
-     - ``pins`` is an optional tupple with the pins to assign to the SPI bus.
+     - ``pins`` is an optional tuple with the pins to assign to the SPI bus.
 
 .. method:: SPI.deinit()
 

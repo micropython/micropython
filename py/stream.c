@@ -267,12 +267,24 @@ void mp_stream_write_adaptor(void *self, const char *buf, size_t len) {
     mp_stream_write(MP_OBJ_FROM_PTR(self), buf, len, MP_STREAM_RW_WRITE);
 }
 
-STATIC mp_obj_t stream_write_method(mp_obj_t self_in, mp_obj_t arg) {
+STATIC mp_obj_t stream_write_method(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    return mp_stream_write(self_in, bufinfo.buf, bufinfo.len, MP_STREAM_RW_WRITE);
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+    size_t max_len = (size_t)-1;
+    size_t off = 0;
+    if (n_args == 3) {
+        max_len = mp_obj_get_int_truncated(args[2]);
+    } else if (n_args == 4) {
+        off = mp_obj_get_int_truncated(args[2]);
+        max_len = mp_obj_get_int_truncated(args[3]);
+        if (off > bufinfo.len) {
+            off = bufinfo.len;
+        }
+    }
+    bufinfo.len -= off;
+    return mp_stream_write(args[0], (byte*)bufinfo.buf + off, MIN(bufinfo.len, max_len), MP_STREAM_RW_WRITE);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write_obj, stream_write_method);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj, 2, 4, stream_write_method);
 
 STATIC mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
     mp_buffer_info_t bufinfo;
@@ -465,6 +477,17 @@ STATIC mp_obj_t stream_tell(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_tell_obj, stream_tell);
 
+STATIC mp_obj_t stream_flush(mp_obj_t self) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(self, MP_STREAM_OP_IOCTL);
+    int error;
+    mp_uint_t res = stream_p->ioctl(self, MP_STREAM_FLUSH, 0, &error);
+    if (res == MP_STREAM_ERROR) {
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(error)));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_flush_obj, stream_flush);
+
 STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_IOCTL);
 
@@ -487,3 +510,63 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     return mp_obj_new_int(res);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
+
+#if MICROPY_STREAMS_POSIX_API
+/*
+ * POSIX-like functions
+ *
+ * These functions have POSIX-compatible signature (except for "void *stream"
+ * first argument instead of "int fd"). They are useful to port existing
+ * POSIX-compatible software to work with MicroPython streams.
+ */
+
+// errno-like variable. If any of the functions below returned with error
+// status, this variable will contain error no.
+int mp_stream_errno;
+
+ssize_t mp_stream_posix_write(mp_obj_t stream, const void *buf, size_t len) {
+    mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    const mp_stream_p_t *stream_p = o->type->protocol;
+    mp_uint_t out_sz = stream_p->write(stream, buf, len, &mp_stream_errno);
+    if (out_sz == MP_STREAM_ERROR) {
+        return -1;
+    } else {
+        return out_sz;
+    }
+}
+
+ssize_t mp_stream_posix_read(mp_obj_t stream, void *buf, size_t len) {
+    mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    const mp_stream_p_t *stream_p = o->type->protocol;
+    mp_uint_t out_sz = stream_p->read(stream, buf, len, &mp_stream_errno);
+    if (out_sz == MP_STREAM_ERROR) {
+        return -1;
+    } else {
+        return out_sz;
+    }
+}
+
+off_t mp_stream_posix_lseek(mp_obj_t stream, off_t offset, int whence) {
+    const mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    const mp_stream_p_t *stream_p = o->type->protocol;
+    struct mp_stream_seek_t seek_s;
+    seek_s.offset = offset;
+    seek_s.whence = whence;
+    mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &mp_stream_errno);
+    if (res == MP_STREAM_ERROR) {
+        return -1;
+    }
+    return seek_s.offset;
+}
+
+int mp_stream_posix_fsync(mp_obj_t stream) {
+    mp_obj_base_t* o = (mp_obj_base_t*)MP_OBJ_TO_PTR(stream);
+    const mp_stream_p_t *stream_p = o->type->protocol;
+    mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_FLUSH, 0, &mp_stream_errno);
+    if (res == MP_STREAM_ERROR) {
+        return -1;
+    }
+    return res;
+}
+
+#endif

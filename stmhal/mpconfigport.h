@@ -235,9 +235,9 @@ static inline mp_uint_t disable_irq(void) {
 // garbage-collected heap. For completeness, emulate C heap via
 // GC heap. Note that MicroPython core never uses malloc() and friends,
 // so these defines are mostly to help extension module writers.
-#define malloc gc_alloc
-#define free gc_free
-#define realloc gc_realloc
+#define malloc(n) m_malloc(n)
+#define free(p) m_free(p)
+#define realloc(p, n) m_realloc(p, n)
 
 // see stm32f4XX_hal_conf.h USE_USB_FS & USE_USB_HS
 // at the moment only USB_FS is supported

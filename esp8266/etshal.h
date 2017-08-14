@@ -20,6 +20,13 @@ void ets_timer_arm_new(os_timer_t *tim, uint32_t millis, bool repeat, bool is_mi
 void ets_timer_setfn(os_timer_t *tim, ETSTimerFunc callback, void *cb_data);
 void ets_timer_disarm(os_timer_t *tim);
 
+// Opaque structure
+typedef char MD5_CTX[64];
+
+void MD5Init(MD5_CTX *context);
+void MD5Update(MD5_CTX *context, const void *data, unsigned int len);
+void MD5Final(unsigned char digest[16], MD5_CTX *context);
+
 // These prototypes are for recent SDKs with "malloc tracking"
 void *pvPortMalloc(unsigned sz, const char *fname, int line);
 void vPortFree(void *p, const char *fname, int line);

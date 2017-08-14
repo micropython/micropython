@@ -63,6 +63,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+#define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
 #ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
@@ -72,6 +73,7 @@
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER (1)
+#define MICROPY_PY_BUILTINS_STR_PARTITION (1)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
@@ -111,7 +113,7 @@
 #define MICROPY_PY_URE              (1)
 #define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UHASHLIB         (1)
-#if MICROPY_PY_USSL
+#if MICROPY_PY_USSL && MICROPY_SSL_AXTLS
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #endif
 #define MICROPY_PY_UBINASCII        (1)
@@ -119,6 +121,7 @@
 #ifndef MICROPY_PY_USELECT
 #define MICROPY_PY_USELECT          (1)
 #endif
+#define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
@@ -138,6 +141,7 @@
 // names in exception messages (may require more RAM).
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_DETAILED)
 #define MICROPY_WARNINGS            (1)
+#define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 
 // Define to 1 to use undertested inefficient GC helper implementation
 // (if more efficient arch-specific one is not available).
@@ -300,3 +304,6 @@ void mp_unix_mark_exec(void);
 #ifndef _DIRENT_HAVE_D_INO
 #define _DIRENT_HAVE_D_INO (1)
 #endif
+
+// For debugging purposes, make printf() available to any source file.
+#include <stdio.h>

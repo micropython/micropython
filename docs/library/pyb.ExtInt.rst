@@ -7,7 +7,7 @@ class ExtInt -- configure I/O pins to interrupt on external events
 There are a total of 22 interrupt lines. 16 of these can come from GPIO pins
 and the remaining 6 are from internal sources.
 
-For lines 0 thru 15, a given line can map to the corresponding line from an
+For lines 0 through 15, a given line can map to the corresponding line from an
 arbitrary port. So line 0 can map to Px0 where x is A, B, C, ... and
 line 1 can map to Px1 where x is A, B, C, ... ::
 
@@ -27,7 +27,7 @@ explanation, along with various techniques for debouncing.
 Trying to register 2 callbacks onto the same pin will throw an exception.
 
 If pin is passed as an integer, then it is assumed to map to one of the
-internal interrupt sources, and must be in the range 16 thru 22.
+internal interrupt sources, and must be in the range 16 through 22.
 
 All other pin objects go through the pin mapper to come up with one of the
 gpio pins. ::

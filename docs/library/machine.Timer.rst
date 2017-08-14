@@ -104,7 +104,7 @@ Methods
        If only a channel identifier passed, then a previously initialized channel
        object is returned (or ``None`` if there is no previous channel).
 
-       Othwerwise, a TimerChannel object is initialized and returned.
+       Otherwise, a TimerChannel object is initialized and returned.
        
        The operating mode is is the one configured to the Timer object that was used to
        create the channel.
@@ -152,7 +152,7 @@ Methods
 
     .. method:: timerchannel.irq(\*, trigger, priority=1, handler=None)
 
-        The behavior of this callback is heaviliy dependent on the operating
+        The behavior of this callback is heavily dependent on the operating
         mode of the timer channel:
 
             - If mode is ``Timer.PERIODIC`` the callback is executed periodically

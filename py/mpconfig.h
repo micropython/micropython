@@ -107,6 +107,12 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
 #endif
 
+// Support automatic GC when reaching allocation threshold,
+// configurable by gc.threshold().
+#ifndef MICROPY_GC_ALLOC_THRESHOLD
+#define MICROPY_GC_ALLOC_THRESHOLD (1)
+#endif
+
 // Number of bytes to allocate initially when creating new chunks to store
 // interned string data.  Smaller numbers lead to more chunks being needed
 // and more wastage at the end of the chunk.  Larger numbers lead to wasted
@@ -516,6 +522,12 @@ typedef double mp_float_t;
 #define MICROPY_STREAMS_NON_BLOCK (0)
 #endif
 
+// Whether to provide stream functions with POSIX-like signatures
+// (useful for porting existing libraries to MicroPython).
+#ifndef MICROPY_STREAMS_POSIX_API
+#define MICROPY_STREAMS_POSIX_API (0)
+#endif
+
 // Whether to call __init__ when importing builtin modules for the first time
 #ifndef MICROPY_MODULE_BUILTIN_INIT
 #define MICROPY_MODULE_BUILTIN_INIT (0)
@@ -584,6 +596,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Issue a warning when comparing str and bytes objects
+#ifndef MICROPY_PY_STR_BYTES_CMP_WARN
+#define MICROPY_PY_STR_BYTES_CMP_WARN (0)
+#endif
+
 // Whether str object is proper unicode
 #ifndef MICROPY_PY_BUILTINS_STR_UNICODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
@@ -592,6 +609,11 @@ typedef double mp_float_t;
 // Whether str.center() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_CENTER
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
+#endif
+
+// Whether str.partition()/str.rpartition() method provided
+#ifndef MICROPY_PY_BUILTINS_STR_PARTITION
+#define MICROPY_PY_BUILTINS_STR_PARTITION (0)
 #endif
 
 // Whether str.splitlines() method provided
@@ -1049,6 +1071,11 @@ typedef double mp_float_t;
 // Modifier for functions which should be never inlined
 #ifndef MP_NOINLINE
 #define MP_NOINLINE __attribute__((noinline))
+#endif
+
+// Modifier for functions which should be always inlined
+#ifndef MP_ALWAYSINLINE
+#define MP_ALWAYSINLINE __attribute__((always_inline))
 #endif
 
 // Condition is likely to be true, to help branch prediction

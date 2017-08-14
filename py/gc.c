@@ -152,6 +152,12 @@ void gc_init(void *start, void *end) {
     // allow auto collection
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
 
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    // by default, maxuint for gc threshold, effectively turning gc-by-threshold off
+    MP_STATE_MEM(gc_alloc_threshold) = (size_t)-1;
+    MP_STATE_MEM(gc_alloc_amount) = 0;
+    #endif
+
     #if MICROPY_PY_THREAD
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
@@ -294,6 +300,9 @@ STATIC void gc_sweep(void) {
 void gc_collect_start(void) {
     GC_ENTER();
     MP_STATE_MEM(gc_lock_depth)++;
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    MP_STATE_MEM(gc_alloc_amount) = 0;
+    #endif
     MP_STATE_MEM(gc_stack_overflow) = 0;
     MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
     // Trace root pointers.  This relies on the root pointers being organised
@@ -405,6 +414,15 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     size_t start_block;
     size_t n_free = 0;
     int collected = !MP_STATE_MEM(gc_auto_collect_enabled);
+
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    if (!collected && MP_STATE_MEM(gc_alloc_amount) >= MP_STATE_MEM(gc_alloc_threshold)) {
+        GC_EXIT();
+        gc_collect();
+        GC_ENTER();
+    }
+    #endif
+
     for (;;) {
 
         // look for a run of n_blocks available blocks
@@ -455,6 +473,10 @@ found:
     // we must create this pointer before unlocking the GC so a collection can find it
     void *ret_ptr = (void*)(MP_STATE_MEM(gc_pool_start) + start_block * BYTES_PER_BLOCK);
     DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
+
+    #if MICROPY_GC_ALLOC_THRESHOLD
+    MP_STATE_MEM(gc_alloc_amount) += n_blocks;
+    #endif
 
     GC_EXIT();
 

@@ -32,5 +32,7 @@ def main(use_stream=True):
         s.send(b"GET / HTTP/1.0\n\n")
         print(s.recv(4096))
 
+    s.close()
+
 
 main()

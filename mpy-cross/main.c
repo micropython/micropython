@@ -35,6 +35,9 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
+#ifdef _WIN32
+#include "windows/fmode.h"
+#endif
 
 // Command line options, with their defaults
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
@@ -185,6 +188,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 
     mp_init();
+#ifdef _WIN32
+    set_fmode_binary();
+#endif
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
 

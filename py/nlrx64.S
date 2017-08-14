@@ -37,8 +37,10 @@
 
 #if defined(__APPLE__) && defined(__MACH__)
 #define NLR_TOP (_mp_state_ctx + NLR_TOP_OFFSET)
+#define MP_THREAD_GET_STATE _mp_thread_get_state
 #else
 #define NLR_TOP (mp_state_ctx + NLR_TOP_OFFSET)
+#define MP_THREAD_GET_STATE mp_thread_get_state
 #endif
 
 // offset of nlr_top within mp_state_thread_t structure
@@ -87,7 +89,7 @@ _nlr_push:
     movq    %rdi, NLR_TOP(%rip)     # stor new nlr_buf (to make linked list)
 #else
     movq    %rdi, %rbp              # since we make a call, must save rdi in rbp
-    callq   mp_thread_get_state     # get mp_state_thread ptr into rax
+    callq   MP_THREAD_GET_STATE     # get mp_state_thread ptr into rax
     movq    NLR_TOP_TH_OFF(%rax), %rsi # get thread.nlr_top (last nlr_buf)
     movq    %rsi, (%rbp)            # store it
     movq    %rbp, NLR_TOP_TH_OFF(%rax) # store new nlr_buf (to make linked list)
@@ -117,7 +119,7 @@ _nlr_pop:
     movq    (%rax), %rax            # load prev nlr_buf
     movq    %rax, NLR_TOP(%rip)     # store prev nlr_buf (to unlink list)
 #else
-    callq   mp_thread_get_state     # get mp_state_thread ptr into rax
+    callq   MP_THREAD_GET_STATE     # get mp_state_thread ptr into rax
     movq    NLR_TOP_TH_OFF(%rax), %rdi # get thread.nlr_top (last nlr_buf)
     movq    (%rdi), %rdi            # load prev nlr_buf
     movq    %rdi, NLR_TOP_TH_OFF(%rax) # store prev nlr_buf (to unlink list)
@@ -150,7 +152,7 @@ nlr_jump:
     movq    %rax, NLR_TOP(%rip)     # store prev nlr_buf (to unlink list)
 #else
     movq    %rdi, %rbp              # put return value in rbp
-    callq   mp_thread_get_state     # get thread ptr in rax
+    callq   MP_THREAD_GET_STATE     # get thread ptr in rax
     movq    %rax, %rsi              # put thread ptr in rsi
     movq    %rbp, %rax              # put return value to rax (for je .fail)
     movq    NLR_TOP_TH_OFF(%rsi), %rdi # get thread.nlr_top in rdi
