@@ -34,6 +34,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/obj.h"
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
@@ -189,6 +190,16 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     return o;
 }
 
+STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
+    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
+    if (!mp_obj_is_true(binary_form)) {
+        mp_raise_NotImplementedError(NULL);
+    }
+    const mbedtls_x509_crt* peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
+    return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
+
 STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
@@ -259,6 +270,7 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_table);
