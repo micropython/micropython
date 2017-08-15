@@ -373,6 +373,11 @@
 #define MICROPY_DEBUG_PRINTERS (0)
 #endif
 
+// Debug information will be extremely verbose (enables all debug-outputs)
+#ifndef MICROPY_DEBUG_VERBOSE
+#define MICROPY_DEBUG_VERBOSE       (0)
+#endif
+
 /*****************************************************************************/
 /* Optimisations                                                             */
 
