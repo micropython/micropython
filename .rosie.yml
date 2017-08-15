@@ -2,8 +2,11 @@
 # builds them) and where to find the tests.
 
 binaries:
-    prebuilt_s3: adafruit-circuit-python
-    file_pattern: bin/{board}/adafruit-circuitpython-{board}-*-{short_sha}.{extension}
+    prebuilt_s3:
+        bucket: adafruit-circuit-python
+        file_pattern: bin/{board}/adafruit-circuitpython-{board}-*-{short_sha}.{extension}
+    rosie_upload:
+        file_pattern: adafruit-circuitpython-{board}-{short_sha}.{extension}
 
 circuitpython_tests:
     test_directories:
