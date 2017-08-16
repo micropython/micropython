@@ -16,6 +16,7 @@ platform:
 
 build:
   project: ports/windows/micropython.vcxproj
+  project: ports/windows/mpy-cross.vcxproj
   verbosity: normal
 
 test_script:

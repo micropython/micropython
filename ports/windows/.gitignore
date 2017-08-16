@@ -6,6 +6,6 @@
 *.pdb
 *.ilk
 *.filters
-/build/*
+/build*/*
 .vs/*
 *.VC.*db
