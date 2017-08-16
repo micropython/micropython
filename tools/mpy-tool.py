@@ -239,7 +239,7 @@ class RawCode:
     def dump(self):
         # dump children first
         for rc in self.raw_codes:
-            rc.freeze()
+            rc.freeze('')
         # TODO
 
     def freeze(self, parent_name):
