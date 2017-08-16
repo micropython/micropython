@@ -28,6 +28,7 @@
 #if MICROPY_PY_ZEPHYR
 
 #include <zephyr.h>
+#include <misc/stack.h>
 
 #include "py/runtime.h"
 
@@ -36,9 +37,22 @@ STATIC mp_obj_t mod_is_preempt_thread(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_is_preempt_thread_obj, mod_is_preempt_thread);
 
+STATIC mp_obj_t mod_current_tid(void) {
+    return MP_OBJ_NEW_SMALL_INT(k_current_get());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
+
+STATIC mp_obj_t mod_stacks_analyze(void) {
+    k_call_stacks_analyze();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_stacks_analyze_obj, mod_stacks_analyze);
+
 STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
     { MP_ROM_QSTR(MP_QSTR_is_preempt_thread), MP_ROM_PTR(&mod_is_preempt_thread_obj) },
+    { MP_ROM_QSTR(MP_QSTR_current_tid), MP_ROM_PTR(&mod_current_tid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stacks_analyze), MP_ROM_PTR(&mod_stacks_analyze_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
