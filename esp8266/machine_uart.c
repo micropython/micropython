@@ -174,7 +174,16 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         self->timeout_char = min_timeout_char;
     }
 
-    self->rxbuflen = args[ARG_rxbuflen].u_int;
+    if (args[ARG_rxbuflen].u_int != self->rxbuflen) {
+        self->rxbuflen = args[ARG_rxbuflen].u_int;
+        if (self->buf) {
+            m_free(self->buf);
+        }
+        self->buf = m_malloc(self->rxbuflen);
+    }
+    self->rxbuf.buf = self->buf;
+    self->rxbuf.size = self->rxbuflen;
+    self->rxbuf.iget = self->rxbuf.iput=0;
 
     if (args[ARG_use_repl].u_int == 0) {
         self->use_repl = 0;
@@ -211,17 +220,6 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
 
     pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
-
-    if (self->rxbuflen) {
-        if (self->buf) {
-            m_free(self->buf);
-        }
-        self->buf = m_malloc(self->rxbuflen);
-    }
-
-    self->rxbuf.buf = self->buf;
-    self->rxbuf.size = self->rxbuflen;
-    self->rxbuf.iget = self->rxbuf.iput=0;
 
     return MP_OBJ_FROM_PTR(self);
 }
