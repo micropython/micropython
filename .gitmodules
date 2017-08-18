@@ -17,3 +17,6 @@
 [submodule "tools/uf2"]
 	path = tools/uf2
 	url = https://github.com/Microsoft/uf2.git
+[submodule "atmel-samd/frozen/Adafruit_CircuitPython_NeoPixel"]
+	path = atmel-samd/frozen/Adafruit_CircuitPython_NeoPixel
+	url = https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel

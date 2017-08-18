@@ -247,12 +247,15 @@ PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
 
 # object file for frozen files
 ifneq ($(FROZEN_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen.o
+PY_O += $(BUILD)/frozen.o
 endif
 
+# Combine old singular FROZEN_MPY_DIR with new multiple value form.
+FROZEN_MPY_DIRS += $(FROZEN_MPY_DIR)
+
 # object file for frozen bytecode (frozen .mpy files)
-ifneq ($(FROZEN_MPY_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
+ifneq ($(FROZEN_MPY_DIRS),)
+PY_O += $(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
