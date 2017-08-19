@@ -88,8 +88,8 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
     struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6*)addr;
     char buf[40];
-    net_addr_ntop(addr->family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->family == AF_INET ? 2 : 4, NULL);
+    net_addr_ntop(addr->sa_family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
+    mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->sa_family == AF_INET ? 2 : 4, NULL);
 
     tuple->items[0] = mp_obj_new_str(buf, strlen(buf), false);
     // We employ the fact that port offset is the same for IPv4 & IPv6
@@ -97,7 +97,7 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     //tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
     tuple->items[1] = port;
 
-    if (addr->family == AF_INET6) {
+    if (addr->sa_family == AF_INET6) {
         tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0); // flow_info
         tuple->items[3] = MP_OBJ_NEW_SMALL_INT(sockaddr_in6->sin6_scope_id);
     }
