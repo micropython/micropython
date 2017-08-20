@@ -50,9 +50,17 @@
 
 // Argument structure for MP_STREAM_SEEK
 struct mp_stream_seek_t {
+    // If whence == MP_SEEK_SET, offset should be treated as unsigned.
+    // This allows dealing with full-width stream sizes (16, 32, 64,
+    // etc. bits). For other seek types, should be treated as signed.
     mp_off_t offset;
     int whence;
 };
+
+// seek ioctl "whence" values
+#define MP_SEEK_SET (0)
+#define MP_SEEK_CUR (1)
+#define MP_SEEK_END (2)
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
