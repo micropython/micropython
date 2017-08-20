@@ -68,7 +68,13 @@ Glossary
         MicroPython supports different :term:`boards <board>`, RTOSes,
         and OSes, and can be relatively easily adapted to new systems.
         MicroPython with support for a particular system is called a
-        "port" to that system.
+        "port" to that system. Different ports may have widely different
+        functionality. This documentation is intended to be a reference
+        of the generic APIs available across different ports ("MicroPython
+        core"). Note that some ports may still omit some APIs described
+        here (e.g. due to resource constraints). Any such differences,
+        and port-specific extensions beyond MicroPython core functionality,
+        would be described in the separate port-specific documentation.
 
     MicroPython Unix port
         Unix port is one of the major :term:`MicroPython ports <MicroPython port>`.
