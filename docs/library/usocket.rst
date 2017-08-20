@@ -12,12 +12,6 @@ This module provides access to the BSD socket interface.
 .. admonition:: Difference to CPython
    :class: attention
 
-   CPython used to have a ``socket.error`` exception which is now deprecated,
-   and is an alias of `OSError`. In MicroPython, use `OSError` directly.
-
-.. admonition:: Difference to CPython
-   :class: attention
-
    For efficiency and consistency, socket objects in MicroPython implement a stream
    (file-like) interface directly. In CPython, you need to convert a socket to
    a file-like object using `makefile()` method. This method is still supported
@@ -250,3 +244,13 @@ Methods
    the length of *buf*.
 
    Return value: number of bytes written.
+
+.. exception:: socket.error
+
+   MicroPython does NOT have this exception.
+
+   .. admonition:: Difference to CPython
+        :class: attention
+
+        CPython used to have a ``socket.error`` exception which is now deprecated,
+        and is an alias of `OSError`. In MicroPython, use `OSError` directly.
