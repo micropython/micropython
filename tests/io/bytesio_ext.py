@@ -26,3 +26,12 @@ a.seek(0)
 arr = bytearray(10)
 print(a.readinto(arr))
 print(arr)
+
+# negative seek should limit offset to 0
+a = io.BytesIO()
+a.seek(10)
+if a.seek(-100, 1) != 0:
+	print('Negative seek allowed, now at', a.seek(0, 1))
+else:
+    a.write(b'123')
+    print(a.getvalue())
