@@ -613,13 +613,11 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
 
     } else {
         mp_parse_node_t pn_id;
-        mp_parse_node_t pn_colon;
         mp_parse_node_t pn_equal;
         if (pn_kind == -1) {
             // this parameter is just an id
 
             pn_id = pn;
-            pn_colon = MP_PARSE_NODE_NULL;
             pn_equal = MP_PARSE_NODE_NULL;
 
         } else if (pn_kind == PN_typedargslist_name) {
@@ -627,7 +625,7 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
 
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
             pn_id = pns->nodes[0];
-            pn_colon = pns->nodes[1];
+            //pn_colon = pns->nodes[1]; // unused
             pn_equal = pns->nodes[2];
 
         } else {
@@ -676,9 +674,6 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
                 compile_node(comp, pn_equal);
             }
         }
-
-        // TODO pn_colon not implemented
-        (void)pn_colon;
     }
 }
 
