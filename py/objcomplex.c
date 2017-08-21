@@ -229,7 +229,6 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
             if (abs1 == 0) {
                 if (rhs_imag == 0 && rhs_real >= 0) {
                     lhs_real = (rhs_real == 0);
-                    rhs_real = 0;
                 } else {
                     mp_raise_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power");
                 }
