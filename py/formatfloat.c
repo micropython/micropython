@@ -118,7 +118,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             *s++ = '?';
         }
         if (buf_size >= 1) {
-            *s++ = '\0';
+            *s = '\0';
         }
         return buf_size >= 2;
     }
