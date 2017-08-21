@@ -58,7 +58,7 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     t->items[3] = MP_OBJ_NEW_SMALL_INT(sb.st_nlink);
     t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.st_uid);
     t->items[5] = MP_OBJ_NEW_SMALL_INT(sb.st_gid);
-    t->items[6] = MP_OBJ_NEW_SMALL_INT(sb.st_size);
+    t->items[6] = mp_obj_new_int_from_uint(sb.st_size);
     t->items[7] = MP_OBJ_NEW_SMALL_INT(sb.st_atime);
     t->items[8] = MP_OBJ_NEW_SMALL_INT(sb.st_mtime);
     t->items[9] = MP_OBJ_NEW_SMALL_INT(sb.st_ctime);
