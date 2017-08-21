@@ -445,22 +445,22 @@ error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 2, pyb_timer_channel);
 
-STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                    (mp_obj_t)&pyb_timer_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),                  (mp_obj_t)&pyb_timer_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_channel),                 (mp_obj_t)&pyb_timer_channel_obj },
+    { MP_ROM_QSTR(MP_QSTR_init),                    MP_ROM_PTR(&pyb_timer_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),                  MP_ROM_PTR(&pyb_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_channel),                 MP_ROM_PTR(&pyb_timer_channel_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A),                       MP_OBJ_NEW_SMALL_INT(TIMER_A) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_B),                       MP_OBJ_NEW_SMALL_INT(TIMER_B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ONE_SHOT),                MP_OBJ_NEW_SMALL_INT(TIMER_CFG_A_ONE_SHOT_UP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PERIODIC),                MP_OBJ_NEW_SMALL_INT(TIMER_CFG_A_PERIODIC_UP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                     MP_OBJ_NEW_SMALL_INT(TIMER_CFG_A_PWM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_POSITIVE),                MP_OBJ_NEW_SMALL_INT(PYBTIMER_POLARITY_POS) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NEGATIVE),                MP_OBJ_NEW_SMALL_INT(PYBTIMER_POLARITY_NEG) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TIMEOUT),                 MP_OBJ_NEW_SMALL_INT(PYBTIMER_TIMEOUT_TRIGGER) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MATCH),                   MP_OBJ_NEW_SMALL_INT(PYBTIMER_MATCH_TRIGGER) },
+    { MP_ROM_QSTR(MP_QSTR_A),                       MP_ROM_INT(TIMER_A) },
+    { MP_ROM_QSTR(MP_QSTR_B),                       MP_ROM_INT(TIMER_B) },
+    { MP_ROM_QSTR(MP_QSTR_ONE_SHOT),                MP_ROM_INT(TIMER_CFG_A_ONE_SHOT_UP) },
+    { MP_ROM_QSTR(MP_QSTR_PERIODIC),                MP_ROM_INT(TIMER_CFG_A_PERIODIC_UP) },
+    { MP_ROM_QSTR(MP_QSTR_PWM),                     MP_ROM_INT(TIMER_CFG_A_PWM) },
+    { MP_ROM_QSTR(MP_QSTR_POSITIVE),                MP_ROM_INT(PYBTIMER_POLARITY_POS) },
+    { MP_ROM_QSTR(MP_QSTR_NEGATIVE),                MP_ROM_INT(PYBTIMER_POLARITY_NEG) },
+    { MP_ROM_QSTR(MP_QSTR_TIMEOUT),                 MP_ROM_INT(PYBTIMER_TIMEOUT_TRIGGER) },
+    { MP_ROM_QSTR(MP_QSTR_MATCH),                   MP_ROM_INT(PYBTIMER_MATCH_TRIGGER) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 
@@ -717,12 +717,12 @@ invalid_args:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_irq_obj, 1, pyb_timer_channel_irq);
 
-STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_freq),                 (mp_obj_t)&pyb_timer_channel_freq_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_period),               (mp_obj_t)&pyb_timer_channel_period_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_duty_cycle),           (mp_obj_t)&pyb_timer_channel_duty_cycle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                  (mp_obj_t)&pyb_timer_channel_irq_obj },
+    { MP_ROM_QSTR(MP_QSTR_freq),                 MP_ROM_PTR(&pyb_timer_channel_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_period),               MP_ROM_PTR(&pyb_timer_channel_period_obj) },
+    { MP_ROM_QSTR(MP_QSTR_duty_cycle),           MP_ROM_PTR(&pyb_timer_channel_duty_cycle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),                  MP_ROM_PTR(&pyb_timer_channel_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);
 

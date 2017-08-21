@@ -17,9 +17,9 @@ STATIC mp_obj_t mod_wipy_heartbeat (mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_wipy_heartbeat_obj, 0, 1, mod_wipy_heartbeat);
 
-STATIC const mp_map_elem_t wipy_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_wipy) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_heartbeat),       (mp_obj_t)&mod_wipy_heartbeat_obj },
+STATIC const mp_rom_map_elem_t wipy_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_wipy) },
+    { MP_ROM_QSTR(MP_QSTR_heartbeat),       MP_ROM_PTR(&mod_wipy_heartbeat_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wipy_module_globals, wipy_module_globals_table);

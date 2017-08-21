@@ -46,12 +46,12 @@
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC const mp_map_elem_t mp_module_binascii_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_ubinascii) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_hexlify),         (mp_obj_t)&mod_binascii_hexlify_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unhexlify),       (mp_obj_t)&mod_binascii_unhexlify_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_a2b_base64),      (mp_obj_t)&mod_binascii_a2b_base64_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_b2a_base64),      (mp_obj_t)&mod_binascii_b2a_base64_obj },
+STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_ubinascii) },
+    { MP_ROM_QSTR(MP_QSTR_hexlify),         MP_ROM_PTR(&mod_binascii_hexlify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unhexlify),       MP_ROM_PTR(&mod_binascii_unhexlify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_a2b_base64),      MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
+    { MP_ROM_QSTR(MP_QSTR_b2a_base64),      MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_binascii_globals, mp_module_binascii_globals_table);

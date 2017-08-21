@@ -364,17 +364,17 @@ STATIC mp_obj_t pyb_spi_write_readinto (mp_obj_t self, mp_obj_t writebuf, mp_obj
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_spi_write_readinto_obj, pyb_spi_write_readinto);
 
-STATIC const mp_map_elem_t pyb_spi_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&pyb_spi_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),              (mp_obj_t)&pyb_spi_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write),               (mp_obj_t)&pyb_spi_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read),                (mp_obj_t)&pyb_spi_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),            (mp_obj_t)&pyb_spi_readinto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write_readinto),      (mp_obj_t)&pyb_spi_write_readinto_obj },
+    { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&pyb_spi_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&pyb_spi_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write),               MP_ROM_PTR(&pyb_spi_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read),                MP_ROM_PTR(&pyb_spi_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto),            MP_ROM_PTR(&pyb_spi_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_readinto),      MP_ROM_PTR(&pyb_spi_write_readinto_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MSB),                 MP_OBJ_NEW_SMALL_INT(PYBSPI_FIRST_BIT_MSB) },
+    { MP_ROM_QSTR(MP_QSTR_MSB),                 MP_ROM_INT(PYBSPI_FIRST_BIT_MSB) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);

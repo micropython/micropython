@@ -137,22 +137,22 @@ arg_error:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 
-STATIC const mp_map_elem_t mp_module_ussl_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_ussl) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wrap_socket),         (mp_obj_t)&mod_ssl_wrap_socket_obj },
+STATIC const mp_rom_map_elem_t mp_module_ussl_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_ussl) },
+    { MP_ROM_QSTR(MP_QSTR_wrap_socket),         MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
 
     // class exceptions
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SSLError),            (mp_obj_t)&mp_type_OSError },
+    { MP_ROM_QSTR(MP_QSTR_SSLError),            MP_ROM_PTR(&mp_type_OSError) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CERT_NONE),           MP_OBJ_NEW_SMALL_INT(SSL_CERT_NONE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CERT_OPTIONAL),       MP_OBJ_NEW_SMALL_INT(SSL_CERT_OPTIONAL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CERT_REQUIRED),       MP_OBJ_NEW_SMALL_INT(SSL_CERT_REQUIRED) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_NONE),           MP_ROM_INT(SSL_CERT_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL),       MP_ROM_INT(SSL_CERT_OPTIONAL) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED),       MP_ROM_INT(SSL_CERT_REQUIRED) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROTOCOL_SSLv3),      MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_SSLV3) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROTOCOL_TLSv1),      MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_TLSV1) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROTOCOL_TLSv1_1),    MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_TLSV1_1) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PROTOCOL_TLSv1_2),    MP_OBJ_NEW_SMALL_INT(SL_SO_SEC_METHOD_TLSV1_2) },
+    { MP_ROM_QSTR(MP_QSTR_PROTOCOL_SSLv3),      MP_ROM_INT(SL_SO_SEC_METHOD_SSLV3) },
+    { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLSv1),      MP_ROM_INT(SL_SO_SEC_METHOD_TLSV1) },
+    { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLSv1_1),    MP_ROM_INT(SL_SO_SEC_METHOD_TLSV1_1) },
+    { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLSv1_2),    MP_ROM_INT(SL_SO_SEC_METHOD_TLSV1_2) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ussl_globals, mp_module_ussl_globals_table);

@@ -1254,35 +1254,35 @@ STATIC mp_obj_t wlan_print_ver(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(wlan_print_ver_fun_obj, wlan_print_ver);
 STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(wlan_print_ver_obj, MP_ROM_PTR(&wlan_print_ver_fun_obj));
 
-STATIC const mp_map_elem_t wlan_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&wlan_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&wlan_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect),             (mp_obj_t)&wlan_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect),          (mp_obj_t)&wlan_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected),         (mp_obj_t)&wlan_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig),            (mp_obj_t)&wlan_ifconfig_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),                (mp_obj_t)&wlan_mode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ssid),                (mp_obj_t)&wlan_ssid_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_auth),                (mp_obj_t)&wlan_auth_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_channel),             (mp_obj_t)&wlan_channel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_antenna),             (mp_obj_t)&wlan_antenna_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mac),                 (mp_obj_t)&wlan_mac_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                 (mp_obj_t)&wlan_irq_obj },
-    // { MP_OBJ_NEW_QSTR(MP_QSTR_connections),         (mp_obj_t)&wlan_connections_obj },
-    // { MP_OBJ_NEW_QSTR(MP_QSTR_urn),                 (mp_obj_t)&wlan_urn_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_print_ver),           (mp_obj_t)&wlan_print_ver_obj },
+STATIC const mp_rom_map_elem_t wlan_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&wlan_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&wlan_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect),             MP_ROM_PTR(&wlan_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect),          MP_ROM_PTR(&wlan_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected),         MP_ROM_PTR(&wlan_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&wlan_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mode),                MP_ROM_PTR(&wlan_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ssid),                MP_ROM_PTR(&wlan_ssid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_auth),                MP_ROM_PTR(&wlan_auth_obj) },
+    { MP_ROM_QSTR(MP_QSTR_channel),             MP_ROM_PTR(&wlan_channel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_antenna),             MP_ROM_PTR(&wlan_antenna_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mac),                 MP_ROM_PTR(&wlan_mac_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),                 MP_ROM_PTR(&wlan_irq_obj) },
+    //{ MP_ROM_QSTR(MP_QSTR_connections),         MP_ROM_PTR(&wlan_connections_obj) },
+    //{ MP_ROM_QSTR(MP_QSTR_urn),                 MP_ROM_PTR(&wlan_urn_obj) },
+    { MP_ROM_QSTR(MP_QSTR_print_ver),           MP_ROM_PTR(&wlan_print_ver_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STA),                 MP_OBJ_NEW_SMALL_INT(ROLE_STA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AP),                  MP_OBJ_NEW_SMALL_INT(ROLE_AP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WEP),                 MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA),                 MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WPA2),                MP_OBJ_NEW_SMALL_INT(SL_SEC_TYPE_WPA_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_STA),                 MP_ROM_INT(ROLE_STA) },
+    { MP_ROM_QSTR(MP_QSTR_AP),                  MP_ROM_INT(ROLE_AP) },
+    { MP_ROM_QSTR(MP_QSTR_WEP),                 MP_ROM_INT(SL_SEC_TYPE_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_WPA),                 MP_ROM_INT(SL_SEC_TYPE_WPA_WPA2) },
+    { MP_ROM_QSTR(MP_QSTR_WPA2),                MP_ROM_INT(SL_SEC_TYPE_WPA_WPA2) },
     #if MICROPY_HW_ANTENNA_DIVERSITY
-    { MP_OBJ_NEW_QSTR(MP_QSTR_INT_ANT),             MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_INTERNAL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_EXT_ANT),             MP_OBJ_NEW_SMALL_INT(ANTENNA_TYPE_EXTERNAL) },
+    { MP_ROM_QSTR(MP_QSTR_INT_ANT),             MP_ROM_INT(ANTENNA_TYPE_INTERNAL) },
+    { MP_ROM_QSTR(MP_QSTR_EXT_ANT),             MP_ROM_INT(ANTENNA_TYPE_EXTERNAL) },
     #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ANY_EVENT),           MP_OBJ_NEW_SMALL_INT(MODWLAN_WIFI_EVENT_ANY) },
+    { MP_ROM_QSTR(MP_QSTR_ANY_EVENT),           MP_ROM_INT(MODWLAN_WIFI_EVENT_ANY) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 

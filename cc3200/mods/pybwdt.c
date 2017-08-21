@@ -146,8 +146,8 @@ STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wdt_feed_obj, pyb_wdt_feed);
 
-STATIC const mp_map_elem_t pybwdt_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_feed),   (mp_obj_t)&pyb_wdt_feed_obj },
+STATIC const mp_rom_map_elem_t pybwdt_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&pyb_wdt_feed_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(pybwdt_locals_dict, pybwdt_locals_dict_table);
 
