@@ -194,7 +194,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
             *out++ = (in[0] & 0x03) << 4;
             *out++ = 64;
         }
-        *out++ = 64;
+        *out = 64;
     }
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding
