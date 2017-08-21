@@ -273,49 +273,50 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
             // use HSI as SYSCLK
             sysclk_source = RCC_SYSCLKSOURCE_HSI;
         } else {
-            // search for a valid PLL configuration that keeps USB at 48MHz
-            for (; wanted_sysclk > 0; wanted_sysclk--) {
+            // sysclk = (HSE_VALUE * n) / (m * p). pll48ck =  (HSE_VALUE * n) / (m * q). We want pll48ck at 48Mhz
+            // valid sysclk and p found at or below wanted_sysclk
+            uint32_t target_sysclk = 0, target_p = 0;
+            // q = 4..9 gives VCO_OUT between 192 and 432MHz (min/max for STM32F401x)
+            for (q = 4; q <= 9; q++) {
+                // compute VCO_OUT with pll48ck at 48Mhz
+                uint32_t vco_out = 48 * q;
+                // Find and memorise the highest sysclk below wanted_sysclk reachable with this vco_out
                 for (p = 2; p <= 8; p += 2) {
-                    // compute VCO_OUT
-                    mp_uint_t vco_out = wanted_sysclk * p;
-                    // make sure VCO_OUT is between 192MHz and 432MHz
-                    if (vco_out < 192 || vco_out > 432) {
+                    // compute sysclk
+                    uint32_t sysclk = vco_out / p;
+                    // should be less than wanted_sysclk
+                    if (sysclk > wanted_sysclk) {
                         continue;
                     }
-                    // make sure Q is an integer
-                    if (vco_out % 48 != 0) {
-                        continue;
+                    // memorise the highest sysclk and associated p
+                    if (target_sysclk < sysclk) {
+                        target_sysclk = sysclk;
+                        target_p = p;
                     }
-                    // solve for Q to get PLL48CK at 48MHz
-                    q = vco_out / 48;
-                    // make sure Q is in range
-                    if (q < 2 || q > 15) {
-                        continue;
+                }
+            }
+            // We have a suitable sysclk, p and q. Solve n and m to reach it from HSE_VALUE
+            if (target_sysclk) {
+                p = target_p;
+                // reconstruct q
+                q = target_sysclk * p / 48;
+                // Try all valid values for n
+                for (n=192; n<=432; n++) {
+                    // Solve m
+                    if ((HSE_VALUE / 1000000 * n / p) % target_sysclk == 0) {
+                        m = HSE_VALUE / 1000000 * n / ( p * target_sysclk);
+                        // Make sure HSE_VALUE / m is between 1 and 2 Mhz
+                        if (m > (HSE_VALUE / 1000000) || m < (HSE_VALUE / 2000000)) {
+                            continue;
+                        }
+                        // Make sure m is between 2 and 63
+                        if (m > 63 || m < 2) {
+                            continue;
+                        }
+                        // found values!
+                        sysclk_source = RCC_SYSCLKSOURCE_PLLCLK;
+                        goto set_clk;
                     }
-                    // make sure N/M is an integer
-                    if (vco_out % (HSE_VALUE / 1000000) != 0) {
-                        continue;
-                    }
-                    // solve for N/M
-                    mp_uint_t n_by_m = vco_out / (HSE_VALUE / 1000000);
-                    // solve for M, making sure VCO_IN (=HSE/M) is between 1MHz and 2MHz
-                    m = 192 / n_by_m;
-                    while (m < (HSE_VALUE / 2000000) || n_by_m * m < 192) {
-                        m += 1;
-                    }
-                    if (m > (HSE_VALUE / 1000000)) {
-                        continue;
-                    }
-                    // solve for N
-                    n = n_by_m * m;
-                    // make sure N is in range
-                    if (n < 192 || n > 432) {
-                        continue;
-                    }
-
-                    // found values!
-                    sysclk_source = RCC_SYSCLKSOURCE_PLLCLK;
-                    goto set_clk;
                 }
             }
             mp_raise_ValueError("can't make valid freq");
