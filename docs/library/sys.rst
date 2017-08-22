@@ -28,7 +28,7 @@ Functions
       this function takes just exception value instead of exception type,
       exception value, and traceback object; *file* argument should be
       positional; further arguments are not supported. CPython-compatible
-      ``traceback`` module can be found in micropython-lib.
+      ``traceback`` module can be found in `micropython-lib`.
 
 Constants
 ---------
