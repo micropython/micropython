@@ -286,7 +286,8 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
 
 //|   .. attribute:: pull
 //|
-//|     Get or set the pin pull.
+//|     Get or set the pin pull. Values may be `digitalio.Pull.UP`,
+//|     `digitalio.Pull.DOWN` or ``None``.
 //|
 //|     :raises AttributeError: if the direction is ~`digitalio.Direction.OUTPUT`.
 //|
@@ -317,6 +318,8 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
         pull = PULL_UP;
     } else if (pull_obj == &digitalio_pull_down_obj) {
         pull = PULL_DOWN;
+    } else if (pull_obj != mp_const_none) {
+        mp_raise_ValueError("Unsupported pull value.");
     }
     common_hal_digitalio_digitalinout_set_pull(self, pull);
     return mp_const_none;
