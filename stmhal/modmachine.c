@@ -202,6 +202,11 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     HAL_RCC_DeInit();
     HAL_DeInit();
 
+    #if (__MPU_PRESENT == 1)
+    // MPU must be disabled for bootloader to function correctly
+    HAL_MPU_Disable();
+    #endif
+
 #if defined(MCU_SERIES_F7)
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.
