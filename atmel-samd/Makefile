@@ -145,9 +145,11 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
-ifneq ($(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+# then invoke make with FROZEN_MPY_DIR=frozen or FROZEN_MPY_DIRS="dir1 dir2"
+# (be sure to build from scratch).
+
+ifneq ($(FROZEN_MPY_DIRS),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -Wno-error=lto-type-mismatch

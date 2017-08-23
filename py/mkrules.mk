@@ -101,29 +101,30 @@ $(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DE
 	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
 endif
 
-ifneq ($(FROZEN_MPY_DIR),)
+ifneq ($(FROZEN_MPY_DIRS),)
 # to build the MicroPython cross compiler
-$(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/windows/fmode.c
+# Currently not used, because the wrong mpy-cross may be left over from a previous build. Build by hand to make sure.
+$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/windows/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
-# make a list of all the .py files that need compiling and freezing
-BLAH := $(info $(shell pwd))
-
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-
-# to build .mpy files from .py files
-$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
-	@$(ECHO) "MPY $<"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MPY_CROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
+# Copy all the modules and single python files to freeze to a common area, omitting top-level dirs (the repo names).
+# Remove any conf.py (sphinx config) and setup.py (module install info) files, which are not meant to be frozen.
+# Then compile .mpy files from all the .py files, placing them in the same directories as the .py files.
+$(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
+	$(ECHO) FREEZE $(FROZEN_MPY_DIRS)
+	$(Q)$(MKDIR) -p $@
+	$(Q)$(RSYNC) -rL --include="*/" --include='*.py' --exclude="*" $(addsuffix /*,$(FROZEN_MPY_DIRS)) $@
+	$(Q)$(RM) -f $@/conf.py $@/setup.py
+	$(Q)$(CD) $@ && \
+$(FIND) -L . -type f -name '*.py' | sed 's=^\./==' | \
+xargs -n1 $(abspath $(MPY_CROSS)) $(MPY_CROSS_FLAGS)
 
 # to build frozen_mpy.c from all .mpy files
 # You need to define MPY_TOOL_LONGINT_IMPL in mpconfigport.mk
 # if the default will not work (mpz is the default).
-$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
+$(BUILD)/frozen_mpy.c: $(BUILD)/frozen_mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(STEPECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MPY_TOOL) $(MPY_TOOL_LONGINT_IMPL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
+	$(Q)$(PYTHON) $(MPY_TOOL) $(MPY_TOOL_LONGINT_IMPL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(shell $(FIND) -L $(BUILD)/frozen_mpy -type f -name '*.mpy') > $@
 endif
 
 ifneq ($(PROG),)

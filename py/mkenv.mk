@@ -42,12 +42,16 @@ endif
 PY_SRC ?= $(TOP)/py
 BUILD ?= build
 
-RM = rm
 ECHO = @echo
+
+CD = cd
 CP = cp
+FIND = find
 MKDIR = mkdir
-SED = sed
 PYTHON = python
+RM = rm
+RSYNC = rsync
+SED = sed
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
