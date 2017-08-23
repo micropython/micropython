@@ -18,8 +18,13 @@ if [ $? -ne 0 ]; then
     version=`date +%Y%m%d`-`git rev-parse --short HEAD`
 fi
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    version=`echo $TRAVIS_PULL_REQUEST_SHA | cut -c1-7`
+
+if [ "$TRAVIS" == "true" ]; then
+    sha=$TRAVIS_COMMIT
+    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+       version=`date +%Y%m%d`-`echo $TRAVIS_PULL_REQUEST_SHA | cut -c1-7`
+       sha=$TRAVIS_PULL_REQUEST_SHA
+    fi
 fi
 
 for board in $ATMEL_BOARDS; do
@@ -29,10 +34,10 @@ for board in $ATMEL_BOARDS; do
     cp atmel-samd/build-$board/firmware.uf2 bin/$board/adafruit-circuitpython-$board-$version.uf2
     (( exit_status = exit_status || $? ))
     # Only upload to Rosie if its a pull request.
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    if [ "$TRAVIS" == "true" ]; then
         for rosie in $ROSIE_SETUPS; do
-            echo "Uploading to https://$rosie.ngrok.io/upload/$TRAVIS_PULL_REQUEST_SHA"
-            curl -F "file=@bin/$board/adafruit-circuitpython-$board-$version.uf2" https://$rosie.ngrok.io/upload/$TRAVIS_PULL_REQUEST_SHA
+            echo "Uploading to https://$rosie.ngrok.io/upload/$sha"
+            curl -F "file=@bin/$board/adafruit-circuitpython-$board-$version.uf2" https://$rosie.ngrok.io/upload/$sha
         done
     fi
 done

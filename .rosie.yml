@@ -6,7 +6,7 @@ binaries:
         bucket: adafruit-circuit-python
         file_pattern: bin/{board}/adafruit-circuitpython-{board}-*-{short_sha}.{extension}
     rosie_upload:
-        file_pattern: adafruit-circuitpython-{board}-{short_sha}.{extension}
+        file_pattern: adafruit-circuitpython-{board}*{short_sha}.{extension}
 
 circuitpython_tests:
     test_directories:
