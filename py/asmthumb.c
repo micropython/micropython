@@ -33,6 +33,7 @@
 // wrapper around everything in this file
 #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
 
+#include "py/mphal.h"
 #include "py/asmthumb.h"
 
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
@@ -53,7 +54,7 @@ void asm_thumb_end_pass(asm_thumb_t *as) {
     #if defined(MCU_SERIES_F7)
     if (as->base.pass == MP_ASM_PASS_EMIT) {
         // flush D-cache, so the code emitted is stored in memory
-        SCB_CleanDCache_by_Addr((uint32_t*)as->base.code_base, as->base.code_size);
+        MP_HAL_CLEAN_DCACHE(as->base.code_base, as->base.code_size);
         // invalidate I-cache
         SCB_InvalidateICache();
     }
