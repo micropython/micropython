@@ -363,6 +363,21 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
 
         // set PLL as system clock source if wanted
         if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
+            #if defined(MCU_SERIES_F7)
+            // if possible, scale down the internal voltage regulator to save power
+            uint32_t volt_scale;
+            if (wanted_sysclk <= 151000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+            } else if (wanted_sysclk <= 180000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE2;
+            } else {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+            }
+            if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
+                goto fail;
+            }
+            #endif
+
             #if !defined(MICROPY_HW_FLASH_LATENCY)
             #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
             #endif
