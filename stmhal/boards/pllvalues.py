@@ -67,14 +67,17 @@ def compute_pll2(hse, sys):
     # no valid values found
     return None
 
-def verify_and_print_pll(hse, sys, pll):
+def compute_derived(hse, pll):
     M, N, P, Q = pll
-
-    # compute derived quantities
     vco_in = hse / M
     vco_out = hse * N / M
     pllck = hse / M * N / P
     pll48ck = hse / M * N / Q
+    return (vco_in, vco_out, pllck, pll48ck)
+
+def verify_pll(hse, pll):
+    M, N, P, Q = pll
+    vco_in, vco_out, pllck, pll48ck = compute_derived(hse, pll)
 
     # verify ints
     assert close_int(M)
@@ -90,26 +93,68 @@ def verify_and_print_pll(hse, sys, pll):
     assert 1 <= vco_in <= 2
     assert 192 <= vco_out <= 432
 
-    # print out values
-    print(out_format % (sys, M, N, P, Q, vco_in, vco_out, pllck, pll48ck))
+def generate_c_table(hse, valid_plls):
+    valid_plls = valid_plls + [(16, (0, 0, 2, 0))]
+    if hse < 16:
+        valid_plls.append((hse, (1, 0, 2, 0)))
+    valid_plls.sort()
+    print("// (M, P/2-1, SYS) values for %u MHz HSE" % hse)
+    print("static const uint16_t pll_freq_table[%u] = {" % len(valid_plls))
+    for sys, (M, N, P, Q) in valid_plls:
+        print("    (%u << 10) | (%u << 8) | %u," % (M, P // 2 - 1, sys))
+    print("};")
+
+def print_table(hse, valid_plls):
+    print("HSE =", hse, "MHz")
+    print("sys :  M      N     P     Q : VCO_IN VCO_OUT   PLLCK PLL48CK")
+    out_format = "%3u : %2u  %.1f  %.2f  %.2f :  %5.2f  %6.2f  %6.2f  %6.2f"
+    for sys, pll in valid_plls:
+        print(out_format % ((sys,) + pll + compute_derived(hse, pll)))
+    print("found %u valid configurations" % len(valid_plls))
 
 def main():
     global out_format
+
+    # parse input args
     import sys
-    if len(sys.argv) != 2:
-        print("usage: pllvalues.py <hse in MHz>")
+    argv = sys.argv[1:]
+
+    c_table = False
+    if argv[0] == '-c':
+        c_table = True
+        argv.pop(0)
+
+    if len(argv) != 1:
+        print("usage: pllvalues.py [-c] <hse in MHz>")
         sys.exit(1)
-    hse_value = int(sys.argv[1])
-    print("HSE =", hse_value, "MHz")
-    print("sys :  M      N     P     Q : VCO_IN VCO_OUT   PLLCK PLL48CK")
-    out_format = "%3u : %2u  %.1f  %.2f  %.2f :  %5.2f  %6.2f  %6.2f  %6.2f"
-    n_valid = 0
+
+    if argv[0].startswith("file:"):
+        # extract HSE_VALUE from header file
+        with open(argv[0][5:]) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("#define") and line.find("HSE_VALUE") != -1:
+                    idx_start = line.find("((uint32_t)") + 11
+                    idx_end = line.find(")", idx_start)
+                    hse = int(line[idx_start:idx_end]) // 1000000
+                    break
+            else:
+                raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
+    else:
+        # HSE given directly as an integer
+        hse = int(argv[0])
+
+    valid_plls = []
     for sysclk in range(1, 217):
-        pll = compute_pll2(hse_value, sysclk)
+        pll = compute_pll2(hse, sysclk)
         if pll is not None:
-            n_valid += 1
-            verify_and_print_pll(hse_value, sysclk, pll)
-    print("found %u valid configurations" % n_valid)
+            verify_pll(hse, pll)
+            valid_plls.append((sysclk, pll))
+
+    if c_table:
+        generate_c_table(hse, valid_plls)
+    else:
+        print_table(hse, valid_plls)
 
 if __name__ == "__main__":
     main()

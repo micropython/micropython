@@ -52,6 +52,7 @@
 #include "spi.h"
 #include "uart.h"
 #include "wdt.h"
+#include "genhdr/pllfreqtable.h"
 
 #if defined(MCU_SERIES_F4)
 // the HAL does not define these constants
@@ -276,61 +277,31 @@ STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
         uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
         uint32_t sysclk_source;
 
-        // the following logic assumes HSE < HSI
-        if (HSE_VALUE / 1000000 <= wanted_sysclk && wanted_sysclk < HSI_VALUE / 1000000) {
-            // use HSE as SYSCLK
-            sysclk_source = RCC_SYSCLKSOURCE_HSE;
-        } else if (HSI_VALUE / 1000000 <= wanted_sysclk && wanted_sysclk < 24) {
-            // use HSI as SYSCLK
-            sysclk_source = RCC_SYSCLKSOURCE_HSI;
-        } else {
-            // search for a valid PLL configuration that keeps USB at 48MHz
-            for (; wanted_sysclk > 0; wanted_sysclk--) {
-                for (p = 2; p <= 8; p += 2) {
-                    // compute VCO_OUT
-                    mp_uint_t vco_out = wanted_sysclk * p;
-                    // make sure VCO_OUT is between 192MHz and 432MHz
-                    if (vco_out < 192 || vco_out > 432) {
-                        continue;
-                    }
-                    // make sure Q is an integer
-                    if (vco_out % 48 != 0) {
-                        continue;
-                    }
-                    // solve for Q to get PLL48CK at 48MHz
-                    q = vco_out / 48;
-                    // make sure Q is in range
-                    if (q < 2 || q > 15) {
-                        continue;
-                    }
-                    // make sure N/M is an integer
-                    if (vco_out % (HSE_VALUE / 1000000) != 0) {
-                        continue;
-                    }
-                    // solve for N/M
-                    mp_uint_t n_by_m = vco_out / (HSE_VALUE / 1000000);
-                    // solve for M, making sure VCO_IN (=HSE/M) is between 1MHz and 2MHz
-                    m = 192 / n_by_m;
-                    while (m < (HSE_VALUE / 2000000) || n_by_m * m < 192) {
-                        m += 1;
-                    }
-                    if (m > (HSE_VALUE / 1000000)) {
-                        continue;
-                    }
-                    // solve for N
-                    n = n_by_m * m;
-                    // make sure N is in range
-                    if (n < 192 || n > 432) {
-                        continue;
-                    }
-
-                    // found values!
+        // search for a valid PLL configuration that keeps USB at 48MHz
+        for (const uint16_t *pll = &pll_freq_table[MP_ARRAY_SIZE(pll_freq_table) - 1]; pll >= &pll_freq_table[0]; --pll) {
+            uint32_t sys = *pll & 0xff;
+            if (sys <= wanted_sysclk) {
+                m = (*pll >> 10) & 0x3f;
+                p = ((*pll >> 7) & 0x6) + 2;
+                if (m == 0) {
+                    // special entry for using HSI directly
+                    sysclk_source = RCC_SYSCLKSOURCE_HSI;
+                    goto set_clk;
+                } else if (m == 1) {
+                    // special entry for using HSE directly
+                    sysclk_source = RCC_SYSCLKSOURCE_HSE;
+                    goto set_clk;
+                } else {
+                    // use PLL
                     sysclk_source = RCC_SYSCLKSOURCE_PLLCLK;
+                    uint32_t vco_out = sys * p;
+                    n = vco_out * m / (HSE_VALUE / 1000000);
+                    q = vco_out / 48;
                     goto set_clk;
                 }
             }
-            mp_raise_ValueError("can't make valid freq");
         }
+        mp_raise_ValueError("can't make valid freq");
 
     set_clk:
         //printf("%lu %lu %lu %lu %lu\n", sysclk_source, m, n, p, q);
