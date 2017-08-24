@@ -4,6 +4,8 @@ the CPU frequency to a given value.  The algorithm here appears as C code
 for the machine.freq() function.
 """
 
+from __future__ import print_function
+
 def close_int(x):
     return abs(x - round(x)) < 0.01
 
@@ -38,7 +40,10 @@ def compute_pll(hse, sys):
 
 # improved version that doesn't require N/M to be an integer
 def compute_pll2(hse, sys):
-    for P in (2, 4, 6, 8): # allowed values of P
+    # Loop over the allowed values of P, looking for a valid PLL configuration
+    # that gives the desired "sys" frequency.  We use floats for P to force
+    # floating point arithmetic on Python 2.
+    for P in (2.0, 4.0, 6.0, 8.0):
         Q = sys * P / 48
         # Q must be an integer in a set range
         if not (close_int(Q) and 2 <= Q <= 15):
