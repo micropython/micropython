@@ -426,7 +426,7 @@ SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(HEADER_BUILD)/pins.h
+$(OBJ): | $(GEN_PINS_HDR)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
