@@ -5,7 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x100 /* 256 KiB but leave 256b for config */
+    /* 256 KiB but leave 256b for internal config and 256b for user config (protected eeprom) */
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x100 - 0x100
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 

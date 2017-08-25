@@ -25,8 +25,11 @@
  */
 
 #include "py/mphal.h"
+#include "py/obj.h"
 
 #include "samd21_pins.h"
+
+#include "shared-bindings/nvm/ByteArray.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -46,6 +49,17 @@ void common_hal_mcu_enable_interrupts(void) {
     // Restore ASF-based interrupts.
     cpu_irq_restore(irq_flags);
 }
+
+// NVM is only available on Express boards for now.
+#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
+    .base = {
+        .type = &nvm_bytearray_type,
+    },
+    .len = NVMCTRL_ROW_SIZE,
+    .start_address = (uint8_t*) (FLASH_SIZE - NVMCTRL_ROW_SIZE)
+};
+#endif
 
 // This maps MCU pin names to pin objects.
 STATIC const mp_map_elem_t mcu_pin_global_dict_table[] = {

@@ -147,6 +147,7 @@ extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
 extern const struct _mp_obj_module_t time_module;
+extern const struct _mp_obj_module_t cpy_nvm_module;
 extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t uheap_module;
 extern const struct _mp_obj_module_t ustack_module;
@@ -174,6 +175,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module }, \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_nvm), (mp_obj_t)&cpy_nvm_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
     #define EXPRESS_BOARD

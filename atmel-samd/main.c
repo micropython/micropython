@@ -34,19 +34,19 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/usb_hid/__init__.h"
 
-#ifdef EXPRESS_BOARD
-#include "common-hal/touchio/TouchIn.h"
-#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100)
-#else
-#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100)
-#endif
-
 #include "autoreload.h"
 #include "flash_api.h"
 #include "mpconfigboard.h"
 #include "rgb_led_status.h"
 #include "shared_dma.h"
 #include "tick.h"
+
+#ifdef EXPRESS_BOARD
+#include "common-hal/touchio/TouchIn.h"
+#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
+#else
+#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
+#endif
 
 fs_user_mount_t fs_user_mount_flash;
 mp_vfs_mount_t mp_vfs_mount_flash;
@@ -567,6 +567,35 @@ safe_mode_t samd21_init(void) {
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
     }
+
+    #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+    // Upgrade the nvm flash to include one sector for eeprom emulation.
+    struct nvm_fusebits fuses;
+    if (nvm_get_fuses(&fuses) == STATUS_OK &&
+            fuses.eeprom_size == NVM_EEPROM_EMULATOR_SIZE_0) {
+        #ifdef INTERNAL_FLASH_FS
+        // Shift the internal file system up one row.
+        for (uint8_t row = 0; row < TOTAL_INTERNAL_FLASH_SIZE / NVMCTRL_ROW_SIZE; row++) {
+            uint32_t new_row_address = INTERNAL_FLASH_MEM_SEG1_START_ADDR + row * NVMCTRL_ROW_SIZE;
+            nvm_erase_row(new_row_address);
+            nvm_write_buffer(new_row_address,
+                             (uint8_t*) (new_row_address + CIRCUITPY_INTERNAL_EEPROM_SIZE),
+                             NVMCTRL_ROW_SIZE);
+        }
+        #endif
+        uint32_t nvm_size = CIRCUITPY_INTERNAL_NVM_SIZE;
+        uint8_t enum_value = 6;
+        while (nvm_size > 256 && enum_value != 255) {
+            nvm_size /= 2;
+            enum_value -= 1;
+        }
+        if (enum_value != 255 && nvm_size == 256) {
+            // Mark the last section as eeprom now.
+            fuses.eeprom_size = (enum nvm_eeprom_emulator_size) enum_value;
+            nvm_set_fuses(&fuses);
+        }
+    }
+    #endif
 
     return NO_SAFE_MODE;
 }

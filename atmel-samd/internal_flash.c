@@ -40,12 +40,6 @@
 
 #include "rgb_led_status.h"
 
-#define TOTAL_INTERNAL_FLASH_SIZE 0x010000
-
-#define INTERNAL_FLASH_MEM_SEG1_START_ADDR (0x00040000 - TOTAL_INTERNAL_FLASH_SIZE)
-#define INTERNAL_FLASH_PART1_START_BLOCK (0x1)
-#define INTERNAL_FLASH_PART1_NUM_BLOCKS (TOTAL_INTERNAL_FLASH_SIZE / FILESYSTEM_BLOCK_SIZE)
-
 void internal_flash_init(void) {
     // Activity LED for flash writes.
     #ifdef MICROPY_HW_LED_MSC
@@ -120,7 +114,6 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 bool internal_flash_read_block(uint8_t *dest, uint32_t block) {
-    //printf("RD %u\n", block);
     if (block == 0) {
         // fake the MBR so we can decide on our own partition table
 

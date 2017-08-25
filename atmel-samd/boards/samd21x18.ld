@@ -5,7 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x100 - 0x010000 /* Leave 256b for config and 64k for the flash file system. */
+    /* Leave 256b for internal config, 64k for the flash file system and 256b for user config. */
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x100 - 0x010000
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 

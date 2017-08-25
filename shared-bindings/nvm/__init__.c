@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
-
-#include "py/mpconfig.h"
 #include "py/obj.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
 
-extern void common_hal_mcu_delay_us(uint32_t);
+#include "shared-bindings/nvm/__init__.h"
+#include "shared-bindings/nvm/ByteArray.h"
 
-extern void common_hal_mcu_disable_interrupts(void);
-extern void common_hal_mcu_enable_interrupts(void);
+//| :mod:`nvm` --- Non-volatile memory
+//| ===========================================================
+//|
+//| .. module:: nvm
+//|   :synopsis: Non-volatile memory
+//|   :platform: SAMD21
+//|
+//| The `nvm` module allows you to store whatever raw bytes you wish in a
+//| reserved section non-volatile memory.
+//|
 
-extern const mp_obj_dict_t mcu_pin_globals;
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     ByteArray
+STATIC const mp_rom_map_elem_t nvm_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_nvm) },
+    { MP_ROM_QSTR(MP_QSTR_ByteArray),   MP_ROM_PTR(&nvm_bytearray_type) },
+};
 
-#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+STATIC MP_DEFINE_CONST_DICT(nvm_module_globals, nvm_module_globals_table);
 
-#include "common-hal/nvm/ByteArray.h"
-extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
-
-#endif
-
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
+// cpy prefix is used to prevent collision with nvm_module global in ASF.
+const mp_obj_module_t cpy_nvm_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&nvm_module_globals,
+};

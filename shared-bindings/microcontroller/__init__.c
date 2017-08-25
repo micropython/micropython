@@ -90,6 +90,12 @@ STATIC mp_obj_t mcu_enable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
 
+//| .. attribute:: nvm
+//|
+//|   Available non-volatile memory. Its a `nvm.ByteArray` when available or
+//|   ``None`` otherwise.
+//|
+
 //| :mod:`microcontroller.pin` --- Microcontroller pin names
 //| --------------------------------------------------------
 //|
@@ -109,7 +115,12 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Pin),   MP_ROM_PTR(&mcu_pin_type) },
+    #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+    { MP_ROM_QSTR(MP_QSTR_nvm),  &common_hal_mcu_nvm_obj },
+    #else
+    { MP_ROM_QSTR(MP_QSTR_nvm),  &mp_const_none_obj },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_Pin),  MP_ROM_PTR(&mcu_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_pin),  MP_ROM_PTR(&mcu_pin_module) },
 };
 

@@ -5,7 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000 + 0x2000, LENGTH = 0x00040000 - 0x2000 - 0x100 /* Leave 8KiB for the bootloader and 256b for config. */
+    /* Leave 8KiB for the bootloader, 256b for internal config and 256b for user config. */
+    FLASH (rx) : ORIGIN = 0x00000000 + 0x2000, LENGTH = 0x00040000 - 0x2000 - 0x100 - 0x100
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
 }
 

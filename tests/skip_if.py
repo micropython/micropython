@@ -52,6 +52,17 @@ def board_in(*board):
     if test_env.board in board:
         skip()
 
+def board_not_in(*board):
+    try:
+        import test_env
+    except ImportError:
+        class Env:
+            def __init__(self, board):
+                self.board = board
+        test_env = Env("unknown")
+    if test_env.board not in board:
+        skip()
+
 def no_cpython_compat():
     try:
         try:

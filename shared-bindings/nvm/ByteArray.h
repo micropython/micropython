@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
-
-#include "py/mpconfig.h"
-#include "py/obj.h"
-
-extern void common_hal_mcu_delay_us(uint32_t);
-
-extern void common_hal_mcu_disable_interrupts(void);
-extern void common_hal_mcu_enable_interrupts(void);
-
-extern const mp_obj_dict_t mcu_pin_globals;
-
-#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H__
+#define __MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H__
 
 #include "common-hal/nvm/ByteArray.h"
-extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
 
-#endif
+const mp_obj_type_t nvm_bytearray_type;
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
+uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self);
+
+bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
+    uint32_t start_index, uint8_t* values, uint32_t len);
+// len and values are intentionally swapped to signify values is an output and
+// also leverage the compiler to validate uses are expected.
+void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
+    uint32_t start_index, uint32_t len, uint8_t* values);
+
+#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H__

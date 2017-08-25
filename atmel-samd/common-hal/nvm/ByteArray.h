@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NVM_BYTEARRAY_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NVM_BYTEARRAY_H__
 
-#include "py/mpconfig.h"
 #include "py/obj.h"
 
-extern void common_hal_mcu_delay_us(uint32_t);
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t* start_address;
+    uint32_t len;
+} nvm_bytearray_obj_t;
 
-extern void common_hal_mcu_disable_interrupts(void);
-extern void common_hal_mcu_enable_interrupts(void);
-
-extern const mp_obj_dict_t mcu_pin_globals;
-
-#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
-#include "common-hal/nvm/ByteArray.h"
-extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
-
-#endif
-
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H__
+#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_NVM_BYTEARRAY_H__
