@@ -81,7 +81,7 @@
 //|   import time
 //|
 //|   led = digitalio.DigitalInOut(D13)
-//|   led.direction = digitalio.Direction.OUT
+//|   led.direction = digitalio.Direction.OUTPUT
 //|   while True:
 //|       led.value = True
 //|       time.sleep(0.1)
