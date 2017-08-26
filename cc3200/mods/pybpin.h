@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBPIN_H_
-#define PYBPIN_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBPIN_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBPIN_H
 
 enum {
     PORT_A0 = GPIOA0_BASE,
@@ -138,4 +137,4 @@ uint8_t pin_find_peripheral_unit (const mp_obj_t pin, uint8_t fn, uint8_t type);
 uint8_t pin_find_peripheral_type (const mp_obj_t pin, uint8_t fn, uint8_t unit);
 int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);;
 
-#endif  // PYBPIN_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBPIN_H

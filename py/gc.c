@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -35,7 +35,7 @@
 
 #if MICROPY_ENABLE_GC
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -555,40 +555,37 @@ void gc_free(void *ptr) {
 
     DEBUG_printf("gc_free(%p)\n", ptr);
 
-    if (VERIFY_PTR(ptr)) {
+    if (ptr == NULL) {
+        GC_EXIT();
+    } else {
+        // get the GC block number corresponding to this pointer
+        assert(VERIFY_PTR(ptr));
         size_t block = BLOCK_FROM_PTR(ptr);
-        if (ATB_GET_KIND(block) == AT_HEAD) {
-            #if MICROPY_ENABLE_FINALISER
-            FTB_CLEAR(block);
-            #endif
-            // set the last_free pointer to this block if it's earlier in the heap
-            if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
-                MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
-            }
+        assert(ATB_GET_KIND(block) == AT_HEAD);
 
-            // free head and all of its tail blocks
+        #if MICROPY_ENABLE_FINALISER
+        FTB_CLEAR(block);
+        #endif
+
+        // set the last_free pointer to this block if it's earlier in the heap
+        if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+            MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
+        }
+
+        // free head and all of its tail blocks
             #ifdef LOG_HEAP_ACTIVITY
             gc_log_change(block, 0);
             #endif
-            do {
-                ATB_ANY_TO_FREE(block);
-                block += 1;
-            } while (ATB_GET_KIND(block) == AT_TAIL);
+        do {
+            ATB_ANY_TO_FREE(block);
+            block += 1;
+        } while (ATB_GET_KIND(block) == AT_TAIL);
 
-            GC_EXIT();
+        GC_EXIT();
 
-            #if EXTENSIVE_HEAP_PROFILING
-            gc_dump_alloc_table();
-            #endif
-        } else {
-            GC_EXIT();
-            assert(!"bad free");
-        }
-    } else if (ptr != NULL) {
-        GC_EXIT();
-        assert(!"bad free");
-    } else {
-        GC_EXIT();
+        #if EXTENSIVE_HEAP_PROFILING
+        gc_dump_alloc_table();
+        #endif
     }
 }
 

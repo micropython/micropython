@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_WINDOWS_INIT_H
+#define MICROPY_INCLUDED_WINDOWS_INIT_H
 
 void init(void);
 void deinit(void);
+
+#endif // MICROPY_INCLUDED_WINDOWS_INIT_H

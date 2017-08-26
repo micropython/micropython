@@ -227,12 +227,9 @@ SRC_C = \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
+	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c
-
-STM_SRC_C = $(addprefix stmhal/,\
-	pybstdio.c \
-	)
 
 SRC_COMMON_HAL = \
 	analogio/__init__.c \
@@ -295,7 +292,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 

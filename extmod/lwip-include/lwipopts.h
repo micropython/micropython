@@ -1,5 +1,5 @@
-#ifndef __LWIPOPTS_H__
-#define __LWIPOPTS_H__
+#ifndef MICROPY_INCLUDED_EXTMOD_LWIP_INCLUDE_LWIPOPTS_H
+#define MICROPY_INCLUDED_EXTMOD_LWIP_INCLUDE_LWIPOPTS_H
 
 #include <py/mpconfig.h>
 #include <py/misc.h>
@@ -32,5 +32,4 @@ typedef uint32_t sys_prot_t;
 // things like this into a port-provided header file.
 #define sys_now mp_hal_ticks_ms
 
-#endif
-
+#endif // MICROPY_INCLUDED_EXTMOD_LWIP_INCLUDE_LWIPOPTS_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MODUSOCKET_H_
-#define MODUSOCKET_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
+#define MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
 
 extern const mp_obj_dict_t socket_locals_dict;
 extern const mp_stream_p_t socket_stream_p;
@@ -36,4 +35,4 @@ extern void modusocket_socket_delete (int16_t sd);
 extern void modusocket_enter_sleep (void);
 extern void modusocket_close_all_user_sockets (void);
 
-#endif /* MODUSOCKET_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H

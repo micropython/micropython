@@ -1,5 +1,5 @@
-#ifndef _INCLUDED_ETS_ALT_TASK_H_
-#define _INCLUDED_ETS_ALT_TASK_H_
+#ifndef MICROPY_INCLUDED_ESP8266_ETS_ALT_TASK_H
+#define MICROPY_INCLUDED_ESP8266_ETS_ALT_TASK_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -9,4 +9,4 @@ extern uint32_t system_time_high_word;
 
 bool ets_loop_iter(void);
 
-#endif  // _INCLUDED_ETS_ALT_TASK_H_
+#endif // MICROPY_INCLUDED_ESP8266_ETS_ALT_TASK_H

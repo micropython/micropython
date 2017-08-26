@@ -8,10 +8,10 @@ PROG = micropython.exe
 QSTR_DEFS = ../unix/qstrdefsport.h
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC += -I.
-INC += -I..
+INC += -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
@@ -62,4 +62,4 @@ SRC_QSTR += $(SRC_C)
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

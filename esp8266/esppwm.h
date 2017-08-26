@@ -1,5 +1,5 @@
-#ifndef __ESPPWM_H__
-#define __ESPPWM_H__
+#ifndef MICROPY_INCLUDED_ESP8266_ESPPWM_H
+#define MICROPY_INCLUDED_ESP8266_ESPPWM_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,4 +14,4 @@ uint16_t pwm_get_freq(uint8_t channel);
 int pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func);
 bool pwm_delete(uint8_t channel);
 
-#endif
+#endif // MICROPY_INCLUDED_ESP8266_ESPPWM_H

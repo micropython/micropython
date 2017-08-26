@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H
 
 #include "py/obj.h"
 
@@ -53,4 +53,4 @@ void mp_hal_disable_all_interrupts(void);
 
 void mp_hal_enable_all_interrupts(void);
 
-#endif // __MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H__
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_MPHALPORT_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -278,7 +278,7 @@ STATIC void rtc_msec_add (uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC const mp_arg_t pyb_rtc_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_INT, {.u_int = 0} },
@@ -456,17 +456,17 @@ invalid_args:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
-STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),            (mp_obj_t)&pyb_rtc_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),          (mp_obj_t)&pyb_rtc_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_now),             (mp_obj_t)&pyb_rtc_now_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm),           (mp_obj_t)&pyb_rtc_alarm_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_left),      (mp_obj_t)&pyb_rtc_alarm_left_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_cancel),    (mp_obj_t)&pyb_rtc_alarm_cancel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),             (mp_obj_t)&pyb_rtc_irq_obj },
+STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&pyb_rtc_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&pyb_rtc_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_now),             MP_ROM_PTR(&pyb_rtc_now_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm),           MP_ROM_PTR(&pyb_rtc_alarm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm_left),      MP_ROM_PTR(&pyb_rtc_alarm_left_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm_cancel),    MP_ROM_PTR(&pyb_rtc_alarm_cancel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&pyb_rtc_irq_obj) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALARM0),          MP_OBJ_NEW_SMALL_INT(PYB_RTC_ALARM0) },
+    { MP_ROM_QSTR(MP_QSTR_ALARM0),          MP_ROM_INT(PYB_RTC_ALARM0) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,9 +26,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include STM32_HAL_H
 
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/obj.h"
 #include "lib/timeutils/timeutils.h"

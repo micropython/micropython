@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H
 
 #include "py/obj.h"
 
@@ -43,4 +43,4 @@ typedef struct {
 extern const digitalio_pull_obj_t digitalio_pull_up_obj;
 extern const digitalio_pull_obj_t digitalio_pull_down_obj;
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H

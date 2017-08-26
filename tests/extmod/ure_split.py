@@ -26,3 +26,8 @@ print(s)
 r = re.compile("[a-f]+")
 s = r.split("0a3b9")
 print(s)
+
+# bytes objects
+r = re.compile(b"x")
+s = r.split(b"fooxbar")
+print(s)

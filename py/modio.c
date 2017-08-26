@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -112,9 +112,9 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bufwriter_flush_obj, bufwriter_flush);
 
-STATIC const mp_map_elem_t bufwriter_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_flush), (mp_obj_t)&bufwriter_flush_obj },
+STATIC const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&bufwriter_flush_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
@@ -127,7 +127,7 @@ STATIC const mp_obj_type_t bufwriter_type = {
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
     .protocol = &bufwriter_stream_p,
-    .locals_dict = (mp_obj_t)&bufwriter_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&bufwriter_locals_dict,
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 

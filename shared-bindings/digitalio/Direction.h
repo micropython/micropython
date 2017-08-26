@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H
 
 #include "py/obj.h"
 
@@ -42,4 +42,4 @@ const mp_obj_type_t digitalio_direction_type;
 extern const digitalio_direction_obj_t digitalio_direction_input_obj;
 extern const digitalio_direction_obj_t digitalio_direction_output_obj;
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIRECTION_H

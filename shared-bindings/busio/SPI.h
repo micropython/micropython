@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H
 
 #include "py/obj.h"
 
@@ -54,4 +54,4 @@ extern bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *dat
 // Reads in len bytes while outputting zeroes.
 extern bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -42,6 +42,12 @@ mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
+    // Code below assumes non-zero buffer length when computing size with
+    // separator, so handle the zero-length case here.
+    if (bufinfo.len == 0) {
+        return mp_const_empty_bytes;
+    }
+
     vstr_t vstr;
     size_t out_len = bufinfo.len * 2;
     if (n_args > 1) {
@@ -75,7 +81,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     if ((bufinfo.len & 1) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "odd-length string"));
+        mp_raise_ValueError("odd-length string");
     }
     vstr_t vstr;
     vstr_init_len(&vstr, bufinfo.len / 2);
@@ -86,7 +92,7 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
         if (unichar_isxdigit(hex_ch)) {
             hex_byte += unichar_xdigit_value(hex_ch);
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "non-hex digit found"));
+            mp_raise_ValueError("non-hex digit found");
         }
         if (i & 1) {
             hex_byte <<= 4;
@@ -99,54 +105,64 @@ mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj, mod_binascii_unhexlify);
 
+// If ch is a character in the base64 alphabet, and is not a pad character, then
+// the corresponding integer between 0 and 63, inclusively, is returned.
+// Otherwise, -1 is returned.
+static int mod_binascii_sextet(byte ch) {
+    if (ch >= 'A' && ch <= 'Z') {
+        return ch - 'A';
+    } else if (ch >= 'a' && ch <= 'z') {
+        return ch - 'a' + 26;
+    } else if (ch >= '0' && ch <= '9') {
+        return ch - '0' + 52;
+    } else if (ch == '+') {
+        return 62;
+    } else if (ch == '/') {
+        return 63;
+    } else {
+        return -1;
+    }
+}
+
 mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
-    if (bufinfo.len % 4 != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incorrect padding"));
-    }
+    byte *in = bufinfo.buf;
 
     vstr_t vstr;
-    byte *in = bufinfo.buf;
-    if (bufinfo.len == 0) {
-        vstr_init_len(&vstr, 0);
-    }
-    else {
-        vstr_init_len(&vstr, ((bufinfo.len / 4) * 3) - ((in[bufinfo.len-1] == '=') ? ((in[bufinfo.len-2] == '=') ? 2 : 1 ) : 0)); 
-    }
-    byte *out = (byte*)vstr.buf;
-    for (mp_uint_t i = bufinfo.len; i; i -= 4) {
-        char hold[4];
-        for (int j = 4; j--;) {
-            if (in[j] >= 'A' && in[j] <= 'Z') {
-                hold[j] = in[j] - 'A';
-            } else if (in[j] >= 'a' && in[j] <= 'z') {
-                hold[j] = in[j] - 'a' + 26;
-            } else if (in[j] >= '0' && in[j] <= '9') {
-                hold[j] = in[j] - '0' + 52;
-            } else if (in[j] == '+') {
-                hold[j] = 62;
-            } else if (in[j] == '/') {
-                hold[j] = 63;
-            } else if (in[j] == '=') {
-                if (j < 2 || i > 4) {
-                    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "incorrect padding"));
-                }
-                hold[j] = 64;
-            } else {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid character"));
-            }
-        }
-        in += 4;
+    vstr_init(&vstr, (bufinfo.len / 4) * 3 + 1); // Potentially over-allocate
+    byte *out = (byte *)vstr.buf;
 
-        *out++ = (hold[0]) << 2 | (hold[1]) >> 4;
-        if (hold[2] != 64) {
-            *out++ = (hold[1] & 0x0F) << 4 | hold[2] >> 2;
-            if (hold[3] != 64) {
-                *out++ = (hold[2] & 0x03) << 6 | hold[3];
+    uint shift = 0;
+    int nbits = 0; // Number of meaningful bits in shift
+    bool hadpad = false; // Had a pad character since last valid character
+    for (size_t i = 0; i < bufinfo.len; i++) {
+        if (in[i] == '=') {
+            if ((nbits == 2) || ((nbits == 4) && hadpad)) {
+                nbits = 0;
+                break;
             }
+            hadpad = true;
+        }
+
+        int sextet = mod_binascii_sextet(in[i]);
+        if (sextet == -1) {
+            continue;
+        }
+        hadpad = false;
+        shift = (shift << 6) | sextet;
+        nbits += 6;
+
+        if (nbits >= 8) {
+            nbits -= 8;
+            out[vstr.len++] = (shift >> nbits) & 0xFF;
         }
     }
+
+    if (nbits) {
+        mp_raise_ValueError("incorrect padding");
+    }
+
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
@@ -178,7 +194,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
             *out++ = (in[0] & 0x03) << 4;
             *out++ = 64;
         }
-        *out++ = 64;
+        *out = 64;
     }
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding

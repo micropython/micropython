@@ -1,6 +1,6 @@
 """
 categories: Types,float
-description: uPy and CPython outputs formats differ
+description: uPy and CPython outputs formats may differ
 cause: Unknown
 workaround: Unknown
 """

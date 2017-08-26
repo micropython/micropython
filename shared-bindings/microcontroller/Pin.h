@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "py/obj.h"
@@ -38,4 +38,4 @@ void assert_pin_free(const mcu_pin_obj_t* pin);
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H

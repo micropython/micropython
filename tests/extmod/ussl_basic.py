@@ -43,6 +43,14 @@ except OSError as er:
 
 # close
 ss.close()
+# close 2nd time
+ss.close()
+
+# read on closed socket
+try:
+    ss.read(10)
+except OSError as er:
+    print('read:', repr(er))
 
 # write on closed socket
 try:

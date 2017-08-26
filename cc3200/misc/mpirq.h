@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MPIRQ_H_
-#define MPIRQ_H_
+#ifndef MICROPY_INCLUDED_CC3200_MISC_MPIRQ_H
+#define MICROPY_INCLUDED_CC3200_MISC_MPIRQ_H
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -72,4 +71,4 @@ void mp_irq_remove (const mp_obj_t parent);
 void mp_irq_handler (mp_obj_t self_in);
 uint mp_irq_translate_priority (uint priority);
 
-#endif /* MPIRQ_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MISC_MPIRQ_H

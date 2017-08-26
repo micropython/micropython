@@ -154,6 +154,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
+        mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
     }
 
     // vstr
@@ -189,7 +190,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# repl\n");
 
         const char *str;
-        mp_uint_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
+        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));

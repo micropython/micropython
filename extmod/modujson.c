@@ -269,7 +269,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     return stack_top;
 
     fail:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "syntax error in JSON"));
+    mp_raise_ValueError("syntax error in JSON");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 
@@ -277,7 +277,7 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
     size_t len;
     const char *buf = mp_obj_str_get_data(obj, &len);
     vstr_t vstr = {len, len, (char*)buf, true};
-    mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0};
+    mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
     return mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_loads_obj, mod_ujson_loads);

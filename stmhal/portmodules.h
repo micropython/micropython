@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_PORTMODULES_H
+#define MICROPY_INCLUDED_STMHAL_PORTMODULES_H
 
 extern const mp_obj_module_t pyb_module;
 extern const mp_obj_module_t stm_module;
@@ -37,3 +39,5 @@ MP_DECLARE_CONST_FUN_OBJ_1(time_sleep_us_obj);
 
 MP_DECLARE_CONST_FUN_OBJ_0(mod_os_sync_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_dupterm_obj);
+
+#endif // MICROPY_INCLUDED_STMHAL_PORTMODULES_H

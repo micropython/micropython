@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef FTP_H_
-#define FTP_H_
+#ifndef MICROPY_INCLUDED_CC3200_FTP_FTP_H
+#define MICROPY_INCLUDED_CC3200_FTP_FTP_H
 
 /******************************************************************************
  DECLARE EXPORTED FUNCTIONS
@@ -36,4 +35,4 @@ extern void ftp_enable (void);
 extern void ftp_disable (void);
 extern void ftp_reset (void);
 
-#endif /* FTP_H_ */
+#endif // MICROPY_INCLUDED_CC3200_FTP_FTP_H

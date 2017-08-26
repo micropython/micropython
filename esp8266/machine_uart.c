@@ -104,7 +104,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
             self->bits = 8;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid data bits"));
+            mp_raise_ValueError("invalid data bits");
             break;
     }
 
@@ -140,7 +140,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
             self->stop = 2;
             break;
         default:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid stop bits"));
+            mp_raise_ValueError("invalid stop bits");
             break;
     }
 
@@ -215,7 +215,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->uart_id == 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "UART(1) can't read"));
+        mp_raise_msg(&mp_type_OSError, "UART(1) can't read");
     }
 
     // make sure we want at least 1 char

@@ -23,8 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_CC3200_MPTHREADPORT_H__
-#define __MICROPY_INCLUDED_CC3200_MPTHREADPORT_H__
 
 #ifndef BOOTLOADER
 #include "FreeRTOS.h"
@@ -39,5 +37,3 @@ typedef struct _mp_thread_mutex_t {
 
 void mp_thread_init(void);
 void mp_thread_gc_others(void);
-
-#endif // __MICROPY_INCLUDED_CC3200_MPTHREADPORT_H__

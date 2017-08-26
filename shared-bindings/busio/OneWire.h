@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/OneWire.h"
@@ -39,4 +39,4 @@ extern bool common_hal_busio_onewire_reset(busio_onewire_obj_t* self);
 extern bool common_hal_busio_onewire_read_bit(busio_onewire_obj_t* self);
 extern void common_hal_busio_onewire_write_bit(busio_onewire_obj_t* self, bool bit);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_ONEWIRE_H

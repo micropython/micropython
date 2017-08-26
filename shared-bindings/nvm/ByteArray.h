@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H
 
 #include "common-hal/nvm/ByteArray.h"
 
@@ -40,4 +40,4 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
     uint32_t start_index, uint32_t len, uint8_t* values);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H

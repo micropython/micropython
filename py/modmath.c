@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -25,7 +25,7 @@
  */
 
 #include "py/builtin.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
@@ -169,6 +169,12 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
         mp_float_t base = mp_obj_get_float(args[1]);
         if (base <= (mp_float_t)0.0) {
             math_error();
+// Turn off warning when comparing exactly with integral value 1.0
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+        } else if (base == (mp_float_t)1.0) {
+#pragma GCC diagnostic pop
+            mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }

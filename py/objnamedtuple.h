@@ -25,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H__
-#define __MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H__
+#ifndef MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
+#define MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
 
 #include <string.h>
 
@@ -55,4 +55,4 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
 
 #endif // MICROPY_PY_COLLECTIONS
 
-#endif  // __MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H__
+#endif  // MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H

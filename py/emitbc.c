@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -902,7 +902,7 @@ void mp_emit_bc_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_closed_ov
         emit_write_bytecode_byte(emit, n_closed_over);
     } else {
         assert(n_closed_over <= 255);
-        emit_bc_pre(emit, -2 - n_closed_over + 1);
+        emit_bc_pre(emit, -2 - (mp_int_t)n_closed_over + 1);
         emit_write_bytecode_byte_raw_code(emit, MP_BC_MAKE_CLOSURE_DEFARGS, scope->raw_code);
         emit_write_bytecode_byte(emit, n_closed_over);
     }

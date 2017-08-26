@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/touchio/TouchIn.h"
@@ -36,4 +36,4 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self);
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H

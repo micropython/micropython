@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_STMHAL_DMA_H__
-#define __MICROPY_INCLUDED_STMHAL_DMA_H__
+#ifndef MICROPY_INCLUDED_STMHAL_DMA_H
+#define MICROPY_INCLUDED_STMHAL_DMA_H
 
 typedef struct _dma_descr_t dma_descr_t;
 
@@ -101,4 +100,4 @@ void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
 void dma_idle_handler(int controller);
 
-#endif //__MICROPY_INCLUDED_STMHAL_DMA_H__
+#endif // MICROPY_INCLUDED_STMHAL_DMA_H

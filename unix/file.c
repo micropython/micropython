@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -47,7 +47,7 @@
 #ifdef MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_fdfile_t *o) {
     if (o->fd < 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "I/O operation on closed file"));
+        mp_raise_ValueError("I/O operation on closed file");
     }
 }
 #else

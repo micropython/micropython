@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_EXTMOD_MACHINE_PULSE_H__
-#define __MICROPY_INCLUDED_EXTMOD_MACHINE_PULSE_H__
+#ifndef MICROPY_INCLUDED_EXTMOD_MACHINE_PULSE_H
+#define MICROPY_INCLUDED_EXTMOD_MACHINE_PULSE_H
 
 #include "py/obj.h"
 #include "py/mphal.h"
@@ -34,4 +33,4 @@ mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj);
 
-#endif // __MICROPY_INCLUDED_EXTMOD_MACHINE_PULSE_H__
+#endif // MICROPY_INCLUDED_EXTMOD_MACHINE_PULSE_H

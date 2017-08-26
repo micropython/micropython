@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -34,7 +34,7 @@
 #include "py/emitglue.h"
 #include "py/bc.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
@@ -42,7 +42,7 @@
 
 #if MICROPY_EMIT_NATIVE
 
-// convert a Micro Python object to a valid native value based on type
+// convert a MicroPython object to a valid native value based on type
 mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
     DEBUG_printf("mp_convert_obj_to_native(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
@@ -66,7 +66,7 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 
 #if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
 
-// convert a native value to a Micro Python object based on type
+// convert a native value to a MicroPython object based on type
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
     DEBUG_printf("mp_convert_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 0xf) {

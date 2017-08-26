@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -33,4 +33,4 @@
 extern uint64_t common_hal_time_monotonic(void);
 extern void common_hal_time_delay_ms(uint32_t);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H

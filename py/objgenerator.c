@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -74,6 +74,7 @@ const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .call = gen_wrap_call,
+    .unary_op = mp_generic_unary_op,
 };
 
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
@@ -235,6 +236,7 @@ const mp_obj_type_t mp_type_gen_instance = {
     { &mp_type_type },
     .name = MP_QSTR_generator,
     .print = gen_instance_print,
+    .unary_op = mp_generic_unary_op,
     .getiter = mp_identity_getiter,
     .iternext = gen_instance_iternext,
     .locals_dict = (mp_obj_dict_t*)&gen_instance_locals_dict,

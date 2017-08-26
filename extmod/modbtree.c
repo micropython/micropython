@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
+#include <errno.h> // for declaration of global errno variable
 #include <fcntl.h>
 
 #include "py/nlr.h"

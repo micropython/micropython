@@ -5,4 +5,5 @@ setblocking: NotImplementedError
 4
 b''
 read: OSError(-261,)
-write: OSError(-256,)
+read: OSError(9,)
+write: OSError(9,)

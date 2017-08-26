@@ -116,9 +116,32 @@ Real-time clock
 RTC in ESP8266 has very bad accuracy, drift may be seconds per minute. As
 a workaround, to measure short enough intervals you can use
 ``utime.time()``, etc. functions, and for wall clock time, synchronize from
-the net using included ``ntpdate.py`` module.
+the net using included ``ntptime.py`` module.
 
 Due to limitations of the ESP8266 chip the internal real-time clock (RTC)
 will overflow every 7:45h.  If a long-term working RTC time is required then
 ``time()`` or ``localtime()`` must be called at least once within 7 hours.
 MicroPython will then handle the overflow.
+
+Sockets and WiFi buffers overflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Socket instances remain active until they are explicitly closed. This has two
+consequences. Firstly they occupy RAM, so an application which opens sockets
+without closing them may eventually run out of memory. Secondly not properly
+closed socket can cause the low-level part of the vendor WiFi stack to emit
+``Lmac`` errors. This occurs if data comes in for a socket and is not
+processed in a timely manner. This can overflow the WiFi stack input queue
+and lead to a deadlock. The only recovery is by a hard reset.
+
+The above may also happen after an application terminates and quits to the REPL
+for any reason including an exception. Subsequent arrival of data provokes the
+failure with the above error message repeatedly issued. So, sockets should be
+closed in any case, regardless whether an application terminates successfully
+or by an exeption, for example using try/finally::
+
+    sock = socket(...)
+    try:
+        # Use sock
+    finally:
+        sock.close()

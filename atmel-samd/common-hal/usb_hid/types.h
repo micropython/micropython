@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H__
-#define __MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H__
+#ifndef MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H
+#define MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H
 
 #include "conf_usb.h"
 
@@ -42,4 +42,4 @@ typedef struct {
     uint8_t usage;
 } usb_hid_device_obj_t;
 
-#endif  // __MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H__
+#endif  // MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H

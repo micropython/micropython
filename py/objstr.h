@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJSTR_H__
-#define __MICROPY_INCLUDED_PY_OBJSTR_H__
+#ifndef MICROPY_INCLUDED_PY_OBJSTR_H
+#define MICROPY_INCLUDED_PY_OBJSTR_H
 
 #include "py/obj.h"
 
@@ -102,4 +102,4 @@ MP_DECLARE_CONST_FUN_OBJ_1(str_isdigit_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_isupper_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(str_islower_obj);
 
-#endif // __MICROPY_INCLUDED_PY_OBJSTR_H__
+#endif // MICROPY_INCLUDED_PY_OBJSTR_H

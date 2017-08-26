@@ -239,7 +239,7 @@ class RawCode:
     def dump(self):
         # dump children first
         for rc in self.raw_codes:
-            rc.freeze()
+            rc.freeze('')
         # TODO
 
     def freeze(self, parent_name):
@@ -331,27 +331,29 @@ class RawCode:
                 # TODO
                 raise FreezeError(self, 'freezing of object %r is not implemented' % (obj,))
 
-        # generate constant table
-        print('STATIC const mp_rom_obj_t const_table_data_%s[%u] = {'
-            % (self.escaped_name, len(self.qstrs) + len(self.objs) + len(self.raw_codes)))
-        for qst in self.qstrs:
-            print('    MP_ROM_QSTR(%s),' % global_qstrs[qst].qstr_id)
-        for i in range(len(self.objs)):
-            if type(self.objs[i]) is float:
-                print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
-                print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
-                print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C')
-                n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
-                n = ((n & ~0x3) | 2) + 0x80800000
-                print('    (mp_rom_obj_t)(0x%08x),' % (n,))
-                print('#else')
-                print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
-                print('#endif')
-            else:
-                print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
-        for rc in self.raw_codes:
-            print('    MP_ROM_PTR(&raw_code_%s),' % rc.escaped_name)
-        print('};')
+        # generate constant table, if it has any entries
+        const_table_len = len(self.qstrs) + len(self.objs) + len(self.raw_codes)
+        if const_table_len:
+            print('STATIC const mp_rom_obj_t const_table_data_%s[%u] = {'
+                % (self.escaped_name, const_table_len))
+            for qst in self.qstrs:
+                print('    MP_ROM_QSTR(%s),' % global_qstrs[qst].qstr_id)
+            for i in range(len(self.objs)):
+                if type(self.objs[i]) is float:
+                    print('#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B')
+                    print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
+                    print('#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C')
+                    n = struct.unpack('<I', struct.pack('<f', self.objs[i]))[0]
+                    n = ((n & ~0x3) | 2) + 0x80800000
+                    print('    (mp_rom_obj_t)(0x%08x),' % (n,))
+                    print('#else')
+                    print('#error "MICROPY_OBJ_REPR_D not supported with floats in frozen mpy files"')
+                    print('#endif')
+                else:
+                    print('    MP_ROM_PTR(&const_obj_%s_%u),' % (self.escaped_name, i))
+            for rc in self.raw_codes:
+                print('    MP_ROM_PTR(&raw_code_%s),' % rc.escaped_name)
+            print('};')
 
         # generate module
         if self.simple_name.str != '<module>':
@@ -362,7 +364,10 @@ class RawCode:
         print('    .n_pos_args = %u,' % self.prelude[3])
         print('    .data.u_byte = {')
         print('        .bytecode = bytecode_data_%s,' % self.escaped_name)
-        print('        .const_table = (mp_uint_t*)const_table_data_%s,' % self.escaped_name)
+        if const_table_len:
+            print('        .const_table = (mp_uint_t*)const_table_data_%s,' % self.escaped_name)
+        else:
+            print('        .const_table = NULL,')
         print('        #if MICROPY_PERSISTENT_CODE_SAVE')
         print('        .bc_len = %u,' % len(self.bytecode))
         print('        .n_obj = %u,' % len(self.objs))

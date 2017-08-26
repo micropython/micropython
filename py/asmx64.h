@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_ASMX64_H__
-#define __MICROPY_INCLUDED_PY_ASMX64_H__
+#ifndef MICROPY_INCLUDED_PY_ASMX64_H
+#define MICROPY_INCLUDED_PY_ASMX64_H
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
@@ -197,4 +197,4 @@ void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
 
 #endif // GENERIC_ASM_API
 
-#endif // __MICROPY_INCLUDED_PY_ASMX64_H__
+#endif // MICROPY_INCLUDED_PY_ASMX64_H

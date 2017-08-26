@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_FONT_PETME128_8X8_H
+#define MICROPY_INCLUDED_STMHAL_FONT_PETME128_8X8_H
 
 static const uint8_t font_petme128_8x8[] = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, // 32= 
@@ -122,3 +124,5 @@ static const uint8_t font_petme128_8x8[] = {
     0x00,0x02,0x03,0x01,0x03,0x02,0x03,0x01, // 126=~
     0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55, // 127
 };
+
+#endif // MICROPY_INCLUDED_STMHAL_FONT_PETME128_8X8_H

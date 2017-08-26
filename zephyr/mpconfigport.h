@@ -98,9 +98,6 @@
 
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
-
-typedef void *machine_ptr_t; // must be of pointer size
-typedef const void *machine_const_ptr_t; // must be of pointer size
 typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -115,7 +112,7 @@ extern const struct _mp_obj_module_t mp_module_zephyr;
 
 #if MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#define MICROPY_PY_USOCKET_WEAK_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
+#define MICROPY_PY_USOCKET_WEAK_DEF { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
 #else
 #define MICROPY_PY_USOCKET_DEF
 #define MICROPY_PY_USOCKET_WEAK_DEF
@@ -134,13 +131,13 @@ extern const struct _mp_obj_module_t mp_module_zephyr;
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     MICROPY_PY_USOCKET_DEF \
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_ZEPHYR_DEF \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_time) }, \
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_time) }, \
     MICROPY_PY_USOCKET_WEAK_DEF \
 
 // extra built in names to add to the global namespace

@@ -1,7 +1,7 @@
 """
 categories: Types,bytes
-description: Bytes subscr with step != 1 not implemented
-cause: Unknown
-workaround: Unknown
+description: Bytes subscription with step != 1 not implemented
+cause: MicroPython is highly optimized for memory usage.
+workaround: Use explicit loop for this very rare operation.
 """
 print(b'123'[0:3:2])

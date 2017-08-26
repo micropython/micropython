@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * Taken from ST Cube library and heavily modified.  See below for original
  * copyright header.
@@ -23,8 +23,8 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -102,52 +102,14 @@ const USBD_CDC_ItfTypeDef USBD_CDC_fops = {
   * @param  None
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Itf_Init(USBD_HandleTypeDef *pdev)
-{
-#if 0
-  /*##-1- Configure the UART peripheral ######################################*/
-  /* Put the USART peripheral in the Asynchronous mode (UART Mode) */
-  /* USART configured as follow:
-      - Word Length = 8 Bits
-      - Stop Bit    = One Stop bit
-      - Parity      = No parity
-      - BaudRate    = 115200 baud
-      - Hardware flow control disabled (RTS and CTS signals) */
-  UartHandle.Instance        = USARTx;
-  UartHandle.Init.BaudRate   = 115200;
-  UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-  UartHandle.Init.StopBits   = UART_STOPBITS_1;
-  UartHandle.Init.Parity     = UART_PARITY_NONE;
-  UartHandle.Init.HwFlowCtl  = UART_HWCONTROL_NONE;
-  UartHandle.Init.Mode       = UART_MODE_TX_RX;
-  
-  if(HAL_UART_Init(&UartHandle) != HAL_OK)
-  {
-    /* Initialization Error */
-    Error_Handler();
-  }
-  
-  /*##-2- Put UART peripheral in IT reception process ########################*/
-  /* Any data received will be stored in "UserTxBuffer" buffer  */
-  if(HAL_UART_Receive_IT(&UartHandle, (uint8_t *)UserTxBuffer, 1) != HAL_OK)
-  {
-    /* Transfer error in reception process */
-    Error_Handler();
-  }
-  
-  /*##-3- Configure the TIM Base generation  #################################*/
-  now done in HAL_MspInit
-  TIM_Config();
-#endif
-  
-    /*##-5- Set Application Buffers ############################################*/
+static int8_t CDC_Itf_Init(USBD_HandleTypeDef *pdev) {
     USBD_CDC_SetTxBuffer(pdev, UserTxBuffer, 0);
     USBD_CDC_SetRxBuffer(pdev, cdc_rx_packet_buf);
 
     cdc_rx_buf_put = 0;
     cdc_rx_buf_get = 0;
-  
-    return (USBD_OK);
+
+    return USBD_OK;
 }
 
 /**
@@ -156,22 +118,14 @@ static int8_t CDC_Itf_Init(USBD_HandleTypeDef *pdev)
   * @param  None
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t CDC_Itf_DeInit(void)
-{
-#if 0
-  /* DeInitialize the UART peripheral */
-  if(HAL_UART_DeInit(&UartHandle) != HAL_OK)
-  {
-    /* Initialization Error */
-  }
-#endif
-  return (USBD_OK);
+static int8_t CDC_Itf_DeInit(void) {
+    return USBD_OK;
 }
 
 /**
   * @brief  CDC_Itf_Control
   *         Manage the CDC class requests
-  * @param  Cmd: Command code            
+  * @param  Cmd: Command code
   * @param  Buf: Buffer containing command data (request parameters)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
@@ -210,16 +164,6 @@ static int8_t CDC_Itf_Control(uint8_t cmd, uint8_t* pbuf, uint16_t length) {
             break;
 
         case CDC_GET_LINE_CODING:
-            #if 0
-            pbuf[0] = (uint8_t)(LineCoding.bitrate);
-            pbuf[1] = (uint8_t)(LineCoding.bitrate >> 8);
-            pbuf[2] = (uint8_t)(LineCoding.bitrate >> 16);
-            pbuf[3] = (uint8_t)(LineCoding.bitrate >> 24);
-            pbuf[4] = LineCoding.format;
-            pbuf[5] = LineCoding.paritytype;
-            pbuf[6] = LineCoding.datatype;
-            #endif
-
             /* Add your code here */
             pbuf[0] = (uint8_t)(115200);
             pbuf[1] = (uint8_t)(115200 >> 8);
@@ -318,11 +262,6 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
   *         free to modify it.
   */
 static int8_t CDC_Itf_Receive(USBD_HandleTypeDef *pdev, uint8_t* Buf, uint32_t *Len) {
-#if 0
-    // this sends the data over the UART using DMA
-    HAL_UART_Transmit_DMA(&UartHandle, Buf, *Len);
-#endif
-
     // copy the incoming data into the circular buffer
     for (uint8_t *src = Buf, *top = Buf + *Len; src < top; ++src) {
         if (mp_interrupt_char != -1 && *src == mp_interrupt_char) {

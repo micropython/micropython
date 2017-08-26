@@ -4,13 +4,13 @@ BOOT_INC  = -Ibootmgr
 BOOT_INC += -Ibootmgr/sl
 BOOT_INC += -Ihal
 BOOT_INC += -Ihal/inc
-BOOT_INC += -I../drivers/cc3100/inc
+BOOT_INC += -I$(TOP)/drivers/cc3100/inc
 BOOT_INC += -Imisc
 BOOT_INC += -Imods
 BOOT_INC += -Isimplelink
 BOOT_INC += -Isimplelink/oslib
 BOOT_INC += -Iutil
-BOOT_INC += -I..
+BOOT_INC += -I$(TOP)
 BOOT_INC += -I.
 BOOT_INC += -I$(BUILD)
 

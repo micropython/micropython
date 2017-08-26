@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -519,7 +519,7 @@ STATIC void EXTI_Handler(uint port) {
 
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC const mp_arg_t pin_init_args[] = {
     { MP_QSTR_mode,                        MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -902,35 +902,35 @@ invalid_args:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
-STATIC const mp_map_elem_t pin_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                    (mp_obj_t)&pin_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value),                   (mp_obj_t)&pin_value_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_id),                      (mp_obj_t)&pin_id_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mode),                    (mp_obj_t)&pin_mode_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pull),                    (mp_obj_t)&pin_pull_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_drive),                   (mp_obj_t)&pin_drive_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alt_list),                (mp_obj_t)&pin_alt_list_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),                     (mp_obj_t)&pin_irq_obj },
+    { MP_ROM_QSTR(MP_QSTR_init),                    MP_ROM_PTR(&pin_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value),                   MP_ROM_PTR(&pin_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_id),                      MP_ROM_PTR(&pin_id_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mode),                    MP_ROM_PTR(&pin_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pull),                    MP_ROM_PTR(&pin_pull_obj) },
+    { MP_ROM_QSTR(MP_QSTR_drive),                   MP_ROM_PTR(&pin_drive_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alt_list),                MP_ROM_PTR(&pin_alt_list_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),                     MP_ROM_PTR(&pin_irq_obj) },
 
     // class attributes
-    { MP_OBJ_NEW_QSTR(MP_QSTR_board),                   (mp_obj_t)&pin_board_pins_obj_type },
+    { MP_ROM_QSTR(MP_QSTR_board),                   MP_ROM_PTR(&pin_board_pins_obj_type) },
 
     // class constants
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IN),                      MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_IN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OUT),                     MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_OUT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OPEN_DRAIN),              MP_OBJ_NEW_SMALL_INT(PIN_TYPE_OD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALT),                     MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_ALT) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALT_OPEN_DRAIN),          MP_OBJ_NEW_SMALL_INT(GPIO_DIR_MODE_ALT_OD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_UP),                 MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PU) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PULL_DOWN),               MP_OBJ_NEW_SMALL_INT(PIN_TYPE_STD_PD) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LOW_POWER),               MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_2MA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MED_POWER),               MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_4MA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HIGH_POWER),              MP_OBJ_NEW_SMALL_INT(PIN_STRENGTH_6MA) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_FALLING),             MP_OBJ_NEW_SMALL_INT(PYB_PIN_FALLING_EDGE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_RISING),              MP_OBJ_NEW_SMALL_INT(PYB_PIN_RISING_EDGE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_LOW_LEVEL),           MP_OBJ_NEW_SMALL_INT(PYB_PIN_LOW_LEVEL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IRQ_HIGH_LEVEL),          MP_OBJ_NEW_SMALL_INT(PYB_PIN_HIGH_LEVEL) },
+    { MP_ROM_QSTR(MP_QSTR_IN),                      MP_ROM_INT(GPIO_DIR_MODE_IN) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),                     MP_ROM_INT(GPIO_DIR_MODE_OUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),              MP_ROM_INT(PIN_TYPE_OD) },
+    { MP_ROM_QSTR(MP_QSTR_ALT),                     MP_ROM_INT(GPIO_DIR_MODE_ALT) },
+    { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN),          MP_ROM_INT(GPIO_DIR_MODE_ALT_OD) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP),                 MP_ROM_INT(PIN_TYPE_STD_PU) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),               MP_ROM_INT(PIN_TYPE_STD_PD) },
+    { MP_ROM_QSTR(MP_QSTR_LOW_POWER),               MP_ROM_INT(PIN_STRENGTH_2MA) },
+    { MP_ROM_QSTR(MP_QSTR_MED_POWER),               MP_ROM_INT(PIN_STRENGTH_4MA) },
+    { MP_ROM_QSTR(MP_QSTR_HIGH_POWER),              MP_ROM_INT(PIN_STRENGTH_6MA) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),             MP_ROM_INT(PYB_PIN_FALLING_EDGE) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),              MP_ROM_INT(PYB_PIN_RISING_EDGE) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_LOW_LEVEL),           MP_ROM_INT(PYB_PIN_LOW_LEVEL) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL),          MP_ROM_INT(PYB_PIN_HIGH_LEVEL) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);

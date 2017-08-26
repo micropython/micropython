@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -32,7 +32,7 @@
 // #       single_input is a single interactive statement;
 // #       file_input is a module or sequence of commands read from an input file;
 // #       eval_input is the input for the eval() functions.
-// # NB: compound_stmt in single_input is followed by extra NEWLINE! --> not in Micro Python
+// # NB: compound_stmt in single_input is followed by extra NEWLINE! --> not in MicroPython
 // single_input: NEWLINE | simple_stmt | compound_stmt
 // file_input: (NEWLINE | stmt)* ENDMARKER
 // eval_input: testlist NEWLINE* ENDMARKER
@@ -244,9 +244,9 @@ DEF_RULE(star_expr, c(star_expr), and(2), tok(OP_STAR), rule(expr))
 DEF_RULE(expr, c(expr), list, rule(xor_expr), tok(OP_PIPE))
 DEF_RULE(xor_expr, c(xor_expr), list, rule(and_expr), tok(OP_CARET))
 DEF_RULE(and_expr, c(and_expr), list, rule(shift_expr), tok(OP_AMPERSAND))
-DEF_RULE(shift_expr, c(shift_expr), list, rule(arith_expr), rule(shift_op))
+DEF_RULE(shift_expr, c(term), list, rule(arith_expr), rule(shift_op))
 DEF_RULE_NC(shift_op, or(2), tok(OP_DBL_LESS), tok(OP_DBL_MORE))
-DEF_RULE(arith_expr, c(arith_expr), list, rule(term), rule(arith_op))
+DEF_RULE(arith_expr, c(term), list, rule(term), rule(arith_op))
 DEF_RULE_NC(arith_op, or(2), tok(OP_PLUS), tok(OP_MINUS))
 DEF_RULE(term, c(term), list, rule(factor), rule(term_op))
 DEF_RULE_NC(term_op, or(4), tok(OP_STAR), tok(OP_SLASH), tok(OP_PERCENT), tok(OP_DBL_SLASH))

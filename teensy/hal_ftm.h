@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_TEENSY_HAL_FTM_H
+#define MICROPY_INCLUDED_TEENSY_HAL_FTM_H
 
 #define FTM0    ((FTM_TypeDef *)&FTM0_SC)
 #define FTM1    ((FTM_TypeDef *)&FTM1_SC)
@@ -181,4 +183,4 @@ void HAL_FTM_IC_Start(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_IC_Start_IT(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_IC_DeInit(FTM_HandleTypeDef *hftm);
 
-
+#endif // MICROPY_INCLUDED_TEENSY_HAL_FTM_H

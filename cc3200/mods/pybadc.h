@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,10 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBADC_H_
-#define PYBADC_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBADC_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBADC_H
 
 extern const mp_obj_type_t pyb_adc_type;
 
-#endif /* PYBADC_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBADC_H

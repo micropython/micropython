@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,6 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_CC3200_UTIL_GCCOLLECT_H
+#define MICROPY_INCLUDED_CC3200_UTIL_GCCOLLECT_H
 
 // variables defining memory layout
 extern uint32_t _etext;
@@ -39,3 +41,5 @@ extern uint32_t _stack;
 extern uint32_t _estack;
 
 void gc_collect(void);
+
+#endif // MICROPY_INCLUDED_CC3200_UTIL_GCCOLLECT_H

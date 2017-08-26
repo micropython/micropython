@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -117,7 +117,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 /// \classmethod \constructor([data[, block_size]])
 /// initial data must be given if block_size wants to be passed
@@ -165,9 +165,9 @@ STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 
-STATIC const mp_map_elem_t hash_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_update),    (mp_obj_t) &hash_update_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_digest),    (mp_obj_t) &hash_digest_obj },
+STATIC const mp_rom_map_elem_t hash_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_update),    MP_ROM_PTR(&hash_update_obj) },
+    { MP_ROM_QSTR(MP_QSTR_digest),    MP_ROM_PTR(&hash_digest_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);
@@ -193,11 +193,11 @@ STATIC const mp_obj_type_t sha256_type = {
     .locals_dict = (mp_obj_t)&hash_locals_dict,
 };
 
-STATIC const mp_map_elem_t mp_module_hashlib_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),    MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib) },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_md5),         (mp_obj_t)&md5_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sha1),        (mp_obj_t)&sha1_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sha256),      (mp_obj_t)&sha256_type },
+STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    //{ MP_ROM_QSTR(MP_QSTR_md5),         MP_ROM_PTR(&md5_type) },
+    { MP_ROM_QSTR(MP_QSTR_sha1),        MP_ROM_PTR(&sha1_type) },
+    { MP_ROM_QSTR(MP_QSTR_sha256),      MP_ROM_PTR(&sha256_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_hashlib_globals, mp_module_hashlib_globals_table);

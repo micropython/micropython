@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  */
 
 /**
@@ -20,13 +20,13 @@
   *
   *        http://www.st.com/software_license_agreement_liberty_v2
   *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
-  * Heavily modified by dpgeorge for Micro Python.
+  * Heavily modified by dpgeorge for MicroPython.
   *
   ******************************************************************************
   */
@@ -134,13 +134,6 @@ int8_t FLASH_STORAGE_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
   */
 int8_t FLASH_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
     storage_read_blocks(buf, blk_addr, blk_len);
-    /*
-    for (int i = 0; i < blk_len; i++) {
-        if (!storage_read_block(buf + i * FLASH_BLOCK_SIZE, blk_addr + i)) {
-            return -1;
-        }
-    }
-    */
     return 0;
 }
 
@@ -154,13 +147,6 @@ int8_t FLASH_STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t
   */
 int8_t FLASH_STORAGE_Write (uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
     storage_write_blocks(buf, blk_addr, blk_len);
-    /*
-    for (int i = 0; i < blk_len; i++) {
-        if (!storage_write_block(buf + i * FLASH_BLOCK_SIZE, blk_addr + i)) {
-            return -1;
-        }
-    }
-    */
     return 0;
 }
 
@@ -213,20 +199,6 @@ static const int8_t SDCARD_STORAGE_Inquirydata[] = { // 36 bytes
   * @retval Status
   */
 int8_t SDCARD_STORAGE_Init(uint8_t lun) {
-    /*
-#ifndef USE_STM3210C_EVAL 
-  NVIC_InitTypeDef NVIC_InitStructure;
-  NVIC_InitStructure.NVIC_IRQChannel = SDIO_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority =0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-#endif
-  if( SD_Init() != 0)
-  {
-    return (-1);
-  }
-  */
     if (!sdcard_power_on()) {
         return -1;
     }
@@ -243,20 +215,8 @@ int8_t SDCARD_STORAGE_Init(uint8_t lun) {
   * @retval Status
   */
 int8_t SDCARD_STORAGE_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
-/*
-#ifdef USE_STM3210C_EVAL   
-  SD_CardInfo SDCardInfo;
-  SD_GetCardInfo(&SDCardInfo);  
-#else
-  if(SD_GetStatus() != 0 ) {
-    return (-1); 
-  }   
-#endif  
-  */
-
     *block_size = SDCARD_BLOCK_SIZE;
     *block_num =  sdcard_get_capacity_in_bytes() / SDCARD_BLOCK_SIZE;
-
     return 0;
 }
 

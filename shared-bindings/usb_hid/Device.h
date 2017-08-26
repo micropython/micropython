@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H
 
 #include "common-hal/usb_hid/types.h"
 
@@ -35,4 +35,4 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self);
 uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H

@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
@@ -36,4 +36,4 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self, con
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self);
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self, uint16_t value);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H

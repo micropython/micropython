@@ -114,8 +114,13 @@ Python prompt over WiFi, connecting through a browser.
 
 Please follow the instructions there.
 
-More detailed instructions can be found at
-http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html
+Documentation
+-------------
+
+More detailed documentation and instructions can be found at
+http://docs.micropython.org/en/latest/esp8266/ , which includes Quick
+Reference, Tutorial, General Information related to ESP8266 port, and
+to MicroPython in general.
 
 Troubleshooting
 ---------------
@@ -132,3 +137,5 @@ experience strange bootloops, crashes, lockups, here's a list to check against:
 
 Please consult dedicated ESP8266 forums/resources for hardware-related
 problems.
+
+Additional information may be available by the documentation links above.

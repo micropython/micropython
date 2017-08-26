@@ -26,7 +26,7 @@ def run_tests(pyb, test_dict):
         print(base_test + ":")
         for test_file in tests:
 
-            # run Micro Python
+            # run MicroPython
             if pyb is None:
                 # run on PC
                 try:

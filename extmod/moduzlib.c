@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -92,7 +92,7 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
         dict_opt = uzlib_zlib_parse_header(&o->decomp);
         if (dict_opt < 0) {
 header_error:
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "compression header"));
+            mp_raise_ValueError("compression header");
         }
         dict_sz = 1 << dict_opt;
     } else {
@@ -143,7 +143,6 @@ STATIC const mp_obj_type_t decompio_type = {
 };
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
     mp_obj_t data = args[0];
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
