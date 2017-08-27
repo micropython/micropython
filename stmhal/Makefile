@@ -22,8 +22,9 @@ FROZEN_MPY_DIR ?= modules
 include $(TOP)/py/py.mk
 
 LD_DIR=boards
-CMSIS_DIR=cmsis
-HAL_DIR=hal/$(MCU_SERIES)
+CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
+MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
+HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 FATFS_DIR=lib/oofatfs
@@ -44,7 +45,7 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/lib/cmsis/inc
 INC += -I$(CMSIS_DIR)/
-INC += -I$(HAL_DIR)/inc
+INC += -I$(TOP)/$(HAL_DIR)/Inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 
@@ -244,7 +245,7 @@ SRC_O = \
 	startup_stm32.o \
 	gchelper.o \
 
-SRC_HAL = $(addprefix $(HAL_DIR)/src/stm32$(MCU_SERIES)xx_,\
+SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
@@ -449,7 +450,7 @@ GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
 GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
 GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
-CMSIS_MCU_HDR = cmsis/$(CMSIS_MCU_LOWER).h
+CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
