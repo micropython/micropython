@@ -38,4 +38,3 @@ typedef struct {
 } digitalio_digitalinout_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-

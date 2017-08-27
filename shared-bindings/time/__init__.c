@@ -133,13 +133,13 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
 };
 #endif
 
-STATIC const mp_map_elem_t time_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_time) },
+STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_monotonic), (mp_obj_t)&time_monotonic_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&time_sleep_obj },
+    { MP_ROM_QSTR(MP_QSTR_monotonic), MP_ROM_PTR(&time_monotonic_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&time_sleep_obj) },
     #if MICROPY_PY_COLLECTIONS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_struct_time), (mp_obj_t)&struct_time_type_obj },
+    { MP_ROM_QSTR(MP_QSTR_struct_time), MP_ROM_PTR(&struct_time_type_obj) },
     #endif
 };
 

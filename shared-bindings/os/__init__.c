@@ -204,30 +204,30 @@ STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_os) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_os) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&os_chdir_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&os_getcwd_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&os_mkdir_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rename), MP_ROM_PTR(&os_rename_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&os_rmdir_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_stat_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&os_statvfs_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&os_remove_obj) }, // unlink aliases to remove
+    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&os_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&os_getcwd_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&os_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&os_rename_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&os_rmdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&os_statvfs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&os_remove_obj) }, // unlink aliases to remove
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sync), MP_ROM_PTR(&os_sync_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&os_sync_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
 
 //| .. data:: sep
 //|
-//|   Separator used to dileneate path components such as folder and file names.
+//|   Separator used to delineate path components such as folder and file names.
 //|
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_OBJ_NEW_QSTR(MP_QSTR__slash_) },
+    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

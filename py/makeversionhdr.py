@@ -87,7 +87,7 @@ def make_version_header(filename):
 #define MICROPY_VERSION_MICRO (%s)
 #define MICROPY_VERSION_STRING "%s"
 """ % (git_tag, git_hash, datetime.date.today().strftime("%Y-%m-%d"),
-    ver[0], ver[1], ver[2], version_string)
+    ver[0].replace('v', ''), ver[1], ver[2], version_string)
 
     # Check if the file contents changed from last time
     write_file = True

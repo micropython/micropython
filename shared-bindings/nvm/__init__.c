@@ -49,7 +49,7 @@
 //|
 //|     ByteArray
 STATIC const mp_rom_map_elem_t nvm_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_nvm) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_nvm) },
     { MP_ROM_QSTR(MP_QSTR_ByteArray),   MP_ROM_PTR(&nvm_bytearray_type) },
 };
 
