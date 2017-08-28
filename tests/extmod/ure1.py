@@ -80,3 +80,6 @@ try:
     re.compile("*")
 except:
     print("Caught invalid regex")
+
+# bytes objects
+m = re.match(rb'a+?', b'ab');  print(m.group(0))

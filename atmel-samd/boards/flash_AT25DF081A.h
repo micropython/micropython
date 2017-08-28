@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H
 
 // Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. Its on the SAMD21
 // Xplained board.
@@ -49,4 +49,4 @@
 
 #define SPI_FLASH_SECTOR_PROTECTION
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_AT25DF081A_H

@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -48,4 +48,4 @@ mp_obj_t common_hal_os_statvfs(const char* path);
 // Returns true if data was correctly sourced from a true random number generator.
 bool common_hal_os_urandom(uint8_t* buffer, mp_uint_t length);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_OS___INIT___H

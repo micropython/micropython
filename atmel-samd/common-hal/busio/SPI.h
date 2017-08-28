@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -42,4 +42,4 @@ typedef struct {
     uint32_t current_baudrate;
 } busio_spi_obj_t;
 
-#endif // __MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H__
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H

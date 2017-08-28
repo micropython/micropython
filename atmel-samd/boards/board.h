@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,8 +26,8 @@
 
 // This file defines board specific functions.
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
 
 #include <stdbool.h>
 
@@ -42,4 +42,4 @@ bool board_requests_safe_mode(void);
 // Reset the state of off MCU components such as neopixels.
 void reset_board(void);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H

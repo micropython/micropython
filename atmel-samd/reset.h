@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_RESET_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_RESET_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
 
 void reset_to_bootloader(void);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_RESET_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_RESET_H

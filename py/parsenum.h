@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_PARSENUM_H__
-#define __MICROPY_INCLUDED_PY_PARSENUM_H__
+#ifndef MICROPY_INCLUDED_PY_PARSENUM_H
+#define MICROPY_INCLUDED_PY_PARSENUM_H
 
 #include "py/mpconfig.h"
 #include "py/lexer.h"
@@ -34,4 +34,4 @@
 mp_obj_t mp_parse_num_integer(const char *restrict str, size_t len, int base, mp_lexer_t *lex);
 mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex);
 
-#endif // __MICROPY_INCLUDED_PY_PARSENUM_H__
+#endif // MICROPY_INCLUDED_PY_PARSENUM_H

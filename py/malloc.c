@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -32,7 +32,7 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
@@ -46,7 +46,7 @@
 #include "py/gc.h"
 
 // We redirect standard alloc functions to GC heap - just for the rest of
-// this module. In the rest of micropython source, system malloc can be
+// this module. In the rest of MicroPython source, system malloc can be
 // freely accessed - for interfacing with system and 3rd-party libs for
 // example. On the other hand, some (e.g. bare-metal) ports may use GC
 // heap as system heap, so, to avoid warnings, we do undef's first.

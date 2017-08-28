@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_ASMX86_H__
-#define __MICROPY_INCLUDED_PY_ASMX86_H__
+#ifndef MICROPY_INCLUDED_PY_ASMX86_H
+#define MICROPY_INCLUDED_PY_ASMX86_H
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
@@ -195,4 +195,4 @@ void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
 
 #endif // GENERIC_ASM_API
 
-#endif // __MICROPY_INCLUDED_PY_ASMX86_H__
+#endif // MICROPY_INCLUDED_PY_ASMX86_H

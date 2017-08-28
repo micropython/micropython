@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-module/bitbangio/types.h"
@@ -39,4 +39,4 @@ extern bool shared_module_bitbangio_onewire_reset(bitbangio_onewire_obj_t* self)
 extern bool shared_module_bitbangio_onewire_read_bit(bitbangio_onewire_obj_t* self);
 extern void shared_module_bitbangio_onewire_write_bit(bitbangio_onewire_obj_t* self, bool bit);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_ONEWIRE_H

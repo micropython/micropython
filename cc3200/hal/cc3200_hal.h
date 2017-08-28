@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef CC3200_LAUNCHXL_HAL_CC3200_HAL_H_
-#define CC3200_LAUNCHXL_HAL_CC3200_HAL_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -69,5 +66,3 @@ extern void mp_hal_set_interrupt_char (int c);
 
 #define mp_hal_delay_us(usec) UtilsDelay(UTILS_DELAY_US_TO_COUNT(usec))
 #define mp_hal_ticks_cpu() (SysTickPeriodGet() - SysTickValueGet())
-
-#endif /* CC3200_LAUNCHXL_HAL_CC3200_HAL_H_ */

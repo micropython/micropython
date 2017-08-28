@@ -34,7 +34,7 @@ ifeq ($(BTARGET), application)
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 # include MicroPython make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 include application.mk
 else
 ifeq ($(BTARGET), bootloader)
@@ -45,7 +45,7 @@ endif
 endif
 
 # always include MicroPython make rules
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk
 
 erase:
 	cc3200tool -p $(PORT) format_flash --size $(FLASH_SIZE_$(BOARD))

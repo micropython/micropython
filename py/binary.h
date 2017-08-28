@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,14 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_BINARY_H__
-#define __MICROPY_INCLUDED_PY_BINARY_H__
+#ifndef MICROPY_INCLUDED_PY_BINARY_H
+#define MICROPY_INCLUDED_PY_BINARY_H
 
 #include "py/obj.h"
 
 // Use special typecode to differentiate repr() of bytearray vs array.array('B')
-// (underlyingly they're same).
-#define BYTEARRAY_TYPECODE 0
+// (underlyingly they're same).  Can't use 0 here because that's used to detect
+// type-specification errors due to end-of-string.
+#define BYTEARRAY_TYPECODE 1
 
 size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign);
 mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index);
@@ -41,4 +42,4 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, const byte *src);
 void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *dest, mp_uint_t val);
 
-#endif // __MICROPY_INCLUDED_PY_BINARY_H__
+#endif // MICROPY_INCLUDED_PY_BINARY_H

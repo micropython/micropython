@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -281,7 +281,7 @@ STATIC void pyb_i2c_readmem_into (mp_arg_val_t *args, vstr_t *vstr) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* MicroPython bindings                                                      */
 /******************************************************************************/
 STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_i2c_obj_t *self = self_in;
@@ -508,17 +508,17 @@ STATIC mp_obj_t pyb_i2c_writeto_mem(mp_uint_t n_args, const mp_obj_t *pos_args, 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_writeto_mem_obj, 1, pyb_i2c_writeto_mem);
 
-STATIC const mp_map_elem_t pyb_i2c_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_i2c_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&pyb_i2c_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),              (mp_obj_t)&pyb_i2c_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan),                (mp_obj_t)&pyb_i2c_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom),            (mp_obj_t)&pyb_i2c_readfrom_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_into),       (mp_obj_t)&pyb_i2c_readfrom_into_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto),             (mp_obj_t)&pyb_i2c_writeto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem),        (mp_obj_t)&pyb_i2c_readfrom_mem_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readfrom_mem_into),   (mp_obj_t)&pyb_i2c_readfrom_mem_into_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeto_mem),         (mp_obj_t)&pyb_i2c_writeto_mem_obj },
+    { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&pyb_i2c_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&pyb_i2c_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&pyb_i2c_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readfrom),            MP_ROM_PTR(&pyb_i2c_readfrom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readfrom_into),       MP_ROM_PTR(&pyb_i2c_readfrom_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeto),             MP_ROM_PTR(&pyb_i2c_writeto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readfrom_mem),        MP_ROM_PTR(&pyb_i2c_readfrom_mem_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readfrom_mem_into),   MP_ROM_PTR(&pyb_i2c_readfrom_mem_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeto_mem),         MP_ROM_PTR(&pyb_i2c_writeto_mem_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_i2c_locals_dict, pyb_i2c_locals_dict_table);

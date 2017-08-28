@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/digitalio/DigitalInOut.h"
@@ -52,4 +52,4 @@ enum digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(dig
 void common_hal_digitalio_digitalinout_set_pull(digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull);
 enum digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(digitalio_digitalinout_obj_t* self);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H

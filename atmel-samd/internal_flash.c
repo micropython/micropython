@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -271,10 +271,10 @@ STATIC mp_obj_t internal_flash_obj_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(internal_flash_obj_ioctl_obj, internal_flash_obj_ioctl);
 
-STATIC const mp_map_elem_t internal_flash_obj_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readblocks), (mp_obj_t)&internal_flash_obj_readblocks_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_writeblocks), (mp_obj_t)&internal_flash_obj_writeblocks_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ioctl), (mp_obj_t)&internal_flash_obj_ioctl_obj },
+STATIC const mp_rom_map_elem_t internal_flash_obj_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&internal_flash_obj_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&internal_flash_obj_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&internal_flash_obj_ioctl_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(internal_flash_obj_locals_dict, internal_flash_obj_locals_dict_table);

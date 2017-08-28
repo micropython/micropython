@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
-#define __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
+#ifndef MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H
+#define MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H
 
 #include "py/mpconfig.h"
 
@@ -47,4 +47,4 @@ typedef struct _pyb_file_obj_t {
 
 #endif  // MICROPY_VFS && MICROPY_VFS_FAT
 
-#endif  // __MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H__
+#endif  // MICROPY_INCLUDED_EXTMOD_VFS_FAT_FILE_H

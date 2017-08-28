@@ -1,5 +1,5 @@
-#ifndef __MICROPY_INCLUDED_ZEPHYR_MODMACHINE_H__
-#define __MICROPY_INCLUDED_ZEPHYR_MODMACHINE_H__
+#ifndef MICROPY_INCLUDED_ZEPHYR_MODMACHINE_H
+#define MICROPY_INCLUDED_ZEPHYR_MODMACHINE_H
 
 #include "py/obj.h"
 
@@ -13,4 +13,4 @@ typedef struct _machine_pin_obj_t {
     uint32_t pin;
 } machine_pin_obj_t;
 
-#endif // __MICROPY_INCLUDED_ZEPHYR_MODMACHINE_H__
+#endif // MICROPY_INCLUDED_ZEPHYR_MODMACHINE_H

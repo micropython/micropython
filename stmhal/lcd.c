@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -220,7 +220,7 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
         lcd->pin_a0 = &pyb_pin_Y5;
         lcd->pin_bl = &pyb_pin_Y12;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LCD bus '%s' does not exist", lcd_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LCD(%s) doesn't exist", lcd_id));
     }
 
     // init the SPI bus

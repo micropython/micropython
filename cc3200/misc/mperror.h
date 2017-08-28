@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MPERROR_H_
-#define MPERROR_H_
+#ifndef MICROPY_INCLUDED_CC3200_MISC_MPERROR_H
+#define MICROPY_INCLUDED_CC3200_MISC_MPERROR_H
 
 extern void NORETURN __fatal_error(const char *msg);
 
@@ -39,4 +38,4 @@ void mperror_heartbeat_signal (void);
 void mperror_enable_heartbeat (bool enable);
 bool mperror_is_heartbeat_enabled (void);
 
-#endif // MPERROR_H_
+#endif // MICROPY_INCLUDED_CC3200_MISC_MPERROR_H

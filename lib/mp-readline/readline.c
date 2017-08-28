@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -188,17 +188,17 @@ int readline_process_char(int c) {
         } else if (c == 9) {
             // tab magic
             const char *compl_str;
-            mp_uint_t compl_len = mp_repl_autocomplete(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len, &mp_plat_print, &compl_str);
+            size_t compl_len = mp_repl_autocomplete(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len, &mp_plat_print, &compl_str);
             if (compl_len == 0) {
                 // no match
-            } else if (compl_len == (mp_uint_t)(-1)) {
+            } else if (compl_len == (size_t)(-1)) {
                 // many matches
                 mp_hal_stdout_tx_str(rl.prompt);
                 mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
                 redraw_from_cursor = true;
             } else {
                 // one match
-                for (mp_uint_t i = 0; i < compl_len; ++i) {
+                for (size_t i = 0; i < compl_len; ++i) {
                     vstr_ins_byte(rl.line, rl.cursor_pos + i, *compl_str++);
                 }
                 // set redraw parameters

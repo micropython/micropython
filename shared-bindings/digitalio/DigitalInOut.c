@@ -335,9 +335,9 @@ const mp_obj_property_t digitalio_digitalio_pull_obj = {
 
 STATIC const mp_rom_map_elem_t digitalio_digitalinout_locals_dict_table[] = {
     // instance methods
-    { MP_ROM_QSTR(MP_QSTR_deinit),                 MP_ROM_PTR(&digitalio_digitalinout_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),               MP_ROM_PTR(&digitalio_digitalinout_obj___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),             MP_ROM_PTR(&digitalio_digitalinout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),          MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),           MP_ROM_PTR(&digitalio_digitalinout_obj___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_switch_to_output),   MP_ROM_PTR(&digitalio_digitalinout_switch_to_output_obj) },
     { MP_ROM_QSTR(MP_QSTR_switch_to_input),    MP_ROM_PTR(&digitalio_digitalinout_switch_to_input_obj) },
 

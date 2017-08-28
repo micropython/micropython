@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_BC0_H__
-#define __MICROPY_INCLUDED_PY_BC0_H__
+#ifndef MICROPY_INCLUDED_PY_BC0_H
+#define MICROPY_INCLUDED_PY_BC0_H
 
-// Micro Python byte-codes.
+// MicroPython byte-codes.
 // The comment at the end of the line (if it exists) tells the arguments to the byte-code.
 
 #define MP_BC_LOAD_CONST_FALSE   (0x10)
@@ -116,4 +116,4 @@
 #define MP_BC_UNARY_OP_MULTI             (0xd0) // + op(7)
 #define MP_BC_BINARY_OP_MULTI            (0xd7) // + op(36)
 
-#endif // __MICROPY_INCLUDED_PY_BC0_H__
+#endif // MICROPY_INCLUDED_PY_BC0_H

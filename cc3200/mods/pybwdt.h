@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBWDT_H_
-#define PYBWDT_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBWDT_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBWDT_H
 
 #include "py/obj.h"
 
@@ -36,4 +35,4 @@ void pybwdt_srv_alive (void);
 void pybwdt_srv_sleeping (bool state);
 void pybwdt_sl_alive (void);
 
-#endif /* PYBWDT_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBWDT_H

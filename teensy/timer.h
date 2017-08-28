@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_TEENSY_TIMER_H
+#define MICROPY_INCLUDED_TEENSY_TIMER_H
 
 extern const mp_obj_type_t pyb_timer_type;
 
 void timer_init0(void);
 void timer_deinit(void);
+
+#endif // MICROPY_INCLUDED_TEENSY_TIMER_H

@@ -8,7 +8,7 @@
 # To build a "minimal" configuration, use "make-minimal" wrapper.
 
 BOARD ?= qemu_x86
-CONF_FILE = prj.conf
+CONF_FILE = prj_$(BOARD)_merged.conf
 OUTDIR_PREFIX = $(BOARD)
 
 # Default heap size is 16KB, which is on conservative side, to let
@@ -17,15 +17,20 @@ OUTDIR_PREFIX = $(BOARD)
 MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
 
+# Default target
+all:
+
 # Zephyr (generated) config files - must be defined before include below
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
+ifneq ($(MAKECMDGOALS), clean)
 include $(Z_EXPORTS)
+endif
 
 include ../py/mkenv.mk
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC += -I.
-INC += -I..
+INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(ZEPHYR_BASE)/net/ip
 INC += -I$(ZEPHYR_BASE)/net/ip/contiki
@@ -54,14 +59,14 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
 	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk
 
+# We use single target here ($(Z_EXPORTS)) for simplicity, but actually
+# number of things get generated here: 'initconfig' generates C header for
+# Kconfig configuration, 'outputexports' generates make environment with CC,
+# etc., and 'lib' generates other headers which may be included by zephyr.h,
+# e.g. DTS-related.
 $(Z_EXPORTS): $(CONF_FILE)
-	# We use single target here ($(Z_EXPORTS)) for simplicity, but actually
-	# number of things get generated here: 'initconfig' generates C header for
-	# Kconfig configuration, 'outputexports' generates make environment with CC,
-	# etc., and 'lib' generates other headers which may be included by zephyr.h,
-	# e.g. DTS-related.
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports lib
 
 GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
@@ -84,15 +89,17 @@ build/genhdr/qstr.i.last: | $(Z_EXPORTS)
 # If we recreate libmicropython, also cause zephyr.bin relink
 LIBMICROPYTHON_EXTRA_CMD = -$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 
-# Clean Zephyr things too
-clean: z_clean
+# MicroPython's global clean cleans everything, fast
+CLEAN_EXTRA = outdir
 
+# Clean Zephyr things in Zephyr way
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
 
-.PHONY: prj.conf
-prj.conf: prj_base.conf
+# This rule is for prj_$(BOARD)_merged.conf, not $(CONF_FILE), which
+# can be overriden
+prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
-	cd ../tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"
+	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"

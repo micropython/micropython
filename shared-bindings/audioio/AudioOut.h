@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
 
 #include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -45,4 +45,4 @@ bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self);
 uint32_t common_hal_audioio_audioout_get_frequency(audioio_audioout_obj_t* self);
 void common_hal_audioio_audioout_set_frequency(audioio_audioout_obj_t* self, uint32_t frequency);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H

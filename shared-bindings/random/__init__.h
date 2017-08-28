@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H
 
 // This depends on shared_module because nearly all functionality is port
 // agnostic. The random module only depends on the common_hal_os_urandom or
@@ -37,4 +37,4 @@ mp_int_t shared_modules_random_randrange(mp_int_t start, mp_int_t stop, mp_int_t
 mp_float_t shared_modules_random_random(void);
 mp_float_t shared_modules_random_uniform(mp_float_t a, mp_float_t b);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef TELNET_H_
-#define TELNET_H_
+#ifndef MICROPY_INCLUDED_CC3200_TELNET_TELNET_H
+#define MICROPY_INCLUDED_CC3200_TELNET_TELNET_H
 
 /******************************************************************************
  DECLARE EXPORTED FUNCTIONS
@@ -39,4 +38,4 @@ extern void telnet_enable (void);
 extern void telnet_disable (void);
 extern void telnet_reset (void);
 
-#endif /* TELNET_H_ */
+#endif // MICROPY_INCLUDED_CC3200_TELNET_TELNET_H

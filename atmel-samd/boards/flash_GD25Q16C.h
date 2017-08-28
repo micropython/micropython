@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H
 
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/product/download/410.html?locale=en_US
@@ -52,4 +52,4 @@
 #define SPI_FLASH_JEDEC_CAPACITY     0x15
 
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_GD25Q16C_H

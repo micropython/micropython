@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/busio/UART.h"
@@ -57,4 +57,4 @@ extern size_t common_hal_busio_uart_write(busio_uart_obj_t *self,
 extern uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self);
 extern bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_UART_H

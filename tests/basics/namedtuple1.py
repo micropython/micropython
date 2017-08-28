@@ -24,6 +24,9 @@ for t in T(1, 2), T(bar=1, foo=2):
 
     print(isinstance(t, tuple))
 
+# Create using positional and keyword args
+print(T(3, bar=4))
+
 try:
     t[0] = 200
 except TypeError:

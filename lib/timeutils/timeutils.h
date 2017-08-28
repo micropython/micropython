@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_LIB_TIMEUTILS_H__
-#define __MICROPY_INCLUDED_LIB_TIMEUTILS_H__
+#ifndef MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
+#define MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
 
 typedef struct _timeutils_struct_time_t {
     uint16_t    tm_year;    // i.e. 2014
@@ -52,4 +51,4 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
 mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds);
 
-#endif // __MICROPY_INCLUDED_LIB_TIMEUTILS_H__
+#endif // MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H

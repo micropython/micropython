@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H
 
 // Settings for the Cypress (was Spansion) S25FL216K 2MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/197346/download
@@ -51,4 +51,4 @@
 #define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
 #define SPI_FLASH_JEDEC_CAPACITY     0x15
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H

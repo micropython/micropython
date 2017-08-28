@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2015-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -275,8 +275,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig)
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-            "either pos or kw args are allowed"));
+        mp_raise_TypeError("either pos or kw args are allowed");
     }
 
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -303,8 +302,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
-                            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                                "invalid buffer length"));
+                            mp_raise_ValueError("invalid buffer length");
                         }
                         wifi_set_macaddr(self->if_id, bufinfo.buf);
                         break;
@@ -374,8 +372,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     // Get config
 
     if (n_args != 2) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError,
-            "can query only one param"));
+        mp_raise_TypeError("can query only one param");
     }
 
     mp_obj_t val;
@@ -422,20 +419,19 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     return val;
 
 unknown:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-        "unknown config param"));
+    mp_raise_ValueError("unknown config param");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
-STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_active), (mp_obj_t)&esp_active_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_config), (mp_obj_t)&esp_config_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
+STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
@@ -443,7 +439,7 @@ STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 const mp_obj_type_t wlan_if_type = {
     { &mp_type_type },
     .name = MP_QSTR_WLAN,
-    .locals_dict = (mp_obj_t)&wlan_if_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&wlan_if_locals_dict,
 };
 
 STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
@@ -456,47 +452,31 @@ STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
 
-STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_wlan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
+STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STA_IF),
-        MP_OBJ_NEW_SMALL_INT(STATION_IF)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_IF),
-        MP_OBJ_NEW_SMALL_INT(SOFTAP_IF)},
+    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(STATION_IF)},
+    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(SOFTAP_IF)},
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_IDLE),
-        MP_OBJ_NEW_SMALL_INT(STATION_IDLE)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECTING),
-        MP_OBJ_NEW_SMALL_INT(STATION_CONNECTING)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_WRONG_PASSWORD),
-        MP_OBJ_NEW_SMALL_INT(STATION_WRONG_PASSWORD)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_NO_AP_FOUND),
-        MP_OBJ_NEW_SMALL_INT(STATION_NO_AP_FOUND)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_CONNECT_FAIL),
-        MP_OBJ_NEW_SMALL_INT(STATION_CONNECT_FAIL)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STAT_GOT_IP),
-        MP_OBJ_NEW_SMALL_INT(STATION_GOT_IP)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(STATION_IDLE)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(STATION_CONNECTING)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(STATION_WRONG_PASSWORD)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(STATION_NO_AP_FOUND)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(STATION_CONNECT_FAIL)},
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(STATION_GOT_IP)},
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
-        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
-        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11G) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
-        MP_OBJ_NEW_SMALL_INT(PHY_MODE_11N) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(PHY_MODE_11B) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(PHY_MODE_11G) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(PHY_MODE_11N) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
-        MP_OBJ_NEW_SMALL_INT(AUTH_OPEN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
-        MP_OBJ_NEW_SMALL_INT(AUTH_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
-        MP_OBJ_NEW_SMALL_INT(AUTH_WPA_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(AUTH_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(AUTH_WPA_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(AUTH_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(AUTH_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(AUTH_WPA_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(AUTH_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(AUTH_WPA_WPA2_PSK) },
 #endif
 };
 

@@ -4,6 +4,8 @@
 .. module:: cmath
    :synopsis: mathematical functions for complex numbers
 
+|see_cpython_module| :mod:`python:cmath`.
+
 The ``cmath`` module provides some basic mathematical functions for
 working with complex numbers.
 

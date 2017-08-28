@@ -118,11 +118,11 @@ mp_obj_t storage_remount(mp_obj_t mount_path, mp_obj_t readonly) {
 MP_DEFINE_CONST_FUN_OBJ_2(storage_remount_obj, storage_remount);
 
 STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_storage) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_storage) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mount), MP_ROM_PTR(&storage_mount_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_umount), MP_ROM_PTR(&storage_umount_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_remount), MP_ROM_PTR(&storage_remount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&storage_mount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&storage_umount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remount), MP_ROM_PTR(&storage_remount_obj) },
 
     //| .. class:: VfsFat(block_device)
     //|
@@ -130,7 +130,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     //|
     //|   :param block_device: Block device the the filesystem lives on
     //|
-    { MP_OBJ_NEW_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(storage_module_globals, storage_module_globals_table);

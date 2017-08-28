@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -119,7 +119,7 @@ mp_uint_t get_prescaler_shift(mp_int_t prescaler) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* MicroPython bindings                                                       */
 
 STATIC const mp_obj_type_t pyb_timer_channel_type;
 
@@ -255,7 +255,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
         // set prescaler and period from frequency
 
         if (vals[0].u_int == 0) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "can't have 0 frequency"));
+            mp_raise_ValueError("can't have 0 frequency");
         }
 
         uint32_t period = MAX(1, F_BUS / vals[0].u_int);
@@ -277,7 +277,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, uint n_args, const 
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "period must be between 0 and 65535, not %d", init->Period));
         }
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "must specify either freq, or prescaler and period"));
+        mp_raise_TypeError("must specify either freq, or prescaler and period");
     }
 
     init->CounterMode = vals[3].u_int;
@@ -498,7 +498,7 @@ STATIC mp_obj_t pyb_timer_channel(mp_uint_t n_args, const mp_obj_t *args, mp_map
     mp_obj_t pin_obj = vals[1].u_obj;
     if (pin_obj != mp_const_none) {
         if (!MP_OBJ_IS_TYPE(pin_obj, &pin_type)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "pin argument needs to be be a Pin type"));
+            mp_raise_ValueError("pin argument needs to be be a Pin type");
         }
         const pin_obj_t *pin = pin_obj;
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_FTM, self->tim_id);
@@ -668,7 +668,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         // start timer, so that it interrupts on overflow
         HAL_FTM_Base_Start_IT(&self->ftm);
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+        mp_raise_ValueError("callback must be None or a callable object");
     }
     return mp_const_none;
 }
@@ -708,32 +708,32 @@ mp_obj_t pyb_timer_reg(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_reg_obj, 1, 3, pyb_timer_reg);
 #endif // MICROPY_TIMER_REG
 
-STATIC const mp_map_elem_t pyb_timer_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_timer_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init), (mp_obj_t)&pyb_timer_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit), (mp_obj_t)&pyb_timer_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_channel), (mp_obj_t)&pyb_timer_channel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_counter), (mp_obj_t)&pyb_timer_counter_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_prescaler), (mp_obj_t)&pyb_timer_prescaler_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_period), (mp_obj_t)&pyb_timer_period_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_callback_obj },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_timer_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&pyb_timer_channel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_counter), MP_ROM_PTR(&pyb_timer_counter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_prescaler), MP_ROM_PTR(&pyb_timer_prescaler_obj) },
+    { MP_ROM_QSTR(MP_QSTR_period), MP_ROM_PTR(&pyb_timer_period_obj) },
+    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_callback_obj) },
 #if MICROPY_TIMER_REG
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reg), (mp_obj_t)&pyb_timer_reg_obj },
+    { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_reg_obj) },
 #endif
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UP),              MP_OBJ_NEW_SMALL_INT(FTM_COUNTERMODE_UP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CENTER),          MP_OBJ_NEW_SMALL_INT(FTM_COUNTERMODE_CENTER) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),             MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_PWM_NORMAL) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PWM_INVERTED),    MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_PWM_INVERTED) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OC_TIMING),       MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_OC_TIMING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OC_ACTIVE),       MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_OC_ACTIVE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OC_INACTIVE),     MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_OC_INACTIVE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_OC_TOGGLE),       MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_OC_TOGGLE) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IC),              MP_OBJ_NEW_SMALL_INT(CHANNEL_MODE_IC) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HIGH),            MP_OBJ_NEW_SMALL_INT(FTM_OCPOLARITY_HIGH) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LOW),             MP_OBJ_NEW_SMALL_INT(FTM_OCPOLARITY_LOW) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RISING),          MP_OBJ_NEW_SMALL_INT(FTM_ICPOLARITY_RISING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FALLING),         MP_OBJ_NEW_SMALL_INT(FTM_ICPOLARITY_FALLING) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BOTH),            MP_OBJ_NEW_SMALL_INT(FTM_ICPOLARITY_BOTH) },
+    { MP_ROM_QSTR(MP_QSTR_UP),              MP_ROM_INT(FTM_COUNTERMODE_UP) },
+    { MP_ROM_QSTR(MP_QSTR_CENTER),          MP_ROM_INT(FTM_COUNTERMODE_CENTER) },
+    { MP_ROM_QSTR(MP_QSTR_PWM),             MP_ROM_INT(CHANNEL_MODE_PWM_NORMAL) },
+    { MP_ROM_QSTR(MP_QSTR_PWM_INVERTED),    MP_ROM_INT(CHANNEL_MODE_PWM_INVERTED) },
+    { MP_ROM_QSTR(MP_QSTR_OC_TIMING),       MP_ROM_INT(CHANNEL_MODE_OC_TIMING) },
+    { MP_ROM_QSTR(MP_QSTR_OC_ACTIVE),       MP_ROM_INT(CHANNEL_MODE_OC_ACTIVE) },
+    { MP_ROM_QSTR(MP_QSTR_OC_INACTIVE),     MP_ROM_INT(CHANNEL_MODE_OC_INACTIVE) },
+    { MP_ROM_QSTR(MP_QSTR_OC_TOGGLE),       MP_ROM_INT(CHANNEL_MODE_OC_TOGGLE) },
+    { MP_ROM_QSTR(MP_QSTR_IC),              MP_ROM_INT(CHANNEL_MODE_IC) },
+    { MP_ROM_QSTR(MP_QSTR_HIGH),            MP_ROM_INT(FTM_OCPOLARITY_HIGH) },
+    { MP_ROM_QSTR(MP_QSTR_LOW),             MP_ROM_INT(FTM_OCPOLARITY_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_RISING),          MP_ROM_INT(FTM_ICPOLARITY_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_FALLING),         MP_ROM_INT(FTM_ICPOLARITY_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_BOTH),            MP_ROM_INT(FTM_ICPOLARITY_BOTH) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_locals_dict, pyb_timer_locals_dict_table);
 
@@ -846,7 +846,7 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) 
                 break;
         }
     } else {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "callback must be None or a callable object"));
+        mp_raise_ValueError("callback must be None or a callable object");
     }
     return mp_const_none;
 }
@@ -867,15 +867,15 @@ mp_obj_t pyb_timer_channel_reg(uint n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_reg_obj, 1, 3, pyb_timer_channel_reg);
 #endif
 
-STATIC const mp_map_elem_t pyb_timer_channel_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pyb_timer_channel_locals_dict_table[] = {
     // instance methods
-    { MP_OBJ_NEW_QSTR(MP_QSTR_callback), (mp_obj_t)&pyb_timer_channel_callback_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pulse_width_percent), (mp_obj_t)&pyb_timer_channel_pulse_width_percent_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_capture), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_compare), (mp_obj_t)&pyb_timer_channel_capture_compare_obj },
+    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&pyb_timer_channel_callback_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pulse_width), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pulse_width_percent), MP_ROM_PTR(&pyb_timer_channel_pulse_width_percent_obj) },
+    { MP_ROM_QSTR(MP_QSTR_capture), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
+    { MP_ROM_QSTR(MP_QSTR_compare), MP_ROM_PTR(&pyb_timer_channel_capture_compare_obj) },
 #if MICROPY_TIMER_REG
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reg), (mp_obj_t)&pyb_timer_channel_reg_obj },
+    { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pyb_timer_channel_reg_obj) },
 #endif
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_timer_channel_locals_dict, pyb_timer_channel_locals_dict_table);

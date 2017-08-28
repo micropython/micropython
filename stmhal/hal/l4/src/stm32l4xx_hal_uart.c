@@ -2104,7 +2104,7 @@ static HAL_StatusTypeDef UART_Receive_IT(UART_HandleTypeDef *huart)
 
 /**
   * @brief Calculate register BRR value without using uint64.
-  * @note   This function is added by the micropython project.
+  * @note   This function is added by the MicroPython project.
   * @param  fck: Input clock frequency to the uart block in Hz.
   * @param  baud: baud rate should be one of {300, 600, 1200, 2400, 4800, 9600, 19200, 57600, 115200}.
   * @retval BRR value

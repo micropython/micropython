@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -35,4 +35,4 @@ void common_hal_storage_umount_path(const char* path);
 void common_hal_storage_umount_object(mp_obj_t vfs_obj);
 void common_hal_storage_remount(const char* path, bool readonly);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H

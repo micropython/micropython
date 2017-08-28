@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * Original template from ST Cube library.  See below for header.
  *
@@ -67,12 +67,10 @@
 
 #include <stdio.h>
 
-#include "stm32_it.h"
-#include STM32_HAL_H
-
 #include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "stm32_it.h"
 #include "pendsv.h"
 #include "irq.h"
 #include "pybthread.h"

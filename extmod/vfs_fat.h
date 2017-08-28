@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_EXTMOD_VFS_FAT_H
+#define MICROPY_INCLUDED_EXTMOD_VFS_FAT_H
 
-#ifndef __MICROPY_INCLUDED_EXTMOD_VFS_FAT_H__
-#define __MICROPY_INCLUDED_EXTMOD_VFS_FAT_H__
 #include "py/lexer.h"
 #include "py/obj.h"
 #include "lib/oofatfs/ff.h"
@@ -67,4 +67,4 @@ MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(fsuser_umount_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(fsuser_mkfs_obj);
 
-#endif  // __MICROPY_INCLUDED_EXTMOD_VFS_FAT_H__
+#endif  // MICROPY_INCLUDED_EXTMOD_VFS_FAT_H

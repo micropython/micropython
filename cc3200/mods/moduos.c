@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -78,7 +78,7 @@ void osmount_unmount_all (void) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 //
 
 STATIC const qstr os_uname_info_fields[] = {
@@ -148,32 +148,32 @@ STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_dupterm_obj, 0, 1, os_dupterm);
 
-STATIC const mp_map_elem_t os_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_uos) },
+STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_uos) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uname),           (mp_obj_t)&os_uname_obj },
+    { MP_ROM_QSTR(MP_QSTR_uname),           MP_ROM_PTR(&os_uname_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_chdir),           (mp_obj_t)&mp_vfs_chdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getcwd),          (mp_obj_t)&mp_vfs_getcwd_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ilistdir),        (mp_obj_t)&mp_vfs_ilistdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_listdir),         (mp_obj_t)&mp_vfs_listdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mkdir),           (mp_obj_t)&mp_vfs_mkdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rename),          (mp_obj_t)&mp_vfs_rename_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_remove),          (mp_obj_t)&mp_vfs_remove_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_rmdir),           (mp_obj_t)&mp_vfs_rmdir_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_stat),            (mp_obj_t)&mp_vfs_stat_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_unlink),          (mp_obj_t)&mp_vfs_remove_obj },     // unlink aliases to remove
+    { MP_ROM_QSTR(MP_QSTR_chdir),           MP_ROM_PTR(&mp_vfs_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd),          MP_ROM_PTR(&mp_vfs_getcwd_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir),        MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir),         MP_ROM_PTR(&mp_vfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mkdir),           MP_ROM_PTR(&mp_vfs_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rename),          MP_ROM_PTR(&mp_vfs_rename_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove),          MP_ROM_PTR(&mp_vfs_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rmdir),           MP_ROM_PTR(&mp_vfs_rmdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat),            MP_ROM_PTR(&mp_vfs_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlink),          MP_ROM_PTR(&mp_vfs_remove_obj) },     // unlink aliases to remove
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sync),            (mp_obj_t)&os_sync_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_urandom),         (mp_obj_t)&os_urandom_obj },
+    { MP_ROM_QSTR(MP_QSTR_sync),            MP_ROM_PTR(&os_sync_obj) },
+    { MP_ROM_QSTR(MP_QSTR_urandom),         MP_ROM_PTR(&os_urandom_obj) },
 
     // MicroPython additions
     // removed: mkfs
     // renamed: unmount -> umount
-    { MP_OBJ_NEW_QSTR(MP_QSTR_mount),           (mp_obj_t)&mp_vfs_mount_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_umount),          (mp_obj_t)&mp_vfs_umount_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_VfsFat),          (mp_obj_t)&mp_fat_vfs_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_dupterm),         (mp_obj_t)&os_dupterm_obj },
+    { MP_ROM_QSTR(MP_QSTR_mount),           MP_ROM_PTR(&mp_vfs_mount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_umount),          MP_ROM_PTR(&mp_vfs_umount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_VfsFat),          MP_ROM_PTR(&mp_fat_vfs_type) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm),         MP_ROM_PTR(&os_dupterm_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

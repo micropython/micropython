@@ -1,8 +1,8 @@
 """
 categories: Core,Classes
 description: When inheriting from multiple classes super() only calls one class
-cause: Depth first non-exhaustive method resolution order
-workaround: Unknown
+cause: See :ref:`cpydiff_core_class_mro`
+workaround: See :ref:`cpydiff_core_class_mro`
 """
 class A:
     def __init__(self):

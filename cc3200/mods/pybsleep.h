@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBSLEEP_H_
-#define PYBSLEEP_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBSLEEP_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBSLEEP_H
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -70,4 +69,4 @@ void pyb_sleep_deepsleep (void);
 pybsleep_reset_cause_t pyb_sleep_get_reset_cause (void);
 pybsleep_wake_reason_t pyb_sleep_get_wake_reason (void);
 
-#endif /* PYBSLEEP_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBSLEEP_H

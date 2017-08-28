@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_MODNETWORK_H
+#define MICROPY_INCLUDED_STMHAL_MODNETWORK_H
 
 #define MOD_NETWORK_IPADDR_BUF_SIZE (4)
 
@@ -77,3 +79,5 @@ extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 void mod_network_init(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
+
+#endif // MICROPY_INCLUDED_STMHAL_MODNETWORK_H

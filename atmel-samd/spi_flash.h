@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H
 
 #include <stdbool.h>
 
@@ -57,4 +57,4 @@ extern const struct _mp_obj_type_t spi_flash_type;
 struct _fs_user_mount_t;
 void flash_init_vfs(struct _fs_user_mount_t *vfs);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H

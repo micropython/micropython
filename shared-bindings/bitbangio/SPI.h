@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H
 
 #include "py/obj.h"
 
@@ -55,4 +55,4 @@ extern bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const u
 // Reads in len bytes while outputting zeroes.
 extern bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H

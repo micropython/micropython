@@ -32,25 +32,25 @@ Constructors
 
     Construct a FrameBuffer object.  The parameters are:
 
-        - `buffer` is an object with a buffer protocol which must be large
+        - *buffer* is an object with a buffer protocol which must be large
           enough to contain every pixel defined by the width, height and
           format of the FrameBuffer.
-        - `width` is the width of the FrameBuffer in pixels
-        - `height` is the height of the FrameBuffer in pixels
-        - `format` specifies the type of pixel used in the FrameBuffer;
+        - *width* is the width of the FrameBuffer in pixels
+        - *height* is the height of the FrameBuffer in pixels
+        - *format* specifies the type of pixel used in the FrameBuffer;
           valid values are ``framebuf.MVLSB``, ``framebuf.RGB565``
           and ``framebuf.GS4_HMSB``. MVLSB is monochrome 1-bit color,
           RGB565 is RGB 16-bit color, and GS4_HMSB is grayscale 4-bit color.
           Where a color value c is passed to a method, c is a small integer
           with an encoding that is dependent on the format of the FrameBuffer.
-        - `stride` is the number of pixels between each horizontal line
-          of pixels in the FrameBuffer. This defaults to `width` but may
+        - *stride* is the number of pixels between each horizontal line
+          of pixels in the FrameBuffer. This defaults to *width* but may
           need adjustments when implementing a FrameBuffer within another
-          larger FrameBuffer or screen. The `buffer` size must accommodate
+          larger FrameBuffer or screen. The *buffer* size must accommodate
           an increased step size.
 
-    One must specify valid `buffer`, `width`, `height`, `format` and
-    optionally `stride`.  Invalid `buffer` size or dimensions may lead to
+    One must specify valid *buffer*, *width*, *height*, *format* and
+    optionally *stride*.  Invalid *buffer* size or dimensions may lead to
     unexpected errors.
 
 Drawing primitive shapes
@@ -64,8 +64,8 @@ The following methods draw shapes onto the FrameBuffer.
 
 .. method:: FrameBuffer.pixel(x, y[, c])
 
-    If `c` is not given, get the color value of the specified pixel.
-    If `c` is given, set the specified pixel to the given color.
+    If *c* is not given, get the color value of the specified pixel.
+    If *c* is given, set the specified pixel to the given color.
 
 .. method:: FrameBuffer.hline(x, y, w, c)
 .. method:: FrameBuffer.vline(x, y, h, c)
@@ -106,7 +106,7 @@ Other methods
 .. method:: FrameBuffer.blit(fbuf, x, y[, key])
 
     Draw another FrameBuffer on top of the current one at the given coordinates.
-    If `key` is specified then it should be a color integer and the
+    If *key* is specified then it should be a color integer and the
     corresponding color will be considered transparent: all pixels with that
     color value will not be drawn.
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef _INCLUDED_MPHAL_H_
-#define _INCLUDED_MPHAL_H_
 
 #include "py/ringbuf.h"
 #include "lib/utils/interrupt_char.h"
@@ -96,5 +93,3 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
 
 void *ets_get_esf_buf_ctlblk(void);
 int ets_esf_free_bufs(int idx);
-
-#endif // _INCLUDED_MPHAL_H_

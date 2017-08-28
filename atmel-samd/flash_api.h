@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H
 
 #include "extmod/vfs_fat.h"
 
@@ -33,4 +33,4 @@ extern void flash_flush(void);
 
 void flash_set_usb_writeable(bool usb_writeable);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_FLASH_API_H

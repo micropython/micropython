@@ -85,24 +85,24 @@ PIN(U0RXD, 3, FUNC_GPIO3, PERIPHS_IO_MUX_U0RXD_U); // gpio3 | RXD0 | RXD
 PIN(U0TXD, 1, FUNC_GPIO1, PERIPHS_IO_MUX_U0TXD_U); // gpio1 / spi_cs1 | TXD0 | TXD
 
 // This maps MCU pin names to pin objects.
-STATIC const mp_map_elem_t mcu_pin_global_dict_table[] = {
-      { MP_OBJ_NEW_QSTR(MP_QSTR_TOUT), (mp_obj_t)&pin_TOUT },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_XPD_DCDC), (mp_obj_t)&pin_XPD_DCDC },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_MTMS), (mp_obj_t)&pin_MTMS },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_MTDI), (mp_obj_t)&pin_MTDI },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_MTCK), (mp_obj_t)&pin_MTCK },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_MTDO), (mp_obj_t)&pin_MTDO },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO2), (mp_obj_t)&pin_GPIO2 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO0), (mp_obj_t)&pin_GPIO0 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO4), (mp_obj_t)&pin_GPIO4 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_SD_DATA_2), (mp_obj_t)&pin_SD_DATA_2 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_SD_DATA_3), (mp_obj_t)&pin_SD_DATA_3 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CMD), (mp_obj_t)&pin_SD_CMD },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CLK), (mp_obj_t)&pin_SD_CLK },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_SD_DATA_0), (mp_obj_t)&pin_SD_DATA_0 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_SD_DATA_1), (mp_obj_t)&pin_SD_DATA_1 },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_DVDD), (mp_obj_t)&pin_DVDD },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_U0RXD), (mp_obj_t)&pin_U0RXD },
-      { MP_OBJ_NEW_QSTR(MP_QSTR_U0TXD), (mp_obj_t)&pin_U0TXD },
+STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_TOUT), MP_ROM_PTR(&pin_TOUT) },
+    { MP_ROM_QSTR(MP_QSTR_XPD_DCDC), MP_ROM_PTR(&pin_XPD_DCDC) },
+    { MP_ROM_QSTR(MP_QSTR_MTMS), MP_ROM_PTR(&pin_MTMS) },
+    { MP_ROM_QSTR(MP_QSTR_MTDI), MP_ROM_PTR(&pin_MTDI) },
+    { MP_ROM_QSTR(MP_QSTR_MTCK), MP_ROM_PTR(&pin_MTCK) },
+    { MP_ROM_QSTR(MP_QSTR_MTDO), MP_ROM_PTR(&pin_MTDO) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO2), MP_ROM_PTR(&pin_GPIO2) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO0), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO4), MP_ROM_PTR(&pin_GPIO4) },
+    { MP_ROM_QSTR(MP_QSTR_SD_DATA_2), MP_ROM_PTR(&pin_SD_DATA_2) },
+    { MP_ROM_QSTR(MP_QSTR_SD_DATA_3), MP_ROM_PTR(&pin_SD_DATA_3) },
+    { MP_ROM_QSTR(MP_QSTR_SD_CMD), MP_ROM_PTR(&pin_SD_CMD) },
+    { MP_ROM_QSTR(MP_QSTR_SD_CLK), MP_ROM_PTR(&pin_SD_CLK) },
+    { MP_ROM_QSTR(MP_QSTR_SD_DATA_0), MP_ROM_PTR(&pin_SD_DATA_0) },
+    { MP_ROM_QSTR(MP_QSTR_SD_DATA_1), MP_ROM_PTR(&pin_SD_DATA_1) },
+    { MP_ROM_QSTR(MP_QSTR_DVDD), MP_ROM_PTR(&pin_DVDD) },
+    { MP_ROM_QSTR(MP_QSTR_U0RXD), MP_ROM_PTR(&pin_U0RXD) },
+    { MP_ROM_QSTR(MP_QSTR_U0TXD), MP_ROM_PTR(&pin_U0TXD) },
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);

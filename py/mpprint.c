@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -354,9 +354,6 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
     }
 
     int len = mp_format_float(f, buf, sizeof(buf), fmt, prec, sign);
-    if (len < 0) {
-        len = 0;
-    }
 
     char *s = buf;
 

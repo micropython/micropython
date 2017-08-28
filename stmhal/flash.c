@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,11 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include STM32_HAL_H
-
-#include "flash.h"
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "py/misc.h"
+#include "flash.h"
 
 typedef struct {
     uint32_t base_address;

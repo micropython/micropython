@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPZ_H__
-#define __MICROPY_INCLUDED_PY_MPZ_H__
+#ifndef MICROPY_INCLUDED_PY_MPZ_H
+#define MICROPY_INCLUDED_PY_MPZ_H
 
 #include <stdint.h>
 
@@ -111,7 +111,8 @@ void mpz_set_from_float(mpz_t *z, mp_float_t src);
 size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base);
 void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf);
 
-bool mpz_is_zero(const mpz_t *z);
+static inline bool mpz_is_zero(const mpz_t *z) { return z->len == 0; }
+static inline bool mpz_is_neg(const mpz_t *z) { return z->len != 0 && z->neg != 0; }
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
 
 void mpz_abs_inpl(mpz_t *dest, const mpz_t *z);
@@ -139,4 +140,4 @@ mp_float_t mpz_as_float(const mpz_t *z);
 #endif
 size_t mpz_as_str_inpl(const mpz_t *z, unsigned int base, const char *prefix, char base_char, char comma, char *str);
 
-#endif // __MICROPY_INCLUDED_PY_MPZ_H__
+#endif // MICROPY_INCLUDED_PY_MPZ_H

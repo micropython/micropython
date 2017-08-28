@@ -1,5 +1,3 @@
-#include STM32_HAL_H
-
 #define MICROPY_HW_BOARD_NAME       "F429I-DISCO"
 #define MICROPY_HW_MCU_NAME         "STM32F429"
 

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPPRINT_H__
-#define __MICROPY_INCLUDED_PY_MPPRINT_H__
+#ifndef MICROPY_INCLUDED_PY_MPPRINT_H
+#define MICROPY_INCLUDED_PY_MPPRINT_H
 
 #include "py/mpconfig.h"
 
@@ -71,4 +71,4 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_MPPRINT_H__
+#endif // MICROPY_INCLUDED_PY_MPPRINT_H

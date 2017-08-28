@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseOut.h"
@@ -39,4 +39,4 @@ extern void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self);
 extern void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self,
     uint16_t* pulses, uint16_t len);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PULSEOUT_H

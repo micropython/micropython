@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,10 +24,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef PYBSPI_H_
-#define PYBSPI_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBSPI_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBSPI_H
 
 extern const mp_obj_type_t pyb_spi_type;
 
-#endif  // PYBSPI_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBSPI_H

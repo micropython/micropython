@@ -51,7 +51,7 @@ binary_functions = [('copysign', copysign, [(23., 42.), (-23., 42.), (23., -42.)
                     ('atan2', atan2, ((1., 0.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
                     ('fmod', fmod, ((1., 1.), (0., 1.), (2., 0.5), (-3., 5.), (-3., -4.),)),
                     ('ldexp', ldexp, ((1., 0), (0., 1), (2., 2), (3., -2), (-3., -4),)),
-                    ('log', log, ((2., 2.), (3., 2.), (4., 5.), (0., 1.), (1., 0.), (-1., 1.), (1., -1.))),
+                    ('log', log, ((2., 2.), (3., 2.), (4., 5.), (0., 1.), (1., 0.), (-1., 1.), (1., -1.), (2., 1.))),
                    ]
 
 for function_name, function, test_vals in binary_functions:
@@ -59,5 +59,5 @@ for function_name, function, test_vals in binary_functions:
     for value1, value2 in test_vals:
         try:
             print("{:.5g}".format(function(value1, value2)))
-        except ValueError as e:
-            print(str(e))
+        except (ValueError, ZeroDivisionError) as e:
+            print(type(e))

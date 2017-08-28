@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,7 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_ACCEL_H
+#define MICROPY_INCLUDED_STMHAL_ACCEL_H
 
 extern const mp_obj_type_t pyb_accel_type;
 
 void accel_init(void);
+
+#endif // MICROPY_INCLUDED_STMHAL_ACCEL_H

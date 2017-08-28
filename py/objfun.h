@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJFUN_H__
-#define __MICROPY_INCLUDED_PY_OBJFUN_H__
+#ifndef MICROPY_INCLUDED_PY_OBJFUN_H
+#define MICROPY_INCLUDED_PY_OBJFUN_H
 
 #include "py/obj.h"
 
@@ -41,4 +41,4 @@ typedef struct _mp_obj_fun_bc_t {
     mp_obj_t extra_args[];
 } mp_obj_fun_bc_t;
 
-#endif // __MICROPY_INCLUDED_PY_OBJFUN_H__
+#endif // MICROPY_INCLUDED_PY_OBJFUN_H

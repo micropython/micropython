@@ -19,7 +19,7 @@ include boards/$(BOARD)/mpconfigboard.mk
 QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -28,9 +28,9 @@ BOSSAC := tools/bossac_osx
 HAL_DIR=hal/$(MCU_SERIES)
 
 INC += -I.
-INC += -I..
-INC += -I../lib/mp-readline
-INC += -I../lib/timeutils
+INC += -I$(TOP)
+INC += -I$(TOP)/lib/mp-readline
+INC += -I$(TOP)/lib/timeutils
 INC += -Iasf_conf/
 INC += -Iasf/common/boards/
 INC += -Iasf/common/services/sleepmgr/
@@ -227,12 +227,9 @@ SRC_C = \
 	lib/utils/interrupt_char.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
+	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c
-
-STM_SRC_C = $(addprefix stmhal/,\
-	pybstdio.c \
-	)
 
 SRC_COMMON_HAL = \
 	analogio/__init__.c \
@@ -295,7 +292,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(STM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 
@@ -306,7 +302,7 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | python3 ../tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(SIZE) $@ | python3 $(TOP)/tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -314,7 +310,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	python2 ../tools/uf2/utils/uf2conv.py -c -o $@ $^
+	python2 $(TOP)/tools/uf2/utils/uf2conv.py -c -o $@ $^
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"
@@ -332,4 +328,4 @@ run:
 test: $(BUILD)/firmware.elf
 	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

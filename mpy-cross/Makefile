@@ -23,10 +23,10 @@ QSTR_DEFS = qstrdefsport.h
 UNAME_S := $(shell uname -s)
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC +=  -I.
-INC +=  -I..
+INC +=  -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
@@ -44,8 +44,8 @@ COPT = -Os #-DNDEBUG
 endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
-# The unix port of micropython on OSX must be compiled with clang,
-# while cross-compile ports require gcc, so we test here for OSX and 
+# The unix port of MicroPython on OSX must be compiled with clang,
+# while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
 CC = clang
@@ -71,4 +71,4 @@ endif
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

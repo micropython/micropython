@@ -14,10 +14,10 @@ QSTR_DEFS = qstrdefsport.h
 UNAME_S := $(shell uname -s)
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC +=  -I.
-INC +=  -I..
+INC +=  -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
@@ -30,7 +30,7 @@ ifdef DEBUG
 CFLAGS += -g
 COPT = -O0
 else
-COPT = -Os -fdata-sections -ffunction-sections #-DNDEBUG
+COPT = -Os -fdata-sections -ffunction-sections -DNDEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
@@ -59,7 +59,7 @@ CFLAGS += -U _FORTIFY_SOURCE
 endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
-# The unix port of micropython on OSX must be compiled with clang,
+# The unix port of MicroPython on OSX must be compiled with clang,
 # while cross-compile ports require gcc, so we test here for OSX and
 # if necessary override the value of 'CC' set in py/mkenv.mk
 ifeq ($(UNAME_S),Darwin)
@@ -87,7 +87,7 @@ endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
-INC +=  -I../lib/mp-readline
+INC +=  -I$(TOP)/lib/mp-readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 LIB_SRC_C_EXTRA += mp-readline/readline.c
 endif
@@ -107,11 +107,11 @@ endif
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d ../lib/libffi/build_dir/out/lib/libffi-*/include)
+LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(TOP)/lib/libffi/build_dir/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib32/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(TOP)/lib/libffi/build_dir/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(TOP)/lib/libffi/build_dir/out/lib/libffi.a
  endif
 else
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
@@ -183,13 +183,13 @@ MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk
 
 .PHONY: test
 
-test: $(PROG) ../tests/run-tests
+test: $(PROG) $(TOP)/tests/run-tests
 	$(eval DIRNAME=$(notdir $(CURDIR)))
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
 
 # install micropython in /usr/local/bin
 TARGET = micropython
@@ -254,12 +254,12 @@ coverage:
 
 coverage_test: coverage
 	$(eval DIRNAME=$(notdir $(CURDIR)))
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -d thread
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
-	cd ../tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --via-mpy -d basics float
-	gcov -o build-coverage/py ../py/*.c
-	gcov -o build-coverage/extmod ../extmod/*.c
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -d thread
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --via-mpy -d basics float
+	gcov -o build-coverage/py $(TOP)/py/*.c
+	gcov -o build-coverage/extmod $(TOP)/extmod/*.c
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
@@ -274,21 +274,21 @@ deplibs: libffi axtls
 # install-exec-recursive & install-data-am targets are used to avoid building
 # docs and depending on makeinfo
 libffi:
-	cd ../lib/libffi; git clean -d -x -f
-	cd ../lib/libffi; ./autogen.sh
-	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
+	cd $(TOP)/lib/libffi; git clean -d -x -f
+	cd $(TOP)/lib/libffi; ./autogen.sh
+	mkdir -p $(TOP)/lib/libffi/build_dir; cd $(TOP)/lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
 
 axtls: $(BUILD)/libaxtls.a
 
-$(BUILD)/libaxtls.a: ../lib/axtls/README | $(OBJ_DIRS)
-	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; $(MAKE) oldconfig -B
-	cd ../lib/axtls; $(MAKE) clean
-	cd ../lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
-	cp ../lib/axtls/_stage/libaxtls.a $@
+$(BUILD)/libaxtls.a: $(TOP)/lib/axtls/README | $(OBJ_DIRS)
+	cd $(TOP)/lib/axtls; cp config/upyconfig config/.config
+	cd $(TOP)/lib/axtls; $(MAKE) oldconfig -B
+	cd $(TOP)/lib/axtls; $(MAKE) clean
+	cd $(TOP)/lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)"
+	cp $(TOP)/lib/axtls/_stage/libaxtls.a $@
 
-../lib/axtls/README:
+$(TOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
-	(cd ..; git submodule update --init --recursive)
+	(cd $(TOP); git submodule update --init --recursive)

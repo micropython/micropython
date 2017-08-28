@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -263,7 +263,7 @@ STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings : adc object (single channel)                        */
+/* MicroPython bindings : adc object (single channel)                         */
 
 STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_obj_adc_t *self = self_in;
@@ -596,7 +596,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
 #endif
 
 /******************************************************************************/
-/* Micro Python bindings : adc_all object                                     */
+/* MicroPython bindings : adc_all object                                      */
 
 STATIC mp_obj_t adc_all_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments

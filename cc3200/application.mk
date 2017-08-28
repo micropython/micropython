@@ -1,5 +1,5 @@
 APP_INC =  -I.
-APP_INC += -I..
+APP_INC += -I$(TOP)
 APP_INC += -Ifatfs/src
 APP_INC += -Ifatfs/src/drivers
 APP_INC += -IFreeRTOS
@@ -10,7 +10,7 @@ APP_INC += -Ihal
 APP_INC += -Ihal/inc
 APP_INC += -Imisc
 APP_INC += -Imods
-APP_INC += -I../drivers/cc3100/inc
+APP_INC += -I$(TOP)/drivers/cc3100/inc
 APP_INC += -Isimplelink
 APP_INC += -Isimplelink/oslib
 APP_INC += -Itelnet
@@ -18,7 +18,7 @@ APP_INC += -Iutil
 APP_INC += -Ibootmgr
 APP_INC += -I$(BUILD)
 APP_INC += -I$(BUILD)/genhdr
-APP_INC += -I../stmhal
+APP_INC += -I$(TOP)/stmhal
 
 APP_CPPDEFINES = -Dgcc -DTARGET_IS_CC3200 -DSL_FULL -DUSE_FREERTOS
 
@@ -147,12 +147,12 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	netutils/netutils.c \
 	timeutils/timeutils.c \
 	utils/pyexec.c \
+	utils/sys_stdio_mphal.c \
 	)
 	
 APP_STM_SRC_C = $(addprefix stmhal/,\
 	bufhelper.c \
 	irq.c \
-	pybstdio.c \
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))

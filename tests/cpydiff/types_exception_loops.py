@@ -1,7 +1,7 @@
 """
 categories: Types,Exception
-description: While loop guards will obscure exception line number reporting due to being optimised onto the end of the code block
-cause: Unknown
+description: Exception in while loop condition may have unexpected line number
+cause: Condition checks are optimized to happen at the end of loop body, and that line number is reported.
 workaround: Unknown
 """
 l = ["-foo", "-bar"]

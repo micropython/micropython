@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H
 
 #include "asf/sam0/drivers/dma/dma.h"
 
@@ -44,4 +44,4 @@ enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t lengt
 bool allocate_block_counter(void);
 void switch_audiodma_trigger(uint8_t trigger_dmac_id);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H

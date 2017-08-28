@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,11 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PIC16BIT_MODPYB_H__
-#define __MICROPY_INCLUDED_PIC16BIT_MODPYB_H__
+#ifndef MICROPY_INCLUDED_PIC16BIT_MODPYB_H
+#define MICROPY_INCLUDED_PIC16BIT_MODPYB_H
 
 extern const mp_obj_type_t pyb_led_type;
 extern const mp_obj_type_t pyb_switch_type;
 extern const mp_obj_module_t pyb_module;
 
-#endif // __MICROPY_INCLUDED_PIC16BIT_MODPYB_H__
+#endif // MICROPY_INCLUDED_PIC16BIT_MODPYB_H

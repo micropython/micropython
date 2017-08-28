@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -314,7 +314,7 @@ STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
 #endif
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 /// \classmethod \constructor(spi, pin_cs, pin_rst)
 /// Create and return a WIZNET5K object.

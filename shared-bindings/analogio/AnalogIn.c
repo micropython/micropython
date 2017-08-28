@@ -148,11 +148,11 @@ const mp_obj_property_t analogio_analogin_reference_voltage_obj = {
 };
 
 STATIC const mp_rom_map_elem_t analogio_analogin_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),                 MP_ROM_PTR(&analogio_analogin_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),              MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),               MP_ROM_PTR(&analogio_analogin___exit___obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_value),              MP_ROM_PTR(&analogio_analogin_value_obj)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_reference_voltage),  MP_ROM_PTR(&analogio_analogin_reference_voltage_obj)},
+    { MP_ROM_QSTR(MP_QSTR_deinit),             MP_ROM_PTR(&analogio_analogin_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),          MP_ROM_PTR(&default___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),           MP_ROM_PTR(&analogio_analogin___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_value),              MP_ROM_PTR(&analogio_analogin_value_obj)},
+    { MP_ROM_QSTR(MP_QSTR_reference_voltage),  MP_ROM_PTR(&analogio_analogin_reference_voltage_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(analogio_analogin_locals_dict, analogio_analogin_locals_dict_table);

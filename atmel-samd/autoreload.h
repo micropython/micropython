@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H
 
 #include <stdbool.h>
 
@@ -39,4 +39,4 @@ void autoreload_enable(void);
 void autoreload_disable(void);
 bool autoreload_is_enabled(void);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_AUTORELOAD_H

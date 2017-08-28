@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H
 
 #include "py/obj.h"
 
@@ -35,4 +35,4 @@ extern uint32_t shared_module_ustack_max_stack_usage(void);
 extern uint32_t shared_module_ustack_stack_size(void);
 extern uint32_t shared_module_ustack_stack_usage(void);
 
-#endif  // __MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H__
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USTACK___INIT___H

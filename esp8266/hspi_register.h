@@ -3,7 +3,7 @@
  *  Modified by David Ogilvy (MetalPhreak)
  *  Based on original file included in SDK 1.0.0
  *
- *  Missing defines from previous SDK versions have 
+ *  Missing defines from previous SDK versions have
  *  been added and are noted with comments. The
  *  names of these defines are likely to change.
  */

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -90,7 +90,7 @@ STATIC void accel_start(void) {
     }
 
     if (status != HAL_OK) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "accelerometer not found"));
+        mp_raise_msg(&mp_type_OSError, "accelerometer not found");
     }
 
     // set MMA to active mode
@@ -102,7 +102,7 @@ STATIC void accel_start(void) {
 }
 
 /******************************************************************************/
-/* Micro Python bindings                                                      */
+/* MicroPython bindings                                                      */
 
 #define NUM_AXIS (3)
 #define FILT_DEPTH (4)

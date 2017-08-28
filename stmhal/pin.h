@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_STMHAL_PIN_H__
-#define __MICROPY_INCLUDED_STMHAL_PIN_H__
+#ifndef MICROPY_INCLUDED_STMHAL_PIN_H
+#define MICROPY_INCLUDED_STMHAL_PIN_H
 
 // This file requires pin_defs_xxx.h (which has port specific enums and
 // defines, so we include it here. It should never be included directly
@@ -98,4 +97,4 @@ const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit);
 const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx);
 const pin_af_obj_t *pin_find_af_by_name(const pin_obj_t *pin, const char *name);
 
-#endif // __MICROPY_INCLUDED_STMHAL_PIN_H__
+#endif // MICROPY_INCLUDED_STMHAL_PIN_H

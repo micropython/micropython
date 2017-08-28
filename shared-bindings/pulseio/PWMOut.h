@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PWMOut.h"
@@ -42,4 +42,4 @@ extern void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, 
 extern uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self);
 extern bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self);
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_PULSEIO_PWMOUT_H

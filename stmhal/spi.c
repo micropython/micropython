@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -182,7 +182,7 @@ STATIC int spi_find(mp_obj_t id) {
         #endif
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%s) does not exist", port));
+            "SPI(%s) doesn't exist", port));
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
@@ -191,7 +191,7 @@ STATIC int spi_find(mp_obj_t id) {
             return spi_id;
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "SPI(%d) does not exist", spi_id));
+            "SPI(%d) doesn't exist", spi_id));
     }
 }
 
@@ -765,7 +765,7 @@ STATIC mp_obj_t pyb_spi_send_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp
             // recv argument given
             mp_get_buffer_raise(args[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
             if (bufinfo_recv.len != bufinfo_send.len) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "recv must be same length as send"));
+                mp_raise_ValueError("recv must be same length as send");
             }
             o_ret = args[1].u_obj;
         }

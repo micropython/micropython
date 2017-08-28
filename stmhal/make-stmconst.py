@@ -128,14 +128,14 @@ def parse_file(filename):
 
 def print_int_obj(val, needed_mpzs):
     if -0x40000000 <= val < 0x40000000:
-        print('MP_OBJ_NEW_SMALL_INT(%#x)' % val, end='')
+        print('MP_ROM_INT(%#x)' % val, end='')
     else:
-        print('(mp_obj_t)&mpz_%08x' % val, end='')
+        print('MP_ROM_PTR(&mpz_%08x)' % val, end='')
         needed_mpzs.add(val)
 
 def print_periph(periph_name, periph_val, needed_qstrs, needed_mpzs):
     qstr = periph_name.upper()
-    print('{ MP_OBJ_NEW_QSTR(MP_QSTR_%s), ' % qstr, end='')
+    print('{ MP_ROM_QSTR(MP_QSTR_%s), ' % qstr, end='')
     print_int_obj(periph_val, needed_mpzs)
     print(' },')
     needed_qstrs.add(qstr)
@@ -144,7 +144,7 @@ def print_regs(reg_name, reg_defs, needed_qstrs, needed_mpzs):
     reg_name = reg_name.upper()
     for r in reg_defs:
         qstr = reg_name + '_' + r[0]
-        print('{ MP_OBJ_NEW_QSTR(MP_QSTR_%s), ' % qstr, end='')
+        print('{ MP_ROM_QSTR(MP_QSTR_%s), ' % qstr, end='')
         print_int_obj(r[1], needed_mpzs)
         print(' }, // %s-bits, %s' % (r[2], r[3]))
         needed_qstrs.add(qstr)
@@ -242,7 +242,7 @@ def main():
 
     #print("#define MOD_STM_CONST_MODULES \\")
     #for mod_lower, mod_upper in modules:
-    #    print("    { MP_OBJ_NEW_QSTR(MP_QSTR_%s), (mp_obj_t)&stm_%s_obj }, \\" % (mod_upper, mod_lower))
+    #    print("    { MP_ROM_QSTR(MP_QSTR_%s), MP_ROM_PTR(&stm_%s_obj) }, \\" % (mod_upper, mod_lower))
 
     print("")
 

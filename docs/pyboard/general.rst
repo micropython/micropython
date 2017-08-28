@@ -1,6 +1,8 @@
 General information about the pyboard
 =====================================
 
+.. contents::
+
 Local filesystem and SD card
 ----------------------------
 
@@ -67,3 +69,12 @@ There are currently 2 kinds of errors that you might see:
 2. If all 4 LEDs cycle on and off slowly, then there was a hard fault.
    This cannot be recovered from and you need to do a hard reset.
 
+Guide for using the pyboard with Windows
+----------------------------------------
+
+The following PDF guide gives information about using the pyboard with Windows,
+including setting up the serial prompt and downloading new firmware using
+DFU programming:
+`PDF guide <http://micropython.org/resources/Micro-Python-Windows-setup.pdf>`__.
+
+.. include:: hardware/index.rst

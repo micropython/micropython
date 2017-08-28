@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -173,7 +173,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         // read RTC memory
 
         system_rtc_mem_read(MEM_USER_LEN_ADDR, &len, sizeof(len));
-        system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
+        system_rtc_mem_read(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_obj_new_bytes(rtcram, len);
     } else {
@@ -183,8 +183,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
         if (bufinfo.len > MEM_USER_MAXLEN) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
-                "buffer too long"));
+            mp_raise_ValueError("buffer too long");
         }
 
         len = bufinfo.len;
@@ -195,7 +194,7 @@ STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
             rtcram[i] = ((uint8_t *)bufinfo.buf)[i];
         }
 
-        system_rtc_mem_write(MEM_USER_DATA_ADDR, rtcram, len + (4 - len % 4));
+        system_rtc_mem_write(MEM_USER_DATA_ADDR, rtcram, (len + 3) & ~3);
 
         return mp_const_none;
     }
@@ -208,7 +207,7 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
 
     // check we want alarm0
     if (mp_obj_get_int(alarm_id) != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid alarm"));
+        mp_raise_ValueError("invalid alarm");
     }
 
     // set expiry time (in microseconds)
@@ -245,7 +244,7 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     // check we want alarm0
     if (args[ARG_trigger].u_int != 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "invalid alarm"));
+        mp_raise_ValueError("invalid alarm");
     }
 
     // set the wake value
@@ -255,13 +254,13 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
-STATIC const mp_map_elem_t pyb_rtc_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_datetime), (mp_obj_t)&pyb_rtc_datetime_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_memory), (mp_obj_t)&pyb_rtc_memory_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm), (mp_obj_t)&pyb_rtc_alarm_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_left), (mp_obj_t)&pyb_rtc_alarm_left_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_irq), (mp_obj_t)&pyb_rtc_irq_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALARM0), MP_OBJ_NEW_SMALL_INT(0) },
+STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&pyb_rtc_datetime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&pyb_rtc_memory_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&pyb_rtc_alarm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alarm_left), MP_ROM_PTR(&pyb_rtc_alarm_left_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_rtc_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ALARM0), MP_ROM_INT(0) },
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
@@ -269,5 +268,5 @@ const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&pyb_rtc_locals_dict,
 };

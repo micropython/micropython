@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef PYBSD_H_
-#define PYBSD_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_PYBSD_H
+#define MICROPY_INCLUDED_CC3200_MODS_PYBSD_H
 
 /******************************************************************************
  DEFINE PUBLIC TYPES
@@ -41,4 +41,4 @@ typedef struct {
 extern pybsd_obj_t pybsd_obj;
 extern const mp_obj_type_t pyb_sd_type;
 
-#endif // PYBSD_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_PYBSD_H

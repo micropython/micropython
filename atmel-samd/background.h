@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H
 
 void run_background_tasks(void);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BACKGROUND_H

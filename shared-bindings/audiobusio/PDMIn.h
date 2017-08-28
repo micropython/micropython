@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H__
-#define __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H__
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H
 
 #include "common-hal/audiobusio/PDMIn.h"
 #include "common-hal/microcontroller/Pin.h"
@@ -43,4 +43,4 @@ uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self);
 uint32_t common_hal_audiobusio_pdmin_get_frequency(audiobusio_pdmin_obj_t* self);
 // TODO(tannewt): Add record to file
 
-#endif // __MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H__
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_AUDIOOUT_H

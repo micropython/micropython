@@ -26,23 +26,23 @@
 
 #include "common-hal/microcontroller/__init__.h"
 
-STATIC const mp_map_elem_t board_global_dict_table[] = {
-  { MP_OBJ_NEW_QSTR(MP_QSTR_ADC), (mp_obj_t)&pin_TOUT },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO16), (mp_obj_t)&pin_XPD_DCDC },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO14), (mp_obj_t)&pin_MTMS },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_SCK), (mp_obj_t)&pin_MTMS },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO12), (mp_obj_t)&pin_MTDI },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_MTDI },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO13), (mp_obj_t)&pin_MTCK },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_MTCK },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO15), (mp_obj_t)&pin_MTDO },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO2), (mp_obj_t)&pin_GPIO2 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO0), (mp_obj_t)&pin_GPIO0 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO4), (mp_obj_t)&pin_GPIO4 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), (mp_obj_t)&pin_GPIO4 },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_RX), (mp_obj_t)&pin_U0RXD },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_TX), (mp_obj_t)&pin_U0TXD },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_GPIO5), (mp_obj_t)&pin_DVDD },
-  { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), (mp_obj_t)&pin_DVDD },
+STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&pin_TOUT) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO16), MP_ROM_PTR(&pin_XPD_DCDC) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO14), MP_ROM_PTR(&pin_MTMS) },
+    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_MTMS) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO12), MP_ROM_PTR(&pin_MTDI) },
+    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_MTDI) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO13), MP_ROM_PTR(&pin_MTCK) },
+    { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_MTCK) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO15), MP_ROM_PTR(&pin_MTDO) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO2), MP_ROM_PTR(&pin_GPIO2) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO0), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO4), MP_ROM_PTR(&pin_GPIO4) },
+    { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO4) },
+    { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_U0RXD) },
+    { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_U0TXD) },
+    { MP_ROM_QSTR(MP_QSTR_GPIO5), MP_ROM_PTR(&pin_DVDD) },
+    { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_DVDD) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);

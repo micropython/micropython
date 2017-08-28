@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MPHAL_H__
-#define __MICROPY_INCLUDED_PY_MPHAL_H__
+#ifndef MICROPY_INCLUDED_PY_MPHAL_H
+#define MICROPY_INCLUDED_PY_MPHAL_H
 
 #include "py/mpconfig.h"
 
@@ -80,4 +80,4 @@ mp_uint_t mp_hal_ticks_cpu(void);
 #include "extmod/virtpin.h"
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_MPHAL_H__
+#endif // MICROPY_INCLUDED_PY_MPHAL_H
