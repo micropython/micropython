@@ -56,9 +56,9 @@ Glossary
         which provides implementations for many modules from CPython's
         standard library. However, large subset of these modules require
         POSIX-like environment (Linux, MacOS, Windows may be partially
-        supported), and thus would work or make sense only with MicroPython
-        Unix port. Some subset of modules is however usable for baremetal ports
-        too.
+        supported), and thus would work or make sense only with
+        `MicroPython Unix port`. Some subset of modules is however usable
+        for `baremetal` ports too.
 
         Unlike monolithic :term:`CPython` stdlib, micropython-lib modules
         are intended to be installed individually - either using manual
