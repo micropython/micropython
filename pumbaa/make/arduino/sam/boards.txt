@@ -1,0 +1,49 @@
+# @file boards.txt
+#
+# @section License
+# Copyright (C) 2016, Erik Moqvist
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# This file is part of the Pumbaa project.
+
+##################################################################
+
+arduino_due_x_dbg.name=Pumbaa Arduino Due (Programming Port)
+arduino_due_x_dbg.vid.0=0x2341
+arduino_due_x_dbg.pid.0=0x003d
+arduino_due_x_dbg.vid.1=0x2A03
+arduino_due_x_dbg.pid.1=0x003d
+
+arduino_due_x_dbg.upload.tool=bossac
+arduino_due_x_dbg.upload.protocol=sam-ba
+arduino_due_x_dbg.upload.maximum_size=524288
+arduino_due_x_dbg.upload.use_1200bps_touch=true
+arduino_due_x_dbg.upload.wait_for_upload_port=false
+arduino_due_x_dbg.upload.native_usb=false
+
+arduino_due_x_dbg.build.mcu=cortex-m3
+arduino_due_x_dbg.build.f_cpu=84000000L
+arduino_due_x_dbg.build.usb_manufacturer="Arduino LLC"
+arduino_due_x_dbg.build.usb_product="Arduino Due"
+arduino_due_x_dbg.build.board=SAM_DUE
+arduino_due_x_dbg.build.extra_flags=
+arduino_due_x_dbg.build.variant_system_lib=
+arduino_due_x_dbg.build.vid=0x2341
+arduino_due_x_dbg.build.pid=0x003e
+arduino_due_x_dbg.build.variant=arduino_due
+arduino_due_x_dbg.build.core=Pumbaa:pumbaa
+
+arduino_due_x_dbg.compiler.c.extra_flags={arduino_due_x_dbg_compiler_c_extra_flags}
+arduino_due_x_dbg.compiler.cpp.extra_flags={arduino_due_x_dbg_compiler_cxx_extra_flags}
+arduino_due_x_dbg.compiler.c.elf.extra_flags={arduino_due_x_dbg_compiler_c_elf_extra_flags}
+
+##################################################################
