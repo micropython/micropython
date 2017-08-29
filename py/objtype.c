@@ -471,14 +471,28 @@ STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, lhs->base.type);
+
+    mp_obj_t res;
     if (dest[0] == MP_OBJ_SENTINEL) {
-        return mp_binary_op(op, lhs->subobj[0], rhs_in);
+        res = mp_binary_op(op, lhs->subobj[0], rhs_in);
     } else if (dest[0] != MP_OBJ_NULL) {
         dest[2] = rhs_in;
-        return mp_call_method_n_kw(1, 0, dest);
+        res = mp_call_method_n_kw(1, 0, dest);
     } else {
         return MP_OBJ_NULL; // op not supported
     }
+
+    #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
+    // NotImplemented means "try other fallbacks (like calling __rop__
+    // instead of __op__) and if nothing works, raise TypeError". As
+    // MicroPython doesn't implement any fallbacks, signal to raise
+    // TypeError right away.
+    if (res == mp_const_notimplemented) {
+        return MP_OBJ_NULL; // op not supported
+    }
+    #endif
+
+    return res;
 }
 
 STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
