@@ -345,7 +345,12 @@ $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
 
-all: $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
+all: $(TOP)/lib/stm32lib/README.md $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
+
+# For convenience, automatically fetch required submodules if they don't exist
+$(TOP)/lib/stm32lib/README.md:
+	$(ECHO) "stm32lib submodule not found, fetching it now..."
+	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
 ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
