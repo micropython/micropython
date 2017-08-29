@@ -527,7 +527,7 @@ STATIC mp_obj_t pyb_can_recv(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // receive the data
     CanRxMsgTypeDef rx_msg;
-    self->can.pRxMsg = &rx_msg;
+    self->can.pRxMsg = self->can.pRx1Msg = &rx_msg;
     HAL_StatusTypeDef status = HAL_CAN_Receive(&self->can, args[0].u_int, args[1].u_int);
 
     if (status != HAL_OK) {

@@ -191,8 +191,7 @@ bool sdcard_power_on(void) {
     sd_handle.Init.ClockDiv            = SDIO_TRANSFER_CLK_DIV;
 
     // init the SD interface, with retry if it's not ready yet
-    HAL_SD_CardInfoTypedef cardinfo;
-    for (int retry = 10; HAL_SD_Init(&sd_handle, &cardinfo) != SD_OK; retry--) {
+    for (int retry = 10; HAL_SD_Init(&sd_handle) != HAL_OK; retry--) {
         if (retry == 0) {
             goto error;
         }
@@ -200,7 +199,7 @@ bool sdcard_power_on(void) {
     }
 
     // configure the SD bus width for wide operation
-    if (HAL_SD_WideBusOperation_Config(&sd_handle, SDIO_BUS_WIDE_4B) != SD_OK) {
+    if (HAL_SD_ConfigWideBusOperation(&sd_handle, SDIO_BUS_WIDE_4B) != HAL_OK) {
         HAL_SD_DeInit(&sd_handle);
         goto error;
     }
@@ -224,9 +223,9 @@ uint64_t sdcard_get_capacity_in_bytes(void) {
     if (sd_handle.Instance == NULL) {
         return 0;
     }
-    HAL_SD_CardInfoTypedef cardinfo;
-    HAL_SD_Get_CardInfo(&sd_handle, &cardinfo);
-    return cardinfo.CardCapacity;
+    HAL_SD_CardInfoTypeDef cardinfo;
+    HAL_SD_GetCardInfo(&sd_handle, &cardinfo);
+    return (uint64_t)cardinfo.LogBlockNbr * (uint64_t)cardinfo.LogBlockSize;
 }
 
 void SDIO_IRQHandler(void) {
@@ -243,13 +242,37 @@ void SDMMC2_IRQHandler(void) {
 }
 #endif
 
+STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t timeout) {
+    // Wait for HAL driver to be ready (eg for DMA to finish)
+    uint32_t start = HAL_GetTick();
+    while (sd->State == HAL_SD_STATE_BUSY) {
+        if (HAL_GetTick() - start >= timeout) {
+            return HAL_TIMEOUT;
+        }
+    }
+    // Wait for SD card to complete the operation
+    for (;;) {
+        HAL_SD_CardStateTypeDef state = HAL_SD_GetCardState(sd);
+        if (state == HAL_SD_CARD_TRANSFER) {
+            return HAL_OK;
+        }
+        if (!(state == HAL_SD_CARD_SENDING || state == HAL_SD_CARD_RECEIVING || state == HAL_SD_CARD_PROGRAMMING)) {
+            return HAL_ERROR;
+        }
+        if (HAL_GetTick() - start >= timeout) {
+            return HAL_TIMEOUT;
+        }
+    }
+    return HAL_OK;
+}
+
 mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
-        return SD_ERROR;
+        return HAL_ERROR;
     }
 
-    HAL_SD_ErrorTypedef err = SD_OK;
+    HAL_StatusTypeDef err = HAL_OK;
 
     // check that dest pointer is aligned on a 4-byte boundary
     uint8_t *orig_dest = NULL;
@@ -280,10 +303,9 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         // from reading the peripheral the CPU then reads the new data
         MP_HAL_CLEANINVALIDATE_DCACHE(dest, num_blocks * SDCARD_BLOCK_SIZE);
 
-        err = HAL_SD_ReadBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
-        if (err == SD_OK) {
-            // wait for DMA transfer to finish, with a large timeout
-            err = HAL_SD_CheckReadOperation(&sd_handle, 100000000);
+        err = HAL_SD_ReadBlocks_DMA(&sd_handle, dest, block_num, num_blocks);
+        if (err == HAL_OK) {
+            err = sdcard_wait_finished(&sd_handle, 60000);
         }
 
         dma_deinit(&SDMMC_RX_DMA);
@@ -291,7 +313,10 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 
         restore_irq_pri(basepri);
     } else {
-        err = HAL_SD_ReadBlocks_BlockNumber(&sd_handle, (uint32_t*)dest, block_num, SDCARD_BLOCK_SIZE, num_blocks);
+        err = HAL_SD_ReadBlocks(&sd_handle, dest, block_num, num_blocks, 60000);
+        if (err == HAL_OK) {
+            err = sdcard_wait_finished(&sd_handle, 60000);
+        }
     }
 
     if (orig_dest != NULL) {
@@ -306,22 +331,22 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
 mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     // check that SD card is initialised
     if (sd_handle.Instance == NULL) {
-        return SD_ERROR;
+        return HAL_ERROR;
     }
 
-    HAL_SD_ErrorTypedef err = SD_OK;
+    HAL_StatusTypeDef err = HAL_OK;
 
     // check that src pointer is aligned on a 4-byte boundary
     if (((uint32_t)src & 3) != 0) {
         // pointer is not aligned, so allocate a temporary block to do the write
         uint8_t *src_aligned = m_new_maybe(uint8_t, SDCARD_BLOCK_SIZE);
         if (src_aligned == NULL) {
-            return SD_ERROR;
+            return HAL_ERROR;
         }
         for (size_t i = 0; i < num_blocks; ++i) {
             memcpy(src_aligned, src + i * SDCARD_BLOCK_SIZE, SDCARD_BLOCK_SIZE);
             err = sdcard_write_blocks(src_aligned, block_num + i, 1);
-            if (err != SD_OK) {
+            if (err != HAL_OK) {
                 break;
             }
         }
@@ -339,17 +364,19 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         // make sure cache is flushed to RAM so the DMA can read the correct data
         MP_HAL_CLEAN_DCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
 
-        err = HAL_SD_WriteBlocks_BlockNumber_DMA(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
-        if (err == SD_OK) {
-            // wait for DMA transfer to finish, with a large timeout
-            err = HAL_SD_CheckWriteOperation(&sd_handle, 100000000);
+        err = HAL_SD_WriteBlocks_DMA(&sd_handle, (uint8_t*)src, block_num, num_blocks);
+        if (err == HAL_OK) {
+            err = sdcard_wait_finished(&sd_handle, 60000);
         }
         dma_deinit(&SDMMC_TX_DMA);
         sd_handle.hdmatx = NULL;
 
         restore_irq_pri(basepri);
     } else {
-        err = HAL_SD_WriteBlocks_BlockNumber(&sd_handle, (uint32_t*)src, block_num, SDCARD_BLOCK_SIZE, num_blocks);
+        err = HAL_SD_WriteBlocks(&sd_handle, (uint8_t*)src, block_num, num_blocks, 60000);
+        if (err == HAL_OK) {
+            err = sdcard_wait_finished(&sd_handle, 60000);
+        }
     }
 
     return err;
@@ -392,12 +419,12 @@ STATIC mp_obj_t sd_info(mp_obj_t self) {
     if (sd_handle.Instance == NULL) {
         return mp_const_none;
     }
-    HAL_SD_CardInfoTypedef cardinfo;
-    HAL_SD_Get_CardInfo(&sd_handle, &cardinfo);
+    HAL_SD_CardInfoTypeDef cardinfo;
+    HAL_SD_GetCardInfo(&sd_handle, &cardinfo);
     // cardinfo.SD_csd and cardinfo.SD_cid have lots of info but we don't use them
     mp_obj_t tuple[3] = {
-        mp_obj_new_int_from_ull(cardinfo.CardCapacity),
-        mp_obj_new_int_from_uint(cardinfo.CardBlockSize),
+        mp_obj_new_int_from_ull((uint64_t)cardinfo.LogBlockNbr * (uint64_t)cardinfo.LogBlockSize),
+        mp_obj_new_int_from_uint(cardinfo.LogBlockSize),
         mp_obj_new_int(cardinfo.CardType),
     };
     return mp_obj_new_tuple(3, tuple);

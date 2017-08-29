@@ -54,11 +54,7 @@
 #include "wdt.h"
 #include "genhdr/pllfreqtable.h"
 
-#if defined(MCU_SERIES_F4)
-// the HAL does not define these constants
-#define RCC_CSR_IWDGRSTF (0x20000000)
-#define RCC_CSR_PINRSTF (0x04000000)
-#elif defined(MCU_SERIES_L4)
+#if defined(MCU_SERIES_L4)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
 #endif
