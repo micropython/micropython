@@ -176,17 +176,19 @@ static uint8_t *flash_cache_get_addr_for_read(uint32_t flash_addr) {
 
 static bool flash_is_initialised = false;
 
+STATIC const mp_machine_soft_spi_obj_t spiflash_spi_bus = {
+    .base = {&mp_machine_soft_spi_type},
+    .delay_half = MICROPY_PY_MACHINE_SPI_MIN_DELAY,
+    .polarity = 0,
+    .phase = 0,
+    .sck = &MICROPY_HW_SPIFLASH_SCK,
+    .mosi = &MICROPY_HW_SPIFLASH_MOSI,
+    .miso = &MICROPY_HW_SPIFLASH_MISO,
+};
+
 STATIC const mp_spiflash_t spiflash = {
     .cs = &MICROPY_HW_SPIFLASH_CS,
-    .spi = {
-        .base = {&mp_machine_soft_spi_type},
-        .delay_half = MICROPY_PY_MACHINE_SPI_MIN_DELAY,
-        .polarity = 0,
-        .phase = 0,
-        .sck = &MICROPY_HW_SPIFLASH_SCK,
-        .mosi = &MICROPY_HW_SPIFLASH_MOSI,
-        .miso = &MICROPY_HW_SPIFLASH_MISO,
-    },
+    .spi = (mp_obj_base_t*)&spiflash_spi_bus.base,
 };
 
 #endif
