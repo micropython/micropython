@@ -35,7 +35,11 @@
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
-#define NLR_OS_WINDOWS (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define NLR_OS_WINDOWS 1
+#else
+#define NLR_OS_WINDOWS 0
+#endif
 
 #if NLR_OS_WINDOWS
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
