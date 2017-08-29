@@ -147,7 +147,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|   .. method:: read(nbytes=None)
 //|
 //|     Read characters.  If ``nbytes`` is specified then read at most that many
-//|     bytes. Otherwise, read everything that has been buffered.
+//|     bytes. Otherwise, read everything that arrives until the connection
+//|     times out. Providing the number of bytes expected is highly recommended
+//|     because it will be faster.
 //|
 //|     :return: Data read
 //|     :rtype: bytes or None
