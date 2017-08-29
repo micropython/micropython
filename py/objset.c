@@ -455,7 +455,7 @@ STATIC mp_obj_t set_union(mp_obj_t self_in, mp_obj_t other_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 
-STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->set.used != 0);
@@ -480,7 +480,7 @@ STATIC mp_obj_t set_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t set_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
+STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
     #if MICROPY_PY_BUILTINS_FROZENSET
     bool update = MP_OBJ_IS_TYPE(lhs, &mp_type_set);

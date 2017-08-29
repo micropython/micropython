@@ -293,7 +293,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
 return MP_OBJ_NULL;
 }
 
-STATIC mp_obj_t jobject_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t jobject_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_jobject_t *self = self_in;
     switch (op) {
         case MP_UNARY_OP_BOOL:

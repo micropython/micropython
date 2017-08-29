@@ -280,7 +280,7 @@ const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle,
 // Note: this function is used to check if an object is a str or bytes, which
 // works because both those types use it as their binary_op method.  Revisit
 // MP_OBJ_IS_STR_OR_BYTES if this fact changes.
-mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // check for modulo
     if (op == MP_BINARY_OP_MODULO) {
         mp_obj_t *args = &rhs_in;
@@ -380,9 +380,10 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
             return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
-    }
 
-    return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
 }
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE

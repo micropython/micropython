@@ -231,7 +231,7 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 }
 #endif
 
-STATIC mp_obj_t array_unary_op(mp_uint_t op, mp_obj_t o_in) {
+STATIC mp_obj_t array_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_array_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->len != 0);
@@ -240,7 +240,7 @@ STATIC mp_obj_t array_unary_op(mp_uint_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t array_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_array_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
         case MP_BINARY_OP_ADD: {

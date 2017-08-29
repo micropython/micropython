@@ -162,7 +162,7 @@ mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(!mpz_is_zero(&o->mpz));
@@ -174,7 +174,7 @@ mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
     }
 }
 
-mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const mpz_t *zlhs;
     const mpz_t *zrhs;
     mpz_t z_int;

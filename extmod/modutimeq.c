@@ -189,7 +189,7 @@ STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_dump_obj, mod_utimeq_dump);
 #endif
 
-STATIC mp_obj_t utimeq_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t utimeq_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_utimeq_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);

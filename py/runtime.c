@@ -209,7 +209,7 @@ void mp_delete_global(qstr qst) {
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
-mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
+mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     DEBUG_OP_printf("unary " UINT_FMT " %p\n", op, arg);
 
     if (op == MP_UNARY_OP_NOT) {
@@ -261,7 +261,7 @@ mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg) {
     }
 }
 
-mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %p %p\n", op, lhs, rhs);
 
     // TODO correctly distinguish inplace operators for mutable objects

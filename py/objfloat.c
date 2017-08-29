@@ -155,7 +155,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     }
 }
 
-STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
+STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
@@ -166,7 +166,7 @@ STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t float_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_float_t lhs_val = mp_obj_float_get(lhs_in);
 #if MICROPY_PY_BUILTINS_COMPLEX
     if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
@@ -239,7 +239,7 @@ STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
     *y = mod;
 }
 
-mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
     mp_float_t rhs_val = mp_obj_get_float(rhs_in); // can be any type, this function will convert to float (if possible)
     switch (op) {
         case MP_BINARY_OP_ADD:

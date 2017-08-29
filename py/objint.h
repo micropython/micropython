@@ -58,9 +58,9 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);
 int mp_obj_int_sign(mp_obj_t self_in);
 mp_obj_t mp_obj_int_abs(mp_obj_t self_in);
-mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in);
-mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
-mp_obj_t mp_obj_int_binary_op_extra_cases(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in);
+mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus);
 
 #endif // MICROPY_INCLUDED_PY_OBJINT_H

@@ -100,7 +100,7 @@ STATIC void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-STATIC mp_obj_t uni_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     switch (op) {
         case MP_UNARY_OP_BOOL:
