@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_GC_H__
-#define __MICROPY_INCLUDED_PY_GC_H__
+#ifndef MICROPY_INCLUDED_PY_GC_H
+#define MICROPY_INCLUDED_PY_GC_H
 
 #include <stdint.h>
 
@@ -64,4 +64,4 @@ void gc_info(gc_info_t *info);
 void gc_dump_info(void);
 void gc_dump_alloc_table(void);
 
-#endif // __MICROPY_INCLUDED_PY_GC_H__
+#endif // MICROPY_INCLUDED_PY_GC_H

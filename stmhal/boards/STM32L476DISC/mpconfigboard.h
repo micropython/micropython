@@ -1,5 +1,3 @@
-#include STM32_HAL_H
-
 #define MICROPY_BOARD_EARLY_INIT    STM32L476DISC_board_early_init
 void STM32L476DISC_board_early_init(void);
 

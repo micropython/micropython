@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * Taken from ST Cube library and modified.  See below for original header.
  *
@@ -87,8 +87,7 @@
   * @{
   */
 
-#include "mpconfigboard.h"
-#include STM32_HAL_H
+#include "py/mphal.h"
 
 void __fatal_error(const char *msg);
 

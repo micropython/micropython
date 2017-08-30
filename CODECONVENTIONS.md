@@ -26,6 +26,27 @@ require such detailed description.
 To get good practical examples of good commits and their messages, browse
 the `git log` of the project.
 
+MicroPython doesn't require explicit sign-off for patches ("Signed-off-by"
+lines and similar). Instead, the commit message, and your name and email
+address on it construes your sign-off of the following:
+
+* That you wrote the change yourself, or took it from a project with
+  a compatible license (in the latter case the commit message, and possibly
+  source code should provide reference where the implementation was taken
+  from and give credit to the original author, as required by the license).
+* That you are allowed to release these changes to an open-source project
+  (for example, changes done during paid work for a third party may require
+  explicit approval from that third party).
+* That you (or your employer) agree to release the changes under
+  MicroPython's license, which is the MIT license. Note that you retain
+  copyright for your changes (for smaller changes, the commit message
+  conveys your copyright; if you make significant changes to a particular
+  source module, you're welcome to add your name to the file header).
+* Your signature for all of the above, which is the 'Author' line in
+  the commit message, and which should include your full real name and
+  a valid and active email address by which you can be contacted in the
+  foreseeable future.
+
 Python code conventions
 =======================
 
@@ -52,7 +73,7 @@ White space:
   keyword and the opening parenthesis.
 - Put 1 space after a comma, and 1 space around operators.
 
-Braces: 
+Braces:
 - Use braces for all blocks, even no-line and single-line pieces of
   code.
 - Put opening braces on the end of the line it belongs to, not on
@@ -114,3 +135,76 @@ Type declarations:
         int member;
         void *data;
     } my_struct_t;
+
+Documentation conventions
+=========================
+
+MicroPython generally follows CPython in documentation process and
+conventions. reStructuredText syntax is used for the documention.
+
+Specific conventions/suggestions:
+
+* Use `*` markup to refer to arguments of a function, e.g.:
+
+```
+.. method:: poll.unregister(obj)
+
+   Unregister *obj* from polling.
+```
+
+* Use following syntax for cross-references/cross-links:
+
+```
+:func:`foo` - function foo in current module
+:func:`module1.foo` - function foo in module "module1"
+    (similarly for other referent types)
+:class:`Foo` - class Foo
+:meth:`Class.method1` - method1 in Class
+:meth:`~Class.method1` - method1 in Class, but rendered just as "method1()",
+    not "Class.method1()"
+:meth:`title <method1>` - reference method1, but render as "title" (use only
+    if really needed)
+:mod:`module1` - module module1
+
+`symbol` - generic xref syntax which can replace any of the above in case
+    the xref is unambiguous. If there's ambiguity, there will be a warning
+    during docs generation, which need to be fixed using one of the syntaxes
+    above
+```
+
+* Cross-referencing arbitrary locations
+~~~
+.. _xref_target:
+
+Normal non-indented text.
+
+This is :ref:`reference <xref_target>`.
+
+(If xref target is followed by section title, can be just
+:ref:`xref_target`).
+~~~
+
+* Linking to external URL:
+```
+`link text <http://foo.com/...>`_
+```
+
+* Referencing builtin singleton objects:
+```
+``None``, ``True``, ``False``
+```
+
+* Use following syntax to create common description for more than one element:
+~~~
+.. function:: foo(x)
+              bar(y)
+
+   Description common to foo() and bar().
+~~~
+
+
+More detailed guides and quickrefs:
+
+* http://www.sphinx-doc.org/en/stable/rest.html
+* http://www.sphinx-doc.org/en/stable/markup/inline.html
+* http://docutils.sourceforge.net/docs/user/rst/quickref.html

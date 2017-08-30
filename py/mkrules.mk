@@ -6,7 +6,7 @@ endif
 
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
-# and should not contain any ..'s but rather be relative to the top of the 
+# and should not contain any ..'s but rather be relative to the top of the
 # tree.
 #
 # So for example, py/map.c would have an object file name py/map.o
@@ -47,7 +47,7 @@ $(BUILD)/%.o: %.c
 	$(call compile_c)
 
 # List all native flags since the current build system doesn't have
-# the micropython configuration available. However, these flags are
+# the MicroPython configuration available. However, these flags are
 # needed to extract all qstrings
 QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM -DN_XTENSA
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
@@ -135,7 +135,7 @@ $(PROG): $(OBJ)
 ifndef DEBUG
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
-	$(Q)$(SIZE) $(PROG)
+	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)
 
 clean: clean-prog
 clean-prog:

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -169,7 +169,7 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
 }
 
 /******************************************************************************/
-// Micro Python bindings for USB
+// MicroPython bindings for USB
 
 /*
   Philosophy of USB driver and Python API: pyb.usb_mode(...) configures the USB
@@ -319,12 +319,12 @@ STATIC mp_obj_t pyb_usb_mode(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     return mp_const_none;
 
 bad_mode:
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "bad USB mode"));
+    mp_raise_ValueError("bad USB mode");
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj, 0, pyb_usb_mode);
 
 /******************************************************************************/
-// Micro Python bindings for USB VCP
+// MicroPython bindings for USB VCP
 
 /// \moduleref pyb
 /// \class USB_VCP - USB virtual comm port
@@ -525,7 +525,7 @@ const mp_obj_type_t pyb_usb_vcp_type = {
 };
 
 /******************************************************************************/
-// Micro Python bindings for USB HID
+// MicroPython bindings for USB HID
 
 typedef struct _pyb_usb_hid_obj_t {
     mp_obj_base_t base;
@@ -590,7 +590,7 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
         mp_obj_t *items;
         mp_obj_get_array(report_in, &bufinfo.len, &items);
         if (bufinfo.len > sizeof(temp_buf)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "tuple/list too large for HID report; use bytearray instead"));
+            mp_raise_ValueError("tuple/list too large for HID report; use bytearray instead");
         }
         for (int i = 0; i < bufinfo.len; i++) {
             temp_buf[i] = mp_obj_get_int(items[i]);

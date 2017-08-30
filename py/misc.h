@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_MISC_H__
-#define __MICROPY_INCLUDED_PY_MISC_H__
+#ifndef MICROPY_INCLUDED_PY_MISC_H
+#define MICROPY_INCLUDED_PY_MISC_H
 
 // a mini library of useful types and functions
 
@@ -92,7 +92,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
 #endif
-void *m_malloc_fail(size_t num_bytes);
+NORETURN void *m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_MEM_STATS
 size_t m_get_total_bytes_allocated(void);
@@ -224,4 +224,4 @@ static inline mp_uint_t count_lead_ones(byte val) {
 #define MP_FLOAT_EXP_BIAS ((1 << (MP_FLOAT_EXP_BITS - 1)) - 1)
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
-#endif // __MICROPY_INCLUDED_PY_MISC_H__
+#endif // MICROPY_INCLUDED_PY_MISC_H

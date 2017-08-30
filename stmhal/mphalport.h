@@ -27,6 +27,10 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // timing functions
 
+#include "stmhal/irq.h"
+
+#define mp_hal_quiet_timing_enter() raise_irq_pri(1)
+#define mp_hal_quiet_timing_exit(irq_state) restore_irq_pri(irq_state)
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
 extern bool mp_hal_ticks_cpu_enabled;

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -25,7 +25,7 @@
  */
 
 #include "py/builtin.h"
-#include "py/nlr.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
@@ -41,7 +41,7 @@
 /// working with floating-point numbers.
 
 STATIC NORETURN void math_error(void) {
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "math domain error"));
+    mp_raise_ValueError("math domain error");
 }
 
 #define MATH_FUN_1(py_name, c_name) \
@@ -168,6 +168,8 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
         mp_float_t base = mp_obj_get_float(args[1]);
         if (base <= (mp_float_t)0.0) {
             math_error();
+        } else if (base == (mp_float_t)1.0) {
+            mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }

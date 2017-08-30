@@ -239,6 +239,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('cmdline/repl_emacs_keys.py')
 
     upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
+    upy_float_precision = int(run_feature_check(pyb, args, base_path, 'float.py'))
     has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
     has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
     cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
@@ -251,6 +252,19 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('thread/thread_lock4.py') # has reliability issues
         skip_tests.add('thread/stress_heap.py') # has reliability issues
         skip_tests.add('thread/stress_recurse.py') # has reliability issues
+
+    if upy_float_precision == 0:
+        skip_tests.add('extmod/ujson_dumps_float.py')
+        skip_tests.add('extmod/ujson_loads_float.py')
+        skip_tests.add('misc/rge_sm.py')
+    if upy_float_precision < 32:
+        skip_tests.add('float/float2int_intbig.py') # requires fp32, there's float2int_fp30_intbig.py instead
+        skip_tests.add('float/string_format.py') # requires fp32, there's string_format_fp30.py instead
+        skip_tests.add('float/bytes_construct.py') # requires fp32
+        skip_tests.add('float/bytearray_construct.py') # requires fp32
+    if upy_float_precision < 64:
+        skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
+        skip_tests.add('float/float2int_doubleprec_intbig.py')
 
     if not has_complex:
         skip_tests.add('float/complex1.py')
@@ -272,8 +286,6 @@ def run_tests(pyb, tests, args, base_path="."):
     # Some tests shouldn't be run on pyboard
     if pyb is not None:
         skip_tests.add('basics/exception_chain.py') # warning is not printed
-        skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
-        skip_tests.add('float/float2int_doubleprec_intbig.py') # requires double precision floating point to work
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
         skip_tests.add('extmod/machine_mem.py') # raw memory access not supported
 
@@ -282,19 +294,12 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('misc/recursion.py')             # requires stack checking enabled
             skip_tests.add('misc/recursive_data.py')        # requires stack checking enabled
             skip_tests.add('misc/recursive_iternext.py')    # requires stack checking enabled
-            skip_tests.add('misc/rge_sm.py')                # requires floating point
             skip_tests.update({'extmod/uctypes_%s.py' % t for t in 'bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native array_assign_le array_assign_native_le'.split()}) # requires uctypes
             skip_tests.add('extmod/zlibd_decompress.py')    # requires zlib
-            skip_tests.add('extmod/ujson_dumps_float.py')   # requires floating point
-            skip_tests.add('extmod/ujson_loads_float.py')   # requires floating point
             skip_tests.add('extmod/uheapq1.py')             # uheapq not supported by WiPy
             skip_tests.add('extmod/urandom_basic.py')       # requires urandom
             skip_tests.add('extmod/urandom_extra.py')       # requires urandom
         elif args.target == 'esp8266':
-            skip_tests.add('float/float2int_intbig.py')     # requires at least fp32, there's float2int_fp30_intbig.py instead
-            skip_tests.add('float/string_format.py')        # requires at least fp32, there's string_format_fp30.py instead
-            skip_tests.add('float/bytes_construct.py')      # requires fp32
-            skip_tests.add('float/bytearray_construct.py')  # requires fp32
             skip_tests.add('misc/rge_sm.py')                # too large
         elif args.target == 'minimal':
             skip_tests.add('misc/rge_sm.py')                # too large
@@ -318,6 +323,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.update({'basics/%s.py' % t for t in 'with_break with_continue with_return'.split()}) # require complete with support
         skip_tests.add('basics/array_construct2.py') # requires generators
         skip_tests.add('basics/bool1.py') # seems to randomly fail
+        skip_tests.add('basics/builtin_hash_gen.py') # requires yield
         skip_tests.add('basics/class_bind_self.py') # requires yield
         skip_tests.add('basics/del_deref.py') # requires checking for unbound local
         skip_tests.add('basics/del_local.py') # requires checking for unbound local
@@ -382,7 +388,7 @@ def run_tests(pyb, tests, args, base_path="."):
         if args.write_exp:
             continue
 
-        # run Micro Python
+        # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
 
         if output_mupy == b'SKIP\n':

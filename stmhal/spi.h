@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_SPI_H
+#define MICROPY_INCLUDED_STMHAL_SPI_H
 
 extern SPI_HandleTypeDef SPIHandle1;
 extern SPI_HandleTypeDef SPIHandle2;
@@ -37,3 +39,5 @@ extern const mp_obj_type_t machine_hard_spi_type;
 void spi_init0(void);
 void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
 SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);
+
+#endif // MICROPY_INCLUDED_STMHAL_SPI_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,15 +27,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include STM32_HAL_H
-
-#include "py/nlr.h"
 #include "py/obj.h"
-#include "extmod/machine_mem.h"
-#include "portmodules.h"
-
 #include "py/objint.h"
+#include "extmod/machine_mem.h"
 #include "genhdr/modstm_mpz.h"
+#include "portmodules.h"
 
 STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_stm) },

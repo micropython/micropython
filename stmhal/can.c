@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -262,7 +262,7 @@ STATIC HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout)
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_can_obj_t *self = self_in;
@@ -321,7 +321,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, mp_uint_t n_args, const
 
     // init CAN (if it fails, it's because the port doesn't exist)
     if (!can_init(self)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN port %d does not exist", self->can_id));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", self->can_id));
     }
 
     return mp_const_none;
@@ -357,13 +357,13 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
             can_idx = PYB_CAN_2;
         #endif
         } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%s) does not exist", port));
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%s) doesn't exist", port));
         }
     } else {
         can_idx = mp_obj_get_int(args[0]);
     }
     if (can_idx < 1 || can_idx > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) does not exist", can_idx));
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN(%d) doesn't exist", can_idx));
     }
 
     pyb_can_obj_t *self;
@@ -473,7 +473,7 @@ STATIC mp_obj_t pyb_can_send(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     if (bufinfo.len > 8) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN data field too long"));
+        mp_raise_ValueError("CAN data field too long");
     }
 
     // send the data
@@ -738,7 +738,7 @@ STATIC mp_obj_t pyb_can_setfilter(mp_uint_t n_args, const mp_obj_t *pos_args, mp
     return mp_const_none;
 
 error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "CAN filter parameter error"));
+    mp_raise_ValueError("CAN filter parameter error");
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_setfilter_obj, 1, pyb_can_setfilter);
 

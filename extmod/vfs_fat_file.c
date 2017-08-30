@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -28,7 +28,6 @@
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
-#include <errno.h>
 
 #include "py/nlr.h"
 #include "py/runtime.h"

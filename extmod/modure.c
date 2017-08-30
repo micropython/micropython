@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -31,6 +31,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_URE
 
@@ -69,7 +70,8 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
         // no match for this group
         return mp_const_none;
     }
-    return mp_obj_new_str(start, self->caps[no * 2 + 1] - start, false);
+    return mp_obj_new_str_of_type(mp_obj_get_type(self->str),
+        (const byte*)start, self->caps[no * 2 + 1] - start);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
@@ -129,6 +131,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
     size_t len;
+    const mp_obj_type_t *str_type = mp_obj_get_type(args[1]);
     subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
@@ -150,10 +153,10 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
-        mp_obj_t s = mp_obj_new_str(subj.begin, caps[0] - subj.begin, false);
+        mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, caps[0] - subj.begin);
         mp_obj_list_append(retval, s);
         if (self->re.sub > 0) {
-            mp_not_implemented("Splitting with sub-captures");
+            mp_raise_NotImplementedError("Splitting with sub-captures");
         }
         subj.begin = caps[1];
         if (maxsplit > 0 && --maxsplit == 0) {
@@ -161,7 +164,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    mp_obj_t s = mp_obj_new_str(subj.begin, subj.end - subj.begin, false);
+    mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, subj.end - subj.begin);
     mp_obj_list_append(retval, s);
     return retval;
 }
@@ -197,7 +200,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
 error:
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Error in regex"));
+        mp_raise_ValueError("Error in regex");
     }
     if (flags & FLAG_DEBUG) {
         re1_5_dumpcode(&o->re);

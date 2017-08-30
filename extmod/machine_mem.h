@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,10 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-
-#ifndef __MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H__
-#define __MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H__
+#ifndef MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H
+#define MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H
 
 #include "py/obj.h"
 
@@ -48,4 +46,4 @@ uintptr_t MICROPY_MACHINE_MEM_GET_READ_ADDR(mp_obj_t addr_o, uint align);
 uintptr_t MICROPY_MACHINE_MEM_GET_WRITE_ADDR(mp_obj_t addr_o, uint align);
 #endif
 
-#endif // __MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H__
+#endif // MICROPY_INCLUDED_EXTMOD_MACHINE_MEM_H

@@ -7,14 +7,6 @@ MicroPython documentation and references
     pyboard/general.rst
     pyboard/tutorial/index.rst
     library/index.rst
-    pyboard/hardware/index.rst
+    reference/index.rst
     genrst/index.rst
     license.rst
-    pyboard_contents.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

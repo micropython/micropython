@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -50,7 +50,7 @@
 #include "py/emit.h"
 #include "py/bc.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -824,7 +824,7 @@ STATIC void emit_get_stack_pointer_to_reg_for_pop(emit_t *emit, mp_uint_t reg_de
                     break;
                 default:
                     // not handled
-                    mp_not_implemented("conversion to object");
+                    mp_raise_NotImplementedError("conversion to object");
             }
         }
 
@@ -2158,7 +2158,7 @@ STATIC void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
                 break;
             default:
                 // this can happen when casting a cast: int(int)
-                mp_not_implemented("casting");
+                mp_raise_NotImplementedError("casting");
         }
     } else {
         assert(vtype_fun == VTYPE_PYOBJ);
@@ -2232,12 +2232,12 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 STATIC void emit_native_yield_value(emit_t *emit) {
     // not supported (for now)
     (void)emit;
-    mp_not_implemented("native yield");
+    mp_raise_NotImplementedError("native yield");
 }
 STATIC void emit_native_yield_from(emit_t *emit) {
     // not supported (for now)
     (void)emit;
-    mp_not_implemented("native yield from");
+    mp_raise_NotImplementedError("native yield from");
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {

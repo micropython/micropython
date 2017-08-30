@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -105,6 +105,12 @@ STATIC mp_obj_t dict_unary_op(mp_uint_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
+        #if MICROPY_PY_SYS_GETSIZEOF
+        case MP_UNARY_OP_SIZEOF: {
+            size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
+            return MP_OBJ_NEW_SMALL_INT(sz);
+        }
+        #endif
         default: return MP_OBJ_NULL; // op not supported
     }
 }
@@ -278,18 +284,20 @@ STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_fromkeys_fun_obj, 2, 3, dict_fromkeys);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, MP_ROM_PTR(&dict_fromkeys_fun_obj));
 
-STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp_map_lookup_kind_t lookup_kind) {
-    mp_map_elem_t *elem = mp_map_lookup(self, key, lookup_kind);
+STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_lookup_kind_t lookup_kind) {
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
+    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_map_elem_t *elem = mp_map_lookup(&self->map, args[1], lookup_kind);
     mp_obj_t value;
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
-        if (deflt == MP_OBJ_NULL) {
+        if (n_args == 2) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, key));
+                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, args[1]));
             } else {
                 value = mp_const_none;
             }
         } else {
-            value = deflt;
+            value = args[2];
         }
         if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
             elem->value = value;
@@ -304,39 +312,19 @@ STATIC mp_obj_t dict_get_helper(mp_map_t *self, mp_obj_t key, mp_obj_t deflt, mp
 }
 
 STATIC mp_obj_t dict_get(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    return dict_get_helper(&self->map,
-                           args[1],
-                           n_args == 3 ? args[2] : MP_OBJ_NULL,
-                           MP_MAP_LOOKUP);
+    return dict_get_helper(n_args, args, MP_MAP_LOOKUP);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_get_obj, 2, 3, dict_get);
 
 STATIC mp_obj_t dict_pop(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    return dict_get_helper(&self->map,
-                           args[1],
-                           n_args == 3 ? args[2] : MP_OBJ_NULL,
-                           MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    return dict_get_helper(n_args, args, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_pop_obj, 2, 3, dict_pop);
 
-
 STATIC mp_obj_t dict_setdefault(size_t n_args, const mp_obj_t *args) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    return dict_get_helper(&self->map,
-                           args[1],
-                           n_args == 3 ? args[2] : MP_OBJ_NULL,
-                           MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    return dict_get_helper(n_args, args, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setdefault);
-
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
@@ -615,9 +603,8 @@ mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
 }
 
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key) {
-    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
-    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
-    dict_get_helper(&self->map, key, MP_OBJ_NULL, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_obj_t args[2] = {self_in, key};
+    dict_get_helper(2, args, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     return self_in;
 }
 

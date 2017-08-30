@@ -20,7 +20,8 @@ before_script:
   # For teensy build
   - sudo apt-get install realpath
   # For coverage testing
-  - sudo pip install cpp-coveralls
+  # cpp-coveralls 0.4 conflicts with urllib3 preinstalled in Travis VM
+  - sudo pip install cpp-coveralls==0.3.12
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version
@@ -40,7 +41,7 @@ script:
   - make -C qemu-arm test
   - make -C stmhal
   - make -C stmhal BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
-  - make -C stmhal BOARD=STM32F7DISC
+  - make -C stmhal BOARD=STM32F769DISC
   - make -C stmhal BOARD=STM32L476DISC
   - make -C teensy
   - make -C cc3200 BTARGET=application BTYPE=release

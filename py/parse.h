@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 #include "py/parse2.h"
-#ifndef __MICROPY_INCLUDED_PY_PARSE_H__
-#define __MICROPY_INCLUDED_PY_PARSE_H__
+#ifndef MICROPY_INCLUDED_PY_PARSE_H
+#define MICROPY_INCLUDED_PY_PARSE_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -105,4 +105,4 @@ typedef struct _mp_parse_t {
 mp_parse_tree_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind);
 void mp_parse_tree_clear(mp_parse_tree_t *tree);
 
-#endif // __MICROPY_INCLUDED_PY_PARSE_H__
+#endif // MICROPY_INCLUDED_PY_PARSE_H

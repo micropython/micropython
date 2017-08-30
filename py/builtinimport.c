@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -37,7 +37,7 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -109,7 +109,7 @@ STATIC mp_import_stat_t find_file(const char *file_str, uint file_len, vstr_t *d
 #if MICROPY_PY_SYS
     } else {
         // go through each path looking for a directory or file
-        for (mp_uint_t i = 0; i < path_num; i++) {
+        for (size_t i = 0; i < path_num; i++) {
             vstr_reset(dest);
             size_t p_len;
             const char *p = mp_obj_str_get_data(path_items[i], &p_len);
@@ -227,11 +227,11 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
         do_load_from_lexer(module_obj, lex);
         return;
     }
-    #endif
+    #else
 
     // If we get here then the file was not frozen and we can't compile scripts.
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
-        "script compilation not supported"));
+    mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
+    #endif
 }
 
 STATIC void chop_component(const char *start, const char **end) {
@@ -248,7 +248,7 @@ STATIC void chop_component(const char *start, const char **end) {
 mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (size_t i = 0; i < n_args; i++) {
         DEBUG_printf("  ");
         mp_obj_print(args[i], PRINT_REPR);
         DEBUG_printf("\n");
@@ -262,6 +262,9 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         fromtuple = args[3];
         if (n_args >= 5) {
             level = MP_OBJ_SMALL_INT_VALUE(args[4]);
+            if (level < 0) {
+                mp_raise_ValueError(NULL);
+            }
         }
     }
 
@@ -306,28 +309,13 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             chop_component(this_name, &p);
         }
 
-
-        uint dots_seen = 0;
         while (level--) {
             chop_component(this_name, &p);
-            dots_seen++;
         }
 
-        if (dots_seen == 0 && level >= 1) {
-            // http://legacy.python.org/dev/peps/pep-0328/#relative-imports-and-name
-            // "If the module's name does not contain any package information
-            // (e.g. it is set to '__main__') then relative imports are
-            // resolved as if the module were a top level module, regardless
-            // of where the module is actually located on the file system."
-            // Supposedly this if catches this condition and resolve it properly
-            // TODO: But nobody knows for sure. This condition happens when
-            // package's __init__.py does something like "import .submod". So,
-            // maybe we should check for package here? But quote above doesn't
-            // talk about packages, it talks about dot-less module names.
-            DEBUG_printf("Warning: no dots in current module name and level>0\n");
-            p = this_name + this_name_l;
-        } else if (level != -1) {
-            mp_raise_msg(&mp_type_ImportError, "invalid relative import");
+        // We must have some component left over to import from
+        if (p == this_name) {
+            mp_raise_ValueError("cannot perform relative import");
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
@@ -340,9 +328,6 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
         DEBUG_printf("Resolved base name for relative import: '%s'\n", qstr_str(new_mod_q));
-        if (new_mod_q == MP_QSTR_) {
-            mp_raise_ValueError("cannot perform relative import");
-        }
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
         mod_str = new_mod;
         mod_len = new_mod_l;

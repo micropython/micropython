@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_EXTINT_H
+#define MICROPY_INCLUDED_STMHAL_EXTINT_H
 
 // Vectors 0-15 are for regular pins
 // Vectors 16-22 are for internal sources.
@@ -52,6 +54,7 @@
 void extint_init0(void);
 
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj);
+void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
 
 void extint_enable(uint line);
 void extint_disable(uint line);
@@ -60,3 +63,5 @@ void extint_swint(uint line);
 void Handle_EXTI_Irq(uint32_t line);
 
 extern const mp_obj_type_t extint_type;
+
+#endif // MICROPY_INCLUDED_STMHAL_EXTINT_H

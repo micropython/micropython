@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -35,7 +35,7 @@
 #include "py/runtime0.h"
 #include "py/runtime.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -339,11 +339,27 @@ const qstr mp_unary_op_method_name[] = {
     [MP_UNARY_OP_NEGATIVE] = MP_QSTR___neg__,
     [MP_UNARY_OP_INVERT] = MP_QSTR___invert__,
     #endif
+    #if MICROPY_PY_SYS_GETSIZEOF
+    [MP_UNARY_OP_SIZEOF] = MP_QSTR_getsizeof,
+    #endif
     [MP_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this, used to make sure array has full size
 };
 
 STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
+
+    #if MICROPY_PY_SYS_GETSIZEOF
+    if (MP_UNLIKELY(op == MP_UNARY_OP_SIZEOF)) {
+        // TODO: This doesn't count inherited objects (self->subobj)
+        const mp_obj_type_t *native_base;
+        size_t num_native_bases = instance_count_native_bases(mp_obj_get_type(self_in), &native_base);
+
+        size_t sz = sizeof(*self) + sizeof(*self->subobj) * num_native_bases
+            + sizeof(*self->members.table) * self->members.alloc;
+        return MP_OBJ_NEW_SMALL_INT(sz);
+    }
+    #endif
+
     qstr op_name = mp_unary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -375,7 +391,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
             if (member[0] == MP_OBJ_NULL) {
                 // https://docs.python.org/3/reference/datamodel.html#object.__hash__
                 // "User-defined classes have __eq__() and __hash__() methods by default;
-                // with them, all objects compare unequal (except with themselves) and 
+                // with them, all objects compare unequal (except with themselves) and
                 // x.__hash__() returns an appropriate value such that x == y implies
                 // both that x is y and hash(x) == hash(y)."
                 return MP_OBJ_NEW_SMALL_INT((mp_uint_t)self_in);
@@ -917,8 +933,8 @@ const mp_obj_type_t mp_type_type = {
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
-    assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // Micro Python restriction, for now
-    assert(MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)); // Micro Python restriction, for now
+    assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // MicroPython restriction, for now
+    assert(MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)); // MicroPython restriction, for now
 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 

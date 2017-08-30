@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_RUNTIME0_H__
-#define __MICROPY_INCLUDED_PY_RUNTIME0_H__
+#ifndef MICROPY_INCLUDED_PY_RUNTIME0_H
+#define MICROPY_INCLUDED_PY_RUNTIME0_H
 
 // These must fit in 8 bits; see scope.h
 #define MP_SCOPE_FLAG_VARARGS      (0x01)
@@ -50,6 +50,7 @@ typedef enum {
     MP_UNARY_OP_NEGATIVE,
     MP_UNARY_OP_INVERT,
     MP_UNARY_OP_NOT,
+    MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 } mp_unary_op_t;
 
 typedef enum {
@@ -151,4 +152,4 @@ typedef enum {
 
 extern void *const mp_fun_table[MP_F_NUMBER_OF];
 
-#endif // __MICROPY_INCLUDED_PY_RUNTIME0_H__
+#endif // MICROPY_INCLUDED_PY_RUNTIME0_H

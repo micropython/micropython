@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_OBJ_H__
-#define __MICROPY_INCLUDED_PY_OBJ_H__
+#ifndef MICROPY_INCLUDED_PY_OBJ_H
+#define MICROPY_INCLUDED_PY_OBJ_H
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
@@ -864,4 +864,4 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
     memmove(((char*)dest) + (beg + slice_len) * (item_sz), ((char*)dest) + (end) * (item_sz), ((dest_len) + (len_adj) - ((beg) + (slice_len))) * (item_sz)); \
     memmove(((char*)dest) + (beg) * (item_sz), slice, slice_len * (item_sz));
 
-#endif // __MICROPY_INCLUDED_PY_OBJ_H__
+#endif // MICROPY_INCLUDED_PY_OBJ_H

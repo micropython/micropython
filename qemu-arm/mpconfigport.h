@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-// options to control how Micro Python is built
+// options to control how MicroPython is built
 
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_EMIT_X64            (0)
@@ -57,7 +57,7 @@ typedef long mp_off_t;
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 // extra built-in modules to add to the list of known ones
 extern const struct _mp_obj_module_t mp_module_uos;

@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __MICROPY_INCLUDED_WINDOWS_FMODE_H__
-#define __MICROPY_INCLUDED_WINDOWS_FMODE_H__
+#ifndef MICROPY_INCLUDED_WINDOWS_FMODE_H
+#define MICROPY_INCLUDED_WINDOWS_FMODE_H
 
 // Treat files opened by open() as binary. No line ending translation is done.
 void set_fmode_binary(void);
@@ -35,4 +34,4 @@ void set_fmode_binary(void);
 // When writing to the file \n will be converted into \r\n.
 void set_fmode_text(void);
 
-#endif
+#endif // MICROPY_INCLUDED_WINDOWS_FMODE_H

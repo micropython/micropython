@@ -370,8 +370,8 @@ class Pins(object):
                 af_words = mux_name.split('_')  # ex mux_name: AF9_I2C2
                 cond_var = conditional_var(af_words[1])
                 print_conditional_if(cond_var, file=af_const_file)
-                key = 'MP_OBJ_NEW_QSTR(MP_QSTR_{}),'.format(mux_name)
-                val = 'MP_OBJ_NEW_SMALL_INT(GPIO_{})'.format(mux_name)
+                key = 'MP_ROM_QSTR(MP_QSTR_{}),'.format(mux_name)
+                val = 'MP_ROM_INT(GPIO_{})'.format(mux_name)
                 print('    { %-*s %s },' % (mux_name_width + 26, key, val),
                       file=af_const_file)
                 print_conditional_endif(cond_var, file=af_const_file)

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -191,6 +191,13 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
 
         case MP_BINARY_OP_POWER:
         case MP_BINARY_OP_INPLACE_POWER: {
+            if (rhs_val < 0) {
+                #if MICROPY_PY_BUILTINS_FLOAT
+                return mp_obj_float_binary_op(op, lhs_val, rhs_in);
+                #else
+                mp_raise_ValueError("negative power with no float support");
+                #endif
+            }
             long long ans = 1;
             while (rhs_val > 0) {
                 if (rhs_val & 1) {
@@ -247,7 +254,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OverflowError, "ulonglong too large"));
+        mp_raise_msg(&mp_type_OverflowError, "ulonglong too large");
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;

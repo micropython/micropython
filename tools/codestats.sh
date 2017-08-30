@@ -28,9 +28,9 @@ bin_stmhal=stmhal/build-PYBV10/firmware.elf
 bin_barearm_1=bare-arm/build/flash.elf
 bin_barearm_2=bare-arm/build/firmware.elf
 bin_minimal=minimal/build/firmware.elf
-bin_cc3200_1=cc3200/build/LAUNCHXL/application.axf 
-bin_cc3200_2=cc3200/build/LAUNCHXL/release/application.axf 
-bin_cc3200_3=cc3200/build/WIPY/release/application.axf 
+bin_cc3200_1=cc3200/build/LAUNCHXL/application.axf
+bin_cc3200_2=cc3200/build/LAUNCHXL/release/application.axf
+bin_cc3200_3=cc3200/build/WIPY/release/application.axf
 
 # start at zero size; if build fails reuse previous valid size
 size_unix="0"

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_IRQ_H
+#define MICROPY_INCLUDED_STMHAL_IRQ_H
 
 // these states correspond to values from query_irq, enable_irq and disable_irq
 #define IRQ_STATE_DISABLED (0x00000001)
@@ -147,4 +149,4 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 #define IRQ_PRI_RTC_WKUP        15
 #define IRQ_SUBPRI_RTC_WKUP                 0
 
-
+#endif // MICROPY_INCLUDED_STMHAL_IRQ_H

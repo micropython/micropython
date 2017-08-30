@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,11 +24,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_UNIX_FDFILE_H
+#define MICROPY_INCLUDED_UNIX_FDFILE_H
 
 #include "py/obj.h"
-
-#ifndef __MICROPY_INCLUDED_UNIX_FILE_H__
-#define __MICROPY_INCLUDED_UNIX_FILE_H__
 
 typedef struct _mp_obj_fdfile_t {
     mp_obj_base_t base;
@@ -38,4 +37,4 @@ typedef struct _mp_obj_fdfile_t {
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
 
-#endif // __MICROPY_INCLUDED_UNIX_FILE_H__
+#endif // MICROPY_INCLUDED_UNIX_FDFILE_H

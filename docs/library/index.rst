@@ -1,3 +1,5 @@
+.. _micropython_lib:
+
 MicroPython libraries
 =====================
 
@@ -38,8 +40,7 @@ information pertaining to a specific port.
 
 Beyond the built-in libraries described in this documentation, many more
 modules from the Python standard library, as well as further MicroPython
-extensions to it, can be found in the `micropython-lib repository
-<https://github.com/micropython/micropython-lib>`_.
+extensions to it, can be found in `micropython-lib`.
 
 Python standard libraries and micro-libraries
 ---------------------------------------------
@@ -52,7 +53,7 @@ e.g. ``ujson`` instead of ``json``. This is to signify that such a module is
 micro-library, i.e. implements only a subset of CPython module functionality.
 By naming them differently, a user has a choice to write a Python-level module
 to extend functionality for better compatibility with CPython (indeed, this is
-what done by micropython-lib project mentioned above).
+what done by the `micropython-lib` project mentioned above).
 
 On some embedded platforms, where it may be cumbersome to add Python-level
 wrapper modules to achieve naming compatibility with CPython, micro-modules
@@ -72,16 +73,17 @@ it will fallback to loading the built-in ``ujson`` module.
        cmath.rst
        gc.rst
        math.rst
-       select.rst
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ustruct.rst
        utime.rst
@@ -97,16 +99,17 @@ it will fallback to loading the built-in ``ujson`` module.
        cmath.rst
        gc.rst
        math.rst
-       select.rst
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ustruct.rst
        utime.rst
@@ -120,12 +123,12 @@ it will fallback to loading the built-in ``ujson`` module.
        builtins.rst
        array.rst
        gc.rst
-       select.rst
        sys.rst
        ubinascii.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ussl.rst
        utime.rst
@@ -142,12 +145,14 @@ it will fallback to loading the built-in ``ujson`` module.
        sys.rst
        ubinascii.rst
        ucollections.rst
+       uerrno.rst
        uhashlib.rst
        uheapq.rst
        uio.rst
        ujson.rst
        uos.rst
        ure.rst
+       uselect.rst
        usocket.rst
        ussl.rst
        ustruct.rst

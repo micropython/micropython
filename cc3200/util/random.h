@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,13 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef __RANDOM_H
-#define __RANDOM_H
+#ifndef MICROPY_INCLUDED_CC3200_UTIL_RANDOM_H
+#define MICROPY_INCLUDED_CC3200_UTIL_RANDOM_H
 
 void rng_init0 (void);
 uint32_t rng_get (void);
 
 MP_DECLARE_CONST_FUN_OBJ_0(machine_rng_get_obj);
 
-#endif // __RANDOM_H
+#endif // MICROPY_INCLUDED_CC3200_UTIL_RANDOM_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -147,12 +147,12 @@ STATIC mp_obj_t network_server_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_server_deinit_obj, network_server_deinit);
 #endif
 
-STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_network) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN),                (mp_obj_t)&mod_network_nic_type_wlan },
+STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_network) },
+    { MP_ROM_QSTR(MP_QSTR_WLAN),                MP_ROM_PTR(&mod_network_nic_type_wlan) },
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Server),              (mp_obj_t)&network_server_type },
+    { MP_ROM_QSTR(MP_QSTR_Server),              MP_ROM_PTR(&network_server_type) },
 #endif
 };
 
@@ -164,11 +164,11 @@ const mp_obj_module_t mp_module_network = {
 };
 
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
-STATIC const mp_map_elem_t network_server_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_init),                (mp_obj_t)&network_server_init_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),              (mp_obj_t)&network_server_deinit_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_timeout),             (mp_obj_t)&network_server_timeout_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isrunning),           (mp_obj_t)&network_server_running_obj },
+STATIC const mp_rom_map_elem_t network_server_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&network_server_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&network_server_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_timeout),             MP_ROM_PTR(&network_server_timeout_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isrunning),           MP_ROM_PTR(&network_server_running_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(network_server_locals_dict, network_server_locals_dict_table);

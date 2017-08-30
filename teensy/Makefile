@@ -4,7 +4,7 @@ include ../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 # If you set USE_ARDUINO_TOOLCHAIN=1 then this makefile will attempt to use
 # the toolchain that comes with Teensyduino
@@ -30,8 +30,8 @@ CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
 
 INC += -I.
-INC += -I..
-INC += -I../stmhal
+INC += -I$(TOP)
+INC += -I$(TOP)/stmhal
 INC += -I$(BUILD)
 INC += -Icore
 
@@ -96,7 +96,6 @@ STM_SRC_C = $(addprefix stmhal/,\
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
-	pybstdio.c \
 	)
 
 STM_SRC_S = $(addprefix stmhal/,\
@@ -107,6 +106,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
+	utils/sys_stdio_mphal.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\
@@ -135,7 +135,7 @@ SRC_C += \
 
 OBJ += $(BUILD)/memzip-files.o
 
-MAKE_MEMZIP = ../lib/memzip/make-memzip.py
+MAKE_MEMZIP = $(TOP)/lib/memzip/make-memzip.py
 ifeq ($(MEMZIP_DIR),)
 MEMZIP_DIR = memzip_files
 endif
@@ -207,7 +207,7 @@ GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C)
+SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(LIB_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -232,4 +232,4 @@ $(BUILD)/%.pp: $(BUILD)/%.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

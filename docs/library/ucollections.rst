@@ -4,6 +4,8 @@
 .. module:: ucollections
    :synopsis: collection and container types
 
+|see_cpython_module| :mod:`python:collections`.
+
 This module implements advanced collection and container types to
 hold/accumulate various objects.
 

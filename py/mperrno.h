@@ -23,9 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_PY_MPERRNO_H
+#define MICROPY_INCLUDED_PY_MPERRNO_H
 
-#ifndef __MICROPY_INCLUDED_PY_MPERRNO_H__
-#define __MICROPY_INCLUDED_PY_MPERRNO_H__
+#include "py/mpconfig.h"
 
 #if MICROPY_USE_INTERNAL_ERRNO
 
@@ -139,7 +140,11 @@
 #endif
 
 #if MICROPY_PY_UERRNO
+
+#include "py/obj.h"
+
 qstr mp_errno_to_str(mp_obj_t errno_val);
+
 #endif
 
-#endif // __MICROPY_INCLUDED_PY_MPERRNO_H__
+#endif // MICROPY_INCLUDED_PY_MPERRNO_H

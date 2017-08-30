@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_RINGBUF_H__
-#define __MICROPY_INCLUDED_PY_RINGBUF_H__
+#ifndef MICROPY_INCLUDED_PY_RINGBUF_H
+#define MICROPY_INCLUDED_PY_RINGBUF_H
 
 typedef struct _ringbuf_t {
     uint8_t *buf;
@@ -69,4 +69,4 @@ static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
     return 0;
 }
 
-#endif // __MICROPY_INCLUDED_PY_RINGBUF_H__
+#endif // MICROPY_INCLUDED_PY_RINGBUF_H

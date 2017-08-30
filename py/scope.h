@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_SCOPE_H__
-#define __MICROPY_INCLUDED_PY_SCOPE_H__
+#ifndef MICROPY_INCLUDED_PY_SCOPE_H
+#define MICROPY_INCLUDED_PY_SCOPE_H
 
 #include "py/parse.h"
 #include "py/emitglue.h"
@@ -93,4 +93,4 @@ id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);
 void scope_find_local_and_close_over(scope_t *scope, id_info_t *id, qstr qst);
 
-#endif // __MICROPY_INCLUDED_PY_SCOPE_H__
+#endif // MICROPY_INCLUDED_PY_SCOPE_H

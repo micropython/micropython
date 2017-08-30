@@ -34,7 +34,7 @@
 
 #include "py/mpthread.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -84,7 +84,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(thread_lock_acquire_obj, 1, 3, thread
 
 STATIC mp_obj_t thread_lock_release(mp_obj_t self_in) {
     mp_obj_thread_lock_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO check if already unlocked
+    if (!self->locked) {
+        mp_raise_msg(&mp_type_RuntimeError, NULL);
+    }
     self->locked = false;
     MP_THREAD_GIL_EXIT();
     mp_thread_mutex_unlock(&self->mutex);

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -113,12 +113,15 @@ STATIC mp_obj_t eval_exec_helper(size_t n_args, const mp_obj_t *args, mp_parse_i
     // work out the context
     mp_obj_dict_t *globals = mp_globals_get();
     mp_obj_dict_t *locals = mp_locals_get();
-    if (n_args > 1) {
-        globals = MP_OBJ_TO_PTR(args[1]);
-        if (n_args > 2) {
-            locals = MP_OBJ_TO_PTR(args[2]);
-        } else {
-            locals = globals;
+    for (size_t i = 1; i < 3 && i < n_args; ++i) {
+        if (args[i] != mp_const_none) {
+            if (!MP_OBJ_IS_TYPE(args[i], &mp_type_dict)) {
+                mp_raise_TypeError(NULL);
+            }
+            locals = MP_OBJ_TO_PTR(args[i]);
+            if (i == 1) {
+                globals = locals;
+            }
         }
     }
 

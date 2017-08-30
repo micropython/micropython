@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -939,19 +939,11 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) 
     z->len = mpn_remove_trailing_zeros(z->dig, z->dig + z->len);
 }
 
-bool mpz_is_zero(const mpz_t *z) {
-    return z->len == 0;
-}
-
 #if 0
 these functions are unused
 
 bool mpz_is_pos(const mpz_t *z) {
     return z->len > 0 && z->neg == 0;
-}
-
-bool mpz_is_neg(const mpz_t *z) {
-    return z->len > 0 && z->neg != 0;
 }
 
 bool mpz_is_odd(const mpz_t *z) {

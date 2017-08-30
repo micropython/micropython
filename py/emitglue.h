@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_PY_EMITGLUE_H__
-#define __MICROPY_INCLUDED_PY_EMITGLUE_H__
+#ifndef MICROPY_INCLUDED_PY_EMITGLUE_H
+#define MICROPY_INCLUDED_PY_EMITGLUE_H
 
 #include "py/obj.h"
 
@@ -74,4 +74,4 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
 mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
 
-#endif // __MICROPY_INCLUDED_PY_EMITGLUE_H__
+#endif // MICROPY_INCLUDED_PY_EMITGLUE_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_LIB_NETUTILS_H__
-#define __MICROPY_INCLUDED_LIB_NETUTILS_H__
+#ifndef MICROPY_INCLUDED_LIB_NETUTILS_NETUTILS_H
+#define MICROPY_INCLUDED_LIB_NETUTILS_NETUTILS_H
 
 #define NETUTILS_IPV4ADDR_BUFSIZE    4
 
@@ -47,4 +47,4 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
 // puts IP in out_ip (which must take at least IPADDR_BUF_SIZE bytes).
 mp_uint_t netutils_parse_inet_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian_t endian);
 
-#endif // __MICROPY_INCLUDED_LIB_NETUTILS_H__
+#endif // MICROPY_INCLUDED_LIB_NETUTILS_NETUTILS_H

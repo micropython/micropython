@@ -1,3 +1,6 @@
+#ifndef MICROPY_INCLUDED_TEENSY_STD_H
+#define MICROPY_INCLUDED_TEENSY_STD_H
+
 typedef unsigned int size_t;
 
 void __assert_func(void);
@@ -18,3 +21,5 @@ char *strcat(char *dest, const char *src);
 
 int printf(const char *fmt, ...);
 int snprintf(char *str, size_t size, const char *fmt, ...);
+
+#endif // MICROPY_INCLUDED_TEENSY_STD_H

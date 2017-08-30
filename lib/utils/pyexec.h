@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__
-#define __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__
+#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
 typedef enum {
     PYEXEC_MODE_RAW_REPL,
@@ -51,4 +51,4 @@ extern uint8_t pyexec_repl_active;
 
 MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
 
-#endif // __MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H__
+#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_USBD_MSC_STORAGE_H
+#define MICROPY_INCLUDED_STMHAL_USBD_MSC_STORAGE_H
 
 extern const USBD_StorageTypeDef USBD_FLASH_STORAGE_fops;
 extern const USBD_StorageTypeDef USBD_SDCARD_STORAGE_fops;
+
+#endif // MICROPY_INCLUDED_STMHAL_USBD_MSC_STORAGE_H

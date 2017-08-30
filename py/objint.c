@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -106,7 +106,7 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 #define MP_FLOAT_SIGN_SHIFT_I32 ((MP_FLOAT_FRAC_BITS + MP_FLOAT_EXP_BITS) % 32)
 #define MP_FLOAT_EXP_SHIFT_I32 (MP_FLOAT_FRAC_BITS % 32)
 
-    if (e & (1 << MP_FLOAT_SIGN_SHIFT_I32)) {
+    if (e & (1U << MP_FLOAT_SIGN_SHIFT_I32)) {
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         e |= u.i[MP_ENDIANNESS_BIG] != 0;
 #endif
@@ -432,15 +432,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_from_bytes_fun_obj, 3, 4, int_fro
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
-    // TODO: Support byteorder param
     // TODO: Support signed param (assumes signed=False)
     (void)n_args;
 
-    if (args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
-        mp_not_implemented("");
+    mp_int_t len = mp_obj_get_int(args[1]);
+    if (len < 0) {
+        mp_raise_ValueError(NULL);
     }
-
-    mp_uint_t len = MP_OBJ_SMALL_INT_VALUE(args[1]);
+    bool big_endian = args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
 
     vstr_t vstr;
     vstr_init_len(&vstr, len);
@@ -449,12 +448,13 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!MP_OBJ_IS_SMALL_INT(args[0])) {
-        mp_obj_int_to_bytes_impl(args[0], false, len, data);
+        mp_obj_int_to_bytes_impl(args[0], big_endian, len, data);
     } else
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(args[0]);
-        mp_binary_set_int(MIN((size_t)len, sizeof(val)), false, data, val);
+        size_t l = MIN((size_t)len, sizeof(val));
+        mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
     }
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);

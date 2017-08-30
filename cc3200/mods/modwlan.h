@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,9 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MODWLAN_H_
-#define MODWLAN_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_MODWLAN_H
+#define MICROPY_INCLUDED_CC3200_MODS_MODWLAN_H
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -97,4 +96,4 @@ extern bool wlan_is_connected (void);
 extern void wlan_set_current_time (uint32_t seconds_since_2000);
 extern void wlan_off_on (void);
 
-#endif /* MODWLAN_H_ */
+#endif // MICROPY_INCLUDED_CC3200_MODS_MODWLAN_H

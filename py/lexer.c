@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -341,7 +341,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                             // 3MB of text; even gzip-compressed and with minimal structure, it'll take
                             // roughly half a meg of storage. This form of Unicode escape may be added
                             // later on, but it's definitely not a priority right now. -- CJA 20140607
-                            mp_not_implemented("unicode name escapes");
+                            mp_raise_NotImplementedError("unicode name escapes");
                             break;
                         default:
                             if (c >= '0' && c <= '7') {
@@ -672,7 +672,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->source_name = src_name;
     lex->reader = reader;
     lex->line = 1;
-    lex->column = -2;   // account for 3 dummy bytes
+    lex->column = (size_t)-2; // account for 3 dummy bytes
     lex->emit_dent = 0;
     lex->nested_bracket_level = 0;
     lex->alloc_indent_level = MICROPY_ALLOC_LEXER_INDENT_INIT;

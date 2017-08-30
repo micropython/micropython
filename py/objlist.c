@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -104,6 +104,12 @@ STATIC mp_obj_t list_unary_op(mp_uint_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
+        #if MICROPY_PY_SYS_GETSIZEOF
+        case MP_UNARY_OP_SIZEOF: {
+            size_t sz = sizeof(*self) + sizeof(mp_obj_t) * self->alloc;
+            return MP_OBJ_NEW_SMALL_INT(sz);
+        }
+        #endif
         default: return MP_OBJ_NULL; // op not supported
     }
 }
@@ -156,7 +162,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementedError("");
             }
 
             mp_int_t len_adj = slice.start - slice.stop;
@@ -196,7 +202,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_get_array(value, &value_len, &value_items);
             mp_bound_slice_t slice_out;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice_out)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementedError("");
             }
             mp_int_t len_adj = value_len - (slice_out.stop - slice_out.start);
             //printf("Len adj: %d\n", len_adj);

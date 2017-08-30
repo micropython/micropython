@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -91,10 +91,8 @@ STATIC mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
-    if (0) {
-        // dummy
-#if MICROPY_PY_BUILTINS_FLOAT
-    } else if (mp_obj_is_float(o_in)) {
+    #if MICROPY_PY_BUILTINS_FLOAT
+    if (mp_obj_is_float(o_in)) {
         mp_float_t value = mp_obj_float_get(o_in);
         // TODO check for NaN etc
         if (value < 0) {
@@ -102,17 +100,17 @@ STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
         } else {
             return o_in;
         }
-#if MICROPY_PY_BUILTINS_COMPLEX
+    #if MICROPY_PY_BUILTINS_COMPLEX
     } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_complex)) {
         mp_float_t real, imag;
         mp_obj_complex_get(o_in, &real, &imag);
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
-#endif
-#endif
-    } else {
-        // this will raise a TypeError if the argument is not integral
-        return mp_obj_int_abs(o_in);
+    #endif
     }
+    #endif
+
+    // this will raise a TypeError if the argument is not integral
+    return mp_obj_int_abs(o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 
@@ -226,14 +224,14 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
 
     mp_obj_t dir = mp_obj_new_list(0, NULL);
     if (dict != NULL) {
-        for (mp_uint_t i = 0; i < dict->map.alloc; i++) {
+        for (size_t i = 0; i < dict->map.alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
                 mp_obj_list_append(dir, dict->map.table[i].key);
             }
         }
     }
     if (members != NULL) {
-        for (mp_uint_t i = 0; i < members->alloc; i++) {
+        for (size_t i = 0; i < members->alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(members, i)) {
                 mp_obj_list_append(dir, members->table[i].key);
             }
@@ -326,7 +324,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
         // given many args
         mp_obj_t best_key = MP_OBJ_NULL;
         mp_obj_t best_obj = MP_OBJ_NULL;
-        for (mp_uint_t i = 0; i < n_args; i++) {
+        for (size_t i = 0; i < n_args; i++) {
             mp_obj_t key = key_fn == MP_OBJ_NULL ? args[i] : mp_call_function_1(key_fn, args[i]);
             if (best_obj == MP_OBJ_NULL || (mp_binary_op(op, key, best_key) == mp_const_true)) {
                 best_key = key;
@@ -398,8 +396,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     #endif
 
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "ord expects a character"));
+        mp_raise_TypeError("ord expects a character");
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
             "ord() expected a character, but string of length %d found", (int)len));
@@ -444,7 +441,7 @@ STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *args, mp_map_t *
 
     mp_print_t print = {stream_obj, mp_stream_write_adaptor};
     #endif
-    for (mp_uint_t i = 0; i < n_args; i++) {
+    for (size_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
             mp_stream_write_adaptor(stream_obj, sep_data, sep_len);
@@ -543,7 +540,7 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
 // See mp_load_attr() if making any changes
-STATIC inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
+static inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
     mp_obj_t dest[2];
     // use load_method, raising or not raising exception
     ((defval == MP_OBJ_NULL) ? mp_load_method : mp_load_method_maybe)(base, attr, dest);

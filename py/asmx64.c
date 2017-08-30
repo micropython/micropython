@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -344,8 +344,9 @@ STATIC void asm_x64_mov_i32_to_r64(asm_x64_t *as, int src_i32, int dest_r64) {
 void asm_x64_mov_i64_to_r64(asm_x64_t *as, int64_t src_i64, int dest_r64) {
     // cpu defaults to i32 to r64
     // to mov i64 to r64 need to use REX prefix
-    assert(dest_r64 < 8);
-    asm_x64_write_byte_2(as, REX_PREFIX | REX_W, OPCODE_MOV_I64_TO_R64 | dest_r64);
+    asm_x64_write_byte_2(as,
+        REX_PREFIX | REX_W | (dest_r64 < 8 ? 0 : REX_B),
+        OPCODE_MOV_I64_TO_R64 | (dest_r64 & 7));
     asm_x64_write_word64(as, src_i64);
 }
 

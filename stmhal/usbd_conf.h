@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  */
 
 /**
@@ -34,7 +34,6 @@
 #define __USBD_CONF_H
 
 /* Includes ------------------------------------------------------------------*/
-#include STM32_HAL_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

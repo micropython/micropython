@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -87,7 +87,7 @@ void pybwdt_sl_alive (void) {
 }
 
 /******************************************************************************/
-// Micro Python bindings
+// MicroPython bindings
 
 STATIC const mp_arg_t pyb_wdt_init_args[] = {
     { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -146,8 +146,8 @@ STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wdt_feed_obj, pyb_wdt_feed);
 
-STATIC const mp_map_elem_t pybwdt_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_feed),   (mp_obj_t)&pyb_wdt_feed_obj },
+STATIC const mp_rom_map_elem_t pybwdt_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&pyb_wdt_feed_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(pybwdt_locals_dict, pybwdt_locals_dict_table);
 

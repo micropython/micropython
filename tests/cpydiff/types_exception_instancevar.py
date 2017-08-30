@@ -1,8 +1,8 @@
 """
 categories: Types,Exception
-description: Assign instance variable to exception
-cause: Unknown
-workaround: Unknown
+description: User-defined attributes for builtin exceptions are not supported
+cause: MicroPython is highly optimized for memory usage.
+workaround: Use user-defined exception subclasses.
 """
 e = Exception()
 e.x = 0

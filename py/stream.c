@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -142,7 +142,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
         while (more_bytes > 0) {
             char *p = vstr_add_len(&vstr, more_bytes);
             if (p == NULL) {
-                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
+                mp_raise_msg(&mp_type_MemoryError, "out of memory");
             }
             int error;
             mp_uint_t out_sz = mp_stream_read_exactly(args[0], p, more_bytes, &error);
@@ -381,7 +381,7 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
     while (max_size == -1 || max_size-- != 0) {
         char *p = vstr_add_len(&vstr, 1);
         if (p == NULL) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError, "out of memory"));
+            mp_raise_msg(&mp_type_MemoryError, "out of memory");
         }
 
         int error;
@@ -448,9 +448,14 @@ STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     struct mp_stream_seek_t seek_s;
     // TODO: Could be uint64
     seek_s.offset = mp_obj_get_int(args[1]);
-    seek_s.whence = 0;
+    seek_s.whence = SEEK_SET;
     if (n_args == 3) {
         seek_s.whence = mp_obj_get_int(args[2]);
+    }
+
+    // In POSIX, it's error to seek before end of stream, we enforce it here.
+    if (seek_s.whence == SEEK_SET && seek_s.offset < 0) {
+        mp_raise_OSError(MP_EINVAL);
     }
 
     int error;

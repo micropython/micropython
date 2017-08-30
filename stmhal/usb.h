@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_USB_H
+#define MICROPY_INCLUDED_STMHAL_USB_H
 
 #include "usbd_cdc_msc_hid0.h"
 
@@ -67,3 +69,5 @@ void usb_vcp_send_strn_cooked(const char *str, int len);
 void pyb_usb_host_init(void);
 void pyb_usb_host_process(void);
 uint pyb_usb_host_get_keyboard(void);
+
+#endif // MICROPY_INCLUDED_STMHAL_USB_H

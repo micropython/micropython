@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,7 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_STMHAL_USBD_DESC_H
+#define MICROPY_INCLUDED_STMHAL_USBD_DESC_H
 
 extern const USBD_DescriptorsTypeDef USBD_Descriptors;
 
 void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num, int cdc_only);
+
+#endif // MICROPY_INCLUDED_STMHAL_USBD_DESC_H

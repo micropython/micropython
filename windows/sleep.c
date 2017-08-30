@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -31,7 +31,7 @@
 HANDLE waitTimer = NULL;
 
 void init_sleep(void) {
-    waitTimer = CreateWaitableTimer(NULL, TRUE, NULL); 
+    waitTimer = CreateWaitableTimer(NULL, TRUE, NULL);
 }
 
 void deinit_sleep(void) {

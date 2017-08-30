@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -148,7 +148,8 @@ mp_obj_t mp_obj_tuple_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
             mp_seq_cat(s->items, o->items, o->len, p->items, p->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(s);
         }
-        case MP_BINARY_OP_MULTIPLY: {
+        case MP_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_INPLACE_MULTIPLY: {
             mp_int_t n;
             if (!mp_obj_get_int_maybe(rhs, &n)) {
                 return MP_OBJ_NULL; // op not supported
@@ -180,7 +181,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_not_implemented("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
             }
             mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice.stop - slice.start, NULL));
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);

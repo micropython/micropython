@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_WINDOWS_SLEEP_H
+#define MICROPY_INCLUDED_WINDOWS_SLEEP_H
 
 void init_sleep(void);
 void deinit_sleep(void);
@@ -30,3 +32,5 @@ void msec_sleep(double msec);
 #ifdef _MSC_VER
 int usleep(__int64 usec);
 #endif
+
+#endif // MICROPY_INCLUDED_WINDOWS_SLEEP_H

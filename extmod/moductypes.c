@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -118,7 +118,7 @@ typedef struct _mp_obj_uctypes_struct_t {
 } mp_obj_uctypes_struct_t;
 
 STATIC NORETURN void syntax_error(void) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "syntax error in uctypes descriptor"));
+    mp_raise_TypeError("syntax error in uctypes descriptor");
 }
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -215,7 +215,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             // but scalar structure field is lowered into native Python int, so all
             // type info is lost. So, we cannot say if it's scalar type description,
             // or such lowered scalar.
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "Cannot unambiguously get sizeof scalar"));
+            mp_raise_TypeError("Cannot unambiguously get sizeof scalar");
         }
         syntax_error();
     }
@@ -281,13 +281,13 @@ STATIC mp_obj_t uctypes_struct_sizeof(mp_obj_t obj_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uctypes_struct_sizeof_obj, uctypes_struct_sizeof);
 
-STATIC inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
+static inline mp_obj_t get_unaligned(uint val_type, byte *p, int big_endian) {
     char struct_type = big_endian ? '>' : '<';
     static const char type2char[16] = "BbHhIiQq------fd";
     return mp_binary_get_val(struct_type, type2char[val_type], &p);
 }
 
-STATIC inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
+static inline void set_unaligned(uint val_type, byte *p, int big_endian, mp_obj_t val) {
     char struct_type = big_endian ? '>' : '<';
     static const char type2char[16] = "BbHhIiQq------fd";
     mp_binary_set_val(struct_type, type2char[val_type], val, &p);
@@ -393,7 +393,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     // TODO: Support at least OrderedDict in addition
     if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_dict)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "struct: no fields"));
+            mp_raise_TypeError("struct: no fields");
     }
 
     mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
@@ -526,7 +526,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     } else {
         // load / store
         if (!MP_OBJ_IS_TYPE(self->desc, &mp_type_tuple)) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "struct: cannot index"));
+            mp_raise_TypeError("struct: cannot index");
         }
 
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);

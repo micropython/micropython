@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifndef MODNETWORK_H_
-#define MODNETWORK_H_
+#ifndef MICROPY_INCLUDED_CC3200_MODS_MODNETWORK_H
+#define MICROPY_INCLUDED_CC3200_MODS_MODNETWORK_H
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -52,7 +51,7 @@ typedef struct _mod_network_socket_base_t {
         } u_param;
         int16_t sd;
     };
-    bool has_timeout;
+    uint32_t timeout_ms; // 0 for no timeout
     bool cert_req;
 } mod_network_socket_base_t;
 
@@ -71,4 +70,4 @@ extern const mod_network_nic_type_t mod_network_nic_type_wlan;
  ******************************************************************************/
 void mod_network_init0(void);
 
-#endif  // MODNETWORK_H_
+#endif // MICROPY_INCLUDED_CC3200_MODS_MODNETWORK_H

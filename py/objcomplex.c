@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -196,7 +196,7 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
         }
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError, "can't do truncated division of a complex number"));
+            mp_raise_TypeError("can't do truncated division of a complex number");
 
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
@@ -229,7 +229,6 @@ mp_obj_t mp_obj_complex_binary_op(mp_uint_t op, mp_float_t lhs_real, mp_float_t 
             if (abs1 == 0) {
                 if (rhs_imag == 0 && rhs_real >= 0) {
                     lhs_real = (rhs_real == 0);
-                    rhs_real = 0;
                 } else {
                     mp_raise_msg(&mp_type_ZeroDivisionError, "0.0 to a complex power");
                 }

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -118,15 +118,28 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)arg;
             mp_uint_t ref = 0;
             switch (s->whence) {
-                case 1: // SEEK_CUR
+                case MP_SEEK_CUR:
                     ref = o->pos;
                     break;
-                case 2: // SEEK_END
+                case MP_SEEK_END:
                     ref = o->vstr->len;
                     break;
             }
-            o->pos = ref + s->offset;
-            s->offset = o->pos;
+            mp_uint_t new_pos = ref + s->offset;
+
+            // For MP_SEEK_SET, offset is unsigned
+            if (s->whence != MP_SEEK_SET && s->offset < 0) {
+                if (new_pos > ref) {
+                    // Negative offset from SEEK_CUR or SEEK_END went past 0.
+                    // CPython sets position to 0, POSIX returns an EINVAL error
+                    new_pos = 0;
+                }
+            } else if (new_pos < ref) {
+                // positive offset went beyond the limit of mp_uint_t
+                *errcode = MP_EINVAL;  // replace with MP_EOVERFLOW when defined
+                return MP_STREAM_ERROR;
+            }
+            s->offset = o->pos = new_pos;
             return 0;
         }
         case MP_STREAM_FLUSH:
