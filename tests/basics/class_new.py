@@ -5,13 +5,14 @@ try:
 except AttributeError:
     print("SKIP")
     raise SystemExit
+
 class A:
     def __new__(cls):
         print("A.__new__")
         return super(cls, A).__new__(cls)
 
     def __init__(self):
-        pass
+        print("A.__init__")
 
     def meth(self):
         print('A.meth')
@@ -35,5 +36,10 @@ a.meth()
 
 class B:
     def __new__(self, v1, v2):
-        None
-B(1, 2)
+        print("B.__new__", v1, v2)
+
+    def __init__(self, v1, v2):
+        # Should not be called in this test
+        print("B.__init__", v1, v2)
+
+print("B inst:", B(1, 2))
