@@ -7,7 +7,7 @@
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC mp_obj_t mod_wipy_heartbeat (mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mod_wipy_heartbeat(size_t n_args, const mp_obj_t *args) {
     if (n_args) {
         mperror_enable_heartbeat (mp_obj_is_true(args[0]));
         return mp_const_none;

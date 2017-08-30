@@ -481,7 +481,7 @@ uint32_t rtc_us_to_subsec(uint32_t us) {
 #define rtc_subsec_to_us
 #endif
 
-mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     rtc_init_finalise();
     if (n_args == 1) {
         // get date and time
@@ -531,7 +531,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime
 // wakeup(None)
 // wakeup(ms, callback=None)
 // wakeup(wucksel, wut, callback)
-mp_obj_t pyb_rtc_wakeup(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     // wut is wakeup counter start value, wucksel is clock source
     // counter is decremented at wucksel rate, and wakes the MCU when it gets to 0
     // wucksel=0b000 is RTC/16 (RTC runs at 32768Hz)
@@ -666,7 +666,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_wakeup_obj, 2, 4, pyb_rtc_wakeup);
 // calibration(cal)
 // When an integer argument is provided, check that it falls in the range [-511 to 512]
 // and set the calibration value; otherwise return calibration value
-mp_obj_t pyb_rtc_calibration(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
     rtc_init_finalise();
     mp_int_t cal;
     if (n_args == 2) {

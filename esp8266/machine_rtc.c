@@ -126,7 +126,7 @@ void rtc_prepare_deepsleep(uint64_t sleep_us) {
     system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
 }
 
-STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // Get time
         uint64_t msecs = pyb_rtc_get_us_since_2000() / 1000;
@@ -165,7 +165,7 @@ STATIC mp_obj_t pyb_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-STATIC mp_obj_t pyb_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     uint8_t rtcram[MEM_USER_MAXLEN];
     uint32_t len;
 

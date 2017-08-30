@@ -101,7 +101,7 @@ void machine_init(void) {
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
-STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print unique id; 96 bits
     {
         byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
@@ -251,7 +251,7 @@ STATIC mp_uint_t machine_freq_calc_apb_div(mp_uint_t wanted_div) {
     else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
     else { return RCC_SYSCLK_DIV16; }
 }
-STATIC mp_obj_t machine_freq(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
         mp_obj_t tuple[4] = {

@@ -62,7 +62,7 @@ STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     }
 }
 
-STATIC mp_obj_t get_wlan(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     int idx = 0;
     if (n_args > 0) {
         idx = mp_obj_get_int(args[0]);
@@ -71,7 +71,7 @@ STATIC mp_obj_t get_wlan(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
 
-STATIC mp_obj_t esp_active(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t mode = wifi_get_opmode();
     if (n_args > 1) {
@@ -94,7 +94,7 @@ STATIC mp_obj_t esp_active(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
-STATIC mp_obj_t esp_connect(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
     require_if(args[0], STATION_IF);
     struct station_config config = {{0}};
     size_t len;
@@ -442,7 +442,7 @@ const mp_obj_type_t wlan_if_type = {
     .locals_dict = (mp_obj_dict_t*)&wlan_if_locals_dict,
 };
 
-STATIC mp_obj_t esp_phy_mode(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_phy_mode());
     } else {

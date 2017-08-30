@@ -243,7 +243,7 @@ STATIC void pyb_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 }
 
 // pin.init(mode, pull=None, *, value)
-STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_pin_obj_init_helper(pyb_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -347,13 +347,13 @@ STATIC mp_obj_t pyb_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
 }
 
 // pin.init(mode, pull)
-STATIC mp_obj_t pyb_pin_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pyb_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_pin_init_obj, 1, pyb_pin_obj_init);
 
 // pin.value([value])
-STATIC mp_obj_t pyb_pin_value(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_pin_value(size_t n_args, const mp_obj_t *args) {
     return pyb_pin_call(args[0], n_args - 1, 0, args + 1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_pin_value_obj, 1, 2, pyb_pin_value);

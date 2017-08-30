@@ -65,7 +65,7 @@
 /// second  is 0-59
 /// weekday is 0-6 for Mon-Sun.
 /// yearday is 1-366
-STATIC mp_obj_t time_localtime(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         timeutils_struct_time_t tm;
 

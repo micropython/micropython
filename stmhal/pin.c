@@ -241,7 +241,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 /// \classmethod \constructor(id, ...)
 /// Create a new Pin object associated with the id.  If additional arguments are given,
@@ -278,7 +278,7 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
 
 /// \classmethod mapper([fun])
 /// Get or set the pin mapper function.
-STATIC mp_obj_t pin_mapper(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_mapper(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         MP_STATE_PORT(pin_class_mapper) = args[1];
         return mp_const_none;
@@ -290,7 +290,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, (mp_obj_t)&pin_mapper_fun
 
 /// \classmethod dict([dict])
 /// Get or set the pin mapper dictionary.
-STATIC mp_obj_t pin_map_dict(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_map_dict(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         MP_STATE_PORT(pin_class_map_dict) = args[1];
         return mp_const_none;
@@ -316,7 +316,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
 
 /// \classmethod debug([state])
 /// Get or set the debugging state (`True` or `False` for on or off).
-STATIC mp_obj_t pin_debug(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_debug(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         pin_class_debug = mp_obj_is_true(args[1]);
         return mp_const_none;
@@ -327,7 +327,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_obj);
 
 // init(mode, pull=None, af=-1, *, value, alt)
-STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = mp_const_none}},
@@ -384,7 +384,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
     return mp_const_none;
 }
 
-STATIC mp_obj_t pin_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
@@ -396,7 +396,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 ///   - With `value` given, set the logic level of the pin.  `value` can be
 ///   anything that converts to a boolean.  If it converts to `True`, the pin
 ///   is set high, otherwise it is set low.
-STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
     return pin_call(args[0], n_args - 1, 0, args + 1);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);

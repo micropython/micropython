@@ -334,7 +334,7 @@ mp_obj_t led_obj_toggle(mp_obj_t self_in) {
 /// Get or set the LED intensity.  Intensity ranges between 0 (off) and 255 (full on).
 /// If no argument is given, return the LED intensity.
 /// If an argument is given, set the LED intensity and return `None`.
-mp_obj_t led_obj_intensity(mp_uint_t n_args, const mp_obj_t *args) {
+mp_obj_t led_obj_intensity(size_t n_args, const mp_obj_t *args) {
     pyb_led_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(led_get_intensity(self->led_id));

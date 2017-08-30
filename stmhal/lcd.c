@@ -421,7 +421,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_get_obj, pyb_lcd_get);
 /// Set the pixel at `(x, y)` to the given colour (0 or 1).
 ///
 /// This method writes to the hidden buffer.  Use `show()` to show the buffer.
-STATIC mp_obj_t pyb_lcd_pixel(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_lcd_pixel(size_t n_args, const mp_obj_t *args) {
     pyb_lcd_obj_t *self = args[0];
     int x = mp_obj_get_int(args[1]);
     int y = mp_obj_get_int(args[2]);
@@ -442,7 +442,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_pixel_obj, 4, 4, pyb_lcd_pixe
 /// Draw the given text to the position `(x, y)` using the given colour (0 or 1).
 ///
 /// This method writes to the hidden buffer.  Use `show()` to show the buffer.
-STATIC mp_obj_t pyb_lcd_text(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_lcd_text(size_t n_args, const mp_obj_t *args) {
     // extract arguments
     pyb_lcd_obj_t *self = args[0];
     size_t len;

@@ -112,7 +112,7 @@ STATIC mp_obj_t network_server_make_new(const mp_obj_type_t *type, size_t n_args
     return (mp_obj_t)self;
 }
 
-STATIC mp_obj_t network_server_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t network_server_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(network_server_args) - 1];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &network_server_args[1], args);
@@ -121,7 +121,7 @@ STATIC mp_obj_t network_server_init(mp_uint_t n_args, const mp_obj_t *pos_args, 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_server_init_obj, 1, network_server_init);
 
 // timeout value given in seconds
-STATIC mp_obj_t network_server_timeout(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t network_server_timeout(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
         uint32_t timeout = mp_obj_get_int(args[1]);
         servers_set_timeout(timeout * 1000);

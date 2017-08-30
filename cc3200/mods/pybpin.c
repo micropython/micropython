@@ -530,7 +530,7 @@ STATIC const mp_arg_t pin_init_args[] = {
 };
 #define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
-STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[pin_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, pos_args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, args);
@@ -660,12 +660,12 @@ STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     return (mp_obj_t)pin;
 }
 
-STATIC mp_obj_t pin_obj_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 
-STATIC mp_obj_t pin_value(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         // get the value
@@ -690,7 +690,7 @@ STATIC mp_obj_t pin_id(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_id_obj, pin_id);
 
-STATIC mp_obj_t pin_mode(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_mode(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->mode);
@@ -704,7 +704,7 @@ STATIC mp_obj_t pin_mode(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mode_obj, 1, 2, pin_mode);
 
-STATIC mp_obj_t pin_pull(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_pull(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         if (self->pull == PIN_TYPE_STD) {
@@ -726,7 +726,7 @@ STATIC mp_obj_t pin_pull(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_pull_obj, 1, 2, pin_pull);
 
-STATIC mp_obj_t pin_drive(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pin_drive(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->strength);
@@ -761,7 +761,7 @@ STATIC mp_obj_t pin_alt_list(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_alt_list_obj, pin_alt_list);
 
 /// \method irq(trigger, priority, handler, wake)
-STATIC mp_obj_t pin_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
     pin_obj_t *self = pos_args[0];

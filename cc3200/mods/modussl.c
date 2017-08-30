@@ -70,7 +70,7 @@ STATIC const mp_obj_type_t ssl_socket_type = {
     .locals_dict = (mp_obj_t)&socket_locals_dict,
 };
 
-STATIC mp_obj_t mod_ssl_wrap_socket(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_sock,             MP_ARG_REQUIRED | MP_ARG_OBJ,  },
         { MP_QSTR_keyfile,          MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = mp_const_none} },

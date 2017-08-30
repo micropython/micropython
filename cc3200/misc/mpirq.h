@@ -34,7 +34,7 @@
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/
-typedef mp_obj_t (*mp_irq_init_t) (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+typedef mp_obj_t (*mp_irq_init_t) (size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 typedef void (*mp_irq_void_method_t) (mp_obj_t self);
 typedef int (*mp_irq_int_method_t)  (mp_obj_t self);
 

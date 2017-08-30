@@ -108,7 +108,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 // Get or set the UART object that the REPL is repeated on.
 // TODO should accept any object with read/write methods.
-STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
             return mp_const_none;

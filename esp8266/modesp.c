@@ -56,7 +56,7 @@ STATIC mp_obj_t esp_osdebug(mp_obj_t val) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_osdebug_obj, esp_osdebug);
 
-STATIC mp_obj_t esp_sleep_type(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_sleep_type(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_sleep_type());
     } else {
@@ -66,7 +66,7 @@ STATIC mp_obj_t esp_sleep_type(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_sleep_type_obj, 0, 1, esp_sleep_type);
 
-STATIC mp_obj_t esp_deepsleep(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_deepsleep(size_t n_args, const mp_obj_t *args) {
     uint32_t sleep_us = n_args > 0 ? mp_obj_get_int(args[0]) : 0;
     // prepare for RTC reset at wake up
     rtc_prepare_deepsleep(sleep_us);

@@ -407,7 +407,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
 
 /// \method ifconfig([(ip, subnet, gateway, dns)])
 /// Get/set IP address, subnet mask, gateway and DNS.
-STATIC mp_obj_t wiznet5k_ifconfig(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
     wiz_NetInfo netinfo;
     ctlnetwork(CN_GET_NETINFO, &netinfo);
     if (n_args == 1) {

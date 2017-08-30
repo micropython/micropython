@@ -145,7 +145,7 @@ void mp_irq_handler (mp_obj_t self_in) {
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC mp_obj_t mp_irq_init (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t mp_irq_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_irq_obj_t *self = pos_args[0];
     // this is a bit of a hack, but it let us reuse the callback_create method from our parent
     ((mp_obj_t *)pos_args)[0] = self->parent;

@@ -310,7 +310,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return (mp_obj_t)&pyb_rtc_obj;
 }
 
-STATIC mp_obj_t pyb_rtc_init (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_rtc_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_rtc_init_args) - 1];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_rtc_init_args[1], args);
@@ -347,7 +347,7 @@ STATIC mp_obj_t pyb_rtc_deinit (mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_rtc_deinit_obj, pyb_rtc_deinit);
 
-STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,                            MP_ARG_INT,  {.u_int = 0} },
         { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -388,7 +388,7 @@ STATIC mp_obj_t pyb_rtc_alarm (mp_uint_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_alarm_obj, 1, pyb_rtc_alarm);
 
-STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     pyb_rtc_obj_t *self = args[0];
     int32_t ms_left;
     uint32_t c_seconds;
@@ -411,7 +411,7 @@ STATIC mp_obj_t pyb_rtc_alarm_left (mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
 
-STATIC mp_obj_t pyb_rtc_alarm_cancel (mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pyb_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
         mp_raise_OSError(MP_ENODEV);
@@ -423,7 +423,7 @@ STATIC mp_obj_t pyb_rtc_alarm_cancel (mp_uint_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_cancel_obj, 1, 2, pyb_rtc_alarm_cancel);
 
 /// \method irq(trigger, priority, handler, wake)
-STATIC mp_obj_t pyb_rtc_irq (mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
     pyb_rtc_obj_t *self = pos_args[0];
