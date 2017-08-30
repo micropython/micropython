@@ -1455,8 +1455,19 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, const byte *pn_va
     // break/continue apply to outer loop (if any) in the else block
     END_BREAK_CONTINUE_BLOCK
 
+    // Compile the else block.  We must pop the iterator variables before
+    // executing the else code because it may contain break/continue statements.
+    uint end_label = 0;
     if (pn_else != NULL) {
+        // discard final value of "var", and possible "end" value
+        EMIT(pop_top);
+        if (end_on_stack) {
+            EMIT(pop_top);
+        }
         compile_node(comp, pn_else);
+        end_label = comp_next_label(comp);
+        EMIT_ARG(jump, end_label);
+        EMIT_ARG(adjust_stack_size, 1 + end_on_stack);
     }
 
     EMIT_ARG(label_assign, break_label);
@@ -1467,6 +1478,10 @@ STATIC void compile_for_stmt_optimised_range(compiler_t *comp, const byte *pn_va
     // discard <end> value if it's on the stack
     if (end_on_stack) {
         EMIT(pop_top);
+    }
+
+    if (pn_else != NULL) {
+        EMIT_ARG(label_assign, end_label);
     }
 }
 
