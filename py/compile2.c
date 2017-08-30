@@ -43,6 +43,8 @@
 
 // TODO need to mangle __attr names
 
+#define INVALID_LABEL (0xffff)
+
 typedef enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) PN_##rule,
@@ -959,7 +961,7 @@ STATIC void compile_del_stmt(compiler_t *comp, const byte *p, const byte *ptop) 
 
 STATIC void compile_break_stmt(compiler_t *comp, const byte *p, const byte *ptop) {
     (void)ptop;
-    if (comp->break_label == 0) {
+    if (comp->break_label == INVALID_LABEL) {
         compile_syntax_error(comp, p, "'break' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
@@ -968,7 +970,7 @@ STATIC void compile_break_stmt(compiler_t *comp, const byte *p, const byte *ptop
 
 STATIC void compile_continue_stmt(compiler_t *comp, const byte *p, const byte *ptop) {
     (void)ptop;
-    if (comp->continue_label == 0) {
+    if (comp->continue_label == INVALID_LABEL) {
         compile_syntax_error(comp, p, "'continue' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
@@ -2840,7 +2842,7 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
 STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
-    comp->next_label = 1;
+    comp->next_label = 0;
     EMIT_ARG(start_pass, pass, scope);
 
     if (comp->pass == MP_PASS_SCOPE) {
@@ -3019,7 +3021,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
 STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
-    comp->next_label = 1;
+    comp->next_label = 0;
 
     if (scope->kind != SCOPE_FUNCTION) {
         compile_syntax_error(comp, NULL, "inline assembler must be a function");
@@ -3273,6 +3275,8 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
     comp->source_file = source_file;
     comp->is_repl = is_repl;
     comp->co_data = parse_tree->co_data;
+    comp->break_label = INVALID_LABEL;
+    comp->continue_label = INVALID_LABEL;
 
     // create the array of scopes
     comp->num_scopes = pt_small_int_value(pt_next(parse_tree->root));
