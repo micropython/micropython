@@ -12,6 +12,11 @@ except AttributeError:
 
 class Foo:
 
+    def __new__(cls):
+        # Should not be called in this test
+        print("in __new__")
+        raise RuntimeError
+
     def __init__(self):
         print("in __init__")
         self.attr = "something"
@@ -19,12 +24,13 @@ class Foo:
 
 o = object.__new__(Foo)
 #print(o)
-print(hasattr(o, "attr"))
-print(isinstance(o, Foo))
+print("Result of __new__ has .attr:", hasattr(o, "attr"))
+print("Result of __new__ is already a Foo:", isinstance(o, Foo))
+
 o.__init__()
 #print(dir(o))
-print(hasattr(o, "attr"))
-print(o.attr)
+print("After __init__ has .attr:", hasattr(o, "attr"))
+print(".attr:", o.attr)
 
 # should only be able to call __new__ on user types
 try:
