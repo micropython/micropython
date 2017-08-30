@@ -35,7 +35,7 @@
 #include "py/compile.h"
 #include "py/runtime.h"
 
-#if MICROPY_ENABLE_COMPILER
+#if MICROPY_ENABLE_COMPILER && MICROPY_USE_SMALL_HEAP_COMPILER
 
 #if MICROPY_PY_ASYNC_AWAIT
 #error "async/await syntax not implemented with this parser/compiler"
@@ -3476,4 +3476,4 @@ mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt
     return mp_make_function_from_raw_code(rc, MP_OBJ_NULL, MP_OBJ_NULL);
 }
 
-#endif // MICROPY_ENABLE_COMPILER
+#endif // MICROPY_ENABLE_COMPILER && MICROPY_USE_SMALL_HEAP_COMPILER

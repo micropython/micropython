@@ -358,6 +358,14 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
 #endif
 
+// Whether to use an alternate parser and compiler optimised for small heaps.
+// This parser/compiler uses more code space but a lot less heap when building
+// the parse tree.  But it has the disadvantage that the entire parse tree must
+// fit in a contiguous chunk of memory on the heap.
+#ifndef MICROPY_USE_SMALL_HEAP_COMPILER
+#define MICROPY_USE_SMALL_HEAP_COMPILER (0)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
@@ -678,7 +686,7 @@ typedef double mp_float_t;
 
 // Support for async/await/async for/async with
 #ifndef MICROPY_PY_ASYNC_AWAIT
-#define MICROPY_PY_ASYNC_AWAIT (1)
+#define MICROPY_PY_ASYNC_AWAIT (!MICROPY_USE_SMALL_HEAP_COMPILER)
 #endif
 
 // Issue a warning when comparing str and bytes objects

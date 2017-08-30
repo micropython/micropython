@@ -40,18 +40,25 @@ STATIC const uint8_t scope_simple_name_table[] = {
     [SCOPE_GEN_EXPR] = MP_QSTR__lt_genexpr_gt_,
 };
 
-scope_t *scope_new(scope_kind_t kind, const byte *pn, qstr source_file, mp_uint_t emit_options) {
+scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options) {
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
     scope->pn = pn;
     scope->source_file = source_file;
     if (kind == SCOPE_FUNCTION || kind == SCOPE_CLASS) {
+        #if MICROPY_USE_SMALL_HEAP_COMPILER
         qstr id;
         pt_extract_id(pn, &id); // function name
         scope->simple_name = id;
+        #else
+        scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
+        #endif
     } else {
         scope->simple_name = scope_simple_name_table[kind];
     }
+    #if !MICROPY_USE_SMALL_HEAP_COMPILER
+    scope->raw_code = mp_emit_glue_new_raw_code();
+    #endif
     scope->emit_options = emit_options;
     scope->id_info_alloc = MICROPY_ALLOC_SCOPE_ID_INIT;
     scope->id_info = m_new(id_info_t, scope->id_info_alloc);

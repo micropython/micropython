@@ -23,14 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "py/parse2.h"
 #ifndef MICROPY_INCLUDED_PY_PARSE_H
 #define MICROPY_INCLUDED_PY_PARSE_H
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include "py/parse2.h"
 #include "py/obj.h"
+
+#if !MICROPY_USE_SMALL_HEAP_COMPILER
 
 struct _mp_lexer_t;
 
@@ -104,5 +106,7 @@ typedef struct _mp_parse_t {
 // the parser will free the lexer before it returns
 mp_parse_tree_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind);
 void mp_parse_tree_clear(mp_parse_tree_t *tree);
+
+#endif // !MICROPY_USE_SMALL_HEAP_COMPILER
 
 #endif // MICROPY_INCLUDED_PY_PARSE_H

@@ -41,7 +41,7 @@
 #include "py/objstr.h"
 #include "py/builtin.h"
 
-#if MICROPY_ENABLE_COMPILER
+#if MICROPY_ENABLE_COMPILER && !MICROPY_USE_SMALL_HEAP_COMPILER
 
 #define RULE_ACT_ARG_MASK       (0x0f)
 #define RULE_ACT_KIND_MASK      (0x30)
@@ -1081,4 +1081,4 @@ void mp_parse_tree_clear(mp_parse_tree_t *tree) {
     }
 }
 
-#endif // MICROPY_ENABLE_COMPILER
+#endif // MICROPY_ENABLE_COMPILER && !MICROPY_USE_SMALL_HEAP_COMPILER

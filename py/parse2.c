@@ -36,6 +36,8 @@
 #include "py/parsenum.h"
 #include "py/smallint.h"
 
+#if MICROPY_ENABLE_COMPILER && MICROPY_USE_SMALL_HEAP_COMPILER
+
 #define RULE_ACT_ARG_MASK       (0x0f)
 #define RULE_ACT_KIND_MASK      (0x30)
 #define RULE_ACT_ALLOW_IDENT    (0x40)
@@ -1445,3 +1447,5 @@ void mp_parse_tree_clear(mp_parse_tree_t *tree) {
         chunk = next;
     }
 }
+
+#endif // MICROPY_ENABLE_COMPILER && MICROPY_USE_SMALL_HEAP_COMPILER

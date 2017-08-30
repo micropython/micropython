@@ -117,8 +117,10 @@ PY_O_BASENAME = \
 	mpz.o \
 	reader.o \
 	lexer.o \
+	parse.o \
 	parse2.o \
 	scope.o \
+	compile.o \
 	compile2.o \
 	emitcommon.o \
 	emitbc.o \

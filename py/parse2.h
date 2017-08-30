@@ -23,13 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_PARSE_H
-#define MICROPY_INCLUDED_PY_PARSE_H
+#ifndef MICROPY_INCLUDED_PY_PARSE2_H
+#define MICROPY_INCLUDED_PY_PARSE2_H
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "py/obj.h"
+
+#if MICROPY_USE_SMALL_HEAP_COMPILER
 
 struct _mp_lexer_t;
 
@@ -41,6 +43,8 @@ struct _mp_lexer_t;
 #define MP_PT_CONST_OBJECT (8)
 #define MP_PT_ID_BASE (10) // +16
 #define MP_PT_RULE_BASE (26) // +173-ish
+
+typedef const byte *mp_parse_node_t;
 
 extern const byte pt_const_int0[];
 
@@ -130,4 +134,6 @@ typedef struct _mp_parse_t {
 mp_parse_tree_t mp_parse(struct _mp_lexer_t *lex, mp_parse_input_kind_t input_kind);
 void mp_parse_tree_clear(mp_parse_tree_t *tree);
 
-#endif // MICROPY_INCLUDED_PY_PARSE_H
+#endif // MICROPY_USE_SMALL_HEAP_COMPILER
+
+#endif // MICROPY_INCLUDED_PY_PARSE2_H
