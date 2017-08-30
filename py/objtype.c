@@ -251,9 +251,9 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
 
     mp_obj_instance_t *o = MP_OBJ_TO_PTR(mp_obj_new_instance(self, num_native_bases));
 
-    // This executes only "__new__" part of obejection creation.
-    // TODO: This won't work will for classes with native bases.
-    // TODO: This is hack, should be resolved along the lines of
+    // This executes only "__new__" part of instance creation.
+    // TODO: This won't work well for classes with native bases.
+    // TODO: This is a hack, should be resolved along the lines of
     // https://github.com/micropython/micropython/issues/606#issuecomment-43685883
     if (n_args == 1 && *args == MP_OBJ_SENTINEL) {
         return MP_OBJ_FROM_PTR(o);
