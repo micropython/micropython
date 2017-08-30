@@ -2248,6 +2248,10 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, const byte *p_arglist
                 n_keyword += 1;
             }
         } else {
+            if (star_flags) {
+                compile_syntax_error(comp, p, "non-keyword arg after */**");
+                return;
+            }
             if (n_keyword > 0) {
                 compile_syntax_error(comp, p, "non-keyword arg after keyword arg");
                 return;
