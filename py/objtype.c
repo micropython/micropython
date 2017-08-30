@@ -113,13 +113,15 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
     assert(lookup->dest[0] == MP_OBJ_NULL);
     assert(lookup->dest[1] == MP_OBJ_NULL);
     for (;;) {
+        DEBUG_printf("mp_obj_class_lookup: Looking up %s in %s\n", qstr_str(lookup->attr), qstr_str(type->name));
         // Optimize special method lookup for native types
         // This avoids extra method_name => slot lookup. On the other hand,
         // this should not be applied to class types, as will result in extra
         // lookup either.
         if (lookup->meth_offset != 0 && mp_obj_is_native_type(type)) {
             if (*(void**)((char*)type + lookup->meth_offset) != NULL) {
-                DEBUG_printf("mp_obj_class_lookup: matched special meth slot for %s\n", qstr_str(lookup->attr));
+                DEBUG_printf("mp_obj_class_lookup: Matched special meth slot (off=%d) for %s\n",
+                    lookup->meth_offset, qstr_str(lookup->attr));
                 lookup->dest[0] = MP_OBJ_SENTINEL;
                 return;
             }
@@ -150,7 +152,8 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
 #if DEBUG_PRINT
                 printf("mp_obj_class_lookup: Returning: ");
                 mp_obj_print(lookup->dest[0], PRINT_REPR); printf(" ");
-                mp_obj_print(lookup->dest[1], PRINT_REPR); printf("\n");
+                // Don't try to repr() lookup->dest[1], as we can be called recursively
+                printf("<%s @%p>\n", mp_obj_get_type_str(lookup->dest[1]), lookup->dest[1]);
 #endif
                 return;
             }
@@ -169,6 +172,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         // attribute not found, keep searching base classes
 
         if (type->parent == NULL) {
+            DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
         } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
             const mp_obj_tuple_t *parent_tuple = type->parent;
