@@ -2035,52 +2035,27 @@ STATIC void compile_and_expr(compiler_t *comp, const byte *p, const byte *ptop) 
     c_binary_op(comp, p, ptop, MP_BINARY_OP_AND);
 }
 
-STATIC void compile_shift_expr(compiler_t *comp, const byte *p, const byte *ptop) {
-    p = compile_node(comp, p);
-    while (p != ptop) {
-        byte tok;
-        p = pt_tok_extract(p, &tok);
-        p = compile_node(comp, p);
-        if (tok == MP_TOKEN_OP_DBL_LESS) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_LSHIFT);
-        } else {
-            assert(tok == MP_TOKEN_OP_DBL_MORE); // should be
-            EMIT_ARG(binary_op, MP_BINARY_OP_RSHIFT);
-        }
-    }
-}
-
-STATIC void compile_arith_expr(compiler_t *comp, const byte *p, const byte *ptop) {
-    p = compile_node(comp, p);
-    while (p != ptop) {
-        byte tok;
-        p = pt_tok_extract(p, &tok);
-        p = compile_node(comp, p);
-        if (tok == MP_TOKEN_OP_PLUS) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_ADD);
-        } else {
-            assert(tok == MP_TOKEN_OP_MINUS); // should be
-            EMIT_ARG(binary_op, MP_BINARY_OP_SUBTRACT);
-        }
-    }
-}
-
 STATIC void compile_term(compiler_t *comp, const byte *p, const byte *ptop) {
     p = compile_node(comp, p);
     while (p != ptop) {
         byte tok;
         p = pt_tok_extract(p, &tok);
         p = compile_node(comp, p);
-        if (tok == MP_TOKEN_OP_STAR) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_MULTIPLY);
-        } else if (tok == MP_TOKEN_OP_DBL_SLASH) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_FLOOR_DIVIDE);
-        } else if (tok == MP_TOKEN_OP_SLASH) {
-            EMIT_ARG(binary_op, MP_BINARY_OP_TRUE_DIVIDE);
-        } else {
-            assert(tok == MP_TOKEN_OP_PERCENT); // should be
-            EMIT_ARG(binary_op, MP_BINARY_OP_MODULO);
+        mp_binary_op_t op;
+        switch (tok) {
+            case MP_TOKEN_OP_PLUS:      op = MP_BINARY_OP_ADD; break;
+            case MP_TOKEN_OP_MINUS:     op = MP_BINARY_OP_SUBTRACT; break;
+            case MP_TOKEN_OP_STAR:      op = MP_BINARY_OP_MULTIPLY; break;
+            case MP_TOKEN_OP_DBL_SLASH: op = MP_BINARY_OP_FLOOR_DIVIDE; break;
+            case MP_TOKEN_OP_SLASH:     op = MP_BINARY_OP_TRUE_DIVIDE; break;
+            case MP_TOKEN_OP_PERCENT:   op = MP_BINARY_OP_MODULO; break;
+            case MP_TOKEN_OP_DBL_LESS:  op = MP_BINARY_OP_LSHIFT; break;
+            default:
+                assert(tok == MP_TOKEN_OP_DBL_MORE);
+                op = MP_BINARY_OP_RSHIFT;
+                break;
         }
+        EMIT_ARG(binary_op, op);
     }
 }
 
