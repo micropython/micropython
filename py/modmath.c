@@ -35,11 +35,6 @@
 // And by defining our own we can ensure it uses the correct const format.
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
 
-/// \module math - mathematical functions
-///
-/// The `math` module provides some basic mathematical funtions for
-/// working with floating-point numbers.
-
 STATIC NORETURN void math_error(void) {
     mp_raise_ValueError("math domain error");
 }
@@ -75,80 +70,74 @@ STATIC NORETURN void math_error(void) {
 #define log2(x) (log(x) * 1.442695040888963407354163704)
 #endif
 
-/// \function sqrt(x)
-/// Returns the square root of `x`.
+// sqrt(x): returns the square root of x
 MATH_FUN_1_ERRCOND(sqrt, sqrt, (x < (mp_float_t)0.0))
-/// \function pow(x, y)
-/// Returns `x` to the power of `y`.
+// pow(x, y): returns x to the power of y
 MATH_FUN_2(pow, pow)
-/// \function exp(x)
+// exp(x)
 MATH_FUN_1(exp, exp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-/// \function expm1(x)
+// expm1(x)
 MATH_FUN_1(expm1, expm1)
-/// \function log2(x)
+// log2(x)
 MATH_FUN_1_ERRCOND(log2, log2, (x <= (mp_float_t)0.0))
-/// \function log10(x)
+// log10(x)
 MATH_FUN_1_ERRCOND(log10, log10, (x <= (mp_float_t)0.0))
-/// \function cosh(x)
+// cosh(x)
 MATH_FUN_1(cosh, cosh)
-/// \function sinh(x)
+// sinh(x)
 MATH_FUN_1(sinh, sinh)
-/// \function tanh(x)
+// tanh(x)
 MATH_FUN_1(tanh, tanh)
-/// \function acosh(x)
+// acosh(x)
 MATH_FUN_1(acosh, acosh)
-/// \function asinh(x)
+// asinh(x)
 MATH_FUN_1(asinh, asinh)
-/// \function atanh(x)
+// atanh(x)
 MATH_FUN_1(atanh, atanh)
 #endif
-/// \function cos(x)
+// cos(x)
 MATH_FUN_1(cos, cos)
-/// \function sin(x)
+// sin(x)
 MATH_FUN_1(sin, sin)
-/// \function tan(x)
+// tan(x)
 MATH_FUN_1(tan, tan)
-/// \function acos(x)
+// acos(x)
 MATH_FUN_1(acos, acos)
-/// \function asin(x)
+// asin(x)
 MATH_FUN_1(asin, asin)
-/// \function atan(x)
+// atan(x)
 MATH_FUN_1(atan, atan)
-/// \function atan2(y, x)
+// atan2(y, x)
 MATH_FUN_2(atan2, atan2)
-/// \function ceil(x)
+// ceil(x)
 MATH_FUN_1_TO_INT(ceil, ceil)
-/// \function copysign(x, y)
+// copysign(x, y)
 MATH_FUN_2(copysign, copysign)
-/// \function fabs(x)
+// fabs(x)
 MATH_FUN_1(fabs, fabs)
-/// \function floor(x)
+// floor(x)
 MATH_FUN_1_TO_INT(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
-/// \function fmod(x, y)
+// fmod(x, y)
 MATH_FUN_2(fmod, fmod)
-/// \function isfinite(x)
+// isfinite(x)
 MATH_FUN_1_TO_BOOL(isfinite, isfinite)
-/// \function isinf(x)
+// isinf(x)
 MATH_FUN_1_TO_BOOL(isinf, isinf)
-/// \function isnan(x)
+// isnan(x)
 MATH_FUN_1_TO_BOOL(isnan, isnan)
-/// \function trunc(x)
+// trunc(x)
 MATH_FUN_1_TO_INT(trunc, trunc)
-/// \function ldexp(x, exp)
+// ldexp(x, exp)
 MATH_FUN_2(ldexp, ldexp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-/// \function erf(x)
-/// Return the error function of `x`.
+// erf(x): return the error function of x
 MATH_FUN_1(erf, erf)
-/// \function erfc(x)
-/// Return the complementary error function of `x`.
+// erfc(x): return the complementary error function of x
 MATH_FUN_1(erfc, erfc)
-/// \function gamma(x)
-/// Return the gamma function of `x`.
+// gamma(x): return the gamma function of x
 MATH_FUN_1(gamma, tgamma)
-/// \function lgamma(x)
-/// return the natural logarithm of the gamma function of `x`.
+// lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
 //TODO: factorial, fsum
@@ -178,8 +167,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_math_log_obj, 1, 2, mp_math_log);
 
 // Functions that return a tuple
 
-/// \function frexp(x)
-/// Converts a floating-point number to fractional and integral components.
+// frexp(x): converts a floating-point number to fractional and integral components
 STATIC mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
     int int_exponent = 0;
     mp_float_t significand = MICROPY_FLOAT_C_FUN(frexp)(mp_obj_get_float(x_obj), &int_exponent);
@@ -190,7 +178,7 @@ STATIC mp_obj_t mp_math_frexp(mp_obj_t x_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_frexp_obj, mp_math_frexp);
 
-/// \function modf(x)
+// modf(x)
 STATIC mp_obj_t mp_math_modf(mp_obj_t x_obj) {
     mp_float_t int_part = 0.0;
     mp_float_t fractional_part = MICROPY_FLOAT_C_FUN(modf)(mp_obj_get_float(x_obj), &int_part);
@@ -203,13 +191,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_modf_obj, mp_math_modf);
 
 // Angular conversions
 
-/// \function radians(x)
+// radians(x)
 STATIC mp_obj_t mp_math_radians(mp_obj_t x_obj) {
     return mp_obj_new_float(mp_obj_get_float(x_obj) * (MP_PI / MICROPY_FLOAT_CONST(180.0)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_radians_obj, mp_math_radians);
 
-/// \function degrees(x)
+// degrees(x)
 STATIC mp_obj_t mp_math_degrees(mp_obj_t x_obj) {
     return mp_obj_new_float(mp_obj_get_float(x_obj) * (MICROPY_FLOAT_CONST(180.0) / MP_PI));
 }

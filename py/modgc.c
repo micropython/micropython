@@ -30,10 +30,7 @@
 
 #if MICROPY_PY_GC && MICROPY_ENABLE_GC
 
-/// \module gc - control the garbage collector
-
-/// \function collect()
-/// Run a garbage collection.
+// collect(): run a garbage collection
 STATIC mp_obj_t py_gc_collect(void) {
     gc_collect();
 #if MICROPY_PY_GC_COLLECT_RETVAL
@@ -44,16 +41,14 @@ STATIC mp_obj_t py_gc_collect(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_collect_obj, py_gc_collect);
 
-/// \function disable()
-/// Disable the garbage collector.
+// disable(): disable the garbage collector
 STATIC mp_obj_t gc_disable(void) {
     MP_STATE_MEM(gc_auto_collect_enabled) = 0;
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_disable_obj, gc_disable);
 
-/// \function enable()
-/// Enable the garbage collector.
+// enable(): enable the garbage collector
 STATIC mp_obj_t gc_enable(void) {
     MP_STATE_MEM(gc_auto_collect_enabled) = 1;
     return mp_const_none;
@@ -65,8 +60,7 @@ STATIC mp_obj_t gc_isenabled(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_isenabled_obj, gc_isenabled);
 
-/// \function mem_free()
-/// Return the number of bytes of available heap RAM.
+// mem_free(): return the number of bytes of available heap RAM
 STATIC mp_obj_t gc_mem_free(void) {
     gc_info_t info;
     gc_info(&info);
@@ -74,8 +68,7 @@ STATIC mp_obj_t gc_mem_free(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_mem_free_obj, gc_mem_free);
 
-/// \function mem_alloc()
-/// Return the number of bytes of heap RAM that are allocated.
+// mem_alloc(): return the number of bytes of heap RAM that are allocated
 STATIC mp_obj_t gc_mem_alloc(void) {
     gc_info_t info;
     gc_info(&info);

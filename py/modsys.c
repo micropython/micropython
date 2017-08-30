@@ -42,8 +42,6 @@
 
 #include "genhdr/mpversion.h"
 
-/// \module sys - system specific functions
-
 // defined per port; type of these is irrelevant, just need pointer
 extern struct _mp_dummy_t mp_sys_stdin_obj;
 extern struct _mp_dummy_t mp_sys_stdout_obj;
@@ -53,10 +51,10 @@ extern struct _mp_dummy_t mp_sys_stderr_obj;
 const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adaptor};
 #endif
 
-/// \constant version - Python language version that this implementation conforms to, as a string
+// version - Python language version that this implementation conforms to, as a string
 STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 
-/// \constant version_info - Python language version that this implementation conforms to, as a tuple of ints
+// version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
 // TODO: CPython is now at 5-element array, but save 2 els so far...
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
@@ -91,13 +89,11 @@ STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
 #undef I
 
 #ifdef MICROPY_PY_SYS_PLATFORM
-/// \constant platform - the platform that MicroPython is running on
+// platform - the platform that MicroPython is running on
 STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 #endif
 
-/// \function exit([retval])
-/// Raise a `SystemExit` exception.  If an argument is given, it is the
-/// value given to `SystemExit`.
+// exit([retval]): raise SystemExit, with optional argument given to the exception
 STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc;
     if (n_args == 0) {
@@ -163,7 +159,6 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #ifdef MICROPY_PY_SYS_PLATFORM
     { MP_ROM_QSTR(MP_QSTR_platform), MP_ROM_PTR(&platform_obj) },
     #endif
-    /// \constant byteorder - the byte order of the system ("little" or "big")
     #if MP_ENDIANNESS_LITTLE
     { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_QSTR(MP_QSTR_little) },
     #else
@@ -184,12 +179,10 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #endif
 
     #if MICROPY_PY_SYS_EXIT
-    // documented per-port
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mp_sys_exit_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES
-    // documented per-port
     { MP_ROM_QSTR(MP_QSTR_stdin), MP_ROM_PTR(&mp_sys_stdin_obj) },
     { MP_ROM_QSTR(MP_QSTR_stdout), MP_ROM_PTR(&mp_sys_stdout_obj) },
     { MP_ROM_QSTR(MP_QSTR_stderr), MP_ROM_PTR(&mp_sys_stderr_obj) },
