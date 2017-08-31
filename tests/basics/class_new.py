@@ -34,6 +34,9 @@ a.meth()
 a = a.__new__(A)
 a.meth()
 
+# __new__ returns not an instance of the class (None here), __init__
+# should not be called
+
 class B:
     def __new__(self, v1, v2):
         print("B.__new__", v1, v2)
@@ -43,3 +46,21 @@ class B:
         print("B.__init__", v1, v2)
 
 print("B inst:", B(1, 2))
+
+
+# Variation of the above, __new__ returns an instance of another class,
+# __init__ should not be called
+
+class Dummy: pass
+
+class C:
+    def __new__(cls):
+        print("C.__new__")
+        return Dummy()
+
+    def __init__(self):
+        # Should not be called in this test
+        print("C.__init__")
+
+c = C()
+print(isinstance(c, Dummy))
