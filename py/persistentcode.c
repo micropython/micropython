@@ -216,7 +216,9 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || header[1] != MPY_VERSION
         || header[2] != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()) {
-        mp_raise_ValueError("incompatible .mpy file");
+        // TODO(tannewt): Restore the generic error after we move folks to 2.0.0.
+        // mp_raise_ValueError("incompatible .mpy file");
+        mp_raise_ValueError("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info.");
     }
     mp_raw_code_t *rc = load_raw_code(reader);
     reader->close(reader->data);
