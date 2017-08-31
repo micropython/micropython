@@ -93,23 +93,12 @@ void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->table = (mp_map_elem_t*)table;
 }
 
-mp_map_t *mp_map_new(size_t n) {
-    mp_map_t *map = m_new(mp_map_t, 1);
-    mp_map_init(map, n);
-    return map;
-}
-
 // Differentiate from mp_map_clear() - semantics is different
 void mp_map_deinit(mp_map_t *map) {
     if (!map->is_fixed) {
         m_del(mp_map_elem_t, map->table, map->alloc);
     }
     map->used = map->alloc = 0;
-}
-
-void mp_map_free(mp_map_t *map) {
-    mp_map_deinit(map);
-    m_del_obj(mp_map_t, map);
 }
 
 void mp_map_clear(mp_map_t *map) {
