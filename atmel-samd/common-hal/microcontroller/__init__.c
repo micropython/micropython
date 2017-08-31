@@ -30,6 +30,7 @@
 #include "samd21_pins.h"
 
 #include "shared-bindings/nvm/ByteArray.h"
+#include "shared-bindings/microcontroller/Processor.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -50,8 +51,17 @@ void common_hal_mcu_enable_interrupts(void) {
     cpu_irq_restore(irq_flags);
 }
 
+// The singleton microcontroller.Processor object, bound to microcontroller.cpu
+// It currently only has properties, and no state.
+mcu_processor_obj_t common_hal_mcu_processor_obj = {
+    .base = {
+        .type = &mcu_processor_type,
+    },
+};
+
 // NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+// The singleton nvm.ByteArray object.
 nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
         .type = &nvm_bytearray_type,

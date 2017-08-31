@@ -32,13 +32,17 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/microcontroller/Processor.h"
+
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Processor.h"
+
 
 #include "py/runtime.h"
 
-//| :mod:`microcontroller` --- Pin references and core functionality
+//| :mod:`microcontroller` --- Pin references and cpu functionality
 //| ================================================================
 //|
 //| .. module:: microcontroller
@@ -54,6 +58,12 @@
 //|     :maxdepth: 3
 //|
 //|     Pin
+//|
+
+//| .. attribute:: cpu
+//|
+//|   CPU information and control, such as temperature and clock frequency.
+//|   This object is the sole instance of `microcontroller.Processor`.
 //|
 
 //| .. method:: delay_us(delay)
@@ -92,8 +102,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupt
 
 //| .. attribute:: nvm
 //|
-//|   Available non-volatile memory. Its a `nvm.ByteArray` when available or
-//|   ``None`` otherwise.
+//|   Available non-volatile memory.
+//|   This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
 
 //| :mod:`microcontroller.pin` --- Microcontroller pin names
@@ -112,16 +122,19 @@ const mp_obj_module_t mcu_pin_module = {
 
 STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
+    { MP_ROM_QSTR(MP_QSTR_cpu),  MP_ROM_PTR(&common_hal_mcu_processor_obj) },
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
     #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-    { MP_ROM_QSTR(MP_QSTR_nvm),  &common_hal_mcu_nvm_obj },
+    { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&common_hal_mcu_nvm_obj) },
     #else
-    { MP_ROM_QSTR(MP_QSTR_nvm),  &mp_const_none_obj },
+    { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&mp_const_none_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_Pin),  MP_ROM_PTR(&mcu_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_pin),  MP_ROM_PTR(&mcu_pin_module) },
+    { MP_ROM_QSTR(MP_QSTR_Processor),   MP_ROM_PTR(&mcu_processor_type) },
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(mcu_module_globals, mcu_module_globals_table);

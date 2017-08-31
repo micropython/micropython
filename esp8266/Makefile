@@ -101,6 +101,7 @@ SRC_C = \
 SRC_COMMON_HAL = \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
+	microcontroller/Processor.c \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \

@@ -46,12 +46,8 @@
 
 //| .. class:: ByteArray()
 //|
-//|   Not currently dynamically supported. Access one through `microcontroller.nvm`.
+//|   Not currently dynamically supported. Access the sole instance through `microcontroller.nvm`.
 //|
-STATIC mp_obj_t nvm_bytearray_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    return mp_const_none;
-}
 
 //|   .. method:: __len__()
 //|
@@ -151,7 +147,6 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
 const mp_obj_type_t nvm_bytearray_type = {
     { &mp_type_type },
     .name = MP_QSTR_ByteArray,
-    .make_new = nvm_bytearray_make_new,
     .subscr = nvm_bytearray_subscr,
     .unary_op = nvm_bytearray_unary_op,
     .print = NULL,

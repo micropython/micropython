@@ -1,10 +1,9 @@
-
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2017 Dan  Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,29 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
 
-#include "py/mpconfig.h"
 #include "py/obj.h"
 
-#include "common-hal/microcontroller/Processor.h"
+typedef struct {
+    mp_obj_base_t base;
+    // Stores no state currently.
+} mcu_processor_obj_t;
 
-extern void common_hal_mcu_delay_us(uint32_t);
-
-extern void common_hal_mcu_disable_interrupts(void);
-extern void common_hal_mcu_enable_interrupts(void);
-
-extern const mp_obj_dict_t mcu_pin_globals;
-
-extern const mcu_processor_obj_t common_hal_mcu_processor_obj;
-
-
-#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
-#include "common-hal/nvm/ByteArray.h"
-extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
-
-#endif
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H

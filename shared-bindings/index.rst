@@ -12,13 +12,28 @@ limited. For example, a microcontroller without analog features will not have
 Support Matrix
 ---------------
 
-===============  ==========  =========  ===========  =======  =======  ===========  =================  ===============  ================  =======  =========  ========  =========  ========  =========  =======  =========
-Port             `analogio`  `audioio`  `bitbangio`  `board`  `busio`  `digitalio`  `microcontroller`  `multiterminal`  `neopixel_write`  `os`     `pulseio`  `random`  `storage`  `time`    `touchio`  `uheap`  `usb_hid`
-===============  ==========  =========  ===========  =======  =======  ===========  =================  ===============  ================  =======  =========  ========  =========  ========  =========  =======  =========
-SAMD21           **Yes**     No         No           **Yes**  **Yes**  **Yes**      **Yes**            No               **Yes**           **Yes**  No         **Yes**   **Yes**    **Yes**   **Yes**    Debug    **Yes**
-SAMD21 Express   **Yes**     **Yes**    **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            No               **Yes**           **Yes**  **Yes**    **Yes**   **Yes**    **Yes**   **Yes**    Debug    **Yes**
-ESP8266          **Yes**     No         **Yes**      **Yes**  **Yes**  **Yes**      **Yes**            **Yes**          **Yes**           **Yes**  No         **Yes**   **Yes**    **Yes**   No         Debug    No
-===============  ==========  =========  ===========  =======  =======  ===========  =================  ===============  ================  =======  =========  ========  =========  ========  =========  =======  =========
+=================  =======  ==============  =======
+Module / Port      SAMD21   SAMD21 Express  ESP8266
+=================  =======  ==============  =======
+`analogio`         **Yes**  **Yes**         **Yes**
+`audioio`          No       **Yes**         No
+`bitbangio`        No       **Yes**         **Yes**
+`board`            **Yes**  **Yes**         **Yes**
+`busio`            **Yes**  **Yes**         **Yes**
+`digitalio`        **Yes**  **Yes**         **Yes**
+`microcontroller`  **Yes**  **Yes**         **Yes**  
+`multiterminal`    No       No              **Yes**
+`neopixel_write`   **Yes**  **Yes**         **Yes**  
+`nvm`              No       **Yes**         No
+`os`               **Yes**  **Yes**         **Yes**
+`pulseio`          No       **Yes**         No
+`random`           **Yes**  **Yes**         **Yes**
+`storage`          **Yes**  **Yes**         **Yes**
+`time`             **Yes**  **Yes**         **Yes**
+`touchio`          **Yes**  **Yes**         No
+`uheap`            Debug    Debug           Debug
+`usb_hid`          **Yes**  **Yes**         No
+=================  =======  ==============  =======
 
 Modules
 ---------

@@ -135,7 +135,9 @@ ifeq ($(DEBUG), 1)
 # -DMICROPY_DEBUG_MODULES may also be added to an -flto build, if you wish.
 CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
 else
-CFLAGS += -Os -DNDEBUG -flto
+# -finline-limit can shrink the image size. -finline-limit=80 or so is similar to not having it on.
+# There is no simple default value, though.
+CFLAGS += -Os -DNDEBUG -flto -finline-limit=57
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -248,6 +250,7 @@ SRC_COMMON_HAL = \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
+	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \

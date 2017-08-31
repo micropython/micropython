@@ -55,6 +55,10 @@ void mp_hal_delay_us(uint32_t us) {
     }
 }
 
+uint32_t mp_hal_get_cpu_freq(void) {
+    return system_get_cpu_freq() * 1000000;
+}
+
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         int c = ringbuf_get(&input_buf);
