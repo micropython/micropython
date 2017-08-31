@@ -55,6 +55,8 @@ mp_uint_t pyb_usb_flags = 0;
 
 #ifdef USE_DEVICE_MODE
 STATIC USBD_HandleTypeDef hUSBDDevice;
+STATIC usbd_cdc_msc_hid_state_t usbd_cdc_msc_hid_state;
+STATIC usbd_cdc_itf_t usbd_cdc_itf;
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 #endif
 
@@ -105,25 +107,37 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 #ifdef USE_DEVICE_MODE
     if (!(pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED)) {
         // only init USB once in the device's power-lifetime
+
+        // configure the VID, PID and the USBD mode (interfaces it will expose)
         USBD_SetVIDPIDRelease(vid, pid, 0x0200, mode == USBD_MODE_CDC);
         if (USBD_SelectMode(mode, hid_info) != 0) {
             return false;
         }
-        USBD_Init(&hUSBDDevice, (USBD_DescriptorsTypeDef*)&USBD_Descriptors, USB_PHY_ID);
-        USBD_RegisterClass(&hUSBDDevice, &USBD_CDC_MSC_HID);
-        USBD_CDC_RegisterInterface(&hUSBDDevice, (USBD_CDC_ItfTypeDef*)&USBD_CDC_fops);
+
+        // set up the USBD state
+        USBD_HandleTypeDef *usbd = &hUSBDDevice;
+        usbd->id = USB_PHY_ID;
+        usbd->dev_state  = USBD_STATE_DEFAULT;
+        usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
+        usbd->pClass = &USBD_CDC_MSC_HID;
+        usbd_cdc_msc_hid_state.cdc = &usbd_cdc_itf;
+        usbd->pClassData = &usbd_cdc_msc_hid_state;
+
         switch (pyb_usb_storage_medium) {
 #if MICROPY_HW_HAS_SDCARD
             case PYB_USB_STORAGE_MEDIUM_SDCARD:
-                USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
+                USBD_MSC_RegisterStorage(usbd, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
                 break;
 #endif
             default:
-                USBD_MSC_RegisterStorage(&hUSBDDevice, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+                USBD_MSC_RegisterStorage(usbd, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
                 break;
         }
-        USBD_HID_RegisterInterface(&hUSBDDevice, (USBD_HID_ItfTypeDef*)&USBD_HID_fops);
-        USBD_Start(&hUSBDDevice);
+        USBD_HID_RegisterInterface(usbd, (USBD_HID_ItfTypeDef*)&USBD_HID_fops);
+
+        // start the USB device
+        USBD_LL_Init(usbd);
+        USBD_LL_Start(usbd);
     }
     pyb_usb_flags |= PYB_USB_FLAG_DEV_ENABLED;
 #endif
@@ -143,13 +157,13 @@ bool usb_vcp_is_enabled(void) {
 }
 
 int usb_vcp_recv_byte(uint8_t *c) {
-    return USBD_CDC_Rx(c, 1, 0);
+    return usbd_cdc_rx(&usbd_cdc_itf, c, 1, 0);
 }
 
 void usb_vcp_send_strn(const char *str, int len) {
 #ifdef USE_DEVICE_MODE
     if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
-        USBD_CDC_TxAlways((const uint8_t*)str, len);
+        usbd_cdc_tx_always(&usbd_cdc_itf, (const uint8_t*)str, len);
     }
 #endif
 }
@@ -159,9 +173,9 @@ void usb_vcp_send_strn_cooked(const char *str, int len) {
     if (pyb_usb_flags & PYB_USB_FLAG_DEV_ENABLED) {
         for (const char *top = str + len; str < top; str++) {
             if (*str == '\n') {
-                USBD_CDC_TxAlways((const uint8_t*)"\r\n", 2);
+                usbd_cdc_tx_always(&usbd_cdc_itf, (const uint8_t*)"\r\n", 2);
             } else {
-                USBD_CDC_TxAlways((const uint8_t*)str, 1);
+                usbd_cdc_tx_always(&usbd_cdc_itf, (const uint8_t*)str, 1);
             }
         }
     }
@@ -362,7 +376,7 @@ STATIC mp_obj_t pyb_usb_vcp_setinterrupt(mp_obj_t self_in, mp_obj_t int_chr_in) 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setinterrupt);
 
 STATIC mp_obj_t pyb_usb_vcp_isconnected(mp_obj_t self_in) {
-    return mp_obj_new_bool(USBD_CDC_IsConnected());
+    return mp_obj_new_bool(usbd_cdc_is_connected(&usbd_cdc_itf));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_isconnected_obj, pyb_usb_vcp_isconnected);
 
@@ -375,7 +389,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 /// \method any()
 /// Return `True` if any characters waiting, else `False`.
 STATIC mp_obj_t pyb_usb_vcp_any(mp_obj_t self_in) {
-    if (USBD_CDC_RxNum() > 0) {
+    if (usbd_cdc_rx_num(&usbd_cdc_itf) > 0) {
         return mp_const_true;
     } else {
         return mp_const_false;
@@ -407,7 +421,7 @@ STATIC mp_obj_t pyb_usb_vcp_send(size_t n_args, const mp_obj_t *args, mp_map_t *
     pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
 
     // send the data
-    int ret = USBD_CDC_Tx(bufinfo.buf, bufinfo.len, vals[1].u_int);
+    int ret = usbd_cdc_tx(&usbd_cdc_itf, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
     return mp_obj_new_int(ret);
 }
@@ -433,7 +447,7 @@ STATIC mp_obj_t pyb_usb_vcp_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
 
     // receive the data
-    int ret = USBD_CDC_Rx((uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
+    int ret = usbd_cdc_rx(&usbd_cdc_itf, (uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -470,7 +484,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_table);
 
 STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    int ret = USBD_CDC_Rx((byte*)buf, size, 0);
+    int ret = usbd_cdc_rx(&usbd_cdc_itf, (byte*)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
         *errcode = MP_EAGAIN;
@@ -480,7 +494,7 @@ STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
 }
 
 STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    int ret = USBD_CDC_Tx((const byte*)buf, size, 0);
+    int ret = usbd_cdc_tx(&usbd_cdc_itf, (const byte*)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
         *errcode = MP_EAGAIN;
@@ -494,10 +508,10 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && USBD_CDC_RxNum() > 0) {
+        if ((flags & MP_STREAM_POLL_RD) && usbd_cdc_rx_num(&usbd_cdc_itf) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && USBD_CDC_TxHalfEmpty()) {
+        if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(&usbd_cdc_itf)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
