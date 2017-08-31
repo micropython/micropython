@@ -42,10 +42,11 @@ docs are low-level API docs and may link out to separate getting started guides.
     :maxdepth: 3
 
     shared-bindings/index.rst
-    docs/drivers.rst
-    docs/common_hal
-    docs/design_guide
     docs/supported_ports.rst
+    docs/troubleshooting.rst
+    docs/drivers.rst
+    docs/design_guide
+    docs/common_hal
     docs/library/index.rst
     README
     CONTRIBUTING
