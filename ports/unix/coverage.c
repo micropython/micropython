@@ -181,8 +181,21 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.*s\n", (int)vstr->len, vstr->buf);
 
         VSTR_FIXED(fix, 4);
-        vstr_add_str(&fix, "large");
-        mp_printf(&mp_plat_print, "%.*s\n", (int)fix.len, fix.buf);
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            vstr_add_str(&fix, "large");
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        fix.len = fix.alloc;
+        if (nlr_push(&nlr) == 0) {
+            vstr_null_terminated_str(&fix);
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
     }
 
     // repl autocomplete
