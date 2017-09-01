@@ -67,7 +67,14 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "str    lr, [r0, #8]        \n" // store lr into nlr_buf
 #endif
 
+#if defined(__ARM_ARCH_6M__)
+    "ldr    r1, nlr_push_tail_var \n"
+    "bx     r1                  \n" // do the rest in C
+    ".align 2                   \n"
+    "nlr_push_tail_var: .word nlr_push_tail \n"
+#else
     "b      nlr_push_tail       \n" // do the rest in C
+#endif
     );
 
     return 0; // needed to silence compiler warning
