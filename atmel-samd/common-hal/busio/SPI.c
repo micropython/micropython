@@ -174,6 +174,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         if (status != STATUS_OK) {
             return false;
         }
+        self->current_baudrate = baudrate;
     }
 
     SercomSpi *const spi_module = &(self->spi_master_instance.hw->SPI);
