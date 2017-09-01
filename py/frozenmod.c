@@ -135,16 +135,21 @@ mp_import_stat_t mp_frozen_stat(const char *str) {
 }
 
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
-    // The +8/-8 account for the .frozen/ path prefix used on frozen modules.
+    // If the frozen module pseudo dir (e.g., ".frozen/") is a prefix of str, remove it.
+    if (strncmp(str, MP_FROZEN_FAKE_DIR_SLASH, MP_FROZEN_FAKE_DIR_SLASH_LENGTH) == 0) {
+        str = str + MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+        len = len - MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+    }
+
     #if MICROPY_MODULE_FROZEN_STR
-    mp_lexer_t *lex = mp_lexer_frozen_str(str + 8, len - 8);
+    mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
     if (lex != NULL) {
         *data = lex;
         return MP_FROZEN_STR;
     }
     #endif
     #if MICROPY_MODULE_FROZEN_MPY
-    const mp_raw_code_t *rc = mp_find_frozen_mpy(str + 8, len - 8);
+    const mp_raw_code_t *rc = mp_find_frozen_mpy(str, len);
     if (rc != NULL) {
         *data = (void*)rc;
         return MP_FROZEN_MPY;

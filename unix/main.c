@@ -40,6 +40,7 @@
 #include "py/mpstate.h"
 #include "py/nlr.h"
 #include "py/compile.h"
+#include "py/frozenmod.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/repl.h"
@@ -469,7 +470,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    path_items[1] = MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen);
+    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
+    path_items[1] = MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR);
     {
     char *p = path;
     for (mp_uint_t i = builtin_path_count; i < path_num; i++) {

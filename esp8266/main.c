@@ -29,6 +29,7 @@
 
 #include "py/nlr.h"
 #include "py/compile.h"
+#include "py/frozenmod.h"
 #include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
@@ -98,8 +99,8 @@ STATIC void mp_reset(void) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
-    // Frozen modules are in their own pseudo-dir, ".frozen".
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
 
     mp_obj_list_init(mp_sys_argv, 0);
     MP_STATE_PORT(term_obj) = MP_OBJ_NULL;

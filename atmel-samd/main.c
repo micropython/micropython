@@ -29,6 +29,7 @@
 
 #include "py/nlr.h"
 #include "py/compile.h"
+#include "py/frozenmod.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/repl.h"
@@ -165,8 +166,8 @@ void reset_mp(void) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
-    // Frozen modules are in their own pseudo-dir, ".frozen".
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
 
     mp_obj_list_init(mp_sys_argv, 0);
 }
