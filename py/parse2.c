@@ -294,21 +294,15 @@ STATIC byte *pt_advance(const byte *p, bool full_rule) {
     return (byte*)p;
 }
 
-bool mp_parse_node_get_int_maybe(const byte *p, mp_obj_t *o) {
+bool mp_parse_node_get_int_maybe(const byte *p, mp_obj_t *o, mp_uint_t *co_data) {
     if (pt_is_small_int(p)) {
         *o = MP_OBJ_NEW_SMALL_INT(pt_small_int_value(p));
         return true;
-    #if 0 // TODO
-    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
-        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
-        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-        // nodes are 32-bit pointers, but need to extract 64-bit object
-        *o = (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
-        #else
-        *o = (mp_obj_t)pns->nodes[0];
-        #endif
-        return MP_OBJ_IS_INT(*o);
-    #endif
+    } else if (*p == MP_PT_CONST_OBJECT) {
+        size_t idx;
+        p = pt_extract_const_obj(p, &idx);
+        *o = (mp_obj_t)co_data[idx];
+        return true;
     } else {
         return false;
     }
@@ -481,9 +475,9 @@ STATIC const byte *pt_del_byte(pt_t *pt, const byte *p) {
 
 #if MICROPY_COMP_MODULE_CONST
 #include "py/builtin.h"
-STATIC const mp_map_elem_t mp_constants_table[] = {
+STATIC const mp_rom_map_elem_t mp_constants_table[] = {
     #if MICROPY_PY_UCTYPES
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uctypes), (mp_obj_t)&mp_module_uctypes },
+    { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
     #endif
     // Extra constants as defined by a port
     MICROPY_PORT_CONSTANTS

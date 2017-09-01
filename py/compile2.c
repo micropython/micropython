@@ -34,6 +34,7 @@
 #include "py/emit.h"
 #include "py/compile.h"
 #include "py/runtime.h"
+#include "py/asmbase.h"
 
 #if MICROPY_ENABLE_COMPILER && MICROPY_USE_SMALL_HEAP_COMPILER
 
@@ -81,6 +82,19 @@ typedef enum {
 
 #endif
 
+#if MICROPY_EMIT_INLINE_ASM
+// define macros for inline assembler
+#if MICROPY_EMIT_INLINE_THUMB
+#define ASM_DECORATOR_QSTR MP_QSTR_asm_thumb
+#define ASM_EMITTER(f) emit_inline_thumb_##f
+#elif MICROPY_EMIT_INLINE_XTENSA
+#define ASM_DECORATOR_QSTR MP_QSTR_asm_xtensa
+#define ASM_EMITTER(f) emit_inline_xtensa_##f
+#else
+#error "unknown asm emitter"
+#endif
+#endif
+
 #define EMIT_INLINE_ASM(fun) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm))
 #define EMIT_INLINE_ASM_ARG(fun, ...) (comp->emit_inline_asm_method_table->fun(comp->emit_inline_asm, __VA_ARGS__))
 
@@ -117,7 +131,7 @@ typedef struct _compiler_t {
     const emit_method_table_t *emit_method_table;   // current emit method table
     #endif
 
-    #if MICROPY_EMIT_INLINE_THUMB
+    #if MICROPY_EMIT_INLINE_ASM
     emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
     #endif
@@ -790,10 +804,10 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, const byte *p, const by
     } else if (attr == MP_QSTR_viper) {
         *emit_options = MP_EMIT_OPT_VIPER;
 #endif
-#if MICROPY_EMIT_INLINE_THUMB
-    } else if (attr == MP_QSTR_asm_thumb) {
-        *emit_options = MP_EMIT_OPT_ASM_THUMB;
-#endif
+    #if MICROPY_EMIT_INLINE_ASM
+    } else if (attr == ASM_DECORATOR_QSTR) {
+        *emit_options = MP_EMIT_OPT_ASM;
+    #endif
     } else {
         compile_syntax_error(comp, NULL, "invalid micropython decorator");
     }
@@ -3016,7 +3030,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     assert(comp->cur_except_level == 0);
 }
 
-#if MICROPY_EMIT_INLINE_THUMB
+#if MICROPY_EMIT_INLINE_ASM
 // requires 3 passes: SCOPE, CODE_SIZE, EMIT
 STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
@@ -3029,7 +3043,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
     }
 
     if (comp->pass > MP_PASS_SCOPE) {
-        EMIT_INLINE_ASM_ARG(start_pass, comp->pass, comp->scope_cur, &comp->compile_error);
+        EMIT_INLINE_ASM_ARG(start_pass, comp->pass, &comp->compile_error);
     }
 
     // get the function definition parse node
@@ -3134,7 +3148,8 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                 return;
             }
             if (pass > MP_PASS_SCOPE) {
-                EMIT_INLINE_ASM_ARG(align, pt_small_int_value(p_args));
+                mp_asm_base_align((mp_asm_base_t*)comp->emit_inline_asm,
+                    pt_small_int_value(p_args));
             }
         } else if (op == MP_QSTR_data) {
             if (!(n_args >= 2 && pt_is_small_int(p_args))) {
@@ -3151,7 +3166,8 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                     }
                     mp_int_t val;
                     p_args = pt_get_small_int(p_args, &val);
-                    EMIT_INLINE_ASM_ARG(data, bytesize, val);
+                    mp_asm_base_data((mp_asm_base_t*)comp->emit_inline_asm,
+                        bytesize, val);
                 }
             }
         } else {
@@ -3174,6 +3190,13 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 
     if (comp->pass > MP_PASS_SCOPE) {
         EMIT_INLINE_ASM_ARG(end_pass, type_sig);
+
+        if (comp->pass == MP_PASS_EMIT) {
+            void *f = mp_asm_base_get_code((mp_asm_base_t*)comp->emit_inline_asm);
+            mp_emit_glue_assign_native(comp->scope_cur->raw_code, MP_CODE_NATIVE_ASM,
+                f, mp_asm_base_get_code_size((mp_asm_base_t*)comp->emit_inline_asm),
+                NULL, comp->scope_cur->num_pos_args, 0, type_sig);
+        }
     }
 
     if (comp->compile_error != MP_OBJ_NULL) {
@@ -3309,10 +3332,10 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
         keep_going = true;
         s->raw_code = mp_emit_glue_new_raw_code();
         if (false) {
-#if MICROPY_EMIT_INLINE_THUMB
-        } else if (s->emit_options == MP_EMIT_OPT_ASM_THUMB) {
+        #if MICROPY_EMIT_INLINE_ASM
+        } else if (s->emit_options == MP_EMIT_OPT_ASM) {
             compile_scope_inline_asm(comp, s, MP_PASS_SCOPE);
-#endif
+        #endif
         } else {
             compile_scope(comp, s, MP_PASS_SCOPE);
         }
@@ -3338,29 +3361,31 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 #if MICROPY_EMIT_NATIVE
     emit_t *emit_native = NULL;
 #endif
-#if MICROPY_EMIT_INLINE_THUMB
-    emit_inline_asm_t *emit_inline_thumb = NULL;
-#endif
     for (uint i = 0; i < comp->num_scopes && comp->compile_error == MP_OBJ_NULL; ++i) {
         scope_t *s = comp->scopes[i];
         if (s == NULL) { continue; }
         if (false) {
             // dummy
 
-#if MICROPY_EMIT_INLINE_THUMB
-        } else if (s->emit_options == MP_EMIT_OPT_ASM_THUMB) {
-            // inline assembly for thumb
-            if (emit_inline_thumb == NULL) {
-                emit_inline_thumb = emit_inline_thumb_new(max_num_labels);
+        #if MICROPY_EMIT_INLINE_ASM
+        } else if (s->emit_options == MP_EMIT_OPT_ASM) {
+            // inline assembly
+            if (comp->emit_inline_asm == NULL) {
+                comp->emit_inline_asm = ASM_EMITTER(new)(comp->co_data, max_num_labels);
             }
             comp->emit = NULL;
-            comp->emit_inline_asm = emit_inline_thumb;
-            comp->emit_inline_asm_method_table = &emit_inline_thumb_method_table;
+            comp->emit_inline_asm_method_table = &ASM_EMITTER(method_table);
             compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
+            #if MICROPY_EMIT_INLINE_XTENSA
+            // Xtensa requires an extra pass to compute size of l32r const table
+            // TODO this can be improved by calculating it during SCOPE pass
+            // but that requires some other structural changes to the asm emitters
+            compile_scope_inline_asm(comp, s, MP_PASS_CODE_SIZE);
+            #endif
             if (comp->compile_error == MP_OBJ_NULL) {
                 compile_scope_inline_asm(comp, s, MP_PASS_EMIT);
             }
-#endif
+        #endif
 
         } else {
 
@@ -3445,11 +3470,11 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 #endif
     }
 #endif
-#if MICROPY_EMIT_INLINE_THUMB
-    if (emit_inline_thumb != NULL) {
-        emit_inline_thumb_free(emit_inline_thumb);
+    #if MICROPY_EMIT_INLINE_ASM
+    if (comp->emit_inline_asm != NULL) {
+        ASM_EMITTER(free)(comp->emit_inline_asm);
     }
-#endif
+    #endif
 
     // free the parse tree
     mp_parse_tree_clear(parse_tree);

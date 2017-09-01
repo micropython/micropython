@@ -44,6 +44,9 @@ struct _mp_lexer_t;
 #define MP_PT_ID_BASE (10) // +16
 #define MP_PT_RULE_BASE (26) // +173-ish
 
+// macro to eliminate differences between original parser and this one
+#define MP_PARSE_NODE_IS_ID(pn) pt_is_any_id(pn)
+
 typedef const byte *mp_parse_node_t;
 
 extern const byte pt_const_int0[];
@@ -114,7 +117,7 @@ const byte *pt_rule_extract_top(const byte *p, const byte **ptop);
 const byte *pt_rule_extract(const byte *p, mp_uint_t *rule_id, size_t *src_line, const byte **ptop);
 bool pt_is_rule_empty(const byte *p);
 
-bool mp_parse_node_get_int_maybe(const byte *p, mp_obj_t *o);
+bool mp_parse_node_get_int_maybe(const byte *p, mp_obj_t *o, mp_uint_t *co_data);
 const byte *mp_parse_node_extract_list(const byte **p, mp_uint_t pn_kind);
 
 typedef enum {
