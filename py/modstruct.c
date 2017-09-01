@@ -174,37 +174,35 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_from);
 
-STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, size_t n_args, const mp_obj_t *args) {
+// This function assumes there is enough room in p to store all the values
+STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
 
     size_t i;
     for (i = 0; i < n_args;) {
-        mp_uint_t sz = 1;
+        mp_uint_t cnt = 1;
         if (*fmt == '\0') {
             // more arguments given than used by format string; CPython raises struct.error here
             break;
         }
         if (unichar_isdigit(*fmt)) {
-            sz = get_fmt_num(&fmt);
-        }
-        if (p + sz > end_p) {
-            mp_raise_ValueError("buffer too small");
+            cnt = get_fmt_num(&fmt);
         }
 
         if (*fmt == 's') {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
-            mp_uint_t to_copy = sz;
+            mp_uint_t to_copy = cnt;
             if (bufinfo.len < to_copy) {
                 to_copy = bufinfo.len;
             }
             memcpy(p, bufinfo.buf, to_copy);
-            memset(p + to_copy, 0, sz - to_copy);
-            p += sz;
+            memset(p + to_copy, 0, cnt - to_copy);
+            p += cnt;
         } else {
             // If we run out of args then we just finish; CPython would raise struct.error
-            while (sz-- && i < n_args) {
+            while (cnt-- && i < n_args) {
                 mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
             }
         }
@@ -219,8 +217,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     vstr_init_len(&vstr, size);
     byte *p = (byte*)vstr.buf;
     memset(p, 0, size);
-    byte *end_p = &p[size];
-    struct_pack_into_internal(args[0], p, end_p, n_args - 1, &args[1]);
+    struct_pack_into_internal(args[0], p, n_args - 1, &args[1]);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
@@ -240,7 +237,13 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     byte *end_p = &p[bufinfo.len];
     p += offset;
 
-    struct_pack_into_internal(args[0], p, end_p, n_args - 3, &args[3]);
+    // Check that the output buffer is big enough to hold all the values
+    mp_int_t sz = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
+    if (p + sz > end_p) {
+        mp_raise_ValueError("buffer too small");
+    }
+
+    struct_pack_into_internal(args[0], p, n_args - 3, &args[3]);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX, struct_pack_into);

@@ -30,6 +30,10 @@ try:
     struct.unpack('2H', b'\x00\x00')
 except:
     print('Exception')
+try:
+    struct.pack_into('2I', bytearray(4), 0, 0)
+except:
+    print('Exception')
 
 # check that unknown types raise an exception
 try:
