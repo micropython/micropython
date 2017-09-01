@@ -206,7 +206,8 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, byte* end_p, siz
             memset(p + to_copy, 0, sz - to_copy);
             p += sz;
         } else {
-            while (sz--) {
+            // If we run out of args then we just finish; CPython would raise struct.error
+            while (sz-- && i < n_args) {
                 mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
             }
         }
