@@ -27,7 +27,7 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 // timing functions
 
-#include "stmhal/irq.h"
+#include "irq.h"
 
 #define mp_hal_quiet_timing_enter() raise_irq_pri(1)
 #define mp_hal_quiet_timing_exit(irq_state) restore_irq_pri(irq_state)
@@ -44,7 +44,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 
 // C-level pin HAL
 
-#include "stmhal/pin.h"
+#include "pin.h"
 
 #define MP_HAL_PIN_FMT                  "%q"
 #define MP_HAL_PIN_MODE_INPUT           (0)

@@ -1,5 +1,5 @@
 -include mpconfigport.mk
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 
 FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules

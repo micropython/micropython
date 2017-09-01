@@ -1,1 +1,1 @@
-../../tools/upip.py
+../../../tools/upip.py

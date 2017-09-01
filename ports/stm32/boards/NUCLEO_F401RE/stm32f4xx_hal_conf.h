@@ -46,7 +46,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-// This board doesn't really have USB, but the stmhal codebase doesn't build
+// This board doesn't really have USB, but the stm32 codebase doesn't build
 // without some USB defined, so we leave this on for now.
 #define USE_USB_FS
 

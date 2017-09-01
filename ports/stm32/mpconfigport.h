@@ -92,7 +92,7 @@
 #define MICROPY_PY_BUILTINS_INPUT   (1)
 #define MICROPY_PY_BUILTINS_POW3    (1)
 #define MICROPY_PY_BUILTINS_HELP    (1)
-#define MICROPY_PY_BUILTINS_HELP_TEXT stmhal_help_text
+#define MICROPY_PY_BUILTINS_HELP_TEXT stm32_help_text
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
@@ -345,4 +345,4 @@ static inline mp_uint_t disable_irq(void) {
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-#define MICROPY_PIN_DEFS_PORT_H "pin_defs_stmhal.h"
+#define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"

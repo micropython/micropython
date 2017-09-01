@@ -98,7 +98,7 @@ $(BUILD)/misc/%.o: CFLAGS += -Os
 $(BUILD)/simplelink/%.o: CFLAGS += -Os
 $(BUILD)/drivers/cc3100/%.o: CFLAGS += -Os
 $(BUILD)/py/%.o: CFLAGS += -Os
-$(BUILD)/stmhal/%.o: CFLAGS += -Os
+$(BUILD)/ports/stm32/%.o: CFLAGS += -Os
 else
 $(error Invalid BTYPE specified)
 endif

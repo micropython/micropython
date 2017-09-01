@@ -26,7 +26,7 @@ ifneq ($(MAKECMDGOALS), clean)
 include $(Z_EXPORTS)
 endif
 
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 include $(TOP)/py/py.mk
 
 INC += -I.

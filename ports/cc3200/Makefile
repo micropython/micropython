@@ -14,7 +14,7 @@ PORT ?= /dev/ttyUSB1
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build/$(BOARD)/$(BTYPE)
 
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 -include ../../localconfig.mk
 
 CROSS_COMPILE ?= arm-none-eabi-
