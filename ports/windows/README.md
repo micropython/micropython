@@ -50,8 +50,8 @@ __Stack usage__
 The msvc compiler is quite stack-hungry which might result in a "maximum recursion depth exceeded"
 RuntimeError for code with lots of nested function calls.
 There are several ways to deal with this:
-- increase the threshold used for detection by altering the argument to `mp_stack_set_limit` in `unix/main.c`
-- disable detection all together by setting `MICROPY_STACK_CHECK` to "0" in `windows/mpconfigport.h`
+- increase the threshold used for detection by altering the argument to `mp_stack_set_limit` in `ports/unix/main.c`
+- disable detection all together by setting `MICROPY_STACK_CHECK` to "0" in `ports/windows/mpconfigport.h`
 - disable the /GL compiler flag by setting `WholeProgramOptimization` to "false"
 
 See [issue 2927](https://github.com/micropython/micropython/issues/2927) for more information.

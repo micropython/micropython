@@ -25,7 +25,7 @@
  */
 
 #include "sleep.h"
-#include "unix/mphalport.h"
+#include "ports/unix/mphalport.h"
 
 #define MICROPY_HAL_HAS_VT100 (0)
 
