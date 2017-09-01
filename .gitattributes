@@ -18,8 +18,6 @@ tests/basics/string_crlf_conversion.py -text
 stmhal/pybcdc.inf_template -text
 stmhal/usbd_* -text
 stmhal/boards/*/stm32f4xx_hal_conf.h -text
-stmhal/cmsis/** -text
-stmhal/hal/** -text
 stmhal/usbdev/** -text
 stmhal/usbhost/** -text
 cc3200/hal/aes.c -text
