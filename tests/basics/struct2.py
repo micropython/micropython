@@ -25,6 +25,12 @@ print(struct.calcsize('0s1s0H2H'))
 print(struct.unpack('<0s1s0H2H', b'01234'))
 print(struct.pack('<0s1s0H2H', b'abc', b'abc', 258, 515))
 
+# check that we get an error if the buffer is too small
+try:
+    struct.unpack('2H', b'\x00\x00')
+except:
+    print('Exception')
+
 # check that unknown types raise an exception
 try:
     struct.unpack('z', b'1')
