@@ -264,20 +264,33 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-mp_float_t mp_obj_get_float(mp_obj_t arg) {
+bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
+    mp_float_t val;
+
     if (arg == mp_const_false) {
-        return 0;
+        val = 0;
     } else if (arg == mp_const_true) {
-        return 1;
+        val = 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
-        return MP_OBJ_SMALL_INT_VALUE(arg);
+        val = MP_OBJ_SMALL_INT_VALUE(arg);
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
-        return mp_obj_int_as_float_impl(arg);
+        val = mp_obj_int_as_float_impl(arg);
     #endif
     } else if (mp_obj_is_float(arg)) {
-        return mp_obj_float_get(arg);
+        val = mp_obj_float_get(arg);
     } else {
+        return false;
+    }
+
+    *value = val;
+    return true;
+}
+
+mp_float_t mp_obj_get_float(mp_obj_t arg) {
+    mp_float_t val;
+
+    if (!mp_obj_get_float_maybe(arg, &val)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("can't convert to float");
         } else {
@@ -285,6 +298,8 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
                 "can't convert %s to float", mp_obj_get_type_str(arg)));
         }
     }
+
+    return val;
 }
 
 #if MICROPY_PY_BUILTINS_COMPLEX
