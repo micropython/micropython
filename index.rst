@@ -1,5 +1,5 @@
 Adafruit CircuitPython API Reference
-========================================
+====================================
 
 .. image:: https://travis-ci.org/adafruit/circuitpython.svg?branch=master
     :target: https://travis-ci.org/adafruit/circuitpython
@@ -17,37 +17,64 @@ Adafruit CircuitPython API Reference
     :target: https://adafru.it/discord
     :alt: Discord
 
-Welcome! This is the documentation for Adafruit CircuitPython. It is an open
-source derivative of `MicroPython <https://micropython.org>`_ for use on
-educational development boards designed and sold by `Adafruit
-<https://adafruit.com>`_. Adafruit CircuitPython features unified Python core
-APIs and a growing list of drivers that work with it.
+Welcome to the API reference documentation for Adafruit CircuitPython.
+This contains low-level API docs, and these docs may link out to separate
+*"getting started"* guides. `Adafruit <https://adafruit.com>`_ has many 
+excellent tutorials available through the
+`Adafruit Learning System <https://learn.adafruit.com/>`_.
+
+What is CircuitPython?
+----------------------
+
+**CircuitPython** is an open source derivative of 
+`MicroPython <https://micropython.org>`_ for use on educational development
+boards designed and sold by `Adafruit <https://adafruit.com>`_. Adafruit
+CircuitPython features unified Python core APIs and a growing list of drivers
+of that work with CircuitPython.
+
+What boards use CircuitPython?
+------------------------------
 
 The Adafruit Express line of boards are specifically
-designed for use with CircuitPython. They are the
-`CircuitPlayground Express <https://www.adafruit.com/product/3333>`_,
-`Feather M0 Express <https://www.adafruit.com/product/3403>`_,
-and `Metro M0 Express <https://www.adafruit.com/product/3505>`_.
-Other supported boards include the `Arduino Zero
-<https://www.arduino.cc/en/Main/ArduinoBoardZero>`_, `Adafruit Feather M0 Basic
-<https://www.adafruit.com/product/2772>`_, `Adafruit Feather HUZZAH
-<https://www.adafruit.com/products/2821>`_ and `Adafruit Feather M0 Bluefruit LE
-<https://www.adafruit.com/products/2995>`_.
+designed for use with CircuitPython. This line includes:
 
-`Adafruit <https://adafruit.com>`_ has many excellent tutorials available
-through the `Adafruit Learning System <https://learn.adafruit.com/>`_. These
-docs are low-level API docs and may link out to separate getting started guides.
+* `CircuitPlayground Express <https://www.adafruit.com/product/3333>`_
+* `Feather M0 Express <https://www.adafruit.com/product/3403>`_
+* `Metro M0 Express <https://www.adafruit.com/product/3505>`_
+
+Other supported boards include:
+
+* `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`_
+* `Adafruit Feather M0 Basic <https://www.adafruit.com/product/2772>`_
+*  `Adafruit Feather HUZZAH <https://www.adafruit.com/products/2821>`_
+* `Adafruit Feather M0 Bluefruit LE <https://www.adafruit.com/products/2995>`_
+
+.. _contents:
+
+Full Table of Contents
+----------------------
 
 .. toctree::
     :maxdepth: 3
+    :caption: API and Usage
 
     shared-bindings/index.rst
     docs/supported_ports.rst
     docs/troubleshooting.rst
     docs/drivers.rst
+
+.. toctree::
+    :maxdepth: 3
+    :caption: Developer reference
+
     docs/design_guide
     docs/common_hal
     docs/library/index.rst
+
+.. toctree::
+    :maxdepth: 3
+    :caption: About the project
+
     README
     CONTRIBUTING
     CODE_OF_CONDUCT
