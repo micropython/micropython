@@ -240,7 +240,11 @@ STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
 }
 
 mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
-    mp_float_t rhs_val = mp_obj_get_float(rhs_in); // can be any type, this function will convert to float (if possible)
+    mp_float_t rhs_val;
+    if (!mp_obj_get_float_maybe(rhs_in, &rhs_val)) {
+        return MP_OBJ_NULL; // op not supported
+    }
+
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
