@@ -37,17 +37,15 @@ What boards use CircuitPython?
 
 The Adafruit Express line of boards are specifically
 designed for use with CircuitPython. This line includes:
-
-* `CircuitPlayground Express <https://www.adafruit.com/product/3333>`_
-* `Feather M0 Express <https://www.adafruit.com/product/3403>`_
+* `CircuitPlayground Express <https://www.adafruit.com/product/3333>`_,
+* `Feather M0 Express <https://www.adafruit.com/product/3403>`_, and
 * `Metro M0 Express <https://www.adafruit.com/product/3505>`_
 
 Other supported boards include:
-
-* `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`_
-* `Adafruit Feather M0 Basic <https://www.adafruit.com/product/2772>`_
-* `Adafruit Feather HUZZAH <https://www.adafruit.com/products/2821>`_
-* `Adafruit Feather M0 Bluefruit LE <https://www.adafruit.com/products/2995>`_
+* `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`_,
+* `Adafruit Feather M0 Basic <https://www.adafruit.com/product/2772>`_,
+* `Adafruit Feather HUZZAH <https://www.adafruit.com/products/2821>`_, and
+* `Adafruit Feather M0 Bluefruit LE <https://www.adafruit.com/products/2995>`_.
 
 .. _contents:
 
