@@ -30,22 +30,23 @@ What is CircuitPython?
 `MicroPython <https://micropython.org>`_. CircuitPython supports use on
 educational development boards designed and sold by
 `Adafruit <https://adafruit.com>`_. Adafruit CircuitPython features unified
-Python core APIs and a growing list of drivers of that work with it.
+Python core APIs and a growing list of Adafruit libraries and drivers of
+that work with it.
 
 What boards use CircuitPython?
 ------------------------------
 
-The Adafruit Express line of boards are specifically
+The Adafruit Express line of boards is specifically
 designed for use with CircuitPython. This line includes:
-* `CircuitPlayground Express <https://www.adafruit.com/product/3333>`_,
-* `Feather M0 Express <https://www.adafruit.com/product/3403>`_, and
-* `Metro M0 Express <https://www.adafruit.com/product/3505>`_
+`CircuitPlayground Express <https://www.adafruit.com/product/3333>`_;
+`Feather M0 Express <https://www.adafruit.com/product/3403>`_; and
+`Metro M0 Express <https://www.adafruit.com/product/3505>`_
 
 Other supported boards include:
-* `Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`_,
-* `Adafruit Feather M0 Basic <https://www.adafruit.com/product/2772>`_,
-* `Adafruit Feather HUZZAH <https://www.adafruit.com/products/2821>`_, and
-* `Adafruit Feather M0 Bluefruit LE <https://www.adafruit.com/products/2995>`_.
+`Arduino Zero <https://www.arduino.cc/en/Main/ArduinoBoardZero>`_;
+`Adafruit Feather M0 Basic <https://www.adafruit.com/product/2772>`_;
+`Adafruit Feather HUZZAH <https://www.adafruit.com/products/2821>`_; and
+`Adafruit Feather M0 Bluefruit LE <https://www.adafruit.com/products/2995>`_.
 
 .. _contents:
 
@@ -63,14 +64,14 @@ Full Table of Contents
 
 .. toctree::
    :maxdepth: 3
-   :caption: Developer reference
+   :caption: Design and porting reference
 
    docs/design_guide
    docs/common_hal
 
 .. toctree::
    :maxdepth: 3
-   :caption: MicroPython specific docs
+   :caption: MicroPython specific
 
    docs/library/index.rst
 
