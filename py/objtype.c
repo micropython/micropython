@@ -460,6 +460,7 @@ STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+retry:;
     qstr op_name = mp_binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -483,6 +484,14 @@ STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
         dest[2] = rhs_in;
         res = mp_call_method_n_kw(1, 0, dest);
     } else {
+        // If this was an inplace method, fallback to normal method
+        // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
+        // "If a specific method is not defined, the augmented assignment
+        // falls back to the normal methods."
+        if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
+            op -= MP_BINARY_OP_INPLACE_OR - MP_BINARY_OP_OR;
+            goto retry;
+        }
         return MP_OBJ_NULL; // op not supported
     }
 
