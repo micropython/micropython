@@ -36,7 +36,7 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #ifdef _WIN32
-#include "windows/fmode.h"
+#include "ports/windows/fmode.h"
 #endif
 
 // Command line options, with their defaults
