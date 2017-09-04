@@ -60,6 +60,11 @@ print(1.2 <= -3.4)
 print(1.2 >= 3.4)
 print(1.2 >= -3.4)
 
+# comparison of nan is special
+nan = float('nan')
+print(nan == 1.2)
+print(nan == nan)
+
 try:
     1.0 / 0
 except ZeroDivisionError:
