@@ -61,7 +61,6 @@
 #include "telnet.h"
 #include "debug.h"
 #include "sflash_diskio.h"
-#include "mpexception.h"
 #include "random.h"
 #include "pybi2c.h"
 #include "pins.h"
@@ -143,7 +142,6 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
 
     // execute all basic initializations
-    mpexception_init0();
     mp_irq_init0();
     pyb_sleep_init0();
     pin_init0();
