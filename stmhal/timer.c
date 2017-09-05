@@ -28,9 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "usbd_cdc_msc_hid.h"
-#include "usbd_cdc_interface.h"
-
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "timer.h"
