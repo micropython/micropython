@@ -53,14 +53,28 @@
 //|   :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
 //|   :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
 //|
-//|   Simple record to buffer::
+//|   Record 8-bit unsigned samples to buffer::
 //|
 //|     import audiobusio
 //|     import board
 //|
 //|     # Prep a buffer to record into
 //|     b = bytearray(200)
-//|     with audiobusio.PDMIn(board.MICROPHONE_DATA, board.MICROPHONE_CLOCK) as mic:
+//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA) as mic:
+//|         mic.record(b, len(b))
+//|
+//|   Record 16-bit unsigned samples to buffer::
+//|
+//|     import audiobusio
+//|     import board
+//|
+//|     # Prep a buffer to record into. The array interface doesn't allow for
+//|     # constructing with a set size so we append to it until we have the size
+//|     # we want.
+//|     b = array.array("H")
+//|     for i in range(200):
+//|         b.append(0)
+//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, bit_depth=16) as mic:
 //|         mic.record(b, len(b))
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
@@ -70,7 +84,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_frequency,  MP_ARG_INT, {.u_int = 8000} },
         { MP_QSTR_bit_depth,  MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_mono,       MP_ARG_BOOL,{.u_bool = false} },
+        { MP_QSTR_mono,       MP_ARG_BOOL,{.u_bool = true} },
         { MP_QSTR_oversample, MP_ARG_INT, {.u_int = 64} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

@@ -96,8 +96,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         mp_raise_RuntimeError("Unable to allocate audio DMA block counter.");
     }
 
-    if (bit_depth != 16 || !mono || oversample != 64) {
-        mp_raise_NotImplementedError("");
+    if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != 64) {
+        mp_raise_NotImplementedError("Only 8 or 16 bit mono with 64 oversample is supported.");
     }
 
     // TODO(tannewt): Use the DPLL to get a more precise sampling rate.
