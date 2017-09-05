@@ -38,4 +38,7 @@ void pyb_rtc_set_us_since_2000(uint64_t nowus);
 uint64_t pyb_rtc_get_us_since_2000();
 void rtc_prepare_deepsleep(uint64_t sleep_us);
 
+void uart_maybe_repl_tx_one_char(char c);
+void machine_uart_init();
+
 #endif // MICROPY_INCLUDED_ESP8266_MODMACHINE_H

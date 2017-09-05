@@ -48,5 +48,7 @@ import gc
 #import webrepl
 #webrepl.start()
 gc.collect()
+from machine import UART
+uart0 = UART(0)
 """)
     return vfs

@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include "ets_sys.h"
 #include "etshal.h"
-#include "uart.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
@@ -45,7 +44,7 @@ const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 void mp_hal_init(void) {
     //ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
-    uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
+    machine_uart_init();
 }
 
 void mp_hal_delay_us(uint32_t us) {
@@ -73,14 +72,14 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_char(char c) {
-    uart_tx_one_char(UART0, c);
+    uart_maybe_repl_tx_one_char(c);
     mp_uos_dupterm_tx_strn(&c, 1);
 }
 
 #if 0
 void mp_hal_debug_str(const char *str) {
     while (*str) {
-        uart_tx_one_char(UART0, *str++);
+        uart_maybe_repl_tx_one_char(UART0, *str++);
     }
     uart_flush(UART0);
 }
@@ -111,9 +110,9 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
     (void)env;
     while (len--) {
         if (*str == '\n') {
-            uart_tx_one_char(UART0, '\r');
+            uart_maybe_repl_tx_one_char('\r');
         }
-        uart_tx_one_char(UART0, *str++);
+        uart_maybe_repl_tx_one_char(*str++);
     }
 }
 
@@ -145,6 +144,7 @@ void mp_hal_signal_input(void) {
     system_os_post(UART_TASK_ID, 0, 0);
     #endif
 }
+
 
 static int call_dupterm_read(void) {
     if (MP_STATE_PORT(term_obj) == NULL) {
