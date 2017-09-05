@@ -13,7 +13,7 @@ Adafruit CircuitPython API Reference
     :target: https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
     :alt: Gitter
 
-.. image :: https://img.shields.io/discord/327254708534116352.svg
+.. image:: https://img.shields.io/discord/327254708534116352.svg
     :target: https://adafru.it/discord
     :alt: Discord
 
@@ -63,20 +63,20 @@ Full Table of Contents
    docs/drivers.rst
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Design and porting reference
 
    docs/design_guide
    docs/common_hal
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: MicroPython specific
 
    docs/library/index.rst
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: About the project
 
    README
