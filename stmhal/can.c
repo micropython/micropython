@@ -422,6 +422,7 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
         HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
         __CAN2_FORCE_RESET();
         __CAN2_RELEASE_RESET();
+        __CAN1_CLK_DISABLE(); // Enabled with CAN2 clk
         __CAN2_CLK_DISABLE();
     }
     return mp_const_none;
