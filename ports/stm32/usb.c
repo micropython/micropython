@@ -57,6 +57,7 @@ mp_uint_t pyb_usb_flags = 0;
 STATIC USBD_HandleTypeDef hUSBDDevice;
 STATIC usbd_cdc_msc_hid_state_t usbd_cdc_msc_hid_state;
 STATIC usbd_cdc_itf_t usbd_cdc_itf;
+STATIC usbd_hid_itf_t usbd_hid_itf;
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 #endif
 
@@ -121,6 +122,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
         usbd->pClass = &USBD_CDC_MSC_HID;
         usbd_cdc_msc_hid_state.cdc = &usbd_cdc_itf;
+        usbd_cdc_msc_hid_state.hid = &usbd_hid_itf;
         usbd->pClassData = &usbd_cdc_msc_hid_state;
 
         switch (pyb_usb_storage_medium) {
@@ -133,7 +135,6 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
                 USBD_MSC_RegisterStorage(usbd, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
                 break;
         }
-        USBD_HID_RegisterInterface(usbd, (USBD_HID_ItfTypeDef*)&USBD_HID_fops);
 
         // start the USB device
         USBD_LL_Init(usbd);
@@ -582,7 +583,7 @@ STATIC mp_obj_t pyb_usb_hid_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
 
     // receive the data
-    int ret = USBD_HID_Rx(&hUSBDDevice, (uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
+    int ret = usbd_hid_rx(&usbd_hid_itf, vstr.len, (uint8_t*)vstr.buf, vals[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -642,7 +643,7 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && USBD_HID_RxNum() > 0) {
+        if ((flags & MP_STREAM_POLL_RD) && usbd_hid_rx_num(&usbd_hid_itf) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
         if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {

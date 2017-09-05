@@ -40,11 +40,6 @@ typedef struct {
   __IO uint32_t RxState;    
 } USBD_CDC_HandleTypeDef;
 
-typedef struct _USBD_HID_Itf {
-  int8_t (* Init)   (USBD_HandleTypeDef *pdev);
-  int8_t (* Receive)(USBD_HandleTypeDef *pdev, uint8_t *, uint32_t);
-} USBD_HID_ItfTypeDef;
-
 typedef struct _USBD_STORAGE {
   int8_t (* Init) (uint8_t lun);
   int8_t (* GetCapacity) (uint8_t lun, uint32_t *block_num, uint16_t *block_size);
@@ -109,7 +104,6 @@ uint8_t USBD_CDC_TransmitPacket  (USBD_HandleTypeDef *pdev);
 
 uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *fops);
 
-uint8_t USBD_HID_RegisterInterface(USBD_HandleTypeDef *pdev, USBD_HID_ItfTypeDef *fops);
 uint8_t USBD_HID_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff);
 uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev);
 int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev);
@@ -122,5 +116,10 @@ struct _usbd_cdc_itf_t;
 void usbd_cdc_init(struct _usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev);
 int8_t usbd_cdc_control(struct _usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length);
 int8_t usbd_cdc_receive(struct _usbd_cdc_itf_t *cdc, uint8_t* Buf, uint32_t *Len);
+
+// These are provided externally to implement the HID interface
+struct _usbd_hid_itf_t;
+void usbd_hid_init(struct _usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev);
+int8_t usbd_hid_receive(struct _usbd_hid_itf_t *hid, size_t len, uint8_t *buf);
 
 #endif // _USB_CDC_MSC_CORE_H_

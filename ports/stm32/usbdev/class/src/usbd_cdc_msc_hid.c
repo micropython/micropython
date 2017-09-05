@@ -96,7 +96,6 @@ static uint8_t *hid_desc;
 static const uint8_t *hid_report_desc;
 
 static USBD_StorageTypeDef *MSC_fops;
-static USBD_HID_ItfTypeDef *HID_fops;
 
 static USBD_CDC_HandleTypeDef CDC_ClassData;
 static USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
@@ -725,7 +724,7 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        USBD_EP_TYPE_INTR,
                        mps_out);
 
-        HID_fops->Init(pdev);
+        usbd_hid_init(state->hid, pdev);
 
         // Prepare Out endpoint to receive next packet
         USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
@@ -975,7 +974,7 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
         return USBD_OK;
     } else if ((usbd_mode & USBD_MODE_HID) && epnum == (hid_out_ep & 0x7f)) {
         HID_ClassData.RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
-        HID_fops->Receive(pdev, HID_ClassData.RxBuffer, HID_ClassData.RxLength);
+        usbd_hid_receive(state->hid, HID_ClassData.RxLength, HID_ClassData.RxBuffer);
     }
 
     return USBD_OK;
@@ -1040,15 +1039,6 @@ uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *
     } else {
         MSC_fops = fops;
         pdev->pUserData = fops; // MSC uses pUserData because SCSI and BOT reference it
-        return USBD_OK;
-    }
-}
-
-uint8_t USBD_HID_RegisterInterface(USBD_HandleTypeDef *pdev, USBD_HID_ItfTypeDef *fops) {
-    if (fops == NULL) {
-        return USBD_FAIL;
-    } else {
-        HID_fops = fops;
         return USBD_OK;
     }
 }

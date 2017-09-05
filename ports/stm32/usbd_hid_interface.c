@@ -36,75 +36,47 @@
 
 #include <stdint.h>
 
-#include "usbd_cdc_msc_hid.h"
 #include "usbd_hid_interface.h"
 
 #include "py/obj.h"
 #include "irq.h"
 #include "usb.h"
 
-/* Private variables ---------------------------------------------------------*/
-
-static uint8_t buffer[2][HID_DATA_FS_MAX_PACKET_SIZE]; // pair of buffers to read individual packets into
-static int8_t current_read_buffer = 0; // which buffer to read from
-static uint32_t last_read_len = 0; // length of last read
-static int8_t current_write_buffer = 0; // which buffer to write to
-
-/* Private function prototypes -----------------------------------------------*/
-static int8_t HID_Itf_Init     (USBD_HandleTypeDef *pdev);
-static int8_t HID_Itf_Receive  (USBD_HandleTypeDef *pdev, uint8_t* pbuf, uint32_t Len);
-
-const USBD_HID_ItfTypeDef USBD_HID_fops = {
-    HID_Itf_Init,
-    HID_Itf_Receive
-};
-
-/**
-  * @brief  HID_Itf_Init
-  *         Initializes the HID media low layer
-  * @param  None
-  * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
-  */
-static int8_t HID_Itf_Init(USBD_HandleTypeDef *pdev)
-{
-    current_read_buffer = 0;
-    last_read_len = 0;
-    current_write_buffer = 0;
-    USBD_HID_SetRxBuffer(pdev, buffer[current_write_buffer]);
-    return USBD_OK;
+void usbd_hid_init(usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev) {
+    hid->usb = pdev;
+    hid->current_read_buffer = 0;
+    hid->last_read_len = 0;
+    hid->current_write_buffer = 0;
+    USBD_HID_SetRxBuffer(pdev, hid->buffer[hid->current_write_buffer]);
 }
 
-/**
-  * @brief  HID_Itf_Receive
-  *         Data received over USB OUT endpoint is processed here.
-  * @param  Buf: Buffer of data received
-  * @param  Len: Number of data received (in bytes)
-  * @retval Result of the opeartion: USBD_OK if all operations are OK else USBD_FAIL
-  * @note   The buffer we are passed here is just UserRxBuffer, so we are
-  *         free to modify it.
-  */
-static int8_t HID_Itf_Receive(USBD_HandleTypeDef *pdev, uint8_t* Buf, uint32_t Len) {
-    current_write_buffer = !current_write_buffer;
-    last_read_len = Len;
+// Data received over USB OUT endpoint is processed here.
+// buf: Buffer of data received
+// len: Number of data received (in bytes)
+// Returns USBD_OK if all operations are OK else USBD_FAIL
+// The buffer we are passed here is just hid->buffer, so we are free to modify it.
+int8_t usbd_hid_receive(usbd_hid_itf_t *hid, size_t len, uint8_t *buf) {
+    hid->current_write_buffer = !hid->current_write_buffer;
+    hid->last_read_len = len;
     // initiate next USB packet transfer, to append to existing data in buffer
-    USBD_HID_SetRxBuffer(pdev, buffer[current_write_buffer]);
-    USBD_HID_ReceivePacket(pdev);
+    USBD_HID_SetRxBuffer(hid->usb, hid->buffer[hid->current_write_buffer]);
+    USBD_HID_ReceivePacket(hid->usb);
     // Set NAK to indicate we need to process read buffer
-    USBD_HID_SetNAK(pdev);
+    USBD_HID_SetNAK(hid->usb);
     return USBD_OK;
 }
 
 // Returns number of ready rx buffers.
-int USBD_HID_RxNum(void) {
-    return (current_read_buffer != current_write_buffer);
+int usbd_hid_rx_num(usbd_hid_itf_t *hid) {
+    return hid->current_read_buffer != hid->current_write_buffer;
 }
 
 // timout in milliseconds.
 // Returns number of bytes read from the device.
-int USBD_HID_Rx(USBD_HandleTypeDef *pdev, uint8_t *buf, uint32_t len, uint32_t timeout) {
+int usbd_hid_rx(usbd_hid_itf_t *hid, size_t len, uint8_t *buf, uint32_t timeout) {
     // Wait until we have buffer to read
     uint32_t start = HAL_GetTick();
-    while (current_read_buffer == current_write_buffer) {
+    while (hid->current_read_buffer == hid->current_write_buffer) {
         // Wraparound of tick is taken care of by 2's complement arithmetic.
         if (HAL_GetTick() - start >= timeout) {
             // timeout
@@ -118,17 +90,17 @@ int USBD_HID_Rx(USBD_HandleTypeDef *pdev, uint8_t *buf, uint32_t len, uint32_t t
     }
 
     // There is not enough space in buffer
-    if (len < last_read_len) {
+    if (len < hid->last_read_len) {
         return 0;
     }
 
     // Copy bytes from device to user buffer
-    memcpy(buf, buffer[current_read_buffer], last_read_len);
-    current_read_buffer = !current_read_buffer;
+    memcpy(buf, hid->buffer[hid->current_read_buffer], hid->last_read_len);
+    hid->current_read_buffer = !hid->current_read_buffer;
 
     // Clear NAK to indicate we are ready to read more data
-    USBD_HID_ClearNAK(pdev);
+    USBD_HID_ClearNAK(hid->usb);
 
     // Success, return number of bytes read
-    return last_read_len;
+    return hid->last_read_len;
 }
