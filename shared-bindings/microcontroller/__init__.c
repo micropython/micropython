@@ -58,17 +58,19 @@
 //|     :maxdepth: 3
 //|
 //|     Pin
+//|     Processor
 //|
 
 //| .. attribute:: cpu
 //|
-//|   CPU information and control, such as temperature and clock frequency.
+//|   CPU information and control, such as `cpu.temperature` and `cpu.frequency`
+//|   (clock frequency).
 //|   This object is the sole instance of `microcontroller.Processor`.
 //|
 
 //| .. method:: delay_us(delay)
 //|
-//|   Dedicated delay method used for very short delays. DO NOT do long delays
+//|   Dedicated delay method used for very short delays. **Do not** do long delays
 //|   because it will stall any concurrent code.
 //|
 STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
