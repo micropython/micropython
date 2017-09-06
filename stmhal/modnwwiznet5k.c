@@ -72,15 +72,35 @@ STATIC void wiz_cs_deselect(void) {
     mp_hal_pin_high(wiznet5k_obj.cs);
 }
 
-STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi, buf, len, 5000);
+
+
+STATIC uint8_t wiz_spi_read(void) {
+    uint8_t buf;
+    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi, &buf, 1, 5000);
+    (void)status;
+    return buf;
+}
+
+STATIC void wiz_spi_write(uint8_t buf) {
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi, &buf, 1, 5000);
     (void)status;
 }
 
-STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi, (uint8_t*)buf, len, 5000);
-    (void)status;
-}
+
+
+//STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
+//    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi, buf, len, 5000);
+//    (void)status;
+//}
+
+//STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
+//    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi, (uint8_t*)buf, len, 5000);
+//    (void)status;
+//}
+
+
+
+
 
 STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
     uint8_t dns_ip[MOD_NETWORK_IPADDR_BUF_SIZE] = {8, 8, 8, 8};
@@ -397,7 +417,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
             if (i % 16 == 0) {
                 printf("\n  %04x:", i);
             }
-            printf(" %02x", WIZCHIP_READ(WIZCHIP_SREG_ADDR(sn, i)));
+//            printf(" %02x", WIZCHIP_READ(WIZCHIP_SREG_ADDR(sn, i)));
         }
     }
     printf("\n");
