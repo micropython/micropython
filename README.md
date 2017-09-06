@@ -34,10 +34,10 @@ Major components in this repository:
   core library.
 - mpy-cross/ -- the MicroPython cross-compiler which is used to turn scripts
   into precompiled bytecode.
-- unix/ -- a version of MicroPython that runs on Unix.
-- stmhal/ -- a version of MicroPython that runs on the PyBoard and similar
+- ports/unix/ -- a version of MicroPython that runs on Unix.
+- ports/stm32/ -- a version of MicroPython that runs on the PyBoard and similar
   STM32 boards (using ST's Cube HAL drivers).
-- minimal/ -- a minimal MicroPython port. Start with this if you want
+- ports/minimal/ -- a minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format. Rendered
@@ -45,13 +45,13 @@ Major components in this repository:
   to select needed board/port at the bottom left corner).
 
 Additional components:
-- bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
+- ports/bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
   mostly to control code size.
-- teensy/ -- a version of MicroPython that runs on the Teensy 3.1
+- ports/teensy/ -- a version of MicroPython that runs on the Teensy 3.1
   (preliminary but functional).
-- pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
-- cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
-- esp8266/ -- an experimental port for ESP8266 WiFi modules.
+- ports/pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
+- ports/cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
+- ports/esp8266/ -- an experimental port for ESP8266 WiFi modules.
 - extmod/ -- additional (non-core) modules implemented in C.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
@@ -72,7 +72,7 @@ Alternatively, fallback implementation based on setjmp/longjmp can be used.
 
 To build (see section below for required dependencies):
 
-    $ cd unix
+    $ cd ports/unix
     $ make axtls
     $ make
 
@@ -115,7 +115,7 @@ these additional dependencies, first fetch git submodules for them:
     $ git submodule update --init
 
 Use this same command to get the latest versions of dependencies, as
-they are updated from time to time. After that, in `unix/` dir, execute:
+they are updated from time to time. After that, in `ports/unix/` dir, execute:
 
     $ make deplibs
 
@@ -123,25 +123,25 @@ This will build all available dependencies (regardless whether they
 are used or not). If you intend to build MicroPython with additional
 options (like cross-compiling), the same set of options should be passed
 to `make deplibs`. To actually enabled use of dependencies, edit
-`unix/mpconfigport.mk` file, which has inline descriptions of the options.
+`ports/unix/mpconfigport.mk` file, which has inline descriptions of the options.
 For example, to build SSL module (required for `upip` tool described above),
 set `MICROPY_PY_USSL` to 1.
 
-In `unix/mpconfigport.mk`, you can also disable some dependencies enabled
+In `ports/unix/mpconfigport.mk`, you can also disable some dependencies enabled
 by default, like FFI support, which requires libffi development files to
 be installed.
 
-The STM version
----------------
+The STM32 version
+-----------------
 
-The "stmhal" port requires an ARM compiler, arm-none-eabi-gcc, and associated
+The "stm32" port requires an ARM compiler, arm-none-eabi-gcc, and associated
 bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
 arm-none-eabi-gcc packages.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
 
-    $ cd stmhal
+    $ cd ports/stm32
     $ make
 
 You then need to get your board into DFU mode.  On the pyboard, connect the
@@ -155,4 +155,4 @@ Then to flash the code via USB DFU to your device:
 This will use the included `tools/pydfu.py` script.  If flashing the firmware
 does not work it may be because you don't have the correct permissions, and
 need to use `sudo make deploy`.
-See the README.md file in the stmhal/ directory for further details.
+See the README.md file in the ports/stm32/ directory for further details.

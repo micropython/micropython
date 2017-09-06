@@ -1,4 +1,4 @@
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 # qstr definitions (must come before including py.mk)

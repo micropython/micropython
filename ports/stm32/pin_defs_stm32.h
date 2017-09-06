@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-// This file contains pin definitions that are specific to the stmhal port.
+// This file contains pin definitions that are specific to the stm32 port.
 // This file should only ever be #included by pin.h and not directly.
 
 enum {

@@ -1,4 +1,4 @@
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
@@ -31,7 +31,7 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat
 
 INC += -I.
 INC += -I$(TOP)
-INC += -I$(TOP)/stmhal
+INC += -I$(TOP)/ports/stm32
 INC += -I$(BUILD)
 INC += -Icore
 
@@ -91,14 +91,14 @@ SRC_C = \
 	uart.c \
 	usb.c \
 
-STM_SRC_C = $(addprefix stmhal/,\
+STM_SRC_C = $(addprefix ports/stm32/,\
 	gccollect.c \
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
 	)
 
-STM_SRC_S = $(addprefix stmhal/,\
+STM_SRC_S = $(addprefix ports/stm32/,\
 	gchelper.s \
 	)
 

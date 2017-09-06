@@ -1,5 +1,5 @@
 #include "py/obj.h"
-#include "../stmhal/lcd.h"
+#include "../stm32/lcd.h"
 
 void lcd_init(void) {
 }

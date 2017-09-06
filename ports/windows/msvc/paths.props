@@ -3,28 +3,28 @@
   <PropertyGroup>
     <PyPathsIncluded>True</PyPathsIncluded>
 
-    <!-- The properties below specify the output directory structure.
+    <!-- The properties below specify the directory structure.
          This defaults to, for example for Configuration = Debug and Platform = x64:
 
          micropython [PyBaseDir]
           |- ...
-          |- windows [PyWinDir]
-              |- ...
-              |- micropython.exe
-              |- build [PyBuildDir]
-                  |- Debugx64 [PyOutDir]
-                  |   |- ...
-                  |   |- micropython.exe
-                  |   |- micropython.map
-                  |   |- obj [PyIntDir]
-                  |- genhdr
+          |- ports/windows [PyWinDir]
+                    |- ...
+                    |- micropython.exe
+                    |- build [PyBuildDir]
+                        |- Debugx64 [PyOutDir]
+                        |   |- ...
+                        |   |- micropython.exe
+                        |   |- micropython.map
+                        |   |- obj [PyIntDir]
+                        |- genhdr
 
          Note that the micropython executable will be copied from PyOutDir
          to PyWinDir after each build. -->
 
     <!-- Start from project root -->
-    <PyBaseDir>$([System.IO.Path]::GetFullPath(`$(MSBuildThisFileDirectory)..\..`))\</PyBaseDir>
-    <PyWinDir>$(PyBaseDir)windows\</PyWinDir>
+    <PyBaseDir>$([System.IO.Path]::GetFullPath(`$(MSBuildThisFileDirectory)..\..\..`))\</PyBaseDir>
+    <PyWinDir>$(PyBaseDir)ports\windows\</PyWinDir>
     <PyBuildDir Condition="'$(PyBuildDir)' == ''">$(PyWinDir)build\</PyBuildDir>
 
     <!-- All include directories needed for uPy -->

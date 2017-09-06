@@ -8,7 +8,7 @@ endif
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 -include mpconfigport.mk
 include boards/$(BOARD)/mpconfigboard.mk
 
@@ -206,7 +206,7 @@ SRC_C = \
 	timer.c \
 	led.c \
 	pin.c \
-	pin_defs_stmhal.c \
+	pin_defs_stm32.c \
 	pin_named_pins.c \
 	bufhelper.c \
 	dma.c \

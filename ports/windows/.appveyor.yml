@@ -15,7 +15,7 @@ platform:
 - x64
 
 build:
-  project: windows/micropython.vcxproj
+  project: ports/windows/micropython.vcxproj
   verbosity: normal
 
 test_script:

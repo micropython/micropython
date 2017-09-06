@@ -10,7 +10,7 @@
   <PropertyGroup>
     <DestDir>$(PyBuildDir)genhdr\</DestDir>
     <PySrcDir>$(PyBaseDir)py\</PySrcDir>
-    <QstrDefs>$(PyBaseDir)unix\qstrdefsport.h</QstrDefs>
+    <QstrDefs>$(PyBaseDir)ports\unix\qstrdefsport.h</QstrDefs>
     <PyQstrDefs>$(PySrcDir)qstrdefs.h</PyQstrDefs>
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
     <QstrGen>$(DestDir)qstrdefs.generated.h</QstrGen>

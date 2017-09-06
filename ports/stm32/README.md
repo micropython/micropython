@@ -24,7 +24,7 @@ bytecode.  The cross-compiler is built and run on the host machine, using:
 $ make -C mpy-cross
 ```
 This command should be executed from the root directory of this repository.
-All other commands below should be executed from the stmhal/ directory.
+All other commands below should be executed from the ports/stm32/ directory.
 
 An ARM compiler is required for the build, along with the associated binary
 utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for
@@ -71,7 +71,7 @@ Or using `dfu-util` directly:
 
 ST Discovery or Nucleo boards have a builtin programmer called ST-LINK. With
 these boards and using Linux or OS X, you have the option to upload the
-`stmhal` firmware using the `st-flash` utility from the
+`stm32` firmware using the `st-flash` utility from the
 [stlink](https://github.com/texane/stlink) project. To do so, connect the board
 with a mini USB cable to its ST-LINK USB port and then use the make target
 `deploy-stlink`. For example, if you have the STM32F4DISCOVERY board, you can
@@ -101,7 +101,7 @@ a mini USB cable to its ST-LINK USB port and then use the make target
     $ make BOARD=STM32F4DISC deploy-openocd
 
 The `openocd` program, which writes the firmware to the target board's flash,
-is configured via the file `stmhal/boards/openocd_stm32f4.cfg`. This
+is configured via the file `ports/stm32/boards/openocd_stm32f4.cfg`. This
 configuration should work for all boards based on a STM32F4xx MCU with a
 ST-LINKv2 interface. You can override the path to this configuration by setting
 `OPENOCD_CONFIG` in your Makefile or on the command line.

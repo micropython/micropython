@@ -18,7 +18,7 @@ APP_INC += -Iutil
 APP_INC += -Ibootmgr
 APP_INC += -I$(BUILD)
 APP_INC += -I$(BUILD)/genhdr
-APP_INC += -I$(TOP)/stmhal
+APP_INC += -I$(TOP)/ports/stm32
 
 APP_CPPDEFINES = -Dgcc -DTARGET_IS_CC3200 -DSL_FULL -DUSE_FREERTOS
 
@@ -151,7 +151,7 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	utils/sys_stdio_mphal.c \
 	)
 	
-APP_STM_SRC_C = $(addprefix stmhal/,\
+APP_STM_SRC_C = $(addprefix ports/stm32/,\
 	bufhelper.c \
 	irq.c \
 	)

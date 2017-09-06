@@ -1,5 +1,5 @@
 -include mpconfigport.mk
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 
 FROZEN_DIR = scripts
 FROZEN_MPY_DIR = modules
@@ -188,7 +188,7 @@ include $(TOP)/py/mkrules.mk
 .PHONY: test
 
 test: $(PROG) $(TOP)/tests/run-tests
-	$(eval DIRNAME=$(notdir $(CURDIR)))
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
 
 # install micropython in /usr/local/bin
@@ -253,7 +253,7 @@ coverage:
 	    BUILD=build-coverage PROG=micropython_coverage
 
 coverage_test: coverage
-	$(eval DIRNAME=$(notdir $(CURDIR)))
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -d thread
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native

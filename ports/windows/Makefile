@@ -1,4 +1,4 @@
-include ../py/mkenv.mk
+include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 # define main target
@@ -28,13 +28,13 @@ endif
 
 # source files
 SRC_C = \
-	unix/main.c \
-	unix/file.c \
-	unix/input.c \
-	unix/modos.c \
-	unix/modmachine.c \
-	unix/modtime.c \
-	unix/gccollect.c \
+	ports/unix/main.c \
+	ports/unix/file.c \
+	ports/unix/input.c \
+	ports/unix/modos.c \
+	ports/unix/modmachine.c \
+	ports/unix/modtime.c \
+	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
