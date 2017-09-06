@@ -126,6 +126,7 @@ STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, busio_spi_obj___exit__);
 
 static void check_lock(busio_spi_obj_t *self) {
+    asm("");
     if (!common_hal_busio_spi_has_lock(self)) {
         mp_raise_RuntimeError("Function requires lock");
     }

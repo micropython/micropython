@@ -110,6 +110,7 @@ STATIC mp_obj_t busio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_i2c___exit___obj, 4, 4, busio_i2c_obj___exit__);
 
 static void check_lock(busio_i2c_obj_t *self) {
+    asm("");
     if (!common_hal_busio_i2c_has_lock(self)) {
         mp_raise_RuntimeError("Function requires lock.");
     }
