@@ -42,25 +42,24 @@
 #include "irq.h"
 #include "usb.h"
 
-void usbd_hid_init(usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev) {
+uint8_t *usbd_hid_init(usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev) {
     hid->usb = pdev;
     hid->current_read_buffer = 0;
     hid->last_read_len = 0;
     hid->current_write_buffer = 0;
-    USBD_HID_SetRxBuffer(pdev, hid->buffer[hid->current_write_buffer]);
+
+    // Return the buffer to place the first USB OUT packet
+    return hid->buffer[hid->current_write_buffer];
 }
 
 // Data received over USB OUT endpoint is processed here.
-// buf: Buffer of data received
-// len: Number of data received (in bytes)
+// len: number of bytes received into the buffer we passed to USBD_HID_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-// The buffer we are passed here is just hid->buffer, so we are free to modify it.
-int8_t usbd_hid_receive(usbd_hid_itf_t *hid, size_t len, uint8_t *buf) {
+int8_t usbd_hid_receive(usbd_hid_itf_t *hid, size_t len) {
     hid->current_write_buffer = !hid->current_write_buffer;
     hid->last_read_len = len;
     // initiate next USB packet transfer, to append to existing data in buffer
-    USBD_HID_SetRxBuffer(hid->usb, hid->buffer[hid->current_write_buffer]);
-    USBD_HID_ReceivePacket(hid->usb);
+    USBD_HID_ReceivePacket(hid->usb, hid->buffer[hid->current_write_buffer]);
     // Set NAK to indicate we need to process read buffer
     USBD_HID_SetNAK(hid->usb);
     return USBD_OK;

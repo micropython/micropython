@@ -98,8 +98,7 @@ uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev, size_t len, const uint
 
 uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *fops);
 
-uint8_t USBD_HID_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff);
-uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev);
+uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev, uint8_t *buf);
 int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev);
 uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
 uint8_t USBD_HID_SetNAK(USBD_HandleTypeDef *pdev);
@@ -113,7 +112,7 @@ int8_t usbd_cdc_receive(struct _usbd_cdc_itf_t *cdc, size_t len);
 
 // These are provided externally to implement the HID interface
 struct _usbd_hid_itf_t;
-void usbd_hid_init(struct _usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev);
-int8_t usbd_hid_receive(struct _usbd_hid_itf_t *hid, size_t len, uint8_t *buf);
+uint8_t *usbd_hid_init(struct _usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev);
+int8_t usbd_hid_receive(struct _usbd_hid_itf_t *hid, size_t len);
 
 #endif // _USB_CDC_MSC_CORE_H_

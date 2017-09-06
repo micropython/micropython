@@ -82,8 +82,6 @@ typedef struct {
     uint32_t             IdleState;
     uint32_t             AltSetting;
     HID_StateTypeDef     state;
-    uint8_t              *RxBuffer;
-    uint32_t             RxLength;
 } USBD_HID_HandleTypeDef;
 
 static uint8_t usbd_mode;
@@ -724,10 +722,10 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        USBD_EP_TYPE_INTR,
                        mps_out);
 
-        usbd_hid_init(state->hid, pdev);
+        uint8_t *buf = usbd_hid_init(state->hid, pdev);
 
         // Prepare Out endpoint to receive next packet
-        USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
+        USBD_LL_PrepareReceive(pdev, hid_out_ep, buf, mps_out);
 
         HID_ClassData.state = HID_IDLE;
     }
@@ -973,8 +971,8 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
         MSC_BOT_DataOut(pdev, epnum);
         return USBD_OK;
     } else if ((usbd_mode & USBD_MODE_HID) && epnum == (hid_out_ep & 0x7f)) {
-        HID_ClassData.RxLength = USBD_LL_GetRxDataSize(pdev, epnum);
-        usbd_hid_receive(state->hid, HID_ClassData.RxLength, HID_ClassData.RxBuffer);
+        size_t len = USBD_LL_GetRxDataSize(pdev, epnum);
+        usbd_hid_receive(state->hid, len);
     }
 
     return USBD_OK;
@@ -1032,13 +1030,8 @@ uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *
     }
 }
 
-uint8_t USBD_HID_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff) {
-    HID_ClassData.RxBuffer = pbuff;
-    return USBD_OK;
-}
-
 // prepare OUT endpoint for reception
-uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev) {
+uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev, uint8_t *buf) {
     // Suspend or Resume USB Out process
     if (pdev->dev_speed == USBD_SPEED_HIGH) {
         return USBD_FAIL;
@@ -1048,7 +1041,7 @@ uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev) {
     uint16_t mps_out =
         hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
         | (hid_desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
-    USBD_LL_PrepareReceive(pdev, hid_out_ep, HID_ClassData.RxBuffer, mps_out);
+    USBD_LL_PrepareReceive(pdev, hid_out_ep, buf, mps_out);
 
     return USBD_OK;
 }
