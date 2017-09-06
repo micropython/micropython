@@ -182,3 +182,31 @@ mp_uint_t unichar_xdigit_value(unichar c) {
     }
     return n;
 }
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+int utf8_chk(uint8_t *p, int len) {
+    uint8_t need = 0;
+    uint8_t *end = p+len;
+    for (uint8_t ch; p < end; p++) {
+        ch = *p;
+        if (need) {
+            if (ch >= 0x80) {
+                need--;
+            } else {
+                // mismatch
+                return 0;
+            }
+        } else {
+            if (ch >= 0xc0) {
+                if (ch >= 0xf8) {
+                    return 0;
+                }
+                need = (0xe5 >> ((ch >> 3) & 0x6)) & 3;
+            } else if (ch >= 0x80) {
+                // mismatch
+                return 0;
+            }
+        }
+    }
+    return (need == 0); // no pending fragments allowed
+}
+#endif

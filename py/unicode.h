@@ -30,5 +30,8 @@
 #include "py/misc.h"
 
 mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr);
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+int utf8_chk(uint8_t *p, int len);
+#endif
 
 #endif // MICROPY_INCLUDED_PY_UNICODE_H

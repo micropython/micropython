@@ -33,3 +33,11 @@ try:
     int('\u0200')
 except ValueError:
     print('ValueError')
+
+#test an invalid UTF-8 string
+# bytes.decode(...) with invalid UTF-8 code
+try:
+    bytes.decode(b"\xa1\x80", 'utf-8')
+except UnicodeError:
+    print('UnicodeError')
+
