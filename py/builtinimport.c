@@ -190,30 +190,37 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     char *file_str = vstr_null_terminated_str(file);
     #endif
 
-    // If we support frozen modules (either as str or mpy) then try to find the
-    // requested filename in the list of frozen module filenames.
-    #if MICROPY_MODULE_FROZEN
-    void *modref;
-    int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
-    #endif
+    #if MICROPY_MODULE_FROZEN || MICROPY_MODULE_FROZEN_MPY
+    if (strncmp(MP_FROZEN_FAKE_DIR_SLASH,
+                file_str,
+                MP_FROZEN_FAKE_DIR_SLASH_LENGTH) == 0) {
+        // If we support frozen modules (either as str or mpy) then try to find the
+        // requested filename in the list of frozen module filenames.
+        #if MICROPY_MODULE_FROZEN
+        void *modref;
+        int frozen_type = mp_find_frozen_module(file_str + MP_FROZEN_FAKE_DIR_SLASH_LENGTH, file->len - MP_FROZEN_FAKE_DIR_SLASH_LENGTH, &modref);
+        #endif
 
-    // If we support frozen str modules and the compiler is enabled, and we
-    // found the filename in the list of frozen files, then load and execute it.
-    #if MICROPY_MODULE_FROZEN_STR
-    if (frozen_type == MP_FROZEN_STR) {
-        do_load_from_lexer(module_obj, modref);
-        return;
-    }
-    #endif
+        // If we support frozen str modules and the compiler is enabled, and we
+        // found the filename in the list of frozen files, then load and execute it.
+        #if MICROPY_MODULE_FROZEN_STR
+        if (frozen_type == MP_FROZEN_STR) {
+            do_load_from_lexer(module_obj, modref);
+            return;
+        }
+        #endif
 
-    // If we support frozen mpy modules and we found a corresponding file (and
-    // its data) in the list of frozen files, execute it.
-    #if MICROPY_MODULE_FROZEN_MPY
-    if (frozen_type == MP_FROZEN_MPY) {
-        do_execute_raw_code(module_obj, modref);
-        return;
+        // If we support frozen mpy modules and we found a corresponding file (and
+        // its data) in the list of frozen files, execute it.
+        #if MICROPY_MODULE_FROZEN_MPY
+        if (frozen_type == MP_FROZEN_MPY) {
+            do_execute_raw_code(module_obj, modref);
+            return;
+        }
+        #endif
+
     }
-    #endif
+    #endif // MICROPY_MODULE_FROZEN || MICROPY_MODULE_FROZEN_MPY
 
     // If we support loading .mpy files then check if the file extension is of
     // the correct format and, if so, load and execute the file.
