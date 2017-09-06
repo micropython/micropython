@@ -22,8 +22,8 @@
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses
-#define MICROPY_HW_I2C1_SCL (pin_B6)        // Arduino D10, pin 17 on CN10
-#define MICROPY_HW_I2C1_SDA (pin_B7)        //              pin 21 on CN7
+#define MICROPY_HW_I2C1_SCL (pin_B8)        // Arduino D15, pin 3 on CN10
+#define MICROPY_HW_I2C1_SDA (pin_B9)        //         D14, pin 5 on CN10
 #define MICROPY_HW_I2C2_SCL (pin_B10)       // Arduino D6,  pin 25 on CN10
 #define MICROPY_HW_I2C2_SDA (pin_B3)        // Arduino D3,  pin 31 on CN10
 #define MICROPY_HW_I2C3_SCL (pin_A8)        // Arduino D7,  pin 23 on CN10
