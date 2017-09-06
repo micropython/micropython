@@ -5,11 +5,12 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 0x0200000 /* entire flash, 2048 KiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 0x0004000 /* sector 0, 16 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 0x0088000 /* sectors 5,6,7,8, 4*128KiB = 512 KiB (could increase it more) */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x0030000 /* 192 KiB */
-    SDRAM(xrw)      : ORIGIN = 0xC0000000, LENGTH = 0x0800000 /* 8 MByte */
+    FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K /* entire flash */
+    FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 16K /* sector 0, 16 KiB */
+    FLASH_FS (rx)   : ORIGIN = 0x08004000, LENGTH = 112K /* sectors 1-4: 3*16K+64K */
+    FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K /* sectors 5-11 are 128K */
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 192K
+    SDRAM(xrw)      : ORIGIN = 0xC0000000, LENGTH = 8192K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
