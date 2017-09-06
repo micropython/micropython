@@ -31,10 +31,6 @@ typedef struct {
   uint32_t data[CDC_DATA_FS_MAX_PACKET_SIZE/4];      /* Force 32bits alignment */
   uint8_t  CmdOpCode;
   uint8_t  CmdLength;    
-  uint8_t  *RxBuffer;  
-  uint8_t  *TxBuffer;   
-  uint32_t RxLength;
-  uint32_t TxLength;    
   
   __IO uint32_t TxState;     
   __IO uint32_t RxState;    
@@ -97,10 +93,8 @@ int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
 // returns the current usb mode
 uint8_t USBD_GetMode();
 
-uint8_t USBD_CDC_SetTxBuffer  (USBD_HandleTypeDef   *pdev, uint8_t  *pbuff, uint16_t length);
-uint8_t USBD_CDC_SetRxBuffer        (USBD_HandleTypeDef   *pdev, uint8_t  *pbuff);
-uint8_t USBD_CDC_ReceivePacket  (USBD_HandleTypeDef *pdev);
-uint8_t USBD_CDC_TransmitPacket  (USBD_HandleTypeDef *pdev);
+uint8_t USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev, uint8_t *buf);
+uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev, size_t len, const uint8_t *buf);
 
 uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *fops);
 
@@ -113,9 +107,9 @@ uint8_t USBD_HID_ClearNAK(USBD_HandleTypeDef *pdev);
 
 // These are provided externally to implement the CDC interface
 struct _usbd_cdc_itf_t;
-void usbd_cdc_init(struct _usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev);
+uint8_t *usbd_cdc_init(struct _usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev);
 int8_t usbd_cdc_control(struct _usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length);
-int8_t usbd_cdc_receive(struct _usbd_cdc_itf_t *cdc, uint8_t* Buf, uint32_t *Len);
+int8_t usbd_cdc_receive(struct _usbd_cdc_itf_t *cdc, size_t len);
 
 // These are provided externally to implement the HID interface
 struct _usbd_hid_itf_t;

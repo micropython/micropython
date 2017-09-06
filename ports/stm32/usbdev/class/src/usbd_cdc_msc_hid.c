@@ -669,14 +669,14 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        CDC_CMD_PACKET_SIZE);
 
         // Init physical Interface components
-        usbd_cdc_init(state->cdc, pdev);
+        uint8_t *buf = usbd_cdc_init(state->cdc, pdev);
 
         // Init Xfer states
         CDC_ClassData.TxState =0;
         CDC_ClassData.RxState =0;
 
         // Prepare Out endpoint to receive next packet
-        USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, CDC_ClassData.RxBuffer, CDC_DATA_OUT_PACKET_SIZE);
+        USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, buf, CDC_DATA_OUT_PACKET_SIZE);
     }
 
     if (usbd_mode & USBD_MODE_MSC) {
@@ -962,11 +962,11 @@ static uint8_t USBD_CDC_MSC_HID_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
     usbd_cdc_msc_hid_state_t *state = pdev->pClassData;
     if ((usbd_mode & USBD_MODE_CDC) && epnum == (CDC_OUT_EP & 0x7f)) {
         /* Get the received data length */
-        CDC_ClassData.RxLength = USBD_LL_GetRxDataSize (pdev, epnum);
+        size_t len = USBD_LL_GetRxDataSize (pdev, epnum);
 
         /* USB data will be immediately processed, this allow next USB traffic being
         NAKed till the end of the application Xfer */
-        usbd_cdc_receive(state->cdc, CDC_ClassData.RxBuffer, &CDC_ClassData.RxLength);
+        usbd_cdc_receive(state->cdc, len);
 
         return USBD_OK;
     } else if ((usbd_mode & USBD_MODE_MSC) && epnum == (MSC_OUT_EP & 0x7f)) {
@@ -995,22 +995,11 @@ uint8_t *USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor (uint16_t *length) {
     return NULL;
 }
 
-uint8_t USBD_CDC_SetTxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff, uint16_t length) {
-    CDC_ClassData.TxBuffer = pbuff;
-    CDC_ClassData.TxLength = length;
-    return USBD_OK;
-}
-
-uint8_t USBD_CDC_SetRxBuffer(USBD_HandleTypeDef *pdev, uint8_t *pbuff) {
-    CDC_ClassData.RxBuffer = pbuff;
-    return USBD_OK;
-}
-
 // data received on non-control OUT endpoint
-uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev) {
+uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev, size_t len, const uint8_t *buf) {
     if (CDC_ClassData.TxState == 0) {
         // transmit next packet
-        USBD_LL_Transmit(pdev, CDC_IN_EP, CDC_ClassData.TxBuffer, CDC_ClassData.TxLength);
+        USBD_LL_Transmit(pdev, CDC_IN_EP, (uint8_t*)buf, len);
 
         // Tx transfer in progress
         CDC_ClassData.TxState = 1;
@@ -1021,14 +1010,14 @@ uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev) {
 }
 
 // prepare OUT endpoint for reception
-uint8_t USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev) {
+uint8_t USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev, uint8_t *buf) {
     // Suspend or Resume USB Out process
     if (pdev->dev_speed == USBD_SPEED_HIGH) {
         return USBD_FAIL;
     }
 
     // Prepare Out endpoint to receive next packet
-    USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, CDC_ClassData.RxBuffer, CDC_DATA_OUT_PACKET_SIZE);
+    USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, buf, CDC_DATA_OUT_PACKET_SIZE);
 
     return USBD_OK;
 }

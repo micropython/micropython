@@ -56,7 +56,7 @@
 #define CDC_SET_CONTROL_LINE_STATE                  0x22
 #define CDC_SEND_BREAK                              0x23
 
-void usbd_cdc_init(usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev) {
+uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev) {
     cdc->usb = pdev;
     cdc->rx_buf_put = 0;
     cdc->rx_buf_get = 0;
@@ -66,8 +66,9 @@ void usbd_cdc_init(usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev) {
     cdc->tx_buf_ptr_wait_count = 0;
     cdc->tx_need_empty_packet = 0;
     cdc->dev_is_connected = 0;
-    USBD_CDC_SetTxBuffer(pdev, cdc->tx_buf, 0);
-    USBD_CDC_SetRxBuffer(pdev, cdc->rx_packet_buf);
+
+    // Return the buffer to place the first USB OUT packet
+    return cdc->rx_packet_buf;
 }
 
 // Manage the CDC class requests
@@ -180,9 +181,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = cdc->tx_buf_ptr_out_shadow;
 
-        USBD_CDC_SetTxBuffer(hpcd->pData, (uint8_t*)&cdc->tx_buf[buffptr], buffsize);
-
-        if (USBD_CDC_TransmitPacket(hpcd->pData) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(hpcd->pData, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
             cdc->tx_buf_ptr_out_shadow += buffsize;
             if (cdc->tx_buf_ptr_out_shadow == USBD_CDC_TX_DATA_SIZE) {
                 cdc->tx_buf_ptr_out_shadow = 0;
@@ -201,13 +200,11 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 }
 
 // Data received over USB OUT endpoint is processed here.
-// Buf: buffer of data received
-// Len: number of data received (in bytes)
+// len: number of bytes received into the buffer we passed to USBD_CDC_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-// The buffer we are passed here is just cdc_rx_packet_buf, so we are free to modify it.
-int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, uint8_t* Buf, uint32_t *Len) {
+int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, size_t len) {
     // copy the incoming data into the circular buffer
-    for (uint8_t *src = Buf, *top = Buf + *Len; src < top; ++src) {
+    for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
         if (mp_interrupt_char != -1 && *src == mp_interrupt_char) {
             pendsv_kbd_intr();
         } else {
@@ -222,8 +219,7 @@ int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, uint8_t* Buf, uint32_t *Len) {
     }
 
     // initiate next USB packet transfer
-    USBD_CDC_SetRxBuffer(cdc->usb, cdc->rx_packet_buf);
-    USBD_CDC_ReceivePacket(cdc->usb);
+    USBD_CDC_ReceivePacket(cdc->usb, cdc->rx_packet_buf);
 
     return USBD_OK;
 }
