@@ -29,11 +29,14 @@
 #include <string.h>
 
 #include "ets_sys.h"
+#include "user_interface.h"
 #include "uart.h"
+#include "esp_mphal.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/ringbuf.h"
 #include "modmachine.h"
 
 // UartDev is defined and initialized in rom code.
@@ -48,22 +51,33 @@ typedef struct _pyb_uart_obj_t {
     uint32_t baudrate;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
+    uint16_t rxbuflen;
+    ringbuf_t rxbuf;
+    byte      *buf;
 } pyb_uart_obj_t;
+
+pyb_uart_obj_t pyb_uart_objs[2];
 
 STATIC const char *_parity_name[] = {"None", "1", "0"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
 
+void uart_init0 (void) {
+    // save references of the UART objects, to prevent the read buffers from being trashed by the gc
+    MP_STATE_PORT(pyb_uart_objs)[0] = &pyb_uart_objs[0];
+    MP_STATE_PORT(pyb_uart_objs)[1] = &pyb_uart_objs[1];
+}
+
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u, rxbuflen=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->timeout, self->timeout_char);
+        self->stop, self->timeout, self->timeout_char, self->rxbuflen);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char, ARG_rxbuflen };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -73,6 +87,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_rxbuflen, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -155,6 +170,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         self->timeout_char = min_timeout_char;
     }
 
+    self->rxbuflen = args[ARG_rxbuflen].u_int;
     // setup
     uart_setup(self->uart_id);
 }
@@ -169,7 +185,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // create instance
-    pyb_uart_obj_t *self = m_new_obj(pyb_uart_obj_t);
+    pyb_uart_obj_t *self = &pyb_uart_objs[uart_id];
     self->base.type = &pyb_uart_type;
     self->uart_id = uart_id;
     self->baudrate = 115200;
@@ -182,7 +198,19 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     // init the peripheral
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+
     pyb_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+
+    if (self->rxbuflen) {
+        if (self->buf) {
+            m_free(self->buf);
+        }
+        self->buf = m_malloc(self->rxbuflen);
+    }
+
+    self->rxbuf.buf = self->buf;
+    self->rxbuf.size = self->rxbuflen;
+    self->rxbuf.iget = self->rxbuf.iput=0;
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -211,6 +239,27 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
 
+void mp_uart_stuff_rx(mp_obj_t self_in, byte ch) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    ringbuf_put(&self->rxbuf,ch);
+}
+
+// Waits at most timeout microseconds for at least 1 char to become ready for reading.
+// Returns true if something available, false if not.
+STATIC bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout_us) {
+    uint32_t start = system_get_time();
+
+    for (;;) {
+        if (*( volatile uint16_t *)(&self->rxbuf.iput) != self->rxbuf.iget) {
+            return true; // have at least 1 char ready for reading
+        }
+        if (timeout_us && system_get_time() - start >= timeout_us) {
+            return false; // timeout
+        }
+        ets_event_poll();
+    }
+}
+
 STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -224,7 +273,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     }
 
     // wait for first char to become available
-    if (!uart_rx_wait(self->timeout * 1000)) {
+    if (!uart_rx_wait(self, self->timeout * 1000)) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
@@ -232,8 +281,10 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     // read the data
     uint8_t *buf = buf_in;
     for (;;) {
-        *buf++ = uart_rx_char();
-        if (--size == 0 || !uart_rx_wait(self->timeout_char * 1000)) {
+        char ch = ringbuf_get(&self->rxbuf);
+        int avail = uart_rx_wait(self, self->timeout_char * 1000);
+        *buf++ = ch;
+        if (--size == 0 || !avail) {
             // return number of bytes read
             return buf - (uint8_t*)buf_in;
         }
@@ -267,7 +318,7 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && uart_rx_any(self->uart_id)) {
+        if ((flags & MP_STREAM_POLL_RD) && self->rxbuf.iget != self->rxbuf.iput) {
             ret |= MP_STREAM_POLL_RD;
         }
         if ((flags & MP_STREAM_POLL_WR) && uart_tx_any_room(self->uart_id)) {

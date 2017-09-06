@@ -167,58 +167,29 @@ static void uart0_rx_intr_handler(void *para) {
     } else if (UART_RXFIFO_TOUT_INT_ST == (READ_PERI_REG(UART_INT_ST(uart_no)) & UART_RXFIFO_TOUT_INT_ST)) {
         read_chars:
         ETS_UART_INTR_DISABLE();
-
-        while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
-            uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == mp_interrupt_char) {
-                mp_keyboard_interrupt();
-            } else {
-                ringbuf_put(&input_buf, RcvChar);
-            }
-        }
-
-        mp_hal_signal_input();
-
+        mp_hal_uart_rx_intr(uart_no);
         // Clear pending FIFO interrupts
         WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
         ETS_UART_INTR_ENABLE();
     }
 }
 
-// Waits at most timeout microseconds for at least 1 char to become ready for reading.
-// Returns true if something available, false if not.
-bool uart_rx_wait(uint32_t timeout_us) {
-    uint32_t start = system_get_time();
-    for (;;) {
-        if (input_buf.iget != input_buf.iput) {
-            return true; // have at least 1 char ready for reading
-        }
-        if (system_get_time() - start >= timeout_us) {
-            return false; // timeout
-        }
-        ets_event_poll();
-    }
-}
 
-int uart_rx_any(uint8 uart) {
-    if (input_buf.iget != input_buf.iput) {
+int uart_rx_any(uint8 uart_no) {
+    if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
         return true; // have at least 1 char ready for reading
     }
     return false;
 }
 
-int uart_tx_any_room(uint8 uart) {
-    uint32_t fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
+int uart_tx_any_room(uint8 uart_no) {
+    uint32_t fifo_cnt = READ_PERI_REG(UART_STATUS(uart_no)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
     if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) >= 126) {
         return false;
     }
     return true;
 }
 
-// Returns char from the input buffer, else -1 if buffer is empty.
-int uart_rx_char(void) {
-    return ringbuf_get(&input_buf);
-}
 
 int uart_rx_one_char(uint8 uart_no) {
     if (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
