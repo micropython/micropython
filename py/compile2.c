@@ -574,7 +574,7 @@ STATIC void close_over_variables_etc(compiler_t *comp, scope_t *this_scope, int 
                 for (int j = 0; j < this_scope->id_info_len; j++) {
                     id_info_t *id2 = &this_scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
-                        // in Micro Python we load closures using LOAD_FAST
+                        // in MicroPython we load closures using LOAD_FAST
                         EMIT_LOAD_FAST(id->qst, id->local_num);
                         nfree += 1;
                     }
@@ -662,9 +662,9 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, const byte *p) {
 
             if (comp->have_star) {
                 comp->num_dict_params += 1;
-                // in Micro Python we put the default dict parameters into a dictionary using the bytecode
+                // in MicroPython we put the default dict parameters into a dictionary using the bytecode
                 if (comp->num_dict_params == 1) {
-                    // in Micro Python we put the default positional parameters into a tuple using the bytecode
+                    // in MicroPython we put the default positional parameters into a tuple using the bytecode
                     // we need to do this here before we start building the map for the default keywords
                     if (comp->num_default_params > 0) {
                         EMIT_ARG(build_tuple, comp->num_default_params);
@@ -708,7 +708,7 @@ STATIC void compile_funcdef_lambdef(compiler_t *comp, scope_t *scope, const byte
         return;
     }
 
-    // in Micro Python we put the default positional parameters into a tuple using the bytecode
+    // in MicroPython we put the default positional parameters into a tuple using the bytecode
     // the default keywords args may have already made the tuple; if not, do it now
     if (comp->num_default_params > 0 && comp->num_dict_params == 0) {
         EMIT_ARG(build_tuple, comp->num_default_params);
@@ -3208,7 +3208,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 #endif
 
 STATIC void scope_compute_things(scope_t *scope) {
-    // in Micro Python we put the *x parameter after all other parameters (except **y)
+    // in MicroPython we put the *x parameter after all other parameters (except **y)
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
         id_info_t *id_param = NULL;
         for (int i = scope->id_info_len - 1; i >= 0; i--) {
@@ -3246,7 +3246,7 @@ STATIC void scope_compute_things(scope_t *scope) {
     // compute the index of cell vars
     for (int i = 0; i < scope->id_info_len; i++) {
         id_info_t *id = &scope->id_info[i];
-        // in Micro Python the cells come right after the fast locals
+        // in MicroPython the cells come right after the fast locals
         // parameters are not counted here, since they remain at the start
         // of the locals, even if they are cell vars
         if (id->kind == ID_INFO_KIND_CELL && !(id->flags & ID_FLAG_IS_PARAM)) {
@@ -3266,14 +3266,14 @@ STATIC void scope_compute_things(scope_t *scope) {
                     id_info_t *id2 = &scope->id_info[j];
                     if (id2->kind == ID_INFO_KIND_FREE && id->qst == id2->qst) {
                         assert(!(id2->flags & ID_FLAG_IS_PARAM)); // free vars should not be params
-                        // in Micro Python the frees come first, before the params
+                        // in MicroPython the frees come first, before the params
                         id2->local_num = num_free;
                         num_free += 1;
                     }
                 }
             }
         }
-        // in Micro Python shift all other locals after the free locals
+        // in MicroPython shift all other locals after the free locals
         if (num_free > 0) {
             for (int i = 0; i < scope->id_info_len; i++) {
                 id_info_t *id = &scope->id_info[i];
