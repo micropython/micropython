@@ -513,6 +513,10 @@ safe_mode_t samd21_init(void) {
     REG_MTB_POSITION = ((uint32_t) (mtb - REG_MTB_BASE)) & 0xFFFFFFF8;
     REG_MTB_FLOW = (((uint32_t) mtb - REG_MTB_BASE) + TRACE_BUFFER_SIZE_BYTES) & 0xFFFFFFF8;
     REG_MTB_MASTER = 0x80000000 + (TRACE_BUFFER_MAGNITUDE_PACKETS - 1);
+#else
+    // Triple check that the MTB is off. Switching between debug and non-debug
+    // builds can leave it set over reset and wreak havok as a result.
+    REG_MTB_MASTER = 0x00000000 + 6;
 #endif
 
 // On power on start or external reset, set _ezero to the canary word. If it
