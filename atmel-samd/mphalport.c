@@ -11,6 +11,7 @@
 #include "lib/utils/interrupt_char.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/smallint.h"
 #include "shared-bindings/time/__init__.h"
 
@@ -157,6 +158,11 @@ int mp_hal_stdin_rx_chr(void) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
         #endif
+        // Check to see if we've been CTRL-Ced by autoreload or the user. Raise the exception if so.
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+            mp_handle_pending();
+        }
+
         #ifdef USB_REPL
         if (reload_next_character) {
             return CHAR_CTRL_D;

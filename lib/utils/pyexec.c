@@ -121,9 +121,6 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         } else {
             mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
             ret = PYEXEC_EXCEPTION;
-            if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_KeyboardInterrupt)) {
-                ret = PYEXEC_FORCED_EXIT;
-            }
         }
     }
     if (result != NULL) {
