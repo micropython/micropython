@@ -83,7 +83,7 @@
 
 // TODO Add python method to change callback object.
 
-#define EXTI_OFFSET	(EXTI_BASE - PERIPH_BASE)
+#define EXTI_OFFSET (EXTI_BASE - PERIPH_BASE)
 
 // Macro used to set/clear the bit corresponding to the line in the IMR/EMR
 // register in an atomic fashion by using bitband addressing.
