@@ -132,7 +132,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ DUP_TOP_TWO
 \\d\+ LOAD_SUBSCR
 \\d\+ LOAD_FAST 12
-\\d\+ BINARY_OP 29 __iadd__
+\\d\+ BINARY_OP 28 __iadd__
 \\d\+ ROT_THREE
 \\d\+ STORE_SUBSCR
 \\d\+ LOAD_DEREF 14

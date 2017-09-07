@@ -84,7 +84,6 @@ typedef enum {
 
     MP_BINARY_OP_MODULO,
     MP_BINARY_OP_POWER,
-    MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
     MP_BINARY_OP_INPLACE_OR,
     MP_BINARY_OP_INPLACE_XOR,
 
@@ -99,6 +98,11 @@ typedef enum {
     MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,
+
+    // Operations below this line don't appear in bytecode, they
+    // just identify special methods.
+
+    MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
 } mp_binary_op_t;
 
 typedef enum {
