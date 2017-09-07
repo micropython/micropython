@@ -103,6 +103,8 @@ typedef enum {
     // just identify special methods.
 
     MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
+
+    MP_BINARY_OP_LAST,
 } mp_binary_op_t;
 
 typedef enum {
