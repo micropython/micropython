@@ -54,6 +54,22 @@ typedef enum {
 } mp_unary_op_t;
 
 typedef enum {
+    // Relational operations, should return a bool
+    MP_BINARY_OP_LESS,
+    MP_BINARY_OP_MORE,
+    MP_BINARY_OP_EQUAL,
+    MP_BINARY_OP_LESS_EQUAL,
+    MP_BINARY_OP_MORE_EQUAL,
+
+    MP_BINARY_OP_NOT_EQUAL,
+    MP_BINARY_OP_IN,
+    MP_BINARY_OP_IS,
+    MP_BINARY_OP_EXCEPTION_MATCH,
+    // these are not supported by the runtime and must be synthesised by the emitter
+    MP_BINARY_OP_NOT_IN,
+    MP_BINARY_OP_IS_NOT,
+
+    // Arithmetic operations
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
     MP_BINARY_OP_AND,
@@ -83,21 +99,6 @@ typedef enum {
     MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,
-
-    // these should return a bool
-    MP_BINARY_OP_LESS,
-    MP_BINARY_OP_MORE,
-    MP_BINARY_OP_EQUAL,
-    MP_BINARY_OP_LESS_EQUAL,
-    MP_BINARY_OP_MORE_EQUAL,
-
-    MP_BINARY_OP_NOT_EQUAL,
-    MP_BINARY_OP_IN,
-    MP_BINARY_OP_IS,
-    MP_BINARY_OP_EXCEPTION_MATCH,
-    // these are not supported by the runtime and must be synthesised by the emitter
-    MP_BINARY_OP_NOT_IN,
-    MP_BINARY_OP_IS_NOT,
 } mp_binary_op_t;
 
 typedef enum {

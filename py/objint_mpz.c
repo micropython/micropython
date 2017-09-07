@@ -221,7 +221,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         return mp_obj_new_float(flhs / frhs);
 #endif
 
-    } else if (op <= MP_BINARY_OP_INPLACE_POWER) {
+    } else if (op >= MP_BINARY_OP_OR) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();
 
         switch (op) {

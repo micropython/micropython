@@ -43,9 +43,9 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
   bc=\\d\+ line=126
 00 LOAD_CONST_NONE
 01 LOAD_CONST_FALSE
-02 BINARY_OP 5 __add__
+02 BINARY_OP 16 __add__
 03 LOAD_CONST_TRUE
-04 BINARY_OP 5 __add__
+04 BINARY_OP 16 __add__
 05 STORE_FAST 0
 06 LOAD_CONST_SMALL_INT 0
 07 STORE_FAST 0
@@ -84,7 +84,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ STORE_FAST 7
 \\d\+ LOAD_FAST 0
 \\d\+ LOAD_DEREF 14
-\\d\+ BINARY_OP 5 __add__
+\\d\+ BINARY_OP 16 __add__
 \\d\+ STORE_FAST 8
 \\d\+ LOAD_FAST 0
 \\d\+ UNARY_OP 4
@@ -96,21 +96,21 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ LOAD_DEREF 14
 \\d\+ DUP_TOP
 \\d\+ ROT_THREE
-\\d\+ BINARY_OP 27 __eq__
+\\d\+ BINARY_OP 2 __eq__
 \\d\+ JUMP_IF_FALSE_OR_POP \\d\+
 \\d\+ LOAD_FAST 1
-\\d\+ BINARY_OP 27 __eq__
+\\d\+ BINARY_OP 2 __eq__
 \\d\+ JUMP \\d\+
 \\d\+ ROT_TWO
 \\d\+ POP_TOP
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_FAST 0
 \\d\+ LOAD_DEREF 14
-\\d\+ BINARY_OP 27 __eq__
+\\d\+ BINARY_OP 2 __eq__
 \\d\+ JUMP_IF_FALSE_OR_POP \\d\+
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_FAST 1
-\\d\+ BINARY_OP 27 __eq__
+\\d\+ BINARY_OP 2 __eq__
 \\d\+ UNARY_OP 6
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_DEREF 14
@@ -132,7 +132,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ DUP_TOP_TWO
 \\d\+ LOAD_SUBSCR
 \\d\+ LOAD_FAST 12
-\\d\+ BINARY_OP 18 __iadd__
+\\d\+ BINARY_OP 29 __iadd__
 \\d\+ ROT_THREE
 \\d\+ STORE_SUBSCR
 \\d\+ LOAD_DEREF 14
@@ -369,7 +369,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 42 STORE_FAST_N 19
 44 LOAD_FAST 9
 45 LOAD_FAST_N 19
-47 BINARY_OP 5 __add__
+47 BINARY_OP 16 __add__
 48 POP_TOP
 49 LOAD_CONST_NONE
 50 RETURN_VALUE
@@ -521,7 +521,7 @@ arg names: *
   bc=\\d\+ line=113
 00 LOAD_DEREF 0
 02 LOAD_CONST_SMALL_INT 1
-03 BINARY_OP 5 __add__
+03 BINARY_OP 16 __add__
 04 STORE_FAST 1
 05 LOAD_CONST_SMALL_INT 1
 06 STORE_DEREF 0
@@ -540,7 +540,7 @@ arg names: * b
   bc=\\d\+ line=139
 00 LOAD_FAST 1
 01 LOAD_DEREF 0
-03 BINARY_OP 5 __add__
+03 BINARY_OP 16 __add__
 04 RETURN_VALUE
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
