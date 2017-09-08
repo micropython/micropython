@@ -699,12 +699,9 @@ STATIC mp_obj_t pyb_i2c_scan(mp_obj_t self_in) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
 
     for (uint addr = 0x08; addr <= 0x77; addr++) {
-        for (int i = 0; i < 10; i++) {
-            HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(self->i2c, addr << 1, 10, 200);
-            if (status == HAL_OK) {
-                mp_obj_list_append(list, mp_obj_new_int(addr));
-                break;
-            }
+        HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(self->i2c, addr << 1, 1, 200);
+        if (status == HAL_OK) {
+            mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
         }
     }
 

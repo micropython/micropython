@@ -54,50 +54,56 @@ typedef enum {
 } mp_unary_op_t;
 
 typedef enum {
-    MP_BINARY_OP_OR,
-    MP_BINARY_OP_XOR,
-    MP_BINARY_OP_AND,
-    MP_BINARY_OP_LSHIFT,
-    MP_BINARY_OP_RSHIFT,
-
-    MP_BINARY_OP_ADD,
-    MP_BINARY_OP_SUBTRACT,
-    MP_BINARY_OP_MULTIPLY,
-    MP_BINARY_OP_FLOOR_DIVIDE,
-    MP_BINARY_OP_TRUE_DIVIDE,
-
-    MP_BINARY_OP_MODULO,
-    MP_BINARY_OP_POWER,
-    MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
-    MP_BINARY_OP_INPLACE_OR,
-    MP_BINARY_OP_INPLACE_XOR,
-
-    MP_BINARY_OP_INPLACE_AND,
-    MP_BINARY_OP_INPLACE_LSHIFT,
-    MP_BINARY_OP_INPLACE_RSHIFT,
-    MP_BINARY_OP_INPLACE_ADD,
-    MP_BINARY_OP_INPLACE_SUBTRACT,
-
-    MP_BINARY_OP_INPLACE_MULTIPLY,
-    MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
-    MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
-    MP_BINARY_OP_INPLACE_MODULO,
-    MP_BINARY_OP_INPLACE_POWER,
-
-    // these should return a bool
+    // Relational operations, should return a bool
     MP_BINARY_OP_LESS,
     MP_BINARY_OP_MORE,
     MP_BINARY_OP_EQUAL,
     MP_BINARY_OP_LESS_EQUAL,
     MP_BINARY_OP_MORE_EQUAL,
-
     MP_BINARY_OP_NOT_EQUAL,
+
     MP_BINARY_OP_IN,
     MP_BINARY_OP_IS,
     MP_BINARY_OP_EXCEPTION_MATCH,
     // these are not supported by the runtime and must be synthesised by the emitter
     MP_BINARY_OP_NOT_IN,
     MP_BINARY_OP_IS_NOT,
+
+    // Arithmetic operations
+    MP_BINARY_OP_INPLACE_OR,
+    MP_BINARY_OP_INPLACE_XOR,
+    MP_BINARY_OP_INPLACE_AND,
+    MP_BINARY_OP_INPLACE_LSHIFT,
+    MP_BINARY_OP_INPLACE_RSHIFT,
+    MP_BINARY_OP_INPLACE_ADD,
+
+    MP_BINARY_OP_INPLACE_SUBTRACT,
+    MP_BINARY_OP_INPLACE_MULTIPLY,
+    MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
+    MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
+    MP_BINARY_OP_INPLACE_MODULO,
+    MP_BINARY_OP_INPLACE_POWER,
+
+    MP_BINARY_OP_OR,
+    MP_BINARY_OP_XOR,
+    MP_BINARY_OP_AND,
+    MP_BINARY_OP_LSHIFT,
+    MP_BINARY_OP_RSHIFT,
+    MP_BINARY_OP_ADD,
+
+    MP_BINARY_OP_SUBTRACT,
+    MP_BINARY_OP_MULTIPLY,
+    MP_BINARY_OP_FLOOR_DIVIDE,
+    MP_BINARY_OP_TRUE_DIVIDE,
+    MP_BINARY_OP_MODULO,
+    MP_BINARY_OP_POWER,
+
+    // Operations below this line don't appear in bytecode, they
+    // just identify special methods.
+
+    MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
+
+    MP_BINARY_OP_LAST,
 } mp_binary_op_t;
 
 typedef enum {

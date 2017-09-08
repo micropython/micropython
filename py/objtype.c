@@ -453,7 +453,7 @@ const qstr mp_binary_op_method_name[] = {
     /*
     MP_BINARY_OP_IS,
     */
-    [MP_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
+    [MP_BINARY_OP_LAST] = 0, // used to make sure array has full size, TODO: FIXME
 };
 
 STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
