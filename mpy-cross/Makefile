@@ -29,8 +29,14 @@ INC +=  -I.
 INC +=  -I$(TOP)
 INC += -I$(BUILD)
 
+
+COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 # compiler settings
 CWARN = -Wall -Werror
+# android workaround
+ifneq (,$(findstring android,$(COMPILER_TARGET)))
+CWARN = -Wall
+endif
 CWARN += -Wpointer-arith -Wuninitialized
 CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
@@ -63,7 +69,6 @@ SRC_C = \
 	gccollect.c \
 
 # Add fmode when compiling with mingw gcc
-COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 	SRC_C += ports/windows/fmode.c
 endif
