@@ -68,5 +68,5 @@ knowledge of the interface details of the chip itself.
    PCA9685 Motor and Servo Controllers <http://micropython-pca9685.readthedocs.io/>
    HT16K33 LED Matrices and Segment Displays <http://micropython-ht16k33.readthedocs.io/>
    IS31FL3731 Charlieplexed LED Matrix <http://micropython-is31fl3731.readthedocs.io/>
-   MAX7219 LED Matrix <http://micropython-max7219.readthedocs.io/>
+   MAX7219 LED Matrix <http://circuitpython.readthedocs.io/projects/max7219/en/latest/>
    DotStar <https://circuitpython.readthedocs.io/projects/dotstar/en/latest/>
