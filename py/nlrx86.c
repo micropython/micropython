@@ -55,7 +55,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     // by default.
     // TODE: Better support for various x86 calling conventions
     // (unfortunately, __attribute__((naked)) is not supported on x86).
-    #ifndef __ZEPHYR__
+    #if !(defined(__ZEPHYR__) || defined(__ANDROID__))
     "pop    %ebp                \n" // undo function's prelude
     #endif
     "mov    4(%esp), %edx       \n" // load nlr_buf
