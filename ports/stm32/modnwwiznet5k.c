@@ -213,7 +213,10 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
     }
 
     // now connect
+    MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(connect)(socket->u_param.fileno, ip, port);
+    MP_THREAD_GIL_ENTER();
+
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -225,7 +228,10 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 }
 
 STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(send)(socket->u_param.fileno, (byte*)buf, len);
+    MP_THREAD_GIL_ENTER();
+
     // TODO convert Wiz errno's to POSIX ones
     if (ret < 0) {
         wiznet5k_socket_close(socket);
@@ -236,7 +242,10 @@ STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
 }
 
 STATIC mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+    MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(recv)(socket->u_param.fileno, buf, len);
+    MP_THREAD_GIL_ENTER();
+
     // TODO convert Wiz errno's to POSIX ones
     if (ret < 0) {
         wiznet5k_socket_close(socket);
@@ -254,7 +263,10 @@ STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
         }
     }
 
+    MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->u_param.fileno, (byte*)buf, len, ip, port);
+    MP_THREAD_GIL_ENTER();
+
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -265,7 +277,9 @@ STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
 
 STATIC mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
+    MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(socket->u_param.fileno, buf, len, ip, &port2);
+    MP_THREAD_GIL_ENTER();
     *port = port2;
     if (ret < 0) {
         wiznet5k_socket_close(socket);
