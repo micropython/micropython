@@ -19,9 +19,8 @@ before_script:
   - sudo apt-get install -y --force-yes gcc-arm-none-eabi
   # For teensy build
   - sudo apt-get install realpath
-  # For coverage testing
-  # cpp-coveralls 0.4 conflicts with urllib3 preinstalled in Travis VM
-  - sudo pip install cpp-coveralls==0.3.12
+  # For coverage testing (upgrade is used to get latest urllib3 version)
+  - sudo pip install --upgrade cpp-coveralls
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version
