@@ -207,6 +207,7 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_set_type = False
     skip_async = False
     skip_const = False
+    skip_revops = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
     native = run_feature_check(pyb, args, base_path, 'native_check.py')
@@ -232,6 +233,11 @@ def run_tests(pyb, tests, args, base_path="."):
     native = run_feature_check(pyb, args, base_path, 'const.py')
     if native == b'CRASH':
         skip_const = True
+
+    # Check if __rOP__ special methods are supported, and skip such tests if it's not
+    native = run_feature_check(pyb, args, base_path, 'reverse_ops.py')
+    if native == b'TypeError\n':
+        skip_revops = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
     t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
@@ -360,6 +366,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
+        skip_it |= skip_revops and test_name.startswith("class_reverse_op")
 
         if skip_it:
             print("skip ", test_file)
