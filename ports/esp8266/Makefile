@@ -85,7 +85,7 @@ SRC_C = \
 	moduos.c \
 	ets_alt_task.c \
 	fatfs_port.c \
-	axtls_helpers.c \
+	posix_helpers.c \
 	hspi.c \
 	$(SRC_MOD)
 

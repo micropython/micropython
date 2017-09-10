@@ -29,7 +29,7 @@
 #include "py/mphal.h"
 #include "py/gc.h"
 
-// Functions for axTLS
+// Functions for external libs like axTLS, BerkeleyDB, etc.
 
 void *malloc(size_t size) {
     return gc_alloc(size, false);
