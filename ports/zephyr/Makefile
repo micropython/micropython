@@ -102,4 +102,4 @@ prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
-	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../zephyr run BOARD=$(BOARD) QEMU_PTY=1"
+	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../ports/zephyr run BOARD=$(BOARD) QEMU_PTY=1"
