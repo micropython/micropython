@@ -101,6 +101,23 @@ typedef enum {
     // Operations below this line don't appear in bytecode, they
     // just identify special methods.
 
+    // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
+#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    MP_BINARY_OP_REVERSE_OR,
+    MP_BINARY_OP_REVERSE_XOR,
+    MP_BINARY_OP_REVERSE_AND,
+    MP_BINARY_OP_REVERSE_LSHIFT,
+    MP_BINARY_OP_REVERSE_RSHIFT,
+    MP_BINARY_OP_REVERSE_ADD,
+
+    MP_BINARY_OP_REVERSE_SUBTRACT,
+    MP_BINARY_OP_REVERSE_MULTIPLY,
+    MP_BINARY_OP_REVERSE_FLOOR_DIVIDE,
+    MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
+    MP_BINARY_OP_REVERSE_MODULO,
+    MP_BINARY_OP_REVERSE_POWER,
+#endif
+
     MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
 
     MP_BINARY_OP_LAST,

@@ -555,7 +555,20 @@ generic_binary_op:
         }
     }
 
-    // TODO implement dispatch for reverse binary ops
+#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_REVERSE_POWER) {
+        mp_obj_t t = rhs;
+        rhs = lhs;
+        lhs = t;
+        if (op <= MP_BINARY_OP_POWER) {
+            op += MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
+            goto generic_binary_op;
+        }
+
+        // Convert __rop__ back to __op__ for error message
+        op -= MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
+    }
+#endif
 
 unsupported_op:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
