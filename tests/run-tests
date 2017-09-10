@@ -210,33 +210,33 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_revops = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'native_check.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'native_check.py')
+    if output == b'CRASH':
         skip_native = True
 
     # Check if arbitrary-precision integers are supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'int_big.py')
-    if native != b'1000000000000000000000000000000000000000000000\n':
+    output = run_feature_check(pyb, args, base_path, 'int_big.py')
+    if output != b'1000000000000000000000000000000000000000000000\n':
         skip_int_big = True
 
     # Check if set type (and set literals) is supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'set_check.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'set_check.py')
+    if output == b'CRASH':
         skip_set_type = True
 
     # Check if async/await keywords are supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'async_check.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'async_check.py')
+    if output == b'CRASH':
         skip_async = True
 
     # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'const.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'const.py')
+    if output == b'CRASH':
         skip_const = True
 
     # Check if __rOP__ special methods are supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'reverse_ops.py')
-    if native == b'TypeError\n':
+    output = run_feature_check(pyb, args, base_path, 'reverse_ops.py')
+    if output == b'TypeError\n':
         skip_revops = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
