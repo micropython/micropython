@@ -759,9 +759,17 @@ typedef double mp_float_t;
 #endif
 
 // Whether to support complete set of special methods
-// for user classes, otherwise only the most used
+// for user classes, or only the most used ones. "Reverse"
+// methods are controlled by MICROPY_PY_REVERSE_SPECIAL_METHODS
+// below.
 #ifndef MICROPY_PY_ALL_SPECIAL_METHODS
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
+#endif
+
+// Whether to support reverse arithmetic operarions methods
+// (__radd__, etc.)
+#ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
 #endif
 
 // Whether to support compile function
