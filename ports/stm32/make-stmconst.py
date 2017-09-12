@@ -1,10 +1,7 @@
 """
-Read in the cmsis/devinc/stm32f405xx.h header, extract relevant constants,
-and create modstmconst.c.
-
-This is not part of the automatic build process because stm32f405xx.h isn't
-expected to change.  After generating the file, some manual intervention is
-needed to copy the new qstr definitions to qstrdefsport.h.
+This script reads in the given CMSIS device include file (eg stm32f405xx.h),
+extracts relevant peripheral constants, and creates qstrs, mpz's and constants
+for the stm module.
 """
 
 from __future__ import print_function
@@ -254,7 +251,7 @@ def main():
         for mpz in sorted(needed_mpzs):
             assert 0 <= mpz <= 0xffffffff
             print('STATIC const mp_obj_int_t mpz_%08x = {{&mp_type_int}, '
-                '{.neg=0, .fixed_dig=1, .alloc=2, .len=2, ' '.dig=(uint16_t[]){%#x, %#x}}};'
+                '{.neg=0, .fixed_dig=1, .alloc=2, .len=2, ' '.dig=(uint16_t*)(const uint16_t[]){%#x, %#x}}};'
                 % (mpz, mpz & 0xffff, (mpz >> 16) & 0xffff), file=mpz_file)
 
 if __name__ == "__main__":
