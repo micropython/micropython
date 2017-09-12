@@ -26,6 +26,7 @@
  #include "py/obj.h"
  #include "py/runtime.h"
  #include "autoreload.h"
+ #include "rgb_led_status.h"
 
 //| :mod:`samd` --- SAMD implementation settings
 //| =================================================
@@ -56,10 +57,27 @@ STATIC mp_obj_t samd_disable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(samd_disable_autoreload_obj, samd_disable_autoreload);
 
+//| .. method:: set_rgb_status_brightness()
+//|
+//|   Set brightness of status neopixel from 0-255
+//|   `set_rgb_status_brightness` is called.
+//|
+STATIC mp_obj_t samd_set_rgb_status_brightness(mp_obj_t lvl){
+      // This must be int. If cast to uint8_t first, will never raise a ValueError.
+      int brightness_int = mp_obj_get_int(lvl);
+      if(brightness_int < 0 || brightness_int > 255){
+            mp_raise_ValueError("Brightness must be between 0 and 255");
+      }
+      set_rgb_status_brightness((uint8_t)brightness_int);
+      return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(samd_set_rgb_status_brightness_obj, samd_set_rgb_status_brightness);
+
 STATIC const mp_rom_map_elem_t samd_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_samd) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&samd_enable_autoreload_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&samd_disable_autoreload_obj)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&samd_set_rgb_status_brightness_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);

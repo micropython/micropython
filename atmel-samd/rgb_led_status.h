@@ -46,5 +46,6 @@ void temp_status_color(uint32_t rgb);
 void clear_temp_status(void);
 
 uint32_t color_brightness(uint32_t color, uint8_t brightness);
+void set_rgb_status_brightness(uint8_t level);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_RGB_LED_STATUS_H

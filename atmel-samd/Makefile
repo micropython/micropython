@@ -137,7 +137,7 @@ CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
 else
 # -finline-limit can shrink the image size. -finline-limit=80 or so is similar to not having it on.
 # There is no simple default value, though.
-CFLAGS += -Os -DNDEBUG -flto -finline-limit=57
+CFLAGS += -Os -DNDEBUG -flto -finline-limit=49
 endif
 
 ifneq ($(FROZEN_DIR),)
