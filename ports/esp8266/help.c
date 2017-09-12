@@ -26,7 +26,7 @@
 
 #include "py/builtin.h"
 
-const char *esp_help_text =
+const char esp_help_text[] =
 "Welcome to MicroPython!\n"
 "\n"
 "For online docs please visit http://docs.micropython.org/en/latest/esp8266/ .\n"

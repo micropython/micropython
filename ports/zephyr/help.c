@@ -26,7 +26,7 @@
 
 #include "py/builtin.h"
 
-const char *zephyr_help_text =
+const char zephyr_help_text[] =
 "Welcome to MicroPython!\n"
 "\n"
 "Control commands:\n"

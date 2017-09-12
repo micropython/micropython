@@ -26,7 +26,7 @@
 
 #include "py/builtin.h"
 
-const char *stm32_help_text =
+const char stm32_help_text[] =
 "Welcome to MicroPython!\n"
 "\n"
 "For online help please visit http://micropython.org/help/.\n"
