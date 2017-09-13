@@ -629,6 +629,62 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     return mp_const_none;
 }
 
+// This table encodes the timer instance and irq number.
+// It assumes that timer instance pointer has the lower 8 bits cleared.
+#define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
+STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
+    #elif defined(MCU_SERIES_L4)
+    TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
+    #endif
+    TIM_ENTRY(2, TIM2_IRQn),
+    TIM_ENTRY(3, TIM3_IRQn),
+    TIM_ENTRY(4, TIM4_IRQn),
+    TIM_ENTRY(5, TIM5_IRQn),
+    #if defined(TIM6)
+    TIM_ENTRY(6, TIM6_DAC_IRQn),
+    #endif
+    #if defined(TIM7)
+    TIM_ENTRY(7, TIM7_IRQn),
+    #endif
+    #if defined(TIM8)
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
+    #elif defined(MCU_SERIES_L4)
+    TIM_ENTRY(8, TIM8_UP_IRQn),
+    #endif
+    #endif
+    #if defined(TIM9)
+    TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
+    #endif
+    #if defined(TIM10)
+    TIM_ENTRY(10, TIM1_UP_TIM10_IRQn),
+    #endif
+    #if defined(TIM11)
+    TIM_ENTRY(11, TIM1_TRG_COM_TIM11_IRQn),
+    #endif
+    #if defined(TIM12)
+    TIM_ENTRY(12, TIM8_BRK_TIM12_IRQn),
+    #endif
+    #if defined(TIM13)
+    TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
+    #endif
+    #if defined(TIM14)
+    TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
+    #endif
+    #if defined(TIM15)
+    TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
+    #endif
+    #if defined(TIM16)
+    TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
+    #endif
+    #if defined(TIM17)
+    TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
+    #endif
+};
+#undef TIM_ENTRY
+
 /// \classmethod \constructor(id, ...)
 /// Construct a new timer object of the given id.  If additional
 /// arguments are given, then the timer is initialised by `init(...)`.
@@ -637,74 +693,30 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // create new Timer object
-    pyb_timer_obj_t *tim = m_new_obj(pyb_timer_obj_t);
-    memset(tim, 0, sizeof(*tim));
+    // get the timer id
+    mp_int_t tim_id = mp_obj_get_int(args[0]);
 
-    tim->base.type = &pyb_timer_type;
-    tim->callback = mp_const_none;
-    tim->channel = NULL;
-
-    // get TIM number
-    tim->tim_id = mp_obj_get_int(args[0]);
-    tim->is_32bit = false;
-
-    switch (tim->tim_id) {
-        #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-        case 1: tim->tim.Instance = TIM1; tim->irqn = TIM1_UP_TIM10_IRQn; break;
-        #elif defined(MCU_SERIES_L4)
-        case 1: tim->tim.Instance = TIM1; tim->irqn = TIM1_UP_TIM16_IRQn; break;
-        #endif
-        case 2: tim->tim.Instance = TIM2; tim->irqn = TIM2_IRQn; tim->is_32bit = true; break;
-        case 3: tim->tim.Instance = TIM3; tim->irqn = TIM3_IRQn; break;
-        case 4: tim->tim.Instance = TIM4; tim->irqn = TIM4_IRQn; break;
-        case 5: tim->tim.Instance = TIM5; tim->irqn = TIM5_IRQn; tim->is_32bit = true; break;
-        #if defined(TIM6)
-        case 6: tim->tim.Instance = TIM6; tim->irqn = TIM6_DAC_IRQn; break;
-        #endif
-        #if defined(TIM7)
-        case 7: tim->tim.Instance = TIM7; tim->irqn = TIM7_IRQn; break;
-        #endif
-        #if defined(TIM8)
-        #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-        case 8: tim->tim.Instance = TIM8; tim->irqn = TIM8_UP_TIM13_IRQn; break;
-        #elif defined(MCU_SERIES_L4)
-        case 8: tim->tim.Instance = TIM8; tim->irqn = TIM8_UP_IRQn; break;
-        #endif
-        #endif
-        #if defined(TIM9)
-        case 9: tim->tim.Instance = TIM9; tim->irqn = TIM1_BRK_TIM9_IRQn; break;
-        #endif
-        #if defined(TIM10)
-        case 10: tim->tim.Instance = TIM10; tim->irqn = TIM1_UP_TIM10_IRQn; break;
-        #endif
-        #if defined(TIM11)
-        case 11: tim->tim.Instance = TIM11; tim->irqn = TIM1_TRG_COM_TIM11_IRQn; break;
-        #endif
-        #if defined(TIM12)
-        case 12: tim->tim.Instance = TIM12; tim->irqn = TIM8_BRK_TIM12_IRQn; break;
-        #endif
-        #if defined(TIM13)
-        case 13: tim->tim.Instance = TIM13; tim->irqn = TIM8_UP_TIM13_IRQn; break;
-        #endif
-        #if defined(TIM14)
-        case 14: tim->tim.Instance = TIM14; tim->irqn = TIM8_TRG_COM_TIM14_IRQn; break;
-        #endif
-        #if defined(TIM15)
-        case 15: tim->tim.Instance = TIM15; tim->irqn = TIM1_BRK_TIM15_IRQn; break;
-        #endif
-        #if defined(TIM16)
-        case 16: tim->tim.Instance = TIM16; tim->irqn = TIM1_UP_TIM16_IRQn; break;
-        #endif
-        #if defined(TIM17)
-        case 17: tim->tim.Instance = TIM17; tim->irqn = TIM1_TRG_COM_TIM17_IRQn; break;
-        #endif
-        default: nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer(%d) doesn't exist", tim->tim_id));
+    // check if the timer exists
+    if (tim_id <= 0 || tim_id > MICROPY_HW_MAX_TIMER || tim_instance_table[tim_id - 1] == 0) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Timer(%d) doesn't exist", tim_id));
     }
 
-    // set the global variable for interrupt callbacks
-    if (tim->tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
-        MP_STATE_PORT(pyb_timer_obj_all)[tim->tim_id - 1] = tim;
+    pyb_timer_obj_t *tim;
+    if (MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] == NULL) {
+        // create new Timer object
+        tim = m_new_obj(pyb_timer_obj_t);
+        memset(tim, 0, sizeof(*tim));
+        tim->base.type = &pyb_timer_type;
+        tim->tim_id = tim_id;
+        tim->is_32bit = tim_id == 2 || tim_id == 5;
+        tim->callback = mp_const_none;
+        uint32_t ti = tim_instance_table[tim_id - 1];
+        tim->tim.Instance = (TIM_TypeDef*)(ti & 0xffffff00);
+        tim->irqn = ti & 0xff;
+        MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] = tim;
+    } else {
+        // reference existing Timer object
+        tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
     }
 
     if (n_args > 1 || n_kw > 0) {

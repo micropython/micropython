@@ -232,9 +232,11 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if defined(MCU_SERIES_F7)
 #define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 #else
 #define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_TIMER (14)
 #define MICROPY_HW_MAX_UART (6)
 #endif
 
@@ -254,8 +256,8 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     \
     mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]; \
     \
-    /* Used to do callbacks to Python code on interrupt */ \
-    struct _pyb_timer_obj_t *pyb_timer_obj_all[14]; \
+    /* pointers to all Timer objects (if they have been created) */ \
+    struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
     struct _pyb_uart_obj_t *pyb_stdio_uart; \
