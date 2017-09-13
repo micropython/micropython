@@ -175,7 +175,7 @@ void mp_native_raise(mp_obj_t o);
 #if MICROPY_WARNINGS
 void mp_warning(const char *msg, ...);
 #else
-#define mp_warning(msg, ...)
+#define mp_warning(...)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME_H
