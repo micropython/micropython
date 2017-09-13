@@ -234,6 +234,10 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define PYB_EXTI_NUM_VECTORS (24)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
+#elif defined(MCU_SERIES_L4)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (6)
 #else
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_TIMER (14)
