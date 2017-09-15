@@ -32,7 +32,21 @@ class SSD1306:
         self.external_vcc = external_vcc
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
-        self.framebuf = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MVLSB)
+        fb = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
+        self.framebuf = fb
+        # Provide methods for accessing FrameBuffer graphics primitives. This is a
+        # workround because inheritance from a native class is currently unsupported.
+        # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
+        self.fill = fb.fill
+        self.pixel = fb.pixel
+        self.hline = fb.hline
+        self.vline = fb.vline
+        self.line = fb.line
+        self.rect = fb.rect
+        self.fill_rect = fb.fill_rect
+        self.text = fb.text
+        self.scroll = fb.scroll
+        self.blit = fb.blit
         self.poweron()
         self.init_display()
 
@@ -87,18 +101,6 @@ class SSD1306:
         self.write_cmd(0)
         self.write_cmd(self.pages - 1)
         self.write_data(self.buffer)
-
-    def fill(self, col):
-        self.framebuf.fill(col)
-
-    def pixel(self, x, y, col):
-        self.framebuf.pixel(x, y, col)
-
-    def scroll(self, dx, dy):
-        self.framebuf.scroll(dx, dy)
-
-    def text(self, string, x, y, col=1):
-        self.framebuf.text(string, x, y, col)
 
 
 class SSD1306_I2C(SSD1306):
