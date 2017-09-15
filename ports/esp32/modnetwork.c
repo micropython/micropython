@@ -130,8 +130,16 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
         ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d", disconn->reason);
         switch (disconn->reason) {
+            case WIFI_REASON_BEACON_TIMEOUT:
+                mp_printf(MP_PYTHON_PRINTER, "beacon timeout\n");
+                // AP has dropped out; try to reconnect.
+                break;
+            case WIFI_REASON_NO_AP_FOUND:
+                mp_printf(MP_PYTHON_PRINTER, "no AP found\n");
+                // AP may not exist, or it may have momentarily dropped out; try to reconnect.
+                break;
             case WIFI_REASON_AUTH_FAIL:
-                mp_printf(MP_PYTHON_PRINTER, "authentication failed");
+                mp_printf(MP_PYTHON_PRINTER, "authentication failed\n");
                 wifi_sta_connected = false;
                 break;
             default:
