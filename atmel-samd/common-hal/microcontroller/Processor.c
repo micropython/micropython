@@ -226,6 +226,8 @@ float common_hal_mcu_processor_get_temperature(void) {
         status = adc_read(&adc_instance_struct, &data);
     } while (status == STATUS_BUSY);
 
+    // Disable so that someone else can use the adc with different settings.
+    adc_disable(&adc_instance_struct);
     return calculate_temperature(data, &nvm_calibration_data);
 }
 

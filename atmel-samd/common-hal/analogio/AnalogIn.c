@@ -40,7 +40,10 @@
 
 // Number of active ADC channels.
 volatile uint8_t active_channel_count;
+
+// Shared between all the instances. Allocated only when needed.
 struct adc_module *adc_instance = NULL;
+struct adc_config *config_adc = NULL;
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
@@ -53,23 +56,24 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     self->pin = pin;
 
     if (adc_instance == NULL) {
-        struct adc_config config_adc;
-        adc_get_config_defaults(&config_adc);
-
-        config_adc.reference = ADC_REFERENCE_INTVCC1;
-        config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
-        config_adc.positive_input = self->pin->adc_input;
-        config_adc.resolution = ADC_RESOLUTION_16BIT;
-        config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
-
-        // Allocate the instance on the heap so we only use the memory when we
+        // Allocate strucs on the heap so we only use the memory when we
         // need it.
         adc_instance = gc_alloc(sizeof(struct adc_module), false);
+        config_adc = gc_alloc(sizeof(struct adc_config), false);
 
-        adc_init(adc_instance, ADC, &config_adc);
+        adc_get_config_defaults(config_adc);
+
+        config_adc->reference = ADC_REFERENCE_INTVCC1;
+        config_adc->gain_factor = ADC_GAIN_FACTOR_DIV2;
+        config_adc->positive_input = self->pin->adc_input;
+        config_adc->resolution = ADC_RESOLUTION_16BIT;
+        config_adc->clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
+
+        adc_init(adc_instance, ADC, config_adc);
     }
 
     self->adc_instance = adc_instance;
+    self->config_adc = config_adc;
     active_channel_count++;
 }
 
@@ -78,9 +82,11 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     if (active_channel_count == 0) {
         adc_reset(adc_instance);
         gc_free(adc_instance);
-        // Set our reference to NULL so the GC doesn't mistakenly see the
-        // pointer in memory.
+        gc_free(config_adc);
+        // Set our references to NULL so the GC doesn't mistakenly see the
+        // pointers in memory.
         adc_instance = NULL;
+        config_adc = NULL;
     }
     reset_pin(self->pin->pin);
 }
@@ -94,16 +100,35 @@ void analogin_reset() {
 }
 
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
-    adc_set_positive_input(adc_instance, self->pin->adc_input);
+    // Something else might have used the ADC in a different way,
+    // so we have to completely re-initialize it.
+    // ADC must have been disabled before adc_init() is called.
+    adc_init(adc_instance, ADC, config_adc);
+    config_adc->positive_input = self->pin->adc_input;
 
     adc_enable(adc_instance);
-    adc_start_conversion(adc_instance);
+
+    // Read twice and discard first result, as recommended in section 14 of
+    // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
+    // "Discard the first conversion result whenever there is a change in ADC configuration
+    // like voltage reference / ADC channel change"
+    // Empirical observation shows the first reading is quite different than subsequent ones.
 
     uint16_t data;
-    enum status_code status = adc_read(adc_instance, &data);
-    while (status == STATUS_BUSY) {
+    enum status_code status;
+
+    adc_start_conversion(adc_instance);
+    do {
       status = adc_read(adc_instance, &data);
+    }  while (status == STATUS_BUSY); 
+    if (status == STATUS_ERR_OVERFLOW) {
+      // TODO(tannewt): Throw an error.
     }
+
+    adc_start_conversion(adc_instance);
+    do {
+        status = adc_read(adc_instance, &data);
+    } while (status == STATUS_BUSY);
     if (status == STATUS_ERR_OVERFLOW) {
       // TODO(tannewt): Throw an error.
     }
