@@ -91,26 +91,7 @@ STATIC mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
-    #if MICROPY_PY_BUILTINS_FLOAT
-    if (mp_obj_is_float(o_in)) {
-        mp_float_t value = mp_obj_float_get(o_in);
-        // TODO check for NaN etc
-        if (value < 0) {
-            return mp_obj_new_float(-value);
-        } else {
-            return o_in;
-        }
-    #if MICROPY_PY_BUILTINS_COMPLEX
-    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_complex)) {
-        mp_float_t real, imag;
-        mp_obj_complex_get(o_in, &real, &imag);
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
-    #endif
-    }
-    #endif
-
-    // this will raise a TypeError if the argument is not integral
-    return mp_obj_int_abs(o_in);
+    return mp_unary_op(MP_UNARY_OP_ABS, o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 

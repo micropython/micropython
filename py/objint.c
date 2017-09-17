@@ -314,16 +314,6 @@ int mp_obj_int_sign(mp_obj_t self_in) {
     }
 }
 
-// This must handle int and bool types, and must raise a
-// TypeError if the argument is not integral
-mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
-    mp_int_t val = mp_obj_get_int(self_in);
-    if (val < 0) {
-        val = -val;
-    }
-    return MP_OBJ_NEW_SMALL_INT(val);
-}
-
 // This is called for operations on SMALL_INT that are not handled by mp_unary_op
 mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     return MP_OBJ_NULL; // op not supported

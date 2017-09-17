@@ -231,6 +231,15 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
                 } else {
                     return MP_OBJ_NEW_SMALL_INT(-val);
                 }
+            case MP_UNARY_OP_ABS:
+                if (val >= 0) {
+                    return arg;
+                } else if (val == MP_SMALL_INT_MIN) {
+                    // check for overflow
+                    return mp_obj_new_int(-val);
+                } else {
+                    return MP_OBJ_NEW_SMALL_INT(-val);
+                }
             default:
                 assert(op == MP_UNARY_OP_INVERT);
                 return MP_OBJ_NEW_SMALL_INT(~val);

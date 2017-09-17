@@ -50,6 +50,7 @@ typedef enum {
     MP_UNARY_OP_NEGATIVE,
     MP_UNARY_OP_INVERT,
     MP_UNARY_OP_NOT,
+    MP_UNARY_OP_ABS, // __abs__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 } mp_unary_op_t;
 
