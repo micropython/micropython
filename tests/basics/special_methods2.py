@@ -134,6 +134,6 @@ print('a' in dir(Cud))
 # ne is not supported, !(eq) is called instead
 #cud1 != cud2
 #
-# in the followin test, cpython still calls __eq__
+# in the following test, cpython still calls __eq__
 # cud3=cud1
 # cud3==cud1
