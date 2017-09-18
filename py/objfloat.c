@@ -163,10 +163,9 @@ STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
         case MP_UNARY_OP_ABS: {
-            mp_float_t value = mp_obj_float_get(o_in);
             // TODO check for NaN etc
-            if (value < 0) {
-                return mp_obj_new_float(-value);
+            if (val < 0) {
+                return mp_obj_new_float(-val);
             } else {
                 return o_in;
             }

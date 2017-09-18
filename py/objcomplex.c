@@ -124,11 +124,8 @@ STATIC mp_obj_t complex_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
         case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(o->real) ^ mp_float_hash(o->imag));
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_complex(-o->real, -o->imag);
-        case MP_UNARY_OP_ABS: {
-            mp_float_t real, imag;
-            mp_obj_complex_get(o_in, &real, &imag);
-            return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
-        }
+        case MP_UNARY_OP_ABS:
+            return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(o->real*o->real + o->imag*o->imag));
         default: return MP_OBJ_NULL; // op not supported
     }
 }
