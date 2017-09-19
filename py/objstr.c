@@ -777,7 +777,7 @@ STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
 
     if (n_args == 1) {
         chars_to_del = whitespace;
-        chars_to_del_len = sizeof(whitespace);
+        chars_to_del_len = sizeof(whitespace) - 1;
     } else {
         if (mp_obj_get_type(args[1]) != self_type) {
             bad_implicit_conversion(args[1]);
