@@ -6,6 +6,10 @@
 #include  "usbd_msc_scsi.h"
 #include  "usbd_ioreq.h"
 
+// Needed for the CDC+MSC+HID state and should be maximum of all template
+// config descriptors defined in usbd_cdc_msc_hid.c
+#define MAX_TEMPLATE_CONFIG_DESC_SIZE (107)
+
 // CDC, MSC and HID packet sizes
 #define CDC_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 #define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
@@ -70,7 +74,39 @@ typedef struct {
   uint32_t                 scsi_blk_len;
 } USBD_MSC_BOT_HandleTypeDef;
 
+typedef enum {
+    HID_IDLE = 0,
+    HID_BUSY,
+} HID_StateTypeDef;
+
+typedef struct {
+    uint32_t             Protocol;
+    uint32_t             IdleState;
+    uint32_t             AltSetting;
+    HID_StateTypeDef     state;
+} USBD_HID_HandleTypeDef;
+
 typedef struct _usbd_cdc_msc_hid_state_t {
+    USBD_HandleTypeDef *pdev;
+
+    uint8_t usbd_mode;
+    uint8_t cdc_iface_num;
+    uint8_t hid_in_ep;
+    uint8_t hid_out_ep;
+    uint8_t hid_iface_num;
+    uint8_t usbd_config_desc_size;
+    uint8_t *hid_desc;
+    const uint8_t *hid_report_desc;
+
+    USBD_StorageTypeDef *MSC_fops;
+
+    USBD_CDC_HandleTypeDef CDC_ClassData;
+    USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
+    USBD_HID_HandleTypeDef HID_ClassData;
+
+    // RAM to hold the current configuration descriptor, which we configure on the fly
+    __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
+
     void *cdc;
     void *msc;
     void *hid;
@@ -89,30 +125,30 @@ extern const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPORT_DESC_
 extern const USBD_ClassTypeDef USBD_CDC_MSC_HID;
 
 // returns 0 on success, -1 on failure
-int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
+int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
 // returns the current usb mode
-uint8_t USBD_GetMode();
+uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd);
 
-uint8_t USBD_CDC_ReceivePacket(USBD_HandleTypeDef *pdev, uint8_t *buf);
-uint8_t USBD_CDC_TransmitPacket(USBD_HandleTypeDef *pdev, size_t len, const uint8_t *buf);
+uint8_t USBD_CDC_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf);
+uint8_t USBD_CDC_TransmitPacket(usbd_cdc_msc_hid_state_t *usbd, size_t len, const uint8_t *buf);
 
-uint8_t USBD_MSC_RegisterStorage(USBD_HandleTypeDef *pdev, USBD_StorageTypeDef *fops);
+uint8_t USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD_StorageTypeDef *fops);
 
-uint8_t USBD_HID_ReceivePacket(USBD_HandleTypeDef *pdev, uint8_t *buf);
-int USBD_HID_CanSendReport(USBD_HandleTypeDef *pdev);
-uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len);
-uint8_t USBD_HID_SetNAK(USBD_HandleTypeDef *pdev);
-uint8_t USBD_HID_ClearNAK(USBD_HandleTypeDef *pdev);
+uint8_t USBD_HID_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf);
+int USBD_HID_CanSendReport(usbd_cdc_msc_hid_state_t *usbd);
+uint8_t USBD_HID_SendReport(usbd_cdc_msc_hid_state_t *usbd, uint8_t *report, uint16_t len);
+uint8_t USBD_HID_SetNAK(usbd_cdc_msc_hid_state_t *usbd);
+uint8_t USBD_HID_ClearNAK(usbd_cdc_msc_hid_state_t *usbd);
 
 // These are provided externally to implement the CDC interface
 struct _usbd_cdc_itf_t;
-uint8_t *usbd_cdc_init(struct _usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev);
+uint8_t *usbd_cdc_init(struct _usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd);
 int8_t usbd_cdc_control(struct _usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length);
 int8_t usbd_cdc_receive(struct _usbd_cdc_itf_t *cdc, size_t len);
 
 // These are provided externally to implement the HID interface
 struct _usbd_hid_itf_t;
-uint8_t *usbd_hid_init(struct _usbd_hid_itf_t *hid, USBD_HandleTypeDef *pdev);
+uint8_t *usbd_hid_init(struct _usbd_hid_itf_t *hid, usbd_cdc_msc_hid_state_t *usbd);
 int8_t usbd_hid_receive(struct _usbd_hid_itf_t *hid, size_t len);
 
 #endif // _USB_CDC_MSC_CORE_H_

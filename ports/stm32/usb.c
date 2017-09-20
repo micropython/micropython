@@ -111,7 +111,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 
         // configure the VID, PID and the USBD mode (interfaces it will expose)
         USBD_SetVIDPIDRelease(vid, pid, 0x0200, mode == USBD_MODE_CDC);
-        if (USBD_SelectMode(mode, hid_info) != 0) {
+        if (USBD_SelectMode(&usbd_cdc_msc_hid_state, mode, hid_info) != 0) {
             return false;
         }
 
@@ -121,6 +121,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         usbd->dev_state  = USBD_STATE_DEFAULT;
         usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
         usbd->pClass = &USBD_CDC_MSC_HID;
+        usbd_cdc_msc_hid_state.pdev = usbd;
         usbd_cdc_msc_hid_state.cdc = &usbd_cdc_itf;
         usbd_cdc_msc_hid_state.hid = &usbd_hid_itf;
         usbd->pClassData = &usbd_cdc_msc_hid_state;
@@ -128,11 +129,11 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         switch (pyb_usb_storage_medium) {
 #if MICROPY_HW_HAS_SDCARD
             case PYB_USB_STORAGE_MEDIUM_SDCARD:
-                USBD_MSC_RegisterStorage(usbd, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
+                USBD_MSC_RegisterStorage(&usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_SDCARD_STORAGE_fops);
                 break;
 #endif
             default:
-                USBD_MSC_RegisterStorage(usbd, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
+                USBD_MSC_RegisterStorage(&usbd_cdc_msc_hid_state, (USBD_StorageTypeDef*)&USBD_FLASH_STORAGE_fops);
                 break;
         }
 
@@ -225,7 +226,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #if defined(USE_HOST_MODE)
         return MP_OBJ_NEW_QSTR(MP_QSTR_host);
     #elif defined(USE_DEVICE_MODE)
-        uint8_t mode = USBD_GetMode();
+        uint8_t mode = USBD_GetMode(&usbd_cdc_msc_hid_state);
         switch (mode) {
             case USBD_MODE_CDC:
                 return MP_OBJ_NEW_QSTR(MP_QSTR_VCP);
@@ -614,7 +615,7 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
     }
 
     // send the data
-    if (USBD_OK == USBD_HID_SendReport(&hUSBDDevice, bufinfo.buf, bufinfo.len)) {
+    if (USBD_OK == USBD_HID_SendReport(&usbd_cdc_msc_hid_state, bufinfo.buf, bufinfo.len)) {
         return mp_obj_new_int(bufinfo.len);
     } else {
         return mp_obj_new_int(0);
@@ -646,7 +647,7 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
         if ((flags & MP_STREAM_POLL_RD) && usbd_hid_rx_num(&usbd_hid_itf) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&hUSBDDevice)) {
+        if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&usbd_cdc_msc_hid_state)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {

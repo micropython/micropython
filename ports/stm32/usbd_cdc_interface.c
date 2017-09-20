@@ -56,8 +56,8 @@
 #define CDC_SET_CONTROL_LINE_STATE                  0x22
 #define CDC_SEND_BREAK                              0x23
 
-uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, USBD_HandleTypeDef *pdev) {
-    cdc->usb = pdev;
+uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
+    cdc->usbd = usbd;
     cdc->rx_buf_put = 0;
     cdc->rx_buf_get = 0;
     cdc->tx_buf_ptr_in = 0;
@@ -181,7 +181,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = cdc->tx_buf_ptr_out_shadow;
 
-        if (USBD_CDC_TransmitPacket(hpcd->pData, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(cdc->usbd, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
             cdc->tx_buf_ptr_out_shadow += buffsize;
             if (cdc->tx_buf_ptr_out_shadow == USBD_CDC_TX_DATA_SIZE) {
                 cdc->tx_buf_ptr_out_shadow = 0;
@@ -219,7 +219,7 @@ int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, size_t len) {
     }
 
     // initiate next USB packet transfer
-    USBD_CDC_ReceivePacket(cdc->usb, cdc->rx_packet_buf);
+    USBD_CDC_ReceivePacket(cdc->usbd, cdc->rx_packet_buf);
 
     return USBD_OK;
 }
