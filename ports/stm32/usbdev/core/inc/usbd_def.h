@@ -235,7 +235,7 @@ typedef struct _USBD_HandleTypeDef
 
   USBD_SetupReqTypedef    request;
   USBD_DescriptorsTypeDef *pDesc;
-  USBD_ClassTypeDef       *pClass;
+  const USBD_ClassTypeDef *pClass;
   void                    *pClassData;  
   void                    *pUserData;    
   void                    *pData;    

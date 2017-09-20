@@ -155,7 +155,7 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
   * @param  pclass: Class handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
+USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, const USBD_ClassTypeDef *pclass)
 {
   USBD_StatusTypeDef   status = USBD_OK;
   if(pclass != 0)

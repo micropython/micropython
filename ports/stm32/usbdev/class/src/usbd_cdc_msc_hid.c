@@ -1112,7 +1112,7 @@ uint8_t USBD_HID_ClearNAK(USBD_HandleTypeDef *pdev) {
 }
 
 // CDC/MSC/HID interface class callback structure
-USBD_ClassTypeDef USBD_CDC_MSC_HID = {
+const USBD_ClassTypeDef USBD_CDC_MSC_HID = {
     USBD_CDC_MSC_HID_Init,
     USBD_CDC_MSC_HID_DeInit,
     USBD_CDC_MSC_HID_Setup,

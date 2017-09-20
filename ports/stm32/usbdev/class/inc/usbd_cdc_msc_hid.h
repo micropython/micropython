@@ -96,7 +96,7 @@ extern const uint8_t USBD_HID_MOUSE_ReportDesc[USBD_HID_MOUSE_REPORT_DESC_SIZE];
 
 extern const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPORT_DESC_SIZE];
 
-extern USBD_ClassTypeDef USBD_CDC_MSC_HID;
+extern const USBD_ClassTypeDef USBD_CDC_MSC_HID;
 
 // returns 0 on success, -1 on failure
 int USBD_SelectMode(uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
