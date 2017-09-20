@@ -72,6 +72,9 @@ typedef struct {
   
   uint32_t                 scsi_blk_addr_in_blks;
   uint32_t                 scsi_blk_len;
+
+  // operations of the underlying block device
+  USBD_StorageTypeDef *bdev_ops;
 } USBD_MSC_BOT_HandleTypeDef;
 
 typedef enum {
@@ -98,8 +101,6 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     uint8_t *hid_desc;
     const uint8_t *hid_report_desc;
 
-    USBD_StorageTypeDef *MSC_fops;
-
     USBD_CDC_HandleTypeDef CDC_ClassData;
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
     USBD_HID_HandleTypeDef HID_ClassData;
@@ -108,7 +109,6 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
     void *cdc;
-    void *msc;
     void *hid;
 } usbd_cdc_msc_hid_state_t;
 
@@ -132,7 +132,9 @@ uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd);
 uint8_t USBD_CDC_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf);
 uint8_t USBD_CDC_TransmitPacket(usbd_cdc_msc_hid_state_t *usbd, size_t len, const uint8_t *buf);
 
-uint8_t USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD_StorageTypeDef *fops);
+static inline void USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD_StorageTypeDef *fops) {
+    usbd->MSC_BOT_ClassData.bdev_ops = fops;
+}
 
 uint8_t USBD_HID_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf);
 int USBD_HID_CanSendReport(usbd_cdc_msc_hid_state_t *usbd);

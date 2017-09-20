@@ -662,9 +662,6 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        USBD_EP_TYPE_BULK,
                        MSC_MAX_PACKET);
 
-        // Set the MSC data for SCSI and BOT to reference it
-        usbd->msc = &usbd->MSC_BOT_ClassData;
-
         // Init the BOT layer
         MSC_BOT_Init(pdev);
     }
@@ -715,7 +712,7 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
         USBD_LL_CloseEP(pdev, CDC_CMD_EP);
     }
 
-    if ((usbd->usbd_mode & USBD_MODE_MSC) && usbd->msc) {
+    if (usbd->usbd_mode & USBD_MODE_MSC) {
         // MSC component
 
         // close endpoints
@@ -724,9 +721,6 @@ static uint8_t USBD_CDC_MSC_HID_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
         // DeInit the BOT layer
         MSC_BOT_DeInit(pdev);
-
-        // clear the state pointer
-        usbd->msc = NULL;
     }
 
     if (usbd->usbd_mode & USBD_MODE_HID) {
@@ -788,7 +782,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                 switch (req->bRequest) {
                     case BOT_GET_MAX_LUN:
                         if ((req->wValue  == 0) && (req->wLength == 1) && ((req->bmRequest & 0x80) == 0x80)) {
-                            usbd->MSC_BOT_ClassData.max_lun = usbd->MSC_fops->GetMaxLun();
+                            usbd->MSC_BOT_ClassData.max_lun = usbd->MSC_BOT_ClassData.bdev_ops->GetMaxLun();
                             USBD_CtlSendData(pdev, (uint8_t *)&usbd->MSC_BOT_ClassData.max_lun, 1);
                         } else {
                             USBD_CtlError(pdev, req);
@@ -990,16 +984,6 @@ uint8_t USBD_CDC_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf) {
     USBD_LL_PrepareReceive(usbd->pdev, CDC_OUT_EP, buf, CDC_DATA_OUT_PACKET_SIZE);
 
     return USBD_OK;
-}
-
-uint8_t USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD_StorageTypeDef *fops) {
-    if (fops == NULL) {
-        return USBD_FAIL;
-    } else {
-        usbd->MSC_fops = fops;
-        usbd->pdev->pUserData = fops; // MSC uses pUserData because SCSI and BOT reference it
-        return USBD_OK;
-    }
 }
 
 // prepare OUT endpoint for reception
