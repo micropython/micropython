@@ -168,10 +168,10 @@ typedef struct _Device_cb
   uint8_t  (*IsoINIncomplete)  (struct _USBD_HandleTypeDef *pdev , uint8_t epnum); 
   uint8_t  (*IsoOUTIncomplete) (struct _USBD_HandleTypeDef *pdev , uint8_t epnum);   
 
-  uint8_t  *(*GetHSConfigDescriptor)(uint16_t *length); 
-  uint8_t  *(*GetFSConfigDescriptor)(uint16_t *length);   
-  uint8_t  *(*GetOtherSpeedConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetDeviceQualifierDescriptor)(uint16_t *length);
+  uint8_t  *(*GetHSConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length); 
+  uint8_t  *(*GetFSConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);   
+  uint8_t  *(*GetOtherSpeedConfigDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);
+  uint8_t  *(*GetDeviceQualifierDescriptor)(struct _USBD_HandleTypeDef *pdev, uint16_t *length);
 #if (USBD_SUPPORT_USER_STRING == 1)
   uint8_t  *(*GetUsrStrDescriptor)(struct _USBD_HandleTypeDef *pdev ,uint8_t index,  uint16_t *length);   
 #endif  
