@@ -479,7 +479,7 @@ static void USBD_SetConfig(USBD_HandleTypeDef *pdev ,
                            USBD_SetupReqTypedef *req)
 {
   
-  static uint8_t  cfgidx;
+  uint8_t cfgidx;
   
   cfgidx = (uint8_t)(req->wValue);                 
   
