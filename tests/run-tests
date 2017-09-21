@@ -345,6 +345,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('misc/rge_sm.py') # requires yield
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
+        skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
