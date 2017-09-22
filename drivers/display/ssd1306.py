@@ -34,6 +34,9 @@ class SSD1306:
         self.buffer = bytearray(self.pages * self.width)
         fb = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MVLSB)
         self.framebuf = fb
+        # Provide methods for accessing FrameBuffer graphics primitives. This is a workround
+        # because inheritance from a native class is currently unsupported.
+        # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
         self.fill = fb.fill  # (col)
         self.pixel = fb.pixel # (x, y[, c])
         self.hline = fb.hline  # (x, y, w, col)
