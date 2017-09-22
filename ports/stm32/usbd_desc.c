@@ -50,59 +50,45 @@
 #define USBD_CONFIGURATION_FS_STRING  "Pyboard Config"
 #define USBD_INTERFACE_FS_STRING      "Pyboard Interface"
 
-// USB Standard Device Descriptor
-// needs to be in RAM because we modify the VID and PID
-__ALIGN_BEGIN static uint8_t hUSBDDeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END = {
-    0x12,                       // bLength
-    USB_DESC_TYPE_DEVICE,       // bDescriptorType
-    0x00,                       // bcdUSB
-    0x02,
-    0xef,                       // bDeviceClass: Miscellaneous Device Class
-    0x02,                       // bDeviceSubClass: Common Class
-    0x01,                       // bDeviceProtocol: Interface Association Descriptor
-    USB_MAX_EP0_SIZE,           // bMaxPacketSize
-    LOBYTE(USBD_VID),           // idVendor
-    HIBYTE(USBD_VID),           // idVendor
-    LOBYTE(USBD_PID),           // idVendor
-    HIBYTE(USBD_PID),           // idVendor
-    0x00,                       // bcdDevice rel. 2.00
-    0x02,
-    USBD_IDX_MFC_STR,           // Index of manufacturer string
-    USBD_IDX_PRODUCT_STR,       // Index of product string
-    USBD_IDX_SERIAL_STR,        // Index of serial number string
-    USBD_MAX_NUM_CONFIGURATION  // bNumConfigurations
-};
-
-__ALIGN_BEGIN static uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
+__ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
     USB_DESC_TYPE_STRING,
     LOBYTE(USBD_LANGID_STRING),
     HIBYTE(USBD_LANGID_STRING),
 };
 
-__ALIGN_BEGIN static uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
-
 // set the VID, PID and device release number
-void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_num, int cdc_only) {
+void USBD_SetVIDPIDRelease(usbd_cdc_msc_hid_state_t *usbd, uint16_t vid, uint16_t pid, uint16_t device_release_num, int cdc_only) {
+    uint8_t *dev_desc = &usbd->usbd_device_desc[0];
+
+    dev_desc[0] = USB_LEN_DEV_DESC; // bLength
+    dev_desc[1] = USB_DESC_TYPE_DEVICE; // bDescriptorType
+    dev_desc[2] = 0x00; // bcdUSB
+    dev_desc[3] = 0x02; // bcdUSB
     if (cdc_only) {
         // Make it look like a Communications device if we're only
         // using CDC. Otherwise, windows gets confused when we tell it that
         // its a composite device with only a cdc serial interface.
-        hUSBDDeviceDesc[4] = 0x02;
-        hUSBDDeviceDesc[5] = 0x00;
-        hUSBDDeviceDesc[6] = 0x00;
+        dev_desc[4] = 0x02; // bDeviceClass
+        dev_desc[5] = 0x00; // bDeviceSubClass
+        dev_desc[6] = 0x00; // bDeviceProtocol
     } else {
         // For the other modes, we make this look like a composite device.
-        hUSBDDeviceDesc[4] = 0xef;
-        hUSBDDeviceDesc[5] = 0x02;
-        hUSBDDeviceDesc[6] = 0x01;
+        dev_desc[4] = 0xef; // bDeviceClass: Miscellaneous Device Class
+        dev_desc[5] = 0x02; // bDeviceSubClass: Common Class
+        dev_desc[6] = 0x01; // bDeviceProtocol: Interface Association Descriptor
     }
-    hUSBDDeviceDesc[8] = LOBYTE(vid);
-    hUSBDDeviceDesc[9] = HIBYTE(vid);
-    hUSBDDeviceDesc[10] = LOBYTE(pid);
-    hUSBDDeviceDesc[11] = HIBYTE(pid);
-    hUSBDDeviceDesc[12] = LOBYTE(device_release_num);
-    hUSBDDeviceDesc[13] = HIBYTE(device_release_num);
+    dev_desc[7] = USB_MAX_EP0_SIZE; // bMaxPacketSize
+    dev_desc[8] = LOBYTE(vid); // idVendor
+    dev_desc[9] = HIBYTE(vid); // idVendor
+    dev_desc[10] = LOBYTE(pid); // idVendor
+    dev_desc[11] = HIBYTE(pid); // idVendor
+    dev_desc[12] = LOBYTE(device_release_num); // bcdDevice
+    dev_desc[13] = HIBYTE(device_release_num); // bcdDevice
+    dev_desc[14] = USBD_IDX_MFC_STR; // Index of manufacturer string
+    dev_desc[15] = USBD_IDX_PRODUCT_STR; // Index of product string
+    dev_desc[16] = USBD_IDX_SERIAL_STR; // Index of serial number string
+    dev_desc[17] = USBD_MAX_NUM_CONFIGURATION; // bNumConfigurations
 }
 
 /**
@@ -112,8 +98,9 @@ void USBD_SetVIDPIDRelease(uint16_t vid, uint16_t pid, uint16_t device_release_n
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    *length = sizeof(hUSBDDeviceDesc);
-    return hUSBDDeviceDesc;
+    uint8_t *dev_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_device_desc;
+    *length = USB_LEN_DEV_DESC;
+    return dev_desc;
 }
 
 /**
@@ -124,7 +111,7 @@ STATIC uint8_t *USBD_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length
   */
 STATIC uint8_t *USBD_LangIDStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
     *length = sizeof(USBD_LangIDDesc);
-    return USBD_LangIDDesc;
+    return (uint8_t*)USBD_LangIDDesc; // the data should only be read from this buf
 }
 
 /**
@@ -134,12 +121,13 @@ STATIC uint8_t *USBD_LangIDStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *len
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_ProductStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
     if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        USBD_GetString((uint8_t *)USBD_PRODUCT_HS_STRING, USBD_StrDesc, length);
+        USBD_GetString((uint8_t *)USBD_PRODUCT_HS_STRING, str_desc, length);
     } else {
-        USBD_GetString((uint8_t *)USBD_PRODUCT_FS_STRING, USBD_StrDesc, length);
+        USBD_GetString((uint8_t *)USBD_PRODUCT_FS_STRING, str_desc, length);
     }
-    return USBD_StrDesc;
+    return str_desc;
 }
 
 /**
@@ -149,8 +137,9 @@ STATIC uint8_t *USBD_ProductStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *le
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_ManufacturerStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    USBD_GetString((uint8_t *)USBD_MANUFACTURER_STRING, USBD_StrDesc, length);
-    return USBD_StrDesc;
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
+    USBD_GetString((uint8_t *)USBD_MANUFACTURER_STRING, str_desc, length);
+    return str_desc;
 }
 
 /**
@@ -179,8 +168,9 @@ STATIC uint8_t *USBD_SerialStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *len
         "%02X%02X%02X%02X%02X%02X",
         id[11], id[10] + id[2], id[9], id[8] + id[0], id[7], id[6]);
 
-    USBD_GetString((uint8_t *)serial_buf, USBD_StrDesc, length);
-    return USBD_StrDesc;
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
+    USBD_GetString((uint8_t *)serial_buf, str_desc, length);
+    return str_desc;
 }
 
 /**
@@ -190,12 +180,13 @@ STATIC uint8_t *USBD_SerialStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *len
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_ConfigStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
     if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        USBD_GetString((uint8_t *)USBD_CONFIGURATION_HS_STRING, USBD_StrDesc, length);
+        USBD_GetString((uint8_t *)USBD_CONFIGURATION_HS_STRING, str_desc, length);
     } else {
-        USBD_GetString((uint8_t *)USBD_CONFIGURATION_FS_STRING, USBD_StrDesc, length);
+        USBD_GetString((uint8_t *)USBD_CONFIGURATION_FS_STRING, str_desc, length);
     }
-    return USBD_StrDesc;
+    return str_desc;
 }
 
 /**
@@ -205,12 +196,13 @@ STATIC uint8_t *USBD_ConfigStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *len
   * @retval Pointer to descriptor buffer
   */
 STATIC uint8_t *USBD_InterfaceStrDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
+    uint8_t *str_desc = ((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->usbd_str_desc;
     if (pdev->dev_speed == USBD_SPEED_HIGH) {
-        USBD_GetString((uint8_t *)USBD_INTERFACE_HS_STRING, USBD_StrDesc, length);
+        USBD_GetString((uint8_t *)USBD_INTERFACE_HS_STRING, str_desc, length);
     } else {
-        USBD_GetString((uint8_t *)USBD_INTERFACE_FS_STRING, USBD_StrDesc, length);
+        USBD_GetString((uint8_t *)USBD_INTERFACE_FS_STRING, str_desc, length);
     }
-    return USBD_StrDesc;
+    return str_desc;
 }
 
 const USBD_DescriptorsTypeDef USBD_Descriptors = {

@@ -105,7 +105,9 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
     USBD_HID_HandleTypeDef HID_ClassData;
 
-    // RAM to hold the current configuration descriptor, which we configure on the fly
+    // RAM to hold the current descriptors, which we configure on the fly
+    __ALIGN_BEGIN uint8_t usbd_device_desc[USB_LEN_DEV_DESC] __ALIGN_END;
+    __ALIGN_BEGIN uint8_t usbd_str_desc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
     void *cdc;

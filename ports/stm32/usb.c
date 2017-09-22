@@ -116,7 +116,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         // only init USB once in the device's power-lifetime
 
         // configure the VID, PID and the USBD mode (interfaces it will expose)
-        USBD_SetVIDPIDRelease(vid, pid, 0x0200, mode == USBD_MODE_CDC);
+        USBD_SetVIDPIDRelease(&usb_dev->usbd_cdc_msc_hid_state, vid, pid, 0x0200, mode == USBD_MODE_CDC);
         if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info) != 0) {
             return false;
         }
