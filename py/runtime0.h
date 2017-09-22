@@ -42,6 +42,8 @@
 #define MP_NATIVE_TYPE_PTR16 (0x06)
 #define MP_NATIVE_TYPE_PTR32 (0x07)
 
+// Note: the first 7 of these are used in bytecode and changing
+// them requires changing the bytecode version.
 typedef enum {
     MP_UNARY_OP_BOOL, // __bool__
     MP_UNARY_OP_LEN, // __len__
@@ -54,6 +56,8 @@ typedef enum {
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 } mp_unary_op_t;
 
+// Note: the first 35 of these are used in bytecode and changing
+// them requires changing the bytecode version.
 typedef enum {
     // Relational operations, should return a bool
     MP_BINARY_OP_LESS,
