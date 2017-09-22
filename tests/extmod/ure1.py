@@ -39,6 +39,18 @@ m = r.match("A")
 print(m)
 print("===")
 
+
+r = re.compile("[a-cu-z-]")
+m = r.match("-")
+print(m.group(0))
+m = r.match("]")
+print(m)
+r = re.compile("[-a-cu-z]")
+m = r.match("-")
+print(m.group(0))
+print("===")
+
+
 r = re.compile("[^a-cu-z]")
 m = r.match("a")
 print(m)
