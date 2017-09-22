@@ -1,0 +1,2 @@
+CHIP=lpc_chip_43xx
+BOARD_CFLAGS=-D__USE_LPCOPEN
