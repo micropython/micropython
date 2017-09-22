@@ -112,7 +112,7 @@ typedef struct {
  * @}
  */
 
-static INLINE void iap_entry(unsigned int cmd_param[], unsigned int status_result[])
+static INLINE void iap_entry(uint32_t cmd_param[], uint32_t status_result[])
 {
 	((IAP_ENTRY_T) IAP_ENTRY_LOCATION)(cmd_param, status_result);
 }

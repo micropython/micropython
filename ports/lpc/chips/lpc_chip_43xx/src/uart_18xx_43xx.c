@@ -125,6 +125,7 @@ void Chip_UART_Init(LPC_USART_T *pUART)
 		pUART->MCR = 0;
 		/*Dummy Reading to Clear Status */
 		tmp = pUART->MSR;
+		(void) tmp;
 	}
 
 	/* Default 8N1, with DLAB disabled */

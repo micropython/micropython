@@ -138,6 +138,7 @@ void Chip_SPI_Int_FlushData(LPC_SPI_T *pSPI)
 	volatile uint32_t tmp;
 	Chip_SPI_GetStatus(pSPI);
 	tmp = Chip_SPI_ReceiveFrame(pSPI);
+	(void) tmp;
 	Chip_SPI_Int_ClearStatus(pSPI, SPI_INT_SPIF);
 }
 
