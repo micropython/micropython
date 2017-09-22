@@ -51,6 +51,7 @@
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
 #include "lwip/ip4.h"
+#include "lwip/igmp.h"
 #include "esp_log.h"
 
 #define SOCKET_POLL_US (100000)
@@ -208,18 +209,37 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int level = mp_obj_get_int(args[1]);
-    if (level != SOL_SOCKET) {
-        mp_raise_ValueError("unsupported level");
-    }
-
-    // only "int" arguments are supported at the moment
     int opt = mp_obj_get_int(args[2]);
-    int val = mp_obj_get_int(args[3]);
-    int ret = lwip_setsockopt_r(self->fd, SOL_SOCKET, opt, &val, sizeof(int));
 
-    if (ret != 0) {
-        exception_from_errno(errno);
+    switch (opt) {
+        // level: SOL_SOCKET
+        case SO_REUSEADDR: {
+            int val = mp_obj_get_int(args[3]);
+            int ret = lwip_setsockopt_r(self->fd, SOL_SOCKET, opt, &val, sizeof(int));
+            if (ret != 0) {
+                exception_from_errno(errno);
+            }
+            break;
+        }
+
+        // level: IPPROTO_IP
+        case IP_ADD_MEMBERSHIP: {
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+            if (bufinfo.len != sizeof(ip4_addr_t) * 2) {
+                mp_raise_ValueError(NULL);
+            }
+
+            // POSIX setsockopt has order: group addr, if addr, lwIP has it vice-versa
+            err_t err = igmp_joingroup((const ip4_addr_t*)bufinfo.buf + 1, bufinfo.buf);
+            if (err != ERR_OK) {
+                mp_raise_OSError(-err);
+            }
+            break;
+        }
+
+        default:
+            mp_printf(&mp_plat_print, "Warning: lwip.setsockopt() option not implemented\n");
     }
 
     return mp_const_none;
@@ -558,8 +578,10 @@ STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(SOCK_RAW) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP), MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP), MP_OBJ_NEW_SMALL_INT(IPPROTO_UDP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SOL_SOCKET) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SO_REUSEADDR) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
