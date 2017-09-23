@@ -1523,6 +1523,17 @@ __STATIC_INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 }
 
 
+/** \brief  Clear all interrupts
+ */
+__STATIC_INLINE void NVIC_ClearAll(void)
+{
+  uint32_t irqpendloop;
+  for (irqpendloop = 0; irqpendloop < 8; irqpendloop++) {
+    NVIC->ICPR[irqpendloop] = 0xFFFFFFFF;
+  }
+}
+
+
 /** \brief  Get Active Interrupt
 
     The function reads the active register in NVIC and returns the active bit.
