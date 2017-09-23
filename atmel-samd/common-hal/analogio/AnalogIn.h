@@ -29,13 +29,6 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-// Don't reorder these includes because they are dependencies of adc_feature.h.
-// They should really be included by adc_feature.h.
-#include <compiler.h>
-#include "asf/sam0/drivers/system/clock/gclk.h"
-#include "asf/sam0/utils/cmsis/samd21/include/component/adc.h"
-#include "asf/sam0/drivers/adc/adc_sam_d_r/adc_feature.h"
-
 #include "py/obj.h"
 
 typedef struct {

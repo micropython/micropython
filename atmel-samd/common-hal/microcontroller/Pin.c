@@ -26,10 +26,16 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/port/port.h"
+#include "atmel_start_pins.h"
+#include "hal/include/hal_gpio.h"
 
-#include "rgb_led_status.h"
+#include "supervisor/shared/rgb_led_status.h"
+#ifdef SAMD21
 #include "samd21_pins.h"
+#endif
+#ifdef SAMD51
+#include "samd51_pins.h"
+#endif
 
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;
@@ -43,22 +49,39 @@ bool speaker_enable_in_use;
 #endif
 
 void reset_all_pins(void) {
-    struct system_pinmux_config config;
-    system_pinmux_get_config_defaults(&config);
-    config.powersave = true;
-
-    uint32_t pin_mask[2] = PORT_OUT_IMPLEMENTED;
+    uint32_t pin_mask[PORT_BITS / 32 + 1] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB or SWD lines.
-    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31);
+    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30);
 
-    system_pinmux_group_set_config(&(PORT->Group[0]), pin_mask[0] & ~MICROPY_PORT_A, &config);
-    system_pinmux_group_set_config(&(PORT->Group[1]), pin_mask[1] & ~MICROPY_PORT_B, &config);
+    // The SWO pin changes between the 21 and 51.
+    #ifdef PORT_PB30H_CM4_SWO
+    pin_mask[1] &= ~(PORT_PB30);
+    #else
+    pin_mask[0] &= ~(PORT_PA31);
+    #endif
+
+    //gpio_set_port_direction(GPIO_PORTA, pin_mask[0] & ~MICROPY_PORT_A, GPIO_DIRECTION_OFF);
+    gpio_set_port_direction(GPIO_PORTB, pin_mask[1] & ~MICROPY_PORT_B, GPIO_DIRECTION_OFF);
+    #if PORT_BITS > 64
+    gpio_set_port_direction(GPIO_PORTC, pin_mask[2] & ~MICROPY_PORT_C, GPIO_DIRECTION_OFF);
+    #endif
+    #if PORT_BITS > 96
+    gpio_set_port_direction(GPIO_PORTD, pin_mask[3] & ~MICROPY_PORT_D, GPIO_DIRECTION_OFF);
+    #endif
 
     // Configure SWD
-    system_pinmux_get_config_defaults(&config);
-    config.mux_position = 0x6;
-    system_pinmux_group_set_config(&(PORT->Group[0]), PORT_PA30 | PORT_PA31, &config);
+    gpio_set_pin_direction(PIN_PA30, GPIO_DIRECTION_OUT);
+    #ifdef SAMD51
+    gpio_set_pin_function(PIN_PB30, MUX_PB30H_CM4_SWO);
+    gpio_set_pin_direction(PIN_PB30, GPIO_DIRECTION_OUT);
+    gpio_set_pin_function(PIN_PB30, MUX_PB30H_CM4_SWO);
+    #endif
+    #ifdef SAMD21
+    //gpio_set_pin_function(PIN_PA30, GPIO_PIN_FUNCTION_G);
+    //gpio_set_pin_direction(PIN_PA31, GPIO_DIRECTION_OUT);
+    //gpio_set_pin_function(PIN_PA31, GPIO_PIN_FUNCTION_G);
+    #endif
 
     #ifdef MICROPY_HW_NEOPIXEL
     neopixel_in_use = false;
@@ -71,12 +94,9 @@ void reset_all_pins(void) {
     // After configuring SWD because it may be shared.
     #ifdef SPEAKER_ENABLE_PIN
     speaker_enable_in_use = false;
-    struct port_config pin_conf;
-    port_get_config_defaults(&pin_conf);
-
-    pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-    port_pin_set_config(SPEAKER_ENABLE_PIN->pin, &pin_conf);
-    port_pin_set_output_level(SPEAKER_ENABLE_PIN->pin, false);
+    gpio_set_pin_function(SPEAKER_ENABLE_PIN->pin, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(SPEAKER_ENABLE_PIN->pin, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(SPEAKER_ENABLE_PIN->pin, false);
     #endif
 }
 
@@ -104,24 +124,26 @@ void reset_pin(uint8_t pin) {
     }
     #endif
 
-    struct system_pinmux_config config;
-    system_pinmux_get_config_defaults(&config);
-    if (pin == PIN_PA30 || pin == PIN_PA31) {
-        config.mux_position = 0x6;
+    if (pin == PIN_PA30
+        #ifdef SAMD51
+        || pin == PIN_PB30) {
+        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_H);
+        #endif
+        #ifdef SAMD21
+        || pin == PIN_PA31) {
+        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_G);
+        #endif
     } else {
-        config.powersave = true;
+        gpio_set_pin_direction(pin, GPIO_DIRECTION_OFF);
+        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_OFF);
     }
-    system_pinmux_pin_set_config(pin, &config);
 
     #ifdef SPEAKER_ENABLE_PIN
     if (pin == SPEAKER_ENABLE_PIN->pin) {
         speaker_enable_in_use = false;
-        struct port_config pin_conf;
-        port_get_config_defaults(&pin_conf);
-
-        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-        port_pin_set_config(SPEAKER_ENABLE_PIN->pin, &pin_conf);
-        port_pin_set_output_level(SPEAKER_ENABLE_PIN->pin, false);
+        gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_OFF);
+        gpio_set_pin_direction(SPEAKER_ENABLE_PIN->pin, GPIO_DIRECTION_OUT);
+        gpio_set_pin_level(SPEAKER_ENABLE_PIN->pin, false);
     }
     #endif
 }
@@ -169,8 +191,8 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     }
     #endif
 
-    PortGroup *const port = system_pinmux_get_group_from_gpio_pin(pin->pin);
-    uint32_t pin_index = (pin->pin);
+    PortGroup *const port = &PORT->Group[(enum gpio_port)GPIO_PORT(pin->pin)];
+    uint8_t pin_index = GPIO_PIN(pin->pin);
     volatile PORT_PINCFG_Type *state = &port->PINCFG[pin_index];
     volatile PORT_PMUX_Type *pmux = &port->PMUX[pin_index / 2];
 

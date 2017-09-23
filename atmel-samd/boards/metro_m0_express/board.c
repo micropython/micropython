@@ -25,20 +25,19 @@
  */
 
 #include "boards/board.h"
-#include "asf/sam0/drivers/port/port.h"
 #include "mpconfigboard.h"
 
 void board_init(void)
 {
-    struct port_config pin_conf;
-    port_get_config_defaults(&pin_conf);
-
-    pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-    port_pin_set_config(MICROPY_HW_LED_TX, &pin_conf);
-    port_pin_set_output_level(MICROPY_HW_LED_TX, true);
-
-    port_pin_set_config(MICROPY_HW_LED_RX, &pin_conf);
-    port_pin_set_output_level(MICROPY_HW_LED_RX, true);
+    // struct port_config pin_conf;
+    // port_get_config_defaults(&pin_conf);
+    //
+    // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+    // port_pin_set_config(MICROPY_HW_LED_TX, &pin_conf);
+    // port_pin_set_output_level(MICROPY_HW_LED_TX, true);
+    //
+    // port_pin_set_config(MICROPY_HW_LED_RX, &pin_conf);
+    // port_pin_set_output_level(MICROPY_HW_LED_RX, true);
 }
 
 bool board_requests_safe_mode(void) {

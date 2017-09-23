@@ -25,8 +25,8 @@
  */
  #include "py/obj.h"
  #include "py/runtime.h"
- #include "autoreload.h"
- #include "rgb_led_status.h"
+ #include "supervisor/shared/autoreload.h"
+ #include "supervisor/shared/rgb_led_status.h"
 
 //| :mod:`samd` --- SAMD implementation settings
 //| =================================================

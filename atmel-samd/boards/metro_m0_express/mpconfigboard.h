@@ -4,9 +4,9 @@
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define MICROPY_HW_LED_TX   PIN_PA27
-#define MICROPY_HW_LED_RX   PIN_PA31
+//#define MICROPY_HW_LED_RX   PIN_PA31
 
-#define MICROPY_HW_NEOPIXEL (&pin_PA30)
+//#define MICROPY_HW_NEOPIXEL (&pin_PA30)
 
 // Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
 #define SPI_FLASH_BAUDRATE  (8000000)
@@ -22,12 +22,14 @@
 
 #define MICROPY_PORT_A        (PORT_PA13 |PORT_PA24 | PORT_PA25 | PORT_PA27 | PORT_PA30 | PORT_PA31)
 #define MICROPY_PORT_B        (PORT_PB03 | PORT_PB22 | PORT_PB23)
+#define MICROPY_PORT_C        (0)
 
 #include "spi_flash.h"
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
+// #define CIRCUITPY_INTERNAL_NVM_SIZE 256
+#define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 

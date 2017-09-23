@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H
 #define MICROPY_INCLUDED_COMMON_HAL_USB_HID_TYPES_H
 
-#include "conf_usb.h"
-
 #include "py/obj.h"
 
 typedef struct {

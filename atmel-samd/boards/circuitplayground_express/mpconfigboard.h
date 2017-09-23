@@ -20,6 +20,7 @@
 // PA24 and PA25 are USB.
 #define MICROPY_PORT_A        (PORT_PA16 | PORT_PA20 | PORT_PA21 | PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (PORT_PB22)
+#define MICROPY_PORT_C        (0)
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
@@ -27,7 +28,8 @@
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
+// #define CIRCUITPY_INTERNAL_NVM_SIZE 256
+#define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
@@ -37,4 +39,4 @@
 #define CALIBRATE_CRYSTALLESS 1
 
 // Explanation of how a user got into safe mode.
-#define BOARD_USER_SAFE_MODE "pressing both buttons at start up"
+#define BOARD_USER_SAFE_MODE_ACTION "pressing both buttons at start up"

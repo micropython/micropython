@@ -25,10 +25,9 @@
  */
 #include "background.h"
 
-#include "asf/common/services/usb/class/msc/device/udi_msc.h"
-#include "common-hal/audioio/AudioOut.h"
+// #include "common-hal/audioio/AudioOut.h"
 
 void run_background_tasks(void) {
-    audioout_background();
-    udi_msc_process_trans();
+    // audioout_background();
+    // udi_msc_process_trans();
 }

@@ -27,10 +27,16 @@
 #include "flash_api.h"
 #include "reset.h"
 
-#include "asf/sam0/utils/cmsis/samd21/include/samd21.h"
+#include "include/sam.h"
 
 // Copied from inc/uf2.h in https://github.com/Microsoft/uf2-samd21
+#ifdef SAMD21
 #define DBL_TAP_PTR ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
+#else
+    #ifdef SAMD51
+    #define DBL_TAP_PTR ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
+    #endif
+#endif
 #define DBL_TAP_MAGIC 0xf01669ef // Randomly selected, adjusted to have first and last bit set
 
 void reset_to_bootloader(void) {

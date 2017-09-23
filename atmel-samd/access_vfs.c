@@ -29,7 +29,6 @@
 #include "access_vfs.h"
 #include "autoreload.h"
 
-#include "asf/common/services/usb/class/msc/device/udi_msc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "lib/oofatfs/ff.h"

@@ -166,6 +166,8 @@ CircuitPython:
   corresponding module.
 * `shared-module` Shared implementation of Python modules that may be
   based on `common-hal`.
+* `supervisor` Code and headers related to the supervisor which monitors and
+  runs individual MicroPython virtual machines (from code in `py`).
 * `tests` Test framework and test scripts.
 * `tools` Various tools, including the pyboard.py module.
 

@@ -3,6 +3,8 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
+#define PORT_HEAP_SIZE (16384 + 4096)
+
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
@@ -132,6 +134,15 @@ typedef long mp_off_t;
 
 // board specific definitions
 #include "mpconfigboard.h"
+#include "include/sam.h"
+
+#ifdef SAMD21
+#define CIRCUITPY_MCU_FAMILY samd21
+#endif
+
+#ifdef SAMD51
+#define CIRCUITPY_MCU_FAMILY samd51
+#endif
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t microcontroller_module;
@@ -172,12 +183,11 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_SYS_MAXSIZE      (1)
     #define MICROPY_CPYTHON_COMPAT      (1)
 
-    #define EXTRA_BUILTIN_MODULES \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module }, \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_nvm), (mp_obj_t)&cpy_nvm_module }, \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
+    #define EXTRA_BUILTIN_MODULES
+//        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
+//        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
+//        { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module },
+//        { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
     #define EXPRESS_BOARD
 #else
     #define MICROPY_PY_BUILTINS_REVERSED (0)
@@ -189,29 +199,28 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_CPYTHON_COMPAT      (0)
 #endif
 
+// Disabled for now.
+// { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module },
+
+
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
     EXTRA_BUILTIN_MODULES
 
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ustack),(mp_obj_t)&ustack_module }
-
-#ifndef MICROPY_PIN_DEFS_PORT_H
-#define MICROPY_PIN_DEFS_PORT_H "pins.h"
-#endif
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

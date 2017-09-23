@@ -28,10 +28,13 @@
 #include <stdint.h>
 #include <string.h>
 
+<<<<<<< HEAD
 #include "asf/sam0/drivers/sercom/spi/spi.h"
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+=======
+>>>>>>> WIP
 #include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"

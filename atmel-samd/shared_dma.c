@@ -23,14 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include <stdbool.h>
 #include "shared_dma.h"
 
 #include "py/gc.h"
 #include "py/mpstate.h"
-
-#include "asf/sam0/drivers/events/events.h"
-#include "asf/sam0/drivers/system/interrupt/system_interrupt.h"
-#include "asf/sam0/drivers/tc/tc.h"
 
 #undef ENABLE
 

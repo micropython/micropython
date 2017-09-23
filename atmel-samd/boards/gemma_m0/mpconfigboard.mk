@@ -5,3 +5,4 @@ USB_PID = 0x801D
 FLASH_IMPL = internal_flash.c
 
 CHIP_VARIANT = SAMD21E18A
+CHIP_FAMILY = samd21

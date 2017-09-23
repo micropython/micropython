@@ -28,7 +28,6 @@
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOIO_AUDIOOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "asf/sam0/drivers/tc/tc.h"
 
 #include "extmod/vfs_fat_file.h"
 #include "py/obj.h"

@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
-BOARD ?= arduino_zero
+BOARD ?= metro_m0_express
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
@@ -14,12 +14,12 @@ include ../py/mkenv.mk
 include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
-# TODO(tannewt): Support friendly pin names like the stmhal implementations do.
-# Add $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+
+include $(TOP)/supervisor/supervisor.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -27,63 +27,31 @@ BOSSAC := tools/bossac_osx
 
 HAL_DIR=hal/$(MCU_SERIES)
 
-INC += -I.
-INC += -I$(TOP)
-INC += -I$(TOP)/lib/mp-readline
-INC += -I$(TOP)/lib/timeutils
-INC += -Iasf_conf/
-INC += -Iasf/common/boards/
-INC += -Iasf/common/services/sleepmgr/
-INC += -Iasf/common/services/storage/ctrl_access/
-INC += -Iasf/common/services/usb/
-INC += -Iasf/common/services/usb/class/cdc/
-INC += -Iasf/common/services/usb/class/cdc/device/
-INC += -Iasf/common/services/usb/class/hid/
-INC += -Iasf/common/services/usb/class/hid/device/
-INC += -Iasf/common/services/usb/class/hid/device/kbd/
-INC += -Iasf/common/services/usb/class/hid/device/mouse/
-INC += -Iasf/common/services/usb/class/msc/
-INC += -Iasf/common/services/usb/class/msc/device/
-INC += -Iasf/common/services/usb/udc/
-INC += -Iasf/common/utils
-INC += -Iasf/common2/services/delay/
-INC +=  $(addprefix -Iasf/sam0/,\
-	drivers/events \
-	drivers/extint \
-	drivers/port \
-	drivers/system \
-	drivers/adc/adc_sam_d_r \
-	drivers/dac \
-	drivers/dac/dac_sam_d_c \
-	drivers/sercom \
-	drivers/sercom/i2c \
-	drivers/system/clock \
-	drivers/system/clock/clock_samd21_r21_da \
-	drivers/system/interrupt \
-	drivers/system/interrupt/system_interrupt_samd21 \
-	drivers/system/pinmux \
-	drivers/system/power/power_sam_d_r \
-	drivers/system/reset/reset_sam_d_r \
-	drivers/tc \
-	drivers/usb \
-	utils \
-	utils/cmsis/samd21/include \
-	utils/cmsis/samd21/source \
-	utils/header_files \
-	utils/preprocessor \
-	)
-INC += -Iasf/thirdparty/CMSIS/Include
-INC += -Iboards
-INC += -Iboards/$(BOARD)/
-INC += -Ifreetouch/
-INC += -I$(BUILD)
+INC += -I. \
+       -I.. \
+       -I../lib/mp-readline \
+       -I../lib/timeutils \
+       -Iasf4/$(CHIP_FAMILY) \
+       -Iasf4/$(CHIP_FAMILY)/hal/include \
+       -Iasf4/$(CHIP_FAMILY)/hal/utils/include \
+       -Iasf4/$(CHIP_FAMILY)/hri \
+       -Iasf4/$(CHIP_FAMILY)/hpl/core \
+       -Iasf4/$(CHIP_FAMILY)/hpl/pm \
+       -Iasf4/$(CHIP_FAMILY)/hpl/port \
+       -Iasf4/$(CHIP_FAMILY)/hpl/tc \
+       -Iasf4/$(CHIP_FAMILY)/include \
+       -Iasf4/$(CHIP_FAMILY)/CMSIS/Include \
+       -Iasf4/$(CHIP_FAMILY)/usb \
+       -Iasf4/$(CHIP_FAMILY)/usb/class/cdc \
+       -Iasf4/$(CHIP_FAMILY)/usb/class/hid \
+       -Iasf4/$(CHIP_FAMILY)/usb/device \
+       -Iasf4_conf/$(CHIP_FAMILY) \
+       -Iboards/$(BOARD) \
+       -Iboards/ \
+       -Ifreetouch \
+       -I$(BUILD)
 
-CFLAGS_CORTEX_M0 = \
-	-mthumb \
-	-mabi=aapcs-linux \
-	-mcpu=cortex-m0plus \
-	-msoft-float \
-	-mfloat-abi=soft \
+BASE_CFLAGS = \
 	-fsingle-precision-constant \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
@@ -102,42 +70,49 @@ CFLAGS_CORTEX_M0 = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
+	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
-	-DUSB_DEVICE_PRODUCT_ID=$(USB_PID) \
-	-DUSB_DEVICE_VENDOR_ID=$(USB_VID) \
-	-DBOARD=USER_BOARD \
+	-DCONF_USB_COMPOSITE_IDPRODUCT=$(USB_PID) \
+	-DCONF_USB_COMPOSITE_IDVENDER=$(USB_VID) \
 	-ffunction-sections \
 	-fdata-sections \
 	-fshort-enums \
-	-D ARM_MATH_CM0PLUS=true \
-	-DSYSTICK_MODE \
-	-DEXTINT_CALLBACK_MODE=true \
-	-DUDD_ENABLE \
-	-DUSART_CALLBACK_MODE=false \
-	-DSPI_CALLBACK_MODE=false \
-	-DI2C_MASTER_CALLBACK_MODE=false \
-	-DDAC_CALLBACK_MODE=false \
-	-DTCC_ASYNC=false \
-	-DADC_CALLBACK_MODE=false \
-	-DEVENTS_INTERRUPT_HOOKS_MODE=false \
-	-DI2S_CALLBACK_MODE=false \
-	-DTC_ASYNC=true \
-	-DUSB_DEVICE_LPM_SUPPORT \
-	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
-	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
-CFLAGS = $(INC) -Wall -Werror -std=gnu11 -nostdlib $(CFLAGS_CORTEX_M0) $(CFLAGS_MOD) $(COPT)
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 # Turn on Python modules useful for debugging (e.g. uheap, ustack).
-# -DMICROPY_DEBUG_MODULES may also be added to an -flto build, if you wish.
-CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
+CFLAGS = -O1 -ggdb -DNDEBUG
+ifeq ($(CHIP_FAMILY), samd21)
+CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
+endif
 else
 # -finline-limit can shrink the image size. -finline-limit=80 or so is similar to not having it on.
 # There is no simple default value, though.
-CFLAGS += -Os -DNDEBUG -flto -finline-limit=49
+CFLAGS = -Os -DNDEBUG -flto -finline-limit=49
+endif
+
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+
+ifeq ($(CHIP_FAMILY), samd21)
+CFLAGS += \
+	-mthumb \
+	-mabi=aapcs-linux \
+	-mcpu=cortex-m0plus \
+	-msoft-float \
+	-mfloat-abi=soft \
+	-DSAMD21
+endif
+ifeq ($(CHIP_FAMILY), samd51)
+CFLAGS += \
+	-mthumb \
+	-mabi=aapcs-linux \
+	-mlong-calls \
+	-mcpu=cortex-m4 \
+	-mfloat-abi=softfp \
+	-mfpu=fpv4-sp-d16 \
+	-DSAMD51
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -158,69 +133,71 @@ CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 #LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/ -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
-LIBS = -larm_cortexM0l_math -lm -lgcc -lc
+LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LIBS := -lgcc -lc
 
-SRC_ASF = $(addprefix asf/sam0/,\
-	drivers/adc/adc_sam_d_r/adc.c \
-	drivers/dac/dac_sam_d_c/dac.c \
-	drivers/dma/dma.c \
-	drivers/events/events_sam_d_r/events.c \
-	drivers/extint/extint_callback.c \
-	drivers/extint/extint_sam_d_r/extint.c \
-	drivers/i2s/i2s.c \
-	drivers/nvm/nvm.c \
-	drivers/port/port.c \
-	drivers/sercom/i2c/i2c_sam0/i2c_master.c \
-	drivers/sercom/sercom.c \
-	drivers/sercom/sercom_interrupt.c \
-	drivers/sercom/spi/spi.c \
-	drivers/sercom/usart/usart.c \
-	drivers/system/clock/clock_samd21_r21_da/clock.c \
-	drivers/system/clock/clock_samd21_r21_da/gclk.c \
-	drivers/system/interrupt/system_interrupt.c   \
-	drivers/system/pinmux/pinmux.c \
-	drivers/system/system.c \
-	drivers/tc/tc_interrupt.c \
-	drivers/tc/tc_sam_d_r/tc.c \
-	drivers/tcc/tcc.c \
-	drivers/usb/stack_interface/usb_device_udd.c \
-	drivers/usb/stack_interface/usb_dual.c \
-	drivers/usb/usb_sam_d_r/usb.c \
-	)
+
+ifeq ($(CHIP_FAMILY), samd21)
+LDFLAGS += -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/
+LIBS :=  -lm $(LIBS) # -larm_cortexM0l_math
+else ifeq ($(CHIP_FAMILY), samd51)
+LDFLAGS += -mthumb -mcpu=cortex-m4
+LIBS := -lm $(LIBS)
+endif
+
+SRC_ASF := \
+	gcc/gcc/startup_$(CHIP_FAMILY).c \
+	gcc/system_$(CHIP_FAMILY).c \
+	hal/src/hal_atomic.c \
+	hal/src/hal_delay.c \
+	hal/src/hal_sleep.c \
+	hal/src/hal_timer.c \
+	hal/src/hal_usb_device.c \
+	hpl/core/hpl_init.c \
+	hpl/gclk/hpl_gclk.c \
+	hpl/pm/hpl_pm.c \
+	hpl/rtc/hpl_rtc.c \
+	hpl/systick/hpl_systick.c \
+	hpl/tc/hpl_tc.c \
+	hpl/usb/hpl_usb.c \
+	usb/class/cdc/device/cdcdf_acm.c \
+	usb/device/usbdc.c \
+	usb/usb_protocol.c \
+	hal/utils/src/utils_list.c \
+
+ifeq ($(CHIP_FAMILY), samd21)
+SRC_ASF += \
+	hpl/core/hpl_core_m0plus_base.c \
+	hpl/sysctrl/hpl_sysctrl.c \
+
+else ifeq ($(CHIP_FAMILY), samd51)
+SRC_ASF += \
+	hpl/core/hpl_core_m4.c \
+	hpl/mclk/hpl_mclk.c \
+	hpl/osc32kctrl/hpl_osc32kctrl.c \
+	hpl/oscctrl/hpl_oscctrl.c \
+
+endif
+
+SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
+
+# Skip this source for now.
+#	access_vfs.c \
+	shared_dma.c \
+	$(FLASH_IMPL) \
 
 SRC_C = \
-	access_vfs.c \
-	autoreload.c \
 	background.c \
 	fatfs_port.c \
 	flash_api.c \
-	main.c \
 	mphalport.c \
 	reset.c \
-	samd21_pins.c \
-	shared_dma.c \
-	rgb_led_status.c \
+	$(CHIP_FAMILY)_pins.c \
 	tick.c \
-	$(FLASH_IMPL) \
+	usb.c \
 	bindings/samd/__init__.c \
-	asf/common/services/sleepmgr/samd/sleepmgr.c \
-	asf/common/services/storage/ctrl_access/ctrl_access.c  \
-	asf/common/services/usb/class/cdc/device/udi_cdc.c \
-	asf/common/services/usb/class/composite/device/udi_composite_desc.c \
-	asf/common/services/usb/class/hid/device/udi_hid.c \
-	asf/common/services/usb/class/hid/device/mouse/udi_hid_mouse.c \
-	asf/common/services/usb/class/hid/device/kbd/udi_hid_kbd.c \
-	asf/common/services/usb/class/msc/device/udi_msc.c     \
-	asf/common/services/usb/udc/udc.c \
-	asf/common/utils/interrupt/interrupt_sam_nvic.c \
-	asf/common2/services/delay/sam0/systick_counter.c \
-	asf/sam0/utils/cmsis/samd21/source/gcc/startup_samd21.c \
-	asf/sam0/utils/cmsis/samd21/source/system_samd21.c \
-	asf/sam0/utils/syscalls/gcc/syscalls.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
-	freetouch/adafruit_ptc.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
 	lib/timeutils/timeutils.c \
@@ -231,26 +208,27 @@ SRC_C = \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
-	lib/mp-readline/readline.c
+	lib/mp-readline/readline.c \
+	# freetouch/adafruit_ptc.c \
 
 SRC_COMMON_HAL = \
-	analogio/__init__.c \
+	board/__init__.c \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
+	microcontroller/Processor.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c
+#	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	audiobusio/__init__.c \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	board/__init__.c \
 	busio/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
-	digitalio/__init__.c \
-	digitalio/DigitalInOut.c \
-	microcontroller/__init__.c \
-	microcontroller/Pin.c \
-	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
@@ -293,12 +271,12 @@ SRC_SHARED_MODULE = \
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
-OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 

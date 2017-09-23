@@ -30,7 +30,7 @@
 
 extern volatile uint64_t ticks_ms;
 
-extern struct tc_module ms_timer;
+extern struct timer_descriptor ms_timer;
 
 void tick_init(void);
 

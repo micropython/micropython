@@ -1,7 +1,7 @@
 rm -rf atmel-samd/build*
 rm -rf esp8266/build*
 
-ATMEL_BOARDS="arduino_zero circuitplayground_express feather_m0_basic feather_m0_adalogger feather_m0_express metro_m0_express trinket_m0 gemma_m0"
+ATMEL_BOARDS="arduino_zero circuitplayground_express feather_m0_basic feather_m0_adalogger feather_m0_express metro_m0_express metro_m4_express trinket_m0 gemma_m0"
 ROSIE_SETUPS="rosie-ci"
 
 for board in $ATMEL_BOARDS; do

@@ -25,20 +25,18 @@
  */
 
 #include "boards/board.h"
-#include "asf/sam0/drivers/port/port.h"
 #include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
 void board_init(void)
 {
-    struct port_config pin_conf;
-    port_get_config_defaults(&pin_conf);
+    gpio_set_pin_function(MICROPY_HW_LED_TX, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(MICROPY_HW_LED_TX, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(MICROPY_HW_LED_TX, true);
 
-    pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-    port_pin_set_config(MICROPY_HW_LED_TX, &pin_conf);
-    port_pin_set_output_level(MICROPY_HW_LED_TX, true);
-
-    port_pin_set_config(MICROPY_HW_LED_RX, &pin_conf);
-    port_pin_set_output_level(MICROPY_HW_LED_RX, true);
+    gpio_set_pin_function(MICROPY_HW_LED_RX, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(MICROPY_HW_LED_RX, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(MICROPY_HW_LED_RX, true);
 }
 
 bool board_requests_safe_mode(void) {

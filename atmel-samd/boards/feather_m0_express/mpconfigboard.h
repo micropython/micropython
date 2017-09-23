@@ -1,9 +1,7 @@
-#define USB_REPL
-
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-#define MICROPY_HW_NEOPIXEL (&pin_PA06)
+// #define MICROPY_HW_NEOPIXEL (&pin_PA06)
 
 // Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
 #define SPI_FLASH_BAUDRATE  (8000000)
@@ -20,12 +18,14 @@
 
 #define MICROPY_PORT_A        (PORT_PA06 | PORT_PA08 | PORT_PA09 | PORT_PA14 | PORT_PA13 | PORT_PA14 | PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        ( 0 )
+#define MICROPY_PORT_C        ( 0 )
 
 #include "spi_flash.h"
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
+// #define CIRCUITPY_INTERNAL_NVM_SIZE 256
+#define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 

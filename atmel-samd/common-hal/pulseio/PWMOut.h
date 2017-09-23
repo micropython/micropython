@@ -28,8 +28,6 @@
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "asf/sam0/drivers/tc/tc.h"
-#include "asf/sam0/drivers/tcc/tcc.h"
 
 #include "py/obj.h"
 
