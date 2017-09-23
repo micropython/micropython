@@ -123,6 +123,25 @@ STATIC INLINE void Chip_RGU_TriggerReset(CHIP_RGU_RST_T ResetNumber)
 }
 
 /**
+ * @brief	Reset the entire chip
+ * @return	Nothing
+ */
+STATIC INLINE void Chip_RGU_TriggerResetAll(void)
+{
+    /* GPIO_RST|AES_RST|ETHERNET_RST|SDIO_RST|DMA_RST|
+     * USB1_RST|USB0_RST|LCD_RST|M0_SUB_RST
+     */
+    LPC_RGU->RESET_CTRL[0] = 0x10DF1000;
+
+    /* M0APP_RST|CAN0_RST|CAN1_RST|I2S_RST|SSP1_RST|SSP0_RST|
+     * I2C1_RST|I2C0_RST|UART3_RST|UART1_RST|UART1_RST|UART0_RST|
+     * DAC_RST|ADC1_RST|ADC0_RST|QEI_RST|MOTOCONPWM_RST|SCT_RST|
+     * RITIMER_RST|TIMER3_RST|TIMER2_RST|TIMER1_RST|TIMER0_RST
+     */
+    LPC_RGU->RESET_CTRL[1] = 0x10DF1000;
+}
+
+/**
  * @brief	Checks the reset status of a peripheral
  * @param	ResetNumber	: Peripheral reset number to trigger
  * @return	true if the periperal is still being reset
