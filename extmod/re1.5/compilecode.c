@@ -55,7 +55,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             for (cnt = 0; *re != ']'; re++, cnt++) {
                 if (!*re) return NULL;
                 EMIT(PC++, *re);
-                if (re[1] == '-') {
+                if (re[1] == '-' && re[2] != ']') {
                     re += 2;
                 }
                 EMIT(PC++, *re);
