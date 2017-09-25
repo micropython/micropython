@@ -533,6 +533,11 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_WARNINGS (0)
 #endif
 
+// This macro is used when printing runtime warnings and errors
+#ifndef MICROPY_ERROR_PRINTER
+#define MICROPY_ERROR_PRINTER (&mp_plat_print)
+#endif
+
 // Float and complex implementation
 #define MICROPY_FLOAT_IMPL_NONE (0)
 #define MICROPY_FLOAT_IMPL_FLOAT (1)

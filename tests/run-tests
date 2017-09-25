@@ -103,7 +103,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         os.close(master)
                         os.close(slave)
                 else:
-                    output_mupy = subprocess.check_output(args + [test_file])
+                    output_mupy = subprocess.check_output(args + [test_file], stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
                 return b'CRASH'
 
@@ -124,7 +124,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist)
+                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
 
