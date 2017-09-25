@@ -620,6 +620,12 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     #endif
         config_deadtime(self, args[6].u_int);
     }
+
+    // Enable ARPE so that the auto-reload register is buffered.
+    // This allows to smoothly change the frequency of the timer.
+    self->tim.Instance->CR1 |= TIM_CR1_ARPE;
+
+    // Start the timer running
     if (args[5].u_obj == mp_const_none) {
         HAL_TIM_Base_Start(&self->tim);
     } else {
@@ -1121,10 +1127,6 @@ STATIC mp_obj_t pyb_timer_freq(size_t n_args, const mp_obj_t *args) {
         uint32_t prescaler = compute_prescaler_period_from_freq(self, args[1], &period);
         self->tim.Instance->PSC = prescaler;
         __HAL_TIM_SetAutoreload(&self->tim, period);
-        // Reset the counter to zero. Otherwise, if counter >= period it will
-        // continue counting until it wraps (at either 16 or 32 bits depending
-        // on the timer).
-        __HAL_TIM_SetCounter(&self->tim, 0);
         return mp_const_none;
     }
 }
@@ -1155,10 +1157,6 @@ STATIC mp_obj_t pyb_timer_period(size_t n_args, const mp_obj_t *args) {
     } else {
         // set
         __HAL_TIM_SetAutoreload(&self->tim, mp_obj_get_int(args[1]) & TIMER_CNT_MASK(self));
-        // Reset the counter to zero. Otherwise, if counter >= period it will
-        // continue counting until it wraps (at either 16 or 32 bits depending
-        // on the timer).
-        __HAL_TIM_SetCounter(&self->tim, 0);
         return mp_const_none;
     }
 }
