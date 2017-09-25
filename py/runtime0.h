@@ -42,16 +42,20 @@
 #define MP_NATIVE_TYPE_PTR16 (0x06)
 #define MP_NATIVE_TYPE_PTR32 (0x07)
 
-// Note: the first 7 of these are used in bytecode and changing
-// them requires changing the bytecode version.
 typedef enum {
-    MP_UNARY_OP_BOOL, // __bool__
-    MP_UNARY_OP_LEN, // __len__
-    MP_UNARY_OP_HASH, // __hash__; must return a small int
+    // These ops may appear in the bytecode. Changing this group
+    // in any way requires changing the bytecode version.
     MP_UNARY_OP_POSITIVE,
     MP_UNARY_OP_NEGATIVE,
     MP_UNARY_OP_INVERT,
     MP_UNARY_OP_NOT,
+
+    // Following ops cannot appear in the bytecode
+    MP_UNARY_OP_NON_BYTECODE,
+
+    MP_UNARY_OP_BOOL = MP_UNARY_OP_NON_BYTECODE, // __bool__
+    MP_UNARY_OP_LEN, // __len__
+    MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 } mp_unary_op_t;

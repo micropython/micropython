@@ -113,7 +113,7 @@
 #define MP_BC_LOAD_CONST_SMALL_INT_MULTI (0x70) // + N(64)
 #define MP_BC_LOAD_FAST_MULTI            (0xb0) // + N(16)
 #define MP_BC_STORE_FAST_MULTI           (0xc0) // + N(16)
-#define MP_BC_UNARY_OP_MULTI             (0xd0) // + op(7)
+#define MP_BC_UNARY_OP_MULTI             (0xd0) // + op(<MP_UNARY_OP_NON_BYTECODE)
 #define MP_BC_BINARY_OP_MULTI            (0xd7) // + op(36)
 
 #endif // MICROPY_INCLUDED_PY_BC0_H
