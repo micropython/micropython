@@ -426,7 +426,7 @@ def read_bytecode_qstrs(file, bytecode, ip):
         ip += sz
 
 def read_raw_code(f):
-    code_type = f.read(1)[0]
+    code_type = bytes_cons(f.read(1))[0]
     if code_type != 2: # must be bytecode
         raise Exception('unsupported code type: %u' % code_type)
     bc_len = read_uint(f)
