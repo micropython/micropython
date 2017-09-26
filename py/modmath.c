@@ -65,6 +65,17 @@ STATIC NORETURN void math_error(void) {
     } \
     STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
+#define MATH_FUN_2_ERRCOND(py_name, c_name, error_condition) \
+    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+        mp_float_t x = mp_obj_get_float(x_obj); \
+        mp_float_t y = mp_obj_get_float(y_obj); \
+        if (error_condition) { \
+            math_error(); \
+        } \
+        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(x, y)); \
+    } \
+    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+
 #if MP_NEED_LOG2
 // 1.442695040888963407354163704 is 1/_M_LN2
 #define log2(x) (log(x) * 1.442695040888963407354163704)
@@ -73,7 +84,7 @@ STATIC NORETURN void math_error(void) {
 // sqrt(x): returns the square root of x
 MATH_FUN_1_ERRCOND(sqrt, sqrt, (x < (mp_float_t)0.0))
 // pow(x, y): returns x to the power of y
-MATH_FUN_2(pow, pow)
+MATH_FUN_2_ERRCOND(pow, pow, ((x == 0 && y < 0) || (x < 0 && y != MICROPY_FLOAT_C_FUN(floor)(y))))
 // exp(x)
 MATH_FUN_1(exp, exp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
@@ -97,15 +108,15 @@ MATH_FUN_1(asinh, asinh)
 MATH_FUN_1(atanh, atanh)
 #endif
 // cos(x)
-MATH_FUN_1(cos, cos)
+MATH_FUN_1_ERRCOND(cos, cos, isinf(x))
 // sin(x)
-MATH_FUN_1(sin, sin)
+MATH_FUN_1_ERRCOND(sin, sin, isinf(x))
 // tan(x)
-MATH_FUN_1(tan, tan)
+MATH_FUN_1_ERRCOND(tan, tan, isinf(x))
 // acos(x)
-MATH_FUN_1(acos, acos)
+MATH_FUN_1_ERRCOND(acos, acos, (x < 1 || x > 1))
 // asin(x)
-MATH_FUN_1(asin, asin)
+MATH_FUN_1_ERRCOND(asin, asin, (x < 1 || x > 1))
 // atan(x)
 MATH_FUN_1(atan, atan)
 // atan2(y, x)
@@ -119,7 +130,7 @@ MATH_FUN_1(fabs, fabs)
 // floor(x)
 MATH_FUN_1_TO_INT(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
 // fmod(x, y)
-MATH_FUN_2(fmod, fmod)
+MATH_FUN_2_ERRCOND(fmod, fmod, (isinf(x) || y == 0))
 // isfinite(x)
 MATH_FUN_1_TO_BOOL(isfinite, isfinite)
 // isinf(x)
