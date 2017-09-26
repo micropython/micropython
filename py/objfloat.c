@@ -298,6 +298,13 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
             if (lhs_val == 0 && rhs_val < 0) {
                 goto zero_division_error;
             }
+            if (lhs_val < 0 && rhs_val != MICROPY_FLOAT_C_FUN(floor)(rhs_val)) {
+                #if MICROPY_PY_BUILTINS_COMPLEX
+                return mp_obj_complex_binary_op(MP_BINARY_OP_POWER, lhs_val, 0, rhs_in);
+                #else
+                mp_raise_ValueError("complex values not supported");
+                #endif
+            }
             lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
             break;
         case MP_BINARY_OP_DIVMOD: {

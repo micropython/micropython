@@ -53,6 +53,10 @@ print(type(hash(1j)))
 # float on lhs should delegate to complex
 print(1.2 + 3j)
 
+# negative base and fractional power should create a complex
+ans = (-1) ** 2.3; print("%.5g %.5g" % (ans.real, ans.imag))
+ans = (-1.2) ** -3.4; print("%.5g %.5g" % (ans.real, ans.imag))
+
 # check printing of inf/nan
 print(float('nan') * 1j)
 print(float('inf') * (1 + 1j))
