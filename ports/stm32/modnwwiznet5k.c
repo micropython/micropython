@@ -173,11 +173,7 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
         int sr = getSn_SR((uint8_t)socket->u_param.fileno);
         if (sr == SOCK_ESTABLISHED) {
             socket2->u_param = socket->u_param;
-            // TODO need to populate this with the correct values
-            ip[0] = 0;
-            ip[1] = 0;
-            ip[2] = 0;
-            ip[3] = 0;
+            getSn_DIPR((uint8_t)socket2->u_param.fileno, ip);
             *port = getSn_PORT(socket2->u_param.fileno);
 
             // WIZnet turns the listening socket into the client socket, so we
