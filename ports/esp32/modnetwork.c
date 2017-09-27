@@ -7,6 +7,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016, 2017 Nick Moore @mnemote
+ * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
  *
  * Based on esp8266/modnetwork.c which is Copyright (c) 2015 Paul Sokolovsky
  * And the ESP IDF example code which is Public Domain / CC0
@@ -47,6 +48,8 @@
 #include "esp_log.h"
 #include "lwip/dns.h"
 #include "tcpip_adapter.h"
+
+#include "modnetwork.h"
 
 #define MODNETWORK_INCLUDE_CONSTANTS (1)
 
@@ -122,7 +125,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         ESP_LOGI("wifi", "STA_START");
         break;
     case SYSTEM_EVENT_STA_GOT_IP:
-        ESP_LOGI("wifi", "GOT_IP");
+        ESP_LOGI("network", "GOT_IP");
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
@@ -161,7 +164,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         break;
     }
     default:
-        ESP_LOGI("wifi", "event %d", event->event_id);
+        ESP_LOGI("network", "event %d", event->event_id);
         break;
     }
     return ESP_OK;
@@ -182,6 +185,19 @@ STATIC void require_if(mp_obj_t wlan_if, int if_no) {
 }
 
 STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+    static int initialized = 0;
+    if (!initialized) {
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        ESP_LOGD("modnetwork", "Initializing WiFi");
+        ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
+        ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+        ESP_LOGD("modnetwork", "Initialized");
+        ESP_EXCEPTIONS( esp_wifi_set_mode(0) );
+        ESP_EXCEPTIONS( esp_wifi_start() );
+        ESP_LOGD("modnetwork", "Started");
+        initialized = 1;
+    }
+
     int idx = (n_args > 0) ? mp_obj_get_int(args[0]) : WIFI_IF_STA;
     if (idx == WIFI_IF_STA) {
         return MP_OBJ_FROM_PTR(&wlan_sta_obj);
@@ -201,14 +217,6 @@ STATIC mp_obj_t esp_initialize() {
         ESP_LOGD("modnetwork", "Initializing Event Loop");
         ESP_EXCEPTIONS( esp_event_loop_init(event_handler, NULL) );
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
-        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-        ESP_LOGD("modnetwork", "Initializing WiFi");
-        ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
-        ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-        ESP_LOGD("modnetwork", "Initialized");
-        ESP_EXCEPTIONS( esp_wifi_set_mode(0) );
-        ESP_EXCEPTIONS( esp_wifi_start() );
-        ESP_LOGD("modnetwork", "Started");
         initialized = 1;
     }
     return mp_const_none;
@@ -358,11 +366,11 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
         // To set a static IP we have to disable DHCP first
-        if (self->if_id == WIFI_IF_STA) {
-            esp_err_t e = tcpip_adapter_dhcpc_stop(WIFI_IF_STA);
+        if (self->if_id == WIFI_IF_STA || self->if_id == ESP_IF_ETH) {
+            esp_err_t e = tcpip_adapter_dhcpc_stop(self->if_id);
             if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
-            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_STA, &info));
-            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_STA, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
+            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(self->if_id, &info));
+            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
         } else if (self->if_id == WIFI_IF_AP) {
             esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
             if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
@@ -374,7 +382,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
@@ -533,6 +541,7 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
     { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&esp_initialize_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_wlan_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LAN), (mp_obj_t)&get_lan_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
@@ -560,6 +569,11 @@ STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
         MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_WPA2_PSK) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_MAX),
         MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_MAX) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_LAN8720),
+        MP_OBJ_NEW_SMALL_INT(PHY_LAN8720) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_TLK110),
+        MP_OBJ_NEW_SMALL_INT(PHY_TLK110) },
 #endif
 };
 

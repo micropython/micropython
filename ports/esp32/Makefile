@@ -136,6 +136,7 @@ SRC_C = \
 	machine_uart.c \
 	modmachine.c \
 	modnetwork.c \
+	network_lan.c \
 	modsocket.c \
 	modesp.c \
 	moduhashlib.c \
@@ -267,6 +268,9 @@ ESPIDF_CXX_O = $(addprefix $(ESPCOMP)/cxx/,\
 ESPIDF_ETHERNET_O = $(addprefix $(ESPCOMP)/ethernet/,\
 	emac_dev.o \
 	emac_main.o \
+	eth_phy/phy_tlk110.o \
+	eth_phy/phy_lan8720.o \
+	eth_phy/phy_common.o \
 	)
 
 $(BUILD)/$(ESPCOMP)/expat/%.o: CFLAGS += -Wno-unused-function
