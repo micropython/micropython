@@ -39,6 +39,7 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 
 #include "lib/utils/interrupt_char.h"
+#include "reset.h"
 
 #include "supervisor/shared/autoreload.h"
 
@@ -153,22 +154,25 @@ static bool usb_device_cb_bulk_in(const uint8_t ep, const enum usb_xfer_code rc,
     return false;
 }
 
+volatile bool reset_on_disconnect = false;
+
 static bool usb_device_cb_state_c(usb_cdc_control_signal_t state)
 {
-    //uint8_t buf[64];
     if (state.rs232.DTR) {
-        // Start Rx and throw away packet.
-        //cdcdf_acm_read((uint8_t *)buf, 64);
+    } else if (!state.rs232.DTR && reset_on_disconnect) {
+        reset_to_bootloader();
     }
 
     /* No error. */
     return false;
 }
 
-// static void usbd_sof_event(void)
-// {
-//     // Triggers button state checks and HID response.
-// }
+static bool usb_device_cb_line_coding_c(const usb_cdc_line_coding_t* coding)
+{
+    reset_on_disconnect = coding->dwDTERate == 1200;
+    /* Ok to change. */
+    return true;
+}
 
 void init_usb(void) {
     init_hardware();
@@ -195,6 +199,7 @@ static inline bool cdc_enabled(void) {
     cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)usb_device_cb_bulk_out);
     cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)usb_device_cb_bulk_in);
     cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)usb_device_cb_state_c);
+    cdcdf_acm_register_callback(CDCDF_ACM_CB_LINE_CODING_C, (FUNC_PTR)usb_device_cb_line_coding_c);
     mp_cdc_enabled = true;
 
     // Ignored read.

@@ -22,43 +22,6 @@
 
 extern struct usart_module usart_instance;
 
-// Read by main to know when USB is connected.
-volatile bool mp_msc_enabled = false;
-bool mp_msc_enable(void) {
-    mp_msc_enabled = true;
-    return true;
-}
-
-void mp_msc_disable(void) {
-    mp_msc_enabled = false;
-}
-
-bool mp_cdc_enable(uint8_t port) {
-    mp_cdc_enabled = false;
-    return true;
-}
-
-void mp_cdc_disable(uint8_t port) {
-    mp_cdc_enabled = false;
-}
-
-volatile bool reset_on_disconnect = false;
-
-void usb_dtr_notify(uint8_t port, bool set) {
-    mp_cdc_enabled = set;
-    if (!set && reset_on_disconnect) {
-        reset_to_bootloader();
-    }
-}
-
-void usb_rts_notify(uint8_t port, bool set) {
-    return;
-}
-
-// void usb_coding_notify(uint8_t port, usb_cdc_line_coding_t* coding) {
-//     reset_on_disconnect = coding->dwDTERate == 1200;
-// }
-
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         #ifdef MICROPY_VM_HOOK_LOOP
