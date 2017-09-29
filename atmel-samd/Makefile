@@ -213,11 +213,12 @@ SRC_C = \
 
 SRC_COMMON_HAL = \
 	board/__init__.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
-	digitalio/__init__.c \
-	digitalio/DigitalInOut.c
+	time/__init__.c
 #	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
@@ -238,7 +239,6 @@ SRC_COMMON_HAL = \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
 	storage/__init__.c \
-	time/__init__.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
 	usb_hid/__init__.c \

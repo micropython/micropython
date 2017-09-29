@@ -18,6 +18,7 @@
 #include "mpconfigboard.h"
 #include "mphalport.h"
 #include "reset.h"
+#include "tick.h"
 #include "usb.h"
 
 extern struct usart_module usart_instance;
@@ -64,7 +65,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
 }
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    delay_us(delay);
+    tick_delay(delay);
 }
 
 void mp_hal_disable_all_interrupts(void) {

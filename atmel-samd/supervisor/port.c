@@ -89,8 +89,6 @@ safe_mode_t port_init(void) {
 
     init_mcu();
 
-    delay_init(SysTick);
-
     board_init();
 
     // Configure millisecond timer initialization.

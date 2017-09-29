@@ -63,6 +63,7 @@
 
 #include "common-hal/microcontroller/Processor.h"
 
+#include "peripheral_clk_config.h"
 
 // #define ADC_TEMP_SAMPLE_LENGTH    4
 // #define INT1V_VALUE_FLOAT         1.0
@@ -226,6 +227,6 @@ float common_hal_mcu_processor_get_temperature(void) {
 
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    return 0;
-    //return system_cpu_clock_get_hz();
+    // TODO(tannewt): Determine this dynamically.
+    return CONF_CPU_FREQUENCY;
 }

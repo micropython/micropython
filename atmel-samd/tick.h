@@ -34,4 +34,6 @@ extern struct timer_descriptor ms_timer;
 
 void tick_init(void);
 
+void tick_delay(uint32_t us);
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_TICK_H
