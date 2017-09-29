@@ -1,0 +1,7 @@
+#frozen test is courtesy od Adafruit CircuitPyhton
+../modules2/frozentest2.py
+
+# 1
+../modules2/from_list1.py
+    #2
+../modules2/from_list2.py

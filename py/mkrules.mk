@@ -106,20 +106,20 @@ ifneq ($(FROZEN_MPY_DIR),)
 $(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
-# make a list of all the .py files that need compiling and freezing
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-
 # to build .mpy files from .py files
-$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py $(MPY_CROSS)
-	@$(ECHO) "MPY $<"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MPY_CROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
+# find all the .py files that need compiling for freezing and create a make file for them.
+# make a list of all the .mpy files that need freezing.
+FROZEN_MPY_MPY_FILES := $(shell $(PYTHON) $(MPY_FIND) $(BUILD) $(FROZEN_MPY_DIR))
 
+# run the makefile to compile .py > .mpy
+include $(BUILD)/frozen.mk
+
+ifneq ($(FROZEN_MPY_MPY_FILES),)
 # to build frozen_mpy.c from all .mpy files
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
 	@$(ECHO) "Creating $@"
 	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
+endif
 endif
 
 ifneq ($(PROG),)

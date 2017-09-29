@@ -67,6 +67,7 @@ else
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 endif
 MPY_TOOL = $(TOP)/tools/mpy-tool.py
+MPY_FIND = $(TOP)/tools/find-modules.py
 
 all:
 .PHONY: all
