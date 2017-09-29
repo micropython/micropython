@@ -148,6 +148,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
     i2s_disable(&self->i2s_instance);
     i2s_reset(&self->i2s_instance);
+    reset_pin(self->clock_pin->pin);
+    reset_pin(self->data_pin->pin);
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {
