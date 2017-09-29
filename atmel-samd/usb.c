@@ -28,6 +28,10 @@
 
 #include <stdint.h>
 
+// We must include this early because it sets values used in the ASF4 includes
+// below.
+#include "py/mpconfig.h"
+
 #include "hal/include/hal_gpio.h"
 #include "usb/class/cdc/device/cdcdf_acm.h"
 // #include "hiddf_mouse.h"
