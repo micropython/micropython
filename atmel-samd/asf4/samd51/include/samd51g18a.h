@@ -3,22 +3,23 @@
  *
  * \brief Header file for SAMD51G18A
  *
- * Copyright (c) 2017 Atmel Corporation,
- *                    a wholly owned subsidiary of Microchip Technology Inc.
+ * Copyright (c) 2017 Microchip Technology Inc.
  *
  * \asf_license_start
  *
  * \page License
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the Licence at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -510,7 +511,7 @@ void SDHC0_Handler               ( void );
  * \brief Configuration of the Cortex-M4 Processor and Core Peripherals
  */
 
-//#define LITTLE_ENDIAN          1        
+//#define LITTLE_ENDIAN          1
 #define __CM4_REV              1         /*!< Core revision r0p1 */
 #define __DEBUG_LVL            3         /*!< Full debug plus DWT data matching */
 #define __FPU_PRESENT          1         /*!< FPU present or not */
@@ -738,6 +739,7 @@ void SDHC0_Handler               ( void );
 #define NVMCTRL_SW5                   (0x008000D0) /**< \brief (NVMCTRL) SW5 Base Address */
 #define NVMCTRL_SW6                   (0x008000E0) /**< \brief (NVMCTRL) SW6 Base Address */
 #define NVMCTRL_SW7                   (0x008000F0) /**< \brief (NVMCTRL) SW7 Base Address */
+#define NVMCTRL_TEMP_LOG              (0x00800100) /**< \brief (NVMCTRL) TEMP_LOG Base Address */
 #define NVMCTRL_TEMP_LOG_W0           (0x00800100) /**< \brief (NVMCTRL) TEMP_LOG_W0 Base Address */
 #define NVMCTRL_TEMP_LOG_W1           (0x00800110) /**< \brief (NVMCTRL) TEMP_LOG_W1 Base Address */
 #define NVMCTRL_TEMP_LOG_W2           (0x00800120) /**< \brief (NVMCTRL) TEMP_LOG_W2 Base Address */
@@ -863,6 +865,7 @@ void SDHC0_Handler               ( void );
 #define NVMCTRL_SW5                   (0x008000D0UL) /**< \brief (NVMCTRL) SW5 Base Address */
 #define NVMCTRL_SW6                   (0x008000E0UL) /**< \brief (NVMCTRL) SW6 Base Address */
 #define NVMCTRL_SW7                   (0x008000F0UL) /**< \brief (NVMCTRL) SW7 Base Address */
+#define NVMCTRL_TEMP_LOG              (0x00800100UL) /**< \brief (NVMCTRL) TEMP_LOG Base Address */
 #define NVMCTRL_TEMP_LOG_W0           (0x00800100UL) /**< \brief (NVMCTRL) TEMP_LOG_W0 Base Address */
 #define NVMCTRL_TEMP_LOG_W1           (0x00800110UL) /**< \brief (NVMCTRL) TEMP_LOG_W1 Base Address */
 #define NVMCTRL_TEMP_LOG_W2           (0x00800120UL) /**< \brief (NVMCTRL) TEMP_LOG_W2 Base Address */
@@ -1017,6 +1020,7 @@ void SDHC0_Handler               ( void );
 #define PPB_ADDR              _UL_(0xE0000000) /**< PPB base address */
 
 #define DSU_DID_RESETVALUE    _UL_(0x60060008)
+#define ADC0_TOUCH_LINES_NUM  22
 #define PORT_GROUPS           2
 
 /* ************************************************************************** */

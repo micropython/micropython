@@ -65,6 +65,15 @@ middlewares:
   USB_DEVICE_COMPOSITE_0:
     user_label: USB_DEVICE_COMPOSITE_0
     configuration:
+      conf_usb_composite_cdc_echo_demo: false
+      conf_usb_composite_hid_keyboard_demo: false
+      conf_usb_composite_hid_mouse_demo: false
+      conf_usb_msc_lun0_capacity: 22
+      conf_usb_msc_lun0_enable: true
+      conf_usb_msc_lun0_rmb: true
+      conf_usb_msc_lun1_enable: false
+      conf_usb_msc_lun1_rmb: true
+      conf_usb_msc_lun_buf_sectors: 4
       usb_composite_bcddevice: 256
       usb_composite_bcdusb: USB 2.0 version
       usb_composite_bconfigval: 1
@@ -98,6 +107,11 @@ middlewares:
       usb_composite_imanufact: 0
       usb_composite_iproduct: 0
       usb_composite_iserialnum: 0
+      usb_composite_msc_bulk_maxpksz: 64 bytes
+      usb_composite_msc_bulkin_epaddr: EndpointAddress = 0x86
+      usb_composite_msc_bulkout_epaddr: EndpointAddress = 0x04
+      usb_composite_msc_demo_en: true
+      usb_composite_msc_support: false
     definition: Atmel:USB:0.0.1::USB_Device_Composite
     functionality: USB_Device_COMPOSITE
     api: USB:Device:COMPOSITE
@@ -1264,6 +1278,19 @@ drivers:
         - name: CPU
           input: CPU
         configuration: {}
+  FLASH_0:
+    user_label: FLASH_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::NVMCTRL::driver_config_definition::Flash::HAL:Driver:FLASH
+    functionality: Flash
+    api: HAL:Driver:FLASH
+    configuration:
+      nvm_arch_cache0: false
+      nvm_arch_cache1: false
+      nvm_arch_sleepprm: Wake On Access
+    optional_signals: []
+    variant: null
+    clocks:
+      domain_group: null
   OSC32KCTRL:
     user_label: OSC32KCTRL
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::OSC32KCTRL::driver_config_definition::OSC32KCTRL::HAL:HPL:OSC32KCTRL
@@ -1454,42 +1481,6 @@ drivers:
         configuration:
           core_gclk_selection: Generic clock generator 0
           slow_gclk_selection: Generic clock generator 3
-  I2C_0:
-    user_label: I2C_0
-    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::SERCOM0::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Sync
-    functionality: I2C
-    api: HAL:Driver:I2C_Master_Sync
-    configuration:
-      i2c_master_advanced: false
-      i2c_master_arch_dbgstop: Keep running
-      i2c_master_arch_inactout: Disabled
-      i2c_master_arch_lowtout: false
-      i2c_master_arch_mexttoen: false
-      i2c_master_arch_runstdby: false
-      i2c_master_arch_sdahold: 300-600ns hold time
-      i2c_master_arch_sexttoen: false
-      i2c_master_arch_trise: 215
-      i2c_master_baud_rate: 100000
-    optional_signals: []
-    variant:
-      specification: SDA=0, SCL=1
-      required_signals:
-      - name: SERCOM0/PAD/0
-        pad: PA08
-        label: SDA
-      - name: SERCOM0/PAD/1
-        pad: PA09
-        label: SCL
-    clocks:
-      domain_group:
-        nodes:
-        - name: Core
-          input: Generic clock generator 0
-        - name: Slow
-          input: Generic clock generator 3
-        configuration:
-          core_gclk_selection: Generic clock generator 0
-          slow_gclk_selection: Generic clock generator 3
   USART_0:
     user_label: USART_0
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::SERCOM1::driver_config_definition::UART::HAL:Driver:USART.Sync
@@ -1524,6 +1515,42 @@ drivers:
       - name: SERCOM1/PAD/1
         pad: PA01
         label: RX
+    clocks:
+      domain_group:
+        nodes:
+        - name: Core
+          input: Generic clock generator 0
+        - name: Slow
+          input: Generic clock generator 3
+        configuration:
+          core_gclk_selection: Generic clock generator 0
+          slow_gclk_selection: Generic clock generator 3
+  I2C_0:
+    user_label: I2C_0
+    definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::SERCOM2::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Sync
+    functionality: I2C
+    api: HAL:Driver:I2C_Master_Sync
+    configuration:
+      i2c_master_advanced: false
+      i2c_master_arch_dbgstop: Keep running
+      i2c_master_arch_inactout: Disabled
+      i2c_master_arch_lowtout: false
+      i2c_master_arch_mexttoen: false
+      i2c_master_arch_runstdby: false
+      i2c_master_arch_sdahold: 300-600ns hold time
+      i2c_master_arch_sexttoen: false
+      i2c_master_arch_trise: 215
+      i2c_master_baud_rate: 100000
+    optional_signals: []
+    variant:
+      specification: SDA=0, SCL=1
+      required_signals:
+      - name: SERCOM2/PAD/0
+        pad: PA09
+        label: SDA
+      - name: SERCOM2/PAD/1
+        pad: PA08
+        label: SCL
     clocks:
       domain_group:
         nodes:
@@ -1665,13 +1692,13 @@ pads:
   PA08:
     name: PA08
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::pad::PA08
-    mode: Peripheral IO
+    mode: I2C
     user_label: PA08
     configuration: null
   PA09:
     name: PA09
     definition: Atmel:SAMD51_Drivers:0.0.1::SAMD51G19A-MF::pad::PA09
-    mode: Peripheral IO
+    mode: I2C
     user_label: PA09
     configuration: null
   PA24:

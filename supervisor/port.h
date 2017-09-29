@@ -50,7 +50,11 @@ extern uint32_t _estack;
 extern uint32_t _ebss;
 
 safe_mode_t port_init(void);
+
+// Reset the microcontroller.
 void reset_port(void);
+
+// Reset the rest of the board.
 void reset_board(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

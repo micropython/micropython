@@ -67,14 +67,14 @@ extern "C" {
  * The list of possible reset reasons.
  */
 enum reset_reason {
-
-	RESET_REASON_POR     = 1,
-	RESET_REASON_BODCORE = 2,
-	RESET_REASON_BODVDD  = 4,
-	RESET_REASON_EXT     = 8,
-	RESET_REASON_WDT     = 16,
-	RESET_REASON_SYST    = 32,
-	RESET_REASON_BACKUP  = 64
+	RESET_REASON_POR    = 1,
+	RESET_REASON_BOD12  = 2,
+	RESET_REASON_BOD33  = 4,
+	RESET_REASON_NVM    = 8,
+	RESET_REASON_EXT    = 16,
+	RESET_REASON_WDT    = 32,
+	RESET_REASON_SYST   = 64,
+	RESET_REASON_BACKUP = 128
 };
 
 /**

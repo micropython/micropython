@@ -65,7 +65,11 @@ static int32_t i2c_m_sync_read(struct io_descriptor *io, uint8_t *buf, const uin
 
 	ret = _i2c_m_sync_transfer(&i2c->device, &msg);
 
-	return (((int32_t)n) > i2c->device.service.msg.len) ? (((int32_t)n) - i2c->device.service.msg.len) : ret;
+	if (ret) {
+		return ret;
+	}
+
+	return n;
 }
 
 /**
@@ -84,7 +88,11 @@ static int32_t i2c_m_sync_write(struct io_descriptor *io, const uint8_t *buf, co
 
 	ret = _i2c_m_sync_transfer(&i2c->device, &msg);
 
-	return (((int32_t)n) > i2c->device.service.msg.len) ? (((int32_t)n) - i2c->device.service.msg.len) : ret;
+	if (ret) {
+		return ret;
+	}
+
+	return n;
 }
 
 /**

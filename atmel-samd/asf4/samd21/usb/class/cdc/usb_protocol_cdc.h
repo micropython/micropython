@@ -3,7 +3,7 @@
  *
  * \brief USB Communication Device Class (CDC) protocol definitions
  *
- * Copyright (c) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (c) 2015 - 2017 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -275,8 +275,8 @@ enum cdc_parity {
 	CDC_PAR_NONE  = 0, //!< No parity
 	CDC_PAR_ODD   = 1, //!< Odd parity
 	CDC_PAR_EVEN  = 2, //!< Even parity
-	CDC_PAR_MARK  = 3, //!< Parity forced to 0 (space)
-	CDC_PAR_SPACE = 4  //!< Parity forced to 1 (mark)
+	CDC_PAR_MARK  = 3, //!< Parity forced to 1 (mark)
+	CDC_PAR_SPACE = 4  //!< Parity forced to 0 (space)
 };
 //@}
 
@@ -403,5 +403,34 @@ typedef struct usb_cdc_notify_serial_state {
 COMPILER_PACK_RESET()
 
 //! @}
+
+/**
+ * \brief Fill a CDC SetLineCoding request
+ * \param[out] req   Pointer to the request to fill
+ * \param[in]  iface Interface Number
+ */
+static inline void usb_fill_SetLineCoding_req(struct usb_req *req, uint8_t iface)
+{
+	req->bmRequestType = 0x21;
+	req->bRequest      = USB_REQ_CDC_SET_LINE_CODING;
+	req->wValue        = 0;
+	req->wIndex        = iface;
+	req->wLength       = sizeof(usb_cdc_line_coding_t);
+}
+
+/**
+ * \brief Fill a CDC SetControlLineState request
+ * \param[out] req   Pointer to the request to fill
+ * \param[in]  iface Interface Number
+ * \param[in]  ctrl  Control Signal Bitmap
+ */
+static inline void usb_fill_SetControlLineState_req(struct usb_req *req, uint8_t iface, uint16_t ctrl)
+{
+	req->bmRequestType = 0x21;
+	req->bRequest      = USB_REQ_CDC_SET_CONTROL_LINE_STATE;
+	req->wValue        = ctrl;
+	req->wIndex        = iface;
+	req->wLength       = 0;
+}
 
 #endif // _USB_PROTOCOL_CDC_H_

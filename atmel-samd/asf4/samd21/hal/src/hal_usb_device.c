@@ -460,7 +460,7 @@ int32_t usb_d_ep_transfer(const struct usb_d_transfer *xfer)
 		case USB_EP_S_ERROR:
 			return -USB_ERROR;
 		case USB_EP_S_DISABLED:
-			return -USB_ERR_FUNC + 1;
+			return -USB_ERR_FUNC;
 		default: /* USB_EP_S_X_xxxx  */
 			return USB_BUSY;
 		}
@@ -546,7 +546,7 @@ static inline int32_t _usb_d_ep_halt_clr(const uint8_t ep)
 	if (ep_index < 0) {
 		return -USB_ERR_PARAM;
 	}
-	if (ept->xfer.hdr.state == USB_EP_S_HALTED) {
+	if (_usb_d_dev_ep_stall(ep, USB_EP_STALL_GET)) {
 		rc = _usb_d_dev_ep_stall(ep, USB_EP_STALL_CLR);
 		if (rc < 0) {
 			return rc;

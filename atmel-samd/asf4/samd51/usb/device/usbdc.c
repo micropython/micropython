@@ -262,6 +262,7 @@ static bool usbdc_clear_ftr_req(const uint8_t ep, const struct usb_req *req)
 			return false;
 		}
 		usb_d_ep_halt(req->wIndex & 0xFF, USB_EP_HALT_CLR);
+		usbdc_xfer(ep, NULL, 0, true);
 		return true;
 	default:
 		return false;
@@ -285,6 +286,7 @@ static bool usbdc_set_ftr_req(const uint8_t ep, const struct usb_req *req)
 			return false;
 		}
 		usb_d_ep_halt(req->wIndex & 0xFF, USB_EP_HALT_SET);
+		usbdc_xfer(ep, NULL, 0, true);
 		return true;
 	default:
 		return false;

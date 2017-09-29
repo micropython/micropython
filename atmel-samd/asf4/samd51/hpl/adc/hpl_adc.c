@@ -223,7 +223,6 @@ int32_t _adc_sync_init(struct _adc_sync_device *const device, void *const hw)
 int32_t _adc_async_init(struct _adc_async_device *const device, void *const hw)
 {
 	int32_t init_status;
-	uint8_t i = _adc_get_regs((uint32_t)hw);
 
 	ASSERT(device);
 

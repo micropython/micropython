@@ -1,0 +1,12 @@
+--- samd21_vanilla/hal/src/hal_timer.c	2017-09-28 12:05:22.000000000 -0700
++++ samd21/hal/src/hal_timer.c	2017-09-19 13:07:29.000000000 -0700
+@@ -236,7 +236,10 @@
+  */
+ static void timer_process_counted(struct _timer_device *device)
+ {
++	#pragma GCC diagnostic push
++	#pragma GCC diagnostic ignored "-Wcast-align"
+ 	struct timer_descriptor *timer = CONTAINER_OF(device, struct timer_descriptor, device);
++        #pragma GCC diagnostic pop
+ 	struct timer_task *      it    = (struct timer_task *)list_get_head(&timer->tasks);
+ 	uint32_t                 time  = ++timer->time;

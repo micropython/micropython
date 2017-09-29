@@ -27,12 +27,14 @@ extern "C" {
 
 #include <hal_evsys.h>
 
+#include <hal_flash.h>
+
 #include <hal_timer.h>
 #include <hal_spi_m_sync.h>
 
-#include <hal_i2c_m_sync.h>
-
 #include <hal_usart_sync.h>
+
+#include <hal_i2c_m_sync.h>
 
 #include <hal_delay.h>
 #include <hal_pwm.h>
@@ -44,13 +46,15 @@ extern "C" {
 
 extern struct adc_sync_descriptor ADC_0;
 
-extern struct dac_sync_descriptor   DAC_0;
+extern struct dac_sync_descriptor DAC_0;
+
+extern struct flash_descriptor      FLASH_0;
 extern struct timer_descriptor      TIMER_0;
 extern struct spi_m_sync_descriptor SPI_0;
 
-extern struct i2c_m_sync_desc I2C_0;
-
 extern struct usart_sync_descriptor USART_0;
+
+extern struct i2c_m_sync_desc I2C_0;
 
 extern struct pwm_descriptor PWM_0;
 
@@ -64,17 +68,20 @@ void DAC_0_PORT_init(void);
 void DAC_0_CLOCK_init(void);
 void DAC_0_init(void);
 
+void FLASH_0_init(void);
+void FLASH_0_CLOCK_init(void);
+
 void SPI_0_PORT_init(void);
 void SPI_0_CLOCK_init(void);
 void SPI_0_init(void);
 
-void I2C_0_CLOCK_init(void);
-void I2C_0_init(void);
-void I2C_0_PORT_init(void);
-
 void USART_0_PORT_init(void);
 void USART_0_CLOCK_init(void);
 void USART_0_init(void);
+
+void I2C_0_CLOCK_init(void);
+void I2C_0_init(void);
+void I2C_0_PORT_init(void);
 
 void delay_driver_init(void);
 

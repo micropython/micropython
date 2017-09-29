@@ -3,7 +3,7 @@
  *
  * \brief USB Device Stack Composite Class Descriptor Setting.
  *
- * Copyright (C) 2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2015 - 2017 Atmel Corporation. All rights reserved.
  *
  * \page License
  *
@@ -127,12 +127,29 @@
 #define CONF_HID_GENERIC_IFC_DESC
 #endif
 
+#if CONF_USB_COMPOSITE_MSC_EN == 1
+#define CONF_MSC_IFC_LEN 23 /* (9 + 7 * 2) */
+#define CONF_MSC_IFC_NUM 1
+#define CONF_USB_COMPOSITE_MSC_BIFCNUM (CONF_USB_COMPOSITE_HID_GENERIC_BIFCNUM + 1)
+#define CONF_MSC_IFC_DESC                                                                                              \
+	USB_IFACE_DESC_BYTES(CONF_USB_COMPOSITE_MSC_BIFCNUM, 0x00, 0x02, 0x08, 0x06, 0x50, 0x00)                           \
+	, USB_ENDP_DESC_BYTES(CONF_USB_COMPOSITE_MSC_BULKIN_EPADDR, 0x02, CONF_USB_COMPOSITE_MSC_BULK_MAXPKSZ, 0),         \
+	    USB_ENDP_DESC_BYTES(CONF_USB_COMPOSITE_MSC_BULKOUT_EPADDR, 0x02, CONF_USB_COMPOSITE_MSC_BULK_MAXPKSZ, 0),
+#else
+#define CONF_MSC_IFC_LEN 0
+#define CONF_MSC_IFC_NUM 0
+#define CONF_USB_COMPOSITE_MSC_BIFCNUM CONF_USB_COMPOSITE_HID_GENERIC_BIFCNUM
+#define CONF_MSC_IFC_DESC
+#endif
+
 #define CONF_USB_COMPOSITE_TOTAL_LEN                                                                                   \
 	(USB_CONFIG_DESC_LEN + CONF_CDC_ACM_IFC_LEN + CONF_HID_MOUSE_IFC_LEN + CONF_HID_KEYBOARD_IFC_LEN                   \
-	 + CONF_HID_GENERIC_IFC_LEN)
+	 + CONF_HID_GENERIC_IFC_LEN                                                                                        \
+	 + CONF_MSC_IFC_LEN)
 
 #define CONF_USB_COMPOSITE_IFC_NUM                                                                                     \
-	(CONF_CDC_ACM_IFC_NUM + CONF_HID_MOUSE_IFC_NUM + CONF_HID_KEYBOARD_IFC_NUM + CONF_HID_GENERIC_IFC_NUM)
+	(CONF_CDC_ACM_IFC_NUM + CONF_HID_MOUSE_IFC_NUM + CONF_HID_KEYBOARD_IFC_NUM + CONF_HID_GENERIC_IFC_NUM              \
+	 + CONF_MSC_IFC_NUM)
 
 #define COMPOSITE_DEV_DESC                                                                                             \
 	USB_DEV_DESC_BYTES(CONF_USB_COMPOSITE_BCDUSB,                                                                      \
@@ -160,7 +177,8 @@
 	CONF_CDC_ACM_IFC_DESC                                                                                              \
 	CONF_HID_MOUSE_IFC_DESC                                                                                            \
 	CONF_HID_KEYBOARD_IFC_DESC                                                                                         \
-	CONF_HID_GENERIC_IFC_DESC
+	CONF_HID_GENERIC_IFC_DESC                                                                                          \
+	CONF_MSC_IFC_DESC
 
 /** USB Device descriptors and configuration descriptors */
 #define COMPOSITE_DESCES_LS_FS                                                                                         \

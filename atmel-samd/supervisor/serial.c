@@ -45,6 +45,8 @@
 //     }
 // }
 
+// SAMD51 addresses: 0x008061FC, 0x00806010, 0x00806014, 0x00806018
+
 void serial_init(void) {
     init_usb();
 }

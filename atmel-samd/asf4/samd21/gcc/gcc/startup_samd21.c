@@ -49,8 +49,8 @@ void __libc_init_array(void);
 void Dummy_Handler(void);
 
 /* Cortex-M0+ core handlers */
-void NMI_Handler(void) __attribute__((weak, alias("Guilty_Handler")));
-void HardFault_Handler(void) __attribute__((weak, alias("Guilty_Handler")));
+void NMI_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
+void HardFault_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 void SVC_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 void PendSV_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 void SysTick_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
@@ -64,7 +64,7 @@ void EIC_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 void NVMCTRL_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 void DMAC_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 #ifdef ID_USB
-void USB_Handler(void) __attribute__((weak, alias("Guilty_Handler")));
+void USB_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 #endif
 void EVSYS_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
 void SERCOM0_Handler(void) __attribute__((weak, alias("Dummy_Handler")));
@@ -234,7 +234,7 @@ void Reset_Handler(void)
 	NVMCTRL->CTRLB.bit.MANW = 1;
 
 	/* Initialize the C library */
-	// __libc_init_array();
+	//__libc_init_array();
 
 	/* Branch to main function */
 	main();
@@ -247,19 +247,8 @@ void Reset_Handler(void)
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
-__attribute__((used)) void Dummy_Handler(void)
+void Dummy_Handler(void)
 {
 	while (1) {
-        asm("");
-	}
-}
-
-/**
- * \brief Default interrupt handler for unused IRQs.
- */
-void Guilty_Handler(void)
-{
-	while (1) {
-        asm("");
 	}
 }

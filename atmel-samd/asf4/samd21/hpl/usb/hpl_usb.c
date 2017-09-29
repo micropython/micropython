@@ -1262,7 +1262,7 @@ static void _usb_d_dev_handle_stall(struct _usb_d_dev_ep *ept, const uint8_t ban
 	uint8_t epn = USB_EP_GET_N(ept->ep);
 	/* Clear interrupt enable. Leave status there for status check. */
 	_usbd_ep_int_stall_en(epn, bank_n, false);
-	_usb_d_dev_trans_done(ept, USB_TRANS_STALL);
+	dev_inst.ep_callbacks.done(ept->ep, USB_TRANS_STALL, ept->trans_count);
 }
 
 /**
@@ -1402,7 +1402,7 @@ static inline void _usb_d_dev_handle_eps(uint32_t epint, struct _usb_d_dev_ep *e
 	mask  = hw->DEVICE.DeviceEndpoint[epn].EPINTENSET.reg;
 	flags &= mask;
 	if (flags) {
-		if (!_usb_d_dev_ep_is_busy(ept)) {
+		if ((ept->flags.bits.eptype == 0x1) && !_usb_d_dev_ep_is_busy(ept)) {
 			_usb_d_dev_trans_setup_isr(ept, flags);
 		} else if (_usb_d_dev_ep_is_in(ept)) {
 			_usb_d_dev_trans_in_isr(ept, flags);

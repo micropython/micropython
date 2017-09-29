@@ -2130,8 +2130,8 @@ static int32_t _spi_sync_enable(void *const hw)
 static int32_t _spi_async_enable(void *const hw)
 {
 	_spi_sync_enable(hw);
-	NVIC_EnableIRQ(_sercom_get_irq_num(hw));
-	NVIC_EnableIRQ(_sercom_get_irq_num(hw));
+	NVIC_EnableIRQ((IRQn_Type)_sercom_get_irq_num(hw));
+	NVIC_EnableIRQ((IRQn_Type)_sercom_get_irq_num(hw));
 
 	return ERR_NONE;
 }
@@ -2163,7 +2163,7 @@ static int32_t _spi_async_disable(void *const hw)
 	_spi_sync_disable(hw);
 	hri_sercomspi_clear_INTEN_reg(
 	    hw, SERCOM_SPI_INTFLAG_ERROR | SERCOM_SPI_INTFLAG_RXC | SERCOM_SPI_INTFLAG_TXC | SERCOM_SPI_INTFLAG_DRE);
-	NVIC_DisableIRQ(_sercom_get_irq_num(hw));
+	NVIC_DisableIRQ((IRQn_Type)_sercom_get_irq_num(hw));
 
 	return ERR_NONE;
 }
@@ -2384,16 +2384,16 @@ int32_t _spi_s_async_init(struct _spi_s_async_dev *dev, void *const hw)
 
 int32_t _spi_m_async_deinit(struct _spi_async_dev *dev)
 {
-	NVIC_DisableIRQ(_sercom_get_irq_num(dev->prvt));
-	NVIC_ClearPendingIRQ(_sercom_get_irq_num(dev->prvt));
+	NVIC_DisableIRQ((IRQn_Type)_sercom_get_irq_num(dev->prvt));
+	NVIC_ClearPendingIRQ((IRQn_Type)_sercom_get_irq_num(dev->prvt));
 
 	return _spi_deinit(dev->prvt);
 }
 
 int32_t _spi_s_async_deinit(struct _spi_s_async_dev *dev)
 {
-	NVIC_DisableIRQ(_sercom_get_irq_num(dev->prvt));
-	NVIC_ClearPendingIRQ(_sercom_get_irq_num(dev->prvt));
+	NVIC_DisableIRQ((IRQn_Type)_sercom_get_irq_num(dev->prvt));
+	NVIC_ClearPendingIRQ((IRQn_Type)_sercom_get_irq_num(dev->prvt));
 
 	return _spi_deinit(dev->prvt);
 }
