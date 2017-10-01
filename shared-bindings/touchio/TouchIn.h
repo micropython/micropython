@@ -35,5 +35,8 @@ extern const mp_obj_type_t touchio_touchin_type;
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu_pin_obj_t *pin);
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self);
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self);
+uint16_t common_hal_touchio_touchin_get_raw_value(touchio_touchin_obj_t *self);
+uint16_t common_hal_touchio_touchin_get_threshold(touchio_touchin_obj_t *self);
+void common_hal_touchio_touchin_set_threshold(touchio_touchin_obj_t *self, uint16_t new_threshold);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TOUCHIO_TOUCHIN_H

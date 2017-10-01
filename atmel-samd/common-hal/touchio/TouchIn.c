@@ -71,7 +71,14 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
 
     adafruit_ptc_init(PTC, &self->config);
 
-    self->threshold = 2 * get_raw_reading(self);
+    // Initial values for pins will vary, depending on what peripherals the pins
+    // share on-chip.
+    //
+    // Set a "touched" threshold not too far above the initial value.
+    // For simple finger touch, the values may vary as much as a factor of two,
+    // but for touches using fruit or other objects, the difference is much less.
+
+    self->threshold = get_raw_reading(self) + 100;
 }
 
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
@@ -86,4 +93,16 @@ void touchin_reset() {
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
     uint16_t reading = get_raw_reading(self);
     return reading > self->threshold;
+}
+
+uint16_t common_hal_touchio_touchin_get_raw_value(touchio_touchin_obj_t *self) {
+    return get_raw_reading(self);
+}
+
+uint16_t common_hal_touchio_touchin_get_threshold(touchio_touchin_obj_t *self) {
+    return self->threshold;
+}
+
+void common_hal_touchio_touchin_set_threshold(touchio_touchin_obj_t *self, uint16_t new_threshold) {
+    self->threshold = new_threshold;
 }
