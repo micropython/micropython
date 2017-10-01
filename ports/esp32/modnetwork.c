@@ -532,6 +532,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         ESP_EXCEPTIONS(esp_wifi_set_mac(self->if_id, bufinfo.buf));
                         break;
                     }
+                    case QS(MP_QSTR_protocol): {
+			esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value));
+			break;
+		    }
                     case QS(MP_QSTR_essid): {
                         req_if = WIFI_IF_AP;
                         mp_uint_t len;
@@ -679,6 +683,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
+<<<<<<< HEAD
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
 
@@ -705,6 +710,39 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_STAT_BEACON_TIMEOUT), MP_ROM_INT(WIFI_REASON_BEACON_TIMEOUT)},
     { MP_ROM_QSTR(MP_QSTR_STAT_ASSOC_FAIL), MP_ROM_INT(WIFI_REASON_ASSOC_FAIL)},
     { MP_ROM_QSTR(MP_QSTR_STAT_HANDSHAKE_TIMEOUT), MP_ROM_INT(WIFI_REASON_HANDSHAKE_TIMEOUT)},
+=======
+    { MP_OBJ_NEW_QSTR(MP_QSTR_STA_IF),
+        MP_OBJ_NEW_SMALL_INT(WIFI_IF_STA)},
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_IF),
+        MP_OBJ_NEW_SMALL_INT(WIFI_IF_AP)},
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
+        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11B) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
+        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11G) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
+        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11N) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_LR),
+        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_LR) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
+        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_OPEN) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
+        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WEP) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
+        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
+        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA2_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
+        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_WPA2_PSK) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_MAX),
+        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_MAX) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_LAN8720),
+        MP_OBJ_NEW_SMALL_INT(PHY_LAN8720) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_TLK110),
+        MP_OBJ_NEW_SMALL_INT(PHY_TLK110) },
+>>>>>>> 00b709d2c... Add protocol to network.WLAN.config and LR constant.
 #endif
 };
 

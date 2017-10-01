@@ -38,6 +38,10 @@ ESPCOMP = $(ESPIDF)/components
 ESPTOOL ?= $(ESPCOMP)/esptool_py/esptool/esptool.py
 
 # verify the ESP IDF version
+<<<<<<< HEAD
+=======
+ESPIDF_SUPHASH := e6afe28bafe5db5ab79fae213f2e8e1ccd9f937c
+>>>>>>> 00b709d2c... Add protocol to network.WLAN.config and LR constant.
 ESPIDF_CURHASH := $(shell git -C $(ESPIDF) show -s --pretty=format:'%H')
 ifneq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH))
 $(info ** WARNING **)
