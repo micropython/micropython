@@ -11,7 +11,7 @@ To create a NeoPixel object do the following::
     >>> import machine, neopixel
     >>> np = neopixel.NeoPixel(machine.Pin(4), 8)
 
-This configures a NeoPixel strip on GPIO4 with 8 pixels.  You can adjust the 
+This configures a NeoPixel strip on GPIO4 with 8 pixels.  You can adjust the
 "4" (pin number) and the "8" (number of pixel) to suit your set up.
 
 For LEDs with more than 3 colors, such as RGBW pixels or RGBY pixels, the 
