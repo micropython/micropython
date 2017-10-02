@@ -32,8 +32,11 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/objstr.h"
+#include "py/stackctrl.h"
 
 #if MICROPY_PY_URE
+
+#define re1_5_stack_chk() MP_STACK_CHECK()
 
 #include "re1.5/re1.5.h"
 
