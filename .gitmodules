@@ -20,3 +20,12 @@
 [submodule "atmel-samd/frozen/Adafruit_CircuitPython_NeoPixel"]
 	path = frozen/Adafruit_CircuitPython_NeoPixel
 	url = https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel
+[submodule "frozen/Adafruit_CircuitPython_Thermistor"]
+	path = frozen/Adafruit_CircuitPython_Thermistor
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Thermistor.git
+[submodule "frozen/Adafruit_CircuitPython_LIS3DH"]
+	path = frozen/Adafruit_CircuitPython_LIS3DH
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LIS3DH.git
+[submodule "frozen/Adafruit_CircuitPython_BusDevice"]
+	path = frozen/Adafruit_CircuitPython_BusDevice
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BusDevice.git
