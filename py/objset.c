@@ -380,7 +380,7 @@ STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     check_set(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception(&mp_type_KeyError));
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, item));
     }
     return mp_const_none;
 }
