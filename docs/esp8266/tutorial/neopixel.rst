@@ -14,18 +14,25 @@ To create a NeoPixel object do the following::
 This configures a NeoPixel strip on GPIO4 with 8 pixels.  You can adjust the
 "4" (pin number) and the "8" (number of pixel) to suit your set up.
 
+To set the colour of pixels use::
+
+    >>> np[0] = (255, 0, 0) # set to red, full brightness
+    >>> np[1] = (0, 128, 0) # set to green, half brightness
+    >>> np[2] = (0, 0, 64)  # set to blue, quarter brightness
+    
 For LEDs with more than 3 colors, such as RGBW pixels or RGBY pixels, the 
 NeoPixel class takes a ``bpp`` parameter. To setup a NeoPixel object for an 
 RGBW Pixel, do the following::
 
     >>> import machine, neopixel
     >>> np = neopixel.NeoPixel(machine.Pin(4), 8, bpp=4)
+    
+In a 4-bpp mode, remember to use 4-tuples instead of 3-tuples to set the color.
+For example to set the first three pixels use:: 
 
-To set the colour of pixels use::
-
-    >>> np[0] = (255, 0, 0) # set to red, full brightness
-    >>> np[1] = (0, 128, 0) # set to green, half brightness
-    >>> np[2] = (0, 0, 64)  # set to blue, quarter brightness
+    >>> np[0] = (255, 0, 0, 128) # Orange in an RGBY Setup
+    >>> np[1] = (0, 255, 0, 128) # Yellow-green in an RGBY Setup
+    >>> np[2] = (0, 0, 255, 128) # Green-blue in an RGBY Setup
 
 Then use the ``write()`` method to output the colours to the LEDs::
 
