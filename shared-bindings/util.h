@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_UTIL_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_UTIL_H
 
-#include "py/runtime.h"
+void raise_error_if_deinited(bool deinited);
 
-#include "shared-bindings/analogio/AnalogOut.h"
 
-void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
-        const mcu_pin_obj_t *pin) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
-        "No hardware support for analog out."));
-}
-
-bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    return true;
-}
-
-void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-}
-
-void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
-        uint16_t value) {
-}
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_UTIL_H

@@ -35,6 +35,10 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "No hardware support for PulseOut."));
 }
 
+bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
+    return true;
+}
+
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 }
 

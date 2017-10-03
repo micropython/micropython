@@ -29,6 +29,7 @@
 
 #include "shared-bindings/bitbangio/I2C.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/util.h"
 
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
@@ -52,6 +53,7 @@
 STATIC mp_obj_t bitbangio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
     bitbangio_i2c_obj_t *self = m_new_obj(bitbangio_i2c_obj_t);
+    raise_error_if_deinited(shared_module_bitbangio_i2c_deinited(self));
     self->base.type = &bitbangio_i2c_type;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
@@ -114,6 +116,7 @@ static void check_lock(bitbangio_i2c_obj_t *self) {
 //|
 STATIC mp_obj_t bitbangio_i2c_scan(mp_obj_t self_in) {
     bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(shared_module_bitbangio_i2c_deinited(self));
     check_lock(self);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
@@ -132,7 +135,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_scan_obj, bitbangio_i2c_scan);
 //|     Attempts to grab the I2C lock. Returns True on success.
 //|
 STATIC mp_obj_t bitbangio_i2c_obj_try_lock(mp_obj_t self_in) {
-    return mp_obj_new_bool(shared_module_bitbangio_i2c_try_lock(MP_OBJ_TO_PTR(self_in)));
+    bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(shared_module_bitbangio_i2c_deinited(self));
+    return mp_obj_new_bool(shared_module_bitbangio_i2c_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_try_lock_obj, bitbangio_i2c_obj_try_lock);
 
@@ -141,7 +146,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_try_lock_obj, bitbangio_i2c_obj_try_lock
 //|     Releases the I2C lock.
 //|
 STATIC mp_obj_t bitbangio_i2c_obj_unlock(mp_obj_t self_in) {
-    shared_module_bitbangio_i2c_unlock(MP_OBJ_TO_PTR(self_in));
+    bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(shared_module_bitbangio_i2c_deinited(self));
+    shared_module_bitbangio_i2c_unlock(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_unlock_obj, bitbangio_i2c_obj_unlock);
@@ -169,6 +176,7 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(shared_module_bitbangio_i2c_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     check_lock(self);
@@ -215,6 +223,7 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
         { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(shared_module_bitbangio_i2c_deinited(self));
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

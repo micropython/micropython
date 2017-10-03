@@ -33,6 +33,7 @@
 #include "py/mphal.h"
 #include "shared-bindings/touchio/TouchIn.h"
 
+#include "samd21_pins.h"
 #include "tick.h"
 
 #include "adafruit_ptc.h"
@@ -81,9 +82,17 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     self->threshold = get_raw_reading(self) + 100;
 }
 
+bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
+    return self->config.pin == NO_PIN;
+}
+
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
     // TODO(tannewt): Reset the PTC.
-    reset_pin(self->pin->pin);
+    if (common_hal_touchio_touchin_deinited(self)) {
+        return;
+    }
+    reset_pin(self->config.pin);
+    self->config.pin = NO_PIN;
 }
 
 void touchin_reset() {

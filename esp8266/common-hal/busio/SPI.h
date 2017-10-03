@@ -34,6 +34,7 @@
 typedef struct {
     mp_obj_base_t base;
     bool locked;
+    bool deinited;
 } busio_spi_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP8266_COMMON_HAL_BUSIO_SPI_H

@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: audiobusio
 //|
@@ -161,7 +162,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, 
 //|
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
+    raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
     if (!MP_OBJ_IS_SMALL_INT(destination_length)) {
         mp_raise_TypeError("destination_length must be int");
     }
@@ -198,6 +199,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_reco
 //|
 STATIC mp_obj_t audiobusio_pdmin_obj_get_frequency(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
     return MP_OBJ_NEW_SMALL_INT(common_hal_audiobusio_pdmin_get_frequency(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_get_frequency_obj, audiobusio_pdmin_obj_get_frequency);

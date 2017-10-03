@@ -30,8 +30,10 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/AnalogOut.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: analogio
 //|
@@ -112,6 +114,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4
 //|
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
    analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+   raise_error_if_deinited(common_hal_analogio_analogout_deinited(self));
    uint32_t v = mp_obj_get_int(value);
    if (v >= (1 << 16)) {
        mp_raise_ValueError("AnalogOut is only 16 bits. Value must be less than 65536.");

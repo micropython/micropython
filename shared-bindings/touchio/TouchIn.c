@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/touchio/TouchIn.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: touchio
 //|
@@ -113,8 +114,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(touchio_touchin___exit___obj, 4, 4, t
 //|     :rtype: bool
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
-   touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return mp_obj_new_bool(common_hal_touchio_touchin_get_value(self));
+    touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    return mp_obj_new_bool(common_hal_touchio_touchin_get_value(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_value_obj, touchio_touchin_obj_get_value);
 
@@ -134,17 +136,18 @@ const mp_obj_property_t touchio_touchin_value_obj = {
 //|     :rtype: int
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
-	touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-	return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_raw_value(self));
+    touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_raw_value(self));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_raw_value_obj, touchio_touchin_obj_get_raw_value);
 
 const mp_obj_property_t touchio_touchin_raw_value_obj = {
-	.base.type = &mp_type_property,
-	.proxy = {(mp_obj_t)&touchio_touchin_get_raw_value_obj,
-                  (mp_obj_t)&mp_const_none_obj,
-                  (mp_obj_t)&mp_const_none_obj},
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&touchio_touchin_get_raw_value_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
  };
 
 
@@ -160,31 +163,33 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
 //|     :rtype: int
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_threshold(mp_obj_t self_in) {
-	touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-	return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_threshold(self));
+    touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_threshold(self));
 }
 
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_threshold_obj, touchio_touchin_obj_get_threshold);
 
 STATIC mp_obj_t touchio_touchin_obj_set_threshold(mp_obj_t self_in, mp_obj_t threshold_obj) {
-	touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-        uint32_t new_threshold = mp_obj_get_int(threshold_obj);
-        if (new_threshold < 0 || new_threshold > UINT16_MAX) {
-            // I would use MP_STRINGIFY(UINT16_MAX), but that prints "0xffff" instead of 65536.
-            mp_raise_ValueError("threshold must be in the range 0-65536");
-        }
-	common_hal_touchio_touchin_set_threshold(self, new_threshold);
-        return mp_const_none;
+    touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    uint32_t new_threshold = mp_obj_get_int(threshold_obj);
+    if (new_threshold < 0 || new_threshold > UINT16_MAX) {
+        // I would use MP_STRINGIFY(UINT16_MAX), but that prints "0xffff" instead of 65536.
+        mp_raise_ValueError("threshold must be in the range 0-65536");
+    }
+    common_hal_touchio_touchin_set_threshold(self, new_threshold);
+    return mp_const_none;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_2(touchio_touchin_set_threshold_obj, touchio_touchin_obj_set_threshold);
 
 const mp_obj_property_t touchio_touchin_threshold_obj = {
-	.base.type = &mp_type_property,
-	.proxy = {(mp_obj_t)&touchio_touchin_get_threshold_obj,
-                  (mp_obj_t)&touchio_touchin_set_threshold_obj,
-                  (mp_obj_t)&mp_const_none_obj},
- };
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&touchio_touchin_get_threshold_obj,
+              (mp_obj_t)&touchio_touchin_set_threshold_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
 
 
 STATIC const mp_rom_map_elem_t touchio_touchin_locals_dict_table[] = {

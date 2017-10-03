@@ -34,6 +34,7 @@ extern const mp_obj_type_t analogio_analogout_type;
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self, const mcu_pin_obj_t *pin);
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self);
+bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self);
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self, uint16_t value);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ANALOGIO_ANALOGOUT_H

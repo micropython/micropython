@@ -34,7 +34,14 @@ void common_hal_busio_onewire_construct(busio_onewire_obj_t* self,
     shared_module_bitbangio_onewire_construct(&self->bitbang, pin);
 }
 
+bool common_hal_busio_onewire_deinited(busio_onewire_obj_t* self) {
+    return shared_module_bitbangio_onewire_deinited(&self->bitbang);
+}
+
 void common_hal_busio_onewire_deinit(busio_onewire_obj_t* self) {
+    if (common_hal_busio_onewire_deinited(self)) {
+        return;
+    }
     shared_module_bitbangio_onewire_deinit(&self->bitbang);
 }
 

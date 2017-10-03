@@ -135,9 +135,13 @@ ifeq ($(DEBUG), 1)
 # -DMICROPY_DEBUG_MODULES may also be added to an -flto build, if you wish.
 CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
 else
-# -finline-limit can shrink the image size. -finline-limit=80 or so is similar to not having it on.
+# GCC_INLINE_LIMIT specifies -finline-limit, which can shrink the image size.
+# -finline-limit=80 or so is similar to not having it on.
 # There is no simple default value, though.
-CFLAGS += -Os -DNDEBUG -flto -finline-limit=39
+ifeq ($(FLASH_IMPL),internal_flash.c)
+GCC_INLINE_LIMIT = -finline-limit=19
+endif
+CFLAGS += -Os -DNDEBUG -flto $(GCC_INLINE_LIMIT)
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -272,7 +276,8 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
-	help.c
+	help.c \
+	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

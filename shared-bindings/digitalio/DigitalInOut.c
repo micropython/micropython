@@ -40,6 +40,7 @@
 #include "shared-bindings/digitalio/Direction.h"
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: digitalio
 //|
@@ -119,6 +120,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_
         { MP_QSTR_drive_mode, MP_ARG_OBJ, {.u_rom_obj = &digitalio_drive_mode_push_pull_obj} },
     };
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -155,6 +157,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
     };
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -187,6 +190,7 @@ extern const digitalio_digitalio_direction_obj_t digitalio_digitalio_direction_o
 
 STATIC mp_obj_t digitalio_digitalinout_obj_get_direction(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     enum digitalio_direction_t direction = common_hal_digitalio_digitalinout_get_direction(self);
     if (direction == DIRECTION_INPUT) {
         return (mp_obj_t)&digitalio_direction_input_obj;
@@ -197,6 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_direction_obj, digitalio_di
 
 STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_obj_t value) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (value == &digitalio_direction_input_obj) {
         common_hal_digitalio_digitalinout_switch_to_input(self, PULL_NONE);
     } else if (value == &digitalio_direction_output_obj) {
@@ -221,6 +226,7 @@ const mp_obj_property_t digitalio_digitalio_direction_obj = {
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_value(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     bool value = common_hal_digitalio_digitalinout_get_value(self);
     return mp_obj_new_bool(value);
 }
@@ -228,6 +234,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_value_obj, digitalio_digita
 
 STATIC mp_obj_t digitalio_digitalinout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
         mp_raise_AttributeError("Cannot set value when direction is input.");
         return mp_const_none;
@@ -250,6 +257,7 @@ const mp_obj_property_t digitalio_digitalinout_value_obj = {
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_drive_mode(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
         mp_raise_AttributeError("Drive mode not used when direction is input.");
         return mp_const_none;
@@ -264,6 +272,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_drive_mode_obj, digitalio_d
 
 STATIC mp_obj_t digitalio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_obj_t drive_mode) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
         mp_raise_AttributeError("Drive mode not used when direction is input.");
         return mp_const_none;
@@ -293,6 +302,7 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_OUTPUT) {
         mp_raise_AttributeError("Pull not used when direction is output.");
         return mp_const_none;
@@ -309,6 +319,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_pull_obj, digitalio_digital
 
 STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t pull_obj) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(self));
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_OUTPUT) {
         mp_raise_AttributeError("Pull not used when direction is output.");
         return mp_const_none;

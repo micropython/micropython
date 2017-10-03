@@ -42,6 +42,7 @@ extern void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
                                                   uint32_t frequency);
 
 extern void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self);
+extern bool shared_module_bitbangio_i2c_deinited(bitbangio_i2c_obj_t *self);
 
 extern bool shared_module_bitbangio_i2c_try_lock(bitbangio_i2c_obj_t *self);
 extern bool shared_module_bitbangio_i2c_has_lock(bitbangio_i2c_obj_t *self);

@@ -45,6 +45,7 @@ extern void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t receiver_buffer_size);
 
 extern void common_hal_busio_uart_deinit(busio_uart_obj_t *self);
+extern bool common_hal_busio_uart_deinited(busio_uart_obj_t *self);
 
 // Read characters. len is in characters NOT bytes!
 extern size_t common_hal_busio_uart_read(busio_uart_obj_t *self,

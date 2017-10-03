@@ -162,7 +162,15 @@ void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
     stop(self);
 }
 
+bool shared_module_bitbangio_i2c_deinited(bitbangio_i2c_obj_t *self) {
+    // If one is deinited, both will be.
+    return common_hal_digitalio_digitalinout_deinited(&self->scl);
+}
+
 void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self) {
+    if (shared_module_bitbangio_i2c_deinited(self)) {
+        return;
+    }
     common_hal_digitalio_digitalinout_deinit(&self->scl);
     common_hal_digitalio_digitalinout_deinit(&self->sda);
 }

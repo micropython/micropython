@@ -34,6 +34,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     shared_module_bitbangio_i2c_construct(&self->bitbang, scl, sda, freq);
 }
 
+bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
+    return shared_module_bitbangio_i2c_deinited(&self->bitbang);
+}
+
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     shared_module_bitbangio_i2c_deinit(&self->bitbang);
 }

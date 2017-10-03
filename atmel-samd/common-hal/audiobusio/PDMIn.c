@@ -145,11 +145,20 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     self->bit_depth = bit_depth;
 }
 
+bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t* self) {
+    return self->clock_pin == mp_const_none;
+}
+
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
+    if (common_hal_audiobusio_pdmin_deinited(self)) {
+        return;
+    }
     i2s_disable(&self->i2s_instance);
     i2s_reset(&self->i2s_instance);
     reset_pin(self->clock_pin->pin);
     reset_pin(self->data_pin->pin);
+    self->clock_pin = mp_const_none;
+    self->data_pin = mp_const_none;
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {

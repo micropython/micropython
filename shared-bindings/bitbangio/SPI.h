@@ -41,6 +41,7 @@ extern void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
     const mcu_pin_obj_t * miso);
 
 extern void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self);
+extern bool shared_module_bitbangio_spi_deinited(bitbangio_spi_obj_t *self);
 
 extern void shared_module_bitbangio_spi_configure(bitbangio_spi_obj_t *self,
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits);

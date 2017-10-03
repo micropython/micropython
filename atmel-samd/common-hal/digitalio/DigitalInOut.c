@@ -51,8 +51,16 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     return DIGITALINOUT_OK;
 }
 
+bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self) {
+    return self->pin == mp_const_none;
+}
+
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self) {
+    if (common_hal_digitalio_digitalinout_deinited(self)) {
+        return;
+    }
     reset_pin(self->pin->pin);
+    self->pin = mp_const_none;
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(

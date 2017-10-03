@@ -29,8 +29,10 @@
 #include "lib/utils/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: pulseio
 //|
@@ -147,13 +149,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pwmout___exit___obj, 4, 4, pu
 //|      (0). 0xffff will always be high, 0 will always be low and 0x7fff will
 //|      be half high and then half low.
 STATIC mp_obj_t pulseio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
-   pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_duty_cycle(self));
+    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_duty_cycle(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_get_duty_cycle_obj, pulseio_pwmout_obj_get_duty_cycle);
 
 STATIC mp_obj_t pulseio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_cycle) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
     mp_int_t duty = mp_obj_get_int(duty_cycle);
     if (duty < 0 || duty > 0xffff) {
         mp_raise_ValueError("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)");
@@ -176,13 +180,15 @@ const mp_obj_property_t pulseio_pwmout_duty_cycle_obj = {
 //|     second). Only writeable when constructed with ``variable_frequency=True``.
 //|
 STATIC mp_obj_t pulseio_pwmout_obj_get_frequency(mp_obj_t self_in) {
-   pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_frequency(self));
+    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_frequency(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_get_frequency_obj, pulseio_pwmout_obj_get_frequency);
 
 STATIC mp_obj_t pulseio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_pulseio_pwmout_deinited(self));
     if (!common_hal_pulseio_pwmout_get_variable_frequency(self)) {
         mp_raise_AttributeError(
             "PWM frequency not writeable when variable_frequency is False on "
