@@ -72,11 +72,6 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_char(char c) {
-    uart_tx_one_char(UART0, c);
-    mp_uos_dupterm_tx_strn(&c, 1);
-}
-
 #if 0
 void mp_hal_debug_str(const char *str) {
     while (*str) {
@@ -87,23 +82,39 @@ void mp_hal_debug_str(const char *str) {
 #endif
 
 void mp_hal_stdout_tx_str(const char *str) {
+    const char *last = str;
     while (*str) {
-        mp_hal_stdout_tx_char(*str++);
+        uart_tx_one_char(UART0, *str++);
     }
+    mp_uos_dupterm_tx_strn(last, str - last);
 }
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+    const char *last = str;
     while (len--) {
-        mp_hal_stdout_tx_char(*str++);
+        uart_tx_one_char(UART0, *str++);
     }
+    mp_uos_dupterm_tx_strn(last, str - last);
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
+    const char *last = str;
     while (len--) {
         if (*str == '\n') {
-            mp_hal_stdout_tx_char('\r');
+            if (str > last) {
+                mp_uos_dupterm_tx_strn(last, str - last);
+            }
+            uart_tx_one_char(UART0, '\r');
+            uart_tx_one_char(UART0, '\n');
+            mp_uos_dupterm_tx_strn("\r\n", 2);
+            ++str;
+            last = str;
+        } else {
+            uart_tx_one_char(UART0, *str++);
         }
-        mp_hal_stdout_tx_char(*str++);
+    }
+    if (str > last) {
+        mp_uos_dupterm_tx_strn(last, str - last);
     }
 }
 
