@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,22 +57,12 @@ STATIC bool is_set_or_frozenset(mp_obj_t o) {
     ;
 }
 
+// This macro is shorthand for mp_check_self to verify the argument is a set.
+#define check_set(o) mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set))
+
 // This macro is shorthand for mp_check_self to verify the argument is a
 // set or frozenset for methods that operate on both of these types.
 #define check_set_or_frozenset(o) mp_check_self(is_set_or_frozenset(o))
-
-// This function is used to verify the argument for methods that modify
-// the set object, and raises an exception if the arg is a frozenset.
-STATIC void check_set(mp_obj_t o) {
-    #if MICROPY_PY_BUILTINS_FROZENSET
-    if (MP_OBJ_IS_TYPE(o, &mp_type_frozenset)) {
-        // Mutable method called on frozenset; emulate CPython behavior, eg:
-        // AttributeError: 'frozenset' object has no attribute 'add'
-        mp_raise_msg(&mp_type_AttributeError, "'frozenset' has no such attribute");
-    }
-    #endif
-    mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set));
-}
 
 STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
@@ -188,25 +178,15 @@ STATIC mp_obj_t set_clear(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
 
-STATIC mp_obj_t set_copy_as_mutable(mp_obj_t self_in) {
+STATIC mp_obj_t set_copy(mp_obj_t self_in) {
+    check_set_or_frozenset(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-
     mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
-    other->base.type = &mp_type_set;
+    other->base.type = self->base.type;
     mp_set_init(&other->set, self->set.alloc);
     other->set.used = self->set.used;
     memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
-
     return MP_OBJ_FROM_PTR(other);
-}
-
-STATIC mp_obj_t set_copy(mp_obj_t self_in) {
-    check_set_or_frozenset(self_in);
-
-    mp_obj_t other = set_copy_as_mutable(self_in);
-    ((mp_obj_base_t*)MP_OBJ_TO_PTR(other))->type = ((mp_obj_base_t*)MP_OBJ_TO_PTR(self_in))->type;
-
-    return other;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_copy_obj, set_copy);
 
@@ -224,25 +204,23 @@ STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
         check_set(args[0]);
         self = args[0];
     } else {
-        check_set_or_frozenset(args[0]);
-        self = set_copy_as_mutable(args[0]);
+        self = set_copy(args[0]);
     }
-
 
     for (size_t i = 1; i < n_args; i++) {
         mp_obj_t other = args[i];
         if (self == other) {
             set_clear(self);
         } else {
+            mp_set_t *self_set = &((mp_obj_set_t*)MP_OBJ_TO_PTR(self))->set;
             mp_obj_t iter = mp_getiter(other, NULL);
             mp_obj_t next;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-                set_discard(self, next);
+                mp_set_lookup(self_set, next, MP_MAP_LOOKUP_REMOVE_IF_FOUND);
             }
         }
     }
 
-    ((mp_obj_base_t*)MP_OBJ_TO_PTR(self))->type = ((mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]))->type;
     return self;
 }
 
@@ -333,16 +311,16 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
         other = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &other_in));
         cleanup_other = true;
     }
-    bool out = true;
+    mp_obj_t out = mp_const_true;
     if (proper && self->set.used == other->set.used) {
-        out = false;
+        out = mp_const_false;
     } else {
         mp_obj_iter_buf_t iter_buf;
         mp_obj_t iter = set_getiter(MP_OBJ_FROM_PTR(self), &iter_buf);
         mp_obj_t next;
         while ((next = set_it_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
             if (!mp_set_lookup(&other->set, next, MP_MAP_LOOKUP)) {
-                out = false;
+                out = mp_const_false;
                 break;
             }
         }
@@ -354,7 +332,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (cleanup_other) {
         set_clear(MP_OBJ_FROM_PTR(other));
     }
-    return mp_obj_new_bool(out);
+    return out;
 }
 STATIC mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(self_in, other_in, false);
@@ -409,7 +387,7 @@ STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_remove_obj, set_remove);
 
 STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other_in) {
-    check_set(self_in);
+    check_set_or_frozenset(self_in); // can be frozenset due to call from set_symmetric_difference
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t iter = mp_getiter(other_in, NULL);
     mp_obj_t next;
@@ -421,10 +399,8 @@ STATIC mp_obj_t set_symmetric_difference_update(mp_obj_t self_in, mp_obj_t other
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_update_obj, set_symmetric_difference_update);
 
 STATIC mp_obj_t set_symmetric_difference(mp_obj_t self_in, mp_obj_t other_in) {
-    check_set_or_frozenset(self_in);
-    mp_obj_t self_out = set_copy_as_mutable(self_in);
+    mp_obj_t self_out = set_copy(self_in);
     set_symmetric_difference_update(self_out, other_in);
-    ((mp_obj_base_t*)MP_OBJ_TO_PTR(self_out))->type = ((mp_obj_base_t*)MP_OBJ_TO_PTR(self_in))->type;
     return self_out;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_symmetric_difference_obj, set_symmetric_difference);
@@ -578,6 +554,19 @@ const mp_obj_type_t mp_type_set = {
 };
 
 #if MICROPY_PY_BUILTINS_FROZENSET
+STATIC const mp_rom_map_elem_t frozenset_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&set_copy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_difference), MP_ROM_PTR(&set_diff_obj) },
+    { MP_ROM_QSTR(MP_QSTR_intersection), MP_ROM_PTR(&set_intersect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isdisjoint), MP_ROM_PTR(&set_isdisjoint_obj) },
+    { MP_ROM_QSTR(MP_QSTR_issubset), MP_ROM_PTR(&set_issubset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_issuperset), MP_ROM_PTR(&set_issuperset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_symmetric_difference), MP_ROM_PTR(&set_symmetric_difference_obj) },
+    { MP_ROM_QSTR(MP_QSTR_union), MP_ROM_PTR(&set_union_obj) },
+    { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_op_contains_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
+
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
     .name = MP_QSTR_frozenset,
@@ -586,7 +575,7 @@ const mp_obj_type_t mp_type_frozenset = {
     .unary_op = set_unary_op,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t*)&set_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&frozenset_locals_dict,
 };
 #endif
 
