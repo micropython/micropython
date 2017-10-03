@@ -152,6 +152,7 @@ extern const struct _mp_obj_module_t neopixel_write_module;
 extern const struct _mp_obj_module_t uheap_module;
 extern const struct _mp_obj_module_t ustack_module;
 extern const struct _mp_obj_module_t samd_module;
+extern const struct _mp_obj_module_t gamepad_module;
 extern const struct _mp_obj_module_t touchio_module;
 extern const struct _mp_obj_module_t usb_hid_module;
 
@@ -171,10 +172,13 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
     #define MICROPY_PY_SYS_MAXSIZE      (1)
     #define MICROPY_CPYTHON_COMPAT      (1)
+    // Scan gamepad every 32ms
+    #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module }, \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_nvm), (mp_obj_t)&cpy_nvm_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }

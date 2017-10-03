@@ -289,6 +289,8 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	gamepad/__init__.c \
+	gamepad/GamePad.c \
 	os/__init__.c \
 	random/__init__.c \
 	storage/__init__.c \

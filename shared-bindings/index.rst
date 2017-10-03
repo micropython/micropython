@@ -21,9 +21,10 @@ Module / Port      SAMD21   SAMD21 Express  ESP8266
 `board`            **Yes**  **Yes**         **Yes**
 `busio`            **Yes**  **Yes**         **Yes**
 `digitalio`        **Yes**  **Yes**         **Yes**
-`microcontroller`  **Yes**  **Yes**         **Yes**  
+`gamepad`          No       **Yes**         No
+`microcontroller`  **Yes**  **Yes**         **Yes**
 `multiterminal`    No       No              **Yes**
-`neopixel_write`   **Yes**  **Yes**         **Yes**  
+`neopixel_write`   **Yes**  **Yes**         **Yes**
 `nvm`              No       **Yes**         No
 `os`               **Yes**  **Yes**         **Yes**
 `pulseio`          No       **Yes**         No
