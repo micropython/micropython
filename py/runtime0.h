@@ -58,6 +58,8 @@ typedef enum {
     MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
+
+    MP_UNARY_OP_LAST_RUNTIME = MP_UNARY_OP_SIZEOF,
 } mp_unary_op_t;
 
 // Note: the first 9+12+12 of these are used in bytecode and changing
@@ -125,11 +127,11 @@ typedef enum {
     // This is not emitted by the compiler but is supported by the runtime
     MP_BINARY_OP_DIVMOD,
 
+    MP_BINARY_OP_LAST_RUNTIME = MP_BINARY_OP_DIVMOD,
+
     // These 2 are not supported by the runtime and must be synthesised by the emitter
     MP_BINARY_OP_NOT_IN,
     MP_BINARY_OP_IS_NOT,
-
-    MP_BINARY_OP_LAST,
 } mp_binary_op_t;
 
 typedef enum {
