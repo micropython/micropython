@@ -463,6 +463,10 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     #else
     bool update = true;
     #endif
+    if (op != MP_BINARY_OP_IN && !is_set_or_frozenset(rhs)) {
+        // For all ops except containment the RHS must be a set/frozenset
+        return MP_OBJ_NULL;
+    }
     switch (op) {
         case MP_BINARY_OP_OR:
             return set_union(lhs, rhs);
