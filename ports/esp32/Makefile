@@ -171,8 +171,13 @@ SRC_C = \
 	network_lan.c \
 	modsocket.c \
 	modesp.c \
+<<<<<<< HEAD
 	esp32_ulp.c \
 	modesp32.c \
+=======
+	esp_espnow.c \
+	moduhashlib.c \
+>>>>>>> 6177511a5... ... start on espnow
 	espneopixel.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
@@ -679,7 +684,11 @@ APP_LD_ARGS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
 APP_LD_ARGS += $(LIBC_LIBM)
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
+<<<<<<< HEAD
 APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
+=======
+APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2 -lespnow
+>>>>>>> 6177511a5... ... start on espnow
 APP_LD_ARGS += $(OBJ)
 APP_LD_ARGS += --end-group
 

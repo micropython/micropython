@@ -122,6 +122,8 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t timing)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 
+extern const mp_obj_module_t mp_module_esp_espnow;
+
 STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp) },
 
@@ -138,6 +140,7 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
+<<<<<<< HEAD
 
     // Constants for second arg of osdebug()
     { MP_ROM_QSTR(MP_QSTR_LOG_NONE), MP_ROM_INT((mp_uint_t)ESP_LOG_NONE)},
@@ -146,6 +149,9 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LOG_INFO), MP_ROM_INT((mp_uint_t)ESP_LOG_INFO)},
     { MP_ROM_QSTR(MP_QSTR_LOG_DEBUG), MP_ROM_INT((mp_uint_t)ESP_LOG_DEBUG)},
     { MP_ROM_QSTR(MP_QSTR_LOG_VERBOSE), MP_ROM_INT((mp_uint_t)ESP_LOG_VERBOSE)},
+=======
+    { MP_ROM_QSTR(MP_QSTR_espnow), MP_ROM_PTR(&mp_module_esp_espnow) },
+>>>>>>> 6177511a5... ... start on espnow
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);
