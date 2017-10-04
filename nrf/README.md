@@ -82,6 +82,7 @@ pca10028             | s110                    | Peripheral             | [Segge
 pca10031             | s110                    | Peripheral             | [Segger](#segger-targets)
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | [UART DFU](#dfu-targets)
+arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
 pca10056             |                         |                        | [Segger](#segger-targets)
 
 ## Segger Targets
