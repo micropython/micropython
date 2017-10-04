@@ -85,8 +85,12 @@ STATIC mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
     STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
 
 #if MP_NEED_LOG2
+#undef log2
+#undef log2f
 // 1.442695040888963407354163704 is 1/_M_LN2
-#define log2(x) (log(x) * 1.442695040888963407354163704)
+mp_float_t MICROPY_FLOAT_C_FUN(log2)(mp_float_t x) {
+    return MICROPY_FLOAT_C_FUN(log)(x) * MICROPY_FLOAT_CONST(1.442695040888963407354163704);
+}
 #endif
 
 // sqrt(x): returns the square root of x
