@@ -15,12 +15,12 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 ifeq ($(SD), )
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)
-	include ../py/mkenv.mk
+	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
-	include ../py/mkenv.mk
+	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
 
 	include drivers/bluetooth/bluetooth_common.mk
@@ -32,21 +32,21 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 FROZEN_MPY_DIR = freeze
 
 # include py core make definitions
-include ../py/py.mk
+include ../../py/py.mk
 
 
 FATFS_DIR = lib/oofatfs
-MPY_CROSS = ../mpy-cross/mpy-cross
-MPY_TOOL = ../tools/mpy-tool.py
+MPY_CROSS = ../../mpy-cross/mpy-cross
+MPY_TOOL = ../../tools/mpy-tool.py
 
 CROSS_COMPILE = arm-none-eabi-
 
 MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
 
 INC += -I.
-INC += -I..
+INC += -I../..
 INC += -I$(BUILD)
-INC += -I./../lib/cmsis/inc
+INC += -I./../../lib/cmsis/inc
 INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
@@ -56,7 +56,7 @@ INC += -I./modules/ubluepy
 INC += -I./modules/music
 INC += -I./modules/random
 INC += -I./modules/ble
-INC += -I../lib/mp-readline
+INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
 
@@ -288,5 +288,5 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-include ../py/mkrules.mk
+include ../../py/mkrules.mk
 
