@@ -61,7 +61,12 @@ float log2f(float x) { return logf(x) / (float)_M_LN2; }
 static const float _M_LN10 = 2.30258509299404; // 0x40135d8e
 float log10f(float x) { return logf(x) / (float)_M_LN10; }
 
-float tanhf(float x) { return sinhf(x) / coshf(x); }
+float tanhf(float x) {
+    if (isinf(x)) {
+        return copysignf(1, x);
+    }
+    return sinhf(x) / coshf(x);
+}
 
 /*****************************************************************************/
 /*****************************************************************************/
