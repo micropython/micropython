@@ -122,7 +122,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
         return buf_size >= 2;
     }
-    if (fp_signbit(f)) {
+    if (fp_signbit(f) && !isnan(f)) {
         *s++ = '-';
         f = -f;
     } else {
