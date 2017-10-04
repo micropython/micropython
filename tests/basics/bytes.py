@@ -8,6 +8,9 @@ print(b'\u1234')
 print(bytes())
 print(bytes(b'abc'))
 
+# make sure empty bytes is converted correctly
+print(str(bytes(), 'utf-8'))
+
 a = b"123"
 print(a)
 print(str(a))
