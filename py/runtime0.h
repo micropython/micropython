@@ -51,15 +51,15 @@ typedef enum {
     MP_UNARY_OP_NOT,
 
     // Following ops cannot appear in the bytecode
-    MP_UNARY_OP_LAST_BYTECODE = MP_UNARY_OP_NOT,
+    MP_UNARY_OP_NUM_BYTECODE,
 
-    MP_UNARY_OP_BOOL, // __bool__
+    MP_UNARY_OP_BOOL = MP_UNARY_OP_NUM_BYTECODE, // __bool__
     MP_UNARY_OP_LEN, // __len__
     MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 
-    MP_UNARY_OP_LAST_RUNTIME = MP_UNARY_OP_SIZEOF,
+    MP_UNARY_OP_NUM_RUNTIME,
 } mp_unary_op_t;
 
 // Note: the first 9+12+12 of these are used in bytecode and changing
@@ -106,11 +106,11 @@ typedef enum {
 
     // Operations below this line don't appear in bytecode, they
     // just identify special methods.
-    MP_BINARY_OP_LAST_BYTECODE = MP_BINARY_OP_POWER,
+    MP_BINARY_OP_NUM_BYTECODE,
 
     // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
 #if MICROPY_PY_REVERSE_SPECIAL_METHODS
-    MP_BINARY_OP_REVERSE_OR,
+    MP_BINARY_OP_REVERSE_OR = MP_BINARY_OP_NUM_BYTECODE,
     MP_BINARY_OP_REVERSE_XOR,
     MP_BINARY_OP_REVERSE_AND,
     MP_BINARY_OP_REVERSE_LSHIFT,
@@ -125,9 +125,13 @@ typedef enum {
 #endif
 
     // This is not emitted by the compiler but is supported by the runtime
-    MP_BINARY_OP_DIVMOD,
+    MP_BINARY_OP_DIVMOD
+        #if !MICROPY_PY_REVERSE_SPECIAL_METHODS
+        = MP_BINARY_OP_NUM_BYTECODE
+        #endif
+    ,
 
-    MP_BINARY_OP_LAST_RUNTIME = MP_BINARY_OP_DIVMOD,
+    MP_BINARY_OP_NUM_RUNTIME,
 
     // These 2 are not supported by the runtime and must be synthesised by the emitter
     MP_BINARY_OP_NOT_IN,
