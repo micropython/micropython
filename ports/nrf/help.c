@@ -31,7 +31,7 @@
 #include "help_sd.h"
 #endif
 
-const char * nrf5_help_text =
+const char nrf5_help_text[] =
 "Welcome to MicroPython!\n"
 "\n"
 "For online help please visit http://micropython.org/help/.\n"
