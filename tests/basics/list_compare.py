@@ -48,3 +48,13 @@ print([1] <= [1, 0])
 print([1] <= [1, -1])
 print([1, 0] <= [1])
 print([1, -1] <= [1])
+
+
+print([] == {})
+print([] != {})
+print([1] == (1,))
+
+try:
+    print([] < {})
+except TypeError:
+    print("TypeError")

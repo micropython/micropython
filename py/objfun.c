@@ -28,15 +28,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objfun.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/bc.h"
 #include "py/stackctrl.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
 #define DEBUG_PRINT (0)

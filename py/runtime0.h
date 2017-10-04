@@ -43,60 +43,93 @@
 #define MP_NATIVE_TYPE_PTR32 (0x07)
 
 typedef enum {
-    MP_UNARY_OP_BOOL, // __bool__
-    MP_UNARY_OP_LEN, // __len__
-    MP_UNARY_OP_HASH, // __hash__; must return a small int
+    // These ops may appear in the bytecode. Changing this group
+    // in any way requires changing the bytecode version.
     MP_UNARY_OP_POSITIVE,
     MP_UNARY_OP_NEGATIVE,
     MP_UNARY_OP_INVERT,
     MP_UNARY_OP_NOT,
+
+    // Following ops cannot appear in the bytecode
+    MP_UNARY_OP_NON_BYTECODE,
+
+    MP_UNARY_OP_BOOL = MP_UNARY_OP_NON_BYTECODE, // __bool__
+    MP_UNARY_OP_LEN, // __len__
+    MP_UNARY_OP_HASH, // __hash__; must return a small int
+    MP_UNARY_OP_ABS, // __abs__
+    MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 } mp_unary_op_t;
 
+// Note: the first 35 of these are used in bytecode and changing
+// them requires changing the bytecode version.
 typedef enum {
-    MP_BINARY_OP_OR,
-    MP_BINARY_OP_XOR,
-    MP_BINARY_OP_AND,
-    MP_BINARY_OP_LSHIFT,
-    MP_BINARY_OP_RSHIFT,
-
-    MP_BINARY_OP_ADD,
-    MP_BINARY_OP_SUBTRACT,
-    MP_BINARY_OP_MULTIPLY,
-    MP_BINARY_OP_FLOOR_DIVIDE,
-    MP_BINARY_OP_TRUE_DIVIDE,
-
-    MP_BINARY_OP_MODULO,
-    MP_BINARY_OP_POWER,
-    MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
-    MP_BINARY_OP_INPLACE_OR,
-    MP_BINARY_OP_INPLACE_XOR,
-
-    MP_BINARY_OP_INPLACE_AND,
-    MP_BINARY_OP_INPLACE_LSHIFT,
-    MP_BINARY_OP_INPLACE_RSHIFT,
-    MP_BINARY_OP_INPLACE_ADD,
-    MP_BINARY_OP_INPLACE_SUBTRACT,
-
-    MP_BINARY_OP_INPLACE_MULTIPLY,
-    MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
-    MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
-    MP_BINARY_OP_INPLACE_MODULO,
-    MP_BINARY_OP_INPLACE_POWER,
-
-    // these should return a bool
+    // Relational operations, should return a bool
     MP_BINARY_OP_LESS,
     MP_BINARY_OP_MORE,
     MP_BINARY_OP_EQUAL,
     MP_BINARY_OP_LESS_EQUAL,
     MP_BINARY_OP_MORE_EQUAL,
-
     MP_BINARY_OP_NOT_EQUAL,
+
     MP_BINARY_OP_IN,
     MP_BINARY_OP_IS,
     MP_BINARY_OP_EXCEPTION_MATCH,
     // these are not supported by the runtime and must be synthesised by the emitter
     MP_BINARY_OP_NOT_IN,
     MP_BINARY_OP_IS_NOT,
+
+    // Arithmetic operations
+    MP_BINARY_OP_INPLACE_OR,
+    MP_BINARY_OP_INPLACE_XOR,
+    MP_BINARY_OP_INPLACE_AND,
+    MP_BINARY_OP_INPLACE_LSHIFT,
+    MP_BINARY_OP_INPLACE_RSHIFT,
+    MP_BINARY_OP_INPLACE_ADD,
+
+    MP_BINARY_OP_INPLACE_SUBTRACT,
+    MP_BINARY_OP_INPLACE_MULTIPLY,
+    MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
+    MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
+    MP_BINARY_OP_INPLACE_MODULO,
+    MP_BINARY_OP_INPLACE_POWER,
+
+    MP_BINARY_OP_OR,
+    MP_BINARY_OP_XOR,
+    MP_BINARY_OP_AND,
+    MP_BINARY_OP_LSHIFT,
+    MP_BINARY_OP_RSHIFT,
+    MP_BINARY_OP_ADD,
+
+    MP_BINARY_OP_SUBTRACT,
+    MP_BINARY_OP_MULTIPLY,
+    MP_BINARY_OP_FLOOR_DIVIDE,
+    MP_BINARY_OP_TRUE_DIVIDE,
+    MP_BINARY_OP_MODULO,
+    MP_BINARY_OP_POWER,
+
+    // Operations below this line don't appear in bytecode, they
+    // just identify special methods.
+
+    // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
+#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    MP_BINARY_OP_REVERSE_OR,
+    MP_BINARY_OP_REVERSE_XOR,
+    MP_BINARY_OP_REVERSE_AND,
+    MP_BINARY_OP_REVERSE_LSHIFT,
+    MP_BINARY_OP_REVERSE_RSHIFT,
+    MP_BINARY_OP_REVERSE_ADD,
+
+    MP_BINARY_OP_REVERSE_SUBTRACT,
+    MP_BINARY_OP_REVERSE_MULTIPLY,
+    MP_BINARY_OP_REVERSE_FLOOR_DIVIDE,
+    MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
+    MP_BINARY_OP_REVERSE_MODULO,
+    MP_BINARY_OP_REVERSE_POWER,
+#endif
+
+    MP_BINARY_OP_DIVMOD, // not emitted by the compiler but supported by the runtime
+
+    MP_BINARY_OP_LAST,
 } mp_binary_op_t;
 
 typedef enum {

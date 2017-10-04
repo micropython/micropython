@@ -373,11 +373,18 @@
 #define MICROPY_DEBUG_PRINTERS (0)
 #endif
 
+// Whether to enable all debugging outputs (it will be extremely verbose)
+#ifndef MICROPY_DEBUG_VERBOSE
+#define MICROPY_DEBUG_VERBOSE (0)
+#endif
+
 /*****************************************************************************/
 /* Optimisations                                                             */
 
 // Whether to use computed gotos in the VM, or a switch
 // Computed gotos are roughly 10% faster, and increase VM code size by a little
+// Note: enabling this will use the gcc-specific extensions of ranged designated
+// initialisers and addresses of labels, which are not part of the C99 standard.
 #ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
@@ -524,6 +531,11 @@ typedef long long mp_longint_impl_t;
 // Whether issue warnings during compiling/execution
 #ifndef MICROPY_WARNINGS
 #define MICROPY_WARNINGS (0)
+#endif
+
+// This macro is used when printing runtime warnings and errors
+#ifndef MICROPY_ERROR_PRINTER
+#define MICROPY_ERROR_PRINTER (&mp_plat_print)
 #endif
 
 // Float and complex implementation
@@ -686,6 +698,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_STR_UNICODE (0)
 #endif
 
+// Whether to check for valid UTF-8 when converting bytes to str
+#ifndef MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+#define MICROPY_PY_BUILTINS_STR_UNICODE_CHECK (MICROPY_PY_BUILTINS_STR_UNICODE)
+#endif
+
 // Whether str.center() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_CENTER
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
@@ -749,9 +766,17 @@ typedef double mp_float_t;
 #endif
 
 // Whether to support complete set of special methods
-// for user classes, otherwise only the most used
+// for user classes, or only the most used ones. "Reverse"
+// methods are controlled by MICROPY_PY_REVERSE_SPECIAL_METHODS
+// below.
 #ifndef MICROPY_PY_ALL_SPECIAL_METHODS
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
+#endif
+
+// Whether to support reverse arithmetic operarions methods
+// (__radd__, etc.)
+#ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
 #endif
 
 // Whether to support compile function
@@ -942,6 +967,11 @@ typedef double mp_float_t;
 // Whether to provide "sys.exit" function
 #ifndef MICROPY_PY_SYS_EXIT
 #define MICROPY_PY_SYS_EXIT (1)
+#endif
+
+// Whether to provide "sys.getsizeof" function
+#ifndef MICROPY_PY_SYS_GETSIZEOF
+#define MICROPY_PY_SYS_GETSIZEOF (0)
 #endif
 
 // Whether to provide sys.{stdin,stdout,stderr} objects

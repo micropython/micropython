@@ -30,8 +30,7 @@
 
 typedef struct _mp_spiflash_t {
     mp_hal_pin_obj_t cs;
-    // TODO replace with generic SPI object
-    mp_machine_soft_spi_obj_t spi;
+    mp_obj_base_t *spi; // object must have protocol pointing to mp_machine_spi_p_t struct
 } mp_spiflash_t;
 
 void mp_spiflash_init(mp_spiflash_t *self);

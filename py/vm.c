@@ -29,8 +29,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/emitglue.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
@@ -1124,7 +1122,7 @@ unwind_return:
                             }
                         }
                         if (obj == MP_OBJ_NULL) {
-                            obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "No active exception to reraise");
+                            obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "no active exception to reraise");
                             RAISE(obj);
                         }
                     } else {

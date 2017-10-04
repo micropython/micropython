@@ -48,6 +48,9 @@ void printre(Regexp*);
 #ifndef re1_5_fatal
 void re1_5_fatal(char*);
 #endif
+#ifndef re1_5_stack_chk
+#define re1_5_stack_chk()
+#endif
 void *mal(int);
 
 struct Prog

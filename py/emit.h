@@ -28,7 +28,6 @@
 
 #include "py/lexer.h"
 #include "py/scope.h"
-#include "py/runtime0.h"
 
 /* Notes on passes:
  * We don't know exactly the opcodes in pass 1 because they depend on the

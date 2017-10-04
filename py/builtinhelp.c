@@ -32,7 +32,7 @@
 
 #if MICROPY_PY_BUILTINS_HELP
 
-const char *mp_help_default_text =
+const char mp_help_default_text[] =
 "Welcome to MicroPython!\n"
 "\n"
 "For online docs please visit http://docs.micropython.org/\n"
@@ -136,20 +136,19 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     }
     #endif
 
+    mp_obj_type_t *type = mp_obj_get_type(obj);
+
     // try to print something sensible about the given object
     mp_print_str(MP_PYTHON_PRINTER, "object ");
     mp_obj_print(obj, PRINT_STR);
-    mp_printf(MP_PYTHON_PRINTER, " is of type %s\n", mp_obj_get_type_str(obj));
+    mp_printf(MP_PYTHON_PRINTER, " is of type %q\n", type->name);
 
     mp_map_t *map = NULL;
-    if (MP_OBJ_IS_TYPE(obj, &mp_type_module)) {
+    if (type == &mp_type_module) {
         map = mp_obj_dict_get_map(mp_obj_module_get_globals(obj));
     } else {
-        mp_obj_type_t *type;
-        if (MP_OBJ_IS_TYPE(obj, &mp_type_type)) {
-            type = obj;
-        } else {
-            type = mp_obj_get_type(obj);
+        if (type == &mp_type_type) {
+            type = MP_OBJ_TO_PTR(obj);
         }
         if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
             map = mp_obj_dict_get_map(type->locals_dict);

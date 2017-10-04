@@ -27,7 +27,6 @@
 #define MICROPY_INCLUDED_PY_BC_H
 
 #include "py/runtime.h"
-#include "py/obj.h"
 #include "py/objfun.h"
 
 // bytecode layout:

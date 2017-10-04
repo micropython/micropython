@@ -26,7 +26,6 @@
 
 #include <stdint.h>
 
-#include "py/nlr.h"
 #include "py/objfun.h"
 #include "py/compile.h"
 #include "py/runtime.h"

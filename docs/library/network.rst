@@ -9,7 +9,7 @@ This module provides network drivers and routing configuration. To use this
 module, a MicroPython variant/build with network capabilities must be installed.
 Network drivers for specific hardware are available within this module and are
 used to configure hardware network interface(s). Network services provided
-by configured interfaces are then available for use via the :mod:`socket`
+by configured interfaces are then available for use via the :mod:`usocket`
 module.
 
 For example::
@@ -39,9 +39,9 @@ Common network adapter interface
 ================================
 
 This section describes an (implied) abstract base class for all network
-interface classes implemented by different ports of MicroPython for
-different hardware. This means that MicroPython does not actually
-provide `AbstractNIC` class, but any actual NIC class, as described
+interface classes implemented by `MicroPython ports <MicroPython port>`
+for different hardware. This means that MicroPython does not actually
+provide ``AbstractNIC`` class, but any actual NIC class, as described
 in the following sections, implements methods as described here.
 
 .. class:: AbstractNIC(id=None, ...)
@@ -411,7 +411,7 @@ parameter should be `id`.
         print(ap.config('channel'))
 
        Following are commonly supported parameters (availability of a specific parameter
-       depends on network technology type, driver, and MicroPython port).
+       depends on network technology type, driver, and `MicroPython port`).
 
        =========  ===========
        Parameter  Description

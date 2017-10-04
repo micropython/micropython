@@ -30,7 +30,7 @@
 #include <assert.h>
 
 #include "py/mpconfig.h"
-#include "py/misc.h"
+#include "py/runtime.h"
 #include "py/mpprint.h"
 
 // returned value is always at least 1 greater than argument
@@ -92,7 +92,9 @@ void vstr_free(vstr_t *vstr) {
 // Extend vstr strictly by requested size, return pointer to newly added chunk.
 char *vstr_extend(vstr_t *vstr, size_t size) {
     if (vstr->fixed_buf) {
-        return NULL;
+        // We can't reallocate, and the caller is expecting the space to
+        // be there, so the only safe option is to raise an exception.
+        mp_raise_msg(&mp_type_RuntimeError, NULL);
     }
     char *new_buf = m_renew(char, vstr->buf, vstr->alloc, vstr->alloc + size);
     char *p = new_buf + vstr->alloc;
@@ -101,17 +103,18 @@ char *vstr_extend(vstr_t *vstr, size_t size) {
     return p;
 }
 
-STATIC bool vstr_ensure_extra(vstr_t *vstr, size_t size) {
+STATIC void vstr_ensure_extra(vstr_t *vstr, size_t size) {
     if (vstr->len + size > vstr->alloc) {
         if (vstr->fixed_buf) {
-            return false;
+            // We can't reallocate, and the caller is expecting the space to
+            // be there, so the only safe option is to raise an exception.
+            mp_raise_msg(&mp_type_RuntimeError, NULL);
         }
         size_t new_alloc = ROUND_ALLOC((vstr->len + size) + 16);
         char *new_buf = m_renew(char, vstr->buf, vstr->alloc, new_alloc);
         vstr->alloc = new_alloc;
         vstr->buf = new_buf;
     }
-    return true;
 }
 
 void vstr_hint_size(vstr_t *vstr, size_t size) {
@@ -119,9 +122,7 @@ void vstr_hint_size(vstr_t *vstr, size_t size) {
 }
 
 char *vstr_add_len(vstr_t *vstr, size_t len) {
-    if (!vstr_ensure_extra(vstr, len)) {
-        return NULL;
-    }
+    vstr_ensure_extra(vstr, len);
     char *buf = vstr->buf + vstr->len;
     vstr->len += len;
     return buf;
@@ -131,9 +132,7 @@ char *vstr_add_len(vstr_t *vstr, size_t len) {
 char *vstr_null_terminated_str(vstr_t *vstr) {
     // If there's no more room, add single byte
     if (vstr->alloc == vstr->len) {
-        if (vstr_extend(vstr, 1) == NULL) {
-            return NULL;
-        }
+        vstr_extend(vstr, 1);
     }
     vstr->buf[vstr->len] = '\0';
     return vstr->buf;
@@ -141,9 +140,6 @@ char *vstr_null_terminated_str(vstr_t *vstr) {
 
 void vstr_add_byte(vstr_t *vstr, byte b) {
     byte *buf = (byte*)vstr_add_len(vstr, 1);
-    if (buf == NULL) {
-        return;
-    }
     buf[0] = b;
 }
 
@@ -153,31 +149,19 @@ void vstr_add_char(vstr_t *vstr, unichar c) {
     // Is it worth just calling vstr_add_len(vstr, 4)?
     if (c < 0x80) {
         byte *buf = (byte*)vstr_add_len(vstr, 1);
-        if (buf == NULL) {
-            return;
-        }
         *buf = (byte)c;
     } else if (c < 0x800) {
         byte *buf = (byte*)vstr_add_len(vstr, 2);
-        if (buf == NULL) {
-            return;
-        }
         buf[0] = (c >> 6) | 0xC0;
         buf[1] = (c & 0x3F) | 0x80;
     } else if (c < 0x10000) {
         byte *buf = (byte*)vstr_add_len(vstr, 3);
-        if (buf == NULL) {
-            return;
-        }
         buf[0] = (c >> 12) | 0xE0;
         buf[1] = ((c >> 6) & 0x3F) | 0x80;
         buf[2] = (c & 0x3F) | 0x80;
     } else {
         assert(c < 0x110000);
         byte *buf = (byte*)vstr_add_len(vstr, 4);
-        if (buf == NULL) {
-            return;
-        }
         buf[0] = (c >> 18) | 0xF0;
         buf[1] = ((c >> 12) & 0x3F) | 0x80;
         buf[2] = ((c >> 6) & 0x3F) | 0x80;
@@ -193,16 +177,7 @@ void vstr_add_str(vstr_t *vstr, const char *str) {
 }
 
 void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
-    if (!vstr_ensure_extra(vstr, len)) {
-        // if buf is fixed, we got here because there isn't enough room left
-        // so just try to copy as much as we can, with room for a possible null byte
-        if (vstr->fixed_buf && vstr->len < vstr->alloc) {
-            len = vstr->alloc - vstr->len;
-            goto copy;
-        }
-        return;
-    }
-copy:
+    vstr_ensure_extra(vstr, len);
     memmove(vstr->buf + vstr->len, str, len);
     vstr->len += len;
 }
@@ -214,9 +189,7 @@ STATIC char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len
     }
     if (byte_len > 0) {
         // ensure room for the new bytes
-        if (!vstr_ensure_extra(vstr, byte_len)) {
-            return NULL;
-        }
+        vstr_ensure_extra(vstr, byte_len);
         // copy up the string to make room for the new bytes
         memmove(vstr->buf + byte_pos + byte_len, vstr->buf + byte_pos, l - byte_pos);
         // increase the length
@@ -227,17 +200,13 @@ STATIC char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len
 
 void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
     char *s = vstr_ins_blank_bytes(vstr, byte_pos, 1);
-    if (s != NULL) {
-        *s = b;
-    }
+    *s = b;
 }
 
 void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
     // TODO UNICODE
     char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
-    if (s != NULL) {
-        *s = chr;
-    }
+    *s = chr;
 }
 
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {

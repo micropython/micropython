@@ -19,49 +19,48 @@ before_script:
   - sudo apt-get install -y --force-yes gcc-arm-none-eabi
   # For teensy build
   - sudo apt-get install realpath
-  # For coverage testing
-  # cpp-coveralls 0.4 conflicts with urllib3 preinstalled in Travis VM
-  - sudo pip install cpp-coveralls==0.3.12
+  # For coverage testing (upgrade is used to get latest urllib3 version)
+  - sudo pip install --upgrade cpp-coveralls
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version
 
 script:
   - make -C mpy-cross
-  - make -C minimal CROSS=1 build/firmware.bin
-  - ls -l minimal/build/firmware.bin
+  - make -C ports/minimal CROSS=1 build/firmware.bin
+  - ls -l ports/minimal/build/firmware.bin
   - tools/check_code_size.sh
   - mkdir -p ${HOME}/persist
   # Save new firmware for reference, but only if building a main branch, not a pull request
-  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp minimal/build/firmware.bin ${HOME}/persist/; fi'
-  - make -C unix deplibs
-  - make -C unix
-  - make -C unix nanbox
-  - make -C bare-arm
-  - make -C qemu-arm test
-  - make -C stmhal
-  - make -C stmhal BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
-  - make -C stmhal BOARD=STM32F769DISC
-  - make -C stmhal BOARD=STM32L476DISC
-  - make -C teensy
-  - make -C cc3200 BTARGET=application BTYPE=release
-  - make -C cc3200 BTARGET=bootloader  BTYPE=release
-  - make -C windows CROSS_COMPILE=i686-w64-mingw32-
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
+  - make -C ports/unix deplibs
+  - make -C ports/unix
+  - make -C ports/unix nanbox
+  - make -C ports/bare-arm
+  - make -C ports/qemu-arm test
+  - make -C ports/stm32
+  - make -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
+  - make -C ports/stm32 BOARD=STM32F769DISC
+  - make -C ports/stm32 BOARD=STM32L476DISC
+  - make -C ports/teensy
+  - make -C ports/cc3200 BTARGET=application BTYPE=release
+  - make -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+  - make -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
 
   # run tests with coverage info
-  - make -C unix coverage
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests -d thread)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --emit native)
-  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../unix/micropython_coverage ./run-tests --via-mpy -d basics float)
+  - make -C ports/unix coverage
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
+  - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float)
 
   # run coveralls coverage analysis (try to, even if some builds/tests failed)
-  - (cd unix && coveralls --root .. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+  - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
 
 after_failure:
   - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
-  - (grep "FAIL" qemu-arm/build/console.out)
+  - (grep "FAIL" ports/qemu-arm/build/console.out)

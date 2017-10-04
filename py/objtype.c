@@ -30,12 +30,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/objtype.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -113,13 +111,15 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
     assert(lookup->dest[0] == MP_OBJ_NULL);
     assert(lookup->dest[1] == MP_OBJ_NULL);
     for (;;) {
+        DEBUG_printf("mp_obj_class_lookup: Looking up %s in %s\n", qstr_str(lookup->attr), qstr_str(type->name));
         // Optimize special method lookup for native types
         // This avoids extra method_name => slot lookup. On the other hand,
         // this should not be applied to class types, as will result in extra
         // lookup either.
         if (lookup->meth_offset != 0 && mp_obj_is_native_type(type)) {
             if (*(void**)((char*)type + lookup->meth_offset) != NULL) {
-                DEBUG_printf("mp_obj_class_lookup: matched special meth slot for %s\n", qstr_str(lookup->attr));
+                DEBUG_printf("mp_obj_class_lookup: Matched special meth slot (off=%d) for %s\n",
+                    lookup->meth_offset, qstr_str(lookup->attr));
                 lookup->dest[0] = MP_OBJ_SENTINEL;
                 return;
             }
@@ -150,7 +150,8 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
 #if DEBUG_PRINT
                 printf("mp_obj_class_lookup: Returning: ");
                 mp_obj_print(lookup->dest[0], PRINT_REPR); printf(" ");
-                mp_obj_print(lookup->dest[1], PRINT_REPR); printf("\n");
+                // Don't try to repr() lookup->dest[1], as we can be called recursively
+                printf("<%s @%p>\n", mp_obj_get_type_str(lookup->dest[1]), lookup->dest[1]);
 #endif
                 return;
             }
@@ -169,6 +170,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         // attribute not found, keep searching base classes
 
         if (type->parent == NULL) {
+            DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
         } else if (((mp_obj_base_t*)type->parent)->type == &mp_type_tuple) {
             const mp_obj_tuple_t *parent_tuple = type->parent;
@@ -251,9 +253,9 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
 
     mp_obj_instance_t *o = MP_OBJ_TO_PTR(mp_obj_new_instance(self, num_native_bases));
 
-    // This executes only "__new__" part of obejection creation.
-    // TODO: This won't work will for classes with native bases.
-    // TODO: This is hack, should be resolved along the lines of
+    // This executes only "__new__" part of instance creation.
+    // TODO: This won't work well for classes with native bases.
+    // TODO: This is a hack, should be resolved along the lines of
     // https://github.com/micropython/micropython/issues/606#issuecomment-43685883
     if (n_args == 1 && *args == MP_OBJ_SENTINEL) {
         return MP_OBJ_FROM_PTR(o);
@@ -330,7 +332,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     return MP_OBJ_FROM_PTR(o);
 }
 
-const qstr mp_unary_op_method_name[] = {
+const uint16_t mp_unary_op_method_name[] = {
     [MP_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [MP_UNARY_OP_LEN] = MP_QSTR___len__,
     [MP_UNARY_OP_HASH] = MP_QSTR___hash__,
@@ -339,11 +341,27 @@ const qstr mp_unary_op_method_name[] = {
     [MP_UNARY_OP_NEGATIVE] = MP_QSTR___neg__,
     [MP_UNARY_OP_INVERT] = MP_QSTR___invert__,
     #endif
+    #if MICROPY_PY_SYS_GETSIZEOF
+    [MP_UNARY_OP_SIZEOF] = MP_QSTR_getsizeof,
+    #endif
     [MP_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this, used to make sure array has full size
 };
 
-STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
+
+    #if MICROPY_PY_SYS_GETSIZEOF
+    if (MP_UNLIKELY(op == MP_UNARY_OP_SIZEOF)) {
+        // TODO: This doesn't count inherited objects (self->subobj)
+        const mp_obj_type_t *native_base;
+        size_t num_native_bases = instance_count_native_bases(mp_obj_get_type(self_in), &native_base);
+
+        size_t sz = sizeof(*self) + sizeof(*self->subobj) * num_native_bases
+            + sizeof(*self->members.table) * self->members.alloc;
+        return MP_OBJ_NEW_SMALL_INT(sz);
+    }
+    #endif
+
     qstr op_name = mp_unary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -388,7 +406,7 @@ STATIC mp_obj_t instance_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
-const qstr mp_binary_op_method_name[] = {
+const uint16_t mp_binary_op_method_name[] = {
     /*
     MP_BINARY_OP_OR,
     MP_BINARY_OP_XOR,
@@ -421,6 +439,13 @@ const qstr mp_binary_op_method_name[] = {
     MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
     MP_BINARY_OP_INPLACE_MODULO,
     MP_BINARY_OP_INPLACE_POWER,*/
+
+    #if MICROPY_PY_REVERSE_SPECIAL_METHODS
+    [MP_BINARY_OP_REVERSE_ADD] = MP_QSTR___radd__,
+    [MP_BINARY_OP_REVERSE_SUBTRACT] = MP_QSTR___rsub__,
+    [MP_BINARY_OP_REVERSE_MULTIPLY] = MP_QSTR___rmul__,
+    #endif
+
     [MP_BINARY_OP_LESS] = MP_QSTR___lt__,
     [MP_BINARY_OP_MORE] = MP_QSTR___gt__,
     [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
@@ -433,13 +458,14 @@ const qstr mp_binary_op_method_name[] = {
     /*
     MP_BINARY_OP_IS,
     */
-    [MP_BINARY_OP_EXCEPTION_MATCH] = MP_QSTR_, // not implemented, used to make sure array has full size
+    [MP_BINARY_OP_LAST] = 0, // used to make sure array has full size, TODO: FIXME
 };
 
-STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+retry:;
     qstr op_name = mp_binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -455,14 +481,36 @@ STATIC mp_obj_t instance_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, lhs->base.type);
+
+    mp_obj_t res;
     if (dest[0] == MP_OBJ_SENTINEL) {
-        return mp_binary_op(op, lhs->subobj[0], rhs_in);
+        res = mp_binary_op(op, lhs->subobj[0], rhs_in);
     } else if (dest[0] != MP_OBJ_NULL) {
         dest[2] = rhs_in;
-        return mp_call_method_n_kw(1, 0, dest);
+        res = mp_call_method_n_kw(1, 0, dest);
     } else {
+        // If this was an inplace method, fallback to normal method
+        // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
+        // "If a specific method is not defined, the augmented assignment
+        // falls back to the normal methods."
+        if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
+            op -= MP_BINARY_OP_INPLACE_OR - MP_BINARY_OP_OR;
+            goto retry;
+        }
         return MP_OBJ_NULL; // op not supported
     }
+
+    #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
+    // NotImplemented means "try other fallbacks (like calling __rop__
+    // instead of __op__) and if nothing works, raise TypeError". As
+    // MicroPython doesn't implement any fallbacks, signal to raise
+    // TypeError right away.
+    if (res == mp_const_notimplemented) {
+        return MP_OBJ_NULL; // op not supported
+    }
+    #endif
+
+    return res;
 }
 
 STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {

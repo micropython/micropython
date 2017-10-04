@@ -30,13 +30,7 @@
 
 #include <math.h>
 
-/// \module cmath - mathematical functions for complex numbers
-///
-/// The `cmath` module provides some basic mathematical funtions for
-/// working with complex numbers.
-
-/// \function phase(z)
-/// Returns the phase of the number `z`, in the range (-pi, +pi].
+// phase(z): returns the phase of the number z in the range (-pi, +pi]
 STATIC mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
@@ -44,8 +38,7 @@ STATIC mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_phase_obj, mp_cmath_phase);
 
-/// \function polar(z)
-/// Returns, as a tuple, the polar form of `z`.
+// polar(z): returns the polar form of z as a tuple
 STATIC mp_obj_t mp_cmath_polar(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
@@ -57,8 +50,7 @@ STATIC mp_obj_t mp_cmath_polar(mp_obj_t z_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_polar_obj, mp_cmath_polar);
 
-/// \function rect(r, phi)
-/// Returns the complex number with modulus `r` and phase `phi`.
+// rect(r, phi): returns the complex number with modulus r and phase phi
 STATIC mp_obj_t mp_cmath_rect(mp_obj_t r_obj, mp_obj_t phi_obj) {
     mp_float_t r = mp_obj_get_float(r_obj);
     mp_float_t phi = mp_obj_get_float(phi_obj);
@@ -66,8 +58,7 @@ STATIC mp_obj_t mp_cmath_rect(mp_obj_t r_obj, mp_obj_t phi_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_cmath_rect_obj, mp_cmath_rect);
 
-/// \function exp(z)
-/// Return the exponential of `z`.
+// exp(z): return the exponential of z
 STATIC mp_obj_t mp_cmath_exp(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
@@ -76,8 +67,7 @@ STATIC mp_obj_t mp_cmath_exp(mp_obj_t z_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_exp_obj, mp_cmath_exp);
 
-/// \function log(z)
-/// Return the natural logarithm of `z`.  The branch cut is along the negative real axis.
+// log(z): return the natural logarithm of z, with branch cut along the negative real axis
 // TODO can take second argument, being the base
 STATIC mp_obj_t mp_cmath_log(mp_obj_t z_obj) {
     mp_float_t real, imag;
@@ -87,8 +77,7 @@ STATIC mp_obj_t mp_cmath_log(mp_obj_t z_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log_obj, mp_cmath_log);
 
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-/// \function log10(z)
-/// Return the base-10 logarithm of `z`.  The branch cut is along the negative real axis.
+// log10(z): return the base-10 logarithm of z, with branch cut along the negative real axis
 STATIC mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
@@ -97,8 +86,7 @@ STATIC mp_obj_t mp_cmath_log10(mp_obj_t z_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_log10_obj, mp_cmath_log10);
 #endif
 
-/// \function sqrt(z)
-/// Return the square-root of `z`.
+// sqrt(z): return the square-root of z
 STATIC mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
@@ -108,8 +96,7 @@ STATIC mp_obj_t mp_cmath_sqrt(mp_obj_t z_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sqrt_obj, mp_cmath_sqrt);
 
-/// \function cos(z)
-/// Return the cosine of `z`.
+// cos(z): return the cosine of z
 STATIC mp_obj_t mp_cmath_cos(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);
@@ -117,8 +104,7 @@ STATIC mp_obj_t mp_cmath_cos(mp_obj_t z_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_cos_obj, mp_cmath_cos);
 
-/// \function sin(z)
-/// Return the sine of `z`.
+// sin(z): return the sine of z
 STATIC mp_obj_t mp_cmath_sin(mp_obj_t z_obj) {
     mp_float_t real, imag;
     mp_obj_get_complex(z_obj, &real, &imag);

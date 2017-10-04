@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 
-#include "py/mpstate.h"
 #include "py/builtin.h"
 #include "py/stackctrl.h"
 #include "py/runtime.h"

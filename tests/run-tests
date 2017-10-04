@@ -13,10 +13,10 @@ from glob import glob
 # to the correct executable.
 if os.name == 'nt':
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3.exe')
-    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../windows/micropython.exe')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../ports/windows/micropython.exe')
 else:
     CPYTHON3 = os.getenv('MICROPY_CPYTHON3', 'python3')
-    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../unix/micropython')
+    MICROPYTHON = os.getenv('MICROPY_MICROPYTHON', '../ports/unix/micropython')
 
 # mpy-cross is only needed if --via-mpy command-line arg is passed
 MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
@@ -103,7 +103,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         os.close(master)
                         os.close(slave)
                 else:
-                    output_mupy = subprocess.check_output(args + [test_file])
+                    output_mupy = subprocess.check_output(args + [test_file], stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
                 return b'CRASH'
 
@@ -124,7 +124,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist)
+                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
                 output_mupy = b'CRASH'
 
@@ -207,31 +207,37 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_set_type = False
     skip_async = False
     skip_const = False
+    skip_revops = False
 
     # Check if micropython.native is supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'native_check.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'native_check.py')
+    if output == b'CRASH':
         skip_native = True
 
     # Check if arbitrary-precision integers are supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'int_big.py')
-    if native != b'1000000000000000000000000000000000000000000000\n':
+    output = run_feature_check(pyb, args, base_path, 'int_big.py')
+    if output != b'1000000000000000000000000000000000000000000000\n':
         skip_int_big = True
 
     # Check if set type (and set literals) is supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'set_check.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'set_check.py')
+    if output == b'CRASH':
         skip_set_type = True
 
     # Check if async/await keywords are supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'async_check.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'async_check.py')
+    if output == b'CRASH':
         skip_async = True
 
     # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
-    native = run_feature_check(pyb, args, base_path, 'const.py')
-    if native == b'CRASH':
+    output = run_feature_check(pyb, args, base_path, 'const.py')
+    if output == b'CRASH':
         skip_const = True
+
+    # Check if __rOP__ special methods are supported, and skip such tests if it's not
+    output = run_feature_check(pyb, args, base_path, 'reverse_ops.py')
+    if output == b'TypeError\n':
+        skip_revops = True
 
     # Check if emacs repl is supported, and skip such tests if it's not
     t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
@@ -302,6 +308,7 @@ def run_tests(pyb, tests, args, base_path="."):
         elif args.target == 'esp8266':
             skip_tests.add('misc/rge_sm.py')                # too large
         elif args.target == 'minimal':
+            skip_tests.add('basics/class_inplace_op.py')    # all special methods not supported
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
 
@@ -338,6 +345,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('misc/rge_sm.py') # requires yield
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
+        skip_tests.add('micropython/emg_exc.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
@@ -360,6 +368,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_it |= skip_set_type and is_set_type
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
+        skip_it |= skip_revops and test_name.startswith("class_reverse_op")
 
         if skip_it:
             print("skip ", test_file)

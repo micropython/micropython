@@ -23,10 +23,10 @@ QSTR_DEFS = qstrdefsport.h
 UNAME_S := $(shell uname -s)
 
 # include py core make definitions
-include ../py/py.mk
+include $(TOP)/py/py.mk
 
 INC +=  -I.
-INC +=  -I..
+INC +=  -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
@@ -65,10 +65,10 @@ SRC_C = \
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
-	SRC_C += windows/fmode.c
+	SRC_C += ports/windows/fmode.c
 endif
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-include ../py/mkrules.mk
+include $(TOP)/py/mkrules.mk
