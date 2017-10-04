@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 #include "py/formatfloat.h"
 
 /***********************************************************************
@@ -82,7 +83,6 @@ static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 
 #define FPROUND_TO_ONE 0.999999999995
 #define FPDECEXP 256
 #define FPMIN_BUF_SIZE 7 // +9e+199
-#include <math.h>
 #define fp_signbit(x) signbit(x)
 #define fp_isspecial(x) 1
 #define fp_isnan(x) isnan(x)
@@ -122,7 +122,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
         return buf_size >= 2;
     }
-    if (fp_signbit(f)) {
+    if (fp_signbit(f) && !isnan(f)) {
         *s++ = '-';
         f = -f;
     } else {
