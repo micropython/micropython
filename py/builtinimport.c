@@ -29,7 +29,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/compile.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"

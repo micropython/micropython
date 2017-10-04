@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "extmod/machine_mem.h"
-#include "py/nlr.h"
 
 #if MICROPY_PY_MACHINE
 

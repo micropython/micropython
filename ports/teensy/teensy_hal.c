@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "usb.h"

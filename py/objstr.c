@@ -28,11 +28,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/unicode.h"
 #include "py/objstr.h"
 #include "py/objlist.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 

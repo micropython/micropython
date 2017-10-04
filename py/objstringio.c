@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/objstr.h"
 #include "py/objstringio.h"
 #include "py/runtime.h"

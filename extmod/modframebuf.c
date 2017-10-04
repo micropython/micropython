@@ -27,8 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_FRAMEBUF

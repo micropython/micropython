@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 
 #if MICROPY_HW_HAS_LCD

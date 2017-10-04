@@ -24,9 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
 #include "py/mpstate.h"
-#include "py/nlr.h"
 
 #if !MICROPY_NLR_SETJMP && defined(__i386__)
 

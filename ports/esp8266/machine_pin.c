@@ -33,7 +33,6 @@
 #include "user_interface.h"
 #include "gpio.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"

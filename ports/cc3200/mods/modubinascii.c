@@ -25,8 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "extmod/modubinascii.h"

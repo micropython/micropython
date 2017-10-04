@@ -33,7 +33,6 @@
 #include <string.h>
 
 
-#include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/objstr.h"

@@ -33,7 +33,6 @@
 #include <net/net_context.h>
 #endif
 
-#include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"

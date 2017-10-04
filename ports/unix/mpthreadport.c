@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "py/mpthread.h"
 #include "py/gc.h"

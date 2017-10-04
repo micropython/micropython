@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 
-#include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/objstringio.h"
 #include "py/parsenum.h"

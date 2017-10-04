@@ -46,7 +46,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/emit.h"
 #include "py/bc.h"
 

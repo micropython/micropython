@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "bufhelper.h"

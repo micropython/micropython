@@ -29,9 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"

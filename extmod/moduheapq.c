@@ -24,9 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
 #include "py/objlist.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_UHEAPQ

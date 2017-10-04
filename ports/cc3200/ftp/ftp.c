@@ -27,8 +27,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "py/mpstate.h"
-#include "py/obj.h"
+#include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"

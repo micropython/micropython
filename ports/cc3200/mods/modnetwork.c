@@ -25,9 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
-#include "py/obj.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"

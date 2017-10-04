@@ -31,8 +31,6 @@
 #include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
-#include "py/obj.h"
-#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
 #include "lib/utils/pyexec.h"

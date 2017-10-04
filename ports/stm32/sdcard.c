@@ -26,7 +26,6 @@
 
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/oofatfs/ff.h"

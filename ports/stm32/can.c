@@ -28,7 +28,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/gc.h"

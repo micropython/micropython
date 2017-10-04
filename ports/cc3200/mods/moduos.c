@@ -28,8 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/runtime.h"

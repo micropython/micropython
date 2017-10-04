@@ -37,8 +37,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/builtin.h"

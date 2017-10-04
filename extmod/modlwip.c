@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/stream.h"

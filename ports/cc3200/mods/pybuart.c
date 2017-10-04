@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/objlist.h"
 #include "py/stream.h"
@@ -48,7 +46,6 @@
 #include "mpirq.h"
 #include "pybsleep.h"
 #include "mpexception.h"
-#include "py/mpstate.h"
 #include "osi.h"
 #include "utils.h"
 #include "pin.h"

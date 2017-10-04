@@ -99,7 +99,6 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 #if MICROPY_PERSISTENT_CODE_LOAD
 
 #include "py/parsenum.h"
-#include "py/bc0.h"
 
 STATIC int read_byte(mp_reader_t *reader) {
     return reader->readbyte(reader->data);

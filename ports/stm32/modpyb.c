@@ -27,8 +27,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/builtin.h"

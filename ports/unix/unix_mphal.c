@@ -29,7 +29,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"

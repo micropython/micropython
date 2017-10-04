@@ -31,7 +31,6 @@
 
 #include "py/mpconfig.h"
 #include "py/misc.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 // Fixed empty map. Useful when need to call kw-receiving functions

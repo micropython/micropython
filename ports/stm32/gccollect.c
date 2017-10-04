@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/gc.h"
 #include "py/mpthread.h"

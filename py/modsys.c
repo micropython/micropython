@@ -25,8 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/builtin.h"
 #include "py/objlist.h"
 #include "py/objtuple.h"
@@ -35,7 +33,6 @@
 #include "py/objtype.h"
 #include "py/stream.h"
 #include "py/smallint.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_SYS

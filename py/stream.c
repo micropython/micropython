@@ -28,7 +28,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "py/nlr.h"
 #include "py/objstr.h"
 #include "py/stream.h"
 #include "py/runtime.h"

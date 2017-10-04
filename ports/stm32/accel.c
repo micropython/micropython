@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "pin.h"
 #include "genhdr/pins.h"

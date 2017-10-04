@@ -29,7 +29,6 @@
 
 #include "esppwm.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "modmachine.h"
 

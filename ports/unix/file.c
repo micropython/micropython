@@ -31,7 +31,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/builtin.h"

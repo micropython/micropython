@@ -27,7 +27,6 @@
 
 #include <stdint.h>
 
-#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "irq.h"

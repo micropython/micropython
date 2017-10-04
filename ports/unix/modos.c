@@ -34,7 +34,6 @@
 #include <dirent.h>
 #include "py/mpconfig.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"

@@ -32,7 +32,6 @@
 #include <ffi.h>
 #include <stdint.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mperrno.h"

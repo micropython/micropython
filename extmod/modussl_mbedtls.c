@@ -31,10 +31,8 @@
 #include <string.h>
 #include <errno.h> // needed because mp_is_nonblocking_error uses system error codes
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "py/obj.h"
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"

@@ -2,7 +2,6 @@
 
 #include "Arduino.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "led.h"

@@ -26,8 +26,6 @@
 #ifndef MICROPY_INCLUDED_STMHAL_MODMACHINE_H
 #define MICROPY_INCLUDED_STMHAL_MODMACHINE_H
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/obj.h"
 
 void machine_init(void);

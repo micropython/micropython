@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpstate.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "inc/hw_types.h"

@@ -29,7 +29,6 @@
 
 #include <stdio.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"

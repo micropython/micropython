@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/obj.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/netutils/netutils.h"
 

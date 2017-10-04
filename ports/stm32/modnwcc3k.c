@@ -30,7 +30,6 @@
 // CC3000 defines its own ENOBUFS (different to standard one!)
 #undef ENOBUFS
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/stream.h"

@@ -29,8 +29,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/emitglue.h"
 #include "py/objtype.h"
 #include "py/runtime.h"

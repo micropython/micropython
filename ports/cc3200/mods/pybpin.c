@@ -29,11 +29,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "py/mpstate.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"

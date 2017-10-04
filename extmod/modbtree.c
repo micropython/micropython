@@ -29,9 +29,7 @@
 #include <errno.h> // for declaration of global errno variable
 #include <fcntl.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
-#include "py/runtime0.h"
 #include "py/stream.h"
 
 #if MICROPY_PY_BTREE

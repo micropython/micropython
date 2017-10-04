@@ -67,7 +67,6 @@
 
 #include <stdio.h>
 
-#include "py/mpstate.h"
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "stm32_it.h"

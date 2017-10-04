@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/runtime.h"

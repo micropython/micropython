@@ -29,7 +29,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "py/mpstate.h"
 #include "py/objlist.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"

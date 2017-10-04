@@ -26,8 +26,6 @@
 
 #include <stdlib.h>
 
-#include "py/obj.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 typedef struct _mp_obj_bool_t {

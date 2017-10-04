@@ -28,7 +28,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/mpstate.h"
 #include "mpexception.h"
 
 
