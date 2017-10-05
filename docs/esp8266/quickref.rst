@@ -362,3 +362,14 @@ from the repository above.
 
 See the MicroPython forum for other community-supported alternatives
 to transfer files to ESP8266.
+
+Real time clock (RTC)
+---------------------
+
+See :ref:`machine.RTC <machine.RTC>` ::
+
+    from machine import RTC
+
+    rtc = RTC()
+    rtc.datetime((2017, 8, 29, 9, 0, 0, 0, 0)) # set a specific time and date
+    print(rtc.datetime())
