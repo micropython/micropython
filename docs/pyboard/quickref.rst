@@ -173,3 +173,14 @@ See :ref:`pyb.I2C <pyb.I2C>`. ::
     i2c.recv(5, 0x42) # receive 5 bytes from slave
     i2c.mem_read(2, 0x42, 0x10) # read 2 bytes from slave 0x42, slave memory 0x10
     i2c.mem_write('xy', 0x42, 0x10) # write 2 bytes to slave 0x42, slave memory 0x10
+
+Real time clock (RTC)
+---------------------
+
+See :ref:`pyb.RTC <pyb.RTC>` ::
+
+    from pyb import RTC
+
+    rtc = RTC()
+    rtc.datetime((2017, 8, 29, 9, 0, 0, 0, 0)) # set a specific time and date
+    print(rtc.datetime())
