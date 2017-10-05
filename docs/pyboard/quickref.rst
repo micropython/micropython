@@ -71,6 +71,18 @@ See :ref:`pyb.Pin <pyb.Pin>`. ::
     p_in = Pin('X2', Pin.IN, Pin.PULL_UP)
     p_in.value() # get value, 0 or 1
 
+Switch
+------
+
+See :ref:`pyb.Switch <pyb.Switch>`. ::
+
+    from pyb import Switch
+
+    sw = Switch()
+    sw.value()
+
+    sw.callback(lambda: pyb.LED(1).toggle())
+
 Servo control
 -------------
 
