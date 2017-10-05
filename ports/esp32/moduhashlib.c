@@ -46,6 +46,7 @@ STATIC mp_obj_t sha256_make_new(const mp_obj_type_t *type,
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(union sha_ctxs));
     o->base.type = type;
     mbedtls_sha256_init(&o->state.sha256);
+    mbedtls_sha256_starts(&o->state.sha256, 0);
     if (n_args == 1) {
         sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -58,6 +59,7 @@ STATIC mp_obj_t sha1_make_new(const mp_obj_type_t *type,
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(union sha_ctxs));
     o->base.type = type;
     mbedtls_sha1_init(&o->state.sha1);
+    mbedtls_sha1_starts(&o->state.sha1);
     if (n_args == 1) {
         sha1_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
