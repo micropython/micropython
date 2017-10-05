@@ -218,3 +218,18 @@ See :ref:`pyb.RTC <pyb.RTC>` ::
     rtc = RTC()
     rtc.datetime((2017, 8, 29, 9, 0, 0, 0, 0)) # set a specific time and date
     print(rtc.datetime())
+
+USB HID (Human Interface Device)
+--------------------------------
+
+See :ref:`pyb.USB_HID <pyb.USB_HID>` ::
+
+    # set in boot.py
+    import pyb
+    pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
+
+    hid = pyb.USB_HID()
+    hid.send((0, 10, 0, 0)) # move mouse 10 pixels to the right
+    
+    accel = pyb.Accel()
+    hid.send((0, accel.x(), accel.y(), 0)) # use the accelerometer
