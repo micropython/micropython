@@ -343,7 +343,7 @@ class Pyboard:
         # check if we could exec command
         data = self.serial.read(2)
         if data != b'OK':
-            raise PyboardError('could not exec command (response: %s)' % data)
+            raise PyboardError('could not exec command (response: %r)' % data)
 
     def exec_raw(self, command, timeout=10, data_consumer=None):
         self.exec_raw_no_follow(command);
