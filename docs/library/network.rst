@@ -98,10 +98,20 @@ parameter should be `id`.
        duration and other parameters. Where possible, parameter names
        should match those in connect().
 
-    .. method:: status()
+    .. method:: status([param])
 
-       Return detailed status of the interface, values are dependent
-       on the network medium/technology.
+       Query dynamic status information of the interface.  When called with no
+       argument the return value describes the network link status.  Otherwise
+       *param* should be a string naming the particular status parameter to
+       retrieve.
+
+       The return types and values are dependent on the network
+       medium/technology.  Some of the parameters that may be supported are:
+
+       * WiFi STA: use ``'rssi'`` to retrieve the RSSI of the AP signal
+       * WiFi AP: use ``'stations'`` to retrieve a list of all the STAs
+         connected to the AP.  The list contains tuples of the form
+         (MAC, RSSI).
 
     .. method:: ifconfig([(ip, subnet, gateway, dns)])
 
@@ -118,7 +128,7 @@ parameter should be `id`.
        Get or set general network interface parameters. These methods allow to work
        with additional parameters beyond standard IP configuration (as dealt with by
        `ifconfig()`). These include network-specific and hardware-specific
-       parameters and status values. For setting parameters, the keyword argument
+       parameters. For setting parameters, the keyword argument
        syntax should be used, and multiple parameters can be set at once. For
        querying, a parameter name should be quoted as a string, and only one
        parameter can be queried at a time::
@@ -128,8 +138,6 @@ parameter should be `id`.
         # Query params one by one
         print(ap.config('essid'))
         print(ap.config('channel'))
-        # Extended status information also available this way
-        print(sta.config('rssi'))
 
 .. only:: port_pyboard
 
