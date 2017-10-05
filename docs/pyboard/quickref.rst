@@ -83,6 +83,16 @@ See :ref:`pyb.Servo <pyb.Servo>`. ::
     s1.angle(-60, 1500) # move to -60 degrees in 1500ms
     s1.speed(50) # for continuous rotation servos
 
+Accelerometer
+-------------
+
+See :ref:`pyb.Accel <pyb.Accel>`. ::
+
+    from pyb import Accel
+
+    accel = Accel()
+    print(accel.x(), accel.y(), accel.z(), accel.tilt())
+
 External interrupts
 -------------------
 
