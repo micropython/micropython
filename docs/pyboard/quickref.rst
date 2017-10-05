@@ -184,6 +184,18 @@ See :ref:`pyb.I2C <pyb.I2C>`. ::
     i2c.mem_read(2, 0x42, 0x10) # read 2 bytes from slave 0x42, slave memory 0x10
     i2c.mem_write('xy', 0x42, 0x10) # write 2 bytes to slave 0x42, slave memory 0x10
 
+CAN bus (controller area network)
+---------------------------------
+
+See :ref:`pyb.CAN <pyb.CAN>`. ::
+
+    from pyb import CAN
+
+    can = CAN(1, CAN.LOOPBACK)
+    can.setfilter(0, CAN.LIST16, 0, (123, 124, 125, 126))  # set a filter to receive messages with id=123, 124, 125 and 126
+    can.send('message!', 123)   # send a message with id 123
+    can.recv(0)                 # receive message on FIFO 0
+
 Real time clock (RTC)
 ---------------------
 
