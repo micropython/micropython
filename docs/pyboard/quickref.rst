@@ -46,10 +46,16 @@ See :ref:`pyb.LED <pyb.LED>`. ::
 
     from pyb import LED
 
-    led = LED(1) # red led
+    # LED 1 = red, 2 = green, 3 = yellow, 4 = blue
+    led = LED(1)
     led.toggle()
     led.on()
     led.off()
+    
+    # LEDs 3 and 4 support PWM intensity (0-255)
+    led4 = LED(4)
+    led4.intensity()
+    led4.intensity(128)
 
 Pins and GPIO
 -------------
