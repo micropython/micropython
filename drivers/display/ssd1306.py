@@ -1,7 +1,6 @@
 # MicroPython SSD1306 OLED driver, I2C and SPI interfaces
 
 from micropython import const
-import time
 import framebuf
 
 
@@ -47,7 +46,6 @@ class SSD1306:
         self.text = fb.text
         self.scroll = fb.scroll
         self.blit = fb.blit
-        self.poweron()
         self.init_display()
 
     def init_display(self):
@@ -79,6 +77,9 @@ class SSD1306:
 
     def poweroff(self):
         self.write_cmd(SET_DISP | 0x00)
+
+    def poweron(self):
+        self.write_cmd(SET_DISP | 0x01)
 
     def contrast(self, contrast):
         self.write_cmd(SET_CONTRAST)
@@ -123,9 +124,6 @@ class SSD1306_I2C(SSD1306):
         self.i2c.write(buf)
         self.i2c.stop()
 
-    def poweron(self):
-        self.write_cmd(SET_DISP | 0x01)
-
 
 class SSD1306_SPI(SSD1306):
     def __init__(self, width, height, spi, dc, res, cs, external_vcc=False):
@@ -137,6 +135,12 @@ class SSD1306_SPI(SSD1306):
         self.dc = dc
         self.res = res
         self.cs = cs
+        import time
+        self.res(1)
+        time.sleep_ms(1)
+        self.res(0)
+        time.sleep_ms(10)
+        self.res(1)
         super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
@@ -154,10 +158,3 @@ class SSD1306_SPI(SSD1306):
         self.cs(0)
         self.spi.write(buf)
         self.cs(1)
-
-    def poweron(self):
-        self.res(1)
-        time.sleep_ms(1)
-        self.res(0)
-        time.sleep_ms(10)
-        self.res(1)
