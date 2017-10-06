@@ -28,6 +28,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * PCA10001
   * PCA10028
   * PCA10031 (dongle)
+  * [WT51822-S4AT](http://www.wireless-tag.com/wireless_module/BLE/WT51822-S4AT.html)
 * nRF52832
   * [PCA10040](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.nrf52%2Fdita%2Fnrf52%2Fdevelopment%2Fnrf52_dev_kit.html) 
   * [Adafruit Feather nRF52](https://www.adafruit.com/product/3406)
@@ -80,6 +81,7 @@ pca10000             | s110                    | Peripheral             | [Segge
 pca10001             | s110                    | Peripheral             | [Segger](#segger-targets)
 pca10028             | s110                    | Peripheral             | [Segger](#segger-targets)
 pca10031             | s110                    | Peripheral             | [Segger](#segger-targets)
+wt51822_s4at         | s110                    | Peripheral             | Manual, see [datasheet](https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf) for pinout
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | [UART DFU](#dfu-targets)
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
