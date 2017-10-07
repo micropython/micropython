@@ -1,0 +1,2 @@
+#define MICROPY_HW_BOARD_NAME       "EDU-CIAA"
+#define MICROPY_HW_MCU_NAME         "LPC4337"
