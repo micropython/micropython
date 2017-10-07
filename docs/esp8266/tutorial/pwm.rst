@@ -60,7 +60,7 @@ Then create a function to pulse the LED::
     >>> def pulse(l, t):
     ...     for i in range(20):
     ...         l.duty(int(math.sin(i / 10 * math.pi) * 500 + 500))
-    ...         time.sleep_ms(t)
+    ...         time.sleep(t/1000)
 
 You can try this function out using::
 
