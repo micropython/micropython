@@ -492,9 +492,12 @@ def main():
     # we need to access feature_check's from the same directory as the
     # run-tests script itself.
     base_path = os.path.dirname(sys.argv[0]) or "."
-    res = run_tests(pyb, tests, args, base_path)
-    if pyb:
-        pyb.close()
+    try:
+        res = run_tests(pyb, tests, args, base_path)
+    finally:
+        if pyb:
+            pyb.close()
+
     if not res:
         sys.exit(1)
 
