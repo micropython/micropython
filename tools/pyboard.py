@@ -5,6 +5,7 @@
 # The MIT License (MIT)
 #
 # Copyright (c) 2014-2016 Damien P. George
+# Copyright (c) 2017 Paul Sokolovsky
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +29,11 @@
 pyboard interface
 
 This module provides the Pyboard class, used to communicate with and
-control the pyboard over a serial USB connection.
+control a MicroPython device over a communication channel. Both real
+boards and emulated devices (e.g. running in QEMU) are supported.
+Various communication channels are supported, including a serial
+connection, telnet-style network connection, external process
+connection.
 
 Example usage:
 
