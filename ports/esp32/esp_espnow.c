@@ -33,6 +33,8 @@
 #include "esp_now.h"
 #include "esp_wifi.h"
 
+#include "freertos/queue.h"
+
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
@@ -79,28 +81,34 @@ static inline void _get_bytes(mp_obj_t str, size_t len, uint8_t *dst) {
 
 // this is crap of course but lets try it
 
-static int recv_buf_len = 0;
-uint8_t recv_mac[6];
-static uint8_t recv_buffer[250];
+typedef struct {
+	uint8_t macaddr[ESP_NOW_ETH_ALEN];
+	uint16_t len;
+	uint8_t data[ESP_NOW_MAX_DATA_LEN];
+} esp_now_queue_t;
+
+QueueHandle_t esp_now_queue;
 
 STATIC mp_obj_t espnow_recv() {
-    if (recv_buf_len < 1) return mp_const_none;
+    static esp_now_queue_t queue_item = { 0 };
+    int r = xQueueReceive(esp_now_queue, &queue_item, 0);
+    if (r != pdTRUE) return mp_const_none;
     mp_obj_tuple_t *msg = mp_obj_new_tuple(2, NULL);
-    msg->items[0] = mp_obj_new_bytes(recv_mac, sizeof(recv_mac));
-    msg->items[1] = mp_obj_new_bytes(recv_buffer, recv_buf_len);
-    recv_buf_len = 0;
+    msg->items[0] = mp_obj_new_bytes(queue_item.macaddr, ESP_NOW_ETH_ALEN);
+    msg->items[1] = mp_obj_new_bytes(queue_item.data, queue_item.len);
     return msg;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_0(espnow_recv_obj, espnow_recv);
 
-void simple_cb(const uint8_t *macaddr, const uint8_t *data, int len) 
+void recv_cb(const uint8_t *macaddr, const uint8_t *data, int len) 
 {
-    if (len < sizeof(recv_buffer)) {
-        memcpy(recv_buffer, data, len);
-	memcpy(recv_mac, macaddr, 6);
-	recv_buf_len = len;
-    }
+    // this is double copying, perhaps I should be just queueing the pointers
+    static esp_now_queue_t queue_item = { 0 };
+    queue_item.len = len;
+    memcpy(queue_item.macaddr, macaddr, ESP_NOW_ETH_ALEN);
+    memcpy(queue_item.data, data, len);
+    xQueueSend(esp_now_queue, &queue_item, 0);
 } 
 
 static int initialized = 0;
@@ -108,8 +116,9 @@ static int initialized = 0;
 STATIC mp_obj_t espnow_init() {
     if (!initialized) {
         esp_now_init();
+	esp_now_queue = xQueueCreate(5, sizeof(esp_now_queue_t));
         initialized = 1;
-	esp_now_register_recv_cb(simple_cb);
+	esp_now_register_recv_cb(recv_cb);
     }
     return mp_const_none;
 }
@@ -118,6 +127,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(espnow_init_obj, espnow_init);
 STATIC mp_obj_t espnow_deinit() {
     if (initialized) {
         esp_now_deinit();
+	vQueueDelete(esp_now_queue);
         initialized = 0;
     }
     return mp_const_none;
@@ -125,8 +135,8 @@ STATIC mp_obj_t espnow_deinit() {
 MP_DEFINE_CONST_FUN_OBJ_0(espnow_deinit_obj, espnow_deinit);
 
 STATIC mp_obj_t espnow_set_pmk(mp_obj_t pmk) {
-    uint8_t buf[ESP_NOW_ETH_ALEN];
-    _get_bytes(pmk, ESP_NOW_ETH_ALEN, buf);
+    uint8_t buf[ESP_NOW_KEY_LEN];
+    _get_bytes(pmk, ESP_NOW_KEY_LEN, buf);
     esp_espnow_exceptions(esp_now_set_pmk(buf));
     return mp_const_none;
 }
@@ -134,15 +144,17 @@ MP_DEFINE_CONST_FUN_OBJ_1(espnow_set_pmk_obj, espnow_set_pmk);
 
 STATIC mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args) {
     esp_now_peer_info_t peer = {0};
+    // leaving channel as 0 for autodetect
     peer.ifidx = ((wlan_if_obj_t *)MP_OBJ_TO_PTR(args[0]))->if_id;
     _get_bytes(args[1], ESP_NOW_ETH_ALEN, peer.peer_addr);
-    _get_bytes(args[2], ESP_NOW_KEY_LEN, peer.lmk);
-    peer.encrypt = (n_args > 3 && mp_obj_is_true(args[3])) ? 1 : 0;
-    // leaving channel as 0 for autodetect
+    if (n_args > 2) {
+        _get_bytes(args[2], ESP_NOW_KEY_LEN, peer.lmk);
+        peer.encrypt = 1;
+    }
     esp_espnow_exceptions(esp_now_add_peer(&peer));
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_add_peer_obj, 3, 4, espnow_add_peer);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_add_peer_obj, 2, 3, espnow_add_peer);
 
 STATIC mp_obj_t espnow_send(mp_obj_t addr, mp_obj_t msg) {
     mp_uint_t len1;

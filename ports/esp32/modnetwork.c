@@ -499,18 +499,11 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
         netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
         // To set a static IP we have to disable DHCP first
-<<<<<<< HEAD
-        if (self->if_id == WIFI_IF_STA || self->if_id == ESP_IF_ETH) {
-            esp_err_t e = tcpip_adapter_dhcpc_stop(self->if_id);
-            if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
-            ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(self->if_id, &info));
-            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
-=======
         if (self->if_id == WIFI_IF_STA) {
             esp_err_t e = tcpip_adapter_dhcpc_stop(WIFI_IF_STA);
             if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_network_exceptions(e);
             ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_STA, &info));
->>>>>>> ... start on espnow
+            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
         } else if (self->if_id == WIFI_IF_AP) {
             esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
             if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_network_exceptions(e);
