@@ -15,4 +15,4 @@ It's as simple as::
             if uart.any():
                 usb.write(uart.read(256))
 
-    pass_through(pyb.USB_VCP(), pyb.UART(1, 9600))
+    pass_through(pyb.USB_VCP(), pyb.UART(1, 9600, timeout=0))

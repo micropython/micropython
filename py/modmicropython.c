@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 
-#include "py/mpstate.h"
 #include "py/builtin.h"
 #include "py/stackctrl.h"
 #include "py/runtime.h"

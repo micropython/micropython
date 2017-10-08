@@ -38,9 +38,9 @@ Constructors
         - *width* is the width of the FrameBuffer in pixels
         - *height* is the height of the FrameBuffer in pixels
         - *format* specifies the type of pixel used in the FrameBuffer;
-          valid values are ``framebuf.MVLSB``, ``framebuf.RGB565``
-          and ``framebuf.GS4_HMSB``. MVLSB is monochrome 1-bit color,
-          RGB565 is RGB 16-bit color, and GS4_HMSB is grayscale 4-bit color.
+          permissible values are listed under Constants below. These set the
+          number of bits used to encode a color value and the layout of these
+          bits in *buffer*.
           Where a color value c is passed to a method, c is a small integer
           with an encoding that is dependent on the format of the FrameBuffer.
         - *stride* is the number of pixels between each horizontal line

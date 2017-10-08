@@ -9,7 +9,9 @@ recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int n
 {
 	const char *old;
 	int off;
-	
+
+	re1_5_stack_chk();
+
 	for(;;) {
 		if(inst_is_consumer(*pc)) {
 			// If we need to match a character, but there's none left, it's fail

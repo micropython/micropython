@@ -3,5 +3,5 @@
 NORETURN void abort_(void);
 
 NORETURN void abort_(void) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "abort() called"));
+    mp_raise_msg(&mp_type_RuntimeError, "abort() called");
 }

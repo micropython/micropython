@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,7 +27,6 @@
 #define MICROPY_INCLUDED_PY_BC_H
 
 #include "py/runtime.h"
-#include "py/obj.h"
 #include "py/objfun.h"
 
 // bytecode layout:

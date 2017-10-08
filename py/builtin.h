@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -118,6 +118,6 @@ extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
 
-extern const char *MICROPY_PY_BUILTINS_HELP_TEXT;
+extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 
 #endif // MICROPY_INCLUDED_PY_BUILTIN_H

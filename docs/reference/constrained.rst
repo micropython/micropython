@@ -279,7 +279,7 @@ After importing the modules, execute:
 
 Then copy and paste all the Q(xxx) lines into a text editor. Check for and
 remove lines which are obviously invalid. Open the file qstrdefsport.h which
-will be found in stmhal (or the equivalent directory for the architecture in
+will be found in ports/stm32 (or the equivalent directory for the architecture in
 use). Copy and paste the corrected lines at the end of the file. Save the file,
 rebuild and flash the firmware. The outcome can be checked by importing the
 modules and again issuing:

@@ -11,6 +11,11 @@ a = (1, 2, 3)
 c = a * 3
 print(a, c)
 
+# inplace multiplication
+a = (1, 2)
+a *= 2
+print(a)
+
 # unsupported type on RHS
 try:
     () * None

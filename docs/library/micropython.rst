@@ -46,7 +46,7 @@ Functions
 
 .. function:: mem_info([verbose])
 
-   Print information about currently used memory.  If the *verbose`* argument
+   Print information about currently used memory.  If the *verbose* argument
    is given then extra information is printed.
 
    The information that is printed is implementation dependent, but currently

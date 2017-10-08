@@ -18,14 +18,16 @@ sts
 
 test
 tes
-larg
+RuntimeError: 
+RuntimeError: 
 # repl
 ame__
 
 __name__        path            argv            version
 version_info    implementation  platform        byteorder
 maxsize         exit            stdin           stdout
-stderr          modules         exc_info        print_exception
+stderr          modules         exc_info        getsizeof
+print_exception
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -37,7 +39,7 @@ ementation
 0
 0
 # runtime utils
-TypeError: can't convert str to int
+TypeError: unsupported type for : 'str'
 TypeError: unsupported types for : 'str', 'str'
 Warning: test
 # format float

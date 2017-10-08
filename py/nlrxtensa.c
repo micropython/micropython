@@ -25,7 +25,6 @@
  */
 
 #include "py/mpstate.h"
-#include "py/nlr.h"
 
 #if !MICROPY_NLR_SETJMP && defined(__xtensa__)
 

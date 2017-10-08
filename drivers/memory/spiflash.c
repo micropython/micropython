@@ -49,10 +49,8 @@ STATIC uint8_t buf[SECTOR_SIZE];
 void mp_spiflash_init(mp_spiflash_t *self) {
     mp_hal_pin_write(self->cs, 1);
     mp_hal_pin_output(self->cs);
-    mp_hal_pin_write(self->spi.sck, 0);
-    mp_hal_pin_output(self->spi.sck);
-    mp_hal_pin_output(self->spi.mosi);
-    mp_hal_pin_input(self->spi.miso);
+    const mp_machine_spi_p_t *protocol = self->spi->type->protocol;
+    protocol->init(self->spi, 0, NULL, (mp_map_t*)&mp_const_empty_map);
 }
 
 STATIC void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
@@ -66,7 +64,8 @@ STATIC void mp_spiflash_release_bus(mp_spiflash_t *self) {
 }
 
 STATIC void mp_spiflash_transfer(mp_spiflash_t *self, size_t len, const uint8_t *src, uint8_t *dest) {
-    mp_machine_soft_spi_transfer(&self->spi.base, len, src, dest);
+    const mp_machine_spi_p_t *protocol = self->spi->type->protocol;
+    protocol->transfer(self->spi, len, src, dest);
 }
 
 STATIC int mp_spiflash_wait_sr(mp_spiflash_t *self, uint8_t mask, uint8_t val, uint32_t timeout) {

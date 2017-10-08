@@ -1,4 +1,4 @@
-The font used for the Micro Python logo is "Exo",
+The font used for the MicroPython logo is "Exo",
 http://www.google.com/fonts/specimen/Exo.
 
 Copyright (c) 2013, Natanael Gama (https://plus.google.com/u/0/+NatanaelGama),

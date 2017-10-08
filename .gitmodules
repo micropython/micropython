@@ -11,3 +11,7 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
+[submodule "lib/stm32lib"]
+	path = lib/stm32lib
+	url = https://github.com/micropython/stm32lib
+	branch = work-F4-1.13.1+F7-1.5.0+L4-1.3.0

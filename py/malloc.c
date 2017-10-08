@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -32,7 +32,7 @@
 #include "py/misc.h"
 #include "py/mpstate.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
@@ -46,7 +46,7 @@
 #include "py/gc.h"
 
 // We redirect standard alloc functions to GC heap - just for the rest of
-// this module. In the rest of micropython source, system malloc can be
+// this module. In the rest of MicroPython source, system malloc can be
 // freely accessed - for interfacing with system and 3rd-party libs for
 // example. On the other hand, some (e.g. bare-metal) ports may use GC
 // heap as system heap, so, to avoid warnings, we do undef's first.
@@ -74,7 +74,7 @@ STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
 void *m_malloc(size_t num_bytes) {
     void *ptr = malloc(num_bytes);
     if (ptr == NULL && num_bytes != 0) {
-        return m_malloc_fail(num_bytes);
+        m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
@@ -100,7 +100,7 @@ void *m_malloc_maybe(size_t num_bytes) {
 void *m_malloc_with_finaliser(size_t num_bytes) {
     void *ptr = malloc_with_finaliser(num_bytes);
     if (ptr == NULL && num_bytes != 0) {
-        return m_malloc_fail(num_bytes);
+        m_malloc_fail(num_bytes);
     }
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
@@ -115,7 +115,7 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 void *m_malloc0(size_t num_bytes) {
     void *ptr = m_malloc(num_bytes);
     if (ptr == NULL && num_bytes != 0) {
-        return m_malloc_fail(num_bytes);
+        m_malloc_fail(num_bytes);
     }
     // If this config is set then the GC clears all memory, so we don't need to.
     #if !MICROPY_GC_CONSERVATIVE_CLEAR
@@ -131,7 +131,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes) {
 #endif
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL && new_num_bytes != 0) {
-        return m_malloc_fail(new_num_bytes);
+        m_malloc_fail(new_num_bytes);
     }
 #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,

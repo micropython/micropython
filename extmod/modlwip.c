@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "py/nlr.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/stream.h"
@@ -45,12 +44,17 @@
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
 #include "lwip/tcp_impl.h"
+#include "lwip/igmp.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
 #endif
+
+// All socket options should be globally distinct,
+// because we ignore option levels for efficiency.
+#define IP_ADD_MEMBERSHIP 0x400
 
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
@@ -124,15 +128,15 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw,
 
     ip_addr_t iplocal, ipremote;
     if (!ipaddr_aton(mp_obj_str_get_str(args[1]), &iplocal)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "not a valid local IP"));
+        mp_raise_ValueError("not a valid local IP");
     }
     if (!ipaddr_aton(mp_obj_str_get_str(args[2]), &ipremote)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "not a valid remote IP"));
+        mp_raise_ValueError("not a valid remote IP");
     }
 
     struct netif *n = &lwip_slip_obj.lwip_netif;
     if (netif_add(n, &iplocal, IP_ADDR_BROADCAST, &ipremote, NULL, slipif_init, ip_input) == NULL) {
-       nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "out of memory"));
+       mp_raise_ValueError("out of memory");
     }
     netif_set_up(n);
     netif_set_default(n);
@@ -1028,7 +1032,7 @@ STATIC mp_obj_t lwip_socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM:
-            mp_not_implemented("");
+            mp_raise_NotImplementedError("");
             break;
     }
 
@@ -1065,7 +1069,7 @@ STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblocking);
 
-STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = args[0];
 
@@ -1079,10 +1083,10 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
-    // Integer options
-    mp_int_t val = mp_obj_get_int(args[3]);
     switch (opt) {
-        case SOF_REUSEADDR:
+        // level: SOL_SOCKET
+        case SOF_REUSEADDR: {
+            mp_int_t val = mp_obj_get_int(args[3]);
             // Options are common for UDP and TCP pcb's.
             if (val) {
                 ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
@@ -1090,6 +1094,24 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
                 ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
             }
             break;
+        }
+
+        // level: IPPROTO_IP
+        case IP_ADD_MEMBERSHIP: {
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+            if (bufinfo.len != sizeof(ip_addr_t) * 2) {
+                mp_raise_ValueError(NULL);
+            }
+
+            // POSIX setsockopt has order: group addr, if addr, lwIP has it vice-versa
+            err_t err = igmp_joingroup((ip_addr_t*)bufinfo.buf + 1, bufinfo.buf);
+            if (err != ERR_OK) {
+                mp_raise_OSError(error_lookup_table[-err]);
+            }
+            break;
+        }
+
         default:
             printf("Warning: lwip.setsockopt() not implemented\n");
     }
@@ -1097,7 +1119,7 @@ STATIC mp_obj_t lwip_socket_setsockopt(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
 
-STATIC mp_obj_t lwip_socket_makefile(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t lwip_socket_makefile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     return args[0];
 }
@@ -1342,6 +1364,9 @@ STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SOF_REUSEADDR) },
+
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);

@@ -21,6 +21,7 @@ This summarises the points detailed below and lists the principal recommendation
 
 * Keep the code as short and simple as possible.
 * Avoid memory allocation: no appending to lists or insertion into dictionaries, no floating point.
+* Consider using ``micropython.schedule`` to work around the above constraint.
 * Where an ISR returns multiple bytes use a pre-allocated ``bytearray``. If multiple integers are to be
   shared between an ISR and the main program consider an array (``array.array``).
 * Where data is shared between the main program and an ISR, consider disabling interrupts prior to accessing
@@ -157,6 +158,26 @@ to floats is normally done in the main loop. However there are a few DSP algorit
 On platforms with hardware floating point (such as the Pyboard) the inline ARM Thumb assembler can be used to work
 round this limitation. This is because the processor stores float values in a machine word; values can be shared
 between the ISR and main program code via an array of floats.
+
+Using micropython.schedule
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This function enables an ISR to schedule a callback for execution "very soon". The callback is queued for
+execution which will take place at a time when the heap is not locked. Hence it can create Python objects
+and use floats. The callback is also guaranteed to run at a time when the main program has completed any
+update of Python objects, so the callback will not encounter partially updated objects.
+
+Typical usage is to handle sensor hardware. The ISR acquires data from the hardware and enables it to
+issue a further interrupt. It then schedules a callback to process the data.
+
+Scheduled callbacks should comply with the principles of interrupt handler design outlined below. This is to
+avoid problems resulting from I/O activity and the modification of shared data which can arise in any code
+which pre-empts the main program loop.
+
+Execution time needs to be considered in relation to the frequency with which interrupts can occur. If an
+interrupt occurs while the previous callback is executing, a further instance of the callback will be queued
+for execution; this will run after the current instance has completed. A sustained high interrupt repetition
+rate therefore carries a risk of unconstrained queue growth and eventual failure with a ``RuntimeError``.
 
 Exceptions
 ----------

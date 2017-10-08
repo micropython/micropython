@@ -39,7 +39,7 @@
 #include "py/smallint.h"
 
 // The current version of .mpy files
-#define MPY_VERSION (2)
+#define MPY_VERSION (3)
 
 // The feature flags byte encodes the compile-time config options that
 // affect the generate bytecode.
@@ -99,7 +99,6 @@ STATIC void extract_prelude(const byte **ip, const byte **ip2, bytecode_prelude_
 #if MICROPY_PERSISTENT_CODE_LOAD
 
 #include "py/parsenum.h"
-#include "py/bc0.h"
 
 STATIC int read_byte(mp_reader_t *reader) {
     return reader->readbyte(reader->data);
@@ -374,7 +373,7 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 // here we define mp_raw_code_save_file depending on the port
 // TODO abstract this away properly
 
-#if defined(__i386__) || defined(__x86_64__) || (defined(__arm__) && (defined(__unix__)))
+#if defined(__i386__) || defined(__x86_64__) || defined(__unix__)
 
 #include <unistd.h>
 #include <sys/stat.h>

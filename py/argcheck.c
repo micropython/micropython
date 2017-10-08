@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 
 void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
@@ -142,6 +141,6 @@ NORETURN void mp_arg_error_terse_mismatch(void) {
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_not_implemented("keyword argument(s) not yet implemented - use normal args instead");
+    mp_raise_NotImplementedError("keyword argument(s) not yet implemented - use normal args instead");
 }
 #endif

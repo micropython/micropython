@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -28,11 +28,9 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/parsenumbase.h"
 #include "py/smallint.h"
 #include "py/objint.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -141,28 +139,7 @@ int mp_obj_int_sign(mp_obj_t self_in) {
     }
 }
 
-// This must handle int and bool types, and must raise a
-// TypeError if the argument is not integral
-mp_obj_t mp_obj_int_abs(mp_obj_t self_in) {
-    if (MP_OBJ_IS_TYPE(self_in, &mp_type_int)) {
-        mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
-        mp_obj_int_t *self2 = mp_obj_int_new_mpz();
-        mpz_abs_inpl(&self2->mpz, &self->mpz);
-        return MP_OBJ_FROM_PTR(self2);
-    } else {
-        mp_int_t val = mp_obj_get_int(self_in);
-        if (val == MP_SMALL_INT_MIN) {
-            return mp_obj_new_int_from_ll(-val);
-        } else {
-            if (val < 0) {
-                val = -val;
-            }
-            return MP_OBJ_NEW_SMALL_INT(val);
-        }
-    }
-}
-
-mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
+mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(!mpz_is_zero(&o->mpz));
@@ -170,11 +147,20 @@ mp_obj_t mp_obj_int_unary_op(mp_uint_t op, mp_obj_t o_in) {
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_neg_inpl(&o2->mpz, &o->mpz); return MP_OBJ_FROM_PTR(o2); }
         case MP_UNARY_OP_INVERT: { mp_obj_int_t *o2 = mp_obj_int_new_mpz(); mpz_not_inpl(&o2->mpz, &o->mpz); return MP_OBJ_FROM_PTR(o2); }
+        case MP_UNARY_OP_ABS: {
+            mp_obj_int_t *self = MP_OBJ_TO_PTR(o_in);
+            if (self->mpz.neg == 0) {
+                return o_in;
+            }
+            mp_obj_int_t *self2 = mp_obj_int_new_mpz();
+            mpz_abs_inpl(&self2->mpz, &self->mpz);
+            return MP_OBJ_FROM_PTR(self2);
+        }
         default: return MP_OBJ_NULL; // op not supported
     }
 }
 
-mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     const mpz_t *zlhs;
     const mpz_t *zrhs;
     mpz_t z_int;
@@ -221,7 +207,7 @@ mp_obj_t mp_obj_int_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         return mp_obj_new_float(flhs / frhs);
 #endif
 
-    } else if (op <= MP_BINARY_OP_INPLACE_POWER) {
+    } else if (op >= MP_BINARY_OP_INPLACE_OR) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();
 
         switch (op) {

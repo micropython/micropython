@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -28,7 +28,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/mpstate.h"
 #include "py/reader.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
@@ -341,7 +340,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                             // 3MB of text; even gzip-compressed and with minimal structure, it'll take
                             // roughly half a meg of storage. This form of Unicode escape may be added
                             // later on, but it's definitely not a priority right now. -- CJA 20140607
-                            mp_not_implemented("unicode name escapes");
+                            mp_raise_NotImplementedError("unicode name escapes");
                             break;
                         default:
                             if (c >= '0' && c <= '7') {

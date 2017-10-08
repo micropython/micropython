@@ -1,5 +1,5 @@
 """
-Micro Python driver for SD cards using SPI bus.
+MicroPython driver for SD cards using SPI bus.
 
 Requires an SPI bus and a CS pin.  Provides readblocks and writeblocks
 methods so the device can be mounted as a filesystem.

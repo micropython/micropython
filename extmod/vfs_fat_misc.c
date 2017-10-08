@@ -28,7 +28,6 @@
 #if MICROPY_VFS_FAT
 
 #include <string.h>
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"

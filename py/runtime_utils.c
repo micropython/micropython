@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,8 +26,6 @@
  */
 
 #include "py/runtime.h"
-#include "py/obj.h"
-#include "py/nlr.h"
 
 void mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg) {
     nlr_buf_t nlr;

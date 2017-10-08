@@ -54,11 +54,11 @@ Glossary
         separate project
         `micropython-lib <https://github.com/micropython/micropython-lib>`_
         which provides implementations for many modules from CPython's
-        standard library. However, large subset of these modules required
+        standard library. However, large subset of these modules require
         POSIX-like environment (Linux, MacOS, Windows may be partially
-        supported), and thus would work or make sense only with MicroPython
-        Unix port. Some subset of modules however usable for baremetal ports
-        too.
+        supported), and thus would work or make sense only with
+        `MicroPython Unix port`. Some subset of modules is however usable
+        for `baremetal` ports too.
 
         Unlike monolithic :term:`CPython` stdlib, micropython-lib modules
         are intended to be installed individually - either using manual
@@ -68,7 +68,13 @@ Glossary
         MicroPython supports different :term:`boards <board>`, RTOSes,
         and OSes, and can be relatively easily adapted to new systems.
         MicroPython with support for a particular system is called a
-        "port" to that system.
+        "port" to that system. Different ports may have widely different
+        functionality. This documentation is intended to be a reference
+        of the generic APIs available across different ports ("MicroPython
+        core"). Note that some ports may still omit some APIs described
+        here (e.g. due to resource constraints). Any such differences,
+        and port-specific extensions beyond MicroPython core functionality,
+        would be described in the separate port-specific documentation.
 
     MicroPython Unix port
         Unix port is one of the major :term:`MicroPython ports <MicroPython port>`.

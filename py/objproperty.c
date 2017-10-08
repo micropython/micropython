@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_PROPERTY
