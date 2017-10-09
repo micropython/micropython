@@ -46,10 +46,16 @@ See :ref:`pyb.LED <pyb.LED>`. ::
 
     from pyb import LED
 
-    led = LED(1) # red led
+    # LED 1 = red, 2 = green, 3 = yellow, 4 = blue
+    led = LED(1)
     led.toggle()
     led.on()
     led.off()
+    
+    # LEDs 3 and 4 support PWM intensity (0-255)
+    led4 = LED(4)
+    led4.intensity()
+    led4.intensity(128)
 
 Pins and GPIO
 -------------
@@ -65,6 +71,18 @@ See :ref:`pyb.Pin <pyb.Pin>`. ::
     p_in = Pin('X2', Pin.IN, Pin.PULL_UP)
     p_in.value() # get value, 0 or 1
 
+Switch
+------
+
+See :ref:`pyb.Switch <pyb.Switch>`. ::
+
+    from pyb import Switch
+
+    sw = Switch()
+    sw.value()
+
+    sw.callback(lambda: pyb.LED(1).toggle())
+
 Servo control
 -------------
 
@@ -76,6 +94,16 @@ See :ref:`pyb.Servo <pyb.Servo>`. ::
     s1.angle(45) # move to 45 degrees
     s1.angle(-60, 1500) # move to -60 degrees in 1500ms
     s1.speed(50) # for continuous rotation servos
+
+Accelerometer
+-------------
+
+See :ref:`pyb.Accel <pyb.Accel>`. ::
+
+    from pyb import Accel
+
+    accel = Accel()
+    print(accel.x(), accel.y(), accel.z(), accel.tilt())
 
 External interrupts
 -------------------
@@ -167,3 +195,41 @@ See :ref:`pyb.I2C <pyb.I2C>`. ::
     i2c.recv(5, 0x42) # receive 5 bytes from slave
     i2c.mem_read(2, 0x42, 0x10) # read 2 bytes from slave 0x42, slave memory 0x10
     i2c.mem_write('xy', 0x42, 0x10) # write 2 bytes to slave 0x42, slave memory 0x10
+
+CAN bus (controller area network)
+---------------------------------
+
+See :ref:`pyb.CAN <pyb.CAN>`. ::
+
+    from pyb import CAN
+
+    can = CAN(1, CAN.LOOPBACK)
+    can.setfilter(0, CAN.LIST16, 0, (123, 124, 125, 126))  # set a filter to receive messages with id=123, 124, 125 and 126
+    can.send('message!', 123)   # send a message with id 123
+    can.recv(0)                 # receive message on FIFO 0
+
+Real time clock (RTC)
+---------------------
+
+See :ref:`pyb.RTC <pyb.RTC>` ::
+
+    from pyb import RTC
+
+    rtc = RTC()
+    rtc.datetime((2017, 8, 29, 9, 0, 0, 0, 0)) # set a specific time and date
+    print(rtc.datetime())
+
+USB HID (Human Interface Device)
+--------------------------------
+
+See :ref:`pyb.USB_HID <pyb.USB_HID>` ::
+
+    # set in boot.py
+    import pyb
+    pyb.usb_mode('VCP+HID') # act as a serial device and a mouse
+
+    hid = pyb.USB_HID()
+    hid.send((0, 10, 0, 0)) # move mouse 10 pixels to the right
+    
+    accel = pyb.Accel()
+    hid.send((0, accel.x(), accel.y(), 0)) # use the accelerometer
