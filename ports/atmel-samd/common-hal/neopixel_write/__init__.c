@@ -23,13 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "hpl_gpio.h"
 
-#include "mphalport.h"
+#include "py/mphal.h"
 
 #include "shared-bindings/neopixel_write/__init__.h"
 
-#include "asf/common2/services/delay/delay.h"
-#include "asf/sam0/drivers/port/port.h"
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
@@ -45,7 +44,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_DETERMINISTIC_Val;
 
     uint32_t pin = digitalinout->pin->pin;
-    port    =  port_get_group_from_gpio_pin(pin);
+    port    =  &PORT->Group[GPIO_PORT(pin)];  // Convert GPIO # to port register
     pinMask =  (1UL << (pin % 32));  // From port_pin_set_output_level ASF code.
     ptr     =  pixels;
     end     =  ptr + numBytes;
@@ -83,5 +82,5 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     // 50us delay to let pixels latch to the data that was just sent.
     // This could be optimized to only occur before pixel writes when necessary,
     // like in the Arduino library.
-    delay_us(50);
+    mp_hal_delay_us(50);
 }
