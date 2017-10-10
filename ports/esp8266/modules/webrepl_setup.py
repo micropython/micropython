@@ -17,7 +17,7 @@ def getpass(prompt):
 
 def input_pass():
     while 1:
-        passwd1 = getpass("New password (between 4 and 9 chars): ")
+        passwd1 = getpass("New password (4-9): ")
         if len(passwd1) < 4:
             print("Password too short")
             continue
