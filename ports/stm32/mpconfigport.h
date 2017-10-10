@@ -326,6 +326,8 @@ static inline mp_uint_t disable_irq(void) {
             __WFI(); \
         } \
     } while (0);
+
+#define MICROPY_THREAD_YIELD() pyb_thread_yield()
 #else
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
@@ -333,6 +335,8 @@ static inline mp_uint_t disable_irq(void) {
         mp_handle_pending(); \
         __WFI(); \
     } while (0);
+
+#define MICROPY_THREAD_YIELD()
 #endif
 
 // We need an implementation of the log2 function which is not a macro
