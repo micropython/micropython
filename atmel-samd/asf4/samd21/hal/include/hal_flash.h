@@ -132,7 +132,7 @@ int32_t flash_write(struct flash_descriptor *flash, uint32_t dst_addr, uint8_t *
  *  \param[in]  length    Number of bytes to append
  *  \return Append status.
  */
-int32_t flash_append(struct flash_descriptor *flash, uint32_t dst_addr, uint8_t *buffer, uint32_t length);
+int32_t flash_append(struct flash_descriptor *flash, uint32_t dst_addr, const uint8_t *buffer, uint32_t length);
 
 /** \brief Reads a number of bytes to a page in the internal Flash
  *

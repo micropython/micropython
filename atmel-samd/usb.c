@@ -123,6 +123,7 @@ static bool usb_device_cb_bulk_out(const uint8_t ep, const enum usb_xfer_code rc
     uint8_t buf[count];
     int32_t result = cdcdf_acm_read(buf, count);
     if (result != ERR_NONE) {
+        atomic_leave_critical(&flags);
         return true;
     }
 

@@ -28,6 +28,10 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 
+#include "py/mpstate.h"
+
+#include "flash_api.h"
+
 #ifdef EXPRESS_BOARD
 // #include "common-hal/touchio/TouchIn.h"
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
@@ -41,38 +45,49 @@ mp_vfs_mount_t mp_vfs_mount_flash;
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
 void filesystem_init(void) {
-    // // init the vfs object
-    // fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
-    // vfs_fat->flags = 0;
-    // flash_init_vfs(vfs_fat);
-    //
-    // // try to mount the flash
-    // FRESULT res = f_mount(&vfs_fat->fatfs);
-    //
-    // if (res == FR_NO_FILESYSTEM) {
-    //     // no filesystem so create a fresh one
-    //
-    //     uint8_t working_buf[_MAX_SS];
-    //     res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
-    //     // Flush the new file system to make sure its repaired immediately.
-    //     flash_flush();
-    //     if (res != FR_OK) {
-    //         return;
-    //     }
-    //
-    //     // set label
-    //     f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
-    // } else if (res != FR_OK) {
-    //     return;
-    // }
-    // mp_vfs_mount_t *vfs = &mp_vfs_mount_flash;
-    // vfs->str = "/";
-    // vfs->len = 1;
-    // vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
-    // vfs->next = NULL;
-    // MP_STATE_VM(vfs_mount_table) = vfs;
-    //
-    // // The current directory is used as the boot up directory.
-    // // It is set to the internal flash filesystem by default.
-    // MP_STATE_PORT(vfs_cur) = vfs;
+    // init the vfs object
+    fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
+    vfs_fat->flags = 0;
+    flash_init_vfs(vfs_fat);
+
+    // try to mount the flash
+    FRESULT res = f_mount(&vfs_fat->fatfs);
+
+    if (res == FR_NO_FILESYSTEM) {
+        // no filesystem so create a fresh one
+        uint8_t working_buf[_MAX_SS];
+        res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
+        // Flush the new file system to make sure its repaired immediately.
+        flash_flush();
+        if (res != FR_OK) {
+            return;
+        }
+
+        // set label
+        f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+    } else if (res != FR_OK) {
+        return;
+    }
+    mp_vfs_mount_t *vfs = &mp_vfs_mount_flash;
+    vfs->str = "/";
+    vfs->len = 1;
+    vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
+    vfs->next = NULL;
+    MP_STATE_VM(vfs_mount_table) = vfs;
+
+    // The current directory is used as the boot up directory.
+    // It is set to the internal flash filesystem by default.
+    MP_STATE_PORT(vfs_cur) = vfs;
+}
+
+void filesystem_flush(void) {
+    flash_flush();
+}
+
+void filesystem_default_writeable(bool writeable) {
+    flash_set_usb_writeable(writeable);
+}
+
+bool filesystem_present(void) {
+    return true;
 }

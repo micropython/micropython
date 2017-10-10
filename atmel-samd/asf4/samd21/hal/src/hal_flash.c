@@ -135,7 +135,7 @@ int32_t flash_write(struct flash_descriptor *flash, uint32_t dst_addr, uint8_t *
 /**
  * \brief Appends a number of bytes to a page in the internal Flash
  */
-int32_t flash_append(struct flash_descriptor *flash, uint32_t dst_addr, uint8_t *buffer, uint32_t length)
+int32_t flash_append(struct flash_descriptor *flash, uint32_t dst_addr, const uint8_t *buffer, uint32_t length)
 {
 	ASSERT(flash && buffer && length);
 
@@ -304,7 +304,10 @@ static int32_t flash_is_address_aligned(struct flash_descriptor *flash, const ui
  */
 static void flash_ready(struct _flash_device *device)
 {
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wcast-align"
 	struct flash_descriptor *const descr = CONTAINER_OF(device, struct flash_descriptor, dev);
+	#pragma GCC diagnostic pop
 	if (descr->callbacks.cb_ready) {
 		descr->callbacks.cb_ready(descr);
 	}
@@ -317,7 +320,10 @@ static void flash_ready(struct _flash_device *device)
  */
 static void flash_error(struct _flash_device *device)
 {
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wcast-align"
 	struct flash_descriptor *const descr = CONTAINER_OF(device, struct flash_descriptor, dev);
+	#pragma GCC diagnostic pop
 	if (descr->callbacks.cb_error) {
 		descr->callbacks.cb_error(descr);
 	}

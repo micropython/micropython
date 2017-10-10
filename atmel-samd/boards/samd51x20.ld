@@ -5,8 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000 + 0x4000, LENGTH = 0x00080000 - 0x4000 /* Leave 16KiB for the bootloader. */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x00030000 /* 192 KiB */
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00100000 - 0x80000 /* 1024 KiB mius 512KiB for the internal file system. */
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x00040000 /* 256 KiB */
 }
 
 /* top end of the stack */

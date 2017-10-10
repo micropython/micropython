@@ -30,12 +30,22 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
+#ifdef SAMD51
+#include "hal/include/hal_rand_sync.h"
+#endif
+
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
     MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
 };
+#ifdef SAMD21
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "samd21");
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "samd21");
+#endif
+#ifdef SAMD51
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "samd51");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "samd51");
+#endif
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
@@ -57,5 +67,19 @@ mp_obj_t common_hal_os_uname(void) {
 }
 
 bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
+    #ifdef SAMD51
+    hri_mclk_set_APBCMASK_TRNG_bit(MCLK);
+    struct rand_sync_desc random;
+    rand_sync_init(&random, TRNG);
+    rand_sync_enable(&random);
+
+    rand_sync_read_buf8(&random, buffer, length);
+
+    rand_sync_disable(&random);
+    rand_sync_deinit(&random);
+    hri_mclk_clear_APBCMASK_TRNG_bit(MCLK);
+    return true;
+    #else
     return false;
+    #endif
 }

@@ -24,7 +24,8 @@
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
-#include "spi_flash.h"
+#include "internal_flash.h"
+//#include "spi_flash.h"
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.

@@ -4,7 +4,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/rgb_led_status.c
 
-ifeq ($(wildcard supervisor/filesystem.c),)
+ifeq ($(wildcard atmel-samd/supervisor/filesystem.c),)
 	SRC_SUPERVISOR += supervisor/filesystem.c
 else
 	SRC_SUPERVISOR += supervisor/stub/filesystem.c

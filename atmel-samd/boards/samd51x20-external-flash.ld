@@ -1,5 +1,5 @@
 /*
-    GNU linker script for SAMD21
+    GNU linker script for SAMD51
 */
 
 /* Specify the memory areas */

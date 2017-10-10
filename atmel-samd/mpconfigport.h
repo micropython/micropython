@@ -3,10 +3,6 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-#define PORT_HEAP_SIZE (16384 + 4096)
-
-#define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
-
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 
 // options to control how MicroPython is built
@@ -138,10 +134,14 @@ typedef long mp_off_t;
 
 #ifdef SAMD21
 #define CIRCUITPY_MCU_FAMILY samd21
+#define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
+#define PORT_HEAP_SIZE (16384 + 4096)
 #endif
 
 #ifdef SAMD51
 #define CIRCUITPY_MCU_FAMILY samd51
+#define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
+#define PORT_HEAP_SIZE (0x20000) // 128KiB
 #endif
 
 // extra built in modules to add to the list of known ones
@@ -205,8 +205,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module },
 
@@ -215,6 +213,8 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
     EXTRA_BUILTIN_MODULES
 

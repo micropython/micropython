@@ -35,10 +35,14 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "asf/sam0/drivers/nvm/nvm.h"
-#include "asf/sam0/drivers/port/port.h"
+#ifdef SAMD21
+#include "hpl/pm/hpl_pm_base.h"
+#endif
+#include "hal/include/hal_flash.h"
 
-#include "rgb_led_status.h"
+#include "supervisor/shared/rgb_led_status.h"
+
+static struct flash_descriptor internal_flash_desc;
 
 void internal_flash_init(void) {
     // Activity LED for flash writes.
@@ -50,6 +54,14 @@ void internal_flash_init(void) {
         port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
         port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
     #endif
+
+    #ifdef SAMD51
+    hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
+    #endif
+    #ifdef SAMD21
+    _pm_enable_bus_clock(PM_BUS_APBB, NVMCTRL);
+    #endif
+    flash_init(&internal_flash_desc, NVMCTRL);
 }
 
 uint32_t internal_flash_get_block_size(void) {
@@ -138,18 +150,8 @@ bool internal_flash_read_block(uint8_t *dest, uint32_t block) {
             // bad block number
             return false;
         }
-        enum status_code error_code;
-        // A block is made up of multiple pages. Read each page
-        // sequentially.
-        for (int i = 0; i < FILESYSTEM_BLOCK_SIZE / NVMCTRL_PAGE_SIZE; i++) {
-          do
-          {
-              error_code = nvm_read_buffer(src + i * NVMCTRL_PAGE_SIZE,
-                                   dest + i * NVMCTRL_PAGE_SIZE,
-                                   NVMCTRL_PAGE_SIZE);
-          } while (error_code == STATUS_BUSY);
-        }
-        return true;
+        int32_t error_code = flash_read(&internal_flash_desc, src, dest, FILESYSTEM_BLOCK_SIZE);
+        return error_code == ERR_NONE;
     }
 }
 
@@ -169,36 +171,21 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
             // bad block number
             return false;
         }
-        enum status_code error_code;
+        int32_t error_code;
         // A block is formed by two rows of flash. We must erase each row
         // before we write back to it.
-        do
-        {
-            error_code = nvm_erase_row(dest);
-        } while (error_code == STATUS_BUSY);
-        if (error_code != STATUS_OK) {
-            return false;
-        }
-        do
-        {
-            error_code = nvm_erase_row(dest + NVMCTRL_ROW_SIZE);
-        } while (error_code == STATUS_BUSY);
-        if (error_code != STATUS_OK) {
+        error_code = flash_erase(&internal_flash_desc,
+                                 dest,
+                                 FILESYSTEM_BLOCK_SIZE / flash_get_page_size(&internal_flash_desc));
+        if (error_code != ERR_NONE) {
             return false;
         }
 
         // A block is made up of multiple pages. Write each page
         // sequentially.
-        for (int i = 0; i < FILESYSTEM_BLOCK_SIZE / NVMCTRL_PAGE_SIZE; i++) {
-          do
-          {
-              error_code = nvm_write_buffer(dest + i * NVMCTRL_PAGE_SIZE,
-                                    src + i * NVMCTRL_PAGE_SIZE,
-                                    NVMCTRL_PAGE_SIZE);
-          } while (error_code == STATUS_BUSY);
-          if (error_code != STATUS_OK) {
-              return false;
-          }
+        error_code = flash_append(&internal_flash_desc, dest, src, FILESYSTEM_BLOCK_SIZE);
+        if (error_code != ERR_NONE) {
+            return false;
         }
         clear_temp_status();
         #ifdef MICROPY_HW_LED_MSC

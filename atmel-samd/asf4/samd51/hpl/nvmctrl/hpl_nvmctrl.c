@@ -167,7 +167,7 @@ void _flash_read(struct _flash_device *const device, const uint32_t src_addr, ui
 /**
  * \brief Writes a number of bytes to a page in the internal Flash.
  */
-void _flash_write(struct _flash_device *const device, const uint32_t dst_addr, uint8_t *buffer, uint32_t length)
+void _flash_write(struct _flash_device *const device, const uint32_t dst_addr, const uint8_t *buffer, uint32_t length)
 {
 	uint8_t  tmp_buffer[NVMCTRL_BLOCK_PAGES][NVMCTRL_PAGE_SIZE];
 	uint32_t block_start_addr, block_end_addr;
@@ -212,7 +212,7 @@ void _flash_write(struct _flash_device *const device, const uint32_t dst_addr, u
 /**
  * \brief Appends a number of bytes in the internal Flash.
  */
-void _flash_append(struct _flash_device *const device, const uint32_t dst_addr, uint8_t *buffer, uint32_t length)
+void _flash_append(struct _flash_device *const device, const uint32_t dst_addr, const uint8_t *buffer, uint32_t length)
 {
 	uint32_t page_start_addr = dst_addr & ~(NVMCTRL_PAGE_SIZE - 1);
 	uint32_t size;
@@ -386,7 +386,10 @@ static void _flash_erase_block(void *const hw, const uint32_t dst_addr)
  */
 static void _flash_program(void *const hw, const uint32_t dst_addr, const uint8_t *buffer, const uint16_t size)
 {
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wcast-align"
 	uint32_t *ptr_read    = (uint32_t *)buffer;
+	#pragma GCC diagnostic pop
 	uint32_t  nvm_address = dst_addr / 4;
 	uint16_t  i;
 
