@@ -335,6 +335,9 @@ static inline mp_uint_t disable_irq(void) {
     } while (0);
 #endif
 
+// We need an implementation of the log2 function which is not a macro
+#define MP_NEED_LOG2 (1)
+
 // There is no classical C heap in bare-metal ports, only Python
 // garbage-collected heap. For completeness, emulate C heap via
 // GC heap. Note that MicroPython core never uses malloc() and friends,

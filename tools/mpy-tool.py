@@ -105,7 +105,7 @@ def make_opcode_format():
     OC4(O, O, U, U), # 0x38-0x3b
     OC4(U, O, B, O), # 0x3c-0x3f
     OC4(O, B, B, O), # 0x40-0x43
-    OC4(B, B, O, U), # 0x44-0x47
+    OC4(B, B, O, B), # 0x44-0x47
     OC4(U, U, U, U), # 0x48-0x4b
     OC4(U, U, U, U), # 0x4c-0x4f
     OC4(V, V, U, V), # 0x50-0x53
@@ -145,7 +145,7 @@ def make_opcode_format():
     OC4(B, B, B, B), # 0xcc-0xcf
 
     OC4(B, B, B, B), # 0xd0-0xd3
-    OC4(B, B, B, B), # 0xd4-0xd7
+    OC4(U, U, U, B), # 0xd4-0xd7
     OC4(B, B, B, B), # 0xd8-0xdb
     OC4(B, B, B, B), # 0xdc-0xdf
 
@@ -156,7 +156,7 @@ def make_opcode_format():
 
     OC4(B, B, B, B), # 0xf0-0xf3
     OC4(B, B, B, B), # 0xf4-0xf7
-    OC4(B, B, B, U), # 0xf8-0xfb
+    OC4(U, U, U, U), # 0xf8-0xfb
     OC4(U, U, U, U), # 0xfc-0xff
     ))
 
