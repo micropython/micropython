@@ -69,12 +69,10 @@ union floatbits {
     uint32_t u;
 };
 static inline int fp_signbit(float x) { union floatbits fb = {x}; return fb.u & FLT_SIGN_MASK; }
-static inline int fp_isspecial(float x) { union floatbits fb = {x}; return (fb.u & FLT_EXP_MASK) == FLT_EXP_MASK; }
-static inline int fp_isinf(float x) { union floatbits fb = {x}; return (fb.u & FLT_MAN_MASK) == 0; }
+#define fp_isnan(x) isnan(x)
+#define fp_isinf(x) isinf(x)
 static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 0; }
 static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 0x3f800000; }
-// Assumes both fp_isspecial() and fp_isinf() were applied before
-#define fp_isnan(x) 1
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
@@ -84,7 +82,6 @@ static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 
 #define FPDECEXP 256
 #define FPMIN_BUF_SIZE 7 // +9e+199
 #define fp_signbit(x) signbit(x)
-#define fp_isspecial(x) 1
 #define fp_isnan(x) isnan(x)
 #define fp_isinf(x) isinf(x)
 #define fp_iszero(x) (x == 0)
@@ -122,7 +119,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
         return buf_size >= 2;
     }
-    if (fp_signbit(f) && !isnan(f)) {
+    if (fp_signbit(f) && !fp_isnan(f)) {
         *s++ = '-';
         f = -f;
     } else {
@@ -135,7 +132,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // It is buf_size minus room for the sign and null byte.
     int buf_remaining = buf_size - 1 - (s - buf);
 
-    if (fp_isspecial(f)) {
+    {
         char uc = fmt & 0x20;
         if (fp_isinf(f)) {
             *s++ = 'I' ^ uc;
