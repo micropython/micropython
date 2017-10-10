@@ -1,4 +1,5 @@
 .. currentmodule:: pyb
+.. _pyb.Switch:
 
 class Switch -- switch object
 =============================
