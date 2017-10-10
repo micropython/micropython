@@ -38,12 +38,14 @@
 // #include "hiddf_keyboard.h"
 #include "usb/class/hid/device/hiddf_generic.h"
 #include "usb/class/composite/device/composite_desc.h"
+#include "usb/class/msc/device/mscdf.h"
 #include "peripheral_clk_config.h"
 #include "hpl/pm/hpl_pm_base.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 
 #include "lib/utils/interrupt_char.h"
 #include "reset.h"
+#include "usb_mass_storage.h"
 
 #include "supervisor/shared/autoreload.h"
 
@@ -108,6 +110,9 @@ static void init_hardware(void) {
 extern uint32_t *_usb_ep1_cache;
 static bool usb_device_cb_bulk_out(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
+    if (rc == USB_XFER_RESET) {
+        return false;
+    }
     volatile hal_atomic_t flags;
     atomic_enter_critical(&flags);
     // If our buffer can't fit the data received, then error out.
@@ -182,12 +187,24 @@ static bool usb_device_cb_line_coding_c(const usb_cdc_line_coding_t* coding)
 void init_usb(void) {
     init_hardware();
 
+    mp_cdc_enabled = false;
+
     usbdc_init(ctrl_buffer);
 
     /* usbdc_register_funcion inside */
     cdcdf_acm_init();
+
+    mscdf_init(1);
     // hiddf_mouse_init();
     // hiddf_keyboard_init();
+
+    mscdf_register_callback(MSCDF_CB_INQUIRY_DISK, (FUNC_PTR)usb_msc_inquiry_info);
+    mscdf_register_callback(MSCDF_CB_GET_DISK_CAPACITY, (FUNC_PTR)usb_msc_get_capacity);
+    mscdf_register_callback(MSCDF_CB_START_READ_DISK, (FUNC_PTR)usb_msc_new_read);
+    mscdf_register_callback(MSCDF_CB_START_WRITE_DISK, (FUNC_PTR)usb_msc_new_write);
+    mscdf_register_callback(MSCDF_CB_EJECT_DISK, (FUNC_PTR)usb_msc_disk_eject);
+    mscdf_register_callback(MSCDF_CB_TEST_DISK_READY, (FUNC_PTR)usb_msc_disk_is_ready);
+    mscdf_register_callback(MSCDF_CB_XFER_BLOCKS_DONE, (FUNC_PTR)usb_msc_xfer_done);
 
     int32_t result = usbdc_start(&multi_desc);
     while (result != ERR_NONE) {}
@@ -226,11 +243,6 @@ int usb_read(void) {
         return 0;
     }
 
-    // Disable autoreload if someone is using the repl.
-    // TODO(tannewt): Check that we're actually in the REPL. It could be an
-    // input() call from a script.
-    autoreload_disable();
-
     // Copy from head.
     int data;
     CRITICAL_SECTION_ENTER();
@@ -241,8 +253,6 @@ int usb_read(void) {
       usb_rx_buf_head = 0;
     }
     CRITICAL_SECTION_LEAVE();
-
-    //usb_write((uint8_t *)&data, 1);
 
     return data;
 }

@@ -172,8 +172,6 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
             return false;
         }
         int32_t error_code;
-        // A block is formed by two rows of flash. We must erase each row
-        // before we write back to it.
         error_code = flash_erase(&internal_flash_desc,
                                  dest,
                                  FILESYSTEM_BLOCK_SIZE / flash_get_page_size(&internal_flash_desc));
@@ -181,8 +179,6 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
             return false;
         }
 
-        // A block is made up of multiple pages. Write each page
-        // sequentially.
         error_code = flash_append(&internal_flash_desc, dest, src, FILESYSTEM_BLOCK_SIZE);
         if (error_code != ERR_NONE) {
             return false;

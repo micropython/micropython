@@ -39,7 +39,7 @@
 // <CONF_USB_D_N_EP_MAX"> Max possible (by "Max Endpoint Number" config)
 // <id> usbd_num_ep_sp
 #ifndef CONF_USB_D_NUM_EP_SP
-#define CONF_USB_D_NUM_EP_SP CONF_USB_N_4
+#define CONF_USB_D_NUM_EP_SP CONF_USB_D_EP_N_MAX
 #endif
 
 // </h>
@@ -60,7 +60,7 @@
 // <i> The number of physical endpoints - 1
 // <id> usbd_arch_max_ep_n
 #ifndef CONF_USB_D_MAX_EP_N
-#define CONF_USB_D_MAX_EP_N CONF_USB_N_2
+#define CONF_USB_D_MAX_EP_N CONF_USB_D_EP_N_MAX
 #endif
 
 // <y> USB Speed Limit
@@ -156,7 +156,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep2_I_CACHE
 #ifndef CONF_USB_EP2_I_CACHE
-#define CONF_USB_EP2_I_CACHE 0
+#define CONF_USB_EP2_I_CACHE 64
 #endif
 // </h>
 
@@ -308,7 +308,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep6_I_CACHE
 #ifndef CONF_USB_EP6_I_CACHE
-#define CONF_USB_EP6_I_CACHE 0
+#define CONF_USB_EP6_I_CACHE 64
 #endif
 // </h>
 

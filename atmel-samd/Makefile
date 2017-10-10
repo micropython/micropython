@@ -44,6 +44,7 @@ INC += -I. \
        -Iasf4/$(CHIP_FAMILY)/usb \
        -Iasf4/$(CHIP_FAMILY)/usb/class/cdc \
        -Iasf4/$(CHIP_FAMILY)/usb/class/hid \
+       -Iasf4/$(CHIP_FAMILY)/usb/class/msc \
        -Iasf4/$(CHIP_FAMILY)/usb/device \
        -Iasf4_conf/$(CHIP_FAMILY) \
        -Iboards/$(BOARD) \
@@ -181,6 +182,7 @@ SRC_ASF := \
 	hpl/tc/hpl_tc.c \
 	hpl/usb/hpl_usb.c \
 	usb/class/cdc/device/cdcdf_acm.c \
+	usb/class/msc/device/mscdf.c \
 	usb/device/usbdc.c \
 	usb/usb_protocol.c \
 	hal/utils/src/utils_list.c \
@@ -204,8 +206,7 @@ endif
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
 # Skip this source for now.
-#	access_vfs.c \
-	shared_dma.c \
+#	shared_dma.c \
 
 SRC_C = \
 	background.c \
@@ -216,6 +217,7 @@ SRC_C = \
 	$(CHIP_FAMILY)_pins.c \
 	tick.c \
 	usb.c \
+	usb_mass_storage.c \
 	$(FLASH_IMPL) \
 	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \

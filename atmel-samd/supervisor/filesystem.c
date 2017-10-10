@@ -65,6 +65,7 @@ void filesystem_init(bool create_allowed) {
 
         // set label
         f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+        flash_flush();
     } else if (res != FR_OK) {
         return;
     }

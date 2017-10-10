@@ -132,6 +132,10 @@ typedef long mp_off_t;
 #include "mpconfigboard.h"
 #include "include/sam.h"
 
+// ASF4 defines.
+#define CONF_USB_COMPOSITE_CDC_ACM_EN 1
+#define CONF_USB_COMPOSITE_MSC_EN 1
+
 #ifdef SAMD21
 #define CIRCUITPY_MCU_FAMILY samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"

@@ -26,8 +26,9 @@
 #include "background.h"
 
 // #include "common-hal/audioio/AudioOut.h"
+#include "usb_mass_storage.h"
 
 void run_background_tasks(void) {
     // audioout_background();
-    // udi_msc_process_trans();
+    usb_msc_background();
 }

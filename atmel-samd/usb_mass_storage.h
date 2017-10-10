@@ -24,17 +24,24 @@
  * THE SOFTWARE.
  */
 
-// This adapts the ASF access API to MicroPython's VFS API so we can expose all
-// VFS block devices as Lun's over USB mass storage control.
+// This adapts the ASF4 USB mass storage API to MicroPython's VFS API so we can
+// expose all VFS block devices as Lun's over USB mass storage control.
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_USB_MASS_STORAGE_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_USB_MASS_STORAGE_H
 
-Ctrl_status vfs_test_unit_ready(void);
-Ctrl_status vfs_read_capacity(uint32_t *u32_nb_sector);
-bool        vfs_wr_protect(void);
-bool        vfs_removal(void);
-Ctrl_status vfs_usb_read_10(uint32_t addr, uint16_t nb_sector);
-Ctrl_status vfs_usb_write_10(uint32_t addr, uint16_t nb_sector);
+#include <stdint.h>
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_ROM_FS_H
+// "background" task that actually manages loading to and from the file systems.
+void usb_msc_background(void);
+
+// Callbacks that hook into ASF4's USB stack.
+int32_t usb_msc_disk_eject(uint8_t lun);
+int32_t usb_msc_disk_is_ready(uint8_t lun);
+int32_t usb_msc_new_read(uint8_t lun, uint32_t addr, uint32_t nblocks);
+int32_t usb_msc_new_write(uint8_t lun, uint32_t addr, uint32_t nblocks);
+int32_t usb_msc_xfer_done(uint8_t lun);
+uint8_t *usb_msc_inquiry_info(uint8_t lun);
+uint8_t *usb_msc_get_capacity(uint8_t lun);
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_USB_MASS_STORAGE_H
