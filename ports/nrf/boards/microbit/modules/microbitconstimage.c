@@ -24,12 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "microbitobj.h"
-
-extern "C" {
-
 #include "py/runtime.h"
-#include "modmicrobit.h"
 #include "microbitimage.h"
 
 
@@ -558,5 +553,3 @@ IMAGE_T microbit_const_image_snake_obj = SMALL_IMAGE(
     0,1,1,1,0,
     0,0,0,0,0
 );
-
-}

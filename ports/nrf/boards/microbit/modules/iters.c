@@ -25,7 +25,7 @@
  */
 
 #include "py/runtime.h"
-#include "lib/iters.h"
+#include "iters.h"
 
 
 typedef struct _repeat_iterator_t {
@@ -53,11 +53,9 @@ const mp_obj_type_t microbit_repeat_iterator_type = {
     .binary_op = NULL,
     .attr = NULL,
     .subscr = NULL,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = microbit_repeat_iter_next,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = MP_OBJ_NULL,
     MP_OBJ_NULL
 };
 
