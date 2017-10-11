@@ -25,15 +25,11 @@
  */
 
 #include <string.h>
-#include "microbitobj.h"
-#include "MicroBitFont.h"
-
-extern "C" {
-
 #include "py/runtime.h"
-#include "modmicrobit.h"
 #include "microbitimage.h"
+#include "microbitconstimage.h"
 #include "py/runtime0.h"
+#include "microbitfont.h"
 
 #define min(a,b) (((a)<(b))?(a):(b))
 #define max(a,b) (((a)>(b))?(a):(b))
@@ -50,12 +46,12 @@ STATIC void microbit_image_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     if (kind == PRINT_STR)
         mp_printf(print, "\n    ");
     mp_printf(print, "'");
-    for (int y = 0; y < self->height(); ++y) {
-        for (int x = 0; x < self->width(); ++x) {
-            mp_printf(print, "%c", "0123456789"[self->getPixelValue(x, y)]);
+    for (int y = 0; y < imageHeight(self); ++y) {
+        for (int x = 0; x < imageWidth(self); ++x) {
+            mp_printf(print, "%c", "0123456789"[imageGetPixelValue(self, x, y)]);
         }
         mp_printf(print, ":");
-        if (kind == PRINT_STR && y < self->height()-1)
+        if (kind == PRINT_STR && y < imageHeight(self)-1)
             mp_printf(print, "'\n    '");
     }
     mp_printf(print, "'");
@@ -64,56 +60,56 @@ STATIC void microbit_image_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_printf(print, ")");
 }
 
-uint8_t monochrome_5by5_t::getPixelValue(mp_int_t x, mp_int_t y) {
+uint8_t monochromeGetPixelValue(monochrome_5by5_t * p_mono, mp_int_t x, mp_int_t y) {
     unsigned int index = y*5+x;
     if (index == 24) 
-        return this->pixel44;
-    return (this->bits24[index>>3] >> (index&7))&1;
+        return p_mono->pixel44;
+    return (p_mono->bits24[index>>3] >> (index&7))&1;
 }
 
-uint8_t greyscale_t::getPixelValue(mp_int_t x, mp_int_t y) {
-    unsigned int index = y*this->width+x;
+uint8_t greyscaleGetPixelValue(greyscale_t * p_greyscale, mp_int_t x, mp_int_t y) {
+    unsigned int index = y*p_greyscale->width+x;
     unsigned int shift = ((index<<2)&4);
-    return (this->byte_data[index>>1] >> shift)&15;
+    return (p_greyscale->byte_data[index>>1] >> shift)&15;
 }
 
-void greyscale_t::setPixelValue(mp_int_t x, mp_int_t y, mp_int_t val) {
-    unsigned int index = y*this->width+x;
+void greyscaleSetPixelValue(greyscale_t * p_greyscale, mp_int_t x, mp_int_t y, mp_int_t val) {
+    unsigned int index = y*p_greyscale->width+x;
     unsigned int shift = ((index<<2)&4);
     uint8_t mask = 240 >> shift;
-    this->byte_data[index>>1] = (this->byte_data[index>>1] & mask) | (val << shift);
+    p_greyscale->byte_data[index>>1] = (p_greyscale->byte_data[index>>1] & mask) | (val << shift);
 }
 
-void greyscale_t::fill(mp_int_t val) {
+void greyscaleFill(greyscale_t * p_greyscale, mp_int_t val) {
     mp_int_t byte = (val<<4) | val;
-    for (int i = 0; i < ((this->width*this->height+1)>>1); i++) {
-        this->byte_data[i] = byte;
+    for (int i = 0; i < ((p_greyscale->width*p_greyscale->height+1)>>1); i++) {
+        p_greyscale->byte_data[i] = byte;
     }
 }
 
-void greyscale_t::clear() {
-    memset(&this->byte_data, 0, (this->width*this->height+1)>>1);
+void greyscaleClear(greyscale_t * p_greyscale) {
+    memset(&p_greyscale->byte_data, 0, (p_greyscale->width*p_greyscale->height+1)>>1);
 }
 
-uint8_t microbit_image_obj_t::getPixelValue(mp_int_t x, mp_int_t y) {
-    if (this->base.five)
-        return this->monochrome_5by5.getPixelValue(x, y)*MAX_BRIGHTNESS;
+uint8_t imageGetPixelValue(microbit_image_obj_t * p_image, mp_int_t x, mp_int_t y) {
+    if (p_image->base.five)
+        return monochromeGetPixelValue(&p_image->monochrome_5by5, x, y)*MAX_BRIGHTNESS;
     else
-        return this->greyscale.getPixelValue(x, y);
+        return greyscaleGetPixelValue(&p_image->greyscale, x, y);
 }
 
-mp_int_t microbit_image_obj_t::width() {
-    if (this->base.five)
+mp_int_t imageWidth(microbit_image_obj_t * p_image) {
+    if (p_image->base.five)
         return 5;
     else
-        return this->greyscale.width;
+        return p_image->greyscale.width;
 }
 
-mp_int_t microbit_image_obj_t::height() {
-    if (this->base.five)
+mp_int_t imageHeight(microbit_image_obj_t * p_image) {
+    if (p_image->base.five)
         return 5;
     else
-        return this->greyscale.height;
+        return p_image->greyscale.height;
 }
 
 STATIC greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
@@ -125,25 +121,25 @@ STATIC greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
     return result;
 }
 
-greyscale_t *microbit_image_obj_t::copy() {
-    mp_int_t w = this->width();
-    mp_int_t h = this->height();
+greyscale_t * imageCopy(microbit_image_obj_t * p_image) {
+    mp_int_t w = imageWidth(p_image);
+    mp_int_t h = imageHeight(p_image);
     greyscale_t *result = greyscale_new(w, h);
     for (mp_int_t y = 0; y < h; y++) {
         for (mp_int_t x = 0; x < w; ++x) {
-            result->setPixelValue(x,y, this->getPixelValue(x,y));
+            greyscaleSetPixelValue(result, x,y, imageGetPixelValue(p_image, x,y));
         }
     }
     return result;
 }
 
-greyscale_t *microbit_image_obj_t::invert() {
-    mp_int_t w = this->width();
-    mp_int_t h = this->height();
+greyscale_t * imageInvert(microbit_image_obj_t * p_image) {
+    mp_int_t w = imageWidth(p_image);
+    mp_int_t h = imageHeight(p_image);
     greyscale_t *result = greyscale_new(w, h);
     for (mp_int_t y = 0; y < h; y++) {
         for (mp_int_t x = 0; x < w; ++x) {
-            result->setPixelValue(x,y, MAX_BRIGHTNESS - this->getPixelValue(x,y));
+            greyscaleSetPixelValue(result, x,y, MAX_BRIGHTNESS - imageGetPixelValue(p_image, x,y));
         }
     }
     return result;
@@ -183,23 +179,23 @@ STATIC microbit_image_obj_t *image_from_parsed_str(const char *s, mp_int_t len) 
         char c = s[i];
         if (c == '\n' || c == ':') {
             while (x < w) {
-                result->setPixelValue(x, y, 0);
+                greyscaleSetPixelValue(result, x, y, 0);
                 x++;
             }
             ++y;
             x = 0;
         } else if (c == ' ') {
             /* Treat spaces as 0 */
-            result->setPixelValue(x, y, 0);
+            greyscaleSetPixelValue(result, x, y, 0);
             ++x;
         } else if ('c' >= '0' && c <= '9') {
-            result->setPixelValue(x, y, c - '0');
+            greyscaleSetPixelValue(result, x, y, c - '0');
             ++x;
         }
     }
     if (y < h) {
         while (x < w) {
-            result->setPixelValue(x, y, 0);
+            greyscaleSetPixelValue(result, x, y, 0);
             x++;
         }
     }
@@ -214,7 +210,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
     switch (n_args) {
         case 0: {
             greyscale_t *image = greyscale_new(5, 5);
-            image->clear();
+            greyscaleClear(image);
             return image;
         }
 
@@ -243,7 +239,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
             mp_int_t h = mp_obj_get_int(args[1]);
             greyscale_t *image = greyscale_new(w, h);
             if (n_args == 2) {
-                image->clear();
+                greyscaleClear(image);
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
@@ -256,7 +252,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
                 for (mp_int_t y = 0; y < h; y++) {
                     for (mp_int_t x = 0; x < w; ++x) {
                         uint8_t val = min(((const uint8_t*)bufinfo.buf)[i], MAX_BRIGHTNESS);
-                        image->setPixelValue(x, y, val);
+                        greyscaleSetPixelValue(image, x, y, val);
                         ++i;
                     }
                 }
@@ -274,7 +270,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
 static void clear_rect(greyscale_t *img, mp_int_t x0, mp_int_t y0,mp_int_t x1, mp_int_t y1) {
     for (int i = x0; i < x1; ++i) {
         for (int j = y0; j < y1; ++j) {
-            img->setPixelValue(i, j, 0);
+            greyscaleSetPixelValue(img, i, j, 0);
         }
     }
 }
@@ -286,8 +282,8 @@ STATIC void image_blit(microbit_image_obj_t *src, greyscale_t *dest, mp_int_t x,
         h = 0;
     mp_int_t intersect_x0 = max(max(0, x), -xdest);
     mp_int_t intersect_y0 = max(max(0, y), -ydest);
-    mp_int_t intersect_x1 = min(min(dest->width+x-xdest, src->width()), x+w);
-    mp_int_t intersect_y1 = min(min(dest->height+y-ydest, src->height()), y+h);
+    mp_int_t intersect_x1 = min(min(dest->width+x-xdest, imageWidth(src)), x+w);
+    mp_int_t intersect_y1 = min(min(dest->height+y-ydest, imageHeight(src)), y+h);
     mp_int_t xstart, xend, ystart, yend, xdel, ydel;
     mp_int_t clear_x0 = max(0, xdest);
     mp_int_t clear_y0 = max(0, ydest);
@@ -310,8 +306,8 @@ STATIC void image_blit(microbit_image_obj_t *src, greyscale_t *dest, mp_int_t x,
     }
     for (int i = xstart; i != xend; i += xdel) {
         for (int j = ystart; j != yend; j += ydel) {
-            int val = src->getPixelValue(i, j);
-            dest->setPixelValue(i+xdest-x, j+ydest-y, val);
+            int val = imageGetPixelValue(src, i, j);
+            greyscaleSetPixelValue(dest, i+xdest-x, j+ydest-y, val);
         }
     }
     // Adjust intersection rectange to dest
@@ -327,8 +323,8 @@ STATIC void image_blit(microbit_image_obj_t *src, greyscale_t *dest, mp_int_t x,
 }
 
 greyscale_t *image_shift(microbit_image_obj_t *self, mp_int_t x, mp_int_t y) {
-    greyscale_t *result = greyscale_new(self->width(), self->width());
-    image_blit(self, result, x, y, self->width(), self->width(), 0, 0);
+    greyscale_t *result = greyscale_new(imageWidth(self), imageWidth(self));
+    image_blit(self, result, x, y, imageWidth(self), imageWidth(self), 0, 0);
     return result;
 }
 
@@ -344,13 +340,13 @@ STATIC microbit_image_obj_t *image_crop(microbit_image_obj_t *img, mp_int_t x, m
 
 mp_obj_t microbit_image_width(mp_obj_t self_in) {
     microbit_image_obj_t *self = (microbit_image_obj_t*)self_in;
-    return MP_OBJ_NEW_SMALL_INT(self->width());
+    return MP_OBJ_NEW_SMALL_INT(imageWidth(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_image_width_obj, microbit_image_width);
 
 mp_obj_t microbit_image_height(mp_obj_t self_in) {
     microbit_image_obj_t *self = (microbit_image_obj_t*)self_in;
-    return MP_OBJ_NEW_SMALL_INT(self->height());
+    return MP_OBJ_NEW_SMALL_INT(imageHeight(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_image_height_obj, microbit_image_height);
 
@@ -362,8 +358,8 @@ mp_obj_t microbit_image_get_pixel(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
             "index cannot be negative"));
     }
-    if (x < self->width() && y < self->height()) {
-        return MP_OBJ_NEW_SMALL_INT(self->getPixelValue(x, y));
+    if (x < imageWidth(self) && y < imageHeight(self)) {
+        return MP_OBJ_NEW_SMALL_INT(imageGetPixelValue(self, x, y));
     }
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "index too large"));
 }
@@ -390,8 +386,8 @@ mp_obj_t microbit_image_set_pixel(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t bright = mp_obj_get_int(args[3]);
     if (bright < 0 || bright > MAX_BRIGHTNESS) 
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "brightness out of bounds."));
-    if (x < self->width() && y < self->height()) {
-        self->greyscale.setPixelValue(x, y, bright);
+    if (x < imageWidth(self) && y < imageHeight(self)) {
+        greyscaleSetPixelValue(&(self->greyscale), x, y, bright);
         return mp_const_none;
     }
     nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "index too large"));
@@ -405,7 +401,7 @@ mp_obj_t microbit_image_fill(mp_obj_t self_in, mp_obj_t n_in) {
     if (n < 0 || n > MAX_BRIGHTNESS) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "brightness out of bounds."));
     }
-    self->greyscale.fill(n);
+    greyscaleFill(&self->greyscale, n);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(microbit_image_fill_obj, microbit_image_fill);
@@ -485,102 +481,102 @@ MP_DEFINE_CONST_FUN_OBJ_2(microbit_image_shift_down_obj, microbit_image_shift_do
 
 mp_obj_t microbit_image_copy(mp_obj_t self_in) {
     microbit_image_obj_t *self = (microbit_image_obj_t*)self_in;
-    return self->copy();
+    return imageCopy(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_image_copy_obj, microbit_image_copy);
 
 mp_obj_t microbit_image_invert(mp_obj_t self_in) {
     microbit_image_obj_t *self = (microbit_image_obj_t*)self_in;
-    return self->invert();
+    return imageInvert(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_image_invert_obj, microbit_image_invert);
 
 
-STATIC const mp_map_elem_t microbit_image_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_width), (mp_obj_t)&microbit_image_width_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_height), (mp_obj_t)&microbit_image_height_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel), (mp_obj_t)&microbit_image_get_pixel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_pixel), (mp_obj_t)&microbit_image_set_pixel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_shift_left), (mp_obj_t)&microbit_image_shift_left_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_shift_right), (mp_obj_t)&microbit_image_shift_right_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_shift_up), (mp_obj_t)&microbit_image_shift_up_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_shift_down), (mp_obj_t)&microbit_image_shift_down_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_copy), (mp_obj_t)&microbit_image_copy_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_crop), (mp_obj_t)&microbit_image_crop_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_invert), (mp_obj_t)&microbit_image_invert_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fill), (mp_obj_t)&microbit_image_fill_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_blit), (mp_obj_t)&microbit_image_blit_obj },
+STATIC const mp_rom_map_elem_t microbit_image_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&microbit_image_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&microbit_image_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_pixel), MP_ROM_PTR(&microbit_image_get_pixel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_pixel), MP_ROM_PTR(&microbit_image_set_pixel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_shift_left), MP_ROM_PTR(&microbit_image_shift_left_obj) },
+    { MP_ROM_QSTR(MP_QSTR_shift_right), MP_ROM_PTR(&microbit_image_shift_right_obj) },
+    { MP_ROM_QSTR(MP_QSTR_shift_up), MP_ROM_PTR(&microbit_image_shift_up_obj) },
+    { MP_ROM_QSTR(MP_QSTR_shift_down), MP_ROM_PTR(&microbit_image_shift_down_obj) },
+    { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&microbit_image_copy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_crop), MP_ROM_PTR(&microbit_image_crop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_invert), MP_ROM_PTR(&microbit_image_invert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&microbit_image_fill_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&microbit_image_blit_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HEART), (mp_obj_t)&microbit_const_image_heart_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HEART_SMALL), (mp_obj_t)&microbit_const_image_heart_small_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HAPPY), (mp_obj_t)&microbit_const_image_happy_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SMILE), (mp_obj_t)&microbit_const_image_smile_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SAD), (mp_obj_t)&microbit_const_image_sad_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CONFUSED), (mp_obj_t)&microbit_const_image_confused_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ANGRY), (mp_obj_t)&microbit_const_image_angry_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ASLEEP), (mp_obj_t)&microbit_const_image_asleep_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SURPRISED), (mp_obj_t)&microbit_const_image_surprised_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SILLY), (mp_obj_t)&microbit_const_image_silly_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_FABULOUS), (mp_obj_t)&microbit_const_image_fabulous_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MEH), (mp_obj_t)&microbit_const_image_meh_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_YES), (mp_obj_t)&microbit_const_image_yes_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NO), (mp_obj_t)&microbit_const_image_no_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK12), (mp_obj_t)&microbit_const_image_clock12_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK1), (mp_obj_t)&microbit_const_image_clock1_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK2), (mp_obj_t)&microbit_const_image_clock2_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK3), (mp_obj_t)&microbit_const_image_clock3_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK4), (mp_obj_t)&microbit_const_image_clock4_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK5), (mp_obj_t)&microbit_const_image_clock5_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK6), (mp_obj_t)&microbit_const_image_clock6_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK7), (mp_obj_t)&microbit_const_image_clock7_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK8), (mp_obj_t)&microbit_const_image_clock8_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK9), (mp_obj_t)&microbit_const_image_clock9_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK10), (mp_obj_t)&microbit_const_image_clock10_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CLOCK11), (mp_obj_t)&microbit_const_image_clock11_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_N), (mp_obj_t)&microbit_const_image_arrow_n_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_NE), (mp_obj_t)&microbit_const_image_arrow_ne_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_E), (mp_obj_t)&microbit_const_image_arrow_e_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_SE), (mp_obj_t)&microbit_const_image_arrow_se_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_S), (mp_obj_t)&microbit_const_image_arrow_s_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_SW), (mp_obj_t)&microbit_const_image_arrow_sw_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_W), (mp_obj_t)&microbit_const_image_arrow_w_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ARROW_NW), (mp_obj_t)&microbit_const_image_arrow_nw_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TRIANGLE), (mp_obj_t)&microbit_const_image_triangle_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TRIANGLE_LEFT), (mp_obj_t)&microbit_const_image_triangle_left_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CHESSBOARD), (mp_obj_t)&microbit_const_image_chessboard_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIAMOND), (mp_obj_t)&microbit_const_image_diamond_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DIAMOND_SMALL), (mp_obj_t)&microbit_const_image_diamond_small_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SQUARE), (mp_obj_t)&microbit_const_image_square_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SQUARE_SMALL), (mp_obj_t)&microbit_const_image_square_small_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RABBIT), (mp_obj_t)&microbit_const_image_rabbit },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_COW), (mp_obj_t)&microbit_const_image_cow },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MUSIC_CROTCHET), (mp_obj_t)&microbit_const_image_music_crotchet_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MUSIC_QUAVER), (mp_obj_t)&microbit_const_image_music_quaver_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MUSIC_QUAVERS), (mp_obj_t)&microbit_const_image_music_quavers_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PITCHFORK), (mp_obj_t)&microbit_const_image_pitchfork_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_XMAS), (mp_obj_t)&microbit_const_image_xmas_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PACMAN), (mp_obj_t)&microbit_const_image_pacman_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TARGET), (mp_obj_t)&microbit_const_image_target_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALL_CLOCKS), (mp_obj_t)&microbit_const_image_all_clocks_tuple_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ALL_ARROWS), (mp_obj_t)&microbit_const_image_all_arrows_tuple_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TSHIRT), (mp_obj_t)&microbit_const_image_tshirt_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ROLLERSKATE), (mp_obj_t)&microbit_const_image_rollerskate_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_DUCK), (mp_obj_t)&microbit_const_image_duck_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_HOUSE), (mp_obj_t)&microbit_const_image_house_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_TORTOISE), (mp_obj_t)&microbit_const_image_tortoise_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTERFLY), (mp_obj_t)&microbit_const_image_butterfly_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STICKFIGURE), (mp_obj_t)&microbit_const_image_stickfigure_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GHOST), (mp_obj_t)&microbit_const_image_ghost_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SWORD), (mp_obj_t)&microbit_const_image_sword_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GIRAFFE), (mp_obj_t)&microbit_const_image_giraffe_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SKULL), (mp_obj_t)&microbit_const_image_skull_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_UMBRELLA), (mp_obj_t)&microbit_const_image_umbrella_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SNAKE), (mp_obj_t)&microbit_const_image_snake_obj },
+    { MP_ROM_QSTR(MP_QSTR_HEART), MP_ROM_PTR(&microbit_const_image_heart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_HEART_SMALL), MP_ROM_PTR(&microbit_const_image_heart_small_obj) },
+    { MP_ROM_QSTR(MP_QSTR_HAPPY), MP_ROM_PTR(&microbit_const_image_happy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SMILE), MP_ROM_PTR(&microbit_const_image_smile_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SAD), MP_ROM_PTR(&microbit_const_image_sad_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CONFUSED), MP_ROM_PTR(&microbit_const_image_confused_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ANGRY), MP_ROM_PTR(&microbit_const_image_angry_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ASLEEP), MP_ROM_PTR(&microbit_const_image_asleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SURPRISED), MP_ROM_PTR(&microbit_const_image_surprised_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SILLY), MP_ROM_PTR(&microbit_const_image_silly_obj) },
+    { MP_ROM_QSTR(MP_QSTR_FABULOUS), MP_ROM_PTR(&microbit_const_image_fabulous_obj) },
+    { MP_ROM_QSTR(MP_QSTR_MEH), MP_ROM_PTR(&microbit_const_image_meh_obj) },
+    { MP_ROM_QSTR(MP_QSTR_YES), MP_ROM_PTR(&microbit_const_image_yes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_NO), MP_ROM_PTR(&microbit_const_image_no_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK12), MP_ROM_PTR(&microbit_const_image_clock12_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK1), MP_ROM_PTR(&microbit_const_image_clock1_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK2), MP_ROM_PTR(&microbit_const_image_clock2_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK3), MP_ROM_PTR(&microbit_const_image_clock3_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK4), MP_ROM_PTR(&microbit_const_image_clock4_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK5), MP_ROM_PTR(&microbit_const_image_clock5_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK6), MP_ROM_PTR(&microbit_const_image_clock6_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK7), MP_ROM_PTR(&microbit_const_image_clock7_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK8), MP_ROM_PTR(&microbit_const_image_clock8_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK9), MP_ROM_PTR(&microbit_const_image_clock9_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK10), MP_ROM_PTR(&microbit_const_image_clock10_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CLOCK11), MP_ROM_PTR(&microbit_const_image_clock11_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_N), MP_ROM_PTR(&microbit_const_image_arrow_n_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_NE), MP_ROM_PTR(&microbit_const_image_arrow_ne_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_E), MP_ROM_PTR(&microbit_const_image_arrow_e_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_SE), MP_ROM_PTR(&microbit_const_image_arrow_se_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_S), MP_ROM_PTR(&microbit_const_image_arrow_s_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_SW), MP_ROM_PTR(&microbit_const_image_arrow_sw_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_W), MP_ROM_PTR(&microbit_const_image_arrow_w_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ARROW_NW), MP_ROM_PTR(&microbit_const_image_arrow_nw_obj) },
+    { MP_ROM_QSTR(MP_QSTR_TRIANGLE), MP_ROM_PTR(&microbit_const_image_triangle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_TRIANGLE_LEFT), MP_ROM_PTR(&microbit_const_image_triangle_left_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CHESSBOARD), MP_ROM_PTR(&microbit_const_image_chessboard_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DIAMOND), MP_ROM_PTR(&microbit_const_image_diamond_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DIAMOND_SMALL), MP_ROM_PTR(&microbit_const_image_diamond_small_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SQUARE), MP_ROM_PTR(&microbit_const_image_square_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SQUARE_SMALL), MP_ROM_PTR(&microbit_const_image_square_small_obj) },
+    { MP_ROM_QSTR(MP_QSTR_RABBIT), MP_ROM_PTR(&microbit_const_image_rabbit) },
+    { MP_ROM_QSTR(MP_QSTR_COW), MP_ROM_PTR(&microbit_const_image_cow) },
+    { MP_ROM_QSTR(MP_QSTR_MUSIC_CROTCHET), MP_ROM_PTR(&microbit_const_image_music_crotchet_obj) },
+    { MP_ROM_QSTR(MP_QSTR_MUSIC_QUAVER), MP_ROM_PTR(&microbit_const_image_music_quaver_obj) },
+    { MP_ROM_QSTR(MP_QSTR_MUSIC_QUAVERS), MP_ROM_PTR(&microbit_const_image_music_quavers_obj) },
+    { MP_ROM_QSTR(MP_QSTR_PITCHFORK), MP_ROM_PTR(&microbit_const_image_pitchfork_obj) },
+    { MP_ROM_QSTR(MP_QSTR_XMAS), MP_ROM_PTR(&microbit_const_image_xmas_obj) },
+    { MP_ROM_QSTR(MP_QSTR_PACMAN), MP_ROM_PTR(&microbit_const_image_pacman_obj) },
+    { MP_ROM_QSTR(MP_QSTR_TARGET), MP_ROM_PTR(&microbit_const_image_target_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ALL_CLOCKS), MP_ROM_PTR(&microbit_const_image_all_clocks_tuple_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ALL_ARROWS), MP_ROM_PTR(&microbit_const_image_all_arrows_tuple_obj) },
+    { MP_ROM_QSTR(MP_QSTR_TSHIRT), MP_ROM_PTR(&microbit_const_image_tshirt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ROLLERSKATE), MP_ROM_PTR(&microbit_const_image_rollerskate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DUCK), MP_ROM_PTR(&microbit_const_image_duck_obj) },
+    { MP_ROM_QSTR(MP_QSTR_HOUSE), MP_ROM_PTR(&microbit_const_image_house_obj) },
+    { MP_ROM_QSTR(MP_QSTR_TORTOISE), MP_ROM_PTR(&microbit_const_image_tortoise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTERFLY), MP_ROM_PTR(&microbit_const_image_butterfly_obj) },
+    { MP_ROM_QSTR(MP_QSTR_STICKFIGURE), MP_ROM_PTR(&microbit_const_image_stickfigure_obj) },
+    { MP_ROM_QSTR(MP_QSTR_GHOST), MP_ROM_PTR(&microbit_const_image_ghost_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SWORD), MP_ROM_PTR(&microbit_const_image_sword_obj) },
+    { MP_ROM_QSTR(MP_QSTR_GIRAFFE), MP_ROM_PTR(&microbit_const_image_giraffe_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SKULL), MP_ROM_PTR(&microbit_const_image_skull_obj) },
+    { MP_ROM_QSTR(MP_QSTR_UMBRELLA), MP_ROM_PTR(&microbit_const_image_umbrella_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SNAKE), MP_ROM_PTR(&microbit_const_image_snake_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(microbit_image_locals_dict, microbit_image_locals_dict_table);
 
-#define THE_FONT MicroBitFont::defaultFont
+#define THE_FONT font_pendolino3_5x5_pad3msb
 
 #define ASCII_START 32
 #define ASCII_END 126
@@ -602,7 +598,7 @@ void microbit_image_set_from_char(greyscale_t *img, char c) {
     const unsigned char *data = get_font_data_from_char(c);
     for (int x = 0; x < 5; ++x) {
         for (int y = 0; y < 5; ++y) {
-            img->setPixelValue(x, y, get_pixel_from_font_data(data, x, y)*MAX_BRIGHTNESS);
+            greyscaleSetPixelValue(img, x, y, get_pixel_from_font_data(data, x, y)*MAX_BRIGHTNESS);
         }
     }
 }
@@ -617,33 +613,34 @@ microbit_image_obj_t *microbit_image_for_char(char c) {
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_float_t fval) {
     if (fval < 0) 
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Brightness multiplier must not be negative."));
-    greyscale_t *result = greyscale_new(lhs->width(), lhs->height());
-    for (int x = 0; x < lhs->width(); ++x) {
-        for (int y = 0; y < lhs->width(); ++y) {
-            int val = min((int)lhs->getPixelValue(x,y)*fval+0.5, MAX_BRIGHTNESS);
-            result->setPixelValue(x, y, val);
+    greyscale_t *result = greyscale_new(imageWidth(lhs), imageHeight(lhs));
+    for (int x = 0; x < imageWidth(lhs); ++x) {
+        for (int y = 0; y < imageWidth(lhs); ++y) {
+            int val = min((int)imageGetPixelValue(lhs, x,y)*fval+0.5, MAX_BRIGHTNESS);
+            greyscaleSetPixelValue(result, x, y, val);
         }
     }
     return (microbit_image_obj_t *)result;
 }
 
 microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_image_obj_t *rhs, bool add) {
-    mp_int_t h = lhs->height();
-    mp_int_t w = lhs->width();
-    if (rhs->height() != h || lhs->width() != w) {
+    mp_int_t h = imageHeight(lhs);
+    mp_int_t w = imageWidth(lhs);
+    if (imageHeight(rhs) != h || imageWidth(lhs) != w) {
+// TODO: verify that image width in test above should really test (lhs != w)
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Images must be the same size."));
     }
     greyscale_t *result = greyscale_new(w, h);
     for (int x = 0; x < w; ++x) {
         for (int y = 0; y < h; ++y) {
             int val;
-            int lval = lhs->getPixelValue(x,y);
-            int rval = rhs->getPixelValue(x,y);
+            int lval = imageGetPixelValue(lhs, x,y);
+            int rval = imageGetPixelValue(rhs, x,y);
             if (add) 
                 val = min(lval + rval, MAX_BRIGHTNESS);
             else
                 val = max(0, lval - rval);
-            result->setPixelValue(x, y, val);
+            greyscaleSetPixelValue(result, x, y, val);
         }
     }
     return (microbit_image_obj_t *)result;
@@ -685,8 +682,6 @@ const mp_obj_type_t microbit_image_type = {
     .getiter = NULL,
     .iternext = NULL,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = NULL,
     .locals_dict = (mp_obj_dict_t*)&microbit_image_locals_dict,
 };
  
@@ -763,7 +758,8 @@ static void restart(scrolling_string_iterator_t *iter) {
     }
 }
 
-STATIC mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in) {
+STATIC mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+    (void)iter_buf;
     scrolling_string_t *str = (scrolling_string_t *)o_in;
     scrolling_string_iterator_t *result = m_new_obj(scrolling_string_iterator_t);
     result->base.type = &microbit_scrolling_string_iterator_type;
@@ -782,25 +778,25 @@ STATIC mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
     if (iter->next_char == iter->end && iter->offset == 5) {
         if (iter->repeat) {
             restart(iter);
-            iter->img->clear();
+            greyscaleClear(iter->img);
         } else {
             return MP_OBJ_STOP_ITERATION;
         }
     }
     for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 5; y++) {
-            iter->img->setPixelValue(x, y, iter->img->getPixelValue(x+1, y));
+            greyscaleSetPixelValue(iter->img, x, y, greyscaleGetPixelValue(iter->img, x+1, y));
         }
     }
     for (int y = 0; y < 5; y++) {
-        iter->img->setPixelValue(4, y, 0);
+        greyscaleSetPixelValue(iter->img, 4, y, 0);
     }
     const unsigned char *font_data;
     if (iter->offset < iter->offset_limit) {
         font_data = get_font_data_from_char(iter->right);
         for (int y = 0; y < 5; ++y) {
             int pix = get_pixel_from_font_data(font_data, iter->offset, y)*MAX_BRIGHTNESS;
-            iter->img->setPixelValue(4, y, pix);
+            greyscaleSetPixelValue(iter->img, 4, y, pix);
         }
     } else if (iter->offset == iter->offset_limit) {
         ++iter->next_char;
@@ -837,8 +833,6 @@ const mp_obj_type_t microbit_scrolling_string_type = {
     .getiter = get_microbit_scrolling_string_iter,
     .iternext = NULL,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = NULL,
     .locals_dict = NULL,
 };
 
@@ -852,11 +846,9 @@ const mp_obj_type_t microbit_scrolling_string_iterator_type = {
     .binary_op = NULL,
     .attr = NULL,
     .subscr = NULL,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = microbit_scrolling_string_iter_next,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = NULL,
     .locals_dict = NULL,
 };
 
@@ -894,7 +886,7 @@ static mp_obj_t facade_unary_op(mp_uint_t op, mp_obj_t self_in) {
     }
 }
 
-static mp_obj_t microbit_facade_iterator(mp_obj_t iterable);
+static mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf);
 
 const mp_obj_type_t string_image_facade_type = {
     { &mp_type_type },
@@ -909,8 +901,6 @@ const mp_obj_type_t string_image_facade_type = {
     .getiter = microbit_facade_iterator,
     .iternext = NULL,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = NULL,
     NULL
 };
 
@@ -952,15 +942,14 @@ const mp_obj_type_t microbit_facade_iterator_type = {
     .binary_op = NULL,
     .attr = NULL,
     .subscr = NULL,
-    .getiter = mp_identity,
+    .getiter = mp_identity_getiter,
     .iternext = microbit_facade_iter_next,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = NULL,
     NULL
 };
 
-mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in) {
+mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in, mp_obj_iter_buf_t *iter_buf) {
+	(void)iter_buf;
     facade_iterator_t *result = m_new_obj(facade_iterator_t);
     string_image_facade_t *iterable = (string_image_facade_t *)iterable_in;
     result->base.type = &microbit_facade_iterator_type;
@@ -968,6 +957,4 @@ mp_obj_t microbit_facade_iterator(mp_obj_t iterable_in) {
     result->image = iterable->image;
     result->index = 0;
     return result;
-}
-
 }

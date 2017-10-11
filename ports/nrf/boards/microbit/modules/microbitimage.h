@@ -25,39 +25,41 @@ typedef struct _monochrome_5by5_t {
     TYPE_AND_FLAGS;
     uint8_t pixel44: 1;
     uint8_t bits24[3];
-    
-    /* This is an internal method it is up to the caller to validate the inputs */
-    uint8_t getPixelValue(mp_int_t x, mp_int_t y);
-
 } monochrome_5by5_t;
+
+
+/* This is an internal method it is up to the caller to validate the inputs */
+uint8_t monochromeGetPixelValue(monochrome_5by5_t * p_mono, mp_int_t x, mp_int_t y);
 
 typedef struct _greyscale_t {
     TYPE_AND_FLAGS;
     uint8_t height;
     uint8_t width;
     uint8_t byte_data[]; /* Static initializer for this will have to be C, not C++ */
-    void clear();
-
-    /* Thiese are internal methods and it is up to the caller to validate the inputs */
-    uint8_t getPixelValue(mp_int_t x, mp_int_t y);
-    void setPixelValue(mp_int_t x, mp_int_t y, mp_int_t val);
-    void fill(mp_int_t val);
 } greyscale_t;
+
+#if 1
+void clear(greyscale_t * p_greyscale);
+/* Thiese are internal methods and it is up to the caller to validate the inputs */
+uint8_t greyscaleGetPixelValue(greyscale_t * p_greyscale, mp_int_t x, mp_int_t y);
+void greyscaleSetPixelValue(greyscale_t * p_greyscale, mp_int_t x, mp_int_t y, mp_int_t val);
+void greyscaleFill(greyscale_t * p_greyscale, mp_int_t val);
+#endif
 
 typedef union _microbit_image_obj_t {
     image_base_t base;
     monochrome_5by5_t monochrome_5by5;
     greyscale_t greyscale;
-    
-    mp_int_t height();
-    mp_int_t width();
-    greyscale_t *copy();
-    greyscale_t *invert();
-    
-    /* This is an internal method it is up to the caller to validate the inputs */
-    uint8_t getPixelValue(mp_int_t x, mp_int_t y);
-    
 } microbit_image_obj_t;
+
+#if 1
+mp_int_t imageHeight(microbit_image_obj_t * p_image_obj);
+mp_int_t imageWidth(microbit_image_obj_t * p_image_obj);
+greyscale_t * imageCopy(microbit_image_obj_t * p_image_obj);
+greyscale_t * imageInvert(microbit_image_obj_t * p_image_obj);
+/* This is an internal method it is up to the caller to validate the inputs */
+uint8_t imageGetPixelValue(microbit_image_obj_t * p_image_obj, mp_int_t x, mp_int_t y);
+#endif
 
 /** Return a facade object that presents the string as a sequence of images */
 mp_obj_t microbit_string_facade(mp_obj_t string);
@@ -81,6 +83,7 @@ mp_obj_t scrolling_string_image_iterable(const char* str, mp_uint_t len, mp_obj_
 
 extern const monochrome_5by5_t microbit_blank_image;
 extern const monochrome_5by5_t microbit_const_image_heart_obj;
+extern const mp_obj_type_t microbit_image_type;
 
 #define BLANK_IMAGE (microbit_image_obj_t *)(&microbit_blank_image)
 #define HEART_IMAGE (microbit_image_obj_t *)(&microbit_const_image_heart_obj)
