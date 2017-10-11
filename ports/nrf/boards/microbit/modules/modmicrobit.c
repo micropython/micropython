@@ -43,8 +43,10 @@ STATIC mp_obj_t microbit_sleep(mp_obj_t ms_in) {
     mp_int_t ms;
     if (mp_obj_is_integer(ms_in)) {
         ms = mp_obj_get_int(ms_in);
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     } else {
         ms = (mp_int_t)mp_obj_get_float(ms_in);
+#endif
     }
     if (ms > 0) {
         mp_hal_delay_ms(ms);
@@ -98,7 +100,11 @@ STATIC mp_obj_t microbit_temperature(void) {
     NRF_TEMP->EVENTS_DATARDY = 0;
     temp = NRF_TEMP->TEMP;
     NRF_TEMP->TASKS_STOP = 1;
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     return mp_obj_new_float(temp/4.0);
+#else
+    return mp_obj_new_int(temp/4);
+#endif
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_temperature_obj, microbit_temperature);
 
