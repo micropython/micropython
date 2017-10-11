@@ -230,6 +230,13 @@ extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE
 #endif
 
+#if BOARD_SPECIFIC_MODULES
+#include "board_modules.h"
+#define MICROPY_BOARD_BUILTINS BOARD_MODULES
+#else
+#define MICROPY_BOARD_BUILTINS
+#endif // BOARD_SPECIFIC_MODULES
+
 #if BLUETOOTH_SD
 
 #if MICROPY_PY_BLE
@@ -249,6 +256,7 @@ extern const struct _mp_obj_module_t ble_module;
     MUSIC_MODULE \
     UBLUEPY_MODULE \
     RANDOM_MODULE \
+    MICROPY_BOARD_BUILTINS \
 
 
 #else
@@ -260,6 +268,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
     RANDOM_MODULE \
+    MICROPY_BOARD_BUILTINS \
 
 
 #endif // BLUETOOTH_SD
@@ -299,6 +308,7 @@ extern const struct _mp_obj_module_t ble_module;
     mp_obj_list_t mod_network_nic_list; \
     \
     /* microbit modules */ \
+    void *async_data[2]; \
     struct _music_data_t *music_data; \
     const struct _pwm_events *pwm_active_events; \
     const struct _pwm_events *pwm_pending_events; \
