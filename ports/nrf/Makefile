@@ -26,6 +26,10 @@ else
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
+ifeq ($(shell test -e boards/$(BOARD)/modules/boardmodules.mk && echo -n yes),yes)
+	include boards/$(BOARD)/modules/boardmodules.mk
+endif
+
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
@@ -264,7 +268,7 @@ $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
