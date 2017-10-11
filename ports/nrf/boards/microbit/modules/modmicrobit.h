@@ -1,0 +1,234 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+#ifndef __MICROPY_INCLUDED_MICROBIT_MODMICROBIT_H__
+#define __MICROPY_INCLUDED_MICROBIT_MODMICROBIT_H__
+
+#include "py/objtuple.h"
+
+extern const mp_obj_type_t microbit_ad_pin_type;
+extern const mp_obj_type_t microbit_dig_pin_type;
+extern const mp_obj_type_t microbit_touch_pin_type;
+
+extern const struct _microbit_pin_obj_t microbit_p0_obj;
+extern const struct _microbit_pin_obj_t microbit_p1_obj;
+extern const struct _microbit_pin_obj_t microbit_p2_obj;
+extern const struct _microbit_pin_obj_t microbit_p3_obj;
+extern const struct _microbit_pin_obj_t microbit_p4_obj;
+extern const struct _microbit_pin_obj_t microbit_p5_obj;
+extern const struct _microbit_pin_obj_t microbit_p6_obj;
+extern const struct _microbit_pin_obj_t microbit_p7_obj;
+extern const struct _microbit_pin_obj_t microbit_p8_obj;
+extern const struct _microbit_pin_obj_t microbit_p9_obj;
+extern const struct _microbit_pin_obj_t microbit_p10_obj;
+extern const struct _microbit_pin_obj_t microbit_p11_obj;
+extern const struct _microbit_pin_obj_t microbit_p12_obj;
+extern const struct _microbit_pin_obj_t microbit_p13_obj;
+extern const struct _microbit_pin_obj_t microbit_p14_obj;
+extern const struct _microbit_pin_obj_t microbit_p15_obj;
+extern const struct _microbit_pin_obj_t microbit_p16_obj;
+extern const struct _microbit_pin_obj_t microbit_p19_obj;
+extern const struct _microbit_pin_obj_t microbit_p20_obj;
+
+extern const mp_obj_type_t microbit_const_image_type;
+extern const struct _monochrome_5by5_t microbit_const_image_heart_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_heart_small_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_happy_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_smile_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_sad_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_confused_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_angry_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_asleep_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_surprised_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_silly_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_fabulous_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_meh_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_yes_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_no_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock12_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock1_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock2_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock3_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock4_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock5_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock6_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock7_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock8_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock9_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock10_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_clock11_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_n_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_ne_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_e_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_se_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_s_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_sw_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_w_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_arrow_nw_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_triangle_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_triangle_left_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_chessboard_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_diamond_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_diamond_small_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_square_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_square_small_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_rabbit;
+extern const struct _monochrome_5by5_t microbit_const_image_cow;
+extern const struct _monochrome_5by5_t microbit_const_image_music_crotchet_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_music_quaver_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_music_quavers_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_pitchfork_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_xmas_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_pacman_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_target_obj;
+extern const struct _mp_obj_tuple_t microbit_const_image_all_clocks_tuple_obj;
+extern const struct _mp_obj_tuple_t microbit_const_image_all_arrows_tuple_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_tshirt_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_rollerskate_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_duck_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_house_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_tortoise_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_butterfly_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_stickfigure_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_ghost_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_sword_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_giraffe_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_skull_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_umbrella_obj;
+extern const struct _monochrome_5by5_t microbit_const_image_snake_obj;
+
+extern const struct _mp_obj_tuple_t microbit_music_tune_dadadadum_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_entertainer_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_prelude_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_ode_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_nyan_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_ringtone_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_funk_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_blues_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_birthday_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_wedding_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_funeral_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_punchline_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_python_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_baddy_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_chase_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_ba_ding_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_wawawawaa_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_jump_up_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_jump_down_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_power_up_obj;
+extern const struct _mp_obj_tuple_t microbit_music_tune_power_down_obj;
+
+extern const mp_obj_type_t microbit_image_type;
+
+extern const mp_obj_type_t microbit_accelerometer_type;
+extern const struct _microbit_accelerometer_obj_t microbit_accelerometer_obj;
+
+extern struct _microbit_display_obj_t microbit_display_obj;
+extern const struct _microbit_button_obj_t microbit_button_a_obj;
+extern const struct _microbit_button_obj_t microbit_button_b_obj;
+extern const struct _microbit_compass_obj_t microbit_compass_obj;
+extern const struct _microbit_i2c_obj_t microbit_i2c_obj;
+extern struct _microbit_uart_obj_t microbit_uart_obj;
+extern struct _microbit_spi_obj_t microbit_spi_obj;
+
+MP_DECLARE_CONST_FUN_OBJ(microbit_reset_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_sleep_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_random_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_running_time_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_temperature_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_panic_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_accelerometer_get_x_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_accelerometer_get_y_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_accelerometer_get_z_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_button_is_pressed_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_button_was_pressed_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_button_get_presses_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_is_calibrated_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_heading_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_calibrate_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_is_calibrating_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_clear_calibration_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_get_x_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_get_y_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_get_z_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_compass_get_field_strength_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_show_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_scroll_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_clear_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_get_pixel_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_set_pixel_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_on_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_off_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_display_is_on_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_read_digital_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_write_digital_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_read_analog_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_write_analog_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_is_touched_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_set_analog_period_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_pin_set_analog_period_microseconds_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_i2c_init_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_i2c_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_i2c_write_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_width_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_height_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_get_pixel_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_set_pixel_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_shift_left_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_shift_right_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_shift_up_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_shift_down_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_copy_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_crop_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_invert_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_image_slice_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_uart_init_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_uart_any_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_readall_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_unbuffered_readline_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ(mp_stream_write_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_spi_init_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_spi_write_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_spi_read_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_spi_write_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_music_set_tempo_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_music_pitch_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_music_play_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_music_get_tempo_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_music_stop_obj);
+MP_DECLARE_CONST_FUN_OBJ(microbit_music_reset_obj);
+MP_DECLARE_CONST_FUN_OBJ(love_badaboom_obj);
+MP_DECLARE_CONST_FUN_OBJ(this_authors_obj);
+
+extern const mp_obj_module_t microbit_module;
+extern const mp_obj_module_t music_module;
+extern const mp_obj_module_t love_module;
+extern const mp_obj_module_t antigravity_module;
+extern const mp_obj_module_t this_module;
+
+#endif // __MICROPY_INCLUDED_MICROBIT_MODMICROBIT_H__
