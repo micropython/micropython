@@ -125,8 +125,39 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
         return fat_vfs_import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
     #endif
-    // TODO delegate to vfs.stat() method
-    return MP_IMPORT_STAT_NO_EXIST;
+
+    mp_obj_t dest[3];
+    dest[2] = mp_obj_new_str(path_out, strlen(path_out), false);
+    mp_load_method_maybe(vfs->obj, MP_QSTR_stat, dest);
+    if (dest[0] == MP_OBJ_NULL) {
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+
+    mp_obj_t st;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        st = mp_call_method_n_kw(1, 0, dest);
+        nlr_pop();
+    } else {
+        // Uncaught exception - file doesn't exist?
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+
+    mp_obj_tuple_t *t = MP_OBJ_TO_PTR(st);
+    if (t->base.type != &mp_type_tuple || t->len != 10) {
+        // Not a valid tuple?
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+
+    mp_int_t filetype = mp_obj_get_int(t->items[0]);
+    if (filetype & MP_S_IFDIR) {
+        return MP_IMPORT_STAT_DIR;
+    } else if (filetype & MP_S_IFREG) {
+        return MP_IMPORT_STAT_FILE;
+    } else {
+        // some other file type
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
