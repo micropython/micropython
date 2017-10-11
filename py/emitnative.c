@@ -123,6 +123,8 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_NEW_CELL] = 1,
     [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
     [MP_F_SETUP_CODE_STATE] = 5,
+    [MP_F_SMALL_INT_FLOOR_DIVIDE] = 2,
+    [MP_F_SMALL_INT_MODULO] = 2,
 };
 
 #include "py/asmx86.h"
@@ -1843,6 +1845,20 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             return;
         }
         #endif
+
+        // special cases for floor-divide and module because we dispatch to helper functions
+        if (op == MP_BINARY_OP_FLOOR_DIVIDE || op == MP_BINARY_OP_INPLACE_FLOOR_DIVIDE
+            || op == MP_BINARY_OP_MODULO || op == MP_BINARY_OP_INPLACE_MODULO) {
+            emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
+            if (op == MP_BINARY_OP_FLOOR_DIVIDE || op == MP_BINARY_OP_INPLACE_FLOOR_DIVIDE) {
+                emit_call(emit, MP_F_SMALL_INT_FLOOR_DIVIDE);
+            } else {
+                emit_call(emit, MP_F_SMALL_INT_MODULO);
+            }
+            emit_post_push_reg(emit, VTYPE_INT, REG_RET);
+            return;
+        }
+
         int reg_rhs = REG_ARG_3;
         emit_pre_pop_reg_flexible(emit, &vtype_rhs, &reg_rhs, REG_RET, REG_ARG_2);
         emit_pre_pop_reg(emit, &vtype_lhs, REG_ARG_2);

@@ -185,6 +185,8 @@ typedef enum {
     MP_F_NEW_CELL,
     MP_F_MAKE_CLOSURE_FROM_RAW_CODE,
     MP_F_SETUP_CODE_STATE,
+    MP_F_SMALL_INT_FLOOR_DIVIDE,
+    MP_F_SMALL_INT_MODULO,
     MP_F_NUMBER_OF,
 } mp_fun_kind_t;
 
