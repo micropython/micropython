@@ -610,13 +610,21 @@ microbit_image_obj_t *microbit_image_for_char(char c) {
     return (microbit_image_obj_t *)result;
 }
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_float_t fval) {
+#else // MICROPY_FLOAT_IMPL_NONE
+microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_int_t fval) {
+#endif
     if (fval < 0) 
         nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Brightness multiplier must not be negative."));
     greyscale_t *result = greyscale_new(imageWidth(lhs), imageHeight(lhs));
     for (int x = 0; x < imageWidth(lhs); ++x) {
         for (int y = 0; y < imageWidth(lhs); ++y) {
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
             int val = min((int)imageGetPixelValue(lhs, x,y)*fval+0.5, MAX_BRIGHTNESS);
+#else // MICROPY_FLOAT_IMPL_NONE
+            int val = min((int)imageGetPixelValue(lhs, x,y)*fval, MAX_BRIGHTNESS);
+#endif
             greyscaleSetPixelValue(result, x, y, val);
         }
     }
@@ -645,8 +653,8 @@ microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_ima
     }
     return (microbit_image_obj_t *)result;
 }                      
-                                   
-STATIC mp_obj_t image_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+
+STATIC mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (mp_obj_get_type(lhs_in) != &microbit_image_type) {
         return MP_OBJ_NULL; // op not supported
     }
@@ -656,9 +664,19 @@ STATIC mp_obj_t image_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) 
     case MP_BINARY_OP_SUBTRACT:
         break;
     case MP_BINARY_OP_MULTIPLY:
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         return microbit_image_dim(lhs, mp_obj_get_float(rhs_in));
+#else
+        return microbit_image_dim(lhs, mp_obj_get_int(rhs_in) * 10);
+#endif
     case MP_BINARY_OP_TRUE_DIVIDE:
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
         return microbit_image_dim(lhs, 1.0/mp_obj_get_float(rhs_in));
+#else
+        break;
+    case MP_BINARY_OP_FLOOR_DIVIDE:
+        return microbit_image_dim(lhs, (100/mp_obj_get_int(rhs_in) + 5) / 10);
+#endif
     default:
         return MP_OBJ_NULL; // op not supported
     }
@@ -877,7 +895,7 @@ static mp_obj_t string_image_facade_subscr(mp_obj_t self_in, mp_obj_t index_in, 
     }
 }
 
-static mp_obj_t facade_unary_op(mp_uint_t op, mp_obj_t self_in) {
+static mp_obj_t facade_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     string_image_facade_t *self = (string_image_facade_t *)self_in;
     switch (op) {
         case MP_UNARY_OP_LEN:
