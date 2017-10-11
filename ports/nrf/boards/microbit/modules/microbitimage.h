@@ -89,7 +89,11 @@ extern const mp_obj_type_t microbit_image_type;
 #define HEART_IMAGE (microbit_image_obj_t *)(&microbit_const_image_heart_obj)
 #define HAPPY_IMAGE (microbit_image_obj_t *)(&microbit_const_image_happy_obj)
 
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_float_t fval);
+#else
+microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_int_t val);
+#endif
 microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_image_obj_t *rhs, bool add);
 
 #endif // __MICROPY_INCLUDED_MICROBIT_IMAGE_H__
