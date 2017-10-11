@@ -15,11 +15,6 @@ typedef struct _microbit_display_obj_t {
     /* boolean histogram of brightness in buffer */
     uint16_t brightnesses;
     uint16_t pins_for_brightness[MAX_BRIGHTNESS+1];
-
-    void advanceRow();
-    inline void setPinsForRow(uint8_t brightness);
-
-    
 } microbit_display_obj_t;
 
 #define ASYNC_MODE_STOPPED 0
@@ -27,9 +22,7 @@ typedef struct _microbit_display_obj_t {
 #define ASYNC_MODE_CLEAR 2
 
 extern microbit_display_obj_t microbit_display_obj;
-
-
-extern "C" {
+extern const mp_obj_type_t    microbit_image_type;
 
 void microbit_display_show(microbit_display_obj_t *display, microbit_image_obj_t *image);
 
@@ -48,7 +41,5 @@ void microbit_display_init(void);
 void microbit_display_tick(void);
 
 bool microbit_display_active_animation(void);
-
-}
 
 #endif // __MICROPY_INCLUDED_MICROBIT_DISPLAY_H__

@@ -24,17 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "mbed.h"
-
-extern "C" {
-
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/mphal.h"
-#include "modmicrobit.h"
 #include "microbitdisplay.h"
 #include "microbitimage.h"
-
+#include "softpwm.h"
+#include "ticker.h"
 extern uint32_t ticks;
 
 STATIC mp_obj_t microbit_reset_(void) {
@@ -106,13 +102,22 @@ STATIC mp_obj_t microbit_temperature(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_temperature_obj, microbit_temperature);
 
-STATIC const mp_map_elem_t microbit_module_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_microbit) },
+static mp_obj_t microbit_module_init(void) {
+    softpwm_init();
+    ticker_init(microbit_display_tick);
+    ticker_start();
+    pwm_start();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(microbit_module___init___obj, microbit_module_init);
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_Image), (mp_obj_t)&microbit_image_type },
+STATIC const mp_rom_map_elem_t microbit_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&microbit_module___init___obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_display), (mp_obj_t)&microbit_display_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_button_a), (mp_obj_t)&microbit_button_a_obj },
+    { MP_ROM_QSTR(MP_QSTR_Image), MP_ROM_PTR(&microbit_image_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_display), MP_ROM_PTR(&microbit_display_obj) },
+/*    { MP_OBJ_NEW_QSTR(MP_QSTR_button_a), (mp_obj_t)&microbit_button_a_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_button_b), (mp_obj_t)&microbit_button_b_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_accelerometer), (mp_obj_t)&microbit_accelerometer_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_compass), (mp_obj_t)&microbit_compass_obj },
@@ -145,14 +150,12 @@ STATIC const mp_map_elem_t microbit_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin16), (mp_obj_t)&microbit_p16_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin19), (mp_obj_t)&microbit_p19_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin20), (mp_obj_t)&microbit_p20_obj },
+*/
 };
 
 STATIC MP_DEFINE_CONST_DICT(microbit_module_globals, microbit_module_globals_table);
 
 const mp_obj_module_t microbit_module = {
     .base = { &mp_type_module },
-    .name = MP_QSTR_microbit,
     .globals = (mp_obj_dict_t*)&microbit_module_globals,
 };
-
-}
