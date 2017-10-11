@@ -20,3 +20,7 @@
 [submodule "atmel-samd/frozen/Adafruit_CircuitPython_NeoPixel"]
 	path = frozen/Adafruit_CircuitPython_NeoPixel
 	url = https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel
+[submodule "atmel-samd/asf4"]
+	path = atmel-samd/asf4
+	url = https://github.com/adafruit/asf4.git
+	branch = circuitpython
