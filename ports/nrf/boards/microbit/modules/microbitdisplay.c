@@ -25,30 +25,26 @@
  */
 
 #include <string.h>
-#include "microbitobj.h"
-#include "nrf_gpio.h"
-
-extern "C" {
+#include "hal_gpio.h"
+#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "modmicrobit.h"
 #include "microbitimage.h"
 #include "microbitdisplay.h"
-#include "microbitpin.h"
-#include "lib/iters.h"
-#include "lib/ticker.h"
+#include "iters.h"
+#include "ticker.h"
 
 #define min(a,b) (((a)<(b))?(a):(b))
 
 void microbit_display_show(microbit_display_obj_t *display, microbit_image_obj_t *image) {
-    mp_int_t w = min(image->width(), 5);
-    mp_int_t h = min(image->height(), 5);
+    mp_int_t w = min(imageWidth(image), 5);
+    mp_int_t h = min(imageHeight(image), 5);
     mp_int_t x = 0;
     mp_int_t brightnesses = 0;
     for (; x < w; ++x) {
         mp_int_t y = 0;
         for (; y < h; ++y) {
-            uint8_t pix = image->getPixelValue(x, y);
+            uint8_t pix = imageGetPixelValue(image, x, y);
             display->image_buffer[x][y] = pix;
             brightnesses |= (1 << pix);
         }
@@ -162,10 +158,10 @@ STATIC void wait_for_event() {
     wakeup_event = false;
 }
 
-struct DisplayPoint {
+typedef struct {
     uint8_t x;
     uint8_t y;
-};
+} DisplayPoint;
 
 #define NO_CONN 0
 
@@ -190,11 +186,11 @@ static const DisplayPoint display_map[COLUMN_COUNT][ROW_COUNT] = {
 #define MAX_ROW_PIN 15
 #define ROW_PINS_MASK 0xe000
 
-inline void microbit_display_obj_t::setPinsForRow(uint8_t brightness) {
+static inline void displaySetPinsForRow(microbit_display_obj_t * p_display, uint8_t brightness) {
     if (brightness == 0) {
-        nrf_gpio_pins_clear(COLUMN_PINS_MASK & ~this->pins_for_brightness[brightness]);
+        hal_gpio_out_clear(0, COLUMN_PINS_MASK & ~p_display->pins_for_brightness[brightness]);
     } else {
-        nrf_gpio_pins_set(this->pins_for_brightness[brightness]);
+        hal_gpio_out_set(0, p_display->pins_for_brightness[brightness]);
     }
 }
 
@@ -221,38 +217,39 @@ inline void microbit_display_obj_t::setPinsForRow(uint8_t brightness) {
  *     Else
  *       Re-queue the PWM callback after the appropriate delay
  */
-void microbit_display_obj_t::advanceRow() {
+static void displayAdvanceRow(microbit_display_obj_t * p_display) {
     /* Clear all of the column bits */
-    nrf_gpio_pins_set(COLUMN_PINS_MASK);
+    hal_gpio_out_set(0, COLUMN_PINS_MASK);
     /* Clear the strobe bit for this row */
-    nrf_gpio_pin_clear(strobe_row+MIN_ROW_PIN);
+    hal_gpio_pin_clear(0, p_display->strobe_row + MIN_ROW_PIN);
 
     /* Move to the next row.  Before this, "this row" refers to the row
      * manipulated by the previous invocation of this function.  After this,
      * "this row" refers to the row manipulated by the current invocation of
      * this function. */
-    strobe_row++;
+    p_display->strobe_row++;
 
     // Reset the row counts and bit mask when we have hit the max.
-    if (strobe_row == ROW_COUNT) {
-        strobe_row = 0;
+    if (p_display->strobe_row == ROW_COUNT) {
+        p_display->strobe_row = 0;
     }
 
     // Set pin for this row.
     // Prepare row for rendering.
     for (int i = 0; i <= MAX_BRIGHTNESS; i++) {
-        pins_for_brightness[i] = 0;
+        p_display->pins_for_brightness[i] = 0;
     }
     for (int i = 0; i < COLUMN_COUNT; i++) {
-        int x = display_map[i][strobe_row].x;
-        int y = display_map[i][strobe_row].y;
-        uint8_t brightness = microbit_display_obj.image_buffer[x][y];
-        pins_for_brightness[brightness] |= (1<<(i+MIN_COLUMN_PIN));
+        int x = display_map[i][p_display->strobe_row].x;
+        int y = display_map[i][p_display->strobe_row].y;
+        int brightness = microbit_display_obj.image_buffer[x][y];
+        p_display->pins_for_brightness[brightness] |= (1<<(i+MIN_COLUMN_PIN));
+        (void)brightness;
     }
     /* Enable the strobe bit for this row */
-    nrf_gpio_pin_set(strobe_row+MIN_ROW_PIN);
+    hal_gpio_pin_set(0, p_display->strobe_row + MIN_ROW_PIN);
     /* Enable the column bits for all pins that need to be on. */
-    nrf_gpio_pins_clear(pins_for_brightness[MAX_BRIGHTNESS]);
+    hal_gpio_out_clear(0, p_display->pins_for_brightness[MAX_BRIGHTNESS]);
 }
 
 static const uint16_t render_timings[] =
@@ -277,7 +274,7 @@ static const uint16_t render_timings[] =
 static int32_t callback(void) {
     microbit_display_obj_t *display = &microbit_display_obj;
     mp_uint_t brightness = display->previous_brightness;
-    display->setPinsForRow(brightness);
+    displaySetPinsForRow(display, brightness);
     brightness += 1;
     if (brightness == MAX_BRIGHTNESS) {
         clear_ticker_callback(DISPLAY_TICKER_SLOT);
@@ -368,7 +365,7 @@ void microbit_display_tick(void) {
         return;
     }
 
-    microbit_display_obj.advanceRow();
+    displayAdvanceRow(&microbit_display_obj);
 
     microbit_display_update();
     microbit_display_obj.previous_brightness = 0;
@@ -382,7 +379,7 @@ void microbit_display_animate(microbit_display_obj_t *self, mp_obj_t iterable, m
     // Reset the repeat state.
     MP_STATE_PORT(async_data)[0] = NULL;
     MP_STATE_PORT(async_data)[1] = NULL;
-    async_iterator = mp_getiter(iterable);
+    async_iterator = mp_getiter(iterable, NULL);
     async_delay = delay;
     async_clear = clear;
     MP_STATE_PORT(async_data)[0] = self; // so it doesn't get GC'd
@@ -430,6 +427,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(microbit_display_scroll_obj, 1, microbit_display_scro
 mp_obj_t microbit_display_on_func(mp_obj_t obj) {
     microbit_display_obj_t *self = (microbit_display_obj_t*)obj;
     /* Try to reclaim the pins we need */
+/*
     microbit_obj_pin_fail_if_cant_acquire(&microbit_p3_obj);
     microbit_obj_pin_fail_if_cant_acquire(&microbit_p4_obj);
     microbit_obj_pin_fail_if_cant_acquire(&microbit_p6_obj);
@@ -442,6 +440,7 @@ mp_obj_t microbit_display_on_func(mp_obj_t obj) {
     microbit_obj_pin_acquire(&microbit_p7_obj, microbit_pin_mode_display);
     microbit_obj_pin_acquire(&microbit_p9_obj, microbit_pin_mode_display);
     microbit_obj_pin_acquire(&microbit_p10_obj, microbit_pin_mode_display);
+*/
     /* Make sure all pins are in the correct state */
     microbit_display_init();
     /* Re-enable the display loop.  This will resume any animations in
@@ -460,14 +459,16 @@ mp_obj_t microbit_display_off_func(mp_obj_t obj) {
     self->active = false;
     /* Disable the row strobes, allowing the columns to be used freely for
      * GPIO. */
-    nrf_gpio_pins_clear(ROW_PINS_MASK);
+    hal_gpio_out_clear(0, ROW_PINS_MASK);
     /* Free pins for other uses */
+/*
     microbit_obj_pin_free(&microbit_p3_obj);
     microbit_obj_pin_free(&microbit_p4_obj);
     microbit_obj_pin_free(&microbit_p6_obj);
     microbit_obj_pin_free(&microbit_p7_obj);
     microbit_obj_pin_free(&microbit_p9_obj);
     microbit_obj_pin_free(&microbit_p10_obj);
+*/
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_display_off_obj, microbit_display_off_func);
@@ -491,7 +492,7 @@ void microbit_display_clear(void) {
     wait_for_event();
 }
 
-mp_obj_t microbit_display_clear_func(void) {
+mp_obj_t microbit_display_clear_func(mp_obj_t self_in) {
     microbit_display_clear();
     return mp_const_none;
 }
@@ -529,21 +530,20 @@ STATIC mp_obj_t microbit_display_get_pixel_func(mp_obj_t self_in, mp_obj_t x_in,
 }
 MP_DEFINE_CONST_FUN_OBJ_3(microbit_display_get_pixel_obj, microbit_display_get_pixel_func);
 
-STATIC const mp_map_elem_t microbit_display_locals_dict_table[] = {
-
-    { MP_OBJ_NEW_QSTR(MP_QSTR_get_pixel),  (mp_obj_t)&microbit_display_get_pixel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_pixel),  (mp_obj_t)&microbit_display_set_pixel_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_show), (mp_obj_t)&microbit_display_show_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scroll), (mp_obj_t)&microbit_display_scroll_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_clear), (mp_obj_t)&microbit_display_clear_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_on),  (mp_obj_t)&microbit_display_on_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_off),  (mp_obj_t)&microbit_display_off_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_is_on),  (mp_obj_t)&microbit_display_is_on_obj },
+STATIC const mp_rom_map_elem_t microbit_display_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_get_pixel),  MP_ROM_PTR(&microbit_display_get_pixel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_pixel),  MP_ROM_PTR(&microbit_display_set_pixel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&microbit_display_show_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&microbit_display_scroll_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&microbit_display_clear_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on),  MP_ROM_PTR(&microbit_display_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off),  MP_ROM_PTR(&microbit_display_off_obj) },
+    { MP_ROM_QSTR(MP_QSTR_is_on),  MP_ROM_PTR(&microbit_display_is_on_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(microbit_display_locals_dict, microbit_display_locals_dict_table);
 
-STATIC const mp_obj_type_t microbit_display_type = {
+const mp_obj_type_t microbit_display_type = {
     { &mp_type_type },
     .name = MP_QSTR_MicroBitDisplay,
     .print = NULL,
@@ -556,14 +556,12 @@ STATIC const mp_obj_type_t microbit_display_type = {
     .getiter = NULL,
     .iternext = NULL,
     .buffer_p = {NULL},
-    .stream_p = NULL,
-    .bases_tuple = NULL,
     .locals_dict = (mp_obj_dict_t*)&microbit_display_locals_dict,
 };
 
 microbit_display_obj_t microbit_display_obj = {
     {&microbit_display_type},
-    { 0 },
+    {{ 0, }},
     .previous_brightness = 0,
     .active = 1,
     .strobe_row = 0,
@@ -573,7 +571,7 @@ microbit_display_obj_t microbit_display_obj = {
 
 void microbit_display_init(void) {
     //  Set pins as output.
-    nrf_gpio_range_cfg_output(MIN_COLUMN_PIN, MIN_COLUMN_PIN + COLUMN_COUNT + ROW_COUNT);
-}
-
+    for (int i = MIN_COLUMN_PIN; i <= MAX_ROW_PIN; i++) {
+        hal_gpio_cfg_pin(0, i, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN);
+    }
 }
