@@ -107,7 +107,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
-void init_flash_fs(void) {
+void init_flash_fs(bool create_allowed) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
     vfs_fat->flags = 0;
@@ -116,7 +116,7 @@ void init_flash_fs(void) {
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
 
-    if (res == FR_NO_FILESYSTEM) {
+    if (res == FR_NO_FILESYSTEM && create_allowed) {
         // no filesystem so create a fresh one
 
         uint8_t working_buf[_MAX_SS];
@@ -653,7 +653,10 @@ int main(void) {
     mp_stack_fill_with_sentinel();
 #endif
 
-    init_flash_fs();
+    // Create a new filesystem only if we're not in a safe mode.
+    // A power brownout here could make it appear as if there's
+    // no SPI flash filesystem, and we might erase the existing one.
+    init_flash_fs(safe_mode == NO_SAFE_MODE);
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_samd21();
