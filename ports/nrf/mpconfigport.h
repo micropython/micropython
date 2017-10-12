@@ -30,13 +30,17 @@
 #include <mpconfigboard.h>
 
 // options to control how MicroPython is built
+#ifndef MICROPY_VFS
+#define MICROPY_VFS                 (1)
+#endif
+#define MICROPY_VFS_FAT             (MICROPY_VFS)
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
-#define MICROPY_READER_VFS          (1)
+#define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_STACK_CHECK         (0)
@@ -54,8 +58,6 @@
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_OPT_MPZ_BITWISE     (0)
-#define MICROPY_VFS                 (1)
-#define MICROPY_VFS_FAT             (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -69,9 +71,11 @@
 #define mp_type_textio fatfs_type_textio
 
 // use vfs's functions for import stat and builtin open
+#if MICROPY_VFS
 #define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open mp_vfs_open
 #define mp_builtin_open_obj mp_vfs_open_obj
+#endif
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
