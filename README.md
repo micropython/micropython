@@ -163,6 +163,37 @@ does not work it may be because you don't have the correct permissions, and
 need to use `sudo make deploy`.
 See the README.md file in the ports/stm32/ directory for further details.
 
+Building under Windows
+----------------------
+
+MicroPython is built using gnu make and requires various gnu utilities ported
+to Windows. MSYS2 should be installed to provide these gnu utilities.
+
+To use frozen bytecode (.mpy modules) you must build mpy-cross for your host OS.
+This requires mingw32 gcc and it dependancies.
+
+Install MSYS2 64 bit from msys2.org
+Run the installer msys2-x86_64-xxxxxxxx.exe
+Follow the instructions on the msys2.org home page to update the package
+database and core modules.
+
+Install the compiler and make:
+
+    pacman -S mingw-w64-i686-gcc 
+    pacman -S make
+
+This will install gcc.exe which is identical to i686-w64-mingw32-gcc
+If you already have MSYS2 / Mingw installed run "gcc -dumpmachine"
+from a command prompt to ensure you have the correct gcc installed.
+Response should be "i686-w64-mingw32"
+
+MicroPython can then be built by running make from a Windows command prompt
+without needing a bash shell.
+
+Alternatively you can use Windows 10 WSL (Windows Subsystem for Linux).
+This provides a Ubuntu bash shell with access to the Windows file system.
+Follow the instructions for Debian / Ubuntu.
+
 Contributing
 ------------
 

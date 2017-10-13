@@ -11,10 +11,12 @@ override undefine BUILD
 override undefine PROG
 endif
 
-include ../py/mkenv.mk
-
-# define main target
+# PROG is used in py/mkenv.mk. Define first.
+# define main target. Compile to run on Host (Linux, OSX or Windows),
+# do not include .exe in PROG.
 PROG = mpy-cross
+
+include ../py/mkenv.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h

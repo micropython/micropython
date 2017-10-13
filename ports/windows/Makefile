@@ -1,8 +1,15 @@
+# PROG and CROSS_COMPILE are used in py/mkenv.mk Define first.
+
+# define main target. Always compile to run on Windows, include .exe in PROG.
+PROG = micropython.exe
+
+# define a default cross compiler if host is not native Windows
+ifneq ($(OS),Windows_NT)
+CROSS_COMPILE ?= i686-w64-mingw32-
+endif
+
 include ../../py/mkenv.mk
 -include mpconfigport.mk
-
-# define main target
-PROG = micropython.exe
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = ../unix/qstrdefsport.h

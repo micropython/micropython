@@ -59,14 +59,23 @@ LD += -m32
 endif
 
 MAKE_FROZEN = $(TOP)/tools/make-frozen.py
-# allow mpy-cross (for WSL) and mpy-cross.exe (for cygwin) to coexist
+# allow mpy-cross (for WSL, Cygwin or Linux) and mpy-cross.exe (for Windows / MSYS2 / mingw) to coexist
 ifeq ($(OS),Windows_NT)
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross.exe
-PROG_EXT = .exe
 else
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 endif
 MPY_TOOL = $(TOP)/tools/mpy-tool.py
+
+# When compiling mpy-cross or Windows port determine whether the target will be a native Windows executable.
+ifeq ($(suffix $(PROG)),.exe)
+	PROG_EXT = .exe
+endif
+COMPILER_TARGET := $(shell $(CC) -dumpmachine)
+ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
+	PROG_EXT = .exe
+endif
+PROG_BASE = $(basename $(PROG))
 
 all:
 .PHONY: all
@@ -74,3 +83,4 @@ all:
 .DELETE_ON_ERROR:
 
 MKENV_INCLUDED = 1
+

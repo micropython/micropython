@@ -103,7 +103,7 @@ endif
 
 ifneq ($(FROZEN_MPY_DIR),)
 # to build the MicroPython cross compiler
-$(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
+$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
 # make a list of all the .py files that need compiling and freezing
@@ -122,25 +122,25 @@ $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generate
 	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
 endif
 
-ifneq ($(PROG),)
+ifneq ($(PROG_BASE),)
 # Build a standalone executable (unix does this)
 
-all: $(PROG)
+all: $(PROG_BASE)$(PROG_EXT)
 
-$(PROG): $(OBJ)
+$(PROG_BASE)$(PROG_EXT): $(OBJ)
 	$(ECHO) "LINK $@"
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
-	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)$(PROG_EXT)
+	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG_BASE)$(PROG_EXT)
 endif
-	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)$(PROG_EXT)
+	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG_BASE)$(PROG_EXT)
 
 clean: clean-prog
 clean-prog:
-	$(RM) -f $(PROG)$(PROG_EXT)
-	$(RM) -f $(PROG).map
+	$(RM) -f $(PROG_BASE)$(PROG_EXT)
+	$(RM) -f $(PROG_BASE).map
 
 .PHONY: clean-prog
 endif

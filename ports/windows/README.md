@@ -5,9 +5,12 @@ consider to contribute.
 
 
 Building on Debian/Ubuntu Linux system
+Building on Windows 10 with WSL (Windows Subsystem for Linux) Ubuntu Bash shell
 ---------------------------------------
 
     sudo apt-get install gcc-mingw-w64
+    make
+or
     make CROSS_COMPILE=i686-w64-mingw32-
 
 If for some reason the mingw-w64 crosscompiler is not available, you can try
@@ -29,12 +32,36 @@ Install following packages using cygwin's setup.exe:
 
 Build using:
 
+    make
+or
     make CROSS_COMPILE=i686-w64-mingw32-
 
 Or for 64bit:
 
     make CROSS_COMPILE=x86_64-w64-mingw32-
 
+
+Building using MSYS2 / Mingw on Windows
+---------------------------------------
+
+Install MSYS2 64 bit from msys2.org
+Run the installer msys2-x86_64-xxxxxxxx.exe
+Follow the instructions on the msys2.org home page to update the package
+database and core modules.
+
+Install the compiler and make:
+
+    pacman -S mingw-w64-i686-gcc 
+    pacman -S make
+
+This will install gcc.exe which is identical to i686-w64-mingw32-gcc
+If you already have MSYS2 / Mingw installed run "gcc -dumpmachine"
+from a command prompt to ensure you have the correct gcc installed.
+Response should be "i686-w64-mingw32"
+
+Build using:
+
+    make
 
 Building using MS Visual Studio 2013 (or higher)
 ------------------------------------------------
