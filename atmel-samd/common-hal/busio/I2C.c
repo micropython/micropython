@@ -95,10 +95,19 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     i2c_master_enable(&self->i2c_master_instance);
 }
 
+bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
+    return self->sda_pin == NO_PIN;
+}
+
 void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
+    if (common_hal_busio_i2c_deinited(self)) {
+        return;
+    }
     i2c_master_reset(&self->i2c_master_instance);
     reset_pin(self->sda_pin);
     reset_pin(self->scl_pin);
+    self->sda_pin = NO_PIN;
+    self->scl_pin = NO_PIN;
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {

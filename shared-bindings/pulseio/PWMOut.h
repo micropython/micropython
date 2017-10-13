@@ -36,6 +36,7 @@ extern void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     const mcu_pin_obj_t* pin, uint16_t duty, uint32_t frequency,
     bool variable_frequency);
 extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self);
+extern bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self);
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty);
 extern uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self);
 extern void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency);

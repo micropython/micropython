@@ -381,7 +381,14 @@ void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* sel
     }
 }
 
+bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self) {
+    return self->pin == mp_const_none;
+}
+
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
+    if (common_hal_audioio_audioout_deinited(self)) {
+        return;
+    }
     refcount--;
     if (refcount == 0) {
         if (MP_STATE_VM(audioout_sample_timer) != NULL) {
@@ -407,6 +414,8 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
         }
         reset_pin(self->pin->pin);
     }
+
+    self->pin = mp_const_none;
 }
 
 static void set_timer_frequency(uint32_t frequency) {

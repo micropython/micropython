@@ -77,7 +77,14 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self, const mcu_p
     }
 }
 
-extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
+bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+    return self->pin == mp_const_none;
+}
+
+void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
+    if (common_hal_pulseio_pwmout_deinited(self)) {
+        return;
+    }
     pwm_delete(self->channel);
     pwm_start();
     if (self->pin->gpio_number < 16) {
@@ -86,9 +93,10 @@ extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         PIN_FUNC_SELECT(self->pin->peripheral, 0);
         PIN_PULLUP_DIS(self->pin->peripheral);
     }
+    self->pin = mp_const_none;
 }
 
-extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
     // We get 16 bits of duty in but the underlying code is only ten bit.
     pwm_set_duty(duty >> 6, self->channel);
     pwm_start();

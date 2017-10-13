@@ -121,12 +121,14 @@ SRC_COMMON_HAL = \
 	time/__init__.c \
 	board/__init__.c
 
+
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
 SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
-	digitalio/Pull.c
+	digitalio/Pull.c \
+	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -141,7 +143,7 @@ SRC_SHARED_MODULE = \
 	multiterminal/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
-	storage/__init__.c \
+	storage/__init__.c
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

@@ -159,11 +159,19 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     spi_enable(&self->spi_master_instance);
 }
 
+bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
+    return self->clock_pin == NO_PIN;
+}
+
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
+    if (common_hal_busio_spi_deinited(self)) {
+        return;
+    }
     spi_disable(&self->spi_master_instance);
     reset_pin(self->clock_pin);
     reset_pin(self->MOSI_pin);
     reset_pin(self->MISO_pin);
+    self->clock_pin = NO_PIN;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,

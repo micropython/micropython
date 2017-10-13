@@ -44,7 +44,7 @@ mp_vfs_mount_t mp_vfs_mount_flash;
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
-void filesystem_init(void) {
+void filesystem_init(bool create_allowed) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
     vfs_fat->flags = 0;
@@ -53,7 +53,7 @@ void filesystem_init(void) {
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
 
-    if (res == FR_NO_FILESYSTEM) {
+    if (res == FR_NO_FILESYSTEM && create_allowed) {
         // no filesystem so create a fresh one
         uint8_t working_buf[_MAX_SS];
         res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));

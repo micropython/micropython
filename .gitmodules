@@ -24,3 +24,12 @@
 	path = atmel-samd/asf4
 	url = https://github.com/adafruit/asf4.git
 	branch = circuitpython
+[submodule "frozen/Adafruit_CircuitPython_Thermistor"]
+	path = frozen/Adafruit_CircuitPython_Thermistor
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Thermistor.git
+[submodule "frozen/Adafruit_CircuitPython_LIS3DH"]
+	path = frozen/Adafruit_CircuitPython_LIS3DH
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LIS3DH.git
+[submodule "frozen/Adafruit_CircuitPython_BusDevice"]
+	path = frozen/Adafruit_CircuitPython_BusDevice
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BusDevice.git

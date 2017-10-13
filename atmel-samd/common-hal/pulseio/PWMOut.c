@@ -238,7 +238,14 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
 }
 
-extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
+bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+    return self->pin == mp_const_none;
+}
+
+void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
+    if (common_hal_pulseio_pwmout_deinited(self)) {
+        return;
+    }
     const pin_timer_t* t = self->timer;
     uint8_t index = (((uint32_t) t->tcc) - ((uint32_t) TCC0)) / 0x400;
     timer_refcount[index]--;
@@ -260,6 +267,7 @@ extern void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         }
     }
     reset_pin(self->pin->pin);
+    self->pin = mp_const_none;
 }
 
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {

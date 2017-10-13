@@ -59,10 +59,18 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     dac_enable(&self->dac_instance);
 }
 
+bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
+    return self->deinited;
+}
+
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
+    if (common_hal_analogio_analogout_deinited(self)) {
+        return;
+    }
     dac_disable(&self->dac_instance);
     dac_chan_disable(&self->dac_instance, DAC_CHANNEL_0);
     reset_pin(PIN_PA02);
+    self->deinited = true;
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,

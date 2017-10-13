@@ -41,13 +41,21 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     return DIGITALINOUT_OK;
 }
 
+bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self) {
+    return self->pin == mp_const_none;
+}
+
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self) {
+    if (common_hal_digitalio_digitalinout_deinited(self)) {
+        return;
+    }
     if (self->pin->gpio_number < 16) {
         uint32_t pin_mask = 1 << self->pin->gpio_number;
         gpio_output_set(0x0, 0x0, 0x0, pin_mask);
         PIN_FUNC_SELECT(self->pin->peripheral, 0);
         PIN_PULLUP_DIS(self->pin->peripheral);
     }
+    self->pin = mp_const_none;
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(

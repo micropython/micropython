@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: analogio
 //|
@@ -114,8 +115,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogin___exit___obj, 4, 4,
 //|     :rtype: int
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_value(mp_obj_t self_in) {
-   analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return MP_OBJ_NEW_SMALL_INT(common_hal_analogio_analogin_get_value(self));
+    analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_analogio_analogin_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_analogio_analogin_get_value(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_value_obj, analogio_analogin_obj_get_value);
 
@@ -134,8 +136,9 @@ const mp_obj_property_t analogio_analogin_value_obj = {
 //|     :rtype: float
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
-   analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   return mp_obj_new_float(common_hal_analogio_analogin_get_reference_voltage(self));
+    analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_analogio_analogin_deinited(self));
+    return mp_obj_new_float(common_hal_analogio_analogin_get_reference_voltage(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_reference_voltage_obj,
                           analogio_analogin_obj_get_reference_voltage);

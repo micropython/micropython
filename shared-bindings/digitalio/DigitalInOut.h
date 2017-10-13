@@ -42,6 +42,7 @@ typedef enum {
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t* self, const mcu_pin_obj_t* pin);
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self);
+bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self);
 void common_hal_digitalio_digitalinout_switch_to_input(digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull);
 void common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t* self, bool value, enum digitalio_drive_mode_t drive_mode);
 enum digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(digitalio_digitalinout_obj_t* self);

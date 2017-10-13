@@ -29,7 +29,7 @@
 
 #include <stdbool.h>
 
-void filesystem_init(void);
+void filesystem_init(bool create_allowed);
 void filesystem_flush(void);
 void filesystem_default_writeable(bool writeable);
 bool filesystem_present(void);

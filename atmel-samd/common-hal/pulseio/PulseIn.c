@@ -152,10 +152,18 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
 }
 
+bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
+    return self->pin == NO_PIN;
+}
+
 void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
+    if (common_hal_pulseio_pulsein_deinited(self)) {
+        return;
+    }
     extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
     active_pulseins[self->channel] = NULL;
     reset_pin(self->pin);
+    self->pin = NO_PIN;
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {

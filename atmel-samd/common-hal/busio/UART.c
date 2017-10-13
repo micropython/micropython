@@ -243,7 +243,14 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->uart_instance.hw->USART.INTENSET.bit.RXC = true;
 }
 
+bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
+    return self->rx_pin == NO_PIN && self->tx_pin == NO_PIN;
+}
+
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
+    if (common_hal_busio_uart_deinited(self)) {
+        return;
+    }
     self->uart_instance.hw->USART.INTENCLR.bit.RXC = true;
 
     uint8_t instance_index = _sercom_get_sercom_inst_index(self->uart_instance.hw);
@@ -256,6 +263,8 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     usart_disable(&self->uart_instance);
     reset_pin(self->rx_pin);
     reset_pin(self->tx_pin);
+    self->rx_pin = NO_PIN;
+    self->tx_pin = NO_PIN;
 }
 
 // Read characters.

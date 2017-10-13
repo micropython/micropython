@@ -27,6 +27,8 @@
 #include <stdint.h>
 
 #include "shared-bindings/busio/UART.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/util.h"
 
 #include "lib/utils/context_manager_helpers.h"
 
@@ -34,7 +36,6 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "shared-bindings/microcontroller/Pin.h"
 
 //| .. currentmodule:: busio
 //|
@@ -179,7 +180,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    busio_uart_obj_t *self = self_in;
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
     byte *buf = buf_in;
 
     // make sure we want at least 1 char
@@ -191,14 +193,16 @@ STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size,
 }
 
 STATIC mp_uint_t busio_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    busio_uart_obj_t *self = self_in;
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
     const byte *buf = buf_in;
 
     return common_hal_busio_uart_write(self, buf, size, errcode);
 }
 
 STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    busio_uart_obj_t *self = self_in;
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
         mp_uint_t flags = arg;

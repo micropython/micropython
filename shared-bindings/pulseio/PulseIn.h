@@ -35,6 +35,7 @@ extern const mp_obj_type_t pulseio_pulsein_type;
 extern void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state);
 extern void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self);
+extern bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self);
 extern void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self);
 extern void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t trigger_duration);
 extern void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self);

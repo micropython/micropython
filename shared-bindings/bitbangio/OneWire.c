@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/bitbangio/OneWire.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: bitbangio
 //|
@@ -117,6 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_onewire___exit___obj, 4, 4,
 //|
 STATIC mp_obj_t bitbangio_onewire_obj_reset(mp_obj_t self_in) {
     bitbangio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(shared_module_bitbangio_onewire_deinited(self));
 
     return mp_obj_new_bool(shared_module_bitbangio_onewire_reset(self));
 }
@@ -131,6 +133,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_onewire_reset_obj, bitbangio_onewire_obj_res
 //|
 STATIC mp_obj_t bitbangio_onewire_obj_read_bit(mp_obj_t self_in) {
     bitbangio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(shared_module_bitbangio_onewire_deinited(self));
 
     return mp_obj_new_bool(shared_module_bitbangio_onewire_read_bit(self));
 }
@@ -142,6 +145,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_onewire_read_bit_obj, bitbangio_onewire_obj_
 //|
 STATIC mp_obj_t bitbangio_onewire_obj_write_bit(mp_obj_t self_in, mp_obj_t bool_obj) {
     bitbangio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(shared_module_bitbangio_onewire_deinited(self));
 
     shared_module_bitbangio_onewire_write_bit(self, mp_obj_is_true(bool_obj));
     return mp_const_none;
