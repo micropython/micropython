@@ -102,7 +102,8 @@ else
   # There is no simple default value, though.
   ifeq ($(FLASH_IMPL),internal_flash.c)
     ifeq ($(CHIP_FAMILY), samd21)
-      CFLAGS += -finline-limit=19
+### TODO(dhalbert): disable for now; breaks things in 3.0.0 build(e.g. deinit checking is disabled)
+#      CFLAGS += -finline-limit=19
     endif
   endif
   CFLAGS += -flto
