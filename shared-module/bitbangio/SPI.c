@@ -70,7 +70,14 @@ void shared_module_bitbangio_spi_construct(bitbangio_spi_obj_t *self,
     self->phase = 0;
 }
 
+bool shared_module_bitbangio_spi_deinited(bitbangio_spi_obj_t *self) {
+    return common_hal_digitalio_digitalinout_deinited(&self->clock);
+}
+
 void shared_module_bitbangio_spi_deinit(bitbangio_spi_obj_t *self) {
+    if (shared_module_bitbangio_spi_deinited(self)) {
+        return;
+    }
     common_hal_digitalio_digitalinout_deinit(&self->clock);
     if (self->has_mosi) {
         common_hal_digitalio_digitalinout_deinit(&self->mosi);

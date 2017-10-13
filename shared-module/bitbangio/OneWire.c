@@ -38,7 +38,14 @@ void shared_module_bitbangio_onewire_construct(bitbangio_onewire_obj_t* self,
     common_hal_digitalio_digitalinout_construct(&self->pin, pin);
 }
 
+bool shared_module_bitbangio_onewire_deinited(bitbangio_onewire_obj_t* self) {
+    return common_hal_digitalio_digitalinout_deinited(&self->pin);
+}
+
 void shared_module_bitbangio_onewire_deinit(bitbangio_onewire_obj_t* self) {
+    if (shared_module_bitbangio_onewire_deinited(self)) {
+        return;
+    }
     common_hal_digitalio_digitalinout_deinit(&self->pin);
 }
 

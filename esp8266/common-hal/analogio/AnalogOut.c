@@ -38,6 +38,10 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         "No hardware support for analog out."));
 }
 
+bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
+    return true;
+}
+
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 }
 

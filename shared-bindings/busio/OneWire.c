@@ -32,6 +32,7 @@
 #include "py/runtime0.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/OneWire.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: busio
 //|
@@ -120,6 +121,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_onewire___exit___obj, 4, 4, bus
 //|
 STATIC mp_obj_t busio_onewire_obj_reset(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_onewire_deinited(self));
 
     return mp_obj_new_bool(common_hal_busio_onewire_reset(self));
 }
@@ -134,6 +136,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_reset_obj, busio_onewire_obj_reset);
 //|
 STATIC mp_obj_t busio_onewire_obj_read_bit(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_onewire_deinited(self));
 
     return mp_obj_new_bool(common_hal_busio_onewire_read_bit(self));
 }
@@ -145,6 +148,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_read_bit_obj, busio_onewire_obj_read_bit
 //|
 STATIC mp_obj_t busio_onewire_obj_write_bit(mp_obj_t self_in, mp_obj_t bool_obj) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_onewire_deinited(self));
 
     common_hal_busio_onewire_write_bit(self, mp_obj_is_true(bool_obj));
     return mp_const_none;

@@ -46,8 +46,16 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     adc_in_use = true;
 }
 
+bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t* self) {
+    return self->deinited;
+}
+
 void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t* self) {
+    if (common_hal_analogio_analogin_deinited(self)) {
+        return;
+    }
     adc_in_use = false;
+    self->deinited = true;
 }
 
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {

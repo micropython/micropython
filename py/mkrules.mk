@@ -46,6 +46,12 @@ vpath %.c . $(TOP)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
+# frozen.c and frozen_mpy.c are created in $(BUILD), so use our rule
+# for those as well.
+vpath %.c . $(BUILD)
+$(BUILD)/%.o: %.c
+	$(call compile_c)
+
 # List all native flags since the current build system doesn't have
 # the MicroPython configuration available. However, these flags are
 # needed to extract all qstrings

@@ -31,6 +31,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/util.h"
 
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
@@ -151,6 +152,7 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -184,7 +186,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_configure_obj, 1, busio_spi_configure);
 //|     :rtype: bool
 //|
 STATIC mp_obj_t busio_spi_obj_try_lock(mp_obj_t self_in) {
-    return mp_obj_new_bool(common_hal_busio_spi_try_lock(MP_OBJ_TO_PTR(self_in)));
+    busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    return mp_obj_new_bool(common_hal_busio_spi_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 
@@ -193,7 +197,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_try_lock_obj, busio_spi_obj_try_lock);
 //|     Releases the SPI lock.
 //|
 STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
-    common_hal_busio_spi_unlock(MP_OBJ_TO_PTR(self_in));
+    busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    common_hal_busio_spi_unlock(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
@@ -214,6 +220,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -251,6 +258,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

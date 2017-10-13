@@ -36,6 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     struct dac_module dac_instance;
+    bool deinited;
 } analogio_analogout_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGOUT_H

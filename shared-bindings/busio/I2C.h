@@ -49,6 +49,7 @@ extern void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                                               uint32_t frequency);
 
 extern void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self);
+extern bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self);
 
 extern bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self);
 extern bool common_hal_busio_i2c_has_lock(busio_i2c_obj_t *self);

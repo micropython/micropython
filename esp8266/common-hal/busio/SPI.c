@@ -74,7 +74,15 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     CLEAR_PERI_REG_MASK(SPI_USER(HSPI), SPI_FLASH_MODE);
 }
 
+bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
+    return self->deinited;
+}
+
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
+    if (common_hal_busio_spi_deinited(self)) {
+        return;
+    }
+
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, 0);
     PIN_PULLUP_DIS(PERIPHS_IO_MUX_MTDI_U);
 
@@ -86,6 +94,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
     // Turn off outputs 12 - 14.
     gpio_output_set(0x0, 0x0, 0x0, 0x7 << 12);
+
+    self->deinited = true;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,

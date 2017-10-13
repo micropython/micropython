@@ -37,8 +37,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     mp_raise_NotImplementedError("");
 }
 
-void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
+bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
+    return true;
+}
 
+void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {

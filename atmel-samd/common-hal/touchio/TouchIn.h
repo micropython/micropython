@@ -36,7 +36,6 @@
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
     struct adafruit_ptc_config config;
     uint16_t threshold;
 } touchio_touchin_obj_t;

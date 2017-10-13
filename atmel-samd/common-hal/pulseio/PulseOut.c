@@ -34,6 +34,7 @@
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "samd21_pins.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 
 #undef ENABLE
@@ -128,7 +129,14 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     turn_off(self->pincfg);
 }
 
+bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
+    return self->pin == NO_PIN;
+}
+
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+    if (common_hal_pulseio_pulseout_deinited(self)) {
+        return;
+    }
     PortGroup *const port_base = port_get_group_from_gpio_pin(self->pin);
     port_base->DIRCLR.reg = 1 << (self->pin % 32);
 
@@ -140,6 +148,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
         gc_free(MP_STATE_VM(pulseout_tc_instance));
         MP_STATE_VM(pulseout_tc_instance) = NULL;
     }
+    self->pin = NO_PIN;
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {

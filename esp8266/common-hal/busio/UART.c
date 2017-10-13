@@ -92,8 +92,16 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uart_setup(UART1);
 }
 
+bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
+    return self->deinited;
+}
+
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
+    if (common_hal_busio_uart_deinited(self)) {
+        return;
+    }
     PIN_FUNC_SELECT(FUNC_U1TXD_BK, 0);
+    self->deinited = true;
 }
 
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {

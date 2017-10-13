@@ -39,6 +39,7 @@ void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* sel
     const mcu_pin_obj_t* pin, pyb_file_obj_t* file);
 
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self);
+bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self);
 void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop);
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self);
 bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self);

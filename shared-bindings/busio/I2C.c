@@ -29,6 +29,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/util.h"
 
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
@@ -126,6 +127,7 @@ static void check_lock(busio_i2c_obj_t *self) {
 //|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
     check_lock(self);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
@@ -147,7 +149,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 //|     :rtype: bool
 //|
 STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
-    return mp_obj_new_bool(common_hal_busio_i2c_try_lock(MP_OBJ_TO_PTR(self_in)));
+    busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    return mp_obj_new_bool(common_hal_busio_i2c_try_lock(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 
@@ -156,7 +160,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 //|     Releases the I2C lock.
 //|
 STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
-    common_hal_busio_i2c_unlock(MP_OBJ_TO_PTR(self_in));
+    busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
+    common_hal_busio_i2c_unlock(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
@@ -184,6 +190,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -229,6 +236,7 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
         { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_busio_i2c_deinited(self));
     check_lock(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);

@@ -32,7 +32,8 @@
 #include "py/obj.h"
 
 typedef struct {
-  mp_obj_base_t base;
+    mp_obj_base_t base;
+    bool deinited;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP8266_COMMON_HAL_BUSIO_UART_H

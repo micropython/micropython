@@ -77,7 +77,14 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     active_channel_count++;
 }
 
+bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {
+    return self->pin == mp_const_none;
+}
+
 void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
+    if (common_hal_analogio_analogin_deinited(self)) {
+        return;
+    }
     active_channel_count--;
     if (active_channel_count == 0) {
         adc_reset(adc_instance);
@@ -89,6 +96,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
         config_adc = NULL;
     }
     reset_pin(self->pin->pin);
+    self->pin = mp_const_none;
 }
 
 void analogin_reset() {

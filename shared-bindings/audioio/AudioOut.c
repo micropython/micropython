@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/AudioOut.h"
+#include "shared-bindings/util.h"
 
 //| .. currentmodule:: audioio
 //|
@@ -162,6 +163,7 @@ STATIC mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_arg
         { MP_QSTR_loop,      MP_ARG_BOOL, {.u_bool = false} },
     };
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -177,6 +179,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_audioout_play_obj, 1, audioio_audioout_obj_pl
 //|
 STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
     common_hal_audioio_audioout_stop(self);
     return mp_const_none;
 }
@@ -188,6 +191,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
     return mp_obj_new_bool(common_hal_audioio_audioout_get_playing(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_playing_obj, audioio_audioout_obj_get_playing);
@@ -207,12 +211,14 @@ const mp_obj_property_t audioio_audioout_playing_obj = {
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_frequency(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
     return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_audioout_get_frequency(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_frequency_obj, audioio_audioout_obj_get_frequency);
 
 STATIC mp_obj_t audioio_audioout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
     common_hal_audioio_audioout_set_frequency(self, mp_obj_get_int(frequency));
     return mp_const_none;
 }

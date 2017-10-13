@@ -29,6 +29,7 @@
 #include "peripheral_clk_config.h"
 
 #include "supervisor/shared/autoreload.h"
+#include "shared-module/gamepad/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
 // Global millisecond tick count
@@ -41,6 +42,11 @@ void SysTick_Handler(void) {
 
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
         autoreload_tick();
+    #endif
+    #ifdef CIRCUITPY_GAMEPAD_TICKS
+    if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
+        gamepad_tick();
+    }
     #endif
 }
 

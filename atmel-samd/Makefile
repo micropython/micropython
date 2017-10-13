@@ -80,27 +80,36 @@ BASE_CFLAGS = \
 	--param max-inline-insns-single=500
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
+
 ifeq ($(CHIP_FAMILY), samd21)
-CFLAGS = -Os -DNDEBUG -finline-limit=49
+CFLAGS = -Os -DNDEBUG
 endif
+
 ifeq ($(CHIP_FAMILY), samd51)
 CFLAGS = -O2 -DNDEBUG
 endif
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-# Turn on Python modules useful for debugging (e.g. uheap, ustack).
-CFLAGS += -ggdb
-ifeq ($(CHIP_FAMILY), samd21)
-CFLAGS += -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER
-endif
+  # Turn on Python modules useful for debugging (e.g. uheap, ustack).
+  CFLAGS += -ggdb
+  ifeq ($(CHIP_FAMILY), samd21)
+    CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
+  endif
 else
-# -finline-limit can shrink the image size. -finline-limit=80 or so is similar to not having it on.
-# There is no simple default value, though.
-CFLAGS += -DNDEBUG -flto -finline-limit=49
+  # -finline-limit can shrink the image size.
+  # -finline-limit=80 or so is similar to not having it on.
+  # There is no simple default value, though.
+  ifeq ($(FLASH_IMPL),internal_flash.c)
+    ifeq ($(CHIP_FAMILY), samd21)
+      CFLAGS += -finline-limit=19
+    endif
+  endif
+  CFLAGS += -flto
 endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+
 
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += \
@@ -262,7 +271,8 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
-	help.c
+	help.c \
+	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -274,6 +284,8 @@ SRC_SHARED_MODULE = \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
+	gamepad/__init__.c \
+	gamepad/GamePad.c \
 	os/__init__.c \
 	random/__init__.c \
 	storage/__init__.c \
