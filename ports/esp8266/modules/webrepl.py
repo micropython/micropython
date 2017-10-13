@@ -31,7 +31,9 @@ def setup_conn(port, accept_handler):
 def accept_conn(listen_sock):
     global client_s
     cl, remote_addr = listen_sock.accept()
-    if uos.dupterm():
+    prev = uos.dupterm(None)
+    uos.dupterm(prev)
+    if prev:
         print("\nConcurrent WebREPL connection from", remote_addr, "rejected")
         cl.close()
         return
