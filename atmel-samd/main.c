@@ -203,6 +203,7 @@ void reset_samd21(void) {
     analogin_reset();
 
 
+    // TODO: move this to analogout_reset()
     // Wait for the DAC to sync then reset.
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
