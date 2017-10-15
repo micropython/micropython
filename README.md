@@ -162,3 +162,13 @@ This will use the included `tools/pydfu.py` script.  If flashing the firmware
 does not work it may be because you don't have the correct permissions, and
 need to use `sudo make deploy`.
 See the README.md file in the ports/stm32/ directory for further details.
+
+Contributing
+------------
+
+MicroPython is an open-source project and welcomes contributions. To be
+productive, please be sure to follow the
+[Contributors' Guidelines](https://github.com/micropython/micropython/wiki/ContributorGuidelines)
+and the [Code Conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md).
+Note that MicroPython is licenced under the MIT license, and all contributions
+should follow this license.
