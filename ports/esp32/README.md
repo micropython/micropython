@@ -7,12 +7,14 @@ a task under FreeRTOS.
 
 Supported features include:
 - REPL (Python prompt) over UART0.
-- 16k stack for the MicroPython task and 64k Python heap.
+- 16k stack for the MicroPython task and 96k Python heap.
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
   integers, single-precision floats, complex numbers, frozen bytecode, as
   well as many of the internal modules.
-- Internal filesystem using the flash (currently 256k in size).
-- The machine module with basic GPIO and bit-banging I2C, SPI support.
+- Internal filesystem using the flash (currently 2M in size).
+- The machine module with GPIO, UART, SPI, software I2C, ADC, DAC, PWM,
+  TouchPad, WDT and Timer.
+- The network module with WLAN (WiFi) support.
 
 Development of this ESP32 port was sponsored in part by Microbric Pty Ltd.
 
