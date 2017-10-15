@@ -189,6 +189,8 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_FRAMEBUF         (0)
     #define EXTRA_BUILTIN_MODULES
 
+    #define MICROPY_PY_BUILTINS_COMPLEX (0)
+
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
     #define MICROPY_CPYTHON_COMPAT      (0)
 #endif

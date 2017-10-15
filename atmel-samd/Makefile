@@ -135,11 +135,12 @@ ifeq ($(DEBUG), 1)
 # -DMICROPY_DEBUG_MODULES may also be added to an -flto build, if you wish.
 CFLAGS += -Os -ggdb -DNDEBUG -DENABLE_MICRO_TRACE_BUFFER -DMICROPY_DEBUG_MODULES
 else
-# GCC_INLINE_LIMIT specifies -finline-limit, which can shrink the image size.
+# -finline-limit can shrink the image size.
 # -finline-limit=80 or so is similar to not having it on.
 # There is no simple default value, though.
-ifeq ($(FLASH_IMPL),internal_flash.c)
-GCC_INLINE_LIMIT = -finline-limit=19
+ifdef INTERNAL_FLASH_FILESYSTEM
+  ## Not currently needed
+  ## CFLAGS += -finline-limit=50
 endif
 CFLAGS += -Os -DNDEBUG -flto $(GCC_INLINE_LIMIT)
 endif
@@ -161,9 +162,13 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
-#LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
 LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/ -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS = -larm_cortexM0l_math -lm -lgcc -lc
+
+# Use toolchain libm if we're not using our own.
+ifndef INTERNAL_LIBM
+LIBS += -lm
+endif
 
 SRC_ASF = $(addprefix asf/sam0/,\
 	drivers/adc/adc_sam_d_r/adc.c \
@@ -237,6 +242,16 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c
 
+# Choose which flash filesystem impl to use.
+# (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
+# But that might not be true in the future.)
+ifdef INTERNAL_FLASH_FILESYSTEM
+SRC_C += internal_flash.c
+endif
+ifdef SPI_FLASH_FILESYSTEM
+SRC_C += spi_flash.c
+endif
+
 SRC_COMMON_HAL = \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
@@ -269,6 +284,30 @@ SRC_COMMON_HAL = \
 	touchio/TouchIn.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c
+
+ifdef INTERNAL_LIBM
+SRC_LIBM = $(addprefix lib/,\
+	libm/math.c \
+	libm/fmodf.c \
+	libm/nearbyintf.c \
+	libm/ef_sqrt.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
+	libm/sf_frexp.c \
+	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/asinfacosf.c \
+	libm/atanf.c \
+	libm/atan2f.c \
+	)
+endif
+
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
@@ -304,6 +343,9 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
+ifdef INTERNAL_LIBM
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
+endif
 
 SRC_QSTR += $(SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 

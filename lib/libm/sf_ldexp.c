@@ -32,7 +32,10 @@
 	float value; int exp;
 #endif
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	if(!isfinite(value)||value==(float)0.0) return value;
+#pragma GCC diagnostic pop
 	value = scalbnf(value,exp);
 	//if(!finitef(value)||value==(float)0.0) errno = ERANGE;
 	return value;

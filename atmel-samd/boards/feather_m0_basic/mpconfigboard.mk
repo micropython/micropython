@@ -2,7 +2,8 @@ LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
 USB_PID = 0x8015
 
-FLASH_IMPL = internal_flash.c
+INTERNAL_FLASH_FILESYSTEM = 1
+INTERNAL_LIBM = 1
 
 CHIP_VARIANT = SAMD21G18A
 

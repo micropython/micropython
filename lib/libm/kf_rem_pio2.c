@@ -138,7 +138,10 @@ recompute:
 	}
 
     /* check if recomputation is needed */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	if(z==zero) {
+#pragma GCC diagnostic pop           
 	    j = 0;
 	    for (i=jz-1;i>=jk;i--) j |= iq[i];
 	    if(j==0) { /* need recomputation */
@@ -155,7 +158,10 @@ recompute:
 	}
 
     /* chop off zero terms */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	if(z==(float)0.0) {
+#pragma GCC diagnostic pop
 	    jz -= 1; q0 -= 8;
 	    while(iq[jz]==0) { jz--; q0-=8;}
 	} else { /* break z into 8-bit if necessary */
