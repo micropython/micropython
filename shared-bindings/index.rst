@@ -27,7 +27,7 @@ Module / Port      SAMD21   SAMD21 Express  ESP8266
 `neopixel_write`   **Yes**  **Yes**         **Yes**
 `nvm`              No       **Yes**         No
 `os`               **Yes**  **Yes**         **Yes**
-`pulseio`          No       **Yes**         No
+`pulseio`          **Yes**  **Yes**         No
 `random`           **Yes**  **Yes**         **Yes**
 `storage`          **Yes**  **Yes**         **Yes**
 `time`             **Yes**  **Yes**         **Yes**
