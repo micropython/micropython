@@ -174,13 +174,13 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
                                 write_value;
     for (size_t j = 0; j < count; ++j) {
         for (size_t k = 0; k < chunk_size; ++k) {
-            data[i] = spi_transaction(HSPI, 0, 0, 0, 0, 0, 0, 8, long_write_value);
+            data[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, long_write_value, 8, 0);
             ++i;
         }
         ets_loop_iter();
     }
     while (i < len) {
-        data[i] = spi_transaction(HSPI, 0, 0, 0, 0, 0, 0, 8, long_write_value);
+        data[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, long_write_value, 8, 0);
         ++i;
     }
     return true;
