@@ -390,29 +390,49 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     size_t hlen;
     const char *host = mp_obj_str_get_data(host_in, &hlen);
     mp_int_t port = mp_obj_get_int(port_in);
+    uint8_t out_ip[MOD_NETWORK_IPADDR_BUF_SIZE];
+    bool have_ip = false;
 
-    // find a NIC that can do a name lookup
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
-        if (nic_type->gethostbyname != NULL) {
-            uint8_t out_ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-            int ret = nic_type->gethostbyname(nic, host, hlen, out_ip);
-            if (ret != 0) {
-                // TODO CPython raises: socket.gaierror: [Errno -2] Name or service not known
-                mp_raise_OSError(ret);
-            }
-            mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
-            tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
-            tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
-            tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
-            tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-            tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
-            return mp_obj_new_list(1, (mp_obj_t*)&tuple);
+    if (hlen > 0) {
+        // check if host is already in IP form
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            netutils_parse_ipv4_addr(host_in, out_ip, NETUTILS_BIG);
+            have_ip = true;
+            nlr_pop();
+        } else {
+            // swallow exception: host was not in IP form so need to do DNS lookup
         }
     }
 
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+    if (!have_ip) {
+        // find a NIC that can do a name lookup
+        for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+            mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+            mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
+            if (nic_type->gethostbyname != NULL) {
+                int ret = nic_type->gethostbyname(nic, host, hlen, out_ip);
+                if (ret != 0) {
+                    // TODO CPython raises: socket.gaierror: [Errno -2] Name or service not known
+                    mp_raise_OSError(ret);
+                }
+                have_ip = true;
+                break;
+            }
+        }
+    }
+
+    if (!have_ip) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+    }
+
+    mp_obj_tuple_t *tuple = mp_obj_new_tuple(5, NULL);
+    tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
+    tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
+    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
+    tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
+    return mp_obj_new_list(1, (mp_obj_t*)&tuple);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
 
