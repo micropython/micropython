@@ -268,6 +268,11 @@ parameter should be `id`.
     Methods
     -------
     
+    .. method:: wiznet5k.isconnected()
+
+       Returns ``True`` if the physical Ethernet link is connected and up.
+       Returns ``False`` otherwise.
+
     .. method:: wiznet5k.ifconfig([(ip, subnet, gateway, dns)])
     
        Get/set IP address, subnet mask, gateway and DNS.
