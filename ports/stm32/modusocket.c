@@ -413,7 +413,6 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
             if (nic_type->gethostbyname != NULL) {
                 int ret = nic_type->gethostbyname(nic, host, hlen, out_ip);
                 if (ret != 0) {
-                    // TODO CPython raises: socket.gaierror: [Errno -2] Name or service not known
                     mp_raise_OSError(ret);
                 }
                 have_ip = true;

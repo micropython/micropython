@@ -92,7 +92,7 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
         return 0;
     } else {
         // failure
-        return MP_ENOENT;
+        return -2;
     }
 }
 
