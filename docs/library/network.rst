@@ -224,7 +224,9 @@ parameter should be `id`.
     ==============
     
     This class allows you to control WIZnet5x00 Ethernet adaptors based on
-    the W5200 and W5500 chipsets (only W5200 tested).
+    the W5200 and W5500 chipsets.  The particular chipset that is supported
+    by the firmware is selected at compile-time via the MICROPY_PY_WIZNET5K
+    option.
     
     Example usage::
     
