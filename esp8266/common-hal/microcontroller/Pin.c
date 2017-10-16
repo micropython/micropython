@@ -28,6 +28,8 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "py/mphal.h"
+
 #include "eagle_soc.h"
 
 extern volatile bool adc_in_use;
@@ -48,11 +50,13 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
 void reset_pins(void) {
     for (int i = 0; i < 17; i++) {
         // 5 is RXD, 6 is TXD
-        if (i == 0 || (i > 4 && i < 13) || i == 12) {
+        if ((i > 4 && i < 13) || i == 12) {
             continue;
         }
         uint32_t peripheral = PERIPHS_IO_MUX + i * 4;
         PIN_FUNC_SELECT(peripheral, 0);
         PIN_PULLUP_DIS(peripheral);
+        // Disable the pin.
+        gpio_output_set(0x0, 0x0, 0x0, 1 << i);
     }
 }
