@@ -59,6 +59,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/touchio/TouchIn.h"
 #include "common-hal/usb_hid/__init__.h"
 
 #include "autoreload.h"
@@ -69,7 +70,6 @@
 #include "tick.h"
 
 #ifdef EXPRESS_BOARD
-#include "common-hal/touchio/TouchIn.h"
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
 #else
 #define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
@@ -193,13 +193,13 @@ void reset_samd21(void) {
 
 #ifdef EXPRESS_BOARD
     audioout_reset();
+#endif
+
     touchin_reset();
     pdmin_reset();
     pulsein_reset();
     pulseout_reset();
     pwmout_reset();
-#endif
-
     analogin_reset();
 
 
