@@ -98,16 +98,22 @@ mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, mp_uint_t n_clos
 
 #define MP_PERSISTENT_ARCH_X86          (1)
 #define MP_PERSISTENT_ARCH_X64          (2)
-#define MP_PERSISTENT_ARCH_THUMB2       (3)
-#define MP_PERSISTENT_ARCH_ARM          (4)
+#define MP_PERSISTENT_ARCH_M0           (3)
+#define MP_PERSISTENT_ARCH_M4           (4)
+#define MP_PERSISTENT_ARCH_ARM          (5)
+
+// Reference for GCC defines:
+// http://micro-os-plus.github.io/develop/predefined-macros/
 
 #if defined(__i386__)
 #define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_X86)
 #elif defined(__x86_64__)
 #define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_X64)
-#elif defined(__thumb2__)
-#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_THUMB2)
-#elif defined(__arm__)
+#elif defined(__ARM_ARCH_6M__)
+#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_M0)
+#elif defined(__ARM_ARCH_7EM__)
+#define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_M4)
+#elif defined(__arm__) && !defined(__thumb__)
 #define MP_PERSISTENT_ARCH_CURRENT (MP_PERSISTENT_ARCH_ARM)
 #else
 #error unknown machine architecture
