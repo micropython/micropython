@@ -400,6 +400,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         }
         printf(" %02x", WIZCHIP_READ(i));
     }
+    /*
     for (int sn = 0; sn < 4; ++sn) {
         printf("\nWiz SREG[%d]:", sn);
         for (int i = 0; i < 0x30; ++i) {
@@ -409,6 +410,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
             printf(" %02x", WIZCHIP_READ(WIZCHIP_SREG_ADDR(sn, i)));
         }
     }
+    */
     printf("\n");
     return mp_const_none;
 }

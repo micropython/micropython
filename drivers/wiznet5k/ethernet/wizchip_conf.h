@@ -56,7 +56,7 @@
  * @todo You should select one, \b 5100, \b 5200 ,\b 5500 or etc. \n\n
  *       ex> <code> #define \_WIZCHIP_      5500 </code>
  */
-#define _WIZCHIP_                      5200   // 5100, 5200, 5500
+#define _WIZCHIP_                      5500   // 5100, 5200, 5500
 
 #define _WIZCHIP_IO_MODE_NONE_         0x0000
 #define _WIZCHIP_IO_MODE_BUS_          0x0100 /**< Bus interface mode */
@@ -92,7 +92,7 @@
  */
 // #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_INDIR_
    #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_
-   #include "w5200/w5200.h"
+   #include "W5200/w5200.h"
 #elif (_WIZCHIP_ == 5500)
   #define _WIZCHIP_ID_                 "W5500\0"
   
@@ -514,10 +514,6 @@ void wizchip_setnetinfo(wiz_NetInfo* pnetinfo);
  * @param pnetinfo : @ref wizNetInfo
  */
 void wizchip_getnetinfo(wiz_NetInfo* pnetinfo);
-
-#if _WIZCHIP_ == 5200   // for W5200 ARP errata
-uint8_t *wizchip_getsubn(void);
-#endif
 
 /**
  * @ingroup extra_functions
