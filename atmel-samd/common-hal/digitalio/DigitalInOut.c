@@ -80,6 +80,9 @@ void common_hal_digitalio_digitalinout_switch_to_output(
     pin_conf.input_pull = PORT_PIN_PULL_NONE;
     port_pin_set_config(self->pin->pin, &pin_conf);
 
+    // Turn on "strong" pin driving (more current available). See DRVSTR doc in datasheet.
+    system_pinmux_pin_set_output_strength(self->pin->pin, SYSTEM_PINMUX_PIN_STRENGTH_HIGH);
+
     self->output = true;
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
     common_hal_digitalio_digitalinout_set_value(self, value);
