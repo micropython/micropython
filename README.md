@@ -32,6 +32,7 @@ This project is in beta. Most APIs should be stable going forward.
 * [Adafruit Feather M0 Express][]
 * [Adafruit Metro M0 Express][]
 * [Adafruit Gemma M0][]
+* [Adafruit Trinket M0][]
 
 ### Other
 
@@ -206,6 +207,7 @@ rest are here to maintain compatibility with the
 [Adafruit Feather M0 Express]: https://www.adafruit.com/product/3403
 [Adafruit Metro M0 Express]: https://www.adafruit.com/product/3505
 [Adafruit Gemma M0]: https://www.adafruit.com/product/3501
+[Adafruit Trinket M0]: https://www.adafruit.com/product/3500
 [Adafruit Feather HUZZAH]: https://www.adafruit.com/products/2821
 [Adafruit Feather M0 Basic]: https://www.adafruit.com/products/2772
 [Adafruit Feather M0 Bluefruit LE]: https://www.adafruit.com/products/2995
