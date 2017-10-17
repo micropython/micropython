@@ -52,10 +52,10 @@
 
 #include "w5200.h"
 
-#define SMASK (0x7ff) /* tx buffer mask */
-#define RMASK (0x7ff) /* rx buffer mask */
-#define SSIZE (2048) /* max tx buffer size */
-#define RSIZE (2048) /* max rx buffer size */
+#define SMASK (16*1024-1) /* tx buffer mask */
+#define RMASK (16*1024-1) /* rx buffer mask */
+#define SSIZE (16*1024) /* max tx buffer size */
+#define RSIZE (16*1024) /* max rx buffer size */
 
 #define TXBUF_BASE (0x8000)
 #define RXBUF_BASE (0xc000)
