@@ -30,6 +30,7 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
@@ -305,9 +306,19 @@ STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
 }
 
 STATIC int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
-    // TODO
-    *_errno = MP_EINVAL;
-    return -1;
+    if (request == MP_STREAM_POLL) {
+        int ret = 0;
+        if (arg & MP_STREAM_POLL_RD && getSn_RX_RSR(socket->u_param.fileno) != 0) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+        if (arg & MP_STREAM_POLL_WR && getSn_TX_FSR(socket->u_param.fileno) != 0) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+        return ret;
+    } else {
+        *_errno = MP_EINVAL;
+        return MP_STREAM_ERROR;
+    }
 }
 
 #if 0
