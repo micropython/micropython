@@ -127,6 +127,7 @@
 #define MICROPY_PY_UTIMEQ           (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_OS_DUPTERM       (1)
+#define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
@@ -178,13 +179,13 @@ extern const struct _mp_obj_module_t mp_module_uheapq;
 extern const struct _mp_obj_module_t mp_module_uhashlib;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_usocket;
+extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_PY_USOCKET
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_lwip) },
 #else
 #define SOCKET_BUILTIN_MODULE
 #define SOCKET_BUILTIN_MODULE_WEAK_LINKS
@@ -319,6 +320,8 @@ static inline mp_uint_t disable_irq(void) {
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        extern void lwip_poll(void); \
+        lwip_poll(); \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
@@ -334,6 +337,8 @@ static inline mp_uint_t disable_irq(void) {
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        extern void lwip_poll(void); \
+        lwip_poll(); \
         __WFI(); \
     } while (0);
 

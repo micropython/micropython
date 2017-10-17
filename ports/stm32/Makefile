@@ -226,6 +226,7 @@ SRC_C = \
 	modutime.c \
 	modusocket.c \
 	modnetwork.c \
+	network_wiznet.c \
 	extint.c \
 	usrsw.c \
 	rng.c \
@@ -290,7 +291,7 @@ ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += modnwwiznet5k.c
+#SRC_MOD += modnwwiznet5k.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
 	ethernet/wizchip_conf.c \
@@ -319,6 +320,39 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	inet_pton.c \
 	patch.c \
 	patch_prog.c \
+	)
+endif
+
+ifeq (1,1)
+LWIP_DIR = lib/lwip/src
+INC += -I$(TOP)/$(LWIP_DIR)/include -I$(TOP)/$(LWIP_DIR)/include/ipv4 -Ilwip-include
+SRC_MOD += extmod/modlwip.c
+SRC_MOD += $(addprefix $(LWIP_DIR)/,\
+	core/def.c \
+	core/dhcp.c \
+	core/dns.c \
+	core/init.c \
+	core/mem.c \
+	core/memp.c \
+	core/netif.c \
+	core/pbuf.c \
+	core/raw.c \
+	core/stats.c \
+	core/sys.c \
+	core/tcp.c \
+	core/tcp_in.c \
+	core/tcp_out.c \
+	core/timers.c \
+	core/udp.c \
+	core/ipv4/autoip.c \
+	core/ipv4/icmp.c \
+	core/ipv4/igmp.c \
+	core/ipv4/inet.c \
+	core/ipv4/inet_chksum.c \
+	core/ipv4/ip_addr.c \
+	core/ipv4/ip.c \
+	core/ipv4/ip_frag.c \
+	netif/etharp.c \
 	)
 endif
 

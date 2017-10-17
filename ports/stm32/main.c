@@ -36,6 +36,7 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "lwip/init.h"
 
 #include "systick.h"
 #include "pendsv.h"
@@ -463,6 +464,13 @@ int main(void) {
     pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
 #endif
 
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power up.
+    lwip_init();
+    #endif
+
     int first_soft_reset = true;
 
 soft_reset:
@@ -684,6 +692,9 @@ soft_reset_exit:
     storage_flush();
 
     printf("PYB: soft reboot\n");
+#if MICROPY_PY_NETWORK
+    mod_network_deinit();
+#endif
     timer_deinit();
     uart_deinit();
 #if MICROPY_HW_ENABLE_CAN

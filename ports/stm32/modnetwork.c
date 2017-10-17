@@ -30,16 +30,56 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK
+
+#include "lwip/init.h"
+#include "lwip/timers.h"
+#include "lwip/netif.h"
 
 /// \module network - network configuration
 ///
 /// This module provides network drivers and routing configuration.
 
+// Access to lwIP internal netif list
+extern struct netif *netif_list;
+
+// Required by lwIP
+u32_t sys_now(void) {
+    return mp_hal_ticks_ms();
+}
+
 void mod_network_init(void) {
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
+}
+
+void mod_network_deinit(void) {
+    #if MICROPY_PY_LWIP
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        //printf("netif_remove(%p)\n", netif);
+        netif_remove(netif);
+    }
+    // TODO there may be some timeouts that are still pending...
+    #endif
+}
+
+struct net_obj_t {
+    mp_obj_base_t base;
+    void (*poll_callback)(void*);
+};
+
+void lwip_poll(void) {
+    // Poll all the NICs
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        if (netif->flags & NETIF_FLAG_LINK_UP) {
+            struct net_obj_t *n = netif->state;
+            n->poll_callback(n);
+        }
+    }
+    // Run the lwIP internal updates
+    sys_check_timeouts();
 }
 
 void mod_network_register_nic(mp_obj_t nic) {
