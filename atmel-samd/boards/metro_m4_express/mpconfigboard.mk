@@ -1,4 +1,4 @@
-LD_FILE = boards/samd51x20.ld
+LD_FILE = boards/samd51x20-bootloader.ld
 USB_VID = 0x239A
 USB_PID = 0x8015
 
