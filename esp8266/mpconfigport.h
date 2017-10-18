@@ -55,7 +55,7 @@
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_FILEIO        (1)
-#define MICROPY_PY_STRUCT           (1)
+#define MICROPY_PY_STRUCT           (0)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_EXIT         (1)
@@ -159,6 +159,7 @@ extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
+extern const struct _mp_obj_module_t struct_module;
 extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_onewire;
@@ -189,6 +190,7 @@ extern const struct _mp_obj_module_t multiterminal_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_multiterminal), (mp_obj_t)&multiterminal_module }, \
 
