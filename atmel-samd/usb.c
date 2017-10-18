@@ -74,7 +74,7 @@ static uint8_t multi_desc_bytes[] = {
 static struct usbd_descriptors multi_desc = {multi_desc_bytes, multi_desc_bytes + sizeof(multi_desc_bytes)};
 
 /** Ctrl endpoint buffer */
-static uint8_t ctrl_buffer[64];
+COMPILER_ALIGNED(4) static uint8_t ctrl_buffer[64];
 
 static void init_hardware(void) {
     #ifdef SAMD21
@@ -107,12 +107,19 @@ static void init_hardware(void) {
     #endif
 }
 
-extern uint32_t *_usb_ep1_cache;
-static bool usb_device_cb_bulk_out(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
-{
-    if (rc == USB_XFER_RESET) {
-        return false;
+COMPILER_ALIGNED(4) uint8_t cdc_packet_buffer[64];
+static volatile bool pending_read;
+
+static int32_t start_read(void) {
+    pending_read = true;
+    return cdcdf_acm_read(cdc_packet_buffer, 64);
+}
+
+static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
+    if (rc != USB_XFER_DONE) {
+        return false; // No errors.
     }
+    pending_read = false;
     volatile hal_atomic_t flags;
     atomic_enter_critical(&flags);
     // If our buffer can't fit the data received, then error out.
@@ -121,24 +128,12 @@ static bool usb_device_cb_bulk_out(const uint8_t ep, const enum usb_xfer_code rc
         return true;
     }
 
-    // We read the data but ignore it later. The data itself isn't correct but
-    // it does mark it as read so further data is received ok.
-    // TODO(tannewt): Get ASF4 fixed so the data is correct and then stop using
-    // _usb_ep1_cache directly below.
-    uint8_t buf[count];
-    int32_t result = cdcdf_acm_read(buf, count);
-    if (result != ERR_NONE) {
-        atomic_leave_critical(&flags);
-        return true;
-    }
-
     for (uint16_t i = 0; i < count; i++) {
-        uint8_t c = ((uint8_t*) &_usb_ep1_cache)[i];
+        uint8_t c = cdc_packet_buffer[i];
         if (c == mp_interrupt_char) {
-            atomic_leave_critical(&flags);
             mp_keyboard_interrupt();
             // Don't put the interrupt into the buffer, just continue.
-            return false;
+            continue;
         } else {
             // The count of characters present in receive buffer is
             // incremented.
@@ -154,12 +149,21 @@ static bool usb_device_cb_bulk_out(const uint8_t ep, const enum usb_xfer_code rc
     }
     atomic_leave_critical(&flags);
 
+    // Trigger a follow up read if we have space.
+    if (usb_rx_count < USB_RX_BUF_SIZE) {
+        int32_t result = start_read();
+        if (result != ERR_NONE) {
+            return true;
+        }
+    }
+
     /* No error. */
     return false;
 }
 
-static bool usb_device_cb_bulk_in(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
+static bool write_complete(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
 {
+    // This is called after writed are finished.
     /* No error. */
     return false;
 }
@@ -193,6 +197,7 @@ void init_usb(void) {
 
     /* usbdc_register_funcion inside */
     cdcdf_acm_init();
+    pending_read = false;
 
     mscdf_init(1);
     // hiddf_mouse_init();
@@ -218,19 +223,19 @@ static inline bool cdc_enabled(void) {
     if (!cdcdf_acm_is_enabled()) {
         return false;
     }
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)usb_device_cb_bulk_out);
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)usb_device_cb_bulk_in);
+    cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)read_complete);
+    cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)write_complete);
     cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)usb_device_cb_state_c);
     cdcdf_acm_register_callback(CDCDF_ACM_CB_LINE_CODING_C, (FUNC_PTR)usb_device_cb_line_coding_c);
     mp_cdc_enabled = true;
 
-    // Ignored read.
-    uint8_t buf[64];
-    cdcdf_acm_read(buf, 64);
     return true;
 }
 
 bool usb_bytes_available(void) {
+    if (!pending_read) {
+        start_read();
+    }
     if (usb_rx_count == 0) {
         cdc_enabled();
         return false;
@@ -253,6 +258,11 @@ int usb_read(void) {
       usb_rx_buf_head = 0;
     }
     CRITICAL_SECTION_LEAVE();
+
+    // Trigger a new read because we just cleared some space.
+    if (!pending_read && usb_rx_count == USB_RX_BUF_SIZE - 1) {
+        start_read();
+    }
 
     return data;
 }
