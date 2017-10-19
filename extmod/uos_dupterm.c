@@ -43,7 +43,13 @@ void mp_uos_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     if (exc != MP_OBJ_NULL) {
         mp_obj_print_exception(&mp_plat_print, exc);
     }
-    mp_stream_close(term);
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_stream_close(term);
+        nlr_pop();
+    } else {
+        // Ignore any errors during stream closing
+    }
 }
 
 int mp_uos_dupterm_rx_chr(void) {
@@ -61,8 +67,8 @@ int mp_uos_dupterm_rx_chr(void) {
             if (res == mp_const_none) {
                 nlr_pop();
             } else if (res == MP_OBJ_NEW_SMALL_INT(0)) {
-                mp_uos_deactivate(idx, "dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
                 nlr_pop();
+                mp_uos_deactivate(idx, "dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(MP_STATE_VM(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
