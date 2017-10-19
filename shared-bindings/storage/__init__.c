@@ -101,21 +101,28 @@ mp_obj_t storage_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 
-//| .. function:: remount(mount_path, readonly)
+//| .. function:: remount(mount_path, readonly=False)
 //|
 //|   Remounts the given path with new parameters.
 //|
-mp_obj_t storage_remount(mp_obj_t mount_path, mp_obj_t readonly) {
-    if (!MP_OBJ_IS_STR(mount_path)) {
-        mp_raise_ValueError("mount_path must be string");
-    }
+mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_readonly };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_readonly, MP_ARG_BOOL | MP_ARG_REQUIRED, {.u_bool = false} },
+    };
 
-    common_hal_storage_remount(mp_obj_str_get_str(mount_path),
-                               mp_obj_is_true(readonly));
+    // get the mount point
+    const char *mnt_str = mp_obj_str_get_str(pos_args[0]);
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    common_hal_storage_remount(mnt_str, args[ARG_readonly].u_bool);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(storage_remount_obj, storage_remount);
+MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 1, storage_remount);
 
 STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_storage) },
