@@ -3,6 +3,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "extmod/misc.h"
 #include "usb.h"
 #include "uart.h"
 
@@ -38,6 +39,10 @@ int mp_hal_stdin_rx_chr(void) {
         } else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
+        int dupterm_c = mp_uos_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
         MICROPY_EVENT_POLL_HOOK
     }
 }
@@ -56,6 +61,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn(str, len);
     }
+    mp_uos_dupterm_tx_strn(str, len);
 }
 
 // Efficiently convert "\n" to "\r\n"
