@@ -108,7 +108,15 @@ def parse_input_headers(infiles):
                     continue
 
                 # add the qstr to the list, with order number to retain original order in file
-                qstrs[ident] = (len(qstrs), ident, qstr)
+                order = len(qstrs)
+                # but put special method names like __add__ at the top of list, so
+                # that their id's fit into a byte
+                if ident == "":
+                    # Sort empty qstr above all still
+                    order = -200000
+                elif ident.startswith("__"):
+                    order -= 100000
+                qstrs[ident] = (order, ident, qstr)
 
     if not qcfgs:
         sys.stderr.write("ERROR: Empty preprocessor output - check for errors above\n")
