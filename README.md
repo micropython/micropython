@@ -59,7 +59,7 @@ Additional components:
 The subdirectories above may include READMEs with additional info.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash and Python (at least 2.7 or 3.3).
+You will also need bash, gcc, and Python (at least 2.7 or 3.3).
 
 The Unix version
 ----------------
@@ -140,8 +140,8 @@ The STM32 version
 -----------------
 
 The "stm32" port requires an ARM compiler, arm-none-eabi-gcc, and associated
-bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
-arm-none-eabi-gcc packages.  Otherwise, try here:
+bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils,
+arm-none-eabi-gcc and arm-none-eabi-newlib packages.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
