@@ -452,24 +452,9 @@ STATIC size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_
     return num_tx;
 }
 
-STATIC void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
-    uint16_t ch = c;
-    int errcode;
-    uart_tx_data(uart_obj, &ch, 1, &errcode);
-}
-
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
     int errcode;
     uart_tx_data(uart_obj, str, len, &errcode);
-}
-
-void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
-    for (const char *top = str + len; str < top; str++) {
-        if (*str == '\n') {
-            uart_tx_char(uart_obj, '\r');
-        }
-        uart_tx_char(uart_obj, *str);
-    }
 }
 
 // this IRQ handler is set up to handle RXNE interrupts only

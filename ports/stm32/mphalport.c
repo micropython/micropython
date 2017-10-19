@@ -58,13 +58,23 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
 }
 
+// Efficiently convert "\n" to "\r\n"
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    // send stdout to UART and USB CDC VCP
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    const char *last = str;
+    while (len--) {
+        if (*str == '\n') {
+            if (str > last) {
+                mp_hal_stdout_tx_strn(last, str - last);
+            }
+            mp_hal_stdout_tx_strn("\r\n", 2);
+            ++str;
+            last = str;
+        } else {
+            ++str;
+        }
     }
-    if (usb_vcp_is_enabled()) {
-        usb_vcp_send_strn_cooked(str, len);
+    if (str > last) {
+        mp_hal_stdout_tx_strn(last, str - last);
     }
 }
 
