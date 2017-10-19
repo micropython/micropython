@@ -342,7 +342,7 @@ const uint16_t mp_unary_op_method_name[MP_UNARY_OP_NUM_RUNTIME] = {
     [MP_UNARY_OP_INVERT] = MP_QSTR___invert__,
     #endif
     #if MICROPY_PY_SYS_GETSIZEOF
-    [MP_UNARY_OP_SIZEOF] = MP_QSTR_getsizeof,
+    [MP_UNARY_OP_SIZEOF] = MP_QSTR___sizeof__,
     #endif
 };
 
