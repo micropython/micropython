@@ -1,5 +1,5 @@
 #define MICROPY_HW_BOARD_NAME "Metro M4 Express"
-#define MICROPY_HW_MCU_NAME "samd51j20"
+#define MICROPY_HW_MCU_NAME "samd51j19"
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
@@ -24,8 +24,6 @@
 #define MICROPY_PORT_B        (PORT_PB06 | PORT_PB08 | PORT_PB09 | PORT_PB11 | PORT_PB17)
 #define MICROPY_PORT_C        (0)
 #define MICROPY_PORT_D        (0)
-
-#define CONF_USB_COMPOSITE_CDC_ACM_EN 1
 
 #define AUTORESET_DELAY_MS 500
 
