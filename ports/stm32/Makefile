@@ -15,6 +15,10 @@ include boards/$(BOARD)/mpconfigboard.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
 
+# extmod modules
+MICROPY_PY_USSL = 1
+MICROPY_SSL_AXTLS = 1
+
 # directory containing scripts to be frozen as bytecode
 FROZEN_MPY_DIR ?= modules
 
@@ -86,8 +90,14 @@ CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 endif
 
+ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_SSL_AXTLS),1)
+LIBS += -L$(BUILD) -laxtls
+endif
+endif
+
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
-LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
+LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -429,7 +439,7 @@ $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
 
-all: $(TOP)/lib/stm32lib/README.md $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
+all: $(TOP)/lib/stm32lib/README.md $(BUILD)/libaxtls.a $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
 
 # For convenience, automatically fetch required submodules if they don't exist
 $(TOP)/lib/stm32lib/README.md:
@@ -583,5 +593,12 @@ $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
+
+$(BUILD)/libaxtls.a: | $(BUILD)/
+	cd $(TOP)/lib/axtls; cp config/upyconfig config/.config
+	cd $(TOP)/lib/axtls; $(MAKE) oldconfig -B
+	cd $(TOP)/lib/axtls; $(MAKE) clean
+	cd $(TOP)/lib/axtls; $(MAKE) all CC="$(CC)" LD="$(LD)" AR="$(AR)" CFLAGS_EXTRA="$(CFLAGS_MCU_$(MCU_SERIES)) -I../../../ports/stm32"
+	cp $(TOP)/lib/axtls/_stage/libaxtls.a $@
 
 include $(TOP)/py/mkrules.mk

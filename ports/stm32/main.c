@@ -758,3 +758,72 @@ soft_reset_exit:
 
     goto soft_reset;
 }
+
+/*******************************************************************/
+// Support functions needed by axtls
+
+#include <time.h>
+#include <sys/time.h>
+
+#undef malloc
+#undef free
+#undef realloc
+
+char *strncpy(char *dest, const char *src, size_t n) {
+   size_t i;
+   for (i = 0; i < n && src[i] != '\0'; i++) {
+       dest[i] = src[i];
+   }
+   for ( ; i < n; i++) {
+       dest[i] = '\0';
+   }
+   return dest;
+}
+
+void *malloc(size_t size) {
+    return m_malloc(size);
+}
+void free(void *ptr) {
+    m_free(ptr);
+}
+void *calloc(size_t nmemb, size_t size) {
+    return m_malloc(nmemb * size);
+}
+void *realloc(void *ptr, size_t size) {
+    return m_realloc(ptr, size);
+}
+void abort(void) {
+    mp_raise_msg(&mp_type_RuntimeError, "abort() called");
+}
+
+int rand(void) {
+    return rng_get();
+}
+int rand_r(unsigned int *seedp) {
+    // hopefully we can get away with this with lwIP...
+    return 0;
+}
+
+time_t time(time_t *t) {
+    return mp_hal_ticks_ms() / 1000;
+}
+time_t mktime(struct tm *tm) {
+    // TODO
+    return 0;
+}
+int gettimeofday(struct timeval *restrict tp, void *restrict tzp) {
+    uint32_t ms = mp_hal_ticks_ms();
+    tp->tv_sec = ms / 1000;
+    tp->tv_usec = ms % 1000 * 1000;
+    return 0;
+}
+
+#define PLATFORM_HTONL(_n) ((uint32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
+#undef htonl
+#undef ntohl
+uint32_t ntohl(uint32_t netlong) {
+    return PLATFORM_HTONL(netlong);
+}
+uint32_t htonl(uint32_t netlong) {
+    return PLATFORM_HTONL(netlong);
+}
