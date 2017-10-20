@@ -36,6 +36,7 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hpl/pm/hpl_pm_base.h"
 
+#include "common-hal/microcontroller/Pin.h"
 #include "tick.h"
 
 extern volatile bool mp_msc_enabled;
@@ -196,8 +197,8 @@ void reset_port(void) {
 //     // Wait for the DAC to sync then reset.
 //     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
 //     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
-//
-//     reset_all_pins();
+
+    reset_all_pins();
 //
 //
 //     usb_hid_reset();
