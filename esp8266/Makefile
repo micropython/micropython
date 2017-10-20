@@ -128,6 +128,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
+	math/__init__.c \
 	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
@@ -144,7 +145,7 @@ SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
 	storage/__init__.c \
-	struct/__init__.c 
+	struct/__init__.c
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

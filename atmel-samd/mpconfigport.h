@@ -51,7 +51,7 @@
 #define MICROPY_PY_ATTRTUPLE        (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
-#define MICROPY_PY_MATH             (1)
+#define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_URANDOM          (0)
@@ -158,6 +158,7 @@ extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
 extern const struct _mp_obj_module_t busio_module;
 extern const struct _mp_obj_module_t board_module;
+extern const struct _mp_obj_module_t math_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
@@ -225,6 +226,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
     EXTRA_BUILTIN_MODULES
 

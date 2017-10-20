@@ -51,7 +51,7 @@
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
-#define MICROPY_PY_MATH             (1)
+#define MICROPY_PY_MATH             (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_FILEIO        (1)
@@ -165,6 +165,7 @@ extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t microcontroller_module;
 extern const struct _mp_obj_module_t board_module;
+extern const struct _mp_obj_module_t math_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
@@ -191,6 +192,7 @@ extern const struct _mp_obj_module_t multiterminal_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_multiterminal), (mp_obj_t)&multiterminal_module }, \
 

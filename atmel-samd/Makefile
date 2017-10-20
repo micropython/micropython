@@ -275,6 +275,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
 	help.c \
+	math/__init__.c \
 	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
