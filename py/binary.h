@@ -42,4 +42,9 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
 long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, const byte *src);
 void mp_binary_set_int(mp_uint_t val_sz, bool big_endian, byte *dest, mp_uint_t val);
 
+// Higher-level reusable functions from modstruct.c
+char mp_struct_get_fmt_type(const char **fmt);
+size_t mp_struct_calc_size_items(const char *fmt, size_t *total_sz);
+void mp_struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args);
+
 #endif // MICROPY_INCLUDED_PY_BINARY_H

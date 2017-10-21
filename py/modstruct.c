@@ -52,7 +52,7 @@
         character data".
  */
 
-STATIC char get_fmt_type(const char **fmt) {
+char mp_struct_get_fmt_type(const char **fmt) {
     char t = **fmt;
     switch (t) {
         case '!':
@@ -82,8 +82,8 @@ STATIC mp_uint_t get_fmt_num(const char **p) {
     return val;
 }
 
-STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
-    char fmt_type = get_fmt_type(&fmt);
+size_t mp_struct_calc_size_items(const char *fmt, size_t *total_sz) {
+    char fmt_type = mp_struct_get_fmt_type(&fmt);
     size_t total_cnt = 0;
     size_t size;
     for (size = 0; *fmt; fmt++) {
@@ -113,7 +113,7 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
 STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     size_t size;
-    calc_size_items(fmt, &size);
+    mp_struct_calc_size_items(fmt, &size);
     return MP_OBJ_NEW_SMALL_INT(size);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
@@ -125,8 +125,8 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
     // we relax the "exact" requirement, and only implement "big enough".
     const char *fmt = mp_obj_str_get_str(args[0]);
     size_t total_sz;
-    size_t num_items = calc_size_items(fmt, &total_sz);
-    char fmt_type = get_fmt_type(&fmt);
+    size_t num_items = mp_struct_calc_size_items(fmt, &total_sz);
+    char fmt_type = mp_struct_get_fmt_type(&fmt);
     mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_items, NULL));
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
@@ -175,9 +175,9 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_from);
 
 // This function assumes there is enough room in p to store all the values
-STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
+void mp_struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
-    char fmt_type = get_fmt_type(&fmt);
+    char fmt_type = mp_struct_get_fmt_type(&fmt);
 
     size_t i;
     for (i = 0; i < n_args;) {
@@ -217,7 +217,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     vstr_init_len(&vstr, size);
     byte *p = (byte*)vstr.buf;
     memset(p, 0, size);
-    struct_pack_into_internal(args[0], p, n_args - 1, &args[1]);
+    mp_struct_pack_into_internal(args[0], p, n_args - 1, &args[1]);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
@@ -243,7 +243,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError("buffer too small");
     }
 
-    struct_pack_into_internal(args[0], p, n_args - 3, &args[3]);
+    mp_struct_pack_into_internal(args[0], p, n_args - 3, &args[3]);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX, struct_pack_into);

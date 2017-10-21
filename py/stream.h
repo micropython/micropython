@@ -65,10 +65,12 @@ struct mp_stream_seek_t {
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_readbin_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_write1_obj);
+MP_DECLARE_CONST_FUN_OBJ_3(mp_stream_writebin_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);

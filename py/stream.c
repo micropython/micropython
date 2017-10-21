@@ -31,6 +31,7 @@
 #include "py/objstr.h"
 #include "py/stream.h"
 #include "py/runtime.h"
+#include "py/binary.h"
 
 #if MICROPY_STREAMS_NON_BLOCK
 #include <errno.h>
@@ -289,6 +290,21 @@ STATIC mp_obj_t stream_write1_method(mp_obj_t self_in, mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_write1_obj, stream_write1_method);
 
+STATIC mp_obj_t stream_writebin_method(mp_obj_t self_in, mp_obj_t fmt_in, mp_obj_t arg_in) {
+    size_t size;
+    const char *fmt = mp_obj_str_get_str(fmt_in);
+    size_t num = mp_struct_calc_size_items(fmt, &size);
+    if (num != 1) {
+        mp_raise_ValueError(NULL);
+    }
+
+    byte buf[size];
+    mp_struct_pack_into_internal(fmt_in, buf, 1, &arg_in);
+
+    return mp_stream_write(self_in, buf, size, MP_STREAM_RW_WRITE);
+}
+MP_DEFINE_CONST_FUN_OBJ_3(mp_stream_writebin_obj, stream_writebin_method);
+
 STATIC mp_obj_t stream_readinto(size_t n_args, const mp_obj_t *args) {
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_buffer_info_t bufinfo;
@@ -357,6 +373,32 @@ STATIC mp_obj_t stream_readall(mp_obj_t self_in) {
     vstr.len = total_size;
     return mp_obj_new_str_from_vstr(STREAM_CONTENT_TYPE(stream_p), &vstr);
 }
+
+STATIC mp_obj_t stream_readbin(mp_obj_t self_in, mp_obj_t fmt_in) {
+    size_t size;
+    const char *fmt = mp_obj_str_get_str(fmt_in);
+    size_t num = mp_struct_calc_size_items(fmt, &size);
+    if (num != 1) {
+        mp_raise_ValueError(NULL);
+    }
+
+    byte buf[size];
+    int error;
+    mp_uint_t out_sz = mp_stream_read_exactly(self_in, buf, size, &error);
+
+    if (error != 0) {
+        mp_raise_OSError(error);
+    } else if (out_sz != size) {
+        nlr_raise(mp_obj_new_exception(&mp_type_EOFError));
+    }
+
+    byte *ptr = buf;
+    char fmt_type = mp_struct_get_fmt_type(&fmt);
+    mp_obj_t res = mp_binary_get_val(fmt_type, *fmt, &ptr);
+
+    return res;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(mp_stream_readbin_obj, stream_readbin);
 
 // Unbuffered, inefficient implementation of readline() for raw I/O files.
 STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) {
