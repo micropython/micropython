@@ -187,6 +187,9 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SEEK_SET), MP_ROM_INT(MP_SEEK_SET) },
+    { MP_ROM_QSTR(MP_QSTR_SEEK_CUR), MP_ROM_INT(MP_SEEK_CUR) },
+    { MP_ROM_QSTR(MP_QSTR_SEEK_END), MP_ROM_INT(MP_SEEK_END) },
     #if MICROPY_PY_IO_RESOURCE_STREAM
     { MP_ROM_QSTR(MP_QSTR_resource_stream), MP_ROM_PTR(&resource_stream_obj) },
     #endif
