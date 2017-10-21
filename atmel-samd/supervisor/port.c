@@ -193,6 +193,9 @@ void reset_port(void) {
 //
 //     analogin_reset();
 //
+// #ifdef CIRCUITPY_GAMEPAD_TICKS
+//     gamepad_reset();
+// #endif
 //
 //     // Wait for the DAC to sync then reset.
 //     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}

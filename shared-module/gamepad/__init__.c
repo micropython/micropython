@@ -49,3 +49,7 @@ void gamepad_tick(void) {
     gamepad_singleton->pressed |= gamepad_singleton->last & gamepad_current;
     gamepad_singleton->last = gamepad_current;
 }
+
+void gamepad_reset(void) {
+    gamepad_singleton = NULL;
+}
