@@ -159,9 +159,11 @@ LIBS := -lgcc -lc
 ifeq ($(CHIP_FAMILY), samd21)
 LDFLAGS += -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/
 LIBS :=  -lm $(LIBS) # -larm_cortexM0l_math
+BOOTLOADER_SIZE := 0x2000
 else ifeq ($(CHIP_FAMILY), samd51)
 LDFLAGS += -mthumb -mcpu=cortex-m4
 LIBS := -lm $(LIBS)
+BOOTLOADER_SIZE := 0x4000
 endif
 
 SRC_ASF := \
@@ -320,7 +322,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	python2 $(TOP)/tools/uf2/utils/uf2conv.py -c -o $@ $^
+	python2 $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"
