@@ -61,6 +61,7 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/touchio/TouchIn.h"
 #include "common-hal/usb_hid/__init__.h"
+#include "shared-module/gamepad/__init__.h"
 
 #include "autoreload.h"
 #include "flash_api.h"
@@ -202,6 +203,9 @@ void reset_samd21(void) {
     pwmout_reset();
     analogin_reset();
 
+#ifdef CIRCUITPY_GAMEPAD_TICKS
+    gamepad_reset();
+#endif
 
     // TODO: move this to analogout_reset()
     // Wait for the DAC to sync then reset.

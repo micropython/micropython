@@ -28,5 +28,6 @@
 #define MICROPY_INCLUDED_GAMEPAD_H
 
 void gamepad_tick(void);
+void gamepad_reset(void);
 
 #endif  // MICROPY_INCLUDED_GAMEPAD_H
