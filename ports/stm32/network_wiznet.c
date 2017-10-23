@@ -281,6 +281,12 @@ STATIC err_t my_netif_init(struct netif *netif) {
 }
 
 STATIC void wiznet_lwip_init(wiznet5k_obj_t *self) {
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        if (netif == &self->netif) {
+            netif_remove(netif);
+            break;
+        }
+    }
     ip_addr_t ipconfig[4];
     ipconfig[0].addr = 0;
     ipconfig[1].addr = 0;
