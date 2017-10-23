@@ -68,8 +68,12 @@ void common_hal_digitalio_digitalinout_switch_to_input(
 void common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
         enum digitalio_drive_mode_t drive_mode) {
-    gpio_set_pin_pull_mode(self->pin->pin, GPIO_PULL_OFF);
-    gpio_set_pin_direction(self->pin->pin, GPIO_DIRECTION_OUT);
+    const uint8_t pin = self->pin->pin;
+    gpio_set_pin_pull_mode(pin, GPIO_PULL_OFF);
+    gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
+
+    // Turn on "strong" pin driving (more current available). See DRVSTR doc in datasheet.
+    hri_port_set_PINCFG_DRVSTR_bit(PORT, (enum gpio_port)GPIO_PORT(pin), pin);
 
     self->output = true;
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
@@ -98,9 +102,9 @@ void common_hal_digitalio_digitalinout_set_value(
 
 bool common_hal_digitalio_digitalinout_get_value(
         digitalio_digitalinout_obj_t* self) {
-    uint32_t pin = self->pin->pin;
+    const uint8_t pin = self->pin->pin;
     if (!self->output) {
-        return gpio_get_pin_level(self->pin->pin);
+        return gpio_get_pin_level(pin);
     } else {
         if (self->open_drain && hri_port_get_DIR_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << pin) == 0) {
             return true;

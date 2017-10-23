@@ -151,7 +151,7 @@ pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
 	    fn = (float)n;
 	    r  = t-fn*pio2_1;
 	    w  = fn*pio2_1t;	/* 1st round good to 40 bit */
-	    if(n<32&&(ix&0xffffff00)!=npio2_hw[n-1]) {	
+	    if(n<32&&(__int32_t)(ix&0xffffff00)!=npio2_hw[n-1]) {	
 		y[0] = r-w;	/* quick check no cancellation */
 	    } else {
 	        __uint32_t high;
@@ -195,7 +195,10 @@ pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
 	}
 	tx[2] = z;
 	nx = 3;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	while(tx[nx-1]==zero) nx--;	/* skip zero term */
+#pragma GCC diagnostic pop
 	n  =  __kernel_rem_pio2f(tx,y,e0,nx,2,two_over_pi);
 	if(hx<0) {y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	return n;

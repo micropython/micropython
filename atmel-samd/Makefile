@@ -101,11 +101,9 @@ else
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
-  ifeq ($(FLASH_IMPL),internal_flash.c)
-    ifeq ($(CHIP_FAMILY), samd21)
-### TODO(dhalbert): disable for now; breaks things in 3.0.0 build(e.g. deinit checking is disabled)
-#      CFLAGS += -finline-limit=19
-    endif
+  ifdef INTERNAL_FLASH_FILESYSTEM
+    ## Not currently needed
+    ## CFLAGS += -finline-limit=50
   endif
   CFLAGS += -flto
 endif
@@ -151,18 +149,19 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
-#LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
 LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
+# Use toolchain libm if we're not using our own.
+ifndef INTERNAL_LIBM
+LIBS += -lm
+endif
 
 ifeq ($(CHIP_FAMILY), samd21)
 LDFLAGS += -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/
-LIBS :=  -lm $(LIBS) # -larm_cortexM0l_math
 BOOTLOADER_SIZE := 0x2000
 else ifeq ($(CHIP_FAMILY), samd51)
 LDFLAGS += -mthumb -mcpu=cortex-m4
-LIBS := -lm $(LIBS)
 BOOTLOADER_SIZE := 0x4000
 endif
 
@@ -220,7 +219,6 @@ SRC_C = \
 	tick.c \
 	usb.c \
 	usb_mass_storage.c \
-	$(FLASH_IMPL) \
 	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
@@ -235,7 +233,17 @@ SRC_C = \
 	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-	# freetouch/adafruit_ptc.c \
+	# freetouch/adafruit_ptc.c
+
+# Choose which flash filesystem impl to use.
+# (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
+# But that might not be true in the future.)
+ifdef INTERNAL_FLASH_FILESYSTEM
+SRC_C += internal_flash.c
+endif
+ifdef SPI_FLASH_FILESYSTEM
+SRC_C += spi_flash.c
+endif
 
 SRC_COMMON_HAL = \
 	board/__init__.c \
@@ -269,6 +277,30 @@ SRC_COMMON_HAL = \
 	touchio/TouchIn.c \
 	usb_hid/__init__.c \
 	usb_hid/Device.c
+
+ifdef INTERNAL_LIBM
+SRC_LIBM = $(addprefix lib/,\
+	libm/math.c \
+	libm/fmodf.c \
+	libm/nearbyintf.c \
+	libm/ef_sqrt.c \
+	libm/kf_rem_pio2.c \
+	libm/kf_sin.c \
+	libm/kf_cos.c \
+	libm/kf_tan.c \
+	libm/ef_rem_pio2.c \
+	libm/sf_sin.c \
+	libm/sf_cos.c \
+	libm/sf_tan.c \
+	libm/sf_frexp.c \
+	libm/sf_modf.c \
+	libm/sf_ldexp.c \
+	libm/asinfacosf.c \
+	libm/atanf.c \
+	libm/atan2f.c \
+	)
+endif
+
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
@@ -306,6 +338,9 @@ OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
+ifdef INTERNAL_LIBM
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
+endif
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(STM_SRC_C)
 

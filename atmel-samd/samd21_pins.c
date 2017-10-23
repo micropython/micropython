@@ -105,7 +105,13 @@ PIN(PA01, EXTINT_CHANNEL(1), NO_ADC, NO_TOUCH,
     NO_TIMER);
 #endif
 #ifdef PIN_PA02
-PIN(PA02, EXTINT_CHANNEL(2), ADC_INPUT(0), TOUCH(0),
+// Touch is not allowed on A0 (PA02) on Circuit Playground Express.
+PIN(PA02, EXTINT_CHANNEL(2), ADC_INPUT(0),
+    #ifdef PA02_NO_TOUCH
+      NO_TOUCH,
+    #else
+      TOUCH(0),
+    #endif
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,

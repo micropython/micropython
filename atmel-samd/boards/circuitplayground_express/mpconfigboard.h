@@ -3,6 +3,9 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+// Don't allow touch on A0 (PA02), because it's connected to the speaker.
+#define PA02_NO_TOUCH       (true)
+
 // Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
 #define SPI_FLASH_BAUDRATE  (8000000)
 

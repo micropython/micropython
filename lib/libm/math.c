@@ -338,7 +338,7 @@ float powf(float x, float y)
 			return sn*huge*huge;  /* overflow */
 	} else if ((j&0x7fffffff) > 0x43160000)  /* z < -150 */ // FIXME: check should be  (uint32_t)j > 0xc3160000
 		return sn*tiny*tiny;  /* underflow */
-	else if (j == 0xc3160000) {  /* z == -150 */
+	else if (j == (int32_t) 0xc3160000) {  /* z == -150 */
 		if (p_l <= z-p_h)
 			return sn*tiny*tiny;  /* underflow */
 	}
@@ -585,13 +585,13 @@ float expm1f(float x)
 /*****************************************************************************/
 /*****************************************************************************/
 
-/* k is such that k*ln2 has minimal relative error and x - kln2 > log(FLT_MIN) */
-static const int k = 235;
-static const float kln2 = 0x1.45c778p+7f;
 
 /* expf(x)/2 for x >= log(FLT_MAX), slightly better than 0.5f*expf(x/2)*expf(x/2) */
 float __expo2f(float x)
 {
+	/* k is such that k*ln2 has minimal relative error and x - kln2 > log(FLT_MIN) */
+	static const int k = 235;
+	static const float kln2 = 0x1.45c778p+7f;
 	float scale;
 
 	/* note that k is odd and scale*scale overflows */

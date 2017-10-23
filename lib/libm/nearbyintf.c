@@ -15,7 +15,10 @@ float nearbyintf(float x)
 		y = x - 0x1p23f + 0x1p23f;
 	else
 		y = x + 0x1p23f - 0x1p23f;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	if (y == 0)
+#pragma GCC diagnostic pop
 		return s ? -0.0f : 0.0f;
 	return y;
 }
