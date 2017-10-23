@@ -23,6 +23,14 @@ extern uint32_t rng_get(void);
 
 // default
 // lwip takes 15800 bytes; TCP d/l: 380k/s local, 7.2k/s remote
+// TCP u/l is very slow
+
+#if 1
+// lwip takes 19159 bytes; TCP d/l and u/l are around 310k/s on local network
+#define MEM_SIZE (5000)
+#define TCP_WND (4 * TCP_MSS)
+#define TCP_SND_BUF (4 * TCP_MSS)
+#endif
 
 #if 0
 // lwip takes 26700 bytes; TCP d/l: 530k/s local, 21k/s remote
