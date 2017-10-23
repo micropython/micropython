@@ -336,6 +336,7 @@ endif
 ifeq (1,1)
 LWIP_DIR = lib/lwip/src
 INC += -I$(TOP)/$(LWIP_DIR)/include -I$(TOP)/$(LWIP_DIR)/include/ipv4 -Ilwip-include
+$(BUILD)/$(LWIP_DIR)/core/%.o: CFLAGS += -Wno-address
 SRC_MOD += extmod/modlwip.c
 SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	core/def.c \
@@ -521,7 +522,7 @@ $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE) | $(HEA
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
-$(BUILD)/libaxtls.a:
+$(BUILD)/libaxtls.a: | $(BUILD)/
 	cd $(TOP)/lib/axtls; cp config/upyconfig config/.config
 	cd $(TOP)/lib/axtls; $(MAKE) oldconfig -B
 	cd $(TOP)/lib/axtls; $(MAKE) clean
