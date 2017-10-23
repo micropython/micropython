@@ -615,9 +615,11 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
             tcp_arg(socket->pcb.tcp, (void*)socket);
             // Register our error callback.
             tcp_err(socket->pcb.tcp, _lwip_tcp_error);
+            #if LWIP_VERSION == 0x01040100
             // set these to work-around bug http://savannah.nongnu.org/bugs/?37184
             socket->pcb.tcp->snd_wnd = TCP_WND;
             socket->pcb.tcp->snd_wnd_max = TCP_WND;
+            #endif
             break;
         }
         case MOD_NETWORK_SOCK_DGRAM: {
