@@ -60,8 +60,6 @@
   should be add to separate modules (C or Python level).
  */
 
-#define MICROPY_SOCKET_EXTRA (0)
-
 // This type must "inherit" from mp_obj_fdfile_t, i.e. matching subset of
 // fields should have the same layout.
 typedef struct _mp_obj_socket_t {
@@ -382,26 +380,6 @@ const mp_obj_type_t mp_type_socket = {
     .locals_dict = (mp_obj_dict_t*)&usocket_locals_dict,
 };
 
-#if MICROPY_SOCKET_EXTRA
-STATIC mp_obj_t mod_socket_htons(mp_obj_t arg) {
-    return MP_OBJ_NEW_SMALL_INT(htons(MP_OBJ_SMALL_INT_VALUE(arg)));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_htons_obj, mod_socket_htons);
-
-
-STATIC mp_obj_t mod_socket_gethostbyname(mp_obj_t arg) {
-    const char *s = mp_obj_str_get_str(arg);
-    struct hostent *h = gethostbyname(s);
-    if (h == NULL) {
-        // CPython: socket.herror
-        mp_raise_OSError(h_errno);
-    }
-    assert(h->h_length == 4);
-    return mp_obj_new_int(*(int*)*h->h_addr_list);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_gethostbyname_obj, mod_socket_gethostbyname);
-#endif // MICROPY_SOCKET_EXTRA
-
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
 STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {
     int family = mp_obj_get_int(family_in);
@@ -549,10 +527,6 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_inet_pton), MP_ROM_PTR(&mod_socket_inet_pton_obj) },
     { MP_ROM_QSTR(MP_QSTR_inet_ntop), MP_ROM_PTR(&mod_socket_inet_ntop_obj) },
     { MP_ROM_QSTR(MP_QSTR_sockaddr), MP_ROM_PTR(&mod_socket_sockaddr_obj) },
-#if MICROPY_SOCKET_EXTRA
-    { MP_ROM_QSTR(MP_QSTR_htons), MP_ROM_PTR(&mod_socket_htons_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gethostbyname), MP_ROM_PTR(&mod_socket_gethostbyname_obj) },
-#endif
 
 #define C(name) { MP_ROM_QSTR(MP_QSTR_ ## name), MP_ROM_INT(name) }
     C(AF_UNIX),
