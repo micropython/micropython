@@ -65,6 +65,7 @@ static volatile uint8_t usb_rx_buf_tail;
 volatile uint8_t usb_rx_count;
 
 volatile bool mp_cdc_enabled = false;
+volatile bool usb_transmitting = false;
 
 static uint8_t multi_desc_bytes[] = {
  /* Device descriptors and Configuration descriptors list. */
@@ -161,9 +162,14 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
     return false;
 }
 
-static bool write_complete(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count)
-{
-    // This is called after writed are finished.
+static bool write_complete(const uint8_t ep,
+                           const enum usb_xfer_code rc,
+                           const uint32_t count) {
+    if (rc != USB_XFER_DONE) {
+        return false; // No errors.
+    }
+    // This is called after writes are finished.
+    usb_transmitting = false;
     /* No error. */
     return false;
 }
@@ -267,18 +273,37 @@ int usb_read(void) {
     return data;
 }
 
+// TODO(tannewt): See if we can disable the internal CDC IN cache since we
+// we manage this one ourselves.
+#define CDC_BULKIN_SIZE CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKIN_MAXPKSZ
+COMPILER_ALIGNED(4) uint8_t cdc_output_buffer[CDC_BULKIN_SIZE];
+
 void usb_write(const char* buffer, uint32_t len) {
     if (!cdc_enabled()) {
         return;
     }
-    int32_t result = cdcdf_acm_write((uint8_t *)buffer, len);
-    while (result == USB_BUSY) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        result = cdcdf_acm_write((uint8_t *)buffer, len);
+    uint8_t * output_buffer;
+    uint8_t output_len;
+    while (len > 0) {
+        while (usb_transmitting) {}
+        output_buffer = (uint8_t *) buffer;
+        output_len = len;
+        // Use our own cache in two different cases:
+        //   * When we're at the end of a transmission and we'll return before
+        //     the given buffer is actually transferred to the USB device.
+        //   * When our given buffer isn't aligned on word boundaries.
+        if (output_len <= CDC_BULKIN_SIZE || ((uint32_t) buffer) % 4 != 0) {
+            output_buffer = cdc_output_buffer;
+            output_len = output_len > CDC_BULKIN_SIZE ? CDC_BULKIN_SIZE : output_len;
+            memcpy(cdc_output_buffer, buffer, output_len);
+        } else {
+            output_len = CDC_BULKIN_SIZE;
+        }
+        usb_transmitting = true;
+        cdcdf_acm_write(output_buffer, output_len);
+        buffer += output_len * sizeof(char);
+        len -= output_len;
     }
-    while (result != ERR_NONE) {}
 }
 
 bool usb_connected(void) {
