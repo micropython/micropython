@@ -152,7 +152,7 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     // Currently supports only blocking mode
     (void)self_in;
     if (!mp_obj_is_true(flag_in)) {
-        mp_raise_NotImplementedError("");
+        mp_raise_NotImplementedError(NULL);
     }
     return mp_const_none;
 }
