@@ -74,14 +74,13 @@ CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fstack-usage
-CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
+CFLAGS += -flto
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE) -L boards/
-LDFLAGS += -Wl,--gc-sections
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)

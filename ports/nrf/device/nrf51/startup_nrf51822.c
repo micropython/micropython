@@ -103,7 +103,7 @@ void SWI3_IRQHandler        (void) __attribute__ ((weak, alias("Default_Handler"
 void SWI4_IRQHandler        (void) __attribute__ ((weak, alias("Default_Handler")));
 void SWI5_IRQHandler        (void) __attribute__ ((weak, alias("Default_Handler")));
 
-const func __Vectors[] __attribute__ ((section(".isr_vector"))) = {
+const func __Vectors[] __attribute__ ((section(".isr_vector"),used)) = {
     (func)&_estack,
     Reset_Handler,
     NMI_Handler,
