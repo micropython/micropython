@@ -231,6 +231,10 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
     uint32_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
+    if (length == 0) {
+        mp_raise_ValueError("Buffer must be at least length 1");
+    }
+
     bool ok = common_hal_busio_spi_write(self, ((uint8_t*)bufinfo.buf) + start, length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
@@ -268,6 +272,10 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
     int32_t start = args[ARG_start].u_int;
     uint32_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    if (length == 0) {
+        mp_raise_ValueError("Buffer must be at least length 1");
+    }
 
     bool ok = common_hal_busio_spi_read(self, ((uint8_t*)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
     if (!ok) {

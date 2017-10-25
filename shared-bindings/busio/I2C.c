@@ -201,6 +201,10 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     int32_t start = args[ARG_start].u_int;
     uint32_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+    if (length == 0) {
+        mp_raise_ValueError("Buffer must be at least length 1");
+    }
+
     uint8_t status = common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t*)bufinfo.buf) + start, length);
     if (status != 0) {
         mp_raise_OSError(status);
@@ -249,6 +253,10 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     int32_t start = args[ARG_start].u_int;
     uint32_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    if (length == 0) {
+        mp_raise_ValueError("Buffer must be at least length 1");
+    }
 
     // do the transfer
     uint8_t status = common_hal_busio_i2c_write(self, args[ARG_address].u_int,
