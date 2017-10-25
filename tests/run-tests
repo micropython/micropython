@@ -124,7 +124,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             e = {"MICROPYPATH": os.getcwd() + ":", "LANG": "en_US.UTF-8"}
-            p = subprocess.Popen(cmdlist, env=e, stdout=subprocess.PIPE)
+            p = subprocess.Popen(cmdlist, env=e, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             output_mupy = b''
             while p.poll() is None:
                 output_mupy += p.stdout.read()
