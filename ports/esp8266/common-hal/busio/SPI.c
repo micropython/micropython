@@ -24,15 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "esp8266/ets_alt_task.h"
-#include "esp8266/hspi.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "common-hal/busio/SPI.h"
 #include "py/nlr.h"
 
 #include "eagle_soc.h"
+#include "ets_alt_task.h"
 #include "c_types.h"
 #include "gpio.h"
+#include "hspi.h"
 
 extern const mcu_pin_obj_t pin_MTMS;
 extern const mcu_pin_obj_t pin_MTCK;

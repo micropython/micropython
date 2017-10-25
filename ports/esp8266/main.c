@@ -28,8 +28,7 @@
 #include <string.h>
 
 #include "py/compile.h"
-// #include "py/frozenmod.h"
-// #include "py/runtime0.h"
+#include "py/frozenmod.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/mperrno.h"
