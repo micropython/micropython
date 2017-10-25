@@ -53,7 +53,7 @@
 //|
 //|     Return the length. This is used by (`len`)
 //|
-STATIC mp_obj_t nvm_bytearray_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t nvm_bytearray_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     nvm_bytearray_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint16_t len = common_hal_nvm_bytearray_get_length(self);
     switch (op) {

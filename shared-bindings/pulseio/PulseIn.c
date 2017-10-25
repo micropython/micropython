@@ -228,7 +228,7 @@ const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
 //|       pulses = pulseio.PulseIn(pin)
 //|       print(len(pulses))
 //|
-STATIC mp_obj_t pulsein_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
     uint16_t len = common_hal_pulseio_pulsein_get_len(self);
