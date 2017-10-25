@@ -117,12 +117,12 @@ Constants
 .. data:: usocket.SOL_*
 
    Socket option levels (an argument to `setsockopt()`). The exact
-   inventory depends on a MicroPython port.
+   inventory depends on a `MicroPython port`.
 
 .. data:: usocket.SO_*
 
    Socket options (an argument to `setsockopt()`). The exact
-   inventory depends on a MicroPython port.
+   inventory depends on a `MicroPython port`.
 
 Constants specific to WiPy:
 

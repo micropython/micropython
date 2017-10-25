@@ -27,7 +27,6 @@
 #define MICROPY_INCLUDED_PY_RUNTIME_H
 
 #include "py/mpstate.h"
-#include "py/obj.h"
 
 typedef enum {
     MP_VM_RETURN_NORMAL,
@@ -57,9 +56,9 @@ typedef struct _mp_arg_t {
     mp_arg_val_t defval;
 } mp_arg_t;
 
-// defined in objtype.c
-extern const qstr mp_unary_op_method_name[];
-extern const qstr mp_binary_op_method_name[];
+// Tables mapping operator enums to qstrs, defined in objtype.c
+extern const uint16_t mp_unary_op_method_name[];
+extern const uint16_t mp_binary_op_method_name[];
 
 void mp_init(void);
 void mp_deinit(void);
@@ -96,8 +95,8 @@ void mp_store_global(qstr qst, mp_obj_t obj);
 void mp_delete_name(qstr qst);
 void mp_delete_global(qstr qst);
 
-mp_obj_t mp_unary_op(mp_uint_t op, mp_obj_t arg);
-mp_obj_t mp_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs);
+mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg);
+mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs);
 
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_call_function_1(mp_obj_t fun, mp_obj_t arg);
@@ -181,7 +180,7 @@ void mp_native_raise(mp_obj_t o);
 #if MICROPY_WARNINGS
 void mp_warning(const char *msg, ...);
 #else
-#define mp_warning(msg, ...)
+#define mp_warning(...)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_RUNTIME_H

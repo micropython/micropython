@@ -34,8 +34,6 @@
 
 #include <string.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "pin.h"
 #include "led.h"

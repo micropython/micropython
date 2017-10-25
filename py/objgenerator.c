@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
 #include "py/runtime.h"
 #include "py/bc.h"
 #include "py/objgenerator.h"

@@ -31,10 +31,8 @@
 #include <string.h>
 #include <errno.h> // needed because mp_is_nonblocking_error uses system error codes
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "py/obj.h"
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
@@ -67,7 +65,7 @@ struct ssl_args {
 
 STATIC const mp_obj_type_t ussl_socket_type;
 
-static void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
+void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
     printf("DBG:%s:%04d: %s\n", file, line, str);
 }
 
@@ -123,8 +121,10 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_x509_crt_init(&o->cert);
     mbedtls_pk_init(&o->pkey);
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
+    #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4)
     mbedtls_debug_set_threshold(0);
+    #endif
 
     mbedtls_entropy_init(&o->entropy);
     const byte seed[] = "upy";
@@ -144,7 +144,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
+    #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
+    #endif
 
     ret = mbedtls_ssl_setup(&o->ssl, &o->conf);
     if (ret != 0) {

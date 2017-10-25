@@ -35,9 +35,9 @@
 void mp_warning(const char *msg, ...) {
     va_list args;
     va_start(args, msg);
-    mp_print_str(&mp_plat_print, "Warning: ");
-    mp_vprintf(&mp_plat_print, msg, args);
-    mp_print_str(&mp_plat_print, "\n");
+    mp_print_str(MICROPY_ERROR_PRINTER, "Warning: ");
+    mp_vprintf(MICROPY_ERROR_PRINTER, msg, args);
+    mp_print_str(MICROPY_ERROR_PRINTER, "\n");
     va_end(args);
 }
 

@@ -29,7 +29,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"

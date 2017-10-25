@@ -110,7 +110,7 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 # to build the MicroPython cross compiler
 # Currently not used, because the wrong mpy-cross may be left over from a previous build. Build by hand to make sure.
-$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/windows/fmode.c
+$(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
 # Copy all the modules and single python files to freeze to a common area, omitting top-level dirs (the repo names).
@@ -144,13 +144,13 @@ $(PROG): $(OBJ)
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
-	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
+	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)$(PROG_EXT)
 endif
-	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)
+	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)$(PROG_EXT)
 
 clean: clean-prog
 clean-prog:
-	$(RM) -f $(PROG)
+	$(RM) -f $(PROG)$(PROG_EXT)
 	$(RM) -f $(PROG).map
 
 .PHONY: clean-prog

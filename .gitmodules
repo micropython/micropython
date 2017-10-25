@@ -11,19 +11,12 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
-[submodule "freetouch2"]
-	path = atmel-samd/freetouch
-	url = https://github.com/adafruit/Adafruit_FreeTouch.git
 [submodule "tools/uf2"]
 	path = tools/uf2
 	url = https://github.com/Microsoft/uf2.git
 [submodule "atmel-samd/frozen/Adafruit_CircuitPython_NeoPixel"]
 	path = frozen/Adafruit_CircuitPython_NeoPixel
 	url = https://github.com/adafruit/Adafruit_CircuitPython_NeoPixel
-[submodule "atmel-samd/asf4"]
-	path = atmel-samd/asf4
-	url = https://github.com/adafruit/asf4.git
-	branch = circuitpython
 [submodule "frozen/Adafruit_CircuitPython_Thermistor"]
 	path = frozen/Adafruit_CircuitPython_Thermistor
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Thermistor.git
@@ -33,3 +26,7 @@
 [submodule "frozen/Adafruit_CircuitPython_BusDevice"]
 	path = frozen/Adafruit_CircuitPython_BusDevice
 	url = https://github.com/adafruit/Adafruit_CircuitPython_BusDevice.git
+[submodule "lib/stm32lib"]
+	path = lib/stm32lib
+	url = https://github.com/micropython/stm32lib
+	branch = work-F4-1.13.1+F7-1.5.0+L4-1.3.0

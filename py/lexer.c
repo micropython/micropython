@@ -28,7 +28,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/mpstate.h"
 #include "py/reader.h"
 #include "py/lexer.h"
 #include "py/runtime.h"

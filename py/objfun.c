@@ -28,10 +28,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objfun.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/bc.h"
 #include "py/stackctrl.h"

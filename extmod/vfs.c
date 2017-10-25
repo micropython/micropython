@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mperrno.h"

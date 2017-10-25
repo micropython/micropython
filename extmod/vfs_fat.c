@@ -33,7 +33,6 @@
 #endif
 
 #include <string.h>
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"

@@ -28,7 +28,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "py/nlr.h"
 #include "py/objstr.h"
 #include "py/stream.h"
 #include "py/runtime.h"
@@ -141,9 +140,6 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
         mp_uint_t last_buf_offset = 0;
         while (more_bytes > 0) {
             char *p = vstr_add_len(&vstr, more_bytes);
-            if (p == NULL) {
-                mp_raise_msg(&mp_type_MemoryError, "out of memory");
-            }
             int error;
             mp_uint_t out_sz = mp_stream_read_exactly(args[0], p, more_bytes, &error);
             if (error != 0) {
@@ -380,10 +376,6 @@ STATIC mp_obj_t stream_unbuffered_readline(size_t n_args, const mp_obj_t *args) 
 
     while (max_size == -1 || max_size-- != 0) {
         char *p = vstr_add_len(&vstr, 1);
-        if (p == NULL) {
-            mp_raise_msg(&mp_type_MemoryError, "out of memory");
-        }
-
         int error;
         mp_uint_t out_sz = stream_p->read(args[0], p, 1, &error);
         if (out_sz == MP_STREAM_ERROR) {
