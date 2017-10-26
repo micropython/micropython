@@ -105,6 +105,22 @@ Functions
       from an exception object). The use of negative values is a provisional
       detail which may change in the future.
 
+.. function:: inet_ntop(af, bin_addr)
+
+   Convert a binary network address *bin_addr* of the given address family *af*
+   to a textual representation::
+
+        >>> usocket.inet_ntop(usocket.AF_INET, b"\x7f\0\0\1")
+        '127.0.0.1'
+
+.. function:: inet_pton(af, txt_addr)
+
+   Convert a textual network address *txt_addr* of the given address family *af*
+   to a binary representation::
+
+        >>> usocket.inet_pton(usocket.AF_INET, "1.2.3.4")
+        b'\x01\x02\x03\x04'
+
 Constants
 ---------
 
