@@ -80,7 +80,7 @@ int32_t usb_msc_disk_eject(uint8_t lun) {
     fs_user_mount_t* current_mount = get_vfs(lun);
     // Return ERR_NOT_READY if not ready, otherwise ERR_NONE.
     if (current_mount == NULL) {
-        return ERR_ABORTED;
+        return ERR_NOT_FOUND;
     }
     // TODO(tannewt): Should we flush here?
     return ERR_NONE;
@@ -98,7 +98,7 @@ int32_t usb_msc_disk_is_ready(uint8_t lun) {
 
     fs_user_mount_t* current_mount = get_vfs(lun);
     if (current_mount == NULL) {
-        return ERR_ABORTED;
+        return ERR_NOT_FOUND;
     }
     return ERR_NONE;
 }
