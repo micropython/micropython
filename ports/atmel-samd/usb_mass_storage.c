@@ -77,6 +77,11 @@ int32_t usb_msc_disk_eject(uint8_t lun) {
     if (lun > 1) {
         return ERR_NOT_FOUND;
     }
+    fs_user_mount_t* current_mount = get_vfs(lun);
+    // Return ERR_NOT_READY if not ready, otherwise ERR_NONE.
+    if (current_mount == NULL) {
+        return ERR_ABORTED;
+    }
     // TODO(tannewt): Should we flush here?
     return ERR_NONE;
 }
@@ -92,11 +97,10 @@ int32_t usb_msc_disk_is_ready(uint8_t lun) {
     }
 
     fs_user_mount_t* current_mount = get_vfs(lun);
-    // Return ERR_NOT_READY if not ready, otherwise ERR_NONE.
-    if (current_mount != NULL) {
-        return ERR_NONE;
+    if (current_mount == NULL) {
+        return ERR_ABORTED;
     }
-    return ERR_NOT_READY;
+    return ERR_NONE;
 }
 
 /**
@@ -111,9 +115,12 @@ uint8_t *usb_msc_inquiry_info(uint8_t lun) {
         for (uint8_t i = 0; i < 36; i++) {
             inquiry_info[lun][i] = 0;
         }
-        inquiry_info[lun][1] = (0x1 << 7);
-        inquiry_info[lun][3] = 0x01;
-        inquiry_info[lun][4] = 31;
+        inquiry_info[lun][0] = SCSI_INQ_PQ_CONNECTED | SCSI_INQ_DT_DIR_ACCESS;
+                               // connected, direct access
+        inquiry_info[lun][1] = SCSI_INQ_RMB;     // removable medium
+        inquiry_info[lun][2] = SCSI_INQ_VER_SPC; // SBC version of SCSI primary commands
+        inquiry_info[lun][3] = SCSI_INQ_RSP_SPC2;// SPC-2 response format
+        inquiry_info[lun][4] = 31;               // 31 bytes following
         return &inquiry_info[lun][0];
     }
 }
