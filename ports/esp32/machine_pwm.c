@@ -131,6 +131,7 @@ STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,
         }
         channel = avail;
     }
+    self->channel = channel;
 
     // New PWM assignment
     self->active = 1;
@@ -148,7 +149,6 @@ STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,
                 "PWM not supported on pin %d", self->pin));
         }
         chan_gpio[channel] = self->pin;
-        self->channel = channel;
     }
 
     // Maybe change PWM timer
