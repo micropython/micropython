@@ -250,12 +250,13 @@ I2C Example
 
   from adafruit_bus_device import i2c_device
 
+  DEVICE_DEFAULT_I2C_ADDR = 0x42
+
   class Widget:
       """A generic widget."""
 
-      def __init__(self, i2c):
-          # Always on address 0x40.
-          self.i2c_device = i2c_device.I2CDevice(i2c, 0x40)
+      def __init__(self, i2c, address=DEVICE_DEFAULT_I2C_ADDR):
+          self.i2c_device = i2c_device.I2CDevice(i2c, address)
           self.buf = bytearray(1)
 
       @property
