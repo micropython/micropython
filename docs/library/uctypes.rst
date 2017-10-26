@@ -8,7 +8,7 @@ This module implements "foreign data interface" for MicroPython. The idea
 behind it is similar to CPython's ``ctypes`` modules, but the actual API is
 different, streamlined and optimized for small size. The basic idea of the
 module is to define data structure layout with about the same power as the
-C language allows, and the access it using familiar dot-syntax to reference
+C language allows, and then access it using familiar dot-syntax to reference
 sub-fields.
 
 .. seealso::
@@ -43,7 +43,7 @@ Following are encoding examples for various field types:
 
   i.e. value is a 2-tuple, first element of which is offset, and second is
   a structure descriptor dictionary (note: offsets in recursive descriptors
-  are relative to a structure it defines).
+  are relative to the structure it defines).
 
 * Arrays of primitive types::
 
@@ -86,9 +86,9 @@ Following are encoding examples for various field types:
   BF_POS and BF_LEN positions, respectively. Bitfield position is counted
   from the least significant bit, and is the number of right-most bit of a
   field (in other words, it's a number of bits a scalar needs to be shifted
-  right to extra the bitfield).
+  right to extract the bitfield).
 
-  In the example above, first UINT16 value will be extracted at offset 0
+  In the example above, first a UINT16 value will be extracted at offset 0
   (this detail may be important when accessing hardware registers, where
   particular access size and alignment are required), and then bitfield
   whose rightmost bit is least-significant bit of this UINT16, and length
@@ -99,7 +99,7 @@ Following are encoding examples for various field types:
   in particular, example above will access least-significant byte of UINT16
   in both little- and big-endian structures. But it depends on the least
   significant bit being numbered 0. Some targets may use different
-  numbering in their native ABI, but ``uctypes`` always uses normalized
+  numbering in their native ABI, but ``uctypes`` always uses the normalized
   numbering described above.
 
 Module contents
