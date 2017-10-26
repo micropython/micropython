@@ -68,7 +68,16 @@ Functions
 
 .. function:: socket(af=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP)
 
-   Create a new socket using the given address family, socket type and protocol number.
+   Create a new socket using the given address family, socket type and
+   protocol number. Note that specifying *proto* in most cases is not
+   required (and not recommended, as some MicroPython ports may omit
+   ``IPPROTO_*`` constants). Instead, *type* argument will select needed
+   protocol automatically::
+
+        # Create STREAM TCP socket
+        socket(AF_INET, SOCK_STREAM)
+        # Create DGRAM UDP socket
+        socket(AF_INET, SOCK_DGRAM)
 
 .. function:: getaddrinfo(host, port)
 
@@ -80,8 +89,8 @@ Functions
 
    The following example shows how to connect to a given url::
 
-      s = socket.socket()
-      s.connect(socket.getaddrinfo('www.micropython.org', 80)[0][-1])
+      s = usocket.socket()
+      s.connect(usocket.getaddrinfo('www.micropython.org', 80)[0][-1])
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -102,7 +111,7 @@ Constants
 .. data:: AF_INET
           AF_INET6
 
-   Address family types. Availability depends on a particular board.
+   Address family types. Availability depends on a particular `MicroPython port`.
 
 .. data:: SOCK_STREAM
           SOCK_DGRAM
@@ -112,7 +121,11 @@ Constants
 .. data:: IPPROTO_UDP
           IPPROTO_TCP
 
-   IP protocol numbers.
+   IP protocol numbers. Availability depends on a particular `MicroPython port`.
+   Note that you don't need to specify these in a call to `usocket.socket()`,
+   because `SOCK_STREAM` socket type automatically selects `IPPROTO_TCP`, and
+   `SOCK_DGRAM` - `IPPROTO_UDP`. Thus, the only real use of these constants
+   is as an argument to `setsockopt()`.
 
 .. data:: usocket.SOL_*
 
@@ -281,7 +294,7 @@ Methods
 
    Return value: number of bytes written.
 
-.. exception:: socket.error
+.. exception:: usocket.error
 
    MicroPython does NOT have this exception.
 
