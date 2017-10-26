@@ -175,9 +175,11 @@ static bool write_complete(const uint8_t ep,
 }
 
 volatile bool reset_on_disconnect = false;
+volatile bool cdc_connected = false;
 
 static bool usb_device_cb_state_c(usb_cdc_control_signal_t state)
 {
+    cdc_connected = state.rs232.DTR;
     if (state.rs232.DTR) {
     } else if (!state.rs232.DTR && reset_on_disconnect) {
         reset_to_bootloader();
@@ -280,6 +282,10 @@ COMPILER_ALIGNED(4) uint8_t cdc_output_buffer[CDC_BULKIN_SIZE];
 
 void usb_write(const char* buffer, uint32_t len) {
     if (!cdc_enabled()) {
+        return;
+    }
+    if (!cdc_connected) {
+        // TODO(tannewt): Should we write to a file instead?
         return;
     }
     uint8_t * output_buffer;
