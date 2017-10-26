@@ -31,11 +31,9 @@
 #include <assert.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/lexer.h"
 #include "py/parse.h"
 #include "py/parsenum.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/objint.h"
 #include "py/objstr.h"

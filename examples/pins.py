@@ -1,5 +1,5 @@
 # Print a nice list of pins, their current settings, and available afs.
-# Requires pins_af.py from stmhal/build-PYBV10/ directory.
+# Requires pins_af.py from ports/stm32/build-PYBV10/ directory.
 
 import pyb
 import pins_af

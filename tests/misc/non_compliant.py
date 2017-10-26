@@ -39,18 +39,6 @@ try:
 except NotImplementedError:
     print('NotImplementedError')
 
-# should raise type error
-try:
-    print(set('12') >= '1')
-except TypeError:
-    print('TypeError')
-
-# should raise type error
-try:
-    print(set('12') <= '123')
-except TypeError:
-    print('TypeError')
-
 # uPy raises TypeError, shold be ValueError
 try:
     '%c' % b'\x01\x02'

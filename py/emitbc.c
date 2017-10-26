@@ -550,7 +550,7 @@ void mp_emit_bc_load_const_obj(emit_t *emit, mp_obj_t obj) {
 void mp_emit_bc_load_null(emit_t *emit) {
     emit_bc_pre(emit, 1);
     emit_write_bytecode_byte(emit, MP_BC_LOAD_NULL);
-};
+}
 
 void mp_emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
     (void)qst;

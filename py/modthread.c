@@ -192,10 +192,10 @@ STATIC void *thread_entry(void *args_in) {
             // swallow exception silently
         } else {
             // print exception out
-            mp_printf(&mp_plat_print, "Unhandled exception in thread started by ");
-            mp_obj_print_helper(&mp_plat_print, args->fun, PRINT_REPR);
-            mp_printf(&mp_plat_print, "\n");
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(exc));
+            mp_printf(MICROPY_ERROR_PRINTER, "Unhandled exception in thread started by ");
+            mp_obj_print_helper(MICROPY_ERROR_PRINTER, args->fun, PRINT_REPR);
+            mp_printf(MICROPY_ERROR_PRINTER, "\n");
+            mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(exc));
         }
     }
 

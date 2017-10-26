@@ -9,7 +9,7 @@
 # executing because it does not exist in old revisions of the repository.
 
 # check that we are in the root directory of the repository
-if [ ! -d py -o ! -d unix -o ! -d stmhal ]; then
+if [ ! -d py -o ! -d ports/unix -o ! -d ports/stm32 ]; then
     echo "script must be run from root of the repository"
     exit 1
 fi
@@ -23,18 +23,18 @@ AWK=awk
 MAKE="make -j2"
 
 # these are the binaries that are built; some have 2 or 3 depending on version
-bin_unix=unix/micropython
-bin_stmhal=stmhal/build-PYBV10/firmware.elf
-bin_barearm_1=bare-arm/build/flash.elf
-bin_barearm_2=bare-arm/build/firmware.elf
-bin_minimal=minimal/build/firmware.elf
-bin_cc3200_1=cc3200/build/LAUNCHXL/application.axf
-bin_cc3200_2=cc3200/build/LAUNCHXL/release/application.axf
-bin_cc3200_3=cc3200/build/WIPY/release/application.axf
+bin_unix=ports/unix/micropython
+bin_stm32=ports/stm32/build-PYBV10/firmware.elf
+bin_barearm_1=ports/bare-arm/build/flash.elf
+bin_barearm_2=ports/bare-arm/build/firmware.elf
+bin_minimal=ports/minimal/build/firmware.elf
+bin_cc3200_1=ports/cc3200/build/LAUNCHXL/application.axf
+bin_cc3200_2=ports/cc3200/build/LAUNCHXL/release/application.axf
+bin_cc3200_3=ports/cc3200/build/WIPY/release/application.axf
 
 # start at zero size; if build fails reuse previous valid size
 size_unix="0"
-size_stmhal="0"
+size_stm32="0"
 size_barearm="0"
 size_minimal="0"
 size_cc3200="0"
@@ -86,7 +86,7 @@ function get_size3() {
 if [ -r $output ]; then
     last_rev=$(tail -n1 $output | $AWK '{print $1}')
 else
-    echo "# hash size_unix size_stmhal size_barearm size_minimal size_cc3200 pystones" > $output
+    echo "# hash size_unix size_stm32 size_barearm size_minimal size_cc3200 pystones" > $output
     last_rev="v1.0"
 fi
 
@@ -132,37 +132,37 @@ EOF
     #### unix ####
 
     $RM $bin_unix
-    $MAKE -C unix CFLAGS_EXTRA=-DNDEBUG
+    $MAKE -C ports/unix CFLAGS_EXTRA=-DNDEBUG
     size_unix=$(get_size $size_unix $bin_unix)
 
     # undo patch if it was applied
     git checkout unix/modtime.c
 
-    #### stmhal ####
+    #### stm32 ####
 
-    $RM $bin_stmhal
-    $MAKE -C stmhal board=PYBV10
-    size_stmhal=$(get_size $size_stmhal $bin_stmhal)
+    $RM $bin_stm32
+    $MAKE -C ports/stm32 board=PYBV10
+    size_stm32=$(get_size $size_stm32 $bin_stm32)
 
     #### bare-arm ####
 
     $RM $bin_barearm_1 $bin_barearm_2
-    $MAKE -C bare-arm
+    $MAKE -C ports/bare-arm
     size_barearm=$(get_size2 $size_barearm $bin_barearm_1 $bin_barearm_2)
 
     #### minimal ####
 
-    if [ -r minimal/Makefile ]; then
+    if [ -r ports/minimal/Makefile ]; then
         $RM $bin_minimal
-        $MAKE -C minimal CROSS=1
+        $MAKE -C ports/minimal CROSS=1
         size_minimal=$(get_size $size_minimal $bin_minimal)
     fi
 
     #### cc3200 ####
 
-    if [ -r cc3200/Makefile ]; then
+    if [ -r ports/cc3200/Makefile ]; then
         $RM $bin_cc3200_1 $bin_cc3200_2 $bin_cc3200_3
-        $MAKE -C cc3200 BTARGET=application
+        $MAKE -C ports/cc3200 BTARGET=application
         size_cc3200=$(get_size3 $size_cc3200 $bin_cc3200_1 $bin_cc3200_2 $bin_cc3200_3)
     fi
 
@@ -178,7 +178,7 @@ EOF
 
     #### output data for this commit ####
 
-    echo "$hash $size_unix $size_stmhal $size_barearm $size_minimal $size_cc3200 $pystones" >> $output
+    echo "$hash $size_unix $size_stm32 $size_barearm $size_minimal $size_cc3200 $pystones" >> $output
 
 done
 

@@ -27,7 +27,6 @@
 #include <string.h>
 #include "py/mpconfig.h"
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/objarray.h"
@@ -68,7 +67,7 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
     }
 }
 
-STATIC mp_obj_t mp_uos_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         if (MP_STATE_PORT(term_obj) == MP_OBJ_NULL) {
             return mp_const_none;

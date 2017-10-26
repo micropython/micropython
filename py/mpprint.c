@@ -485,14 +485,17 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 's':
             {
                 const char *str = va_arg(args, const char*);
-                if (str) {
-                    if (prec < 0) {
-                        prec = strlen(str);
-                    }
-                    chrs += mp_print_strn(print, str, prec, flags, fill, width);
-                } else {
+                #ifndef NDEBUG
+                // With debugging enabled, catch printing of null string pointers
+                if (prec != 0 && str == NULL) {
                     chrs += mp_print_strn(print, "(null)", 6, flags, fill, width);
+                    break;
                 }
+                #endif
+                if (prec < 0) {
+                    prec = strlen(str);
+                }
+                chrs += mp_print_strn(print, str, prec, flags, fill, width);
                 break;
             }
             case 'u':

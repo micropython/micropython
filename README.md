@@ -177,24 +177,24 @@ CircuitPython:
 Ports include the code unique to a microcontroller line and also
 variations based on the board.
 
-* `atmel-samd` Support for SAMD21 based boards such as [Arduino Zero][],
+* `ports/atmel-samd` Support for SAMD21 based boards such as [Arduino Zero][],
   [Adafruit Feather M0 Basic][], and [Adafruit Feather M0 Bluefruit LE][].
-* `bare-arm` A bare minimum version of MicroPython for ARM MCUs.
-* `cc3200` Support for boards based [CC3200](http://www.ti.com/product/CC3200)
+* `ports/bare-arm` A bare minimum version of MicroPython for ARM MCUs.
+* `ports/cc3200` Support for boards based [CC3200](http://www.ti.com/product/CC3200)
   from TI such as the [WiPy 1.0](https://www.pycom.io/solutions/py-boards/wipy1/).
-* `esp8266` Support for boards based on ESP8266 WiFi modules such as the
+* `ports/esp8266` Support for boards based on ESP8266 WiFi modules such as the
   [Adafruit Feather HUZZAH][].
-* `minimal` A minimal MicroPython port. Start with this if you want
+* `ports/minimal` A minimal MicroPython port. Start with this if you want
   to port MicroPython to another microcontroller.
-* `pic16bit` Support for 16-bit PIC microcontrollers.
-* `qemu-arm` Support for ARM emulation through [QEMU](https://qemu.org).
-* `stmhal` Support for boards based on STM32 microcontrollers including
+* `ports/pic16bit` Support for 16-bit PIC microcontrollers.
+* `ports/qemu-arm` Support for ARM emulation through [QEMU](https://qemu.org).
+* `ports/stm32` Support for boards based on STM32 microcontrollers including
   the MicroPython flagship [PyBoard](https://store.micropython.org/store/#/products/PYBv1_1).
-* `teensy` Support for the Teensy line of boards such as the
+* `ports/teensy` Support for the Teensy line of boards such as the
   [Teensy 3.1](https://www.pjrc.com/teensy/teensy31.html).
-* `unix` Support for UNIX.
-* `windows` Support for [Windows](https://www.microsoft.com/en-us/windows/).
-* `zephyr` Support for [Zephyr](https://www.zephyrproject.org/), a
+* `ports/unix` Support for UNIX.
+* `ports/windows` Support for [Windows](https://www.microsoft.com/en-us/windows/).
+* `ports/zephyr` Support for [Zephyr](https://www.zephyrproject.org/), a
   real-time operating system by the Linux Foundation.
 
 CircuitPython only maintains the `atmel-samd` and `esp8266` ports. The

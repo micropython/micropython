@@ -28,11 +28,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/unicode.h"
 #include "py/objstr.h"
 #include "py/objlist.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
@@ -161,6 +159,11 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
+                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+                if (!utf8_check(str_data, str_len)) {
+                    mp_raise_msg(&mp_type_UnicodeError, NULL);
+                }
+                #endif
                 mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
@@ -168,6 +171,11 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
+                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+                if (!utf8_check(bufinfo.buf, bufinfo.len)) {
+                    mp_raise_msg(&mp_type_UnicodeError, NULL);
+                }
+                #endif
                 return mp_obj_new_str(bufinfo.buf, bufinfo.len, false);
             }
     }
@@ -280,7 +288,7 @@ const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle,
 // Note: this function is used to check if an object is a str or bytes, which
 // works because both those types use it as their binary_op method.  Revisit
 // MP_OBJ_IS_STR_OR_BYTES if this fact changes.
-mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // check for modulo
     if (op == MP_BINARY_OP_MODULO) {
         mp_obj_t *args = &rhs_in;
@@ -380,9 +388,10 @@ mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
         case MP_BINARY_OP_MORE:
         case MP_BINARY_OP_MORE_EQUAL:
             return mp_obj_new_bool(mp_seq_cmp_bytes(op, lhs_data, lhs_len, rhs_data, rhs_len));
-    }
 
-    return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
 }
 
 #if !MICROPY_PY_BUILTINS_STR_UNICODE
@@ -726,7 +735,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_rindex_obj, 2, 4, str_rindex);
 STATIC mp_obj_t str_startswith(size_t n_args, const mp_obj_t *args) {
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
     GET_STR_DATA_LEN(args[0], str, str_len);
-    GET_STR_DATA_LEN(args[1], prefix, prefix_len);
+    size_t prefix_len;
+    const char *prefix = mp_obj_str_get_data(args[1], &prefix_len);
     const byte *start = str;
     if (n_args > 2) {
         start = str_index_to_ptr(self_type, str, str_len, args[2], true);
@@ -740,7 +750,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_startswith_obj, 2, 3, str_startswith);
 
 STATIC mp_obj_t str_endswith(size_t n_args, const mp_obj_t *args) {
     GET_STR_DATA_LEN(args[0], str, str_len);
-    GET_STR_DATA_LEN(args[1], suffix, suffix_len);
+    size_t suffix_len;
+    const char *suffix = mp_obj_str_get_data(args[1], &suffix_len);
     if (n_args > 2) {
         mp_raise_NotImplementedError("start/end indices");
     }
@@ -764,7 +775,7 @@ STATIC mp_obj_t str_uni_strip(int type, size_t n_args, const mp_obj_t *args) {
 
     if (n_args == 1) {
         chars_to_del = whitespace;
-        chars_to_del_len = sizeof(whitespace);
+        chars_to_del_len = sizeof(whitespace) - 1;
     } else {
         if (mp_obj_get_type(args[1]) != self_type) {
             bad_implicit_conversion(args[1]);
@@ -1961,8 +1972,8 @@ const mp_obj_type_t mp_type_bytes = {
     .locals_dict = (mp_obj_dict_t*)&str8_locals_dict,
 };
 
-// the zero-length bytes
-const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, NULL};
+// The zero-length bytes object, with data that includes a null-terminating byte
+const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, (const byte*)""};
 
 // Create a str/bytes object using the given data.  New memory is allocated and
 // the data is copied across.

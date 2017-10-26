@@ -18,7 +18,8 @@ sts
 
 test
 tes
-larg
+RuntimeError: 
+RuntimeError: 
 # repl
 ame__
 
@@ -38,7 +39,7 @@ ementation
 0
 0
 # runtime utils
-TypeError: can't convert str to int
+TypeError: unsupported type for : 'str'
 TypeError: unsupported types for : 'str', 'str'
 Warning: test
 # format float
