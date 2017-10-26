@@ -37,6 +37,7 @@ void usb_msc_background(void);
 
 // Callbacks that hook into ASF4's USB stack.
 int32_t usb_msc_disk_eject(uint8_t lun);
+int32_t usb_msc_disk_is_writable(uint8_t lun);
 int32_t usb_msc_disk_is_ready(uint8_t lun);
 int32_t usb_msc_new_read(uint8_t lun, uint32_t addr, uint32_t nblocks);
 int32_t usb_msc_new_write(uint8_t lun, uint32_t addr, uint32_t nblocks);

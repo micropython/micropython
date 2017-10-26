@@ -73,8 +73,6 @@ BASE_CFLAGS = \
 	-Wcast-align \
 	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
-	-DCONF_USB_COMPOSITE_IDPRODUCT=$(USB_PID) \
-	-DCONF_USB_COMPOSITE_IDVENDER=$(USB_VID) \
 	-ffunction-sections \
 	-fdata-sections \
 	-fshort-enums \
@@ -233,6 +231,7 @@ SRC_C = \
 	lib/utils/sys_stdio_mphal.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
+	$(BUILD)/autogen_usb_descriptor.c \
 	# freetouch/adafruit_ptc.c
 
 # Choose which flash filesystem impl to use.
@@ -358,6 +357,14 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
 	python2 $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
+
+$(BUILD)/autogen_usb_descriptor.c: tools/gen_usb_descriptor.py Makefile
+	python3 tools/gen_usb_descriptor.py \
+		--manufacturer $(USB_MANUFACTURER)\
+		--product $(USB_PRODUCT)\
+		--vid $(USB_VID)\
+		--pid $(USB_PID)\
+		$@
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

@@ -29,25 +29,33 @@
 #include "supervisor/serial.h"
 
 #include "usb.h"
+#include "tools/autogen_usb_descriptor.h"
 
-// Serial number as hex characters.
-// char serial_number[USB_DEVICE_GET_SERIAL_NAME_LENGTH];
-// void load_serial_number(void) {
-//     char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
-//         'B', 'C', 'D', 'E', 'F'};
-//     uint32_t* addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
-//                               (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
-//     for (int i = 0; i < 4; i++) {
-//         for (int j = 0; j < 8; j++) {
-//             uint8_t nibble = (*(addresses[i]) >> j * 4) & 0xf;
-//             serial_number[i * 8 + j] = nibble_to_hex[nibble];
-//         }
-//     }
-// }
-
-// SAMD51 addresses: 0x008061FC, 0x00806010, 0x00806014, 0x00806018
+// Serial number as hex characters. This writes directly to the USB
+// descriptor.
+void load_serial_number(void) {
+    char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                              'A', 'B', 'C', 'D', 'E', 'F'};
+    #ifdef SAMD21
+    uint32_t* addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
+                              (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
+    #endif
+    #ifdef SAMD51
+    uint32_t* addresses[4] = {(uint32_t *) 0x008061FC, (uint32_t *) 0x00806010,
+                              (uint32_t *) 0x00806014, (uint32_t *) 0x00806018};
+    #endif
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 8; j++) {
+            uint8_t nibble = (*(addresses[i]) >> j * 4) & 0xf;
+            // Strings are UTF-16-LE encoded.
+            serial_number[i * 16 + j * 2] = nibble_to_hex[nibble];
+            serial_number[i * 16 + j * 2 + 1] = 0;
+        }
+    }
+}
 
 void serial_init(void) {
+    load_serial_number();
     init_usb();
 }
 

@@ -87,6 +87,28 @@ int32_t usb_msc_disk_eject(uint8_t lun) {
 }
 
 /**
+ * \brief Inquiry whether Disk is writable. ERR_DENIED if it is not writable.
+ *     ERR_NONE if it is. ERR_NOT_FOUND if its missing.
+ * \param[in] lun logic unit number
+ * \return Operation status.
+ */
+int32_t usb_msc_disk_is_writable(uint8_t lun) {
+    if (lun > 1) {
+        return ERR_NOT_FOUND;
+    }
+
+    fs_user_mount_t* vfs = get_vfs(lun);
+    if (vfs == NULL) {
+        return ERR_NOT_FOUND;
+    }
+    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
+        (vfs->flags & FSUSER_USB_WRITABLE) == 0) {
+        return ERR_DENIED;
+    }
+    return ERR_NONE;
+}
+
+/**
  * \brief Inquiry whether Disk is ready
  * \param[in] lun logic unit number
  * \return Operation status.
@@ -178,7 +200,7 @@ COMPILER_ALIGNED(4) uint8_t sector_buffer[512];
  */
 int32_t usb_msc_new_read(uint8_t lun, uint32_t addr, uint32_t nblocks) {
     if (lun > 1) {
-        return ERR_DENIED;
+        return ERR_NOT_FOUND;
     }
 
     // Store transfer info so we can service it in the "background".
@@ -199,13 +221,16 @@ int32_t usb_msc_new_read(uint8_t lun, uint32_t addr, uint32_t nblocks) {
  */
 int32_t usb_msc_new_write(uint8_t lun, uint32_t addr, uint32_t nblocks) {
     if (lun > 1) {
-        return ERR_DENIED;
+        return ERR_NOT_FOUND;
     }
 
     fs_user_mount_t * vfs = get_vfs(lun);
     // This is used to determine the writeability of the disk from USB.
-    if (vfs == NULL || vfs->writeblocks[0] == MP_OBJ_NULL /*||
-        (vfs->flags & FSUSER_USB_WRITEABLE) == 0*/) {
+    if (vfs == NULL) {
+        return ERR_NOT_FOUND;
+    }
+    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
+        (vfs->flags & FSUSER_USB_WRITABLE) == 0) {
         return ERR_DENIED;
     }
 

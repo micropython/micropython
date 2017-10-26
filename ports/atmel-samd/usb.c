@@ -44,6 +44,7 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 
 #include "lib/utils/interrupt_char.h"
+#include "tools/autogen_usb_descriptor.h"
 #include "reset.h"
 #include "usb_mass_storage.h"
 
@@ -66,13 +67,6 @@ volatile uint8_t usb_rx_count = 0;
 
 volatile bool mp_cdc_enabled = false;
 volatile bool usb_transmitting = false;
-
-static uint8_t multi_desc_bytes[] = {
- /* Device descriptors and Configuration descriptors list. */
- COMPOSITE_DESCES_LS_FS,
-};
-
-static struct usbd_descriptors multi_desc = {multi_desc_bytes, multi_desc_bytes + sizeof(multi_desc_bytes)};
 
 /** Ctrl endpoint buffer */
 COMPILER_ALIGNED(4) static uint8_t ctrl_buffer[64];
@@ -221,8 +215,10 @@ void init_usb(void) {
     mscdf_register_callback(MSCDF_CB_EJECT_DISK, (FUNC_PTR)usb_msc_disk_eject);
     mscdf_register_callback(MSCDF_CB_TEST_DISK_READY, (FUNC_PTR)usb_msc_disk_is_ready);
     mscdf_register_callback(MSCDF_CB_XFER_BLOCKS_DONE, (FUNC_PTR)usb_msc_xfer_done);
+    mscdf_register_callback(MSCDF_CB_IS_WRITABLE, (FUNC_PTR)usb_msc_disk_is_writable);
 
-    usbdc_start(&multi_desc);
+    usbdc_start(&descriptor_bounds);
+
     usbdc_attach();
 }
 
