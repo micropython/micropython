@@ -765,16 +765,24 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
 #endif
 
-// Whether to support complete set of special methods
-// for user classes, or only the most used ones. "Reverse"
-// methods are controlled by MICROPY_PY_REVERSE_SPECIAL_METHODS
-// below.
+// Whether to support complete set of special methods for user
+// classes, or only the most used ones. "Inplace" methods are
+// controlled by MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS below.
+// "Reverse" methods are controlled by
+// MICROPY_PY_REVERSE_SPECIAL_METHODS below.
 #ifndef MICROPY_PY_ALL_SPECIAL_METHODS
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
 #endif
 
-// Whether to support reverse arithmetic operarions methods
-// (__radd__, etc.)
+// Whether to support all inplace arithmetic operarion methods
+// (__imul__, etc.)
+#ifndef MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
+#define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (0)
+#endif
+
+// Whether to support reverse arithmetic operarion methods
+// (__radd__, etc.). Additionally gated by
+// MICROPY_PY_ALL_SPECIAL_METHODS.
 #ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
 #endif

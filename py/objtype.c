@@ -422,11 +422,11 @@ const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
     // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
     [MP_BINARY_OP_IN] = MP_QSTR___contains__,
 
-    #if MICROPY_PY_ALL_SPECIAL_METHODS
     // All inplace methods are optional, and normal methods will be used
     // as a fallback.
     [MP_BINARY_OP_INPLACE_ADD] = MP_QSTR___iadd__,
     [MP_BINARY_OP_INPLACE_SUBTRACT] = MP_QSTR___isub__,
+    #if MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
     [MP_BINARY_OP_INPLACE_MULTIPLY] = MP_QSTR___imul__,
     [MP_BINARY_OP_INPLACE_FLOOR_DIVIDE] = MP_QSTR___ifloordiv__,
     [MP_BINARY_OP_INPLACE_TRUE_DIVIDE] = MP_QSTR___itruediv__,
