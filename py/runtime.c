@@ -1043,7 +1043,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     dest[1] = MP_OBJ_NULL;
 
     // get the type
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // look for built-in names
     if (0) {
@@ -1061,14 +1061,22 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         // this type can do its own load, so call it
         type->attr(obj, attr, dest);
 
-    } else if (type->locals_dict != NULL) {
-        // generic method lookup
-        // this is a lookup in the object (ie not class or type)
-        assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
-        mp_map_t *locals_map = &type->locals_dict->map;
-        mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
-        if (elem != NULL) {
-            mp_convert_member_lookup(obj, type, elem->value, dest);
+    } else {
+        while (type->locals_dict != NULL) {
+            // generic method lookup
+            // this is a lookup in the object (ie not class or type)
+            assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
+            mp_map_t *locals_map = &type->locals_dict->map;
+            mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
+            if (elem != NULL) {
+                mp_convert_member_lookup(obj, type, elem->value, dest);
+                break;
+            }
+            if (type->parent == NULL) {
+                break;
+            }
+            // search parents
+            type = type->parent;
         }
     }
 }
