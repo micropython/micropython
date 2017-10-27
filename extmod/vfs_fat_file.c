@@ -220,13 +220,7 @@ STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, size
 // TODO gc hook to close the file if not already closed
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
@@ -251,6 +245,7 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &fileio_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 #endif
@@ -270,6 +265,7 @@ const mp_obj_type_t mp_type_vfs_fat_textio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &textio_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 

@@ -197,12 +197,7 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 #if MICROPY_PY_USSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
 #endif
@@ -224,6 +219,7 @@ STATIC const mp_obj_type_t ussl_socket_type = {
     .getiter = NULL,
     .iternext = NULL,
     .protocol = &ussl_socket_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (void*)&ussl_socket_locals_dict,
 };
 

@@ -214,15 +214,9 @@ STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fileno), MP_ROM_PTR(&fdfile_fileno_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&fdfile___exit___obj) },
 };
@@ -244,6 +238,7 @@ const mp_obj_type_t mp_type_fileio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &fileio_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 #endif
@@ -263,6 +258,7 @@ const mp_obj_type_t mp_type_textio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &textio_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
 };
 

@@ -223,13 +223,8 @@ STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, s
 }
 
 STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stringio___exit___obj) },
@@ -258,6 +253,7 @@ const mp_obj_type_t mp_type_stringio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &stringio_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
 };
 
@@ -270,6 +266,7 @@ const mp_obj_type_t mp_type_bytesio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &bytesio_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (mp_obj_dict_t*)&stringio_locals_dict,
 };
 #endif

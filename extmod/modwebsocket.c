@@ -276,12 +276,7 @@ STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t 
 }
 
 STATIC const mp_rom_map_elem_t websocket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
 
@@ -296,6 +291,7 @@ STATIC const mp_obj_type_t websocket_type = {
     .name = MP_QSTR_websocket,
     .make_new = websocket_make_new,
     .protocol = &websocket_stream_p,
+    .parent = &mp_type_base_stream,
     .locals_dict = (void*)&websocket_locals_dict,
 };
 
