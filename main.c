@@ -127,6 +127,7 @@ bool start_mp(safe_mode_t safe_mode) {
 
     pyexec_result_t result;
     bool found_main = false;
+
     if (safe_mode != NO_SAFE_MODE) {
         serial_write(MSG_SAFE_MODE_NO_MAIN);
     } else {
