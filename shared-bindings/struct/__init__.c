@@ -54,10 +54,10 @@
 //| *s*, *P*, *f*, *d* (the latter 2 depending on the floating-point support).
 
 
- //| .. function:: calcsize(fmt)
- //|
- //|   Return the number of bytes needed to store the given fmt.
- //|
+//| .. function:: calcsize(fmt)
+//|
+//|   Return the number of bytes needed to store the given fmt.
+//|
 
 STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 
