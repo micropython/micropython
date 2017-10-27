@@ -37,5 +37,6 @@ int usb_read(void);
 void usb_write(const char* buffer, uint32_t len);
 bool usb_bytes_available(void);
 bool usb_connected(void);
+void usb_cdc_background(void);
 
 #endif  // __MICROPY_INCLUDED_ATMEL_SAMD_USB_H__
