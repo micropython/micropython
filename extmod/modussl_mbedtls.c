@@ -111,7 +111,11 @@ int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
+#if MICROPY_PY_USSL_FINALISER
+    mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
+#else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
+#endif
     o->base.type = &ussl_socket_type;
 
     int ret;
@@ -272,6 +276,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+#if MICROPY_PY_USSL_FINALISER
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
 };
 
