@@ -56,13 +56,13 @@
 static uint8_t usb_rx_buf[USB_RX_BUF_SIZE];
 
 // Receive buffer head
-static volatile uint8_t usb_rx_buf_head;
+static volatile uint8_t usb_rx_buf_head = 0;
 
 // Receive buffer tail
-static volatile uint8_t usb_rx_buf_tail;
+static volatile uint8_t usb_rx_buf_tail = 0;
 
 // Number of bytes in receive buffer
-volatile uint8_t usb_rx_count;
+volatile uint8_t usb_rx_count = 0;
 
 volatile bool mp_cdc_enabled = false;
 volatile bool usb_transmitting = false;
@@ -133,8 +133,11 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
         uint8_t c = cdc_packet_buffer[i];
         if (c == mp_interrupt_char) {
             mp_keyboard_interrupt();
-            // Don't put the interrupt into the buffer, just continue.
-            continue;
+            // If interrupted, flush all the input.
+            usb_rx_count = 0;
+            usb_rx_buf_head = 0;
+            usb_rx_buf_tail = 0;
+            break;
         } else {
             // The count of characters present in receive buffer is
             // incremented.
@@ -144,7 +147,7 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
             if (usb_rx_buf_tail == USB_RX_BUF_SIZE) {
                 // Reached the end of buffer, revert back to beginning of
                 // buffer.
-                usb_rx_buf_tail = 0x00;
+                usb_rx_buf_tail = 0;
             }
         }
     }
@@ -219,8 +222,7 @@ void init_usb(void) {
     mscdf_register_callback(MSCDF_CB_TEST_DISK_READY, (FUNC_PTR)usb_msc_disk_is_ready);
     mscdf_register_callback(MSCDF_CB_XFER_BLOCKS_DONE, (FUNC_PTR)usb_msc_xfer_done);
 
-    int32_t result = usbdc_start(&multi_desc);
-    while (result != ERR_NONE) {}
+    usbdc_start(&multi_desc);
     usbdc_attach();
 }
 
@@ -314,4 +316,13 @@ void usb_write(const char* buffer, uint32_t len) {
 
 bool usb_connected(void) {
     return cdc_enabled();
+}
+
+// Poll for input if keyboard interrupts are enabled,
+// so that we can check for the interrupt char. read_complete() does the checking.
+void usb_cdc_background() {
+    //
+    if (mp_interrupt_char != -1 && cdc_enabled() && !pending_read) {
+        start_read();
+    }
 }

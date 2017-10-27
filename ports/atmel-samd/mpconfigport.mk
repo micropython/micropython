@@ -3,5 +3,5 @@
 # This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=none
 
-INTERNAL_LIBM = (1)
+INTERNAL_LIBM = 1
 

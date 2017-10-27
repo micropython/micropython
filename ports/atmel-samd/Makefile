@@ -238,10 +238,10 @@ SRC_C = \
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
 # But that might not be true in the future.)
-ifdef INTERNAL_FLASH_FILESYSTEM
+ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 SRC_C += internal_flash.c
 endif
-ifdef SPI_FLASH_FILESYSTEM
+ifeq ($(SPI_FLASH_FILESYSTEM),1)
 SRC_C += spi_flash.c
 endif
 
@@ -278,7 +278,7 @@ SRC_COMMON_HAL = \
 	usb_hid/__init__.c \
 	usb_hid/Device.c
 
-ifdef INTERNAL_LIBM
+ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = $(addprefix lib/,\
 	libm/math.c \
 	libm/fmodf.c \
@@ -338,7 +338,7 @@ OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASF:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
-ifdef INTERNAL_LIBM
+ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 
