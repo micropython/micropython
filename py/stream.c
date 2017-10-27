@@ -494,6 +494,24 @@ STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj, 2, 3, stream_ioctl);
 
+#if MICROPY_PY_IO
+STATIC const mp_rom_map_elem_t base_stream_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(base_stream_locals_dict, base_stream_locals_dict_table);
+
+const mp_obj_type_t mp_type_base_stream = {
+    { &mp_type_type },
+    .name = MP_QSTR_,
+    .locals_dict = (mp_obj_dict_t*)&base_stream_locals_dict,
+};
+#endif
+
 #if MICROPY_STREAMS_POSIX_API
 /*
  * POSIX-like functions

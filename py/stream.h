@@ -73,6 +73,8 @@ typedef struct _mp_stream_p_t {
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
 } mp_stream_p_t;
 
+extern const mp_obj_type_t mp_type_base_stream;
+
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj);
