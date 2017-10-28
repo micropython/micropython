@@ -107,7 +107,7 @@ struct class_lookup_data {
     bool is_type;
 };
 
-STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_type_t *type) {
+STATIC void mp_obj_class_lookup_(struct class_lookup_data  *lookup, const mp_obj_type_t *type) {
     assert(lookup->dest[0] == MP_OBJ_NULL);
     assert(lookup->dest[1] == MP_OBJ_NULL);
     for (;;) {
@@ -183,7 +183,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                     // Not a "real" type
                     continue;
                 }
-                mp_obj_class_lookup(lookup, bt);
+                mp_obj_class_lookup_(lookup, bt);
                 if (lookup->dest[0] != MP_OBJ_NULL) {
                     return;
                 }
@@ -198,6 +198,24 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
         if (type == &mp_type_object) {
             // Not a "real" type
             return;
+        }
+    }
+}
+
+STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_type_t *type) {
+    DEBUG_printf("looking up %s starting in %s\n", qstr_str(lookup->attr), qstr_str(type->name));
+
+    mp_obj_class_lookup_(lookup, type);
+    if (lookup->dest[0] != MP_OBJ_NULL) {
+        return;
+    }
+
+    // If we didn't find anything before, and lookup __new__ or __init__ purely
+    // by name, lookup in 'object', which is base class for all user classes.
+    if (lookup->meth_offset == 0) {
+        if (lookup->attr == MP_QSTR___new__ /*|| lookup->attr == MP_QSTR___init__*/) {
+            DEBUG_printf("Fallback lookup in object\n");
+            mp_obj_class_lookup_(lookup, &mp_type_object);
         }
     }
 }
