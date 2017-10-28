@@ -110,6 +110,18 @@ the firmware (note the ``-fm dio`` option)::
 
     esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
 
+.. warning::
+    As of **MicroPython 1.9.2**, using ``--flash_size=detect`` with boards with a flash size 
+    of 8MB or more will result in "soft bricking" your ESP8266 board (identified by the board 
+    LED constant blinking). To prevent this from happening, you **MUST** set the flash size 
+    to ``4MB``::
+
+      esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=4MB 0 esp8266-20170108-v1.8.7.bin
+
+    If you managed to soft brick your board, don't worry, you can repeat the steps in this 
+    section and make sure to flash the firmware with the workaround flash size, as stated 
+    in this note.
+
 If the above commands run without error then MicroPython should be installed on
 your board!
 
