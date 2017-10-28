@@ -663,6 +663,11 @@ typedef double mp_float_t;
 #define MICROPY_VFS (0)
 #endif
 
+// Support for __slots__ in user-defined classes
+#ifndef MICROPY_CLASS_SLOTS
+#define MICROPY_CLASS_SLOTS (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 

@@ -31,6 +31,7 @@
 #include <assert.h>
 
 #include "py/objtype.h"
+#include "py/objnamedtuple.h"
 #include "py/runtime.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -249,9 +250,28 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
 
     const mp_obj_type_t *native_base;
     size_t num_native_bases = instance_count_native_bases(self, &native_base);
-    assert(num_native_bases < 2);
 
-    mp_obj_instance_t *o = MP_OBJ_TO_PTR(mp_obj_new_instance(self, num_native_bases));
+    mp_obj_instance_t *o;
+
+    #if MICROPY_CLASS_SLOTS
+    mp_map_elem_t *slots = mp_map_lookup(&self->locals_dict->map, MP_OBJ_NEW_QSTR(MP_QSTR___slots__), MP_MAP_LOOKUP);
+    if (slots != NULL) {
+        if (num_native_bases != 0) {
+            mp_raise_TypeError(NULL);
+        }
+
+        const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t*)self;
+        size_t num_fields = type->n_fields;
+
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_fields, NULL));
+        t->base.type = self;
+        o = (mp_obj_instance_t*)t;
+    } else
+    #endif
+    {
+        assert(num_native_bases < 2);
+        o = MP_OBJ_TO_PTR(mp_obj_new_instance(self, num_native_bases));
+    }
 
     // This executes only "__new__" part of instance creation.
     // TODO: This won't work well for classes with native bases.
@@ -525,6 +545,8 @@ retry:;
     return res;
 }
 
+STATIC void mp_obj_instance_load_class_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+
 STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     // logic: look in instance members then class locals
     assert(mp_obj_is_instance_type(mp_obj_get_type(self_in)));
@@ -553,6 +575,12 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
         return;
     }
 #endif
+
+    mp_obj_instance_load_class_attr(self_in, attr, dest);
+}
+
+STATIC void mp_obj_instance_load_class_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = attr,
@@ -743,6 +771,26 @@ void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         if (mp_obj_instance_store_attr(self_in, attr, dest[1])) {
             dest[0] = MP_OBJ_NULL; // indicate success
         }
+    }
+}
+
+STATIC void mp_obj_slotted_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
+    size_t id = mp_obj_namedtuple_find_field((mp_obj_namedtuple_type_t*)self->tuple.base.type, attr);
+
+    if (id == (size_t)-1) {
+        mp_obj_instance_load_class_attr(self_in, attr, dest);
+        return;
+    }
+
+    if (dest[0] == MP_OBJ_NULL) {
+        // load attribute
+        dest[0] = self->tuple.items[id];
+    } else {
+        // delete/store attribute
+        // if dest[1] == MP_OBJ_NULL, delete
+        self->tuple.items[id] = dest[1];
+        dest[0] = MP_OBJ_NULL; // indicate success
     }
 }
 
@@ -1000,7 +1048,27 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
-    mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
+    mp_map_t *locals_map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(locals_dict))->map;
+    #if MICROPY_CLASS_SLOTS
+    mp_map_elem_t *slots = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___slots__), MP_MAP_LOOKUP);
+    if (slots != NULL) {
+        printf("Object with __slots__\n");
+    }
+    #else
+    // Rely on compiler to optize always-false branches away
+    const mp_map_elem_t *slots = NULL;
+    #endif
+
+    mp_obj_type_t *o;
+    if (MP_LIKELY(slots == NULL)) {
+        o = m_new0(mp_obj_type_t, 1);
+    } else {
+        size_t n_fields;
+        mp_obj_t *fields;
+        mp_obj_get_array(slots->value, &n_fields, &fields);
+        o = (mp_obj_type_t*)mp_obj_new_namedtuple_base(n_fields, fields);
+    }
+
     o->base.type = &mp_type_type;
     o->name = name;
     o->print = instance_print;
@@ -1008,7 +1076,11 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     o->call = mp_obj_instance_call;
     o->unary_op = instance_unary_op;
     o->binary_op = instance_binary_op;
-    o->attr = mp_obj_instance_attr;
+    if (MP_LIKELY(slots == NULL)) {
+        o->attr = mp_obj_instance_attr;
+    } else {
+        o->attr = mp_obj_slotted_attr;
+    }
     o->subscr = instance_subscr;
     o->getiter = instance_getiter;
     //o->iternext = ; not implemented
@@ -1036,7 +1108,6 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         mp_raise_TypeError("multiple bases have instance lay-out conflict");
     }
 
-    mp_map_t *locals_map = &o->locals_dict->map;
     mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___new__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // __new__ slot exists; check if it is a function
