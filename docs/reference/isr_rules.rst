@@ -80,7 +80,7 @@ example causes two LED's to flash at different rates.
             self.led.toggle()
 
     red = Foo(pyb.Timer(4, freq=1), pyb.LED(1))
-    greeen = Foo(pyb.Timer(2, freq=0.8), pyb.LED(2))
+    green = Foo(pyb.Timer(2, freq=0.8), pyb.LED(2))
 
 In this example the ``red`` instance associates timer 4 with LED 1: when a timer 4 interrupt occurs ``red.cb()``
 is called causing LED 1 to change state. The ``green`` instance operates similarly: a timer 2 interrupt
