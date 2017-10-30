@@ -207,6 +207,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|   .. method:: SPI.write(buffer, \*, start=0, end=len(buffer))
 //|
 //|     Write the data contained in ``buf``. Requires the SPI being locked.
+//|     At least one byte must be written.
 //|
 //|     :param bytearray buffer: buffer containing the bytes to write
 //|     :param int start: Index to start writing from
@@ -247,6 +248,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 //|   .. method:: SPI.readinto(buffer, \*, start=0, end=len(buffer), write_value=0)
 //|
 //|     Read into the buffer specified by ``buf`` while writing zeroes. Requires the SPI being locked.
+//|     At least one byte must be read.
 //|
 //|     :param bytearray buffer: buffer to write into
 //|     :param int start: Index to start writing at

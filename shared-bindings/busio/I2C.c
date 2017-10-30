@@ -171,6 +171,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 //|
 //|      Read into ``buffer`` from the slave specified by ``address``.
 //|      The number of bytes read will be the length of ``buffer``.
+//|      At least one byte must be read.
 //|
 //|      If ``start`` or ``end`` is provided, then the buffer will be sliced
 //|      as if ``buffer[start:end]``. This will not cause an allocation like
@@ -223,6 +224,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_in
 //|      as if ``buffer[start:end]``. This will not cause an allocation like
 //|      ``buffer[start:end]`` will so it saves memory.
 //|
+//|      Writing a buffer or slice of length zero is permitted, as it can be used
+//|      to poll for the existence of a device.
+//|
 //|      :param int address: 7-bit device address
 //|      :param bytearray buffer: buffer containing the bytes to write
 //|      :param int start: Index to start writing from
@@ -253,10 +257,6 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     int32_t start = args[ARG_start].u_int;
     uint32_t length = bufinfo.len;
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
-
-    if (length == 0) {
-        mp_raise_ValueError("Buffer must be at least length 1");
-    }
 
     // do the transfer
     uint8_t status = common_hal_busio_i2c_write(self, args[ARG_address].u_int,
