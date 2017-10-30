@@ -138,6 +138,7 @@
 #define MICROPY_PY_MACHINE_SPI_MAX_BAUDRATE (ets_get_cpu_frequency() * 1000000 / 200) // roughly
 #define MICROPY_PY_USSL                     (1)
 #define MICROPY_SSL_MBEDTLS                 (1)
+#define MICROPY_PY_USSL_FINALISER           (1)
 #define MICROPY_PY_WEBSOCKET                (0)
 #define MICROPY_PY_FRAMEBUF                 (1)
 
