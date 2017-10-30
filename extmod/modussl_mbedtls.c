@@ -65,23 +65,30 @@ struct ssl_args {
 
 STATIC const mp_obj_type_t ussl_socket_type;
 
-void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
+#ifdef MBEDTLS_DEBUG_C
+STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
+    (void)ctx;
+    (void)level;
     printf("DBG:%s:%04d: %s\n", file, line, str);
 }
+#endif
 
 // TODO: FIXME!
-int null_entropy_func(void *data, unsigned char *output, size_t len) {
+STATIC int null_entropy_func(void *data, unsigned char *output, size_t len) {
+    (void)data;
+    (void)output;
+    (void)len;
     // enjoy random bytes
     return 0;
 }
 
-int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
+STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_WRITE);
     int err;
 
-    int out_sz = sock_stream->write(sock, buf, len, &err);
+    mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
@@ -92,13 +99,13 @@ int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     }
 }
 
-int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
+STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_READ);
     int err;
 
-    int out_sz = sock_stream->read(sock, buf, len, &err);
+    mp_uint_t out_sz = sock_stream->read(sock, buf, len, &err);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_READ;
