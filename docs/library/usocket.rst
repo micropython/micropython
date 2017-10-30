@@ -237,11 +237,29 @@ Methods
 
 .. method:: socket.settimeout(value)
 
+   **Note**: Not every port supports this method, see below.
+
    Set a timeout on blocking socket operations. The value argument can be a nonnegative floating
    point number expressing seconds, or None. If a non-zero value is given, subsequent socket operations
    will raise an `OSError` exception if the timeout period value has elapsed before the operation has
    completed. If zero is given, the socket is put in non-blocking mode. If None is given, the socket
    is put in blocking mode.
+
+   Not every `MicroPython port` supports this method. A more portable and
+   generic solution is to use `uselect.poll` object. This allows to wait on
+   multiple objects at the same time (and not just on sockets, but on generic
+   stream objects which support polling). Example::
+
+        # Instead of:
+        s.settimeout(1.0)  # time in seconds
+        s.read(10)  # may timeout
+
+        # Use:
+        poller = uselect.poll()
+        poller.register(s, uselect.POLLIN)
+        res = poller.poll(1000)  # time in milliseconds
+        if not res:
+            # s is still not ready for input, i.e. operation timed out
 
    .. admonition:: Difference to CPython
       :class: attention
