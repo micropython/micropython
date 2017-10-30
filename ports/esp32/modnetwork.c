@@ -328,16 +328,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_isconnected_obj, esp_isconnected);
 STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     tcpip_adapter_ip_info_t info;
-    ip_addr_t dns_addr;
+    tcpip_adapter_dns_info_t dns_info;
     tcpip_adapter_get_ip_info(self->if_id, &info);
+    tcpip_adapter_get_dns_info(self->if_id, TCPIP_ADAPTER_DNS_MAIN, &dns_info);
     if (n_args == 1) {
         // get
-        dns_addr = dns_getserver(0);
         mp_obj_t tuple[4] = {
             netutils_format_ipv4_addr((uint8_t*)&info.ip, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&info.netmask, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&info.gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns_addr, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t*)&dns_info.ip, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
     } else {
@@ -356,16 +356,18 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             netutils_parse_ipv4_addr(items[1], (void*)&info.netmask, NETUTILS_BIG);
         }
         netutils_parse_ipv4_addr(items[2], (void*)&info.gw, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[3], (void*)&dns_addr, NETUTILS_BIG);
+        netutils_parse_ipv4_addr(items[3], (void*)&dns_info.ip, NETUTILS_BIG);
         // To set a static IP we have to disable DHCP first
         if (self->if_id == WIFI_IF_STA) {
             esp_err_t e = tcpip_adapter_dhcpc_stop(WIFI_IF_STA);
             if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
             ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_STA, &info));
+            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_STA, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
         } else if (self->if_id == WIFI_IF_AP) {
             esp_err_t e = tcpip_adapter_dhcps_stop(WIFI_IF_AP);
             if (e != ESP_OK && e != ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED) _esp_exceptions(e);
             ESP_EXCEPTIONS(tcpip_adapter_set_ip_info(WIFI_IF_AP, &info));
+            ESP_EXCEPTIONS(tcpip_adapter_set_dns_info(WIFI_IF_AP, TCPIP_ADAPTER_DNS_MAIN, &dns_info));
             ESP_EXCEPTIONS(tcpip_adapter_dhcps_start(WIFI_IF_AP));
         }
         return mp_const_none;
