@@ -277,6 +277,10 @@ STATIC err_t my_netif_init(struct netif *netif) {
         printf("WIZNET fatal error in netifinit: %d\n", ret);
         return ERR_IF;
     }
+
+    // Enable MAC filtering so we only get frames destined for us, to reduce load on lwIP
+    setSn_MR(0, getSn_MR(0) | Sn_MR_MFEN);
+
     return ERR_OK;
 }
 
