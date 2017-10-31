@@ -234,8 +234,8 @@ int __attribute__((used)) main(void) {
     autoreload_enable();
 
     // By default our internal flash is readonly to local python code and
-    // writeable over USB. Set it here so that boot.py can change it.
-    filesystem_default_writeable(false);
+    // writable over USB. Set it here so that boot.py can change it.
+    filesystem_writable_by_python(false);
 
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
@@ -244,12 +244,12 @@ int __attribute__((used)) main(void) {
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         // Since USB isn't up yet we can cheat and let ourselves write the boot
         // output file.
-        filesystem_default_writeable(true);
+        filesystem_writable_by_python(true);
         FIL file_pointer;
         boot_output_file = &file_pointer;
         f_open(&((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs,
             boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
-        filesystem_default_writeable(false);
+        filesystem_writable_by_python(false);
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.

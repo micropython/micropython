@@ -42,5 +42,5 @@ void common_hal_storage_remount(const char* mount_path, bool readonly) {
         mp_raise_RuntimeError("Cannot remount '/' when USB is active.");
     }
 
-    flash_set_usb_writeable(readonly);
+    flash_set_usb_writable(readonly);
 }

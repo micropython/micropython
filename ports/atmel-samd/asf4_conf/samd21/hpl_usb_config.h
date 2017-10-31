@@ -39,7 +39,7 @@
 // <CONF_USB_D_N_EP_MAX"> Max possible (by "Max Endpoint Number" config)
 // <id> usbd_num_ep_sp
 #ifndef CONF_USB_D_NUM_EP_SP
-#define CONF_USB_D_NUM_EP_SP CONF_USB_D_EP_N_MAX
+#define CONF_USB_D_NUM_EP_SP CONF_USB_D_N_EP_MAX
 #endif
 
 // </h>
@@ -118,7 +118,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep1_I_CACHE
 #ifndef CONF_USB_EP1_I_CACHE
-#define CONF_USB_EP1_I_CACHE 64
+#define CONF_USB_EP1_I_CACHE 0
 #endif
 // </h>
 
@@ -176,7 +176,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep3_cache
 #ifndef CONF_USB_EP3_CACHE
-#define CONF_USB_EP3_CACHE 64
+#define CONF_USB_EP3_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP3 IN
@@ -194,7 +194,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep3_I_CACHE
 #ifndef CONF_USB_EP3_I_CACHE
-#define CONF_USB_EP3_I_CACHE 0
+#define CONF_USB_EP3_I_CACHE 64
 #endif
 // </h>
 
@@ -252,7 +252,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep5_cache
 #ifndef CONF_USB_EP5_CACHE
-#define CONF_USB_EP5_CACHE 64
+#define CONF_USB_EP5_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP5 IN
@@ -290,7 +290,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep6_cache
 #ifndef CONF_USB_EP6_CACHE
-#define CONF_USB_EP6_CACHE 64
+#define CONF_USB_EP6_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP6 IN
@@ -308,7 +308,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep6_I_CACHE
 #ifndef CONF_USB_EP6_I_CACHE
-#define CONF_USB_EP6_I_CACHE 64
+#define CONF_USB_EP6_I_CACHE 0
 #endif
 // </h>
 
@@ -328,7 +328,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep7_cache
 #ifndef CONF_USB_EP7_CACHE
-#define CONF_USB_EP7_CACHE 64
+#define CONF_USB_EP7_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP7 IN

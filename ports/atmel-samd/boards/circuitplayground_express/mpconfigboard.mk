@@ -1,6 +1,8 @@
 LD_FILE = boards/samd21x18-bootloader-crystalless.ld
 USB_VID = 0x239A
 USB_PID = 0x8019
+USB_PRODUCT = "CircuitPlayground Express"
+USB_MANUFACTURER = "Adafruit Industries LLC"
 
 #SPI_FLASH_FILESYSTEM = 1
 INTERNAL_FLASH_FILESYSTEM = 1

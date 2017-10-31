@@ -31,7 +31,7 @@
 
 void filesystem_init(bool create_allowed);
 void filesystem_flush(void);
-void filesystem_default_writeable(bool writeable);
+void filesystem_writable_by_python(bool writable);
 bool filesystem_present(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H

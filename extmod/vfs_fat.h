@@ -35,8 +35,8 @@
 #define FSUSER_NATIVE        (0x0001) // readblocks[2]/writeblocks[2] contain native func
 #define FSUSER_FREE_OBJ      (0x0002) // fs_user_mount_t obj should be freed on umount
 #define FSUSER_HAVE_IOCTL    (0x0004) // new protocol with ioctl
-// Device is write-able over USB and read-only to MicroPython.
-#define FSUSER_USB_WRITEABLE (0x0008)
+// Device is writable over USB and read-only to MicroPython.
+#define FSUSER_USB_WRITABLE (0x0008)
 
 typedef struct _fs_user_mount_t {
     mp_obj_base_t base;

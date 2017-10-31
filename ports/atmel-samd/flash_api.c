@@ -30,7 +30,7 @@
 
 #define VFS_INDEX 0
 
-void flash_set_usb_writeable(bool usb_writeable) {
+void flash_set_usb_writable(bool usb_writable) {
     mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
     for (uint8_t i = 0; current_mount != NULL; i++) {
         if (i == VFS_INDEX) {
@@ -43,9 +43,9 @@ void flash_set_usb_writeable(bool usb_writeable) {
     }
     fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
 
-    if (usb_writeable) {
-        vfs->flags |= FSUSER_USB_WRITEABLE;
+    if (usb_writable) {
+        vfs->flags |= FSUSER_USB_WRITABLE;
     } else {
-        vfs->flags &= ~FSUSER_USB_WRITEABLE;
+        vfs->flags &= ~FSUSER_USB_WRITABLE;
     }
 }

@@ -98,9 +98,9 @@ DSTATUS disk_status (
     }
 
     // This is used to determine the writeability of the disk from MicroPython.
-    // So, if its USB writeable we make it read-only from MicroPython.
+    // So, if its USB writable we make it read-only from MicroPython.
     if (vfs->writeblocks[0] == MP_OBJ_NULL ||
-        (vfs->flags & FSUSER_USB_WRITEABLE) != 0) {
+        (vfs->flags & FSUSER_USB_WRITABLE) != 0) {
         return STA_PROTECT;
     } else {
         return 0;

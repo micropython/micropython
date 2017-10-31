@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,17 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/filesystem.h"
+#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_TOOLS_AUTOGEN_USB_DESCRIPTOR_H__
+#define __MICROPY_INCLUDED_ATMEL_SAMD_TOOLS_AUTOGEN_USB_DESCRIPTOR_H__
 
-void filesystem_init(void) {
-}
+#include "usb/device/usbdc.h"
 
-void filesystem_flush(void) {
-}
+struct usbd_descriptors descriptor_bounds;
+uint8_t* serial_number;
+uint8_t serial_number_length;
 
-void filesystem_writable_by_python(bool writable) {
-}
-
-bool filesystem_present(void) {
-    return false;
-}
+#endif // __MICROPY_INCLUDED_ATMEL_SAMD_TOOLS_AUTOGEN_USB_DESCRIPTOR_H__

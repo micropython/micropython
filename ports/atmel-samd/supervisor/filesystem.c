@@ -85,8 +85,8 @@ void filesystem_flush(void) {
     flash_flush();
 }
 
-void filesystem_default_writeable(bool writeable) {
-    flash_set_usb_writeable(writeable);
+void filesystem_writable_by_python(bool writable) {
+    flash_set_usb_writable(!writable);
 }
 
 bool filesystem_present(void) {
