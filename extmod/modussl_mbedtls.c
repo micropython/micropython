@@ -141,8 +141,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     const byte seed[] = "upy";
     ret = mbedtls_ctr_drbg_seed(&o->ctr_drbg, null_entropy_func/*mbedtls_entropy_func*/, &o->entropy, seed, sizeof(seed));
     if (ret != 0) {
-        printf("ret=%d\n", ret);
-        assert(0);
+        goto cleanup;
     }
 
     ret = mbedtls_ssl_config_defaults(&o->conf,
@@ -150,7 +149,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
                     MBEDTLS_SSL_TRANSPORT_STREAM,
                     MBEDTLS_SSL_PRESET_DEFAULT);
     if (ret != 0) {
-        assert(0);
+        goto cleanup;
     }
 
     mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
@@ -161,14 +160,14 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     ret = mbedtls_ssl_setup(&o->ssl, &o->conf);
     if (ret != 0) {
-        assert(0);
+        goto cleanup;
     }
 
     if (args->server_hostname.u_obj != mp_const_none) {
         const char *sni = mp_obj_str_get_str(args->server_hostname.u_obj);
         ret = mbedtls_ssl_set_hostname(&o->ssl, sni);
         if (ret != 0) {
-            assert(0);
+            goto cleanup;
         }
     }
 
@@ -194,13 +193,27 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
         if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-            //assert(0);
             printf("mbedtls_ssl_handshake error: -%x\n", -ret);
-            mp_raise_OSError(MP_EIO);
+            goto cleanup;
         }
     }
 
     return o;
+
+cleanup:
+    mbedtls_pk_free(&o->pkey);
+    mbedtls_x509_crt_free(&o->cert);
+    mbedtls_x509_crt_free(&o->cacert);
+    mbedtls_ssl_free(&o->ssl);
+    mbedtls_ssl_config_free(&o->conf);
+    mbedtls_ctr_drbg_free(&o->ctr_drbg);
+    mbedtls_entropy_free(&o->entropy);
+
+    if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
+        mp_raise_OSError(MP_ENOMEM);
+    } else {
+        mp_raise_OSError(MP_EIO);
+    }
 }
 
 STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
