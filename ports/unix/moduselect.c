@@ -141,13 +141,12 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
             if (self->obj_map) {
                 self->obj_map[entries - self->entries] = MP_OBJ_NULL;
             }
-            break;
+            return mp_const_none;
         }
         entries++;
     }
 
-    // TODO raise KeyError if obj didn't exist in map
-    return mp_const_none;
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, obj_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 
@@ -159,13 +158,12 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
     for (int i = self->len - 1; i >= 0; i--) {
         if (entries->fd == fd) {
             entries->events = mp_obj_get_int(eventmask_in);
-            break;
+            return mp_const_none;
         }
         entries++;
     }
 
-    // TODO raise KeyError if obj didn't exist in map
-    return mp_const_none;
+    nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, obj_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
 
