@@ -359,6 +359,7 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	python2 $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 $(BUILD)/autogen_usb_descriptor.c: tools/gen_usb_descriptor.py Makefile
+	install -d $(BUILD)
 	python3 tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
