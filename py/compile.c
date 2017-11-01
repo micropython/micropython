@@ -1050,8 +1050,8 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             for (int i = 0; i < n; i++) {
                 len += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
-            byte *q_ptr;
-            byte *str_dest = qstr_build_start(len, &q_ptr);
+            char *q_ptr = alloca(len);
+            char *str_dest = q_ptr;
             for (int i = 0; i < n; i++) {
                 if (i > 0) {
                     *str_dest++ = '.';
@@ -1061,7 +1061,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
                 memcpy(str_dest, str_src, str_src_len);
                 str_dest += str_src_len;
             }
-            qstr q_full = qstr_build_end(q_ptr);
+            qstr q_full = qstr_from_strn(q_ptr, len);
             EMIT_ARG(import_name, q_full);
             if (is_as) {
                 for (int i = 1; i < n; i++) {
