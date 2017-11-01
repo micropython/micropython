@@ -309,8 +309,7 @@ void usb_msc_background(void) {
         // Load more blocks from USB if they are needed.
         if (active_nblocks > 0) {
             int32_t result = mscdf_xfer_blocks(false, sector_buffer, 1);
-            while (result != ERR_NONE) {}
-            usb_busy = true;
+            usb_busy = result != ERR_NONE;
         } else {
             mscdf_xfer_blocks(false, NULL, 0);
             active_write = false;
