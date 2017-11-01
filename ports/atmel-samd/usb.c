@@ -107,7 +107,11 @@ static volatile bool pending_read;
 
 static int32_t start_read(void) {
     pending_read = true;
-    return cdcdf_acm_read(cdc_packet_buffer, 64);
+    int32_t result = cdcdf_acm_read(cdc_packet_buffer, 64);
+    if (result != ERR_NONE) {
+        pending_read = false;
+    }
+    return result;
 }
 
 static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const uint32_t count) {
@@ -222,7 +226,7 @@ void init_usb(void) {
     usbdc_attach();
 }
 
-static inline bool cdc_enabled(void) {
+static bool cdc_enabled(void) {
     if (mp_cdc_enabled) {
         return true;
     }
@@ -239,11 +243,10 @@ static inline bool cdc_enabled(void) {
 }
 
 bool usb_bytes_available(void) {
-    if (!pending_read) {
+    if (cdc_enabled() && !pending_read) {
         start_read();
     }
     if (usb_rx_count == 0) {
-        cdc_enabled();
         return false;
     }
     return usb_rx_count > 0;
