@@ -199,12 +199,15 @@ void set_rgb_status_brightness(uint8_t level){
       rgb_status_brightness = level;
 }
 
-void prep_rgb_status_animation(const pyexec_result_t* result, bool found_main, rgb_status_animation_t* status) {
+void prep_rgb_status_animation(const pyexec_result_t* result,
+                               bool found_main,
+                               safe_mode_t safe_mode,
+                               rgb_status_animation_t* status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
     new_status_color(ALL_DONE);
     status->pattern_start = ticks_ms;
-
-    uint32_t total_exception_cycle = 0;
+    status->safe_mode = safe_mode;
+    status->total_exception_cycle = 0;
     status->ones = result->exception_line % 10;
     status->ones += status->ones > 0 ? 1 : 0;
     status->tens = (result->exception_line / 10) % 10;
@@ -224,7 +227,7 @@ void prep_rgb_status_animation(const pyexec_result_t* result, bool found_main, r
     }
     status->ok = result->return_code != PYEXEC_EXCEPTION;
     if (!status->ok) {
-        status->total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
+        status->total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * status->digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
     }
     if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_IndentationError)) {
         status->exception_color = INDENTATION_ERROR;
@@ -244,11 +247,11 @@ void prep_rgb_status_animation(const pyexec_result_t* result, bool found_main, r
 
 void tick_rgb_status_animation(rgb_status_animation_t* status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
-    uint32_t tick_diff = ticks_ms - pattern_start;
+    uint32_t tick_diff = ticks_ms - status->pattern_start;
     if (status->ok) {
         // All is good. Ramp ALL_DONE up and down.
         if (tick_diff > ALL_GOOD_CYCLE_MS) {
-            pattern_start = ticks_ms;
+            status->pattern_start = ticks_ms;
             tick_diff = 0;
         }
 
@@ -256,14 +259,14 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
         if (brightness > 255) {
             brightness = 511 - brightness;
         }
-        if (safe_mode == NO_SAFE_MODE) {
+        if (status->safe_mode == NO_SAFE_MODE) {
             new_status_color(color_brightness(ALL_DONE, brightness));
         } else {
             new_status_color(color_brightness(SAFE_MODE, brightness));
         }
     } else {
-        if (tick_diff > total_exception_cycle) {
-            pattern_start = ticks_ms;
+        if (tick_diff > status->total_exception_cycle) {
+            status->pattern_start = ticks_ms;
             tick_diff = 0;
         }
         // First flash the file color.
@@ -275,34 +278,34 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
             }
         // Next flash the exception color.
         } else if (tick_diff < EXCEPTION_TYPE_LENGTH_MS * 2) {
-            new_status_color(exception_color);
+            new_status_color(status->exception_color);
         // Finally flash the line number digits from highest to lowest.
         // Zeroes will not produce a flash but can be read by the absence of
         // a color from the sequence.
-        } else if (tick_diff < (EXCEPTION_TYPE_LENGTH_MS * 2 + LINE_NUMBER_TOGGLE_LENGTH * digit_sum)) {
+        } else if (tick_diff < (EXCEPTION_TYPE_LENGTH_MS * 2 + LINE_NUMBER_TOGGLE_LENGTH * status->digit_sum)) {
             uint32_t digit_diff = tick_diff - EXCEPTION_TYPE_LENGTH_MS * 2;
             if ((digit_diff % LINE_NUMBER_TOGGLE_LENGTH) < (LINE_NUMBER_TOGGLE_LENGTH / 2)) {
                 new_status_color(BLACK);
-            } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * thousands) {
+            } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * status->thousands) {
                 if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH) {
                     new_status_color(BLACK);
                 } else {
                     new_status_color(THOUSANDS);
                 }
-            } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds)) {
-                if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + 1)) {
+            } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (status->thousands + status->hundreds)) {
+                if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (status->thousands + 1)) {
                     new_status_color(BLACK);
                 } else {
                     new_status_color(HUNDREDS);
                 }
-            } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds + tens)) {
-                if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds + 1)) {
+            } else if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (status->thousands + status->hundreds + status->tens)) {
+                if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (status->thousands + status->hundreds + 1)) {
                     new_status_color(BLACK);
                 } else {
                     new_status_color(TENS);
                 }
             } else {
-                if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (thousands + hundreds + tens + 1)) {
+                if (digit_diff < LINE_NUMBER_TOGGLE_LENGTH * (status->thousands + status->hundreds + status->tens + 1)) {
                     new_status_color(BLACK);
                 } else {
                     new_status_color(ONES);

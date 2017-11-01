@@ -6,7 +6,7 @@
 #define MICROPY_HW_LED_TX   PIN_PA27
 #define MICROPY_HW_LED_RX   PIN_PB06
 
-// #define MICROPY_HW_NEOPIXEL (&pin_PB17)
+#define MICROPY_HW_NEOPIXEL (&pin_PB17)
 
 #define SPI_FLASH_BAUDRATE  (1000000)
 

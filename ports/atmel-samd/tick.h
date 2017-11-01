@@ -36,4 +36,9 @@ void tick_init(void);
 
 void tick_delay(uint32_t us);
 
+void current_tick(uint64_t* ms, uint32_t* us_until_ms);
+// Do not call this with interrupts disabled because it may be waiting for
+// ticks_ms to increment.
+void wait_until(uint64_t ms, uint32_t us_until_ms);
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_TICK_H

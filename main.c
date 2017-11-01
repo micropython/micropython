@@ -146,7 +146,7 @@ bool start_mp(safe_mode_t safe_mode) {
     // Wait for connection or character.
     bool serial_connected_before_animation = false;
     rgb_status_animation_t animation;
-    prep_rgb_status_animation(&result, found_main, &animation);
+    prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP

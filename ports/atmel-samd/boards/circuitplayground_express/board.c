@@ -61,6 +61,6 @@ void reset_board(void) {
     common_hal_digitalio_digitalinout_construct(&neopixel_pin, &pin_PB23);
     common_hal_digitalio_digitalinout_switch_to_output(&neopixel_pin, false,
         DRIVE_MODE_PUSH_PULL);
-    // common_hal_neopixel_write(&neopixel_pin, empty, 30);
+    common_hal_neopixel_write(&neopixel_pin, empty, 30);
     common_hal_digitalio_digitalinout_deinit(&neopixel_pin);
 }
