@@ -185,3 +185,11 @@ limitation with usage of TLS on the low-memory devices:
    time, taking as a reference being able to access https://google.com .
    The smaller buffer hower means that some sites can't be accessed using
    it, and it's not possible to stream large amounts of data.
+
+There are also some not implemented features specifically in MicroPython's
+``ussl`` module based on axTLS:
+
+6. Certificates are not validated (this may make connections susceptible
+   to man-in-the-middle attacks).
+7. There is no support for client certificates (scheduled to be fixed in
+   1.9.4 release).
