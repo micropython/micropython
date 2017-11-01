@@ -37,8 +37,12 @@ static inline void delay_cycles(uint8_t cycles) {
     uint32_t stop = start - cycles;
     if (start < cycles) {
         stop = 0xffffff + start - cycles;
+        while (SysTick->VAL < start || SysTick->VAL > stop) {}
+    } else {
+        // Make sure the systick value is between start and stop in case it
+        // wraps around before we read its value less than stop.
+        while (SysTick->VAL > stop && SysTick->VAL <= start) {}
     }
-    while (SysTick->VAL > stop) {}
 }
 #endif
 
