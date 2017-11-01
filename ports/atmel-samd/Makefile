@@ -10,8 +10,8 @@ endif
 BUILD ?= build-$(BOARD)
 
 include ../../py/mkenv.mk
--include mpconfigport.mk
 include boards/$(BOARD)/mpconfigboard.mk
+-include mpconfigport.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
