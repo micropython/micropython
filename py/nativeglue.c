@@ -64,7 +64,7 @@ mp_uint_t mp_convert_obj_to_native(mp_obj_t obj, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM
+#if MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM || MICROPY_PERSISTENT_NATIVE
 
 // convert a native value to a MicroPython object based on type
 mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
@@ -82,7 +82,7 @@ mp_obj_t mp_convert_native_to_obj(mp_uint_t val, mp_uint_t type) {
 
 #endif
 
-#if MICROPY_EMIT_NATIVE
+#if MICROPY_EMIT_NATIVE || MICROPY_PERSISTENT_NATIVE
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
