@@ -113,7 +113,7 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         mp_int_t r = ssl_read(o->ssl_sock, &o->buf);
         if (r == SSL_OK) {
             // SSL_OK from ssl_read() means "everything is ok, but there's
-            // not user data yet. So, we just keep reading.
+            // no user data yet". So, we just keep reading.
             continue;
         }
         if (r < 0) {
