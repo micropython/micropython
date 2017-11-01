@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "lib/utils/pyexec.h"
+#include "supervisor/port.h"
 
 #include "mpconfigport.h"
 #include "rgb_led_colors.h"
@@ -59,6 +60,8 @@ typedef struct {
     bool ok;
     uint32_t pattern_start;
     uint32_t total_exception_cycle;
+    safe_mode_t safe_mode;
+    uint8_t digit_sum;
     uint8_t ones;
     uint8_t tens;
     uint8_t hundreds;
@@ -67,7 +70,10 @@ typedef struct {
     bool found_main;
 } rgb_status_animation_t;
 
-void prep_rgb_status_animation(const pyexec_result_t* result, bool found_main, rgb_status_animation_t* status);
+void prep_rgb_status_animation(const pyexec_result_t* result,
+                               bool found_main,
+                               safe_mode_t safe_mode,
+                               rgb_status_animation_t* status);
 void tick_rgb_status_animation(rgb_status_animation_t* status);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_RGB_LED_STATUS_H
