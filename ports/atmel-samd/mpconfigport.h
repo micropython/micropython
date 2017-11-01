@@ -43,6 +43,7 @@
 #define MICROPY_PY_BUILTINS_SET     (1)
 #define MICROPY_PY_BUILTINS_SLICE   (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_MIN_MAX (1)
 #define MICROPY_PY___FILE__         (1)
@@ -186,7 +187,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
     #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
-    #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
     #define MICROPY_PY_SYS_MAXSIZE      (1)
     #define MICROPY_CPYTHON_COMPAT      (1)
     // Scan gamepad every 32ms
