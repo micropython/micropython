@@ -121,6 +121,9 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
                 // EOF
                 return 0;
             }
+            if (r == SSL_EAGAIN) {
+                r = MP_EAGAIN;
+            }
             *errcode = r;
             return MP_STREAM_ERROR;
         }
