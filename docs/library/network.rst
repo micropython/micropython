@@ -72,8 +72,7 @@ parameter should be `id`.
        connection parameters. For various medium types, there are different
        sets of predefined/recommended parameters, among them:
 
-       * WiFi: *bssid* keyword to connect by BSSID (MAC address) instead
-         of access point name
+       * WiFi: *bssid* keyword to connect to a specific BSSID (MAC address)
 
     .. method:: disconnect()
 
@@ -225,7 +224,9 @@ parameter should be `id`.
     ==============
     
     This class allows you to control WIZnet5x00 Ethernet adaptors based on
-    the W5200 and W5500 chipsets (only W5200 tested).
+    the W5200 and W5500 chipsets.  The particular chipset that is supported
+    by the firmware is selected at compile-time via the MICROPY_PY_WIZNET5K
+    option.
     
     Example usage::
     
@@ -269,6 +270,11 @@ parameter should be `id`.
     Methods
     -------
     
+    .. method:: wiznet5k.isconnected()
+
+       Returns ``True`` if the physical Ethernet link is connected and up.
+       Returns ``False`` otherwise.
+
     .. method:: wiznet5k.ifconfig([(ip, subnet, gateway, dns)])
     
        Get/set IP address, subnet mask, gateway and DNS.
@@ -333,9 +339,12 @@ parameter should be `id`.
         argument is passed. Otherwise, query current state if no argument is
         provided. Most other methods require active interface.
 
-    .. method:: wlan.connect(ssid, password)
+    .. method:: wlan.connect(ssid=None, password=None, \*, bssid=None)
 
         Connect to the specified wireless network, using the specified password.
+        If *bssid* is given then the connection will be restricted to the
+        access-point with that MAC address (the *ssid* must also be specified
+        in this case).
 
     .. method:: wlan.disconnect()
 
@@ -413,16 +422,17 @@ parameter should be `id`.
        Following are commonly supported parameters (availability of a specific parameter
        depends on network technology type, driver, and `MicroPython port`).
 
-       =========  ===========
-       Parameter  Description
-       =========  ===========
-       mac        MAC address (bytes)
-       essid      WiFi access point name (string)
-       channel    WiFi channel (integer)
-       hidden     Whether ESSID is hidden (boolean)
-       authmode   Authentication mode supported (enumeration, see module constants)
-       password   Access password (string)
-       =========  ===========
+       =============  ===========
+       Parameter      Description
+       =============  ===========
+       mac            MAC address (bytes)
+       essid          WiFi access point name (string)
+       channel        WiFi channel (integer)
+       hidden         Whether ESSID is hidden (boolean)
+       authmode       Authentication mode supported (enumeration, see module constants)
+       password       Access password (string)
+       dhcp_hostname  The DHCP hostname to use
+       =============  ===========
 
 
 

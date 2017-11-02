@@ -93,29 +93,55 @@ STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_active_obj, 1, 2, esp_active);
 
-STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
-    require_if(args[0], STATION_IF);
+STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ssid, ARG_password, ARG_bssid };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    require_if(pos_args[0], STATION_IF);
     struct station_config config = {{0}};
     size_t len;
     const char *p;
+    bool set_config = false;
 
-    if (n_args > 1) {
-        p = mp_obj_str_get_data(args[1], &len);
+    // set parameters based on given args
+    if (args[ARG_ssid].u_obj != mp_const_none) {
+        p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
         len = MIN(len, sizeof(config.ssid));
         memcpy(config.ssid, p, len);
-        if (n_args > 2) {
-            p = mp_obj_str_get_data(args[2], &len);
-            len = MIN(len, sizeof(config.password));
-            memcpy(config.password, p, len);
+        set_config = true;
+    }
+    if (args[ARG_password].u_obj != mp_const_none) {
+        p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+        len = MIN(len, sizeof(config.password));
+        memcpy(config.password, p, len);
+        set_config = true;
+    }
+    if (args[ARG_bssid].u_obj != mp_const_none) {
+        p = mp_obj_str_get_data(args[ARG_bssid].u_obj, &len);
+        if (len != sizeof(config.bssid)) {
+            mp_raise_ValueError(NULL);
         }
+        config.bssid_set = 1;
+        memcpy(config.bssid, p, sizeof(config.bssid));
+        set_config = true;
+    }
 
+    if (set_config) {
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 1, 7, esp_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     require_if(self_in, STATION_IF);

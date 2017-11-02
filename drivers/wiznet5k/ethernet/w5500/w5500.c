@@ -57,6 +57,16 @@
 
 ////////////////////////////////////////////////////
 
+#define LPC_SSP0 (0)
+
+static void Chip_SSP_ReadFrames_Blocking(int dummy, uint8_t *buf, uint32_t len) {
+    WIZCHIP.IF.SPI._read_bytes(buf, len);
+}
+
+static void Chip_SSP_WriteFrames_Blocking(int dummy, const uint8_t *buf, uint32_t len) {
+    WIZCHIP.IF.SPI._write_bytes(buf, len);
+}
+
 uint8_t  WIZCHIP_READ(uint32_t AddrSel)
 {
    uint8_t ret;

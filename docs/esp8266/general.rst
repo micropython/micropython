@@ -145,3 +145,43 @@ or by an exeption, for example using try/finally::
         # Use sock
     finally:
         sock.close()
+
+
+SSL/TLS limitations
+~~~~~~~~~~~~~~~~~~~
+
+ESP8266 uses `axTLS <http://axtls.sourceforge.net/>`_ library, which is one
+of the smallest TLS libraries with the compatible licensing. However, it
+also has some known issues/limitations:
+
+1. No support for Diffie-Hellman (DH) key exchange and Elliptic-curve
+   cryptography (ECC). This means it can't work with sites which force
+   the use of these features (it works ok with classic RSA certifactes).
+2. Half-duplex communication nature. axTLS uses a single buffer for both
+   sending and receiving, which leads to considerable memory saving and
+   works well with protocols like HTTP. But there may be problems with
+   protocols which don't follow classic request-response model.
+
+Besides axTLS own limitations, the configuration used for MicroPython is
+highly optimized for code size, which leads to additional limitations
+(these may be lifted in the future):
+
+3. Optimized RSA algorithms are not enabled, which may lead to slow
+   SSL handshakes.
+4. Stored sessions are not supported (may allow faster repeated connections
+   to the same site in some circumstances).
+
+Besides axTLS specific limitations described above, there's another generic
+limitation with usage of TLS on the low-memory devices:
+
+5. The TLS standard specifies the maximum length of the TLS record (unit
+   of TLS communication, the entire record must be buffered before it can
+   be processed) as 16KB. That's almost half of the available ESP8266 memory,
+   and inside a more or less advanced application would be hard to allocate
+   due to memory fragmentation issues. As a compromise, a smaller buffer is
+   used, with the idea that the most interesting usage for SSL would be
+   accessing various REST APIs, which usually require much smaller messages.
+   The buffers size is on the order of 5KB, and is adjusted from time to
+   time, taking as a reference being able to access https://google.com .
+   The smaller buffer hower means that some sites can't be accessed using
+   it, and it's not possible to stream large amounts of data.

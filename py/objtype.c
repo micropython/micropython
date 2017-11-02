@@ -335,7 +335,9 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     return MP_OBJ_FROM_PTR(o);
 }
 
-const uint16_t mp_unary_op_method_name[] = {
+// Qstrs for special methods are guaranteed to have a small value, so we use byte
+// type to represent them.
+const byte mp_unary_op_method_name[MP_UNARY_OP_NUM_RUNTIME] = {
     [MP_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [MP_UNARY_OP_LEN] = MP_QSTR___len__,
     [MP_UNARY_OP_HASH] = MP_QSTR___hash__,
@@ -343,11 +345,11 @@ const uint16_t mp_unary_op_method_name[] = {
     [MP_UNARY_OP_POSITIVE] = MP_QSTR___pos__,
     [MP_UNARY_OP_NEGATIVE] = MP_QSTR___neg__,
     [MP_UNARY_OP_INVERT] = MP_QSTR___invert__,
+    [MP_UNARY_OP_ABS] = MP_QSTR___abs__,
     #endif
     #if MICROPY_PY_SYS_GETSIZEOF
-    [MP_UNARY_OP_SIZEOF] = MP_QSTR_getsizeof,
+    [MP_UNARY_OP_SIZEOF] = MP_QSTR___sizeof__,
     #endif
-    [MP_UNARY_OP_NOT] = MP_QSTR_, // don't need to implement this, used to make sure array has full size
 };
 
 STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -409,59 +411,69 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-const uint16_t mp_binary_op_method_name[] = {
-    /*
-    MP_BINARY_OP_OR,
-    MP_BINARY_OP_XOR,
-    MP_BINARY_OP_AND,
-    MP_BINARY_OP_LSHIFT,
-    MP_BINARY_OP_RSHIFT,
-    */
+// Binary-op enum values not listed here will have the default value of 0 in the
+// table, corresponding to MP_QSTR_NULL, and are therefore unsupported (a lookup will
+// fail).  They can be added at the expense of code size for the qstr.
+// Qstrs for special methods are guaranteed to have a small value, so we use byte
+// type to represent them.
+const byte mp_binary_op_method_name[MP_BINARY_OP_NUM_RUNTIME] = {
+    [MP_BINARY_OP_LESS] = MP_QSTR___lt__,
+    [MP_BINARY_OP_MORE] = MP_QSTR___gt__,
+    [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
+    [MP_BINARY_OP_LESS_EQUAL] = MP_QSTR___le__,
+    [MP_BINARY_OP_MORE_EQUAL] = MP_QSTR___ge__,
+    // MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
+    [MP_BINARY_OP_IN] = MP_QSTR___contains__,
+
+    // All inplace methods are optional, and normal methods will be used
+    // as a fallback.
+    [MP_BINARY_OP_INPLACE_ADD] = MP_QSTR___iadd__,
+    [MP_BINARY_OP_INPLACE_SUBTRACT] = MP_QSTR___isub__,
+    #if MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
+    [MP_BINARY_OP_INPLACE_MULTIPLY] = MP_QSTR___imul__,
+    [MP_BINARY_OP_INPLACE_FLOOR_DIVIDE] = MP_QSTR___ifloordiv__,
+    [MP_BINARY_OP_INPLACE_TRUE_DIVIDE] = MP_QSTR___itruediv__,
+    [MP_BINARY_OP_INPLACE_MODULO] = MP_QSTR___imod__,
+    [MP_BINARY_OP_INPLACE_POWER] = MP_QSTR___ipow__,
+    [MP_BINARY_OP_INPLACE_OR] = MP_QSTR___ior__,
+    [MP_BINARY_OP_INPLACE_XOR] = MP_QSTR___ixor__,
+    [MP_BINARY_OP_INPLACE_AND] = MP_QSTR___iand__,
+    [MP_BINARY_OP_INPLACE_LSHIFT] = MP_QSTR___ilshift__,
+    [MP_BINARY_OP_INPLACE_RSHIFT] = MP_QSTR___irshift__,
+    #endif
+
     [MP_BINARY_OP_ADD] = MP_QSTR___add__,
     [MP_BINARY_OP_SUBTRACT] = MP_QSTR___sub__,
     #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_BINARY_OP_MULTIPLY] = MP_QSTR___mul__,
     [MP_BINARY_OP_FLOOR_DIVIDE] = MP_QSTR___floordiv__,
     [MP_BINARY_OP_TRUE_DIVIDE] = MP_QSTR___truediv__,
+    [MP_BINARY_OP_MODULO] = MP_QSTR___mod__,
+    [MP_BINARY_OP_DIVMOD] = MP_QSTR___divmod__,
+    [MP_BINARY_OP_POWER] = MP_QSTR___pow__,
+    [MP_BINARY_OP_OR] = MP_QSTR___or__,
+    [MP_BINARY_OP_XOR] = MP_QSTR___xor__,
+    [MP_BINARY_OP_AND] = MP_QSTR___and__,
+    [MP_BINARY_OP_LSHIFT] = MP_QSTR___lshift__,
+    [MP_BINARY_OP_RSHIFT] = MP_QSTR___rshift__,
     #endif
-    /*
-    MP_BINARY_OP_MODULO,
-    MP_BINARY_OP_POWER,
-    MP_BINARY_OP_DIVMOD,
-    MP_BINARY_OP_INPLACE_OR,
-    MP_BINARY_OP_INPLACE_XOR,
-    MP_BINARY_OP_INPLACE_AND,
-    MP_BINARY_OP_INPLACE_LSHIFT,
-    MP_BINARY_OP_INPLACE_RSHIFT,*/
-    #if MICROPY_PY_ALL_SPECIAL_METHODS
-    [MP_BINARY_OP_INPLACE_ADD] = MP_QSTR___iadd__,
-    [MP_BINARY_OP_INPLACE_SUBTRACT] = MP_QSTR___isub__,
-    #endif
-    /*MP_BINARY_OP_INPLACE_MULTIPLY,
-    MP_BINARY_OP_INPLACE_FLOOR_DIVIDE,
-    MP_BINARY_OP_INPLACE_TRUE_DIVIDE,
-    MP_BINARY_OP_INPLACE_MODULO,
-    MP_BINARY_OP_INPLACE_POWER,*/
 
     #if MICROPY_PY_REVERSE_SPECIAL_METHODS
     [MP_BINARY_OP_REVERSE_ADD] = MP_QSTR___radd__,
     [MP_BINARY_OP_REVERSE_SUBTRACT] = MP_QSTR___rsub__,
+    #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_BINARY_OP_REVERSE_MULTIPLY] = MP_QSTR___rmul__,
+    [MP_BINARY_OP_REVERSE_FLOOR_DIVIDE] = MP_QSTR___rfloordiv__,
+    [MP_BINARY_OP_REVERSE_TRUE_DIVIDE] = MP_QSTR___rtruediv__,
+    [MP_BINARY_OP_REVERSE_MODULO] = MP_QSTR___rmod__,
+    [MP_BINARY_OP_REVERSE_POWER] = MP_QSTR___rpow__,
+    [MP_BINARY_OP_REVERSE_OR] = MP_QSTR___ror__,
+    [MP_BINARY_OP_REVERSE_XOR] = MP_QSTR___rxor__,
+    [MP_BINARY_OP_REVERSE_AND] = MP_QSTR___rand__,
+    [MP_BINARY_OP_REVERSE_LSHIFT] = MP_QSTR___rlshift__,
+    [MP_BINARY_OP_REVERSE_RSHIFT] = MP_QSTR___rrshift__,
     #endif
-
-    [MP_BINARY_OP_LESS] = MP_QSTR___lt__,
-    [MP_BINARY_OP_MORE] = MP_QSTR___gt__,
-    [MP_BINARY_OP_EQUAL] = MP_QSTR___eq__,
-    [MP_BINARY_OP_LESS_EQUAL] = MP_QSTR___le__,
-    [MP_BINARY_OP_MORE_EQUAL] = MP_QSTR___ge__,
-    /*
-    MP_BINARY_OP_NOT_EQUAL, // a != b calls a == b and inverts result
-    */
-    [MP_BINARY_OP_IN] = MP_QSTR___contains__,
-    /*
-    MP_BINARY_OP_IS,
-    */
-    [MP_BINARY_OP_LAST] = 0, // used to make sure array has full size, TODO: FIXME
+    #endif
 };
 
 STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {

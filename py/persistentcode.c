@@ -39,7 +39,7 @@
 #include "py/smallint.h"
 
 // The current version of .mpy files
-#define MPY_VERSION (2)
+#define MPY_VERSION (3)
 
 // The feature flags byte encodes the compile-time config options that
 // affect the generate bytecode.

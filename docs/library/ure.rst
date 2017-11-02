@@ -34,6 +34,8 @@ Supported operators are:
 
 ``'+?'``
 
+``'|'``
+
 ``'()'``
    Grouping. Each group is capturing (a substring it captures can be accessed
    with `match.group()` method).

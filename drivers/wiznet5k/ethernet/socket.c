@@ -52,9 +52,8 @@
 
 #include <string.h>
 
+#include "py/mpthread.h"
 #include "socket.h"
-
-extern void HAL_Delay(uint32_t);
 
 #define SOCK_ANY_PORT_NUM  0xC000;
 
@@ -242,7 +241,7 @@ int8_t WIZCHIP_EXPORT(connect)(uint8_t sn, uint8_t * addr, uint16_t port)
          #endif
          return SOCKERR_TIMEOUT;
 		}
-        HAL_Delay(1);
+        MICROPY_THREAD_YIELD();
 	}
    #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
@@ -317,6 +316,7 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
       }
       if( (sock_io_mode & (1<<sn)) && (len > freesize) ) return SOCK_BUSY;
       if(len <= freesize) break;
+      MICROPY_THREAD_YIELD();
    }
    wiz_send_data(sn, buf, len);
    #if _WIZCHIP_ == 5200
@@ -368,7 +368,7 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
       }
       if((sock_io_mode & (1<<sn)) && (recvsize == 0)) return SOCK_BUSY;
       if(recvsize != 0) break;
-      HAL_Delay(1);
+      MICROPY_THREAD_YIELD();
    };
    if(recvsize < len) len = recvsize;
    wiz_recv_data(sn, buf, len);
@@ -416,7 +416,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
       if(getSn_SR(sn) == SOCK_CLOSED) return SOCKERR_SOCKCLOSED;
       if( (sock_io_mode & (1<<sn)) && (len > freesize) ) return SOCK_BUSY;
       if(len <= freesize) break;
-      HAL_Delay(1);
+      MICROPY_THREAD_YIELD();
    };
 	wiz_send_data(sn, buf, len);
 
@@ -446,7 +446,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
          return SOCKERR_TIMEOUT;
       }
       ////////////
-      HAL_Delay(1);
+      MICROPY_THREAD_YIELD();
    }
    #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
@@ -486,6 +486,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
          if(getSn_SR(sn) == SOCK_CLOSED) return SOCKERR_SOCKCLOSED;
          if( (sock_io_mode & (1<<sn)) && (pack_len == 0) ) return SOCK_BUSY;
          if(pack_len != 0) break;
+         MICROPY_THREAD_YIELD();
       };
    }
    sock_pack_info[sn] = PACK_COMPLETED;

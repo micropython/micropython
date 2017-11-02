@@ -348,31 +348,16 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     if (MP_OBJ_IS_STR(o_in)) {
         len = unichar_charlen(str, len);
         if (len == 1) {
-            if (!UTF8_IS_NONASCII(*str)) {
-                goto return_first_byte;
-            }
-            mp_int_t ord = *str++ & 0x7F;
-            for (mp_int_t mask = 0x40; ord & mask; mask >>= 1) {
-                ord &= ~mask;
-            }
-            while (UTF8_IS_CONT(*str)) {
-                ord = (ord << 6) | (*str++ & 0x3F);
-            }
-            return mp_obj_new_int(ord);
+            return mp_obj_new_int(utf8_get_char((const byte*)str));
         }
-    } else {
-        // a bytes object
+    } else
+    #endif
+    {
+        // a bytes object, or a str without unicode support (don't sign extend the char)
         if (len == 1) {
-        return_first_byte:
             return MP_OBJ_NEW_SMALL_INT(((const byte*)str)[0]);
         }
     }
-    #else
-    if (len == 1) {
-        // don't sign extend when converting to ord
-        return mp_obj_new_int(((const byte*)str)[0]);
-    }
-    #endif
 
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError("ord expects a character");

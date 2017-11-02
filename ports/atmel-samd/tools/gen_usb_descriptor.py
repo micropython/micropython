@@ -4,10 +4,9 @@ import os
 import sys
 
 # path hacking
-sys.path.append("../../tools")
+sys.path.append("../../tools/usb_descriptor")
 
-from usb_descriptor import core
-from usb_descriptor import cdc
+from adafruit_usb_descriptor import cdc, standard, util
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--manufacturer', type=str,
@@ -24,16 +23,16 @@ parser.add_argument('output_file', type=argparse.FileType('w'))
 
 args = parser.parse_args()
 
-langid = core.StringDescriptor("\u0409")
-manufacturer = core.StringDescriptor(args.manufacturer)
-product = core.StringDescriptor(args.product)
-serial_number = core.StringDescriptor("serial number. you should fill in a unique serial number here."[:args.serial_number_length])
+langid = standard.StringDescriptor("\u0409")
+manufacturer = standard.StringDescriptor(args.manufacturer)
+product = standard.StringDescriptor(args.product)
+serial_number = standard.StringDescriptor("serial number. you should fill in a unique serial number here."[:args.serial_number_length])
 strings = [langid, manufacturer, product, serial_number]
 
 # vid = 0x239A
 # pid = 0x8021
 
-device = core.DeviceDescriptor(
+device = standard.DeviceDescriptor(
     idVendor=args.vid,
     idProduct=args.pid,
     iManufacturer=strings.index(manufacturer),
@@ -43,7 +42,7 @@ device = core.DeviceDescriptor(
 # Interface numbers are interface set local and endpoints are interface local
 # until core.join_interfaces renumbers them.
 cdc_interfaces = [
-    core.InterfaceDescriptor(
+    standard.InterfaceDescriptor(
         bInterfaceClass=0x2,  # Communications Device Class
         bInterfaceSubClass=0x02,  # Abstract control model
         bInterfaceProtocol=0x01,  # Common AT Commands
@@ -59,53 +58,53 @@ cdc_interfaces = [
             cdc.AbstractControlManagement(bmCapabilities=0x02),
             cdc.Union(bMasterInterface=0x00,
                       bSlaveInterface=[0x01]),
-            core.EndpointDescriptor(
-                bEndpointAddress=0x0 | core.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=core.EndpointDescriptor.TYPE_INTERRUPT,
+            standard.EndpointDescriptor(
+                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+                bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
                 wMaxPacketSize=0x8,
                 bInterval=10)
         ]
     ),
-    core.InterfaceDescriptor(
+    standard.InterfaceDescriptor(
         bInterfaceClass=0x0a,
         subdescriptors=[
-            core.EndpointDescriptor(
-                bEndpointAddress=0x0 | core.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=core.EndpointDescriptor.TYPE_BULK),
-            core.EndpointDescriptor(
-                bEndpointAddress=0x0 | core.EndpointDescriptor.DIRECTION_OUT,
-                bmAttributes=core.EndpointDescriptor.TYPE_BULK)
+            standard.EndpointDescriptor(
+                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+                bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+            standard.EndpointDescriptor(
+                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+                bmAttributes=standard.EndpointDescriptor.TYPE_BULK)
         ]
     )
 ]
 
 msc_interfaces = [
-    core.InterfaceDescriptor(
+    standard.InterfaceDescriptor(
         bInterfaceClass=0x08,
         bInterfaceSubClass=0x06,
         bInterfaceProtocol=0x50,
         subdescriptors=[
-            core.EndpointDescriptor(
-                bEndpointAddress=0x0 | core.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=core.EndpointDescriptor.TYPE_BULK),
-            core.EndpointDescriptor(
-                bEndpointAddress=0x1 | core.EndpointDescriptor.DIRECTION_OUT,
-                bmAttributes=core.EndpointDescriptor.TYPE_BULK)
+            standard.EndpointDescriptor(
+                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+                bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+            standard.EndpointDescriptor(
+                bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
+                bmAttributes=standard.EndpointDescriptor.TYPE_BULK)
         ]
     )
 ]
 
-interfaces = core.join_interfaces(cdc_interfaces, msc_interfaces)
+interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces)
 
-cdc_function = core.InterfaceAssociationDescriptor(
+cdc_function = standard.InterfaceAssociationDescriptor(
     bFirstInterface=interfaces.index(cdc_interfaces[0]),
     bInterfaceCount=len(cdc_interfaces),
     bFunctionClass=0x2,  # Communications Device Class
     bFunctionSubClass=0x2,  # Abstract control model
     bFunctionProtocol=0x1)  # Common AT Commands
 
-configuration = core.ConfigurationDescriptor(
-    wTotalLength=(core.ConfigurationDescriptor.bLength +
+configuration = standard.ConfigurationDescriptor(
+    wTotalLength=(standard.ConfigurationDescriptor.bLength +
                   cdc_function.bLength +
                   sum([len(bytes(x)) for x in interfaces])),
     bNumInterfaces=len(interfaces))

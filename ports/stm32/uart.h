@@ -48,6 +48,5 @@ void uart_irq_handler(mp_uint_t uart_id);
 mp_uint_t uart_rx_any(pyb_uart_obj_t *uart_obj);
 int uart_rx_char(pyb_uart_obj_t *uart_obj);
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
-void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 
 #endif // MICROPY_INCLUDED_STMHAL_UART_H
