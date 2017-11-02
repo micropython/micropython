@@ -13,7 +13,7 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None)
+.. function:: ussl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None)
 
    Takes a stream *sock* (usually usocket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, which wraps the underlying stream in
@@ -23,12 +23,12 @@ Functions
    server-side SSL socket should be created from a normal socket returned from
    `accept()` on a non-SSL listening server socket.
 
-   Depending on the underlying module implementation for a particular board,
-   some or all keyword arguments above may be not supported.
+   Depending on the underlying module implementation in a particular
+   `MicroPython port`, some or all keyword arguments above may be not supported.
 
 .. warning::
 
-   Some implementations of ``ssl`` module do NOT validate server certificates,
+   Some implementations of ``ussl`` module do NOT validate server certificates,
    which makes an SSL connection established prone to man-in-the-middle attacks.
 
 Exceptions
@@ -41,8 +41,8 @@ Exceptions
 Constants
 ---------
 
-.. data:: ssl.CERT_NONE
-          ssl.CERT_OPTIONAL
-          ssl.CERT_REQUIRED
+.. data:: ussl.CERT_NONE
+          ussl.CERT_OPTIONAL
+          ussl.CERT_REQUIRED
 
     Supported values for *cert_reqs* parameter.

@@ -49,6 +49,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // send stdout to UART and USB CDC VCP
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+        void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len);
         uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
     }
     if (usb_vcp_is_enabled()) {

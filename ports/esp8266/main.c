@@ -101,8 +101,7 @@ STATIC void mp_reset(void) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
 
     mp_obj_list_init(mp_sys_argv, 0);
-    MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
-    MP_STATE_PORT(dupterm_arr_obj) = MP_OBJ_NULL;
+
     reset_pins();
     #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     extern void esp_native_code_init(void);

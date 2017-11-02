@@ -57,10 +57,14 @@
 #define CDC_SEND_BREAK                              0x23
 
 uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
+    // Link the parent state
     cdc->usbd = usbd;
+
+    // Reset all the CDC state
+    // Note: we don't reset tx_buf_ptr_in in order to allow the output buffer to
+    // be filled (by usbd_cdc_tx_always) before the USB device is connected.
     cdc->rx_buf_put = 0;
     cdc->rx_buf_get = 0;
-    cdc->tx_buf_ptr_in = 0;
     cdc->tx_buf_ptr_out = 0;
     cdc->tx_buf_ptr_out_shadow = 0;
     cdc->tx_buf_ptr_wait_count = 0;

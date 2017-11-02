@@ -97,7 +97,7 @@ SRC_MOD += modtermios.c
 endif
 ifeq ($(MICROPY_PY_SOCKET),1)
 CFLAGS_MOD += -DMICROPY_PY_SOCKET=1
-SRC_MOD += modsocket.c
+SRC_MOD += modusocket.c
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0

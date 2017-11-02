@@ -21,6 +21,7 @@ print(float("INF"))
 print(float("infinity"))
 print(float("INFINITY"))
 print(float("nan"))
+print(float("-nan"))
 print(float("NaN"))
 try:
     float("")

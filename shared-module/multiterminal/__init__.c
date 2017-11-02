@@ -30,21 +30,21 @@
 #include "shared-bindings/multiterminal/__init__.h"
 
 mp_obj_t shared_module_multiterminal_get_secondary_terminal() {
-    if (MP_STATE_PORT(term_obj) == MP_OBJ_NULL) {
+    if (MP_STATE_VM(dupterm_objs[0]) == MP_OBJ_NULL) {
         return mp_const_none;
     } else {
-        return MP_STATE_PORT(term_obj);
+        return MP_STATE_VM(dupterm_objs[0]);
     }
 }
 
 void shared_module_multiterminal_set_secondary_terminal(mp_obj_t secondary_terminal) {
-    MP_STATE_PORT(term_obj) = secondary_terminal;
+    MP_STATE_VM(dupterm_objs[0]) = secondary_terminal;
     if (MP_STATE_PORT(dupterm_arr_obj) == MP_OBJ_NULL) {
         MP_STATE_PORT(dupterm_arr_obj) = mp_obj_new_bytearray(1, "");
     }
 }
 
 void shared_module_multiterminal_clear_secondary_terminal() {
-    MP_STATE_PORT(term_obj) = MP_OBJ_NULL;
+    MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_NULL;
     MP_STATE_PORT(dupterm_arr_obj) = MP_OBJ_NULL;
 }

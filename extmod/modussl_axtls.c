@@ -51,7 +51,11 @@ struct ssl_args {
 STATIC const mp_obj_type_t ussl_socket_type;
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
+#if MICROPY_PY_USSL_FINALISER
+    mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
+#else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
+#endif
     o->base.type = &ussl_socket_type;
     o->buf = NULL;
     o->bytes_left = 0;
@@ -152,7 +156,7 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     // Currently supports only blocking mode
     (void)self_in;
     if (!mp_obj_is_true(flag_in)) {
-        mp_raise_NotImplementedError("");
+        mp_raise_NotImplementedError(NULL);
     }
     return mp_const_none;
 }
@@ -178,6 +182,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+#if MICROPY_PY_USSL_FINALISER
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_table);

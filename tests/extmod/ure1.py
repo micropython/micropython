@@ -48,7 +48,12 @@ m = r.match("d")
 print(m.group(0))
 m = r.match("A")
 print(m.group(0))
+print("===")
 
+# '-' character within character class block
+print(re.match("[-a]+", "-a]d").group(0))
+print(re.match("[a-]+", "-a]d").group(0))
+print("===")
 
 r = re.compile("o+")
 m = r.search("foobar")

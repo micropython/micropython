@@ -108,11 +108,11 @@ void mp_hal_stdio_mode_orig(void) {
 #endif
 
 #if MICROPY_PY_OS_DUPTERM
-static int call_dupterm_read(void) {
+static int call_dupterm_read(size_t idx) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t read_m[3];
-        mp_load_method(MP_STATE_PORT(term_obj), MP_QSTR_read, read_m);
+        mp_load_method(MP_STATE_VM(dupterm_objs[idx]), MP_QSTR_read, read_m);
         read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
         mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
         if (res == mp_const_none) {
@@ -122,18 +122,18 @@ static int call_dupterm_read(void) {
         mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
         if (bufinfo.len == 0) {
             mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
-            MP_STATE_PORT(term_obj) = NULL;
+            MP_STATE_VM(dupterm_objs[idx]) = MP_OBJ_NULL;
             return -1;
         }
         nlr_pop();
         return *(byte*)bufinfo.buf;
     } else {
         // Temporarily disable dupterm to avoid infinite recursion
-        mp_obj_t save_term = MP_STATE_PORT(term_obj);
-        MP_STATE_PORT(term_obj) = NULL;
+        mp_obj_t save_term = MP_STATE_VM(dupterm_objs[idx]);
+        MP_STATE_VM(dupterm_objs[idx]) = NULL;
         mp_printf(&mp_plat_print, "dupterm: ");
         mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
-        MP_STATE_PORT(term_obj) = save_term;
+        MP_STATE_VM(dupterm_objs[idx]) = save_term;
     }
 
     return -1;
@@ -143,10 +143,11 @@ static int call_dupterm_read(void) {
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c;
 #if MICROPY_PY_OS_DUPTERM
-    if (MP_STATE_PORT(term_obj) != MP_OBJ_NULL) {
+    // TODO only support dupterm one slot at the moment
+    if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
         int c;
         do {
-             c = call_dupterm_read();
+             c = call_dupterm_read(0);
         } while (c == -2);
         if (c == -1) {
             goto main_term;

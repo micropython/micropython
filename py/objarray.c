@@ -286,7 +286,7 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 
             // Otherwise, can only look for a scalar numeric value in an array
             if (MP_OBJ_IS_INT(rhs_in) || mp_obj_is_float(rhs_in)) {
-                mp_raise_NotImplementedError("");
+                mp_raise_NotImplementedError(NULL);
             }
 
             return mp_const_false;

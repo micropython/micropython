@@ -48,16 +48,6 @@ float copysignf(float x, float y) {
 }
 #endif
 
-// some compilers define log2f in terms of logf
-#ifdef log2f
-#undef log2f
-#endif
-// some compilers have _M_LN2 defined in math.h, some don't
-#ifndef _M_LN2
-#define _M_LN2 (0.69314718055994530942)
-#endif
-float log2f(float x) { return logf(x) / (float)_M_LN2; }
-
 static const float _M_LN10 = 2.30258509299404; // 0x40135d8e
 float log10f(float x) { return logf(x) / (float)_M_LN10; }
 

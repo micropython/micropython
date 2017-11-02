@@ -38,6 +38,10 @@
 #include "extmod/vfs_fat.h"
 #endif
 
+// For mp_vfs_proxy_call, the maximum number of additional args that can be passed.
+// A fixed maximum size is used to avoid the need for a costly variable array.
+#define PROXY_MAX_ARGS (2)
+
 // path is the path to lookup and *path_out holds the path within the VFS
 // object (starts with / if an absolute path).
 // Returns MP_VFS_ROOT for root dir (and then path_out is undefined) and
@@ -97,6 +101,7 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
 }
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
+    assert(n_args <= PROXY_MAX_ARGS);
     if (vfs == MP_VFS_NONE) {
         // mount point not found
         mp_raise_OSError(MP_ENODEV);
@@ -105,7 +110,7 @@ STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_
         // can't do operation on root dir
         mp_raise_OSError(MP_EPERM);
     }
-    mp_obj_t meth[n_args + 2];
+    mp_obj_t meth[2 + PROXY_MAX_ARGS];
     mp_load_method(vfs->obj, meth_name, meth);
     if (args != NULL) {
         memcpy(meth + 2, args, n_args * sizeof(*args));
