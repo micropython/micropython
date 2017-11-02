@@ -52,12 +52,9 @@ void reset_all_pins(void) {
     uint32_t pin_mask[PORT_BITS / 32 + 1] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB or SWD lines.
-    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30);
+    pin_mask[0] &= ~(PORT_PA24 | PORT_PA25 | PORT_PA30 | PORT_PA31);
 
-    // The SWO pin changes between the 21 and 51.
-    #ifdef PORT_PB30H_CM4_SWO
-    pin_mask[1] &= ~(PORT_PB30);
-    #else
+    #ifdef SAMD21
     pin_mask[0] &= ~(PORT_PA31);
     #endif
 
@@ -71,11 +68,10 @@ void reset_all_pins(void) {
     #endif
 
     // Configure SWD
-    gpio_set_pin_direction(PIN_PA30, GPIO_DIRECTION_OUT);
     #ifdef SAMD51
-    gpio_set_pin_function(PIN_PB30, MUX_PB30H_CM4_SWO);
-    gpio_set_pin_direction(PIN_PB30, GPIO_DIRECTION_OUT);
-    gpio_set_pin_function(PIN_PB30, MUX_PB30H_CM4_SWO);
+    gpio_set_pin_function(PIN_PA30, MUX_PA30H_CM4_SWCLK);
+    // SWDIO will be automatically switched on PA31 when a signal is input on
+    // SWCLK.
     #endif
     #ifdef SAMD21
     //gpio_set_pin_function(PIN_PA30, GPIO_PIN_FUNCTION_G);
@@ -126,7 +122,7 @@ void reset_pin(uint8_t pin) {
 
     if (pin == PIN_PA30
         #ifdef SAMD51
-        || pin == PIN_PB30) {
+        ) {
         gpio_set_pin_function(pin, GPIO_PIN_FUNCTION_H);
         #endif
         #ifdef SAMD21
