@@ -132,6 +132,7 @@ class SSD1306_SPI(SSD1306):
         res.init(res.OUT, value=0)
         cs.init(cs.OUT, value=1)
         self.spi = spi
+        self.spi.init(spi.MASTER,baudrate=self.rate, polarity=0, phase=0)
         self.dc = dc
         self.res = res
         self.cs = cs
@@ -144,7 +145,6 @@ class SSD1306_SPI(SSD1306):
         super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
-        self.spi.init(baudrate=self.rate, polarity=0, phase=0)
         self.cs(1)
         self.dc(0)
         self.cs(0)
@@ -152,7 +152,6 @@ class SSD1306_SPI(SSD1306):
         self.cs(1)
 
     def write_data(self, buf):
-        self.spi.init(baudrate=self.rate, polarity=0, phase=0)
         self.cs(1)
         self.dc(1)
         self.cs(0)
