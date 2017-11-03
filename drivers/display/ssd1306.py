@@ -2,6 +2,7 @@
 
 from micropython import const
 import framebuf
+import time
 
 
 # register definitions
@@ -25,10 +26,13 @@ SET_CHARGE_PUMP     = const(0x8d)
 
 
 class SSD1306:
-    def __init__(self, width, height, external_vcc):
+    def __init__(self, width, height, external_vcc, res):
         self.width = width
         self.height = height
         self.external_vcc = external_vcc
+        self.res = res
+        if(res):
+            res.init(res.OUT, value=0)
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
         fb = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
@@ -49,6 +53,14 @@ class SSD1306:
         self.init_display()
 
     def init_display(self):
+        if(self.res):
+            # not all of the modules have reset pin broke out
+            # so we handle it optionally
+            self.res(1)
+            time.sleep_ms(1)
+            self.res(0)
+            time.sleep_ms(10)
+            self.res(1)
         for cmd in (
             SET_DISP | 0x00, # off
             # address setting
@@ -105,11 +117,11 @@ class SSD1306:
 
 
 class SSD1306_I2C(SSD1306):
-    def __init__(self, width, height, i2c, addr=0x3c, external_vcc=False):
+    def __init__(self, width, height, i2c, addr=0x3c, res=None, external_vcc=False):
         self.i2c = i2c
         self.addr = addr
         self.temp = bytearray(2)
-        super().__init__(width, height, external_vcc)
+        super().__init__(width, height, external_vcc, res)
 
     def write_cmd(self, cmd):
         self.temp[0] = 0x80 # Co=1, D/C#=0
@@ -126,19 +138,11 @@ class SSD1306_SPI(SSD1306):
     def __init__(self, width, height, spi, dc, res, cs, external_vcc=False):
         self.rate = 10 * 1024 * 1024
         dc.init(dc.OUT, value=0)
-        res.init(res.OUT, value=0)
         cs.init(cs.OUT, value=1)
         self.spi = spi
         self.dc = dc
-        self.res = res
         self.cs = cs
-        import time
-        self.res(1)
-        time.sleep_ms(1)
-        self.res(0)
-        time.sleep_ms(10)
-        self.res(1)
-        super().__init__(width, height, external_vcc)
+        super().__init__(width, height, external_vcc, res)
 
     def write_cmd(self, cmd):
         self.spi.init(baudrate=self.rate, polarity=0, phase=0)
