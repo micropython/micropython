@@ -207,7 +207,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|   .. method:: SPI.write(buffer, \*, start=0, end=len(buffer))
 //|
 //|     Write the data contained in ``buf``. Requires the SPI being locked.
-//|     At least one byte must be written.
+//|     If the buffer is empty, nothing happens.
 //|
 //|     :param bytearray buffer: buffer containing the bytes to write
 //|     :param int start: Index to start writing from
@@ -233,7 +233,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
     if (length == 0) {
-        mp_raise_ValueError("Buffer must be at least length 1");
+        return mp_const_none;
     }
 
     bool ok = common_hal_busio_spi_write(self, ((uint8_t*)bufinfo.buf) + start, length);
@@ -247,8 +247,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 
 //|   .. method:: SPI.readinto(buffer, \*, start=0, end=len(buffer), write_value=0)
 //|
-//|     Read into the buffer specified by ``buf`` while writing zeroes. Requires the SPI being locked.
-//|     At least one byte must be read.
+//|     Read into the buffer specified by ``buf`` while writing zeroes.
+//|     Requires the SPI being locked.
+//|     If the number of bytes to read is 0, nothing happens.
 //|
 //|     :param bytearray buffer: buffer to write into
 //|     :param int start: Index to start writing at
@@ -276,7 +277,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
     normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
 
     if (length == 0) {
-        mp_raise_ValueError("Buffer must be at least length 1");
+        return mp_const_none;
     }
 
     bool ok = common_hal_busio_spi_read(self, ((uint8_t*)bufinfo.buf) + start, length, args[ARG_write_value].u_int);
