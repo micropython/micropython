@@ -273,7 +273,6 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
 void usb_msc_background(void) {
     if (active_read && !usb_busy) {
         if (active_nblocks == 0) {
-            mscdf_xfer_blocks(false, NULL, 0);
             active_read = false;
             return;
         }
