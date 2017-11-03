@@ -47,7 +47,7 @@ etc. are not supported.
 Functions
 ---------
 
-.. function:: compile(regex_str)
+.. function:: compile(regex_str, [flags])
 
    Compile regular expression, return `regex <regex>` object.
 
@@ -65,6 +65,7 @@ Functions
 .. data:: DEBUG
 
    Flag value, display debug information about compiled expression.
+   (Availability depends on `MicroPython port`.)
 
 
 .. _regex:
