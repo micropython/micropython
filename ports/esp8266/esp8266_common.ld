@@ -73,6 +73,17 @@ SECTIONS
         _irom0_text_start = ABSOLUTE(.);
         *(.irom0.literal .irom.literal .irom.text.literal .irom0.text .irom.text)
 
+        /* Vendor SDK in v2.1.0-7-gb8fd588 started to build these with
+           -ffunction-sections -fdata-sections, and require routing to
+           irom via linker:
+           https://github.com/espressif/ESP8266_NONOS_SDK/commit/b8fd588a33f0319dc135523b51655e97b483b205
+         */
+
+        *libcrypto.a:(.literal.* .text.*)
+        *libnet80211.a:(.literal.* .text.*)
+        *libwpa.a:(.literal.* .text.*)
+        *libwpa2.a:(.literal.* .text.*)
+
         /* we put some specific text in this section */
 
         *py/argcheck.o*(.literal* .text*)
