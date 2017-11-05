@@ -65,7 +65,7 @@ def start(port=8266, password=None):
             _webrepl.password(webrepl_cfg.PASS)
             setup_conn(port, accept_conn)
             print("Started webrepl in normal mode")
-        except:
+        except (ImportError, NameError):
             print("WebREPL is not configured, run 'import webrepl_setup'")
     else:
         _webrepl.password(password)
