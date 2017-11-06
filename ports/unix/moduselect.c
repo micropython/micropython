@@ -277,12 +277,30 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
+STATIC mp_obj_t poll_dump(mp_obj_t self_in) {
+    mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
+
+    struct pollfd *entries = self->entries;
+    for (int i = self->len - 1; i >= 0; i--) {
+        printf("fd: %d ev: %x rev: %x", entries->fd, entries->events, entries->revents);
+        if (self->obj_map) {
+            printf(" obj: %p", self->obj_map[entries - self->entries]);
+        }
+        printf("\n");
+        entries++;
+    }
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(poll_dump_obj, poll_dump);
+
 STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
     { MP_ROM_QSTR(MP_QSTR_unregister), MP_ROM_PTR(&poll_unregister_obj) },
     { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&poll_dump_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
