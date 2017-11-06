@@ -40,6 +40,8 @@
 #include "py/mphal.h"
 #include "fdfile.h"
 
+#define DEBUG 0
+
 #if MICROPY_PY_SOCKET
 extern const mp_obj_type_t mp_type_socket;
 #endif
@@ -277,6 +279,7 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
+#if DEBUG
 STATIC mp_obj_t poll_dump(mp_obj_t self_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -293,6 +296,7 @@ STATIC mp_obj_t poll_dump(mp_obj_t self_in) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(poll_dump_obj, poll_dump);
+#endif
 
 STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_register), MP_ROM_PTR(&poll_register_obj) },
@@ -300,7 +304,9 @@ STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_modify), MP_ROM_PTR(&poll_modify_obj) },
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&poll_poll_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipoll), MP_ROM_PTR(&poll_ipoll_obj) },
-//    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&poll_dump_obj) },
+    #if DEBUG
+    { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&poll_dump_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
