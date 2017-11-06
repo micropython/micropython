@@ -894,6 +894,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
 #endif
 
+// Whether to provide the _asdict function for namedtuple
+#ifndef MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
+#define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (0)
+#endif
+
 // Whether to provide "math" module
 #ifndef MICROPY_PY_MATH
 #define MICROPY_PY_MATH (1)
