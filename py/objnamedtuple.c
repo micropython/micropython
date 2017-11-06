@@ -166,6 +166,25 @@ STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t 
     o->base.parent = &mp_type_tuple;
     o->n_fields = n_fields;
     for (size_t i = 0; i < n_fields; i++) {
+        #if MICROPY_CPYTHON_COMPAT
+        size_t fieldLen;
+        const char *field = mp_obj_str_get_data(fields[i], &fieldLen);
+        if (!fieldLen) {
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                mp_raise_ValueError("Field name cannot be empty");
+            } else {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                    "Type names and field names must be valid identifiers: '%s'", field));
+            }
+        } else if (field[0] == '_') {
+            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                mp_raise_ValueError("Field name cannot start with underscore");
+            } else {
+                nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+                    "Field names cannot start with an underscore: '%s'", field));
+            }
+        }
+        #endif
         o->fields[i] = mp_obj_str_get_qstr(fields[i]);
     }
     return MP_OBJ_FROM_PTR(o);

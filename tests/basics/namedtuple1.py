@@ -82,3 +82,13 @@ print(t.foo, t.bar)
 # Not implemented so far
 #T2 = namedtuple("TupComma", "foo,bar")
 #t = T2(1, 2)
+
+try:
+    namedtuple("Empty", [""])
+except ValueError:
+    print("ValueError")
+
+try:
+    namedtuple("Underscore", ["_foo"])
+except ValueError:
+    print("ValueError")
