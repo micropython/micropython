@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_USB_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_USB_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_USB_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_USB_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -39,4 +39,4 @@ bool usb_bytes_available(void);
 bool usb_connected(void);
 void usb_cdc_background(void);
 
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_USB_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_USB_H

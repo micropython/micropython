@@ -34,8 +34,9 @@
 #include "include/component/sercom.h"
 
 typedef struct {
-    Sercom *const sercom;
-    uint8_t pad;
+    Sercom *const sercom;     // SERCOM0, SERCOM1, etc.
+    uint8_t index;            // 0, 1, etc. corresponding to SERCOM<n>.
+    uint8_t pad;              // which of the four SERCOM pads to use
 } pin_sercom_t;
 
 typedef struct {

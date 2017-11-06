@@ -169,6 +169,8 @@ SRC_ASF := \
 	hal/src/hal_atomic.c \
 	hal/src/hal_delay.c \
 	hal/src/hal_flash.c \
+	hal/src/hal_i2c_m_sync.c \
+	hal/src/hal_io.c \
 	hal/src/hal_sleep.c \
 	hal/src/hal_timer.c \
 	hal/src/hal_usb_device.c \
@@ -177,6 +179,7 @@ SRC_ASF := \
 	hpl/nvmctrl/hpl_nvmctrl.c \
 	hpl/pm/hpl_pm.c \
 	hpl/rtc/hpl_rtc.c \
+	hpl/sercom/hpl_sercom.c \
 	hpl/systick/hpl_systick.c \
 	hpl/tc/hpl_tc.c \
 	hpl/usb/hpl_usb.c \
@@ -213,6 +216,7 @@ SRC_C = \
 	flash_api.c \
 	mphalport.c \
 	reset.c \
+	$(CHIP_FAMILY)_peripherals.c \
 	$(CHIP_FAMILY)_pins.c \
 	tick.c \
 	usb.c \
@@ -246,6 +250,8 @@ endif
 
 SRC_COMMON_HAL = \
 	board/__init__.c \
+	busio/__init__.c \
+	busio/I2C.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
@@ -253,7 +259,7 @@ SRC_COMMON_HAL = \
 	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
-	time/__init__.c
+	time/__init__.c \
 #	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
@@ -261,8 +267,6 @@ SRC_COMMON_HAL = \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	busio/__init__.c \
-	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
 	neopixel_write/__init__.c \

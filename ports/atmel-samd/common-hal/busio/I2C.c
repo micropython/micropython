@@ -26,25 +26,23 @@
 
 #include "shared-bindings/busio/I2C.h"
 #include "py/mperrno.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 
-#include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
-#include "samd21_pins.h"
+#include "hal/include/hal_gpio.h"
+#include "hal/include/hal_i2c_m_sync.h"
+#include "hal/include/hpl_i2c_m_sync.h"
 
-// We use ENABLE registers below we don't want to treat as a macro.
-#undef ENABLE
+#include "peripherals.h"
+#include "pins.h"
+
 
 // Number of times to try to send packet if failed.
-#define TIMEOUT 1
+#define ATTEMPTS 2
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency) {
-    struct i2c_master_config config_i2c_master;
-    i2c_master_get_config_defaults(&config_i2c_master);
-    // Struct takes the argument in Khz not Hz.
-    config_i2c_master.baud_rate = frequency / 1000;
     Sercom* sercom = NULL;
+    uint8_t sercom_index;
     uint32_t sda_pinmux = 0;
     uint32_t scl_pinmux = 0;
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
@@ -60,6 +58,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                 scl->sercom[j].pad == 1) {
                 scl_pinmux = PINMUX(scl->pin, (j == 0) ? MUX_C : MUX_D);
                 sercom = potential_sercom;
+                sercom_index = scl->sercom[j].index; // 2 for SERCOM2, etc.
                 break;
             }
         }
@@ -71,28 +70,36 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError("Invalid pins");
     }
 
-    config_i2c_master.pinmux_pad0 = sda_pinmux; // SDA
-    config_i2c_master.pinmux_pad1 = scl_pinmux; // SCL
-    config_i2c_master.buffer_timeout = 10000;
+
+    // Set up I2C clocks on sercom.
+    sercom_clock_init(sercom, sercom_index);
+
+    if (i2c_m_sync_init(&self->i2c_desc, sercom) != ERR_NONE) {
+            mp_raise_OSError(MP_EIO);
+    }
+        
+    gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_OFF);
+    gpio_set_pin_function(sda->pin, sda_pinmux);
+
+    gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_OFF);
+    gpio_set_pin_function(scl->pin, scl_pinmux);
+
+    // clkrate is always 0. baud_rate is in kHz.
+    
+    // Frequency must be set before the I2C device is enabled.
+    if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
+        mp_raise_ValueError("Unsupported baudrate");
+    }
 
     self->sda_pin = sda->pin;
     self->scl_pin = scl->pin;
     claim_pin(sda);
     claim_pin(scl);
 
-    enum status_code status = i2c_master_init(&self->i2c_master_instance,
-        sercom, &config_i2c_master);
-
-    if (status != STATUS_OK) {
+    if (i2c_m_sync_enable(&self->i2c_desc) != ERR_NONE) {
         common_hal_busio_i2c_deinit(self);
-        if (status == STATUS_ERR_BAUDRATE_UNAVAILABLE) {
-            mp_raise_ValueError("Unsupported baudrate");
-        } else {
-            mp_raise_OSError(MP_EIO);
-        }
+        mp_raise_OSError(MP_EIO);
     }
-
-    i2c_master_enable(&self->i2c_master_instance);
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
@@ -103,7 +110,10 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     if (common_hal_busio_i2c_deinited(self)) {
         return;
     }
-    i2c_master_reset(&self->i2c_master_instance);
+
+    i2c_m_sync_disable(&self->i2c_desc);
+    i2c_m_sync_deinit(&self->i2c_desc);
+    
     reset_pin(self->sda_pin);
     reset_pin(self->scl_pin);
     self->sda_pin = NO_PIN;
@@ -111,29 +121,23 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    uint8_t buf;
-    struct i2c_master_packet packet = {
-        .address     = addr,
-        .data_length = 0,
-        .data        = &buf,
-        .ten_bit_address = false,
-        .high_speed      = false,
-        .hs_master_code  = 0x0,
-    };
+    struct io_descriptor *i2c_io;
+    i2c_m_sync_get_io_descriptor(&self->i2c_desc, &i2c_io);
+    i2c_m_sync_set_slaveaddr(&self->i2c_desc, addr, I2C_M_SEVEN);
 
-    enum status_code status = i2c_master_write_packet_wait(
-        &self->i2c_master_instance, &packet);
-    return status == STATUS_OK;
-}
-
-void common_hal_busio_i2c_configure(busio_i2c_obj_t *self,
-        uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-    return;
+    // Write no data when just probing
+    return io_write(i2c_io, NULL, 0) == ERR_NONE;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
-    self->has_lock = i2c_master_lock(&self->i2c_master_instance) == STATUS_OK;
-    return self->has_lock;
+    bool grabbed_lock = false;
+    CRITICAL_SECTION_ENTER()
+        if (!self->has_lock) {
+            grabbed_lock = true;
+            self->has_lock = true;
+        }
+    CRITICAL_SECTION_LEAVE();
+    return grabbed_lock;
 }
 
 bool common_hal_busio_i2c_has_lock(busio_i2c_obj_t *self) {
@@ -142,38 +146,29 @@ bool common_hal_busio_i2c_has_lock(busio_i2c_obj_t *self) {
 
 void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
-    i2c_master_unlock(&self->i2c_master_instance);
 }
 
 uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-        const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    struct i2c_master_packet packet = {
-        .address     = addr,
-        .data_length = len,
-        .data        = (uint8_t *) data,
-        .ten_bit_address = false,
-        .high_speed      = false,
-        .hs_master_code  = 0x0,
-    };
+                                   const uint8_t *data, size_t len, bool transmit_stop_bit) {
 
-    uint16_t timeout = 0;
-    enum status_code status = STATUS_BUSY;
-    while (status != STATUS_OK) {
-        if (transmit_stop_bit) {
-            status = i2c_master_write_packet_wait(&self->i2c_master_instance,
-                                                  &packet);
-        } else {
-            status = i2c_master_write_packet_wait_no_stop(
-                &self->i2c_master_instance, &packet);
-        }
-        /* Increment timeout counter and check if timed out. */
-        if (timeout++ == TIMEOUT) {
+    uint16_t attempts = ATTEMPTS;
+    int32_t status;
+    do {
+        struct _i2c_m_msg msg;
+        msg.addr = addr;
+        msg.len = len;
+        msg.flags  = transmit_stop_bit ? I2C_M_STOP : 0;
+        msg.buffer = (uint8_t *) data;
+        status = _i2c_m_sync_transfer(&self->i2c_desc.device, &msg);
+
+        // Give up after ATTEMPTS tries.
+        if (--attempts == 0) {
             break;
         }
-    }
-    if (status == STATUS_OK) {
+    } while (status != I2C_OK);
+    if (status == I2C_OK) {
         return 0;
-    } else if (status == STATUS_ERR_BAD_ADDRESS) {
+    } else if (status == I2C_ERR_BAD_ADDRESS) {
         return MP_ENODEV;
     }
     return MP_EIO;
@@ -181,28 +176,25 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         uint8_t *data, size_t len) {
-    struct i2c_master_packet packet = {
-        .address     = addr,
-        .data_length = len,
-        .data        = data,
-        .ten_bit_address = false,
-        .high_speed      = false,
-        .hs_master_code  = 0x0,
-    };
 
-    uint16_t timeout = 0;
-    enum status_code status = STATUS_BUSY;
-    while (status != STATUS_OK) {
-        status = i2c_master_read_packet_wait(&self->i2c_master_instance,
-                                             &packet);
-        /* Increment timeout counter and check if timed out. */
-        if (timeout++ == TIMEOUT) {
+    uint16_t attempts = ATTEMPTS;
+    int32_t status;
+    do {
+        struct _i2c_m_msg msg;
+	msg.addr   = addr;
+	msg.len    = len;
+	msg.flags  = I2C_M_STOP | I2C_M_RD;
+	msg.buffer = data;
+        status = _i2c_m_sync_transfer(&self->i2c_desc.device, &msg);
+
+        // Give up after ATTEMPTS tries.
+        if (--attempts == 0) {
             break;
         }
-    }
-    if (status == STATUS_OK) {
+    } while (status != I2C_OK);
+    if (status == ERR_NONE) {
         return 0;
-    } else if (status == STATUS_ERR_BAD_ADDRESS) {
+    } else if (status == I2C_ERR_BAD_ADDRESS) {
         return MP_ENODEV;
     }
     return MP_EIO;

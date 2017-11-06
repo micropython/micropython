@@ -29,13 +29,14 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/sercom/i2c/i2c_master.h"
+#include "hal/include/hal_i2c_m_sync.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    struct i2c_master_module i2c_master_instance;
-    bool has_lock;
+    struct i2c_m_sync_desc i2c_desc;
+    volatile bool has_lock;
     uint8_t scl_pin;
     uint8_t sda_pin;
 } busio_i2c_obj_t;

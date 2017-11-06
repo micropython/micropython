@@ -24,16 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_H
 
 #include "mpconfigport.h"
 
 #ifdef SAMD21
-#include "samd21_pins.h"
+#include "samd21_peripherals.h"
 #endif
 #ifdef SAMD51
-#include "samd51_pins.h"
+#include "samd51_peripherals.h"
 #endif
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_PINS_H

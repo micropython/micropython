@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 by Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PERIPHERALS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PERIPHERALS_H
 
-#include "mpconfigport.h"
+#include "sam.h"
 
-#ifdef SAMD21
-#include "samd21_pins.h"
-#endif
-#ifdef SAMD51
-#include "samd51_pins.h"
-#endif
+void sercom_clock_init(Sercom* sercom, uint8_t sercom_index);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PERIPHERALS_H
+

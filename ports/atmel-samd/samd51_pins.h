@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PINS_H__
-#define __MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PINS_H__
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PINS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PINS_H
 
 #include "include/sam.h"
 
@@ -345,4 +345,4 @@ extern const mcu_pin_obj_t pin_PB01;
 #ifdef PIN_PB02
 extern const mcu_pin_obj_t pin_PB02;
 #endif
-#endif  // __MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PINS_H__
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SAMD51_PINS_H

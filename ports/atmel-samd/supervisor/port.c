@@ -166,22 +166,23 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    // Reset all SERCOMs except the one being used by the SPI flash.
-//     Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
-//     for (int i = 0; i < SERCOM_INST_NUM; i++) {
-//         #ifdef SPI_FLASH_SERCOM
-//             if (sercom_instances[i] == SPI_FLASH_SERCOM) {
-//                 continue;
-//             }
-//         #endif
-//         #ifdef MICROPY_HW_APA102_SERCOM
-//             if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
-//                 continue;
-//             }
-//         #endif
-//         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
-//     }
-//
+    // Reset all SERCOMs except the ones being used by on-board devices.
+    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+#ifdef SPI_FLASH_SERCOM
+        if (sercom_instances[i] == SPI_FLASH_SERCOM) {
+            continue;
+        }
+#endif
+#ifdef MICROPY_HW_APA102_SERCOM
+        if (sercom_instances[i] == MICROPY_HW_APA102_SERCOM) {
+            continue;
+        }
+#endif
+        // SWRST is same for all modes of SERCOMs.
+        sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
+    }
+
 // #ifdef EXPRESS_BOARD
 //     audioout_reset();
 //     touchin_reset();

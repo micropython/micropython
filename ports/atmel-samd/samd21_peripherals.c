@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
+#include "hpl/gclk/hpl_gclk_base.h"
+#include "hpl/pm/hpl_pm_base.h"
 
-#include "mpconfigport.h"
+// The clock initializer values are rather random, so we need to put them in
+// tables for lookup. We can't compute them.
 
-#ifdef SAMD21
-#include "samd21_pins.h"
+static const uint8_t SERCOMx_GCLK_ID_CORE[] = {
+    SERCOM0_GCLK_ID_CORE,
+    SERCOM1_GCLK_ID_CORE,
+    SERCOM2_GCLK_ID_CORE,
+    SERCOM3_GCLK_ID_CORE,
+#ifdef SERCOM4
+    SERCOM4_GCLK_ID_CORE,
 #endif
-#ifdef SAMD51
-#include "samd51_pins.h"
+#ifdef SERCOM5
+    SERCOM5_GCLK_ID_CORE,
 #endif
+};
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
+static const uint8_t SERCOMx_GCLK_ID_SLOW[] = {
+    SERCOM0_GCLK_ID_SLOW,
+    SERCOM1_GCLK_ID_SLOW,
+    SERCOM2_GCLK_ID_SLOW,
+    SERCOM3_GCLK_ID_SLOW,
+#ifdef SERCOM4
+    SERCOM4_GCLK_ID_SLOW,
+#endif
+#ifdef SERCOM5
+    SERCOM5_GCLK_ID_SLOW,
+#endif
+};
+
+    
+// Clock initialization as done in Atmel START.
+void sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
+    _pm_enable_bus_clock(PM_BUS_APBC, sercom);
+    _gclk_enable_channel(SERCOMx_GCLK_ID_CORE[sercom_index], GCLK_CLKCTRL_GEN_GCLK0_Val);
+    _gclk_enable_channel(SERCOMx_GCLK_ID_SLOW[sercom_index], GCLK_CLKCTRL_GEN_GCLK3_Val);
+}
