@@ -85,7 +85,7 @@ CFLAGS = -Os -DNDEBUG
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
-CFLAGS = -O2 -DNDEBUG
+CFLAGS = -Os -DNDEBUG
 endif
 
 #Debugging/Optimization
