@@ -32,18 +32,17 @@
 #include "tick.h"
 
 #ifdef SAMD51
-static inline void delay_cycles(uint8_t cycles) {
-    uint32_t start = SysTick->VAL;
-    uint32_t stop = start - cycles;
-    if (start < cycles) {
-        stop = 0xffffff + start - cycles;
-        while (SysTick->VAL < start || SysTick->VAL > stop) {}
-    } else {
-        // Make sure the systick value is between start and stop in case it
-        // wraps around before we read its value less than stop.
-        while (SysTick->VAL > stop && SysTick->VAL <= start) {}
+// This magical macro makes sure the delay isn't optimized out and is the
+// minimal three instructions.
+#define delay_cycles(cycles) \
+{ \
+    uint32_t t; \
+    asm volatile ( \
+        "movs %[t], %[c]\n\t" \
+        "loop%=:\n\t" \
+        "subs	%[t], #1\n\t" \
+        "bne.n  loop%=" : [t] "=r"(t) : [c] "I" (cycles)); \
     }
-}
 #endif
 
 uint64_t next_start_tick_ms = 0;
@@ -88,7 +87,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
         asm("nop; nop;");
         #endif
         #ifdef SAMD51
-        delay_cycles(18);
+        delay_cycles(3);
         #endif
         if(p & bitMask) {
             // This is the high delay unique to a one bit.
@@ -97,7 +96,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             asm("nop; nop; nop; nop; nop; nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(25);
+            delay_cycles(11);
             #endif
             *clr = pinMask;
         } else {
@@ -108,7 +107,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             asm("nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(25);
+            delay_cycles(3);
             #endif
         }
         if((bitMask >>= 1) != 0) {
@@ -119,7 +118,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             asm("nop; nop; nop; nop; nop;");
             #endif
             #ifdef SAMD51
-            delay_cycles(44);
+            delay_cycles(20);
             #endif
         } else {
             if(ptr >= end) break;
@@ -130,7 +129,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             // above operations take.
             // For the SK6812 its 0.6us +- 0.15us
             #ifdef SAMD51
-            delay_cycles(50);
+            delay_cycles(15);
             #endif
         }
     }
