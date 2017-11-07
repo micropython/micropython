@@ -105,10 +105,10 @@ bool common_hal_digitalio_digitalinout_get_value(
     if (!self->output) {
         return gpio_get_pin_level(pin);
     } else {
-        if (self->open_drain && hri_port_get_DIR_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << pin) == 0) {
+        if (self->open_drain && hri_port_get_DIR_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << GPIO_PIN(pin)) == 0) {
             return true;
         } else {
-            return hri_port_get_OUT_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << pin);
+            return hri_port_get_OUT_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << GPIO_PIN(pin));
         }
     }
 }
@@ -160,7 +160,7 @@ enum digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     } else {
         if (hri_port_get_PINCFG_PULLEN_bit(PORT, (enum gpio_port)GPIO_PORT(pin), pin) == 0) {
             return PULL_NONE;
-        } if (hri_port_get_OUT_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << pin) > 0) {
+        } if (hri_port_get_OUT_reg(PORT, (enum gpio_port)GPIO_PORT(pin), 1U << GPIO_PIN(pin)) > 0) {
             return PULL_UP;
         } else {
             return PULL_DOWN;
