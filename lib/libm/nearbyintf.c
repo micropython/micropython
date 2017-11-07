@@ -18,7 +18,7 @@ float nearbyintf(float x)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 	if (y == 0)
-#pragma GCC diagnostic pop
 		return s ? -0.0f : 0.0f;
+#pragma GCC diagnostic pop
 	return y;
 }
