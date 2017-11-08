@@ -92,4 +92,8 @@
 #define MSG_SOFT_REBOOT "soft reboot"
 #endif
 
+#ifndef MSG_DOUBLE_FILE_EXTENSION
+#define MSG_DOUBLE_FILE_EXTENSION "WARNING: Your code filename has two extensions\r\n"
+#endif
+
 #endif  // MICROPY_SUPERVISOR_MESSAGES_DEFAULT_H

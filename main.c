@@ -98,16 +98,21 @@ void reset_mp(void) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 }
+#define STRING_LIST(...) {__VA_ARGS__, ""}
 
-bool maybe_run(const char* filename, pyexec_result_t* exec_result) {
-    mp_import_stat_t stat = mp_import_stat(filename);
-    if (stat != MP_IMPORT_STAT_FILE) {
-        return false;
+bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
+
+    for (int i = 0; filenames[i] != (char*)""; i++) {
+        mp_import_stat_t stat = mp_import_stat(filenames[i]);
+        if (stat != MP_IMPORT_STAT_FILE) {
+            continue;
+        }
+        serial_write(filenames[i]);
+        serial_write(MSG_OUTPUT_SUFFIX);
+        pyexec_file(filenames[i], exec_result);
+        return true;
     }
-    serial_write(filename);
-    serial_write(MSG_OUTPUT_SUFFIX);
-    pyexec_file(filename, exec_result);
-    return true;
+    return false;
 }
 
 bool start_mp(safe_mode_t safe_mode) {
@@ -132,10 +137,17 @@ bool start_mp(safe_mode_t safe_mode) {
         serial_write(MSG_SAFE_MODE_NO_MAIN);
     } else {
         new_status_color(MAIN_RUNNING);
-        found_main = maybe_run("code.txt", &result) ||
-                     maybe_run("code.py", &result) ||
-                     maybe_run("main.py", &result) ||
-                     maybe_run("main.txt", &result);
+
+        const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+                                                    "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+        found_main = maybe_run_list(supported_filenames, &result);
+        if (!found_main){
+            found_main = maybe_run_list(double_extension_filenames, &result);
+            if (found_main) {
+                serial_write(MSG_DOUBLE_FILE_EXTENSION);
+            }
+        }
         reset_status_led();
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -253,10 +265,8 @@ int __attribute__((used)) main(void) {
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
-        bool found_boot = maybe_run("settings.txt", NULL) ||
-                          maybe_run("settings.py", NULL) ||
-                          maybe_run("boot.py", NULL) ||
-                          maybe_run("boot.txt", NULL);
+        static const char *filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+        bool found_boot = maybe_run_list(filenames, NULL);
         (void) found_boot;
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
