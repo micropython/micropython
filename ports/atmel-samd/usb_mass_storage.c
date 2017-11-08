@@ -256,6 +256,7 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
         return ERR_DENIED;
     }
 
+    CRITICAL_SECTION_ENTER();
     if (active_read) {
         active_addr += 1;
         active_nblocks--;
@@ -268,6 +269,7 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
         sector_loaded = true;
     }
     usb_busy = false;
+    CRITICAL_SECTION_LEAVE();
 
     return ERR_NONE;
 }
@@ -277,9 +279,10 @@ void usb_msc_background(void) {
     if (active_read && !usb_busy) {
         fs_user_mount_t * vfs = get_vfs(active_lun);
         disk_read(vfs, sector_buffer, active_addr, 1);
-        // TODO(tannewt): Check the read result.
-        mscdf_xfer_blocks(true, sector_buffer, 1);
-        usb_busy = true;
+        CRITICAL_SECTION_ENTER();
+        int32_t result = mscdf_xfer_blocks(true, sector_buffer, 1);
+        usb_busy = result == ERR_NONE;
+        CRITICAL_SECTION_LEAVE();
     }
     if (active_write && !usb_busy) {
         if (sector_loaded) {
@@ -306,8 +309,14 @@ void usb_msc_background(void) {
         }
         // Load more blocks from USB if they are needed.
         if (active_nblocks > 0) {
+            // Turn off interrupts because with them on,
+            // usb_msc_xfer_done could be called before we update
+            // usb_busy. If that happened, we'd overwrite the fact that
+            // the transfer actually already finished.
+            CRITICAL_SECTION_ENTER();
             int32_t result = mscdf_xfer_blocks(false, sector_buffer, 1);
-            usb_busy = result != ERR_NONE;
+            usb_busy = result == ERR_NONE;
+            CRITICAL_SECTION_LEAVE();
         } else {
             mscdf_xfer_blocks(false, NULL, 0);
             active_write = false;
