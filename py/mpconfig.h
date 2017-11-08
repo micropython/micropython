@@ -1293,4 +1293,24 @@ typedef double mp_float_t;
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
 #endif
 
+#ifndef MP_HTOBE16
+#if MP_ENDIANNESS_LITTLE
+# define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
+# define MP_BE16TOH(x) MP_HTOBE16(x)
+#else
+# define MP_HTOBE16(x) (x)
+# define MP_BE16TOH(x) (x)
+#endif
+#endif
+
+#ifndef MP_HTOBE32
+#if MP_ENDIANNESS_LITTLE
+# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8)  & 0xff00) | (((x) >> 24) & 0xff) ))
+# define MP_BE32TOH(x) MP_HTOBE32(x)
+#else
+# define MP_HTOBE32(x) (x)
+# define MP_BE32TOH(x) (x)
+#endif
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H
