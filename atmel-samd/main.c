@@ -122,6 +122,11 @@ void init_flash_fs(bool create_allowed) {
     if (res == FR_NO_FILESYSTEM && create_allowed) {
         // no filesystem so create a fresh one
 
+        // Wait two seconds before creating. Jittery power might
+        // fail before we're ready. This can happen if someone
+        // is bobbling a bit when plugging in a battery.
+        mp_hal_delay_ms(2000);
+
         uint8_t working_buf[_MAX_SS];
         res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
         // Flush the new file system to make sure its repaired immediately.
