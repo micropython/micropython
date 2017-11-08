@@ -63,10 +63,10 @@ static fs_user_mount_t* get_vfs(int lun) {
 /* Inquiry Information */
 // This is designed to handle the common case where we have an internal file
 // system and an optional SD card.
-static uint8_t inquiry_info[2][36];
+COMPILER_ALIGNED(4) static uint8_t inquiry_info[2][36];
 
 /* Capacities of Disk */
-static uint8_t format_capa[2][8];
+COMPILER_ALIGNED(4) static uint8_t format_capa[2][8];
 
 /**
  * \brief Eject Disk
