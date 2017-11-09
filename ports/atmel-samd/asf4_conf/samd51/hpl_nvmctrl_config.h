@@ -19,14 +19,14 @@
 // <i> Indicate whether AHB0 cache is disable or not
 // <id> nvm_arch_cache0
 #ifndef CONF_NVM_CACHE0
-#define CONF_NVM_CACHE0 0
+#define CONF_NVM_CACHE0 1
 #endif
 
 // <q> AHB1 Cache Disable
 // <i> Indicate whether AHB1 cache is disable or not
 // <id> nvm_arch_cache1
 #ifndef CONF_NVM_CACHE1
-#define CONF_NVM_CACHE1 0
+#define CONF_NVM_CACHE1 1
 #endif
 
 // </h>

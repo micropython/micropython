@@ -260,9 +260,6 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
     if (active_read) {
         active_addr += 1;
         active_nblocks--;
-        if (active_nblocks == 0) {
-            active_read = false;
-        }
     }
 
     if (active_write) {
@@ -277,6 +274,10 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
 // The start_read callback begins a read transaction which we accept but delay our response until the "main thread" calls usb_msc_background. Once it does, we read immediately from the drive into our cache and trigger the USB DMA to output the sector. Once the sector is transmitted, xfer_done will be called.
 void usb_msc_background(void) {
     if (active_read && !usb_busy) {
+        if (active_nblocks == 0) {
+            active_read = false;
+            return;
+        }
         fs_user_mount_t * vfs = get_vfs(active_lun);
         disk_read(vfs, sector_buffer, active_addr, 1);
         CRITICAL_SECTION_ENTER();
