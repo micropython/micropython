@@ -983,12 +983,12 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
     // Basic validation of base classes
-    size_t len;
-    mp_obj_t *items;
-    mp_obj_tuple_get(bases_tuple, &len, &items);
-    for (size_t i = 0; i < len; i++) {
-        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
-        mp_obj_type_t *t = MP_OBJ_TO_PTR(items[i]);
+    size_t bases_len;
+    mp_obj_t *bases_items;
+    mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
+    for (size_t i = 0; i < bases_len; i++) {
+        assert(MP_OBJ_IS_TYPE(bases_items[i], &mp_type_type));
+        mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -1014,17 +1014,17 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     //o->iternext = ; not implemented
     o->buffer_p.get_buffer = instance_get_buffer;
 
-    if (len > 0) {
+    if (bases_len > 0) {
         // Inherit protocol from a base class. This allows to define an
         // abstract base class which would translate C-level protocol to
         // Python method calls, and any subclass inheriting from it will
         // support this feature.
-        o->protocol = ((mp_obj_type_t*)MP_OBJ_TO_PTR(items[0]))->protocol;
+        o->protocol = ((mp_obj_type_t*)MP_OBJ_TO_PTR(bases_items[0]))->protocol;
 
-        if (len >= 2) {
+        if (bases_len >= 2) {
             o->parent = MP_OBJ_TO_PTR(bases_tuple);
         } else {
-            o->parent = MP_OBJ_TO_PTR(items[0]);
+            o->parent = MP_OBJ_TO_PTR(bases_items[0]);
         }
     }
 
