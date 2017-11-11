@@ -36,6 +36,8 @@
 #include "nrf_sdm.h"
 #include "ble_gap.h"
 #include "ble.h" // sd_ble_uuid_encode
+#include "hal/hal_nvmc.h"
+#include "mphalport.h"
 
 
 #define BLE_DRIVER_VERBOSE 0
@@ -858,6 +860,22 @@ void ble_drv_discover_descriptors(void) {
 
 #endif
 
+static void sd_evt_handler(uint32_t evt_id) {
+    switch (evt_id) {
+#ifdef HAL_NVMC_MODULE_ENABLED
+        case NRF_EVT_FLASH_OPERATION_SUCCESS:
+            hal_nvmc_operation_finished(HAL_NVMC_SUCCESS);
+            break;
+        case NRF_EVT_FLASH_OPERATION_ERROR:
+            hal_nvmc_operation_finished(HAL_NVMC_ERROR);
+            break;
+#endif
+        default:
+            // unhandled event!
+            break;
+    }
+}
+
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // S132 event ranges.
 // Common 0x01 -> 0x0F
@@ -1049,12 +1067,11 @@ void SWI2_EGU2_IRQHandler(void) {
 #endif
 
     uint32_t evt_id;
-    uint32_t err_code;
-    do {
-        err_code = sd_evt_get(&evt_id);
-        // TODO: handle non ble events
-    } while (err_code != NRF_ERROR_NOT_FOUND && err_code != NRF_SUCCESS);
+    while (sd_evt_get(&evt_id) != NRF_ERROR_NOT_FOUND) {
+        sd_evt_handler(evt_id);
+    }
 
+    uint32_t err_code;
     uint16_t evt_len = sizeof(m_ble_evt_buf);
     do {
         err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
