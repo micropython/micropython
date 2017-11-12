@@ -59,8 +59,6 @@ enum {
 
 #elif defined(NRF52)
 #define HAL_NVMC_PAGESIZE (4096)
-#error NRF52 not yet implemented
-
 #else
 #error Unknown chip
 #endif
