@@ -31,7 +31,7 @@
 
 // options to control how MicroPython is built
 #ifndef MICROPY_VFS
-#define MICROPY_VFS                 (1)
+#define MICROPY_VFS                 (0)
 #endif
 #define MICROPY_VFS_FAT             (MICROPY_VFS)
 #define MICROPY_ALLOC_PATH_MAX      (512)
