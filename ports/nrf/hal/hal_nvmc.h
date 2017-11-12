@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Ayke van Laethem
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
-#define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
-typedef enum {
-    PYEXEC_MODE_RAW_REPL,
-    PYEXEC_MODE_FRIENDLY_REPL,
-} pyexec_mode_kind_t;
+#ifndef HAL_NVMC_H__
+#define HAL_NVMC_H__
 
-extern pyexec_mode_kind_t pyexec_mode_kind;
+#include <stdint.h>
 
-// Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
-// the pyexec functions if a SystemExit exception is raised by the running code.
-// It will reset to 0 at the start of each execution (eg each REPL entry).
-extern int pyexec_system_exit;
+#include "nrf.h"
 
-#define PYEXEC_FORCED_EXIT (0x100)
-#define PYEXEC_SWITCH_MODE (0x200)
+// Erase a single page. The pageaddr is an address within the first page.
+bool hal_nvmc_erase_page(uint32_t pageaddr);
 
-int pyexec_raw_repl(void);
-int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_frozen_module(const char *name);
-void pyexec_event_repl_init(void);
-int pyexec_event_repl_process_char(int c);
-extern uint8_t pyexec_repl_active;
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
+// Write an array of 32-bit words to flash. The len parameter is the
+// number of words, not the number of bytes. Dest and buf must be aligned.
+bool hal_nvmc_write_words(uint32_t *dest, const uint32_t *buf, size_t len);
 
-MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
+// Write a byte to flash. May have any alignment.
+bool hal_nvmc_write_byte(byte *dest, byte b);
 
-#endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
+// Write an (unaligned) byte buffer to flash.
+bool hal_nvmc_write_buffer(void *dest_in, const void *buf_in, size_t len);
+
+// Call for ble_drv.c: notify (from an interrupt) that the current flash
+// operation has finished.
+void hal_nvmc_operation_finished(uint8_t result);
+
+enum {
+    HAL_NVMC_BUSY,
+    HAL_NVMC_SUCCESS,
+    HAL_NVMC_ERROR,
+};
+
+#if defined(NRF51)
+#define HAL_NVMC_PAGESIZE (1024)
+
+#elif defined(NRF52)
+#define HAL_NVMC_PAGESIZE (4096)
+#else
+#error Unknown chip
+#endif
+
+#define HAL_NVMC_IS_PAGE_ALIGNED(addr) ((uint32_t)(addr) & (HAL_NVMC_PAGESIZE - 1))
+
+#endif // HAL_NVMC_H__
