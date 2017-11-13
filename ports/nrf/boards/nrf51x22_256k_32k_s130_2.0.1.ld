@@ -6,9 +6,9 @@ SEARCH_DIR(.)
 GROUP(-lgcc -lc -lnosys)
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x040000 /* entire flash, 256 KiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x0001b000, LENGTH = 0x000400 /* sector 0, 1 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x0001b400, LENGTH = 0x024c00 /* 147 KiB */
+    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 256K     /* entire flash */
+    FLASH_TEXT (rx) : ORIGIN = 0x0001B000, LENGTH = 130K     /* app */
+    FLASH_USER (rx) : ORIGIN = 0x0003B000, LENGTH = 18K      /* app data, filesystem */
     RAM (xrw)       : ORIGIN = 0x200013c8, LENGTH = 0x006c38 /* 27 KiB */
 }
  
