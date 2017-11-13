@@ -5,9 +5,9 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x080000 /* entire flash, 512 KiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x0001c000, LENGTH = 0x001000 /* sector 0, 4 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x0001d000, LENGTH = 0x060000 /* 396 KiB */
+    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 512K     /* entire flash */
+    FLASH_TEXT (rx) : ORIGIN = 0x0001c000, LENGTH = 336K     /* app */
+    FLASH_USER (rx) : ORIGIN = 0x00070000, LENGTH = 64K      /* app data, filesystem */
     RAM (xrw)       : ORIGIN = 0x200039c0, LENGTH = 0x0c640  /* 49.5 KiB, give 8KiB headroom for softdevice */
 }
  
