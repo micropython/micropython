@@ -1,15 +1,15 @@
 /*
-    GNU linker script for NRF52 blank w/ no SoftDevice
+    GNU linker script for NRF51 AA w/ no SoftDevice
 */
 /* Specify the memory areas */
 SEARCH_DIR(.)
 GROUP(-lgcc -lc -lnosys)
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x040000 /* entire flash, 256 KiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x00000000, LENGTH = 0x000400 /* sector 0, 1 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x00000400, LENGTH = 0x03FC00 /* 255 KiB */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x004000 /* 16 KiB */
+    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 256K /* entire flash */
+    FLASH_TEXT (rx) : ORIGIN = 0x00000000, LENGTH = 192K /* app */
+    FLASH_USER (rx) : ORIGIN = 0x00030000, LENGTH = 64K  /* app data, filesystem */
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 16K  /* use all RAM */
 }
  
 /* produce a link error if there is not this amount of RAM for these sections */

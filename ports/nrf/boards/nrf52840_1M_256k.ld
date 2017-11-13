@@ -5,10 +5,10 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x100000 /* entire flash, 1 MiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x00000000, LENGTH = 0x001000 /* sector 0, 4 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x00001000, LENGTH = 0x0FF000 /* 1020 KiB */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x040000 /* 256 KiB */
+    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 1M   /* entire flash */
+    FLASH_TEXT (rx) : ORIGIN = 0x00000000, LENGTH = 960K /* app */
+    FLASH_USER (rx) : ORIGIN = 0x000F0000, LENGTH = 64K  /* app data, filesystem */
+    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 256K /* use all RAM */
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
