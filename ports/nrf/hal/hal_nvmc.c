@@ -35,12 +35,12 @@
 
 #ifdef HAL_NVMC_MODULE_ENABLED
 
-#if BLUETOOTH_SD
-
 // Rotates bits in `value` left `shift` times.
 STATIC inline uint32_t rotate_left(uint32_t value, uint32_t shift) {
     return (value << shift) | (value >> (32 - shift));
 }
+
+#if BLUETOOTH_SD
 
 STATIC volatile uint8_t hal_nvmc_operation_state = HAL_NVMC_BUSY;
 
@@ -158,7 +158,7 @@ bool hal_nvmc_write_byte(byte *dest_in, byte b) {
     uint32_t value = 0xffffff00 | b;
 
     // Rotate bits in value to an aligned position.
-    value = rotate_left(value, 24 - (dest - dest_aligned) * 8);
+    value = rotate_left(value, (dest & 3) * 8);
 
     // Put the value at the right place.
     *(uint32_t*)dest_aligned = value;
