@@ -3,12 +3,14 @@
 */
 
 /* Specify the memory areas */
+/* Memory map: https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/memory-map */
 MEMORY
 {
-    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x080000 /* entire flash, 512 KiB */
-    FLASH_ISR (rx)  : ORIGIN = 0x0001c000, LENGTH = 0x001000 /* sector 0, 4 KiB */
-    FLASH_TEXT (rx) : ORIGIN = 0x0001c400, LENGTH = 0x026c00 /* 152 KiB - APP - ISR */
-    RAM (xrw)       : ORIGIN = 0x200039c0, LENGTH = 0x0c640  /* 49.5 KiB, give 8KiB headroom for softdevice */
+    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 512K     /* entire flash */
+    FLASH_TEXT (rx) : ORIGIN = 0x0001C000, LENGTH = 162K     /* app */
+    FLASH_TEMP (rx) : ORIGIN = 0x00044800, LENGTH = 162K     /* temporary storage area for DFU */
+    FLASH_USER (rx) : ORIGIN = 0x0006D000, LENGTH = 28K      /* app data, filesystem */
+    RAM (xrw)       : ORIGIN = 0x200039C0, LENGTH = 0x0C640  /* 49.5 KiB, give 8KiB headroom for softdevice */
 }
  
 /* produce a link error if there is not this amount of RAM for these sections */
