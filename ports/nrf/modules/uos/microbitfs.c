@@ -349,7 +349,7 @@ STATIC file_descriptor_obj *microbit_file_open(const char *name, size_t name_len
         }
         index = find_chunk_and_erase();
         if (index == FILE_NOT_FOUND) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "No more storage space"));
+            mp_raise_OSError(MP_ENOSPC);
         }
         hal_nvmc_write_byte(&(file_system_chunks[index].marker), FILE_START);
         hal_nvmc_write_byte(&(file_system_chunks[index].header.name_len), name_len);
@@ -383,7 +383,7 @@ STATIC mp_obj_t microbit_remove(mp_obj_t filename) {
     const char *name = mp_obj_str_get_data(filename, &name_len);
     mp_uint_t index = microbit_find_file(name, name_len);
     if (index == 255) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "file not found"));
+        mp_raise_OSError(MP_ENOENT);
     }
     clear_file(index);
     return mp_const_none;
@@ -493,7 +493,7 @@ STATIC mp_obj_t microbit_file_size(mp_obj_t filename) {
     const char *name = mp_obj_str_get_data(filename, &name_len);
     uint8_t chunk = microbit_find_file(name, name_len);
     if (chunk == 255) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "file not found"));
+        mp_raise_OSError(MP_ENOENT);
     }
     mp_uint_t len = 0;
     uint8_t end_offset = file_system_chunks[chunk].header.end_offset;
@@ -686,7 +686,7 @@ mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args) {
     const char *filename = mp_obj_str_get_data(args[0], &name_len);
     file_descriptor_obj *res = microbit_file_open(filename, name_len, read == 0, text == 0);
     if (res == NULL) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "file not found"));
+        mp_raise_OSError(MP_ENOENT);
     }
     return res;
 mode_error:
