@@ -161,6 +161,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/led.c \
 	machine/temp.c \
 	uos/moduos.c \
+	uos/microbitfs.c \
 	utime/modutime.c \
 	pyb/modpyb.c \
 	ubluepy/modubluepy.c \
