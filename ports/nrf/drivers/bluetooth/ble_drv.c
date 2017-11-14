@@ -1071,12 +1071,24 @@ void SWI2_EGU2_IRQHandler(void) {
         sd_evt_handler(evt_id);
     }
 
-    uint32_t err_code;
     uint16_t evt_len = sizeof(m_ble_evt_buf);
-    do {
-        err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
+    while (1) {
+        uint32_t err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
+        if (err_code != NRF_SUCCESS) {
+            // Possible error conditions:
+            //  * NRF_ERROR_NOT_FOUND: no events left, break
+            //  * NRF_ERROR_DATA_SIZE: retry with a bigger data buffer
+            //    (currently not handled, TODO)
+            //  * NRF_ERROR_INVALID_ADDR: pointer is not aligned, should
+            //    not happen.
+            // In all cases, it's best to simply stop now.
+            if (err_code == NRF_ERROR_DATA_SIZE) {
+                BLE_DRIVER_LOG("NRF_ERROR_DATA_SIZE\n");
+            }
+            break;
+        }
         ble_evt_handler((ble_evt_t *)m_ble_evt_buf);
-    } while (err_code != NRF_ERROR_NOT_FOUND && err_code != NRF_SUCCESS);
+    }
 }
 
 #endif // BLUETOOTH_SD
