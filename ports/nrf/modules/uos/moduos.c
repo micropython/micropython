@@ -33,6 +33,7 @@
 #include "py/objstr.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
+#include "modules/uos/microbitfs.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
@@ -148,6 +149,12 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
 
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mod_os_sync_obj) },
+
+#elif MICROPY_HW_HAS_BUILTIN_FLASH
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&uos_mbfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&uos_mbfs_ilistdir_obj) }, // uses ~136 bytes
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&uos_mbfs_stat_obj) },         // uses ~228 bytes
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&uos_mbfs_remove_obj) },
 #endif
 
     /// \constant sep - separation character used in paths
