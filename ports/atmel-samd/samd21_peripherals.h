@@ -29,6 +29,8 @@
 
 #include "include/sam.h"
 
-void sercom_clock_init(Sercom* sercom, uint8_t sercom_index);
+void samd_peripheral_sercom_clock_init(Sercom* sercom, uint8_t sercom_index);
+uint8_t samd_peripheral_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad);
+bool samd_peripheral_valid_spi_clock_pad(uint8_t clock_pad);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H

@@ -95,7 +95,7 @@ static void dma_configure(uint8_t channel, uint8_t trigsrc, bool output_event) {
     system_interrupt_leave_critical_section();
 }
 
-enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length) {
+int32_t shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length) {
     if (general_dma_tx.job_status != STATUS_OK) {
         return general_dma_tx.job_status;
     }
@@ -113,7 +113,7 @@ enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_
 
     dma_descriptor_create(general_dma_tx.descriptor, &descriptor_config);
     enum status_code status = dma_start_transfer_job(&general_dma_tx);
-    if (status != STATUS_OK) {
+    if (status != ERR_NONE) {
         return status;
     }
 
@@ -134,8 +134,8 @@ enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_
     return general_dma_tx.job_status;
 }
 
-enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx) {
-    if (general_dma_tx.job_status != STATUS_OK) {
+int32_t shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx) {
+    if (general_dma_tx.job_status != ERR_NONE) {
         return general_dma_tx.job_status;
     }
 

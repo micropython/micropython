@@ -29,17 +29,17 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/sercom/spi/spi.h"
+#include "hal/include/hal_spi_m_sync.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    struct spi_module spi_master_instance;
+    struct spi_m_sync_descriptor spi_desc;
     bool has_lock;
     uint8_t clock_pin;
     uint8_t MOSI_pin;
     uint8_t MISO_pin;
-    uint32_t current_baudrate;
 } busio_spi_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H

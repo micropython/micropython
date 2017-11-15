@@ -58,8 +58,35 @@ static const uint8_t SERCOMx_GCLK_ID_SLOW[] = {
 
     
 // Clock initialization as done in Atmel START.
-void sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
+void samd_peripheral_sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
     _pm_enable_bus_clock(PM_BUS_APBC, sercom);
     _gclk_enable_channel(SERCOMx_GCLK_ID_CORE[sercom_index], GCLK_CLKCTRL_GEN_GCLK0_Val);
     _gclk_enable_channel(SERCOMx_GCLK_ID_SLOW[sercom_index], GCLK_CLKCTRL_GEN_GCLK3_Val);
+}
+
+// Figure out the DOPO value given the chosen clock pad and mosi pad.
+// Return an out-of-range value (255) if the combination is not permitted.
+// <0x0=>PAD[0,1]_DO_SCK
+// <0x1=>PAD[2,3]_DO_SCK
+// <0x2=>PAD[3,1]_DO_SCK
+// <0x3=>PAD[0,3]_DO_SCK
+uint8_t samd_peripheral_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad) {
+    if (clock_pad == 1) {
+        if (mosi_pad == 0) {
+            return 0;
+        } else if (mosi_pad == 3) {
+            return 2;
+        }
+    } else if (clock_pad == 3) {
+        if (mosi_pad == 0) {
+            return 3;
+        } else if (mosi_pad == 2) {
+            return 1;
+        }
+    }
+    return 255;
+}
+
+bool samd_peripheral_valid_spi_clock_pad(uint8_t clock_pad) {
+    return clock_pad == 1 || clock_pad == 3;
 }

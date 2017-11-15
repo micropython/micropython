@@ -183,4 +183,8 @@ print-def:
 	@$(CC) -E -Wp,-dM __empty__.c
 	@$(RM) -f __empty__.c
 
+tags:
+	ctags -e -R $(TOP)
+
 -include $(OBJ:.o=.P)
+

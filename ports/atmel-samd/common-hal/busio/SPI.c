@@ -25,25 +25,35 @@
  */
 
 #include "shared-bindings/busio/SPI.h"
-#include "py/nlr.h"
+#include "py/mperrno.h"
 #include "py/runtime.h"
-#include "rgb_led_status.h"
-#include "samd21_pins.h"
+
+#include "hpl_sercom_config.h"
+#include "peripheral_clk_config.h"
+
+#include "hal/include/hal_gpio.h"
+#include "hal/include/hal_spi_m_sync.h"
+#include "hal/include/hpl_spi_m_sync.h"
+
+#include "peripherals.h"
+#include "pins.h"
 #include "shared_dma.h"
 
-// We use ENABLE registers below we don't want to treat as a macro.
-#undef ENABLE
-
-// Number of times to try to send packet if failed.
-#define TIMEOUT 1
+// Convert frequency to clock-speed-dependent value. Return 0 if out of range.
+static uint8_t baudrate_to_baud_reg_value(const uint32_t baudrate) {
+    uint32_t baud_reg_value = (uint32_t) (((float) PROTOTYPE_SERCOM_SPI_M_SYNC_CLOCK_FREQUENCY /
+                                           (2 * baudrate)) + 0.5f);
+    if (baud_reg_value > 0xff) {
+        return 0;
+    }
+    return (uint8_t) baud_reg_value;
+}
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
         const mcu_pin_obj_t * miso) {
-    struct spi_config config_spi_master;
-    spi_get_config_defaults(&config_spi_master);
-
     Sercom* sercom = NULL;
+    uint8_t sercom_index;
     uint32_t clock_pinmux = 0;
     bool mosi_none = mosi == mp_const_none;
     bool miso_none = miso == mp_const_none;
@@ -52,8 +62,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t clock_pad = 0;
     uint8_t mosi_pad = 0;
     uint8_t miso_pad = 0;
+    uint8_t dopo = 255;
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         Sercom* potential_sercom = clock->sercom[i].sercom;
+        sercom_index = clock->sercom[i].index; // 2 for SERCOM2, etc.
         if (potential_sercom == NULL ||
         #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
             (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
@@ -66,11 +78,18 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         }
         clock_pinmux = PINMUX(clock->pin, (i == 0) ? MUX_C : MUX_D);
         clock_pad = clock->sercom[i].pad;
+        if (!samd_peripheral_valid_spi_clock_pad(clock_pad)) {
+            continue;
+        }
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (!mosi_none) {
                 if(potential_sercom == mosi->sercom[j].sercom) {
                     mosi_pinmux = PINMUX(mosi->pin, (j == 0) ? MUX_C : MUX_D);
                     mosi_pad = mosi->sercom[j].pad;
+                    dopo = samd_peripheral_get_spi_dopo(clock_pad, mosi_pad);
+                    if (dopo > 0x3) {
+                        continue;  // pad combination not possible
+                    }
                     if (miso_none) {
                         sercom = potential_sercom;
                         break;
@@ -101,62 +120,52 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_ValueError("Invalid pins");
     }
 
-    // Depends on where MOSI and CLK are.
-    uint8_t dopo = 8;
-    if (clock_pad == 1) {
-        if (mosi_pad == 0) {
-            dopo = 0;
-        } else if (mosi_pad == 3) {
-            dopo = 2;
-        }
-    } else if (clock_pad == 3) {
-        if (mosi_pad == 0) {
-            dopo = 3;
-        } else if (mosi_pad == 2) {
-            dopo = 1;
-        }
+    // Set up SPI clocks on SERCOM.
+    samd_peripheral_sercom_clock_init(sercom, sercom_index);
+    
+    if (spi_m_sync_init(&self->spi_desc, sercom) != ERR_NONE) {
+        mp_raise_OSError(MP_EIO);
     }
-    if (dopo == 8) {
-        mp_raise_ValueError("MOSI and clock pins incompatible");
-    }
+    
+    hri_sercomspi_write_CTRLA_DOPO_bf(sercom, dopo);
+    hri_sercomspi_write_CTRLA_DIPO_bf(sercom, miso_pad);
 
-    config_spi_master.mux_setting = (dopo << SERCOM_SPI_CTRLA_DOPO_Pos) |
-        (miso_pad << SERCOM_SPI_CTRLA_DIPO_Pos);
-
-    // Map pad to pinmux through a short array.
-    uint32_t *pinmuxes[4] = {&config_spi_master.pinmux_pad0,
-                             &config_spi_master.pinmux_pad1,
-                             &config_spi_master.pinmux_pad2,
-                             &config_spi_master.pinmux_pad3};
-    // Set other pinmuxes to unused so we don't accidentally change other pin
-    // state.
-    for (uint8_t i = 0; i < 4; i++) {
-        *pinmuxes[i] = PINMUX_UNUSED;
+    // Always start at 250khz which is what SD cards need. They are sensitive to
+    // SPI bus noise before they are put into SPI mode.
+    uint8_t baud_value = baudrate_to_baud_reg_value(250000);
+    if (baud_value == 0) {
+        mp_raise_RuntimeError("SPI initial baudrate out of range.");
     }
-    *pinmuxes[clock_pad] = clock_pinmux;
-    self->clock_pin = clock->pin;
+    if (spi_m_sync_set_baudrate(&self->spi_desc, baud_value) != ERR_NONE) {
+        // spi_m_sync_set_baudrate does not check for validity, just whether the device is
+        // busy or not
+        mp_raise_OSError(MP_EIO);
+    }
+        
+    gpio_set_pin_pull_mode(clock->pin, GPIO_PULL_OFF);
+    gpio_set_pin_function(clock->pin, clock_pinmux);
     claim_pin(clock);
-    self->MOSI_pin = NO_PIN;
-    if (!mosi_none) {
-        *pinmuxes[mosi_pad] = mosi_pinmux;
+    self->clock_pin = clock->pin;
+
+    if (mosi_none) {
+        self->MOSI_pin = NO_PIN;
+    } else {
+        gpio_set_pin_pull_mode(mosi->pin, GPIO_PULL_OFF);
+        gpio_set_pin_function(mosi->pin, mosi_pinmux);
         self->MOSI_pin = mosi->pin;
         claim_pin(mosi);
     }
-    self->MISO_pin = NO_PIN;
-    if (!miso_none) {
-        *pinmuxes[miso_pad] = miso_pinmux;
+
+    if (miso_none) {
+        self->MISO_pin = NO_PIN;
+    } else {
+        gpio_set_pin_pull_mode(miso->pin, GPIO_PULL_OFF);
+        gpio_set_pin_function(miso->pin, miso_pinmux);
         self->MISO_pin = miso->pin;
         claim_pin(miso);
     }
 
-    // Always start at 250khz which is what SD cards need. They are sensitive to
-    // SPI bus noise before they are put into SPI mode.
-    self->current_baudrate = 250000;
-    config_spi_master.mode_specific.master.baudrate = self->current_baudrate;
-
-    spi_init(&self->spi_master_instance, sercom, &config_spi_master);
-
-    spi_enable(&self->spi_master_instance);
+    spi_m_sync_enable(&self->spi_desc);
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
@@ -167,7 +176,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return;
     }
-    spi_disable(&self->spi_master_instance);
+    spi_m_sync_disable(&self->spi_desc);
+    spi_m_sync_deinit(&self->spi_desc);
     reset_pin(self->clock_pin);
     reset_pin(self->MOSI_pin);
     reset_pin(self->MISO_pin);
@@ -176,49 +186,45 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-    // TODO(tannewt): Check baudrate first before changing it.
-    if (baudrate != self->current_baudrate) {
-        enum status_code status = spi_set_baudrate(&self->spi_master_instance, baudrate);
-        if (status != STATUS_OK) {
-            return false;
-        }
-        self->current_baudrate = baudrate;
+    uint8_t baud_reg_value = baudrate_to_baud_reg_value(baudrate);
+    if (baud_reg_value == 0) {
+        mp_raise_ValueError("baudrate out of range");
     }
 
-    SercomSpi *const spi_module = &(self->spi_master_instance.hw->SPI);
+    void * hw = self->spi_desc.dev.prvt;
     // If the settings are already what we want then don't reset them.
-    if (spi_module->CTRLA.bit.CPHA == phase &&
-        spi_module->CTRLA.bit.CPOL == polarity &&
-        spi_module->CTRLB.bit.CHSIZE == (bits - 8)) {
+    if (hri_sercomspi_get_CTRLA_CPHA_bit(hw) == phase &&
+        hri_sercomspi_get_CTRLA_CPOL_bit(hw) == polarity &&
+        hri_sercomspi_read_CTRLB_CHSIZE_bf(hw) == ((uint32_t)bits - 8) &&
+        hri_sercomspi_read_BAUD_BAUD_bf(hw) == baud_reg_value) {
         return true;
     }
 
-    spi_disable(&self->spi_master_instance);
-    while (spi_is_syncing(&self->spi_master_instance)) {
-        /* Wait until the synchronization is complete */
-    }
+    // Disable, set values (most or all are enable-protected), and re-enable. 
+    spi_m_sync_disable(&self->spi_desc);
+    hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
 
-    spi_module->CTRLA.bit.CPHA = phase;
-    spi_module->CTRLA.bit.CPOL = polarity;
-    spi_module->CTRLB.bit.CHSIZE = bits - 8;
+    hri_sercomspi_write_CTRLA_CPHA_bit(hw, phase);
+    hri_sercomspi_write_CTRLA_CPOL_bit(hw, polarity);
+    hri_sercomspi_write_CTRLB_CHSIZE_bf(hw, bits - 8);
+    hri_sercomspi_write_BAUD_BAUD_bf(hw, baud_reg_value);
+    hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
 
-    while (spi_is_syncing(&self->spi_master_instance)) {
-        /* Wait until the synchronization is complete */
-    }
-
-    /* Enable the module */
-    spi_enable(&self->spi_master_instance);
-
-    while (spi_is_syncing(&self->spi_master_instance)) {
-        /* Wait until the synchronization is complete */
-    }
+    spi_m_sync_enable(&self->spi_desc);
+    hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
 
     return true;
 }
 
 bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
-    self->has_lock = spi_lock(&self->spi_master_instance) == STATUS_OK;
-    return self->has_lock;
+    bool grabbed_lock = false;
+    CRITICAL_SECTION_ENTER()
+        if (!self->has_lock) {
+            grabbed_lock = true;
+            self->has_lock = true;
+        }
+    CRITICAL_SECTION_LEAVE();
+    return grabbed_lock;
 }
 
 bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
@@ -227,7 +233,6 @@ bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
 
 void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
     self->has_lock = false;
-    spi_unlock(&self->spi_master_instance);
 }
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
@@ -235,13 +240,15 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     if (len == 0) {
         return true;
     }
-    enum status_code status;
-    if (len >= 16) {
-        status = shared_dma_write(self->spi_master_instance.hw, data, len);
-    } else {
-        status = spi_write_buffer_wait(&self->spi_master_instance, data, len);
-    }
-    return status == STATUS_OK;
+    int32_t status;
+//    if (len >= 16) {
+//        status = shared_dma_write(self->spi_desc.dev.prvt, data, len);
+//    } else {
+        struct io_descriptor *spi_io;
+        spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
+        status = spi_io->write(spi_io, data, len);
+//    }
+        return status > 0; // Status is number of chars read or an error code < 0.
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
@@ -249,11 +256,16 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     if (len == 0) {
         return true;
     }
-    enum status_code status;
-    if (len >= 16) {
-        status = shared_dma_read(self->spi_master_instance.hw, data, len, write_value);
-    } else {
-        status = spi_read_buffer_wait(&self->spi_master_instance, data, len, write_value);
-    }
-    return status == STATUS_OK;
+    int32_t status;
+//    if (len >= 16) {
+//        status = shared_dma_read(self->spi_desc.dev.prvt, data, len, write_value);
+//    } else {
+        self->spi_desc.dev.dummy_byte = write_value;
+
+        struct io_descriptor *spi_io;
+        spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
+
+        status = spi_io->read(spi_io, data, len);
+//    }
+        return status > 0; // Status is number of chars read or an error code < 0.
 }

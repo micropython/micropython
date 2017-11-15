@@ -172,6 +172,7 @@ SRC_ASF := \
 	hal/src/hal_i2c_m_sync.c \
 	hal/src/hal_io.c \
 	hal/src/hal_sleep.c \
+	hal/src/hal_spi_m_sync.c \
 	hal/src/hal_timer.c \
 	hal/src/hal_usb_device.c \
 	hpl/core/hpl_init.c \
@@ -252,6 +253,7 @@ SRC_COMMON_HAL = \
 	board/__init__.c \
 	busio/__init__.c \
 	busio/I2C.c \
+	busio/SPI.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
@@ -267,7 +269,6 @@ SRC_COMMON_HAL = \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	busio/SPI.c \
 	busio/UART.c \
 	neopixel_write/__init__.c \
 	nvm/__init__.c \
