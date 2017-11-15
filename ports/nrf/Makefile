@@ -95,16 +95,35 @@ endif
 LIBS = \
 
 ifeq ($(MCU_VARIANT), nrf52)
-LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
-LIBC_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
-LIBS += -L $(dir $(LIBM_FILE_NAME)) -lm
-LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
+
+
+SRC_LIB += $(addprefix lib/,\
+        libm/math.c \
+        libm/fmodf.c \
+        libm/nearbyintf.c \
+        libm/ef_sqrt.c \
+        libm/kf_rem_pio2.c \
+        libm/kf_sin.c \
+        libm/kf_cos.c \
+        libm/kf_tan.c \
+        libm/ef_rem_pio2.c \
+        libm/sf_sin.c \
+        libm/sf_cos.c \
+        libm/sf_tan.c \
+        libm/sf_frexp.c \
+        libm/sf_modf.c \
+        libm/sf_ldexp.c \
+        libm/asinfacosf.c \
+        libm/atanf.c \
+        libm/atan2f.c \
+	)
+
 endif
 
-SRC_LIB = $(addprefix lib/,\
+SRC_LIB += $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
