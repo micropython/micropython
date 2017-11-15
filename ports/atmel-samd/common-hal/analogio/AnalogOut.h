@@ -29,14 +29,17 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/dac/dac.h"
+#include "hal/include/hal_dac_sync.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    struct dac_module dac_instance;
+    struct dac_sync_descriptor descriptor;
+    uint8_t channel;
     bool deinited;
 } analogio_analogout_obj_t;
+
+void analogout_reset(void);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ANALOGIO_ANALOGOUT_H

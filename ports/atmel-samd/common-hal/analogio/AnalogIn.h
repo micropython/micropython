@@ -34,6 +34,8 @@
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t * pin;
+    Adc* instance;
+    uint8_t channel;
 } analogio_analogin_obj_t;
 
 void analogin_reset(void);
