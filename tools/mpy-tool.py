@@ -287,7 +287,9 @@ class RawCode:
         # generate constant objects
         for i, obj in enumerate(self.objs):
             obj_name = 'const_obj_%s_%u' % (self.escaped_name, i)
-            if is_str_type(obj) or is_bytes_type(obj):
+            if obj is Ellipsis:
+                print('#define %s mp_const_ellipsis_obj' % obj_name)
+            elif is_str_type(obj) or is_bytes_type(obj):
                 if is_str_type(obj):
                     obj = bytes_cons(obj, 'utf8')
                     obj_type = 'mp_type_str'
@@ -328,7 +330,6 @@ class RawCode:
                 print('STATIC const mp_obj_complex_t %s = {{&mp_type_complex}, %.16g, %.16g};'
                     % (obj_name, obj.real, obj.imag))
             else:
-                # TODO
                 raise FreezeError(self, 'freezing of object %r is not implemented' % (obj,))
 
         # generate constant table, if it has any entries
