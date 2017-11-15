@@ -162,17 +162,12 @@ void asm_x64_call_ind(asm_x64_t* as, void* ptr, int temp_r32);
     } while (0)
 #define ASM_CALL_IND(as, ptr, idx) asm_x64_call_ind(as, ptr, ASM_X64_REG_RAX)
 
-#define ASM_MOV_REG_TO_LOCAL        asm_x64_mov_r64_to_local
-#define ASM_MOV_IMM_TO_REG          asm_x64_mov_i64_to_r64_optimised
-#define ASM_MOV_ALIGNED_IMM_TO_REG  asm_x64_mov_i64_to_r64_aligned
-#define ASM_MOV_IMM_TO_LOCAL_USING(as, imm, local_num, reg_temp) \
-    do { \
-        asm_x64_mov_i64_to_r64_optimised(as, (imm), (reg_temp)); \
-        asm_x64_mov_r64_to_local(as, (reg_temp), (local_num)); \
-    } while (false)
-#define ASM_MOV_LOCAL_TO_REG        asm_x64_mov_local_to_r64
+#define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x64_mov_r64_to_local((as), (reg_src), (local_num))
+#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x64_mov_i64_to_r64_optimised((as), (imm), (reg_dest))
+#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_x64_mov_i64_to_r64_aligned((as), (imm), (reg_dest))
+#define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_x64_mov_local_to_r64((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x64_mov_r64_r64((as), (reg_dest), (reg_src))
-#define ASM_MOV_LOCAL_ADDR_TO_REG   asm_x64_mov_local_addr_to_r64
+#define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x64_mov_local_addr_to_r64((as), (local_num), (reg_dest))
 
 #define ASM_LSL_REG(as, reg) asm_x64_shl_r64_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x64_sar_r64_cl((as), (reg))
