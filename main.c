@@ -290,18 +290,14 @@ int __attribute__((used)) main(void) {
     bool first_run = true;
     for (;;) {
         if (!skip_repl) {
-            // The REPL mode can change, or it can request a reload.
-            bool autoreload_on = autoreload_is_enabled();
-            autoreload_disable();
+            autoreload_suspend();
             new_status_color(REPL_RUNNING);
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
                 exit_code = pyexec_raw_repl();
             } else {
                 exit_code = pyexec_friendly_repl();
             }
-            if (autoreload_on) {
-                autoreload_enable();
-            }
+            autoreload_resume();
             reset_port();
             reset_board();
             reset_mp();
