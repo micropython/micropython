@@ -1,4 +1,6 @@
 import skip_if
+# TODO(tannewt): Remove this when we add nvm support to 3.x
+skip_if.always()
 skip_if.board_not_in("metro_m0_express", "feather_m0_express", "circuitplayground_express")
 
 import microcontroller
