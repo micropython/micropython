@@ -261,7 +261,7 @@ mp_obj_t mp_vfs_chdir(mp_obj_t path_in) {
         // subsequent relative paths begin at the root of that VFS.
         for (vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
             if (vfs->len == 1) {
-                mp_obj_t root = mp_obj_new_str("/", 1, false);
+                mp_obj_t root = MP_OBJ_NEW_QSTR(MP_QSTR__slash_);
                 mp_vfs_proxy_call(vfs, MP_QSTR_chdir, 1, &root);
                 break;
             }
@@ -318,7 +318,7 @@ STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
         self->cur.vfs = vfs->next;
         if (vfs->len == 1) {
             // vfs is mounted at root dir, delegate to it
-            mp_obj_t root = mp_obj_new_str("/", 1, false);
+            mp_obj_t root = MP_OBJ_NEW_QSTR(MP_QSTR__slash_);
             self->is_iter = true;
             self->cur.iter = mp_vfs_proxy_call(vfs, MP_QSTR_ilistdir, 1, &root);
             return mp_iternext(self->cur.iter);
