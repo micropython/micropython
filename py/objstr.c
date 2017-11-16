@@ -164,6 +164,13 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
                 }
                 #endif
+
+                // Check if a qstr with this data already exists
+                qstr q = qstr_find_strn((const char*)str_data, str_len);
+                if (q != MP_QSTR_NULL) {
+                    return MP_OBJ_NEW_QSTR(q);
+                }
+
                 mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
