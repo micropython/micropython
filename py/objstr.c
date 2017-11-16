@@ -164,7 +164,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
                 }
                 #endif
-                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(type, NULL, str_len));
+                mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(type, NULL, str_len));
                 o->data = str_data;
                 o->hash = str_hash;
                 return MP_OBJ_FROM_PTR(o);
@@ -205,7 +205,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         if (str_hash == 0) {
             str_hash = qstr_compute_hash(str_data, str_len);
         }
-        mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_of_type(&mp_type_bytes, NULL, str_len));
+        mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_str_copy(&mp_type_bytes, NULL, str_len));
         o->data = str_data;
         o->hash = str_hash;
         return MP_OBJ_FROM_PTR(o);
@@ -226,7 +226,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     // check if argument has the buffer protocol
     mp_buffer_info_t bufinfo;
     if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
-        return mp_obj_new_str_of_type(&mp_type_bytes, bufinfo.buf, bufinfo.len);
+        return mp_obj_new_bytes(bufinfo.buf, bufinfo.len);
     }
 
     vstr_t vstr;
@@ -1977,8 +1977,9 @@ const mp_obj_type_t mp_type_bytes = {
 const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, (const byte*)""};
 
 // Create a str/bytes object using the given data.  New memory is allocated and
-// the data is copied across.
-mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, size_t len) {
+// the data is copied across.  This function should only be used if the type is bytes,
+// or if the type is str and the string data is known to be not interned.
+mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte* data, size_t len) {
     mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
     o->base.type = type;
     o->len = len;
@@ -1990,6 +1991,17 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, siz
         p[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
     }
     return MP_OBJ_FROM_PTR(o);
+}
+
+// Create a str/bytes object using the given data.  If the type is str and the string
+// data is already interned, then a qstr object is returned.  Otherwise new memory is
+// allocated for the object and the data is copied across.
+mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, size_t len) {
+    if (type == &mp_type_str) {
+        return mp_obj_new_str((const char*)data, len);
+    } else {
+        return mp_obj_new_bytes(data, len);
+    }
 }
 
 // Create a str using a qstr to store the data; may use existing or new qstr.
@@ -2034,7 +2046,7 @@ mp_obj_t mp_obj_new_str(const char* data, size_t len) {
         return MP_OBJ_NEW_QSTR(q);
     } else {
         // no existing qstr, don't make one
-        return mp_obj_new_str_of_type(&mp_type_str, (const byte*)data, len);
+        return mp_obj_new_str_copy(&mp_type_str, (const byte*)data, len);
     }
 }
 
@@ -2044,7 +2056,7 @@ mp_obj_t mp_obj_str_intern(mp_obj_t str) {
 }
 
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len) {
-    return mp_obj_new_str_of_type(&mp_type_bytes, data, len);
+    return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
 
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
