@@ -39,4 +39,8 @@ void autoreload_enable(void);
 void autoreload_disable(void);
 bool autoreload_is_enabled(void);
 
+// Temporarily turn it off. Used during the REPL.
+void autoreload_suspend(void);
+void autoreload_resume(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H

@@ -32,6 +32,7 @@ Module / Port      SAMD21   SAMD21 Express  ESP8266
 `random`           **Yes**  **Yes**         **Yes**
 `storage`          **Yes**  **Yes**         **Yes**
 `struct`           **Yes**  **Yes**         **Yes**
+`supervisor`       **Yes**  **Yes**         No
 `time`             **Yes**  **Yes**         **Yes**
 `touchio`          **Yes**  **Yes**         No
 `uheap`            Debug    Debug           Debug

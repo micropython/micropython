@@ -27,6 +27,9 @@ def skip():
     print("SKIP")
     raise SystemExit
 
+def always():
+    skip()
+
 def no_reversed():
     import builtins
     if "reversed" not in dir(builtins):
@@ -87,5 +90,15 @@ def no_slice_assign():
     m2 = memoryview(b2)
     try:
         m2[1:3] = m1[0:2]
+    except TypeError:
+        skip()
+
+
+def no_reverse_ops():
+    class Foo:
+        def __radd__(self, other):
+            pass
+    try:
+        5 + Foo()
     except TypeError:
         skip()

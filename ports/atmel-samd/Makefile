@@ -221,7 +221,6 @@ SRC_C = \
 	tick.c \
 	usb.c \
 	usb_mass_storage.c \
-	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	lib/oofatfs/ff.c \
@@ -314,6 +313,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Pull.c \
 	help.c \
 	math/__init__.c \
+	supervisor/__init__.c \
 	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \

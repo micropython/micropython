@@ -31,13 +31,15 @@
 
 volatile uint32_t autoreload_delay_ms = 0;
 bool autoreload_enabled = false;
+static bool autoreload_suspended = false;
 volatile bool reload_next_character = false;
 
 inline void autoreload_tick() {
     if (autoreload_delay_ms == 0) {
         return;
     }
-    if (autoreload_delay_ms == 1 && autoreload_enabled && !reload_next_character) {
+    if (autoreload_delay_ms == 1 && autoreload_enabled &&
+        !autoreload_suspended && !reload_next_character) {
         mp_keyboard_interrupt();
         reload_next_character = true;
     }
@@ -51,6 +53,14 @@ void autoreload_enable() {
 
 void autoreload_disable() {
     autoreload_enabled = false;
+}
+
+void autoreload_suspend() {
+    autoreload_suspended = true;
+}
+
+void autoreload_resume() {
+    autoreload_suspended = false;
 }
 
 inline bool autoreload_is_enabled() {
