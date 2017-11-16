@@ -9,7 +9,13 @@ if [ "$TRAVIS" == "true" ]; then
     PARALLEL="-j 2"
 fi
 
-for board in $ATMEL_BOARDS; do
+if [ -z "$TRAVIS_BOARD" ]; then
+    boards=$ATMEL_BOARDS
+else
+    boards=$TRAVIS_BOARD
+fi
+
+for board in $boards; do
     make $PARALLEL -C ports/atmel-samd BOARD=$board
     (( exit_status = exit_status || $? ))
 done
@@ -32,7 +38,7 @@ if [ "$TRAVIS" == "true" ]; then
     fi
 fi
 
-for board in $ATMEL_BOARDS; do
+for board in $boards; do
     mkdir -p bin/$board/
     cp ports/atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
     (( exit_status = exit_status || $? ))
