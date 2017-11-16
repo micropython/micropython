@@ -57,7 +57,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
         // make 3-tuple with info about this entry
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
         if (self->is_str) {
-            t->items[0] = mp_obj_new_str(fn, strlen(fn), false);
+            t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
             t->items[0] = mp_obj_new_bytes((const byte*)fn, strlen(fn));
         }

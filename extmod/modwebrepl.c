@@ -141,7 +141,7 @@ STATIC void handle_op(mp_obj_webrepl_t *self) {
     // Handle operations requiring opened file
 
     mp_obj_t open_args[2] = {
-        mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname), false),
+        mp_obj_new_str(self->hdr.fname, strlen(self->hdr.fname)),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb)
     };
 

@@ -216,7 +216,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 ++len;
             }
         }
-        return mp_obj_new_str((const char*)s, len, true); // This will create a one-character string
+        return mp_obj_new_str_via_qstr((const char*)s, len); // This will create a one-character string
     } else {
         return MP_OBJ_NULL; // op not supported
     }
@@ -291,7 +291,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     if (self->cur < len) {
         const byte *cur = str + self->cur;
         const byte *end = utf8_next_char(str + self->cur);
-        mp_obj_t o_out = mp_obj_new_str((const char*)cur, end - cur, true);
+        mp_obj_t o_out = mp_obj_new_str_via_qstr((const char*)cur, end - cur);
         self->cur += end - cur;
         return o_out;
     } else {

@@ -60,7 +60,7 @@ STATIC mp_obj_tuple_t os_uname_info_obj = {
 STATIC mp_obj_t os_uname(void) {
     // We must populate the "release" field each time in case it was GC'd since the last call.
     const char *ver = system_get_sdk_version();
-    os_uname_info_obj.items[2] = mp_obj_new_str(ver, strlen(ver), false);
+    os_uname_info_obj.items[2] = mp_obj_new_str(ver, strlen(ver));
     return (mp_obj_t)&os_uname_info_obj;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);

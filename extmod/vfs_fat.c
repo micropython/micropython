@@ -197,7 +197,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
-    return mp_obj_new_str(buf, strlen(buf), false);
+    return mp_obj_new_str(buf, strlen(buf));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getcwd_obj, fat_vfs_getcwd);
 

@@ -411,7 +411,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
         case QS(MP_QSTR_essid):
             req_if = SOFTAP_IF;
-            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
             break;
         case QS(MP_QSTR_hidden):
             req_if = SOFTAP_IF;
@@ -428,7 +428,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case QS(MP_QSTR_dhcp_hostname): {
             req_if = STATION_IF;
             char* s = wifi_station_get_hostname();
-            val = mp_obj_new_str(s, strlen(s), false);
+            val = mp_obj_new_str(s, strlen(s));
             break;
         }
         default:

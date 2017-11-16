@@ -69,7 +69,7 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
     while (*name) {
         size_t l = strlen(name);
         // name should end in '.py' and we strip it off
-        mp_obj_list_append(list, mp_obj_new_str(name, l - 3, false));
+        mp_obj_list_append(list, mp_obj_new_str(name, l - 3));
         name += l + 1;
     }
 }

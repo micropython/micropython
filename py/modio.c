@@ -176,7 +176,7 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
         return MP_OBJ_FROM_PTR(o);
     }
 
-    mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len, false);
+    mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len);
     return mp_builtin_open(1, &path_out, (mp_map_t*)&mp_const_empty_map);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
