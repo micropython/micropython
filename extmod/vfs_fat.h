@@ -35,6 +35,7 @@
 #define FSUSER_NATIVE       (0x0001) // readblocks[2]/writeblocks[2] contain native func
 #define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount
 #define FSUSER_HAVE_IOCTL   (0x0004) // new protocol with ioctl
+#define FSUSER_NO_FILESYSTEM (0x0008) // the block device has no filesystem on it
 
 typedef struct _fs_user_mount_t {
     mp_obj_base_t base;
