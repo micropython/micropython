@@ -20,14 +20,14 @@ FROZEN_DIR = scripts
 # Default target
 all:
 
+include ../../py/mkenv.mk
+include $(TOP)/py/py.mk
+
 # Zephyr (generated) config files - must be defined before include below
 Z_EXPORTS = outdir/$(OUTDIR_PREFIX)/Makefile.export
 ifneq ($(MAKECMDGOALS), clean)
 include $(Z_EXPORTS)
 endif
-
-include ../../py/mkenv.mk
-include $(TOP)/py/py.mk
 
 INC += -I.
 INC += -I$(TOP)
@@ -56,18 +56,10 @@ SRC_QSTR += $(SRC_C)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-CFLAGS = $(KBUILD_CFLAGS) $(NOSTDINC_FLAGS) $(ZEPHYRINCLUDE) \
+CFLAGS = $(Z_CFLAGS) \
 	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
 
 include $(TOP)/py/mkrules.mk
-
-# We use single target here ($(Z_EXPORTS)) for simplicity, but actually
-# number of things get generated here: 'initconfig' generates C header for
-# Kconfig configuration, 'outputexports' generates make environment with CC,
-# etc., and 'lib' generates other headers which may be included by zephyr.h,
-# e.g. DTS-related.
-$(Z_EXPORTS): $(CONF_FILE)
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) initconfig outputexports lib
 
 GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
 KCONFIG_TARGETS = \
@@ -81,7 +73,7 @@ $(GENERIC_TARGETS): $(LIBMICROPYTHON)
 $(CLEAN_TARGETS):  clean
 
 $(GENERIC_TARGETS) $(KCONFIG_TARGETS) $(CLEAN_TARGETS):
-	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) CONF_FILE=$(CONF_FILE) $@
+	$(MAKE) -C outdir/$(BOARD) $@
 
 $(LIBMICROPYTHON): | $(Z_EXPORTS)
 build/genhdr/qstr.i.last: | $(Z_EXPORTS)
@@ -103,3 +95,11 @@ prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
 
 test:
 	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../ports/zephyr run BOARD=$(BOARD) QEMU_PTY=1"
+
+cmake: outdir/$(BOARD)/Makefile
+
+outdir/$(BOARD)/Makefile: $(CONF_FILE)
+	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) -DCONF_FILE=$(CONF_FILE) -Boutdir/$(BOARD) -H.
+
+$(Z_EXPORTS): outdir/$(BOARD)/Makefile
+	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@
