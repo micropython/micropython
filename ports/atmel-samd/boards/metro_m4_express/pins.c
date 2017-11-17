@@ -7,9 +7,9 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0),  (mp_obj_t)&pin_PA02 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A1),  (mp_obj_t)&pin_PA05 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A2),  (mp_obj_t)&pin_PA06 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A3),  (mp_obj_t)&pin_PA07 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A3),  (mp_obj_t)&pin_PA04 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A4),  (mp_obj_t)&pin_PA11 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_A5),  (mp_obj_t)&pin_PA04 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A5),  (mp_obj_t)&pin_PA07 },
 
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_D0),  (mp_obj_t)&pin_PA23 },
@@ -32,8 +32,8 @@ STATIC const mp_map_elem_t board_global_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), (mp_obj_t)&pin_PB17 },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SCK), (mp_obj_t)&pin_PA12 },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PA13 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SCK), (mp_obj_t)&pin_PA13 },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), (mp_obj_t)&pin_PA12 },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), (mp_obj_t)&pin_PA15 },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_LED_RX), (mp_obj_t)&pin_PB06 },

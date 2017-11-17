@@ -1,7 +1,3 @@
-// Derived from:
-// Create START project with using six I2C, then six ...
-// then merge all.
-
 /* Auto-generated config file peripheral_clk_config.h */
 #ifndef PERIPHERAL_CLK_CONFIG_H
 #define PERIPHERAL_CLK_CONFIG_H
