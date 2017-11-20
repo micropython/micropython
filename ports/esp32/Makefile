@@ -83,6 +83,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/lwip/posix
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
+INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
 INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa-debug-module/include
@@ -148,6 +149,7 @@ SRC_C = \
 	network_lan.c \
 	modsocket.c \
 	modesp.c \
+	esp32_ulp.c \
 	modesp32.c \
 	moduhashlib.c \
 	espneopixel.c \
@@ -417,6 +419,10 @@ ESPIDF_SPI_FLASH_O = $(addprefix $(ESPCOMP)/spi_flash/,\
 	flash_ops.o \
 	)
 
+ESPIDF_ULP_O = $(addprefix $(ESPCOMP)/ulp/,\
+	ulp.o \
+	)
+
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
 ESPIDF_LWIP_O = $(addprefix $(ESPCOMP)/lwip/,\
 	api/pppapi.o \
@@ -605,6 +611,7 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NGHTTP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ULP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
 ################################################################################
 # Main targets
