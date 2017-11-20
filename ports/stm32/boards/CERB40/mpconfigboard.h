@@ -1,5 +1,3 @@
-#define CERB40
-
 #define MICROPY_HW_BOARD_NAME       "Cerb40"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
