@@ -223,6 +223,7 @@ pin_init0();
     if (ret_code == PYEXEC_FORCED_EXIT) {
         NVIC_SystemReset();
     } else {
+        printf("MPY: soft reboot\n");
         goto soft_reset;
     }
 
