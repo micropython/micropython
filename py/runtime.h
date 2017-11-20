@@ -151,7 +151,7 @@ NORETURN void mp_raise_ValueError(const char *msg);
 NORETURN void mp_raise_TypeError(const char *msg);
 NORETURN void mp_raise_NotImplementedError(const char *msg);
 NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_exc_recursion_depth(void);
+NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
 #undef mp_check_self
