@@ -45,11 +45,13 @@
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
-//|   restrictions on the recording parameters.
+//|   restrictions on the recording parameters. The overall frequency is
+//|   determined by `frequency`x`oversample`, and the total must be 1MHz or
+//|   higher, so `frequency` must be a minimum of 16000.
 //|
 //|   :param ~microcontroller.Pin clock_pin: The pin to output the clock to
 //|   :param ~microcontroller.Pin data_pin: The pin to read the data from
-//|   :param int frequency: Target frequency of the resulting samples. Check `frequency` for real value.
+//|   :param int frequency: Target frequency in Hz of the resulting samples. Check `frequency` for real value
 //|   :param int bit_depth: Final number of bits per sample. Must be divisible by 8
 //|   :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
 //|   :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
@@ -61,7 +63,7 @@
 //|
 //|     # Prep a buffer to record into
 //|     b = bytearray(200)
-//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA) as mic:
+//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, frequency=16000) as mic:
 //|         mic.record(b, len(b))
 //|
 //|   Record 16-bit unsigned samples to buffer::
@@ -75,7 +77,7 @@
 //|     b = array.array("H")
 //|     for i in range(200):
 //|         b.append(0)
-//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, bit_depth=16) as mic:
+//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, frequency=16000, bit_depth=16) as mic:
 //|         mic.record(b, len(b))
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
