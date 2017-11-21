@@ -29,8 +29,6 @@ endif
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
-FROZEN_MPY_DIR = freeze
-
 # include py core make definitions
 include ../../py/py.mk
 
