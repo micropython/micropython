@@ -72,6 +72,20 @@ The **make sd** will trigger a flash of the bluetooth stack before that applicat
 
 Note: further tuning of features to include in bluetooth or even setting up the device to use REPL over Bluetooth can be configured in the `bluetooth_conf.h`.
 
+## Compile with frozen modules
+
+Frozen modules are Python modules compiled to bytecode and added to the firmware
+image, as part of MicroPython. They can be imported as usual, using the `import`
+statement. The advantage is that frozen modules use a lot less RAM as the
+bytecode is stored in flash, not in RAM like when importing from a filesystem.
+Also, frozen modules are available even when no filesystem is present to import
+from.
+
+To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
+`make` with the given directory. For example:
+
+     make BOARD=pca10040 FROZEN_MPY_DIR=freeze
+
 ## Target Boards and Make Flags
 
 Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
