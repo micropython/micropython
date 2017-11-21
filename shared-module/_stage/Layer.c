@@ -47,8 +47,8 @@ uint16_t get_layer_pixel(layer_obj_t *layer, int16_t x, uint16_t y) {
         uint8_t tx = x >> 4;
         uint8_t ty = y >> 4;
 
-        frame = layer->map[(tx * layer->width + ty) >> 1];
-        if (ty & 0x01) {
+        frame = layer->map[(ty * layer->width + tx) >> 1];
+        if (tx & 0x01) {
             frame &= 0x0f;
         } else {
             frame >>= 4;
@@ -60,41 +60,41 @@ uint16_t get_layer_pixel(layer_obj_t *layer, int16_t x, uint16_t y) {
     y &= 0x0f;
 
     // Rotate the image.
-    uint8_t tx = x; // Temporary variable for swapping.
+    uint8_t ty = y; // Temporary variable for swapping.
     switch (layer->rotation) {
         case 1: // 90 degrees clockwise
-            x = 15 - y;
-            y = tx;
+            y = 15 - x;
+            x = ty;
             break;
         case 2: // 180 degrees
-            x = 15 - tx;
-            y = 15 - y;
+            y = 15 - ty;
+            x = 15 - x;
             break;
         case 3: // 90 degrees counter-clockwise
-            x = y;
-            y = 15 - tx;
+            y = x;
+            x = 15 - ty;
             break;
         case 4: // 0 degrees, mirrored
-            y = 15 - y;
+            x = 15 - x;
             break;
         case 5: // 90 degrees clockwise, mirrored
-            x = y;
-            y = tx;
+            y = x;
+            x = ty;
             break;
         case 6: // 180 degrees, mirrored
-            x = 15 - tx;
+            y = 15 - ty;
             break;
         case 7: // 90 degrees counter-clockwise, mirrored
-            x = 15 - y;
-            y = 15 - tx;
+            y = 15 - x;
+            x = 15 - ty;
             break;
         default: // 0 degrees
             break;
     }
 
     // Get the value of the pixel.
-    uint8_t pixel = layer->graphic[(frame << 7) + (x << 3) + (y >> 1)];
-    if (y & 0x01) {
+    uint8_t pixel = layer->graphic[(frame << 7) + (y << 3) + (x >> 1)];
+    if (x & 0x01) {
         pixel &= 0x0f;
     } else {
         pixel >>= 4;
