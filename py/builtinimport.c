@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -29,7 +29,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/compile.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
@@ -37,7 +36,7 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
@@ -435,7 +434,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     DEBUG_printf("%.*s is dir\n", vstr_len(&path), vstr_str(&path));
                     // https://docs.python.org/3/reference/import.html
                     // "Specifically, any module that contains a __path__ attribute is considered a package."
-                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path), false));
+                    mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(&path), vstr_len(&path)));
                     size_t orig_path_len = path.len;
                     vstr_add_char(&path, PATH_SEP_CHAR);
                     vstr_add_str(&path, "__init__.py");

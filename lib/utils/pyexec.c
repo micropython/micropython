@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -29,7 +29,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"

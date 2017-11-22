@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -29,9 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/parsenum.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
@@ -139,12 +137,11 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             return mp_obj_new_float(0);
 
         case 1:
-        default:
-            if (MP_OBJ_IS_STR(args[0])) {
-                // a string, parse it
-                size_t l;
-                const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_decimal(s, l, false, false, NULL);
+        default: {
+            mp_buffer_info_t bufinfo;
+            if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+                // a textual representation, parse it
+                return mp_parse_num_decimal(bufinfo.buf, bufinfo.len, false, false, NULL);
             } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
@@ -152,21 +149,30 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
                 // something else, try to cast it to a float
                 return mp_obj_new_float(mp_obj_get_float(args[0]));
             }
+        }
     }
 }
 
-STATIC mp_obj_t float_unary_op(mp_uint_t op, mp_obj_t o_in) {
+STATIC mp_obj_t float_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_float_t val = mp_obj_float_get(o_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(val != 0);
         case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT(mp_float_hash(val));
         case MP_UNARY_OP_POSITIVE: return o_in;
         case MP_UNARY_OP_NEGATIVE: return mp_obj_new_float(-val);
+        case MP_UNARY_OP_ABS: {
+            // TODO check for NaN etc
+            if (val < 0) {
+                return mp_obj_new_float(-val);
+            } else {
+                return o_in;
+            }
+        }
         default: return MP_OBJ_NULL; // op not supported
     }
 }
 
-STATIC mp_obj_t float_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_float_t lhs_val = mp_obj_float_get(lhs_in);
 #if MICROPY_PY_BUILTINS_COMPLEX
     if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_complex)) {
@@ -239,8 +245,12 @@ STATIC void mp_obj_float_divmod(mp_float_t *x, mp_float_t *y) {
     *y = mod;
 }
 
-mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
-    mp_float_t rhs_val = mp_obj_get_float(rhs_in); // can be any type, this function will convert to float (if possible)
+mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t rhs_in) {
+    mp_float_t rhs_val;
+    if (!mp_obj_get_float_maybe(rhs_in, &rhs_val)) {
+        return MP_OBJ_NULL; // op not supported
+    }
+
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD: lhs_val += rhs_val; break;
@@ -285,6 +295,13 @@ mp_obj_t mp_obj_float_binary_op(mp_uint_t op, mp_float_t lhs_val, mp_obj_t rhs_i
         case MP_BINARY_OP_INPLACE_POWER:
             if (lhs_val == 0 && rhs_val < 0) {
                 goto zero_division_error;
+            }
+            if (lhs_val < 0 && rhs_val != MICROPY_FLOAT_C_FUN(floor)(rhs_val)) {
+                #if MICROPY_PY_BUILTINS_COMPLEX
+                return mp_obj_complex_binary_op(MP_BINARY_OP_POWER, lhs_val, 0, rhs_in);
+                #else
+                mp_raise_ValueError("complex values not supported");
+                #endif
             }
             lhs_val = MICROPY_FLOAT_C_FUN(pow)(lhs_val, rhs_val);
             break;

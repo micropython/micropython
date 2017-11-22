@@ -10,7 +10,7 @@ REFERENCE=$HOME/persist/firmware.bin
 
 if [ -f $REFERENCE ]; then
     size_old=$(stat -c%s $REFERENCE)
-    size_new=$(stat -c%s minimal/build/firmware.bin)
+    size_new=$(stat -c%s ports/minimal/build/firmware.bin)
     echo "Old size: $size_old new size: $size_new"
     if [ $size_new -gt $size_old ]; then
         echo "Validation failure: Core code size increased"

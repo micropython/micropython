@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,9 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
@@ -53,7 +51,11 @@ struct ssl_args {
 STATIC const mp_obj_type_t ussl_socket_type;
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
+#if MICROPY_PY_USSL_FINALISER
+    mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
+#else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
+#endif
     o->base.type = &ussl_socket_type;
     o->buf = NULL;
     o->bytes_left = 0;
@@ -111,13 +113,16 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         mp_int_t r = ssl_read(o->ssl_sock, &o->buf);
         if (r == SSL_OK) {
             // SSL_OK from ssl_read() means "everything is ok, but there's
-            // not user data yet. So, we just keep reading.
+            // no user data yet". So, we just keep reading.
             continue;
         }
         if (r < 0) {
             if (r == SSL_CLOSE_NOTIFY || r == SSL_ERROR_CONN_LOST) {
                 // EOF
                 return 0;
+            }
+            if (r == SSL_EAGAIN) {
+                r = MP_EAGAIN;
             }
             *errcode = r;
             return MP_STREAM_ERROR;
@@ -154,7 +159,7 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     // Currently supports only blocking mode
     (void)self_in;
     if (!mp_obj_is_true(flag_in)) {
-        mp_not_implemented("");
+        mp_raise_NotImplementedError(NULL);
     }
     return mp_const_none;
 }
@@ -180,6 +185,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+#if MICROPY_PY_USSL_FINALISER
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_table);

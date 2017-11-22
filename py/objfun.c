@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -28,15 +28,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/objfun.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/bc.h"
 #include "py/stackctrl.h"
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
 #define DEBUG_PRINT (0)
@@ -480,7 +478,7 @@ typedef mp_uint_t (*inline_asm_fun_2_t)(mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*inline_asm_fun_3_t)(mp_uint_t, mp_uint_t, mp_uint_t);
 typedef mp_uint_t (*inline_asm_fun_4_t)(mp_uint_t, mp_uint_t, mp_uint_t, mp_uint_t);
 
-// convert a Micro Python object to a sensible value for inline asm
+// convert a MicroPython object to a sensible value for inline asm
 STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
     // TODO for byte_array, pass pointer to the array
     if (MP_OBJ_IS_SMALL_INT(obj)) {

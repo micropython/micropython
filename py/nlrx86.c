@@ -24,9 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
 #include "py/mpstate.h"
-#include "py/nlr.h"
 
 #if !MICROPY_NLR_SETJMP && defined(__i386__)
 
@@ -35,7 +33,11 @@
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
-#define NLR_OS_WINDOWS (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define NLR_OS_WINDOWS 1
+#else
+#define NLR_OS_WINDOWS 0
+#endif
 
 #if NLR_OS_WINDOWS
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
@@ -51,7 +53,7 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     // by default.
     // TODE: Better support for various x86 calling conventions
     // (unfortunately, __attribute__((naked)) is not supported on x86).
-    #ifndef __ZEPHYR__
+    #if !(defined(__ZEPHYR__) || defined(__ANDROID__))
     "pop    %ebp                \n" // undo function's prelude
     #endif
     "mov    4(%esp), %edx       \n" // load nlr_buf

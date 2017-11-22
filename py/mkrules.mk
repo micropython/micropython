@@ -47,7 +47,7 @@ $(BUILD)/%.o: %.c
 	$(call compile_c)
 
 # List all native flags since the current build system doesn't have
-# the micropython configuration available. However, these flags are
+# the MicroPython configuration available. However, these flags are
 # needed to extract all qstrings
 QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB -DN_ARM -DN_XTENSA
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
@@ -103,7 +103,7 @@ endif
 
 ifneq ($(FROZEN_MPY_DIR),)
 # to build the MicroPython cross compiler
-$(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/windows/fmode.c
+$(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
 # make a list of all the .py files that need compiling and freezing
@@ -119,7 +119,7 @@ $(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py $(TOP)/mpy-cross/mpy-cross
 # to build frozen_mpy.c from all .mpy files
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
 	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
+	$(Q)$(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
 endif
 
 ifneq ($(PROG),)
@@ -135,7 +135,7 @@ $(PROG): $(OBJ)
 ifndef DEBUG
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
-	$(Q)$(SIZE) $(PROG)
+	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)
 
 clean: clean-prog
 clean-prog:

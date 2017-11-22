@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,8 +26,6 @@
 
 #include <stdlib.h>
 
-#include "py/obj.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 typedef struct _mp_obj_bool_t {
@@ -63,7 +61,7 @@ STATIC mp_obj_t bool_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
     }
 }
 
-STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
+STATIC mp_obj_t bool_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     if (op == MP_UNARY_OP_LEN) {
         return MP_OBJ_NULL;
     }
@@ -71,7 +69,7 @@ STATIC mp_obj_t bool_unary_op(mp_uint_t op, mp_obj_t o_in) {
     return mp_unary_op(op, MP_OBJ_NEW_SMALL_INT(self->value));
 }
 
-STATIC mp_obj_t bool_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t bool_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_bool_t *self = MP_OBJ_TO_PTR(lhs_in);
     return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(self->value), rhs_in);
 }

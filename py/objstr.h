@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -65,9 +65,10 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len);
 mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args);
+mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte* data, size_t len);
 mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, size_t len);
 
-mp_obj_t mp_obj_str_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
+mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,

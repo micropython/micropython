@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,9 +27,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/obj.h"
-#include "py/runtime0.h"
 
 /******************************************************************************/
 /* singleton objects defined by Python                                        */

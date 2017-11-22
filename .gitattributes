@@ -15,16 +15,13 @@
 # These should also not be modified by git.
 tests/basics/string_cr_conversion.py -text
 tests/basics/string_crlf_conversion.py -text
-stmhal/pybcdc.inf_template -text
-stmhal/usbd_* -text
-stmhal/boards/*/stm32f4xx_hal_conf.h -text
-stmhal/cmsis/** -text
-stmhal/hal/** -text
-stmhal/usbdev/** -text
-stmhal/usbhost/** -text
-cc3200/hal/aes.c -text
-cc3200/hal/aes.h -text
-cc3200/hal/des.c -text
-cc3200/hal/i2s.c -text
-cc3200/hal/i2s.h -text
-cc3200/version.h -text
+ports/stm32/pybcdc.inf_template -text
+ports/stm32/usbd_* -text
+ports/stm32/usbdev/** -text
+ports/stm32/usbhost/** -text
+ports/cc3200/hal/aes.c -text
+ports/cc3200/hal/aes.h -text
+ports/cc3200/hal/des.c -text
+ports/cc3200/hal/i2s.c -text
+ports/cc3200/hal/i2s.h -text
+ports/cc3200/version.h -text

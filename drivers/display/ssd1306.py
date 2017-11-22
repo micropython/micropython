@@ -1,7 +1,6 @@
 # MicroPython SSD1306 OLED driver, I2C and SPI interfaces
 
 from micropython import const
-import time
 import framebuf
 
 
@@ -32,8 +31,21 @@ class SSD1306:
         self.external_vcc = external_vcc
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
-        self.framebuf = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MVLSB)
-        self.poweron()
+        fb = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
+        self.framebuf = fb
+        # Provide methods for accessing FrameBuffer graphics primitives. This is a
+        # workround because inheritance from a native class is currently unsupported.
+        # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
+        self.fill = fb.fill
+        self.pixel = fb.pixel
+        self.hline = fb.hline
+        self.vline = fb.vline
+        self.line = fb.line
+        self.rect = fb.rect
+        self.fill_rect = fb.fill_rect
+        self.text = fb.text
+        self.scroll = fb.scroll
+        self.blit = fb.blit
         self.init_display()
 
     def init_display(self):
@@ -66,6 +78,9 @@ class SSD1306:
     def poweroff(self):
         self.write_cmd(SET_DISP | 0x00)
 
+    def poweron(self):
+        self.write_cmd(SET_DISP | 0x01)
+
     def contrast(self, contrast):
         self.write_cmd(SET_CONTRAST)
         self.write_cmd(contrast)
@@ -88,18 +103,6 @@ class SSD1306:
         self.write_cmd(self.pages - 1)
         self.write_data(self.buffer)
 
-    def fill(self, col):
-        self.framebuf.fill(col)
-
-    def pixel(self, x, y, col):
-        self.framebuf.pixel(x, y, col)
-
-    def scroll(self, dx, dy):
-        self.framebuf.scroll(dx, dy)
-
-    def text(self, string, x, y, col=1):
-        self.framebuf.text(string, x, y, col)
-
 
 class SSD1306_I2C(SSD1306):
     def __init__(self, width, height, i2c, addr=0x3c, external_vcc=False):
@@ -121,9 +124,6 @@ class SSD1306_I2C(SSD1306):
         self.i2c.write(buf)
         self.i2c.stop()
 
-    def poweron(self):
-        pass
-
 
 class SSD1306_SPI(SSD1306):
     def __init__(self, width, height, spi, dc, res, cs, external_vcc=False):
@@ -135,6 +135,12 @@ class SSD1306_SPI(SSD1306):
         self.dc = dc
         self.res = res
         self.cs = cs
+        import time
+        self.res(1)
+        time.sleep_ms(1)
+        self.res(0)
+        time.sleep_ms(10)
+        self.res(1)
         super().__init__(width, height, external_vcc)
 
     def write_cmd(self, cmd):
@@ -152,10 +158,3 @@ class SSD1306_SPI(SSD1306):
         self.cs(0)
         self.spi.write(buf)
         self.cs(1)
-
-    def poweron(self):
-        self.res(1)
-        time.sleep_ms(1)
-        self.res(0)
-        time.sleep_ms(10)
-        self.res(1)

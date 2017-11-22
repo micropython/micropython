@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -31,11 +31,9 @@
 #include <assert.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/lexer.h"
 #include "py/parse.h"
 #include "py/parsenum.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/objint.h"
 #include "py/objstr.h"
@@ -419,7 +417,7 @@ STATIC void push_result_token(parser_t *parser, const rule_t *rule) {
             pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
         } else {
             // not interned, make a node holding a pointer to the string/bytes object
-            mp_obj_t o = mp_obj_new_str_of_type(
+            mp_obj_t o = mp_obj_new_str_copy(
                 lex->tok_kind == MP_TOKEN_STRING ? &mp_type_str : &mp_type_bytes,
                 (const byte*)lex->vstr.buf, lex->vstr.len);
             pn = make_node_const_object(parser, lex->tok_line, o);

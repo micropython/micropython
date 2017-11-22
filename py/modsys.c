@@ -1,9 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +25,19 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
-#include "py/nlr.h"
 #include "py/builtin.h"
 #include "py/objlist.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/objint.h"
+#include "py/objtype.h"
 #include "py/stream.h"
 #include "py/smallint.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_SYS
 
 #include "genhdr/mpversion.h"
-
-/// \module sys - system specific functions
 
 // defined per port; type of these is irrelevant, just need pointer
 extern struct _mp_dummy_t mp_sys_stdin_obj;
@@ -49,10 +48,10 @@ extern struct _mp_dummy_t mp_sys_stderr_obj;
 const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adaptor};
 #endif
 
-/// \constant version - Python language version that this implementation conforms to, as a string
+// version - Python language version that this implementation conforms to, as a string
 STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 
-/// \constant version_info - Python language version that this implementation conforms to, as a tuple of ints
+// version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
 // TODO: CPython is now at 5-element array, but save 2 els so far...
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
@@ -87,13 +86,11 @@ STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
 #undef I
 
 #ifdef MICROPY_PY_SYS_PLATFORM
-/// \constant platform - the platform that Micro Python is running on
+// platform - the platform that MicroPython is running on
 STATIC const MP_DEFINE_STR_OBJ(platform_obj, MICROPY_PY_SYS_PLATFORM);
 #endif
 
-/// \function exit([retval])
-/// Raise a `SystemExit` exception.  If an argument is given, it is the
-/// value given to `SystemExit`.
+// exit([retval]): raise SystemExit, with optional argument given to the exception
 STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc;
     if (n_args == 0) {
@@ -143,6 +140,11 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
 #endif
 
+STATIC mp_obj_t mp_sys_getsizeof(mp_obj_t obj) {
+    return mp_unary_op(MP_UNARY_OP_SIZEOF, obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
+
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
@@ -154,7 +156,6 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #ifdef MICROPY_PY_SYS_PLATFORM
     { MP_ROM_QSTR(MP_QSTR_platform), MP_ROM_PTR(&platform_obj) },
     #endif
-    /// \constant byteorder - the byte order of the system ("little" or "big")
     #if MP_ENDIANNESS_LITTLE
     { MP_ROM_QSTR(MP_QSTR_byteorder), MP_ROM_QSTR(MP_QSTR_little) },
     #else
@@ -168,19 +169,17 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     // to not try to compare sys.maxsize to some literal number (as this
     // number might not fit in available int size), but instead count number
     // of "one" bits in sys.maxsize.
-    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_OBJ_NEW_SMALL_INT(MP_SMALL_INT_MAX) },
+    { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_INT(MP_SMALL_INT_MAX) },
     #else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_maxsize_obj) },
     #endif
     #endif
 
     #if MICROPY_PY_SYS_EXIT
-    // documented per-port
     { MP_ROM_QSTR(MP_QSTR_exit), MP_ROM_PTR(&mp_sys_exit_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES
-    // documented per-port
     { MP_ROM_QSTR(MP_QSTR_stdin), MP_ROM_PTR(&mp_sys_stdin_obj) },
     { MP_ROM_QSTR(MP_QSTR_stdout), MP_ROM_PTR(&mp_sys_stdout_obj) },
     { MP_ROM_QSTR(MP_QSTR_stderr), MP_ROM_PTR(&mp_sys_stderr_obj) },
@@ -191,6 +190,9 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #endif
     #if MICROPY_PY_SYS_EXC_INFO
     { MP_ROM_QSTR(MP_QSTR_exc_info), MP_ROM_PTR(&mp_sys_exc_info_obj) },
+    #endif
+    #if MICROPY_PY_SYS_GETSIZEOF
+    { MP_ROM_QSTR(MP_QSTR_getsizeof), MP_ROM_PTR(&mp_sys_getsizeof_obj) },
     #endif
 
     /*

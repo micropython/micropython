@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -92,7 +92,7 @@ void *m_realloc(void *ptr, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move);
 void m_free(void *ptr);
 #endif
-NORETURN void *m_malloc_fail(size_t num_bytes);
+NORETURN void m_malloc_fail(size_t num_bytes);
 
 #if MICROPY_MEM_STATS
 size_t m_get_total_bytes_allocated(void);

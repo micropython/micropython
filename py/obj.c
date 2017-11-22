@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -29,12 +29,10 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/obj.h"
 #include "py/objtype.h"
 #include "py/objint.h"
 #include "py/objstr.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
@@ -162,7 +160,16 @@ bool mp_obj_is_callable(mp_obj_t o_in) {
 // comparison returns NotImplemented, == and != are decided by comparing the object
 // pointer."
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2) {
-    if (o1 == o2) {
+    // Float (and complex) NaN is never equal to anything, not even itself,
+    // so we must have a special check here to cover those cases.
+    if (o1 == o2
+        #if MICROPY_PY_BUILTINS_FLOAT
+        && !mp_obj_is_float(o1)
+        #endif
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        && !MP_OBJ_IS_TYPE(o1, &mp_type_complex)
+        #endif
+        ) {
         return true;
     }
     if (o1 == mp_const_none || o2 == mp_const_none) {
@@ -264,20 +271,33 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-mp_float_t mp_obj_get_float(mp_obj_t arg) {
+bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
+    mp_float_t val;
+
     if (arg == mp_const_false) {
-        return 0;
+        val = 0;
     } else if (arg == mp_const_true) {
-        return 1;
+        val = 1;
     } else if (MP_OBJ_IS_SMALL_INT(arg)) {
-        return MP_OBJ_SMALL_INT_VALUE(arg);
+        val = MP_OBJ_SMALL_INT_VALUE(arg);
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
-        return mp_obj_int_as_float_impl(arg);
+        val = mp_obj_int_as_float_impl(arg);
     #endif
     } else if (mp_obj_is_float(arg)) {
-        return mp_obj_float_get(arg);
+        val = mp_obj_float_get(arg);
     } else {
+        return false;
+    }
+
+    *value = val;
+    return true;
+}
+
+mp_float_t mp_obj_get_float(mp_obj_t arg) {
+    mp_float_t val;
+
+    if (!mp_obj_get_float_maybe(arg, &val)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError("can't convert to float");
         } else {
@@ -285,6 +305,8 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
                 "can't convert %s to float", mp_obj_get_type_str(arg)));
         }
     }
+
+    return val;
 }
 
 #if MICROPY_PY_BUILTINS_COMPLEX
@@ -505,7 +527,7 @@ void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flag
     }
 }
 
-mp_obj_t mp_generic_unary_op(mp_uint_t op, mp_obj_t o_in) {
+mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     switch (op) {
         case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
         default: return MP_OBJ_NULL; // op not supported

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,9 +27,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/objlist.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
@@ -87,28 +85,22 @@ STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
     }
 }
 
-// Don't pass MP_BINARY_OP_NOT_EQUAL here
-STATIC bool list_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t another_in) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_list));
-    if (!MP_OBJ_IS_TYPE(another_in, &mp_type_list)) {
-        return false;
-    }
-    mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_list_t *another = MP_OBJ_TO_PTR(another_in);
-
-    return mp_seq_cmp_objs(op, self->items, self->len, another->items, another->len);
-}
-
-STATIC mp_obj_t list_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
+        #if MICROPY_PY_SYS_GETSIZEOF
+        case MP_UNARY_OP_SIZEOF: {
+            size_t sz = sizeof(*self) + sizeof(mp_obj_t) * self->alloc;
+            return MP_OBJ_NEW_SMALL_INT(sz);
+        }
+        #endif
         default: return MP_OBJ_NULL; // op not supported
     }
 }
 
-STATIC mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
+STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_list_t *o = MP_OBJ_TO_PTR(lhs);
     switch (op) {
         case MP_BINARY_OP_ADD: {
@@ -140,8 +132,18 @@ STATIC mp_obj_t list_binary_op(mp_uint_t op, mp_obj_t lhs, mp_obj_t rhs) {
         case MP_BINARY_OP_LESS:
         case MP_BINARY_OP_LESS_EQUAL:
         case MP_BINARY_OP_MORE:
-        case MP_BINARY_OP_MORE_EQUAL:
-            return mp_obj_new_bool(list_cmp_helper(op, lhs, rhs));
+        case MP_BINARY_OP_MORE_EQUAL: {
+            if (!MP_OBJ_IS_TYPE(rhs, &mp_type_list)) {
+                if (op == MP_BINARY_OP_EQUAL) {
+                    return mp_const_false;
+                }
+                return MP_OBJ_NULL; // op not supported
+            }
+
+            mp_obj_list_t *another = MP_OBJ_TO_PTR(rhs);
+            bool res = mp_seq_cmp_objs(op, o->items, o->len, another->items, another->len);
+            return mp_obj_new_bool(res);
+        }
 
         default:
             return MP_OBJ_NULL; // op not supported
@@ -156,7 +158,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementedError(NULL);
             }
 
             mp_int_t len_adj = slice.start - slice.stop;
@@ -196,7 +198,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             mp_obj_get_array(value, &value_len, &value_items);
             mp_bound_slice_t slice_out;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice_out)) {
-                mp_not_implemented("");
+                mp_raise_NotImplementedError(NULL);
             }
             mp_int_t len_adj = value_len - (slice_out.stop - slice_out.start);
             //printf("Len adj: %d\n", len_adj);

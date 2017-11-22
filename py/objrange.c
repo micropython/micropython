@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,8 +26,6 @@
 
 #include <stdlib.h>
 
-#include "py/nlr.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 /******************************************************************************/
@@ -130,7 +128,7 @@ STATIC mp_int_t range_len(mp_obj_range_t *self) {
     return len;
 }
 
-STATIC mp_obj_t range_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t range_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_range_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t len = range_len(self);
     switch (op) {

@@ -122,7 +122,7 @@ def url_open(url):
         s.connect(addr)
 
         if proto == "https:":
-            s = ussl.wrap_socket(s)
+            s = ussl.wrap_socket(s, server_hostname=host)
             if warn_ussl:
                 print("Warning: %s SSL certificate is not validated" % host)
                 warn_ussl = False

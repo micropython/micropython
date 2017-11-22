@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,9 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
 #include "py/objlist.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_UHEAPQ
@@ -35,7 +33,7 @@
 
 STATIC mp_obj_list_t *get_heap(mp_obj_t heap_in) {
     if (!MP_OBJ_IS_TYPE(heap_in, &mp_type_list)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TypeError, "heap must be a list"));
+        mp_raise_TypeError("heap must be a list");
     }
     return MP_OBJ_TO_PTR(heap_in);
 }

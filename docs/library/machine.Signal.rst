@@ -4,17 +4,44 @@
 class Signal -- control and sense external I/O devices
 ======================================================
 
-The Signal class is a simple extension of Pin class. Unlike Pin, which
+The Signal class is a simple extension of the `Pin` class. Unlike Pin, which
 can be only in "absolute" 0 and 1 states, a Signal can be in "asserted"
 (on) or "deasserted" (off) states, while being inverted (active-low) or
-not. Summing up, it adds logical inversion support to Pin functionality.
+not. In other words, it adds logical inversion support to Pin functionality.
 While this may seem a simple addition, it is exactly what is needed to
 support wide array of simple digital devices in a way portable across
 different boards, which is one of the major MicroPython goals. Regardless
-whether different users have an active-high or active-low LED, a normally
-open or normally closed relay - you can develop single, nicely looking
+of whether different users have an active-high or active-low LED, a normally
+open or normally closed relay - you can develop a single, nicely looking
 application which works with each of them, and capture hardware
-configuration differences in few lines on the config file of your app.
+configuration differences in few lines in the config file of your app.
+
+Example::
+
+    from machine import Pin, Signal
+
+    # Suppose you have an active-high LED on pin 0
+    led1_pin = Pin(0, Pin.OUT)
+    # ... and active-low LED on pin 1
+    led2_pin = Pin(1, Pin.OUT)
+
+    # Now to light up both of them using Pin class, you'll need to set
+    # them to different values
+    led1_pin.value(1)
+    led2_pin.value(0)
+
+    # Signal class allows to abstract away active-high/active-low
+    # difference
+    led1 = Signal(led1_pin, invert=False)
+    led2 = Signal(led2_pin, invert=True)
+
+    # Now lighting up them looks the same
+    led1.value(1)
+    led2.value(1)
+
+    # Even better:
+    led1.on()
+    led2.on()
 
 Following is the guide when Signal vs Pin should be used:
 
@@ -33,11 +60,11 @@ architecture of MicroPython: Pin offers the lowest overhead, which may
 be important when bit-banging protocols. But Signal adds additional
 flexibility on top of Pin, at the cost of minor overhead (much smaller
 than if you implemented active-high vs active-low device differences in
-Python manually!). Also, Pin is low-level object which needs to be
+Python manually!). Also, Pin is a low-level object which needs to be
 implemented for each support board, while Signal is a high-level object
 which comes for free once Pin is implemented.
 
-If in doubt, give the Signal a try! Once again, it is developed to save
+If in doubt, give the Signal a try! Once again, it is offered to save
 developers from the need to handle unexciting differences like active-low
 vs active-high signals, and allow other users to share and enjoy your
 application, instead of being frustrated by the fact that it doesn't

@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "extmod/machine_mem.h"
-#include "py/nlr.h"
 
 #if MICROPY_PY_MACHINE
 

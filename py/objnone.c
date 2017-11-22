@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,9 +26,7 @@
 
 #include <stdlib.h>
 
-#include "py/nlr.h"
 #include "py/obj.h"
-#include "py/runtime0.h"
 
 typedef struct _mp_obj_none_t {
     mp_obj_base_t base;

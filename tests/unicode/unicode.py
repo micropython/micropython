@@ -33,3 +33,17 @@ try:
     int('\u0200')
 except ValueError:
     print('ValueError')
+
+# test invalid UTF-8 string
+try:
+    str(b'ab\xa1', 'utf8')
+except UnicodeError:
+    print('UnicodeError')
+try:
+    str(b'ab\xf8', 'utf8')
+except UnicodeError:
+    print('UnicodeError')
+try:
+    str(bytearray(b'ab\xc0a'), 'utf8')
+except UnicodeError:
+    print('UnicodeError')

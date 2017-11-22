@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,12 +27,10 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "py/nlr.h"
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/objstr.h"
 #include "py/objtype.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/stream.h"
@@ -91,26 +89,7 @@ STATIC mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
 MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 STATIC mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
-    #if MICROPY_PY_BUILTINS_FLOAT
-    if (mp_obj_is_float(o_in)) {
-        mp_float_t value = mp_obj_float_get(o_in);
-        // TODO check for NaN etc
-        if (value < 0) {
-            return mp_obj_new_float(-value);
-        } else {
-            return o_in;
-        }
-    #if MICROPY_PY_BUILTINS_COMPLEX
-    } else if (MP_OBJ_IS_TYPE(o_in, &mp_type_complex)) {
-        mp_float_t real, imag;
-        mp_obj_complex_get(o_in, &real, &imag);
-        return mp_obj_new_float(MICROPY_FLOAT_C_FUN(sqrt)(real*real + imag*imag));
-    #endif
-    }
-    #endif
-
-    // this will raise a TypeError if the argument is not integral
-    return mp_obj_int_abs(o_in);
+    return mp_unary_op(MP_UNARY_OP_ABS, o_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_abs_obj, mp_builtin_abs);
 
@@ -180,12 +159,12 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     } else {
         mp_raise_ValueError("chr() arg not in range(0x110000)");
     }
-    return mp_obj_new_str(str, len, true);
+    return mp_obj_new_str_via_qstr(str, len);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {
         char str[1] = {ord};
-        return mp_obj_new_str(str, 1, true);
+        return mp_obj_new_str_via_qstr(str, 1);
     } else {
         mp_raise_ValueError("chr() arg not in range(256)");
     }
@@ -369,31 +348,16 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     if (MP_OBJ_IS_STR(o_in)) {
         len = unichar_charlen(str, len);
         if (len == 1) {
-            if (!UTF8_IS_NONASCII(*str)) {
-                goto return_first_byte;
-            }
-            mp_int_t ord = *str++ & 0x7F;
-            for (mp_int_t mask = 0x40; ord & mask; mask >>= 1) {
-                ord &= ~mask;
-            }
-            while (UTF8_IS_CONT(*str)) {
-                ord = (ord << 6) | (*str++ & 0x3F);
-            }
-            return mp_obj_new_int(ord);
+            return mp_obj_new_int(utf8_get_char((const byte*)str));
         }
-    } else {
-        // a bytes object
+    } else
+    #endif
+    {
+        // a bytes object, or a str without unicode support (don't sign extend the char)
         if (len == 1) {
-        return_first_byte:
             return MP_OBJ_NEW_SMALL_INT(((const byte*)str)[0]);
         }
     }
-    #else
-    if (len == 1) {
-        // don't sign extend when converting to ord
-        return mp_obj_new_int(((const byte*)str)[0]);
-    }
-    #endif
 
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError("ord expects a character");
@@ -493,16 +457,14 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
         return o_in;
     }
 #if MICROPY_PY_BUILTINS_FLOAT
-    mp_int_t num_dig = 0;
+    mp_float_t val = mp_obj_get_float(o_in);
     if (n_args > 1) {
-        num_dig = mp_obj_get_int(args[1]);
-        mp_float_t val = mp_obj_get_float(o_in);
+        mp_int_t num_dig = mp_obj_get_int(args[1]);
         mp_float_t mult = MICROPY_FLOAT_C_FUN(pow)(10, num_dig);
         // TODO may lead to overflow
         mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val * mult) / mult;
         return mp_obj_new_float(rounded);
     }
-    mp_float_t val = mp_obj_get_float(o_in);
     mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val);
     return mp_obj_new_int_from_float(rounded);
 #else
@@ -540,7 +502,7 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 
 // See mp_load_attr() if making any changes
-STATIC inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
+static inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
     mp_obj_t dest[2];
     // use load_method, raising or not raising exception
     ((defval == MP_OBJ_NULL) ? mp_load_method : mp_load_method_maybe)(base, attr, dest);

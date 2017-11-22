@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -36,7 +36,7 @@
 // ultimately we will replace this with a static hash table of some kind
 // also probably need to include the length in the string data, to allow null bytes in the string
 
-#if 0 // print debugging info
+#if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_printf(...) (void)0
@@ -238,29 +238,6 @@ qstr qstr_from_strn(const char *str, size_t len) {
         memcpy(q_ptr + MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN, str, len);
         q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
         q = qstr_add(q_ptr);
-    }
-    QSTR_EXIT();
-    return q;
-}
-
-byte *qstr_build_start(size_t len, byte **q_ptr) {
-    assert(len < (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN)));
-    *q_ptr = m_new(byte, MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len + 1);
-    Q_SET_LENGTH(*q_ptr, len);
-    return Q_GET_DATA(*q_ptr);
-}
-
-qstr qstr_build_end(byte *q_ptr) {
-    QSTR_ENTER();
-    qstr q = qstr_find_strn((const char*)Q_GET_DATA(q_ptr), Q_GET_LENGTH(q_ptr));
-    if (q == 0) {
-        size_t len = Q_GET_LENGTH(q_ptr);
-        mp_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
-        Q_SET_HASH(q_ptr, hash);
-        q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
-        q = qstr_add(q_ptr);
-    } else {
-        m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));
     }
     QSTR_EXIT();
     return q;

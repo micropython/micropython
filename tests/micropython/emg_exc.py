@@ -2,6 +2,11 @@
 
 import micropython
 import sys
+try:
+    import uio
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 # some ports need to allocate heap for the emg exc
 try:
@@ -14,7 +19,16 @@ def f():
     try:
         raise ValueError(1)
     except ValueError as er:
-        sys.print_exception(er)
+        exc = er
     micropython.heap_unlock()
+
+    # print the exception
+    buf = uio.StringIO()
+    sys.print_exception(exc, buf)
+    for l in buf.getvalue().split("\n"):
+        if l.startswith("  File "):
+            print(l.split('"')[2])
+        else:
+            print(l)
 
 f()

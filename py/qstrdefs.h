@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -51,11 +51,3 @@ Q(<genexpr>)
 Q(<string>)
 Q(<stdin>)
 Q(utf-8)
-
-// The following qstrings not referenced from anywhere in the sources
-Q(__locals__)
-Q(BufferError)
-Q(FileExistsError)
-Q(FileNotFoundError)
-Q(FloatingPointError)
-Q(UnboundLocalError)

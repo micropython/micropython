@@ -96,7 +96,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         if (n_args == 1) {
             if (n_kw == 0) {
             } else if (n_kw == 1 && args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_invert)) {
-                invert = mp_obj_is_true(args[1]);
+                invert = mp_obj_is_true(args[2]);
             } else {
                 goto error;
             }

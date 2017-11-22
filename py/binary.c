@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -206,7 +206,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
         return (mp_obj_t)(mp_uint_t)val;
     } else if (val_type == 'S') {
         const char *s_val = (const char*)(uintptr_t)(mp_uint_t)val;
-        return mp_obj_new_str(s_val, strlen(s_val), false);
+        return mp_obj_new_str(s_val, strlen(s_val));
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {
         union { uint32_t i; float f; } fpu = {val};
@@ -303,7 +303,10 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
                 // zero/sign extend if needed
                 if (BYTES_PER_WORD < 8 && size > sizeof(val)) {
                     int c = (is_signed(val_type) && (mp_int_t)val < 0) ? 0xff : 0x00;
-                    memset(p + sizeof(val), c, size - sizeof(val));
+                    memset(p, c, size);
+                    if (struct_type == '>') {
+                        p += size - sizeof(val);
+                    }
                 }
             }
     }

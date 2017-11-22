@@ -21,6 +21,13 @@ print(binascii.a2b_base64(b'f4D/'))
 print(binascii.a2b_base64(b'f4D+')) # convert '+'
 print(binascii.a2b_base64(b'MTIzNEFCQ0RhYmNk'))
 
+# Ignore invalid characters and pad sequences
+print(binascii.a2b_base64(b'Zm9v\n'))
+print(binascii.a2b_base64(b'Zm\x009v\n'))
+print(binascii.a2b_base64(b'Zm9v=='))
+print(binascii.a2b_base64(b'Zm9v==='))
+print(binascii.a2b_base64(b'Zm9v===YmFy'))
+
 try:
     print(binascii.a2b_base64(b'abc'))
 except ValueError:

@@ -4,8 +4,8 @@ print(s.remove(1))
 print(list(s))
 try:
     print(s.remove(1), "!!!")
-except KeyError:
-    pass
+except KeyError as er:
+    print('KeyError', er.args[0])
 else:
     print("failed to raise KeyError")
 

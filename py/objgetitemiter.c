@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -26,7 +26,6 @@
 
 #include <stdlib.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
 
 // this is a wrapper object that turns something that has a __getitem__ method into an iterator

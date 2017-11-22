@@ -1,4 +1,5 @@
 .. currentmodule:: pyb
+.. _pyb.LCD:
 
 class LCD -- LCD control for the LCD touch-sensor pyskin
 ========================================================

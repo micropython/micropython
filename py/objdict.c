@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,9 +27,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/nlr.h"
-#include "py/obj.h"
-#include "py/runtime0.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/objtype.h"
@@ -100,16 +97,22 @@ STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return dict_out;
 }
 
-STATIC mp_obj_t dict_unary_op(mp_uint_t op, mp_obj_t self_in) {
+STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->map.used != 0);
         case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->map.used);
+        #if MICROPY_PY_SYS_GETSIZEOF
+        case MP_UNARY_OP_SIZEOF: {
+            size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
+            return MP_OBJ_NEW_SMALL_INT(sz);
+        }
+        #endif
         default: return MP_OBJ_NULL; // op not supported
     }
 }
 
-STATIC mp_obj_t dict_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
         case MP_BINARY_OP_IN: {
@@ -476,7 +479,7 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_print_str(print, "])");
 }
 
-STATIC mp_obj_t dict_view_binary_op(mp_uint_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // only supported for the 'keys' kind until sets and dicts are refactored
     mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(lhs_in);
     if (o->kind != MP_DICT_VIEW_KEYS) {
