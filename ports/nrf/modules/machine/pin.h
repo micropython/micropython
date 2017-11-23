@@ -62,9 +62,6 @@ typedef struct {
   uint32_t pull;
 } pin_obj_t;
 
-// Adafruit
-extern const mp_obj_type_t mcu_pin_type;
-
 extern const mp_obj_type_t pin_type;
 extern const mp_obj_type_t pin_af_type;
 
@@ -87,16 +84,8 @@ typedef struct {
 extern const mp_obj_type_t pin_board_pins_obj_type;
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
 
-//extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
-//extern const mp_obj_dict_t pin_board_pins_locals_dict;
-
-// Adafruit modification for CircuitPython board module
-extern const mp_obj_dict_t mcu_pin_globals;
-extern const mp_obj_dict_t board_module_globals;
-
-#define pin_cpu_pins_locals_dict    mcu_pin_globals
-#define pin_board_pins_locals_dict  board_module_globals
-
+extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t pin_board_pins_locals_dict;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(pin_init_obj);
 

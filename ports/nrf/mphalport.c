@@ -59,11 +59,6 @@ int mp_hal_stdin_rx_chr(void) {
     return 0;
 }
 
-bool mp_hal_stdin_any(void)
-{
-  return uart_rx_any(MP_STATE_PORT(pyb_stdio_uart));
-}
-
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
         uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);

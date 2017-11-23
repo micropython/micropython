@@ -48,7 +48,6 @@
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
-//CP UPDATE: See mpconfigport.h for LONGINT implementation
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #if NRF51
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
@@ -204,12 +203,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // extra built in modules to add to the list of known ones
-
-extern const struct _mp_obj_module_t microcontroller_module;
-extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t digitalio_module;
-extern const struct _mp_obj_module_t time_module;
-
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_utime;
@@ -260,14 +253,10 @@ extern const struct _mp_obj_module_t ble_module;
 #else
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     MUSIC_MODULE \
     RANDOM_MODULE \
 

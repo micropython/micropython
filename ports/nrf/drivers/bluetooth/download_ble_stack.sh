@@ -52,33 +52,15 @@ function download_s132_nrf52_3_0_0
     cd -
 }
 
-function download_s132_nrf52_5_0_0
-{
-    echo ""
-    echo "####################################"
-    echo "### Downloading s132_nrf52_5.0.0 ###"
-    echo "####################################"
-    echo ""
-
-    mkdir -p $1/s132_nrf52_5.0.0
-    cd $1/s132_nrf52_5.0.0
-
-    wget http://www.nordicsemi.com/eng/nordic/download_resource/58987/11/7198220/116068
-    mv 116068 temp.zip
-    unzip -u temp.zip
-    rm temp.zip
-    cd -
-}
 
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ $# -eq 0 ]; then
+if [ $# -eq 0 ]; then 
     echo "No Bluetooth LE stack defined, downloading all."
     download_s110_nrf51_8_0_0 ${SCRIPT_DIR}
     download_s132_nrf52_2_0_1 ${SCRIPT_DIR}
     download_s132_nrf52_3_0_0 ${SCRIPT_DIR}
-    download_s132_nrf52_5_0_0 ${SCRIPT_DIR}
-else
+else 
     case $1 in
         "s110_nrf51" )
             download_s110_nrf51_8_0_0 ${SCRIPT_DIR} ;;
@@ -86,8 +68,6 @@ else
             download_s132_nrf52_2_0_1 ${SCRIPT_DIR} ;;
         "s132_nrf52_3_0_0" )
             download_s132_nrf52_3_0_0 ${SCRIPT_DIR} ;;
-        "s132_nrf52_5_0_0" )
-            download_s132_nrf52_5_0_0 ${SCRIPT_DIR} ;;
     esac
 fi
 

@@ -5,9 +5,7 @@
     ------------------------------------------------------------------------
     START ADDR  END ADDR   SIZE    DESCRIPTION
     ----------  ---------- ------- -----------------------------------------
-    0x0007F000..0x0007FFFF (  4KB) Bootloader Settings
-    0x0007E000..0x0007EFFF (  4KB) Master Boot Record Params
-    0x00074000..0x0007DFFF ( 40KB) Serial + OTA Bootloader
+    0x00074000..0x00080000 ( 48KB) Serial + OTA Bootloader
     0x0006D000..0x00073FFF ( 28KB) Private Config Data (Bonding, Keys, etc.)
     0x00055000..0x0006CFFF ( 96KB) User Filesystem
     0x0001C000..0x00054FFF (228KB) Application Code
@@ -26,7 +24,7 @@ MEMORY
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
-_minimum_heap_size = 0 /*16K Circuit Python use static variable for HEAP */;
+_minimum_heap_size = 16K;
 
 /* top end of the stack */
 

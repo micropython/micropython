@@ -74,28 +74,6 @@ static inline void hal_gpio_cfg_pin(uint8_t port, uint32_t pin_number, hal_gpio_
                                          | mode;
 }
 
-static inline void hal_gpio_dir_set(uint8_t port, uint32_t pin, hal_gpio_mode_t mode)
-{
-  GPIO_BASE(port)->PIN_CNF[pin] &= ~GPIO_PIN_CNF_DIR_Msk;
-  GPIO_BASE(port)->PIN_CNF[pin] |= mode;
-}
-
-static inline hal_gpio_mode_t hal_gpio_dir_get(uint8_t port, uint32_t pin)
-{
-  return GPIO_BASE(port)->PIN_CNF[pin] & GPIO_PIN_CNF_DIR_Msk;
-}
-
-static inline void hal_gpio_pull_set(uint8_t port, uint32_t pin, hal_gpio_pull_t pull)
-{
-  GPIO_BASE(port)->PIN_CNF[pin] &= ~GPIO_PIN_CNF_PULL_Msk;
-  GPIO_BASE(port)->PIN_CNF[pin] |= pull;
-}
-
-static inline hal_gpio_pull_t hal_gpio_pull_get(uint8_t port, uint32_t pin)
-{
-  return GPIO_BASE(port)->PIN_CNF[pin] & GPIO_PIN_CNF_PULL_Msk;
-}
-
 static inline void hal_gpio_out_set(uint8_t port, uint32_t pin_mask) {
     GPIO_BASE(port)->OUTSET = pin_mask;
 }
@@ -110,14 +88,6 @@ static inline void hal_gpio_pin_set(uint8_t port, uint32_t pin) {
 
 static inline void hal_gpio_pin_clear(uint8_t port, uint32_t pin) {
     GPIO_BASE(port)->OUTCLR = (1 << pin);
-}
-
-static inline void hal_gpio_pin_set_value(uint8_t port, uint32_t pin, uint8_t value) {
-  if (value) {
-    hal_gpio_pin_set(port, pin);
-  }else {
-    hal_gpio_pin_clear(port, pin);
-  }
 }
 
 static inline void hal_gpio_pin_toggle(uint8_t port, uint32_t pin) {
