@@ -50,10 +50,11 @@ Methods
 
    Modify the *eventmask* for *obj*.
 
-.. method:: poll.poll([timeout])
+.. method:: poll.poll(timeout=-1)
 
-   Wait for at least one of the registered objects to become ready. Returns
-   list of (``obj``, ``event``, ...) tuples, ``event`` element specifies
+   Wait for at least one of the registered objects to become ready, with optional
+   timeout in milliseconds (if *timeout* arg is not specified or -1, there is no
+   timeout). Returns list of (``obj``, ``event``, ...) tuples, ``event`` element specifies
    which events happened with a stream and is a combination of ``select.POLL*``
    constants described above. There may be other elements in tuple, depending
    on a platform and version, so don't assume that its size is 2. In case of
