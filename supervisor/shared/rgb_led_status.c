@@ -207,6 +207,7 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     new_status_color(ALL_DONE);
     status->pattern_start = ticks_ms;
     status->safe_mode = safe_mode;
+    status->found_main = found_main;
     status->total_exception_cycle = 0;
     status->ones = result->exception_line % 10;
     status->ones += status->ones > 0 ? 1 : 0;

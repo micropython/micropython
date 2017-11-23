@@ -131,6 +131,11 @@ bool start_mp(safe_mode_t safe_mode) {
     #endif
 
     pyexec_result_t result;
+
+    result.return_code = 0;
+    result.exception_type = NULL;
+    result.exception_line = 0;
+
     bool found_main = false;
 
     if (safe_mode != NO_SAFE_MODE) {
@@ -166,9 +171,10 @@ bool start_mp(safe_mode_t safe_mode) {
         if (reload_next_character) {
             return true;
         }
+
         if (serial_connected() && serial_bytes_available()) {
             // Skip REPL if reload was requested.
-            return serial_read() == CHAR_CTRL_D;
+            return (serial_read() == CHAR_CTRL_D);
         }
 
         if (!serial_connected_before_animation && serial_connected()) {
