@@ -8,7 +8,7 @@ BOOTLOADER_PKG = boards/feather52/bootloader/feather52_bootloader_$(SOFTDEV_VERS
 
 NRF_DEFINES += -DNRF52832_XXAA
 
-
+CFLAGS += -DADAFRUIT_FEATHER52
 
 check_defined = \
     $(strip $(foreach 1,$1, \

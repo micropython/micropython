@@ -121,5 +121,6 @@ void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_in
 hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch);
 
 hal_uart_error_t hal_uart_char_read(NRF_UART_Type * p_instance, uint8_t * ch);
+int hal_uart_available(NRF_UART_Type * p_instance);
 
 #endif // HAL_UART_H__

@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#define PCA10040
-
 #define MICROPY_HW_BOARD_NAME       "Bluefruit nRF52 Feather"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nrf52"
@@ -33,7 +31,7 @@
 #define MICROPY_PY_MACHINE_HW_PWM   (1)
 #define MICROPY_PY_MACHINE_HW_SPI   (1)
 #define MICROPY_PY_MACHINE_TIMER    (1)
-#define MICROPY_PY_MACHINE_RTC      (1)
+#define MICROPY_PY_MACHINE_RTC      (0)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
@@ -74,3 +72,8 @@
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
 #define HELP_TEXT_BOARD_LED         "1,2"
+
+
+
+#define PORT_HEAP_SIZE                (16*1024)
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500

@@ -35,6 +35,8 @@ extern uint32_t _ebss;
 
 typedef void (*func)(void);
 
+#define _start   main
+
 extern void  _start(void) __attribute__((noreturn));
 extern void SystemInit(void);
 

@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
-# then default to pca10040.
-BOARD ?= pca10040
+# then default to feather52.
+BOARD ?= feather52
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
@@ -11,17 +11,18 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
 
-
 ifeq ($(SD), )
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)
 	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
+	-include mpconfigport.mk
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
 	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
+	-include mpconfigport.mk
 
 	include drivers/bluetooth/bluetooth_common.mk
 endif
@@ -34,10 +35,9 @@ FROZEN_MPY_DIR = freeze
 # include py core make definitions
 include ../../py/py.mk
 
+include $(TOP)/supervisor/supervisor.mk
 
 FATFS_DIR = lib/oofatfs
-MPY_CROSS = ../../mpy-cross/mpy-cross
-MPY_TOOL = ../../tools/mpy-tool.py
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -120,7 +120,6 @@ SRC_HAL = $(addprefix hal/,\
 	hal_spi.c \
 	hal_spie.c \
 	hal_time.c \
-	hal_rtc.c \
 	hal_timer.c \
 	hal_twi.c \
 	hal_adc.c \
@@ -136,17 +135,19 @@ SRC_HAL += $(addprefix hal/,\
 	)
 endif
 
+
 SRC_C += \
-	main.c \
 	mphalport.c \
 	help.c \
-	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+  boards/$(BOARD)/board.c \
+  lib/utils/context_manager_helpers.c \
+  fifo.c \
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
@@ -156,7 +157,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/adc.c \
 	machine/pin.c \
 	machine/timer.c \
-	machine/rtc.c \
 	machine/pwm.c \
 	machine/led.c \
 	machine/temp.c \
@@ -183,13 +183,38 @@ SRC_C += \
 	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 
+
+SRC_COMMON_HAL += \
+  board/__init__.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
+	microcontroller/Processor.c \
+  time/__init__.c \
+
+# These don't have corresponding files in each port but are still located in
+# shared-bindings to make it clear what the contents of the modules are.
+SRC_BINDINGS_ENUMS = \
+	digitalio/Direction.c \
+	digitalio/DriveMode.c \
+	digitalio/Pull.c \
+	help.c \
+	math/__init__.c \
+	util.c
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
-OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
@@ -245,7 +270,7 @@ $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_COMMON_HAL_EXPANDED)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
