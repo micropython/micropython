@@ -33,8 +33,6 @@
 #include "esp_now.h"
 #include "esp_wifi.h"
 
-#include "freertos/queue.h"
-
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
@@ -79,36 +77,27 @@ static inline void _get_bytes(mp_obj_t str, size_t len, uint8_t *dst) {
     memcpy(dst, data, len);
 }
 
-// this is crap of course but lets try it
+static mp_obj_t send_cb_obj = mp_const_none;
+static mp_obj_t recv_cb_obj = mp_const_none;
 
-typedef struct {
-	uint8_t macaddr[ESP_NOW_ETH_ALEN];
-	uint16_t len;
-	uint8_t data[ESP_NOW_MAX_DATA_LEN];
-} esp_now_queue_t;
-
-QueueHandle_t esp_now_queue;
-
-STATIC mp_obj_t espnow_recv() {
-    static esp_now_queue_t queue_item = { 0 };
-    int r = xQueueReceive(esp_now_queue, &queue_item, 0);
-    if (r != pdTRUE) return mp_const_none;
-    mp_obj_tuple_t *msg = mp_obj_new_tuple(2, NULL);
-    msg->items[0] = mp_obj_new_bytes(queue_item.macaddr, ESP_NOW_ETH_ALEN);
-    msg->items[1] = mp_obj_new_bytes(queue_item.data, queue_item.len);
-    return msg;
+STATIC void IRAM_ATTR send_cb(const uint8_t *macaddr, esp_now_send_status_t status)
+{
+    if (send_cb_obj != mp_const_none) {
+        mp_obj_tuple_t *msg = mp_obj_new_tuple(2, NULL);
+        msg->items[0] = mp_obj_new_bytes(macaddr, ESP_NOW_ETH_ALEN);
+        msg->items[1] = (status == ESP_NOW_SEND_SUCCESS) ? mp_const_true : mp_const_false;
+	mp_sched_schedule(send_cb_obj, msg);
+    }
 }
 
-MP_DEFINE_CONST_FUN_OBJ_0(espnow_recv_obj, espnow_recv);
-
-void recv_cb(const uint8_t *macaddr, const uint8_t *data, int len) 
+STATIC void IRAM_ATTR recv_cb(const uint8_t *macaddr, const uint8_t *data, int len) 
 {
-    // this is double copying, perhaps I should be just queueing the pointers
-    static esp_now_queue_t queue_item = { 0 };
-    queue_item.len = len;
-    memcpy(queue_item.macaddr, macaddr, ESP_NOW_ETH_ALEN);
-    memcpy(queue_item.data, data, len);
-    xQueueSend(esp_now_queue, &queue_item, 0);
+    if (recv_cb_obj != mp_const_none) {
+        mp_obj_tuple_t *msg = mp_obj_new_tuple(2, NULL);
+        msg->items[0] = mp_obj_new_bytes(macaddr, ESP_NOW_ETH_ALEN);
+        msg->items[1] = mp_obj_new_bytes(data, len);
+	mp_sched_schedule(recv_cb_obj, msg);
+    }
 } 
 
 static int initialized = 0;
@@ -116,9 +105,9 @@ static int initialized = 0;
 STATIC mp_obj_t espnow_init() {
     if (!initialized) {
         esp_now_init();
-	esp_now_queue = xQueueCreate(5, sizeof(esp_now_queue_t));
         initialized = 1;
 	esp_now_register_recv_cb(recv_cb);
+	esp_now_register_send_cb(send_cb);
     }
     return mp_const_none;
 }
@@ -127,12 +116,23 @@ MP_DEFINE_CONST_FUN_OBJ_0(espnow_init_obj, espnow_init);
 STATIC mp_obj_t espnow_deinit() {
     if (initialized) {
         esp_now_deinit();
-	vQueueDelete(esp_now_queue);
         initialized = 0;
     }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espnow_deinit_obj, espnow_deinit);
+
+STATIC mp_obj_t espnow_set_send_cb(mp_obj_t cb) {
+    send_cb_obj = cb;
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(espnow_set_send_cb_obj, espnow_set_send_cb);
+
+STATIC mp_obj_t espnow_set_recv_cb(mp_obj_t cb) {
+    recv_cb_obj = cb;
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(espnow_set_recv_cb_obj, espnow_set_recv_cb);
 
 STATIC mp_obj_t espnow_set_pmk(mp_obj_t pmk) {
     uint8_t buf[ESP_NOW_KEY_LEN];
@@ -184,7 +184,8 @@ STATIC const mp_rom_map_elem_t espnow_globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_peer), MP_ROM_PTR(&espnow_add_peer_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&espnow_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_send_all), MP_ROM_PTR(&espnow_send_all_obj) },
-    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&espnow_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_send_cb), MP_ROM_PTR(&espnow_set_send_cb_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_recv_cb), MP_ROM_PTR(&espnow_set_recv_cb_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_globals_dict, espnow_globals_dict_table);
 
