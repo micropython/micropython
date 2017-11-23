@@ -1159,19 +1159,25 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         uintptr_t flags = arg;
         ret = 0;
 
-        if (flags & MP_STREAM_POLL_RD && socket->incoming.pbuf != NULL) {
-            ret |= MP_STREAM_POLL_RD;
-        }
+        switch (socket->state) {
+        case STATE_NEW:
+        case STATE_CONNECTING:
+            break;
+        case STATE_CONNECTED:
+            if (flags & MP_STREAM_POLL_RD && socket->incoming.pbuf != NULL) {
+                ret |= MP_STREAM_POLL_RD;
+            }
 
-        if (flags & MP_STREAM_POLL_WR && tcp_sndbuf(socket->pcb.tcp) > 0) {
-            ret |= MP_STREAM_POLL_WR;
-        }
-
-        if (socket->state == STATE_PEER_CLOSED) {
-            // Peer-closed socket is both readable and writable: read will
+            if (flags & MP_STREAM_POLL_WR && tcp_sndbuf(socket->pcb.tcp) > 0) {
+                ret |= MP_STREAM_POLL_WR;
+            }
+            break;
+        default:
+            // Any other state is both readable and writable: read will
             // return EOF, write - error. Without this poll will hang on a
             // socket which was closed by peer.
             ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
+            break;
         }
 
     } else {
