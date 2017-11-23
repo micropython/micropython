@@ -29,6 +29,5 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK),  MP_ROM_PTR(&pin_PB11) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PB10) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA12) },
-    { MP_ROM_QSTR(MP_QSTR_FLASH_CS),   MP_ROM_PTR(&pin_PA13) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);

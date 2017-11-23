@@ -58,7 +58,7 @@ static const uint8_t SERCOMx_GCLK_ID_SLOW[] = {
 
     
 // Clock initialization as done in Atmel START.
-void samd_peripheral_sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
+void samd_peripherals_sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
     _pm_enable_bus_clock(PM_BUS_APBC, sercom);
     _gclk_enable_channel(SERCOMx_GCLK_ID_CORE[sercom_index], GCLK_CLKCTRL_GEN_GCLK0_Val);
     _gclk_enable_channel(SERCOMx_GCLK_ID_SLOW[sercom_index], GCLK_CLKCTRL_GEN_GCLK3_Val);
@@ -70,7 +70,7 @@ void samd_peripheral_sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
 // <0x1=>PAD[2,3]_DO_SCK
 // <0x2=>PAD[3,1]_DO_SCK
 // <0x3=>PAD[0,3]_DO_SCK
-uint8_t samd_peripheral_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad) {
+uint8_t samd_peripherals_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad) {
     if (clock_pad == 1) {
         if (mosi_pad == 0) {
             return 0;
@@ -87,6 +87,6 @@ uint8_t samd_peripheral_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad) {
     return 255;
 }
 
-bool samd_peripheral_valid_spi_clock_pad(uint8_t clock_pad) {
+bool samd_peripherals_valid_spi_clock_pad(uint8_t clock_pad) {
     return clock_pad == 1 || clock_pad == 3;
 }

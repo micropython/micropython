@@ -218,6 +218,7 @@ SRC_C = \
 	mphalport.c \
 	reset.c \
 	$(CHIP_FAMILY)_peripherals.c \
+	peripherals.c \
 	$(CHIP_FAMILY)_pins.c \
 	tick.c \
 	usb.c \
@@ -260,6 +261,7 @@ SRC_COMMON_HAL = \
 	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
+	storage/__init__.c \
 	time/__init__.c \
 #	analogio/__init__.c \
 	analogio/AnalogIn.c \
@@ -276,7 +278,6 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
-	storage/__init__.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
 	usb_hid/__init__.c \

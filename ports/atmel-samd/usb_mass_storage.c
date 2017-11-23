@@ -271,7 +271,11 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
     return ERR_NONE;
 }
 
-// The start_read callback begins a read transaction which we accept but delay our response until the "main thread" calls usb_msc_background. Once it does, we read immediately from the drive into our cache and trigger the USB DMA to output the sector. Once the sector is transmitted, xfer_done will be called.
+// The start_read callback begins a read transaction which we accept
+// but delay our response until the "main thread" calls
+// usb_msc_background. Once it does, we read immediately from the
+// drive into our cache and trigger the USB DMA to output the
+// sector. Once the sector is transmitted, xfer_done will be called.
 void usb_msc_background(void) {
     if (active_read && !usb_busy) {
         if (active_nblocks == 0) {
@@ -290,7 +294,7 @@ void usb_msc_background(void) {
             fs_user_mount_t * vfs = get_vfs(active_lun);
             disk_write(vfs, sector_buffer, active_addr, 1);
             // Since by getting here we assume the mount is read-only to
-            // MicroPython lets update the cached FatFs sector if its the one
+            // MicroPython let's update the cached FatFs sector if it's the one
             // we just wrote.
             #if _MAX_SS != _MIN_SS
             if (vfs->ssize == FILESYSTEM_BLOCK_SIZE) {

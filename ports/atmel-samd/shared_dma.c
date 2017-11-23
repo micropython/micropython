@@ -43,28 +43,33 @@ void init_shared_dma(void) {
     struct dma_resource_config config;
     dma_get_config_defaults(&config);
 
-    // This allocates the lowest channel first so make sure the audio is first
-    // so it gets the highest priority.
-    config.peripheral_trigger = DAC_DMAC_ID_EMPTY;
-    config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
-    config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
-    config.event_config.event_output_enable = true;
-    dma_allocate(&audio_dma, &config);
+    // See asf4_conf/hpl_dmac_config.h for initial settings for DMA channels
+    // DMA Channel 0: audio, highest priority,
+    // normal transfer on input, DAC 0 empty is trigger source, trigger on each beat, beat is one byte
+    // output enable true.
+    // asf3 settings:
+    //config.peripheral_trigger = DAC_DMAC_ID_EMPTY;
+    //config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
+    //config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
+    //config.event_config.event_output_enable = true;
+
     // Turn on the transfer complete interrupt so that the job_status changes to done.
     g_chan_interrupt_flag[audio_dma.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
 
     // Prioritize the RX channel over the TX channel because TX can cause an RX
     // overflow.
-    dma_get_config_defaults(&config);
-    config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
-    config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
+    
+    // DMA Channel 1: rx channel,
+    // normal transfer on input, trigger on each beat, beat is one byte
+    //config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
+    //config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
     dma_allocate(&general_dma_rx, &config);
     g_chan_interrupt_flag[general_dma_rx.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
 
-    dma_get_config_defaults(&config);
-    config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
-    config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
-    dma_allocate(&general_dma_tx, &config);
+    // DMA Channel 1: rx channel,
+    // normal transfer on input, trigger on each beat, beat is one byte
+    //config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
+    //config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
     g_chan_interrupt_flag[general_dma_tx.channel_id] |= (1UL << DMA_CALLBACK_TRANSFER_DONE);
 
     // Be sneaky and reuse the active descriptor memory.

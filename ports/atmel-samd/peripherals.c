@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 by Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H
+#include "peripherals.h"
 
-#include "include/sam.h"
+#include "hpl_sercom_config.h"
 
-void samd_peripherals_sercom_clock_init(Sercom* sercom, uint8_t sercom_index);
-uint8_t samd_peripherals_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad);
-bool samd_peripherals_valid_spi_clock_pad(uint8_t clock_pad);
+// Routines that are the same across all samd variants.
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H
+
+// Convert frequency to clock-speed-dependent value. Return 0 if out of range.
+uint8_t samd_peripherals_baudrate_to_baud_reg_value(const uint32_t baudrate) {
+    uint32_t baud_reg_value = (uint32_t) (((float) PROTOTYPE_SERCOM_SPI_M_SYNC_CLOCK_FREQUENCY /
+                                           (2 * baudrate)) + 0.5f);
+    if (baud_reg_value > 0xff) {
+        return 0;
+    }
+    return (uint8_t) baud_reg_value;
+}
+
