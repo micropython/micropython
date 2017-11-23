@@ -141,6 +141,7 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
     } else if (event_id == 17) {         // disconnect event
         self->conn_handle = 0xFFFF;      // invalid connection handle
         m_connected = false;
+        ble_uart_advertise();
     }
 }
 
