@@ -536,25 +536,17 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                 return res;
             }
         }
-        if (type->getiter != NULL) {
-            /* second attempt, walk the iterator */
-            mp_obj_iter_buf_t iter_buf;
-            mp_obj_t iter = mp_getiter(rhs, &iter_buf);
-            mp_obj_t next;
-            while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-                if (mp_obj_equal(next, lhs)) {
-                    return mp_const_true;
-                }
-            }
-            return mp_const_false;
-        }
 
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object not iterable");
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object is not iterable", mp_obj_get_type_str(rhs)));
+        // final attempt, walk the iterator (will raise if rhs is not iterable)
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iter = mp_getiter(rhs, &iter_buf);
+        mp_obj_t next;
+        while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+            if (mp_obj_equal(next, lhs)) {
+                return mp_const_true;
+            }
         }
+        return mp_const_false;
     }
 
     // generic binary_op supplied by type
