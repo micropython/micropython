@@ -3,6 +3,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "extmod/misc.h"
 #include "usb.h"
 #include "uart.h"
 
@@ -38,6 +39,10 @@ int mp_hal_stdin_rx_chr(void) {
         } else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
         }
+        int dupterm_c = mp_uos_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
         MICROPY_EVENT_POLL_HOOK
     }
 }
@@ -56,15 +61,26 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn(str, len);
     }
+    mp_uos_dupterm_tx_strn(str, len);
 }
 
+// Efficiently convert "\n" to "\r\n"
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    // send stdout to UART and USB CDC VCP
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    const char *last = str;
+    while (len--) {
+        if (*str == '\n') {
+            if (str > last) {
+                mp_hal_stdout_tx_strn(last, str - last);
+            }
+            mp_hal_stdout_tx_strn("\r\n", 2);
+            ++str;
+            last = str;
+        } else {
+            ++str;
+        }
     }
-    if (usb_vcp_is_enabled()) {
-        usb_vcp_send_strn_cooked(str, len);
+    if (str > last) {
+        mp_hal_stdout_tx_strn(last, str - last);
     }
 }
 

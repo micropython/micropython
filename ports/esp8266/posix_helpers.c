@@ -55,14 +55,13 @@ void *realloc(void *ptr, size_t size) {
     return p;
 }
 
-#define PLATFORM_HTONL(_n) ((uint32_t)( (((_n) & 0xff) << 24) | (((_n) & 0xff00) << 8) | (((_n) >> 8)  & 0xff00) | (((_n) >> 24) & 0xff) ))
 #undef htonl
 #undef ntohl
 uint32_t ntohl(uint32_t netlong) {
-    return PLATFORM_HTONL(netlong);
+    return MP_BE32TOH(netlong);
 }
 uint32_t htonl(uint32_t netlong) {
-    return PLATFORM_HTONL(netlong);
+    return MP_HTOBE32(netlong);
 }
 
 time_t time(time_t *t) {

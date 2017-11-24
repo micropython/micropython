@@ -112,5 +112,14 @@ Functions
    the heap may be locked) and scheduling a function to call later will lift
    those restrictions.
 
-   There is a finite stack to hold the scheduled functions and `schedule`
+   Note: If `schedule()` is called from a preempting IRQ, when memory
+   allocation is not allowed and the callback to be passed to `schedule()` is
+   a bound method, passing this directly will fail. This is because creating a
+   reference to a bound method causes memory allocation. A solution is to
+   create a reference to the method in the class constructor and to pass that
+   reference to `schedule()`. This is discussed in detail here
+   :ref:`reference documentation <isr_rules>` under "Creation of Python
+   objects".
+
+   There is a finite stack to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the stack is full.

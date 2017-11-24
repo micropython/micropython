@@ -280,17 +280,12 @@ void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_nu
         asm_xtensa_op_callx0(as, ASM_XTENSA_REG_A0); \
     } while (0)
 
-#define ASM_MOV_REG_TO_LOCAL(as, reg, local_num) asm_xtensa_mov_local_reg(as, (local_num), (reg))
-#define ASM_MOV_IMM_TO_REG(as, imm, reg) asm_xtensa_mov_reg_i32(as, (reg), (imm))
-#define ASM_MOV_ALIGNED_IMM_TO_REG(as, imm, reg) asm_xtensa_mov_reg_i32(as, (reg), (imm))
-#define ASM_MOV_IMM_TO_LOCAL_USING(as, imm, local_num, reg_temp) \
-    do { \
-        asm_xtensa_mov_reg_i32(as, (reg_temp), (imm)); \
-        asm_xtensa_mov_local_reg(as, (local_num), (reg_temp)); \
-    } while (0)
-#define ASM_MOV_LOCAL_TO_REG(as, local_num, reg) asm_xtensa_mov_reg_local(as, (reg), (local_num))
+#define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_xtensa_mov_local_reg((as), (local_num), (reg_src))
+#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))
+#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_xtensa_mov_reg_i32((as), (reg_dest), (imm))
+#define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_xtensa_mov_reg_local((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_xtensa_op_mov_n((as), (reg_dest), (reg_src))
-#define ASM_MOV_LOCAL_ADDR_TO_REG(as, local_num, reg) asm_xtensa_mov_reg_local_addr(as, (reg), (local_num))
+#define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_xtensa_mov_reg_local_addr((as), (reg_dest), (local_num))
 
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) \
     do { \

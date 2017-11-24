@@ -102,6 +102,13 @@ void mp_init(void) {
     MP_STATE_VM(mp_module_builtins_override_dict) = NULL;
     #endif
 
+    #if MICROPY_PY_OS_DUPTERM
+    for (size_t i = 0; i < MICROPY_PY_OS_DUPTERM; ++i) {
+        MP_STATE_VM(dupterm_objs[i]) = MP_OBJ_NULL;
+    }
+    MP_STATE_VM(dupterm_arr_obj) = MP_OBJ_NULL;
+    #endif
+
     #if MICROPY_FSUSERMOUNT
     // zero out the pointers to the user-mounted devices
     memset(MP_STATE_VM(fs_user_mount), 0, sizeof(MP_STATE_VM(fs_user_mount)));
@@ -516,38 +523,12 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         }
     }
 
-    /* deal with `in`
-     *
-     * NOTE `a in b` is `b.__contains__(a)`, hence why the generic dispatch
-     * needs to go below with swapped arguments
-     */
+    // Convert MP_BINARY_OP_IN to MP_BINARY_OP_CONTAINS with swapped args.
     if (op == MP_BINARY_OP_IN) {
-        mp_obj_type_t *type = mp_obj_get_type(rhs);
-        if (type->binary_op != NULL) {
-            mp_obj_t res = type->binary_op(op, rhs, lhs);
-            if (res != MP_OBJ_NULL) {
-                return res;
-            }
-        }
-        if (type->getiter != NULL) {
-            /* second attempt, walk the iterator */
-            mp_obj_iter_buf_t iter_buf;
-            mp_obj_t iter = mp_getiter(rhs, &iter_buf);
-            mp_obj_t next;
-            while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-                if (mp_obj_equal(next, lhs)) {
-                    return mp_const_true;
-                }
-            }
-            return mp_const_false;
-        }
-
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError("object not iterable");
-        } else {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "'%s' object is not iterable", mp_obj_get_type_str(rhs)));
-        }
+        op = MP_BINARY_OP_CONTAINS;
+        mp_obj_t temp = lhs;
+        lhs = rhs;
+        rhs = temp;
     }
 
     // generic binary_op supplied by type
@@ -575,6 +556,20 @@ generic_binary_op:
         op -= MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
     }
 #endif
+
+    if (op == MP_BINARY_OP_CONTAINS) {
+        // If type didn't support containment then explicitly walk the iterator.
+        // mp_getiter will raise the appropriate exception if lhs is not iterable.
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iter = mp_getiter(lhs, &iter_buf);
+        mp_obj_t next;
+        while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+            if (mp_obj_equal(next, rhs)) {
+                return mp_const_true;
+            }
+        }
+        return mp_const_false;
+    }
 
 unsupported_op:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {

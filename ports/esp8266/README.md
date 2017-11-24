@@ -92,11 +92,15 @@ of FlashROM.
 First start
 -----------
 
+Be sure to change ESP8266's WiFi access point password ASAP, see below.
+
 __Serial prompt__
 
 You can access the REPL (Python prompt) over UART (the same as used for
 programming).
 - Baudrate: 115200
+
+Run `help()` for some basic information.
 
 __WiFi__
 
@@ -105,14 +109,32 @@ Initially, the device configures itself as a WiFi access point (AP).
 - Password: micropythoN (note the upper-case N).
 - IP address of the board: 192.168.4.1.
 - DHCP-server is activated.
+- Please be sure to change the password to something non-guessable
+  immediately. `help()` gives information how.
 
 __WebREPL__
 
 Python prompt over WiFi, connecting through a browser.
 - Hosted at http://micropython.org/webrepl.
 - GitHub repository https://github.com/micropython/webrepl.
+  Please follow the instructions there.
 
-Please follow the instructions there.
+__upip__
+
+The ESP8266 port comes with builtin `upip` package manager, which can
+be used to install additional modules (see the main README for more
+information):
+
+```
+>>> import upip
+>>> upip.install("micropython-pystone_lowmem")
+[...]
+>>> import pystone_lowmem
+>>> pystone_lowmem.main()
+```
+
+Downloading and installing packages may requite a lot of free memory,
+if you get an error, retry immediately after the hard reset.
 
 Documentation
 -------------

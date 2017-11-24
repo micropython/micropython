@@ -666,6 +666,13 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
+// Whether to support multiple inheritance of Python classes.  Multiple
+// inheritance makes some C functions inherently recursive, and adds a bit of
+// code overhead.
+#ifndef MICROPY_MULTIPLE_INHERITANCE
+#define MICROPY_MULTIPLE_INHERITANCE (1)
+#endif
+
 // Whether to implement attributes on functions
 #ifndef MICROPY_PY_FUNCTION_ATTRS
 #define MICROPY_PY_FUNCTION_ATTRS (0)
@@ -765,16 +772,24 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
 #endif
 
-// Whether to support complete set of special methods
-// for user classes, or only the most used ones. "Reverse"
-// methods are controlled by MICROPY_PY_REVERSE_SPECIAL_METHODS
-// below.
+// Whether to support complete set of special methods for user
+// classes, or only the most used ones. "Inplace" methods are
+// controlled by MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS below.
+// "Reverse" methods are controlled by
+// MICROPY_PY_REVERSE_SPECIAL_METHODS below.
 #ifndef MICROPY_PY_ALL_SPECIAL_METHODS
 #define MICROPY_PY_ALL_SPECIAL_METHODS (0)
 #endif
 
-// Whether to support reverse arithmetic operarions methods
-// (__radd__, etc.)
+// Whether to support all inplace arithmetic operarion methods
+// (__imul__, etc.)
+#ifndef MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
+#define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (0)
+#endif
+
+// Whether to support reverse arithmetic operarion methods
+// (__radd__, etc.). Additionally gated by
+// MICROPY_PY_ALL_SPECIAL_METHODS.
 #ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
 #endif
@@ -884,6 +899,11 @@ typedef double mp_float_t;
 // Whether to provide "collections.OrderedDict" type
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
+#endif
+
+// Whether to provide the _asdict function for namedtuple
+#ifndef MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
+#define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (0)
 #endif
 
 // Whether to provide "math" module
@@ -1101,6 +1121,8 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_USSL
 #define MICROPY_PY_USSL (0)
+// Whether to add finaliser code to ussl objects
+#define MICROPY_PY_USSL_FINALISER (0)
 #endif
 
 #ifndef MICROPY_PY_WEBSOCKET
@@ -1281,6 +1303,26 @@ typedef double mp_float_t;
 // Condition is likely to be false, to help branch prediction
 #ifndef MP_UNLIKELY
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
+
+#ifndef MP_HTOBE16
+#if MP_ENDIANNESS_LITTLE
+# define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
+# define MP_BE16TOH(x) MP_HTOBE16(x)
+#else
+# define MP_HTOBE16(x) (x)
+# define MP_BE16TOH(x) (x)
+#endif
+#endif
+
+#ifndef MP_HTOBE32
+#if MP_ENDIANNESS_LITTLE
+# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8)  & 0xff00) | (((x) >> 24) & 0xff) ))
+# define MP_BE32TOH(x) MP_HTOBE32(x)
+#else
+# define MP_HTOBE32(x) (x)
+# define MP_BE32TOH(x) (x)
+#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

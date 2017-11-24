@@ -286,13 +286,13 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_data.c \
 	)
 
-ifeq ($(MICROPY_PY_WIZNET5K),1)
+ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
-CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=1
+CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
 SRC_MOD += modnwwiznet5k.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-	ethernet/w5200/w5200.c \
+	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
 	ethernet/wizchip_conf.c \
 	ethernet/socket.c \
 	internet/dns/dns.c \

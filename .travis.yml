@@ -39,7 +39,7 @@ script:
   - make -C ports/bare-arm
   - make -C ports/qemu-arm test
   - make -C ports/stm32
-  - make -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=1 MICROPY_PY_CC3K=1
+  - make -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
   - make -C ports/stm32 BOARD=STM32F769DISC
   - make -C ports/stm32 BOARD=STM32L476DISC
   - make -C ports/teensy

@@ -177,20 +177,6 @@ void usb_vcp_send_strn(const char *str, int len) {
 #endif
 }
 
-void usb_vcp_send_strn_cooked(const char *str, int len) {
-#ifdef USE_DEVICE_MODE
-    if (usb_device.enabled) {
-        for (const char *top = str + len; str < top; str++) {
-            if (*str == '\n') {
-                usbd_cdc_tx_always(&usb_device.usbd_cdc_itf, (const uint8_t*)"\r\n", 2);
-            } else {
-                usbd_cdc_tx_always(&usb_device.usbd_cdc_itf, (const uint8_t*)str, 1);
-            }
-        }
-    }
-#endif
-}
-
 /******************************************************************************/
 // MicroPython bindings for USB
 

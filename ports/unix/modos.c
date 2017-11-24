@@ -133,7 +133,7 @@ STATIC mp_obj_t mod_os_getenv(mp_obj_t var_in) {
     if (s == NULL) {
         return mp_const_none;
     }
-    return mp_obj_new_str(s, strlen(s), false);
+    return mp_obj_new_str(s, strlen(s));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_os_getenv_obj, mod_os_getenv);
 
@@ -171,7 +171,7 @@ STATIC mp_obj_t listdir_next(mp_obj_t self_in) {
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
-    t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name), false);
+    t->items[0] = mp_obj_new_str(dirent->d_name, strlen(dirent->d_name));
     #ifdef _DIRENT_HAVE_D_TYPE
     t->items[1] = MP_OBJ_NEW_SMALL_INT(dirent->d_type);
     #else

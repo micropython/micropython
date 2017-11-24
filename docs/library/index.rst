@@ -88,6 +88,7 @@ it will fallback to loading the built-in ``ujson`` module.
        ustruct.rst
        utime.rst
        uzlib.rst
+       _thread.rst
 
 .. only:: port_pyboard
 
@@ -114,6 +115,7 @@ it will fallback to loading the built-in ``ujson`` module.
        ustruct.rst
        utime.rst
        uzlib.rst
+       _thread.rst
 
 .. only:: port_wipy
 

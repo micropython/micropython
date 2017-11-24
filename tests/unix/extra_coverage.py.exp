@@ -39,8 +39,8 @@ ementation
 0
 0
 # runtime utils
-TypeError: unsupported type for : 'str'
-TypeError: unsupported types for : 'str', 'str'
+TypeError: unsupported type for __abs__: 'str'
+TypeError: unsupported types for __divmod__: 'str', 'str'
 Warning: test
 # format float
 ?

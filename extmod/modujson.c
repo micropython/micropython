@@ -166,7 +166,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
                     goto fail;
                 }
                 S_NEXT(s);
-                next = mp_obj_new_str(vstr.buf, vstr.len, false);
+                next = mp_obj_new_str(vstr.buf, vstr.len);
                 break;
             case '-':
             case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {

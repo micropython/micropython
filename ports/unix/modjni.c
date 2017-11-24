@@ -266,7 +266,7 @@ STATIC mp_obj_t jobject_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value)
                 return mp_const_none;
             }
         }
-        mp_raise_NotImplementedError("");
+        mp_raise_NotImplementedError(NULL);
     }
 
     if (!JJ(IsInstanceOf, self->obj, List_class)) {
@@ -337,7 +337,7 @@ STATIC mp_obj_t new_jobject(jobject jo) {
         return mp_const_none;
     } else if (JJ(IsInstanceOf, jo, String_class)) {
         const char *s = JJ(GetStringUTFChars, jo, NULL);
-        mp_obj_t ret = mp_obj_new_str(s, strlen(s), false);
+        mp_obj_t ret = mp_obj_new_str(s, strlen(s));
         JJ(ReleaseStringUTFChars, jo, s);
         return ret;
     } else if (JJ(IsInstanceOf, jo, Class_class)) {

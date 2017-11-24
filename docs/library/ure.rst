@@ -15,8 +15,9 @@ Supported operators are:
 ``'.'``
    Match any character.
 
-``'[]'``
-   Match set of characters. Individual characters and ranges are supported.
+``'[...]'``
+   Match set of characters. Individual characters and ranges are supported,
+   including negated sets (e.g. ``[^a-c]``).
 
 ``'^'``
 
@@ -34,18 +35,21 @@ Supported operators are:
 
 ``'+?'``
 
-``'()'``
+``'|'``
+
+``'(...)'``
    Grouping. Each group is capturing (a substring it captures can be accessed
    with `match.group()` method).
 
-Counted repetitions (``{m,n}``), more advanced assertions, named groups,
-etc. are not supported.
+**NOT SUPPORTED**: Counted repetitions (``{m,n}``), more advanced assertions
+(``\b``, ``\B``), named groups (``(?P<name>...)``), non-capturing groups
+(``(?:...)``), etc.
 
 
 Functions
 ---------
 
-.. function:: compile(regex_str)
+.. function:: compile(regex_str, [flags])
 
    Compile regular expression, return `regex <regex>` object.
 
@@ -63,6 +67,7 @@ Functions
 .. data:: DEBUG
 
    Flag value, display debug information about compiled expression.
+   (Availability depends on `MicroPython port`.)
 
 
 .. _regex:

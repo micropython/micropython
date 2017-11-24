@@ -160,17 +160,12 @@ void asm_x86_call_ind(asm_x86_t* as, void* ptr, mp_uint_t n_args, int temp_r32);
     } while (0)
 #define ASM_CALL_IND(as, ptr, idx) asm_x86_call_ind(as, ptr, mp_f_n_args[idx], ASM_X86_REG_EAX)
 
-#define ASM_MOV_REG_TO_LOCAL        asm_x86_mov_r32_to_local
-#define ASM_MOV_IMM_TO_REG          asm_x86_mov_i32_to_r32
-#define ASM_MOV_ALIGNED_IMM_TO_REG  asm_x86_mov_i32_to_r32_aligned
-#define ASM_MOV_IMM_TO_LOCAL_USING(as, imm, local_num, reg_temp) \
-    do { \
-        asm_x86_mov_i32_to_r32(as, (imm), (reg_temp)); \
-        asm_x86_mov_r32_to_local(as, (reg_temp), (local_num)); \
-    } while (false)
-#define ASM_MOV_LOCAL_TO_REG        asm_x86_mov_local_to_r32
+#define ASM_MOV_LOCAL_REG(as, local_num, reg_src) asm_x86_mov_r32_to_local((as), (reg_src), (local_num))
+#define ASM_MOV_REG_IMM(as, reg_dest, imm) asm_x86_mov_i32_to_r32((as), (imm), (reg_dest))
+#define ASM_MOV_REG_ALIGNED_IMM(as, reg_dest, imm) asm_x86_mov_i32_to_r32_aligned((as), (imm), (reg_dest))
+#define ASM_MOV_REG_LOCAL(as, reg_dest, local_num) asm_x86_mov_local_to_r32((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_REG(as, reg_dest, reg_src) asm_x86_mov_r32_r32((as), (reg_dest), (reg_src))
-#define ASM_MOV_LOCAL_ADDR_TO_REG   asm_x86_mov_local_addr_to_r32
+#define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x86_mov_local_addr_to_r32((as), (local_num), (reg_dest))
 
 #define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))

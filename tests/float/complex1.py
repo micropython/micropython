@@ -59,6 +59,7 @@ ans = (-1.2) ** -3.4; print("%.5g %.5g" % (ans.real, ans.imag))
 
 # check printing of inf/nan
 print(float('nan') * 1j)
+print(float('-nan') * 1j)
 print(float('inf') * (1 + 1j))
 print(float('-inf') * (1 + 1j))
 

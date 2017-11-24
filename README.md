@@ -59,7 +59,7 @@ Additional components:
 The subdirectories above may include READMEs with additional info.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash and Python (at least 2.7 or 3.3).
+You will also need bash, gcc, and Python (at least 2.7 or 3.3).
 
 The Unix version
 ----------------
@@ -140,8 +140,8 @@ The STM32 version
 -----------------
 
 The "stm32" port requires an ARM compiler, arm-none-eabi-gcc, and associated
-bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils and
-arm-none-eabi-gcc packages.  Otherwise, try here:
+bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils,
+arm-none-eabi-gcc and arm-none-eabi-newlib packages.  Otherwise, try here:
 https://launchpad.net/gcc-arm-embedded
 
 To build:
@@ -162,3 +162,13 @@ This will use the included `tools/pydfu.py` script.  If flashing the firmware
 does not work it may be because you don't have the correct permissions, and
 need to use `sudo make deploy`.
 See the README.md file in the ports/stm32/ directory for further details.
+
+Contributing
+------------
+
+MicroPython is an open-source project and welcomes contributions. To be
+productive, please be sure to follow the
+[Contributors' Guidelines](https://github.com/micropython/micropython/wiki/ContributorGuidelines)
+and the [Code Conventions](https://github.com/micropython/micropython/blob/master/CODECONVENTIONS.md).
+Note that MicroPython is licenced under the MIT license, and all contributions
+should follow this license.

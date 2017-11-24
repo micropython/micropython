@@ -137,12 +137,11 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             return mp_obj_new_float(0);
 
         case 1:
-        default:
-            if (MP_OBJ_IS_STR(args[0])) {
-                // a string, parse it
-                size_t l;
-                const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_decimal(s, l, false, false, NULL);
+        default: {
+            mp_buffer_info_t bufinfo;
+            if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+                // a textual representation, parse it
+                return mp_parse_num_decimal(bufinfo.buf, bufinfo.len, false, false, NULL);
             } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
@@ -150,6 +149,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
                 // something else, try to cast it to a float
                 return mp_obj_new_float(mp_obj_get_float(args[0]));
             }
+        }
     }
 }
 

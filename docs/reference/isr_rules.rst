@@ -80,7 +80,7 @@ example causes two LED's to flash at different rates.
             self.led.toggle()
 
     red = Foo(pyb.Timer(4, freq=1), pyb.LED(1))
-    greeen = Foo(pyb.Timer(2, freq=0.8), pyb.LED(2))
+    green = Foo(pyb.Timer(2, freq=0.8), pyb.LED(2))
 
 In this example the ``red`` instance associates timer 4 with LED 1: when a timer 4 interrupt occurs ``red.cb()``
 is called causing LED 1 to change state. The ``green`` instance operates similarly: a timer 2 interrupt
@@ -123,6 +123,32 @@ A means of creating an object without employing a class or globals is as follows
 
 The compiler instantiates the default ``buf`` argument when the function is
 loaded for the first time (usually when the module it's in is imported).
+
+An instance of object creation occurs when a reference to a bound method is
+created. This means that an ISR cannot pass a bound method to a function. One
+solution is to create a reference to the bound method in the class constructor
+and to pass that reference in the ISR. For example:
+
+.. code:: python
+
+    class Foo():
+        def __init__(self):
+            self.bar_ref = self.bar  # Allocation occurs here
+            self.x = 0.1
+            tim = pyb.Timer(4)
+            tim.init(freq=2)
+            tim.callback(self.cb)
+
+        def bar(self, _):
+            self.x *= 1.2
+            print(self.x)
+
+        def cb(self, t):
+            # Passing self.bar would cause allocation.
+            micropython.schedule(self.bar_ref, 0)
+
+Other techniques are to define and instantiate the method in the constructor
+or to pass :meth:`Foo.bar` with the argument *self*.
 
 Use of Python objects
 ~~~~~~~~~~~~~~~~~~~~~
@@ -178,6 +204,9 @@ Execution time needs to be considered in relation to the frequency with which in
 interrupt occurs while the previous callback is executing, a further instance of the callback will be queued
 for execution; this will run after the current instance has completed. A sustained high interrupt repetition
 rate therefore carries a risk of unconstrained queue growth and eventual failure with a ``RuntimeError``.
+
+If the callback to be passed to `schedule()` is a bound method, consider the
+note in "Creation of Python objects".
 
 Exceptions
 ----------

@@ -125,7 +125,7 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
 
     if (ip == 0) {
         // unknown host
-        return MP_ENOENT;
+        return -2;
     }
 
     out_ip[0] = ip >> 24;
@@ -531,8 +531,8 @@ STATIC mp_obj_t cc3k_ifconfig(mp_obj_t self_in) {
         netutils_format_ipv4_addr(ipconfig.aucDefaultGateway, NETUTILS_LITTLE),
         netutils_format_ipv4_addr(ipconfig.aucDNSServer, NETUTILS_LITTLE),
         netutils_format_ipv4_addr(ipconfig.aucDHCPServer, NETUTILS_LITTLE),
-        mp_obj_new_str(mac_vstr.buf, mac_vstr.len, false),
-        mp_obj_new_str((const char*)ipconfig.uaSSID, strlen((const char*)ipconfig.uaSSID), false),
+        mp_obj_new_str(mac_vstr.buf, mac_vstr.len),
+        mp_obj_new_str((const char*)ipconfig.uaSSID, strlen((const char*)ipconfig.uaSSID)),
     };
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
 }

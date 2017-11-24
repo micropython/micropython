@@ -461,7 +461,7 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     #else
     bool update = true;
     #endif
-    if (op != MP_BINARY_OP_IN && !is_set_or_frozenset(rhs)) {
+    if (op != MP_BINARY_OP_CONTAINS && !is_set_or_frozenset(rhs)) {
         // For all ops except containment the RHS must be a set/frozenset
         return MP_OBJ_NULL;
     }
@@ -507,7 +507,7 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             return set_issubset(lhs, rhs);
         case MP_BINARY_OP_MORE_EQUAL:
             return set_issuperset(lhs, rhs);
-        case MP_BINARY_OP_IN: {
+        case MP_BINARY_OP_CONTAINS: {
             mp_obj_set_t *o = MP_OBJ_TO_PTR(lhs);
             mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);
             return mp_obj_new_bool(elem != MP_OBJ_NULL);

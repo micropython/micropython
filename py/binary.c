@@ -206,7 +206,7 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte **ptr) {
         return (mp_obj_t)(mp_uint_t)val;
     } else if (val_type == 'S') {
         const char *s_val = (const char*)(uintptr_t)(mp_uint_t)val;
-        return mp_obj_new_str(s_val, strlen(s_val), false);
+        return mp_obj_new_str(s_val, strlen(s_val));
 #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {
         union { uint32_t i; float f; } fpu = {val};

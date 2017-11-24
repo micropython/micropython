@@ -46,7 +46,7 @@ Running
 To run the resulting firmware in QEMU (for BOARDs like qemu_x86,
 qemu_cortex_m3):
 
-    make qemu
+    make run
 
 With the default configuration, networking is now enabled, so you need to
 follow instructions in https://wiki.zephyrproject.org/view/Networking-with-Qemu
@@ -110,4 +110,4 @@ To make a minimal build:
 To run a minimal build in QEMU without requiring TAP networking setup
 run the following after you built image with the previous command:
 
-    ./make-minimal BOARD=<qemu_x86|qemu_cortex_m3> qemu
+    ./make-minimal BOARD=<qemu_x86|qemu_cortex_m3> run

@@ -481,7 +481,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             vstr_add_strn(&vstr, p + 1, p1 - p - 1);
             path_items[i] = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
         } else {
-            path_items[i] = MP_OBJ_NEW_QSTR(qstr_from_strn(p, p1 - p));
+            path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
         }
         p = p1 + 1;
     }
@@ -537,7 +537,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return usage(argv);
                 }
                 mp_obj_t import_args[4];
-                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]), false);
+                import_args[0] = mp_obj_new_str(argv[a + 1], strlen(argv[a + 1]));
                 import_args[1] = import_args[2] = mp_const_none;
                 // Ask __import__ to handle imported module specially - set its __name__
                 // to __main__, and also return this leaf module, not top-level package
@@ -603,7 +603,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
             // Set base dir of the script as first entry in sys.path
             char *p = strrchr(basedir, '/');
-            path_items[0] = MP_OBJ_NEW_QSTR(qstr_from_strn(basedir, p - basedir));
+            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);

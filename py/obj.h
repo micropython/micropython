@@ -637,7 +637,8 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value);
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base);
 mp_obj_t mp_obj_new_int_from_ll(long long val); // this must return a multi-precision integer object (or raise an overflow exception)
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a multi-precision integer object (or raise an overflow exception)
-mp_obj_t mp_obj_new_str(const char* data, size_t len, bool make_qstr_if_not_already);
+mp_obj_t mp_obj_new_str(const char* data, size_t len);
+mp_obj_t mp_obj_new_str_via_qstr(const char* data, size_t len);
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, void *items);

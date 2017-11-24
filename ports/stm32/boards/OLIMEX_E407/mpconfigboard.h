@@ -1,5 +1,3 @@
-#define STM32E407
-
 #define MICROPY_HW_BOARD_NAME       "OLIMEX STM32-E407"
 #define MICROPY_HW_MCU_NAME         "STM32F407"
 

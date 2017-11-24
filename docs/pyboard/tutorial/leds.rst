@@ -60,10 +60,10 @@ One problem you might find is that if you stop the script and then start it agai
         for l in leds:
             l.off()
 
-The Fourth Special LED
-----------------------
+The Special LEDs
+----------------
 
-The blue LED is special. As well as turning it on and off, you can control the intensity using the intensity() method. This takes a number between 0 and 255 that determines how bright it is. The following script makes the blue LED gradually brighter then turns it off again. ::
+The yellow and blue LEDs are special. As well as turning them on and off, you can control their intensity using the intensity() method. This takes a number between 0 and 255 that determines how bright it is. The following script makes the blue LED gradually brighter then turns it off again. ::
 
     led = pyb.LED(4)
     intensity = 0
@@ -72,4 +72,4 @@ The blue LED is special. As well as turning it on and off, you can control the i
         led.intensity(intensity)
         pyb.delay(20)
 
-You can call intensity() on the other LEDs but they can only be off or on. 0 sets them off and any other number up to 255 turns them on.
+You can call intensity() on LEDs 1 and 2 but they can only be off or on. 0 sets them off and any other number up to 255 turns them on.
