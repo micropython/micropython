@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime0.h"
+#include "py/obj.h"
 #include "py/builtin.h"
 
 STATIC mp_obj_t op_getitem(mp_obj_t self_in, mp_obj_t key_in) {
