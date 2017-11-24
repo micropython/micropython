@@ -115,7 +115,7 @@ STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_dict_t *o = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
-        case MP_BINARY_OP_IN: {
+        case MP_BINARY_OP_CONTAINS: {
             mp_map_elem_t *elem = mp_map_lookup(&o->map, rhs_in, MP_MAP_LOOKUP);
             return mp_obj_new_bool(elem != NULL);
         }
@@ -485,7 +485,7 @@ STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t
     if (o->kind != MP_DICT_VIEW_KEYS) {
         return MP_OBJ_NULL; // op not supported
     }
-    if (op != MP_BINARY_OP_IN) {
+    if (op != MP_BINARY_OP_CONTAINS) {
         return MP_OBJ_NULL; // op not supported
     }
     return dict_binary_op(op, o->dict, rhs_in);

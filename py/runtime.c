@@ -523,30 +523,12 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
         }
     }
 
-    /* deal with `in`
-     *
-     * NOTE `a in b` is `b.__contains__(a)`, hence why the generic dispatch
-     * needs to go below with swapped arguments
-     */
+    // Convert MP_BINARY_OP_IN to MP_BINARY_OP_CONTAINS with swapped args.
     if (op == MP_BINARY_OP_IN) {
-        mp_obj_type_t *type = mp_obj_get_type(rhs);
-        if (type->binary_op != NULL) {
-            mp_obj_t res = type->binary_op(op, rhs, lhs);
-            if (res != MP_OBJ_NULL) {
-                return res;
-            }
-        }
-
-        // final attempt, walk the iterator (will raise if rhs is not iterable)
-        mp_obj_iter_buf_t iter_buf;
-        mp_obj_t iter = mp_getiter(rhs, &iter_buf);
-        mp_obj_t next;
-        while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
-            if (mp_obj_equal(next, lhs)) {
-                return mp_const_true;
-            }
-        }
-        return mp_const_false;
+        op = MP_BINARY_OP_CONTAINS;
+        mp_obj_t temp = lhs;
+        lhs = rhs;
+        rhs = temp;
     }
 
     // generic binary_op supplied by type
@@ -574,6 +556,20 @@ generic_binary_op:
         op -= MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
     }
 #endif
+
+    if (op == MP_BINARY_OP_CONTAINS) {
+        // If type didn't support containment then explicitly walk the iterator.
+        // mp_getiter will raise the appropriate exception if lhs is not iterable.
+        mp_obj_iter_buf_t iter_buf;
+        mp_obj_t iter = mp_getiter(lhs, &iter_buf);
+        mp_obj_t next;
+        while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
+            if (mp_obj_equal(next, rhs)) {
+                return mp_const_true;
+            }
+        }
+        return mp_const_false;
+    }
 
 unsupported_op:
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {

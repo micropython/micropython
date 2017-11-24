@@ -269,8 +269,7 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
             return lhs_in;
         }
 
-        case MP_BINARY_OP_IN: {
-            /* NOTE `a in b` is `b.__contains__(a)` */
+        case MP_BINARY_OP_CONTAINS: {
             mp_buffer_info_t lhs_bufinfo;
             mp_buffer_info_t rhs_bufinfo;
 
