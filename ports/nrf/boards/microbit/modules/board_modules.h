@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_NRF_BOARD_MICROBIT_BOARD_MODULES_H
 #define MICROPY_INCLUDED_NRF_BOARD_MICROBIT_BOARD_MODULES_H
 
+#include "modmicrobit.h"
+
 extern const struct _mp_obj_module_t microbit_module;
 
 #define BOARD_MODULES \
