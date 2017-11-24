@@ -324,7 +324,7 @@ STATIC uint8_t find_chunk_and_erase(void) {
 }
 
 STATIC mp_obj_t microbit_file_name(file_descriptor_obj *fd) {
-    return mp_obj_new_str(&(file_system_chunks[fd->start_chunk].header.filename[0]), file_system_chunks[fd->start_chunk].header.name_len, false);
+    return mp_obj_new_str(&(file_system_chunks[fd->start_chunk].header.filename[0]), file_system_chunks[fd->start_chunk].header.name_len);
 }
 
 STATIC file_descriptor_obj *microbit_file_descriptor_new(uint8_t start_chunk, bool write, bool binary);
@@ -481,7 +481,7 @@ STATIC mp_obj_t microbit_file_list(void) {
     mp_obj_t res = mp_obj_new_list(0, NULL);
     for (uint8_t index = 1; index <= chunks_in_file_system; index++) {
         if (file_system_chunks[index].marker == FILE_START) {
-            mp_obj_t name = mp_obj_new_str(&file_system_chunks[index].header.filename[0], file_system_chunks[index].header.name_len, false);
+            mp_obj_t name = mp_obj_new_str(&file_system_chunks[index].header.filename[0], file_system_chunks[index].header.name_len);
             mp_obj_list_append(res, name);
         }
     }
@@ -585,7 +585,7 @@ STATIC mp_obj_t uos_mbfs_ilistdir_it_iternext(mp_obj_t self_in) {
         }
 
         // Get the file name as str object.
-        mp_obj_t name = mp_obj_new_str(&file_system_chunks[self->index].header.filename[0], file_system_chunks[self->index].header.name_len, false);
+        mp_obj_t name = mp_obj_new_str(&file_system_chunks[self->index].header.filename[0], file_system_chunks[self->index].header.name_len);
 
         // make 3-tuple with info about this entry
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));

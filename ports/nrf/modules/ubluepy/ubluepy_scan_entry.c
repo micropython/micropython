@@ -109,7 +109,7 @@ STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
                 vstr_t vstr;
                 vstr_init(&vstr, len);
                 vstr_printf(&vstr, "%s", text);
-                description = mp_obj_new_str(vstr.buf, vstr.len, false);
+                description = mp_obj_new_str(vstr.buf, vstr.len);
                 vstr_clear(&vstr);
             }
         }
