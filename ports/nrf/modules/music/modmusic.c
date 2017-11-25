@@ -77,10 +77,7 @@ extern volatile uint32_t ticks;
 STATIC uint32_t start_note(const char *note_str, size_t note_len, const pin_obj_t *pin);
 
 void microbit_music_init0(void) {
-    softpwm_init();
-    ticker_init(microbit_music_tick);
-    ticker_start();
-    pwm_start();
+    ticker_register_low_pri_callback(microbit_music_tick);
 }
 
 void microbit_music_tick(void) {
@@ -460,8 +457,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(microbit_music_set_tempo_obj, 0, microbit_music_set_t
 
 
 static mp_obj_t music_init(void) {
-    microbit_music_init0();
-
     music_data = m_new_obj(music_data_t);
     music_data->bpm = DEFAULT_BPM;
     music_data->ticks = DEFAULT_TICKS;
