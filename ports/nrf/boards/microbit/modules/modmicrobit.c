@@ -27,6 +27,7 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "modmicrobit.h"
 #include "microbitdisplay.h"
 #include "microbitimage.h"
 #include "softpwm.h"
@@ -108,18 +109,11 @@ STATIC mp_obj_t microbit_temperature(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_temperature_obj, microbit_temperature);
 
-static mp_obj_t microbit_module_init(void) {
-    softpwm_init();
-    ticker_init(microbit_display_tick);
-    ticker_start();
-    pwm_start();
-    return mp_const_none;
+void board_modules_init0(void) {
+	ticker_register_low_pri_callback(microbit_display_tick);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(microbit_module___init___obj, microbit_module_init);
 
 STATIC const mp_rom_map_elem_t microbit_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&microbit_module___init___obj) },
-
     { MP_ROM_QSTR(MP_QSTR_Image), MP_ROM_PTR(&microbit_image_type) },
 
     { MP_ROM_QSTR(MP_QSTR_display), MP_ROM_PTR(&microbit_display_obj) },
