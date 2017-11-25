@@ -32,6 +32,8 @@
 #include "microbitimage.h"
 #include "softpwm.h"
 #include "ticker.h"
+#include "hal_temp.h"
+
 extern uint32_t ticks;
 
 STATIC mp_obj_t microbit_reset_(void) {
@@ -95,16 +97,11 @@ STATIC mp_obj_t microbit_panic(mp_uint_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_panic_obj, 0, 1, microbit_panic);
 
 STATIC mp_obj_t microbit_temperature(void) {
-    int temp;
-    NRF_TEMP->TASKS_START = 1;
-    while (NRF_TEMP->EVENTS_DATARDY == 0);
-    NRF_TEMP->EVENTS_DATARDY = 0;
-    temp = NRF_TEMP->TEMP;
-    NRF_TEMP->TASKS_STOP = 1;
+    int temp = hal_temp_read();
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    return mp_obj_new_float(temp/4.0);
+    return mp_obj_new_float(temp);
 #else
-    return mp_obj_new_int(temp/4);
+    return mp_obj_new_int(temp);
 #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_0(microbit_temperature_obj, microbit_temperature);
@@ -129,8 +126,9 @@ STATIC const mp_rom_map_elem_t microbit_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_sleep), (mp_obj_t)&microbit_sleep_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_running_time), (mp_obj_t)&microbit_running_time_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_panic), (mp_obj_t)&microbit_panic_obj },
+*/
     { MP_OBJ_NEW_QSTR(MP_QSTR_temperature), (mp_obj_t)&microbit_temperature_obj },
-    
+/*
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin0), (mp_obj_t)&microbit_p0_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin1), (mp_obj_t)&microbit_p1_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_pin2), (mp_obj_t)&microbit_p2_obj },
