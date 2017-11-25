@@ -357,8 +357,7 @@ static void microbit_display_update(void) {
 
 #define GREYSCALE_MASK ((1<<MAX_BRIGHTNESS)-2)
 
-/* This is the top-level animation/display callback.  It is not a registered
- * callback. */
+/* This is the top-level animation/display registered callback. */
 void microbit_display_tick(void) {
     /* Do nothing if the display is not active. */
     if (!microbit_display_obj.active) {
