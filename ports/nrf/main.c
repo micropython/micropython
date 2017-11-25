@@ -61,6 +61,11 @@
 #include "ble_uart.h"
 #endif
 
+#if MICROPY_PY_MACHINE_SOFT_PWM
+#include "ticker.h"
+#include "softpwm.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -204,6 +209,23 @@ pin_init0();
     while (!ble_uart_enabled()) {
         ;
     }
+#endif
+
+#if MICROPY_PY_MACHINE_SOFT_PWM
+    ticker_init0();
+    softpwm_init0();
+#endif
+
+#if MICROPY_PY_MUSIC
+    microbit_music_init0();
+#endif
+#if BOARD_SPECIFIC_MODULES
+    board_modules_init0();
+#endif
+
+#if MICROPY_PY_MACHINE_SOFT_PWM
+    ticker_start();
+    pwm_start();
 #endif
 
     for (;;) {
