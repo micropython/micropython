@@ -39,11 +39,10 @@
 #define SlowTicker_IRQHandler SWI0_IRQHandler
 
 // Ticker callback function called every MACRO_TICK
-static volatile callback_ptr slow_ticker;
+static volatile uint8_t      m_num_of_slow_tickers = 0;
+static volatile callback_ptr m_slow_tickers[2]     = {NULL, NULL};
 
-void ticker_init(callback_ptr slow_ticker_callback) {
-    slow_ticker = slow_ticker_callback;
-
+void ticker_init0(void) {
     NRF_TIMER_Type *ticker = FastTicker;
 #ifdef NRF51
     ticker->POWER = 1;
@@ -68,6 +67,10 @@ void ticker_init(callback_ptr slow_ticker_callback) {
     hal_irq_priority(SlowTicker_IRQn, 3);
 
     hal_irq_enable(SlowTicker_IRQn);
+}
+
+void ticker_register_low_pri_callback(callback_ptr slow_ticker_callback) {
+    m_slow_tickers[m_num_of_slow_tickers++] = slow_ticker_callback;
 }
 
 /* Start and stop timer 1 including workarounds for Anomaly 73 for Timer
@@ -156,7 +159,12 @@ int clear_ticker_callback(uint32_t index) {
 
 void SlowTicker_IRQHandler(void)
 {
-    slow_ticker();
+
+    for (int i = 0; i < m_num_of_slow_tickers; i++) {
+        if (m_slow_tickers[i] != NULL) {
+            m_slow_tickers[i]();
+        }
+    }
 }
 
 #endif // MICROPY_PY_MACHINE_SOFT_PWM

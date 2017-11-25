@@ -10,14 +10,13 @@
 typedef void (*callback_ptr)(void);
 typedef int32_t (*ticker_callback_ptr)(void);
 
-void ticker_init(callback_ptr slow_ticker_callback);
+void ticker_init0();
 void ticker_start(void);
 void ticker_stop(void);
-
 int clear_ticker_callback(uint32_t index);
 int set_ticker_callback(uint32_t index, ticker_callback_ptr func, int32_t initial_delay_us);
 
-int set_low_priority_callback(callback_ptr callback, int id);
+void ticker_register_low_pri_callback(callback_ptr callback);
 
 #define CYCLES_PER_MICROSECONDS 16
 
