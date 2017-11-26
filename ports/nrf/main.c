@@ -47,6 +47,7 @@
 #include "led.h"
 #include "uart.h"
 #include "nrf.h"
+#include "nrf_sdm.h"
 #include "pin.h"
 #include "spi.h"
 #include "i2c.h"
@@ -220,12 +221,13 @@ pin_init0();
 
     mp_deinit();
 
-    if (ret_code == PYEXEC_FORCED_EXIT) {
-        NVIC_SystemReset();
-    } else {
-        printf("MPY: soft reboot\n");
-        goto soft_reset;
-    }
+    printf("MPY: soft reboot\n");
+
+#if BLUETOOTH_SD
+    sd_softdevice_disable();
+#endif
+
+    goto soft_reset;
 
     return 0;
 }
