@@ -89,11 +89,11 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
 
         nlr_pop();
         return 0;
-    } else {
-        // uncaught exception
-        mp_obj_print_exception(&mp_stderr_print, (mp_obj_t)nlr.ret_val);
-        return 1;
     }
+
+    // uncaught exception
+    mp_obj_print_exception(&mp_stderr_print, (mp_obj_t)nlr.ret_val);
+    return 1;
 }
 
 STATIC int usage(char **argv) {
