@@ -44,11 +44,13 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(mp_hal_status_to_errno_table[status])));
 }
 
+#if !MICROPY_KBD_EXCEPTION
 void mp_hal_set_interrupt_char(int c) {
 
 }
+#endif
 
-#if (MICROPY_PY_BLE_NUS == 0)
+#if !MICROPY_PY_BLE_NUS
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
