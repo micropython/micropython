@@ -224,6 +224,12 @@ typedef struct _mp_state_thread_t {
     #if MICROPY_STACK_CHECK
     size_t stack_limit;
     #endif
+
+    #if MICROPY_ENABLE_PYSTACK
+    uint8_t *pystack_start;
+    uint8_t *pystack_end;
+    uint8_t *pystack_cur;
+    #endif
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.

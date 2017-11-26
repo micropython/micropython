@@ -1457,7 +1457,7 @@ NORETURN void mp_raise_NotImplementedError(const char *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 
-#if MICROPY_STACK_CHECK
+#if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
         MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));

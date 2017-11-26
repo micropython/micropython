@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_RUNTIME_H
 
 #include "py/mpstate.h"
+#include "py/pystack.h"
 
 typedef enum {
     MP_VM_RETURN_NORMAL,
