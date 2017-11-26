@@ -35,12 +35,15 @@ Methods
 
    Register *obj* for polling. *eventmask* is logical OR of:
 
-   * ``select.POLLIN``  - data available for reading
-   * ``select.POLLOUT`` - more data can be written
-   * ``select.POLLERR`` - error occurred
-   * ``select.POLLHUP`` - end of stream/connection termination detected
+   * `uselect.POLLIN`  - data available for reading
+   * `uselect.POLLOUT` - more data can be written
 
-   *eventmask* defaults to ``select.POLLIN | select.POLLOUT``.
+   Note that flags like `uselect.POLLHUP` and `uselect.POLLERR` are
+   *not* valid as input eventmask (these are unsolicited events which
+   will be returned from `poll()` regardless of whether they are asked
+   for). This semantics is per POSIX.
+
+   *eventmask* defaults to ``uselect.POLLIN | uselect.POLLOUT``.
 
 .. method:: poll.unregister(obj)
 
@@ -52,15 +55,21 @@ Methods
 
 .. method:: poll.poll(timeout=-1)
 
-   Wait for at least one of the registered objects to become ready, with optional
-   timeout in milliseconds (if *timeout* arg is not specified or -1, there is no
-   timeout). Returns list of (``obj``, ``event``, ...) tuples, ``event`` element specifies
-   which events happened with a stream and is a combination of ``select.POLL*``
-   constants described above. There may be other elements in tuple, depending
-   on a platform and version, so don't assume that its size is 2. In case of
-   timeout, an empty list is returned.
+   Wait for at least one of the registered objects to become ready or have an
+   exceptional condition, with optional timeout in milliseconds (if *timeout*
+   arg is not specified or -1, there is no timeout).
 
-   Timeout is in milliseconds.
+   Returns list of (``obj``, ``event``, ...) tuples. There may be other elements in
+   tuple, depending on a platform and version, so don't assume that its size is 2.
+   The ``event`` element specifies which events happened with a stream and
+   is a combination of ``uselect.POLL*`` constants described above. Note that
+   flags `uselect.POLLHUP` and `uselect.POLLERR` can be returned at any time
+   (even if were not asked for), and must be acted on accordingly (the
+   corresponding stream unregistered from poll and likely closed), because
+   otherwise all further invocations of `poll()` may return immediately with
+   these flags set for this stream again.
+
+   In case of timeout, an empty list is returned.
 
    .. admonition:: Difference to CPython
       :class: attention
