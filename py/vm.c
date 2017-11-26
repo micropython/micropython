@@ -966,7 +966,11 @@ unwind_jump:;
 
                         mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
                             out_args.n_args, out_args.n_kw, out_args.args);
-                        m_del(mp_obj_t, out_args.args, out_args.n_alloc);
+                        #if !MICROPY_ENABLE_PYSTACK
+                        // Freeing args at this point does not follow a LIFO order so only do it if
+                        // pystack is not enabled.  For pystack, they are freed when code_state is.
+                        mp_nonlocal_free(out_args.args, out_args.n_alloc * sizeof(mp_obj_t));
+                        #endif
                         if (new_state) {
                             new_state->prev = code_state;
                             code_state = new_state;
@@ -1043,7 +1047,11 @@ unwind_jump:;
 
                         mp_code_state_t *new_state = mp_obj_fun_bc_prepare_codestate(out_args.fun,
                             out_args.n_args, out_args.n_kw, out_args.args);
-                        m_del(mp_obj_t, out_args.args, out_args.n_alloc);
+                        #if !MICROPY_ENABLE_PYSTACK
+                        // Freeing args at this point does not follow a LIFO order so only do it if
+                        // pystack is not enabled.  For pystack, they are freed when code_state is.
+                        mp_nonlocal_free(out_args.args, out_args.n_alloc * sizeof(mp_obj_t));
+                        #endif
                         if (new_state) {
                             new_state->prev = code_state;
                             code_state = new_state;
@@ -1110,6 +1118,8 @@ unwind_return:
                         mp_globals_set(code_state->old_globals);
                         mp_code_state_t *new_code_state = code_state->prev;
                         #if MICROPY_ENABLE_PYSTACK
+                        // Free code_state, and args allocated by mp_call_prepare_args_n_kw_var
+                        // (The latter is implicitly freed when using pystack due to its LIFO nature.)
                         // The sizeof in the following statement does not include the size of the variable
                         // part of the struct.  This arg is anyway not used if pystack is enabled.
                         mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
@@ -1458,6 +1468,8 @@ unwind_loop:
                 mp_globals_set(code_state->old_globals);
                 mp_code_state_t *new_code_state = code_state->prev;
                 #if MICROPY_ENABLE_PYSTACK
+                // Free code_state, and args allocated by mp_call_prepare_args_n_kw_var
+                // (The latter is implicitly freed when using pystack due to its LIFO nature.)
                 // The sizeof in the following statement does not include the size of the variable
                 // part of the struct.  This arg is anyway not used if pystack is enabled.
                 mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
