@@ -66,6 +66,10 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         // that we don't need the extra information, enough is captured by the
         // gc_collect_regs_and_stack function above
         //gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
+        #if MICROPY_ENABLE_PYSTACK
+        void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
+        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
+        #endif
         thread_signal_done = 1;
     }
 }

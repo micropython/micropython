@@ -440,6 +440,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     gc_init(heap, heap + heap_size);
 #endif
 
+    #if MICROPY_ENABLE_PYSTACK
+    static mp_obj_t pystack[1024];
+    mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
+    #endif
+
     mp_init();
 
     char *home = getenv("HOME");
