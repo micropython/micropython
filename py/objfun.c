@@ -225,6 +225,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
 
     mp_code_state_t *code_state;
+    #if MICROPY_ENABLE_PYSTACK
+    code_state = mp_pystack_alloc(sizeof(mp_code_state_t) + state_size);
+    #else
     // If we use m_new_obj_var(), then on no memory, MemoryError will be
     // raised. But this is not correct exception for a function call,
     // RuntimeError should be raised instead. So, we use m_new_obj_var_maybe(),
@@ -234,6 +237,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     if (!code_state) {
         return NULL;
     }
+    #endif
 
     INIT_CODESTATE(code_state, self, n_args, n_kw, args);
 
@@ -260,6 +264,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
 
     // allocate state for locals and stack
     mp_code_state_t *code_state = NULL;
+    #if MICROPY_ENABLE_PYSTACK
+    code_state = mp_pystack_alloc(sizeof(mp_code_state_t) + state_size);
+    #else
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
     }
@@ -267,6 +274,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         code_state = alloca(sizeof(mp_code_state_t) + state_size);
         state_size = 0; // indicate that we allocated using alloca
     }
+    #endif
 
     INIT_CODESTATE(code_state, self, n_args, n_kw, args);
 
@@ -312,10 +320,14 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         result = code_state->state[n_state - 1];
     }
 
+    #if MICROPY_ENABLE_PYSTACK
+    mp_pystack_free(code_state);
+    #else
     // free the state if it was allocated on the heap
     if (state_size != 0) {
         m_del_var(mp_code_state_t, byte, state_size, code_state);
     }
+    #endif
 
     if (vm_return_kind == MP_VM_RETURN_NORMAL) {
         return result;

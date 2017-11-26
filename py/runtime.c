@@ -1348,11 +1348,12 @@ import_error:
     const char *pkg_name = mp_obj_str_get_data(dest[0], &pkg_name_len);
 
     const uint dot_name_len = pkg_name_len + 1 + qstr_len(name);
-    char *dot_name = alloca(dot_name_len);
+    char *dot_name = mp_local_alloc(dot_name_len);
     memcpy(dot_name, pkg_name, pkg_name_len);
     dot_name[pkg_name_len] = '.';
     memcpy(dot_name + pkg_name_len + 1, qstr_str(name), qstr_len(name));
     qstr dot_name_q = qstr_from_strn(dot_name, dot_name_len);
+    mp_local_free(dot_name);
 
     mp_obj_t args[5];
     args[0] = MP_OBJ_NEW_QSTR(dot_name_q);

@@ -1108,7 +1108,13 @@ unwind_return:
                     if (code_state->prev != NULL) {
                         mp_obj_t res = *sp;
                         mp_globals_set(code_state->old_globals);
-                        code_state = code_state->prev;
+                        mp_code_state_t *new_code_state = code_state->prev;
+                        #if MICROPY_ENABLE_PYSTACK
+                        // The sizeof in the following statement does not include the size of the variable
+                        // part of the struct.  This arg is anyway not used if pystack is enabled.
+                        mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
+                        #endif
+                        code_state = new_code_state;
                         *code_state->sp = res;
                         goto run_code_state;
                     }
@@ -1450,7 +1456,13 @@ unwind_loop:
             #if MICROPY_STACKLESS
             } else if (code_state->prev != NULL) {
                 mp_globals_set(code_state->old_globals);
-                code_state = code_state->prev;
+                mp_code_state_t *new_code_state = code_state->prev;
+                #if MICROPY_ENABLE_PYSTACK
+                // The sizeof in the following statement does not include the size of the variable
+                // part of the struct.  This arg is anyway not used if pystack is enabled.
+                mp_nonlocal_free(code_state, sizeof(mp_code_state_t));
+                #endif
+                code_state = new_code_state;
                 size_t n_state = mp_decode_uint_value(code_state->fun_bc->bytecode);
                 fastn = &code_state->state[n_state - 1];
                 exc_stack = (mp_exc_stack_t*)(code_state->state + n_state);

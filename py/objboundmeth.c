@@ -51,6 +51,9 @@ mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, s
     // need to insert self before all other args and then call meth
     size_t n_total = n_args + 2 * n_kw;
     mp_obj_t *args2 = NULL;
+    #if MICROPY_ENABLE_PYSTACK
+    args2 = mp_pystack_alloc(sizeof(mp_obj_t) * (1 + n_total));
+    #else
     mp_obj_t *free_args2 = NULL;
     if (n_total > 4) {
         // try to use heap to allocate temporary args array
@@ -61,12 +64,17 @@ mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, s
         // (fallback to) use stack to allocate temporary args array
         args2 = alloca(sizeof(mp_obj_t) * (1 + n_total));
     }
+    #endif
     args2[0] = self;
     memcpy(args2 + 1, args, n_total * sizeof(mp_obj_t));
     mp_obj_t res = mp_call_function_n_kw(meth, n_args + 1, n_kw, args2);
+    #if MICROPY_ENABLE_PYSTACK
+    mp_pystack_free(args2);
+    #else
     if (free_args2 != NULL) {
         m_del(mp_obj_t, free_args2, 1 + n_total);
     }
+    #endif
     return res;
 }
 

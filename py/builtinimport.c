@@ -318,7 +318,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         }
 
         uint new_mod_l = (mod_len == 0 ? (size_t)(p - this_name) : (size_t)(p - this_name) + 1 + mod_len);
-        char *new_mod = alloca(new_mod_l);
+        char *new_mod = mp_local_alloc(new_mod_l);
         memcpy(new_mod, this_name, p - this_name);
         if (mod_len != 0) {
             new_mod[p - this_name] = '.';
@@ -326,9 +326,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
         }
 
         qstr new_mod_q = qstr_from_strn(new_mod, new_mod_l);
+        mp_local_free(new_mod);
         DEBUG_printf("Resolved base name for relative import: '%s'\n", qstr_str(new_mod_q));
         module_name = MP_OBJ_NEW_QSTR(new_mod_q);
-        mod_str = new_mod;
+        mod_str = qstr_str(new_mod_q);
         mod_len = new_mod_l;
     }
 
