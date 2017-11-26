@@ -125,6 +125,7 @@ SRC_LIB += $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
 	utils/pyexec.c \
+	utils/interrupt_char.c \
 	timeutils/timeutils.c \
 	oofatfs/ff.c \
 	oofatfs/option/unicode.c \
