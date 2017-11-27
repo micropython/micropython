@@ -193,37 +193,6 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 }
 
 /******************************************************************************/
-/* dict iterator                                                              */
-
-typedef struct _mp_obj_dict_it_t {
-    mp_obj_base_t base;
-    mp_fun_1_t iternext;
-    mp_obj_t dict;
-    size_t cur;
-} mp_obj_dict_it_t;
-
-STATIC mp_obj_t dict_it_iternext(mp_obj_t self_in) {
-    mp_obj_dict_it_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_elem_t *next = dict_iter_next(MP_OBJ_TO_PTR(self->dict), &self->cur);
-
-    if (next == NULL) {
-        return MP_OBJ_STOP_ITERATION;
-    } else {
-        return next->key;
-    }
-}
-
-STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
-    assert(sizeof(mp_obj_dict_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_dict_it_t *o = (mp_obj_dict_it_t*)iter_buf;
-    o->base.type = &mp_type_polymorph_iter;
-    o->iternext = dict_it_iternext;
-    o->dict = self_in;
-    o->cur = 0;
-    return MP_OBJ_FROM_PTR(o);
-}
-
-/******************************************************************************/
 /* dict methods                                                               */
 
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
@@ -526,6 +495,20 @@ STATIC mp_obj_t dict_values(mp_obj_t self_in) {
     return dict_view(self_in, MP_DICT_VIEW_VALUES);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
+
+/******************************************************************************/
+/* dict iterator                                                              */
+
+STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
+    mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t*)iter_buf;
+    o->base.type = &dict_view_it_type;
+    o->kind = MP_DICT_VIEW_KEYS;
+    o->dict = self_in;
+    o->cur = 0;
+    return MP_OBJ_FROM_PTR(o);
+}
 
 /******************************************************************************/
 /* dict constructors & public C API                                           */
