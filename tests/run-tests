@@ -271,6 +271,7 @@ def run_tests(pyb, tests, args, base_path="."):
     if upy_float_precision < 64:
         skip_tests.add('float/float_divmod.py') # tested by float/float_divmod_relaxed.py instead
         skip_tests.add('float/float2int_doubleprec_intbig.py')
+        skip_tests.add('float/float_parse_doubleprec.py')
 
     if not has_complex:
         skip_tests.add('float/complex1.py')
