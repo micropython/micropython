@@ -28,9 +28,9 @@ PB08                   ``A1``           ``A7`` / ``TX``              ``A1``     
 PB09                   ``A2``           ``A6`` / ``RX``              ``A2``                ``A2``            ``A2``                                         ``A2``
 PA04                   ``A3``           ``IR_PROXIMITY``             ``A3``                ``A3``            ``A3``              ``D0`` / ``TX`` / ``SDA``  ``A3``
 PA05                   ``A4``           ``A1``                       ``A4``                ``A4``            ``A4``              ``D2`` / ``RX`` / ``SCL``  ``A4``
-PA06                   ``D8``           ``A2``                                                               ``NEOPIXEL``                                   ``D8``            ``D4`` / ``TX``
+PA06                   ``D8``           ``A2``                       ``D8`` / ``GREEN_LED``                  ``NEOPIXEL``                                   ``D8``            ``D4`` / ``TX``
 PA07                   ``D9``           ``A3``                       ``D9``                ``D9``            ``D9``                                         ``D9``            ``D3`` / ``RX``
-PA08                   ``D4``           ``MICROPHONE_DO``            ``SD_CS``                                                                              ``D4``            ``D0`` / ``SDA``
+PA08                   ``D4``           ``MICROPHONE_DO``            ``D4`` / ``SD_CS``                                                                     ``D4``            ``D0`` / ``SDA``
 PA09                   ``D3``           ``TEMPERATURE`` / ``A9``                                                                                            ``D3``            ``D2`` / ``SCL``
 PA10                   ``D1`` / ``TX``  ``MICROPHONE_SCK``           ``D1`` / ``TX``       ``D1`` / ``TX``   ``D1`` / ``TX``                                ``D1`` / ``TX``   ``D13``
 PA11                   ``D0`` / ``RX``  ``LIGHT`` / ``A8``           ``D0`` / ``RX``       ``D0`` / ``RX``   ``D0`` / ``RX``                                ``D0`` / ``RX``
@@ -41,11 +41,11 @@ PA13                                    ``ACCELEROMETER_INTERRUPT``             
 PA14                   ``D2``           ``BUTTON_B`` / ``D5``                                                                                               ``D2``
 PA15                   ``D5``           ``SLIDE_SWITCH`` / ``D7``    ``D5``                ``D5``            ``D5``                                         ``D5``
 PA16                   ``D11``          ``MISO``                     ``D11``               ``D11``           ``D11``                                        ``D11``
-PA17                   ``D13``          ``D13``                      ``D13``               ``D13``           ``D13``                                        ``D13``
+PA17                   ``D13``          ``D13``                      ``D13`` / ``RED_LED`` ``D13``           ``D13``                                        ``D13``
 PA18                   ``D10``                                       ``D10``               ``D10``           ``D10``                                        ``D10``
 PA19                   ``D12``                                       ``D12``               ``D12``           ``D12``                                        ``D12``
 PA20                   ``D6``           ``MOSI``                     ``D6``                ``D6``            ``D6``                                         ``D6``
-PA21                   ``D7``           ``SCK``                                                                                                             ``D7``
+PA21                   ``D7``           ``SCK``                      ``D7`` / ``SD_CD``                                                                     ``D7``
 PA22                   ``SDA``                                       ``SDA``               ``SDA``           ``SDA``                                        ``SDA``
 PA23                   ``SCL``          ``REMOTEOUT`` / ``IR_TX``    ``SCL``               ``SCL``           ``SCL``             ``L`` / ``D13``            ``SCL``
 PA24
@@ -112,6 +112,15 @@ PA31                                                   **Yes**  **Yes**  **Yes**
 PB02                   **Yes**                         **Yes**  **Yes**  **Yes**  **Yes**               **Yes**  **Yes**     **Yes**                **Yes**    **Yes**    **Yes**       **Yes**           **Yes**
 PB03                   **Yes**                         **Yes**  **Yes**  **Yes**             **Yes**    **Yes**  **Yes**                 **Yes**    **Yes**               **Yes**       **Yes**           **Yes**
 =====================  ========  =========  =========  =======  =======  =======  =========  =========  =======  ==========  ==========  =========  =========  =========  ============  =======  =======  =========
+
+Setup
+-----
+Install required compiler packages:
+
+.. code-block:: shell
+
+    sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
+    sudo apt-get install gcc-arm-embedded
 
 Building
 --------

@@ -39,7 +39,7 @@ This project is in beta. Most APIs should be stable going forward.
 * [Adafruit Feather HUZZAH][]
 * [Adafruit Feather M0 Basic][]
 * [Adafruit Feather M0 Bluefruit LE][] (uses M0 Basic binaries)
-* [Adafruit Feather M0 Adalogger][] (MicroSD card not supported yet.)
+* [Adafruit Feather M0 Adalogger][] (MicroSD card supported using the [Adafruit CircuitPython SD library](https://github.com/adafruit/Adafruit_CircuitPython_SD))
 * [Arduino Zero][]
 
 ## Download
