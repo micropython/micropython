@@ -38,7 +38,7 @@
 //|
 //| .. module:: storage
 //|   :synopsis: storage management
-//|   :platform: SAMD21
+//|   :platform: SAMD21, SAMD51
 //|
 //| The `storage` provides storage management functionality such as mounting and
 //| unmounting which is typically handled by the operating system hosting Python.

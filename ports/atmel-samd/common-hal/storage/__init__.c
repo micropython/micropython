@@ -30,6 +30,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
+#include "usb.h"
 
 extern volatile bool mp_msc_enabled;
 
@@ -38,7 +39,9 @@ void common_hal_storage_remount(const char* mount_path, bool readonly) {
         mp_raise_OSError(MP_EINVAL);
     }
 
-    if (mp_msc_enabled) {
+    // TODO(dhalbert): is this is a good enough check? It checks for
+    // CDC enabled. There is no "MSC enabled" check.
+    if (usb_connected()) {
         mp_raise_RuntimeError("Cannot remount '/' when USB is active.");
     }
 

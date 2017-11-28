@@ -27,7 +27,12 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_H
 
+#include <stdint.h>
+
 #include "mpconfigport.h"
+
+// Routines common across chip families.
+uint8_t samd_peripherals_baudrate_to_baud_reg_value(const uint32_t baudrate);
 
 #ifdef SAMD21
 #include "samd21_peripherals.h"

@@ -72,7 +72,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
 
     // Set up I2C clocks on sercom.
-    samd_peripheral_sercom_clock_init(sercom, sercom_index);
+    samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
     if (i2c_m_sync_init(&self->i2c_desc, sercom) != ERR_NONE) {
             mp_raise_OSError(MP_EIO);

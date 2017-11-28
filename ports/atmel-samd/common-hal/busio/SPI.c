@@ -37,17 +37,7 @@
 
 #include "peripherals.h"
 #include "pins.h"
-#include "shared_dma.h"
-
-// Convert frequency to clock-speed-dependent value. Return 0 if out of range.
-static uint8_t baudrate_to_baud_reg_value(const uint32_t baudrate) {
-    uint32_t baud_reg_value = (uint32_t) (((float) PROTOTYPE_SERCOM_SPI_M_SYNC_CLOCK_FREQUENCY /
-                                           (2 * baudrate)) + 0.5f);
-    if (baud_reg_value > 0xff) {
-        return 0;
-    }
-    return (uint8_t) baud_reg_value;
-}
+//#include "shared_dma.h"
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
@@ -78,7 +68,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         }
         clock_pinmux = PINMUX(clock->pin, (i == 0) ? MUX_C : MUX_D);
         clock_pad = clock->sercom[i].pad;
-        if (!samd_peripheral_valid_spi_clock_pad(clock_pad)) {
+        if (!samd_peripherals_valid_spi_clock_pad(clock_pad)) {
             continue;
         }
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
@@ -86,7 +76,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 if(potential_sercom == mosi->sercom[j].sercom) {
                     mosi_pinmux = PINMUX(mosi->pin, (j == 0) ? MUX_C : MUX_D);
                     mosi_pad = mosi->sercom[j].pad;
-                    dopo = samd_peripheral_get_spi_dopo(clock_pad, mosi_pad);
+                    dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
                     if (dopo > 0x3) {
                         continue;  // pad combination not possible
                     }
@@ -121,7 +111,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     // Set up SPI clocks on SERCOM.
-    samd_peripheral_sercom_clock_init(sercom, sercom_index);
+    samd_peripherals_sercom_clock_init(sercom, sercom_index);
     
     if (spi_m_sync_init(&self->spi_desc, sercom) != ERR_NONE) {
         mp_raise_OSError(MP_EIO);
@@ -132,7 +122,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     // Always start at 250khz which is what SD cards need. They are sensitive to
     // SPI bus noise before they are put into SPI mode.
-    uint8_t baud_value = baudrate_to_baud_reg_value(250000);
+    uint8_t baud_value = samd_peripherals_baudrate_to_baud_reg_value(250000);
     if (baud_value == 0) {
         mp_raise_RuntimeError("SPI initial baudrate out of range.");
     }
@@ -142,6 +132,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_OSError(MP_EIO);
     }
         
+    gpio_set_pin_direction(clock->pin, GPIO_DIRECTION_OUT);
     gpio_set_pin_pull_mode(clock->pin, GPIO_PULL_OFF);
     gpio_set_pin_function(clock->pin, clock_pinmux);
     claim_pin(clock);
@@ -150,6 +141,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (mosi_none) {
         self->MOSI_pin = NO_PIN;
     } else {
+        gpio_set_pin_direction(mosi->pin, GPIO_DIRECTION_OUT);
         gpio_set_pin_pull_mode(mosi->pin, GPIO_PULL_OFF);
         gpio_set_pin_function(mosi->pin, mosi_pinmux);
         self->MOSI_pin = mosi->pin;
@@ -159,6 +151,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (miso_none) {
         self->MISO_pin = NO_PIN;
     } else {
+        gpio_set_pin_direction(miso->pin, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(miso->pin, GPIO_PULL_OFF);
         gpio_set_pin_function(miso->pin, miso_pinmux);
         self->MISO_pin = miso->pin;
@@ -186,7 +179,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-    uint8_t baud_reg_value = baudrate_to_baud_reg_value(baudrate);
+    uint8_t baud_reg_value = samd_peripherals_baudrate_to_baud_reg_value(baudrate);
     if (baud_reg_value == 0) {
         mp_raise_ValueError("baudrate out of range");
     }
@@ -248,7 +241,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
         status = spi_io->write(spi_io, data, len);
 //    }
-        return status > 0; // Status is number of chars read or an error code < 0.
+        return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
@@ -267,5 +260,5 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
 
         status = spi_io->read(spi_io, data, len);
 //    }
-        return status > 0; // Status is number of chars read or an error code < 0.
+        return status >= 0; // Status is number of chars read or an error code < 0.
 }
