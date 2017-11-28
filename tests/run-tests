@@ -312,6 +312,7 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('basics/class_inplace_op.py')    # all special methods not supported
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
+            skip_tests.add('float/float_parse.py')          # minor parsing artifacts with 32-bit floats
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
