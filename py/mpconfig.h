@@ -695,6 +695,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Non-standard .pend_throw() method for generators, allowing for
+// Future-like behavior with respect to exception handling (useful
+// for implement async schedulers).
+#ifndef MICROPY_PY_GENERATOR_PEND_THROW
+#define MICROPY_PY_GENERATOR_PEND_THROW (1)
+#endif
+
 // Issue a warning when comparing str and bytes objects
 #ifndef MICROPY_PY_STR_BYTES_CMP_WARN
 #define MICROPY_PY_STR_BYTES_CMP_WARN (0)
