@@ -89,8 +89,10 @@ z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
 
 # This rule is for prj_$(BOARD)_merged.conf, not $(CONF_FILE), which
-# can be overriden
-prj_$(BOARD)_merged.conf: prj_base.conf prj_$(BOARD).conf
+# can be overriden.
+# prj_$(BOARD).conf is optional, that's why it's resolved with $(wildcard)
+# function.
+prj_$(BOARD)_merged.conf: prj_base.conf $(wildcard prj_$(BOARD).conf)
 	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
