@@ -46,14 +46,6 @@ STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_
 /******************************************************************************/
 // instance object
 
-STATIC mp_obj_t mp_obj_new_instance(const mp_obj_type_t *class, size_t subobjs) {
-    mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, subobjs);
-    o->base.type = class;
-    mp_map_init(&o->members, 0);
-    mp_seq_clear(o->subobj, 0, subobjs, sizeof(*o->subobj));
-    return MP_OBJ_FROM_PTR(o);
-}
-
 STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_type_t **last_native_base) {
     int count = 0;
     for (;;) {
@@ -85,6 +77,30 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
             type = type->parent;
         }
     }
+}
+
+// This wrapper function is allows a subclass of a native type to call the
+// __init__() method (corresponding to type->make_new) of the native type.
+STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *args) {
+    mp_obj_instance_t *self = MP_OBJ_TO_PTR(args[0]);
+    const mp_obj_type_t *native_base = NULL;
+    instance_count_native_bases(self->base.type, &native_base);
+    self->subobj[0] = native_base->make_new(native_base, n_args - 1, 0, args + 1);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(native_base_init_wrapper_obj, 1, MP_OBJ_FUN_ARGS_MAX, native_base_init_wrapper);
+
+STATIC mp_obj_t mp_obj_new_instance(const mp_obj_type_t *class, size_t subobjs) {
+    mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, subobjs);
+    o->base.type = class;
+    mp_map_init(&o->members, 0);
+    // Initialise the native base-class slot (should be 1 at most) with a valid
+    // object.  It doesn't matter which object, so long as it can be uniquely
+    // distinguished from a native class that is initialised.
+    if (subobjs != 0) {
+        o->subobj[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
+    }
+    return MP_OBJ_FROM_PTR(o);
 }
 
 // TODO
@@ -280,7 +296,13 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     if (init_fn[0] == MP_OBJ_SENTINEL) {
         // Native type's constructor is what wins - it gets all our arguments,
         // and none Python classes are initialized at all.
-        o->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args);
+
+        // Since type->make_new() implements both __new__() and __init__() in
+        // one go, of which the latter may be overridden by the Python subclass,
+        // we defer (see the end of this function) the call of the native
+        // constructor to give a chance for the Python __init__() method to call
+        // said native constructor.
+
     } else if (init_fn[0] != MP_OBJ_NULL) {
         // now call Python class __new__ function with all args
         if (n_args == 0 && n_kw == 0) {
@@ -305,6 +327,8 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     o = MP_OBJ_TO_PTR(new_ret);
 
     // now call Python class __init__ function with all args
+    // This method has a chance to call super().__init__() to construct a
+    // possible native base class.
     init_fn[0] = init_fn[1] = MP_OBJ_NULL;
     lookup.obj = o;
     lookup.attr = MP_QSTR___init__;
@@ -331,6 +355,12 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
             }
         }
 
+    }
+
+    // If the type had a native base that was not explicitly initialised
+    // (constructed) by the Python __init__() method then construct it now.
+    if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
+        o->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args);
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -1107,6 +1137,11 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         .is_type = false,
     };
 
+    // Allow a call super().__init__() to reach any native base classes
+    if (attr == MP_QSTR___init__) {
+        lookup.meth_offset = offsetof(mp_obj_type_t, make_new);
+    }
+
     if (type->parent == NULL) {
         // no parents, do nothing
     #if MICROPY_MULTIPLE_INHERITANCE
@@ -1116,18 +1151,33 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         const mp_obj_t *items = parent_tuple->items;
         for (size_t i = 0; i < len; i++) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+            if (MP_OBJ_TO_PTR(items[i]) == &mp_type_object) {
+                // The "object" type will be searched at the end of this function,
+                // and we don't want to lookup native methods in object.
+                continue;
+            }
             mp_obj_class_lookup(&lookup, (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]));
             if (dest[0] != MP_OBJ_NULL) {
-                return;
+                break;
             }
         }
     #endif
-    } else {
+    } else if (type->parent != &mp_type_object) {
         mp_obj_class_lookup(&lookup, type->parent);
-        if (dest[0] != MP_OBJ_NULL) {
-            return;
-        }
     }
+
+    if (dest[0] != MP_OBJ_NULL) {
+        if (dest[0] == MP_OBJ_SENTINEL) {
+            // Looked up native __init__ so defer to it
+            dest[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
+            dest[1] = self->obj;
+        }
+        return;
+    }
+
+    // Reset meth_offset so we don't look up any native methods in object,
+    // because object never takes up the native base-class slot.
+    lookup.meth_offset = 0;
 
     mp_obj_class_lookup(&lookup, &mp_type_object);
 }
