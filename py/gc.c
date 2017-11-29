@@ -628,26 +628,17 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
     void *ptr = ptr_in;
 
-    // sanity check the ptr
-    if (!VERIFY_PTR(ptr)) {
-        return NULL;
-    }
-
-    // get first block
-    size_t block = BLOCK_FROM_PTR(ptr);
-
     GC_ENTER();
-
-    // sanity check the ptr is pointing to the head of a block
-    if (ATB_GET_KIND(block) != AT_HEAD) {
-        GC_EXIT();
-        return NULL;
-    }
 
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         GC_EXIT();
         return NULL;
     }
+
+    // get the GC block number corresponding to this pointer
+    assert(VERIFY_PTR(ptr));
+    size_t block = BLOCK_FROM_PTR(ptr);
+    assert(ATB_GET_KIND(block) == AT_HEAD);
 
     // compute number of new blocks that are requested
     size_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
