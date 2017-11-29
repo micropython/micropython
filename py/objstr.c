@@ -2084,7 +2084,7 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     }
 }
 
-STATIC void bad_implicit_conversion(mp_obj_t self_in) {
+STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError("can't convert to str implicitly");
     } else {
