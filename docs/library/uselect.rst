@@ -83,10 +83,10 @@ Methods
    way to poll on streams.
 
    If *flags* is 1, one-shot behavior for events is employed: streams for
-   which events happened, event mask will be automatically reset (equivalent
-   to ``poll.modify(obj, 0)``), so new events for such a stream won't be
-   processed until new mask is set with `poll.modify()`. This behavior is
-   useful for asynchronous I/O schedulers.
+   which events happened will have their event masks automatically reset
+   (equivalent to ``poll.modify(obj, 0)``), so new events for such a stream
+   won't be processed until new mask is set with `poll.modify()`. This
+   behavior is useful for asynchronous I/O schedulers.
 
    .. admonition:: Difference to CPython
       :class: attention
