@@ -125,9 +125,6 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
         case MP_VM_RETURN_YIELD:
             *ret_val = *self->code_state.sp;
-            if (*ret_val == MP_OBJ_STOP_ITERATION) {
-                self->code_state.ip = 0;
-            }
             break;
 
         case MP_VM_RETURN_EXCEPTION: {
