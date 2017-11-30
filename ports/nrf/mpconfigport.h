@@ -231,7 +231,7 @@ extern const struct _mp_obj_module_t random_module;
 #endif
 
 #if BOARD_SPECIFIC_MODULES
-#include "board_modules.h"
+#include "boardmodules.h"
 #define MICROPY_BOARD_BUILTINS BOARD_MODULES
 #else
 #define MICROPY_BOARD_BUILTINS
