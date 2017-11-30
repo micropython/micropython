@@ -127,16 +127,20 @@ void init_flash_fs(bool create_allowed) {
         // is bobbling a bit when plugging in a battery.
         mp_hal_delay_ms(2000);
 
-        uint8_t working_buf[_MAX_SS];
-        res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
-        // Flush the new file system to make sure its repaired immediately.
-        flash_flush();
-        if (res != FR_OK) {
-            return;
-        }
+        // Then try one more time to mount the flash in case it was late coming up.
+        res = f_mount(&vfs_fat->fatfs);
+        if (res == FR_NO_FILESYSTEM) {
+            uint8_t working_buf[_MAX_SS];
+            res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
+            // Flush the new file system to make sure its repaired immediately.
+            flash_flush();
+            if (res != FR_OK) {
+                return;
+            }
 
-        // set label
-        f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+            // set label
+            f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+        }
     } else if (res != FR_OK) {
         return;
     }
