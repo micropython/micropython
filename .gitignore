@@ -48,3 +48,12 @@ _build
 # Generated rst files
 ######################
 genrst/
+
+# ctags and similar
+###################
+TAGS
+
+# Merge leftovers
+#################
+*.orig
+
