@@ -47,7 +47,6 @@
 #include "led.h"
 #include "uart.h"
 #include "nrf.h"
-#include "nrf_sdm.h"
 #include "pin.h"
 #include "spi.h"
 #include "i2c.h"
@@ -56,6 +55,10 @@
 #include "pwm.h"
 #endif
 #include "timer.h"
+
+#if BLUETOOTH_SD
+#include "nrf_sdm.h"
+#endif
 
 #if (MICROPY_PY_BLE_NUS)
 #include "ble_uart.h"
