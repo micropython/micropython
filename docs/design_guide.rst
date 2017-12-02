@@ -235,7 +235,7 @@ Renders as:
 Use BusDevice
 --------------------------------------------------------------------------------
 
-[BusDevice](https://github.com/adafruit/Adafruit_CircuitPython_BusDevice) is an
+`BusDevice <https://github.com/adafruit/Adafruit_CircuitPython_BusDevice>`_ is an
 awesome foundational library that manages talking on a shared I2C or SPI device
 for you. The devices manage locking which ensures that a transfer is done as a
 single unit despite CircuitPython internals and, in the future, other Python
