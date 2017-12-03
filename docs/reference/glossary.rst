@@ -64,6 +64,22 @@ Glossary
         properties of these pins (e.g. controllable by the same
         register).
 
+    interned string
+        A string referenced by its (unique) identity rather than its
+        address. Interned strings are thus can be quickly compared just
+        by their identifiers, instead of comparing by content. The
+        drawbacks of interned strings are that interning operation takes
+        time (proportional to the number of existing interned strings,
+        i.e. becoming slower and slower over time) and that the space
+        used for interned strings is not reclaimable. String interning
+        is done automatically by MicroPython compiler and runtimer when
+        it's either required by the implementation (e.g. function keyword
+        arguments are represented by interned string id's) or deemed
+        beneficial (e.g. for short enough strings, which have a chance
+        to be repeated, and thus interning them would save memory on
+        copies). Most of string and I/O operations don't produce interned
+        strings due to drawbacks described above.
+
     MCU
         Microcontroller. Microcontrollers usually have much less resources
         than a full-fledged computing system, but smaller, cheaper and
