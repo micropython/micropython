@@ -2,7 +2,7 @@
 categories: Modules,builtins
 description: Second argument to next() is not implemented
 cause: MicroPython is optimised for code space.
-workaround: Instead of `val = next(it, deflt)` use::
+workaround: Instead of ``val = next(it, deflt)`` use::
 
     try:
         val = next(it)
