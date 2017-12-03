@@ -402,30 +402,30 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     mp_obj_t val;
 
-    #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
-    switch ((uintptr_t)args[1]) {
-        case QS(MP_QSTR_mac): {
+    qstr key = mp_obj_str_get_qstr(args[1]);
+    switch (key) {
+        case MP_QSTR_mac: {
             uint8_t mac[6];
             wifi_get_macaddr(self->if_id, mac);
             return mp_obj_new_bytes(mac, sizeof(mac));
         }
-        case QS(MP_QSTR_essid):
+        case MP_QSTR_essid:
             req_if = SOFTAP_IF;
             val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
             break;
-        case QS(MP_QSTR_hidden):
+        case MP_QSTR_hidden:
             req_if = SOFTAP_IF;
             val = mp_obj_new_bool(cfg.ap.ssid_hidden);
             break;
-        case QS(MP_QSTR_authmode):
+        case MP_QSTR_authmode:
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
             break;
-        case QS(MP_QSTR_channel):
+        case MP_QSTR_channel:
             req_if = SOFTAP_IF;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
-        case QS(MP_QSTR_dhcp_hostname): {
+        case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
             char* s = wifi_station_get_hostname();
             val = mp_obj_new_str(s, strlen(s));
@@ -434,7 +434,6 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         default:
             goto unknown;
     }
-    #undef QS
 
     // We post-check interface requirements to save on code size
     if (req_if >= 0) {
