@@ -343,7 +343,7 @@ soft_reset:
         }
     }
 
-    printf("PYB: soft reboot\n");
+    printf("MPY: soft reboot\n");
 
 //    first_soft_reset = false;
     goto soft_reset;

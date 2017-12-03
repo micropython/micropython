@@ -203,7 +203,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         if (res == FR_OK) {
             // success creating fresh LFS
         } else {
-            printf("PYB: can't create flash filesystem\n");
+            printf("MPY: can't create flash filesystem\n");
             return false;
         }
 
@@ -235,7 +235,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         // mount sucessful
     } else {
     fail:
-        printf("PYB: can't mount flash\n");
+        printf("MPY: can't mount flash\n");
         return false;
     }
 
@@ -349,7 +349,7 @@ STATIC bool init_sdcard_fs(void) {
     }
 
     if (first_part) {
-        printf("PYB: can't mount SD card\n");
+        printf("MPY: can't mount SD card\n");
         return false;
     } else {
         return true;
@@ -763,11 +763,11 @@ soft_reset_exit:
     // soft reset
 
     #if MICROPY_HW_ENABLE_STORAGE
-    printf("PYB: sync filesystems\n");
+    printf("MPY: sync filesystems\n");
     storage_flush();
     #endif
 
-    printf("PYB: soft reboot\n");
+    printf("MPY: soft reboot\n");
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     #endif
