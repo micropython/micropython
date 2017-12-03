@@ -170,7 +170,7 @@ pin_init0();
 
         FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
         if (res != FR_OK) {
-            printf("PYB: can't mount SD card\n");
+            printf("MPY: can't mount SD card\n");
             MP_STATE_PORT(fs_user_mount)[1] = NULL;
             m_del_obj(fs_user_mount_t, vfs);
         } else {
