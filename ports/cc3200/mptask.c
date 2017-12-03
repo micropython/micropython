@@ -234,7 +234,7 @@ soft_reset_exit:
 
     // soft reset
     pyb_sleep_signal_soft_reset();
-    mp_printf(&mp_plat_print, "PYB: soft reboot\n");
+    mp_printf(&mp_plat_print, "MPY: soft reboot\n");
 
     // disable all callbacks to avoid undefined behaviour
     // when coming out of a soft reset
