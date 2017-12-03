@@ -120,6 +120,16 @@ Glossary
         from context, it's recommended to use full specification like one
         of the above.
 
+    stream
+        Also known as a "file-like object". An object which provides sequential
+        read-write access to the underlying data. A stream object implements
+        a corresponding interface, which consists of methods like ``read()``,
+        ``write()``, ``readinto()``, ``seek()``, ``flush()``, ``close()``, etc.
+        A stream is an important concept in MicroPython, many I/O objects
+        implement the stream interface, and thus can be used consistently and
+        interchangeably in different contexts. For more information on
+        streams in MicroPython, see `uio` module.
+
     upip
         (Literally, "micro pip"). A package manage for MicroPython, inspired
         by :term:`CPython`'s pip, but much smaller and with reduced functionality.
