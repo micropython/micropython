@@ -17,7 +17,7 @@ Constants
     Error codes, based on ANSI C/POSIX standard. All error codes start with
     "E". As mentioned above, inventory of the codes depends on
     `MicroPython port`. Errors are usually accessible as ``exc.args[0]``
-    where `exc` is an instance of `OSError`. Usage example::
+    where ``exc`` is an instance of `OSError`. Usage example::
 
         try:
             uos.mkdir("my_dir")
