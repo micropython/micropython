@@ -15,6 +15,29 @@ Glossary
         may also refer to "boardless" ports like
         :term:`Unix port <MicroPython Unix port>`).
 
+    callee-owned tuple
+        A tuple returned by some builtin function/method, containing data
+        which is valid for a limited time, usually until next call to the
+        same function (or a group of related functions). After next call,
+        data in the tuple may be changed. This leads to the following
+        restriction on the usage of callee-owned tuples - references to
+        them cannot be stored. The only valid operation is extracting
+        values from them (including making a copy). Callee-owned tuples
+        is a MicroPython-specific construct (not available in the general
+        Python language), introduced for memory allocation optimization.
+        The idea is that callee-owned tuple is allocated once and stored
+        on the callee side. Subsequent calls don't require allocation,
+        allowing to return multiple values when allocation is not possible
+        (e.g. in interrupt context) or not desirable (because allocation
+        inherently leads to memory fragmentation). Note that callee-owned
+        tuples are effectively mutable tuples, making an exception to
+        Python's rule that tuples are immutable. (It may be interesting
+        why tuples were used for such a purpose then, instead of mutable
+        lists - the reason for that is that lists are mutable from user
+        application side too, so a user could do things to a callee-owned
+        list which the callee doesn't expect and could lead to problems;
+        a tuple is protected from this.)
+
     CPython
         CPython is the reference implementation of Python programming
         language, and the most well-known one, which most of the people
