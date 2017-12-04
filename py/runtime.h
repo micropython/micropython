@@ -106,8 +106,9 @@ mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args);
 mp_obj_t mp_call_method_self_n_kw(mp_obj_t meth, mp_obj_t self, size_t n_args, size_t n_kw, const mp_obj_t *args);
 // Call function and catch/dump exception - for Python callbacks from C code
-void mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg);
-void mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
+// (return MP_OBJ_NULL in case of exception).
+mp_obj_t mp_call_function_1_protected(mp_obj_t fun, mp_obj_t arg);
+mp_obj_t mp_call_function_2_protected(mp_obj_t fun, mp_obj_t arg1, mp_obj_t arg2);
 
 typedef struct _mp_call_args_t {
     mp_obj_t fun;
