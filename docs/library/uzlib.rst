@@ -25,7 +25,7 @@ Functions
 
 .. class:: DecompIO(stream, wbits=0)
 
-   Create a stream wrapper which allows transparent decompression of
+   Create a `stream` wrapper which allows transparent decompression of
    compressed data in another *stream*. This allows to process compressed
    streams with data larger than available heap size. In addition to
    values described in :func:`decompress`, *wbits* may take values

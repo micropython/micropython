@@ -24,7 +24,7 @@ are supported.
 
 WiPy/CC3200: Bits can be 5, 6, 7, 8. Stop can be 1 or 2.
 
-A UART object acts like a stream object and reading and writing is done
+A UART object acts like a `stream` object and reading and writing is done
 using the standard stream methods::
 
     uart.read(10)       # read 10 characters, returns a bytes object

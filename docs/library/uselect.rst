@@ -7,7 +7,7 @@
 |see_cpython_module| :mod:`python:select`.
 
 This module provides functions to efficiently wait for events on multiple
-streams (select streams which are ready for operations).
+`streams <stream>` (select streams which are ready for operations).
 
 Functions
 ---------
@@ -33,7 +33,7 @@ Methods
 
 .. method:: poll.register(obj[, eventmask])
 
-   Register *obj* for polling. *eventmask* is logical OR of:
+   Register `stream` *obj* for polling. *eventmask* is logical OR of:
 
    * `uselect.POLLIN`  - data available for reading
    * `uselect.POLLOUT` - more data can be written
