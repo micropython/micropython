@@ -63,8 +63,10 @@ typedef unsigned int uint;
 #define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type*)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 #if MICROPY_ENABLE_FINALISER
 #define m_new_obj_with_finaliser(type) ((type*)(m_malloc_with_finaliser(sizeof(type))))
+#define m_new_obj_var_with_finaliser(type, var_type, var_num) ((type*)m_malloc_with_finaliser(sizeof(type) + sizeof(var_type) * (var_num)))
 #else
 #define m_new_obj_with_finaliser(type) m_new_obj(type)
+#define m_new_obj_var_with_finaliser(type, var_type, var_num) m_new_obj_var(type, var_type, var_num)
 #endif
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #define m_renew(type, ptr, old_num, new_num) ((type*)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
