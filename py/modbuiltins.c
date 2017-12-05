@@ -383,46 +383,52 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
-STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    mp_map_elem_t *sep_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_MAP_LOOKUP);
-    mp_map_elem_t *end_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_end), MP_MAP_LOOKUP);
-    const char *sep_data = " ";
-    size_t sep_len = 1;
-    const char *end_data = "\n";
-    size_t end_len = 1;
-    if (sep_elem != NULL && sep_elem->value != mp_const_none) {
-        sep_data = mp_obj_str_get_data(sep_elem->value, &sep_len);
-    }
-    if (end_elem != NULL && end_elem->value != mp_const_none) {
-        end_data = mp_obj_str_get_data(end_elem->value, &end_len);
-    }
-    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-    void *stream_obj = &mp_sys_stdout_obj;
-    mp_map_elem_t *file_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_file), MP_MAP_LOOKUP);
-    if (file_elem != NULL && file_elem->value != mp_const_none) {
-        stream_obj = MP_OBJ_TO_PTR(file_elem->value); // XXX may not be a concrete object
-    }
+STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_sep, ARG_end, ARG_file };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__space_)} },
+        { MP_QSTR_end, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__0x0a_)} },
+        #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+        { MP_QSTR_file, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_sys_stdout_obj)} },
+        #endif
+    };
 
-    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
+    // parse args (a union is used to reduce the amount of C stack that is needed)
+    union {
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        size_t len[2];
+    } u;
+    mp_arg_parse_all(0, NULL, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, u.args);
+
+    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+    // TODO file may not be a concrete object (eg it could be a small-int)
+    mp_print_t print = {MP_OBJ_TO_PTR(u.args[ARG_file].u_obj), mp_stream_write_adaptor};
     #endif
+
+    // extract the objects first because we are going to use the other part of the union
+    mp_obj_t sep = u.args[ARG_sep].u_obj;
+    mp_obj_t end = u.args[ARG_end].u_obj;
+    const char *sep_data = mp_obj_str_get_data(sep, &u.len[0]);
+    const char *end_data = mp_obj_str_get_data(end, &u.len[1]);
+
     for (size_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-            mp_stream_write_adaptor(stream_obj, sep_data, sep_len);
+            mp_stream_write_adaptor(print.data, sep_data, u.len[0]);
             #else
-            mp_print_strn(&mp_plat_print, sep_data, sep_len, 0, 0, 0);
+            mp_print_strn(&mp_plat_print, sep_data, u.len[0], 0, 0, 0);
             #endif
         }
         #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-        mp_obj_print_helper(&print, args[i], PRINT_STR);
+        mp_obj_print_helper(&print, pos_args[i], PRINT_STR);
         #else
-        mp_obj_print_helper(&mp_plat_print, args[i], PRINT_STR);
+        mp_obj_print_helper(&mp_plat_print, pos_args[i], PRINT_STR);
         #endif
     }
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-    mp_stream_write_adaptor(stream_obj, end_data, end_len);
+    mp_stream_write_adaptor(print.data, end_data, u.len[1]);
     #else
-    mp_print_strn(&mp_plat_print, end_data, end_len, 0, 0, 0);
+    mp_print_strn(&mp_plat_print, end_data, u.len[1], 0, 0, 0);
     #endif
     return mp_const_none;
 }
