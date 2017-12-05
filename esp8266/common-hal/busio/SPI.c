@@ -185,3 +185,23 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     }
     return true;
 }
+
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+    // Process data in chunks, let the pending tasks run in between
+    size_t chunk_size = 1024; // TODO this should depend on baudrate
+    size_t count = len / chunk_size;
+    size_t i = 0;
+    for (size_t j = 0; j < count; ++j) {
+        for (size_t k = 0; k < chunk_size; ++k) {
+            data_in[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, data_out[i], 8, 0);
+            ++i;
+        }
+        ets_loop_iter();
+    }
+    while (i < len) {
+        data_in[i] = spi_transaction(HSPI, 0, 0, 0, 0, 8, data_out[i], 8, 0);
+        ++i;
+    }
+    return true;
+
+}
