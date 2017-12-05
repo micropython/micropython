@@ -84,6 +84,7 @@ typedef enum {
     BROWNOUT,
     HARD_CRASH,
     USER_SAFE_MODE,
+    SOFTWARE_SAFE_MODE
 } safe_mode_t;
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -375,7 +376,10 @@ bool start_mp(safe_mode_t safe_mode) {
                 mp_hal_stdout_tx_str(".\r\n");
             } else
             #endif
-            if (safe_mode != NO_SAFE_MODE) {
+            if (safe_mode == SOFTWARE_SAFE_MODE) {
+                mp_hal_stdout_tx_str("\r\nYou requested starting in safe mode from your software.");
+                mp_hal_stdout_tx_str(".\r\nTo exit, please reset the board.\r\n");
+            } else if (safe_mode != NO_SAFE_MODE) {
                 mp_hal_stdout_tx_str("\r\nYou are running in safe mode which means something really bad happened.\r\n");
                 if (safe_mode == HARD_CRASH) {
                     mp_hal_stdout_tx_str("Looks like our core CircuitPython code crashed hard. Whoops!\r\n");
@@ -524,10 +528,14 @@ safe_mode_t samd21_init(void) {
     REG_MTB_MASTER = 0x00000000 + 6;
 #endif
 
+    // CIRCUITPY_SOFTWARE_SAFE_MODE works just like the canary except if it
+    // survives we enter safe mode with a friendlier message.
+    bool software_safe_mode = _ezero == CIRCUITPY_SOFTWARE_SAFE_MODE;
+
 // On power on start or external reset, set _ezero to the canary word. If it
-// gets killed, we boot in safe mod. _ezero is the boundary between statically
-// allocated memory including the fixed MicroPython heap and the stack. If either
-// misbehaves, the canary will not be in tact after soft reset.
+// gets killed, we boot in safe mode. _ezero is the boundary between statically
+// allocated memory including the fixed MicroPython heap and the stack. If
+// either misbehaves, the canary will not be in tact after soft reset.
 #ifdef CIRCUITPY_CANARY_WORD
     if (PM->RCAUSE.bit.POR == 1 || PM->RCAUSE.bit.EXT == 1) {
         _ezero = CIRCUITPY_CANARY_WORD;
@@ -605,6 +613,10 @@ safe_mode_t samd21_init(void) {
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
+    }
+
+    if (software_safe_mode) {
+        return SOFTWARE_SAFE_MODE;
     }
 
     #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
