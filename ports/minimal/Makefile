@@ -17,8 +17,8 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 ifeq ($(CROSS), 1)
-DFU = $(TOP)/tools/dfu.py
-PYDFU = $(TOP)/tools/pydfu.py
+DFU = $(PYTHON) $(TOP)/tools/dfu.py
+PYDFU = $(PYTHON) $(TOP)/tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mabi=aapcs-linux -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -fsingle-precision-constant -Wdouble-promotion
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
@@ -69,11 +69,11 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
+	$(Q)$(DFU) -b 0x08000000:$(BUILD)/firmware.bin $@
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
-	$(Q)$(PYTHON) $(PYDFU) -u $<
+	$(Q)$(PYDFU) -u $<
 
 # Run emulation build on a POSIX system with suitable terminal settings
 run:

@@ -165,23 +165,36 @@ $(BUILD)/uart.o: $(CONFVARS_FILE)
 
 FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
+#MAKE_PINS = boards/make-pins.py
+#BOARD_PINS = boards/$(BOARD)/pins.csv
+#AF_FILE = boards/stm32f4xx_af.csv
+#PREFIX_FILE = boards/stm32f4xx_prefix.c
+#GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+#GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+#GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
+#GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+#GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+MAKE_IMG_SRC = $(CURDIR)/makeimg.py
+MAKE_IMG = $(PYTHON) $(MAKE_IMG_SRC)
+ESPTOOL ?= esptool.py
+
 .PHONY: deploy
 
 deploy: $(BUILD)/firmware-combined.bin
 	$(ECHO) "Writing $< to the board"
-	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
+	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
 erase:
 	$(ECHO) "Erase flash"
-	$(Q)esptool.py --port $(PORT) --baud $(BAUD) erase_flash
+	$(Q)$(ESPTOOL) --port $(PORT) --baud $(BAUD) erase_flash
 
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
 $(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
-	$(Q)esptool.py elf2image $^
-	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
+	$(Q)$(ESPTOOL) elf2image $^
+	$(Q)$(MAKE_IMG) $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
@@ -195,16 +208,6 @@ ota:
 	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
 	$(MAKE) LDSCRIPT=esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
-#MAKE_PINS = boards/make-pins.py
-#BOARD_PINS = boards/$(BOARD)/pins.csv
-#AF_FILE = boards/stm32f4xx_af.csv
-#PREFIX_FILE = boards/stm32f4xx_prefix.c
-#GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
-#GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-#GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-#GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-#GEN_PINS_AF_PY = $(BUILD)/pins_af.py
-
 # Making OBJ use an order-only depenedency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
@@ -214,9 +217,9 @@ ota:
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-#$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+#$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS_SRC) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 #	$(ECHO) "Create $@"
-#	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+#	$(Q)$(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 #
 #$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 #	$(call compile_c)
