@@ -4,9 +4,10 @@ Glossary
 .. glossary::
 
     baremetal
-        A system without (full-fledged) OS, like an :term:`MCU`. When
-        running on a baremetal system, MicroPython effectively becomes
-        its user-facing OS with a command interpreter (REPL).
+        A system without a (full-fledged) OS, for example an
+        :term:`MCU`-based system. When running on a baremetal system,
+        MicroPython effectively becomes its user-facing OS with a command
+        interpreter (REPL).
 
     board
         A PCB board. Oftentimes, the term is used to denote a particular
