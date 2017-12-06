@@ -123,6 +123,7 @@ CFLAGS_CORTEX_M0 = \
 	-DI2S_CALLBACK_MODE=false \
 	-DTC_ASYNC=true \
 	-DUSB_DEVICE_LPM_SUPPORT \
+	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
@@ -315,6 +316,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
+	microcontroller/RunMode.c \
 	help.c \
 	util.c
 

@@ -24,9 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/microcontroller/Processor.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
@@ -34,6 +37,7 @@
 #include "ets_alt_task.h"
 #include "etshal.h"
 #include "osapi.h"
+#include "user_interface.h"
 #include "xtirq.h"
 
 #define ETS_LOOP_ITER_BIT (12)
@@ -54,9 +58,21 @@ void common_hal_mcu_enable_interrupts() {
     enable_irq(saved_interrupt_state & ~(1 << ETS_LOOP_ITER_BIT));
 }
 
+void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
+    if (runmode == RUNMODE_BOOTLOADER) {
+        mp_raise_ValueError("Cannot reset into bootloader because no bootloader is present.");
+    } else if (runmode == RUNMODE_SAFE_MODE) {
+        mp_raise_ValueError("ESP8226 does not support safe mode.");
+    }
+}
+
+void common_hal_mcu_reset(void) {
+    system_restart();
+}
+
 // The singleton microcontroller.Processor object, returned by microcontroller.cpu
 // It currently only has properties, and no state.
-mcu_processor_obj_t common_hal_mcu_processor_obj = {
+const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     .base = {
         .type = &mcu_processor_type,
     },

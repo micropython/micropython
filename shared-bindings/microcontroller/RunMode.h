@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -23,15 +23,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
 
-// Copied from inc/uf2.h in https://github.com/Microsoft/uf2-samd21
-#define DBL_TAP_MAGIC 0xf01669ef // Randomly selected, adjusted to have first and last bit set
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_RUNMODE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_RUNMODE_H
 
-extern uint32_t _bootloader_dbl_tap;
+#include "py/obj.h"
 
-void reset_to_bootloader(void);
-void reset(void);
+typedef enum {
+    RUNMODE_NORMAL,
+    RUNMODE_SAFE_MODE,
+    RUNMODE_BOOTLOADER
+} mcu_runmode_t;
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_RESET_H
+const mp_obj_type_t mcu_runmode_type;
+
+typedef struct {
+    mp_obj_base_t base;
+} mcu_runmode_obj_t;
+extern const mcu_runmode_obj_t mcu_runmode_normal_obj;
+extern const mcu_runmode_obj_t mcu_runmode_safe_mode_obj;
+extern const mcu_runmode_obj_t mcu_runmode_bootloader_obj;
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_RUNMODE_H
