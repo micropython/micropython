@@ -535,7 +535,7 @@ safe_mode_t samd21_init(void) {
 // On power on start or external reset, set _ezero to the canary word. If it
 // gets killed, we boot in safe mode. _ezero is the boundary between statically
 // allocated memory including the fixed MicroPython heap and the stack. If
-// either misbehaves, the canary will not be in tact after soft reset.
+// either misbehaves, the canary will not be intact after soft reset.
 #ifdef CIRCUITPY_CANARY_WORD
     if (PM->RCAUSE.bit.POR == 1 || PM->RCAUSE.bit.EXT == 1) {
         _ezero = CIRCUITPY_CANARY_WORD;

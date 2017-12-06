@@ -31,7 +31,7 @@
 //| :class:`RunMode` -- run state of the microcontroller
 //| =============================================================
 //|
-//| .. class:: mcirocontroller.RunMode
+//| .. class:: microcontroller.RunMode
 //|
 //|     Enum-like class to define the run mode of the microcontroller and
 //|     CircuitPython.
