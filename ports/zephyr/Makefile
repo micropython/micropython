@@ -105,4 +105,4 @@ outdir/$(BOARD)/Makefile: $(CONF_FILE)
 
 $(Z_EXPORTS): outdir/$(BOARD)/Makefile
 	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@
-	make -C outdir/$(BOARD) syscall_macros_h_target
+	make -C outdir/$(BOARD) syscall_macros_h_target syscall_list_h_target
