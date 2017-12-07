@@ -446,11 +446,16 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             }
         }
 
-        // parse long specifiers (current not used)
-        //bool long_arg = false;
+        // parse long specifiers (only for LP64 model where they make a difference)
+        #ifndef __LP64__
+        const
+        #endif
+        bool long_arg = false;
         if (*fmt == 'l') {
             ++fmt;
-            //long_arg = true;
+            #ifdef __LP64__
+            long_arg = true;
+            #endif
         }
 
         if (*fmt == '\0') {
@@ -505,11 +510,17 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 chrs += mp_print_int(print, va_arg(args, int), 1, 10, 'a', flags, fill, width);
                 break;
             case 'x':
-                chrs += mp_print_int(print, va_arg(args, unsigned int), 0, 16, 'a', flags, fill, width);
+            case 'X': {
+                char fmt_c = 'x' - *fmt + 'A';
+                mp_uint_t val;
+                if (long_arg) {
+                    val = va_arg(args, unsigned long int);
+                } else {
+                    val = va_arg(args, unsigned int);
+                }
+                chrs += mp_print_int(print, val, 0, 16, fmt_c, flags, fill, width);
                 break;
-            case 'X':
-                chrs += mp_print_int(print, va_arg(args, unsigned int), 0, 16, 'A', flags, fill, width);
-                break;
+            }
             case 'p':
             case 'P': // don't bother to handle upcase for 'P'
                 // Use unsigned long int to work on both ILP32 and LP64 systems
