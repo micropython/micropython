@@ -44,6 +44,10 @@
 // make this 1 to dump the heap each time it changes
 #define EXTENSIVE_HEAP_PROFILING (0)
 
+// make this 1 to zero out swept memory to more eagerly
+// detect untraced object still in use
+#define CLEAR_ON_SWEEP (0)
+
 #define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
 
@@ -286,6 +290,9 @@ STATIC void gc_sweep(void) {
             case AT_TAIL:
                 if (free_tail) {
                     ATB_ANY_TO_FREE(block);
+                    #if CLEAR_ON_SWEEP
+                    memset((void*)PTR_FROM_BLOCK(block), 0, BYTES_PER_BLOCK);
+                    #endif
                 }
                 break;
 
