@@ -511,7 +511,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 break;
             case 'x':
             case 'X': {
-                char fmt_c = 'x' - *fmt + 'A';
+                char fmt_c = *fmt - 'X' + 'A';
                 mp_uint_t val;
                 if (long_arg) {
                     val = va_arg(args, unsigned long int);
