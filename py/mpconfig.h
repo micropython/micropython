@@ -233,6 +233,18 @@
 #define alloca(x) m_malloc(x)
 #endif
 
+// Various strategies for allocating small, variable-length arrays
+// limited to the current function/scope.  Preferred method is VLA,
+// but backup methods are to use alloca() or the heap depending on
+// what a platform/compiler supports.
+#define MICROPY_SCOPED_VAR_IMPL_VLA (0)
+#define MICROPY_SCOPED_VAR_IMPL_ALLOCA (1)
+#define MICROPY_SCOPED_VAR_IMPL_HEAP (2)
+
+#ifndef MICROPY_SCOPED_VAR_IMPL
+#define MICROPY_SCOPED_VAR_IMPL (MICROPY_SCOPED_VAR_IMPL_VLA)
+#endif
+
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 

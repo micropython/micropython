@@ -102,6 +102,20 @@ size_t m_get_current_bytes_allocated(void);
 size_t m_get_peak_bytes_allocated(void);
 #endif
 
+#if MICROPY_SCOPED_VAR_IMPL == MICROPY_SCOPED_VAR_IMPL_VLA
+#define MP_SCOPED_ALLOC(type, var, num)  type var[num]
+#define MP_SCOPED_FREE(type)
+#elif MICROPY_SCOPED_VAR_IMPL == MICROPY_SCOPED_VAR_IMPL_ALLOCA
+#define MP_SCOPED_ALLOC(type, var, num)  type *var = alloca(sizeof(type) * (num))
+#define MP_SCOPED_FREE(type)
+#elif MICROPY_SCOPED_VAR_IMPL == MICROPY_SCOPED_VAR_IMPL_HEAP
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+#error cannot use SCOPED_VAR_IMPL_HEAP with MALLOC_USES_ALLOCATED_SIZE
+#endif
+#define MP_SCOPED_ALLOC(type, var, num)  type *var = m_new(type, num)
+#define MP_SCOPED_FREE(var)              m_free(var)
+#endif
+
 /** array helpers ***********************************************/
 
 // get the number of elements in a fixed-size array
