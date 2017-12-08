@@ -46,12 +46,10 @@ void mp_asm_base_deinit(mp_asm_base_t *as, bool free_code) {
 }
 
 void mp_asm_base_start_pass(mp_asm_base_t *as, int pass) {
-    if (pass == MP_ASM_PASS_COMPUTE) {
-        #ifndef NDEBUG
-        // With debugging enabled labels are checked for unique assignment
+    if (pass < MP_ASM_PASS_EMIT) {
+        // Reset labels so we can detect backwards jumps (and verify unique assignment)
         memset(as->label_offsets, -1, as->max_num_labels * sizeof(size_t));
-        #endif
-    } else if (pass == MP_ASM_PASS_EMIT) {
+    } else {
         // allocating executable RAM is platform specific
         MP_PLAT_ALLOC_EXEC(as->code_offset, (void**)&as->code_base, &as->code_size);
         assert(as->code_base != NULL);
