@@ -49,12 +49,11 @@ end:
 #include "genhdr/tests.h"
 
 int main() {
-    const char a[] = {"sim"};
     mp_stack_ctrl_init();
     mp_stack_set_limit(10240);
     heap = malloc(HEAP_SIZE);
-    int r = tinytest_main(1, (const char **) a, groups);
-    printf( "status: %i\n", r);
+    int r = tinytest_main(0, NULL, groups);
+    printf("status: %d\n", r);
     return r;
 }
 
