@@ -9,10 +9,12 @@ include $(TOP)/py/py.mk
 
 CROSS_COMPILE = arm-none-eabi-
 
+TINYTEST = $(TOP)/lib/tinytest
+
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-INC += -I$(TOP)/tools/tinytest/
+INC += -I$(TINYTEST)
 
 CFLAGS_CORTEX_M3 = -mthumb -mcpu=cortex-m3 -mfloat-abi=soft
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 $(CFLAGS_CORTEX_M3) $(COPT) \
@@ -101,7 +103,7 @@ $(BUILD)/genhdr/tests.h:
 	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
 
 $(BUILD)/tinytest.o:
-	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TOP)/tools/tinytest/tinytest.c
+	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
 
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(OBJ_COMMON) $(OBJ_RUN)
