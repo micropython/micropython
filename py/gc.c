@@ -195,6 +195,14 @@ bool gc_is_locked(void) {
         && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
     )
 
+#ifndef TRACE_MARK
+#if DEBUG_PRINT
+#define TRACE_MARK(block, ptr) DEBUG_printf("gc_mark(%p)\n", ptr)
+#else
+#define TRACE_MARK(block, ptr)
+#endif
+#endif
+
 // ptr should be of type void*
 #define VERIFY_MARK_AND_PUSH(ptr) \
     do { \
@@ -202,7 +210,7 @@ bool gc_is_locked(void) {
             size_t _block = BLOCK_FROM_PTR(ptr); \
             if (ATB_GET_KIND(_block) == AT_HEAD) { \
                 /* an unmarked head, mark it, and push it on gc stack */ \
-                DEBUG_printf("gc_mark(%p)\n", ptr); \
+                TRACE_MARK(_block, ptr); \
                 ATB_HEAD_TO_MARK(_block); \
                 if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
                     *MP_STATE_MEM(gc_sp)++ = _block; \
