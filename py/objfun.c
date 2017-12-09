@@ -195,20 +195,30 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // than this will try to use the heap, with fallback to stack allocation.
 #define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
 
-// Set this to enable a simple stack overflow check.
+// Set this to 1 to enable a simple stack overflow check.
 #define VM_DETECT_STACK_OVERFLOW (0)
+
+#define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
+    { \
+        /* bytecode prelude: state size and exception stack size */               \
+        n_state_out_var = mp_decode_uint_value(bytecode);                         \
+        size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
+                                                                                  \
+        n_state += VM_DETECT_STACK_OVERFLOW;                                      \
+                                                                                  \
+        /* state size in bytes */                                                 \
+        state_size_out_var = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t); \
+    }
 
 #if MICROPY_STACKLESS
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // bytecode prelude: state size and exception stack size
-    size_t n_state = mp_decode_uint_value(self->bytecode);
-    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self->bytecode));
+    size_t n_state, state_size;
+    DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
 
     // allocate state for locals and stack
-    size_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state_t *code_state;
     code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
     if (!code_state) {
@@ -238,16 +248,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
-    // bytecode prelude: state size and exception stack size
-    size_t n_state = mp_decode_uint_value(self->bytecode);
-    size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(self->bytecode));
-
-#if VM_DETECT_STACK_OVERFLOW
-    n_state += 1;
-#endif
+    size_t n_state, state_size;
+    DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
 
     // allocate state for locals and stack
-    size_t state_size = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t);
     mp_code_state_t *code_state = NULL;
     if (state_size > VM_MAX_STATE_ON_STACK) {
         code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
