@@ -33,6 +33,13 @@
 #include "py/misc.h"
 #include "py/runtime.h"
 
+#if MICROPY_DEBUG_VERBOSE // print debugging info
+#define DEBUG_PRINT (1)
+#else // don't print debugging info
+#define DEBUG_PRINT (0)
+#define DEBUG_printf(...) (void)0
+#endif
+
 // Fixed empty map. Useful when need to call kw-receiving functions
 // without any keywords from C, etc.
 const mp_map_t mp_const_empty_map = {
@@ -114,6 +121,7 @@ void mp_map_clear(mp_map_t *map) {
 STATIC void mp_map_rehash(mp_map_t *map) {
     size_t old_alloc = map->alloc;
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
+    DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
     mp_map_elem_t *old_table = map->table;
     mp_map_elem_t *new_table = m_new0(mp_map_elem_t, new_alloc);
     // If we reach this point, table resizing succeeded, now we can edit the old map.
