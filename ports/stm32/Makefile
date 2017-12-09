@@ -264,6 +264,7 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dac.c \
 	hal_dac_ex.c \
 	hal_dma.c \
+	hal_eth.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_gpio.c \
@@ -300,7 +301,7 @@ ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += modnwwiznet5k.c
+SRC_MOD += network_wiznet.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
 	ethernet/wizchip_conf.c \
