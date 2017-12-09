@@ -210,6 +210,12 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
         state_size_out_var = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t); \
     }
 
+#define INIT_CODESTATE(code_state, _fun_bc, n_args, n_kw, args) \
+    code_state->fun_bc = _fun_bc; \
+    code_state->ip = 0; \
+    mp_setup_code_state(code_state, n_args, n_kw, args); \
+    code_state->old_globals = mp_globals_get();
+
 #if MICROPY_STACKLESS
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
@@ -229,12 +235,9 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
         return NULL;
     }
 
-    code_state->fun_bc = self;
-    code_state->ip = 0;
-    mp_setup_code_state(code_state, n_args, n_kw, args);
+    INIT_CODESTATE(code_state, self, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
-    code_state->old_globals = mp_globals_get();
     mp_globals_set(self->globals);
 
     return code_state;
@@ -265,12 +268,9 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         state_size = 0; // indicate that we allocated using alloca
     }
 
-    code_state->fun_bc = self;
-    code_state->ip = 0;
-    mp_setup_code_state(code_state, n_args, n_kw, args);
+    INIT_CODESTATE(code_state, self, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
-    code_state->old_globals = mp_globals_get();
     mp_globals_set(self->globals);
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(code_state->old_globals);
