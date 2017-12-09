@@ -937,6 +937,9 @@ unwind_jump:;
                         deep_recursion_error:
                             mp_exc_recursion_depth();
                         }
+                        #else
+                        // If we couldn't allocate codestate on heap, in
+                        // non non-strict case fall thru to stack allocation.
                         #endif
                     }
                     #endif
@@ -974,6 +977,9 @@ unwind_jump:;
                         else {
                             goto deep_recursion_error;
                         }
+                        #else
+                        // If we couldn't allocate codestate on heap, in
+                        // non non-strict case fall thru to stack allocation.
                         #endif
                     }
                     #endif
@@ -1008,6 +1014,9 @@ unwind_jump:;
                         else {
                             goto deep_recursion_error;
                         }
+                        #else
+                        // If we couldn't allocate codestate on heap, in
+                        // non non-strict case fall thru to stack allocation.
                         #endif
                     }
                     #endif
@@ -1045,6 +1054,9 @@ unwind_jump:;
                         else {
                             goto deep_recursion_error;
                         }
+                        #else
+                        // If we couldn't allocate codestate on heap, in
+                        // non non-strict case fall thru to stack allocation.
                         #endif
                     }
                     #endif

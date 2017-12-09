@@ -218,8 +218,12 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     size_t n_state, state_size;
     DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
 
-    // allocate state for locals and stack
     mp_code_state_t *code_state;
+    // If we use m_new_obj_var(), then on no memory, MemoryError will be
+    // raised. But this is not correct exception for a function call,
+    // RuntimeError should be raised instead. So, we use m_new_obj_var_maybe(),
+    // return NULL, then vm.c takes the needed action (either raise
+    // RuntimeError or fallback to stack allocation).
     code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
     if (!code_state) {
         return NULL;
