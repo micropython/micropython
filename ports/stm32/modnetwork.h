@@ -45,6 +45,7 @@ typedef struct _mod_network_nic_type_t {
 } mod_network_nic_type_t;
 
 extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
+extern const mp_obj_type_t mod_network_nic_type_ethernet;
 
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
 
