@@ -258,6 +258,8 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	ethernetif.c \
+	network_ethernet.c \
 	$(wildcard boards/$(BOARD)/*.c)
 
 ifeq ($(MCU_SERIES),f0)

@@ -103,8 +103,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
 
-    #if MICROPY_PY_ETHERNET
-    { MP_ROM_QSTR(MP_QSTR_ETHERNET), MP_ROM_PTR(&mod_network_nic_type_ethernet) ,},
+    #if MICROPY_HW_ENABLE_ETH_RMII
+    { MP_ROM_QSTR(MP_QSTR_Ethernet), MP_ROM_PTR(&mod_network_nic_type_ethernet) ,},
     #endif
     #if MICROPY_PY_WIZNET5K
     { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
