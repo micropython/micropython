@@ -44,8 +44,14 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#if defined MCU_SERIES_F7
 #include "stm32f7xx_hal.h"
-#include "lwip/opt.h"
+#elif defined MCU_SERIES_F4
+#include "stm32f4xx_hal.h"
+#elif defined MCU_SERIES_L4
+#include "stm32l4xx_hal.h"
+#endif
+#include "lwip-include/lwipopts.h"
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include <string.h>
@@ -192,7 +198,7 @@ void low_level_init(struct netif *netif)
   netif->mtu = 1500;
 
   /* Accept broadcast address and ARP traffic */
-  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 
   /* Enable MAC and DMA transmission and reception */
   HAL_ETH_Start(&EthHandle);
