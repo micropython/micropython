@@ -299,7 +299,8 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 
 # for STM32 on-chip ethernet
 ifneq ($(MICROPY_PY_ETH),)
-CFLAGS_MOD += -DMICROPY_PY_ETH_$(MICROPY_PY_ETH)=1
+CFLAGS_MOD += -DMICROPY_PY_ETH_$(MICROPY_PY_ETH)=1 \
+	      -DMICROPY_PY_ETH=1
 SRC_MOD += ethernetif.c \
 	network_ethernet.c \
 
