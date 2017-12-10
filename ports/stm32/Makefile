@@ -297,6 +297,14 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_data.c \
 	)
 
+# for STM32 on-chip ethernet
+ifneq ($(MICROPY_PY_ETH),)
+CFLAGS_MOD += -DMICROPY_PY_ETH_$(MICROPY_PY_ETH)=1
+SRC_MOD += ethernetif.c \
+	network_ethernet.c \
+
+endif
+
 ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
