@@ -6,6 +6,8 @@
 #include "py/mphal.h"
 #include "lib/netutils/netutils.h"
 
+#include "lwip/opt.h"
+#include "lwip-include/lwipopts.h"
 #include "lwip/init.h"
 #include "lwip/timers.h"
 #include "lwip/tcp.h"
