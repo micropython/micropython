@@ -938,7 +938,11 @@ typedef double mp_float_t;
 
 // Whether to provide "uio.resource_stream()" function with
 // the semantics of CPython's pkg_resources.resource_stream()
-// (allows to access resources in frozen packages).
+// (allows to access binary resources in frozen source packages).
+// Note that the same functionality can be achieved in "pure
+// Python" by prepocessing binary resources into Python source
+// and bytecode-freezing it (with a simple helper module available
+// e.g. in micropython-lib).
 #ifndef MICROPY_PY_IO_RESOURCE_STREAM
 #define MICROPY_PY_IO_RESOURCE_STREAM (0)
 #endif
