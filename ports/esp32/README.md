@@ -26,33 +26,27 @@ There are two main components that are needed to build the firmware:
   different to the compiler used by the ESP8266)
 - the Espressif IDF (IoT development framework, aka SDK)
 
-Instructions for setting up both of these components are provided by the
-ESP-IDF itself, which is found at https://github.com/espressif/esp-idf .
-Follow the guide "Setting Up ESP-IDF", for Windows, Mac or Linux.  You
-only need to perform up to "Step 2" of the guide, by which stage you
-should have installed the cross-compile and cloned the ESP-IDF repository.
+The ESP-IDF changes quickly and MicroPython only supports a certain version. The
+git hash of this version can be found by running `make` without a configured
+`ESPIDF`. Then you can fetch only the given esp-idf using the following command:
+
+    $ git clone https://github.com/espressif/esp-idf.git
+    $ git checkout <Current supported ESP-IDF commit hash>
+    $ git submodule update --recursive
+
+The binary toolchain (binutils, gcc, etc.) can be installed using the following
+guides:
+
+  * [Linux installation](https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html)
+  * [MacOS installation](https://esp-idf.readthedocs.io/en/latest/get-started/macos-setup.html)
+  * [Windows installation](https://esp-idf.readthedocs.io/en/latest/get-started/windows-setup.html)
 
 If you are on a Windows machine then the
 [Windows Subsystem for Linux](https://msdn.microsoft.com/en-au/commandline/wsl/install_guide)
 is the most efficient way to install the ESP32 toolchain and build the project.
 If you use WSL then follow the
-[Linux guidelines](http://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html)
+[Linux guidelines](https://esp-idf.readthedocs.io/en/latest/get-started/linux-setup.html)
 for the ESP-IDF instead of the Windows ones.
-
-Be advised that the ESP-IDF is still undergoing changes and only some
-versions are supported.  To find which build is compatible refer to the line
-in the makefile containing the following:
-```
-ESPIDF_SUPHASH := <Current supported ESP-IDF commit hash>
-```
-After finishing "Step 2" you can roll back your current build of
-the ESP-IDF (and update the submodules accordingly) using:
-```
-$ git checkout <Current supported ESP-IDF commit hash>
-$ git submodule update --recursive
-```
-Note that you will get a warning when building the code if the ESP-IDF
-version is incorrect.
 
 The Espressif ESP-IDF instructions above only install pyserial for Python 2,
 so if you're running Python 3 or a non-system Python you'll also need to
@@ -64,7 +58,13 @@ $ pip install pyserial
 
 Once everything is set up you should have a functioning toolchain with
 prefix xtensa-esp32-elf- (or otherwise if you configured it differently)
-as well as a copy of the ESP-IDF repository.
+as well as a copy of the ESP-IDF repository. You will need to update your `PATH`
+environment variable to include the ESP32 toolchain. For example, you can issue
+the following commands on (at least) Linux:
+
+    $ export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
+
+You cam put this command in your `.profile` or `.bash_login`.
 
 You then need to set the `ESPIDF` environment/makefile variable to point to
 the root of the ESP-IDF repository.  You can set the variable in your PATH,
