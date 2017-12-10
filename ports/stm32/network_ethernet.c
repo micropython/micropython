@@ -35,7 +35,7 @@ const mp_obj_type_t mod_network_nic_type_ethernet;
 
 STATIC ethernet_obj_t ethernet_obj;
 
-// network.ETHERNET()
+// network.Ethernet()
 
 STATIC mp_obj_t ethernet_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
@@ -171,7 +171,7 @@ STATIC MP_DEFINE_CONST_DICT(ethernet_locals_dict, ethernet_locals_dict_table);
 
 const mp_obj_type_t mod_network_nic_type_ethernet = {
     { &mp_type_type },
-    .name = MP_QSTR_ETHERNET,
+    .name = MP_QSTR_Ethernet,
     .make_new = ethernet_make_new,
     .locals_dict = (mp_obj_dict_t*)&ethernet_locals_dict,
 };
