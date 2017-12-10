@@ -14,7 +14,7 @@ current frequency use::
     >>> machine.freq()
     80000000
 
-By default the CPU runs at 80MHz.  It can be change to 160MHz if you need more
+By default the CPU runs at 80MHz.  It can be changed to 160MHz if you need more
 processing power, at the expense of current consumption::
 
     >>> machine.freq(160000000)
