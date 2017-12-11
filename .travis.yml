@@ -37,7 +37,7 @@ script:
   - make -C ports/unix
   - make -C ports/unix nanbox
   - make -C ports/bare-arm
-  - make -C ports/qemu-arm test
+  - make -C ports/qemu-arm -f Makefile.test test
   - make -C ports/stm32
   - make -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
   - make -C ports/stm32 BOARD=STM32F769DISC
