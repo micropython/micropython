@@ -21,3 +21,7 @@ toolchain and not with CodeSourcery toolchain. You will need to modify
 The difference is that CodeSourcery needs `-T generic-m-hosted.ld` while
 ARM's version  requires `--specs=nano.specs --specs=rdimon.specs` to be
 passed to the linker.
+
+To build and run image with builtin testsuite:
+
+    make -f Makefile.test test

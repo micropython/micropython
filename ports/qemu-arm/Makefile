@@ -46,7 +46,7 @@ SRC_RUN_C = \
 SRC_TEST_C = \
 	test_main.c \
 
-LIB_SRC_C = $(addprefix lib/,\
+LIB_SRC_C += $(addprefix lib/,\
 	libm/math.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
@@ -91,26 +91,8 @@ all: run
 run: $(BUILD)/firmware.elf
 	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware.elf
 
-test: $(BUILD)/firmware-test.elf
-	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware-test.elf > $(BUILD)/console.out
-	$(Q)tail -n2 $(BUILD)/console.out
-	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"
-
-.PHONY: $(BUILD)/genhdr/tests.h
-
-$(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
-$(BUILD)/genhdr/tests.h:
-	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
-
-$(BUILD)/tinytest.o:
-	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
-
 ## `$(LD)` doesn't seem to like `--specs` for some reason, but we can just use `$(CC)` here.
 $(BUILD)/firmware.elf: $(OBJ_COMMON) $(OBJ_RUN)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
-	$(Q)$(SIZE) $@
-
-$(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 

@@ -1,0 +1,24 @@
+LIB_SRC_C = lib/upytesthelper/upytesthelper.c
+
+include Makefile
+
+CFLAGS += -DTEST
+
+.PHONY: $(BUILD)/genhdr/tests.h
+
+$(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
+$(BUILD)/genhdr/tests.h:
+	(cd $(TOP)/tests; ./run-tests --write-exp)
+	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
+
+$(BUILD)/tinytest.o:
+	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
+
+$(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(SIZE) $@
+
+test: $(BUILD)/firmware-test.elf
+	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware-test.elf > $(BUILD)/console.out
+	$(Q)tail -n2 $(BUILD)/console.out
+	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"
