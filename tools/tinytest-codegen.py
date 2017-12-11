@@ -54,16 +54,31 @@ testgroup_member = (
 # currently these tests are selected because they pass on qemu-arm
 test_dirs = ('basics', 'micropython', 'float', 'extmod', 'inlineasm') # 'import', 'io', 'misc')
 exclude_tests = (
+    # pattern matching in .exp
+    'basics/bytes_compare3.py',
     'extmod/ticks_diff.py',
     'extmod/time_ms_us.py',
     'extmod/uheapq_timeq.py',
+    # unicode char issue
+    'extmod/ujson_loads.py',
+    # doesn't output to python stdout
+    'extmod/ure_debug.py',
+    'extmod/vfs_basic.py',
     'extmod/vfs_fat_ramdisk.py', 'extmod/vfs_fat_fileio.py',
     'extmod/vfs_fat_fsusermount.py', 'extmod/vfs_fat_oldproto.py',
+    # rounding issues
+    'float/float_divmod.py',
     # requires double precision floating point to work
     'float/float2int_doubleprec_intbig.py',
-    # inline asm tests
+    'float/float_parse_doubleprec.py',
+    # inline asm FP tests (require Cortex-M4)
     'inlineasm/asmfpaddsub.py', 'inlineasm/asmfpcmp.py', 'inlineasm/asmfpldrstr.py',
     'inlineasm/asmfpmuldiv.py','inlineasm/asmfpsqrt.py',
+    # different filename in output
+    'micropython/emg_exc.py',
+    'micropython/heapalloc_traceback.py',
+    # pattern matching in .exp
+    'micropython/meminfo.py',
 )
 
 output = []
