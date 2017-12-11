@@ -1,32 +1,38 @@
-#! /usr/bin/env python3
+#!/usr/bin/env python3
 
 import os, sys
 from glob import glob
 from re import sub
 
 def escape(s):
-  lookup = {
-    '\0': '\\0',
-    '\t': '\\t',
-    '\n': '\\n\"\n\"',
-    '\r': '\\r',
-    '\\': '\\\\',
-    '\"': '\\\"',
-  }
-  return "\"\"\n\"{}\"".format(''.join([lookup[x] if x in lookup else x for x in s]))
+    s = s.decode()
+    lookup = {
+        '\0': '\\0',
+        '\t': '\\t',
+        '\n': '\\n\"\n\"',
+        '\r': '\\r',
+        '\\': '\\\\',
+        '\"': '\\\"',
+    }
+    return "\"\"\n\"{}\"".format(''.join([lookup[x] if x in lookup else x for x in s]))
 
 def chew_filename(t):
-  return { 'func': "test_{}_fn".format(sub(r'/|\.|-', '_', t)), 'desc': t.split('/')[1] }
+    return { 'func': "test_{}_fn".format(sub(r'/|\.|-', '_', t)), 'desc': t.split('/')[1] }
 
-def script_to_map(t):
-  r = { 'name': chew_filename(t)['func'] }
-  with open(t) as f: r['script'] = escape(''.join(f.readlines()))
-  return r
+def script_to_map(test_file):
+    r = {"name": chew_filename(test_file)["func"]}
+    with open(test_file, "rb") as f:
+        r["script"] = escape(f.read())
+    with open(test_file + ".exp", "rb") as f:
+        r["output"] = escape(f.read())
+    return r
 
 test_function = (
     "void {name}(void* data) {{\n"
-    "  const char * pystr = {script};\n"
-    "  do_str(pystr);\n"
+    "  static const char pystr[] = {script};\n"
+    "  static const char exp[] = {output};\n"
+    "  upytest_set_expected_output(exp, sizeof(exp) - 1);\n"
+    "  upytest_execute_test(pystr);\n"
     "}}"
 )
 
@@ -57,10 +63,10 @@ exclude_tests = (
 output = []
 
 for group in test_dirs:
-  tests = [test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests]
-  output.extend([test_function.format(**script_to_map(test)) for test in tests])
-  testcase_members = [testcase_member.format(**chew_filename(test)) for test in tests]
-  output.append(testcase_struct.format(name=group, body='\n'.join(testcase_members)))
+    tests = [test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests]
+    output.extend([test_function.format(**script_to_map(test)) for test in tests])
+    testcase_members = [testcase_member.format(**chew_filename(test)) for test in tests]
+    output.append(testcase_struct.format(name=group, body='\n'.join(testcase_members)))
 
 testgroup_members = [testgroup_member.format(name=group) for group in test_dirs]
 
