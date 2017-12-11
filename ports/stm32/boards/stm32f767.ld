@@ -10,10 +10,10 @@ MEMORY
     FLASH_FS (r)    : ORIGIN = 0x08008000, LENGTH = 96K     /* sectors 1, 2, 3 (32K each) */
     FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K    /* sectors 4-7 1*128Kib 3*256KiB = 896K */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
-    ETHER_BUF1 (rw)  : ORIGIN = 0x20020000, LENGTH = 256     /* SRAM1 = 368K, SRRAM2 = 16K */
-    ETHER_BUF2 (rw)  : ORIGIN = 0x20020100, LENGTH = 256     /* SRAM1 = 368K, SRRAM2 = 16K */
-    ETHER_BUF3 (rw)  : ORIGIN = 0x20020200, LENGTH = 15K     /* SRAM1 = 368K, SRRAM2 = 16K */
-    ETHER_BUF4 (rw)  : ORIGIN = 0x20022100, LENGTH = 15K     /* SRAM1 = 368K, SRRAM2 = 16K */
+    ETHER_BUF1 (rw)  : ORIGIN = 0x20020000, LENGTH = 256    /* for DMARxDscrTab in ethernetif.c */
+    ETHER_BUF2 (rw)  : ORIGIN = 0x20020100, LENGTH = 256    /* for DMATxDscrTab in ethernetif.c */
+    ETHER_BUF3 (rw)  : ORIGIN = 0x20020200, LENGTH = 15K    /* for Rx_Buff in ethernetif.c */
+    ETHER_BUF4 (rw)  : ORIGIN = 0x20022100, LENGTH = 15K    /* for Tx_Buff in ethernetif.c */
     RAM (xrw)       : ORIGIN = 0x20024000, LENGTH = 368K    /* SRAM1 = 368K, SRAM2 = 16K */
 }
 
