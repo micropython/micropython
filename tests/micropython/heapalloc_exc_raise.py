@@ -5,6 +5,7 @@ import micropython
 e = ValueError("error")
 
 def func():
+    micropython.heap_lock()
     try:
         # This works as is because traceback is not allocated
         # if not possible (heap is locked, no memory). If heap
@@ -16,8 +17,7 @@ def func():
         raise e
     except Exception as e2:
         print(e2)
+    micropython.heap_unlock()
 
-micropython.heap_lock()
 func()
 print("ok")
-micropython.heap_unlock()
