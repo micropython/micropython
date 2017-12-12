@@ -298,13 +298,14 @@ SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	)
 
 # for STM32 on-chip ethernet
-ifneq ($(MICROPY_PY_ETH),)
+ifeq ($(MICROPY_PY_ETH),RMII)
 CFLAGS_MOD += -DMICROPY_PY_ETH_$(MICROPY_PY_ETH)=1 -DMICROPY_PY_ETH=1
 SRC_MOD += ethernetif.c \
 	network_ethernet.c 
 endif
 
-ifneq ($(MICROPY_PY_WIZNET5K),0)
+# for WIZNET5K MACRAW mode
+ifeq ($(MICROPY_PY_ETH),WIZNET5K)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)

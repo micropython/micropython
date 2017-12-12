@@ -414,6 +414,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
     return reset_mode;
 }
 
+#ifdef MICROPY_PY_ETH_RMII
 extern ETH_DMADescTypeDef DMARxDscrTab;
 static void MPU_Config(void)
 {
@@ -440,9 +441,12 @@ static void MPU_Config(void)
   /* Enable the MPU */
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
+#endif
 
 int main(void) {
+#ifdef MICROPY_PY_ETH_RMII
     MPU_Config();
+#endif
     // TODO disable JTAG
 
     /* STM32F4xx HAL library initialization:

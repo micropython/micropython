@@ -13,3 +13,9 @@ git submodule update --init
 make -C mpy-cross
 make -C ports/stm32 MICROPY_PY_ETH=RMII BOARD=NUCLEO_F767ZI
 ```
+
+## How to build original WIZnet5K MACRAW mode support
+
+```
+make -C ports/stm32 MICROPY_PY_ETH=WIZNET5K MICROPY_PY_WIZNET5K=5500 BOARD=YOUR_BOARD
+```
