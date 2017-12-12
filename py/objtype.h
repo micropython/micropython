@@ -37,6 +37,11 @@ typedef struct _mp_obj_instance_t {
     // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_instance_t;
 
+#if MICROPY_CPYTHON_COMPAT
+// this is needed for object.__new__
+mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *cls, const mp_obj_type_t **native_base);
+#endif
+
 // this needs to be exposed for MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE to work
 void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
