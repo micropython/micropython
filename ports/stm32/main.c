@@ -425,7 +425,7 @@ static void MPU_Config(void)
   /* Configure the MPU attributes as Device for Ethernet Descriptors in the SRAM */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.BaseAddress = (unsigned int) &DMARxDscrTab;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_256B;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_512B;
   MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
   MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
