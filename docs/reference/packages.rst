@@ -199,6 +199,32 @@ Few notes:
    you may want to decrease the amount of frozen modules included.
 
 
+Creating distribution packages
+------------------------------
+
+Distribution packages for MicroPython are created in the same manner
+as for CPython or any other Python implementation, see references at
+the end of chapter. "Source distribution" (sdist) format is used for
+packaging. The post-processing discussed above, (and pre-processing
+discussed in the following section) is achieved by using custom
+"sdist" command for distutils/setuptools. Thus, packaging steps
+remain the same as for standard distutils/setuptools, the user just
+need to override "sdist" command implementation by passing the
+appropriate argument to ``setup()`` call::
+
+    from setuptools import setup
+    import sdist_upip
+
+    setup(
+        ...,
+        cmdclass={'sdist': sdist_upip.sdist}
+    )
+
+The sdist_upip.py module as referenced above can be found in
+`micropython-lib`:
+https://github.com/micropython/micropython-lib/blob/master/sdist_upip.py
+
+
 Application resources
 ---------------------
 
