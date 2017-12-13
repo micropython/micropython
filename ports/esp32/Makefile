@@ -23,7 +23,11 @@ CROSS_COMPILE ?= xtensa-esp32-elf-
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
+ifneq ($(IDF_PATH),)
+ESPIDF = $(IDF_PATH)
+else
 $(error Please configure the ESPIDF variable)
+endif
 endif
 ESPCOMP = $(ESPIDF)/components
 ESPTOOL ?= $(ESPCOMP)/esptool_py/esptool/esptool.py
