@@ -380,6 +380,10 @@ def run_tests(pyb, tests, args, base_path="."):
             skipped_tests.append(test_name)
             continue
 
+        if args.list_tests:
+            print(test_file)
+            continue
+
         # get expected output
         test_file_expected = test_file + '.exp'
         if os.path.isfile(test_file_expected):
@@ -430,6 +434,9 @@ def run_tests(pyb, tests, args, base_path="."):
 
         test_count += 1
 
+    if args.list_tests:
+        return True
+
     print("{} tests performed ({} individual testcases)".format(test_count, testcase_count))
     print("{} tests passed".format(passed_count))
 
@@ -451,6 +458,7 @@ def main():
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
+    cmd_parser.add_argument('--list-tests', action='store_true', help='list tests instead of running them')
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
@@ -459,12 +467,12 @@ def main():
     args = cmd_parser.parse_args()
 
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal')
-    if args.target in EXTERNAL_TARGETS:
+    if args.target == 'unix' or args.list_tests:
+        pyb = None
+    elif args.target in EXTERNAL_TARGETS:
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
-    elif args.target == 'unix':
-        pyb = None
     else:
         raise ValueError('target must be either %s or unix' % ", ".join(EXTERNAL_TARGETS))
 
