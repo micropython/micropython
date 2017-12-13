@@ -165,7 +165,8 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
             break;
         }
     }
-    mp_local_free(caps);
+    // cast is a workaround for a bug in msvc (see above)
+    mp_local_free((char**)caps);
 
     mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte*)subj.begin, subj.end - subj.begin);
     mp_obj_list_append(retval, s);
