@@ -3,6 +3,8 @@
 import os, sys
 from glob import glob
 from re import sub
+import argparse
+
 
 def escape(s):
     s = s.decode()
@@ -17,7 +19,7 @@ def escape(s):
     return "\"\"\n\"{}\"".format(''.join([lookup[x] if x in lookup else x for x in s]))
 
 def chew_filename(t):
-    return { 'func': "test_{}_fn".format(sub(r'/|\.|-', '_', t)), 'desc': t.split('/')[1] }
+    return { 'func': "test_{}_fn".format(sub(r'/|\.|-', '_', t)), 'desc': t }
 
 def script_to_map(test_file):
     r = {"name": chew_filename(test_file)["func"]}
@@ -47,7 +49,7 @@ testgroup_struct = (
     "struct testgroup_t groups[] = {{\n{body}\n  END_OF_GROUPS\n}};"
 )
 testgroup_member = (
-    "  {{ \"{name}/\", {name}_tests }},"
+    "  {{ \"{name}\", {name}_tests }},"
 )
 
 ## XXX: may be we could have `--without <groups>` argument...
@@ -82,14 +84,24 @@ exclude_tests = (
 )
 
 output = []
+tests = []
 
-for group in test_dirs:
-    tests = [test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests]
-    output.extend([test_function.format(**script_to_map(test)) for test in tests])
-    testcase_members = [testcase_member.format(**chew_filename(test)) for test in tests]
-    output.append(testcase_struct.format(name=group, body='\n'.join(testcase_members)))
+argparser = argparse.ArgumentParser(description='Convert native MicroPython tests to tinytest/upytesthelper C code')
+argparser.add_argument('--target', help='the target platform')
+args = argparser.parse_args()
 
-testgroup_members = [testgroup_member.format(name=group) for group in test_dirs]
+if not args.target:
+    for group in test_dirs:
+        tests += [test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests]
+else:
+    for l in os.popen("./run-tests --list-tests --target=%s" % args.target, "r"):
+        tests.append(l.rstrip())
+
+output.extend([test_function.format(**script_to_map(test)) for test in tests])
+testcase_members = [testcase_member.format(**chew_filename(test)) for test in tests]
+output.append(testcase_struct.format(name="", body='\n'.join(testcase_members)))
+
+testgroup_members = [testgroup_member.format(name=group) for group in [""]]
 
 output.append(testgroup_struct.format(body='\n'.join(testgroup_members)))
 
