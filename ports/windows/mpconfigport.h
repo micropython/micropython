@@ -232,6 +232,7 @@ typedef __int64                     ssize_t;
 #define SSIZE_MAX                   _I32_MAX
 typedef int                         ssize_t;
 #endif
+typedef mp_off_t                    off_t;
 
 
 // Put static/global variables in sections with a known name
