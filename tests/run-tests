@@ -287,14 +287,14 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('cmdline/cmd_parsetree.py')
 
     # Some tests shouldn't be run on a PC
-    if pyb is None:
+    if args.target == 'unix':
         # unix build does not have the GIL so can't run thread mutation tests
         for t in tests:
             if t.startswith('thread/mutate_'):
                 skip_tests.add(t)
 
     # Some tests shouldn't be run on pyboard
-    if pyb is not None:
+    if args.target != 'unix':
         skip_tests.add('basics/exception_chain.py') # warning is not printed
         skip_tests.add('micropython/meminfo.py') # output is very different to PC output
         skip_tests.add('extmod/machine_mem.py') # raw memory access not supported
