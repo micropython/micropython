@@ -259,8 +259,8 @@ an extra intermediate step when packaging application - creation of
 
 The idea of this module is to convert binary data to a Python bytes
 object, and put it into the dictionary, indexed by the resource name.
-This conversion is done using ``tools/mpy_bin2res.py`` script from
-the MicroPython distribution.
+This conversion is done automatically using overridden ``sdist`` command
+described in the previous section.
 
 Let's trace the complete process using the following example. Suppose
 your application has the following structure::
@@ -281,16 +281,27 @@ following calls::
     pkg_resources.resource_stream(__name__, "data/image.png")
 
 You can develop and debug using the `MicroPython Unix port` as usual.
-When times come to make a distribution package out of it, you would
-need to run following command, with ``my_app/`` being the current
-directory (and assuming ``mpy_bin2res.py`` is in your path)::
+When time comes to make a distribution package out of it, just use
+overridden "sdist" command from sdist_upip.py module as described in
+the previous section.
 
-    mpy_bin2res.py data/page.html data/image.png
+This will create a Python resource module named ``R.py``, based on the
+files declared in ``MANIFEST`` or ``MANIFEST.in`` files (any non-``.py``
+file will be considered a resource and added to ``R.py``) - before
+proceeding with the normal packaging steps.
 
-This will produce a Python resource module named ``R.py``. Afterwards,
-you package the project for distribution as usual (using ``setup.py sdist``).
 Prepared like this, your application will work both when deployed to
 filesystem and as frozen bytecode.
+
+If you would like to debug ``R.py`` creation, you can run::
+
+    python3 setup.py sdist --manifest-only
+
+Alternatively, you can use tools/mpy_bin2res.py script from the
+MicroPython distribution, in which can you will need to pass paths
+to all resource files::
+
+    mpy_bin2res.py data/page.html data/image.png
 
 References
 ----------
