@@ -376,13 +376,14 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and test_name.startswith("class_reverse_op")
 
+        if args.list_tests:
+            if not skip_it:
+                print(test_file)
+            continue
+
         if skip_it:
             print("skip ", test_file)
             skipped_tests.append(test_name)
-            continue
-
-        if args.list_tests:
-            print(test_file)
             continue
 
         # get expected output
