@@ -71,7 +71,11 @@
 //| .. method:: delay_us(delay)
 //|
 //|   Dedicated delay method used for very short delays. **Do not** do long delays
-//|   because it will stall any concurrent code.
+//|   because this stops all other functions from completing. Think of this as an empty
+//|   ``while`` loop that runs for the specified ``(delay)`` time. If you have other
+//|   code or peripherals (e.g audio recording) that require specific timing or
+//|   processing while you are waiting, explore a different avenue such as using 
+//|   `time.sleep()`.
 //|
 STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
     uint32_t delay = mp_obj_get_int(delay_obj);
