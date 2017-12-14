@@ -146,6 +146,7 @@ SRC_C = \
 	moduhashlib.c \
 	espneopixel.c \
 	machine_hw_spi.c \
+	machine_i2s.c \
 	machine_wdt.c \
 	mpthreadport.c \
 	$(SRC_MOD)
@@ -214,6 +215,7 @@ ESPIDF_DRIVER_O = $(addprefix $(ESPCOMP)/driver/,\
 	timer.o \
 	spi_master.o \
 	spi_common.o \
+	i2s.o \
 	rtc_module.o \
 	)
 
