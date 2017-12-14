@@ -1,3 +1,5 @@
+# test multiple inheritance of user classes
+
 class A:
     def __init__(self, x):
         print('A init', x)
@@ -29,6 +31,9 @@ class Sub(A, B):
 
     def g(self):
         print(self.x)
+
+print(issubclass(Sub, A))
+print(issubclass(Sub, B))
 
 o = Sub()
 print(o.x)

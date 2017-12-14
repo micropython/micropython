@@ -124,3 +124,18 @@ try:
     f.x = 1
 except AttributeError:
     print('AttributeError')
+
+# can't call a function type (ie make new instances of a function)
+try:
+    type(f)()
+except TypeError:
+    print('TypeError')
+
+# test when object explicitly listed at not-last position in parent tuple
+# this is not compliant with CPython because of illegal MRO
+class A:
+    def foo(self):
+        print('A.foo')
+class B(object, A):
+    pass
+B().foo()
