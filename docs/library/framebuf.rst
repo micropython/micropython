@@ -155,3 +155,7 @@ Constants
 .. data:: framebuf.GS4_HMSB
 
     Grayscale (4-bit) color format
+
+.. data:: framebuf.GS8
+
+    Grayscale (8-bit) color format
