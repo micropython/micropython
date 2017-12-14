@@ -40,7 +40,7 @@ typedef enum {
 } mp_raw_code_kind_t;
 
 typedef struct _mp_raw_code_t {
-    mp_raw_code_kind_t kind : 3;
+    mp_uint_t kind : 3; // of type mp_raw_code_kind_t
     mp_uint_t scope_flags : 7;
     mp_uint_t n_pos_args : 11;
     union {
