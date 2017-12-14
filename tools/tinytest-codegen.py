@@ -87,14 +87,14 @@ output = []
 tests = []
 
 argparser = argparse.ArgumentParser(description='Convert native MicroPython tests to tinytest/upytesthelper C code')
-argparser.add_argument('--target', help='the target platform')
+argparser.add_argument('--stdin', action="store_true", help='read list of tests from stdin')
 args = argparser.parse_args()
 
-if not args.target:
+if not args.stdin:
     for group in test_dirs:
         tests += [test for test in glob('{}/*.py'.format(group)) if test not in exclude_tests]
 else:
-    for l in os.popen("./run-tests --list-tests --target=%s" % args.target, "r"):
+    for l in sys.stdin:
         tests.append(l.rstrip())
 
 output.extend([test_function.format(**script_to_map(test)) for test in tests])
