@@ -313,6 +313,7 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('misc/rge_sm.py')                # too large
         elif args.target == 'minimal':
             skip_tests.add('basics/class_inplace_op.py')    # all special methods not supported
+            skip_tests.add('basics/subclass_native_init.py')# native subclassing corner cases not support
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
             skip_tests.add('float/float_parse.py')          # minor parsing artifacts with 32-bit floats
