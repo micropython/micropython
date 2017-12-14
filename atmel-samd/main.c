@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "genhdr/mpversion.h"
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/frozenmod.h"
@@ -700,6 +701,9 @@ int main(void) {
         f_open(&((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs,
             boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
         flash_set_usb_writeable(true);
+        // Write version info to boot_out.txt.
+        mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
+        mp_hal_stdout_tx_str("\r\n");
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
