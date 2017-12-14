@@ -358,6 +358,16 @@ def run_tests(pyb, tests, args, base_path="."):
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
+
+        if args.filters:
+            # Default verdict is the opposit of the first action
+            verdict = "include" if args.filters[0][0] == "exclude" else "exclude"
+            for action, pat in args.filters:
+                if pat.search(test_file):
+                    verdict = action
+            if verdict == "exclude":
+                continue
+
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
@@ -451,14 +461,42 @@ def run_tests(pyb, tests, args, base_path="."):
     # all tests succeeded
     return True
 
+
+class append_filter(argparse.Action):
+
+    def __init__(self, option_strings, dest, **kwargs):
+        super().__init__(option_strings, dest, default=[], **kwargs)
+
+    def __call__(self, parser, args, value, option):
+        if not hasattr(args, self.dest):
+            args.filters = []
+        if option.startswith(("-e", "--e")):
+            option = "exclude"
+        else:
+            option = "include"
+        args.filters.append((option, re.compile(value)))
+
+
 def main():
-    cmd_parser = argparse.ArgumentParser(description='Run tests for MicroPython.')
+    cmd_parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='Run and manage tests for MicroPython.',
+        epilog='''\
+Options -i and -e can be multiple and processed in the order given. Regex
+"search" (vs "match") operation is used. An action (include/exclude) of
+the last matching regex is used:
+  run-tests -i async - exclude all, then include tests containg "async" anywhere
+  run-tests -e '/big.+int' - include all, then exclude by regex
+  run-tests -e async -i async_foo - include all, exclude async, yet still include async_foo
+''')
     cmd_parser.add_argument('--target', default='unix', help='the target platform')
     cmd_parser.add_argument('--device', default='/dev/ttyACM0', help='the serial device or the IP address of the pyboard')
     cmd_parser.add_argument('-b', '--baudrate', default=115200, help='the baud rate of the serial device')
     cmd_parser.add_argument('-u', '--user', default='micro', help='the telnet login username')
     cmd_parser.add_argument('-p', '--password', default='python', help='the telnet login password')
     cmd_parser.add_argument('-d', '--test-dirs', nargs='*', help='input test directories (if no files given)')
+    cmd_parser.add_argument('-e', '--exclude', action=append_filter, metavar='REGEX', dest='filters', help='exclude test by regex on path/name.py')
+    cmd_parser.add_argument('-i', '--include', action=append_filter, metavar='REGEX', dest='filters', help='include test by regex on path/name.py')
     cmd_parser.add_argument('--write-exp', action='store_true', help='save .exp files to run tests w/o CPython')
     cmd_parser.add_argument('--list-tests', action='store_true', help='list tests instead of running them')
     cmd_parser.add_argument('--emit', default='bytecode', help='MicroPython emitter to use (bytecode or native)')
