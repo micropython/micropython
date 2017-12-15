@@ -211,48 +211,56 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_async = False
     skip_const = False
     skip_revops = False
+    skip_endian = False
+    has_complex = True
+    has_coverage = False
 
-    # Check if micropython.native is supported, and skip such tests if it's not
-    output = run_feature_check(pyb, args, base_path, 'native_check.py')
-    if output == b'CRASH':
-        skip_native = True
+    upy_float_precision = 32
 
-    # Check if arbitrary-precision integers are supported, and skip such tests if it's not
-    output = run_feature_check(pyb, args, base_path, 'int_big.py')
-    if output != b'1000000000000000000000000000000000000000000000\n':
-        skip_int_big = True
+    # If we're asked to --list-tests, we can't assume that there's a
+    # connection to target, so we can't run feature checks usefully.
+    if not (args.list_tests or args.write_exp):
+        # Check if micropython.native is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'native_check.py')
+        if output == b'CRASH':
+            skip_native = True
 
-    # Check if set type (and set literals) is supported, and skip such tests if it's not
-    output = run_feature_check(pyb, args, base_path, 'set_check.py')
-    if output == b'CRASH':
-        skip_set_type = True
+        # Check if arbitrary-precision integers are supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'int_big.py')
+        if output != b'1000000000000000000000000000000000000000000000\n':
+            skip_int_big = True
 
-    # Check if async/await keywords are supported, and skip such tests if it's not
-    output = run_feature_check(pyb, args, base_path, 'async_check.py')
-    if output == b'CRASH':
-        skip_async = True
+        # Check if set type (and set literals) is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'set_check.py')
+        if output == b'CRASH':
+            skip_set_type = True
 
-    # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
-    output = run_feature_check(pyb, args, base_path, 'const.py')
-    if output == b'CRASH':
-        skip_const = True
+        # Check if async/await keywords are supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'async_check.py')
+        if output == b'CRASH':
+            skip_async = True
 
-    # Check if __rOP__ special methods are supported, and skip such tests if it's not
-    output = run_feature_check(pyb, args, base_path, 'reverse_ops.py')
-    if output == b'TypeError\n':
-        skip_revops = True
+        # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'const.py')
+        if output == b'CRASH':
+            skip_const = True
 
-    # Check if emacs repl is supported, and skip such tests if it's not
-    t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
-    if not 'True' in str(t, 'ascii'):
-        skip_tests.add('cmdline/repl_emacs_keys.py')
+        # Check if __rOP__ special methods are supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'reverse_ops.py')
+        if output == b'TypeError\n':
+            skip_revops = True
 
-    upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
-    upy_float_precision = int(run_feature_check(pyb, args, base_path, 'float.py'))
-    has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
-    has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
-    cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
-    skip_endian = (upy_byteorder != cpy_byteorder)
+        # Check if emacs repl is supported, and skip such tests if it's not
+        t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
+        if not 'True' in str(t, 'ascii'):
+            skip_tests.add('cmdline/repl_emacs_keys.py')
+
+        upy_byteorder = run_feature_check(pyb, args, base_path, 'byteorder.py')
+        upy_float_precision = int(run_feature_check(pyb, args, base_path, 'float.py'))
+        has_complex = run_feature_check(pyb, args, base_path, 'complex.py') == b'complex\n'
+        has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
+        cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
+        skip_endian = (upy_byteorder != cpy_byteorder)
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
