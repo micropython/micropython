@@ -16,6 +16,7 @@ Support Matrix
 Module / Port      SAMD21   SAMD21 Express  ESP8266
 =================  =======  ==============  =======
 `analogio`         **Yes**  **Yes**         **Yes**
+`audiobusio`       **Yes**  **Yes**         No
 `audioio`          No       **Yes**         No
 `bitbangio`        No       **Yes**         **Yes**
 `board`            **Yes**  **Yes**         **Yes**
