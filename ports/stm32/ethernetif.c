@@ -141,6 +141,19 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
   __HAL_RCC_ETH_CLK_ENABLE();
 }
 
+/* MAC Address from HW unique ID **********************************************/
+
+void mac_address_from_hwid(byte macaddress[6]) {
+  byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
+
+  macaddress[0] = MAC_ADDR0;
+  macaddress[1] = MAC_ADDR1;
+  macaddress[2] = MAC_ADDR2;
+  macaddress[3] = id[0] * id[8] ^ id[5];
+  macaddress[4] = id[4] * id[9] ^ id[11];
+  macaddress[5] = id[6] * id[10] ^ id[2];
+}
+
 /*******************************************************************************
                        LL Driver Interface ( LwIP stack --> ETH) 
 *******************************************************************************/
@@ -154,7 +167,8 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
 void low_level_init(struct netif *netif)
 {
   uint8_t macaddress[6]= { MAC_ADDR0, MAC_ADDR1, MAC_ADDR2, MAC_ADDR3, MAC_ADDR4, MAC_ADDR5 };
-  
+
+  mac_address_from_hwid(macaddress);
   EthHandle.Instance = ETH;  
   EthHandle.Init.MACAddr = macaddress;
   EthHandle.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
@@ -183,12 +197,13 @@ void low_level_init(struct netif *netif)
   netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
   /* set netif MAC hardware address */
-  netif->hwaddr[0] =  MAC_ADDR0;
+  mac_address_from_hwid(netif->hwaddr);
+  /*  netif->hwaddr[0] =  MAC_ADDR0;
   netif->hwaddr[1] =  MAC_ADDR1;
   netif->hwaddr[2] =  MAC_ADDR2;
   netif->hwaddr[3] =  MAC_ADDR3;
   netif->hwaddr[4] =  MAC_ADDR4;
-  netif->hwaddr[5] =  MAC_ADDR5;
+  netif->hwaddr[5] =  MAC_ADDR5;*/
 
   /* set netif maximum transfer unit */
   netif->mtu = 1500;
