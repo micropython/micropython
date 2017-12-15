@@ -41,6 +41,13 @@
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
 
+#ifdef TEST
+#include "lib/upytesthelper/upytesthelper.h"
+#include "lib/tinytest/tinytest.c"
+#include "lib/upytesthelper/upytesthelper.c"
+#include TEST
+#endif
+
 static char *stack_top;
 static char heap[MICROPY_HEAP_SIZE];
 
@@ -94,6 +101,14 @@ int real_main(void) {
     mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
 
     init_zephyr();
+
+    #ifdef TEST
+    static const char *argv[] = {"test"};
+    upytest_set_heap(heap, heap + sizeof(heap));
+    int r = tinytest_main(1, argv, groups);
+    printf("status: %d\n", r);
+    return 0;
+    #endif
 
 soft_reset:
     #if MICROPY_ENABLE_GC

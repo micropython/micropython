@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# This is a wrapper for make to build a binary with builtin testsuite.
+# It should be run just like make (i.e. extra vars can be passed on the
+# command line, etc.), e.g.:
+#
+# ./make-bin-testsuite BOARD=qemu_cortex_m3
+# ./make-bin-testsuite BOARD=qemu_cortex_m3 run
+#
+
+(cd ../../tests; ./run-tests --write-exp)
+(cd ../../tests; ./run-tests --list-tests --target=minimal \
+    -e async -e intbig -e int_big -e builtin_help -e memstats -e bytes_compare3 -e class_reverse_op \
+    -e /set -e frozenset -e complex -e const -e native -e viper \
+    -e 'float_divmod\.' -e float_parse_doubleprec -e float/true_value -e float/types \
+    | ../tools/tinytest-codegen.py --stdin) > bin-testsuite.c
+
+make \
+    CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_bin_testsuite.h>" -DTEST=\"bin-testsuite.c\" -DNO_FORKING' \
+    "$@"
