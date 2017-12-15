@@ -111,7 +111,9 @@ STATIC void configure_adc_temp(struct adc_module *adc_instance) {
     // "Discard the first conversion result whenever there is a change
     // in ADC configuration like voltage reference / ADC channel change."
 
-    config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV16;
+    // Default input clock is GCLK0 (48 MHz)
+    // 48Mhz / 32 = 1.5MHz. Max ADC clock is 2.1MHz
+    config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV32;
     config_adc.reference = ADC_REFERENCE_INT1V;
     config_adc.positive_input = ADC_POSITIVE_INPUT_TEMP;
     config_adc.negative_input = ADC_NEGATIVE_INPUT_GND;

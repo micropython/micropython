@@ -74,8 +74,10 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     config_adc.reference = ADC_REFERENCE_INTVCC1;
     config_adc.gain_factor = ADC_GAIN_FACTOR_DIV2;
     config_adc.positive_input = self->pin->adc_input;
-    config_adc.resolution = ADC_RESOLUTION_16BIT;
-    config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV128;
+    config_adc.resolution = ADC_RESOLUTION_12BIT;
+    // Default input clock is GCLK0 (48 MHz)
+    // 48Mhz / 32 = 1.5MHz. Max ADC clock is 2.1MHz
+    config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV32;
 
     struct adc_module adc_instance;
     // ADC must have been disabled before adc_init() is called.
@@ -108,7 +110,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     }
 
     adc_disable(&adc_instance);
-    return data;
+    // Scale to 16 bits. In the future we might make this be this be under API control.
+    return data * 16;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
