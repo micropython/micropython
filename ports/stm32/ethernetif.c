@@ -55,6 +55,9 @@
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include <string.h>
+#include "py/mphal.h"
+#include "pin.h"
+#include "genhdr/pins.h"
 
 #if MICROPY_HW_ENABLE_ETH_RMII
 
@@ -108,38 +111,31 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
 /* Ethernet pins configuration ************************************************/
-  /*
-        RMII_REF_CLK ----------------------> PA1
-        RMII_MDIO -------------------------> PA2
-        RMII_MDC --------------------------> PC1
-        RMII_MII_CRS_DV -------------------> PA7
-        RMII_MII_RXD0 ---------------------> PC4
-        RMII_MII_RXD1 ---------------------> PC5
-        RMII_MII_RXER ---------------------> PG2
-        RMII_MII_TX_EN --------------------> PG11
-        RMII_MII_TXD0 ---------------------> PG13
-        RMII_MII_TXD1 ---------------------> PB13
-  */
-
-  /* Configure PA1, PA2 and PA7 */
   GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
   GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStructure.Pull = GPIO_NOPULL; 
   GPIO_InitStructure.Alternate = GPIO_AF11_ETH;
-  GPIO_InitStructure.Pin = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_7;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
   
-  /* Configure PB13 */
-  GPIO_InitStructure.Pin = GPIO_PIN_13;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
-  
-  /* Configure PC1, PC4 and PC5 */
-  GPIO_InitStructure.Pin = GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-  /* Configure PG2, PG11, PG13 and PG14 */
-  GPIO_InitStructure.Pin =  GPIO_PIN_2 | GPIO_PIN_11 | GPIO_PIN_13;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_REF_CLK.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_REF_CLK.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MDIO.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MDIO.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MDC.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MDC.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_CRS_DV.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_CRS_DV.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_RXD0.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_RXD0.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_RXD1.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_RXD1.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_RXER.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_RXER.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_TX_EN.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_TX_EN.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_TXD0.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_TXD0.gpio, &GPIO_InitStructure);
+  GPIO_InitStructure.Pin = pyb_pin_RMII_MII_TXD1.pin_mask;
+  HAL_GPIO_Init(pyb_pin_RMII_MII_TXD1.gpio, &GPIO_InitStructure);
   
   /* Enable ETHERNET clock  */
   __HAL_RCC_ETH_CLK_ENABLE();
