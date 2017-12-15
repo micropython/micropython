@@ -106,4 +106,5 @@ testgroup_members = [testgroup_member.format(name=group) for group in [""]]
 output.append(testgroup_struct.format(body='\n'.join(testgroup_members)))
 
 ## XXX: may be we could have `--output <filename>` argument...
-print('\n\n'.join(output))
+# Don't depend on what system locale is set, use utf8 encoding.
+sys.stdout.buffer.write('\n\n'.join(output).encode('utf8'))
