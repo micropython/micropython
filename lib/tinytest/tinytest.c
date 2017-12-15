@@ -234,8 +234,9 @@ testcase_run_one(const struct testgroup_t *group,
 		return SKIP;
 	}
 
+	printf("# starting %s%s\n", group->prefix, testcase->name);
 	if (opt_verbosity>0 && !opt_forked) {
-		printf("%s%s: ", group->prefix, testcase->name);
+		//printf("%s%s: ", group->prefix, testcase->name);
 	} else {
 		if (opt_verbosity==0) printf(".");
 		cur_test_prefix = group->prefix;
@@ -252,6 +253,7 @@ testcase_run_one(const struct testgroup_t *group,
 		outcome = testcase_run_bare_(testcase);
 	}
 
+	printf("%s%s: ", group->prefix, testcase->name);
 	if (outcome == OK) {
 		++n_ok;
 		if (opt_verbosity>0 && !opt_forked)
@@ -263,7 +265,8 @@ testcase_run_one(const struct testgroup_t *group,
 	} else {
 		++n_bad;
 		if (!opt_forked)
-			printf("\n  [%s FAILED]\n", testcase->name);
+			//printf("\n  [%s FAILED]\n", testcase->name);
+			puts("FAILED");
 	}
 
 	if (opt_forked) {
