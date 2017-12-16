@@ -204,12 +204,13 @@ Creating distribution packages
 
 Distribution packages for MicroPython are created in the same manner
 as for CPython or any other Python implementation, see references at
-the end of chapter. "Source distribution" (sdist) format is used for
-packaging. The post-processing discussed above, (and pre-processing
-discussed in the following section) is achieved by using custom
-"sdist" command for distutils/setuptools. Thus, packaging steps
-remain the same as for standard distutils/setuptools, the user just
-need to override "sdist" command implementation by passing the
+the end of chapter. Setuptools (instead of distutils) should be used,
+because distutils do not support dependencies and other features. "Source
+distribution" (``sdist``) format is used for packaging. The post-processing
+discussed above, (and pre-processing discussed in the following section)
+is achieved by using custom ``sdist`` command for setuptools. Thus, packaging
+steps remain the same as for the standard setuptools, the user just
+needs to override ``sdist`` command implementation by passing the
 appropriate argument to ``setup()`` call::
 
     from setuptools import setup
