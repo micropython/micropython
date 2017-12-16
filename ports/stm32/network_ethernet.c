@@ -139,8 +139,6 @@ STATIC void ethernet_lwip_init(ethernet_obj_t *self) {
     ipconfig[3].addr = 0;
 
     memset(&self->netif, 0, sizeof(struct netif));
-    ethernetif_init(&self->netif);
-
     self-> netif.linkoutput = low_level_output;
 
     netif_add(&self->netif, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, ethernetif_init, ethernet_input);
