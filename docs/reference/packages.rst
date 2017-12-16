@@ -130,12 +130,12 @@ transferring this image to a device by suitable means.
 
 Installing to a directory image involves using ``-p`` switch to `upip`::
 
-    micropython -m upip install -p install_image micropython-pystone_lowmem
+    micropython -m upip install -p install_dir micropython-pystone_lowmem
 
 After this command, the package content (and contents of every depenency
-packages) will be available in the ``install_image/`` subdirectory. You
+packages) will be available in the ``install_dir/`` subdirectory. You
 would need to transfer contents of this directory (without the
-``install_image/`` prefix) to the device, at the suitable location, where
+``install_dir/`` prefix) to the device, at the suitable location, where
 it can be found by the Python ``import`` statement (see discussion of
 the `upip` installation path above).
 
