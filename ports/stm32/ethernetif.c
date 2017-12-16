@@ -143,15 +143,33 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
 
 /* MAC Address from HW unique ID **********************************************/
 
+/**
+  * @brief generate MAC address from STM32 hardware ID. 
+  *
+  * @param byte[6] for storing MAC address.
+  *
+  * @note hw ID is 96 bits length: lot number, silicon wafer number, X-Y
+  *       coordinates. Numbers seem to be in Ascii code(0x30-0x39).
+  *       This function uses FNV-1 hash algorithm to generate 32 bits value
+  *       from hw ID and store lower 24 bits to macaddress[3]..[5].
+  */
 void mac_address_from_hwid(byte macaddress[6]) {
   byte *id = (byte*)MP_HAL_UNIQUE_ID_ADDRESS;
+  unsigned int hash;
+  int i;
 
+  hash = 0x811c9dc5;
+  for (i = 0; i < 12; i++) {
+    hash = (16777619 * hash) ^ id[i];
+  }
   macaddress[0] = MAC_ADDR0;
   macaddress[1] = MAC_ADDR1;
   macaddress[2] = MAC_ADDR2;
-  macaddress[3] = id[0] * id[8] ^ id[5];
-  macaddress[4] = id[4] * id[9] ^ id[11];
-  macaddress[5] = id[6] * id[10] ^ id[2];
+  macaddress[5] = hash & 0xff;
+  hash = hash >> 8;
+  macaddress[4] = hash & 0xff;
+  hash = hash >> 8;
+  macaddress[3] = hash & 0xff;
 }
 
 /*******************************************************************************
