@@ -10,10 +10,10 @@ MEMORY
     FLASH_FS (r)    : ORIGIN = 0x08008000, LENGTH = 96K     /* sectors 1, 2, 3 (32K each) */
     FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K    /* sectors 4-7 1*128Kib 3*256KiB = 896K */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
-    ETHER_BUF1 (rw)  : ORIGIN = 0x20020000, LENGTH = 256    /* 32 * 5 bytes for DMARxDscrTab in ethernetif.c */
-    ETHER_BUF2 (rw)  : ORIGIN = 0x20020100, LENGTH = 256    /* 32 * 5 bytes for DMATxDscrTab in ethernetif.c */
-    ETHER_BUF3 (rw)  : ORIGIN = 0x20020200, LENGTH = 7620   /* 1524 * 5 bytes for Rx_Buff in ethernetif.c */
-    ETHER_BUF4 (rw)  : ORIGIN = 0x20022100, LENGTH = 7620   /* 1524 * 5 bytes for Tx_Buff in ethernetif.c */
+    ETH_RXDMA (rw)  : ORIGIN = 0x20020000, LENGTH = 256    /* 32 * 5 bytes for DMARxDscrTab in ethernetif.c */
+    ETH_TXDMA (rw)  : ORIGIN = 0x20020100, LENGTH = 256    /* 32 * 5 bytes for DMATxDscrTab in ethernetif.c */
+    ETH_RXBUF (rw)  : ORIGIN = 0x20020200, LENGTH = 7620   /* 1524 * 5 bytes for Rx_Buff in ethernetif.c */
+    ETH_TXBUF (rw)  : ORIGIN = 0x20022100, LENGTH = 7620   /* 1524 * 5 bytes for Tx_Buff in ethernetif.c */
     RAM (xrw)       : ORIGIN = 0x20024000, LENGTH = 368K    /* SRAM1 = 368K, SRAM2 = 16K */
 }
 
@@ -25,10 +25,10 @@ _minimum_heap_size = 16K;
 /* Ethernet DMA Descriptor table / buffer */
 SECTIONS
 {
-	.RxDescripSection : { *(.DMARxDscrTab_section) } >ETHER_BUF1
-	.TxDescripSection : { *(.DMATxDscrTab_section) } >ETHER_BUF2
-	.RxarraySection : { *(.Rx_Buff_section) } >ETHER_BUF3
-	.TxarraySection : { *(.Tx_Buff_section) } >ETHER_BUF4
+    .RxDescripSection : { *(.DMARxDscrTab_section) } >ETH_RXDMA
+    .TxDescripSection : { *(.DMATxDscrTab_section) } >ETH_TXDMA
+    .RxarraySection   : { *(.Rx_Buff_section) }      >ETH_RXBUF
+    .TxarraySection   : { *(.Tx_Buff_section) }      >ETH_TXBUF
 }
 
 /* Define tho top end of the stack.  The stack is full descending so begins just
