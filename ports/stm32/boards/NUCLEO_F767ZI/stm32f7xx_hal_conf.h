@@ -192,9 +192,9 @@
 /* LAN8742A PHY Address*/
 #define LAN8742A_PHY_ADDRESS            0x00
 /* PHY Reset delay these values are based on a 1 ms Systick interrupt*/
-#define PHY_RESET_DELAY                 ((uint32_t)0x00000FFF)
+#define PHY_RESET_DELAY                 ((uint32_t)0x000000FF)
 /* PHY Configuration delay */
-#define PHY_CONFIG_DELAY                ((uint32_t)0x00000FFF)
+#define PHY_CONFIG_DELAY                ((uint32_t)0x000000FF)
 
 #define PHY_READ_TO                     ((uint32_t)0x0000FFFF)
 #define PHY_WRITE_TO                    ((uint32_t)0x0000FFFF)
