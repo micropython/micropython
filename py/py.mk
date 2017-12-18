@@ -103,6 +103,7 @@ endif
 # py object files
 PY_O_BASENAME = \
 	mpstate.o \
+	nlr.o \
 	nlrx86.o \
 	nlrx64.o \
 	nlrthumb.o \

@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if !MICROPY_NLR_SETJMP && defined(__x86_64__)
+#if MICROPY_NLR_X64
 
 #undef nlr_push
 
@@ -38,8 +38,6 @@
 #else
 #define NLR_OS_WINDOWS 0
 #endif
-
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
 
 unsigned int nlr_push(nlr_buf_t *nlr) {
     (void)nlr;
@@ -88,54 +86,38 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0; // needed to silence compiler warning
 }
 
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    nlr->prev = *top;
-    MP_NLR_SAVE_PYSTACK(nlr);
-    *top = nlr;
-    return 0; // normal return
-}
-
-void nlr_pop(void) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    *top = (*top)->prev;
-}
-
-NORETURN void nlr_jump(void *val) {
-    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
-    nlr_buf_t *top = *top_ptr;
-    if (top == NULL) {
-        nlr_jump_fail(val);
-    }
-
-    top->ret_val = val;
-    MP_NLR_RESTORE_PYSTACK(top);
-    *top_ptr = top->prev;
+NORETURN void nlr_jump_tail(nlr_buf_t *top) {
+    (void)top;
 
     __asm volatile (
-    "movq   %0, %%rcx           \n" // %rcx points to nlr_buf
     #if NLR_OS_WINDOWS
-    "movq   88(%%rcx), %%rsi    \n" // load saved %rsi
-    "movq   80(%%rcx), %%rdi    \n" // load saved %rdr
+    "movq   88(%rcx), %rsi      \n" // load saved %rsi
+    "movq   80(%rcx), %rdi      \n" // load saved %rdr
+    "movq   72(%rcx), %r15      \n" // load saved %r15
+    "movq   64(%rcx), %r14      \n" // load saved %r14
+    "movq   56(%rcx), %r13      \n" // load saved %r13
+    "movq   48(%rcx), %r12      \n" // load saved %r12
+    "movq   40(%rcx), %rbx      \n" // load saved %rbx
+    "movq   32(%rcx), %rsp      \n" // load saved %rsp
+    "movq   24(%rcx), %rbp      \n" // load saved %rbp
+    "movq   16(%rcx), %rax      \n" // load saved %rip
+    #else
+    "movq   72(%rdi), %r15      \n" // load saved %r15
+    "movq   64(%rdi), %r14      \n" // load saved %r14
+    "movq   56(%rdi), %r13      \n" // load saved %r13
+    "movq   48(%rdi), %r12      \n" // load saved %r12
+    "movq   40(%rdi), %rbx      \n" // load saved %rbx
+    "movq   32(%rdi), %rsp      \n" // load saved %rsp
+    "movq   24(%rdi), %rbp      \n" // load saved %rbp
+    "movq   16(%rdi), %rax      \n" // load saved %rip
     #endif
-    "movq   72(%%rcx), %%r15    \n" // load saved %r15
-    "movq   64(%%rcx), %%r14    \n" // load saved %r14
-    "movq   56(%%rcx), %%r13    \n" // load saved %r13
-    "movq   48(%%rcx), %%r12    \n" // load saved %r12
-    "movq   40(%%rcx), %%rbx    \n" // load saved %rbx
-    "movq   32(%%rcx), %%rsp    \n" // load saved %rsp
-    "movq   24(%%rcx), %%rbp    \n" // load saved %rbp
-    "movq   16(%%rcx), %%rax    \n" // load saved %rip
-    "movq   %%rax, (%%rsp)      \n" // store saved %rip to stack
-    "xorq   %%rax, %%rax        \n" // clear return register
-    "inc    %%al                \n" // increase to make 1, non-local return
+    "movq   %rax, (%rsp)        \n" // store saved %rip to stack
+    "xorq   %rax, %rax          \n" // clear return register
+    "inc    %al                 \n" // increase to make 1, non-local return
     "ret                        \n" // return
-    :                               // output operands
-    : "r"(top)                      // input operands
-    :                               // clobbered registers
     );
 
     for (;;); // needed to silence compiler warning
 }
 
-#endif // !MICROPY_NLR_SETJMP && defined(__x86_64__)
+#endif // MICROPY_NLR_X64
