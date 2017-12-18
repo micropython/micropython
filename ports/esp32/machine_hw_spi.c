@@ -295,7 +295,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_INT , {.u_int = -1} },
+        { MP_QSTR_id,       MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -343,7 +343,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT , {.u_int = -1} },
+        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
