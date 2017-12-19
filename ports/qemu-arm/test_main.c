@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include <setjmp.h>
 
 #include "py/obj.h"
 #include "py/compile.h"
