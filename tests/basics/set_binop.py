@@ -61,6 +61,12 @@ except TypeError:
 
 # unsupported operator
 try:
+    set('abc') * set('abc')
+except TypeError:
+    print('TypeError')
+
+# unsupported operator with RHS not a set
+try:
     set('abc') * 2
 except TypeError:
     print('TypeError')
