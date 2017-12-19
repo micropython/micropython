@@ -35,11 +35,15 @@
 #define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
 #endif
 
+#if !MICROPY_NLR_SETJMP
+// When not using setjmp, nlr_push_tail is called from inline asm so needs special care
 #if MICROPY_NLR_X86 && (defined(_WIN32) || defined(__CYGWIN__))
 // On these 32-bit platforms make sure nlr_push_tail doesn't have a leading underscore
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else
+// LTO can't see inside inline asm functions so explicitly mark nlr_push_tail as used
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
+#endif
 #endif
 
 unsigned int nlr_push_tail(nlr_buf_t *nlr) {
