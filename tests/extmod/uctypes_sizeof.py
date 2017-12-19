@@ -40,3 +40,8 @@ assert uctypes.sizeof(S.arr4) == 6
 print(uctypes.sizeof(S.sub))
 assert uctypes.sizeof(S.sub) == 1
 
+# invalid descriptor
+try:
+    print(uctypes.sizeof([]))
+except TypeError:
+    print("TypeError")
