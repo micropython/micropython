@@ -1390,7 +1390,7 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
    can have dest, lhs, rhs the same; mod can't be the same as dest
 */
 void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t *mod) {
-    if (lhs->len == 0 || rhs->neg != 0) {
+    if (lhs->len == 0 || rhs->neg != 0 || (mod->len == 1 && mod->dig[0] == 1)) {
         mpz_set_from_int(dest, 0);
         return;
     }
