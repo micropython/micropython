@@ -46,6 +46,7 @@ class SDCard:
 
         self.cmdbuf = bytearray(6)
         self.dummybuf = bytearray(512)
+        self.tokenbuf = bytearray(1)
         for i in range(512):
             self.dummybuf[i] = 0xff
         self.dummybuf_memoryview = memoryview(self.dummybuf)
@@ -134,7 +135,7 @@ class SDCard:
                 return
         raise OSError("timeout waiting for v2 card")
 
-    def cmd(self, cmd, arg, crc, final=0, release=True):
+    def cmd(self, cmd, arg, crc, final=0, release=True, skip1=False):
         self.cs(0)
 
         # create and send the command
@@ -147,9 +148,13 @@ class SDCard:
         buf[5] = crc
         self.spi.write(buf)
 
+        if skip1:
+            self.spi.readinto(self.tokenbuf, 0xff)
+
         # wait for the response (response[7] == 0)
         for i in range(_CMD_TIMEOUT):
-            response = self.spi.read(1, 0xff)[0]
+            self.spi.readinto(self.tokenbuf, 0xff)
+            response = self.tokenbuf[0]
             if not (response & 0x80):
                 # this could be a big-endian integer that we are getting here
                 for j in range(final):
@@ -164,27 +169,19 @@ class SDCard:
         self.spi.write(b'\xff')
         return -1
 
-    def cmd_nodata(self, cmd):
-        self.spi.write(cmd)
-        self.spi.read(1, 0xff) # ignore stuff byte
-        for _ in range(_CMD_TIMEOUT):
-            if self.spi.read(1, 0xff)[0] == 0xff:
-                self.cs(1)
-                self.spi.write(b'\xff')
-                return 0    # OK
-        self.cs(1)
-        self.spi.write(b'\xff')
-        return 1 # timeout
-
     def readinto(self, buf):
         self.cs(0)
 
         # read until start byte (0xff)
-        while self.spi.read(1, 0xff)[0] != 0xfe:
-            pass
+        while True:
+            self.spi.readinto(self.tokenbuf, 0xff)
+            if self.tokenbuf[0] == 0xfe:
+                break
 
         # read data
-        mv = self.dummybuf_memoryview[:len(buf)]
+        mv = self.dummybuf_memoryview
+        if len(buf) != len(mv):
+            mv = mv[:len(buf)]
         self.spi.write_readinto(mv, buf)
 
         # read checksum
@@ -231,26 +228,26 @@ class SDCard:
         return self.sectors
 
     def readblocks(self, block_num, buf):
-        nblocks, err = divmod(len(buf), 512)
-        assert nblocks and not err, 'Buffer length is invalid'
+        nblocks = len(buf) // 512
+        assert nblocks and not len(buf) % 512, 'Buffer length is invalid'
         if nblocks == 1:
             # CMD17: set read address for single block
             if self.cmd(17, block_num * self.cdv, 0) != 0:
-                return 1
+                raise OSError(5) # EIO
             # receive the data
             self.readinto(buf)
         else:
             # CMD18: set read address for multiple blocks
             if self.cmd(18, block_num * self.cdv, 0) != 0:
-                return 1
+                raise OSError(5) # EIO
             offset = 0
             mv = memoryview(buf)
             while nblocks:
                 self.readinto(mv[offset : offset + 512])
                 offset += 512
                 nblocks -= 1
-            return self.cmd_nodata(b'\x0c') # cmd 12
-        return 0
+            if self.cmd(12, 0, 0xff, skip1=True):
+                raise OSError(5) # EIO
 
     def writeblocks(self, block_num, buf):
         nblocks, err = divmod(len(buf), 512)
@@ -258,14 +255,14 @@ class SDCard:
         if nblocks == 1:
             # CMD24: set write address for single block
             if self.cmd(24, block_num * self.cdv, 0) != 0:
-                return 1
+                raise OSError(5) # EIO
 
             # send the data
             self.write(_TOKEN_DATA, buf)
         else:
             # CMD25: set write address for first block
             if self.cmd(25, block_num * self.cdv, 0) != 0:
-                return 1
+                raise OSError(5) # EIO
             # send the data
             offset = 0
             mv = memoryview(buf)
@@ -274,4 +271,3 @@ class SDCard:
                 offset += 512
                 nblocks -= 1
             self.write_token(_TOKEN_STOP_TRAN)
-        return 0
