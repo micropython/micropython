@@ -351,11 +351,9 @@ STATIC mp_obj_t set_issuperset_proper(mp_obj_t self_in, mp_obj_t other_in) {
 }
 
 STATIC mp_obj_t set_equal(mp_obj_t self_in, mp_obj_t other_in) {
+    assert(is_set_or_frozenset(other_in));
     check_set_or_frozenset(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!is_set_or_frozenset(other_in)) {
-        return mp_const_false;
-    }
     mp_obj_set_t *other = MP_OBJ_TO_PTR(other_in);
     if (self->set.used != other->set.used) {
         return mp_const_false;
