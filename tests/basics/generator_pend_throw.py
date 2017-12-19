@@ -24,3 +24,8 @@ except Exception as e:
     print("raised", repr(e))
 
 print("ret was:", v)
+
+try:
+    gen().pend_throw(ValueError())
+except TypeError:
+    print("TypeError")
