@@ -35,17 +35,12 @@
 #define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#define NLR_OS_WINDOWS 1
+#if MICROPY_NLR_X86 && (defined(_WIN32) || defined(__CYGWIN__))
+// On these 32-bit platforms make sure nlr_push_tail doesn't have a leading underscore
+unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else
-#define NLR_OS_WINDOWS 0
-#endif
-
-//#if NLR_OS_WINDOWS
-//unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
-//#else
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
-//#endif
+#endif
 
 unsigned int nlr_push_tail(nlr_buf_t *nlr) {
     nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
