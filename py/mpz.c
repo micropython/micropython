@@ -1395,16 +1395,15 @@ void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t 
         return;
     }
 
+    mpz_set_from_int(dest, 1);
+
     if (rhs->len == 0) {
-        mpz_set_from_int(dest, 1);
         return;
     }
 
     mpz_t *x = mpz_clone(lhs);
     mpz_t *n = mpz_clone(rhs);
     mpz_t quo; mpz_init_zero(&quo);
-
-    mpz_set_from_int(dest, 1);
 
     while (n->len > 0) {
         if ((n->dig[0] & 1) != 0) {
