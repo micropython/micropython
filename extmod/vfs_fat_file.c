@@ -134,11 +134,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
                 break;
 
             case 1: // SEEK_CUR
-                if (s->offset != 0) {
-                    *errcode = MP_EOPNOTSUPP;
-                    return MP_STREAM_ERROR;
-                }
-                // no-operation
+                f_lseek(&self->fp, f_tell(&self->fp) + s->offset);
                 break;
 
             case 2: // SEEK_END
