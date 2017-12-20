@@ -33,5 +33,6 @@ extern uint32_t _bootloader_dbl_tap;
 
 void reset_to_bootloader(void);
 void reset(void);
+bool bootloader_available(void);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_RESET_H

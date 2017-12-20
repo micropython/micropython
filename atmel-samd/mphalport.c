@@ -62,7 +62,7 @@ volatile bool reset_on_disconnect = false;
 
 void usb_dtr_notify(uint8_t port, bool set) {
     mp_cdc_enabled = set;
-    if (!set && reset_on_disconnect && _bootloader_dbl_tap != 0) {
+    if (!set && reset_on_disconnect && bootloader_available()) {
         reset_to_bootloader();
     }
 }
