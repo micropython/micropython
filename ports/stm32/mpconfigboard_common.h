@@ -97,6 +97,11 @@
 #define MICROPY_HW_HAS_LCD (0)
 #endif
 
+// Defines which UART ports are to be half-duplex
+#ifndef MICROPY_HW_UARTn_IS_HALF_DUPLEX
+#define MICROPY_HW_UARTn_IS_HALF_DUPLEX(n)    (0)
+#endif
+
 /*****************************************************************************/
 // General configuration
 

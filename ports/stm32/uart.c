@@ -314,8 +314,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     uart_obj->irqn = irqn;
     uart_obj->uart.Instance = UARTx;
 
-    // init UARTx
-    HAL_UART_Init(&uart_obj->uart);
+    if(MICROPY_HW_UARTn_IS_HALF_DUPLEX(uart_obj->uart_id)) {
+        // init in half-duplex mode
+        HAL_HalfDuplex_Init(&uart_obj->uart);
+    } else {
+        // init UARTx
+        HAL_UART_Init(&uart_obj->uart);
+    }
 
     uart_obj->is_enabled = true;
 
@@ -553,6 +558,9 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             if (self->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
                 mp_printf(print, "CTS");
             }
+        }
+        if(MICROPY_HW_UARTn_IS_HALF_DUPLEX(self->uart_id)) {
+            mp_printf(print, ", half=1");
         }
         mp_printf(print, ", stop=%u, timeout=%u, timeout_char=%u, read_buf_len=%u)",
             self->uart.Init.StopBits == UART_STOPBITS_1 ? 1 : 2,
