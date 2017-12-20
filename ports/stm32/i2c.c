@@ -100,7 +100,10 @@ I2C_HandleTypeDef I2CHandle3 = {.Instance = NULL};
 I2C_HandleTypeDef I2CHandle4 = {.Instance = NULL};
 #endif
 
+#if defined(MICROPY_HW_I2C1_SCL) || defined(MICROPY_HW_I2C2_SCL) \
+    || defined(MICROPY_HW_I2C3_SCL) || defined(MICROPY_HW_I2C3_SCL)
 STATIC bool pyb_i2c_use_dma[4];
+#endif
 
 const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
