@@ -245,6 +245,10 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MICROPY_HW_MAX_UART (6)
 #endif
 
+#ifndef MICROPY_HW_UARTn_IS_HALF_DUPLEX
+#define MICROPY_HW_UARTn_IS_HALF_DUPLEX(n)    (0)
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
