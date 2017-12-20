@@ -96,9 +96,14 @@ class SDCard:
             raise OSError("no response from SD card")
         csd = bytearray(16)
         self.readinto(csd)
-        if csd[0] & 0xc0 != 0x40:
+        if csd[0] & 0xc0 == 0x40: # CSD version 2.0
+            self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 2014
+        elif csd[0] & 0xc0 == 0x00: # CSD version 1.0 (old, <=2GB)
+            c_size = csd[6] & 0b11 | csd[7] << 2 | (csd[8] & 0b11000000) << 4
+            c_size_mult = ((csd[9] & 0b11) << 1) | csd[10] >> 7
+            self.sectors = (c_size + 1) * (2 ** (c_size_mult + 2))
+        else:
             raise OSError("SD card CSD format not supported")
-        self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 2014
         #print('sectors', self.sectors)
 
         # CMD16: set block length to 512 bytes
