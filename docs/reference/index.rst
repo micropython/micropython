@@ -24,6 +24,7 @@ implementation and the best practices to use them.
    isr_rules.rst
    speed_python.rst
    constrained.rst
+   packages.rst
 
 .. only:: port_pyboard
 

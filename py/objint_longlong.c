@@ -151,9 +151,15 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             return mp_obj_new_int_from_ll(lhs_val * rhs_val);
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
+            if (rhs_val == 0) {
+                goto zero_division;
+            }
             return mp_obj_new_int_from_ll(lhs_val / rhs_val);
         case MP_BINARY_OP_MODULO:
         case MP_BINARY_OP_INPLACE_MODULO:
+            if (rhs_val == 0) {
+                goto zero_division;
+            }
             return mp_obj_new_int_from_ll(lhs_val % rhs_val);
 
         case MP_BINARY_OP_AND:
@@ -210,6 +216,9 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         default:
             return MP_OBJ_NULL; // op not supported
     }
+
+zero_division:
+    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
 }
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {

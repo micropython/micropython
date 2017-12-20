@@ -29,3 +29,9 @@ print(123 // 7, 123 % 7)
 print(-123 // 7, -123 % 7)
 print(123 // -7, 123 % -7)
 print(-123 // -7, -123 % -7)
+
+# won't fold so an exception can be raised at runtime
+try:
+    1 << -1
+except ValueError:
+    print('ValueError')

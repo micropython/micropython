@@ -351,11 +351,9 @@ STATIC mp_obj_t set_issuperset_proper(mp_obj_t self_in, mp_obj_t other_in) {
 }
 
 STATIC mp_obj_t set_equal(mp_obj_t self_in, mp_obj_t other_in) {
+    assert(is_set_or_frozenset(other_in));
     check_set_or_frozenset(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!is_set_or_frozenset(other_in)) {
-        return mp_const_false;
-    }
     mp_obj_set_t *other = MP_OBJ_TO_PTR(other_in);
     if (self->set.used != other->set.used) {
         return mp_const_false;
@@ -461,7 +459,7 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     #else
     bool update = true;
     #endif
-    if (op != MP_BINARY_OP_IN && !is_set_or_frozenset(rhs)) {
+    if (op != MP_BINARY_OP_CONTAINS && !is_set_or_frozenset(rhs)) {
         // For all ops except containment the RHS must be a set/frozenset
         return MP_OBJ_NULL;
     }
@@ -507,7 +505,7 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             return set_issubset(lhs, rhs);
         case MP_BINARY_OP_MORE_EQUAL:
             return set_issuperset(lhs, rhs);
-        case MP_BINARY_OP_IN: {
+        case MP_BINARY_OP_CONTAINS: {
             mp_obj_set_t *o = MP_OBJ_TO_PTR(lhs);
             mp_obj_t elem = mp_set_lookup(&o->set, rhs, MP_MAP_LOOKUP);
             return mp_obj_new_bool(elem != MP_OBJ_NULL);

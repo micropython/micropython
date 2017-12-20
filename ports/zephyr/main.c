@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2016 Linaro Limited
+ * Copyright (c) 2016-2017 Linaro Limited
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,16 @@
 #include "lib/utils/pyexec.h"
 #include "lib/mp-readline/readline.h"
 
+#ifdef TEST
+#include "lib/upytesthelper/upytesthelper.h"
+#include "lib/tinytest/tinytest.c"
+#include "lib/upytesthelper/upytesthelper.c"
+#include TEST
+#endif
+
+static char *stack_top;
+static char heap[MICROPY_HEAP_SIZE];
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -55,9 +65,6 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
         mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
     }
 }
-
-static char *stack_top;
-static char heap[MICROPY_HEAP_SIZE];
 
 void init_zephyr(void) {
     // We now rely on CONFIG_NET_APP_SETTINGS to set up bootstrap
@@ -94,6 +101,14 @@ int real_main(void) {
     mp_stack_set_limit(CONFIG_MAIN_STACK_SIZE - 512);
 
     init_zephyr();
+
+    #ifdef TEST
+    static const char *argv[] = {"test"};
+    upytest_set_heap(heap, heap + sizeof(heap));
+    int r = tinytest_main(1, argv, groups);
+    printf("status: %d\n", r);
+    return 0;
+    #endif
 
 soft_reset:
     #if MICROPY_ENABLE_GC

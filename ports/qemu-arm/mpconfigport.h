@@ -17,6 +17,7 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
@@ -69,3 +70,9 @@ extern const struct _mp_obj_module_t mp_module_uos;
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+#ifdef TEST
+#include "lib/upytesthelper/upytesthelper.h"
+#undef MP_PLAT_PRINT_STRN
+#define MP_PLAT_PRINT_STRN(str, len) upytest_output(str, len)
+#endif

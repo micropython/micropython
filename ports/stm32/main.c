@@ -511,6 +511,11 @@ soft_reset:
     // GC init
     gc_init(&_heap_start, &_heap_end);
 
+    #if MICROPY_ENABLE_PYSTACK
+    static mp_obj_t pystack[384];
+    mp_pystack_init(pystack, &pystack[384]);
+    #endif
+
     // MicroPython init
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);

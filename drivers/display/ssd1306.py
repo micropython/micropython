@@ -23,29 +23,16 @@ SET_PRECHARGE       = const(0xd9)
 SET_VCOM_DESEL      = const(0xdb)
 SET_CHARGE_PUMP     = const(0x8d)
 
-
-class SSD1306:
+# Subclassing FrameBuffer provides support for graphics primitives
+# http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
+class SSD1306(framebuf.FrameBuffer):
     def __init__(self, width, height, external_vcc):
         self.width = width
         self.height = height
         self.external_vcc = external_vcc
         self.pages = self.height // 8
         self.buffer = bytearray(self.pages * self.width)
-        fb = framebuf.FrameBuffer(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
-        self.framebuf = fb
-        # Provide methods for accessing FrameBuffer graphics primitives. This is a
-        # workround because inheritance from a native class is currently unsupported.
-        # http://docs.micropython.org/en/latest/pyboard/library/framebuf.html
-        self.fill = fb.fill
-        self.pixel = fb.pixel
-        self.hline = fb.hline
-        self.vline = fb.vline
-        self.line = fb.line
-        self.rect = fb.rect
-        self.fill_rect = fb.fill_rect
-        self.text = fb.text
-        self.scroll = fb.scroll
-        self.blit = fb.blit
+        super.__init__(self.buffer, self.width, self.height, framebuf.MONO_VLSB)
         self.init_display()
 
     def init_display(self):

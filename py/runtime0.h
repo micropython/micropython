@@ -131,6 +131,10 @@ typedef enum {
         #endif
     ,
 
+    // The runtime will convert MP_BINARY_OP_IN to this operator with swapped args.
+    // A type should implement this containment operator instead of MP_BINARY_OP_IN.
+    MP_BINARY_OP_CONTAINS,
+
     MP_BINARY_OP_NUM_RUNTIME,
 
     // These 2 are not supported by the runtime and must be synthesised by the emitter

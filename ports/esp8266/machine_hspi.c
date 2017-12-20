@@ -65,6 +65,9 @@ STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint
             spi_tx8fast(HSPI, src[i]);
             ++i;
         }
+        // wait for SPI transaction to complete
+        while (spi_busy(HSPI)) {
+        }
     } else {
         // we need to read and write data
 

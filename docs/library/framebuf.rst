@@ -148,6 +148,14 @@ Constants
 
     Red Green Blue (16-bit, 5+6+5) color format
 
+.. data:: framebuf.GS2_HMSB
+
+    Grayscale (2-bit) color format
+
 .. data:: framebuf.GS4_HMSB
 
     Grayscale (4-bit) color format
+
+.. data:: framebuf.GS8
+
+    Grayscale (8-bit) color format

@@ -62,12 +62,11 @@ class NRF24L01:
 
         # init the SPI bus and pins
         self.init_spi(4000000)
-        cs.init(cs.OUT, value=1)
-        ce.init(ce.OUT, value=0)
 
         # reset everything
-        self.ce(0)
-        self.cs(1)
+        ce.init(ce.OUT, value=0)
+        cs.init(cs.OUT, value=1)
+
         self.payload_size = payload_size
         self.pipe0_read_addr = None
         utime.sleep_ms(5)
@@ -215,7 +214,7 @@ class NRF24L01:
 
     # blocking wait for tx complete
     def send(self, buf, timeout=500):
-        send_nonblock = self.send_start(buf)
+        self.send_start(buf)
         start = utime.ticks_ms()
         result = None
         while result is None and utime.ticks_diff(utime.ticks_ms(), start) < timeout:

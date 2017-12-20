@@ -44,6 +44,8 @@ typedef struct _mp_obj_ssl_socket_t {
 } mp_obj_ssl_socket_t;
 
 struct ssl_args {
+    mp_arg_val_t key;
+    mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
 };
@@ -62,8 +64,26 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     o->sock = sock;
 
     uint32_t options = SSL_SERVER_VERIFY_LATER;
+    if (args->key.u_obj != mp_const_none) {
+        options |= SSL_NO_DEFAULT_KEY;
+    }
     if ((o->ssl_ctx = ssl_ctx_new(options, SSL_DEFAULT_CLNT_SESS)) == NULL) {
         mp_raise_OSError(MP_EINVAL);
+    }
+
+    if (args->key.u_obj != mp_const_none) {
+        size_t len;
+        const byte *data = (const byte*)mp_obj_str_get_data(args->key.u_obj, &len);
+        int res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_RSA_KEY, data, len, NULL);
+        if (res != SSL_OK) {
+            mp_raise_ValueError("invalid key");
+        }
+
+        data = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &len);
+        res = ssl_obj_memory_load(o->ssl_ctx, SSL_OBJ_X509_CERT, data, len, NULL);
+        if (res != SSL_OK) {
+            mp_raise_ValueError("invalid cert");
+        }
     }
 
     if (args->server_side.u_bool) {
@@ -211,6 +231,8 @@ STATIC const mp_obj_type_t ussl_socket_type = {
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };

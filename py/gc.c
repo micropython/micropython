@@ -44,6 +44,10 @@
 // make this 1 to dump the heap each time it changes
 #define EXTENSIVE_HEAP_PROFILING (0)
 
+// make this 1 to zero out swept memory to more eagerly
+// detect untraced object still in use
+#define CLEAR_ON_SWEEP (0)
+
 #define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / BYTES_PER_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
 
@@ -191,6 +195,14 @@ bool gc_is_locked(void) {
         && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
     )
 
+#ifndef TRACE_MARK
+#if DEBUG_PRINT
+#define TRACE_MARK(block, ptr) DEBUG_printf("gc_mark(%p)\n", ptr)
+#else
+#define TRACE_MARK(block, ptr)
+#endif
+#endif
+
 // ptr should be of type void*
 #define VERIFY_MARK_AND_PUSH(ptr) \
     do { \
@@ -198,7 +210,7 @@ bool gc_is_locked(void) {
             size_t _block = BLOCK_FROM_PTR(ptr); \
             if (ATB_GET_KIND(_block) == AT_HEAD) { \
                 /* an unmarked head, mark it, and push it on gc stack */ \
-                DEBUG_printf("gc_mark(%p)\n", ptr); \
+                TRACE_MARK(_block, ptr); \
                 ATB_HEAD_TO_MARK(_block); \
                 if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
                     *MP_STATE_MEM(gc_sp)++ = _block; \
@@ -277,7 +289,7 @@ STATIC void gc_sweep(void) {
                 }
 #endif
                 free_tail = 1;
-                DEBUG_printf("gc_sweep(%x)\n", PTR_FROM_BLOCK(block));
+                DEBUG_printf("gc_sweep(%p)\n", PTR_FROM_BLOCK(block));
                 #if MICROPY_PY_GC_COLLECT_RETVAL
                 MP_STATE_MEM(gc_collected)++;
                 #endif
@@ -286,6 +298,9 @@ STATIC void gc_sweep(void) {
             case AT_TAIL:
                 if (free_tail) {
                     ATB_ANY_TO_FREE(block);
+                    #if CLEAR_ON_SWEEP
+                    memset((void*)PTR_FROM_BLOCK(block), 0, BYTES_PER_BLOCK);
+                    #endif
                 }
                 break;
 
@@ -305,11 +320,18 @@ void gc_collect_start(void) {
     #endif
     MP_STATE_MEM(gc_stack_overflow) = 0;
     MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
+
     // Trace root pointers.  This relies on the root pointers being organised
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
     // dict_globals, then the root pointer section of mp_state_vm.
     void **ptrs = (void**)(void*)&mp_state_ctx;
     gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.qstr_last_chunk) / sizeof(void*));
+
+    #if MICROPY_ENABLE_PYSTACK
+    // Trace root pointers from the Python stack.
+    ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
+    gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
+    #endif
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
@@ -628,26 +650,17 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
     void *ptr = ptr_in;
 
-    // sanity check the ptr
-    if (!VERIFY_PTR(ptr)) {
-        return NULL;
-    }
-
-    // get first block
-    size_t block = BLOCK_FROM_PTR(ptr);
-
     GC_ENTER();
-
-    // sanity check the ptr is pointing to the head of a block
-    if (ATB_GET_KIND(block) != AT_HEAD) {
-        GC_EXIT();
-        return NULL;
-    }
 
     if (MP_STATE_MEM(gc_lock_depth) > 0) {
         GC_EXIT();
         return NULL;
     }
+
+    // get the GC block number corresponding to this pointer
+    assert(VERIFY_PTR(ptr));
+    size_t block = BLOCK_FROM_PTR(ptr);
+    assert(ATB_GET_KIND(block) == AT_HEAD);
 
     // compute number of new blocks that are requested
     size_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;

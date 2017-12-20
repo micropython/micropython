@@ -170,8 +170,8 @@ static inline bool MP_OBJ_IS_OBJ(mp_const_obj_t o)
 
 static inline bool MP_OBJ_IS_SMALL_INT(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 0xffff000000000000) == 0x0001000000000000); }
-#define MP_OBJ_SMALL_INT_VALUE(o) (((intptr_t)(o)) >> 1)
-#define MP_OBJ_NEW_SMALL_INT(small_int) ((mp_obj_t)(((uintptr_t)(small_int)) << 1) | 0x0001000000000001)
+#define MP_OBJ_SMALL_INT_VALUE(o) (((mp_int_t)((o) << 16)) >> 17)
+#define MP_OBJ_NEW_SMALL_INT(small_int) (((((uint64_t)(small_int)) & 0x7fffffffffff) << 1) | 0x0001000000000001)
 
 static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
     { return ((((mp_int_t)(o)) & 0xffff000000000000) == 0x0002000000000000); }

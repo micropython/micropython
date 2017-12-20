@@ -12,7 +12,7 @@ This module provides access to the BSD socket interface.
 .. admonition:: Difference to CPython
    :class: attention
 
-   For efficiency and consistency, socket objects in MicroPython implement a stream
+   For efficiency and consistency, socket objects in MicroPython implement a `stream`
    (file-like) interface directly. In CPython, you need to convert a socket to
    a file-like object using `makefile()` method. This method is still supported
    by MicroPython (but is a no-op), so where compatibility with CPython matters,
@@ -248,7 +248,7 @@ Methods
    Not every `MicroPython port` supports this method. A more portable and
    generic solution is to use `uselect.poll` object. This allows to wait on
    multiple objects at the same time (and not just on sockets, but on generic
-   stream objects which support polling). Example::
+   `stream` objects which support polling). Example::
 
         # Instead of:
         s.settimeout(1.0)  # time in seconds

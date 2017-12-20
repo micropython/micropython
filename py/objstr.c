@@ -384,8 +384,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             return mp_obj_new_str_from_vstr(lhs_type, &vstr);
         }
 
-        case MP_BINARY_OP_IN:
-            /* NOTE `a in b` is `b.__contains__(a)` */
+        case MP_BINARY_OP_CONTAINS:
             return mp_obj_new_bool(find_subbytes(lhs_data, lhs_len, rhs_data, rhs_len, 1) != NULL);
 
         //case MP_BINARY_OP_NOT_EQUAL: // This is never passed here
@@ -2085,7 +2084,7 @@ bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     }
 }
 
-STATIC void bad_implicit_conversion(mp_obj_t self_in) {
+STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError("can't convert to str implicitly");
     } else {

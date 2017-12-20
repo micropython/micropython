@@ -127,14 +127,12 @@ void qstr_init(void) {
 
 STATIC const byte *find_qstr(qstr q) {
     // search pool for this qstr
-    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
-        if (q >= pool->total_prev_len) {
-            return pool->qstrs[q - pool->total_prev_len];
-        }
+    // total_prev_len==0 in the final pool, so the loop will always terminate
+    qstr_pool_t *pool = MP_STATE_VM(last_pool);
+    while (q < pool->total_prev_len) {
+        pool = pool->prev;
     }
-
-    // not found
-    return 0;
+    return pool->qstrs[q - pool->total_prev_len];
 }
 
 // qstr_mutex must be taken while in this function

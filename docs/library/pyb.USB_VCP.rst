@@ -4,7 +4,7 @@
 class USB_VCP -- USB virtual comm port
 ======================================
 
-The USB_VCP class allows creation of an object representing the USB
+The USB_VCP class allows creation of a `stream`-like object representing the USB
 virtual comm port.  It can be used to read and write data over USB to
 the connected host.
 
@@ -47,7 +47,7 @@ Methods
    Read at most ``nbytes`` from the serial device and return them as a
    bytes object.  If ``nbytes`` is not specified then the method reads
    all available bytes from the serial device.
-   USB_VCP stream implicitly works in non-blocking mode,
+   USB_VCP `stream` implicitly works in non-blocking mode,
    so if no pending data available, this method will return immediately
    with ``None`` value.
 

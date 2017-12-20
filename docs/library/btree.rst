@@ -5,7 +5,7 @@
    :synopsis: simple BTree database
 
 The ``btree`` module implements a simple key-value database using external
-storage (disk files, or in general case, a random-access stream). Keys are
+storage (disk files, or in general case, a random-access `stream`). Keys are
 stored sorted in the database, and besides efficient retrieval by a key
 value, a database also supports efficient ordered range scans (retrieval
 of values with the keys in a given range). On the application interface

@@ -1,5 +1,5 @@
 StopIteration
 Traceback (most recent call last):
-  File  , line 22, in test
+  File  , line 23, in test
 StopIteration: 
 

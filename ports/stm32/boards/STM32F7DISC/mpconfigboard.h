@@ -1,5 +1,3 @@
-#define STM32F7DISC
-
 #define MICROPY_HW_BOARD_NAME       "F7DISC"
 #define MICROPY_HW_MCU_NAME         "STM32F746"
 

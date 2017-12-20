@@ -131,7 +131,7 @@ STATIC const mp_obj_type_t bufwriter_type = {
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
-#if MICROPY_MODULE_FROZEN_STR
+#if MICROPY_PY_IO_RESOURCE_STREAM
 STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     VSTR_FIXED(path_buf, MICROPY_ALLOC_PATH_MAX);
     size_t len;
@@ -179,7 +179,7 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     mp_obj_t path_out = mp_obj_new_str(path_buf.buf, path_buf.len);
     return mp_builtin_open(1, &path_out, (mp_map_t*)&mp_const_empty_map);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {

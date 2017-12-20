@@ -36,6 +36,10 @@ try:
 except ValueError:
     print("ValueError")
 
+# construct from something with the buffer protocol
+print(float(b"1.2"))
+print(float(bytearray(b"3.4")))
+
 # unary operators
 print(bool(0.0))
 print(bool(1.2))

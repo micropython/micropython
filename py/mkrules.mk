@@ -160,6 +160,27 @@ clean:
 	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
 
+# Clean every non-git file from FROZEN_DIR/FROZEN_MPY_DIR, but making a backup.
+# We run rmdir below to avoid empty backup dir (it will silently fail if backup
+# is non-empty).
+clean-frozen:
+	if [ -n "$(FROZEN_MPY_DIR)" ]; then \
+	backup_dir=$(FROZEN_MPY_DIR).$$(date +%Y%m%dT%H%M%S); mkdir $$backup_dir; \
+	cd $(FROZEN_MPY_DIR); git status --ignored -u all -s . | awk ' {print $$2}' \
+	| xargs --no-run-if-empty cp --parents -t ../$$backup_dir; \
+	rmdir ../$$backup_dir 2>/dev/null || true; \
+	git clean -d -f .; \
+	fi
+
+	if [ -n "$(FROZEN_DIR)" ]; then \
+	backup_dir=$(FROZEN_DIR).$$(date +%Y%m%dT%H%M%S); mkdir $$backup_dir; \
+	cd $(FROZEN_DIR); git status --ignored -u all -s . | awk ' {print $$2}' \
+	| xargs --no-run-if-empty cp --parents -t ../$$backup_dir; \
+	rmdir ../$$backup_dir 2>/dev/null || true; \
+	git clean -d -f .; \
+	fi
+.PHONY: clean-frozen
+
 print-cfg:
 	$(ECHO) "PY_SRC = $(PY_SRC)"
 	$(ECHO) "BUILD  = $(BUILD)"

@@ -35,12 +35,6 @@ def exists(fname):
     except OSError:
         return False
 
-def copy_stream(s_in, s_out):
-    buf = bytearray(64)
-    while 1:
-        sz = s_in.readinto(buf)
-        s_out.write(buf, sz)
-
 
 def get_daemon_status():
     with open(RC) as f:
@@ -51,22 +45,22 @@ def get_daemon_status():
                 return True
         return None
 
-def add_daemon():
-    with open(RC) as old_f, open(RC + ".tmp", "w") as new_f:
-        new_f.write("import webrepl\nwebrepl.start()\n")
-        copy_stream(old_f, new_f)
 
 def change_daemon(action):
     LINES = ("import webrepl", "webrepl.start()")
     with open(RC) as old_f, open(RC + ".tmp", "w") as new_f:
+        found = False
         for l in old_f:
             for patt in LINES:
                 if patt in l:
+                    found = True
                     if action and l.startswith("#"):
                         l = l[1:]
                     elif not action and not l.startswith("#"):
                         l = "#" + l
             new_f.write(l)
+        if not found:
+            new_f.write("import webrepl\nwebrepl.start()\n")
     # FatFs rename() is not POSIX compliant, will raise OSError if
     # dest file exists.
     os.remove(RC)

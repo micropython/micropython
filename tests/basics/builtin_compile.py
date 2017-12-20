@@ -46,3 +46,4 @@ if have_compile():
     test()
 else:
     print("SKIP")
+    raise SystemExit
