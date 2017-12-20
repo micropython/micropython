@@ -254,7 +254,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[0] = &MICROPY_HW_SPI1_NSS;
         #endif
         pins[1] = &MICROPY_HW_SPI1_SCK;
+        #if defined(MICROPY_HW_SPI1_MISO)
         pins[2] = &MICROPY_HW_SPI1_MISO;
+        #endif
         pins[3] = &MICROPY_HW_SPI1_MOSI;
         // enable the SPI clock
         __SPI1_CLK_ENABLE();
@@ -266,7 +268,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[0] = &MICROPY_HW_SPI2_NSS;
         #endif
         pins[1] = &MICROPY_HW_SPI2_SCK;
+        #if defined(MICROPY_HW_SPI2_MISO)
         pins[2] = &MICROPY_HW_SPI2_MISO;
+        #endif
         pins[3] = &MICROPY_HW_SPI2_MOSI;
         // enable the SPI clock
         __SPI2_CLK_ENABLE();
@@ -278,7 +282,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[0] = &MICROPY_HW_SPI3_NSS;
         #endif
         pins[1] = &MICROPY_HW_SPI3_SCK;
+        #if defined(MICROPY_HW_SPI3_MISO)
         pins[2] = &MICROPY_HW_SPI3_MISO;
+        #endif
         pins[3] = &MICROPY_HW_SPI3_MOSI;
         // enable the SPI clock
         __SPI3_CLK_ENABLE();
@@ -290,7 +296,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[0] = &MICROPY_HW_SPI4_NSS;
         #endif
         pins[1] = &MICROPY_HW_SPI4_SCK;
+        #if defined(MICROPY_HW_SPI4_MISO)
         pins[2] = &MICROPY_HW_SPI4_MISO;
+        #endif
         pins[3] = &MICROPY_HW_SPI4_MOSI;
         // enable the SPI clock
         __SPI4_CLK_ENABLE();
@@ -302,7 +310,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[0] = &MICROPY_HW_SPI5_NSS;
         #endif
         pins[1] = &MICROPY_HW_SPI5_SCK;
+        #if defined(MICROPY_HW_SPI5_MISO)
         pins[2] = &MICROPY_HW_SPI5_MISO;
+        #endif
         pins[3] = &MICROPY_HW_SPI5_MOSI;
         // enable the SPI clock
         __SPI5_CLK_ENABLE();
@@ -314,7 +324,9 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         pins[0] = &MICROPY_HW_SPI6_NSS;
         #endif
         pins[1] = &MICROPY_HW_SPI6_SCK;
+        #if defined(MICROPY_HW_SPI6_MISO)
         pins[2] = &MICROPY_HW_SPI6_MISO;
+        #endif
         pins[3] = &MICROPY_HW_SPI6_MOSI;
         // enable the SPI clock
         __SPI6_CLK_ENABLE();
