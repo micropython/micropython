@@ -500,7 +500,14 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     if (!self->is_enabled) {
         mp_printf(print, "UART(%u)", self->uart_id);
     } else {
-        mp_int_t bits = (self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9);
+        mp_int_t bits;
+        switch (self->uart.Init.WordLength) {
+            #ifdef UART_WORDLENGTH_7B
+            case UART_WORDLENGTH_7B: bits = 7; break;
+            #endif
+            case UART_WORDLENGTH_8B: bits = 8; break;
+            case UART_WORDLENGTH_9B: default: bits = 9; break;
+        }
         if (self->uart.Init.Parity != UART_PARITY_NONE) {
             bits -= 1;
         }
@@ -580,6 +587,10 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         init->WordLength = UART_WORDLENGTH_8B;
     } else if (bits == 9) {
         init->WordLength = UART_WORDLENGTH_9B;
+    #ifdef UART_WORDLENGTH_7B
+    } else if (bits == 7) {
+        init->WordLength = UART_WORDLENGTH_7B;
+    #endif
     } else {
         mp_raise_ValueError("unsupported combination of bits and parity");
     }
