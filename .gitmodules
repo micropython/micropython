@@ -40,3 +40,6 @@
 [submodule "tools/usb_descriptor"]
 	path = tools/usb_descriptor
 	url = https://github.com/adafruit/usb_descriptor.git
+[submodule "lib/nrfutil"]
+	path = lib/nrfutil
+	url = https://github.com/adafruit/nRF52_nrfutil

@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#define PCA10040
-
 #define MICROPY_HW_BOARD_NAME       "Bluefruit nRF52 Feather"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "nrf52"
@@ -33,7 +31,7 @@
 #define MICROPY_PY_MACHINE_HW_PWM   (1)
 #define MICROPY_PY_MACHINE_HW_SPI   (1)
 #define MICROPY_PY_MACHINE_TIMER    (1)
-#define MICROPY_PY_MACHINE_RTC      (1)
+#define MICROPY_PY_MACHINE_RTC      (0)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
@@ -59,18 +57,23 @@
 #define MICROPY_HW_LED2             (19) // LED2
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_A8)
-#define MICROPY_HW_UART1_TX         (pin_A6)
+#define MICROPY_HW_UART1_RX         (pin_PA08)
+#define MICROPY_HW_UART1_TX         (pin_PA06)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_A12) // (Arduino D13)
-#define MICROPY_HW_SPI0_MOSI        (pin_A13) // (Arduino D11)
-#define MICROPY_HW_SPI0_MISO        (pin_A14) // (Arduino D12)
+#define MICROPY_HW_SPI0_SCK         (pin_PA12) // (Arduino D13)
+#define MICROPY_HW_SPI0_MOSI        (pin_PA13) // (Arduino D11)
+#define MICROPY_HW_SPI0_MISO        (pin_PA14) // (Arduino D12)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
 #define HELP_TEXT_BOARD_LED         "1,2"
+
+
+
+#define PORT_HEAP_SIZE                (32*1024)
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500

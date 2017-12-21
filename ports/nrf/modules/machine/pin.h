@@ -51,16 +51,20 @@ typedef struct {
 typedef struct {
   mp_obj_base_t base;
   qstr name;
-  uint32_t port   : 4;
-  uint32_t pin    : 5;      // Some ARM processors use 32 bits/PORT
-  uint32_t num_af : 4;
-  uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
-  uint32_t adc_num  : 3;    // 1 bit per ADC
-  uint32_t pin_mask;
+
+  uint32_t port        : 1;
+  uint32_t pin         : 5; // Some ARM processors use 32 bits/PORT
+  uint32_t num_af      : 4;
+  uint32_t adc_channel : 4; // 0 is no ADC, ADC channel from 1 to 8
+
+//  uint32_t pin_mask;
   pin_gpio_t *gpio;
   const pin_af_obj_t *af;
   uint32_t pull;
 } pin_obj_t;
+
+// Adafruit
+extern const mp_obj_type_t mcu_pin_type;
 
 extern const mp_obj_type_t pin_type;
 extern const mp_obj_type_t pin_af_type;
@@ -84,8 +88,16 @@ typedef struct {
 extern const mp_obj_type_t pin_board_pins_obj_type;
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
 
-extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+//extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+//extern const mp_obj_dict_t pin_board_pins_locals_dict;
+
+// Adafruit modification for CircuitPython board module
+extern const mp_obj_dict_t mcu_pin_globals;
+extern const mp_obj_dict_t board_module_globals;
+
+#define pin_cpu_pins_locals_dict    mcu_pin_globals
+#define pin_board_pins_locals_dict  board_module_globals
+
 
 MP_DECLARE_CONST_FUN_OBJ_KW(pin_init_obj);
 

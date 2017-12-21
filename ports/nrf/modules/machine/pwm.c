@@ -34,7 +34,8 @@
 #if MICROPY_PY_MACHINE_HW_PWM
 
 #include "pin.h"
-#include "genhdr/pins.h"
+//#include "genhdr/pins.h"
+#include "pins.h"
 #include "pwm.h"
 
 #if NRF52

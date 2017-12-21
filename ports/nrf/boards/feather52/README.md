@@ -1,6 +1,10 @@
 # Setup
 
-Before you can build, you will need to run the following commands once:
+## Installing CircuitPython submodules
+
+Before you can build, you will need to run the following commands once, which
+will install the submodules that are part of the CircuitPython ecosystem, and
+build the `mpy-cross` tool:
 
 ```
 $ cd circuitpython
@@ -8,7 +12,7 @@ $ git submodule update --init
 $ make -C mpy-cross
 ```
 
-You then need to download the SD and Nordic SDK files:
+You then need to download the SD and Nordic SDK files via:
 
 > This script relies on `wget`, which must be available from the command line.
 
@@ -17,47 +21,50 @@ $ cd ports/nrf
 $ ./drivers/bluetooth/download_ble_stack.sh
 ```
 
+## Installing `nrfutil`
+
+The Adafruit Bluefruit nRF52 Feather ships with a serial and OTA BLE bootloader
+that can be used to flash firmware images over a simple serial connection,
+using the on-board USB serial converter.
+
+If you haven't installed this command-line tool yet, go to the `/libs/nrfutil`
+folder (where nrfutil 0.5.2 is installed as a sub-module) and run the following
+commands:
+
+> If you get a 'sudo: pip: command not found' error running 'sudo pip install',
+you can install pip via 'sudo easy_install pip'
+
+```
+$ cd ../../libs/nrfutil
+$ sudo pip install -r requirements.txt
+$ sudo python setup.py install
+```
+
 # Building and flashing firmware images
 
-## Building CircuitPython
+## Building CircuitPython binaries
 
 #### REPL over UART (default settings)
 
 To build a CircuitPython binary with default settings for the
 `feather52` target enter:
 
+> **NOTE:** `BOARD=feather52` is the default option and isn't stricly required.
+
 ```
 $ make BOARD=feather52 V=1
 ```
 
-#### REPL over BLE UART (AKA `NUS`)
+#### REPL over BLE support
 
-To build a CircuitPython binary with REPL over BLE UART, edit
-`bluetooth_conf.h` with the following values (under
-`#elif (BLUETOOTH_SD == 132)`):
-
-```
-#define MICROPY_PY_BLE                  (1)
-#define MICROPY_PY_BLE_NUS              (1)
-#define BLUETOOTH_WEBBLUETOOTH_REPL     (1)
-```
-
-Then build the CircuitPython binary, including `SD=s132`
-to enable BLE support in the build process:
+To build a CircuitPython binary with BLE support (S132) include `SD=s132`
+as part of the build process:
 
 ```
 $ make BOARD=feather52 V=1 SD=s132
 ```
 
-## Flashing with `nrfutil`
-
-The Adafruit Bluefruit nRF52 Feather ships with a serial and OTA BLE bootloader
-that can be used to flash firmware images over a simple serial connection,
-using the on-board USB serial converter.
-
-These commands assume that you have already installed `nrfutil`, as described
-in the [learning guide](https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide/arduino-bsp-setup)
-for the Arduino variant of the board.
+## Flashing binaries with `nrfutil`
 
 ### 1. **Update bootloader** to single-bank version
 
@@ -88,7 +95,7 @@ To enable BLE5 support and the latest S132 release, flash the v5.0.0 bootloader 
 $ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SOFTDEV_VERSION=5.0.0 boot-flash
 ```
 
-### 2. Generate a CircuitPython DFU .zip package and flash it over serial
+### 2. Generate and flash a CircuitPython DFU .zip package over serial
 
 The following command will package and flash the CircuitPython binary using the
 appropriate bootloader mentionned above.
@@ -102,9 +109,76 @@ image, as described earlier in this readme.
 $ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART dfu-gen dfu-flash
 ```
 
-If you built your CircuitPython binary with **BLE UART** support you will
-need to add the `SD=s132` flag as shown below:
+If you built your CircuitPython binary with **BLE** support you will need to
+add the `SD=s132` flag as shown below:
 
 ```
 $ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 dfu-gen dfu-flash
 ```
+
+## Working with CircuitPython
+
+### Running local files with `ampy`
+
+[ampy](https://learn.adafruit.com/micropython-basics-load-files-and-run-code/install-ampy)
+is a command-line tool that can be used with the nRF52 Feather to transfer
+local python files to the nRF52 for execution, rather than having to enter
+the REPL manually, enter paste mode, and paste the code yourself.
+
+> **IMPORTANT**: You must have `ampy` version **1.0.3** or higher to use `ampy`
+  with the nRF52. The bootloader on the nRF52 requires a delay between the
+  HW reset, and the moment when the command sequance is sent to enter raw
+  mode. This required `-d/--delay` flag was added in release 1.0.3.
+
+
+Save the following file as `test.py`:
+
+```
+import board
+import digitalio
+import time
+
+led = digitalio.DigitalInOut(board.LED2)
+led.direction = digitalio.Direction.OUTPUT
+
+while True:
+    led.value = True
+    time.sleep(0.5)
+    led.value = False
+    time.sleep(0.5)
+```
+
+Then run the saved file via ampy, updating the serial port as required:
+
+```
+$ ampy -p /dev/tty.SLAB_USBtoUART -d 1.5 run test.py
+```
+
+This should give you blinky at 1 Hz on LED2 (the blue LED on the nRF52 Feather).
+
+### Uploading files and libraries with `ampy`
+
+To upload Python files or pre-compiled CircuitPython libraries to the `lib` folder,
+run the following commands:
+
+> In this example **i2c_device.py** is used, which is part of
+  [Adafruit_CircuitPython_BusDevice](https://github.com/adafruit/Adafruit_CircuitPython_BusDevice)
+
+```
+$ ampy -p /dev/tty.SLAB_USBtoUART -d 1.5 put i2c_device.py lib/i2c_device.py
+```
+
+To verify that the file was uploaded correctly, you can check the contents of
+the `lib` folder with:
+
+```
+$ ampy -p /dev/tty.SLAB_USBtoUART -d 1.5 ls /lib
+i2c_device.py
+```
+
+### Suggested libraries
+
+The following libraries should be installed as a minimum on most new boards:
+
+- [Adafruit_CircuitPython_BusDevice](https://github.com/adafruit/Adafruit_CircuitPython_BusDevice)
+- [Adafruit_CircuitPython_Register](https://github.com/adafruit/Adafruit_CircuitPython_Register/tree/master)

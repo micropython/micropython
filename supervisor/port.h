@@ -57,4 +57,8 @@ void reset_port(void);
 // Reset the rest of the board.
 void reset_board(void);
 
+#ifdef NRF52_SERIES
+void HardFault_Handler(void);
+#endif
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

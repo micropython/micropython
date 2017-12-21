@@ -194,7 +194,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     mp_printf(print, "Pin(Pin.cpu.%q, mode=Pin.", self->name);
     mp_printf(print, "port=0x%x, ", self->port);
     mp_printf(print, "pin=0x%x, ", self->pin);
-    mp_printf(print, "pin_mask=0x%x,", self->pin_mask);
+//    mp_printf(print, "pin_mask=0x%x,", self->pin_mask);
 /*
     uint32_t mode = pin_get_mode(self);
 
@@ -567,7 +567,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 */
-#include "genhdr/pins_af_const.h"
+//#include "genhdr/pins_af_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);

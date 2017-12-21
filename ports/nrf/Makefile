@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
-# then default to pca10040.
-BOARD ?= pca10040
+# then default to feather52.
+BOARD ?= feather52
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
@@ -11,33 +11,38 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
 
-
 ifeq ($(SD), )
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)
 	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
+	-include mpconfigport.mk
+	
+INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include	
+INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)	
+	
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
 	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
+	-include mpconfigport.mk
 
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
+
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h
 
 FROZEN_MPY_DIR = freeze
 
 # include py core make definitions
 include ../../py/py.mk
 
+include $(TOP)/supervisor/supervisor.mk
 
 FATFS_DIR = lib/oofatfs
-MPY_CROSS = ../../mpy-cross/mpy-cross
-MPY_TOOL = ../../tools/mpy-tool.py
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -105,22 +110,12 @@ LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 endif
 
-SRC_LIB = $(addprefix lib/,\
-	libc/string0.c \
-	mp-readline/readline.c \
-	utils/pyexec.c \
-	timeutils/timeutils.c \
-	oofatfs/ff.c \
-	oofatfs/option/unicode.c \
-	)
-
 SRC_HAL = $(addprefix hal/,\
 	hal_uart.c \
 	hal_uarte.c \
 	hal_spi.c \
 	hal_spie.c \
 	hal_time.c \
-	hal_rtc.c \
 	hal_timer.c \
 	hal_twi.c \
 	hal_adc.c \
@@ -136,17 +131,31 @@ SRC_HAL += $(addprefix hal/,\
 	)
 endif
 
+
 SRC_C += \
-	main.c \
 	mphalport.c \
 	help.c \
-	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
+  fifo.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+  boards/$(BOARD)/board.c \
+  boards/$(BOARD)/pins.c \
+	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
+	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/option/ccsbcs.c \
+  lib/timeutils/timeutils.c \
+  lib/utils/buffer_helper.c \
+  lib/utils/context_manager_helpers.c \
+  lib/utils/pyexec.c \
+	lib/libc/string0.c \
+	lib/mp-readline/readline.c \
+  internal_flash.c \
+  
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
@@ -156,11 +165,9 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/adc.c \
 	machine/pin.c \
 	machine/timer.c \
-	machine/rtc.c \
 	machine/pwm.c \
 	machine/led.c \
 	machine/temp.c \
-	uos/moduos.c \
 	utime/modutime.c \
 	pyb/modpyb.c \
 	ubluepy/modubluepy.c \
@@ -179,18 +186,72 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	random/modrandom.c \
 	)
 
-SRC_C += \
-	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
-	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	
+SRC_COMMON_HAL += \
+  board/__init__.c \
+	digitalio/__init__.c \
+	digitalio/DigitalInOut.c \
+	microcontroller/__init__.c \
+	microcontroller/Pin.c \
+	microcontroller/Processor.c \
+	os/__init__.c \
+  time/__init__.c \
+	analogio/__init__.c \
+	analogio/AnalogIn.c \
+	analogio/AnalogOut.c \
+	busio/__init__.c\
+	busio/I2C.c \
+	busio/SPI.c \
+  pulseio/__init__.c \
+	pulseio/PulseIn.c \
+	pulseio/PulseOut.c \
+  pulseio/PWMOut.c \
+  storage/__init__.c \
+
+# These don't have corresponding files in each port but are still located in
+# shared-bindings to make it clear what the contents of the modules are.
+SRC_BINDINGS_ENUMS = \
+	digitalio/Direction.c \
+	digitalio/DriveMode.c \
+	digitalio/Pull.c \
+	help.c \
+	math/__init__.c \
+	supervisor/__init__.c \
+	util.c
+
+SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
+
+SRC_SHARED_MODULE = \
+ 	os/__init__.c \
+	random/__init__.c \
+	storage/__init__.c \
+
+#  bitbangio/__init__.c \
+	bitbangio/I2C.c \
+	bitbangio/OneWire.c \
+	bitbangio/SPI.c \
+	busio/OneWire.c \
+	gamepad/__init__.c \
+	gamepad/GamePad.c \
+	struct/__init__.c \
+	uheap/__init__.c \
+	ustack/__init__.c
+
+#SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
+
+SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
-OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
@@ -241,11 +302,11 @@ endif
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_MOD) $(SRC_LIB) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(DRIVERS_SRC_C) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
@@ -256,16 +317,16 @@ SRC_QSTR_AUTO_DEPS +=
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(HEADER_BUILD)/pins.h
+#$(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+#$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+#	$(ECHO) "Create $@"
+#	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
-	$(call compile_c)
+#$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
+#	$(call compile_c)
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv
@@ -290,4 +351,4 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-include ../../py/mkrules.mk
+include $(TOP)/py/mkrules.mk

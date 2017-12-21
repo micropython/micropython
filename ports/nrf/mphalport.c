@@ -32,6 +32,8 @@
 #include "py/mperrno.h"
 #include "uart.h"
 
+FIL* boot_output_file;
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
@@ -57,6 +59,11 @@ int mp_hal_stdin_rx_chr(void) {
     }
 
     return 0;
+}
+
+bool mp_hal_stdin_any(void)
+{
+  return uart_rx_any(MP_STATE_PORT(pyb_stdio_uart));
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
