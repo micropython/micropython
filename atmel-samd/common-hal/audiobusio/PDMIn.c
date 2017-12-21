@@ -273,8 +273,9 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
         uint32_t pdm_sample = pdm_samples[i];
         REPEAT_16_TIMES( {
                 if (pdm_sample & 0x8000) {
-                    running_sum += *filter_ptr++;
+                    running_sum += *filter_ptr;
                 }
+                filter_ptr++;
                 pdm_sample <<= 1;
             }
             )
