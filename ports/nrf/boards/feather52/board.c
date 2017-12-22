@@ -31,13 +31,6 @@
 
 #include "boards/board.h"
 
-#if 0
-#include "common-hal/microcontroller/Pin.h"
-#include "hal/include/hal_gpio.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/neopixel_write/__init__.h"
-#endif
-
 // Must match temp register in bootloader
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
 uint32_t bootloaderVersion = 0;
@@ -119,4 +112,3 @@ void reset_board(void) {
 //    common_hal_neopixel_write(&neopixel_pin, empty, 30);
 //    common_hal_digitalio_digitalinout_deinit(&neopixel_pin);
 }
-
