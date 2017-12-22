@@ -47,7 +47,7 @@ void pulsein_reset(void) {
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
-
+    mp_raise_NotImplementedError(NULL);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
