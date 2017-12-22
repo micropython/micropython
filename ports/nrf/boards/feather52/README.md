@@ -35,7 +35,7 @@ commands:
 you can install pip via 'sudo easy_install pip'
 
 ```
-$ cd ../../libs/nrfutil
+$ cd ../../lib/nrfutil
 $ sudo pip install -r requirements.txt
 $ sudo python setup.py install
 ```
@@ -53,15 +53,6 @@ To build a CircuitPython binary with default settings for the
 
 ```
 $ make BOARD=feather52 V=1
-```
-
-#### REPL over BLE support
-
-To build a CircuitPython binary with BLE support (S132) include `SD=s132`
-as part of the build process:
-
-```
-$ make BOARD=feather52 V=1 SD=s132
 ```
 
 ## Flashing binaries with `nrfutil`
