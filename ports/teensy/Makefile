@@ -135,7 +135,7 @@ SRC_C += \
 
 OBJ += $(BUILD)/memzip-files.o
 
-MAKE_MEMZIP = $(TOP)/lib/memzip/make-memzip.py
+MAKE_MEMZIP = $(PYTHON) $(TOP)/lib/memzip/make-memzip.py
 ifeq ($(MEMZIP_DIR),)
 MEMZIP_DIR = memzip_files
 endif
@@ -145,7 +145,7 @@ $(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
 
 $(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
 	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
+	$(Q)$(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
 
 endif # USE_MEMZIP
 
@@ -196,7 +196,8 @@ $(BUILD)/%.hex: $(BUILD)/%.elf
 	$(ECHO) "HEX $<"
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom "$<" "$@"
 
-MAKE_PINS = make-pins.py
+MAKE_PINS_SRC = make-pins.py
+MAKE_PINS = $(PYTHON) $(MAKE_PINS_SRC)
 BOARD_PINS = teensy_pins.csv
 AF_FILE = mk20dx256_af.csv
 PREFIX_FILE = mk20dx256_prefix.c
@@ -221,9 +222,9 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: teensy_%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: teensy_%.csv $(MAKE_PINS_SRC) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
 	$(call compile_c)

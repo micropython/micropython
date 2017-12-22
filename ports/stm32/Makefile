@@ -28,10 +28,10 @@ HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 FATFS_DIR=lib/oofatfs
-DFU=$(TOP)/tools/dfu.py
+DFU=$(PYTHON) $(TOP)/tools/dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 1
-PYDFU ?= $(TOP)/tools/pydfu.py
+PYDFU ?= $(PYTHON) $(TOP)/tools/pydfu.py
 DFU_UTIL ?= dfu-util
 DEVICE=0483:df11
 STFLASH ?= st-flash
@@ -370,7 +370,7 @@ endif
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 ifeq ($(USE_PYDFU),1)
-	$(Q)$(PYTHON) $(PYDFU) -u $<
+	$(Q)$(PYDFU) -u $<
 else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
@@ -392,7 +392,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
-	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
+	$(Q)$(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -403,8 +403,10 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
 
-PLLVALUES = boards/pllvalues.py
-MAKE_PINS = boards/make-pins.py
+PLLVALUES_SRC = boards/pllvalues.py
+PLLVALUES = $(PYTHON) $(PLLVALUES_SRC)
+MAKE_PINS_SRC = boards/make-pins.py
+MAKE_PINS = $(PYTHON) $(MAKE_PINS_SRC)
 BOARD_PINS = boards/$(BOARD)/pins.csv
 PREFIX_FILE = boards/stm32f4xx_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
@@ -413,8 +415,12 @@ GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
-INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
-FILE2H = $(TOP)/tools/file2h.py
+INSERT_USB_IDS_SRC = $(TOP)/tools/insert-usb-ids.py
+INSERT_USB_IDS = $(PYTHON) $(INSERT_USB_IDS_SRC)
+FILE2H_SRC = $(TOP)/tools/file2h.py
+FILE2H = $(PYTHON) $(FILE2H_SRC)
+MAKE_STMCONST_SRC = $(CURDIR)/make-stmconst.py
+MAKE_STMCONST = $(PYTHON) $(MAKE_STMCONST_SRC)
 
 USB_IDS_FILE = usb.h
 CDCINF_TEMPLATE = pybcdc.inf_template
@@ -443,9 +449,9 @@ main.c: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS_SRC) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
 	$(call compile_c)
@@ -458,23 +464,23 @@ CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
 CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
-$(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
+$(GEN_PLLFREQTABLE_HDR): $(PLLVALUES_SRC) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(PLLVALUES) -c file:boards/$(BOARD)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
+	$(Q)$(PLLVALUES) -c file:boards/$(BOARD)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to
 # make both modstm_const.h and modstm_qstr.h
-$(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
+$(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) $(MAKE_STMCONST_SRC) | $(HEADER_BUILD)
 	$(ECHO) "Create stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(MAKE_STMCONST) --qstr $(GEN_STMCONST_QSTR) --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
 
-$(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
+$(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H_SRC) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(FILE2H) $< > $@
+	$(Q)$(FILE2H) $< > $@
 
-$(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE) | $(HEADER_BUILD)
+$(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS_SRC) $(USB_IDS_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
+	$(Q)$(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
 include $(TOP)/py/mkrules.mk
