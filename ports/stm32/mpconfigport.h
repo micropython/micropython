@@ -131,7 +131,6 @@
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (1)
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
 #define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
@@ -243,6 +242,17 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_TIMER (14)
 #define MICROPY_HW_MAX_UART (6)
+#endif
+
+// enable hardware I2C if there are any peripherals defined
+#define MICROPY_HW_ENABLE_HW_I2C ( \
+    defined(MICROPY_HW_I2C1_SCL) \
+    || defined(MICROPY_HW_I2C2_SCL) \
+    || defined(MICROPY_HW_I2C3_SCL) \
+    || defined(MICROPY_HW_I2C4_SCL) \
+)
+#if MICROPY_HW_ENABLE_HW_I2C
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
