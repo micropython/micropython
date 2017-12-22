@@ -120,5 +120,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_A5   ), MP_ROM_PTR(&pin_PA29) },
   { MP_ROM_QSTR(MP_QSTR_A6   ), MP_ROM_PTR(&pin_PA30) },
   { MP_ROM_QSTR(MP_QSTR_A7   ), MP_ROM_PTR(&pin_PA31) },
+  { MP_ROM_QSTR(MP_QSTR_D13  ), MP_ROM_PTR(&pin_PA17) }, // LED for stdrd exmpl
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
