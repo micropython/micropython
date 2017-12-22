@@ -17,10 +17,10 @@ ifeq ($(SD), )
 	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
 	-include mpconfigport.mk
-	
-INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include	
-INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)	
-	
+
+INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
+INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
+
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
@@ -137,25 +137,25 @@ SRC_C += \
 	help.c \
 	pin_named_pins.c \
 	fatfs_port.c \
-  fifo.c \
+ 	fifo.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
-  boards/$(BOARD)/board.c \
-  boards/$(BOARD)/pins.c \
+ 	boards/$(BOARD)/board.c \
+ 	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
-  lib/timeutils/timeutils.c \
-  lib/utils/buffer_helper.c \
-  lib/utils/context_manager_helpers.c \
-  lib/utils/pyexec.c \
+ 	lib/timeutils/timeutils.c \
+ 	lib/utils/buffer_helper.c \
+ 	lib/utils/context_manager_helpers.c \
+ 	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
-  internal_flash.c \
-  
+ 	internal_flash.c \
+
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
@@ -186,27 +186,27 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	random/modrandom.c \
 	)
 
-	
+
 SRC_COMMON_HAL += \
-  board/__init__.c \
+	board/__init__.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	os/__init__.c \
-  time/__init__.c \
+ 	time/__init__.c \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	busio/__init__.c\
 	busio/I2C.c \
 	busio/SPI.c \
-  pulseio/__init__.c \
+ 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
-  pulseio/PWMOut.c \
-  storage/__init__.c \
+ 	pulseio/PWMOut.c \
+ 	storage/__init__.c \
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
