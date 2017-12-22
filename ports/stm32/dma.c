@@ -455,18 +455,10 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
             DMA_CalcBaseAndBitshift(dma);
 
 #elif defined(MCU_SERIES_L4)
-            // copied from stm32l4xx_hal_dma.c:dma_init()
-            if ((uint32_t)(dma->Instance) < (uint32_t)(DMA2_Channel1)) {
-                // DMA1
-                dma->ChannelIndex = (((uint32_t)dma->Instance - (uint32_t)DMA1_Channel1) 
-                                        / ((uint32_t)DMA1_Channel2 - (uint32_t)DMA1_Channel1)) << 2;
-                dma->DmaBaseAddress = DMA1;
-            } else {
-                // DMA2
-                dma->ChannelIndex = (((uint32_t)dma->Instance - (uint32_t)DMA2_Channel1) 
-                                        / ((uint32_t)DMA2_Channel2 - (uint32_t)DMA2_Channel1)) << 2;
-                dma->DmaBaseAddress = DMA2;
-            }
+            // The memset() just above will have cleared these private vars from the HAL.
+            // Recalculate them now.
+            dma->DmaBaseAddress = (DMA_TypeDef *)((uint32_t)dma->Instance & ~0xff);
+            dma->ChannelIndex = (((uint32_t)dma->Instance - (uint32_t)dma->DmaBaseAddress) /20)*4;
 #endif
         }
 
