@@ -222,7 +222,7 @@ void i2c_init0(void) {
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
     memset(&I2CHandle4, 0, sizeof(I2C_HandleTypeDef));
-    I2CHandle3.Instance = I2C4;
+    I2CHandle4.Instance = I2C4;
     #endif
 }
 
@@ -258,7 +258,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
         i2c_unit = 4;
         scl_pin = &MICROPY_HW_I2C4_SCL;
         sda_pin = &MICROPY_HW_I2C4_SDA;
-        __I2C3_CLK_ENABLE();
+        __I2C4_CLK_ENABLE();
     #endif
     } else {
         // I2C does not exist for this board (shouldn't get here, should be checked by caller)
