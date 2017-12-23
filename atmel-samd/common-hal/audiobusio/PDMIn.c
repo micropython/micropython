@@ -213,11 +213,15 @@ static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
     }
     dma_descriptor_create(audio_dma.descriptor, &descriptor_config);
 
+    // Do we need more values than will fit in the first buffer?
+    // If so, set up a second buffer chained to be filled after the first buffer.
     if (length * words_per_sample > words_per_buffer) {
         block_transfer_count = words_per_buffer;
         descriptor_config.next_descriptor_address = ((uint32_t)audio_dma.descriptor);
         if (length * words_per_sample < 2 * words_per_buffer) {
-            block_transfer_count = 2 * words_per_buffer - length * words_per_sample;
+            // Length needed is more than one buffer but less than two.
+            // Subtract off the size of the first buffer, and what remains is the count we need.
+            block_transfer_count = length * words_per_sample - words_per_buffer;
             descriptor_config.next_descriptor_address = 0;
         }
         descriptor_config.block_transfer_count = block_transfer_count;
@@ -309,18 +313,21 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     uint32_t remaining_samples_needed = output_buffer_length;
     while (values_output < output_buffer_length) {
         // Wait for the next buffer to fill
-        while (tc_get_count_value(MP_STATE_VM(audiodma_block_counter)) == buffers_processed) {
+        uint32_t block_counter;
+        while ((block_counter = tc_get_count_value(MP_STATE_VM(audiodma_block_counter))) == buffers_processed) {
             #ifdef MICROPY_VM_HOOK_LOOP
                 MICROPY_VM_HOOK_LOOP
             #endif
         }
-        if (tc_get_count_value(MP_STATE_VM(audiodma_block_counter)) != (buffers_processed + 1)) {
+        if (block_counter != (buffers_processed + 1)) {
+            // Looks like we aren't keeping up. We shouldn't skip a buffer.
             break;
         }
 
         // The mic is running all the time, so we don't need to wait the usual 10msec or 100msec
         // for it to start up.
 
+        // Flip back and forth between processing the first and second buffers.
         uint32_t *buffer = first_buffer;
         DmacDescriptor* descriptor = audio_dma.descriptor;
         if (buffers_processed % 2 == 1) {
@@ -342,15 +349,13 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
             }
             values_output++;
         }
+
         buffers_processed++;
 
-        // See if we need to transfer less than a full buffer for the remaining needed samples.
+        // We might need fewer than an entire of samples, but we won't try to alter the
+        // last DMA, which might already be in progress, so we'll just throw away some
+        // samples at the end.
         remaining_samples_needed = output_buffer_length - values_output;
-        if (remaining_samples_needed > 0 && remaining_samples_needed < samples_per_buffer) {
-            descriptor->BTCNT.reg = remaining_samples_needed;
-            descriptor->DSTADDR.reg = ((uint32_t) buffer) + remaining_samples_needed * words_per_sample;
-            descriptor->DESCADDR.reg = 0;
-        }
     }
 
     stop_dma(self);
