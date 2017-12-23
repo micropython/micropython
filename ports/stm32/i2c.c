@@ -136,11 +136,17 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 // The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
 // defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (100000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (100000)
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {100000, 0x40912732}, \
+        {400000, 0x10911823}, \
+        {1000000, 0x00611116}, \
+    }
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (1000000)
 
-#elif defined(STM32F767xx) || defined(STM32F769xx)
+#elif defined(STM32F722xx) || defined(STM32F723xx) \
+    || defined(STM32F732xx) || defined(STM32F733xx) \
+    || defined(STM32F767xx) || defined(STM32F769xx)
 
 // These timing values are for f_I2CCLK=54MHz and are only approximate
 #define MICROPY_HW_I2C_BAUDRATE_TIMING { \
