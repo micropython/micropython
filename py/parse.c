@@ -61,9 +61,6 @@
 typedef struct _rule_t {
     byte rule_id;
     byte act;
-#ifdef USE_RULE_NAME
-    const char *rule_name;
-#endif
     uint16_t arg[];
 } rule_t;
 
@@ -94,13 +91,8 @@ enum {
 #define tok(t)                  (RULE_ARG_TOK | MP_TOKEN_##t)
 #define rule(r)                 (RULE_ARG_RULE | RULE_##r)
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
-#ifdef USE_RULE_NAME
-#define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { __VA_ARGS__ } };
-#define DEF_RULE_NC(rule, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, #rule, { __VA_ARGS__ } };
-#else
 #define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
 #define DEF_RULE_NC(rule, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
-#endif
 #include "py/grammar.h"
 #undef or
 #undef and
@@ -129,6 +121,23 @@ STATIC const rule_t *const rules[] = {
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
+
+#if USE_RULE_NAME
+// Define an array of rule names corresponding to each rule
+STATIC const char *const rule_name_table[] = {
+#define DEF_RULE(rule, comp, kind, ...) #rule,
+#define DEF_RULE_NC(rule, kind, ...)
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+    "", // RULE_const_object
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) #rule,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+};
+#endif
 
 typedef struct _rule_stack_t {
     size_t src_line : 8 * sizeof(size_t) - 8; // maximum bits storing source line number
@@ -313,11 +322,11 @@ void mp_parse_node_print(mp_parse_node_t pn, size_t indent) {
             #endif
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-#ifdef USE_RULE_NAME
-            printf("%s(%u) (n=%u)\n", rules[MP_PARSE_NODE_STRUCT_KIND(pns)]->rule_name, (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
-#else
+            #if USE_RULE_NAME
+            printf("%s(%u) (n=%u)\n", rule_name_table[MP_PARSE_NODE_STRUCT_KIND(pns)], (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
+            #else
             printf("rule(%u) (n=%u)\n", (uint)MP_PARSE_NODE_STRUCT_KIND(pns), (uint)n);
-#endif
+            #endif
             for (size_t i = 0; i < n; i++) {
                 mp_parse_node_print(pns->nodes[i], indent + 2);
             }
@@ -797,7 +806,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         for (int j = 0; j < parser.rule_stack_top; ++j) {
             printf(" ");
         }
-        printf("%s n=%d i=%d bt=%d\n", rule->rule_name, n, i, backtrack);
+        printf("%s n=%d i=%d bt=%d\n", rule_name_table[rule->rule_id], n, i, backtrack);
         */
 
         switch (rule->act & RULE_ACT_KIND_MASK) {
