@@ -241,6 +241,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART6_IRQn;
             pins[0] = &MICROPY_HW_UART6_TX;
             pins[1] = &MICROPY_HW_UART6_RX;
+            #if defined(MICROPY_HW_UART6_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = &MICROPY_HW_UART6_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART6_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = &MICROPY_HW_UART6_CTS;
+            }
+            #endif
             __USART6_CLK_ENABLE();
             break;
         #endif
