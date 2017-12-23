@@ -61,7 +61,7 @@
 typedef struct _rule_t {
     byte rule_id;
     byte act;
-    uint16_t arg[];
+    const uint16_t *arg;
 } rule_t;
 
 enum {
@@ -81,6 +81,8 @@ enum {
 #undef DEF_RULE_NC
 };
 
+// Define an array of actions corresponding to each rule
+STATIC const uint8_t rule_act_table[] = {
 #define or(n)                   (RULE_ACT_OR | n)
 #define and(n)                  (RULE_ACT_AND | n)
 #define and_ident(n)            (RULE_ACT_AND | n | RULE_ACT_ALLOW_IDENT)
@@ -88,35 +90,55 @@ enum {
 #define one_or_more             (RULE_ACT_LIST | 2)
 #define list                    (RULE_ACT_LIST | 1)
 #define list_with_end           (RULE_ACT_LIST | 3)
-#define tok(t)                  (RULE_ARG_TOK | MP_TOKEN_##t)
-#define rule(r)                 (RULE_ARG_RULE | RULE_##r)
-#define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
-#define DEF_RULE(rule, comp, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
-#define DEF_RULE_NC(rule, kind, ...) static const rule_t rule_##rule = { RULE_##rule, kind, { __VA_ARGS__ } };
+
+#define DEF_RULE(rule, comp, kind, ...) kind,
+#define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
-#undef or
-#undef and
-#undef list
-#undef list_with_end
-#undef tok
-#undef rule
-#undef opt_rule
-#undef one_or_more
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
-STATIC const rule_t *const rules[] = {
-// define rules with a compile function
-#define DEF_RULE(rule, comp, kind, ...) &rule_##rule,
+    0, // RULE_const_object
+
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) kind,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+
+#undef or
+#undef and
+#undef and_ident
+#undef and_blank
+#undef one_or_more
+#undef list
+#undef list_with_end
+};
+
+// Define the argument data for each rule
+#define tok(t)                  (RULE_ARG_TOK | MP_TOKEN_##t)
+#define rule(r)                 (RULE_ARG_RULE | RULE_##r)
+#define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
+
+#define DEF_RULE(rule, comp, kind, ...) static const uint16_t const rule_arg_##rule[] = { __VA_ARGS__ };
+#define DEF_RULE_NC(rule, kind, ...) static const uint16_t const rule_arg_##rule[] = { __VA_ARGS__ };
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+
+#undef tok
+#undef rule
+#undef opt_rule
+
+// Define an array of pointers to corresponding rule data
+STATIC const uint16_t *const rule_arg_table[] = {
+#define DEF_RULE(rule, comp, kind, ...) &rule_arg_##rule[0],
 #define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     NULL, // RULE_const_object
-
-// define rules without a compile function
 #define DEF_RULE(rule, comp, kind, ...)
-#define DEF_RULE_NC(rule, kind, ...) &rule_##rule,
+#define DEF_RULE_NC(rule, kind, ...) &rule_arg_##rule[0],
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
@@ -137,6 +159,10 @@ STATIC const char *const rule_name_table[] = {
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
+#endif
+
+#if (MICROPY_COMP_CONST_FOLDING && MICROPY_COMP_CONST) || !MICROPY_ENABLE_DOC_STRING
+static const rule_t rule_pass_stmt = {RULE_pass_stmt, (RULE_ACT_AND | 1), &rule_arg_pass_stmt[0]};
 #endif
 
 typedef struct _rule_stack_t {
@@ -214,7 +240,7 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     return ret;
 }
 
-STATIC void push_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t arg_i) {
+STATIC void push_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
         rule_stack_t *rs = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc + MICROPY_ALLOC_PARSE_RULE_INC);
         parser->rule_stack = rs;
@@ -222,19 +248,21 @@ STATIC void push_rule(parser_t *parser, size_t src_line, const rule_t *rule, siz
     }
     rule_stack_t *rs = &parser->rule_stack[parser->rule_stack_top++];
     rs->src_line = src_line;
-    rs->rule_id = rule->rule_id;
+    rs->rule_id = rule_id;
     rs->arg_i = arg_i;
 }
 
 STATIC void push_rule_from_arg(parser_t *parser, size_t arg) {
     assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE || (arg & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE);
     size_t rule_id = arg & RULE_ARG_ARG_MASK;
-    push_rule(parser, parser->lexer->tok_line, rules[rule_id], 0);
+    push_rule(parser, parser->lexer->tok_line, rule_id, 0);
 }
 
-STATIC void pop_rule(parser_t *parser, const rule_t **rule, size_t *arg_i, size_t *src_line) {
+STATIC void pop_rule(parser_t *parser, rule_t *rule, size_t *arg_i, size_t *src_line) {
     parser->rule_stack_top -= 1;
-    *rule = rules[parser->rule_stack[parser->rule_stack_top].rule_id];
+    rule->rule_id = parser->rule_stack[parser->rule_stack_top].rule_id;
+    rule->act = rule_act_table[rule->rule_id];
+    rule->arg = rule_arg_table[rule->rule_id];
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
     *src_line = parser->rule_stack[parser->rule_stack_top].src_line;
 }
@@ -656,7 +684,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
                 if (qstr_str(id)[0] == '_') {
                     pop_result(parser); // pop const(value)
                     pop_result(parser); // pop id
-                    push_result_rule(parser, 0, rules[RULE_pass_stmt], 0); // replace with "pass"
+                    push_result_rule(parser, 0, &rule_pass_stmt, 0); // replace with "pass"
                     return true;
                 }
 
@@ -782,7 +810,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         case MP_PARSE_EVAL_INPUT: top_level_rule = RULE_eval_input; break;
         default: top_level_rule = RULE_file_input;
     }
-    push_rule(&parser, lex->tok_line, rules[top_level_rule], 0);
+    push_rule(&parser, lex->tok_line, top_level_rule, 0);
 
     // parse!
 
@@ -797,7 +825,9 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             break;
         }
 
-        pop_rule(&parser, &rule, &i, &rule_src_line);
+        rule_t rule_data;
+        pop_rule(&parser, &rule_data, &i, &rule_src_line);
+        rule = &rule_data;
         n = rule->act & RULE_ACT_ARG_MASK;
 
         /*
@@ -827,7 +857,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     } else {
                         assert(kind == RULE_ARG_RULE);
                         if (i + 1 < n) {
-                            push_rule(&parser, rule_src_line, rule, i + 1); // save this or-rule
+                            push_rule(&parser, rule_src_line, rule->rule_id, i + 1); // save this or-rule
                         }
                         push_rule_from_arg(&parser, rule->arg[i]); // push child of or-rule
                         goto next_rule;
@@ -879,7 +909,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             }
                         }
                     } else {
-                        push_rule(&parser, rule_src_line, rule, i + 1); // save this and-rule
+                        push_rule(&parser, rule_src_line, rule->rule_id, i + 1); // save this and-rule
                         push_rule_from_arg(&parser, rule->arg[i]); // push child of and-rule
                         goto next_rule;
                     }
@@ -900,7 +930,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         // Pushing the "pass" rule here will overwrite any RULE_const_object
                         // entry that was on the result stack, allowing the GC to reclaim
                         // the memory from the const object when needed.
-                        push_result_rule(&parser, rule_src_line, rules[RULE_pass_stmt], 0);
+                        push_result_rule(&parser, rule_src_line, &rule_pass_stmt, 0);
                         break;
                     }
                 }
@@ -1009,7 +1039,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             }
                         } else {
                             assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE);
-                            push_rule(&parser, rule_src_line, rule, i + 1); // save this list-rule
+                            push_rule(&parser, rule_src_line, rule->rule_id, i + 1); // save this list-rule
                             push_rule_from_arg(&parser, arg); // push child of list-rule
                             goto next_rule;
                         }
