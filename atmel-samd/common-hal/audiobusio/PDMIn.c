@@ -334,7 +334,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
             buffer = second_buffer;
             descriptor = &second_descriptor;
         }
-        // Decimate and filter the last buffer
+        // Decimate and filter the buffer that was just filled.
         uint32_t samples_gathered = descriptor->BTCNT.reg / words_per_sample;
         // Don't run off the end of output buffer. Process only as many as needed.
         uint32_t samples_to_process = min(remaining_samples_needed, samples_gathered);
@@ -352,10 +352,28 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 
         buffers_processed++;
 
-        // We might need fewer than an entire of samples, but we won't try to alter the
-        // last DMA, which might already be in progress, so we'll just throw away some
-        // samples at the end.
+        // Compute how many more samples we need, and if the last buffer is the last
+        // set of samples needed, adjust the DMA count to only fetch as necessary.
         remaining_samples_needed = output_buffer_length - values_output;
+        if (remaining_samples_needed <= samples_per_buffer*2 &&
+            remaining_samples_needed > samples_per_buffer) {
+            // Adjust the DMA settings for the current buffer, which will be processed
+            // after the other buffer, which is now receiving samples via DMA.
+            // We don't adjust the DMA in progress, but the one after that.
+            // Timeline:
+            // 1. current buffer (already processed)
+            // 2. alternate buffer (DMA in progress)
+            // 3. current buffer (last set of samples needed)
+
+            // Set up to receive the last set of samples (don't include the alternate buffer, now in use).
+            uint32_t samples_needed_for_last_buffer = remaining_samples_needed - samples_per_buffer;
+            descriptor->BTCNT.reg = samples_needed_for_last_buffer * words_per_sample;
+            descriptor->DSTADDR.reg = ((uint32_t) buffer)
+                + samples_needed_for_last_buffer * words_per_sample * sizeof(buffer[0]);
+
+            // Break chain to alternate buffer.
+            descriptor->DESCADDR.reg = 0;
+        }
     }
 
     stop_dma(self);
