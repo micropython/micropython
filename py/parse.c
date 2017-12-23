@@ -161,10 +161,6 @@ STATIC const char *const rule_name_table[] = {
 };
 #endif
 
-#if (MICROPY_COMP_CONST_FOLDING && MICROPY_COMP_CONST) || !MICROPY_ENABLE_DOC_STRING
-static const rule_t rule_pass_stmt = {RULE_pass_stmt, (RULE_ACT_AND | 1), &rule_arg_pass_stmt[0]};
-#endif
-
 typedef struct _rule_stack_t {
     size_t src_line : 8 * sizeof(size_t) - 8; // maximum bits storing source line number
     size_t rule_id : 8; // this must be large enough to fit largest rule number
@@ -491,12 +487,12 @@ STATIC const mp_rom_map_elem_t mp_constants_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
-STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t num_args);
+STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
 
 #if MICROPY_COMP_CONST_FOLDING
-STATIC bool fold_logical_constants(parser_t *parser, const rule_t *rule, size_t *num_args) {
-    if (rule->rule_id == RULE_or_test
-        || rule->rule_id == RULE_and_test) {
+STATIC bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *num_args) {
+    if (rule_id == RULE_or_test
+        || rule_id == RULE_and_test) {
         // folding for binary logical ops: or and
         size_t copy_to = *num_args;
         for (size_t i = copy_to; i > 0;) {
@@ -506,7 +502,7 @@ STATIC bool fold_logical_constants(parser_t *parser, const rule_t *rule, size_t 
                 // always need to keep the last value
                 break;
             }
-            if (rule->rule_id == RULE_or_test) {
+            if (rule_id == RULE_or_test) {
                 if (mp_parse_node_is_const_true(pn)) {
                     //
                     break;
@@ -533,7 +529,7 @@ STATIC bool fold_logical_constants(parser_t *parser, const rule_t *rule, size_t 
         // we did a complete folding if there's only 1 arg left
         return *num_args == 1;
 
-    } else if (rule->rule_id == RULE_not_test_2) {
+    } else if (rule_id == RULE_not_test_2) {
         // folding for unary logical op: not
         mp_parse_node_t pn = peek_result(parser, 0);
         if (mp_parse_node_is_const_false(pn)) {
@@ -551,23 +547,23 @@ STATIC bool fold_logical_constants(parser_t *parser, const rule_t *rule, size_t 
     return false;
 }
 
-STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args) {
+STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     // this code does folding of arbitrary integer expressions, eg 1 + 2 * 3 + 4
     // it does not do partial folding, eg 1 + 2 + x -> 3 + x
 
     mp_obj_t arg0;
-    if (rule->rule_id == RULE_expr
-        || rule->rule_id == RULE_xor_expr
-        || rule->rule_id == RULE_and_expr) {
+    if (rule_id == RULE_expr
+        || rule_id == RULE_xor_expr
+        || rule_id == RULE_and_expr) {
         // folding for binary ops: | ^ &
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
         }
         mp_binary_op_t op;
-        if (rule->rule_id == RULE_expr) {
+        if (rule_id == RULE_expr) {
             op = MP_BINARY_OP_OR;
-        } else if (rule->rule_id == RULE_xor_expr) {
+        } else if (rule_id == RULE_xor_expr) {
             op = MP_BINARY_OP_XOR;
         } else {
             op = MP_BINARY_OP_AND;
@@ -580,9 +576,9 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
             }
             arg0 = mp_binary_op(op, arg0, arg1);
         }
-    } else if (rule->rule_id == RULE_shift_expr
-        || rule->rule_id == RULE_arith_expr
-        || rule->rule_id == RULE_term) {
+    } else if (rule_id == RULE_shift_expr
+        || rule_id == RULE_arith_expr
+        || rule_id == RULE_term) {
         // folding for binary ops: << >> + - * / % //
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
@@ -626,7 +622,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
             }
             arg0 = mp_binary_op(op, arg0, arg1);
         }
-    } else if (rule->rule_id == RULE_factor_2) {
+    } else if (rule_id == RULE_factor_2) {
         // folding for unary ops: + - ~
         mp_parse_node_t pn = peek_result(parser, 0);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
@@ -645,7 +641,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
         arg0 = mp_unary_op(op, arg0);
 
     #if MICROPY_COMP_CONST
-    } else if (rule->rule_id == RULE_expr_stmt) {
+    } else if (rule_id == RULE_expr_stmt) {
         mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!MP_PARSE_NODE_IS_NULL(pn1)
             && !(MP_PARSE_NODE_IS_STRUCT_KIND(pn1, RULE_expr_stmt_augassign)
@@ -684,7 +680,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
                 if (qstr_str(id)[0] == '_') {
                     pop_result(parser); // pop const(value)
                     pop_result(parser); // pop id
-                    push_result_rule(parser, 0, &rule_pass_stmt, 0); // replace with "pass"
+                    push_result_rule(parser, 0, RULE_pass_stmt, 0); // replace with "pass"
                     return true;
                 }
 
@@ -700,7 +696,7 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
     #endif
 
     #if MICROPY_COMP_MODULE_CONST
-    } else if (rule->rule_id == RULE_atom_expr_normal) {
+    } else if (rule_id == RULE_atom_expr_normal) {
         mp_parse_node_t pn0 = peek_result(parser, 1);
         mp_parse_node_t pn1 = peek_result(parser, 0);
         if (!(MP_PARSE_NODE_IS_ID(pn0)
@@ -745,9 +741,9 @@ STATIC bool fold_constants(parser_t *parser, const rule_t *rule, size_t num_args
 }
 #endif
 
-STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *rule, size_t num_args) {
+STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args) {
     // optimise away parenthesis around an expression if possible
-    if (rule->rule_id == RULE_atom_paren) {
+    if (rule_id == RULE_atom_paren) {
         // there should be just 1 arg for this rule
         mp_parse_node_t pn = peek_result(parser, 0);
         if (MP_PARSE_NODE_IS_NULL(pn)) {
@@ -761,11 +757,11 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *ru
     }
 
     #if MICROPY_COMP_CONST_FOLDING
-    if (fold_logical_constants(parser, rule, &num_args)) {
+    if (fold_logical_constants(parser, rule_id, &num_args)) {
         // we folded this rule so return straight away
         return;
     }
-    if (fold_constants(parser, rule, num_args)) {
+    if (fold_constants(parser, rule_id, num_args)) {
         // we folded this rule so return straight away
         return;
     }
@@ -773,7 +769,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, const rule_t *ru
 
     mp_parse_node_struct_t *pn = parser_alloc(parser, sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * num_args);
     pn->source_line = src_line;
-    pn->kind_num_nodes = (rule->rule_id & 0xff) | (num_args << 8);
+    pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
     for (size_t i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
     }
@@ -930,7 +926,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         // Pushing the "pass" rule here will overwrite any RULE_const_object
                         // entry that was on the result stack, allowing the GC to reclaim
                         // the memory from the const object when needed.
-                        push_result_rule(&parser, rule_src_line, &rule_pass_stmt, 0);
+                        push_result_rule(&parser, rule_src_line, RULE_pass_stmt, 0);
                         break;
                     }
                 }
@@ -976,7 +972,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         i += 1;
                     }
 
-                    push_result_rule(&parser, rule_src_line, rule, i);
+                    push_result_rule(&parser, rule_src_line, rule->rule_id, i);
                 }
                 break;
             }
@@ -1058,12 +1054,12 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     // list matched single item
                     if (had_trailing_sep) {
                         // if there was a trailing separator, make a list of a single item
-                        push_result_rule(&parser, rule_src_line, rule, i);
+                        push_result_rule(&parser, rule_src_line, rule->rule_id, i);
                     } else {
                         // just leave single item on stack (ie don't wrap in a list)
                     }
                 } else {
-                    push_result_rule(&parser, rule_src_line, rule, i);
+                    push_result_rule(&parser, rule_src_line, rule->rule_id, i);
                 }
                 break;
             }
