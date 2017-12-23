@@ -58,12 +58,6 @@
 // (un)comment to use rule names; for debugging
 //#define USE_RULE_NAME (1)
 
-typedef struct _rule_t {
-    byte rule_id;
-    byte act;
-    const uint16_t *arg;
-} rule_t;
-
 enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
@@ -254,13 +248,12 @@ STATIC void push_rule_from_arg(parser_t *parser, size_t arg) {
     push_rule(parser, parser->lexer->tok_line, rule_id, 0);
 }
 
-STATIC void pop_rule(parser_t *parser, rule_t *rule, size_t *arg_i, size_t *src_line) {
+STATIC uint8_t pop_rule(parser_t *parser, size_t *arg_i, size_t *src_line) {
     parser->rule_stack_top -= 1;
-    rule->rule_id = parser->rule_stack[parser->rule_stack_top].rule_id;
-    rule->act = rule_act_table[rule->rule_id];
-    rule->arg = rule_arg_table[rule->rule_id];
+    uint8_t rule_id = parser->rule_stack[parser->rule_stack_top].rule_id;
     *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
     *src_line = parser->rule_stack[parser->rule_stack_top].src_line;
+    return rule_id;
 }
 
 bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
@@ -810,10 +803,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     // parse!
 
-    size_t n, i; // state for the current rule
-    size_t rule_src_line; // source line for the first token matched by the current rule
     bool backtrack = false;
-    const rule_t *rule = NULL;
 
     for (;;) {
         next_rule:
@@ -821,10 +811,13 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             break;
         }
 
-        rule_t rule_data;
-        pop_rule(&parser, &rule_data, &i, &rule_src_line);
-        rule = &rule_data;
-        n = rule->act & RULE_ACT_ARG_MASK;
+        // Pop the next rule to process it
+        size_t i; // state for the current rule
+        size_t rule_src_line; // source line for the first token matched by the current rule
+        uint8_t rule_id = pop_rule(&parser, &i, &rule_src_line);
+        uint8_t rule_act = rule_act_table[rule_id];
+        const uint16_t *rule_arg = rule_arg_table[rule_id];
+        size_t n = rule_act & RULE_ACT_ARG_MASK;
 
         /*
         // debugging
@@ -832,10 +825,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         for (int j = 0; j < parser.rule_stack_top; ++j) {
             printf(" ");
         }
-        printf("%s n=%d i=%d bt=%d\n", rule_name_table[rule->rule_id], n, i, backtrack);
+        printf("%s n=%d i=%d bt=%d\n", rule_name_table[rule_id], n, i, backtrack);
         */
 
-        switch (rule->act & RULE_ACT_KIND_MASK) {
+        switch (rule_act & RULE_ACT_KIND_MASK) {
             case RULE_ACT_OR:
                 if (i > 0 && !backtrack) {
                     goto next_rule;
@@ -843,19 +836,19 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     backtrack = false;
                 }
                 for (; i < n; ++i) {
-                    uint16_t kind = rule->arg[i] & RULE_ARG_KIND_MASK;
+                    uint16_t kind = rule_arg[i] & RULE_ARG_KIND_MASK;
                     if (kind == RULE_ARG_TOK) {
-                        if (lex->tok_kind == (rule->arg[i] & RULE_ARG_ARG_MASK)) {
-                            push_result_token(&parser, rule->rule_id);
+                        if (lex->tok_kind == (rule_arg[i] & RULE_ARG_ARG_MASK)) {
+                            push_result_token(&parser, rule_id);
                             mp_lexer_to_next(lex);
                             goto next_rule;
                         }
                     } else {
                         assert(kind == RULE_ARG_RULE);
                         if (i + 1 < n) {
-                            push_rule(&parser, rule_src_line, rule->rule_id, i + 1); // save this or-rule
+                            push_rule(&parser, rule_src_line, rule_id, i + 1); // save this or-rule
                         }
-                        push_rule_from_arg(&parser, rule->arg[i]); // push child of or-rule
+                        push_rule_from_arg(&parser, rule_arg[i]); // push child of or-rule
                         goto next_rule;
                     }
                 }
@@ -867,7 +860,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 // failed, backtrack if we can, else syntax error
                 if (backtrack) {
                     assert(i > 0);
-                    if ((rule->arg[i - 1] & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE) {
+                    if ((rule_arg[i - 1] & RULE_ARG_KIND_MASK) == RULE_ARG_OPT_RULE) {
                         // an optional rule that failed, so continue with next arg
                         push_result_node(&parser, MP_PARSE_NODE_NULL);
                         backtrack = false;
@@ -884,13 +877,13 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // progress through the rule
                 for (; i < n; ++i) {
-                    if ((rule->arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
+                    if ((rule_arg[i] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                         // need to match a token
-                        mp_token_kind_t tok_kind = rule->arg[i] & RULE_ARG_ARG_MASK;
+                        mp_token_kind_t tok_kind = rule_arg[i] & RULE_ARG_ARG_MASK;
                         if (lex->tok_kind == tok_kind) {
                             // matched token
                             if (tok_kind == MP_TOKEN_NAME) {
-                                push_result_token(&parser, rule->rule_id);
+                                push_result_token(&parser, rule_id);
                             }
                             mp_lexer_to_next(lex);
                         } else {
@@ -905,8 +898,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             }
                         }
                     } else {
-                        push_rule(&parser, rule_src_line, rule->rule_id, i + 1); // save this and-rule
-                        push_rule_from_arg(&parser, rule->arg[i]); // push child of and-rule
+                        push_rule(&parser, rule_src_line, rule_id, i + 1); // save this and-rule
+                        push_rule_from_arg(&parser, rule_arg[i]); // push child of and-rule
                         goto next_rule;
                     }
                 }
@@ -917,7 +910,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 #if !MICROPY_ENABLE_DOC_STRING
                 // this code discards lonely statements, such as doc strings
-                if (input_kind != MP_PARSE_SINGLE_INPUT && rule->rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
+                if (input_kind != MP_PARSE_SINGLE_INPUT && rule_id == RULE_expr_stmt && peek_result(&parser, 0) == MP_PARSE_NODE_NULL) {
                     mp_parse_node_t p = peek_result(&parser, 1);
                     if ((MP_PARSE_NODE_IS_LEAF(p) && !MP_PARSE_NODE_IS_ID(p))
                         || MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_const_object)) {
@@ -937,8 +930,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 size_t num_not_nil = 0;
                 for (size_t x = n; x > 0;) {
                     --x;
-                    if ((rule->arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
-                        mp_token_kind_t tok_kind = rule->arg[x] & RULE_ARG_ARG_MASK;
+                    if ((rule_arg[x] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
+                        mp_token_kind_t tok_kind = rule_arg[x] & RULE_ARG_ARG_MASK;
                         if (tok_kind == MP_TOKEN_NAME) {
                             // only tokens which were names are pushed to stack
                             i += 1;
@@ -953,7 +946,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     }
                 }
 
-                if (num_not_nil == 1 && (rule->act & RULE_ACT_ALLOW_IDENT)) {
+                if (num_not_nil == 1 && (rule_act & RULE_ACT_ALLOW_IDENT)) {
                     // this rule has only 1 argument and should not be emitted
                     mp_parse_node_t pn = MP_PARSE_NODE_NULL;
                     for (size_t x = 0; x < i; ++x) {
@@ -966,19 +959,19 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 } else {
                     // this rule must be emitted
 
-                    if (rule->act & RULE_ACT_ADD_BLANK) {
+                    if (rule_act & RULE_ACT_ADD_BLANK) {
                         // and add an extra blank node at the end (used by the compiler to store data)
                         push_result_node(&parser, MP_PARSE_NODE_NULL);
                         i += 1;
                     }
 
-                    push_result_rule(&parser, rule_src_line, rule->rule_id, i);
+                    push_result_rule(&parser, rule_src_line, rule_id, i);
                 }
                 break;
             }
 
             default: {
-                assert((rule->act & RULE_ACT_KIND_MASK) == RULE_ACT_LIST);
+                assert((rule_act & RULE_ACT_KIND_MASK) == RULE_ACT_LIST);
 
                 // n=2 is: item item*
                 // n=1 is: item (sep item)*
@@ -1016,13 +1009,13 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     }
                 } else {
                     for (;;) {
-                        size_t arg = rule->arg[i & 1 & n];
+                        size_t arg = rule_arg[i & 1 & n];
                         if ((arg & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                             if (lex->tok_kind == (arg & RULE_ARG_ARG_MASK)) {
                                 if (i & 1 & n) {
                                     // separators which are tokens are not pushed to result stack
                                 } else {
-                                    push_result_token(&parser, rule->rule_id);
+                                    push_result_token(&parser, rule_id);
                                 }
                                 mp_lexer_to_next(lex);
                                 // got element of list, so continue parsing list
@@ -1035,7 +1028,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             }
                         } else {
                             assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE);
-                            push_rule(&parser, rule_src_line, rule->rule_id, i + 1); // save this list-rule
+                            push_rule(&parser, rule_src_line, rule_id, i + 1); // save this list-rule
                             push_rule_from_arg(&parser, arg); // push child of list-rule
                             goto next_rule;
                         }
@@ -1045,7 +1038,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
                 // compute number of elements in list, result in i
                 i -= 1;
-                if ((n & 1) && (rule->arg[1] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
+                if ((n & 1) && (rule_arg[1] & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                     // don't count separators when they are tokens
                     i = (i + 1) / 2;
                 }
@@ -1054,12 +1047,12 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     // list matched single item
                     if (had_trailing_sep) {
                         // if there was a trailing separator, make a list of a single item
-                        push_result_rule(&parser, rule_src_line, rule->rule_id, i);
+                        push_result_rule(&parser, rule_src_line, rule_id, i);
                     } else {
                         // just leave single item on stack (ie don't wrap in a list)
                     }
                 } else {
-                    push_result_rule(&parser, rule_src_line, rule->rule_id, i);
+                    push_result_rule(&parser, rule_src_line, rule_id, i);
                 }
                 break;
             }
