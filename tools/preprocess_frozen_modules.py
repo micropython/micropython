@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import os.path
+from pathlib import Path
+import semver
+import subprocess
+
+def version_string(path=None, *, valid_semver=False):
+    version = None
+    tag = subprocess.run('git describe --tags --exact-match', shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path)
+    if tag.returncode == 0:
+        version = tag.stdout.strip().decode("utf-8", "strict")
+    else:
+        describe = subprocess.run("git describe --tags", shell=True, stdout=subprocess.PIPE, cwd=path)
+        tag, additional_commits, commitish = describe.stdout.strip().decode("utf-8", "strict").rsplit("-", maxsplit=2)
+        commitish = commitish[1:]
+        if valid_semver:
+            version_info = semver.parse_version_info(tag)
+            if not version_info.prerelease:
+                version = semver.bump_patch(tag) + "-alpha.0.plus." + additional_commits + "+" + commitish
+            else:
+                version = tag + ".plus." + additional_commits + "+" + commitish
+        else:
+            version = commitish
+    return version
+
+# Visit all the .py files in topdir. Replace any __version__ = "0.0.0-auto.0" type of info
+# with actual version info derived from git.
+def copy_and_process(in_dir, out_dir):
+    for root, subdirs, files in os.walk(in_dir):
+
+        # Skip library examples directories.
+        if Path(root).name == 'examples':
+            continue
+
+        for file in files:
+            # Skip top-level setup.py (module install info) and conf.py (sphinx config),
+            # which are not part of the library
+            if (root == in_dir) and file in ('conf.py', 'setup.py'):
+                continue
+
+            input_file_path = Path(root, file)
+            output_file_path = Path(out_dir, input_file_path.relative_to(in_dir))
+
+            if file.endswith(".py"):
+                output_file_path.parent.mkdir(parents=True, exist_ok=True)
+                with input_file_path.open("r") as input, output_file_path.open("w") as output:
+                    for line in input:
+                        if line.startswith("__version__"):
+                            module_version = version_string(root, valid_semver=True)
+                            line = line.replace("0.0.0-auto.0", module_version)
+                        output.write(line)
+
+if __name__ == '__main__':
+    argparser = argparse.ArgumentParser(description="""\
+    Copy and pre-process .py files into output directory, before freezing.
+    1. Remove top-level repo directory.
+    2. Update __version__ info.
+    3. Remove examples.
+    4. Remove non-library setup.py and conf.py""")
+    argparser.add_argument("in_dirs", metavar="input-dir", nargs="+",
+                           help="top-level code dirs (may be git repo dirs)")
+    argparser.add_argument("-o", "--out_dir", help="output directory")
+    args = argparser.parse_args()
+
+    for in_dir in args.in_dirs:
+        copy_and_process(in_dir, args.out_dir)
