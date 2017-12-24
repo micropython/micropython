@@ -45,7 +45,9 @@ def copy_and_process(in_dir, out_dir):
             output_file_path = Path(out_dir, input_file_path.relative_to(in_dir))
 
             if file.endswith(".py"):
-                output_file_path.parent.mkdir(parents=True, exist_ok=True)
+                # mkdir() takes an exists_ok=True, but not until Python 3.5.
+                if not output_file_path.parent.exists():
+                    output_file_path.parent.mkdir(parents=True)
                 with input_file_path.open("r") as input, output_file_path.open("w") as output:
                     for line in input:
                         if line.startswith("__version__"):
