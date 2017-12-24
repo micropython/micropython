@@ -6,15 +6,16 @@ from pathlib import Path
 import semver
 import subprocess
 
+# Compatible with Python 3.4 due to travis using trusty as default.
+
 def version_string(path=None, *, valid_semver=False):
     version = None
-    tag = subprocess.run('git describe --tags --exact-match', shell=True,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path)
-    if tag.returncode == 0:
-        version = tag.stdout.strip().decode("utf-8", "strict")
-    else:
-        describe = subprocess.run("git describe --tags", shell=True, stdout=subprocess.PIPE, cwd=path)
-        tag, additional_commits, commitish = describe.stdout.strip().decode("utf-8", "strict").rsplit("-", maxsplit=2)
+    try:
+        tag = subprocess.check_output('git describe --tags --exact-match', shell=True, cwd=path)
+        version = tag.strip().decode("utf-8", "strict")
+    except subprocess.CalledProcessError:
+        describe = subprocess.check_output("git describe --tags", shell=True, cwd=path)
+        tag, additional_commits, commitish = describe.strip().decode("utf-8", "strict").rsplit("-", maxsplit=2)
         commitish = commitish[1:]
         if valid_semver:
             version_info = semver.parse_version_info(tag)
@@ -45,7 +46,6 @@ def copy_and_process(in_dir, out_dir):
             output_file_path = Path(out_dir, input_file_path.relative_to(in_dir))
 
             if file.endswith(".py"):
-                # mkdir() takes an exists_ok=True, but not until Python 3.5.
                 if not output_file_path.parent.exists():
                     output_file_path.parent.mkdir(parents=True)
                 with input_file_path.open("r") as input, output_file_path.open("w") as output:
