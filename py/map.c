@@ -170,6 +170,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     if (map->is_ordered) {
         for (mp_map_elem_t *elem = &map->table[0], *top = &map->table[map->used]; elem < top; elem++) {
             if (elem->key == index || (!compare_only_ptrs && mp_obj_equal(elem->key, index))) {
+                #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
                 if (MP_UNLIKELY(lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND)) {
                     // remove the found element by moving the rest of the array down
                     mp_obj_t value = elem->value;
@@ -180,9 +181,11 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     elem->key = MP_OBJ_NULL;
                     elem->value = value;
                 }
+                #endif
                 return elem;
             }
         }
+        #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
         if (MP_LIKELY(lookup_kind != MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)) {
             return NULL;
         }
@@ -198,6 +201,9 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
             map->all_keys_are_qstrs = 0;
         }
         return elem;
+        #else
+        return NULL;
+        #endif
     }
 
     // map is a hash table (not an ordered array), so do a hash lookup

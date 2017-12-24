@@ -1,5 +1,5 @@
 ----------------
-[   4] rule(1) (n=8)
+[   4] rule(1) (n=9)
          tok(4)
 [   4]   rule(22) (n=4)
            id(i)
@@ -25,6 +25,9 @@
 [  11]   rule(5) (n=2)
            id(f)
 [  11]     literal \.\+
+[  12]   rule(5) (n=2)
+           id(g)
+           int(123)
 ----------------
 File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
@@ -42,6 +45,7 @@ arg names:
   bc=27 line=9
   bc=32 line=10
   bc=37 line=11
+  bc=42 line=12
 00 BUILD_TUPLE 0
 02 GET_ITER_STACK
 03 FOR_ITER 12
@@ -59,8 +63,10 @@ arg names:
 34 STORE_NAME e
 37 LOAD_CONST_OBJ \.\+
 39 STORE_NAME f
-42 LOAD_CONST_NONE
-43 RETURN_VALUE
+42 LOAD_CONST_SMALL_INT 123
+45 STORE_NAME g
+48 LOAD_CONST_NONE
+49 RETURN_VALUE
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+

@@ -251,7 +251,7 @@ STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t tim
     }
     // Wait for SD card to complete the operation
     for (;;) {
-        HAL_SD_CardStateTypeDef state = HAL_SD_GetCardState(sd);
+        HAL_SD_CardStateTypedef state = HAL_SD_GetCardState(sd);
         if (state == HAL_SD_CARD_TRANSFER) {
             return HAL_OK;
         }

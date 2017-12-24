@@ -36,6 +36,9 @@
 
 #include "driver/spi_master.h"
 
+#define MP_HW_SPI_MAX_XFER_BYTES (4092)
+#define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
+
 typedef struct _machine_hw_spi_obj_t {
     mp_obj_base_t base;
     spi_host_device_t host;
@@ -227,35 +230,52 @@ STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
 STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    int bits_to_send = len * self->bits;
-    bool shortMsg = len <= 4;
-
     if (self->state == MACHINE_HW_SPI_STATE_DEINIT) {
         mp_raise_msg(&mp_type_OSError, "transfer on deinitialized SPI");
         return;
     }
 
-    struct spi_transaction_t transaction = {
-        .flags = 0,
-        .length = bits_to_send,
-        .tx_buffer = NULL,
-        .rx_buffer = NULL,
-    };
+    struct spi_transaction_t transaction = { 0 };
 
-    if (shortMsg) {
+    // Round to nearest whole set of bits
+    int bits_to_send = len * 8 / self->bits * self->bits;
+
+
+    if (len <= 4) {
         if (src != NULL) {
             memcpy(&transaction.tx_data, src, len);
         }
-        transaction.flags |= (SPI_TRANS_USE_TXDATA | SPI_TRANS_USE_RXDATA);
+
+        transaction.flags = SPI_TRANS_USE_TXDATA | SPI_TRANS_USE_RXDATA;
+        transaction.length = bits_to_send;
+        spi_device_transmit(self->spi, &transaction);
+
+        if (dest != NULL) {
+            memcpy(dest, &transaction.rx_data, len);
+        }
     } else {
-        transaction.tx_buffer = src;
-        transaction.rx_buffer = dest;
-    }
+        int offset = 0;
+        int bits_remaining = bits_to_send;
 
-    spi_device_transmit(self->spi, &transaction);
+        while (bits_remaining) {
+            memset(&transaction, 0, sizeof(transaction));
 
-    if (shortMsg && dest != NULL) {
-        memcpy(dest, &transaction.rx_data, len);
+            transaction.length =
+                bits_remaining > MP_HW_SPI_MAX_XFER_BITS ? MP_HW_SPI_MAX_XFER_BITS : bits_remaining;
+
+            if (src != NULL) {
+                transaction.tx_buffer = src + offset;
+            }
+            if (dest != NULL) {
+                transaction.rx_buffer = dest + offset;
+            }
+
+            spi_device_transmit(self->spi, &transaction);
+            bits_remaining -= transaction.length;
+
+            // doesn't need ceil(); loop ends when bits_remaining is 0
+            offset += transaction.length / 8;
+        }
     }
 }
 
@@ -275,7 +295,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_INT , {.u_int = -1} },
+        { MP_QSTR_id,       MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -323,7 +343,7 @@ STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_
 mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT , {.u_int = -1} },
+        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },

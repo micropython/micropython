@@ -145,6 +145,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %+d % d\n", -123, 123, 123); // sign
         mp_printf(&mp_plat_print, "%05d\n", -123); // negative number with zero padding
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
+        mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
         mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
         mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision

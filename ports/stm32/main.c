@@ -556,7 +556,10 @@ soft_reset:
     rng_init0();
 #endif
 
+    #if MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
+    #endif
+
     spi_init0();
     pyb_usb_init0();
 

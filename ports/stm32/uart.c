@@ -241,6 +241,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART6_IRQn;
             pins[0] = &MICROPY_HW_UART6_TX;
             pins[1] = &MICROPY_HW_UART6_RX;
+            #if defined(MICROPY_HW_UART6_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = &MICROPY_HW_UART6_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART6_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = &MICROPY_HW_UART6_CTS;
+            }
+            #endif
             __USART6_CLK_ENABLE();
             break;
         #endif
@@ -500,7 +510,14 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     if (!self->is_enabled) {
         mp_printf(print, "UART(%u)", self->uart_id);
     } else {
-        mp_int_t bits = (self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9);
+        mp_int_t bits;
+        switch (self->uart.Init.WordLength) {
+            #ifdef UART_WORDLENGTH_7B
+            case UART_WORDLENGTH_7B: bits = 7; break;
+            #endif
+            case UART_WORDLENGTH_8B: bits = 8; break;
+            case UART_WORDLENGTH_9B: default: bits = 9; break;
+        }
         if (self->uart.Init.Parity != UART_PARITY_NONE) {
             bits -= 1;
         }
@@ -580,6 +597,10 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         init->WordLength = UART_WORDLENGTH_8B;
     } else if (bits == 9) {
         init->WordLength = UART_WORDLENGTH_9B;
+    #ifdef UART_WORDLENGTH_7B
+    } else if (bits == 7) {
+        init->WordLength = UART_WORDLENGTH_7B;
+    #endif
     } else {
         mp_raise_ValueError("unsupported combination of bits and parity");
     }
