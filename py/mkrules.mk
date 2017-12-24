@@ -114,14 +114,13 @@ $(MPY_CROSS): $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/windows/fmode.c
 	$(Q)$(MAKE) -C $(TOP)/mpy-cross
 
 # Copy all the modules and single python files to freeze to a common area, omitting top-level dirs (the repo names).
-# Remove any conf.py (sphinx config) and setup.py (module install info) files, which are not meant to be frozen.
-# Also remove the library examples directory, so it won't be included.
+# Do any preprocessing necessary: currently, this adds version information, removes examples, and
+# non-library .py files in the modules (setup.py and conf.py)
 # Then compile .mpy files from all the .py files, placing them in the same directories as the .py files.
 $(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
 	$(ECHO) FREEZE $(FROZEN_MPY_DIRS)
 	$(Q)$(MKDIR) -p $@
-	$(Q)$(RSYNC) -rL --include="*/" --include='*.py' --exclude="*" $(addsuffix /*,$(FROZEN_MPY_DIRS)) $@
-	$(Q)$(RM) -rf $@/conf.py $@/setup.py $@/examples
+	$(Q)$(PREPROCESS_FROZEN_MODULES) -o $@ $(FROZEN_MPY_DIRS)
 	$(Q)$(CD) $@ && \
 $(FIND) -L . -type f -name '*.py' | sed 's=^\./==' | \
 xargs -n1 $(abspath $(MPY_CROSS)) $(MPY_CROSS_FLAGS)
