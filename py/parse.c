@@ -872,14 +872,14 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         const uint16_t *rule_arg = get_rule_arg(rule_id);
         size_t n = rule_act & RULE_ACT_ARG_MASK;
 
-        /*
+        #if 0
         // debugging
-        printf("depth=%d ", parser.rule_stack_top);
+        printf("depth=" UINT_FMT " ", parser.rule_stack_top);
         for (int j = 0; j < parser.rule_stack_top; ++j) {
             printf(" ");
         }
-        printf("%s n=%d i=%d bt=%d\n", rule_name_table[rule_id], n, i, backtrack);
-        */
+        printf("%s n=" UINT_FMT " i=" UINT_FMT " bt=%d\n", rule_name_table[rule_id], n, i, backtrack);
+        #endif
 
         switch (rule_act & RULE_ACT_KIND_MASK) {
             case RULE_ACT_OR:
