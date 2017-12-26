@@ -26,6 +26,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/runtime.h"
 #include "py/mphal.h"
 
@@ -126,6 +128,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     }
 
     eth_config_t config;
+    memset(&config, 0, sizeof(config));
 
     switch (args[ARG_phy_type].u_int) {
         case PHY_TLK110:
