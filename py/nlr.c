@@ -28,7 +28,7 @@
 
 #if !MICROPY_NLR_SETJMP
 // When not using setjmp, nlr_push_tail is called from inline asm so needs special c
-#if MICROPY_NLR_X86 && (defined(_WIN32) || defined(__CYGWIN__))
+#if MICROPY_NLR_X86 && MICROPY_NLR_OS_WINDOWS
 // On these 32-bit platforms make sure nlr_push_tail doesn't have a leading undersco
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else

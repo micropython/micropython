@@ -36,13 +36,19 @@
 
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
 #if !MICROPY_NLR_SETJMP
+// A lot of nlr-related things need different treatment on Windows
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define MICROPY_NLR_OS_WINDOWS 1
+#else
+#define MICROPY_NLR_OS_WINDOWS 0
+#endif
 #if defined(__i386__)
     #define MICROPY_NLR_X86 (1)
     #define MICROPY_NLR_NUM_REGS (6)
 #elif defined(__x86_64__)
     #define MICROPY_NLR_X64 (1)
-    #if defined(__CYGWIN__)
-        #define MICROPY_NLR_NUM_REGS (12)
+    #if MICROPY_NLR_OS_WINDOWS
+        #define MICROPY_NLR_NUM_REGS (10)
     #else
         #define MICROPY_NLR_NUM_REGS (8)
     #endif
