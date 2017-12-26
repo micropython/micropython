@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,13 +108,20 @@ STATIC const uint8_t rule_act_table[] = {
 #undef list_with_end
 };
 
-// Define the argument data for each rule
+// Define the argument data for each rule, as a combined array
+STATIC const uint16_t rule_arg_combined_table[] = {
 #define tok(t)                  (RULE_ARG_TOK | MP_TOKEN_##t)
 #define rule(r)                 (RULE_ARG_RULE | RULE_##r)
 #define opt_rule(r)             (RULE_ARG_OPT_RULE | RULE_##r)
 
-#define DEF_RULE(rule, comp, kind, ...) static const uint16_t const rule_arg_##rule[] = { __VA_ARGS__ };
-#define DEF_RULE_NC(rule, kind, ...) static const uint16_t const rule_arg_##rule[] = { __VA_ARGS__ };
+#define DEF_RULE(rule, comp, kind, ...) __VA_ARGS__,
+#define DEF_RULE_NC(rule, kind, ...)
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...)  __VA_ARGS__,
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
@@ -122,21 +129,59 @@ STATIC const uint8_t rule_act_table[] = {
 #undef tok
 #undef rule
 #undef opt_rule
+};
 
-// Define an array of pointers to corresponding rule data
-STATIC const uint16_t *const rule_arg_table[] = {
-#define DEF_RULE(rule, comp, kind, ...) &rule_arg_##rule[0],
+// Macro to create a list of N-1 identifiers where N is the number of variable arguments to the macro
+#define RULE_PADDING(rule, ...) RULE_PADDING2(rule, __VA_ARGS__, RULE_PADDING_IDS(rule))
+#define RULE_PADDING2(rule, ...) RULE_PADDING3(rule, __VA_ARGS__)
+#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) __VA_ARGS__
+#define RULE_PADDING_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
+
+// Use an enum to create constants that specify where in rule_arg_combined_table a given rule starts
+enum {
+#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET_##rule, RULE_PADDING(rule, __VA_ARGS__)
 #define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    NULL, // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
-#define DEF_RULE_NC(rule, kind, ...) &rule_arg_##rule[0],
+#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET_##rule, RULE_PADDING(rule, __VA_ARGS__)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
+
+// Use the above enum values to create a table of offsets for each rule's arg
+// data, which indexes rule_arg_combined_table.  The offsets require 9 bits of
+// storage but only the lower 8 bits are stored here.  The 9th bit is computed
+// in get_rule_arg using the FIRST_RULE_WITH_OFFSET_ABOVE_255 constant.
+STATIC const uint8_t rule_arg_offset_table[] = {
+#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET_##rule & 0xff,
+#define DEF_RULE_NC(rule, kind, ...)
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+    0, // RULE_const_object
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET_##rule & 0xff,
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+};
+
+// Define a constant that's used to determine the 9th bit of the values in rule_arg_offset_table
+static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
+#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET_##rule >= 0x100 ? RULE_##rule :
+#define DEF_RULE_NC(rule, kind, ...)
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+#define DEF_RULE(rule, comp, kind, ...)
+#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET_##rule >= 0x100 ? RULE_##rule :
+#include "py/grammar.h"
+#undef DEF_RULE
+#undef DEF_RULE_NC
+0;
 
 #if USE_RULE_NAME
 // Define an array of rule names corresponding to each rule
@@ -188,6 +233,14 @@ typedef struct _parser_t {
     mp_map_t consts;
     #endif
 } parser_t;
+
+STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
+    size_t off = rule_arg_offset_table[r_id];
+    if (r_id >= FIRST_RULE_WITH_OFFSET_ABOVE_255) {
+        off |= 0x100;
+    }
+    return &rule_arg_combined_table[off];
+}
 
 STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     // use a custom memory allocator to store parse nodes sequentially in large chunks
@@ -816,7 +869,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         size_t rule_src_line; // source line for the first token matched by the current rule
         uint8_t rule_id = pop_rule(&parser, &i, &rule_src_line);
         uint8_t rule_act = rule_act_table[rule_id];
-        const uint16_t *rule_arg = rule_arg_table[rule_id];
+        const uint16_t *rule_arg = get_rule_arg(rule_id);
         size_t n = rule_act & RULE_ACT_ARG_MASK;
 
         /*
