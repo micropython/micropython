@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_NLR_THUMB
+#if (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 
 #undef nlr_push
 
@@ -37,6 +37,7 @@
 //      r4-r11, r13=sp
 
 __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
+
     __asm volatile (
     "str    r4, [r0, #12]       \n" // store r4 into nlr_buf
     "str    r5, [r0, #16]       \n" // store r5 into nlr_buf
@@ -74,10 +75,36 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "b      nlr_push_tail       \n" // do the rest in C
 #endif
     );
+
+    return 0; // needed to silence compiler warning
 }
 
-NORETURN __attribute__((naked)) void nlr_jump_tail(nlr_buf_t *top) {
+__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
+    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
+    nlr->prev = *top;
+    MP_NLR_SAVE_PYSTACK(nlr);
+    *top = nlr;
+    return 0; // normal return
+}
+
+void nlr_pop(void) {
+    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
+    *top = (*top)->prev;
+}
+
+NORETURN __attribute__((naked)) void nlr_jump(void *val) {
+    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
+    nlr_buf_t *top = *top_ptr;
+    if (top == NULL) {
+        nlr_jump_fail(val);
+    }
+
+    top->ret_val = val;
+    MP_NLR_RESTORE_PYSTACK(top);
+    *top_ptr = top->prev;
+
     __asm volatile (
+    "mov    r0, %0              \n" // r0 points to nlr_buf
     "ldr    r4, [r0, #12]       \n" // load r4 from nlr_buf
     "ldr    r5, [r0, #16]       \n" // load r5 from nlr_buf
     "ldr    r6, [r0, #20]       \n" // load r6 from nlr_buf
@@ -106,7 +133,12 @@ NORETURN __attribute__((naked)) void nlr_jump_tail(nlr_buf_t *top) {
 #endif
     "movs   r0, #1              \n" // return 1, non-local return
     "bx     lr                  \n" // return
+    :                               // output operands
+    : "r"(top)                      // input operands
+    :                               // clobbered registers
     );
+
+    for (;;); // needed to silence compiler warning
 }
 
-#endif // MICROPY_NLR_THUMB
+#endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
