@@ -62,6 +62,10 @@ NORETURN void nlr_jump_tail(nlr_buf_t *top) {
     (void)top;
 
     __asm volatile (
+    #if MICROPY_NLR_OS_WINDOWS
+    "pop    %ebp                \n" // undo function's prelude
+    "mov    4(%esp), %edx       \n" // load nlr_buf
+    #endif
     "mov    28(%edx), %esi      \n" // load saved %esi
     "mov    24(%edx), %edi      \n" // load saved %edi
     "mov    20(%edx), %ebx      \n" // load saved %ebx

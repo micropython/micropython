@@ -33,16 +33,10 @@
 // x86-64 callee-save registers are:
 //  rbx, rbp, rsp, r12, r13, r14, r15
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#define NLR_OS_WINDOWS 1
-#else
-#define NLR_OS_WINDOWS 0
-#endif
-
 unsigned int nlr_push(nlr_buf_t *nlr) {
     (void)nlr;
 
-    #if NLR_OS_WINDOWS
+    #if MICROPY_NLR_OS_WINDOWS
 
     __asm volatile (
     "movq   (%rsp), %rax        \n" // load return %rip
@@ -90,7 +84,7 @@ NORETURN void nlr_jump_tail(nlr_buf_t *top) {
     (void)top;
 
     __asm volatile (
-    #if NLR_OS_WINDOWS
+    #if MICROPY_NLR_OS_WINDOWS
     "movq   88(%rcx), %rsi      \n" // load saved %rsi
     "movq   80(%rcx), %rdi      \n" // load saved %rdr
     "movq   72(%rcx), %r15      \n" // load saved %r15
