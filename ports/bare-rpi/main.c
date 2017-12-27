@@ -35,50 +35,8 @@ int main(int argc, char **argv) {
     gc_init ( &heap_start, &heap_end );
 
     mp_init();
-    do_str("\n\
-import C;\n\
-\n\
-def gpio_pinmode ( pin, mode ): \n\
-    if ( mode >= 0 and mode <= 3 and pin >= 0 and pin <= 53 ):\n\
-        ptr = C.RawPtr ( 0x20200000 );\n\
-        while (pin >= 10) :\n\
-            pin = pin - 10;\n\
-            ptr.offset(4);\n\
-        \n\
-        pin = pin * 3;\n\
-        mode = mode << pin;\n\
-        \n\
-        mask = 7 << pin;\n\
-        mask = ~mask;\n\
-        \n\
-        val = ptr.read();\n\
-        val = (val & mask) | mode;\n\
-        ptr.write ( val );\n\
-\n\
-def gpio_write ( pin, val ):\n\
-    ptr = C.RawPtr ( 0x20200000 );\n\
-    if ((val==0 or val==1) and (pin>=0 and pin<=53)) :\n\
-        if (pin > 31) :\n\
-            pin=pin-32;\n\
-            ptr.offset(4);\n\
-        if (val == 0) :\n\
-            ptr.offset(40);\n\
-        else :\n\
-            ptr.offset(28);\n\
-        v = 1 << pin;\n\
-        ptr.write ( v );\n\
-\n\
-gpio_pinmode ( 47, 1 );\n\
-while (1):\n\
-    res = gpio_write ( 47, 0 );\n\
-    x = 0x8000\n\
-    while ( x > 0 ):\n\
-        x = x - 1\n\
-    res = gpio_write ( 47, 1 );\n\
-    x = 0x8000\n\
-    while ( x > 0 ):\n\
-        x = x - 1\n\
-", MP_PARSE_FILE_INPUT);
+    do_str("print('Hello World')", MP_PARSE_FILE_INPUT);
+    do_str("i = 0\nwhile ( i < 10 ) :\n    print ( i );\n    i=i+1\n", MP_PARSE_FILE_INPUT);
     
     mp_deinit();
     return 0;

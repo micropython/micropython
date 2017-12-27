@@ -54,12 +54,6 @@ void pios_gpio_pullControl ( uint32_t pin, uint32_t pull ) {
     pios_gpio_pullBulk ( p, pull );    
 }
 
-/**
- * \brief reads the value of the GPIO-pin (set as input)
- * \param pin the GPIO pin you want the state of (in [0, 53])
- * \return the state of the GPIO-Pin (i.e. HIGH or LOW-signal level), 
- * always returns LOW if the input is invalid
- **/
 uint32_t pios_gpio_read ( uint32_t pin ) {
     if ( pin > 53 ) 
         return PIOS_GPIO_LOW;
@@ -74,11 +68,6 @@ uint32_t pios_gpio_read ( uint32_t pin ) {
     return ( ((val & (1<<pin)) == 0) ? PIOS_GPIO_LOW : PIOS_GPIO_HIGH );
 }
 
-/**
- * \brief writes a value to the GPIO-Pin (i.e. writes 1 to set or 1 to clear-registers)
- * \param pin GPIO-Pin (preferably between 0 and 53)
- * \param val output-value (1 for on, 0 for off)
- **/
 void pios_gpio_write ( uint32_t pin, uint32_t val ) {
     if ( pin > 53 ) 
         return;
@@ -95,12 +84,6 @@ void pios_gpio_write ( uint32_t pin, uint32_t val ) {
     (*base) = 1 << pin;
 }
 
-/**
- * \brief sets the PIN into the mode we want
- * \param pin GPIO-Pin
- * \param val GPIO-Mode
- * \return NONE
- **/
 void pios_gpio_pinmode ( uint32_t pin, uint32_t val ) {
     if ( val > 7 )
         return;

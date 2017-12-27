@@ -35,7 +35,6 @@ SRC_C = \
 	main.c \
     uart.c \
     gpio.c \
-    module_rawptr.c
 
 SRC_S = \
     start.s
