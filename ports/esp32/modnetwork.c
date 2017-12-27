@@ -396,7 +396,6 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     ESP_EXCEPTIONS(esp_wifi_get_config(self->if_id, &cfg));
 
     if (kwargs->used != 0) {
-
         for (size_t i = 0; i < kwargs->alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
                 int req_if = -1;
@@ -443,6 +442,14 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case QS(MP_QSTR_channel): {
                         req_if = WIFI_IF_AP;
                         cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        break;
+                    }
+                    case QS(MP_QSTR_dhcp_hostname): {
+                        req_if = WIFI_IF_STA;
+                        if (self->if_id == WIFI_IF_STA) {
+                            const char *hostname = mp_obj_str_get_str(kwargs->table[i].value);
+                            ESP_EXCEPTIONS(tcpip_adapter_set_hostname(self->if_id, hostname));
+                        }
                         break;
                     }
                     default:
@@ -494,6 +501,12 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             req_if = WIFI_IF_AP;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
+        case QS(MP_QSTR_dhcp_hostname): {
+            const char *hostname;
+            ESP_EXCEPTIONS(tcpip_adapter_get_hostname(self->if_id, &hostname));
+            val = mp_obj_new_str(hostname, strlen(hostname));
+            break;
+		}
         default:
             goto unknown;
     }
