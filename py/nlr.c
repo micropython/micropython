@@ -27,12 +27,12 @@
 #include "py/mpstate.h"
 
 #if !MICROPY_NLR_SETJMP
-// When not using setjmp, nlr_push_tail is called from inline asm so needs special c
+// When not using setjmp, nlr_push_tail is called from inline asm so needs special care
 #if MICROPY_NLR_X86 && MICROPY_NLR_OS_WINDOWS
-// On these 32-bit platforms make sure nlr_push_tail doesn't have a leading undersco
+// On these 32-bit platforms make sure nlr_push_tail doesn't have a leading underscore
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else
-// LTO can't see inside inline asm functions so explicitly mark nlr_push_tail as use
+// LTO can't see inside inline asm functions so explicitly mark nlr_push_tail as used
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
 #endif
 #endif
