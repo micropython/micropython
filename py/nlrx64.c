@@ -88,29 +88,8 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0; // needed to silence compiler warning
 }
 
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    nlr->prev = *top;
-    MP_NLR_SAVE_PYSTACK(nlr);
-    *top = nlr;
-    return 0; // normal return
-}
-
-void nlr_pop(void) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    *top = (*top)->prev;
-}
-
 NORETURN void nlr_jump(void *val) {
-    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
-    nlr_buf_t *top = *top_ptr;
-    if (top == NULL) {
-        nlr_jump_fail(val);
-    }
-
-    top->ret_val = val;
-    MP_NLR_RESTORE_PYSTACK(top);
-    *top_ptr = top->prev;
+    MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
     "movq   %0, %%rcx           \n" // %rcx points to nlr_buf

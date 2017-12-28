@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,29 +82,8 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     #endif
 }
 
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    nlr->prev = *top;
-    MP_NLR_SAVE_PYSTACK(nlr);
-    *top = nlr;
-    return 0; // normal return
-}
-
-void nlr_pop(void) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    *top = (*top)->prev;
-}
-
 NORETURN void nlr_jump(void *val) {
-    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
-    nlr_buf_t *top = *top_ptr;
-    if (top == NULL) {
-        nlr_jump_fail(val);
-    }
-
-    top->ret_val = val;
-    MP_NLR_RESTORE_PYSTACK(top);
-    *top_ptr = top->prev;
+    MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
     "mov    r0, %0              \n" // r0 points to nlr_buf

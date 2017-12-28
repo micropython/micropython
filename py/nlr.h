@@ -88,24 +88,29 @@ struct _nlr_buf_t {
 #define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
 #endif
 
-#if MICROPY_NLR_SETJMP
-#include "py/mpstate.h"
+// Helper macro to use at the start of a specific nlr_jump implementation
+#define MP_NLR_JUMP_HEAD(val, top) \
+    nlr_buf_t **_top_ptr = &MP_STATE_THREAD(nlr_top); \
+    nlr_buf_t *top = *_top_ptr; \
+    if (top == NULL) { \
+        nlr_jump_fail(val); \
+    } \
+    top->ret_val = val; \
+    MP_NLR_RESTORE_PYSTACK(top); \
+    *_top_ptr = top->prev; \
 
-NORETURN void nlr_setjmp_jump(void *val);
+#if MICROPY_NLR_SETJMP
 // nlr_push() must be defined as a macro, because "The stack context will be
 // invalidated if the function which called setjmp() returns."
-#define nlr_push(buf) ( \
-    (buf)->prev = MP_STATE_THREAD(nlr_top), \
-    MP_NLR_SAVE_PYSTACK(buf), \
-    MP_STATE_THREAD(nlr_top) = (buf), \
-    setjmp((buf)->jmpbuf))
-#define nlr_pop() { MP_STATE_THREAD(nlr_top) = MP_STATE_THREAD(nlr_top)->prev; }
-#define nlr_jump(val) nlr_setjmp_jump(val)
+// For this case it is safe to call nlr_push_tail() first.
+#define nlr_push(buf) (nlr_push_tail(buf), setjmp((buf)->jmpbuf))
 #else
 unsigned int nlr_push(nlr_buf_t *);
+#endif
+
+unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
 NORETURN void nlr_jump(void *val);
-#endif
 
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
