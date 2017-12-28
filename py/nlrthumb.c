@@ -76,7 +76,10 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
 #endif
     );
 
-    return 0; // needed to silence compiler warning
+    #if defined(__GNUC__)
+    // Older versions of gcc give an error when naked functions don't return a value
+    __builtin_unreachable();
+    #endif
 }
 
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
@@ -92,7 +95,7 @@ void nlr_pop(void) {
     *top = (*top)->prev;
 }
 
-NORETURN __attribute__((naked)) void nlr_jump(void *val) {
+NORETURN void nlr_jump(void *val) {
     nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
     nlr_buf_t *top = *top_ptr;
     if (top == NULL) {
@@ -138,7 +141,11 @@ NORETURN __attribute__((naked)) void nlr_jump(void *val) {
     :                               // clobbered registers
     );
 
+    #if defined(__GNUC__)
+    __builtin_unreachable();
+    #else
     for (;;); // needed to silence compiler warning
+    #endif
 }
 
 #endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
