@@ -13,6 +13,7 @@ env:
   - TRAVIS_BOARD=metro_m4_express
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0
+  - TRAVIS_BOARD=feather52
   - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix
 
