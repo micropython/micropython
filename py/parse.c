@@ -131,39 +131,46 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 #undef opt_rule
 };
 
-// Macro to create a list of N-1 identifiers where N is the number of variable arguments to the macro
+// Macro to create a list of N identifiers where N is the number of variable arguments to the macro
+#define RULE_EXPAND(x) x
 #define RULE_PADDING(rule, ...) RULE_PADDING2(rule, __VA_ARGS__, RULE_PADDING_IDS(rule))
-#define RULE_PADDING2(rule, ...) RULE_PADDING3(rule, __VA_ARGS__)
-#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) __VA_ARGS__
+#define RULE_PADDING2(rule, ...) RULE_EXPAND(RULE_PADDING3(rule, __VA_ARGS__))
+#define RULE_PADDING3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, ...) __VA_ARGS__
 #define RULE_PADDING_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r,
 
-// Use an enum to create constants that specify where in rule_arg_combined_table a given rule starts
+// Use an enum to create constants specifying how much room a rule takes in rule_arg_combined_table
 enum {
-#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET_##rule, RULE_PADDING(rule, __VA_ARGS__)
+#define DEF_RULE(rule, comp, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
 #define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 #define DEF_RULE(rule, comp, kind, ...)
-#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET_##rule, RULE_PADDING(rule, __VA_ARGS__)
+#define DEF_RULE_NC(rule, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
+
+// Macro to compute the start of a rule in rule_arg_combined_table
+#define RULE_ARG_OFFSET(rule, ...) RULE_ARG_OFFSET2(rule, __VA_ARGS__, RULE_ARG_OFFSET_IDS(rule))
+#define RULE_ARG_OFFSET2(rule, ...) RULE_EXPAND(RULE_ARG_OFFSET3(rule, __VA_ARGS__))
+#define RULE_ARG_OFFSET3(rule, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, ...) _13
+#define RULE_ARG_OFFSET_IDS(r) PAD12_##r, PAD11_##r, PAD10_##r, PAD9_##r, PAD8_##r, PAD7_##r, PAD6_##r, PAD5_##r, PAD4_##r, PAD3_##r, PAD2_##r, PAD1_##r, PAD0_##r,
 
 // Use the above enum values to create a table of offsets for each rule's arg
 // data, which indexes rule_arg_combined_table.  The offsets require 9 bits of
 // storage but only the lower 8 bits are stored here.  The 9th bit is computed
 // in get_rule_arg using the FIRST_RULE_WITH_OFFSET_ABOVE_255 constant.
 STATIC const uint8_t rule_arg_offset_table[] = {
-#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET_##rule & 0xff,
+#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
 #define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     0, // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
-#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET_##rule & 0xff,
+#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
@@ -171,13 +178,13 @@ STATIC const uint8_t rule_arg_offset_table[] = {
 
 // Define a constant that's used to determine the 9th bit of the values in rule_arg_offset_table
 static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
-#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET_##rule >= 0x100 ? RULE_##rule :
+#define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) >= 0x100 ? RULE_##rule :
 #define DEF_RULE_NC(rule, kind, ...)
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 #define DEF_RULE(rule, comp, kind, ...)
-#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET_##rule >= 0x100 ? RULE_##rule :
+#define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) >= 0x100 ? RULE_##rule :
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
