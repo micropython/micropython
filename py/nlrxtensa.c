@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if !MICROPY_NLR_SETJMP && defined(__xtensa__)
+#if MICROPY_NLR_XTENSA
 
 #undef nlr_push
 
@@ -101,4 +101,4 @@ NORETURN void nlr_jump(void *val) {
     for (;;); // needed to silence compiler warning
 }
 
-#endif // !MICROPY_NLR_SETJMP && defined(__xtensa__)
+#endif // MICROPY_NLR_XTENSA

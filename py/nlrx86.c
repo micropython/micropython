@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if !MICROPY_NLR_SETJMP && defined(__i386__)
+#if MICROPY_NLR_X86
 
 #undef nlr_push
 
@@ -114,4 +114,4 @@ NORETURN void nlr_jump(void *val) {
     for (;;); // needed to silence compiler warning
 }
 
-#endif // !MICROPY_NLR_SETJMP && defined(__i386__)
+#endif // MICROPY_NLR_X86

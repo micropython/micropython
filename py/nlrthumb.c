@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+#if MICROPY_NLR_THUMB
 
 #undef nlr_push
 
@@ -148,4 +148,4 @@ NORETURN void nlr_jump(void *val) {
     #endif
 }
 
-#endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+#endif // MICROPY_NLR_THUMB
