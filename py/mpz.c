@@ -1647,16 +1647,12 @@ char *mpz_as_str(const mpz_t *i, unsigned int base) {
 }
 #endif
 
-// assumes enough space as calculated by mp_int_format_size
+// assumes enough space in str as calculated by mp_int_format_size
+// base must be between 2 and 32 inclusive
 // returns length of string, not including null byte
 size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, char base_char, char comma, char *str) {
-    if (str == NULL) {
-        return 0;
-    }
-    if (base < 2 || base > 32) {
-        str[0] = 0;
-        return 0;
-    }
+    assert(str != NULL);
+    assert(2 <= base && base <= 32);
 
     size_t ilen = i->len;
 
