@@ -151,6 +151,7 @@ SRC_C += \
  	lib/timeutils/timeutils.c \
  	lib/utils/buffer_helper.c \
  	lib/utils/context_manager_helpers.c \
+  lib/utils/interrupt_char.c \
  	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \

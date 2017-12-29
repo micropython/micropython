@@ -32,6 +32,8 @@
 #include "hal_uart.h"
 #include "fifo.h"
 
+#include "lib/utils/interrupt_char.h"
+
 #ifdef HAL_UART_MODULE_ENABLED
 
 FIFO_DEF(_ff_uart, 128, uint8_t, true, UARTE0_UART0_IRQn);
@@ -162,7 +164,15 @@ void UARTE0_UART0_IRQHandler(void)
   if (p_instance->EVENTS_RXDRDY)
   {
     uint8_t ch = (uint8_t) p_instance->RXD;
-    fifo_write(_ff_uart, &ch);
+
+    // Keyboard interrupt
+    if (mp_interrupt_char != -1 && ch == mp_interrupt_char)
+    {
+      mp_keyboard_interrupt();
+    }else
+    {
+      fifo_write(_ff_uart, &ch);
+    }
 
     p_instance->EVENTS_RXDRDY = 0x0UL;
   }
