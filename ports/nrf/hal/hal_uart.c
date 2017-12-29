@@ -69,16 +69,6 @@ hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch) {
 }
 
 hal_uart_error_t hal_uart_char_read(NRF_UART_Type * p_instance, uint8_t * ch) {
-//    p_instance->ERRORSRC = 0;
-//    while (p_instance->EVENTS_RXDRDY != 1) {
-//        // Wait for RXD data.
-//    }
-//
-//    p_instance->EVENTS_RXDRDY = 0;
-//    *ch = p_instance->RXD;
-//
-//    return p_instance->ERRORSRC;
-
   while ( !fifo_read(_ff_uart, ch) ) {
     // wait for fifo data
   }

@@ -29,17 +29,35 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "mphalport.h"
-#include "uart.h"
+#include "pins.h"
+#include "hal_uart.h"
 
 void serial_init(void) {
-  uart_init0();
+//  uart_init0();
+//
+//  mp_obj_t args[2] = {
+//      MP_OBJ_NEW_SMALL_INT(0),
+//      MP_OBJ_NEW_SMALL_INT(115200),
+//  };
+//  MP_STATE_PORT(pyb_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
 
-  mp_obj_t args[2] = {
-      MP_OBJ_NEW_SMALL_INT(0),
-      MP_OBJ_NEW_SMALL_INT(115200),
+  hal_uart_init_t param =
+  {
+      .id           = 0,
+      .rx_pin       = &MICROPY_HW_UART1_RX,
+      .tx_pin       = &MICROPY_HW_UART1_TX,
+      .rts_pin      = NULL,
+      .cts_pin      = NULL,
+      .flow_control = MICROPY_HW_UART1_HWFC ? true : false,
+      .use_parity   = false,
+      .baud_rate    = HAL_UART_BAUD_115K2,
+      .irq_priority = 6,
+      .irq_num      = UARTE0_UART0_IRQn
   };
-  MP_STATE_PORT(pyb_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
+
+  hal_uart_init( UART_BASE(0), &param);
 }
+
 
 bool serial_connected(void) {
     return true;
