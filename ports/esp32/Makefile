@@ -567,8 +567,10 @@ ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
 	src/crypto/crypto_internal-cipher.o \
 	src/fast_crypto/fast_aes-unwrap.o \
 	src/fast_crypto/fast_aes-wrap.o \
+	src/fast_crypto/fast_aes-cbc.o \
 	src/fast_crypto/fast_sha256.o \
 	src/fast_crypto/fast_sha256-internal.o \
+	src/fast_crypto/fast_crypto_internal-modexp.o \
 	port/os_xtensa.o \
 	)
 
