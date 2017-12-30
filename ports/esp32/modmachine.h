@@ -15,5 +15,12 @@ extern const mp_obj_type_t machine_uart_type;
 
 void machine_pins_init(void);
 void machine_pins_deinit(void);
+extern const mp_obj_type_t machine_rtc_type;
+
+typedef enum {
+    //MACHINE_WAKE_IDLE=0x01,
+    MACHINE_WAKE_SLEEP=0x02,
+    MACHINE_WAKE_DEEPSLEEP=0x04
+} wake_type_t;
 
 #endif // MICROPY_INCLUDED_ESP32_MODMACHINE_H
