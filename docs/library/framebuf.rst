@@ -146,7 +146,18 @@ Constants
 
 .. data:: framebuf.RGB565
 
-    Red Green Blue (16-bit, 5+6+5) color format
+    Red Green Blue (16-bit, 5+6+5) device-endian color format
+    This will default to the device's native endianness (likely to be little-endian).
+
+.. data:: framebuf.RGB565_BE
+
+    Red Green Blue (16-bit, 5+6+5) big-endian color format
+    This will result in a pixel color value of `0xabcd` being stored in the buffer as `[0xab, 0xcd]`.
+
+.. data:: framebuf.RGB565_LE
+
+    Red Green Blue (16-bit, 5+6+5) little-endian color format
+    This will result in a pixel color value of `0xabcd` being stored in the buffer as `[0xcd, 0xab]`.
 
 .. data:: framebuf.GS2_HMSB
 

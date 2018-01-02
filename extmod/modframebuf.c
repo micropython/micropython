@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/binary.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_FRAMEBUF
@@ -52,13 +53,14 @@ typedef struct _mp_framebuf_p_t {
 } mp_framebuf_p_t;
 
 // constants for formats
-#define FRAMEBUF_MVLSB    (0)
-#define FRAMEBUF_RGB565   (1)
-#define FRAMEBUF_GS2_HMSB (5)
-#define FRAMEBUF_GS4_HMSB (2)
-#define FRAMEBUF_GS8      (6)
-#define FRAMEBUF_MHLSB    (3)
-#define FRAMEBUF_MHMSB    (4)
+#define FRAMEBUF_MVLSB     (0)
+#define FRAMEBUF_RGB565_BE (1)
+#define FRAMEBUF_RGB565_LE (7)
+#define FRAMEBUF_GS2_HMSB  (5)
+#define FRAMEBUF_GS4_HMSB  (2)
+#define FRAMEBUF_GS8       (6)
+#define FRAMEBUF_MHLSB     (3)
+#define FRAMEBUF_MHMSB     (4)
 
 // Functions for MHLSB and MHMSB
 
@@ -114,16 +116,27 @@ STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, in
 
 // Functions for RGB565 format
 
+STATIC void rgb565_flip_endian(uint32_t* col, uint8_t format) {
+    if ((MP_ENDIANNESS_LITTLE && format == FRAMEBUF_RGB565_BE) || (MP_ENDIANNESS_BIG && format == FRAMEBUF_RGB565_LE)) {
+        *col = ((*col & 0xff) << 8) | ((*col >> 8) & 0xff);
+    }
+}
+
 STATIC void rgb565_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
+    rgb565_flip_endian(&col, fb->format);
     ((uint16_t*)fb->buf)[x + y * fb->stride] = col;
 }
 
 STATIC uint32_t rgb565_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
-    return ((uint16_t*)fb->buf)[x + y * fb->stride];
+    uint32_t col = ((uint16_t*)fb->buf)[x + y * fb->stride];
+    rgb565_flip_endian(&col, fb->format);
+    return col;
 }
 
 STATIC void rgb565_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+    rgb565_flip_endian(&col, fb->format);
     uint16_t *b = &((uint16_t*)fb->buf)[x + y * fb->stride];
+
     while (h--) {
         for (int ww = w; ww; --ww) {
             *b++ = col;
@@ -228,13 +241,24 @@ STATIC void gs8_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int 
 
 STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
-    [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
+    [FRAMEBUF_RGB565_BE] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
+    [FRAMEBUF_RGB565_LE] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
     [FRAMEBUF_GS2_HMSB] = {gs2_hmsb_setpixel, gs2_hmsb_getpixel, gs2_hmsb_fill_rect},
     [FRAMEBUF_GS4_HMSB] = {gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
     [FRAMEBUF_GS8] = {gs8_setpixel, gs8_getpixel, gs8_fill_rect},
     [FRAMEBUF_MHLSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
     [FRAMEBUF_MHMSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
 };
+
+STATIC inline size_t bytes_per_pixel(const mp_obj_framebuf_t *fb) {
+    switch (fb->format) {
+        case FRAMEBUF_RGB565_BE:
+        case FRAMEBUF_RGB565_LE:
+            return 2;
+        default:
+            return 1;
+    }
+}
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
     formats[fb->format].setpixel(fb, x, y, col);
@@ -281,7 +305,8 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
 
     switch (o->format) {
         case FRAMEBUF_MVLSB:
-        case FRAMEBUF_RGB565:
+        case FRAMEBUF_RGB565_BE:
+        case FRAMEBUF_RGB565_LE:
             break;
         case FRAMEBUF_MHLSB:
         case FRAMEBUF_MHMSB:
@@ -306,7 +331,7 @@ STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     (void)flags;
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     bufinfo->buf = self->buf;
-    bufinfo->len = self->stride * self->height * (self->format == FRAMEBUF_RGB565 ? 2 : 1);
+    bufinfo->len = self->stride * self->height * bytes_per_pixel(self);
     bufinfo->typecode = 'B'; // view framebuf as bytes
     return 0;
 }
@@ -630,7 +655,13 @@ STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer1), MP_ROM_PTR(&legacy_framebuffer1_obj) },
     { MP_ROM_QSTR(MP_QSTR_MVLSB), MP_ROM_INT(FRAMEBUF_MVLSB) },
     { MP_ROM_QSTR(MP_QSTR_MONO_VLSB), MP_ROM_INT(FRAMEBUF_MVLSB) },
-    { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(FRAMEBUF_RGB565) },
+#if MP_ENDIANNESS_BIG
+    { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(FRAMEBUF_RGB565_BE) },
+#else
+    { MP_ROM_QSTR(MP_QSTR_RGB565), MP_ROM_INT(FRAMEBUF_RGB565_LE) },
+#endif
+    { MP_ROM_QSTR(MP_QSTR_RGB565_BE), MP_ROM_INT(FRAMEBUF_RGB565_BE) },
+    { MP_ROM_QSTR(MP_QSTR_RGB565_LE), MP_ROM_INT(FRAMEBUF_RGB565_LE) },
     { MP_ROM_QSTR(MP_QSTR_GS2_HMSB), MP_ROM_INT(FRAMEBUF_GS2_HMSB) },
     { MP_ROM_QSTR(MP_QSTR_GS4_HMSB), MP_ROM_INT(FRAMEBUF_GS4_HMSB) },
     { MP_ROM_QSTR(MP_QSTR_GS8), MP_ROM_INT(FRAMEBUF_GS8) },
