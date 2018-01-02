@@ -92,6 +92,7 @@ endif
 ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
+  CFLAGS += -flto
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -122,8 +123,6 @@ ifeq ($(CHIP_FAMILY), samd51)
 CFLAGS += \
 	-mthumb \
 	-mabi=aapcs-linux \
-	-mlong-calls \
-	-mtune=cortex-m4 \
 	-mcpu=cortex-m4 \
 	-mfloat-abi=hard \
 	-mfpu=fpv4-sp-d16 \
