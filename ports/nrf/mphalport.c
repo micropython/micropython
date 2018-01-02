@@ -30,7 +30,10 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "uart.h"
+#include "hal_uart.h"
+
+#define UART_INSTANCE   UART_BASE(0)
+FIL* boot_output_file;
 
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
@@ -44,31 +47,36 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(mp_hal_status_to_errno_table[status])));
 }
 
-void mp_hal_set_interrupt_char(int c) {
-
-}
-
 #if (MICROPY_PY_BLE_NUS == 0)
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        if ( hal_uart_available(UART_INSTANCE) ) {
+          uint8_t ch;
+          hal_uart_char_read(UART_INSTANCE, &ch);
+          return (int) ch;
         }
     }
 
     return 0;
 }
 
+bool mp_hal_stdin_any(void) {
+  return hal_uart_available(UART_INSTANCE);
+}
+
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
-    }
+  while(len--) {
+    hal_uart_char_write(UART_INSTANCE, *str++);
+  }
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+  while(len--){
+    if (*str == '\n') {
+      hal_uart_char_write(UART_INSTANCE, '\r');
     }
+    hal_uart_char_write(UART_INSTANCE, *str++);
+  }
 }
 #endif
 

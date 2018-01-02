@@ -1,7 +1,8 @@
 rm -rf ports/atmel-samd/build*
 rm -rf ports/esp8266/build*
+rm -rf ports/nrf/build*
 
-ATMEL_BOARDS="arduino_zero circuitplayground_express feather_m0_basic feather_m0_adalogger feather_m0_express metro_m0_express metro_m4_express trinket_m0 gemma_m0"
+ATMEL_BOARDS="arduino_zero circuitplayground_express feather_m0_basic feather_m0_adalogger feather_m0_express metro_m0_express metro_m4_express trinket_m0 gemma_m0 feather52"
 ROSIE_SETUPS="rosie-ci"
 
 PARALLEL="-j 5"
@@ -16,8 +17,13 @@ else
 fi
 
 for board in $boards; do
-    make $PARALLEL -C ports/atmel-samd BOARD=$board
-    (( exit_status = exit_status || $? ))
+    if [ $board == "feather52" ]; then
+        make $PARALLEL -C ports/nrf BOARD=feather52
+        (( exit_status = exit_status || $? ))
+    else
+        make $PARALLEL -C ports/atmel-samd BOARD=$board
+        (( exit_status = exit_status || $? ))
+    fi
 done
 if [ -z "$TRAVIS" ]; then
     make $PARALLEL -C ports/esp8266 BOARD=feather_huzzah
@@ -40,10 +46,15 @@ fi
 
 for board in $boards; do
     mkdir -p bin/$board/
-    cp ports/atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
-    (( exit_status = exit_status || $? ))
-    cp ports/atmel-samd/build-$board/firmware.uf2 bin/$board/adafruit-circuitpython-$board-$version.uf2
-    (( exit_status = exit_status || $? ))
+    if [ $board == "feather52" ]; then
+        cp ports/nrf/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
+        (( exit_status = exit_status || $? ))
+    else
+        cp ports/atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
+        (( exit_status = exit_status || $? ))
+        cp ports/atmel-samd/build-$board/firmware.uf2 bin/$board/adafruit-circuitpython-$board-$version.uf2
+        (( exit_status = exit_status || $? ))
+    fi
     # Only upload to Rosie if its a pull request.
     if [ "$TRAVIS" == "true" ]; then
         for rosie in $ROSIE_SETUPS; do

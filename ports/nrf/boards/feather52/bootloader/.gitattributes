@@ -1,0 +1,2 @@
+# Inform git that .zip files should be treated as binary
+*.zip binary

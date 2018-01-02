@@ -35,7 +35,8 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "pin.h"
-#include "genhdr/pins.h"
+//#include "genhdr/pins.h"
+#include "pins.h"
 
 #include "uart.h"
 #include "mpconfigboard.h"
@@ -65,6 +66,8 @@ void uart_init0(void) {
     // reset the UART handles
     memset(&UARTHandle0, 0, sizeof(UART_HandleTypeDef));
     UARTHandle0.p_instance = UART_BASE(0);
+    UARTHandle0.init.irq_num = UARTE0_UART0_IRQn;
+
 #if NRF52840_XXAA
     memset(&UARTHandle1, 0, sizeof(UART_HandleTypeDef));
     UARTHandle0.p_instance = UART_BASE(1);
@@ -82,13 +85,13 @@ STATIC int uart_find(mp_obj_t id) {
               "UART(%d) does not exist", uart_id));
 }
 
-void uart_irq_handler(mp_uint_t uart_id) {
-
-}
+//void uart_irq_handler(mp_uint_t uart_id) {
+//
+//}
 
 bool uart_rx_any(machine_hard_uart_obj_t *uart_obj) {
     // TODO: uart will block for now.
-    return true;
+    return hal_uart_available(uart_obj->uart->p_instance) > 0;
 }
 
 int uart_rx_char(machine_hard_uart_obj_t * self) {

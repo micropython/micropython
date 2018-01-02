@@ -30,8 +30,13 @@
 #include "nrf.h"
 #include "mphalport.h"
 #include "hal_uart.h"
+#include "fifo.h"
+
+#include "lib/utils/interrupt_char.h"
 
 #ifdef HAL_UART_MODULE_ENABLED
+
+FIFO_DEF(_ff_uart, 128, uint8_t, true, UARTE0_UART0_IRQn);
 
 uint32_t hal_uart_baudrate_lookup[] = {
     UART_BAUDRATE_BAUDRATE_Baud1200,   ///< 1200 baud.
@@ -66,15 +71,11 @@ hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch) {
 }
 
 hal_uart_error_t hal_uart_char_read(NRF_UART_Type * p_instance, uint8_t * ch) {
-    p_instance->ERRORSRC = 0;
-    while (p_instance->EVENTS_RXDRDY != 1) {
-        // Wait for RXD data.
-    }
+  while ( !fifo_read(_ff_uart, ch) ) {
+    // wait for fifo data
+  }
 
-    p_instance->EVENTS_RXDRDY = 0;
-    *ch = p_instance->RXD;
-
-    return p_instance->ERRORSRC;
+  return HAL_UART_ERROR_NONE;
 }
 
 hal_uart_error_t hal_uart_buffer_write(NRF_UART_Type * p_instance, uint8_t * p_buffer, uint32_t num_of_bytes, uart_complete_cb cb) {
@@ -104,6 +105,11 @@ hal_uart_error_t hal_uart_buffer_read(NRF_UART_Type * p_instance, uint8_t * p_bu
     }
     cb();
     return err;
+}
+
+int hal_uart_available(NRF_UART_Type * p_instance)
+{
+  return fifo_count(_ff_uart);
 }
 
 void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_init) {
@@ -141,6 +147,35 @@ void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_in
     p_instance->EVENTS_RXDRDY = 0;
     p_instance->TASKS_STARTTX = 1;
     p_instance->TASKS_STARTRX = 1;
+
+    // Adafruit IRQ + fifo
+    fifo_clear(_ff_uart);
+    p_instance->INTENSET = UART_INTENSET_RXDRDY_Msk;
+    NVIC_ClearPendingIRQ(p_uart_init->irq_num);
+    NVIC_SetPriority(p_uart_init->irq_num, p_uart_init->irq_priority);
+    NVIC_EnableIRQ(p_uart_init->irq_num);
+}
+
+
+void UARTE0_UART0_IRQHandler(void)
+{
+  NRF_UART_Type * p_instance = NRF_UART0;
+
+  if (p_instance->EVENTS_RXDRDY)
+  {
+    uint8_t ch = (uint8_t) p_instance->RXD;
+
+    // Keyboard interrupt
+    if (mp_interrupt_char != -1 && ch == mp_interrupt_char)
+    {
+      mp_keyboard_interrupt();
+    }else
+    {
+      fifo_write(_ff_uart, &ch);
+    }
+
+    p_instance->EVENTS_RXDRDY = 0x0UL;
+  }
 }
 
 #endif // HAL_UART_MODULE_ENABLED

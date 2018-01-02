@@ -1,3 +1,7 @@
+/* Flash region for File System */
+__fatfs_flash_start_addr = ORIGIN(FLASH_FATFS);
+__fatfs_flash_length     = LENGTH(FLASH_FATFS);
+
 /* define output sections */
 SECTIONS
 {
@@ -75,8 +79,8 @@ SECTIONS
     .heap :
     {
         . = ALIGN(4);
-	PROVIDE ( end = . );
-	PROVIDE ( _end = . );
+	      PROVIDE ( end = . );
+	      PROVIDE ( _end = . );
         _heap_start = .;    /* define a global symbol at heap start */
         . = . + _minimum_heap_size;
     } >RAM
@@ -101,3 +105,4 @@ SECTIONS
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
+

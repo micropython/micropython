@@ -19,7 +19,7 @@
 
 #define PIN(p_port, p_pin, p_af, p_adc_num, p_adc_channel) \
 { \
-    { &pin_type }, \
+    { &mcu_pin_type }, \
     .name = MP_QSTR_ ## p_port ## p_pin, \
     .port = PORT_ ## p_port, \
     .pin = (p_pin), \

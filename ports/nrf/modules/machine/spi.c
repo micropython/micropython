@@ -33,7 +33,8 @@
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "pin.h"
-#include "genhdr/pins.h"
+//#include "genhdr/pins.h"
+#include "pins.h"
 #include "spi.h"
 #include "hal_spi.h"
 

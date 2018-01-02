@@ -32,6 +32,8 @@
 #include "pin.h"
 #include "hal_gpio.h"
 
+#include "lib/oofatfs/ff.h"
+
 typedef enum
 {
   HAL_OK       = 0x00,
@@ -39,6 +41,8 @@ typedef enum
   HAL_BUSY     = 0x02,
   HAL_TIMEOUT  = 0x03
 } HAL_StatusTypeDef;
+
+extern FIL* boot_output_file;
 
 static inline uint32_t hal_tick_fake(void) {
 	return 0;
@@ -53,6 +57,7 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
+bool mp_hal_stdin_any(void);
 
 #define mp_hal_pin_obj_t const pin_obj_t*
 #define mp_hal_get_pin_obj(o)    pin_find(o)

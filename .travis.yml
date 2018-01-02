@@ -13,6 +13,7 @@ env:
   - TRAVIS_BOARD=metro_m4_express
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0
+  - TRAVIS_BOARD=feather52
   - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix
 
@@ -47,8 +48,10 @@ before_script:
 
   # For teensy build
   - sudo apt-get install realpath
+  # For nrf builds
+  - ([[ $TRAVIS_BOARD != "feather52" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For coverage testing (upgrade is used to get latest urllib3 version)
-  - sudo pip install --upgrade cpp-coveralls
+  - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
   - gcc --version
   - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
   - python3 --version
