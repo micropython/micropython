@@ -74,15 +74,15 @@
 #define ATB_3_IS_FREE(a) (((a) & ATB_MASK_3) == 0)
 
 #define BLOCK_SHIFT(block) (2 * ((block) & (BLOCKS_PER_ATB - 1)))
-#define ATB_GET_KIND(block) ((MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
-#define ATB_ANY_TO_FREE(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
-#define ATB_FREE_TO_HEAD(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] |= (AT_HEAD << BLOCK_SHIFT(block)); } while (0)
-#define ATB_FREE_TO_TAIL(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] |= (AT_TAIL << BLOCK_SHIFT(block)); } while (0)
-#define ATB_HEAD_TO_MARK(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
-#define ATB_MARK_TO_HEAD(block) do { MP_STATE_MEM(gc_alloc_table_start)[(block) / BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
+#define ATB_GET_KIND(area, block) ((area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] >> BLOCK_SHIFT(block)) & 3)
+#define ATB_ANY_TO_FREE(area, block) do { area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] &= (~(AT_MARK << BLOCK_SHIFT(block))); } while (0)
+#define ATB_FREE_TO_HEAD(area, block) do { area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] |= (AT_HEAD << BLOCK_SHIFT(block)); } while (0)
+#define ATB_FREE_TO_TAIL(area, block) do { area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] |= (AT_TAIL << BLOCK_SHIFT(block)); } while (0)
+#define ATB_HEAD_TO_MARK(area, block) do { area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] |= (AT_MARK << BLOCK_SHIFT(block)); } while (0)
+#define ATB_MARK_TO_HEAD(area, block) do { area->gc_alloc_table_start[(block) / BLOCKS_PER_ATB] &= (~(AT_TAIL << BLOCK_SHIFT(block))); } while (0)
 
-#define BLOCK_FROM_PTR(ptr) (((byte*)(ptr) - MP_STATE_MEM(gc_pool_start)) / BYTES_PER_BLOCK)
-#define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (uintptr_t)MP_STATE_MEM(gc_pool_start)))
+#define BLOCK_FROM_PTR(area, ptr) (((byte*)(ptr) - area->gc_pool_start) / BYTES_PER_BLOCK)
+#define PTR_FROM_BLOCK(area, block) (((block) * BYTES_PER_BLOCK + (uintptr_t)area->gc_pool_start))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
 
 #if MICROPY_ENABLE_FINALISER
@@ -91,9 +91,9 @@
 
 #define BLOCKS_PER_FTB (8)
 
-#define FTB_GET(block) ((MP_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] >> ((block) & 7)) & 1)
-#define FTB_SET(block) do { MP_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] |= (1 << ((block) & 7)); } while (0)
-#define FTB_CLEAR(block) do { MP_STATE_MEM(gc_finaliser_table_start)[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
+#define FTB_GET(area, block) ((area->gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] >> ((block) & 7)) & 1)
+#define FTB_SET(area, block) do { area->gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] |= (1 << ((block) & 7)); } while (0)
+#define FTB_CLEAR(area, block) do { area->gc_finaliser_table_start[(block) / BLOCKS_PER_FTB] &= (~(1 << ((block) & 7))); } while (0)
 #endif
 
 #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
@@ -104,49 +104,13 @@
 #define GC_EXIT()
 #endif
 
-// TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
-    // align end pointer on block boundary
-    end = (void*)((uintptr_t)end & (~(BYTES_PER_BLOCK - 1)));
-    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
-
-    // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
-    // T = A + F + P
-    //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
-    //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
-    // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
-    size_t total_byte_len = (byte*)end - (byte*)start;
-#if MICROPY_ENABLE_FINALISER
-    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
-#else
-    MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
-#endif
-
-    MP_STATE_MEM(gc_alloc_table_start) = (byte*)start;
-
-#if MICROPY_ENABLE_FINALISER
-    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
-    MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len);
-#endif
-
-    size_t gc_pool_block_len = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
-    MP_STATE_MEM(gc_pool_start) = (byte*)end - gc_pool_block_len * BYTES_PER_BLOCK;
-    MP_STATE_MEM(gc_pool_end) = end;
-
-#if MICROPY_ENABLE_FINALISER
-    assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
-#endif
-
-    // clear ATBs
-    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len));
-
-#if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
-#endif
+    MP_STATE_MEM(gc_area) = NULL;
+    gc_add(start, end);
 
     // set last free ATB index to start of heap
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
+    MP_STATE_MEM(gc_last_area) = MP_STATE_MEM(gc_area);
 
     // unlock the GC
     MP_STATE_MEM(gc_lock_depth) = 0;
@@ -163,13 +127,76 @@ void gc_init(void *start, void *end) {
     #if MICROPY_PY_THREAD
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
+}
+
+// TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
+void gc_add(void *start, void *end) {
+    // align end pointer on block boundary
+    end = (void*)((uintptr_t)end & (~(BYTES_PER_BLOCK - 1)));
+    DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
+
+    mp_state_mem_area_t *area = (mp_state_mem_area_t*)start;
+    area->gc_area_num = 0;
+    area->gc_area_next = NULL;
+
+    // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
+    // T = A + F + P
+    //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
+    //     P = A * BLOCKS_PER_ATB * BYTES_PER_BLOCK
+    // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+    size_t total_byte_len = (byte*)end - ((byte*)start + sizeof(mp_state_mem_area_t));
+
+    // Add this area to the linked list of allocated areas.
+    if (MP_STATE_MEM(gc_area) == NULL) {
+        // first area (called from gc_init())
+        MP_STATE_MEM(gc_area) = area;
+    } else {
+        area->gc_area_num = 1;
+        // there is already at least one area
+        mp_state_mem_area_t *parent = MP_STATE_MEM(gc_area);
+        while (parent->gc_area_next != NULL) {
+            parent = parent->gc_area_next;
+            area->gc_area_num++;
+        }
+        parent->gc_area_next = area;
+    }
+
+
+#if MICROPY_ENABLE_FINALISER
+    area->gc_alloc_table_byte_len = total_byte_len * BITS_PER_BYTE / (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+#else
+    area->gc_alloc_table_byte_len = total_byte_len / (1 + BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
+#endif
+
+    area->gc_alloc_table_start = (byte*)start + sizeof(mp_state_mem_area_t);
+
+#if MICROPY_ENABLE_FINALISER
+    size_t gc_finaliser_table_byte_len = (area->gc_alloc_table_byte_len * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    area->gc_finaliser_table_start = area->gc_alloc_table_start + area->gc_alloc_table_byte_len;
+#endif
+
+    size_t gc_pool_block_len = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
+    area->gc_pool_start = (byte*)end - gc_pool_block_len * BYTES_PER_BLOCK;
+    area->gc_pool_end = end;
+
+#if MICROPY_ENABLE_FINALISER
+    assert(area->gc_pool_start >= area->gc_finaliser_table_start + gc_finaliser_table_byte_len);
+#endif
+
+    // clear ATBs
+    memset(area->gc_alloc_table_start, 0, area->gc_alloc_table_byte_len);
+
+#if MICROPY_ENABLE_FINALISER
+    // clear FTBs
+    memset(area->gc_finaliser_table_start, 0, gc_finaliser_table_byte_len);
+#endif
 
     DEBUG_printf("GC layout:\n");
-    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
+    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", area->gc_alloc_table_start, area->gc_alloc_table_byte_len, area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
 #if MICROPY_ENABLE_FINALISER
-    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_finaliser_table_start), gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
+    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", area->gc_finaliser_table_start, gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
 #endif
-    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_pool_start), gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", area->gc_pool_start, gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
 void gc_lock(void) {
@@ -188,12 +215,33 @@ bool gc_is_locked(void) {
     return MP_STATE_MEM(gc_lock_depth) != 0;
 }
 
-// ptr should be of type void*
-#define VERIFY_PTR(ptr) ( \
-        ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0      /* must be aligned on a block */ \
-        && ptr >= (void*)MP_STATE_MEM(gc_pool_start)     /* must be above start of pool */ \
-        && ptr < (void*)MP_STATE_MEM(gc_pool_end)        /* must be below end of pool */ \
-    )
+STATIC bool valid_ptr(const void *ptr) {
+    // TODO check code size
+    if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) { // must be aligned on a block
+        return false;
+    }
+
+    for (mp_state_mem_area_t *area = MP_STATE_MEM(gc_area); area != NULL; area = area->gc_area_next) {
+        if (ptr >= (void*)area->gc_pool_start         // must be above start of pool
+                && ptr < (void*)area->gc_pool_end) {  // must be below end of pool
+            return true;
+        }
+    }
+    return false;
+}
+
+STATIC mp_state_mem_area_t * area_from_ptr(const void *ptr) {
+    // TODO merge with valid_ptr?
+    // TODO: or, it's often used together with valid_ptr, do an assert
+    // that way.
+    for (mp_state_mem_area_t *area = MP_STATE_MEM(gc_area); area != NULL; area = area->gc_area_next) {
+        if (ptr >= (void*)area->gc_pool_start         // must be above start of pool
+                && ptr < (void*)area->gc_pool_end) {  // must be below end of pool
+            return area;
+        }
+    }
+    return NULL;
+}
 
 #ifndef TRACE_MARK
 #if DEBUG_PRINT
@@ -206,14 +254,16 @@ bool gc_is_locked(void) {
 // ptr should be of type void*
 #define VERIFY_MARK_AND_PUSH(ptr) \
     do { \
-        if (VERIFY_PTR(ptr)) { \
-            size_t _block = BLOCK_FROM_PTR(ptr); \
-            if (ATB_GET_KIND(_block) == AT_HEAD) { \
+        if (valid_ptr(ptr)) { \
+            mp_state_mem_area_t *_area = area_from_ptr(ptr); \
+            size_t _block = BLOCK_FROM_PTR(_area, ptr); \
+            if (ATB_GET_KIND(_area, _block) == AT_HEAD) { \
                 /* an unmarked head, mark it, and push it on gc stack */ \
                 TRACE_MARK(_block, ptr); \
-                ATB_HEAD_TO_MARK(_block); \
+                ATB_HEAD_TO_MARK(_area, _block); \
                 if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
-                    *MP_STATE_MEM(gc_sp)++ = _block; \
+                    mp_state_mem_stack_element_t _element = {_area, _block}; \
+                    *MP_STATE_MEM(gc_sp)++ = _element; \
                 } else { \
                     MP_STATE_MEM(gc_stack_overflow) = 1; \
                 } \
@@ -224,16 +274,16 @@ bool gc_is_locked(void) {
 STATIC void gc_drain_stack(void) {
     while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
         // pop the next block off the stack
-        size_t block = *--MP_STATE_MEM(gc_sp);
+        mp_state_mem_stack_element_t block = *--MP_STATE_MEM(gc_sp);
 
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
             n_blocks += 1;
-        } while (ATB_GET_KIND(block + n_blocks) == AT_TAIL);
+        } while (ATB_GET_KIND(block.area, block.block + n_blocks) == AT_TAIL);
 
         // check this block's children
-        void **ptrs = (void**)PTR_FROM_BLOCK(block);
+        void **ptrs = (void**)PTR_FROM_BLOCK(block.area, block.block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void*); i > 0; i--, ptrs++) {
             void *ptr = *ptrs;
             VERIFY_MARK_AND_PUSH(ptr);
@@ -247,11 +297,14 @@ STATIC void gc_deal_with_stack_overflow(void) {
         MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
         // scan entire memory looking for blocks which have been marked but not their children
-        for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
-            // trace (again) if mark bit set
-            if (ATB_GET_KIND(block) == AT_MARK) {
-                *MP_STATE_MEM(gc_sp)++ = block;
-                gc_drain_stack();
+        for (mp_state_mem_area_t *area = MP_STATE_MEM(gc_area); area != NULL; area = area->gc_area_next) {
+            for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+                // trace (again) if mark bit set
+                if (ATB_GET_KIND(area, block) == AT_MARK) {
+                    mp_state_mem_stack_element_t element = {area, block};
+                    *MP_STATE_MEM(gc_sp)++ = element;
+                    gc_drain_stack();
+                }
             }
         }
     }
@@ -263,51 +316,53 @@ STATIC void gc_sweep(void) {
     #endif
     // free unmarked heads and their tails
     int free_tail = 0;
-    for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
-        switch (ATB_GET_KIND(block)) {
-            case AT_HEAD:
+    for (mp_state_mem_area_t *area = MP_STATE_MEM(gc_area); area != NULL; area = area->gc_area_next) {
+        for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+            switch (ATB_GET_KIND(area, block)) {
+                case AT_HEAD:
 #if MICROPY_ENABLE_FINALISER
-                if (FTB_GET(block)) {
-                    mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(block);
-                    if (obj->type != NULL) {
-                        // if the object has a type then see if it has a __del__ method
-                        mp_obj_t dest[2];
-                        mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
-                        if (dest[0] != MP_OBJ_NULL) {
-                            // load_method returned a method, execute it in a protected environment
-                            #if MICROPY_ENABLE_SCHEDULER
-                            mp_sched_lock();
-                            #endif
-                            mp_call_function_1_protected(dest[0], dest[1]);
-                            #if MICROPY_ENABLE_SCHEDULER
-                            mp_sched_unlock();
-                            #endif
+                    if (FTB_GET(area, block)) {
+                        mp_obj_base_t *obj = (mp_obj_base_t*)PTR_FROM_BLOCK(area, block);
+                        if (obj->type != NULL) {
+                            // if the object has a type then see if it has a __del__ method
+                            mp_obj_t dest[2];
+                            mp_load_method_maybe(MP_OBJ_FROM_PTR(obj), MP_QSTR___del__, dest);
+                            if (dest[0] != MP_OBJ_NULL) {
+                                // load_method returned a method, execute it in a protected environment
+                                #if MICROPY_ENABLE_SCHEDULER
+                                mp_sched_lock();
+                                #endif
+                                mp_call_function_1_protected(dest[0], dest[1]);
+                                #if MICROPY_ENABLE_SCHEDULER
+                                mp_sched_unlock();
+                                #endif
+                            }
                         }
+                        // clear finaliser flag
+                        FTB_CLEAR(area, block);
                     }
-                    // clear finaliser flag
-                    FTB_CLEAR(block);
-                }
 #endif
-                free_tail = 1;
-                DEBUG_printf("gc_sweep(%p)\n", PTR_FROM_BLOCK(block));
-                #if MICROPY_PY_GC_COLLECT_RETVAL
-                MP_STATE_MEM(gc_collected)++;
-                #endif
-                // fall through to free the head
-
-            case AT_TAIL:
-                if (free_tail) {
-                    ATB_ANY_TO_FREE(block);
-                    #if CLEAR_ON_SWEEP
-                    memset((void*)PTR_FROM_BLOCK(block), 0, BYTES_PER_BLOCK);
+                    free_tail = 1;
+                    DEBUG_printf("gc_sweep(%lu)\n", PTR_FROM_BLOCK(area, block));
+                    #if MICROPY_PY_GC_COLLECT_RETVAL
+                    MP_STATE_MEM(gc_collected)++;
                     #endif
-                }
-                break;
+                    // fall through to free the head
 
-            case AT_MARK:
-                ATB_MARK_TO_HEAD(block);
-                free_tail = 0;
-                break;
+                case AT_TAIL:
+                    if (free_tail) {
+                        ATB_ANY_TO_FREE(area, block);
+                        #if CLEAR_ON_SWEEP
+                        memset((void*)PTR_FROM_BLOCK(area, block), 0, BYTES_PER_BLOCK);
+                        #endif
+                    }
+                    break;
+
+                case AT_MARK:
+                    ATB_MARK_TO_HEAD(area, block);
+                    free_tail = 0;
+                    break;
+            }
         }
     }
 }
@@ -346,65 +401,69 @@ void gc_collect_end(void) {
     gc_deal_with_stack_overflow();
     gc_sweep();
     MP_STATE_MEM(gc_last_free_atb_index) = 0;
+    MP_STATE_MEM(gc_last_area) = MP_STATE_MEM(gc_area);
     MP_STATE_MEM(gc_lock_depth)--;
     GC_EXIT();
 }
 
 void gc_info(gc_info_t *info) {
     GC_ENTER();
-    info->total = MP_STATE_MEM(gc_pool_end) - MP_STATE_MEM(gc_pool_start);
+    info->total = 0;
     info->used = 0;
     info->free = 0;
     info->max_free = 0;
     info->num_1block = 0;
     info->num_2block = 0;
     info->max_block = 0;
-    bool finish = false;
-    for (size_t block = 0, len = 0, len_free = 0; !finish;) {
-        size_t kind = ATB_GET_KIND(block);
-        switch (kind) {
-            case AT_FREE:
-                info->free += 1;
-                len_free += 1;
-                len = 0;
-                break;
+    for (mp_state_mem_area_t *area = MP_STATE_MEM(gc_area); area != NULL; area = area->gc_area_next) {
+        bool finish = false;
+        info->total += area->gc_pool_end - area->gc_pool_start;
+        for (size_t block = 0, len = 0, len_free = 0; !finish;) {
+            size_t kind = ATB_GET_KIND(area, block);
+            switch (kind) {
+                case AT_FREE:
+                    info->free += 1;
+                    len_free += 1;
+                    len = 0;
+                    break;
 
-            case AT_HEAD:
-                info->used += 1;
-                len = 1;
-                break;
+                case AT_HEAD:
+                    info->used += 1;
+                    len = 1;
+                    break;
 
-            case AT_TAIL:
-                info->used += 1;
-                len += 1;
-                break;
+                case AT_TAIL:
+                    info->used += 1;
+                    len += 1;
+                    break;
 
-            case AT_MARK:
-                // shouldn't happen
-                break;
-        }
-
-        block++;
-        finish = (block == MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
-        // Get next block type if possible
-        if (!finish) {
-            kind = ATB_GET_KIND(block);
-        }
-
-        if (finish || kind == AT_FREE || kind == AT_HEAD) {
-            if (len == 1) {
-                info->num_1block += 1;
-            } else if (len == 2) {
-                info->num_2block += 1;
+                case AT_MARK:
+                    // shouldn't happen
+                    break;
             }
-            if (len > info->max_block) {
-                info->max_block = len;
+
+            block++;
+            finish = (block == area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+            // Get next block type if possible
+            if (!finish) {
+                kind = ATB_GET_KIND(area, block);
             }
-            if (finish || kind == AT_HEAD) {
-                if (len_free > info->max_free) {
-                    info->max_free = len_free;
+
+            if (finish || kind == AT_FREE || kind == AT_HEAD) {
+                if (len == 1) {
+                    info->num_1block += 1;
+                } else if (len == 2) {
+                    info->num_2block += 1;
                 }
-                len_free = 0;
+                if (len > info->max_block) {
+                    info->max_block = len;
+                }
+                if (finish || kind == AT_HEAD) {
+                    if (len_free > info->max_free) {
+                        info->max_free = len_free;
+                    }
+                    len_free = 0;
+                }
             }
         }
     }
@@ -431,10 +490,11 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
         return NULL;
     }
 
+    mp_state_mem_area_t *area;
     size_t i;
     size_t end_block;
     size_t start_block;
-    size_t n_free = 0;
+    size_t n_free;
     int collected = !MP_STATE_MEM(gc_auto_collect_enabled);
 
     #if MICROPY_GC_ALLOC_THRESHOLD
@@ -446,15 +506,22 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     #endif
 
     for (;;) {
+        area = MP_STATE_MEM(gc_last_area);
+        i = MP_STATE_MEM(gc_last_free_atb_index);
 
         // look for a run of n_blocks available blocks
-        for (i = MP_STATE_MEM(gc_last_free_atb_index); i < MP_STATE_MEM(gc_alloc_table_byte_len); i++) {
-            byte a = MP_STATE_MEM(gc_alloc_table_start)[i];
-            if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
-            if (ATB_1_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 1; goto found; } } else { n_free = 0; }
-            if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
-            if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
-        }
+        do {
+            n_free = 0;
+            for (; i < area->gc_alloc_table_byte_len; i++) {
+                byte a = area->gc_alloc_table_start[i];
+                if (ATB_0_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 0; goto found; } } else { n_free = 0; }
+                if (ATB_1_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 1; goto found; } } else { n_free = 0; }
+                if (ATB_2_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 2; goto found; } } else { n_free = 0; }
+                if (ATB_3_IS_FREE(a)) { if (++n_free >= n_blocks) { i = i * BLOCKS_PER_ATB + 3; goto found; } } else { n_free = 0; }
+            }
+            area = area->gc_area_next;
+            i = 0;
+        } while (area != NULL);
 
         GC_EXIT();
         // nothing found!
@@ -479,21 +546,22 @@ found:
     // before this one.  Also, whenever we free or shink a block we must check
     // if this index needs adjusting (see gc_realloc and gc_free).
     if (n_free == 1) {
+        MP_STATE_MEM(gc_last_area) = area;
         MP_STATE_MEM(gc_last_free_atb_index) = (i + 1) / BLOCKS_PER_ATB;
     }
 
     // mark first block as used head
-    ATB_FREE_TO_HEAD(start_block);
+    ATB_FREE_TO_HEAD(area, start_block);
 
     // mark rest of blocks as used tail
     // TODO for a run of many blocks can make this more efficient
     for (size_t bl = start_block + 1; bl <= end_block; bl++) {
-        ATB_FREE_TO_TAIL(bl);
+        ATB_FREE_TO_TAIL(area, bl);
     }
 
     // get pointer to first block
     // we must create this pointer before unlocking the GC so a collection can find it
-    void *ret_ptr = (void*)(MP_STATE_MEM(gc_pool_start) + start_block * BYTES_PER_BLOCK);
+    void *ret_ptr = (void*)(area->gc_pool_start + start_block * BYTES_PER_BLOCK);
     DEBUG_printf("gc_alloc(%p)\n", ret_ptr);
 
     #if MICROPY_GC_ALLOC_THRESHOLD
@@ -520,7 +588,7 @@ found:
         ((mp_obj_base_t*)ret_ptr)->type = NULL;
         // set mp_obj flag only if it has a finaliser
         GC_ENTER();
-        FTB_SET(start_block);
+        FTB_SET(area, start_block);
         GC_EXIT();
     }
     #else
@@ -560,24 +628,26 @@ void gc_free(void *ptr) {
         GC_EXIT();
     } else {
         // get the GC block number corresponding to this pointer
-        assert(VERIFY_PTR(ptr));
-        size_t block = BLOCK_FROM_PTR(ptr);
-        assert(ATB_GET_KIND(block) == AT_HEAD);
+        assert(valid_ptr(ptr));
+        mp_state_mem_area_t *area = area_from_ptr(ptr);
+        size_t block = BLOCK_FROM_PTR(area, ptr);
+        assert(ATB_GET_KIND(area, block) == AT_HEAD);
 
         #if MICROPY_ENABLE_FINALISER
-        FTB_CLEAR(block);
+        FTB_CLEAR(area, block);
         #endif
 
         // set the last_free pointer to this block if it's earlier in the heap
-        if (block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+        if (area->gc_area_num < MP_STATE_MEM(gc_last_area)->gc_area_num || (area == MP_STATE_MEM(gc_last_area) && block / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index))) {
+            MP_STATE_MEM(gc_last_area) = area;
             MP_STATE_MEM(gc_last_free_atb_index) = block / BLOCKS_PER_ATB;
         }
 
         // free head and all of its tail blocks
         do {
-            ATB_ANY_TO_FREE(block);
+            ATB_ANY_TO_FREE(area, block);
             block += 1;
-        } while (ATB_GET_KIND(block) == AT_TAIL);
+        } while (ATB_GET_KIND(area, block) == AT_TAIL);
 
         GC_EXIT();
 
@@ -589,14 +659,15 @@ void gc_free(void *ptr) {
 
 size_t gc_nbytes(const void *ptr) {
     GC_ENTER();
-    if (VERIFY_PTR(ptr)) {
-        size_t block = BLOCK_FROM_PTR(ptr);
-        if (ATB_GET_KIND(block) == AT_HEAD) {
+    if (valid_ptr(ptr)) {
+        mp_state_mem_area_t *area = area_from_ptr(ptr);
+        size_t block = BLOCK_FROM_PTR(area, ptr);
+        if (ATB_GET_KIND(area, block) == AT_HEAD) {
             // work out number of consecutive blocks in the chain starting with this on
             size_t n_blocks = 0;
             do {
                 n_blocks += 1;
-            } while (ATB_GET_KIND(block + n_blocks) == AT_TAIL);
+            } while (ATB_GET_KIND(area, block + n_blocks) == AT_TAIL);
             GC_EXIT();
             return n_blocks * BYTES_PER_BLOCK;
         }
@@ -658,9 +729,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     // get the GC block number corresponding to this pointer
-    assert(VERIFY_PTR(ptr));
-    size_t block = BLOCK_FROM_PTR(ptr);
-    assert(ATB_GET_KIND(block) == AT_HEAD);
+    assert(valid_ptr(ptr));
+    mp_state_mem_area_t *area = area_from_ptr(ptr);
+    size_t block = BLOCK_FROM_PTR(area, ptr);
+    assert(ATB_GET_KIND(area, block) == AT_HEAD);
 
     // compute number of new blocks that are requested
     size_t new_blocks = (n_bytes + BYTES_PER_BLOCK - 1) / BYTES_PER_BLOCK;
@@ -673,9 +745,9 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     // efficiently shrink it (see below for shrinking code).
     size_t n_free   = 0;
     size_t n_blocks = 1; // counting HEAD block
-    size_t max_block = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
+    size_t max_block = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     for (size_t bl = block + n_blocks; bl < max_block; bl++) {
-        byte block_type = ATB_GET_KIND(bl);
+        byte block_type = ATB_GET_KIND(area, bl);
         if (block_type == AT_TAIL) {
             n_blocks++;
             continue;
@@ -701,11 +773,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     if (new_blocks < n_blocks) {
         // free unneeded tail blocks
         for (size_t bl = block + new_blocks, count = n_blocks - new_blocks; count > 0; bl++, count--) {
-            ATB_ANY_TO_FREE(bl);
+            ATB_ANY_TO_FREE(area, bl);
         }
 
         // set the last_free pointer to end of this block if it's earlier in the heap
-        if ((block + new_blocks) / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index)) {
+        if (area->gc_area_num < MP_STATE_MEM(gc_last_area)->gc_area_num || (area == MP_STATE_MEM(gc_last_area) && (block + new_blocks) / BLOCKS_PER_ATB < MP_STATE_MEM(gc_last_free_atb_index))) {
+            MP_STATE_MEM(gc_last_area) = area;
             MP_STATE_MEM(gc_last_free_atb_index) = (block + new_blocks) / BLOCKS_PER_ATB;
         }
 
@@ -722,8 +795,8 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     if (new_blocks <= n_blocks + n_free) {
         // mark few more blocks as used tail
         for (size_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
-            assert(ATB_GET_KIND(bl) == AT_FREE);
-            ATB_FREE_TO_TAIL(bl);
+            assert(ATB_GET_KIND(area, bl) == AT_FREE);
+            ATB_FREE_TO_TAIL(area, bl);
         }
 
         GC_EXIT();
@@ -744,7 +817,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     }
 
     #if MICROPY_ENABLE_FINALISER
-    bool ftb_state = FTB_GET(block);
+    bool ftb_state = FTB_GET(area, block);
     #else
     bool ftb_state = false;
     #endif
@@ -783,110 +856,113 @@ void gc_dump_info(void) {
 void gc_dump_alloc_table(void) {
     GC_ENTER();
     static const size_t DUMP_BYTES_PER_LINE = 64;
-    #if !EXTENSIVE_HEAP_PROFILING
-    // When comparing heap output we don't want to print the starting
-    // pointer of the heap because it changes from run to run.
-    mp_printf(&mp_plat_print, "GC memory layout; from %p:", MP_STATE_MEM(gc_pool_start));
-    #endif
-    for (size_t bl = 0; bl < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; bl++) {
-        if (bl % DUMP_BYTES_PER_LINE == 0) {
-            // a new line of blocks
-            {
-                // check if this line contains only free blocks
-                size_t bl2 = bl;
-                while (bl2 < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB && ATB_GET_KIND(bl2) == AT_FREE) {
-                    bl2++;
-                }
-                if (bl2 - bl >= 2 * DUMP_BYTES_PER_LINE) {
-                    // there are at least 2 lines containing only free blocks, so abbreviate their printing
-                    mp_printf(&mp_plat_print, "\n       (%u lines all free)", (uint)(bl2 - bl) / DUMP_BYTES_PER_LINE);
-                    bl = bl2 & (~(DUMP_BYTES_PER_LINE - 1));
-                    if (bl >= MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB) {
-                        // got to end of heap
-                        break;
+    for (mp_state_mem_area_t *area = MP_STATE_MEM(gc_area); area != NULL; area = area->gc_area_next) {
+        #if !EXTENSIVE_HEAP_PROFILING
+        // When comparing heap output we don't want to print the starting
+        // pointer of the heap because it changes from run to run.
+        mp_printf(&mp_plat_print, "GC area #%d (size %d), from %p:",
+                area->gc_area_num, area->gc_pool_end - area->gc_pool_start, area->gc_pool_start);
+        #endif
+        for (size_t bl = 0; bl < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; bl++) {
+            if (bl % DUMP_BYTES_PER_LINE == 0) {
+                // a new line of blocks
+                {
+                    // check if this line contains only free blocks
+                    size_t bl2 = bl;
+                    while (bl2 < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB && ATB_GET_KIND(area, bl2) == AT_FREE) {
+                        bl2++;
+                    }
+                    if (bl2 - bl >= 2 * DUMP_BYTES_PER_LINE) {
+                        // there are at least 2 lines containing only free blocks, so abbreviate their printing
+                        mp_printf(&mp_plat_print, "\n       (%u lines all free)", (uint)(bl2 - bl) / DUMP_BYTES_PER_LINE);
+                        bl = bl2 & (~(DUMP_BYTES_PER_LINE - 1));
+                        if (bl >= area->gc_alloc_table_byte_len * BLOCKS_PER_ATB) {
+                            // got to end of heap
+                            break;
+                        }
                     }
                 }
+                // print header for new line of blocks
+                // (the cast to uint32_t is for 16-bit ports)
+                //mp_printf(&mp_plat_print, "\n%05x: ", (uint)(PTR_FROM_BLOCK(bl) & (uint32_t)0xfffff));
+                mp_printf(&mp_plat_print, "\n%05x: ", (uint)((bl * BYTES_PER_BLOCK) & (uint32_t)0xfffff));
             }
-            // print header for new line of blocks
-            // (the cast to uint32_t is for 16-bit ports)
-            //mp_printf(&mp_plat_print, "\n%05x: ", (uint)(PTR_FROM_BLOCK(bl) & (uint32_t)0xfffff));
-            mp_printf(&mp_plat_print, "\n%05x: ", (uint)((bl * BYTES_PER_BLOCK) & (uint32_t)0xfffff));
-        }
-        int c = ' ';
-        switch (ATB_GET_KIND(bl)) {
-            case AT_FREE: c = '.'; break;
-            /* this prints out if the object is reachable from BSS or STACK (for unix only)
-            case AT_HEAD: {
-                c = 'h';
-                void **ptrs = (void**)(void*)&mp_state_ctx;
-                mp_uint_t len = offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t);
-                for (mp_uint_t i = 0; i < len; i++) {
-                    mp_uint_t ptr = (mp_uint_t)ptrs[i];
-                    if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
-                        c = 'B';
-                        break;
-                    }
-                }
-                if (c == 'h') {
-                    ptrs = (void**)&c;
-                    len = ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&c) / sizeof(mp_uint_t);
+            int c = ' ';
+            switch (ATB_GET_KIND(area, bl)) {
+                case AT_FREE: c = '.'; break;
+                /* this prints out if the object is reachable from BSS or STACK (for unix only)
+                case AT_HEAD: {
+                    c = 'h';
+                    void **ptrs = (void**)(void*)&mp_state_ctx;
+                    mp_uint_t len = offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t);
                     for (mp_uint_t i = 0; i < len; i++) {
                         mp_uint_t ptr = (mp_uint_t)ptrs[i];
-                        if (VERIFY_PTR(ptr) && BLOCK_FROM_PTR(ptr) == bl) {
-                            c = 'S';
+                        if (valid_ptr(ptr) && BLOCK_FROM_PTR(area, ptr) == bl) {
+                            c = 'B';
                             break;
                         }
                     }
-                }
-                break;
-            }
-            */
-            /* this prints the uPy object type of the head block */
-            case AT_HEAD: {
-                void **ptr = (void**)(MP_STATE_MEM(gc_pool_start) + bl * BYTES_PER_BLOCK);
-                if (*ptr == &mp_type_tuple) { c = 'T'; }
-                else if (*ptr == &mp_type_list) { c = 'L'; }
-                else if (*ptr == &mp_type_dict) { c = 'D'; }
-                else if (*ptr == &mp_type_str || *ptr == &mp_type_bytes) { c = 'S'; }
-                #if MICROPY_PY_BUILTINS_BYTEARRAY
-                else if (*ptr == &mp_type_bytearray) { c = 'A'; }
-                #endif
-                #if MICROPY_PY_ARRAY
-                else if (*ptr == &mp_type_array) { c = 'A'; }
-                #endif
-                #if MICROPY_PY_BUILTINS_FLOAT
-                else if (*ptr == &mp_type_float) { c = 'F'; }
-                #endif
-                else if (*ptr == &mp_type_fun_bc) { c = 'B'; }
-                else if (*ptr == &mp_type_module) { c = 'M'; }
-                else {
-                    c = 'h';
-                    #if 0
-                    // This code prints "Q" for qstr-pool data, and "q" for qstr-str
-                    // data.  It can be useful to see how qstrs are being allocated,
-                    // but is disabled by default because it is very slow.
-                    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
-                        if ((qstr_pool_t*)ptr == pool) {
-                            c = 'Q';
-                            break;
-                        }
-                        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-                            if ((const byte*)ptr == *q) {
-                                c = 'q';
+                    if (c == 'h') {
+                        ptrs = (void**)&c;
+                        len = ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&c) / sizeof(mp_uint_t);
+                        for (mp_uint_t i = 0; i < len; i++) {
+                            mp_uint_t ptr = (mp_uint_t)ptrs[i];
+                            if (valid_ptr(ptr) && BLOCK_FROM_PTR(area, ptr) == bl) {
+                                c = 'S';
                                 break;
                             }
                         }
                     }
-                    #endif
+                    break;
                 }
-                break;
+                */
+                /* this prints the uPy object type of the head block */
+                case AT_HEAD: {
+                    void **ptr = (void**)(area->gc_pool_start + bl * BYTES_PER_BLOCK);
+                    if (*ptr == &mp_type_tuple) { c = 'T'; }
+                    else if (*ptr == &mp_type_list) { c = 'L'; }
+                    else if (*ptr == &mp_type_dict) { c = 'D'; }
+                    else if (*ptr == &mp_type_str || *ptr == &mp_type_bytes) { c = 'S'; }
+                    #if MICROPY_PY_BUILTINS_BYTEARRAY
+                    else if (*ptr == &mp_type_bytearray) { c = 'A'; }
+                    #endif
+                    #if MICROPY_PY_ARRAY
+                    else if (*ptr == &mp_type_array) { c = 'A'; }
+                    #endif
+                    #if MICROPY_PY_BUILTINS_FLOAT
+                    else if (*ptr == &mp_type_float) { c = 'F'; }
+                    #endif
+                    else if (*ptr == &mp_type_fun_bc) { c = 'B'; }
+                    else if (*ptr == &mp_type_module) { c = 'M'; }
+                    else {
+                        c = 'h';
+                        #if 0
+                        // This code prints "Q" for qstr-pool data, and "q" for qstr-str
+                        // data.  It can be useful to see how qstrs are being allocated,
+                        // but is disabled by default because it is very slow.
+                        for (qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
+                            if ((qstr_pool_t*)ptr == pool) {
+                                c = 'Q';
+                                break;
+                            }
+                            for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
+                                if ((const byte*)ptr == *q) {
+                                    c = 'q';
+                                    break;
+                                }
+                            }
+                        }
+                        #endif
+                    }
+                    break;
+                }
+                case AT_TAIL: c = '='; break;
+                case AT_MARK: c = 'm'; break;
             }
-            case AT_TAIL: c = '='; break;
-            case AT_MARK: c = 'm'; break;
+            mp_printf(&mp_plat_print, "%c", c);
         }
-        mp_printf(&mp_plat_print, "%c", c);
+        mp_print_str(&mp_plat_print, "\n");
     }
-    mp_print_str(&mp_plat_print, "\n");
     GC_EXIT();
 }
 
