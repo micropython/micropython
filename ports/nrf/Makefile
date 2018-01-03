@@ -137,25 +137,25 @@ SRC_C += \
 	help.c \
 	pin_named_pins.c \
 	fatfs_port.c \
- 	fifo.c \
+	fifo.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
- 	boards/$(BOARD)/board.c \
- 	boards/$(BOARD)/pins.c \
+	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
 	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \
- 	lib/timeutils/timeutils.c \
- 	lib/utils/buffer_helper.c \
- 	lib/utils/context_manager_helpers.c \
- 	lib/utils/interrupt_char.c \
- 	lib/utils/pyexec.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/buffer_helper.c \
+	lib/utils/context_manager_helpers.c \
+	lib/utils/interrupt_char.c \
+	lib/utils/pyexec.c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
- 	internal_flash.c \
+	internal_flash.c \
 
 
 DRIVERS_SRC_C += $(addprefix modules/,\
@@ -196,18 +196,18 @@ SRC_COMMON_HAL += \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	os/__init__.c \
- 	time/__init__.c \
+	time/__init__.c \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	busio/__init__.c\
 	busio/I2C.c \
 	busio/SPI.c \
- 	pulseio/__init__.c \
+	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
- 	pulseio/PWMOut.c \
- 	storage/__init__.c \
+	pulseio/PWMOut.c \
+	storage/__init__.c \
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
@@ -215,6 +215,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
+	microcontroller/RunMode.c \
 	help.c \
 	math/__init__.c \
 	supervisor/__init__.c \
@@ -225,7 +226,7 @@ SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE = \
- 	os/__init__.c \
+	os/__init__.c \
 	random/__init__.c \
 	storage/__init__.c \
 
