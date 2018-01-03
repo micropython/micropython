@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -41,6 +42,12 @@
 
 #include "shared_dma.h"
 #include "tick.h"
+
+#define OVERSAMPLING 64
+#define SAMPLES_PER_BUFFER 32
+
+// MEMS microphones must be clocked at at least 1MHz.
+#define MIN_MIC_CLOCK 1000000
 
 void pdmin_reset(void) {
     while (I2S->SYNCBUSY.reg & I2S_SYNCBUSY_ENABLE) {}
@@ -96,8 +103,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         mp_raise_RuntimeError("Unable to allocate audio DMA block counter.");
     }
 
-    if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != 64) {
-        mp_raise_NotImplementedError("Only 8 or 16 bit mono with 64 oversample is supported.");
+    if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
+        mp_raise_NotImplementedError("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported.");
     }
 
     // TODO(tannewt): Use the DPLL to get a more precise sampling rate.
@@ -112,12 +119,17 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     config_clock_unit.clock.mck_out_enable = false;
 
     config_clock_unit.clock.sck_src = I2S_SERIAL_CLOCK_SOURCE_MCKDIV;
-    config_clock_unit.clock.sck_div = 8000000 / frequency / oversample;
-    self->frequency = 8000000 / config_clock_unit.clock.sck_div / oversample;
+    uint32_t clock_divisor = (uint32_t) roundf( 8000000.0f / frequency / oversample);
+    config_clock_unit.clock.sck_div = clock_divisor;
+    float mic_clock_freq = 8000000.0f / clock_divisor;
+    self->frequency =  mic_clock_freq / oversample;
+    if (mic_clock_freq <  MIN_MIC_CLOCK || clock_divisor == 0 || clock_divisor > 255) {
+        mp_raise_ValueError("sampling frequency out of range");
+    }
 
     config_clock_unit.frame.number_slots = 2;
     config_clock_unit.frame.slot_size = I2S_SLOT_SIZE_16_BIT;
-    config_clock_unit.frame.data_delay = I2S_DATA_DELAY_1;
+    config_clock_unit.frame.data_delay = I2S_DATA_DELAY_0;
 
     config_clock_unit.frame.frame_sync.width = I2S_FRAME_SYNC_WIDTH_SLOT;
 
@@ -141,6 +153,10 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     i2s_serializer_set_config(&self->i2s_instance, self->serializer, &config_serializer);
     i2s_enable(&self->i2s_instance);
 
+    // Run the serializer all the time. This eliminates startup delay for the microphone.
+    i2s_clock_unit_enable(&self->i2s_instance, self->clock_unit);
+    i2s_serializer_enable(&self->i2s_instance, self->serializer);
+
     self->bytes_per_sample = oversample >> 3;
     self->bit_depth = bit_depth;
 }
@@ -154,6 +170,8 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
         return;
     }
     i2s_disable(&self->i2s_instance);
+    i2s_serializer_disable(&self->i2s_instance, self->serializer);
+    i2s_clock_unit_disable(&self->i2s_instance, self->clock_unit);
     i2s_reset(&self->i2s_instance);
     reset_pin(self->clock_pin->pin);
     reset_pin(self->data_pin->pin);
@@ -195,11 +213,15 @@ static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
     }
     dma_descriptor_create(audio_dma.descriptor, &descriptor_config);
 
+    // Do we need more values than will fit in the first buffer?
+    // If so, set up a second buffer chained to be filled after the first buffer.
     if (length * words_per_sample > words_per_buffer) {
         block_transfer_count = words_per_buffer;
         descriptor_config.next_descriptor_address = ((uint32_t)audio_dma.descriptor);
         if (length * words_per_sample < 2 * words_per_buffer) {
-            block_transfer_count = 2 * words_per_buffer - length * words_per_sample;
+            // Length needed is more than one buffer but less than two.
+            // Subtract off the size of the first buffer, and what remains is the count we need.
+            block_transfer_count = length * words_per_sample - words_per_buffer;
             descriptor_config.next_descriptor_address = 0;
         }
         descriptor_config.block_transfer_count = block_transfer_count;
@@ -213,117 +235,150 @@ static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
 void start_dma(audiobusio_pdmin_obj_t* self) {
     dma_start_transfer_job(&audio_dma);
     tc_start_counter(MP_STATE_VM(audiodma_block_counter));
-    i2s_clock_unit_enable(&self->i2s_instance, self->clock_unit);
-    i2s_serializer_enable(&self->i2s_instance, self->serializer);
     I2S->DATA[1].reg = I2S->DATA[1].reg;
 }
 
 void stop_dma(audiobusio_pdmin_obj_t* self) {
-    // Turn off the I2S clock and serializer. Peripheral is still enabled.
-    i2s_serializer_disable(&self->i2s_instance, self->serializer);
-    i2s_clock_unit_disable(&self->i2s_instance, self->clock_unit);
-
-    // Shutdown the DMA
+    // Shutdown the DMA: serializer keeps running.
     tc_stop_counter(MP_STATE_VM(audiodma_block_counter));
     dma_abort_job(&audio_dma);
 }
 
-static const uint16_t sinc_filter[64] = {
-    0, 1, 6, 16, 29, 49, 75, 108,
-    149, 200, 261, 334, 418, 514, 622, 742,
-    872, 1012, 1161, 1315, 1472, 1631, 1787, 1938,
-    2081, 2212, 2329, 2429, 2509, 2568, 2604, 2616,
-    2604, 2568, 2509, 2429, 2329, 2212, 2081, 1938,
-    1787, 1631, 1472, 1315, 1161, 1012, 872, 742,
-    622, 514, 418, 334, 261, 200, 149, 108,
-    75, 49, 29, 16, 6, 1, 0, 0
+// a windowed sinc filter for 44 khz, 64 samples
+//
+// This filter is good enough to use for lower sample rates as
+// well. It does not increase the noise enough to be a problem.
+//
+// In the long run we could use a fast filter like this to do the
+// decimation and initial filtering in real time, filtering to a
+// higher sample rate than specified.  Then after the audio is
+// recorded, a more expensive filter non-real-time filter could be
+// used to down-sample and low-pass.
+uint16_t sinc_filter [OVERSAMPLING] = {
+    0, 2, 9, 21, 39, 63, 94, 132,
+    179, 236, 302, 379, 467, 565, 674, 792,
+    920, 1055, 1196, 1341, 1487, 1633, 1776, 1913,
+    2042, 2159, 2263, 2352, 2422, 2474, 2506, 2516,
+    2506, 2474, 2422, 2352, 2263, 2159, 2042, 1913,
+    1776, 1633, 1487, 1341, 1196, 1055, 920, 792,
+    674, 565, 467, 379, 302, 236, 179, 132,
+    94, 63, 39, 21, 9, 2, 0, 0
 };
 
+#define REPEAT_16_TIMES(X) X X X X X X X X X X X X X X X X
+
 static uint16_t filter_sample(uint32_t pdm_samples[4]) {
-    uint16_t sample = 0;
-    for (uint8_t i = 0; i < 4; i++) {
-        uint16_t pdm = pdm_samples[i] & 0xffff;
-        for (uint8_t j = 0; j < 16; j++) {
-            if ((pdm & 0x8000) != 0) {
-                sample += sinc_filter[i * 16 + j];
+    uint16_t running_sum = 0;
+    const uint16_t *filter_ptr = sinc_filter;
+    for (uint8_t i = 0; i < OVERSAMPLING/16; i++) {
+        // The sample is 16-bits right channel in the upper two bytes and 16-bits left channel
+        // in the lower two bytes.
+        // We just ignore the upper bits
+        uint32_t pdm_sample = pdm_samples[i];
+        REPEAT_16_TIMES( {
+                if (pdm_sample & 0x8000) {
+                    running_sum += *filter_ptr;
+                }
+                filter_ptr++;
+                pdm_sample <<= 1;
             }
-            pdm <<= 1;
-        }
+            )
     }
-    return sample;
+    return running_sum;
 }
 
+// output_buffer may be a byte buffer or a halfword buffer.
+// output_buffer_length is the number of slots, not the number of bytes.
 uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* self,
-        uint16_t* output_buffer, uint32_t length) {
-    // Write the wave file header.
-
-    // We allocate two 256 byte buffers on the stack to use for double buffering.
-    // Our oversample rate is 64 (bits) so each buffer produces 32 samples.
-    // TODO(tannewt): Can the compiler optimize better if we fix the size of
-    // these buffers?
-    uint8_t samples_per_buffer = 32;
+        uint16_t* output_buffer, uint32_t output_buffer_length) {
+    // We allocate two buffers on the stack to use for double buffering.
+    const uint8_t samples_per_buffer = SAMPLES_PER_BUFFER;
     // For every word we record, we throw away 2 bytes of a phantom second channel.
-    uint8_t words_per_sample = self->bytes_per_sample / 2;
-    uint8_t words_per_buffer = samples_per_buffer * words_per_sample;
+    const uint8_t words_per_sample = self->bytes_per_sample / 2;
+    const uint8_t words_per_buffer = samples_per_buffer * words_per_sample;
     uint32_t first_buffer[words_per_buffer];
     uint32_t second_buffer[words_per_buffer];
 
     COMPILER_ALIGNED(16) DmacDescriptor second_descriptor;
 
-    setup_dma(self, length, &second_descriptor, words_per_buffer,
+    setup_dma(self, output_buffer_length, &second_descriptor, words_per_buffer,
        words_per_sample, first_buffer, second_buffer);
 
     start_dma(self);
 
     // Record
     uint32_t buffers_processed = 0;
-    uint32_t total_bytes = 0;
+    uint32_t values_output = 0;
 
-    uint64_t start_ticks = ticks_ms;
-    while (total_bytes < length) {
+    uint32_t remaining_samples_needed = output_buffer_length;
+    while (values_output < output_buffer_length) {
         // Wait for the next buffer to fill
-        while (tc_get_count_value(MP_STATE_VM(audiodma_block_counter)) == buffers_processed) {
+        uint32_t block_counter;
+        while ((block_counter = tc_get_count_value(MP_STATE_VM(audiodma_block_counter))) == buffers_processed) {
             #ifdef MICROPY_VM_HOOK_LOOP
                 MICROPY_VM_HOOK_LOOP
             #endif
         }
-        if (tc_get_count_value(MP_STATE_VM(audiodma_block_counter)) != (buffers_processed + 1)) {
+        if (block_counter != (buffers_processed + 1)) {
+            // Looks like we aren't keeping up. We shouldn't skip a buffer.
             break;
         }
-        // Throw away the first ~10ms of data because thats during mic start up.
-        if (ticks_ms - start_ticks < 10) {
-            buffers_processed++;
-            continue;
-        }
-        uint32_t* buffer = first_buffer;
+
+        // The mic is running all the time, so we don't need to wait the usual 10msec or 100msec
+        // for it to start up.
+
+        // Flip back and forth between processing the first and second buffers.
+        uint32_t *buffer = first_buffer;
         DmacDescriptor* descriptor = audio_dma.descriptor;
         if (buffers_processed % 2 == 1) {
             buffer = second_buffer;
             descriptor = &second_descriptor;
         }
-        // Decimate and filter the last buffer
-        int32_t samples_gathered = descriptor->BTCNT.reg / words_per_sample;
-        for (uint16_t i = 0; i < samples_gathered; i++) {
+        // Decimate and filter the buffer that was just filled.
+        uint32_t samples_gathered = descriptor->BTCNT.reg / words_per_sample;
+        // Don't run off the end of output buffer. Process only as many as needed.
+        uint32_t samples_to_process = min(remaining_samples_needed, samples_gathered);
+        for (uint32_t i = 0; i < samples_to_process; i++) {
+            // Call filter_sample just one place so it can be inlined.
+            uint16_t value = filter_sample(buffer + i * words_per_sample);
             if (self->bit_depth == 8) {
-                ((uint8_t*) output_buffer)[total_bytes] = filter_sample(buffer + i * words_per_sample) >> 8;
-                total_bytes += 1;
-            } else if (self->bit_depth == 16) {
-                output_buffer[total_bytes / 2] = filter_sample(buffer + i * words_per_sample);
-                total_bytes += 2;
+                // Truncate to 8 bits.
+                ((uint8_t*) output_buffer)[values_output] = value >> 8;
+            } else {
+                output_buffer[values_output] = value;
             }
+            values_output++;
         }
+
         buffers_processed++;
 
-        if (length - total_bytes < samples_per_buffer) {
-            descriptor->BTCNT.reg = (length - total_bytes) * words_per_sample;
-            descriptor->DSTADDR.reg = ((uint32_t) buffer) + (length - total_bytes) * self->bytes_per_sample;
+        // Compute how many more samples we need, and if the last buffer is the last
+        // set of samples needed, adjust the DMA count to only fetch as necessary.
+        remaining_samples_needed = output_buffer_length - values_output;
+        if (remaining_samples_needed <= samples_per_buffer*2 &&
+            remaining_samples_needed > samples_per_buffer) {
+            // Adjust the DMA settings for the current buffer, which will be processed
+            // after the other buffer, which is now receiving samples via DMA.
+            // We don't adjust the DMA in progress, but the one after that.
+            // Timeline:
+            // 1. current buffer (already processed)
+            // 2. alternate buffer (DMA in progress)
+            // 3. current buffer (last set of samples needed)
+
+            // Set up to receive the last set of samples (don't include the alternate buffer, now in use).
+            uint32_t samples_needed_for_last_buffer = remaining_samples_needed - samples_per_buffer;
+            descriptor->BTCNT.reg = samples_needed_for_last_buffer * words_per_sample;
+            descriptor->DSTADDR.reg = ((uint32_t) buffer)
+                + samples_needed_for_last_buffer * words_per_sample * sizeof(buffer[0]);
+
+            // Break chain to alternate buffer.
             descriptor->DESCADDR.reg = 0;
         }
     }
 
     stop_dma(self);
 
-    return total_bytes;
+    return values_output;
 }
 
 void common_hal_audiobusio_pdmin_record_to_file(audiobusio_pdmin_obj_t* self, uint8_t* buffer, uint32_t length) {

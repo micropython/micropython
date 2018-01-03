@@ -58,7 +58,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(
-        digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull) {
+        digitalio_digitalinout_obj_t* self, digitalio_pull_t pull) {
     self->output = false;
 
     common_hal_digitalio_digitalinout_set_pull(self, pull);
@@ -66,7 +66,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
 
 void common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
-        enum digitalio_drive_mode_t drive_mode) {
+        digitalio_drive_mode_t drive_mode) {
     const uint8_t pin = self->pin->pin;
     gpio_set_pin_pull_mode(pin, GPIO_PULL_OFF);
     gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
@@ -79,7 +79,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(
     common_hal_digitalio_digitalinout_set_value(self, value);
 }
 
-enum digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
+digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
         digitalio_digitalinout_obj_t* self) {
     return self->output? DIRECTION_OUTPUT : DIRECTION_INPUT;
 }
@@ -115,7 +115,7 @@ bool common_hal_digitalio_digitalinout_get_value(
 
 void common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_digitalinout_obj_t* self,
-        enum digitalio_drive_mode_t drive_mode) {
+        digitalio_drive_mode_t drive_mode) {
     bool value = common_hal_digitalio_digitalinout_get_value(self);
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
     // True is implemented differently between modes so reset the value to make
@@ -125,7 +125,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
     }
 }
 
-enum digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
+digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
         digitalio_digitalinout_obj_t* self) {
     if (self->open_drain) {
         return DRIVE_MODE_OPEN_DRAIN;
@@ -135,7 +135,7 @@ enum digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
 }
 
 void common_hal_digitalio_digitalinout_set_pull(
-        digitalio_digitalinout_obj_t* self, enum digitalio_pull_t pull) {
+        digitalio_digitalinout_obj_t* self, digitalio_pull_t pull) {
     enum gpio_pull_mode asf_pull = GPIO_PULL_OFF;
     switch (pull) {
         case PULL_UP:
@@ -151,7 +151,7 @@ void common_hal_digitalio_digitalinout_set_pull(
     gpio_set_pin_pull_mode(self->pin->pin, asf_pull);
 }
 
-enum digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
+digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         digitalio_digitalinout_obj_t* self) {
     uint32_t pin = self->pin->pin;
     if (self->output) {

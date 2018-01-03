@@ -106,6 +106,47 @@ STATIC mp_obj_t mcu_enable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
 
+//| .. method:: on_next_reset(run_mode)
+//|
+//|   Configure the run mode used the next time the microcontroller is reset but
+//|   not powered down.
+//|
+//|   :param ~microcontroller.RunMode run_mode: The next run mode
+//|
+STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
+    mcu_runmode_t run_mode;
+    if (run_mode_obj == &mcu_runmode_normal_obj) {
+        run_mode = RUNMODE_NORMAL;
+    } else if (run_mode_obj == &mcu_runmode_safe_mode_obj) {
+        run_mode = RUNMODE_SAFE_MODE;
+    } else if (run_mode_obj == &mcu_runmode_bootloader_obj) {
+        run_mode = RUNMODE_BOOTLOADER;
+    } else {
+        mp_raise_ValueError("Invalid run mode.");
+    }
+
+    common_hal_mcu_on_next_reset(run_mode);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
+
+//| .. method:: reset()
+//|
+//|   Reset the microcontroller. After reset, the microcontroller will enter the
+//|   run mode last set by `one_next_reset`.
+//|
+//|   .. warning:: This may result in file system corruption when connected to a
+//|     host computer. Be very careful when calling this! Make sure the device
+//|     "Safely removed" on Windows or "ejected" on Mac OSX and Linux.
+//|
+STATIC mp_obj_t mcu_reset(void) {
+    common_hal_mcu_reset();
+    // We won't actually get here because we're resetting.
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
+
 //| .. attribute:: nvm
 //|
 //|   Available non-volatile memory.
@@ -132,11 +173,14 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on_next_reset), MP_ROM_PTR(&mcu_on_next_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mcu_reset_obj) },
     #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&common_hal_mcu_nvm_obj) },
     #else
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&mp_const_none_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_RunMode),  MP_ROM_PTR(&mcu_runmode_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),  MP_ROM_PTR(&mcu_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_pin),  MP_ROM_PTR(&mcu_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_Processor),   MP_ROM_PTR(&mcu_processor_type) },

@@ -191,6 +191,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 //|   .. method:: SPI.write(buf)
 //|
 //|     Write the data contained in ``buf``. Requires the SPI being locked.
+//|     If the buffer is empty, nothing happens.
 //|
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
@@ -198,6 +199,9 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
     raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
+    if (src.len == 0) {
+        return mp_const_none;
+    }
     check_lock(self);
     bool ok = shared_module_bitbangio_spi_write(self, src.buf, src.len);
     if (!ok) {
@@ -210,7 +214,9 @@ MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 //|   .. method:: SPI.readinto(buf)
 //|
-//|     Read into the buffer specified by ``buf`` while writing zeroes. Requires the SPI being locked.
+//|     Read into the buffer specified by ``buf`` while writing zeroes.
+//|     Requires the SPI being locked.
+//|     If the number of bytes to read is 0, nothing happens.
 //|
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
@@ -218,6 +224,9 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
     raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+    if (bufinfo.len == 0) {
+        return mp_const_none;
+    }
     check_lock(args[0]);
     bool ok = shared_module_bitbangio_spi_read(self, bufinfo.buf, bufinfo.len);
     if (!ok) {

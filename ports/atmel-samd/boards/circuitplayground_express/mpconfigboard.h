@@ -10,16 +10,29 @@
 #define SPI_FLASH_BAUDRATE  (8000000)
 
 // On-board flash
-#define SPI_FLASH_MUX_SETTING SPI_SIGNAL_MUX_SETTING_E
-// Use default pinmux for the chip select since we manage it ourselves.
-#define SPI_FLASH_PAD0_PINMUX PINMUX_PA16D_SERCOM3_PAD0 // MISO
-#define SPI_FLASH_PAD1_PINMUX PINMUX_UNUSED // CS
-#define SPI_FLASH_PAD2_PINMUX PINMUX_PA20D_SERCOM3_PAD2 // MOSI
-#define SPI_FLASH_PAD3_PINMUX PINMUX_PA21D_SERCOM3_PAD3 // SCK
+#define SPI_FLASH_MOSI_PIN          PIN_PA20
+#define SPI_FLASH_MISO_PIN          PIN_PA16
+#define SPI_FLASH_SCK_PIN           PIN_PA21
+#define SPI_FLASH_CS_PIN            PIN_PB22
 
-#define SPI_FLASH_CS          PIN_PB22
-#define SPI_FLASH_SERCOM      SERCOM3
+#define SPI_FLASH_MOSI_PIN_FUNCTION PINMUX_PA20D_SERCOM3_PAD2
+#define SPI_FLASH_MISO_PIN_FUNCTION PINMUX_PA16D_SERCOM3_PAD0
+#define SPI_FLASH_SCK_PIN_FUNCTION  PINMUX_PA21D_SERCOM3_PAD3
+#define SPI_FLASH_SERCOM            SERCOM3
+#define SPI_FLASH_SERCOM_INDEX      5
+#define SPI_FLASH_MOSI_PAD          2
+#define SPI_FLASH_MISO_PAD          0
+#define SPI_FLASH_SCK_PAD           3
 
+// <o> Transmit Data Pinout
+// <0x0=>PAD[0,1]_DO_SCK
+// <0x1=>PAD[2,3]_DO_SCK
+// <0x2=>PAD[3,1]_DO_SCK
+// <0x3=>PAD[0,3]_DO_SCK
+#define SPI_FLASH_DOPO              1
+#define SPI_FLASH_DIPO              0    // same as MISO PAD
+
+// These are pins not to reset.
 // PA24 and PA25 are USB.
 #define MICROPY_PORT_A        (PORT_PA16 | PORT_PA20 | PORT_PA21 | PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (PORT_PB22)
@@ -27,8 +40,7 @@
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
-#include "internal_flash.h"
-//#include "spi_flash.h"
+#include "spi_flash.h"
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.

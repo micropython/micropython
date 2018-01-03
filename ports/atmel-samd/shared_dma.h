@@ -37,6 +37,7 @@ void init_shared_dma(void);
 
 enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
 enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
+enum status_code shared_dma_transfer(Sercom* sercom, uint8_t* buffer_out, uint8_t* buffer_in, uint32_t length, uint8_t tx);
 
 // Allocate a counter to track how far along we are in a DMA double buffer.
 bool allocate_block_counter(void);

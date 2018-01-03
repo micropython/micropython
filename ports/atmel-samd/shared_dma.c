@@ -106,7 +106,7 @@ int32_t shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length)
     }
     dma_configure(general_dma_tx.channel_id, sercom_index(sercom) * 2 + 2, false);
 
-    // Set up TX second.
+    // Set up TX. There is no RX job.
     struct dma_descriptor_config descriptor_config;
     dma_descriptor_get_config_defaults(&descriptor_config);
     descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
@@ -141,6 +141,11 @@ int32_t shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length)
 
 int32_t shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx) {
     if (general_dma_tx.job_status != ERR_NONE) {
+}
+
+// Do write and read simultaneously. If buffer_out is NULL, write the tx byte over and over.
+// If buffer_out is a real buffer, ignore tx.
+enum status_code shared_dma_transfer(Sercom* sercom, uint8_t* buffer_out, uint8_t* buffer_in, uint32_t length, uint8_t tx) {
         return general_dma_tx.job_status;
     }
 
@@ -156,17 +161,19 @@ int32_t shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_
     descriptor_config.block_transfer_count = length;
     // DATA register is consistently addressed across all SERCOM modes.
     descriptor_config.source_address = ((uint32_t)&sercom->SPI.DATA.reg);
-    descriptor_config.destination_address = ((uint32_t)buffer + length);
+    descriptor_config.destination_address = ((uint32_t)buffer_in + length);
 
     dma_descriptor_create(general_dma_rx.descriptor, &descriptor_config);
 
-    // Set up TX to retransmit the same byte over and over.
+    // Set up TX second.
     dma_descriptor_get_config_defaults(&descriptor_config);
     descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
-    descriptor_config.src_increment_enable = false;
+    // Increment write address only if we have a real buffer.
+    descriptor_config.src_increment_enable = buffer_out != NULL;
     descriptor_config.dst_increment_enable = false;
     descriptor_config.block_transfer_count = length;
-    descriptor_config.source_address = ((uint32_t)&tx);
+    // 
+    descriptor_config.source_address = ((uint32_t) (buffer_out != NULL ? buffer_out + length : &tx));
     // DATA register is consistently addressed across all SERCOM modes.
     descriptor_config.destination_address = ((uint32_t)&sercom->SPI.DATA.reg);
 
