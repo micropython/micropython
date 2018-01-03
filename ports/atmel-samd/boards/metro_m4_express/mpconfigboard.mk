@@ -1,4 +1,4 @@
-LD_FILE = boards/samd51x19-bootloader.ld
+LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x239A
 USB_PID = 0x8021
 USB_PRODUCT = "Metro M4 Express"
