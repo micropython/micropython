@@ -1,4 +1,6 @@
 -include mpconfigport.mk
+MPCONFIGPORT_MK ?= mpconfigport.mk
+-include $(MPCONFIGPORT_MK)
 include ../../py/mkenv.mk
 
 FROZEN_DIR = scripts
