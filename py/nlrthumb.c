@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 //      r4-r11, r13=sp
 
 __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
+
     __asm volatile (
     "str    r4, [r0, #12]       \n" // store r4 into nlr_buf
     "str    r5, [r0, #16]       \n" // store r5 into nlr_buf
@@ -74,10 +75,18 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
     "b      nlr_push_tail       \n" // do the rest in C
 #endif
     );
+
+    #if defined(__GNUC__)
+    // Older versions of gcc give an error when naked functions don't return a value
+    __builtin_unreachable();
+    #endif
 }
 
-NORETURN __attribute__((naked)) void nlr_jump_tail(nlr_buf_t *top) {
+NORETURN void nlr_jump(void *val) {
+    MP_NLR_JUMP_HEAD(val, top)
+
     __asm volatile (
+    "mov    r0, %0              \n" // r0 points to nlr_buf
     "ldr    r4, [r0, #12]       \n" // load r4 from nlr_buf
     "ldr    r5, [r0, #16]       \n" // load r5 from nlr_buf
     "ldr    r6, [r0, #20]       \n" // load r6 from nlr_buf
@@ -106,7 +115,16 @@ NORETURN __attribute__((naked)) void nlr_jump_tail(nlr_buf_t *top) {
 #endif
     "movs   r0, #1              \n" // return 1, non-local return
     "bx     lr                  \n" // return
+    :                               // output operands
+    : "r"(top)                      // input operands
+    :                               // clobbered registers
     );
+
+    #if defined(__GNUC__)
+    __builtin_unreachable();
+    #else
+    for (;;); // needed to silence compiler warning
+    #endif
 }
 
 #endif // MICROPY_NLR_THUMB

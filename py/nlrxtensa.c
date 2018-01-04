@@ -37,7 +37,6 @@
 //  a3-a7 = rest of args
 
 unsigned int nlr_push(nlr_buf_t *nlr) {
-    (void)nlr;
 
     __asm volatile (
     "s32i.n  a0, a2, 8          \n" // save regs...
@@ -56,10 +55,11 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0; // needed to silence compiler warning
 }
 
-NORETURN void nlr_jump_tail(nlr_buf_t *top) {
-    (void)top;
+NORETURN void nlr_jump(void *val) {
+    MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
+    "mov.n   a2, %0             \n" // a2 points to nlr_buf
     "l32i.n  a0, a2, 8          \n" // restore regs...
     "l32i.n  a1, a2, 12         \n"
     "l32i.n  a8, a2, 16         \n"
@@ -72,6 +72,9 @@ NORETURN void nlr_jump_tail(nlr_buf_t *top) {
     "l32i.n  a15, a2, 44        \n"
     "movi.n a2, 1               \n" // return 1, non-local return
     "ret.n                      \n" // return
+    :                               // output operands
+    : "r"(top)                      // input operands
+    :                               // clobbered registers
     );
 
     for (;;); // needed to silence compiler warning

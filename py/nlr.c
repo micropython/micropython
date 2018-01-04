@@ -26,18 +26,9 @@
 
 #include "py/mpstate.h"
 
-// Helper macros to save/restore the pystack state
-#if MICROPY_ENABLE_PYSTACK
-#define MP_NLR_SAVE_PYSTACK(nlr_buf) (nlr_buf)->pystack = MP_STATE_THREAD(pystack_cur)
-#define MP_NLR_RESTORE_PYSTACK(nlr_buf) MP_STATE_THREAD(pystack_cur) = (nlr_buf)->pystack
-#else
-#define MP_NLR_SAVE_PYSTACK(nlr_buf) (void)nlr_buf
-#define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
-#endif
-
 #if !MICROPY_NLR_SETJMP
 // When not using setjmp, nlr_push_tail is called from inline asm so needs special care
-#if MICROPY_NLR_X86 && (defined(_WIN32) || defined(__CYGWIN__))
+#if MICROPY_NLR_X86 && MICROPY_NLR_OS_WINDOWS
 // On these 32-bit platforms make sure nlr_push_tail doesn't have a leading underscore
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else
@@ -57,18 +48,4 @@ unsigned int nlr_push_tail(nlr_buf_t *nlr) {
 void nlr_pop(void) {
     nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
     *top = (*top)->prev;
-}
-
-NORETURN void nlr_jump(void *val) {
-    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
-    nlr_buf_t *top = *top_ptr;
-    if (top == NULL) {
-        nlr_jump_fail(val);
-    }
-
-    top->ret_val = val;
-    MP_NLR_RESTORE_PYSTACK(top);
-    *top_ptr = top->prev;
-
-    nlr_jump_tail(top);
 }
