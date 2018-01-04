@@ -317,7 +317,7 @@ void SystemInit(void)
   *
   * Timers run from APBx if APBx_PRESC=1, else 2x APBx
   */
-void SystemClock_Config(void)
+MP_WEAK void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
