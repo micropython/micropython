@@ -27,6 +27,8 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/microcontroller/Processor.h"
 
+
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
@@ -41,9 +43,17 @@ void common_hal_mcu_disable_interrupts() {
 void common_hal_mcu_enable_interrupts() {
 }
 
-// The singleton microcontroller.Processor object, returned by microcontroller.cpu
+void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
+    // TODO: see atmel-samd for functionality
+}
+
+void common_hal_mcu_reset(void) {
+    // TODO: see atmel-samd for functionality
+}
+
+// The singleton microcontroller.Processor object, bound to microcontroller.cpu
 // It currently only has properties, and no state.
-mcu_processor_obj_t common_hal_mcu_processor_obj = {
+const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     .base = {
         .type = &mcu_processor_type,
     },

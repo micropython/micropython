@@ -262,3 +262,20 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
 //    }
         return status >= 0; // Status is number of chars read or an error code < 0.
 }
+
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+    if (len == 0) {
+        return true;
+    }
+    int32_t status;
+//    if (len >= 16) {
+//        status = shared_dma_transfer(self->spi_master_instance.hw, data_out, data_in, len, 0 /*ignored*/);
+//    } else {
+        struct spi_xfer xfer;
+        xfer.txbuf = data_out;
+        xfer.rxbuf = data_in;
+        xfer.size = len;
+        status = spi_m_sync_transfer(&self->spi_desc, &xfer);
+//    }
+        return status >= 0; // Status is number of chars read or an error code < 0.
+}

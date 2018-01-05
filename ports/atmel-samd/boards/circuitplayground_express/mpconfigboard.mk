@@ -1,19 +1,16 @@
-LD_FILE = boards/samd21x18-bootloader-crystalless.ld
+LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x239A
 USB_PID = 0x8019
 USB_PRODUCT = "CircuitPlayground Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
-#SPI_FLASH_FILESYSTEM = 1
-INTERNAL_FLASH_FILESYSTEM = 1
+SPI_FLASH_FILESYSTEM = 1
 
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
 # Include these Python libraries in firmware.
-### TODO(halbert): disable some of these frozen modules; they don't fit in 3.0.0 build while internalfs
-### is in use
-###FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
-###FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
-###FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
-###FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Thermistor
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Thermistor

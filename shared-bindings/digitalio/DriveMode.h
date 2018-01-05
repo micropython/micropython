@@ -29,10 +29,10 @@
 
 #include "py/obj.h"
 
-enum digitalio_drive_mode_t {
+typedef enum {
     DRIVE_MODE_PUSH_PULL,
     DRIVE_MODE_OPEN_DRAIN
-};
+} digitalio_drive_mode_t;
 
 typedef struct {
     mp_obj_base_t base;

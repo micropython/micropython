@@ -76,6 +76,9 @@ BASE_CFLAGS = \
 	-ffunction-sections \
 	-fdata-sections \
 	-fshort-enums \
+	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
+	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
+	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
@@ -312,6 +315,7 @@ SRC_BINDINGS_ENUMS = \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
+	microcontroller/RunMode.c \
 	help.c \
 	math/__init__.c \
 	supervisor/__init__.c \

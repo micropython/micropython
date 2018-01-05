@@ -27,10 +27,13 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "hal/include/hal_atomic.h"
+#include "py/runtime.h"
 
+#include "reset.h"
 #include "samd21_pins.h"
 
 #include "shared-bindings/nvm/ByteArray.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
@@ -48,9 +51,32 @@ void common_hal_mcu_enable_interrupts(void) {
     atomic_leave_critical(&flags);
 }
 
+extern uint32_t _ezero;
+
+void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
+    // Set up the defaults.
+    _bootloader_dbl_tap = DBL_TAP_MAGIC;
+    _ezero = CIRCUITPY_CANARY_WORD;
+
+    if (runmode == RUNMODE_BOOTLOADER) {
+        if (!bootloader_available()) {
+            mp_raise_ValueError("Cannot reset into bootloader because no bootloader is present.");
+        }
+        // Pretend to be the first of the two reset presses needed to enter the
+        // bootloader. That way one reset will end in the bootloader.
+        _bootloader_dbl_tap = DBL_TAP_MAGIC;
+    } else if (runmode == RUNMODE_SAFE_MODE) {
+        _ezero = CIRCUITPY_SOFTWARE_SAFE_MODE;
+    }
+}
+
+void common_hal_mcu_reset(void) {
+    reset();
+}
+
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
 // It currently only has properties, and no state.
-mcu_processor_obj_t common_hal_mcu_processor_obj = {
+const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     .base = {
         .type = &mcu_processor_type,
     },
@@ -59,7 +85,7 @@ mcu_processor_obj_t common_hal_mcu_processor_obj = {
 // NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
 // The singleton nvm.ByteArray object.
-// nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
+// const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
 //     .base = {
 //         .type = &nvm_bytearray_type,
 //     },

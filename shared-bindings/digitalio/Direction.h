@@ -29,10 +29,10 @@
 
 #include "py/obj.h"
 
-enum digitalio_direction_t {
+typedef enum {
     DIRECTION_INPUT,
     DIRECTION_OUTPUT
-};
+} digitalio_direction_t;
 typedef struct {
     mp_obj_base_t base;
 } digitalio_direction_obj_t;

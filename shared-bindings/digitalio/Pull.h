@@ -29,11 +29,11 @@
 
 #include "py/obj.h"
 
-enum digitalio_pull_t {
+typedef enum _digitalio_pull_t {
     PULL_NONE,
     PULL_UP,
     PULL_DOWN
-};
+} digitalio_pull_t;
 
 const mp_obj_type_t digitalio_pull_type;
 
