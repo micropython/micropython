@@ -33,7 +33,7 @@
 
 #define PYB_I2C_SPEED_STANDARD (100000L)
 #define PYB_I2C_SPEED_FULL     (400000L)
-#define PYB_I2C_SPEED_HIGH     (1000000L)
+#define PYB_I2C_SPEED_FAST     (1000000L)
 
 typedef struct _pyb_i2c_obj_t {
     mp_obj_base_t base;
