@@ -1071,8 +1071,8 @@ void SWI2_EGU2_IRQHandler(void) {
         sd_evt_handler(evt_id);
     }
 
-    uint16_t evt_len = sizeof(m_ble_evt_buf);
     while (1) {
+        uint16_t evt_len  = sizeof(m_ble_evt_buf);
         uint32_t err_code = sd_ble_evt_get(m_ble_evt_buf, &evt_len);
         if (err_code != NRF_SUCCESS) {
             // Possible error conditions:
