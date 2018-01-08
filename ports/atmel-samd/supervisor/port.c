@@ -36,6 +36,14 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hpl/pm/hpl_pm_base.h"
 
+#ifdef SAMD21
+#include "hri/hri_pm_d21.h"
+#endif
+#ifdef SAMD51
+#include "hri/hri_rstc_d51.h"
+#endif
+
+
 #include "common-hal/microcontroller/Pin.h"
 #include "tick.h"
 
@@ -65,28 +73,35 @@ safe_mode_t port_init(void) {
     #endif
 #endif
 
-// // On power on start or external reset, set _ezero to the canary word. If it
-// // gets killed, we boot in safe mod. _ezero is the boundary between statically
-// // allocated memory including the fixed MicroPython heap and the stack. If either
-// // misbehaves, the canary will not be in tact after soft reset.
-// #ifdef CIRCUITPY_CANARY_WORD
-//     if (PM->RCAUSE.bit.POR == 1 || PM->RCAUSE.bit.EXT == 1) {
-//         _ezero = CIRCUITPY_CANARY_WORD;
-//     } else if (PM->RCAUSE.bit.SYST == 1) {
-//         // If we're starting from a system reset we're likely coming from the
-//         // bootloader or hard fault handler. If we're coming from the handler
-//         // the canary will be CIRCUITPY_SAFE_RESTART_WORD and we don't want to
-//         // revive the canary so that a second hard fault won't restart. Resets
-//         // from anywhere else are ok.
-//         if (_ezero == CIRCUITPY_SAFE_RESTART_WORD) {
-//             _ezero = ~CIRCUITPY_CANARY_WORD;
-//         } else {
-//             _ezero = CIRCUITPY_CANARY_WORD;
-//         }
-//     }
-// #endif
-//
-//     load_serial_number();
+
+// On power on start or external reset, set _ezero to the canary word. If it
+// gets killed, we boot in safe mode. _ezero is the boundary between statically
+// allocated memory including the fixed MicroPython heap and the stack. If either
+// misbehaves, the canary will not be intact after soft reset.
+#ifdef CIRCUITPY_CANARY_WORD
+#ifdef SAMD21
+    bool power_on_or_external_reset = hri_pm_get_RCAUSE_POR_bit(PM) || hri_pm_get_RCAUSE_EXT_bit(PM);
+    bool system_reset = hri_pm_get_RCAUSE_EXT_bit(PM);
+#endif
+#ifdef SAMD51
+    bool power_on_or_external_reset = hri_rstc_get_RCAUSE_POR_bit(RSTC) || hri_rstc_get_RCAUSE_EXT_bit(RSTC);
+    bool system_reset = hri_rstc_get_RCAUSE_EXT_bit(RSTC);
+#endif
+   if (power_on_or_external_reset) {
+        _ezero = CIRCUITPY_CANARY_WORD;
+    } else if (system_reset) {
+        // If we're starting from a system reset we're likely coming from the
+        // bootloader or hard fault handler. If we're coming from the handler
+        // the canary will be CIRCUITPY_SAFE_RESTART_WORD and we don't want to
+        // revive the canary so that a second hard fault won't restart. Resets
+        // from anywhere else are ok.
+        if (_ezero == CIRCUITPY_SAFE_RESTART_WORD) {
+            _ezero = ~CIRCUITPY_CANARY_WORD;
+        } else {
+            _ezero = CIRCUITPY_CANARY_WORD;
+        }
+    }
+#endif
 
     init_mcu();
 
