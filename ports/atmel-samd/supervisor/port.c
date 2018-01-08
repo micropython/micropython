@@ -81,11 +81,11 @@ safe_mode_t port_init(void) {
 #ifdef CIRCUITPY_CANARY_WORD
 #ifdef SAMD21
     bool power_on_or_external_reset = hri_pm_get_RCAUSE_POR_bit(PM) || hri_pm_get_RCAUSE_EXT_bit(PM);
-    bool system_reset = hri_pm_get_RCAUSE_EXT_bit(PM);
+    bool system_reset = hri_pm_get_RCAUSE_SYST_bit(PM);
 #endif
 #ifdef SAMD51
     bool power_on_or_external_reset = hri_rstc_get_RCAUSE_POR_bit(RSTC) || hri_rstc_get_RCAUSE_EXT_bit(RSTC);
-    bool system_reset = hri_rstc_get_RCAUSE_EXT_bit(RSTC);
+    bool system_reset = hri_rstc_get_RCAUSE_SYST_bit(RSTC);
 #endif
    if (power_on_or_external_reset) {
         _ezero = CIRCUITPY_CANARY_WORD;
