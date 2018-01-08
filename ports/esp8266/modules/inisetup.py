@@ -32,6 +32,16 @@ programming).
 """ % (bdev.START_SEC, bdev.blocks))
         time.sleep(3)
 
+def frozensetup():
+    # The "frozensetup" module may be frozen in the executable by
+    # derivatives to perform additional first-run setup without
+    # needing to modify core MicroPython code.
+    try:
+        import frozensetup
+    except ImportError:
+        return
+    frozensetup.setup()
+
 def setup():
     check_bootsec()
     print("Performing initial setup")
@@ -49,4 +59,5 @@ import gc
 #webrepl.start()
 gc.collect()
 """)
+    frozensetup()
     return vfs

@@ -24,6 +24,16 @@ by firmware programming).
 """)
         time.sleep(3)
 
+def frozensetup():
+    # The "frozensetup" module may be frozen in the executable by
+    # derivatives to perform additional first-run setup without
+    # needing to modify core MicroPython code.
+    try:
+        import frozensetup
+    except ImportError:
+        return
+    frozensetup.setup()
+
 def setup():
     check_bootsec()
     print("Performing initial setup")
@@ -35,4 +45,5 @@ def setup():
         f.write("""\
 # This file is executed on every boot (including wake-boot from deepsleep)
 """)
+    frozensetup()
     return vfs
