@@ -802,6 +802,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (0)
 #endif
 
+// Whether to support rounding of integers (incl bignum); eg round(123,-1)=120
+#ifndef MICROPY_PY_BUILTINS_ROUND_INT
+#define MICROPY_PY_BUILTINS_ROUND_INT (0)
+#endif
+
 // Whether to support timeout exceptions (like socket.timeout)
 #ifndef MICROPY_PY_BUILTINS_TIMEOUTERROR
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
