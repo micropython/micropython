@@ -460,7 +460,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_obj_t o_in = args[0];
     if (MP_OBJ_IS_INT(o_in)) {
-        if(mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, args[1], mp_obj_new_int(0)))){
+        if(n_args == 1 || mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, args[1], mp_obj_new_int(0)))){
             return o_in;
         }
         mp_obj_t num_dig = mp_unary_op(MP_UNARY_OP_NEGATIVE, (args[1]));
