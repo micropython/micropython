@@ -19,6 +19,7 @@
 # VIM Swap Files
 ######################
 *.swp
+.tags
 
 # Build directory
 ######################
