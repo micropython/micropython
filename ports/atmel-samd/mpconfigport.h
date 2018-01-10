@@ -6,13 +6,13 @@
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 
 // options to control how MicroPython is built
-
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_ALLOC_PATH_MAX      (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
 // TODO(tannewt): Reduce this number if we want the REPL to function under 512
 // free bytes.
 // #define MICROPY_ALLOC_PARSE_RULE_INIT   (64)
+#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -20,6 +20,8 @@
 #define MICROPY_COMP_CONST          (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
+// Turn off for consistency
+#define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_ENABLE_GC           (1)
@@ -59,6 +61,7 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #define MICROPY_PY_STRUCT           (0)
 #define MICROPY_PY_SYS              (1)
+#define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 
@@ -186,8 +189,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
     #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
-    #define MICROPY_PY_SYS_MAXSIZE      (1)
-    #define MICROPY_CPYTHON_COMPAT      (1)
     // Scan gamepad every 32ms
     #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
@@ -206,7 +207,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_BUILTINS_COMPLEX (0)
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
-    #define MICROPY_CPYTHON_COMPAT      (0)
 #endif
 
 // Disabled for now.
