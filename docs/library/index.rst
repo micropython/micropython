@@ -179,6 +179,7 @@ the following libraries.
    machine.rst
    micropython.rst
    network.rst
+   ucryptolib.rst
    uctypes.rst
 
 
