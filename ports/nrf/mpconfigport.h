@@ -43,7 +43,7 @@
 #define MICROPY_HELPER_REPL                      (1)
 #define MICROPY_REPL_EMACS_KEYS                  (0)
 #define MICROPY_REPL_AUTO_INDENT                 (1)
-#define MICROPY_ENABLE_SOURCE_LINE               (0)
+#define MICROPY_ENABLE_SOURCE_LINE               (1)
 //CP UPDATE: See mpconfigport.h for LONGINT implementation
 #define MICROPY_LONGINT_IMPL                     (MICROPY_LONGINT_IMPL_MPZ)
 #if NRF51
