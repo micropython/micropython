@@ -466,7 +466,7 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
         if (!MP_OBJ_IS_INT(args[1])){
             mp_raise_TypeError("Chcu int");
         }
-        mp_obj_t num_dig = mp_unary_op(MP_UNARY_OP_NEGATIVE, (args[1])); //TODO: check that second parameter is int
+        mp_obj_t num_dig = mp_unary_op(MP_UNARY_OP_NEGATIVE, (args[1]));
         mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, mp_obj_new_int(10), num_dig);
         mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, mp_obj_new_int(2));
         mp_obj_t floor = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, o_in, mult);
