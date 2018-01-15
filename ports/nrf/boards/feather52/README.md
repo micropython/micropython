@@ -55,6 +55,26 @@ To build a CircuitPython binary with default settings for the
 $ make BOARD=feather52 V=1
 ```
 
+#### REPL over BLE UART (AKA 'NUS')
+
+To build a CircuitPython binary that uses the Nordic UART Service (AKA 'NUS' or
+'BLEUART'), modify `/ports/nrf/bluetooth_conf.h` to have the following macro
+set to `1` in the `#elif (BLUETOOTH_SD == 132)` section:
+
+```
+#define MICROPY_PY_BLE_NUS              (1)
+```
+
+... then build as normal, via:
+
+```
+$ make BOARD=feather52 V=1
+```
+
+You can then connect over BLE UART using an application like Bluefruit LE
+Connect, available for Android, iOS and OS X, or any other application that
+supports the NUS service and allows you to send the corrent EOL sequence.
+
 ## Flashing binaries with `nrfutil`
 
 ### 1. **Update bootloader** to single-bank version
@@ -91,7 +111,7 @@ $ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SOFTDEV_VERSION=5.0.0 boot
 The following command will package and flash the CircuitPython binary using the
 appropriate bootloader mentionned above.
 
-This command assumes you have already build a valid circuitpython
+This command assumes you have already built a valid circuitpython
 image, as described earlier in this readme.
 
 > The name of the serial port target will vary, depending on your OS.
@@ -100,11 +120,12 @@ image, as described earlier in this readme.
 $ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART dfu-gen dfu-flash
 ```
 
-If you built your CircuitPython binary with **BLE** support you will need to
-add the `SD=s132` flag as shown below:
+By default, CircuitPython will build with **BLE** support enabled using
+`SD=s132` and the `SOFTDEV_VERSION=2.0.1`. If you wish to specify a different
+SD family or version you can enter the optional fields as shown below:
 
 ```
-$ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 dfu-gen dfu-flash
+$ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 SOFTDEV_VERSION=5.0.0 dfu-gen dfu-flash
 ```
 
 ## Working with CircuitPython
