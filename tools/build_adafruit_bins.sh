@@ -47,7 +47,7 @@ fi
 for board in $boards; do
     mkdir -p bin/$board/
     if [ $board == "feather52" ]; then
-        cp ports/nrf/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
+        cp ports/nrf/build-$board-s132/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
         (( exit_status = exit_status || $? ))
     else
         cp ports/atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
