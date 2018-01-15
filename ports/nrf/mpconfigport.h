@@ -274,8 +274,8 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR     (MP_QSTR_utime           ), MP_ROM_PTR(&mp_module_utime)      }, \
     MUSIC_MODULE \
     RANDOM_MODULE \
-    /*BLE_MODULE \
-    UBLUEPY_MODULE \*/
+    BLE_MODULE \
+    UBLUEPY_MODULE \
 
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \

@@ -6,7 +6,8 @@ $(error Invalid BOARD specified)
 endif
 
 # If SoftDevice is selected, try to use that one.
-SD ?=
+# Default to SD132 (exact version can be set with SOFTDEV_VERSION)
+SD ?= s132
 SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
