@@ -32,15 +32,18 @@
 #include "pins.h"
 #include "hal_uart.h"
 
-void serial_init(void) {
-//  uart_init0();
-//
-//  mp_obj_t args[2] = {
-//      MP_OBJ_NEW_SMALL_INT(0),
-//      MP_OBJ_NEW_SMALL_INT(115200),
-//  };
-//  MP_STATE_PORT(pyb_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
+#if (MICROPY_PY_BLE_NUS)
+#include "ble_uart.h"
+#endif
 
+void serial_init(void) {
+
+#if MICROPY_PY_BLE_NUS
+    ble_uart_init0();
+    while (!ble_uart_enabled()) {
+        ;
+    }
+#else
   hal_uart_init_t param =
   {
       .id           = 0,
@@ -56,6 +59,7 @@ void serial_init(void) {
   };
 
   hal_uart_init( UART_BASE(0), &param);
+#endif
 }
 
 

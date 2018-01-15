@@ -25,7 +25,7 @@ MEMORY
     FLASH_ISR   (rx) : ORIGIN = 0x0001c000, LENGTH = 0x001000 /* sector 0, 4 KiB */
     FLASH_TEXT  (rx) : ORIGIN = 0x0001d000, LENGTH = 0x03C000 /* APP - ISR, 240 KiB */
     FLASH_FATFS (r)  : ORIGIN = 0x00059000, LENGTH = 0x019000 /* File system 100KB KB */
-    RAM (xrw)        : ORIGIN = 0x200039c0, LENGTH = 0x0c640  /* 49.5 KiB, give 8KiB headroom for softdevice */
+    RAM (xrw)        : ORIGIN = 0x20003000, LENGTH = 0x0D000  /* 52 KiB, give 8KiB headroom for softdevice */
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */

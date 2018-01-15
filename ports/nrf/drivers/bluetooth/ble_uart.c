@@ -105,6 +105,10 @@ int mp_hal_stdin_rx_chr(void) {
     return (int)byte;
 }
 
+bool mp_hal_stdin_any(void) {
+  return !isBufferEmpty(mp_rx_ring_buffer);
+}
+
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     uint8_t *buf = (uint8_t *)str;
     size_t send_len;
