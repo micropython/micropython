@@ -41,6 +41,7 @@ SRC_C = main.c \
 	modusocket.c \
 	modutime.c \
 	modzephyr.c \
+	modzsensor.c \
 	modmachine.c \
 	machine_pin.c \
 	uart_core.c \
