@@ -742,11 +742,30 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
-    parser.rule_stack = m_new(rule_stack_t, parser.rule_stack_alloc);
+    parser.rule_stack = NULL;
+    while (parser.rule_stack_alloc > 1) {
+        parser.rule_stack = m_new_maybe(rule_stack_t, parser.rule_stack_alloc);
+        if (parser.rule_stack != NULL) {
+            break;
+        } else {
+            parser.rule_stack_alloc /= 2;
+        }
+    }
 
     parser.result_stack_alloc = MICROPY_ALLOC_PARSE_RESULT_INIT;
     parser.result_stack_top = 0;
-    parser.result_stack = m_new(mp_parse_node_t, parser.result_stack_alloc);
+    parser.result_stack = NULL;
+    while (parser.result_stack_alloc > 1) {
+        parser.result_stack = m_new_maybe(mp_parse_node_t, parser.result_stack_alloc);
+        if (parser.result_stack != NULL) {
+            break;
+        } else {
+            parser.result_stack_alloc /= 2;
+        }
+    }
+    if (parser.rule_stack == NULL || parser.result_stack == NULL) {
+        mp_raise_msg(&mp_type_MemoryError, "Unable to init parser");
+    }
 
     parser.lexer = lex;
 
