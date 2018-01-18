@@ -11,34 +11,39 @@ limited. For example, a microcontroller without analog features will not have
 
 Support Matrix
 ---------------
+NOTE 1: **All Supported** means the following ports are supported: SAMD21, SAMD21 Express,
+SAMD51, SAMD51 Express, and ESP8266.
 
-=================  =======  ==============  =======
-Module / Port      SAMD21   SAMD21 Express  ESP8266
-=================  =======  ==============  =======
-`analogio`         **Yes**  **Yes**         **Yes**
-`audiobusio`       **Yes**  **Yes**         No
-`audioio`          No       **Yes**         No
-`bitbangio`        No       **Yes**         **Yes**
-`board`            **Yes**  **Yes**         **Yes**
-`busio`            **Yes**  **Yes**         **Yes**
-`digitalio`        **Yes**  **Yes**         **Yes**
-`gamepad`          No       **Yes**         No
-`math`             **Yes**  **Yes**         **Yes**
-`microcontroller`  **Yes**  **Yes**         **Yes**
-`multiterminal`    No       No              **Yes**
-`neopixel_write`   **Yes**  **Yes**         **Yes**
-`nvm`              No       **Yes**         No
-`os`               **Yes**  **Yes**         **Yes**
-`pulseio`          **Yes**  **Yes**         No
-`random`           **Yes**  **Yes**         **Yes**
-`storage`          **Yes**  **Yes**         **Yes**
-`struct`           **Yes**  **Yes**         **Yes**
-`supervisor`       **Yes**  **Yes**         No
-`time`             **Yes**  **Yes**         **Yes**
-`touchio`          **Yes**  **Yes**         No
-`uheap`            Debug    Debug           Debug
-`usb_hid`          **Yes**  **Yes**         No
-=================  =======  ==============  =======
+NOTE 2: **SAMD** and/or **SAMD Express** without additional numbers, means both SAMD21 & SAMD51 versions
+are supported.
+
+=================  ===============
+Module             Supported Ports  				
+=================  ===============
+`analogio`         **All Supported**
+`audiobusio`       **SAMD/SAMD Express**
+`audioio`          **SAMD Express**
+`bitbangio`        **SAMD Express, ESP8266**
+`board`            **All Supported**
+`busio`            **All Supported**
+`digitalio`        **All Supported**
+`gamepad`          **SAMD Express**
+`math`             **All Supported**
+`microcontroller`  **All Supported**
+`multiterminal`    **ESP8266**
+`neopixel_write`   **All Supported**
+`nvm`              **SAMD Express**
+`os`               **All Supported**
+`pulseio`          **SAMD/SAMD Express**
+`random`           **All Supported**
+`storage`          **All Supported**
+`struct`           **All Supported**
+`supervisor`       **SAMD/SAMD Express**
+`time`             **All Supported**
+`touchio`          **SAMD/SAMD Express**
+`uheap`            **Debug (All)**
+`usb_hid`          **SAMD/SAMD Express**
+=================  ===============  				
 
 Modules
 ---------

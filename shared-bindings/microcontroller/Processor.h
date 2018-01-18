@@ -35,5 +35,6 @@ const mp_obj_type_t mcu_processor_type;
 
 uint32_t common_hal_mcu_processor_get_frequency(void);
 float common_hal_mcu_processor_get_temperature(void);
+void common_hal_mcu_processor_get_uid(uint8_t raw_id[]);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PROCESSOR_H

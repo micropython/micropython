@@ -38,3 +38,10 @@ float common_hal_mcu_processor_get_temperature(void) {
 uint32_t common_hal_mcu_processor_get_frequency(void) {
     return mp_hal_get_cpu_freq();
 }
+
+void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
+    uint32_t id = system_get_chip_id();
+    for (int i=0; i<4; i++){
+        raw_id[i] = id >> (i * 8);
+    }
+}

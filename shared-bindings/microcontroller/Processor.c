@@ -32,7 +32,6 @@
 
 #include "py/objproperty.h"
 
-#include "py/objproperty.h"
 #include "py/runtime.h"
 
 //| .. currentmodule:: microcontroller
@@ -93,9 +92,31 @@ const mp_obj_property_t mcu_processor_temperature_obj = {
     },
 };
 
+//| .. attribute:: uid
+//|
+//|   Return the unique id (aka serial number) of the chip.
+//|   Returns a bytearray object. 
+//|
+STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
+    uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+    common_hal_mcu_processor_get_uid(raw_id);
+    return mp_obj_new_bytearray(sizeof(raw_id), raw_id);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_uid_obj, mcu_processor_get_uid);
+
+const mp_obj_property_t mcu_processor_uid_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&mcu_processor_get_uid_obj,  // getter
+        (mp_obj_t)&mp_const_none_obj,            // no setter
+        (mp_obj_t)&mp_const_none_obj,            // no deleter
+    },
+};
+
 STATIC const mp_rom_map_elem_t mcu_processor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&mcu_processor_frequency_obj) },
     { MP_ROM_QSTR(MP_QSTR_temperature), MP_ROM_PTR(&mcu_processor_temperature_obj) },
+    { MP_ROM_QSTR(MP_QSTR_uid), MP_ROM_PTR(&mcu_processor_uid_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mcu_processor_locals_dict, mcu_processor_locals_dict_table);

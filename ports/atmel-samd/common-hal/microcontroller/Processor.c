@@ -230,3 +230,20 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
     // TODO(tannewt): Determine this dynamically.
     return CONF_CPU_FREQUENCY;
 }
+
+void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
+    #ifdef SAMD21
+    uint32_t* id_addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
+                                 (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
+    #endif
+    #ifdef SAMD51
+    uint32_t* id_addresses[4] = {(uint32_t *) 0x008061FC, (uint32_t *) 0x00806010,
+                                 (uint32_t *) 0x00806014, (uint32_t *) 0x00806018};
+    #endif
+
+    for (int i=0; i<4; i++) {
+        for (int k=0; k<4; k++) {
+            raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xf;
+        }
+    }
+}
