@@ -8,6 +8,8 @@ env:
   - TRAVIS_BOARD=circuitplayground_express
   - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
+  - TRAVIS_BOARD=feather_m0_rfm69
+  - TRAVIS_BOARD=feather_m0_rfm9x
   - TRAVIS_BOARD=feather_m0_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
