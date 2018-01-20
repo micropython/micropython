@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_W25Q80DV_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_W25Q80DV_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_W25Q16FW_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_W25Q16FW_H
 
 // The total flash size in bytes.
-#define SPI_FLASH_TOTAL_SIZE  (1 << 20) // 1 MiB
+#define SPI_FLASH_TOTAL_SIZE  (1 << 21) // 2 MiB
 
 // The size of the smallest erase unit thats erased with command 0x20.
 #define SPI_FLASH_ERASE_SIZE  (1 << 12) // 4 KiB
@@ -39,14 +39,15 @@
 // These are the first three response bytes to the JEDEC ID command 0x9f that is
 // used to confirm we're talking to the flash we expect.
 #ifndef SPI_FLASH_JEDEC_MANUFACTURER
-#define SPI_FLASH_JEDEC_MANUFACTURER 0xef
-#define SPI_FLASH_SECTOR_PROTECTION false
-#define SPI_FLASH_JEDEC_MEMORY_TYPE_2  0x40
+  #define SPI_FLASH_JEDEC_MANUFACTURER 0xef
+  #define SPI_FLASH_SECTOR_PROTECTION false
+  #define SPI_FLASH_JEDEC_MEMORY_TYPE  0x60
 #else
-#define SPI_FLASH_JEDEC_MANUFACTURER_2 0xef
-#define SPI_FLASH_SECTOR_PROTECTION_2 false
-#define SPI_FLASH_JEDEC_MEMORY_TYPE_2  0x40
+  #define SPI_FLASH_JEDEC_MANUFACTURER_2 0xef
+  #define SPI_FLASH_SECTOR_PROTECTION_2 false
+  #define SPI_FLASH_JEDEC_MEMORY_TYPE_2  0x60
 #endif
-#define SPI_FLASH_JEDEC_CAPACITY     0x14
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_W25Q80DV_H
+#define SPI_FLASH_JEDEC_CAPACITY     0x15
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_W25Q16BV_H
