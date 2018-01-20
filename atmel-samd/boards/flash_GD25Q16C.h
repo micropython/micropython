@@ -44,11 +44,12 @@
 // used to confirm we're talking to the flash we expect.
 #define SPI_FLASH_JEDEC_MANUFACTURER 0xc8
 #define SPI_FLASH_SECTOR_PROTECTION true
+#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
 #else
 #define SPI_FLASH_JEDEC_MANUFACTURER_2 0xc8
 #define SPI_FLASH_SECTOR_PROTECTION_2 true
+#define SPI_FLASH_JEDEC_MEMORY_TYPE_2  0x40
 #endif
-#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
 #define SPI_FLASH_JEDEC_CAPACITY     0x15
 
 
