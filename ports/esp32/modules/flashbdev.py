@@ -3,10 +3,13 @@ import esp
 class FlashBdev:
 
     SEC_SIZE = 4096
-    START_SEC = esp.flash_user_start() // SEC_SIZE
 
-    def __init__(self, blocks):
+    def __init__(self, blocks, offset=None):
         self.blocks = blocks
+	if not offset:
+		self.START_SEC = esp.flash_user_start() // self.SEC_SIZE
+	else:
+		self.START_SEC = offset // self.SEC_SIZE
 
     def readblocks(self, n, buf):
         #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
@@ -26,9 +29,14 @@ class FlashBdev:
             return self.SEC_SIZE
 
 size = esp.flash_size()
+vfspart = esp.partition_find_first(1,129,None)
 if size < 1024*1024:
     # flash too small for a filesystem
     bdev = None
+elif vfspart:
+    # if we have a partition for the filesystem, use it
+    bdev = FlashBdev(vfspart[3] // FlashBdev.SEC_SIZE, vfspart[2])
+    print("FAT filesystem found on partition '{}'".format(vfspart[4].strip()))
 else:
     # for now we use a fixed size for the filesystem
     bdev = FlashBdev(2048 * 1024 // FlashBdev.SEC_SIZE)

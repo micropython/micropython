@@ -59,6 +59,7 @@ INC += -I$(TOP)/lib/timeutils
 INC += -I$(BUILD)
 
 INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include
+INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_priv
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
@@ -83,6 +84,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/lwip/posix
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
+INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
 INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa-debug-module/include
@@ -209,6 +211,7 @@ SRC_QSTR_AUTO_DEPS +=
 
 ################################################################################
 # List of object files from the ESP32 IDF components
+
 
 ESPIDF_DRIVER_O = $(addprefix $(ESPCOMP)/driver/,\
 	uart.o \
@@ -363,6 +366,11 @@ ESPIDF_NEWLIB_O = $(addprefix $(ESPCOMP)/newlib/,\
 	locks.o \
 	)
 
+ESPIDF_BOOTLOADER_SUPPORT_O = $(addprefix $(ESPCOMP)/bootloader_support/,\
+	src/esp_image_format.o \
+	src/bootloader_flash.o \
+	)
+
 ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
 	nghttp2/lib/nghttp2_http.o \
 	nghttp2/lib/nghttp2_version.o \
@@ -406,6 +414,10 @@ ESPIDF_SPI_FLASH_O = $(addprefix $(ESPCOMP)/spi_flash/,\
 	spi_flash_rom_patch.o \
 	cache_utils.o \
 	flash_ops.o \
+	)
+
+ESPIDF_APP_UPDATE_O = $(addprefix $(ESPCOMP)/app_update/,\
+	esp_ota_ops.o \
 	)
 
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
@@ -594,7 +606,9 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_TRACE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NGHTTP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_BOOTLOADER_SUPPORT_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_UPDATE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
 ################################################################################
 # Main targets
@@ -725,7 +739,7 @@ $(BUILD)/bootloader.elf: $(BOOTLOADER_OBJ)
 # Declarations to build the partitions
 
 PYTHON2 ?= python2
-PART_SRC = partitions.csv
+PART_SRC = ./partitiontable.csv
 
 $(BUILD)/partitions.bin: $(PART_SRC)
 	$(ECHO) "Create $@"

@@ -28,11 +28,13 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "rom/gpio.h"
 #include "esp_log.h"
 #include "esp_spi_flash.h"
-
+#include "esp_partition.h"
+#include "esp_ota_ops.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -100,6 +102,54 @@ STATIC mp_obj_t esp_flash_user_start(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
+STATIC mp_obj_t mp_esp_partition_find_first(mp_obj_t type_in, mp_obj_t subtype_in, mp_obj_t label_in ) {
+    const mp_int_t type = mp_obj_get_int(type_in);
+    const mp_int_t subtype = mp_obj_get_int(subtype_in);
+    const char* label = NULL;
+    if ( mp_obj_is_true(label_in) ) {
+        label = mp_obj_str_get_str(label_in);
+    }
+
+    const esp_partition_t* part = esp_partition_find_first(type, subtype, label);
+    void* partptr = &part;
+
+    if (part == NULL) {
+       return mp_const_none;
+    }
+
+    mp_obj_t tuple[7];
+    tuple[0] = mp_obj_new_int(part->type);
+    tuple[1] = mp_obj_new_int(part->subtype);
+    tuple[2] = mp_obj_new_int(part->address);
+    tuple[3] = mp_obj_new_int(part->size);
+    tuple[4] = mp_obj_new_str(part->label,16,false);
+    tuple[5] = mp_obj_new_bool(part->encrypted);
+    tuple[6] = mp_obj_new_bytes(partptr, sizeof(partptr));
+
+    return mp_obj_new_tuple(7, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_partition_find_first_obj, mp_esp_partition_find_first);
+
+STATIC mp_obj_t mp_esp_ota_set_boot_partition (mp_obj_t partition_ptr_in) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(partition_ptr_in, &bufinfo, MP_BUFFER_READ);
+    esp_partition_t* partition_ptr = NULL;
+    memcpy(&partition_ptr, bufinfo.buf, bufinfo.len);
+    esp_err_t res = esp_ota_set_boot_partition(partition_ptr);
+    if (res != ESP_OK) {
+        mp_raise_OSError(MP_EIO);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_ota_set_boot_partition_obj, mp_esp_ota_set_boot_partition);
+
+STATIC mp_obj_t mp_esp_ota_get_boot_partition (void) {
+    const esp_partition_t* part = esp_ota_get_boot_partition();
+    void* partptr = &part;
+    return mp_obj_new_bytes(partptr, sizeof(partptr));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_ota_get_boot_partition_obj, mp_esp_ota_get_boot_partition);
+
 STATIC mp_obj_t esp_gpio_matrix_in(mp_obj_t pin, mp_obj_t sig, mp_obj_t inv) {
     gpio_matrix_in(mp_obj_get_int(pin), mp_obj_get_int(sig), mp_obj_get_int(inv));
     return mp_const_none;
@@ -132,6 +182,10 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_partition_find_first), MP_ROM_PTR(&esp_partition_find_first_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ota_set_boot_partition), MP_ROM_PTR(&esp_ota_set_boot_partition_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ota_get_boot_partition), MP_ROM_PTR(&esp_ota_get_boot_partition_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_in), MP_ROM_PTR(&esp_gpio_matrix_in_obj) },
     { MP_ROM_QSTR(MP_QSTR_gpio_matrix_out), MP_ROM_PTR(&esp_gpio_matrix_out_obj) },
