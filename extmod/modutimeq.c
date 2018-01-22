@@ -175,6 +175,28 @@ STATIC mp_obj_t mod_utimeq_peektime(mp_obj_t heap_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_utimeq_peektime_obj, mod_utimeq_peektime);
 
+STATIC mp_obj_t mod_utimeq_discard(mp_obj_t heap_in, mp_obj_t callback) {
+    mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
+    if (heap->len == 0) {
+        return mp_const_none;
+    }
+    for (mp_uint_t i = 0; i < heap->len; i++) {
+        if (heap->items[i].callback != callback) {
+            continue;
+        }
+        heap->len -= 1;
+        heap->items[i] = heap->items[heap->len];
+        heap->items[heap->len].callback = MP_OBJ_NULL;
+        heap->items[heap->len].args = MP_OBJ_NULL;
+        if (i < heap->len) {
+            utimeq_heap_siftup(heap, i);
+            utimeq_heap_siftdown(heap, 0, i);
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_discard_obj, mod_utimeq_discard);
+
 #if DEBUG
 STATIC mp_obj_t mod_utimeq_dump(mp_obj_t heap_in) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
@@ -203,6 +225,7 @@ STATIC const mp_rom_map_elem_t utimeq_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&mod_utimeq_heappush_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&mod_utimeq_heappop_obj) },
     { MP_ROM_QSTR(MP_QSTR_peektime), MP_ROM_PTR(&mod_utimeq_peektime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_discard), MP_ROM_PTR(&mod_utimeq_discard_obj) },
     #if DEBUG
     { MP_ROM_QSTR(MP_QSTR_dump), MP_ROM_PTR(&mod_utimeq_dump_obj) },
     #endif
