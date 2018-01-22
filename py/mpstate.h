@@ -60,13 +60,9 @@ typedef struct _mp_sched_item_t {
     mp_obj_t arg;
 } mp_sched_item_t;
 
-// This structure hold information about the memory allocation system.
-typedef struct _mp_state_mem_t {
-    #if MICROPY_MEM_STATS
-    size_t total_bytes_allocated;
-    size_t current_bytes_allocated;
-    size_t peak_bytes_allocated;
-    #endif
+typedef struct _mp_state_mem_area_t {
+    size_t gc_area_num;
+    struct _mp_state_mem_area_t *gc_area_next;
 
     byte *gc_alloc_table_start;
     size_t gc_alloc_table_byte_len;
@@ -75,10 +71,26 @@ typedef struct _mp_state_mem_t {
     #endif
     byte *gc_pool_start;
     byte *gc_pool_end;
+} mp_state_mem_area_t;
+
+typedef struct {
+    mp_state_mem_area_t *area;
+    size_t block;
+} mp_state_mem_stack_element_t;;
+
+// This structure hold information about the memory allocation system.
+typedef struct _mp_state_mem_t {
+    #if MICROPY_MEM_STATS
+    size_t total_bytes_allocated;
+    size_t current_bytes_allocated;
+    size_t peak_bytes_allocated;
+    #endif
+
+    mp_state_mem_area_t *gc_area;
 
     int gc_stack_overflow;
-    size_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
-    size_t *gc_sp;
+    mp_state_mem_stack_element_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    mp_state_mem_stack_element_t *gc_sp;
     uint16_t gc_lock_depth;
 
     // This variable controls auto garbage collection.  If set to 0 then the
@@ -92,6 +104,7 @@ typedef struct _mp_state_mem_t {
     #endif
 
     size_t gc_last_free_atb_index;
+    mp_state_mem_area_t *gc_last_area;
 
     #if MICROPY_PY_GC_COLLECT_RETVAL
     size_t gc_collected;
