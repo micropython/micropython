@@ -29,6 +29,7 @@
 #include <math.h>
 
 #include "esp_mphal.h"
+#include "user_interface.h"
 
 
 float common_hal_mcu_processor_get_temperature(void) {
