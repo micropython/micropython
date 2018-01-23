@@ -30,7 +30,7 @@
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
-#include "py/gc.h"
+#include "py/misc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
@@ -256,12 +256,12 @@ void spi_flash_init(void) {
     if (spi_flash_is_initialised) {
         return;
     }
-        
+
     samd_peripherals_sercom_clock_init(SPI_FLASH_SERCOM, SPI_FLASH_SERCOM_INDEX);
 
     // Set up with defaults, then change.
     spi_m_sync_init(&spi_flash_desc, SPI_FLASH_SERCOM);
-        
+
     hri_sercomspi_write_CTRLA_DOPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DOPO);
     hri_sercomspi_write_CTRLA_DIPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DIPO);
 
@@ -398,7 +398,7 @@ static bool flush_scratch_flash(void) {
 static bool allocate_ram_cache(void) {
     uint8_t blocks_per_sector = SPI_FLASH_ERASE_SIZE / FILESYSTEM_BLOCK_SIZE;
     uint8_t pages_per_block = FILESYSTEM_BLOCK_SIZE / SPI_FLASH_PAGE_SIZE;
-    MP_STATE_VM(flash_ram_cache) = gc_alloc(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
+    MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
     }
@@ -409,7 +409,7 @@ static bool allocate_ram_cache(void) {
     bool success = true;
     for (i = 0; i < blocks_per_sector; i++) {
         for (j = 0; j < pages_per_block; j++) {
-            uint8_t *page_cache = gc_alloc(SPI_FLASH_PAGE_SIZE, false);
+            uint8_t *page_cache = m_malloc_maybe(SPI_FLASH_PAGE_SIZE, false);
             if (page_cache == NULL) {
                 success = false;
                 break;
@@ -427,11 +427,11 @@ static bool allocate_ram_cache(void) {
         i++;
         for (; i > 0; i--) {
             for (; j > 0; j--) {
-                gc_free(MP_STATE_VM(flash_ram_cache)[(i - 1) * pages_per_block + (j - 1)]);
+                m_free(MP_STATE_VM(flash_ram_cache)[(i - 1) * pages_per_block + (j - 1)]);
             }
             j = pages_per_block;
         }
-        gc_free(MP_STATE_VM(flash_ram_cache));
+        m_free(MP_STATE_VM(flash_ram_cache));
         MP_STATE_VM(flash_ram_cache) = NULL;
     }
     return success;
@@ -474,13 +474,13 @@ static bool flush_ram_cache(bool keep_cache) {
                         MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                         SPI_FLASH_PAGE_SIZE);
             if (!keep_cache) {
-                gc_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
+                m_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
         }
     }
     // We're done with the cache for now so give it back.
     if (!keep_cache) {
-        gc_free(MP_STATE_VM(flash_ram_cache));
+        m_free(MP_STATE_VM(flash_ram_cache));
         MP_STATE_VM(flash_ram_cache) = NULL;
     }
     return true;
