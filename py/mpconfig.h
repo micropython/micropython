@@ -606,6 +606,11 @@
 #define MICROPY_ENABLE_GC (0)
 #endif
 
+// Whether the garbage-collected heap can be split over multiple memory areas.
+#ifndef MICROPY_GC_SPLIT_HEAP
+#define MICROPY_GC_SPLIT_HEAP (0)
+#endif
+
 // Hook to run code during time consuming garbage collector operations
 #ifndef MICROPY_GC_HOOK_LOOP
 #define MICROPY_GC_HOOK_LOOP
