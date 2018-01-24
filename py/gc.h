@@ -30,6 +30,7 @@
 #include <stddef.h>
 
 void gc_init(void *start, void *end);
+void gc_add(void *start, void *end);
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.
