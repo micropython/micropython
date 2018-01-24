@@ -9,6 +9,10 @@ import sys
 import pygraphviz as pgv
 import io
 import html
+import os.path
+import string
+
+import click
 
 from analyze_mpy import Prelude
 
@@ -32,176 +36,211 @@ READLINE_HIST_SIZE = 8
 
 SKIP_SYMBOLS = [".debug_ranges", ".debug_frame", ".debug_loc", ".comment", ".debug_str", ".debug_line", ".debug_abbrev", ".debug_info", "COMMON"]
 
-ownership_graph = pgv.AGraph(directed=True)
+@click.command()
+@click.argument("ram_filename")
+@click.argument("bin_filename")
+@click.argument("map_filename")
+@click.option("--print_block_contents", default=False,
+              help="Prints the contents of each allocated block")
+@click.option("--print_unknown_types", default=False,
+              help="Prints the micropython base type if we don't understand it.")
+@click.option("--print_block_state", default=False,
+              help="Prints the heap block states (allocated or free)")
+@click.option("--print_conflicting_symbols", default=False,
+              help="Prints conflicting symbols from the map")
+@click.option("--print-heap-structure/--no-print-heap-structure", default=False,
+              help="Print heap structure")
+@click.option("--output_directory", default="heapvis",
+              help="Destination for rendered output")
+@click.option("--draw-heap-layout/--no-draw-heap-layout", default=True,
+              help="Draw the heap layout")
+@click.option("--draw-heap-ownership/--no-draw-heap-ownership", default=False,
+              help="Draw the ownership graph of blocks on the heap")
+@click.option("--draw-heap-ownership/--no-draw-heap-ownership", default=False,
+              help="Draw the ownership graph of blocks on the heap")
+@click.option("--analyze-snapshots", default="last", type=click.Choice(['all', 'last']))
+def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_contents,
+                      print_unknown_types, print_block_state, print_conflicting_symbols,
+                      print_heap_structure, output_directory, draw_heap_layout,
+                      draw_heap_ownership, analyze_snapshots):
+    with open(ram_filename, "rb") as f:
+        ram_dump = f.read()
 
-with open(sys.argv[1], "rb") as f:
-    ram = f.read()
+    with open(bin_filename, "rb") as f:
+        rom = f.read()
 
-with open(sys.argv[2], "rb") as f:
-    rom = f.read()
+    symbols = {} # name -> address, size
+    symbol_lookup = {} # address -> name
+    manual_symbol_map = {} # autoname -> name
 
-symbols = {} # name -> address, size
-symbol_lookup = {} # address -> name
-manual_symbol_map = {} # autoname -> name
+    def add_symbol(name, address=None, size=None):
+        if "lto_priv" in name:
+            name = name.split(".")[0]
+        if address:
+            address = int(address, 0)
+        if size:
+            size = int(size, 0)
+        if name in symbols:
+            if address and symbols[name][0] and symbols[name][0] != address:
+                if print_conflicting_symbols:
+                    print("Conflicting symbol: {} at addresses 0x{:08x} and 0x{:08x}".format(name, address, symbols[name][0]))
+                return
+            if not address:
+                address = symbols[name][0]
+            if not size:
+                size = symbols[name][1]
+        symbols[name] = (address, size)
+        if address:
+            if not size:
+                size = 4
+            for offset in range(0, size, 4):
+                symbol_lookup[address + offset] = "{}+{}".format(name, offset)
 
-def add_symbol(name, address=None, size=None):
-    global symbols
-    if address:
-        address = int(address, 0)
-    if size:
-        size = int(size, 0)
-    if name in symbols:
-        if address and symbols[name][0] and symbols[name][0] != address:
-            print("Conflicting symbol: {}".format(name))
-            return
-        if not address:
-            address = symbols[name][0]
-        if not size:
-            size = symbols[name][1]
-    symbols[name] = (address, size)
-    if address:
-        if not size:
-            size = 4
-        for offset in range(0, size, 4):
-            symbol_lookup[address + offset] = "{}+{}".format(name, offset)
+    with open(map_filename, "r") as f:
+        common_symbols = False
+        name = None
+        for line in f:
+            line = line.strip()
+            parts = line.split()
+            if line.startswith("Common symbol"):
+                common_symbols = True
+            if line == "Discarded input sections":
+                common_symbols = False
+            if common_symbols:
+                if len(parts) == 1:
+                    name = parts[0]
+                elif len(parts) == 2 and name:
+                    add_symbol(name, size=parts[0])
+                    name = None
+                elif len(parts) == 3:
+                    add_symbol(parts[0], size=parts[1])
+                    name = None
+            else:
+                if len(parts) == 1 and parts[0].startswith((".text", ".rodata", ".bss")) and parts[0].count(".") > 1 and not parts[0].isnumeric() and ".str" not in parts[0]:
+                    name = parts[0].split(".")[2]
+                if len(parts) == 3 and parts[0].startswith("0x") and parts[1].startswith("0x") and name:
+                    add_symbol(name, parts[0], parts[1])
+                    name = None
+                if len(parts) == 2 and parts[0].startswith("0x") and not parts[1].startswith("0x"):
+                    add_symbol(parts[1], parts[0])
+                if len(parts) == 4 and parts[0] not in SKIP_SYMBOLS and parts[1].startswith("0x") and parts[2].startswith("0x"):
+                    name, address, size, source = parts
+                    if name.startswith((".text", ".rodata", ".bss")) and name.count(".") > 1:
+                        name = name.split(".")[-1]
+                        add_symbol(name, address, size)
+                    name = None
+                # Linker symbols
+                if len(parts) >= 4 and parts[0].startswith("0x") and parts[2] == "=" and parts[1] != ".":
+                    add_symbol(parts[1], parts[0])
 
-with open(sys.argv[3], "r") as f:
-    common_symbols = False
-    name = None
-    for line in f:
-        line = line.strip()
-        parts = line.split()
-        if line.startswith("Common symbol"):
-            common_symbols = True
-        if line == "Discarded input sections":
-            common_symbols = False
-        if common_symbols:
-            if len(parts) == 1:
-                name = parts[0]
-            elif len(parts) == 2 and name:
-                add_symbol(name, size=parts[0])
-                name = None
-            elif len(parts) == 3:
-                add_symbol(parts[0], size=parts[1])
-                name = None
-        else:
-            if len(parts) == 2 and parts[0].startswith("0x") and not parts[1].startswith("0x"):
-                add_symbol(parts[1], parts[0])
-            if len(parts) == 4 and parts[0] not in SKIP_SYMBOLS and parts[1].startswith("0x") and parts[2].startswith("0x"):
-                name, address, size, source = parts
-                if name.startswith((".text", ".rodata", ".bss")) and name.count(".") > 1:
-                    name = name.split(".")[-1]
-                    add_symbol(name, address, size)
-            # Linker symbols
-            if len(parts) >= 4 and parts[0].startswith("0x") and parts[2] == "=" and parts[1] != ".":
-                add_symbol(parts[1], parts[0])
+    rom_start = symbols["_sfixed"][0]
+    ram_start = symbols["_srelocate"][0]
+    ram_end = symbols["_estack"][0]
+    ram_length = ram_end - ram_start
+    if analyze_snapshots == "all":
+        snapshots = range(len(ram_dump) // ram_length - 1, -1, -1)
+    elif analyze_snapshots == "last":
+        snapshots = range(len(ram_dump) // ram_length - 1, len(ram_dump) // ram_length - 2, -1)
+    for snapshot_num in snapshots:
+        ram = ram_dump[ram_length*snapshot_num:ram_length*(snapshot_num + 1)]
 
-rom_start = symbols["_sfixed"][0]
-ram_start = symbols["_srelocate"][0]
+        ownership_graph = pgv.AGraph(directed=True)
+        def load(address, size=4):
+            if size is None:
+                raise ValueError("You must provide a size")
+            if address > ram_start:
+                ram_address = address - ram_start
+                if (ram_address + size) > len(ram):
+                    raise ValueError("Unable to read 0x{:08x} from ram.".format(address))
+                return ram[ram_address:ram_address+size]
+            elif address < len(rom):
+                if (address + size) > len(rom):
+                    raise ValueError("Unable to read 0x{:08x} from rom.".format(address))
+                return rom[address:address+size]
 
-def load(address, size=4):
-    if size is None:
-        raise ValueError("You must provide a size")
-    if address > ram_start:
-        ram_address = address - ram_start
-        if (ram_address + size) > len(ram):
-            raise ValueError("Unable to read 0x{:08x} from ram.".format(address))
-        return ram[ram_address:ram_address+size]
-    elif address < len(rom):
-        if (address + size) > len(rom):
-            raise ValueError("Unable to read 0x{:08x} from rom.".format(address))
-        return rom[address:address+size]
+        def load_pointer(address):
+            return struct.unpack("<I", load(address))[0]
 
-def load_pointer(address):
-    return struct.unpack("<I", load(address))[0]
+        heap_start, heap_size = symbols["heap"]
+        heap = load(heap_start, heap_size)
+        total_byte_len = len(heap)
 
-heap_start, heap_size = symbols["heap"]
-heap = load(heap_start, heap_size)
-total_byte_len = len(heap)
+        # These change every run so we load them from the symbol table
+        mp_state_ctx = symbols["mp_state_ctx"][0]
+        manual_symbol_map["mp_state_ctx+20"] = "mp_state_ctx.vm.last_pool"
+        last_pool = load_pointer(mp_state_ctx + 20) # (gdb) p &mp_state_ctx.vm.last_pool
+        manual_symbol_map["mp_state_ctx+88"] = "mp_state_ctx.vm.dict_main.map.table"
+        dict_main_table = load_pointer(mp_state_ctx + 88) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
+        manual_symbol_map["mp_state_ctx+68"] = "mp_state_ctx.vm.mp_loaded_modules_dict.map.table"
+        imports_table = load_pointer(mp_state_ctx + 68) # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
 
-# These change every run so we load them from the symbol table
-mp_state_ctx = symbols["mp_state_ctx"][0]
-manual_symbol_map["mp_state_ctx+24"] = "mp_state_ctx.vm.last_pool"
-last_pool = load_pointer(mp_state_ctx + 24) # (gdb) p &mp_state_ctx.vm.last_pool
-manual_symbol_map["mp_state_ctx+92"] = "mp_state_ctx.vm.dict_main.map.table"
-dict_main_table = load_pointer(mp_state_ctx + 92) # (gdb) p &mp_state_ctx.vm.dict_main.map.table
-manual_symbol_map["mp_state_ctx+72"] = "mp_state_ctx.vm.mp_loaded_modules_dict.map.table"
-imports_table = load_pointer(mp_state_ctx + 72) # (gdb) p &mp_state_ctx.vm.mp_loaded_modules_dict.map.table
+        manual_symbol_map["mp_state_ctx+104"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
+        manual_symbol_map["mp_state_ctx+120"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
 
-manual_symbol_map["mp_state_ctx+108"] = "mp_state_ctx.vm.mp_sys_path_obj.items"
-manual_symbol_map["mp_state_ctx+124"] = "mp_state_ctx.vm.mp_sys_argv_obj.items"
+        for i in range(READLINE_HIST_SIZE):
+            manual_symbol_map["mp_state_ctx+{}".format(128 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
 
-for i in range(READLINE_HIST_SIZE):
-    manual_symbol_map["mp_state_ctx+{}".format(128 + i * 4)] = "mp_state_ctx.vm.readline_hist[{}]".format(i)
+        tuple_type = symbols["mp_type_tuple"][0]
+        type_type = symbols["mp_type_type"][0]
+        map_type = symbols["mp_type_map"][0]
+        dict_type = symbols["mp_type_dict"][0]
+        property_type = symbols["mp_type_property"][0]
+        str_type = symbols["mp_type_str"][0]
+        function_types = [symbols["mp_type_fun_" + x][0] for x in ["bc", "builtin_0", "builtin_1", "builtin_2", "builtin_3", "builtin_var"]]
+        bytearray_type = symbols["mp_type_bytearray"][0]
 
-tuple_type = symbols["mp_type_tuple"][0]
-type_type = symbols["mp_type_type"][0]
-map_type = symbols["mp_type_map"][0]
-dict_type = symbols["mp_type_dict"][0]
-property_type = symbols["mp_type_property"][0]
-str_type = symbols["mp_type_str"][0]
-function_types = [symbols["mp_type_fun_" + x][0] for x in ["bc", "builtin_0", "builtin_1", "builtin_2", "builtin_3", "builtin_var"]]
-bytearray_type = symbols["mp_type_bytearray"][0]
+        dynamic_type = 0x40000000 # placeholder, doesn't match any memory
 
-dynamic_type = 0x40000000 # placeholder, doesn't match any memory
+        type_colors = {
+            dict_type: "red",
+            property_type: "yellow",
+            map_type: "blue",
+            type_type: "orange",
+            tuple_type: "skyblue",
+            str_type: "pink",
+            bytearray_type: "purple"
+            }
 
-type_colors = {
-    dict_type: "red",
-    property_type: "yellow",
-    map_type: "blue",
-    type_type: "orange",
-    tuple_type: "skyblue",
-    str_type: "pink",
-    bytearray_type: "purple"
-    }
+        pool_shift = heap_start % BYTES_PER_BLOCK
+        atb_length = total_byte_len * BITS_PER_BYTE // (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB // BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+        pool_length = atb_length * BLOCKS_PER_ATB * BYTES_PER_BLOCK
+        gc_finaliser_table_byte_len = (atb_length * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) // BLOCKS_PER_FTB
 
-pool_shift = heap_start % BYTES_PER_BLOCK
+        if print_heap_structure:
+            print("mp_state_ctx at 0x{:08x} and length {}".format(*symbols["mp_state_ctx"]))
+            print("Total heap length:", total_byte_len)
+            print("ATB length:", atb_length)
+            print("Total allocatable:", pool_length)
+            print("FTB length:", gc_finaliser_table_byte_len)
 
-print("Total heap length:", total_byte_len)
-atb_length = total_byte_len * BITS_PER_BYTE // (BITS_PER_BYTE + BITS_PER_BYTE * BLOCKS_PER_ATB // BLOCKS_PER_FTB + BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK)
+        pool_start = heap_start + total_byte_len - pool_length - pool_shift
+        pool = heap[-pool_length-pool_shift:]
 
-print("ATB length:", atb_length)
-pool_length = atb_length * BLOCKS_PER_ATB * BYTES_PER_BLOCK
-print("Total allocatable:", pool_length)
+        total_height = 65 * 18
+        total_width = (pool_length // (64 * 16)) * 90
 
-gc_finaliser_table_byte_len = (atb_length * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) // BLOCKS_PER_FTB
-print("FTB length:", gc_finaliser_table_byte_len)
+        map_element_blocks = [dict_main_table, imports_table]
+        string_blocks = []
+        bytecode_blocks = []
+        qstr_pools = []
+        qstr_chunks = []
+        block_data = {}
 
-pool_start = heap_start + total_byte_len - pool_length - pool_shift
-pool = heap[-pool_length-pool_shift:]
+        # Find all the qtr pool addresses.
+        prev_pool = last_pool
+        while prev_pool > ram_start:
+            qstr_pools.append(prev_pool)
+            prev_pool = load_pointer(prev_pool)
 
-map_element_blocks = [dict_main_table, imports_table]
-string_blocks = []
-bytecode_blocks = []
-qstr_pools = []
-qstr_chunks = []
-block_data = {}
-
-# Find all the qtr pool addresses.
-prev_pool = last_pool
-while prev_pool > ram_start:
-    qstr_pools.append(prev_pool)
-    prev_pool = load_pointer(prev_pool)
-
-longest_free = 0
-current_free = 0
-current_allocation = 0
-total_free = 0
-for i in range(atb_length):
-    # Each atb byte is four blocks worth of info
-    atb = heap[i]
-    for j in range(4):
-        block_state = (atb >> (j * 2)) & 0x3
-        if block_state != AT_FREE and current_free > 0:
-            print("{} bytes free".format(current_free * BYTES_PER_BLOCK))
-            current_free = 0
-        if block_state != AT_TAIL and current_allocation > 0:
+        def save_allocated_block(end, current_allocation):
             allocation_length = current_allocation * BYTES_PER_BLOCK
-            end = (i * BLOCKS_PER_ATB + j) * BYTES_PER_BLOCK
             start = end - allocation_length
             address = pool_start + start
             data = pool[start:end]
-            print("0x{:x} {} bytes allocated".format(address, allocation_length))
+            if print_block_state:
+                print("0x{:x} {} bytes allocated".format(address, allocation_length))
+            if print_block_contents:
+                print(data)
 
             rows = ""
             for k in range(current_allocation - 1):
@@ -214,6 +253,7 @@ for i in range(atb_length):
             ownership_graph.add_node(address, label=table, style="invisible", shape="plaintext")
             potential_type = None
             node = ownership_graph.get_node(address)
+            node.attr["height"] = 0.25 * current_allocation
             block_data[address] = data
             for k in range(len(data) // 4):
                 word = struct.unpack_from("<I", data, offset=(k * 4))[0]
@@ -226,9 +266,8 @@ for i in range(atb_length):
                         bgcolor = "green"
                     elif potential_type in type_colors:
                         bgcolor = type_colors[potential_type]
-                    else:
-                        pass
-                        #print("unknown type", hex(potential_type))
+                    elif print_unknown_types:
+                        print("unknown type", hex(potential_type))
                     node.attr["label"] = "<" + node.attr["label"].replace("\"gray\"", "\"" + bgcolor + "\"") + ">"
 
                 if potential_type == str_type and k == 3:
@@ -262,180 +301,294 @@ for i in range(atb_length):
                     if k == 2 and 0x20000000 < word < 0x20040000:
                         bytecode_blocks.append(word)
 
-            current_allocation = 0
-        if block_state == AT_FREE:
-            current_free += 1
-            total_free += 1
-        elif block_state == AT_HEAD:
-            current_allocation = 1
-        elif block_state == AT_TAIL:
-            current_allocation += 1
-        longest_free = max(longest_free, current_free)
-if current_free > 0:
-    print("{} bytes free".format(current_free * BYTES_PER_BLOCK))
 
-def is_qstr(obj):
-    return obj & 0xff800007 == 0x00000006
+        longest_free = 0
+        current_free = 0
+        current_allocation = 0
+        total_free = 0
+        for i in range(atb_length):
+            # Each atb byte is four blocks worth of info
+            atb = heap[i]
+            for j in range(4):
+                block_state = (atb >> (j * 2)) & 0x3
+                if block_state != AT_FREE and current_free > 0:
+                    if print_block_state:
+                        print("{} bytes free".format(current_free * BYTES_PER_BLOCK))
+                    current_free = 0
+                if block_state != AT_TAIL and current_allocation > 0:
+                    save_allocated_block((i * BLOCKS_PER_ATB + j) * BYTES_PER_BLOCK, current_allocation)
+                    current_allocation = 0
+                if block_state == AT_FREE:
+                    current_free += 1
+                    total_free += 1
+                elif block_state == AT_HEAD or block_state == AT_MARK:
+                    current_allocation = 1
+                elif block_state == AT_TAIL and current_allocation > 0:
+                    # In gc_free the logging happens before the tail is freed. So checking
+                    # current_allocation > 0 ensures we only extend an allocation thats started.
+                    current_allocation += 1
+                longest_free = max(longest_free, current_free)
+        #if current_free > 0:
+        #    print("{} bytes free".format(current_free * BYTES_PER_BLOCK))
+        if current_allocation > 0:
+            save_allocated_block(pool_length, current_allocation)
 
-def find_qstr(qstr_index):
-    pool_ptr = last_pool
-    if not is_qstr(qstr_index):
-        return "object"
-    qstr_index >>= 3
-    while pool_ptr != 0:
-        #print(hex(pool_ptr))
-        if pool_ptr in block_data:
-            pool = block_data[pool_ptr]
-            prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", pool)
-        else:
-            rom_offset = pool_ptr - rom_start
-            prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", rom[rom_offset:rom_offset+32])
-            pool = rom[rom_offset:rom_offset+length*4]
-            #print("rom pool")
-        #print(hex(prev), total_prev_len, alloc, length)
-        #print(qstr_index, total_prev_len)
-        if qstr_index >= total_prev_len:
-            offset = (qstr_index - total_prev_len) * 4 + 16
-            start = struct.unpack_from("<I", pool, offset=offset)[0]
-            #print(hex(start))
-            if start < heap_start:
-                start -= rom_start
-                if start > len(rom):
-                    return "more than rom: {:x}".format(start + rom_start)
-                qstr_hash, qstr_len = struct.unpack("<BB", rom[start:start+2])
-                return rom[start+2:start+2+qstr_len].decode("utf-8")
+        def is_qstr(obj):
+            return obj & 0xff800007 == 0x00000006
+
+        def find_qstr(qstr_index):
+            pool_ptr = last_pool
+            if not is_qstr(qstr_index):
+                return "object"
+            qstr_index >>= 3
+            while pool_ptr != 0:
+                if pool_ptr > ram_start:
+                    if pool_ptr in block_data:
+                        pool = block_data[pool_ptr]
+                        prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", pool)
+                    else:
+                        print("missing qstr pool: {:08x}".format(pool_ptr))
+                        return "missing"
+                else:
+                    rom_offset = pool_ptr - rom_start
+                    prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", rom[rom_offset:rom_offset+32])
+                    pool = rom[rom_offset:rom_offset+length*4]
+
+                if qstr_index >= total_prev_len:
+                    offset = (qstr_index - total_prev_len) * 4 + 16
+                    start = struct.unpack_from("<I", pool, offset=offset)[0]
+                    if start < heap_start:
+                        start -= rom_start
+                        if start > len(rom):
+                            return "more than rom: {:x}".format(start + rom_start)
+                        qstr_hash, qstr_len = struct.unpack("<BB", rom[start:start+2])
+                        return rom[start+2:start+2+qstr_len].decode("utf-8")
+                    else:
+                        if start > heap_start + len(heap):
+                            return "out of range: {:x}".format(start)
+                        local = start - heap_start
+                        qstr_hash, qstr_len = struct.unpack("<BB", heap[local:local+2])
+                        return heap[local+2:local+2+qstr_len].decode("utf-8")
+
+                pool_ptr = prev
+            return "unknown"
+
+        def format(obj):
+            if obj & 1 != 0:
+                return obj >> 1
+            if is_qstr(obj):
+                return find_qstr(obj)
             else:
-                if start > heap_start + len(heap):
-                    return "out of range: {:x}".format(start)
-                local = start - heap_start
-                qstr_hash, qstr_len = struct.unpack("<BB", heap[local:local+2])
-                return heap[local+2:local+2+qstr_len].decode("utf-8")
+                return "0x{:08x}".format(obj)
 
-        pool_ptr = prev
-    return "unknown"
+        for block in sorted(map_element_blocks):
+            if block == 0:
+                continue
+            try:
+                node = ownership_graph.get_node(block)
+            except KeyError:
+                print("Unable to find memory block for 0x{:08x}. Is there something running?".format(block))
+                continue
+            if block not in block_data:
+                continue
+            data = block_data[block]
+            cells = []
+            for i in range(len(data) // 8):
+                key, value = struct.unpack_from("<II", data, offset=(i * 8))
+                if key == MP_OBJ_NULL or key == MP_OBJ_SENTINEL:
+                    cells.append(("", " "))
+                else:
+                    cells.append((key, format(key)))
+                    if value in block_data:
+                        edge = ownership_graph.get_edge(block, value)
+                        edge.attr["tailport"] = str(key)
+            rows = ""
+            for i in range(len(cells) // 2):
+                rows += "<tr><td port=\"{}\">{}</td><td port=\"{}\">{}</td></tr>".format(
+                    cells[2*i][0],
+                    cells[2*i][1],
+                    cells[2*i+1][0],
+                    cells[2*i+1][1])
+            node.attr["shape"] = "plaintext"
+            node.attr["style"] = "invisible"
+            node.attr["label"] = "<<table bgcolor=\"gold\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\"><tr><td colspan=\"2\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
 
-def format(obj):
-    if obj & 1 != 0:
-        return obj >> 1
-    if is_qstr(obj):
-        return find_qstr(obj)
-    else:
-        return "0x{:08x}".format(obj)
+        for node, degree in ownership_graph.in_degree_iter():
+            if degree == 0:
+                address_bytes = struct.pack("<I", int(node))
+                location = -1
+                for _ in range(ram.count(address_bytes)):
+                    location = ram.find(address_bytes, location + 1)
+                    pointer_location = ram_start + location
+                    source = "0x{:08x}".format(pointer_location)
+                    if pointer_location in symbol_lookup:
+                        source = symbol_lookup[pointer_location]
+                    if source in manual_symbol_map:
+                        source = manual_symbol_map[source]
+                    if "readline_hist" in source:
+                        string_blocks.append(int(node))
+                    ownership_graph.add_edge(source, node)
 
-for block in sorted(map_element_blocks):
-    try:
-        node = ownership_graph.get_node(block)
-    except KeyError:
-        print("Unable to find memory block for 0x{:08x}. Is there something running?".format(block))
-        continue
-    #node.attr["fillcolor"] = "gold"
-    data = block_data[block]
-    #print("0x{:08x}".format(block))
-    cells = []
-    for i in range(len(data) // 8):
-        key, value = struct.unpack_from("<II", data, offset=(i * 8))
-        if key == MP_OBJ_NULL or key == MP_OBJ_SENTINEL:
-            #print("  <empty slot>")
-            cells.append(("", " "))
-        else:
-            #print("  {}, {}".format(format(key), format(value)))
-            cells.append((key, format(key)))
-            if value in block_data:
-                edge = ownership_graph.get_edge(block, value)
-                edge.attr["tailport"] = str(key)
-    rows = ""
-    for i in range(len(cells) // 2):
-        rows += "<tr><td port=\"{}\">{}</td><td port=\"{}\">{}</td></tr>".format(
-            cells[2*i][0],
-            cells[2*i][1],
-            cells[2*i+1][0],
-            cells[2*i+1][1])
-    node.attr["shape"] = "plaintext"
-    node.attr["style"] = "invisible"
-    node.attr["label"] = "<<table bgcolor=\"gold\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\"><tr><td colspan=\"2\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
+        for block in string_blocks:
+            if block == 0:
+                continue
+            node = ownership_graph.get_node(block)
+            node.attr["fillcolor"] = "hotpink"
+            if block in block_data:
+                raw_string = block_data[block]
+            else:
+                print("Unable to find memory block for string at 0x{:08x}.".format(block))
+                continue
+            try:
+                raw_string = block_data[block].decode('utf-8')
+            except:
+                raw_string = str(block_data[block])
+            wrapped = []
+            for i in range(0, len(raw_string), 16):
+                wrapped.append(raw_string[i:i+16])
+            node.attr["label"] = "\n".join(wrapped)
+            node.attr["style"] = "filled"
+            node.attr["fontname"] = "FiraCode-Medium"
+            node.attr["fontpath"] = "/Users/tannewt/Library/Fonts/"
+            node.attr["fontsize"] = 8
+            node.attr["height"] = len(wrapped) * 0.25
 
-for node, degree in ownership_graph.in_degree_iter():
-    if degree == 0:
-        address_bytes = struct.pack("<I", int(node))
-        location = -1
-        for _ in range(ram.count(address_bytes)):
-            location = ram.find(address_bytes, location + 1)
-            pointer_location = ram_start + location
-            source = "0x{:08x}".format(pointer_location)
-            if pointer_location in symbol_lookup:
-                source = symbol_lookup[pointer_location]
-            if source in manual_symbol_map:
-                source = manual_symbol_map[source]
-            if "readline_hist" in source:
-                string_blocks.append(int(node))
-            ownership_graph.add_edge(source, node)
+        for block in bytecode_blocks:
+            node = ownership_graph.get_node(block)
+            node.attr["fillcolor"] = "lightseagreen"
+            if block in block_data:
+                data = block_data[block]
+            else:
+                print("Unable to find memory block for bytecode at 0x{:08x}.".format(block))
+                continue
+            prelude = Prelude(io.BufferedReader(io.BytesIO(data)))
+            node.attr["shape"] = "plaintext"
+            node.attr["style"] = "invisible"
+            code_info_size = prelude.code_info_size
+            rows = ""
+            remaining_bytecode = len(data) - 16
+            while code_info_size >= 16:
+                rows += "<tr><td colspan=\"16\" bgcolor=\"palegreen\" height=\"18\" width=\"80\"></td></tr>"
+                code_info_size -= 16
+                remaining_bytecode -= 16
+            if code_info_size > 0:
+                rows += ("<tr><td colspan=\"{}\" bgcolor=\"palegreen\" height=\"18\" width=\"{}\"></td>"
+                         "<td colspan=\"{}\" bgcolor=\"seagreen\" height=\"18\" width=\"{}\"></td></tr>"
+                        ).format(code_info_size, code_info_size * (80 / 16), (16 - code_info_size), (80 / 16) * (16 - code_info_size))
+                remaining_bytecode -= 16
+            for i in range(remaining_bytecode // 16):
+                rows += "<tr><td colspan=\"16\" bgcolor=\"seagreen\" height=\"18\" width=\"80\"></td></tr>"
+            node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\"><tr><td colspan=\"16\" bgcolor=\"lightseagreen\" height=\"18\" width=\"80\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
 
-for block in string_blocks:
-    node = ownership_graph.get_node(block)
-    node.attr["fillcolor"] = "hotpink"
-    string = block_data[block].decode('utf-8')
-    wrapped = []
-    for i in range(0, len(string), 16):
-        wrapped.append(string[i:i+16])
-    node.attr["label"] = "\n".join(wrapped)
-    node.attr["style"] = "filled"
-    node.attr["fontname"] = "FiraCode-Medium"
-    node.attr["fontpath"] = "/Users/tannewt/Library/Fonts/"
-    node.attr["fontsize"] = 8
+        for block in qstr_chunks:
+            if block not in block_data:
+                ownership_graph.delete_node(block)
+                continue
+            data = block_data[block]
+            qstrs_in_chunk = ""
+            offset = 0
+            while offset < len(data) - 1:
+                qstr_hash, qstr_len = struct.unpack_from("<BB", data, offset=offset)
+                if qstr_hash == 0:
+                    qstrs_in_chunk += " " * (len(data) - offset)
+                    offset = len(data)
+                    continue
+                offset += 2 + qstr_len + 1
+                qstrs_in_chunk += "  " + data[offset - qstr_len - 1: offset - 1].decode("utf-8")
+            printable_qstrs = ""
+            for i in range(len(qstrs_in_chunk)):
+                c = qstrs_in_chunk[i]
+                if c not in string.printable or c in "\v\f":
+                    printable_qstrs += "░"
+                else:
+                    printable_qstrs += qstrs_in_chunk[i]
+            wrapped = []
+            for i in range(0, len(printable_qstrs), 16):
+                wrapped.append(html.escape(printable_qstrs[i:i+16]))
+            node = ownership_graph.get_node(block)
+            node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\" bgcolor=\"lightsalmon\" width=\"80\"><tr><td height=\"18\" >0x{:08x}</td></tr><tr><td height=\"{}\" >{}</td></tr></table>>".format(block, 18 * (len(wrapped) - 1), "<br/>".join(wrapped))
+            node.attr["fontname"] = "FiraCode-Medium"
+            node.attr["fontpath"] = "/Users/tannewt/Library/Fonts/"
+            node.attr["fontsize"] = 8
 
-for block in bytecode_blocks:
-    node = ownership_graph.get_node(block)
-    node.attr["fillcolor"] = "lightseagreen"
-    data = block_data[block]
-    prelude = Prelude(io.BufferedReader(io.BytesIO(data)))
-    node.attr["shape"] = "plaintext"
-    node.attr["style"] = "invisible"
-    code_info_size = prelude.code_info_size
-    rows = ""
-    remaining_bytecode = len(data) - 16
-    while code_info_size >= 16:
-        rows += "<tr><td colspan=\"16\" bgcolor=\"palegreen\" height=\"18\" width=\"80\"></td></tr>"
-        code_info_size -= 16
-        remaining_bytecode -= 16
-    if code_info_size > 0:
-        rows += ("<tr><td colspan=\"{}\" bgcolor=\"palegreen\" height=\"18\" width=\"{}\"></td>"
-                 "<td colspan=\"{}\" bgcolor=\"seagreen\" height=\"18\" width=\"{}\"></td></tr>"
-                ).format(code_info_size, code_info_size * (80 / 16), (16 - code_info_size), (80 / 16) * (16 - code_info_size))
-        remaining_bytecode -= 16
-    for i in range(remaining_bytecode // 16):
-        rows += "<tr><td colspan=\"16\" bgcolor=\"seagreen\" height=\"18\" width=\"80\"></td></tr>"
-    node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\"><tr><td colspan=\"16\" bgcolor=\"lightseagreen\" height=\"18\" width=\"80\">0x{:08x}</td></tr>{}</table>>".format(block, rows)
+        print("Total free space:", BYTES_PER_BLOCK * total_free)
+        print("Longest free space:", BYTES_PER_BLOCK * longest_free)
 
-for block in qstr_chunks:
-    if block not in block_data:
-        ownership_graph.delete_node(block)
-        continue
-    data = block_data[block]
-    string = ""
-    offset = 0
-    while offset < len(data) - 1:
-        qstr_hash, qstr_len = struct.unpack_from("<BB", data, offset=offset)
-        if qstr_hash == 0:
-            string += " " * (len(data) - offset)
-            offset = len(data)
-            continue
-        offset += 2 + qstr_len + 1
-        string += "  " + data[offset - qstr_len - 1: offset - 1].decode("utf-8")
-    #print(string)
-    wrapped = []
-    for i in range(0, len(string), 16):
-        wrapped.append(html.escape(string[i:i+16]))
-    node = ownership_graph.get_node(block)
-    node.attr["label"] = "<<table border=\"1\" cellspacing=\"0\" bgcolor=\"lightsalmon\" width=\"80\"><tr><td height=\"18\" >0x{:08x}</td></tr><tr><td height=\"{}\" >{}</td></tr></table>>".format(block, 18 * (len(wrapped) - 1), "<br/>".join(wrapped))
-    node.attr["fontname"] = "FiraCode-Medium"
-    node.attr["fontpath"] = "/Users/tannewt/Library/Fonts/"
-    node.attr["fontsize"] = 8
+        # First render the graph of objects on the heap.
+        if draw_heap_ownership:
+            ownership_graph.layout(prog="dot")
+            fn = os.path.join(output_directory, "heap_ownership{:04d}.png".format(snapshot_num))
+            print(fn)
+            ownership_graph.draw(fn)
 
-print("Total free space:", BYTES_PER_BLOCK * total_free)
-print("Longest free space:", BYTES_PER_BLOCK * longest_free)
+        # Second, render the heap layout in memory order.
+        for node in ownership_graph:
+            try:
+                address = int(node.name)
+            except ValueError:
+                ownership_graph.remove_node(node)
+                continue
+            block = (address - pool_start) // 16
+            x = block // 64
+            y = 64 - block % 64
+            try:
+                height = float(node.attr["height"])
+            except:
+                height = 0.25
+            #print(hex(address), "height", height, y)
+            #if address in block_data:
+            #    print(hex(address), block, len(block_data[address]), x, y, height)
+            node.attr["pos"] = "{},{}".format(x * 80, (y - (height - 0.25) * 2) * 18) # in inches
 
-with open("heap.dot", "w") as f:
-    f.write(ownership_graph.string())
+        # Clear edge positioning from ownership graph layout.
+        if draw_heap_ownership:
+            for edge in ownership_graph.iteredges():
+                del edge.attr["pos"]
 
-ownership_graph.layout(prog="dot")
-ownership_graph.draw("heap.png")
+        # Reformat block nodes so they are the correct size and do not have keys in them.
+        for block in sorted(map_element_blocks):
+            try:
+                node = ownership_graph.get_node(block)
+            except KeyError:
+                if block != 0:
+                    print("Unable to find memory block for 0x{:08x}. Is there something running?".format(block))
+                continue
+            #node.attr["fillcolor"] = "gold"
+            if block not in block_data:
+                continue
+            data = block_data[block]
+            #print("0x{:08x}".format(block))
+            cells = []
+            for i in range(len(data) // 8):
+                key, value = struct.unpack_from("<II", data, offset=(i * 8))
+                if key == MP_OBJ_NULL or key == MP_OBJ_SENTINEL:
+                    #print("  <empty slot>")
+                    cells.append(("", " "))
+                else:
+                    #print("  {}, {}".format(format(key), format(value)))
+                    cells.append((key, ""))
+                    if value in block_data:
+                        edge = ownership_graph.get_edge(block, value)
+                        edge.attr["tailport"] = str(key)
+            rows = ""
+            for i in range(len(cells) // 2):
+                rows += "<tr><td port=\"{}\" height=\"18\" width=\"40\">{}</td><td port=\"{}\" height=\"18\" width=\"40\">{}</td></tr>".format(
+                    cells[2*i][0],
+                    cells[2*i][1],
+                    cells[2*i+1][0],
+                    cells[2*i+1][1])
+            node.attr["label"] = "<<table bgcolor=\"gold\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\">{}</table>>".format(rows)
+
+
+        ownership_graph.add_node("center", pos="{},{}".format(total_width // 2 - 40, total_height // 2), shape="plaintext", label=" ")
+        ownership_graph.graph_attr["viewport"] = "{},{},1,{}".format(total_width, total_height, "center")
+
+        ownership_graph.has_layout = True
+
+        if draw_heap_layout:
+            fn = os.path.join(output_directory, "heap_layout{:04d}.png".format(snapshot_num))
+            print(fn)
+            ownership_graph.draw(fn)
+
+if __name__ == "__main__":
+    do_all_the_things()

@@ -10,15 +10,16 @@ set logging on
 set remote hardware-breakpoint-limit 4
 
 # gc log
-break gc.c:110
+break gc.c:103
 commands
 backtrace
 p/x start_block
 p/x length
+append binary memory ram.bin &_srelocate &_estack
 continue
 end
 
-break mp_hal_stdin_rx_chr
+break main.c:164
 
 continue
 
