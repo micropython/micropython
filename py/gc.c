@@ -147,7 +147,7 @@ void gc_init(void *start, void *end) {
 #endif
 
     // Set first free ATB index to the start of the heap.
-    MP_STATE_MEM(gc_last_free_atb_index) = 0;
+    MP_STATE_MEM(gc_first_free_atb_index) = 0;
     // Set last free ATB index to the end of the heap.
     MP_STATE_MEM(gc_last_free_atb_index) = MP_STATE_MEM(gc_alloc_table_byte_len) - 1;
     // Set the lowest long lived ptr to the end of the heap to start. This will be lowered as long

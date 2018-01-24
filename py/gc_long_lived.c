@@ -46,7 +46,6 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
         mp_raw_code_t* raw_code = MP_OBJ_TO_PTR(fun_bc->const_table[i]);
         if (raw_code->kind == MP_CODE_BYTECODE) {
             raw_code->data.u_byte.bytecode = gc_make_long_lived((byte*) raw_code->data.u_byte.bytecode);
-            // TODO(tannewt): Do we actually want to recurse here?
             raw_code->data.u_byte.const_table = gc_make_long_lived((byte*) raw_code->data.u_byte.const_table);
         }
         ((mp_uint_t *) fun_bc->const_table)[i] = (mp_uint_t) make_obj_long_lived(
@@ -56,6 +55,8 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
     fun_bc->const_table = gc_make_long_lived((mp_uint_t*) fun_bc->const_table);
     // extra_args stores keyword only argument default values.
     size_t words = gc_nbytes(fun_bc) / sizeof(mp_uint_t*);
+    // Functions (mp_obj_fun_bc_t) have four pointers (base, globals, bytecode and const_table)
+    // before the variable length extra_args so remove them from the length.
     for (size_t i = 0; i < words - 4; i++) {
         if (fun_bc->extra_args[i] == NULL) {
             continue;
