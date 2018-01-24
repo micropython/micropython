@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "py/gc.h"
 #include "py/mpstate.h"
 #include "py/qstr.h"
 #include "py/gc.h"
@@ -143,7 +144,7 @@ STATIC qstr qstr_add(const byte *q_ptr) {
 
     // make sure we have room in the pool for a new qstr
     if (MP_STATE_VM(last_pool)->len >= MP_STATE_VM(last_pool)->alloc) {
-        qstr_pool_t *pool = m_new_obj_var_maybe(qstr_pool_t, const char*, MP_STATE_VM(last_pool)->alloc * 2);
+        qstr_pool_t *pool = m_new_ll_obj_var_maybe(qstr_pool_t, const char*, MP_STATE_VM(last_pool)->alloc * 2);
         if (pool == NULL) {
             QSTR_EXIT();
             m_malloc_fail(MP_STATE_VM(last_pool)->alloc * 2);
@@ -213,10 +214,10 @@ qstr qstr_from_strn(const char *str, size_t len) {
             if (al < MICROPY_ALLOC_QSTR_CHUNK_INIT) {
                 al = MICROPY_ALLOC_QSTR_CHUNK_INIT;
             }
-            MP_STATE_VM(qstr_last_chunk) = m_new_maybe(byte, al);
+            MP_STATE_VM(qstr_last_chunk) = m_new_ll_maybe(byte, al);
             if (MP_STATE_VM(qstr_last_chunk) == NULL) {
                 // failed to allocate a large chunk so try with exact size
-                MP_STATE_VM(qstr_last_chunk) = m_new_maybe(byte, n_bytes);
+                MP_STATE_VM(qstr_last_chunk) = m_new_ll_maybe(byte, n_bytes);
                 if (MP_STATE_VM(qstr_last_chunk) == NULL) {
                     QSTR_EXIT();
                     m_malloc_fail(n_bytes);
@@ -258,7 +259,7 @@ qstr qstr_build_end(byte *q_ptr) {
         mp_uint_t hash = qstr_compute_hash(Q_GET_DATA(q_ptr), len);
         Q_SET_HASH(q_ptr, hash);
         q_ptr[MICROPY_QSTR_BYTES_IN_HASH + MICROPY_QSTR_BYTES_IN_LEN + len] = '\0';
-        q = qstr_add(q_ptr);
+        q = qstr_add(gc_make_long_lived(q_ptr));
     } else {
         m_del(byte, q_ptr, Q_GET_ALLOC(q_ptr));
     }

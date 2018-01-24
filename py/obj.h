@@ -816,6 +816,7 @@ typedef struct _mp_obj_module_t {
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
 mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
+void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals);
 // check if given module object is a package
 bool mp_obj_is_package(mp_obj_t module);
 
