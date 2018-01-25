@@ -56,13 +56,18 @@ typedef unsigned int uint;
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
 
-#define m_new(type, num) ((type*)(m_malloc(sizeof(type) * (num))))
-#define m_new_maybe(type, num) ((type*)(m_malloc_maybe(sizeof(type) * (num))))
-#define m_new0(type, num) ((type*)(m_malloc0(sizeof(type) * (num))))
+#define m_new(type, num) ((type*)(m_malloc(sizeof(type) * (num), false)))
+#define m_new_ll(type, num) ((type*)(m_malloc(sizeof(type) * (num), true)))
+#define m_new_maybe(type, num) ((type*)(m_malloc_maybe(sizeof(type) * (num), false)))
+#define m_new_ll_maybe(type, num) ((type*)(m_malloc_maybe(sizeof(type) * (num), true)))
+#define m_new0(type, num) ((type*)(m_malloc0(sizeof(type) * (num), false)))
+#define m_new0_ll(type, num) ((type*)(m_malloc0(sizeof(type) * (num), true)))
 #define m_new_obj(type) (m_new(type, 1))
+#define m_new_ll_obj(type) (m_new_ll(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))
-#define m_new_obj_var(obj_type, var_type, var_num) ((obj_type*)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
-#define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type*)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#define m_new_obj_var(obj_type, var_type, var_num) ((obj_type*)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num), false))
+#define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type*)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num), false))
+#define m_new_ll_obj_var_maybe(obj_type, var_type, var_num) ((obj_type*)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num), true))
 #if MICROPY_ENABLE_FINALISER
 #define m_new_obj_with_finaliser(type) ((type*)(m_malloc_with_finaliser(sizeof(type))))
 #else
@@ -81,10 +86,10 @@ typedef unsigned int uint;
 #endif
 #define m_del_obj(type, ptr) (m_del(type, ptr, 1))
 
-void *m_malloc(size_t num_bytes);
-void *m_malloc_maybe(size_t num_bytes);
+void *m_malloc(size_t num_bytes, bool long_lived);
+void *m_malloc_maybe(size_t num_bytes, bool long_lived);
 void *m_malloc_with_finaliser(size_t num_bytes);
-void *m_malloc0(size_t num_bytes);
+void *m_malloc0(size_t num_bytes, bool long_lived);
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes);
 void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move);

@@ -45,9 +45,11 @@ void gc_collect_start(void);
 void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
-void *gc_alloc(size_t n_bytes, bool has_finaliser);
+void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived);
 void gc_free(void *ptr); // does not call finaliser
 size_t gc_nbytes(const void *ptr);
+bool gc_has_finaliser(const void *ptr);
+void *gc_make_long_lived(void *old_ptr);
 void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
 
 typedef struct _gc_info_t {

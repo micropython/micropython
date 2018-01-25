@@ -30,6 +30,7 @@
 #include <assert.h>
 
 #include "py/compile.h"
+#include "py/gc_long_lived.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
@@ -144,6 +145,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     // parse, compile and execute the module in its context
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
+    mp_obj_module_set_globals(module_obj, make_dict_long_lived(mod_globals, 10));
 }
 #endif
 
@@ -173,6 +175,8 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
 
         // finish nlr block, restore context
         nlr_pop();
+        mp_obj_module_set_globals(module_obj,
+            make_dict_long_lived(mp_obj_module_get_globals(module_obj), 10));
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
     } else {
@@ -468,6 +472,10 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
             if (outer_module_obj != MP_OBJ_NULL) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);
                 mp_store_attr(outer_module_obj, s, module_obj);
+                // The above store can cause a dictionary rehash and new allocation. So,
+                // lets make sure the globals dictionary is still long lived.
+                mp_obj_module_set_globals(outer_module_obj,
+                    make_dict_long_lived(mp_obj_module_get_globals(outer_module_obj), 10));
             }
             outer_module_obj = module_obj;
             if (top_module_obj == MP_OBJ_NULL) {

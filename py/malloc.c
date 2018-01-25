@@ -53,12 +53,15 @@
 #undef malloc
 #undef free
 #undef realloc
-#define malloc(b) gc_alloc((b), false)
-#define malloc_with_finaliser(b) gc_alloc((b), true)
+#define malloc_ll(b, ll) gc_alloc((b), false, (ll))
+#define malloc_with_finaliser(b) gc_alloc((b), true, false)
 #define free gc_free
 #define realloc(ptr, n) gc_realloc(ptr, n, true)
 #define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
 #else
+#define malloc_ll(b, ll) malloc(b)
+#define malloc_with_finaliser(b) malloc((b))
+
 STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
     if (allow_move) {
         return realloc(ptr, n_bytes);
@@ -71,8 +74,8 @@ STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
 }
 #endif // MICROPY_ENABLE_GC
 
-void *m_malloc(size_t num_bytes) {
-    void *ptr = malloc(num_bytes);
+void *m_malloc(size_t num_bytes, bool long_lived) {
+    void *ptr = malloc_ll(num_bytes, long_lived);
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }
@@ -85,8 +88,8 @@ void *m_malloc(size_t num_bytes) {
     return ptr;
 }
 
-void *m_malloc_maybe(size_t num_bytes) {
-    void *ptr = malloc(num_bytes);
+void *m_malloc_maybe(size_t num_bytes, bool long_lived) {
+    void *ptr = malloc_ll(num_bytes, long_lived);
 #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
     MP_STATE_MEM(current_bytes_allocated) += num_bytes;
@@ -112,8 +115,8 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 }
 #endif
 
-void *m_malloc0(size_t num_bytes) {
-    void *ptr = m_malloc(num_bytes);
+void *m_malloc0(size_t num_bytes, bool long_lived) {
+    void *ptr = m_malloc(num_bytes, long_lived);
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }

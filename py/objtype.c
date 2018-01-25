@@ -30,6 +30,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/gc_long_lived.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
 
@@ -960,7 +961,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
                 // note that locals_map may be in ROM, so add will fail in that case
                 if (elem != NULL) {
-                    elem->value = dest[1];
+                    elem->value = make_obj_long_lived(dest[1], 10);
                     dest[0] = MP_OBJ_NULL; // indicate success
                 }
             }
@@ -1002,7 +1003,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
-    mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
+    mp_obj_type_t *o = m_new0_ll(mp_obj_type_t, 1);
     o->base.type = &mp_type_type;
     o->name = name;
     o->print = instance_print;
@@ -1030,7 +1031,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
-    o->locals_dict = MP_OBJ_TO_PTR(locals_dict);
+    o->locals_dict = make_dict_long_lived(locals_dict, 10);
 
     const mp_obj_type_t *native_base;
     size_t num_native_bases = instance_count_native_bases(o, &native_base);
