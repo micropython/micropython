@@ -1428,10 +1428,9 @@ import_error:
     mp_load_method_maybe(module, MP_QSTR___name__, dest);
     size_t pkg_name_len;
     const char *pkg_name = mp_obj_str_get_data(dest[0], &pkg_name_len);
+
     const uint dot_name_len = pkg_name_len + 1 + qstr_len(name);
-    // Previously dot_name was created using alloca(), but that caused run-time crashes on M4 due to
-    // stack corruption (compiler bug, it appears), so use an array instead.
-    char dot_name[dot_name_len];
+    char *dot_name = alloca(dot_name_len);
     memcpy(dot_name, pkg_name, pkg_name_len);
     dot_name[pkg_name_len] = '.';
     memcpy(dot_name + pkg_name_len + 1, qstr_str(name), qstr_len(name));

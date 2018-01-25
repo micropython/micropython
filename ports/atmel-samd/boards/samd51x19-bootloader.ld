@@ -10,7 +10,8 @@ MEMORY
 }
 
 /* top end of the stack */
-_estack = ORIGIN(RAM) + LENGTH(RAM) - 4;
+/* stack must be double-word (8 byte) aligned */
+_estack = ORIGIN(RAM) + LENGTH(RAM) - 8;
 _bootloader_dbl_tap = _estack;
 
 /* define output sections */

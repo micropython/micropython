@@ -144,7 +144,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     }
 
     mp_obj_t retval = mp_obj_new_list(0, NULL);
-    const char* caps[caps_num];
+    const char **caps = alloca(caps_num * sizeof(char*));
     while (true) {
         // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
         memset((char**)caps, 0, caps_num * sizeof(char*));
