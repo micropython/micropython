@@ -203,24 +203,6 @@ bool gc_is_locked(void) {
 #endif
 #endif
 
-// ptr should be of type void*
-#define VERIFY_MARK_AND_PUSH(ptr) \
-    do { \
-        if (VERIFY_PTR(ptr)) { \
-            size_t _block = BLOCK_FROM_PTR(ptr); \
-            if (ATB_GET_KIND(_block) == AT_HEAD) { \
-                /* an unmarked head, mark it, and push it on gc stack */ \
-                TRACE_MARK(_block, ptr); \
-                ATB_HEAD_TO_MARK(_block); \
-                if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
-                    *MP_STATE_MEM(gc_sp)++ = _block; \
-                } else { \
-                    MP_STATE_MEM(gc_stack_overflow) = 1; \
-                } \
-            } \
-        } \
-    } while (0)
-
 STATIC void gc_drain_stack(void) {
     while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
         // pop the next block off the stack
@@ -236,7 +218,20 @@ STATIC void gc_drain_stack(void) {
         void **ptrs = (void**)PTR_FROM_BLOCK(block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void*); i > 0; i--, ptrs++) {
             void *ptr = *ptrs;
-            VERIFY_MARK_AND_PUSH(ptr);
+            if (VERIFY_PTR(ptr)) {
+                // Mark and push this pointer
+                size_t childblock = BLOCK_FROM_PTR(ptr);
+                if (ATB_GET_KIND(childblock) == AT_HEAD) {
+                    // an unmarked head, mark it, and push it on gc stack
+                    TRACE_MARK(childblock, ptr);
+                    ATB_HEAD_TO_MARK(childblock);
+                    if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) {
+                        *MP_STATE_MEM(gc_sp)++ = childblock;
+                    } else {
+                        MP_STATE_MEM(gc_stack_overflow) = 1;
+                    }
+                }
+            }
         }
     }
 }
@@ -337,8 +332,17 @@ void gc_collect_start(void) {
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
-        VERIFY_MARK_AND_PUSH(ptr);
-        gc_drain_stack();
+        if (VERIFY_PTR(ptr)) {
+            // Mark and push this pointer
+            size_t block = BLOCK_FROM_PTR(ptr);
+            if (ATB_GET_KIND(block) == AT_HEAD) {
+                // an unmarked head, mark it, and push it on gc stack
+                TRACE_MARK(block, ptr);
+                ATB_HEAD_TO_MARK(block);
+                *MP_STATE_MEM(gc_sp)++ = block;
+                gc_drain_stack();
+            }
+        }
     }
 }
 
