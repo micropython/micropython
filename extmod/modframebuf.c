@@ -580,6 +580,58 @@ STATIC mp_obj_t framebuf_text(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_text);
 
+STATIC mp_obj_t framebuf_text_scaled(size_t n_args, const mp_obj_t *args) {
+    // extract arguments
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    const char *str = mp_obj_str_get_str(args[1]);
+    mp_int_t x0 = mp_obj_get_int(args[2]);
+    mp_int_t y0 = mp_obj_get_int(args[3]);
+    
+    mp_int_t scale = 1;
+    if (n_args >= 5) {
+        scale = mp_obj_get_int(args[4]);
+    }
+
+    mp_int_t col = 1;
+    if (n_args >= 6) {
+        col = mp_obj_get_int(args[5]);
+    }
+
+    // loop over chars
+    for (; *str; ++str) {
+        // get char and make sure its in range of font
+        int chr = *(uint8_t*)str;
+        if (chr < 32 || chr > 127) {
+            chr = 127;
+        }
+        // get char data
+        const uint8_t *chr_data = &font_petme128_8x8[(chr - 32) * 8];
+        // loop over char data
+        mp_int_t xs = 0;
+        mp_int_t ys = 0;
+        for (int j = 0; j < 8; j++, x0+=scale) {
+            uint vline_data = chr_data[j]; // each byte is a column of 8 pixels, LSB at top
+            for (int y = y0; vline_data; vline_data >>= 1, y+=scale) { // scan over vertical column
+                if (vline_data & 1) { // only draw if pixel set
+                    for (int sx=0; sx < scale; sx++) {
+                        xs=x0 + sx;
+                        if (0 <= xs && xs < self->width) { // clip x
+                            for(int sy=0; sy < scale; sy++) {
+                                ys=y+sy;
+                                if (0 <= ys && ys < self->height) { // clip y
+                                    setpixel(self, xs, ys, col);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_scaled_obj, 5, 6, framebuf_text_scaled);
+
 STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&framebuf_fill_rect_obj) },
@@ -591,6 +643,7 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
+    { MP_ROM_QSTR(MP_QSTR_text_scaled), MP_ROM_PTR(&framebuf_text_scaled_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebuf_locals_dict, framebuf_locals_dict_table);
 
