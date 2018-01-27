@@ -79,18 +79,32 @@ Functions
         # Create DGRAM UDP socket
         socket(AF_INET, SOCK_DGRAM)
 
-.. function:: getaddrinfo(host, port)
+.. function:: getaddrinfo(host, port, af=0, type=0, proto=0, flags=0)
 
    Translate the host/port argument into a sequence of 5-tuples that contain all the 
-   necessary arguments for creating a socket connected to that service. The list of 
-   5-tuples has following structure::
+   necessary arguments for creating a socket connected to that service. Arguments
+   *af*, *type*, and *proto* (which have the same meaning as for `socket()` function)
+   can be used to filter which kind of addresses are returned. If a parameter not
+   specified or zero, all combinations of addresses can be returned (requiring
+   filtering on the user side).
+
+   The resulting list of 5-tuples has the following structure::
 
       (family, type, proto, canonname, sockaddr)
 
    The following example shows how to connect to a given url::
 
       s = usocket.socket()
+      # This assumes that if "type" is not specified, address for
+      # SOCK_STREAM will be returned, which may be not true
       s.connect(usocket.getaddrinfo('www.micropython.org', 80)[0][-1])
+
+   Recommended use of filtering params::
+
+      s = usocket.socket()
+      # Guaranteedly returns address which can be connect'ed to for
+      # stream operation.
+      s.connect(usocket.getaddrinfo('www.micropython.org', 80, 0, SOCK_STREAM)[0][-1])
 
    .. admonition:: Difference to CPython
       :class: attention
