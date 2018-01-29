@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "uGame"
+#define MICROPY_HW_BOARD_NAME "uGame10"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 // Salae reads 12mhz which is the limit even though we set it to the
@@ -8,7 +8,7 @@
 #define SPI_FLASH_MOSI_PIN          PIN_PA16
 #define SPI_FLASH_MISO_PIN          PIN_PA19
 #define SPI_FLASH_SCK_PIN           PIN_PA17
-#define SPI_FLASH_CS_PIN            PIN_PA11
+#define SPI_FLASH_CS_PIN            PIN_PA18
 #define SPI_FLASH_MOSI_PIN_FUNCTION PINMUX_PA16D_SERCOM3_PAD0
 #define SPI_FLASH_MISO_PIN_FUNCTION PINMUX_PA19D_SERCOM3_PAD3
 #define SPI_FLASH_SCK_PIN_FUNCTION  PINMUX_PA17D_SERCOM3_PAD1
@@ -26,9 +26,8 @@
 #define SPI_FLASH_DIPO              3   // same as MISO pad
 
 // These are pins not to reset.
-#define MICROPY_PORT_A        (PORT_PA11 | PORT_PA16 |\
-                               PORT_PA17 | PORT_PA18 | PORT_PA19 | PORT_PA24 |\
-                               PORT_PA25)
+#define MICROPY_PORT_A        (PORT_PA16 | PORT_PA17 | PORT_PA18 | PORT_PA19 |\
+                               PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
 
