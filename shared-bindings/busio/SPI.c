@@ -140,6 +140,9 @@ static void check_lock(busio_spi_obj_t *self) {
 //|     :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
 //|       due to the granularity of available clock settings.
 //|       Check the `frequency` attribute for the actual clock rate.
+//|       **Note:** on the SAMD21, it is possible to set the baud rate to 24 MHz, but that
+//|       speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
+//|       within spec for the SAMD21.
 //|     :param int polarity: the base state of the clock line (0 or 1)
 //|     :param int phase: the edge of the clock that data is captured. First (0)
 //|       or second (1). Rising or falling depends on clock polarity.
