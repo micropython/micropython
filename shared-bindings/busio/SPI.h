@@ -58,4 +58,7 @@ extern bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size
 // Reads and write len bytes simultaneously.
 extern bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len);
 
+// Return actual SPI bus frequency.
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_SPI_H

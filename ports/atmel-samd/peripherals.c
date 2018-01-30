@@ -31,13 +31,15 @@
 // Routines that are the same across all samd variants.
 
 
-// Convert frequency to clock-speed-dependent value. Return 0 if out of range.
-uint8_t samd_peripherals_baudrate_to_baud_reg_value(const uint32_t baudrate) {
+// Convert frequency to clock-speed-dependent value. Return 255 if > 255.
+uint8_t samd_peripherals_spi_baudrate_to_baud_reg_value(const uint32_t baudrate) {
     uint32_t baud_reg_value = (uint32_t) (((float) PROTOTYPE_SERCOM_SPI_M_SYNC_CLOCK_FREQUENCY /
-                                           (2 * baudrate)) + 0.5f);
-    if (baud_reg_value > 0xff) {
-        return 0;
-    }
-    return (uint8_t) baud_reg_value;
+                                           (2 * baudrate)) - 0.5f);
+    return (uint8_t) (baud_reg_value > 255 ? 255 : baud_reg_value);
+}
+
+// Convert BAUD reg value back to a frequency.
+uint32_t samd_peripherals_spi_baud_reg_value_to_baudrate(const uint8_t baud_reg_value) {
+    return PROTOTYPE_SERCOM_SPI_M_SYNC_CLOCK_FREQUENCY / (2 * (baud_reg_value + 1));
 }
 

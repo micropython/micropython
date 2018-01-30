@@ -36,7 +36,7 @@
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
 #include "py/mperrno.h"
-#include "py/nlr.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 
 //| .. currentmodule:: busio
@@ -137,7 +137,12 @@ static void check_lock(busio_spi_obj_t *self) {
 //|
 //|     Configures the SPI bus. Only valid when locked.
 //|
-//|     :param int baudrate: the clock rate in Hertz
+//|     :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
+//|       due to the granularity of available clock settings.
+//|       Check the `frequency` attribute for the actual clock rate.
+//|       **Note:** on the SAMD21, it is possible to set the baud rate to 24 MHz, but that
+//|       speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
+//|       within spec for the SAMD21.
 //|     :param int polarity: the base state of the clock line (0 or 1)
 //|     :param int phase: the edge of the clock that data is captured. First (0)
 //|       or second (1). Rising or falling depends on clock polarity.
@@ -350,6 +355,25 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 2, busio_spi_write_readinto);
 
+//|   .. attribute:: frequency
+//|
+//|     The actual SPI bus frequency. This may not match the frequency requested
+//|     due to internal limitations.
+//|
+STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
+    busio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_spi_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_busio_spi_get_frequency(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_get_frequency_obj, busio_spi_obj_get_frequency);
+
+const mp_obj_property_t busio_spi_frequency_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&busio_spi_get_frequency_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&busio_spi_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -362,6 +386,7 @@ STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&busio_spi_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&busio_spi_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&busio_spi_write_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&busio_spi_frequency_obj) }
 };
 STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 

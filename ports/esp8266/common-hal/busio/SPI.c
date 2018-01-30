@@ -67,6 +67,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 2);
 
     spi_clock(HSPI, SPI_CLK_PREDIV, SPI_CLK_CNTDIV);
+    self->frequency = SPI_CLK_FREQ;
     spi_tx_byte_order(HSPI, SPI_BYTE_ORDER_HIGH_TO_LOW);
     spi_rx_byte_order(HSPI, SPI_BYTE_ORDER_HIGH_TO_LOW);
 
@@ -107,6 +108,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         // Special case for full speed.
         spi_init_gpio(HSPI, SPI_CLK_80MHZ_NODIV);
         spi_clock(HSPI, 0, 0);
+        self->frequency = 80000000L;
     } else if (baudrate > 40000000L) {
         return false;
     } else {
@@ -118,6 +120,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         }
         spi_init_gpio(HSPI, SPI_CLK_USE_DIV);
         spi_clock(HSPI, prediv, cntdiv);
+        self->frequency = 80000000L / (prediv * cntdiv);
     }
     spi_mode(HSPI, phase, polarity);
     return true;
@@ -204,4 +207,8 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
     }
     return true;
 
+}
+
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+    return self->frequency;
 }

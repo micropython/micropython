@@ -122,10 +122,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     // Always start at 250khz which is what SD cards need. They are sensitive to
     // SPI bus noise before they are put into SPI mode.
-    uint8_t baud_value = samd_peripherals_baudrate_to_baud_reg_value(250000);
-    if (baud_value == 0) {
-        mp_raise_RuntimeError("SPI initial baudrate out of range.");
-    }
+    uint8_t baud_value = samd_peripherals_spi_baudrate_to_baud_reg_value(250000);
     if (spi_m_sync_set_baudrate(&self->spi_desc, baud_value) != ERR_NONE) {
         // spi_m_sync_set_baudrate does not check for validity, just whether the device is
         // busy or not
@@ -179,10 +176,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-    uint8_t baud_reg_value = samd_peripherals_baudrate_to_baud_reg_value(baudrate);
-    if (baud_reg_value == 0) {
-        mp_raise_ValueError("baudrate out of range");
-    }
+    uint8_t baud_reg_value = samd_peripherals_spi_baudrate_to_baud_reg_value(baudrate);
 
     void * hw = self->spi_desc.dev.prvt;
     // If the settings are already what we want then don't reset them.
@@ -278,4 +272,8 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
         status = spi_m_sync_transfer(&self->spi_desc, &xfer);
 //    }
         return status >= 0; // Status is number of chars read or an error code < 0.
+}
+
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+    return samd_peripherals_spi_baud_reg_value_to_baudrate(hri_sercomspi_read_BAUD_reg(self->spi_desc.dev.prvt));
 }
