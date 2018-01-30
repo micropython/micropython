@@ -236,7 +236,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
-//|   .. method:: SPI.write_readinto(buf_in, buf_out)
+//|   .. method:: SPI.write_readinto(buffer_out, buffer_in)
 //|
 //|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *args) {
@@ -279,7 +279,7 @@ STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitbangio_spi_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&bitbangio_spi_write_obj) },
-	{ MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&bitbangio_spi_write_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&bitbangio_spi_write_readinto_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitbangio_spi_locals_dict, bitbangio_spi_locals_dict_table);
 
