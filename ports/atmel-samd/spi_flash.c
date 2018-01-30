@@ -280,7 +280,7 @@ void spi_flash_init(void) {
     hri_sercomspi_write_CTRLA_DOPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DOPO);
     hri_sercomspi_write_CTRLA_DIPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DIPO);
 
-    spi_m_sync_set_baudrate(&spi_flash_desc, samd_peripherals_baudrate_to_baud_reg_value(SPI_FLASH_BAUDRATE));
+    spi_m_sync_set_baudrate(&spi_flash_desc, samd_peripherals_spi_baudrate_to_baud_reg_value(SPI_FLASH_BAUDRATE));
 
     gpio_set_pin_direction(SPI_FLASH_CS_PIN, GPIO_DIRECTION_OUT);
     // There's already a pull-up on the board.

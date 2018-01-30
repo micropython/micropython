@@ -33,7 +33,7 @@
 // Functions for external libs like axTLS, BerkeleyDB, etc.
 
 void *malloc(size_t size) {
-    void *p = gc_alloc(size, false);
+    void *p = gc_alloc(size, false, false);
     if (p == NULL) {
         // POSIX requires ENOMEM to be set in case of error
         errno = ENOMEM;

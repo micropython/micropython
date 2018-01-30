@@ -33,6 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
+    uint32_t frequency;
     bool locked;
     bool deinited;
 } busio_spi_obj_t;
