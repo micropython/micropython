@@ -184,3 +184,23 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
   return true;
 }
   
+uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
+    switch (self->spi->FREQUENCY) {
+    case SPI_FREQUENCY_FREQUENCY_K125:
+        return 125000;
+    case SPI_FREQUENCY_FREQUENCY_K250:
+        return 250000;
+    case SPI_FREQUENCY_FREQUENCY_K500:
+        return 500000;
+    case SPI_FREQUENCY_FREQUENCY_M1:
+        return 1000000;
+    case SPI_FREQUENCY_FREQUENCY_M2:
+        return 2000000;
+    case SPI_FREQUENCY_FREQUENCY_M4:
+        return 4000000;
+    case SPI_FREQUENCY_FREQUENCY_M8:
+        return 8000000;
+    default:
+        return 0;
+    }
+}
