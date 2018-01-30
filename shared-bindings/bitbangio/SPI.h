@@ -56,4 +56,7 @@ extern bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const u
 // Reads in len bytes while outputting zeroes.
 extern bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len);
 
+// Transfer out len bytes while reading len bytes
+extern bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8_t *dout, uint8_t *din, size_t len);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITBANGIO_SPI_H

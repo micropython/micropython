@@ -238,3 +238,69 @@ bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, 
     }
     return true;
 }
+
+// transfer
+bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8_t *dout, uint8_t *din, size_t len) {
+    if (len > 0 && (!self->has_mosi || !self->has_miso) ) {
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError,
+            "Cannot transfer without MOSI and MISO pins."));
+    }
+    uint32_t delay_half = self->delay_half;
+
+    // only MSB transfer is implemented
+
+    // If a port defines MICROPY_PY_MACHINE_SPI_MIN_DELAY, and the configured
+    // delay_half is equal to this value, then the software SPI implementation
+    // will run as fast as possible, limited only by CPU speed and GPIO time.
+    #ifdef MICROPY_PY_MACHINE_SPI_MIN_DELAY
+    if (delay_half <= MICROPY_PY_MACHINE_SPI_MIN_DELAY) {
+        for (size_t i = 0; i < len; ++i) {
+            uint8_t data_out = dout[i];
+            uint8_t data_in = 0;
+			for (int j = 0; j < 8; ++j, data_out <<= 1) {
+				common_hal_digitalio_digitalinout_set_value(&self->mosi, (data_out >> 7) & 1);
+				common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+				data_in = (data_in << 1) | common_hal_digitalio_digitalinout_get_value(&self->miso);
+				common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
+			}
+			din[i] = data_in;
+
+            if (dest != NULL) {
+                dest[i] = data_in;
+            }
+        }
+        return true;
+    }
+    #endif
+
+    for (size_t i = 0; i < len; ++i) {
+        uint8_t data_out = dout[i];
+        uint8_t data_in = 0;
+        for (int j = 0; j < 8; ++j, data_out <<= 1) {
+            common_hal_digitalio_digitalinout_set_value(&self->mosi, (data_out >> 7) & 1);
+            if (self->phase == 0) {
+				common_hal_mcu_delay_us(delay_half);
+				common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+			} else {
+				common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+				common_hal_mcu_delay_us(delay_half);
+			}
+			data_in = (data_in << 1) | common_hal_digitalio_digitalinout_get_value(&self->miso);
+			if (self->phase == 0) {
+				common_hal_mcu_delay_us(delay_half);
+				common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
+			} else {
+				common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
+				common_hal_mcu_delay_us(delay_half);
+			}
+        }
+        din[i] = data_in;
+
+        // Some ports need a regular callback, but probably we don't need
+        // to do this every byte, or even at all.
+        #ifdef MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK;
+        #endif
+    }
+    return true;
+}
