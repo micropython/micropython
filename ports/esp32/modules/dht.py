@@ -1,1 +1,1 @@
-../../esp8266/modules/dht.py
+../../../drivers/dht/dht.py
