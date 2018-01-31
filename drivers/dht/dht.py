@@ -1,7 +1,10 @@
 # DHT11/DHT22 driver for MicroPython on ESP8266
 # MIT license; Copyright (c) 2016 Damien P. George
 
-import esp
+try:
+    from esp import dht_readinto
+except:
+    from pyb import dht_readinto
 
 class DHTBase:
     def __init__(self, pin):
@@ -10,7 +13,7 @@ class DHTBase:
 
     def measure(self):
         buf = self.buf
-        esp.dht_readinto(self.pin, buf)
+        dht_readinto(self.pin, buf)
         if (buf[0] + buf[1] + buf[2] + buf[3]) & 0xff != buf[4]:
             raise Exception("checksum error")
 
