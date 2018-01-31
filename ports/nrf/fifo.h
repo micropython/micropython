@@ -48,7 +48,7 @@ extern "C" {
 
 #if CFG_FIFO_MUTEX
 
-#include "nrf52.h"
+#include "nrf.h"
 
 #define fifo_mutex_t          IRQn_Type
 
