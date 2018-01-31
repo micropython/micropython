@@ -34,6 +34,7 @@ typedef union {
         uint64_t e : 8;
         uint64_t s : 1;
     };
+    uint32_t i;
 } float_s_t;
 
 #ifndef NDEBUG
@@ -56,6 +57,18 @@ float tanhf(float x) {
         return copysignf(1, x);
     }
     return sinhf(x) / coshf(x);
+}
+
+float fabsf(float x) {
+    float_s_t u = {x};
+    u.i &= 0x7ffffffful; // remove sign bit
+    return u.f;
+}
+
+float nanf(const char *tagp) {
+    float_s_t u;
+    u.i = 0x7fc00000ul; // quiet NaN
+    return u.f;
 }
 
 /*****************************************************************************/
