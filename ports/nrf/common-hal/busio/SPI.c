@@ -69,10 +69,15 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
         return;
     }
 
+#ifdef NRF52840_XXAA
+    self->spi->PSEL.SCK  = SPI_PSEL_SCK_CONNECT_Disconnected;
+    self->spi->PSEL.MOSI = SPI_PSEL_MOSI_CONNECT_Disconnected;
+    self->spi->PSEL.MISO = SPI_PSEL_MISO_CONNECT_Disconnected;
+#else
     self->spi->PSELSCK  = SPI_PSEL_SCK_PSELSCK_Disconnected;
     self->spi->PSELMOSI = SPI_PSEL_MOSI_PSELMOSI_Disconnected;
     self->spi->PSELMISO = SPI_PSEL_MISO_PSELMISO_Disconnected;
-
+#endif
 //    reset_pin(self->clock_pin);
 //    reset_pin(self->MOSI_pin);
 //    reset_pin(self->MISO_pin);
