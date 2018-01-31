@@ -187,7 +187,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // get uart id
     mp_int_t uart_num = mp_obj_get_int(args[0]);
-    if (uart_num < 0 || uart_num > UART_NUM_MAX) {
+    if (uart_num < 0 || uart_num >= UART_NUM_MAX) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_num));
     }
 
