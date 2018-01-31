@@ -28,7 +28,7 @@ endif
 	SOFTDEV_HEX_NAME = $(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_softdevice.hex
 	SOFTDEV_HEX_PATH = drivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)
 else
-	$(error Incorrect softdevice set flag)
+$(error Incorrect softdevice set flag)
 endif
 
 define STACK_MISSING_ERROR
