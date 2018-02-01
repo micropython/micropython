@@ -244,11 +244,20 @@ void SDMMC2_IRQHandler(void) {
 STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t timeout) {
     // Wait for HAL driver to be ready (eg for DMA to finish)
     uint32_t start = HAL_GetTick();
-    while (sd->State == HAL_SD_STATE_BUSY) {
+    for (;;) {
+        // Do an atomic check of the state; WFI will exit even if IRQs are disabled
+        uint32_t irq_state = disable_irq();
+        if (sd->State != HAL_SD_STATE_BUSY) {
+            enable_irq(irq_state);
+            break;
+        }
+        __WFI();
+        enable_irq(irq_state);
         if (HAL_GetTick() - start >= timeout) {
             return HAL_TIMEOUT;
         }
     }
+
     // Wait for SD card to complete the operation
     for (;;) {
         HAL_SD_CardStateTypedef state = HAL_SD_GetCardState(sd);
@@ -261,6 +270,7 @@ STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t tim
         if (HAL_GetTick() - start >= timeout) {
             return HAL_TIMEOUT;
         }
+        __WFI();
     }
     return HAL_OK;
 }
