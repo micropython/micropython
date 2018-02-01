@@ -359,27 +359,44 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 
         // set PLL as system clock source if wanted
         if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
+            uint32_t flash_latency;
             #if defined(MCU_SERIES_F7)
             // if possible, scale down the internal voltage regulator to save power
+            // the flash_latency values assume a supply voltage between 2.7V and 3.6V
             uint32_t volt_scale;
-            if (wanted_sysclk <= 151000000) {
+            if (wanted_sysclk <= 90000000) {
                 volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+                flash_latency = FLASH_LATENCY_2;
+            } else if (wanted_sysclk <= 120000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+                flash_latency = FLASH_LATENCY_3;
+            } else if (wanted_sysclk <= 144000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+                flash_latency = FLASH_LATENCY_4;
             } else if (wanted_sysclk <= 180000000) {
                 volt_scale = PWR_REGULATOR_VOLTAGE_SCALE2;
+                flash_latency = FLASH_LATENCY_5;
+            } else if (wanted_sysclk <= 210000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+                flash_latency = FLASH_LATENCY_6;
             } else {
                 volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+                flash_latency = FLASH_LATENCY_7;
             }
             if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
                 goto fail;
             }
             #endif
 
+            #if !defined(MCU_SERIES_F7)
             #if !defined(MICROPY_HW_FLASH_LATENCY)
             #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
             #endif
+            flash_latency = MICROPY_HW_FLASH_LATENCY;
+            #endif
             RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
             RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-            if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK) {
+            if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, flash_latency) != HAL_OK) {
                 goto fail;
             }
         }
