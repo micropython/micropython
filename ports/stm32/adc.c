@@ -66,7 +66,13 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
+#if defined(STM32F722xx) || defined(STM32F723xx) || \
+    defined(STM32F732xx) || defined(STM32F733xx)
+#define ADC_CAL_ADDRESS         (0x1ff07a2a)
+#else
 #define ADC_CAL_ADDRESS         (0x1ff0f44a)
+#endif
+
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
 
@@ -91,6 +97,8 @@
 #define VBAT_DIV (2)
 #elif defined(STM32F427xx) || defined(STM32F429xx) || \
       defined(STM32F437xx) || defined(STM32F439xx) || \
+      defined(STM32F722xx) || defined(STM32F723xx) || \
+      defined(STM32F732xx) || defined(STM32F733xx) || \
       defined(STM32F746xx) || defined(STM32F767xx) || \
       defined(STM32F769xx) || defined(STM32F446xx)
 #define VBAT_DIV (4)
