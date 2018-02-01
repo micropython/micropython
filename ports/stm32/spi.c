@@ -404,11 +404,16 @@ void spi_deinit(SPI_HandleTypeDef *spi) {
 }
 
 STATIC HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t timeout) {
-    // Note: we can't use WFI to idle in this loop because the DMA completion
-    // interrupt may occur before the WFI.  Hence we miss it and have to wait
-    // until the next sys-tick (up to 1ms).
     uint32_t start = HAL_GetTick();
-    while (HAL_SPI_GetState(spi) != HAL_SPI_STATE_READY) {
+    for (;;) {
+        // Do an atomic check of the state; WFI will exit even if IRQs are disabled
+        uint32_t irq_state = disable_irq();
+        if (spi->State == HAL_SPI_STATE_READY) {
+            enable_irq(irq_state);
+            return HAL_OK;
+        }
+        __WFI();
+        enable_irq(irq_state);
         if (HAL_GetTick() - start >= timeout) {
             return HAL_TIMEOUT;
         }
