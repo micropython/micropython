@@ -28,6 +28,7 @@
 #include "usbd_ioreq.h"
 #include "usbd_cdc_msc_hid.h"
 
+#define MSC_TEMPLATE_CONFIG_DESC_SIZE (32)
 #define CDC_TEMPLATE_CONFIG_DESC_SIZE (67)
 #define CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE (98)
 #define CDC_HID_TEMPLATE_CONFIG_DESC_SIZE (107)
@@ -88,6 +89,54 @@ __ALIGN_BEGIN static uint8_t USBD_CDC_MSC_HID_DeviceQualifierDesc[USB_LEN_DEV_QU
     0x00,
 };
 */
+
+// USB MSC device Configuration Descriptor
+static const uint8_t msc_template_config_desc[MSC_TEMPLATE_CONFIG_DESC_SIZE] = {
+    //--------------------------------------------------------------------------
+    // Configuration Descriptor
+    0x09,   // bLength: Configuration Descriptor size
+    USB_DESC_TYPE_CONFIGURATION, // bDescriptorType: Configuration
+    LOBYTE(MSC_TEMPLATE_CONFIG_DESC_SIZE), // wTotalLength: no of returned bytes
+    HIBYTE(MSC_TEMPLATE_CONFIG_DESC_SIZE),
+    0x01,   // bNumInterfaces: 1 interfaces
+    0x01,   // bConfigurationValue: Configuration value
+    0x00,   // iConfiguration: Index of string descriptor describing the configuration
+    0x80,   // bmAttributes: bus powered; 0xc0 for self powered
+    0xfa,   // bMaxPower: in units of 2mA
+
+    //==========================================================================
+    // MSC only has 1 interface so doesn't need an IAD
+
+    //--------------------------------------------------------------------------
+    // Interface Descriptor
+    0x09,   // bLength: Interface Descriptor size
+    USB_DESC_TYPE_INTERFACE, // bDescriptorType: interface descriptor
+    MSC_IFACE_NUM_WITH_CDC, // bInterfaceNumber: Number of Interface
+    0x00,   // bAlternateSetting: Alternate setting
+    0x02,   // bNumEndpoints
+    0x08,   // bInterfaceClass: MSC Class
+    0x06,   // bInterfaceSubClass : SCSI transparent
+    0x50,   // nInterfaceProtocol
+    0x00,   // iInterface:
+
+    // Endpoint IN descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
+    MSC_IN_EP,                      // bEndpointAddress: IN, address 3
+    0x02,                           // bmAttributes: Bulk endpoint type
+    LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
+    HIBYTE(MSC_MAX_PACKET),
+    0x00,                           // bInterval: ignore for Bulk transfer
+
+    // Endpoint OUT descriptor
+    0x07,                           // bLength: Endpoint descriptor length
+    USB_DESC_TYPE_ENDPOINT,         // bDescriptorType: Endpoint descriptor type
+    MSC_OUT_EP,                     // bEndpointAddress: OUT, address 3
+    0x02,                           // bmAttributes: Bulk endpoint type
+    LOBYTE(MSC_MAX_PACKET),         // wMaxPacketSize
+    HIBYTE(MSC_MAX_PACKET),
+    0x00,                           // bInterval: ignore for Bulk transfer
+};
 
 // USB CDC MSC device Configuration Descriptor
 static const uint8_t cdc_msc_template_config_desc[CDC_MSC_TEMPLATE_CONFIG_DESC_SIZE] = {
@@ -554,6 +603,11 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
 
     // construct config desc
     switch (usbd->usbd_mode) {
+        case USBD_MODE_MSC:
+            usbd->usbd_config_desc_size = sizeof(msc_template_config_desc);
+            memcpy(usbd->usbd_config_desc, msc_template_config_desc, sizeof(msc_template_config_desc));
+            break;
+
         case USBD_MODE_CDC_MSC:
             usbd->usbd_config_desc_size = sizeof(cdc_msc_template_config_desc);
             memcpy(usbd->usbd_config_desc, cdc_msc_template_config_desc, sizeof(cdc_msc_template_config_desc));
