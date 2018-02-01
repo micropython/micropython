@@ -37,6 +37,7 @@ typedef enum {
     USBD_MODE_CDC_MSC = 0x03,
     USBD_MODE_CDC_HID = 0x05,
     USBD_MODE_MSC_HID = 0x06,
+    USBD_MODE_HIGH_SPEED = 0x80, // or with one of the above
 } usb_device_mode_t;
 
 typedef struct _USBD_HID_ModeInfoTypeDef {

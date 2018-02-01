@@ -152,10 +152,19 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
      * Enable calling WFI and correct
      * function of the embedded USB_FS_IN_HS phy
      */
-    __OTGHSULPI_CLK_SLEEP_DISABLE();
-    __OTGHS_CLK_SLEEP_ENABLE();
+    __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
+    __HAL_RCC_USB_OTG_HS_CLK_SLEEP_ENABLE();
+
     /* Enable USB HS Clocks */
-    __USB_OTG_HS_CLK_ENABLE();
+
+    #if defined(STM32F723xx) || defined(STM32F733xx)
+    // Needs to remain awake during sleep or else __WFI() will disable the USB
+    __HAL_RCC_USB_OTG_HS_ULPI_CLK_SLEEP_ENABLE();
+    __HAL_RCC_OTGPHYC_CLK_ENABLE();
+    __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
+    #endif
+
+    __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
 
 #else // !USE_USB_HS_IN_FS
 
@@ -399,7 +408,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
   * @param  pdev: Device handle
   * @retval USBD Status
   */
-USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev)
+USBD_StatusTypeDef  USBD_LL_Init (USBD_HandleTypeDef *pdev, int high_speed)
 { 
 #if defined(USE_USB_FS)
 if (pdev->id ==  USB_PHY_FS_ID)
@@ -447,25 +456,34 @@ if (pdev->id == USB_PHY_HS_ID)
   pcd_hs_handle.Init.ep0_mps = 0x40;
   pcd_hs_handle.Init.dma_enable = 0;
   pcd_hs_handle.Init.low_power_enable = 0;
+  #if defined(STM32F723xx) || defined(STM32F733xx)
+  pcd_hs_handle.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+  #else
   pcd_hs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
+  #endif
   pcd_hs_handle.Init.Sof_enable = 1;
-  pcd_hs_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
+  if (high_speed) {
+      pcd_hs_handle.Init.speed = PCD_SPEED_HIGH;
+  } else {
+      pcd_hs_handle.Init.speed = PCD_SPEED_HIGH_IN_FULL;
+  }
 #if !defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
   pcd_hs_handle.Init.vbus_sensing_enable = 0; // No VBUS Sensing on USB0
 #else
   pcd_hs_handle.Init.vbus_sensing_enable = 1;
 #endif
+  pcd_hs_handle.Init.use_external_vbus = 0;
   /* Link The driver to the stack */
   pcd_hs_handle.pData = pdev;
   pdev->pData = &pcd_hs_handle;
   /*Initialize LL Driver */
   HAL_PCD_Init(&pcd_hs_handle);
 
-  HAL_PCD_SetRxFiFo(&pcd_hs_handle, 0x80);
+  HAL_PCD_SetRxFiFo(&pcd_hs_handle, 0x200);
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 0x20);
-  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x40);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x100);
   HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 0x20);
-  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 0x40);
+  HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 0xc0);
 #else // !defined(USE_USB_HS_IN_FS)
   /*Set LL Driver parameters */
   pcd_hs_handle.Instance = USB_OTG_HS;

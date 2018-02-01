@@ -37,7 +37,7 @@
 typedef struct _usbd_cdc_itf_t {
     usbd_cdc_msc_hid_state_t *usbd; // the parent USB device
 
-    uint8_t rx_packet_buf[CDC_DATA_FS_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
+    uint8_t rx_packet_buf[CDC_DATA_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
     uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it
     volatile uint16_t rx_buf_put; // circular buffer index
     uint16_t rx_buf_get; // circular buffer index

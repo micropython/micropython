@@ -114,6 +114,8 @@ void pyb_usb_init0(void) {
 
 bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
 #ifdef USE_DEVICE_MODE
+    bool high_speed = (mode & USBD_MODE_HIGH_SPEED) != 0;
+    mode &= 0x7f;
     usb_device_t *usb_dev = &usb_device;
     if (!usb_dev->enabled) {
         // only init USB once in the device's power-lifetime
@@ -147,7 +149,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         }
 
         // start the USB device
-        USBD_LL_Init(usbd);
+        USBD_LL_Init(usbd, high_speed);
         USBD_LL_Start(usbd);
         usb_dev->enabled = true;
     }
@@ -215,6 +217,9 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_hid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (mp_obj_t)&pyb_usb_hid_mouse_obj} },
+        #if USBD_SUPPORT_HS_MODE
+        { MP_QSTR_high_speed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        #endif
     };
 
     // fetch the current usb mode -> pyb.usb_mode()
@@ -322,6 +327,12 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         // need to keep a copy of this so report_desc does not get GC'd
         MP_STATE_PORT(pyb_hid_report_desc) = items[4];
     }
+
+    #if USBD_SUPPORT_HS_MODE
+    if (args[4].u_bool) {
+        mode |= USBD_MODE_HIGH_SPEED;
+    }
+    #endif
 
     // init the USB device
     if (!pyb_usb_dev_init(vid, pid, mode, &hid_info)) {

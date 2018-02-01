@@ -5,13 +5,30 @@
 #include  "usbd_msc_bot.h"
 #include  "usbd_msc_scsi.h"
 #include  "usbd_ioreq.h"
+#include  STM32_HAL_H
+
+// Work out if we should support USB high-speed device mode
+#if defined(USE_USB_HS) \
+    && (!defined(USE_USB_HS_IN_FS) || defined(STM32F723xx) || defined(STM32F733xx))
+#define USBD_SUPPORT_HS_MODE (1)
+#else
+#define USBD_SUPPORT_HS_MODE (0)
+#endif
 
 // Needed for the CDC+MSC+HID state and should be maximum of all template
 // config descriptors defined in usbd_cdc_msc_hid.c
 #define MAX_TEMPLATE_CONFIG_DESC_SIZE (107)
 
 // CDC, MSC and HID packet sizes
+#define MSC_FS_MAX_PACKET           (64)
+#define MSC_HS_MAX_PACKET           (512)
 #define CDC_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
+#define CDC_DATA_HS_MAX_PACKET_SIZE (512) // endpoint IN & OUT packet size
+#if USBD_SUPPORT_HS_MODE
+#define CDC_DATA_MAX_PACKET_SIZE    CDC_DATA_HS_MAX_PACKET_SIZE
+#else
+#define CDC_DATA_MAX_PACKET_SIZE    CDC_DATA_FS_MAX_PACKET_SIZE
+#endif
 #define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
 #define HID_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 
@@ -32,7 +49,7 @@ typedef struct {
 } USBD_CDC_LineCodingTypeDef;
 
 typedef struct {
-  uint32_t data[CDC_DATA_FS_MAX_PACKET_SIZE/4];      /* Force 32bits alignment */
+  uint32_t data[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32bits alignment
   uint8_t  CmdOpCode;
   uint8_t  CmdLength;    
   
@@ -125,6 +142,28 @@ extern const uint8_t USBD_HID_MOUSE_ReportDesc[USBD_HID_MOUSE_REPORT_DESC_SIZE];
 extern const uint8_t USBD_HID_KEYBOARD_ReportDesc[USBD_HID_KEYBOARD_REPORT_DESC_SIZE];
 
 extern const USBD_ClassTypeDef USBD_CDC_MSC_HID;
+
+static inline uint32_t usbd_msc_max_packet(USBD_HandleTypeDef *pdev) {
+    #if USBD_SUPPORT_HS_MODE
+    if (pdev->dev_speed == USBD_SPEED_HIGH) {
+        return MSC_HS_MAX_PACKET;
+    } else
+    #endif
+    {
+        return MSC_FS_MAX_PACKET;
+    }
+}
+
+static inline uint32_t usbd_cdc_max_packet(USBD_HandleTypeDef *pdev) {
+    #if USBD_SUPPORT_HS_MODE
+    if (pdev->dev_speed == USBD_SPEED_HIGH) {
+        return CDC_DATA_HS_MAX_PACKET_SIZE;
+    } else
+    #endif
+    {
+        return CDC_DATA_FS_MAX_PACKET_SIZE;
+    }
+}
 
 // returns 0 on success, -1 on failure
 int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
