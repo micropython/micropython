@@ -42,12 +42,15 @@
 #include "bufhelper.h"
 #include "usb.h"
 
+// Work out which USB device to use as the main one (the one with the REPL)
+#if !defined(MICROPY_HW_USB_MAIN_DEV)
 #if defined(USE_USB_FS)
-#define USB_PHY_ID  USB_PHY_FS_ID
+#define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
 #elif defined(USE_USB_HS) && defined(USE_USB_HS_IN_FS)
-#define USB_PHY_ID  USB_PHY_HS_ID
+#define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
-#error Unable to determine proper USB_PHY_ID to use
+#error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
+#endif
 #endif
 
 // this will be persistent across a soft-reset
@@ -123,7 +126,7 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
 
         // set up the USBD state
         USBD_HandleTypeDef *usbd = &usb_dev->hUSBDDevice;
-        usbd->id = USB_PHY_ID;
+        usbd->id = MICROPY_HW_USB_MAIN_DEV;
         usbd->dev_state  = USBD_STATE_DEFAULT;
         usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
         usbd->pClass = &USBD_CDC_MSC_HID;
