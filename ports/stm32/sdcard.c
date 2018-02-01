@@ -227,11 +227,13 @@ uint64_t sdcard_get_capacity_in_bytes(void) {
     return (uint64_t)cardinfo.LogBlockNbr * (uint64_t)cardinfo.LogBlockSize;
 }
 
+#if !defined(MICROPY_HW_SDMMC2_CK)
 void SDIO_IRQHandler(void) {
     IRQ_ENTER(SDIO_IRQn);
     HAL_SD_IRQHandler(&sd_handle);
     IRQ_EXIT(SDIO_IRQn);
 }
+#endif
 
 #if defined(MCU_SERIES_F7)
 void SDMMC2_IRQHandler(void) {
