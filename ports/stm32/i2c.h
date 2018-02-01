@@ -31,10 +31,6 @@
 // use this for OwnAddress1 to configure I2C in master mode
 #define PYB_I2C_MASTER_ADDRESS (0xfe)
 
-#define PYB_I2C_SPEED_STANDARD (100000L)
-#define PYB_I2C_SPEED_FULL     (400000L)
-#define PYB_I2C_SPEED_FAST     (1000000L)
-
 typedef struct _pyb_i2c_obj_t {
     mp_obj_base_t base;
     I2C_HandleTypeDef *i2c;

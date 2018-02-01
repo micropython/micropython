@@ -89,6 +89,10 @@
 #define PYB_I2C_MASTER (0)
 #define PYB_I2C_SLAVE  (1)
 
+#define PYB_I2C_SPEED_STANDARD (100000L)
+#define PYB_I2C_SPEED_FULL     (400000L)
+#define PYB_I2C_SPEED_FAST     (1000000L)
+
 #if defined(MICROPY_HW_I2C1_SCL)
 I2C_HandleTypeDef I2CHandle1 = {.Instance = NULL};
 #endif
