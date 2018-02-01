@@ -106,6 +106,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             __CAN1_CLK_ENABLE();
             break;
 
+        #if defined(CAN2)
         // CAN2 is on RX,TX = Y5,Y6 = PB12,PB13
         case PYB_CAN_2:
             CANx = CAN2;
@@ -115,6 +116,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             __CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
             __CAN2_CLK_ENABLE();
             break;
+        #endif
 
         default:
             return false;
@@ -416,12 +418,14 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
         __CAN1_FORCE_RESET();
         __CAN1_RELEASE_RESET();
         __CAN1_CLK_DISABLE();
+    #if defined(CAN2)
     } else if (self->can.Instance == CAN2) {
         HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
         __CAN2_FORCE_RESET();
         __CAN2_RELEASE_RESET();
         __CAN2_CLK_DISABLE();
+    #endif
     }
     return mp_const_none;
 }
@@ -760,11 +764,13 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         *callback = callback_in;
     } else if (mp_obj_is_callable(callback_in)) {
         *callback = callback_in;
-        uint32_t irq;
+        uint32_t irq = 0;
         if (self->can_id == PYB_CAN_1) {
             irq = (fifo == 0) ? CAN1_RX0_IRQn : CAN1_RX1_IRQn;
+        #if defined(CAN2)
         } else {
             irq = (fifo == 0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
+        #endif
         }
         HAL_NVIC_SetPriority(irq, IRQ_PRI_CAN, IRQ_SUBPRI_CAN);
         HAL_NVIC_EnableIRQ(irq);
