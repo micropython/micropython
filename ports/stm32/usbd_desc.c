@@ -33,8 +33,7 @@
 #include "usbd_desc.h"
 #include "usbd_conf.h"
 
-// need these headers just for MP_HAL_UNIQUE_ID_ADDRESS
-#include "py/misc.h"
+// need this header just for MP_HAL_UNIQUE_ID_ADDRESS
 #include "py/mphal.h"
 
 // So we don't clash with existing ST boards, we use the unofficial FOSS VID.

@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include STM32_HAL_H
 #include "usbd_ioreq.h"
 #include "usbd_cdc_msc_hid.h"
 

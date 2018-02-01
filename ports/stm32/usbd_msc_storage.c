@@ -36,7 +36,7 @@
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_msc_storage.h"
 
-#include "py/misc.h"
+#include "py/mpstate.h"
 #include "storage.h"
 #include "sdcard.h"
 

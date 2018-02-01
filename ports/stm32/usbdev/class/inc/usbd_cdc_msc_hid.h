@@ -36,8 +36,8 @@ typedef struct {
   uint8_t  CmdOpCode;
   uint8_t  CmdLength;    
   
-  __IO uint32_t TxState;     
-  __IO uint32_t RxState;    
+  volatile uint32_t TxState;
+  volatile uint32_t RxState;
 } USBD_CDC_HandleTypeDef;
 
 typedef struct _USBD_STORAGE {
