@@ -58,6 +58,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
   self->spi->PSELSCK  = clock->pin;
   self->spi->PSELMOSI = mosi->pin;
   self->spi->PSELMISO = miso->pin;
+
+
+#if NRF52840_XXAA
+    self->spi->PSELSCK  |= (clock->port << SPI_PSEL_SCK_PORT_Pos);
+    self->spi->PSELMOSI |= (mosi->port << SPI_PSEL_MOSI_PORT_Pos);
+    self->spi->PSELMISO |= (miso->port << SPI_PSEL_MISO_PORT_Pos);
+#endif
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
