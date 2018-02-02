@@ -458,6 +458,9 @@ int main(void) {
     switch_init0();
 #endif
     spi_init0();
+    #if MICROPY_HW_ENABLE_HW_I2C
+    i2c_init0();
+    #endif
 
 #if defined(USE_DEVICE_MODE)
     // default to internal flash being the usb medium
@@ -552,10 +555,6 @@ soft_reset:
 #if MICROPY_HW_ENABLE_CAN
     can_init0();
 #endif
-
-    #if MICROPY_HW_ENABLE_HW_I2C
-    i2c_init0();
-    #endif
 
     pyb_usb_init0();
 

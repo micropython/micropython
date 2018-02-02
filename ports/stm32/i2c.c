@@ -217,21 +217,18 @@ uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
 #endif
 
 void i2c_init0(void) {
-    // reset the I2C1 handles
+    // Initialise the I2C handles.
+    // The structs live on the BSS so all other fields will be zero after a reset.
     #if defined(MICROPY_HW_I2C1_SCL)
-    memset(&I2CHandle1, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle1.Instance = I2C1;
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    memset(&I2CHandle2, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle2.Instance = I2C2;
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    memset(&I2CHandle3, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle3.Instance = I2C3;
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    memset(&I2CHandle4, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle4.Instance = I2C4;
     #endif
 }
