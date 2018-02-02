@@ -281,7 +281,11 @@ void spi_flash_init(void) {
              || response[1] == SPI_FLASH_JEDEC_MANUFACTURER_2
             #endif
             ) &&
-            response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
+            (response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE 
+            #ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
+            || response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE_2 
+            #endif
+            ) &&
             response[3] == SPI_FLASH_JEDEC_CAPACITY) {
             spi_flash_is_initialised = true;
         } else {
