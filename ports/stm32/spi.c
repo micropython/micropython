@@ -135,29 +135,24 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
 };
 
 void spi_init0(void) {
-    // reset the SPI handles
+    // Initialise the SPI handles.
+    // The structs live on the BSS so all other fields will be zero after a reset.
     #if defined(MICROPY_HW_SPI1_SCK)
-    memset(&SPIHandle1, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle1.Instance = SPI1;
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
-    memset(&SPIHandle2, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle2.Instance = SPI2;
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
-    memset(&SPIHandle3, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle3.Instance = SPI3;
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
-    memset(&SPIHandle4, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle4.Instance = SPI4;
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
-    memset(&SPIHandle5, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle5.Instance = SPI5;
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
-    memset(&SPIHandle6, 0, sizeof(SPI_HandleTypeDef));
     SPIHandle6.Instance = SPI6;
     #endif
 }
