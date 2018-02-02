@@ -552,10 +552,6 @@ soft_reset:
     can_init0();
 #endif
 
-#if MICROPY_HW_ENABLE_RNG
-    rng_init0();
-#endif
-
     #if MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
