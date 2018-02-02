@@ -172,7 +172,7 @@ void gc_collect(void) {
     #if MICROPY_PY_THREAD
     mp_thread_gc_others();
     #endif
-    #if MICROPY_EMIT_NATIVE
+    #if MICROPY_EMIT_NATIVE && defined(UNIX)
     mp_unix_mark_exec();
     #endif
     gc_collect_end();
