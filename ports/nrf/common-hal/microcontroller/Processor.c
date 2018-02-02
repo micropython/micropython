@@ -25,10 +25,45 @@
  */
 
 #include "common-hal/microcontroller/Processor.h"
+#include "py/runtime.h"
 
-// TODO port common_hal_mcu_processor
+#ifdef BLUETOOTH_SD
+#include "nrf_sdm.h"
+#endif
+
+#include "nrf.h"
+
 float common_hal_mcu_processor_get_temperature(void) {
-    return 0;
+    int32_t temp = 0;
+
+#ifdef BLUETOOTH_SD
+    uint8_t sd_en = 0;
+
+    (void) sd_softdevice_is_enabled(&sd_en);
+
+    if (sd_en) {
+        uint32_t err_code = sd_temp_get(&temp);
+        if (err_code != NRF_SUCCESS) {
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+                      "Can not get temperature. status: 0x" HEX2_FMT, (uint16_t)err_code));
+
+            return 0;
+        }
+    }
+#endif
+
+    NRF_TEMP->TASKS_START = 1;
+
+    while (NRF_TEMP->EVENTS_DATARDY == 0)
+        ;
+
+    NRF_TEMP->EVENTS_DATARDY = 0;
+
+    temp = NRF_TEMP->TEMP;
+
+    NRF_TEMP->TASKS_STOP = 1;
+
+    return temp / 4.0f;
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
