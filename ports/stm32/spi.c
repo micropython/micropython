@@ -179,6 +179,18 @@ STATIC int spi_find(mp_obj_t id) {
         } else if (strcmp(port, MICROPY_HW_SPI3_NAME) == 0) {
             return 3;
         #endif
+        #ifdef MICROPY_HW_SPI4_NAME
+        } else if (strcmp(port, MICROPY_HW_SPI4_NAME) == 0) {
+            return 4;
+        #endif
+        #ifdef MICROPY_HW_SPI5_NAME
+        } else if (strcmp(port, MICROPY_HW_SPI5_NAME) == 0) {
+            return 5;
+        #endif
+        #ifdef MICROPY_HW_SPI6_NAME
+        } else if (strcmp(port, MICROPY_HW_SPI6_NAME) == 0) {
+            return 6;
+        #endif
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
             "SPI(%s) doesn't exist", port));
