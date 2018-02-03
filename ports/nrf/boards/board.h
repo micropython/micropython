@@ -31,8 +31,6 @@
 
 #include <stdbool.h>
 
-extern volatile uint32_t ticks_ms;
-
 // Initializes board related state once on start up.
 void board_init(void);
 

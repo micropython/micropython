@@ -27,7 +27,7 @@ Module             Supported Ports
 `board`            **All Supported**
 `busio`            **All Supported**
 `digitalio`        **All Supported**
-`gamepad`          **SAMD Express**
+`gamepad`          **SAMD Express, nRF**
 `math`             **All Supported**
 `microcontroller`  **All Supported**
 `multiterminal`    **ESP8266**

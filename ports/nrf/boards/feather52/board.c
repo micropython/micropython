@@ -35,52 +35,10 @@
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
 uint32_t bootloaderVersion = 0;
 
-volatile uint32_t ticks_ms = 0;
-
-#define HAL_LFCLK_FREQ (32768UL)
-#define HAL_RTC_FREQ   (1024UL)
-#define HAL_RTC_COUNTER_PRESCALER ((HAL_LFCLK_FREQ/HAL_RTC_FREQ)-1)
-
-/* Maximum RTC ticks */
-#define portNRF_RTC_MAXTICKS   ((1U<<24)-1U)
-
 void board_init(void)
 {
   // Retrieve bootloader version
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
-
-  // 32Khz XTAL
-  NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
-  NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
-
-  // Set up RTC1 as tick timer
-  NVIC_DisableIRQ(RTC1_IRQn);
-  NRF_RTC1->EVTENCLR    = RTC_EVTEN_COMPARE0_Msk;
-  NRF_RTC1->INTENCLR    = RTC_INTENSET_COMPARE0_Msk;
-  NRF_RTC1->TASKS_STOP  = 1;
-  NRF_RTC1->TASKS_CLEAR = 1;
-
-  ticks_ms = 0;
-
-  NRF_RTC1->PRESCALER = HAL_RTC_COUNTER_PRESCALER;
-  NRF_RTC1->INTENSET = RTC_INTENSET_TICK_Msk;
-  NRF_RTC1->TASKS_START = 1;
-  NRF_RTC1->EVTENSET = RTC_EVTEN_OVRFLW_Msk;
-  NVIC_SetPriority(RTC1_IRQn, 0xf); // lowest priority
-  NVIC_EnableIRQ(RTC1_IRQn);
-}
-
-void RTC1_IRQHandler(void)
-{
-  // Clear event
-  NRF_RTC1->EVENTS_TICK = 0;
-  volatile uint32_t dummy = NRF_RTC1->EVENTS_TICK;
-  (void) dummy;
-
-  // Tick correction
-  uint32_t systick_counter = NRF_RTC1->COUNTER;
-  uint32_t diff = (systick_counter - ticks_ms) & portNRF_RTC_MAXTICKS;
-  ticks_ms += diff;
 }
 
 // Check the status of the two buttons on CircuitPlayground Express. If both are

@@ -139,6 +139,7 @@ SRC_C += \
 	pin_named_pins.c \
 	fatfs_port.c \
 	fifo.c \
+	tick.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
@@ -230,22 +231,24 @@ SRC_SHARED_MODULE = \
 	os/__init__.c \
 	random/__init__.c \
 	storage/__init__.c \
+	gamepad/__init__.c \
+	gamepad/GamePad.c
 
 #  bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	busio/OneWire.c \
-	gamepad/__init__.c \
-	gamepad/GamePad.c \
 	struct/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c
 
-#SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
+SRC_SHARED_BINDINGS = \
+	gamepad/__init__.c \
+	gamepad/GamePad.c
 
-SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-module/, $(SRC_SHARED_MODULE))
+SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_BINDINGS)) \
+                             $(addprefix shared-module/, $(SRC_SHARED_MODULE))
 
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))

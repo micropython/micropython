@@ -28,16 +28,18 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 
+#include "shared-module/gamepad/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "tick.h"
 
 safe_mode_t port_init(void) {
     board_init();
 
-#if 0
     // Configure millisecond timer initialization.
     tick_init();
 
+#if 0
     #ifdef CIRCUITPY_CANARY_WORD
     // Run in safe mode if the canary is corrupt.
     if (_ezero != CIRCUITPY_CANARY_WORD) {
@@ -54,6 +56,10 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+ #ifdef CIRCUITPY_GAMEPAD_TICKS
+     gamepad_reset();
+ #endif
+
     pwmout_reset();
     reset_all_pins();
 }
