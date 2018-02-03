@@ -63,13 +63,6 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
 
 #define NUM_LEDS MP_ARRAY_SIZE(pyb_led_obj)
 
-void led_init(void) {
-    for (uint8_t i = 0; i < NUM_LEDS; i++) {
-        LED_OFF(pyb_led_obj[i].hw_pin);
-        hal_gpio_cfg_pin(0, pyb_led_obj[i].hw_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    }
-}
-
 void led_state(pyb_led_obj_t * led_obj, int state) {
     if (state == 1) {
         LED_ON(led_obj->hw_pin);
@@ -107,6 +100,9 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     if (!(1 <= led_id && led_id <= NUM_LEDS)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LED(%d) does not exist", led_id));
     }
+
+    hal_gpio_cfg_pin(0, pyb_led_obj[led_id - 1].hw_pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+    LED_OFF(pyb_led_obj[led_id - 1].hw_pin);
 
     // return static led object
     return (mp_obj_t)&pyb_led_obj[led_id - 1];
