@@ -1941,51 +1941,52 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             }
         } else {
         plain_assign:
-            if (MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_testlist_star_expr)
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
-                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[1]) == 2
-                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 2) {
-                // optimisation for a, b = c, d
-                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns->nodes[1];
+            #if MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
+            if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_testlist_star_expr)
+                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)) {
                 mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
-                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
-                    || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)) {
-                    // can't optimise when it's a star expression on the lhs
-                    goto no_optimisation;
+                pns1 = (mp_parse_node_struct_t*)pns->nodes[1];
+                uint32_t n_pns0 = MP_PARSE_NODE_STRUCT_NUM_NODES(pns0);
+                // Can only optimise a tuple-to-tuple assignment when all of the following hold:
+                //  - equal number of items in LHS and RHS tuples
+                //  - 2 or 3 items in the tuples
+                //  - there are no star expressions in the LHS tuple
+                if (n_pns0 == MP_PARSE_NODE_STRUCT_NUM_NODES(pns1)
+                    && (n_pns0 == 2
+                        #if MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
+                        || n_pns0 == 3
+                        #endif
+                        )
+                    && !MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
+                    && !MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)
+                    #if MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
+                    && (n_pns0 == 2 || !MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[2], PN_star_expr))
+                    #endif
+                    ) {
+                    // Optimisation for a, b = c, d or a, b, c = d, e, f
+                    compile_node(comp, pns1->nodes[0]); // rhs
+                    compile_node(comp, pns1->nodes[1]); // rhs
+                    #if MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
+                    if (n_pns0 == 3) {
+                        compile_node(comp, pns1->nodes[2]); // rhs
+                        EMIT(rot_three);
+                    }
+                    #endif
+                    EMIT(rot_two);
+                    c_assign(comp, pns0->nodes[0], ASSIGN_STORE); // lhs store
+                    c_assign(comp, pns0->nodes[1], ASSIGN_STORE); // lhs store
+                    #if MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
+                    if (n_pns0 == 3) {
+                        c_assign(comp, pns0->nodes[2], ASSIGN_STORE); // lhs store
+                    }
+                    #endif
+                    return;
                 }
-                compile_node(comp, pns10->nodes[0]); // rhs
-                compile_node(comp, pns10->nodes[1]); // rhs
-                EMIT(rot_two);
-                c_assign(comp, pns0->nodes[0], ASSIGN_STORE); // lhs store
-                c_assign(comp, pns0->nodes[1], ASSIGN_STORE); // lhs store
-            } else if (MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_testlist_star_expr)
-                && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)
-                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[1]) == 3
-                && MP_PARSE_NODE_STRUCT_NUM_NODES((mp_parse_node_struct_t*)pns->nodes[0]) == 3) {
-                // optimisation for a, b, c = d, e, f
-                mp_parse_node_struct_t *pns10 = (mp_parse_node_struct_t*)pns->nodes[1];
-                mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns->nodes[0];
-                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[0], PN_star_expr)
-                    || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[1], PN_star_expr)
-                    || MP_PARSE_NODE_IS_STRUCT_KIND(pns0->nodes[2], PN_star_expr)) {
-                    // can't optimise when it's a star expression on the lhs
-                    goto no_optimisation;
-                }
-                compile_node(comp, pns10->nodes[0]); // rhs
-                compile_node(comp, pns10->nodes[1]); // rhs
-                compile_node(comp, pns10->nodes[2]); // rhs
-                EMIT(rot_three);
-                EMIT(rot_two);
-                c_assign(comp, pns0->nodes[0], ASSIGN_STORE); // lhs store
-                c_assign(comp, pns0->nodes[1], ASSIGN_STORE); // lhs store
-                c_assign(comp, pns0->nodes[2], ASSIGN_STORE); // lhs store
-            } else {
-                no_optimisation:
-                compile_node(comp, pns->nodes[1]); // rhs
-                c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
             }
+            #endif
+
+            compile_node(comp, pns->nodes[1]); // rhs
+            c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
         }
     } else {
         goto plain_assign;

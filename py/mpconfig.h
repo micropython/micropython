@@ -347,7 +347,7 @@
 #endif
 
 // Whether to enable optimisation of: a, b, c = d, e, f
-// Cost 156 bytes (Thumb2)
+// Requires MICROPY_COMP_DOUBLE_TUPLE_ASSIGN and costs 68 bytes (Thumb2)
 #ifndef MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #endif
