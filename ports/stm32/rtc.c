@@ -162,7 +162,7 @@ void rtc_init_finalise() {
         return;
     }
 
-    rtc_info = 0x20000000 | (rtc_use_lse << 28);
+    rtc_info = 0x20000000;
     if (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
         if (rtc_use_lse) {
             // fall back to LSI...
@@ -181,6 +181,9 @@ void rtc_init_finalise() {
             return;
         }
     }
+
+    // record if LSE or LSI is used
+    rtc_info |= (rtc_use_lse << 28);
 
     // record how long it took for the RTC to start up
     rtc_info |= (HAL_GetTick() - rtc_startup_tick) & 0xffff;
