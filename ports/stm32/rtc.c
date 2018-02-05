@@ -335,7 +335,11 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
     RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
     if (rtc_use_lse) {
+        #if MICROPY_HW_RTC_USE_BYPASS
+        RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+        #else
         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+        #endif
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
     } else {
         RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
