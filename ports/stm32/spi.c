@@ -561,14 +561,6 @@ STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
     {{&pyb_spi_type}, &spi_obj[5]},
 };
 
-const spi_t *spi_from_mp_obj(mp_obj_t o) {
-    if (!MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
-        mp_raise_ValueError("expecting an SPI object");
-    }
-    pyb_spi_obj_t *self = o;
-    return self->spi;
-}
-
 STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
     spi_print(print, self->spi, true);
@@ -985,3 +977,15 @@ const mp_obj_type_t machine_hard_spi_type = {
     .protocol = &machine_hard_spi_p,
     .locals_dict = (mp_obj_t)&mp_machine_spi_locals_dict,
 };
+
+const spi_t *spi_from_mp_obj(mp_obj_t o) {
+    if (MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
+        pyb_spi_obj_t *self = o;
+        return self->spi;
+    } else if (MP_OBJ_IS_TYPE(o, &machine_hard_spi_type)) {
+        machine_hard_spi_obj_t *self = o;;
+        return self->spi;
+    } else {
+        mp_raise_TypeError("expecting an SPI object");
+    }
+}
