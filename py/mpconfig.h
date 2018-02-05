@@ -936,6 +936,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_COLLECTIONS (1)
 #endif
 
+// Whether to provide "ucollections.deque" type
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE
+#define MICROPY_PY_COLLECTIONS_DEQUE (0)
+#endif
+
 // Whether to provide "collections.OrderedDict" type
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (0)
