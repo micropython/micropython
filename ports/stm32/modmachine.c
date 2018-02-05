@@ -99,6 +99,11 @@ void machine_init(void) {
     RCC->CSR |= RCC_CSR_RMVF;
 }
 
+void machine_deinit(void) {
+    // we are doing a soft-reset so change the reset_cause
+    reset_cause = PYB_RESET_SOFT;
+}
+
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
 STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {

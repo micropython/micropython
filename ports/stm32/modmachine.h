@@ -29,6 +29,7 @@
 #include "py/obj.h"
 
 void machine_init(void);
+void machine_deinit(void);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);

@@ -454,13 +454,21 @@ int main(void) {
     #endif
     pendsv_init();
     led_init();
-#if MICROPY_HW_HAS_SWITCH
+    #if MICROPY_HW_HAS_SWITCH
     switch_init0();
-#endif
+    #endif
+    machine_init();
+    #if MICROPY_HW_ENABLE_RTC
+    rtc_init_start(false);
+    #endif
     spi_init0();
     #if MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
+    #if MICROPY_HW_HAS_SDCARD
+    sdcard_init();
+    #endif
+    storage_init();
 
 #if defined(USE_DEVICE_MODE)
     // default to internal flash being the usb medium
@@ -482,24 +490,6 @@ soft_reset:
     led_state(3, 0);
     led_state(4, 0);
     uint reset_mode = update_reset_mode(1);
-
-    machine_init();
-
-#if MICROPY_HW_ENABLE_RTC
-    if (first_soft_reset) {
-        rtc_init_start(false);
-    }
-#endif
-
-    // more sub-system init
-#if MICROPY_HW_HAS_SDCARD
-    if (first_soft_reset) {
-        sdcard_init();
-    }
-#endif
-    if (first_soft_reset) {
-        storage_init();
-    }
 
     // Python threading init
     #if MICROPY_PY_THREAD
@@ -692,6 +682,7 @@ soft_reset_exit:
 #if MICROPY_HW_ENABLE_CAN
     can_deinit();
 #endif
+    machine_deinit();
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();
