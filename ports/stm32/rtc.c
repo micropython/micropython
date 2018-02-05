@@ -132,13 +132,14 @@ void rtc_init_start(bool force_init) {
             // provide some status information
             rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
             return;
-        } else if (((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) && ((RCC->CSR & 3) == 3)) {
-            // LSI configured & enabled & ready --> no need to (re-)init RTC
+        } else if ((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) {
+            // LSI configured as the RTC clock source --> no need to (re-)init RTC
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
             __HAL_RCC_CLEAR_RESET_FLAGS();
-            RCC->CSR |= 1;
+            // Turn the LSI on (it may need this even if the RTC is running)
+            RCC->CSR |= RCC_CSR_LSION;
             // provide some status information
             rtc_info |= 0x80000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
             return;
