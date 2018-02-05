@@ -257,13 +257,13 @@ bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8
         for (size_t i = 0; i < len; ++i) {
             uint8_t data_out = dout[i];
             uint8_t data_in = 0;
-			for (int j = 0; j < 8; ++j, data_out <<= 1) {
-				common_hal_digitalio_digitalinout_set_value(&self->mosi, (data_out >> 7) & 1);
-				common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
-				data_in = (data_in << 1) | common_hal_digitalio_digitalinout_get_value(&self->miso);
-				common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
-			}
-			din[i] = data_in;
+            for (int j = 0; j < 8; ++j, data_out <<= 1) {
+                common_hal_digitalio_digitalinout_set_value(&self->mosi, (data_out >> 7) & 1);
+                common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+                data_in = (data_in << 1) | common_hal_digitalio_digitalinout_get_value(&self->miso);
+                common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
+            }
+            din[i] = data_in;
 
             if (dest != NULL) {
                 dest[i] = data_in;
@@ -279,20 +279,20 @@ bool shared_module_bitbangio_spi_transfer(bitbangio_spi_obj_t *self, const uint8
         for (int j = 0; j < 8; ++j, data_out <<= 1) {
             common_hal_digitalio_digitalinout_set_value(&self->mosi, (data_out >> 7) & 1);
             if (self->phase == 0) {
-				common_hal_mcu_delay_us(delay_half);
-				common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
-			} else {
-				common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
-				common_hal_mcu_delay_us(delay_half);
-			}
-			data_in = (data_in << 1) | common_hal_digitalio_digitalinout_get_value(&self->miso);
-			if (self->phase == 0) {
-				common_hal_mcu_delay_us(delay_half);
-				common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
-			} else {
-				common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
-				common_hal_mcu_delay_us(delay_half);
-			}
+                common_hal_mcu_delay_us(delay_half);
+                common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+            } else {
+                common_hal_digitalio_digitalinout_set_value(&self->clock, 1 - self->polarity);
+                common_hal_mcu_delay_us(delay_half);
+            }
+            data_in = (data_in << 1) | common_hal_digitalio_digitalinout_get_value(&self->miso);
+            if (self->phase == 0) {
+                common_hal_mcu_delay_us(delay_half);
+                common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
+            } else {
+                common_hal_digitalio_digitalinout_set_value(&self->clock, self->polarity);
+                common_hal_mcu_delay_us(delay_half);
+            }
         }
         din[i] = data_in;
 

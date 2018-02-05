@@ -244,23 +244,23 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *args
     raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
 
     mp_buffer_info_t bufinfoin;
-	mp_get_buffer_raise(args[2], &bufinfoin, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args[2], &bufinfoin, MP_BUFFER_WRITE);
 
-	if (bufinfoin.len == 0) {
-		return mp_const_none;
-	}
+    if (bufinfoin.len == 0) {
+        return mp_const_none;
+    }
 
-	mp_buffer_info_t bufinfoout;
-	mp_get_buffer_raise(args[1], &bufinfoout, MP_BUFFER_READ);
+    mp_buffer_info_t bufinfoout;
+    mp_get_buffer_raise(args[1], &bufinfoout, MP_BUFFER_READ);
 
-	if (bufinfoout.len != bufinfoin.len) {
-		mp_raise_ValueError("buffers must be of equal length");
-	}
+    if (bufinfoout.len != bufinfoin.len) {
+        mp_raise_ValueError("buffers must be of equal length");
+    }
 
     bool ok = shared_module_bitbangio_spi_transfer(self,
                                             ((uint8_t*)bufinfoout.buf),
                                             ((uint8_t*)bufinfoin.buf),
-											bufinfoin.len);
+                                            bufinfoin.len);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
