@@ -243,7 +243,7 @@ html_last_updated_fmt = '%d %b %Y'
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MicroPythondoc'
+htmlhelp_basename = 'CircuitPythondoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -265,7 +265,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'MicroPython.tex', 'MicroPython Documentation',
+  (master_doc, 'CircuitPython.tex', 'CircuitPython Documentation',
    'Damien P. George, Paul Sokolovsky, and contributors', 'manual'),
 ]
 
@@ -295,7 +295,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'micropython', 'MicroPython Documentation',
+    ('index', 'CircuitPython', 'CircuitPython Documentation',
      ['Damien P. George, Paul Sokolovsky, and contributors'], 1),
 ]
 
@@ -309,8 +309,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'MicroPython', 'MicroPython Documentation',
-   'Damien P. George, Paul Sokolovsky, and contributors', 'MicroPython', 'One line description of project.',
+  (master_doc, 'CircuitPython', 'CircuitPython Documentation',
+   'Damien P. George, Paul Sokolovsky, and contributors', 'CircuitPython', 'One line description of project.',
    'Miscellaneous'),
 ]
 
