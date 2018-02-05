@@ -34,7 +34,6 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "bufhelper.h"
-#include "dma.h"
 #include "spi.h"
 
 /// \moduleref pyb
@@ -75,13 +74,6 @@
 // SPI6_TX: DMA2_Stream5.CHANNEL_1
 // SPI6_RX: DMA2_Stream6.CHANNEL_1
 
-typedef struct _pyb_spi_obj_t {
-    mp_obj_base_t base;
-    SPI_HandleTypeDef *spi;
-    const dma_descr_t *tx_dma_descr;
-    const dma_descr_t *rx_dma_descr;
-} pyb_spi_obj_t;
-
 #if defined(MICROPY_HW_SPI1_SCK)
 SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
@@ -101,36 +93,36 @@ SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
 SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 
-STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
+const spi_t spi_obj[6] = {
     #if defined(MICROPY_HW_SPI1_SCK)
-    {{&pyb_spi_type}, &SPIHandle1, &dma_SPI_1_TX, &dma_SPI_1_RX},
+    {&SPIHandle1, &dma_SPI_1_TX, &dma_SPI_1_RX},
     #else
-    {{&pyb_spi_type}, NULL, NULL, NULL},
+    {NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
-    {{&pyb_spi_type}, &SPIHandle2, &dma_SPI_2_TX, &dma_SPI_2_RX},
+    {&SPIHandle2, &dma_SPI_2_TX, &dma_SPI_2_RX},
     #else
-    {{&pyb_spi_type}, NULL, NULL, NULL},
+    {NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
-    {{&pyb_spi_type}, &SPIHandle3, &dma_SPI_3_TX, &dma_SPI_3_RX},
+    {&SPIHandle3, &dma_SPI_3_TX, &dma_SPI_3_RX},
     #else
-    {{&pyb_spi_type}, NULL, NULL, NULL},
+    {NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
-    {{&pyb_spi_type}, &SPIHandle4, &dma_SPI_4_TX, &dma_SPI_4_RX},
+    {&SPIHandle4, &dma_SPI_4_TX, &dma_SPI_4_RX},
     #else
-    {{&pyb_spi_type}, NULL, NULL, NULL},
+    {NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
-    {{&pyb_spi_type}, &SPIHandle5, &dma_SPI_5_TX, &dma_SPI_5_RX},
+    {&SPIHandle5, &dma_SPI_5_TX, &dma_SPI_5_RX},
     #else
-    {{&pyb_spi_type}, NULL, NULL, NULL},
+    {NULL, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
-    {{&pyb_spi_type}, &SPIHandle6, &dma_SPI_6_TX, &dma_SPI_6_RX},
+    {&SPIHandle6, &dma_SPI_6_TX, &dma_SPI_6_RX},
     #else
-    {{&pyb_spi_type}, NULL, NULL, NULL},
+    {NULL, NULL, NULL},
     #endif
 };
 
@@ -192,8 +184,8 @@ STATIC int spi_find(mp_obj_t id) {
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
-        if (spi_id >= 1 && spi_id <= MP_ARRAY_SIZE(pyb_spi_obj)
-            && pyb_spi_obj[spi_id - 1].spi != NULL) {
+        if (spi_id >= 1 && spi_id <= MP_ARRAY_SIZE(spi_obj)
+            && spi_obj[spi_id - 1].spi != NULL) {
             return spi_id;
         }
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
@@ -203,8 +195,9 @@ STATIC int spi_find(mp_obj_t id) {
 
 // sets the parameters in the SPI_InitTypeDef struct
 // if an argument is -1 then the corresponding parameter is not changed
-STATIC void spi_set_params(SPI_HandleTypeDef *spi, uint32_t prescale, int32_t baudrate,
+STATIC void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
+    SPI_HandleTypeDef *spi = spi_obj->spi;
     SPI_InitTypeDef *init = &spi->Init;
 
     if (prescale != 0xffffffff || baudrate != -1) {
@@ -248,14 +241,13 @@ STATIC void spi_set_params(SPI_HandleTypeDef *spi, uint32_t prescale, int32_t ba
 }
 
 // TODO allow to take a list of pins to use
-void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
-    const pyb_spi_obj_t *self;
+void spi_init(const spi_t *self, bool enable_nss_pin) {
+    SPI_HandleTypeDef *spi = self->spi;
     const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
-        self = &pyb_spi_obj[0];
         #if defined(MICROPY_HW_SPI1_NSS)
         pins[0] = &MICROPY_HW_SPI1_NSS;
         #endif
@@ -269,7 +261,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
-        self = &pyb_spi_obj[1];
         #if defined(MICROPY_HW_SPI2_NSS)
         pins[0] = &MICROPY_HW_SPI2_NSS;
         #endif
@@ -283,7 +274,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
-        self = &pyb_spi_obj[2];
         #if defined(MICROPY_HW_SPI3_NSS)
         pins[0] = &MICROPY_HW_SPI3_NSS;
         #endif
@@ -297,7 +287,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
-        self = &pyb_spi_obj[3];
         #if defined(MICROPY_HW_SPI4_NSS)
         pins[0] = &MICROPY_HW_SPI4_NSS;
         #endif
@@ -311,7 +300,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
-        self = &pyb_spi_obj[4];
         #if defined(MICROPY_HW_SPI5_NSS)
         pins[0] = &MICROPY_HW_SPI5_NSS;
         #endif
@@ -325,7 +313,6 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
-        self = &pyb_spi_obj[5];
         #if defined(MICROPY_HW_SPI6_NSS)
         pins[0] = &MICROPY_HW_SPI6_NSS;
         #endif
@@ -349,7 +336,7 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
         if (pins[i] == NULL) {
             continue;
         }
-        mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &pyb_spi_obj[0]) + 1);
+        mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_SPI, (self - &spi_obj[0]) + 1);
     }
 
     // init the SPI device
@@ -368,7 +355,8 @@ void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin) {
     dma_invalidate_channel(self->rx_dma_descr);
 }
 
-void spi_deinit(SPI_HandleTypeDef *spi) {
+void spi_deinit(const spi_t *spi_obj) {
+    SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
@@ -410,12 +398,13 @@ void spi_deinit(SPI_HandleTypeDef *spi) {
     }
 }
 
-STATIC HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t timeout) {
+STATIC HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t timeout) {
     uint32_t start = HAL_GetTick();
+    volatile HAL_SPI_StateTypeDef *state = &spi->spi->State;
     for (;;) {
         // Do an atomic check of the state; WFI will exit even if IRQs are disabled
         uint32_t irq_state = disable_irq();
-        if (spi->State == HAL_SPI_STATE_READY) {
+        if (*state == HAL_SPI_STATE_READY) {
             enable_irq(irq_state);
             return HAL_OK;
         }
@@ -433,7 +422,7 @@ STATIC HAL_StatusTypeDef spi_wait_dma_finished(SPI_HandleTypeDef *spi, uint32_t 
 // and use that value for the baudrate in the formula, plus a small constant.
 #define SPI_TRANSFER_TIMEOUT(len) ((len) + 100)
 
-STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
+STATIC void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is
     // unknown but we sidestep the issue by using polling for 1 byte transfer.
@@ -452,7 +441,7 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
             MP_HAL_CLEAN_DCACHE(src, len);
             status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t*)src, len);
             if (status == HAL_OK) {
-                status = spi_wait_dma_finished(self->spi, timeout);
+                status = spi_wait_dma_finished(self, timeout);
             }
             dma_deinit(self->tx_dma_descr);
         }
@@ -474,7 +463,7 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             status = HAL_SPI_Receive_DMA(self->spi, dest, len);
             if (status == HAL_OK) {
-                status = spi_wait_dma_finished(self->spi, timeout);
+                status = spi_wait_dma_finished(self, timeout);
             }
             if (self->spi->hdmatx != NULL) {
                 dma_deinit(self->tx_dma_descr);
@@ -495,7 +484,7 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
             MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
             status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t*)src, dest, len);
             if (status == HAL_OK) {
-                status = spi_wait_dma_finished(self->spi, timeout);
+                status = spi_wait_dma_finished(self, timeout);
             }
             dma_deinit(self->tx_dma_descr);
             dma_deinit(self->rx_dma_descr);
@@ -507,7 +496,9 @@ STATIC void spi_transfer(const pyb_spi_obj_t *self, size_t len, const uint8_t *s
     }
 }
 
-STATIC void spi_print(const mp_print_t *print, SPI_HandleTypeDef *spi, bool legacy) {
+STATIC void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
+    SPI_HandleTypeDef *spi = spi_obj->spi;
+
     uint spi_num = 1; // default to SPI1
     if (spi->Instance == SPI2) { spi_num = 2; }
     else if (spi->Instance == SPI3) { spi_num = 3; }
@@ -556,7 +547,21 @@ STATIC void spi_print(const mp_print_t *print, SPI_HandleTypeDef *spi, bool lega
 /******************************************************************************/
 /* MicroPython bindings for legacy pyb API                                    */
 
-SPI_HandleTypeDef *spi_get_handle(mp_obj_t o) {
+typedef struct _pyb_spi_obj_t {
+    mp_obj_base_t base;
+    const spi_t *spi;
+} pyb_spi_obj_t;
+
+STATIC const pyb_spi_obj_t pyb_spi_obj[] = {
+    {{&pyb_spi_type}, &spi_obj[0]},
+    {{&pyb_spi_type}, &spi_obj[1]},
+    {{&pyb_spi_type}, &spi_obj[2]},
+    {{&pyb_spi_type}, &spi_obj[3]},
+    {{&pyb_spi_type}, &spi_obj[4]},
+    {{&pyb_spi_type}, &spi_obj[5]},
+};
+
+const spi_t *spi_from_mp_obj(mp_obj_t o) {
     if (!MP_OBJ_IS_TYPE(o, &pyb_spi_type)) {
         mp_raise_ValueError("expecting an SPI object");
     }
@@ -595,7 +600,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // set the SPI configuration values
-    SPI_InitTypeDef *init = &self->spi->Init;
+    SPI_InitTypeDef *init = &self->spi->spi->Init;
     init->Mode = args[0].u_int;
 
     spi_set_params(self->spi, args[2].u_int, args[1].u_int, args[3].u_int, args[4].u_int,
@@ -693,7 +698,7 @@ STATIC mp_obj_t pyb_spi_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     // send the data
-    spi_transfer(self, bufinfo.len, bufinfo.buf, NULL, args[1].u_int);
+    spi_transfer(self->spi, bufinfo.len, bufinfo.buf, NULL, args[1].u_int);
 
     return mp_const_none;
 }
@@ -727,7 +732,7 @@ STATIC mp_obj_t pyb_spi_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
 
     // receive the data
-    spi_transfer(self, vstr.len, NULL, (uint8_t*)vstr.buf, args[1].u_int);
+    spi_transfer(self->spi, vstr.len, NULL, (uint8_t*)vstr.buf, args[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -797,7 +802,7 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
 
     // do the transfer
-    spi_transfer(self, bufinfo_send.len, bufinfo_send.buf, bufinfo_recv.buf, args[2].u_int);
+    spi_transfer(self->spi, bufinfo_send.len, bufinfo_send.buf, bufinfo_recv.buf, args[2].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -845,7 +850,8 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    spi_transfer((pyb_spi_obj_t*)self_in, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
+    pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
+    spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
 STATIC const mp_machine_spi_p_t pyb_spi_p = {
@@ -866,21 +872,21 @@ const mp_obj_type_t pyb_spi_type = {
 
 typedef struct _machine_hard_spi_obj_t {
     mp_obj_base_t base;
-    const pyb_spi_obj_t *pyb;
+    const spi_t *spi;
 } machine_hard_spi_obj_t;
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
-    {{&machine_hard_spi_type}, &pyb_spi_obj[0]},
-    {{&machine_hard_spi_type}, &pyb_spi_obj[1]},
-    {{&machine_hard_spi_type}, &pyb_spi_obj[2]},
-    {{&machine_hard_spi_type}, &pyb_spi_obj[3]},
-    {{&machine_hard_spi_type}, &pyb_spi_obj[4]},
-    {{&machine_hard_spi_type}, &pyb_spi_obj[5]},
+    {{&machine_hard_spi_type}, &spi_obj[0]},
+    {{&machine_hard_spi_type}, &spi_obj[1]},
+    {{&machine_hard_spi_type}, &spi_obj[2]},
+    {{&machine_hard_spi_type}, &spi_obj[3]},
+    {{&machine_hard_spi_type}, &spi_obj[4]},
+    {{&machine_hard_spi_type}, &spi_obj[5]},
 };
 
 STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_print(print, self->pyb->spi, false);
+    spi_print(print, self->spi, false);
 }
 
 mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -911,7 +917,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     }
 
     // set the SPI configuration values
-    SPI_InitTypeDef *init = &self->pyb->spi->Init;
+    SPI_InitTypeDef *init = &self->spi->spi->Init;
     init->Mode = SPI_MODE_MASTER;
 
     // these parameters are not currently configurable
@@ -922,12 +928,12 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     init->CRCPolynomial = 0;
 
     // set configurable paramaters
-    spi_set_params(self->pyb->spi, 0xffffffff, args[ARG_baudrate].u_int,
+    spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);
 
     // init the SPI bus
-    spi_init(self->pyb->spi, false);
+    spi_init(self->spi, false);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -947,22 +953,22 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // set the SPI configuration values
-    spi_set_params(self->pyb->spi, 0xffffffff, args[ARG_baudrate].u_int,
+    spi_set_params(self->spi, 0xffffffff, args[ARG_baudrate].u_int,
         args[ARG_polarity].u_int, args[ARG_phase].u_int, args[ARG_bits].u_int,
         args[ARG_firstbit].u_int);
 
     // re-init the SPI bus
-    spi_init(self->pyb->spi, false);
+    spi_init(self->spi, false);
 }
 
 STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_deinit(self->pyb->spi);
+    spi_deinit(self->spi);
 }
 
 STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_transfer(self->pyb, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
+    spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
 STATIC const mp_machine_spi_p_t machine_hard_spi_p = {

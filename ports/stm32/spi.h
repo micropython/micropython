@@ -26,18 +26,29 @@
 #ifndef MICROPY_INCLUDED_STMHAL_SPI_H
 #define MICROPY_INCLUDED_STMHAL_SPI_H
 
+#include "dma.h"
+
+typedef struct _spi_t {
+    SPI_HandleTypeDef *spi;
+    const dma_descr_t *tx_dma_descr;
+    const dma_descr_t *rx_dma_descr;
+} spi_t;
+
 extern SPI_HandleTypeDef SPIHandle1;
 extern SPI_HandleTypeDef SPIHandle2;
 extern SPI_HandleTypeDef SPIHandle3;
 extern SPI_HandleTypeDef SPIHandle4;
 extern SPI_HandleTypeDef SPIHandle5;
 extern SPI_HandleTypeDef SPIHandle6;
+
+extern const spi_t spi_obj[6];
+
 extern const mp_obj_type_t pyb_spi_type;
 extern const mp_obj_type_t machine_soft_spi_type;
 extern const mp_obj_type_t machine_hard_spi_type;
 
 void spi_init0(void);
-void spi_init(SPI_HandleTypeDef *spi, bool enable_nss_pin);
-SPI_HandleTypeDef *spi_get_handle(mp_obj_t o);
+void spi_init(const spi_t *spi, bool enable_nss_pin);
+const spi_t *spi_from_mp_obj(mp_obj_t o);
 
 #endif // MICROPY_INCLUDED_STMHAL_SPI_H
