@@ -74,7 +74,7 @@ static ble_drv_gatts_evt_callback_t        gatts_event_handler;
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_gatts_observer;
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
 static volatile bool m_write_done;
@@ -128,14 +128,22 @@ uint32_t ble_drv_stack_enable(void) {
         .source = NRF_CLOCK_LF_SRC_RC,
         .rc_ctiv = 16,
         .rc_temp_ctiv = 2,
+#if (BLUETOOTH_SD == 140)
+        .accuracy = 0
+#else
         .xtal_accuracy = 0
+#endif
     };
 #else
     nrf_clock_lf_cfg_t clock_config = {
         .source = NRF_CLOCK_LF_SRC_XTAL,
         .rc_ctiv = 0,
         .rc_temp_ctiv = 0,
+#if (BLUETOOTH_SD == 140)
+        .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
+#else
         .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
+#endif
     };
 #endif
     uint32_t err_code = sd_softdevice_enable(&clock_config,
@@ -153,6 +161,7 @@ uint32_t ble_drv_stack_enable(void) {
     BLE_DRIVER_LOG("IRQ enable status: " UINT_FMT "\n", (uint16_t)err_code);
     
     // Enable BLE stack.
+#if (BLUETOOTH_SD != 140)
     ble_enable_params_t ble_enable_params;
     memset(&ble_enable_params, 0x00, sizeof(ble_enable_params));
     ble_enable_params.gatts_enable_params.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT;
@@ -161,7 +170,7 @@ uint32_t ble_drv_stack_enable(void) {
     ble_enable_params.gap_enable_params.periph_conn_count  = 1;
     ble_enable_params.gap_enable_params.central_conn_count = 1;
 #endif
-
+#endif
 
 #if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
     err_code = sd_ble_enable(&ble_enable_params);
@@ -170,6 +179,10 @@ uint32_t ble_drv_stack_enable(void) {
 #if (BLUETOOTH_SD == 132)
     uint32_t app_ram_start = 0x200039c0;
     err_code = sd_ble_enable(&ble_enable_params, &app_ram_start); // 8K SD headroom from linker script.
+    BLE_DRIVER_LOG("BLE ram size: " UINT_FMT "\n", (uint16_t)app_ram_start);
+#elif (BLUETOOTH_SD == 140)
+    uint32_t app_ram_start = 0x20004000;
+    err_code = sd_ble_enable(&app_ram_start);
     BLE_DRIVER_LOG("BLE ram size: " UINT_FMT "\n", (uint16_t)app_ram_start);
 #else
     err_code = sd_ble_enable(&ble_enable_params, (uint32_t *)0x20001870);
@@ -229,7 +242,7 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
     SD_TEST_OR_ENABLE();
 
     ble_gap_addr_t local_ble_addr;
-#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
+#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3) || (BLUETOOTH_SD == 140)
     uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
 #else
     uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
@@ -352,7 +365,11 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
     attr_char_value.p_attr_md = &attr_md;
     attr_char_value.init_len  = sizeof(uint8_t);
     attr_char_value.init_offs = 0;
+#if (BLUETOOTH_SD == 140)
+    attr_char_value.max_len   = (BLE_GATT_ATT_MTU_DEFAULT - 3);
+#else
     attr_char_value.max_len   = (GATT_MTU_SIZE_DEFAULT - 3);
+#endif
 
     ble_gatts_char_handles_t handles;
 
@@ -378,7 +395,11 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     uint8_t byte_pos = 0;
 
+#if (BLUETOOTH_SD == 140)
+    uint8_t adv_data[BLE_GAP_ADV_SR_MAX_LEN_DEFAULT];
+#else
     uint8_t adv_data[BLE_GAP_ADV_MAX_SIZE];
+#endif
 
     if (p_adv_params->device_name_len > 0) {
         ble_gap_conn_sec_mode_t sec_mode;
@@ -532,7 +553,11 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     }
 
     if ((p_adv_params->data_len > 0) && (p_adv_params->p_data != NULL)) {
+#if (BLUETOOTH_SD == 140)
+        if (p_adv_params->data_len + byte_pos > BLE_GAP_ADV_SR_MAX_LEN_DEFAULT) {
+#else
         if (p_adv_params->data_len + byte_pos > BLE_GAP_ADV_MAX_SIZE) {
+#endif
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                       "Can not fit data into the advertisment packet."));
         }
@@ -543,7 +568,16 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
     // scan response data not set
     uint32_t err_code;
+#if (BLUETOOTH_SD == 140)
+    const ble_data_t ble_adv_data = {
+        .p_data = adv_data,
+        .len = byte_pos
+    };
+
+    if ((err_code = sd_ble_gap_adv_data_set(BLE_GAP_ADV_SET_HANDLE_DEFAULT, &ble_adv_data, NULL)) != 0) {
+#else
     if ((err_code = sd_ble_gap_adv_data_set(adv_data, byte_pos, NULL, 0)) != 0) {
+#endif
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not apply advertisment data. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
@@ -554,19 +588,38 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
     // initialize advertising params
     memset(&m_adv_params, 0, sizeof(m_adv_params));
     if (p_adv_params->connectable) {
+#if (BLUETOOTH_SD == 140)
+        m_adv_params.properties.connectable = 1;
+        m_adv_params.properties.scannable = 1;
+#else
         m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_IND;
+#endif
     } else {
+#if (BLUETOOTH_SD == 140)
+        m_adv_params.properties.connectable = 0;
+#else
         m_adv_params.type        = BLE_GAP_ADV_TYPE_ADV_NONCONN_IND;
+#endif
     }
 
     m_adv_params.p_peer_addr = NULL;                                // undirected advertisement
     m_adv_params.fp          = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval    = MSEC_TO_UNITS(100, UNIT_0_625_MS);   // approx 8 ms
+#if (BLUETOOTH_SD == 140)
+    m_adv_params.duration              = 0;                         // infinite advertisment
+    m_adv_params.properties.legacy_pdu = 1;
+    m_adv_params.primary_phy           = BLE_GAP_PHY_1MBPS;
+#else
     m_adv_params.timeout     = 0;                                   // infinite advertisment
+#endif
 
     ble_drv_advertise_stop();
 
+#if (BLUETOOTH_SD == 140)
+    err_code = sd_ble_gap_adv_start(BLE_GAP_ADV_SET_HANDLE_DEFAULT, &m_adv_params, BLE_CONN_CFG_TAG_DEFAULT);
+#else
     err_code = sd_ble_gap_adv_start(&m_adv_params);
+#endif
     if (err_code != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not start advertisment. status: 0x" HEX2_FMT, (uint16_t)err_code));
@@ -580,7 +633,11 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 void ble_drv_advertise_stop(void) {
     if (m_adv_in_progress == true) {
         uint32_t err_code;
+#if (BLUETOOTH_SD == 140)
+        if ((err_code = sd_ble_gap_adv_stop(BLE_GAP_ADV_SET_HANDLE_DEFAULT)) != 0) {
+#else
         if ((err_code = sd_ble_gap_adv_stop()) != 0) {
+#endif
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                       "Can not stop advertisment. status: 0x" HEX2_FMT, (uint16_t)err_code));
         }
@@ -656,7 +713,7 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t 
     gatts_event_handler = evt_handler;
 }
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 
 void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t evt_handler) {
     mp_gattc_observer = obj;
@@ -721,10 +778,19 @@ void ble_drv_scan_start(void) {
     SD_TEST_OR_ENABLE();
 
     ble_gap_scan_params_t scan_params;
+    memset(&scan_params, 0, sizeof(ble_gap_scan_params_t));
+
     scan_params.active   = 1;
     scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
     scan_params.window   = MSEC_TO_UNITS(100, UNIT_0_625_MS);
+#if (BLUETOOTH_SD == 140)
+    scan_params.filter_policy     = BLE_GAP_SCAN_FP_ACCEPT_ALL;
+    scan_params.filter_duplicates = BLE_GAP_SCAN_DUPLICATES_SUPPRESS;
+    scan_params.scan_phy          = BLE_GAP_PHY_1MBPS;
+    scan_params.duration          = 0; // Infinite
+#else
     scan_params.timeout  = 0; // Infinite
+#endif
 
 #if (BLUETOOTH_SD == 130)
     scan_params.selective   = 0;
@@ -751,7 +817,11 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     scan_params.active   = 1;
     scan_params.interval = MSEC_TO_UNITS(100, UNIT_0_625_MS);
     scan_params.window   = MSEC_TO_UNITS(100, UNIT_0_625_MS);
-    scan_params.timeout  = 0; // infinite
+#if (BLUETOOTH_SD == 140)
+    scan_params.duration  = 0; // Infinite
+#else
+    scan_params.timeout  = 0; // Infinite
+#endif
 
 #if (BLUETOOTH_SD == 130)
     scan_params.selective   = 0;
@@ -782,7 +852,11 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     conn_params.conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT;
 
     uint32_t err_code;
+#if (BLUETOOTH_SD == 140)
+    if ((err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_DEFAULT)) != 0) {
+#else
     if ((err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params)) != 0) {
+#endif
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not connect. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
@@ -904,14 +978,18 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             (void)sd_ble_gatts_sys_attr_set(p_ble_evt->evt.gatts_evt.conn_handle, NULL, 0, 0);
             break;
 
-#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
+#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3) || (BLUETOOTH_SD == 140)
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
             BLE_DRIVER_LOG("GATTS EVT EXCHANGE MTU REQUEST\n");
             (void)sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle, 23); // MAX MTU size
             break;
 #endif
 
+#if (BLUETOOTH_SD == 140)
+        case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+#else
         case BLE_EVT_TX_COMPLETE:
+#endif
             BLE_DRIVER_LOG("BLE EVT TX COMPLETE\n");
             m_tx_in_progress = false;
             break;
@@ -924,17 +1002,23 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                                               NULL, NULL);
             break;
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132)
+#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
         case BLE_GAP_EVT_ADV_REPORT:
             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
             ble_drv_adv_data_t adv_data = {
                 .p_peer_addr  = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr,
                 .addr_type    = p_ble_evt->evt.gap_evt.params.adv_report.peer_addr.addr_type,
+#if (BLUETOOTH_SD == 140)
+                .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.type.scannable,
+#else
                 .is_scan_resp = p_ble_evt->evt.gap_evt.params.adv_report.scan_rsp,
+#endif
                 .rssi         = p_ble_evt->evt.gap_evt.params.adv_report.rssi,
                 .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.dlen,
                 .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data,
+#if (BLUETOOTH_SD != 140)
                 .adv_type     = p_ble_evt->evt.gap_evt.params.adv_report.type
+#endif
             };
 
             // TODO: Fix unsafe callback to possible undefined callback...
@@ -1040,7 +1124,11 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     }
 }
 
+#if (BLUETOOTH_SD == 140)
+static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)] __attribute__ ((aligned (4)));
+#else
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)] __attribute__ ((aligned (4)));
+#endif
 
 #ifdef NRF51
 void SWI2_IRQHandler(void) {

@@ -82,3 +82,6 @@
 #endif
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"
+
+#define PORT_HEAP_SIZE                (128*1024)
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
