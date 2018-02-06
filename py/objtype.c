@@ -760,6 +760,16 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
         }
         #endif
 
+        #if MICROPY_CPYTHON_COMPAT
+        if (attr == MP_QSTR___class__) {
+            if (!(MP_OBJ_IS_OBJ(value) && mp_obj_is_instance_type((mp_obj_type_t*)MP_OBJ_TO_PTR(value)))) {
+                mp_raise_TypeError(NULL);
+            }
+            self->base.type = MP_OBJ_TO_PTR(value);
+            return true;
+        }
+        #endif
+
         mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
         return true;
     }
