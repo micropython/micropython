@@ -27,16 +27,10 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_ANALOGIO_ANALOGOUT_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_ANALOGIO_ANALOGOUT_H
 
-#include "common-hal/microcontroller/Pin.h"
-
-//#include "asf/sam0/drivers/dac/dac.h"
-
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-//    struct dac_module dac_instance;
-    bool deinited;
 } analogio_analogout_obj_t;
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_ANALOGIO_ANALOGOUT_H
