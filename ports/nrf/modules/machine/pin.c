@@ -92,8 +92,14 @@
 /// You can set `pyb.Pin.debug(True)` to get some debug information about
 /// how a particular object gets mapped to a pin.
 
+#define PIN_DEBUG (0)
+
 // Pin class variables
+#if PIN_DEBUG
 STATIC bool pin_class_debug;
+#else
+#define pin_class_debug (0)
+#endif
 
 // Forward declare function
 void gpio_irq_event_callback(hal_gpio_event_channel_t channel);
@@ -101,7 +107,10 @@ void gpio_irq_event_callback(hal_gpio_event_channel_t channel);
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
     MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
+
+    #if PIN_DEBUG
     pin_class_debug = false;
+    #endif
 
     hal_gpio_register_callback(gpio_irq_event_callback);
 }
@@ -336,6 +345,7 @@ STATIC mp_obj_t pin_af_list(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
 
+#if PIN_DEBUG
 /// \classmethod debug([state])
 /// Get or set the debugging state (`True` or `False` for on or off).
 STATIC mp_obj_t pin_debug(mp_uint_t n_args, const mp_obj_t *args) {
@@ -347,6 +357,7 @@ STATIC mp_obj_t pin_debug(mp_uint_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, (mp_obj_t)&pin_debug_fun_obj);
+#endif
 
 // init(mode, pull=None, af=-1, *, value, alt)
 STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -537,7 +548,9 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // class methods
     { MP_ROM_QSTR(MP_QSTR_mapper),  MP_ROM_PTR(&pin_mapper_obj) },
     { MP_ROM_QSTR(MP_QSTR_dict),    MP_ROM_PTR(&pin_map_dict_obj) },
+    #if PIN_DEBUG
     { MP_ROM_QSTR(MP_QSTR_debug),   MP_ROM_PTR(&pin_debug_obj) },
+    #endif
 
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&pin_board_pins_obj_type) },
