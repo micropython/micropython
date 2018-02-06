@@ -236,6 +236,38 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
+//|   .. method:: SPI.write_readinto(buffer_out, buffer_in)
+//|
+//|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
+STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *args) {
+    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
+
+    mp_buffer_info_t bufinfoin;
+    mp_get_buffer_raise(args[2], &bufinfoin, MP_BUFFER_WRITE);
+
+    if (bufinfoin.len == 0) {
+        return mp_const_none;
+    }
+
+    mp_buffer_info_t bufinfoout;
+    mp_get_buffer_raise(args[1], &bufinfoout, MP_BUFFER_READ);
+
+    if (bufinfoout.len != bufinfoin.len) {
+        mp_raise_ValueError("buffers must be of equal length");
+    }
+
+    bool ok = shared_module_bitbangio_spi_transfer(self,
+                                            ((uint8_t*)bufinfoout.buf),
+                                            ((uint8_t*)bufinfoin.buf),
+                                            bufinfoin.len);
+    if (!ok) {
+        mp_raise_OSError(MP_EIO);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_write_readinto_obj, 3, 3, bitbangio_spi_write_readinto);
+
 STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&bitbangio_spi_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -247,6 +279,7 @@ STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitbangio_spi_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&bitbangio_spi_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&bitbangio_spi_write_readinto_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitbangio_spi_locals_dict, bitbangio_spi_locals_dict_table);
 
