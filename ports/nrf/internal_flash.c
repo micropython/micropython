@@ -37,7 +37,10 @@
 #include "supervisor/shared/rgb_led_status.h"
 
 #include "nrf.h"
-#include "nrf_soc.h"
+
+#ifdef BLUETOOTH_SD
+#include "nrf_sdm.h"
+#endif
 
 // defined in linker
 extern uint32_t __fatfs_flash_start_addr[];
@@ -83,6 +86,8 @@ static uint32_t convert_block_to_flash_addr(uint32_t block) {
 }
 
 bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
+  uint8_t sd_en = 0;
+
 #ifdef MICROPY_HW_LED_MSC
   port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
 #endif
@@ -99,12 +104,48 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
   memcpy(buf, flash_align, FLASH_PAGE_SIZE);
   memcpy(buf + (dest%FLASH_PAGE_SIZE), src, FILESYSTEM_BLOCK_SIZE);
 
-  if (NRF_SUCCESS != sd_flash_page_erase(pagenum)) {
-    return false;
-  }
+#ifdef BLUETOOTH_SD
+  (void) sd_softdevice_is_enabled(&sd_en);
 
-  if (NRF_SUCCESS != sd_flash_write((uint32_t*) flash_align, (uint32_t*) buf, FLASH_PAGE_SIZE/4)) {
-    return false;
+  if (sd_en) {
+    if (NRF_SUCCESS != sd_flash_page_erase(pagenum)) {
+      return false;
+    }
+
+    if (NRF_SUCCESS != sd_flash_write((uint32_t*) flash_align, (uint32_t*) buf, FLASH_PAGE_SIZE / sizeof(uint32_t))) {
+      return false;
+    }
+  }
+#endif
+
+  if (!sd_en) {
+    // Erase
+    NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Een << NVMC_CONFIG_WEN_Pos);
+    while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+
+    NRF_NVMC->ERASEPAGE = dest;
+    while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+
+    NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
+    while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+
+    // Write
+    uint32_t *src = (uint32_t*) buf;
+    uint32_t i = 0;
+
+    while (i < (FLASH_PAGE_SIZE / sizeof(uint32_t))) {
+      NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos);
+      while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+
+      *flash_align++ = *src++;
+
+      while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+
+      NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
+      while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+
+      ++i;
+    }
   }
 
   clear_temp_status();

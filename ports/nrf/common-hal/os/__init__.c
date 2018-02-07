@@ -30,8 +30,11 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
+#ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
-#include "nrf_soc.h"
+#endif
+
+#include "nrf.h"
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
@@ -61,15 +64,15 @@ mp_obj_t common_hal_os_uname(void) {
 }
 
 bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
-  uint8_t sd_en = 0;
-  (void) sd_softdevice_is_enabled(&sd_en);
+#ifdef BLUETOOTH_SD
+    uint8_t sd_en = 0;
+    (void) sd_softdevice_is_enabled(&sd_en);
 
-  if ( sd_en )
-  {
-    return NRF_SUCCESS == sd_rand_application_vector_get(buffer,length);
-  }else
-  {
-    // SoftDevice is not enabled.
+    if (sd_en) {
+      return NRF_SUCCESS == sd_rand_application_vector_get(buffer,length);
+    }
+#endif
+
     NRF_RNG->EVENTS_VALRDY = 0;
     NRF_RNG->TASKS_START   = 1;
 
@@ -82,7 +85,6 @@ bool common_hal_os_urandom(uint8_t* buffer, uint32_t length) {
     }
 
     NRF_RNG->TASKS_STOP = 1;
-  }
 
-  return true;
+    return true;
 }
