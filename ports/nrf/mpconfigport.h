@@ -46,11 +46,7 @@
 #define MICROPY_ENABLE_SOURCE_LINE               (1)
 //CP UPDATE: See mpconfigport.h for LONGINT implementation
 #define MICROPY_LONGINT_IMPL                     (MICROPY_LONGINT_IMPL_MPZ)
-#if NRF51
-#define MICROPY_FLOAT_IMPL                       (MICROPY_FLOAT_IMPL_NONE)
-#else
 #define MICROPY_FLOAT_IMPL                       (MICROPY_FLOAT_IMPL_FLOAT)
-#endif
 
 #define MICROPY_OPT_COMPUTED_GOTO                (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
