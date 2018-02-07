@@ -14,8 +14,8 @@ MEMORY
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 40K;
-_minimum_heap_size = 128K;
- 
+_minimum_heap_size = 0;
+
 /* top end of the stack */
 
 /*_stack_end = ORIGIN(RAM) + LENGTH(RAM);*/
