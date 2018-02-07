@@ -60,7 +60,7 @@ source_parsers = {'.md': CommonMarkParser,
 
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2017, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = '2014-2018, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
@@ -83,42 +83,47 @@ version = release = '0.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["*/build-*",
+exclude_patterns = ["**/build-*",
                     ".venv",
-                    "atmel-samd/asf",
-                    "atmel-samd/asf_conf",
-                    "atmel-samd/common-hal",
-                    "atmel-samd/boards",
-                    "atmel-samd/QTouch",
-                    "atmel-samd/*.c",
-                    "atmel-samd/*.h",
-                    "bare-arm",
-                    "cc3200",
-                    "cc3200/FreeRTOS",
-                    "cc3200/hal",
                     "drivers",
-                    "esp8266",
                     "examples",
                     "extmod",
                     "frozen",
                     "lib",
-                    "minimal",
                     "mpy-cross",
-                    "pic16bit",
+                    "ports/*/*.c",
+                    "ports/*/*.h",
+                    "ports/*/boards",
+                    "ports/*/common-hal",
+                    "ports/*/supervisor",
+                    "ports/atmel-samd/asf4",
+                    "ports/atmel-samd/asf4_conf",
+                    "ports/atmel-samd/QTouch",
+                    "ports/bare-arm",
+                    "ports/cc3200",
+                    "ports/cc3200/FreeRTOS",
+                    "ports/cc3200/hal",
+                    "ports/esp8266",
+                    "ports/minimal",
+                    "ports/nrf/devices",
+                    "ports/nrf/drivers",
+                    "ports/nrf/hal",
+                    "ports/nrf/modules",
+                    "ports/pic16bit",
+                    "ports/qemu-arm",
+                    "ports/stm32",
+                    "ports/stm32/hal",
+                    "ports/stm32/cmsis",
+                    "ports/stm32/usbdev",
+                    "ports/stm32/usbhost",
+                    "ports/teensy",
+                    "ports/unix",
+                    "ports/windows",
+                    "ports/zephyr",
                     "py",
-                    "qemu-arm",
                     "shared-module",
-                    "stmhal",
-                    "stmhal/hal",
-                    "stmhal/cmsis",
-                    "stmhal/usbdev",
-                    "stmhal/usbhost",
-                    "teensy",
                     "tests",
-                    "tools",
-                    "unix",
-                    "windows",
-                    "zephyr"]
+                    "tools"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
