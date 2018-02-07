@@ -56,13 +56,6 @@ void internal_flash_init(void) {
         port_pin_set_config(MICROPY_HW_LED_MSC, &pin_conf);
         port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
     #endif
-
-    #ifdef SAMD51
-    hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
-    #endif
-    #ifdef SAMD21
-    _pm_enable_bus_clock(PM_BUS_APBB, NVMCTRL);
-    #endif
 //    flash_init(&internal_flash_desc, NVMCTRL);
 }
 

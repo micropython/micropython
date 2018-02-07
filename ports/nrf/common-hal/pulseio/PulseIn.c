@@ -28,19 +28,12 @@
 
 #include <stdint.h>
 
-//#include "asf/common2/services/delay/delay.h"
-//#include "asf/sam0/drivers/extint/extint.h"
-//#include "asf/sam0/drivers/extint/extint_callback.h"
-//#include "asf/sam0/drivers/port/port.h"
-
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-//#include "samd21_pins.h"
+
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
-
-//#include "tick.h"
 
 void pulsein_reset(void) {
 

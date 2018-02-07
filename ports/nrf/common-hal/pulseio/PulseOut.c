@@ -28,13 +28,10 @@
 
 #include <stdint.h>
 
-//#include "asf/sam0/drivers/tc/tc_interrupt.h"
-//#include "asf/sam0/drivers/port/port.h"
-
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-//#include "samd21_pins.h"
+
 #include "shared-bindings/pulseio/PulseOut.h"
 
 //void pulse_finish(struct tc_module *const module) {
