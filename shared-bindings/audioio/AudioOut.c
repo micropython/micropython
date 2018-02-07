@@ -187,7 +187,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 
 //|   .. attribute:: playing
 //|
-//|     True when the audio sample is being output.
+//|     True when the audio sample is being output. (read-only)
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);

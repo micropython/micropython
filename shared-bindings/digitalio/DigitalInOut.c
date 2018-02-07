@@ -253,7 +253,10 @@ const mp_obj_property_t digitalio_digitalinout_value_obj = {
 
 //|   .. attribute:: drive_mode
 //|
-//|     Get or set the pin drive mode.
+//|     The pin drive mode. One of:
+//|
+//|     - `digitalio.DriveMode.PUSH_PULL`
+//|     - `digitalio.DriveMode.OPEN_DRAIN`
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_drive_mode(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -295,10 +298,13 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
 
 //|   .. attribute:: pull
 //|
-//|     Get or set the pin pull. Values may be `digitalio.Pull.UP`,
-//|     `digitalio.Pull.DOWN` or ``None``.
+//|     The pin pull direction. One of:
 //|
-//|     :raises AttributeError: if the direction is ~`digitalio.Direction.OUTPUT`.
+//|     - `digitalio.Pull.UP`
+//|     - `digitalio.Pull.DOWN`
+//|     - `None`
+//|
+//|     :raises AttributeError: if `direction` is :py:data:`~digitalio.Direction.OUTPUT`.
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);

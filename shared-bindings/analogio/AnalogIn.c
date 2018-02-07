@@ -106,13 +106,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogin___exit___obj, 4, 4,
 
 //|   .. attribute:: value
 //|
-//|     Read the value on the analog pin and return it.  The returned value
-//|     will be between 0 and 65535 inclusive (16-bit). Even if the underlying
-//|     analog to digital converter (ADC) is lower resolution, the result will
-//|     be scaled to be 16-bit.
+//|     The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
 //|
-//|     :return: the data read
-//|     :rtype: int
+//|     Even if the underlying analog to digital converter (ADC) is lower
+//|     resolution, the value is 16-bit.
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_value(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -130,10 +127,8 @@ const mp_obj_property_t analogio_analogin_value_obj = {
 
 //|   .. attribute:: reference_voltage
 //|
-//|     The maximum voltage measurable. Also known as the reference voltage.
-//|
-//|     :return: the reference voltage
-//|     :rtype: float
+//|     The maximum voltage measurable (also known as the reference voltage) as a
+//|     `float` in Volts.
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);

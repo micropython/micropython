@@ -1,9 +1,7 @@
 Design Guide
 ============
 
-MicroPython has created a great foundation to build upon and to make it even
-better for beginners we've created CircuitPython. This guide covers a number of
-ways the core and libraries are geared towards beginners.
+This guide covers a variety of development practices for CircuitPython core and library APIs. Consistency with these practices ensures that beginners can learn a pattern once and apply it throughout the CircuitPython ecosystem.
 
 Start libraries with the cookiecutter
 -------------------------------------
@@ -164,20 +162,110 @@ After the license comment::
 Class description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Documenting what the object does::
+At the class level document what class does and how to initialize it::
 
     class DS3231:
-        """Interface to the DS3231 RTC."""
+        """DS3231 real-time clock.
+
+           :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
+           :param int address: The I2C address of the device.
+        """
+
+        def __init__(self, i2c_bus, address=0x40):
+            self._i2c = i2c_bus
+
 
 Renders as:
 
-.. py:class:: DS3231
-  :noindex:
+.. py:class:: DS3231(i2c_bus, address=64)
+    :noindex:
 
-  Interface to the DS3231 RTC.
+    DS3231 real-time clock.
+
+    :param ~busio.I2C i2c_bus: The I2C bus the DS3231 is connected to.
+    :param int address: The I2C address of the device.
+
+Attributes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Attributes are state on objects. (See `Getters/Setters` above for more discussion
+about when to use them.) They can be defined internally in a number of different
+ways. Each approach is enumerated below with an explanation of where the comment
+goes.
+
+Regardless of how the attribute is implemented, it should have a short
+description of what state it represents including the type, possible values and/or
+units. It should be marked as ``(read-only)`` or ``(write-only)`` at the end of
+the first line for attributes that are not both readable and writeable.
+
+Instance attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Comment comes from after the assignment::
+
+    def __init__(self, drive_mode):
+        self.drive_mode = drive_mode
+        """
+        The pin drive mode. One of:
+
+        - `digitalio.DriveMode.PUSH_PULL`
+        - `digitalio.DriveMode.OPEN_DRAIN`
+        """
+
+Renders as:
+
+.. py:attribute:: drive_mode
+    :noindex:
+
+    The pin drive mode. One of:
+
+    - `digitalio.DriveMode.PUSH_PULL`
+    - `digitalio.DriveMode.OPEN_DRAIN`
+
+Property description
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Comment comes from the getter::
+
+    @property
+    def datetime(self):
+        """The current date and time as a `time.struct_time`."""
+        return self.datetime_register
+
+    @datetime.setter
+    def datetime(self, value):
+        pass
+
+Renders as:
+
+.. py:attribute:: datetime
+    :noindex:
+
+    The current date and time as a `time.struct_time`.
+
+Read-only example::
+
+    @property
+    def temperature(self):
+        """
+        The current temperature in degrees Celcius. (read-only)
+
+        The device may require calibration to get accurate readings.
+        """
+        return self._read(TEMPERATURE)
+
+
+Renders as:
+
+.. py:attribute:: temperature
+    :noindex:
+
+    The current temperature in degrees Celcius. (read-only)
+
+    The device may require calibration to get accurate readings.
 
 Data descriptor description
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Comment is after even though its weird::
 
@@ -187,9 +275,9 @@ Comment is after even though its weird::
 Renders as:
 
 .. py:attribute:: lost_power
-  :noindex:
+    :noindex:
 
-  True if the device has lost power since the time was set.
+    True if the device has lost power since the time was set.
 
 Method description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -210,27 +298,6 @@ Renders as:
   Turns the bot ``degrees`` right.
 
   :param float degrees: Degrees to turn right
-
-Property description
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Comment comes from the getter::
-
-    @property
-    def datetime(self):
-        """The current date and time"""
-        return self.datetime_register
-
-    @datetime.setter
-    def datetime(self, value):
-        pass
-
-Renders as:
-
-.. py:attribute:: datetime
-  :noindex:
-
-  The current date and time
 
 Use BusDevice
 --------------------------------------------------------------------------------
