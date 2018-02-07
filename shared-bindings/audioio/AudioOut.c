@@ -101,7 +101,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     // We explicitly don't check whether the pin is free because multiple
     // AudioOuts may share it.
 
-    // create PWM object from the given pin
+    // create AudioOut object from the given pin
     audioio_audioout_obj_t *self = m_new_obj(audioio_audioout_obj_t);
     self->base.type = &audioio_audioout_type;
     mp_buffer_info_t bufinfo;
@@ -124,7 +124,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
 
 //|   .. method:: deinit()
 //|
-//|      Deinitialises the PWMOut and releases any hardware resources for reuse.
+//|      Deinitialises the AudioOut and releases any hardware resources for reuse.
 //|
 STATIC mp_obj_t audioio_audioout_deinit(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);

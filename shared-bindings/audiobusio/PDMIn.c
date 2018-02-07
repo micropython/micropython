@@ -146,7 +146,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
 
 //|   .. method:: deinit()
 //|
-//|      Deinitialises the PWMOut and releases any hardware resources for reuse.
+//|      Deinitialises the PDMIn and releases any hardware resources for reuse.
 //|
 STATIC mp_obj_t audiobusio_pdmin_deinit(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
