@@ -181,6 +181,9 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (0)
 
+// Scan gamepad every 32ms
+#define CIRCUITPY_GAMEPAD_TICKS 0x1f
+
 // if sdk is in use, import configuration
 #if BLUETOOTH_SD
 #include "bluetooth_conf.h"
@@ -223,6 +226,7 @@ extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
+extern const struct _mp_obj_module_t gamepad_module;
 
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t machine_module;
@@ -269,6 +273,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         },\
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
     { MP_ROM_QSTR     (MP_QSTR_pyb             ), MP_ROM_PTR(&pyb_module)           }, \
     { MP_ROM_QSTR     (MP_QSTR_utime           ), MP_ROM_PTR(&mp_module_utime)      }, \

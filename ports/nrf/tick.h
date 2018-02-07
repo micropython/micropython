@@ -23,22 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_NRF_TICK_H
+#define MICROPY_INCLUDED_NRF_TICK_H
 
-#include <string.h>
-#include <stdbool.h>
+#include "mpconfigport.h"
 
-#include "nrf.h"
+#include <stdint.h>
 
-#include "boards/board.h"
+extern volatile uint64_t ticks_ms;
 
-void board_init(void) {
+extern struct timer_descriptor ms_timer;
 
-}
+void tick_init(void);
 
-bool board_requests_safe_mode(void) {
-  return false;
-}
+void tick_delay(uint32_t us);
 
-void reset_board(void) {
+void current_tick(uint64_t* ms, uint32_t* us_until_ms);
+// Do not call this with interrupts disabled because it may be waiting for
+// ticks_ms to increment.
+void wait_until(uint64_t ms, uint32_t us_until_ms);
 
-}
+#endif  // MICROPY_INCLUDED_NRF_TICK_H

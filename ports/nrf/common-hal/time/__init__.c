@@ -27,7 +27,7 @@
 #include "py/mphal.h"
 
 #include "shared-bindings/time/__init__.h"
-#include "boards/board.h"
+#include "tick.h"
 
 inline uint64_t common_hal_time_monotonic() {
   return ticks_ms;
