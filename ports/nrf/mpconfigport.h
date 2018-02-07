@@ -124,6 +124,7 @@
 #define MICROPY_PY_UHEAPQ                        (0)
 #define MICROPY_PY_UHASHLIB                      (0)
 #define MICROPY_PY_UTIME_MP_HAL                  (1)
+#define MICROPY_PY_STRUCT                        (0)
 #define MICROPY_PY_MACHINE                       (1)
 #define MICROPY_PY_MACHINE_PULSE                 (0)
 #define MICROPY_PY_MACHINE_I2C_MAKE_NEW          machine_hard_i2c_make_new
@@ -224,6 +225,7 @@ extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
 extern const struct _mp_obj_module_t storage_module;
+extern const struct _mp_obj_module_t struct_module;
 extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
@@ -272,6 +274,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_os              ), (mp_obj_t)&os_module              }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         },\
+    { MP_OBJ_NEW_QSTR (MP_QSTR_struct          ), (mp_obj_t)&struct_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
