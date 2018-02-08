@@ -231,6 +231,16 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d\n", MP_OBJ_IS_QSTR(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
     }
 
+    // bytearray
+    {
+        mp_printf(&mp_plat_print, "# bytearray\n");
+
+        // create a bytearray via mp_obj_new_bytearray
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(mp_obj_new_bytearray(4, "data"), &bufinfo, MP_BUFFER_RW);
+        mp_printf(&mp_plat_print, "%.*s\n", bufinfo.len, bufinfo.buf);
+    }
+
     // mpz
     {
         mp_printf(&mp_plat_print, "# mpz\n");

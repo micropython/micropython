@@ -34,6 +34,8 @@ ementation
 (start=1, stop=2, step=3)
 # str
 1
+# bytearray
+data
 # mpz
 1
 12345678
