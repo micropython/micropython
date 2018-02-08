@@ -129,7 +129,6 @@
 #define MICROPY_PY_MACHINE_PULSE                 (0)
 #define MICROPY_PY_MACHINE_I2C_MAKE_NEW          machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI                   (0)
-#define MICROPY_PY_MACHINE_SPI_MIN_DELAY         (0)
 #define MICROPY_PY_FRAMEBUF                      (0)
 
 #define MICROPY_KBD_EXCEPTION                    (1)
@@ -217,6 +216,7 @@ typedef long mp_off_t;
 // extra built in modules to add to the list of known ones
 
 extern const struct _mp_obj_module_t microcontroller_module;
+extern const struct _mp_obj_module_t bitbangio_module;
 extern const struct _mp_obj_module_t analogio_module;
 extern const struct _mp_obj_module_t digitalio_module;
 extern const struct _mp_obj_module_t pulseio_module;
@@ -271,6 +271,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_digitalio       ), (mp_obj_t)&digitalio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_pulseio         ), (mp_obj_t)&pulseio_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_microcontroller ), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR (MP_QSTR_bitbangio       ), (mp_obj_t)&bitbangio_module       }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_os              ), (mp_obj_t)&os_module              }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_random          ), (mp_obj_t)&random_module          }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_storage         ), (mp_obj_t)&storage_module         },\
