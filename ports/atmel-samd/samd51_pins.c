@@ -251,7 +251,11 @@ PIN(PB07, EXTINT_CHANNEL(7), NO_ADC, ADC_INPUT(9),
 PIN(PB08, EXTINT_CHANNEL(8), ADC_INPUT(2), ADC_INPUT(0), TOUCH(1),
     NO_SERCOM,
     SERCOM(4, 0),
+    #ifdef TC4
     TC(TC4, 0),
+    #else
+    NO_TIMER,
+    #endif
     NO_TIMER,
     NO_TIMER);
 #endif
@@ -259,7 +263,11 @@ PIN(PB08, EXTINT_CHANNEL(8), ADC_INPUT(2), ADC_INPUT(0), TOUCH(1),
 PIN(PB09, EXTINT_CHANNEL(9), ADC_INPUT(3), ADC_INPUT(1), TOUCH(2),
     NO_SERCOM,
     SERCOM(4, 1),
+    #ifdef TC4
     TC(TC4, 1),
+    #else
+    NO_TIMER,
+    #endif
     NO_TIMER,
     NO_TIMER);
 #endif

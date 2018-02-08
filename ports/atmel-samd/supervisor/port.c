@@ -119,12 +119,13 @@ safe_mode_t port_init(void) {
     // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
     // Output clocks for debugging.
-    #ifdef SAMD51
-    gpio_set_pin_function(PIN_PA10, GPIO_PIN_FUNCTION_M); // GCLK4, D3
-    gpio_set_pin_function(PIN_PA11, GPIO_PIN_FUNCTION_M); // GCLK5, A4
-    gpio_set_pin_function(PIN_PB14, GPIO_PIN_FUNCTION_M); // GCLK0, D5
-    gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
-    #endif
+    // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
+    // #ifdef SAMD51
+    // gpio_set_pin_function(PIN_PA10, GPIO_PIN_FUNCTION_M); // GCLK4, D3
+    // gpio_set_pin_function(PIN_PA11, GPIO_PIN_FUNCTION_M); // GCLK5, A4
+    // gpio_set_pin_function(PIN_PB14, GPIO_PIN_FUNCTION_M); // GCLK0, D5
+    // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
+    // #endif
 
     // Init the nvm controller.
     // struct nvm_config config_nvm;
