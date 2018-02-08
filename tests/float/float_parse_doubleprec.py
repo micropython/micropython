@@ -14,3 +14,8 @@ print(float('.' + '9' * 400 + 'e-100'))
 print(float('.' + '0' * 400 + '9e100'))
 print(float('.' + '0' * 400 + '9e200'))
 print(float('.' + '0' * 400 + '9e400'))
+
+# ensure that accuracy is retained when value is close to a subnormal
+print(float('1.00000000000000000000e-307'))
+print(float('10.0000000000000000000e-308'))
+print(float('100.000000000000000000e-309'))
