@@ -1,13 +1,20 @@
 Design Guide
 ============
 
-This guide covers a variety of development practices for CircuitPython core and library APIs. Consistency with these practices ensures that beginners can learn a pattern once and apply it throughout the CircuitPython ecosystem.
+This guide covers a variety of development practices for CircuitPython core and library APIs. These
+APIs are both `built-into CircuitPython
+<https://github.com/adafruit/circuitpython/tree/master/shared-bindings>`_ and those that are
+`distributed on GitHub <https://github.com/search?utf8=%E2%9C%93&q=topic%3Acircuitpython&type=>`_
+and in the `Adafruit <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_ and `Community
+<https://github.com/adafruit/CircuitPython_Community_Bundle/>`_ bundles. Consistency with these
+practices ensures that beginners can learn a pattern once and apply it throughout the CircuitPython
+ecosystem.
 
 Start libraries with the cookiecutter
 -------------------------------------
 
-Cookiecutter is a cool tool that lets you bootstrap a new repo based on another
-repo. We've made one `here <https://github.com/adafruit/cookiecutter-adafruit-circuitpython>`_
+Cookiecutter is a tool that lets you bootstrap a new repo based on another repo.
+We've made one `here <https://github.com/adafruit/cookiecutter-adafruit-circuitpython>`_
 for CircuitPython libraries that include configs for Travis CI and ReadTheDocs
 along with a setup.py, license, code of conduct and readme.
 
@@ -18,6 +25,10 @@ along with a setup.py, license, code of conduct and readme.
 
     cookiecutter gh:adafruit/cookiecutter-adafruit-circuitpython
 
+Cookiecutter will provide a series of prompts relating to the library and then create a new
+directory with all of the files. See `the CircuitPython cookiecutter README
+<https://github.com/adafruit/cookiecutter-adafruit-circuitpython#introduction>`_ for more details.
+
 Module Naming
 -------------
 
@@ -26,7 +37,11 @@ Adafruit funded libraries should be under the
 ``Adafruit_CircuitPython_<name>`` and have a corresponding ``adafruit_<name>``
 directory (aka package) or ``adafruit_<name>.py`` file (aka module).
 
-Community created libraries should have the format ``CircuitPython_<name>`` and
+If the name would normally have a space, such as "Thermal Printer", use an underscore instead
+("Thermal_Printer"). This underscore will be used everywhere even when the separation between
+"adafruit" and "circuitpython" is done with a ``-``. Use the underscore in the cookiecutter prompts.
+
+Community created libraries should have the repo format ``CircuitPython_<name>`` and
 not have the ``adafruit_`` module or package prefix.
 
 Both should have the CircuitPython repository topic on GitHub.
@@ -88,7 +103,7 @@ Verify your device
 --------------------------------------------------------------------------------
 
 Whenever possible, make sure device you are talking to is the device you expect.
-If not, raise a ValueError. Beware that I2C addresses can be identical on
+If not, raise a RuntimeError. Beware that I2C addresses can be identical on
 different devices so read registers you know to make sure they match your
 expectation. Validating this upfront will help catch mistakes.
 
@@ -122,6 +137,18 @@ not add non-CPython APIs to the same modules. Instead, use separate non-CPython
 modules to add extra functionality. By distinguishing API boundaries at modules
 you increase the likelihood that incorrect expectations are found on import and
 not randomly during runtime.
+
+When adding a new module for additional functionality related to a CPython
+module do NOT simply prefix it with u. This is not a large enough differentiation
+from CPython. This is the MicroPython convention and they use u* modules
+interchangeably with the CPython name. This is confusing. Instead, think up a
+new name that is related to the extra functionality you are adding.
+
+For example, storage mounting and unmounting related functions were moved from
+``uos`` into a new `storage` module. Terminal related functions were moved into
+`multiterminal`. These names better match their functionality and do not
+conflict with CPython names. Make sure to check that you don't conflict with
+CPython libraries too. That way we can port the API to CPython in the future.
 
 Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -196,7 +223,7 @@ goes.
 Regardless of how the attribute is implemented, it should have a short
 description of what state it represents including the type, possible values and/or
 units. It should be marked as ``(read-only)`` or ``(write-only)`` at the end of
-the first line for attributes that are not both readable and writeable.
+the first line for attributes that are not both readable and writable.
 
 Instance attributes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,7 +275,7 @@ Read-only example::
     @property
     def temperature(self):
         """
-        The current temperature in degrees Celcius. (read-only)
+        The current temperature in degrees Celsius. (read-only)
 
         The device may require calibration to get accurate readings.
         """
@@ -260,7 +287,7 @@ Renders as:
 .. py:attribute:: temperature
     :noindex:
 
-    The current temperature in degrees Celcius. (read-only)
+    The current temperature in degrees Celsius. (read-only)
 
     The device may require calibration to get accurate readings.
 
@@ -464,14 +491,14 @@ properties.
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``datetime``          | time.struct           | date and time                                                           |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
-
-Common APIs
---------------------------------------------------------------------------------
-
-Outside of sensors, having common methods amongst drivers for similar devices
-such as devices can be really useful. Its early days however. For now, try to
-adhere to guidelines in this document. Once a design is settled on, add it as a
-subsection to this one.
+| ``duty_cycle``        | int                   | 16-bit PWM duty cycle (regardless of output resolution)                 |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``frequency``         | int                   | Hertz                                                                   |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``value``             | bool                  | Digital logic                                                           |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``value``             | int                   | 16-bit Analog value, unit-less                                          |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
 
 Adding native modules
 --------------------------------------------------------------------------------
