@@ -1,12 +1,13 @@
 /*
-    GNU linker script for SAMD51
+    GNU linker script for SAMD51x20 (1MB flash, 256K RAM)
 */
 
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000 + 0x4000, LENGTH = 0x00100000 - 0x4000 /* Leave 16KiB for the bootloader. */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x00040000 /* 256 KiB */
+    /* Leave 16KiB for the bootloader. */
+    FLASH (rx) : ORIGIN = 0x00000000 + 16K, LENGTH = 1M - 16K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 256K
 }
 
 /* top end of the stack */
@@ -29,14 +30,14 @@ SECTIONS
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
 
         . = ALIGN(4);
-        _etext = .;        /* define a global symbol at end of code */
     } >FLASH
 
     .ARM.exidx :
     {
         *(.ARM.exidx*)
         *(.gnu.linkonce.armexidx.*)
-        _sidata = .;  /* This is used by the startup in order to initialize the .data section */
+        _etext = .;        /* define a global symbol at end of code */
+        _sidata = .;       /* start of .data section */
     } > FLASH
 
     /* This is the initialized data section
@@ -75,7 +76,7 @@ SECTIONS
     .stack :
     {
         . = ALIGN(4);
-        . = . + 0x800; /* Reserve a minimum of 2K for the stack. */
+        . = . + 2K; /* Reserve a minimum of 2K for the stack. */
         . = ALIGN(4);
     } >RAM
 

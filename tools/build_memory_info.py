@@ -24,7 +24,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import re
 import sys
+
+# Handle size constants with K or M suffixes (allowed in .ld but not in Python).
+K_PATTERN = re.compile(r'([0-9]+)K')
+K_REPLACE = r'(\1*1024)'
+
+M_PATTERN = re.compile(r'([0-9]+)M')
+M_REPLACE = r'(\1*1024*1024)'
 
 print()
 
@@ -49,6 +57,8 @@ for region in regions:
     space = regions[region]
     if "/*" in space:
         space = space.split("/*")[0]
+    space = K_PATTERN.sub(K_REPLACE, space)
+    space = M_PATTERN.sub(M_REPLACE, space)
     regions[region] = eval(space)
 
 free_flash = regions["FLASH"] - text - data

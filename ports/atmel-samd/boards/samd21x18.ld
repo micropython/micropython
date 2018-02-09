@@ -1,13 +1,13 @@
 /*
-    GNU linker script for SAMD21
+    GNU linker script for SAMD21x18 (256K flash, 32K RAM)
 */
 
 /* Specify the memory areas */
 MEMORY
 {
     /* Leave 256b for internal config, 64k for the flash file system and 256b for user config. */
-    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00040000 - 0x100 - 0x010000
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 256K - 256 - 64K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 32K
 }
 
 /* top end of the stack */
@@ -29,11 +29,17 @@ SECTIONS
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
 
         . = ALIGN(4);
-        _etext = .;        /* define a global symbol at end of code */
-        _sidata = _etext;  /* This is used by the startup in order to initialize the .data section */
     } >FLASH
 
-    /* This is the initialized data section
+    .ARM.exidx :
+    {
+        *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+        _etext = .;        /* define a global symbol at end of code */
+        _sidata = .;       /* start of .data section */
+    } > FLASH
+
+/* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
@@ -69,7 +75,7 @@ SECTIONS
     .stack :
     {
         . = ALIGN(4);
-        . = . + 0x800; /* Reserve a minimum of 2K for the stack. */
+        . = . + 2K; /* Reserve a minimum of 2K for the stack. */
         . = ALIGN(4);
     } >RAM
 
