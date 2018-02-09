@@ -294,7 +294,7 @@ Renders as:
 Data descriptor description
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Comment is after even though its weird::
+Comment is after the definition::
 
     lost_power = i2c_bit.RWBit(0x0f, 7)
     """True if the device has lost power since the time was set."""
