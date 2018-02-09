@@ -277,7 +277,6 @@ SRC_COMMON_HAL = \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
 	busio/UART.c \
-	neopixel_write/__init__.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
 	pulseio/__init__.c \
