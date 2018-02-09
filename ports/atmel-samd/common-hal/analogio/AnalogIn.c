@@ -114,12 +114,12 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     adc_sync_set_channel_gain(&adc, self->channel, ADC_INPUTCTRL_GAIN_DIV2_Val);
 
     // Load the factory calibration
-    hri_adc_set_CALIB_BIAS_CAL_bf(ADC, (*((uint32_t*) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos);
+    hri_adc_write_CALIB_BIAS_CAL_bf(ADC, (*((uint32_t*) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos);
     // Bits 7:5
     uint16_t linearity = ((*((uint32_t*) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
     // Bits 4:0
     linearity |= (*((uint32_t*) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
-    hri_adc_set_CALIB_LINEARITY_CAL_bf(ADC, linearity);
+    hri_adc_write_CALIB_LINEARITY_CAL_bf(ADC, linearity);
     #endif
 
     // SAMD51 has a CALIB register but doesn't have documented fuses for them.
@@ -136,9 +136,9 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         biasr2r = ((*(uint32_t*) ADC1_FUSES_BIASR2R_ADDR) & ADC1_FUSES_BIASR2R_Msk) >> ADC1_FUSES_BIASR2R_Pos;
         biascomp = ((*(uint32_t*) ADC1_FUSES_BIASCOMP_ADDR) & ADC1_FUSES_BIASCOMP_Msk) >> ADC1_FUSES_BIASCOMP_Pos;
     }
-    hri_adc_set_CALIB_BIASREFBUF_bf(self->instance, biasrefbuf);
-    hri_adc_set_CALIB_BIASR2R_bf(self->instance, biasr2r);
-    hri_adc_set_CALIB_BIASCOMP_bf(self->instance, biascomp);
+    hri_adc_write_CALIB_BIASREFBUF_bf(self->instance, biasrefbuf);
+    hri_adc_write_CALIB_BIASR2R_bf(self->instance, biasr2r);
+    hri_adc_write_CALIB_BIASCOMP_bf(self->instance, biascomp);
     #endif
 
     adc_sync_enable_channel(&adc, self->channel);
