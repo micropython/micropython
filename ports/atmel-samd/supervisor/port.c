@@ -43,7 +43,8 @@
 #include "hri/hri_rstc_d51.h"
 #endif
 
-
+#include "common-hal/analogio/AnalogIn.h"
+#include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "tick.h"
 
@@ -207,16 +208,14 @@ void reset_port(void) {
 //     pulseout_reset();
 //     pwmout_reset();
 // #endif
-//
-//     analogin_reset();
-//
+
+    analogin_reset();
+
 // #ifdef CIRCUITPY_GAMEPAD_TICKS
 //     gamepad_reset();
 // #endif
 //
-//     // Wait for the DAC to sync then reset.
-//     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
-//     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;
+    analogout_reset();
 
     reset_all_pins();
 //
@@ -276,9 +275,9 @@ void reset_port(void) {
  */
 __attribute__((used)) void HardFault_Handler(void)
 {
-	while (true) {
+    while (true) {
         asm("");
-	}
+    }
     for (uint32_t i = 0; i < 100000; i++) {
         asm("noop;");
     }

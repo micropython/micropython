@@ -168,7 +168,9 @@ endif
 SRC_ASF := \
 	gcc/gcc/startup_$(CHIP_FAMILY).c \
 	gcc/system_$(CHIP_FAMILY).c \
+	hal/src/hal_adc_sync.c \
 	hal/src/hal_atomic.c \
+	hal/src/hal_dac_sync.c \
 	hal/src/hal_delay.c \
 	hal/src/hal_flash.c \
 	hal/src/hal_i2c_m_sync.c \
@@ -177,7 +179,9 @@ SRC_ASF := \
 	hal/src/hal_spi_m_sync.c \
 	hal/src/hal_timer.c \
 	hal/src/hal_usb_device.c \
+	hpl/adc/hpl_adc.c \
 	hpl/core/hpl_init.c \
+	hpl/dac/hpl_dac.c \
 	hpl/gclk/hpl_gclk.c \
 	hpl/nvmctrl/hpl_nvmctrl.c \
 	hpl/pm/hpl_pm.c \
@@ -265,10 +269,10 @@ SRC_COMMON_HAL = \
 	os/__init__.c \
 	storage/__init__.c \
 	time/__init__.c \
-#	analogio/__init__.c \
+	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
-	audiobusio/__init__.c \
+#	audiobusio/__init__.c \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
