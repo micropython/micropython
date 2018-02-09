@@ -1,12 +1,13 @@
 /*
-    GNU linker script for SAMD21
+    GNU linker script for SAMD21x18 (256K flash, 32K RAM)
 */
 
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000 + 0x2000, LENGTH = 0x00040000 - 0x2000 - 0x100 /* Leave 8KiB for the bootloader and 256b for user config. */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 0x008000 /* 32 KiB */
+    /* Leave 8KiB for the bootloader and 256b for user config. */
+    FLASH (rx) : ORIGIN = 0x00000000 + 8K, LENGTH = 256K - 8K - 256
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 32K /* 32 KiB RAM */
 }
 
 /* top end of the stack */
@@ -29,21 +30,21 @@ SECTIONS
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
 
         . = ALIGN(4);
-        _etext = .;        /* define a global symbol at end of code */
     } >FLASH
 
     .ARM.exidx :
     {
         *(.ARM.exidx*)
         *(.gnu.linkonce.armexidx.*)
-        _sidata = .;  /* This is used by the startup in order to initialize the .data section */
+        _etext = .;        /* define a global symbol at end of code */
+        _sidata = .;       /* start of .data section */
     } > FLASH
 
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
-    .data : AT ( _sidata )
+    .data : AT ( _etext )
     {
         . = ALIGN(4);
         _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
@@ -75,7 +76,7 @@ SECTIONS
     .stack :
     {
         . = ALIGN(4);
-        . = . + 0x800; /* Reserve a minimum of 2K for the stack. */
+        . = . + 2K; /* Reserve a minimum of 2K for the stack. */
         . = ALIGN(4);
     } >RAM
 
