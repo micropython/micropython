@@ -38,24 +38,29 @@
 #  define _TCC_SIZE(n,unused)              TPASTE3(TCC,n,_SIZE),
 #  define TCC_SIZES         { MREPEAT(TCC_INST_NUM, _TCC_SIZE, 0) }
 
-uint32_t target_timer_frequencies[TC_INST_NUM + TCC_INST_NUM];
-static uint32_t timer_periods[TC_INST_NUM + TCC_INST_NUM];
-uint8_t timer_refcount[TC_INST_NUM + TCC_INST_NUM];
+static uint32_t tcc_periods[TCC_INST_NUM];
+static uint32_t tc_periods[TC_INST_NUM];
+
+uint32_t target_tcc_frequencies[TCC_INST_NUM];
+uint8_t tcc_refcount[TCC_INST_NUM];
 const uint16_t prescaler[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
 
 // This bitmask keeps track of which channels of a TCC are currently claimed.
+#ifdef SAMD21
 uint8_t tcc_channels[3] = {0xf0, 0xfc, 0xfc};
+uint8_t tcc_cc_num[3] = {4, 2, 2};
+#endif
+#ifdef SAMD51
+uint8_t tcc_channels[5] = {0xc0, 0xf0, 0xf8, 0xfc, 0xfc};
+uint8_t tcc_cc_num[5] = {6, 4, 3, 2, 2};
+Tcc* tcc_insts[TCC_INST_NUM] = TCC_INSTS;
+#endif
 
 void pwmout_reset(void) {
-    // Reset all but TC5
-    for (int i = 0; i < TC_INST_NUM + TCC_INST_NUM; i++) {
-        if (i == 5) {
-            target_timer_frequencies[i] = 1000;
-            timer_refcount[i] = 1;
-        } else {
-            target_timer_frequencies[i] = 0;
-            timer_refcount[i] = 0;
-        }
+    // Reset all timers
+    for (int i = 0; i < TCC_INST_NUM; i++) {
+        target_timer_frequencies[i] = 0;
+        timer_refcount[i] = 0;
     }
     Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
     for (int i = 0; i < TCC_INST_NUM; i++) {
@@ -65,32 +70,45 @@ void pwmout_reset(void) {
             while (tccs[i]->SYNCBUSY.bit.ENABLE == 1) {
             }
         }
-        // TODO(tannewt): Make this depend on the CMSIS.
-        if (i == 0) {
-            tcc_channels[i] = 0xf0;
-        } else {
-            tcc_channels[i] = 0xfc;
+        uint8_t mask = 0xff;
+        for (uint8_t j = 0; j < tcc_cc_num[i]; j++) {
+            mask <<= 1;
         }
+        tcc_channels[i] = 0xf0;
         tccs[i]->CTRLA.bit.SWRST = 1;
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
     for (int i = 0; i < TC_INST_NUM; i++) {
-        if (tcs[i] == TC5) {
-            continue;
-        }
         tcs[i]->COUNT16.CTRLA.bit.SWRST = 1;
         while (tcs[i]->COUNT16.CTRLA.bit.SWRST == 1) {
         }
     }
 }
 
+static uint8_t tcc_channel(uint8_t timer_index, uint8_t wave_output) {
+    // For the SAMD51 this hardcodes the use of OTMX == 0x0, the output matrix mapping, which uses
+    // SAMD21-style modulo mapping.
+    return t->wave_output % tcc_cc_num[index];
+}
+
 bool channel_ok(const pin_timer_t* t, uint8_t index) {
-    return (!t->is_tc && (tcc_channels[index] & (1 << t->channel)) == 0) ||
+    uint8_t channel_bit = 1 << tcc_channel(index, t->wave_output);
+    return (!t->is_tc && ((tcc_channels[index] & channel_bit) == 0)) ||
             t->is_tc;
 }
 
-static uint8_t timer_index(uint32_t base_timer_address) {
+static uint8_t timer_index(Tcc* base_timer_address) {
+    #ifdef SAMD21
     return (base_timer_address - ((uint32_t) TCC0)) / 0x400;
+    #endif
+    // TCCs are scattered through the memory map of the SAMD51 so use a loop.
+    #ifdef SAMD51
+    for (uint8_t i = 0; i < TCC_INST_NUM; i++) {
+        if (base_timer_address == tcc_insts[i]) {
+            return i;
+        }
+    }
+    #endif
 }
 
 void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
@@ -185,32 +203,32 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         }
         timer_periods[index] = top;
         if (t->is_tc) {
-            struct tc_config config_tc;
-            tc_get_config_defaults(&config_tc);
+            // struct tc_config config_tc;
+            // tc_get_config_defaults(&config_tc);
+            //
+            // config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
+            // config_tc.clock_prescaler = TC_CTRLA_PRESCALER(divisor);
+            // config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_PWM;
+            // config_tc.counter_16_bit.compare_capture_channel[0] = top;
 
-            config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
-            config_tc.clock_prescaler = TC_CTRLA_PRESCALER(divisor);
-            config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_PWM;
-            config_tc.counter_16_bit.compare_capture_channel[0] = top;
-
-            enum status_code status = tc_init(&self->tc_instance, t->tc, &config_tc);
-            if (status != STATUS_OK) {
-                mp_raise_RuntimeError("Failed to init timer");
-            }
-            tc_enable(&self->tc_instance);
+            // enum status_code status = tc_init(&self->tc_instance, t->tc, &config_tc);
+            // if (status != STATUS_OK) {
+            //     mp_raise_RuntimeError("Failed to init timer");
+            // }
+            // tc_enable(&self->tc_instance);
         } else {
-            struct tcc_config config_tcc;
-            tcc_get_config_defaults(&config_tcc, t->tcc);
-
-            config_tcc.counter.clock_prescaler = divisor;
-            config_tcc.counter.period = top;
-            config_tcc.compare.wave_generation = TCC_WAVE_GENERATION_SINGLE_SLOPE_PWM;
-
-            enum status_code status = tcc_init(&self->tcc_instance, t->tcc, &config_tcc);
-            if (status != STATUS_OK) {
-                mp_raise_RuntimeError("Failed to init timer");
-            }
-            tcc_enable(&self->tcc_instance);
+            // struct tcc_config config_tcc;
+            // tcc_get_config_defaults(&config_tcc, t->tcc);
+            //
+            // config_tcc.counter.clock_prescaler = divisor;
+            // config_tcc.counter.period = top;
+            // config_tcc.compare.wave_generation = TCC_WAVE_GENERATION_SINGLE_SLOPE_PWM;
+            //
+            // enum status_code status = tcc_init(&self->tcc_instance, t->tcc, &config_tcc);
+            // if (status != STATUS_OK) {
+            //     mp_raise_RuntimeError("Failed to init timer");
+            // }
+            // tcc_enable(&self->tcc_instance);
         }
 
         target_timer_frequencies[index] = frequency;
@@ -222,18 +240,18 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             // We're changing frequency so claim all of the channels.
             tcc_channels[index] = 0xff;
         } else {
-            tcc_channels[index] |= (1 << t->channel);
+            tcc_channels[index] |= (1 << tcc_channel(index, t->channel));
         }
     }
 
     self->timer = t;
 
     // Connect the wave output to the outside world.
-    struct system_pinmux_config pin_config;
-    system_pinmux_get_config_defaults(&pin_config);
-    pin_config.mux_position = &self->pin->primary_timer == t ? MUX_E : MUX_F;
-    pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
-    system_pinmux_pin_set_config(pin->pin, &pin_config);
+    //struct system_pinmux_config pin_config;
+    //system_pinmux_get_config_defaults(&pin_config);
+    //pin_config.mux_position = &self->pin->primary_timer == t ? MUX_E : MUX_F;
+    //pin_config.direction = SYSTEM_PINMUX_PIN_DIR_OUTPUT;
+    //system_pinmux_pin_set_config(pin->pin, &pin_config);
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
 }
@@ -250,20 +268,20 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     uint8_t index = (((uint32_t) t->tcc) - ((uint32_t) TCC0)) / 0x400;
     timer_refcount[index]--;
     if (!t->is_tc) {
-        tcc_channels[index] &= ~(1 << t->channel);
+        tcc_channels[index] &= ~(1 << tcc_channel(index, t->wave_output));
     }
     if (timer_refcount[index] == 0) {
         target_timer_frequencies[index] = 0;
         if (t->is_tc) {
-            tc_disable(&self->tc_instance);
+            //tc_disable(&self->tc_instance);
         } else {
             if (t->tcc == TCC0) {
                 tcc_channels[index] = 0xf0;
             } else {
                 tcc_channels[index] = 0xfc;
             }
-            tcc_disable(&self->tcc_instance);
-            tcc_reset(&self->tcc_instance);
+            //tcc_disable(&self->tcc_instance);
+            //tcc_reset(&self->tcc_instance);
         }
     }
     reset_pin(self->pin->pin);
@@ -276,31 +294,32 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
     if (t->is_tc) {
         index = timer_index((uint32_t) self->timer->tc);
         uint16_t adjusted_duty = timer_periods[index] * duty / 0xffff;
-        tc_set_compare_value(&self->tc_instance, t->channel, adjusted_duty);
+        //tc_set_compare_value(&self->tc_instance, t->channel, adjusted_duty);
     } else {
         index = timer_index((uint32_t) self->timer->tcc);
         uint32_t adjusted_duty = ((uint64_t) timer_periods[index]) * duty / 0xffff;
-        tcc_set_compare_value(&self->tcc_instance, t->channel, adjusted_duty);
+        //tcc_set_compare_value(&self->tcc_instance, t->channel, adjusted_duty);
     }
 }
 
 uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
-        while (tc_is_syncing(&self->tc_instance)) {
-            /* Wait for sync */
-        }
-        uint16_t cv = t->tc->COUNT16.CC[t->channel].reg;
+        // while (tc_is_syncing(&self->tc_instance)) {
+        //     /* Wait for sync */
+        // }
+        uint16_t cv = t->tc->COUNT16.CC[t->wave_output].reg;
         return cv * 0xffff / timer_periods[timer_index((uint32_t) self->timer->tc)];
     } else {
+        uint8_t channel = tcc_channel(timer_index(t->tcc), t->wave_output);
         uint32_t cv = 0;
-        if ((t->tcc->STATUS.vec.CCBV & (1 << t->channel)) != 0) {
-            cv = t->tcc->CCB[t->channel].reg;
+        if ((t->tcc->STATUS.vec.CCBV & (1 << channel)) != 0) {
+            cv = t->tcc->CCB[channel].reg;
         } else {
-            cv = t->tcc->CC[t->channel].reg;
+            cv = t->tcc->CC[channel].reg;
         }
 
-        uint32_t duty_cycle = ((uint64_t) cv) * 0xffff / timer_periods[timer_index((uint32_t) self->timer->tcc)];
+        uint32_t duty_cycle = ((uint64_t) cv) * 0xffff / timer_periods[timer_index(t->tcc)];
 
         return duty_cycle;
     }
@@ -332,31 +351,31 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
     uint8_t old_divisor;
     uint8_t index;
     if (t->is_tc) {
-        index = timer_index((uint32_t) self->timer->tc);
+        index = timer_index(t->tc);
         old_divisor = t->tc->COUNT16.CTRLA.bit.PRESCALER;
     } else {
-        index = timer_index((uint32_t) self->timer->tcc);
+        index = timer_index(t->tcc);
         old_divisor = t->tcc->CTRLA.bit.PRESCALER;
     }
     if (new_divisor != old_divisor) {
         if (t->is_tc) {
-            tc_disable(&self->tc_instance);
+            //tc_disable(&self->tc_instance);
             t->tc->COUNT16.CTRLA.bit.PRESCALER = new_divisor;
-            tc_enable(&self->tc_instance);
+            //tc_enable(&self->tc_instance);
         } else {
-            tcc_disable(&self->tcc_instance);
+            //tcc_disable(&self->tcc_instance);
             t->tcc->CTRLA.bit.PRESCALER = new_divisor;
-            tcc_enable(&self->tcc_instance);
+            //tcc_enable(&self->tcc_instance);
         }
     }
     timer_periods[index] = new_top;
     if (t->is_tc) {
-        while (tc_is_syncing(&self->tc_instance)) {
-            /* Wait for sync */
-        }
+        // while (tc_is_syncing(&self->tc_instance)) {
+        //     /* Wait for sync */
+        // }
         t->tc->COUNT16.CC[0].reg = new_top;
     } else {
-        tcc_set_top_value(&self->tcc_instance, new_top);
+        //tcc_set_top_value(&self->tcc_instance, new_top);
     }
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, old_duty);

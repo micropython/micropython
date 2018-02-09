@@ -41,7 +41,6 @@ typedef struct {
     volatile uint16_t start;
     volatile uint16_t len;
     volatile bool first_edge;
-    uint16_t ticks_per_ms;
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);

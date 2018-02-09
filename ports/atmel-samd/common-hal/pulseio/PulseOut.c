@@ -28,8 +28,7 @@
 
 #include <stdint.h>
 
-#include "asf/sam0/drivers/tc/tc_interrupt.h"
-#include "asf/sam0/drivers/port/port.h"
+#include "hal/include/hal_gpio.h"
 
 #include "mpconfigport.h"
 #include "py/gc.h"
@@ -37,12 +36,11 @@
 #include "samd21_pins.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 
-#undef ENABLE
-
 // This timer is shared amongst all PulseOut objects under the assumption that
-// the code is single threaded. Its stored in MICROPY_PORT_ROOT_POINTERS so it
-// doesn't get garbage collected.
+// the code is single threaded.
 static uint8_t refcount = 0;
+
+static Tc* pulseout_tc_instance = NULL;
 
 static __IO PORT_PINCFG_Type *active_pincfg = NULL;
 static uint16_t *pulse_buffer = NULL;
@@ -70,7 +68,7 @@ void pulse_finish(struct tc_module *const module) {
         return;
     }
     current_compare = (current_compare + pulse_buffer[pulse_index] * 3 / 4) & 0xffff;
-    tc_set_compare_value(MP_STATE_VM(pulseout_tc_instance), TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
+    //tc_set_compare_value(MP_STATE_VM(pulseout_tc_instance), TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
     if (pulse_index % 2 == 0) {
         turn_on(active_pincfg);
     }
@@ -78,7 +76,7 @@ void pulse_finish(struct tc_module *const module) {
 
 void pulseout_reset() {
     refcount = 0;
-    MP_STATE_VM(pulseout_tc_instance) = NULL;
+    pulseout_tc_instance = NULL;
     active_pincfg = NULL;
 }
 
@@ -97,28 +95,24 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
         if (t == NULL) {
             mp_raise_RuntimeError("All timers in use");
         }
-        MP_STATE_VM(pulseout_tc_instance) = gc_alloc(sizeof(struct tc_module), false);
-        if (t == NULL) {
-            mp_raise_msg(&mp_type_MemoryError, "");
-        }
 
-        struct tc_config config_tc;
-        tc_get_config_defaults(&config_tc);
+        // struct tc_config config_tc;
+        // tc_get_config_defaults(&config_tc);
+        //
+        // config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
+        // config_tc.clock_prescaler = TC_CTRLA_PRESCALER_DIV64;
+        // config_tc.wave_generation = TC_WAVE_GENERATION_NORMAL_FREQ;
 
-        config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
-        config_tc.clock_prescaler = TC_CTRLA_PRESCALER_DIV64;
-        config_tc.wave_generation = TC_WAVE_GENERATION_NORMAL_FREQ;
-
-        tc_init(MP_STATE_VM(pulseout_tc_instance), t, &config_tc);
-        tc_register_callback(MP_STATE_VM(pulseout_tc_instance), pulse_finish, TC_CALLBACK_CC_CHANNEL0);
-        tc_enable(MP_STATE_VM(pulseout_tc_instance));
-        tc_stop_counter(MP_STATE_VM(pulseout_tc_instance));
+        // tc_init(MP_STATE_VM(pulseout_tc_instance), t, &config_tc);
+        // tc_register_callback(MP_STATE_VM(pulseout_tc_instance), pulse_finish, TC_CALLBACK_CC_CHANNEL0);
+        // tc_enable(MP_STATE_VM(pulseout_tc_instance));
+        // tc_stop_counter(MP_STATE_VM(pulseout_tc_instance));
     }
     refcount++;
 
     self->pin = carrier->pin->pin;
 
-    PortGroup *const port_base = port_get_group_from_gpio_pin(self->pin);
+    PortGroup *const port_base = PORT->GROUP[GPIO_PORT(self->pin)];
     self->pincfg = &port_base->PINCFG[self->pin % 32];
 
     // Set the port to output a zero.
@@ -144,8 +138,8 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 
     refcount--;
     if (refcount == 0) {
-        tc_reset(MP_STATE_VM(pulseout_tc_instance));
-        gc_free(MP_STATE_VM(pulseout_tc_instance));
+        //tc_reset(MP_STATE_VM(pulseout_tc_instance));
+        m_free(MP_STATE_VM(pulseout_tc_instance));
         MP_STATE_VM(pulseout_tc_instance) = NULL;
     }
     self->pin = NO_PIN;
@@ -161,11 +155,11 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     pulse_length = length;
 
     current_compare = pulses[0] * 3 / 4;
-    tc_set_compare_value(MP_STATE_VM(pulseout_tc_instance), TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
+    //tc_set_compare_value(MP_STATE_VM(pulseout_tc_instance), TC_COMPARE_CAPTURE_CHANNEL_0, current_compare);
 
-    tc_enable_callback(MP_STATE_VM(pulseout_tc_instance), TC_CALLBACK_CC_CHANNEL0);
+    //tc_enable_callback(MP_STATE_VM(pulseout_tc_instance), TC_CALLBACK_CC_CHANNEL0);
     turn_on(active_pincfg);
-    tc_start_counter(MP_STATE_VM(pulseout_tc_instance));
+    //tc_start_counter(MP_STATE_VM(pulseout_tc_instance));
 
     while(pulse_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
@@ -175,7 +169,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
         #endif
     }
 
-    tc_stop_counter(MP_STATE_VM(pulseout_tc_instance));
-    tc_disable_callback(MP_STATE_VM(pulseout_tc_instance), TC_CALLBACK_CC_CHANNEL0);
+    //tc_stop_counter(MP_STATE_VM(pulseout_tc_instance));
+    //tc_disable_callback(MP_STATE_VM(pulseout_tc_instance), TC_CALLBACK_CC_CHANNEL0);
     active_pincfg = NULL;
 }

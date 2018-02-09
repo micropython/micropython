@@ -28,10 +28,7 @@
 
 #include <stdint.h>
 
-#include "asf/common2/services/delay/delay.h"
-#include "asf/sam0/drivers/extint/extint.h"
-#include "asf/sam0/drivers/extint/extint_callback.h"
-#include "asf/sam0/drivers/port/port.h"
+#include "hal/include/hal_gpio.h"
 
 #include "mpconfigport.h"
 #include "py/gc.h"
@@ -49,7 +46,7 @@ static uint16_t last_us[EIC_NUMBER_OF_INTERRUPTS];
 void pulsein_reset(void) {
     for (int i = 0; i < EIC_NUMBER_OF_INTERRUPTS; i++) {
         if (active_pulseins[i] != NULL) {
-            extint_chan_disable_callback(i, EXTINT_CALLBACK_TYPE_DETECT);
+            //extint_chan_disable_callback(i, EXTINT_CALLBACK_TYPE_DETECT);
         }
         active_pulseins[i] = NULL;
         last_ms[i] = 0;
@@ -58,65 +55,65 @@ void pulsein_reset(void) {
 }
 
 static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
-    struct extint_chan_conf config;
-    extint_chan_get_config_defaults(&config);
-    config.gpio_pin            = self->pin;
-    config.gpio_pin_pull       = EXTINT_PULL_NONE;
-    config.filter_input_signal = true;
+    // struct extint_chan_conf config;
+    // extint_chan_get_config_defaults(&config);
+    // config.gpio_pin            = self->pin;
+    // config.gpio_pin_pull       = EXTINT_PULL_NONE;
+    // config.filter_input_signal = true;
 
     if (!first_edge) {
-        config.detection_criteria  = EXTINT_DETECT_BOTH;
+        //config.detection_criteria  = EXTINT_DETECT_BOTH;
     } else if (self->idle_state) {
-        config.detection_criteria  = EXTINT_DETECT_FALLING;
+        //config.detection_criteria  = EXTINT_DETECT_FALLING;
     } else {
-        config.detection_criteria  = EXTINT_DETECT_RISING;
+        //config.detection_criteria  = EXTINT_DETECT_RISING;
     }
-    extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
-    extint_chan_set_config(self->channel, &config);
+    //extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    //extint_chan_set_config(self->channel, &config);
     // Clear any interrupts that may have triggered without notifying the CPU.
     EIC->INTFLAG.reg |=  (1UL << self->channel);
-    extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    //extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
 }
 
-static void pulsein_callback(void) {
+//static void pulsein_callback(void) {
     // Grab the current time first.
-    uint16_t current_us = tc_get_count_value(&ms_timer);
+    //uint16_t current_us = tc_get_count_value(&ms_timer);
     // Add the overflow flag to account for tick interrupts that are blocked by
     // this interrupt.
-    uint64_t current_ms = ticks_ms + TC5->COUNT16.INTFLAG.bit.OVF;
-    pulseio_pulsein_obj_t* self = active_pulseins[extint_get_current_channel()];
-    current_us = current_us * 1000 / self->ticks_per_ms;
-    if (self->first_edge) {
-        self->first_edge = false;
-        pulsein_set_config(self, false);
-    } else {
-        uint32_t ms_diff = current_ms - last_ms[self->channel];
-        uint16_t us_diff = current_us - last_us[self->channel];
-        uint32_t total_diff = us_diff;
-        if (last_us[self->channel] > current_us) {
-            total_diff = 1000 + current_us - last_us[self->channel];
-            if (ms_diff > 1) {
-                total_diff += (ms_diff - 1) * 1000;
-            }
-        } else {
-            total_diff += ms_diff * 1000;
-        }
-        uint16_t duration = 0xffff;
-        if (total_diff < duration) {
-            duration = total_diff;
-        }
-
-        uint16_t i = (self->start + self->len) % self->maxlen;
-        self->buffer[i] = duration;
-        if (self->len < self->maxlen) {
-            self->len++;
-        } else {
-            self->start++;
-        }
-    }
-    last_ms[self->channel] = current_ms;
-    last_us[self->channel] = current_us;
-}
+    //uint64_t current_ms = ticks_ms + TC5->COUNT16.INTFLAG.bit.OVF;
+    //pulseio_pulsein_obj_t* self = active_pulseins[extint_get_current_channel()];
+    //current_us = current_us * 1000 / self->ticks_per_ms;
+    // if (self->first_edge) {
+    //     self->first_edge = false;
+    //     pulsein_set_config(self, false);
+    // } else {
+    //     uint32_t ms_diff = current_ms - last_ms[self->channel];
+    //     uint16_t us_diff = current_us - last_us[self->channel];
+    //     uint32_t total_diff = us_diff;
+    //     if (last_us[self->channel] > current_us) {
+    //         total_diff = 1000 + current_us - last_us[self->channel];
+    //         if (ms_diff > 1) {
+    //             total_diff += (ms_diff - 1) * 1000;
+    //         }
+    //     } else {
+    //         total_diff += ms_diff * 1000;
+    //     }
+    //     uint16_t duration = 0xffff;
+    //     if (total_diff < duration) {
+    //         duration = total_diff;
+    //     }
+    //
+    //     uint16_t i = (self->start + self->len) % self->maxlen;
+    //     self->buffer[i] = duration;
+    //     if (self->len < self->maxlen) {
+    //         self->len++;
+    //     } else {
+    //         self->start++;
+    //     }
+    // }
+//     last_ms[self->channel] = current_ms;
+//     last_us[self->channel] = current_us;
+// }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         const mcu_pin_obj_t* pin, uint16_t maxlen, bool idle_state) {
@@ -129,7 +126,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         mp_raise_RuntimeError("EXTINT channel already in use");
     }
 
-    self->buffer = (uint16_t *) gc_alloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
         mp_raise_msg_varg(&mp_type_MemoryError, "Failed to allocate RX buffer of %d bytes", maxlen * sizeof(uint16_t));
     }
@@ -140,16 +137,15 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->start = 0;
     self->len = 0;
     self->first_edge = true;
-    self->ticks_per_ms = (system_cpu_clock_get_hz() / 1000 - 1);
 
     active_pulseins[pin->extint_channel] = self;
 
     pulsein_set_config(self, true);
-    extint_register_callback(
-        pulsein_callback,
-        self->channel,
-        EXTINT_CALLBACK_TYPE_DETECT);
-    extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    //extint_register_callback(
+    //    pulsein_callback,
+    //    self->channel,
+    //    EXTINT_CALLBACK_TYPE_DETECT);
+    //extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
@@ -160,38 +156,27 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
-    extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    //extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
     active_pulseins[self->channel] = NULL;
     reset_pin(self->pin);
     self->pin = NO_PIN;
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
-    extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    //extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
 }
 
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         uint16_t trigger_duration) {
     // Send the trigger pulse.
     if (trigger_duration > 0) {
-        struct port_config pin_conf;
-        port_get_config_defaults(&pin_conf);
-
-        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-        pin_conf.input_pull = PORT_PIN_PULL_NONE;
-        port_pin_set_config(self->pin, &pin_conf);
-
-        // TODO(tannewt): delay_us isn't exactly correct so we adjust the value
-        // here before calling it. Find out why its not exact and fix it instead
-        // of hacking around it here.
-        uint32_t adjusted_duration = trigger_duration;
-        adjusted_duration *= 4;
-        adjusted_duration /= 5;
+        gpio_set_pin_pull_mode(self->pin, GPIO_PULL_OFF);
+        gpio_set_pin_direction(self->pin, GPIO_DIRECTION_OUT);
 
         common_hal_mcu_disable_interrupts();
-        port_pin_set_output_level(self->pin, !self->idle_state);
-        common_hal_mcu_delay_us(adjusted_duration);
-        port_pin_set_output_level(self->pin, self->idle_state);
+        gpio_set_pin_level(self->pin, !self->idle_state);
+        common_hal_mcu_delay_us(trigger_duration);
+        gpio_set_pin_level(self->pin, self->idle_state);
         common_hal_mcu_enable_interrupts();
     }
 

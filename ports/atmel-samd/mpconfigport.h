@@ -197,7 +197,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
 //        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
 //        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
-//        { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module },
+//    { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
     #define EXPRESS_BOARD
 #else
     #define MICROPY_PY_BUILTINS_REVERSED (0)
@@ -212,7 +212,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 // Disabled for now.
 // { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
 
@@ -225,6 +224,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
@@ -260,7 +260,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
     struct dac_module* audioout_dac_instance; \
     struct events_resource* audioout_sample_event; \
     struct events_resource* audioout_dac_event; \
-    struct tc_module* pulseout_tc_instance; \
     FLASH_ROOT_POINTERS \
 
 void run_background_tasks(void);

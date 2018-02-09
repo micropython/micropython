@@ -44,9 +44,7 @@ typedef struct {
         Tc *const tc;
         Tcc *const tcc;
     };
-    #ifdef SAMD21
     bool is_tc:1;
-    #endif
     uint8_t wave_output:4;
 } pin_timer_t;
 

@@ -45,12 +45,14 @@
 #define TCC(p_tcc, p_wave_output) \
 { \
   .tcc = p_tcc, \
+  .is_tc = false, \
   .wave_output = p_wave_output \
 }
 
 #define TC(p_tc, p_wave_output) \
 { \
   .tc = p_tc, \
+  .is_tc = true, \
   .wave_output = p_wave_output \
 }
 
