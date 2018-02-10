@@ -198,6 +198,8 @@ void turn_on_clocks(const pin_timer_t* timer) {
         }
     }
 
+    // FIXME(tannewt): TC4-TC7 can only have 100mhz inputs.
+
     hri_gclk_write_PCHCTRL_reg(GCLK, gclk_id,
                                GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
     #endif
