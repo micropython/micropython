@@ -112,7 +112,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 
     self->pin = carrier->pin->pin;
 
-    PortGroup *const port_base = PORT->GROUP[GPIO_PORT(self->pin)];
+    PortGroup *const port_base = &PORT->Group[GPIO_PORT(self->pin)];
     self->pincfg = &port_base->PINCFG[self->pin % 32];
 
     // Set the port to output a zero.
@@ -131,7 +131,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
     if (common_hal_pulseio_pulseout_deinited(self)) {
         return;
     }
-    PortGroup *const port_base = port_get_group_from_gpio_pin(self->pin);
+    PortGroup *const port_base = &PORT->Group[GPIO_PORT(self->pin)];
     port_base->DIRCLR.reg = 1 << (self->pin % 32);
 
     turn_on(self->pincfg);
@@ -139,8 +139,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
     refcount--;
     if (refcount == 0) {
         //tc_reset(MP_STATE_VM(pulseout_tc_instance));
-        m_free(MP_STATE_VM(pulseout_tc_instance));
-        MP_STATE_VM(pulseout_tc_instance) = NULL;
+        pulseout_tc_instance = NULL;
     }
     self->pin = NO_PIN;
 }
