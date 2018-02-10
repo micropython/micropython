@@ -90,7 +90,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
   uint32_t dest = convert_block_to_flash_addr(block);
 
   uint32_t pagenum = dest / FLASH_PAGE_SIZE;
-  uint8_t* flash_align = (uint8_t*) (pagenum*FLASH_PAGE_SIZE);
+  uint32_t* flash_align = (uint32_t*) (pagenum*FLASH_PAGE_SIZE);
 
   // Read back current page to update only 512 portion
   __ALIGN(4) uint8_t buf[FLASH_PAGE_SIZE];
@@ -105,7 +105,7 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
       return false;
     }
 
-    if (NRF_SUCCESS != sd_flash_write((uint32_t*) flash_align, (uint32_t*) buf, FLASH_PAGE_SIZE / sizeof(uint32_t))) {
+    if (NRF_SUCCESS != sd_flash_write(flash_align, (uint32_t*) buf, FLASH_PAGE_SIZE / sizeof(uint32_t))) {
       return false;
     }
   }
@@ -123,14 +123,15 @@ bool internal_flash_write_block(const uint8_t *src, uint32_t block) {
     while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
 
     // Write
-    uint32_t *src = (uint32_t*) buf;
+    uint32_t *p_src = (uint32_t*) buf;
+    uint32_t *p_dest = flash_align;
     uint32_t i = 0;
 
     while (i < (FLASH_PAGE_SIZE / sizeof(uint32_t))) {
       NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos);
       while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
 
-      *flash_align++ = *src++;
+      *p_dest++ = *p_src++;
 
       while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
 
