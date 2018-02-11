@@ -196,7 +196,7 @@ uint32_t ble_drv_stack_enable(void) {
 
 #if (BLUETOOTH_SD == 132)
     uint32_t app_ram_start = 0x200039c0;
-#if (BLE_API_VERSION == 3)
+#if (BLE_API_VERSION == 2) || (BLE_API_VERSION == 3)
     err_code = sd_ble_enable(&ble_enable_params, &app_ram_start); // 8K SD headroom from linker script.
 #elif (BLE_API_VERSION >= 4)
     err_code = sd_ble_enable(&app_ram_start); // 8K SD headroom from linker script.
