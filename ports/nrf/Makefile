@@ -89,8 +89,8 @@ LDFLAGS += -Wl,--gc-sections
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 #ASMFLAGS += -g -gtabs+
-CFLAGS += -O0 -ggdb
-LDFLAGS += -O0
+CFLAGS += -O1 -ggdb
+LDFLAGS += -O1
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
