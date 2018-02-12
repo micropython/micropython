@@ -210,12 +210,12 @@ pwm_start(void)
 /******************************************************************************
  * FunctionName : pwm_set_duty
  * Description  : set each channel's duty params
- * Parameters   : uint8 duty    : 0 ~ PWM_DEPTH
+ * Parameters   : int16_t duty  : 0 ~ PWM_DEPTH
  *                uint8 channel : channel index
  * Returns      : NONE
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
-pwm_set_duty(uint16 duty, uint8 channel)
+pwm_set_duty(int16_t duty, uint8 channel)
 {
     uint8 i;
     for(i=0;i<pwm_channel_num;i++){
