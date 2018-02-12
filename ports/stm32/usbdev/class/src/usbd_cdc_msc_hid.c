@@ -821,13 +821,45 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
 
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
 
+    // Work out the recipient of the setup request
+    uint8_t mode = usbd->usbd_mode;
+    uint8_t recipient = 0;
+    switch (req->bmRequest & USB_REQ_RECIPIENT_MASK) {
+        case USB_REQ_RECIPIENT_INTERFACE: {
+            uint16_t iface = req->wIndex;
+            if ((mode & USBD_MODE_CDC) && iface == usbd->cdc_iface_num) {
+                recipient = USBD_MODE_CDC;
+            } else if ((mode & USBD_MODE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
+                recipient = USBD_MODE_MSC;
+            } else if ((mode & USBD_MODE_HID) && iface == usbd->hid_iface_num) {
+                recipient = USBD_MODE_HID;
+            }
+            break;
+        }
+        case USB_REQ_RECIPIENT_ENDPOINT: {
+            uint8_t ep = req->wIndex & 0x7f;
+            if ((mode & USBD_MODE_CDC) && (ep == CDC_OUT_EP || ep == (CDC_CMD_EP & 0x7f))) {
+                recipient = USBD_MODE_CDC;
+            } else if ((mode & USBD_MODE_MSC) && ep == MSC_OUT_EP) {
+                recipient = USBD_MODE_MSC;
+            } else if ((mode & USBD_MODE_HID) && ep == usbd->hid_out_ep) {
+                recipient = USBD_MODE_HID;
+            }
+            break;
+        }
+    }
+
+    // Fail the request if we didn't have a valid recipient
+    if (recipient == 0) {
+        USBD_CtlError(pdev, req);
+        return USBD_FAIL;
+    }
+
     switch (req->bmRequest & USB_REQ_TYPE_MASK) {
 
         // Class request
         case USB_REQ_TYPE_CLASS:
-            // req->wIndex is the recipient interface number
-            if ((usbd->usbd_mode & USBD_MODE_CDC) && req->wIndex == usbd->cdc_iface_num) {
-                // CDC component
+            if (recipient == USBD_MODE_CDC) {
                 if (req->wLength) {
                     if (req->bmRequest & 0x80) {
                         // device-to-host request
@@ -844,8 +876,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                     // Transfer the command to the interface layer
                     return usbd_cdc_control(usbd->cdc, req->bRequest, NULL, req->wValue);
                 }
-            } else if ((usbd->usbd_mode & USBD_MODE_MSC) && req->wIndex == MSC_IFACE_NUM_WITH_CDC) {
-                // MSC component
+            } else if (recipient == USBD_MODE_MSC) {
                 switch (req->bRequest) {
                     case BOT_GET_MAX_LUN:
                         if ((req->wValue  == 0) && (req->wLength == 1) && ((req->bmRequest & 0x80) == 0x80)) {
@@ -870,7 +901,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         USBD_CtlError(pdev, req);
                         return USBD_FAIL;
                 }
-            } else if ((usbd->usbd_mode & USBD_MODE_HID) && req->wIndex == usbd->hid_iface_num) {
+            } else if (recipient == USBD_MODE_HID) {
                 switch (req->bRequest) {
                     case HID_REQ_SET_PROTOCOL:
                         usbd->HID_ClassData.Protocol = (uint8_t)(req->wValue);
@@ -895,9 +926,8 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
             }
             break;
 
-        // Interface & Endpoint request
         case USB_REQ_TYPE_STANDARD:
-            if ((usbd->usbd_mode & USBD_MODE_MSC) && req->wIndex == MSC_IFACE_NUM_WITH_CDC) {
+            if (recipient == USBD_MODE_MSC) {
                 switch (req->bRequest) {
                     case USB_REQ_GET_INTERFACE :
                         USBD_CtlSendData(pdev, (uint8_t *)&usbd->MSC_BOT_ClassData.interface, 1);
@@ -924,7 +954,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                         MSC_BOT_CplClrFeature(pdev, (uint8_t)req->wIndex);
                         break;
                 }
-            } else if ((usbd->usbd_mode & USBD_MODE_HID) && req->wIndex == usbd->hid_iface_num) {
+            } else if (recipient == USBD_MODE_HID) {
                 switch (req->bRequest) {
                     case USB_REQ_GET_DESCRIPTOR: {
                         uint16_t len = 0;
