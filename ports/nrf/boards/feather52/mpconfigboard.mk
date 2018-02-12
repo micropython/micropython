@@ -8,6 +8,11 @@ BOOTLOADER_PKG = boards/feather52/bootloader/feather52_bootloader_$(SOFTDEV_VERS
 
 NRF_DEFINES += -DNRF52832_XXAA
 
+ifeq ($(SD), )
+INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
+INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
+endif
+
 CFLAGS += -DADAFRUIT_FEATHER52
 
 check_defined = \

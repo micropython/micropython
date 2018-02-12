@@ -74,7 +74,6 @@ static ble_drv_gatts_evt_callback_t        gatts_event_handler;
 static mp_obj_t mp_gap_observer;
 static mp_obj_t mp_gatts_observer;
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
 static volatile bool m_primary_service_found;
 static volatile bool m_characteristic_found;
 static volatile bool m_write_done;
@@ -90,45 +89,25 @@ static mp_obj_t mp_gattc_observer;
 static mp_obj_t mp_gattc_disc_service_observer;
 static mp_obj_t mp_gattc_disc_char_observer;
 static mp_obj_t mp_gattc_char_data_observer;
-#endif
 
-#if (BLUETOOTH_SD != 100) && (BLUETOOTH_SD != 110)
 #include "nrf_nvic.h"
 
-#ifdef NRF52
 nrf_nvic_state_t nrf_nvic_state = {0};
-#endif // NRF52
 
-#endif // (BLUETOOTH_SD != 100)
-
-#if (BLUETOOTH_SD == 100 ) || (BLUETOOTH_SD == 110)
-void softdevice_assert_handler(uint32_t pc, uint16_t line_number, const uint8_t * p_file_name) {
-    BLE_DRIVER_LOG("ERROR: SoftDevice assert!!!");
-}
-#else
 void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
     BLE_DRIVER_LOG("ERROR: SoftDevice assert!!!");
 }
-#endif
+
 uint32_t ble_drv_stack_enable(void) {
     m_adv_in_progress = false;
     m_tx_in_progress  = false;
 
-#if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
-#if BLUETOOTH_LFCLK_RC
-    uint32_t err_code = sd_softdevice_enable(NRF_CLOCK_LFCLKSRC_RC_250_PPM_250MS_CALIBRATION,
-                                             softdevice_assert_handler);
-#else
-    uint32_t err_code = sd_softdevice_enable(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM,
-                                             softdevice_assert_handler);
-#endif // BLUETOOTH_LFCLK_RC
-#else
 #if BLUETOOTH_LFCLK_RC
     nrf_clock_lf_cfg_t clock_config = {
         .source = NRF_CLOCK_LF_SRC_RC,
         .rc_ctiv = 16,
         .rc_temp_ctiv = 2,
-#if (BLUETOOTH_SD == 140)
+#if (BLE_API_VERSION == 4)
         .accuracy = 0
 #else
         .xtal_accuracy = 0
@@ -139,7 +118,7 @@ uint32_t ble_drv_stack_enable(void) {
         .source = NRF_CLOCK_LF_SRC_XTAL,
         .rc_ctiv = 0,
         .rc_temp_ctiv = 0,
-#if (BLUETOOTH_SD == 140)
+#if (BLE_API_VERSION == 4)
         .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
 #else
         .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
@@ -148,47 +127,33 @@ uint32_t ble_drv_stack_enable(void) {
 #endif
     uint32_t err_code = sd_softdevice_enable(&clock_config,
                                              softdevice_assert_handler);
-#endif
 
     BLE_DRIVER_LOG("SoftDevice enable status: " UINT_FMT "\n", (uint16_t)err_code);
 
-#if NRF51
-    err_code = sd_nvic_EnableIRQ(SWI2_IRQn);
-#else
     err_code = sd_nvic_EnableIRQ(SWI2_EGU2_IRQn);
-#endif
 
     BLE_DRIVER_LOG("IRQ enable status: " UINT_FMT "\n", (uint16_t)err_code);
     
     // Enable BLE stack.
-#if (BLUETOOTH_SD != 140)
+#if (BLE_API_VERSION == 2)
     ble_enable_params_t ble_enable_params;
     memset(&ble_enable_params, 0x00, sizeof(ble_enable_params));
     ble_enable_params.gatts_enable_params.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT;
     ble_enable_params.gatts_enable_params.service_changed  = 0;
-#if (BLUETOOTH_SD == 132)
     ble_enable_params.gap_enable_params.periph_conn_count  = 1;
     ble_enable_params.gap_enable_params.central_conn_count = 1;
 #endif
-#endif
 
-#if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
-    err_code = sd_ble_enable(&ble_enable_params);
-#else
-
-#if (BLUETOOTH_SD == 132)
+#if (BLE_API_VERSION == 2)
     uint32_t app_ram_start = 0x200039c0;
     err_code = sd_ble_enable(&ble_enable_params, &app_ram_start); // 8K SD headroom from linker script.
     BLE_DRIVER_LOG("BLE ram size: " UINT_FMT "\n", (uint16_t)app_ram_start);
-#elif (BLUETOOTH_SD == 140)
+#else
     uint32_t app_ram_start = 0x20004000;
     err_code = sd_ble_enable(&app_ram_start);
     BLE_DRIVER_LOG("BLE ram size: " UINT_FMT "\n", (uint16_t)app_ram_start);
-#else
-    err_code = sd_ble_enable(&ble_enable_params, (uint32_t *)0x20001870);
 #endif
 
-#endif
 
     BLE_DRIVER_LOG("BLE enable status: " UINT_FMT "\n", (uint16_t)err_code);
 
@@ -242,10 +207,10 @@ void ble_drv_address_get(ble_drv_addr_t * p_addr) {
     SD_TEST_OR_ENABLE();
 
     ble_gap_addr_t local_ble_addr;
-#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3) || (BLUETOOTH_SD == 140)
-    uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
-#else
+#if (BLE_API_VERSION == 2)
     uint32_t err_code = sd_ble_gap_address_get(&local_ble_addr);
+#else
+    uint32_t err_code = sd_ble_gap_addr_get(&local_ble_addr);
 #endif
 
     if (err_code != 0) {
@@ -365,10 +330,10 @@ bool ble_drv_characteristic_add(ubluepy_characteristic_obj_t * p_char_obj) {
     attr_char_value.p_attr_md = &attr_md;
     attr_char_value.init_len  = sizeof(uint8_t);
     attr_char_value.init_offs = 0;
-#if (BLUETOOTH_SD == 140)
-    attr_char_value.max_len   = (BLE_GATT_ATT_MTU_DEFAULT - 3);
-#else
+#if (BLE_API_VERSION == 2)
     attr_char_value.max_len   = (GATT_MTU_SIZE_DEFAULT - 3);
+#else
+    attr_char_value.max_len   = (BLE_GATT_ATT_MTU_DEFAULT - 3);
 #endif
 
     ble_gatts_char_handles_t handles;
@@ -617,6 +582,8 @@ bool ble_drv_advertise_data(ubluepy_advertise_data_t * p_adv_params) {
 
 #if (BLUETOOTH_SD == 140)
     err_code = sd_ble_gap_adv_start(BLE_GAP_ADV_SET_HANDLE_DEFAULT, &m_adv_params, BLE_CONN_CFG_TAG_DEFAULT);
+#elif (BLUETOOTH_SD == 132 && BLE_API_VERSION == 4)
+    err_code = sd_ble_gap_adv_start(&m_adv_params, BLE_CONN_CFG_TAG_DEFAULT);
 #else
     err_code = sd_ble_gap_adv_start(&m_adv_params);
 #endif
@@ -713,8 +680,6 @@ void ble_drv_gatts_event_handler_set(mp_obj_t obj, ble_drv_gatts_evt_callback_t 
     gatts_event_handler = evt_handler;
 }
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
-
 void ble_drv_gattc_event_handler_set(mp_obj_t obj, ble_drv_gattc_evt_callback_t evt_handler) {
     mp_gattc_observer = obj;
     gattc_event_handler = evt_handler;
@@ -792,13 +757,6 @@ void ble_drv_scan_start(void) {
     scan_params.timeout  = 0; // Infinite
 #endif
 
-#if (BLUETOOTH_SD == 130)
-    scan_params.selective   = 0;
-    scan_params.p_whitelist = NULL;
-#elif (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
-    scan_params.use_whitelist = 0;
-#endif
-
     uint32_t err_code;
     if ((err_code = sd_ble_gap_scan_start(&scan_params)) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
@@ -823,13 +781,6 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     scan_params.timeout  = 0; // Infinite
 #endif
 
-#if (BLUETOOTH_SD == 130)
-    scan_params.selective   = 0;
-    scan_params.p_whitelist = NULL;
-#elif (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3)
-    scan_params.use_whitelist = 0;
-#endif
-
     ble_gap_addr_t addr;
     memset(&addr, 0, sizeof(addr));
 
@@ -852,10 +803,10 @@ void ble_drv_connect(uint8_t * p_addr, uint8_t addr_type) {
     conn_params.conn_sup_timeout  = BLE_CONN_SUP_TIMEOUT;
 
     uint32_t err_code;
-#if (BLUETOOTH_SD == 140)
-    if ((err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_DEFAULT)) != 0) {
-#else
+#if (BLE_API_VERSION == 2)
     if ((err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params)) != 0) {
+#else
+    if ((err_code = sd_ble_gap_connect(&addr, &scan_params, &conn_params, BLE_CONN_CFG_TAG_DEFAULT)) != 0) {
 #endif
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not connect. status: 0x" HEX2_FMT, (uint16_t)err_code));
@@ -930,8 +881,6 @@ void ble_drv_discover_descriptors(void) {
 
 }
 
-#endif
-
 static void ble_evt_handler(ble_evt_t * p_ble_evt) {
 // S132 event ranges.
 // Common 0x01 -> 0x0F
@@ -978,14 +927,14 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
             (void)sd_ble_gatts_sys_attr_set(p_ble_evt->evt.gatts_evt.conn_handle, NULL, 0, 0);
             break;
 
-#if (BLUETOOTH_SD == 132 && BLE_API_VERSION == 3) || (BLUETOOTH_SD == 140)
+#if (BLE_API_VERSION == 4)
         case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
             BLE_DRIVER_LOG("GATTS EVT EXCHANGE MTU REQUEST\n");
             (void)sd_ble_gatts_exchange_mtu_reply(p_ble_evt->evt.gatts_evt.conn_handle, 23); // MAX MTU size
             break;
 #endif
 
-#if (BLUETOOTH_SD == 140)
+#if (BLE_API_VERSION == 4)
         case BLE_GATTS_EVT_HVN_TX_COMPLETE:
 #else
         case BLE_EVT_TX_COMPLETE:
@@ -1002,7 +951,6 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                                               NULL, NULL);
             break;
 
-#if (BLUETOOTH_SD == 130) || (BLUETOOTH_SD == 132) || (BLUETOOTH_SD == 140)
         case BLE_GAP_EVT_ADV_REPORT:
             BLE_DRIVER_LOG("BLE EVT ADV REPORT\n");
             ble_drv_adv_data_t adv_data = {
@@ -1016,7 +964,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
                 .rssi         = p_ble_evt->evt.gap_evt.params.adv_report.rssi,
                 .data_len     = p_ble_evt->evt.gap_evt.params.adv_report.dlen,
                 .p_data       = p_ble_evt->evt.gap_evt.params.adv_report.data,
-#if (BLUETOOTH_SD != 140)
+#if (BLUETOOTH_SD == 132)
                 .adv_type     = p_ble_evt->evt.gap_evt.params.adv_report.type
 #endif
             };
@@ -1116,7 +1064,6 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_GATTC_EVT_HVX:
             BLE_DRIVER_LOG("BLE EVT HVX RESPONSE\n");
             break;
-#endif
 
         default:
             BLE_DRIVER_LOG(">>> unhandled evt: 0x" HEX2_FMT "\n", p_ble_evt->header.evt_id);
@@ -1124,18 +1071,13 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
     }
 }
 
-#if (BLUETOOTH_SD == 140)
-static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)] __attribute__ ((aligned (4)));
-#else
+#if (BLE_API_VERSION == 2)
 static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)] __attribute__ ((aligned (4)));
-#endif
-
-#ifdef NRF51
-void SWI2_IRQHandler(void) {
 #else
-void SWI2_EGU2_IRQHandler(void) {
+static uint8_t m_ble_evt_buf[sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT)] __attribute__ ((aligned (4)));
 #endif
 
+void SWI2_EGU2_IRQHandler(void) {
     uint32_t evt_id;
     uint32_t err_code;
     do {

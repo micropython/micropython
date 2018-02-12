@@ -19,9 +19,6 @@ ifeq ($(SD), )
 	include boards/$(BOARD)/mpconfigboard.mk
 	-include mpconfigport.mk
 
-INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
-INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
-
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)

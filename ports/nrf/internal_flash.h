@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H
+#ifndef MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
+#define MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -58,4 +58,4 @@ struct _fs_user_mount_t;
 void flash_init_vfs(struct _fs_user_mount_t *vfs);
 void flash_flush(void);
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_INTERNAL_FLASH_H
+#endif  // MICROPY_INCLUDED_NRF_INTERNAL_FLASH_H
