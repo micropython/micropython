@@ -109,6 +109,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
+#if MICROPY_PY_MACHINE_UART
 // Get or set the UART object that the REPL is repeated on.
 // TODO should accept any object with read/write methods.
 STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
@@ -130,6 +131,7 @@ STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_dupterm_obj, 0, 1, os_dupterm);
+#endif // MICROPY_PY_MACHINE_UART
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
@@ -165,7 +167,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 #endif
 
     // these are MicroPython extensions
+#if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mod_os_dupterm_obj) },
+#endif
 #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },

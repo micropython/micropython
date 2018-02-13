@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "NRF51822"
 #define MICROPY_PY_SYS_PLATFORM     "nrf51"
 
+#define MICROPY_PY_MACHINE_UART     (1)
 #define MICROPY_PY_MUSIC            (1)
 #define MICROPY_PY_MACHINE_SOFT_PWM (1)
 #define MICROPY_PY_MACHINE_HW_SPI   (1)
