@@ -257,7 +257,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         #endif
         pins[3] = &MICROPY_HW_SPI1_MOSI;
         // enable the SPI clock
-        __SPI1_CLK_ENABLE();
+        __HAL_RCC_SPI1_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
@@ -270,7 +270,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         #endif
         pins[3] = &MICROPY_HW_SPI2_MOSI;
         // enable the SPI clock
-        __SPI2_CLK_ENABLE();
+        __HAL_RCC_SPI2_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
@@ -283,7 +283,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         #endif
         pins[3] = &MICROPY_HW_SPI3_MOSI;
         // enable the SPI clock
-        __SPI3_CLK_ENABLE();
+        __HAL_RCC_SPI3_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
@@ -296,7 +296,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         #endif
         pins[3] = &MICROPY_HW_SPI4_MOSI;
         // enable the SPI clock
-        __SPI4_CLK_ENABLE();
+        __HAL_RCC_SPI4_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
@@ -309,7 +309,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         #endif
         pins[3] = &MICROPY_HW_SPI5_MOSI;
         // enable the SPI clock
-        __SPI5_CLK_ENABLE();
+        __HAL_RCC_SPI5_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
@@ -322,7 +322,7 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
         #endif
         pins[3] = &MICROPY_HW_SPI6_MOSI;
         // enable the SPI clock
-        __SPI6_CLK_ENABLE();
+        __HAL_RCC_SPI6_CLK_ENABLE();
     #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
@@ -361,39 +361,39 @@ void spi_deinit(const spi_t *spi_obj) {
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
-        __SPI1_FORCE_RESET();
-        __SPI1_RELEASE_RESET();
-        __SPI1_CLK_DISABLE();
+        __HAL_RCC_SPI1_FORCE_RESET();
+        __HAL_RCC_SPI1_RELEASE_RESET();
+        __HAL_RCC_SPI1_CLK_DISABLE();
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
-        __SPI2_FORCE_RESET();
-        __SPI2_RELEASE_RESET();
-        __SPI2_CLK_DISABLE();
+        __HAL_RCC_SPI2_FORCE_RESET();
+        __HAL_RCC_SPI2_RELEASE_RESET();
+        __HAL_RCC_SPI2_CLK_DISABLE();
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
-        __SPI3_FORCE_RESET();
-        __SPI3_RELEASE_RESET();
-        __SPI3_CLK_DISABLE();
+        __HAL_RCC_SPI3_FORCE_RESET();
+        __HAL_RCC_SPI3_RELEASE_RESET();
+        __HAL_RCC_SPI3_CLK_DISABLE();
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
-        __SPI4_FORCE_RESET();
-        __SPI4_RELEASE_RESET();
-        __SPI4_CLK_DISABLE();
+        __HAL_RCC_SPI4_FORCE_RESET();
+        __HAL_RCC_SPI4_RELEASE_RESET();
+        __HAL_RCC_SPI4_CLK_DISABLE();
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
-        __SPI5_FORCE_RESET();
-        __SPI5_RELEASE_RESET();
-        __SPI5_CLK_DISABLE();
+        __HAL_RCC_SPI5_FORCE_RESET();
+        __HAL_RCC_SPI5_RELEASE_RESET();
+        __HAL_RCC_SPI5_CLK_DISABLE();
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
-        __SPI6_FORCE_RESET();
-        __SPI6_RELEASE_RESET();
-        __SPI6_CLK_DISABLE();
+        __HAL_RCC_SPI6_FORCE_RESET();
+        __HAL_RCC_SPI6_RELEASE_RESET();
+        __HAL_RCC_SPI6_CLK_DISABLE();
     #endif
     }
 }
@@ -915,7 +915,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     // these parameters are not currently configurable
     init->Direction = SPI_DIRECTION_2LINES;
     init->NSS = SPI_NSS_SOFT;
-    init->TIMode = SPI_TIMODE_DISABLED;
+    init->TIMode = SPI_TIMODE_DISABLE;
     init->CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     init->CRCPolynomial = 0;
 
