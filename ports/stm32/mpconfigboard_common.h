@@ -50,6 +50,11 @@
 #define MICROPY_HW_ENABLE_CAN (0)
 #endif
 
+// Whether to enable USB support
+#ifndef MICROPY_HW_ENABLE_USB
+#define MICROPY_HW_ENABLE_USB (0)
+#endif
+
 // Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
 #ifndef MICROPY_HW_ENABLE_SERVO
 #define MICROPY_HW_ENABLE_SERVO (0)
@@ -105,12 +110,6 @@
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
 #endif
-
-// USB configuration
-// see stm32f4XX_hal_conf.h USE_USB_FS & USE_USB_HS
-// at the moment only USB_FS is supported
-#define USE_DEVICE_MODE
-//#define USE_HOST_MODE
 
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"

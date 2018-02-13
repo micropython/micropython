@@ -42,11 +42,13 @@
 #include "bufhelper.h"
 #include "usb.h"
 
+#if MICROPY_HW_ENABLE_USB
+
 // Work out which USB device to use as the main one (the one with the REPL)
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
-#if defined(USE_USB_FS)
+#if defined(MICROPY_HW_USB_FS)
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_FS_ID)
-#elif defined(USE_USB_HS) && defined(USE_USB_HS_IN_FS)
+#elif defined(MICROPY_HW_USB_HS) && defined(MICROPY_HW_USB_HS_IN_FS)
 #define MICROPY_HW_USB_MAIN_DEV (USB_PHY_HS_ID)
 #else
 #error Unable to determine proper MICROPY_HW_USB_MAIN_DEV to use
@@ -64,10 +66,8 @@ typedef struct _usb_device_t {
     usbd_hid_itf_t usbd_hid_itf;
 } usb_device_t;
 
-#ifdef USE_DEVICE_MODE
 usb_device_t usb_device;
 pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
-#endif
 
 // predefined hid mouse data
 STATIC const mp_obj_str_t pyb_usb_hid_mouse_desc_obj = {
@@ -113,7 +113,6 @@ void pyb_usb_init0(void) {
 }
 
 bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_HID_ModeInfoTypeDef *hid_info) {
-#ifdef USE_DEVICE_MODE
     bool high_speed = (mode & USBD_MODE_HIGH_SPEED) != 0;
     mode &= 0x7f;
     usb_device_t *usb_dev = &usb_device;
@@ -153,7 +152,6 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         USBD_LL_Start(usbd);
         usb_dev->enabled = true;
     }
-#endif
 
     return true;
 }
@@ -175,11 +173,9 @@ int usb_vcp_recv_byte(uint8_t *c) {
 }
 
 void usb_vcp_send_strn(const char *str, int len) {
-#ifdef USE_DEVICE_MODE
     if (usb_device.enabled) {
         usbd_cdc_tx_always(&usb_device.usbd_cdc_itf, (const uint8_t*)str, len);
     }
-#endif
 }
 
 /******************************************************************************/
@@ -226,7 +222,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (n_args == 0) {
     #if defined(USE_HOST_MODE)
         return MP_OBJ_NEW_QSTR(MP_QSTR_host);
-    #elif defined(USE_DEVICE_MODE)
+    #else
         uint8_t mode = USBD_GetMode(&usb_device.usbd_cdc_msc_hid_state);
         switch (mode) {
             case USBD_MODE_CDC:
@@ -257,9 +253,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // check if user wants to disable the USB
     if (args[0].u_obj == mp_const_none) {
         // disable usb
-        #if defined(USE_DEVICE_MODE)
         pyb_usb_dev_deinit();
-        #endif
         return mp_const_none;
     }
 
@@ -276,7 +270,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         goto bad_mode;
     }
 
-#elif defined(USE_DEVICE_MODE)
+#else
 
     // hardware configured for USB device mode
 
@@ -339,9 +333,6 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         goto bad_mode;
     }
 
-#else
-    // hardware not configured for USB
-    goto bad_mode;
 #endif
 
     return mp_const_none;
@@ -619,7 +610,6 @@ STATIC mp_obj_t pyb_usb_hid_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_hid_recv_obj, 1, pyb_usb_hid_recv);
 
 STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
-#ifdef USE_DEVICE_MODE
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     byte temp_buf[8];
@@ -643,7 +633,6 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
     } else {
         return mp_obj_new_int(0);
     }
-#endif
 
     return mp_const_none;
 }
@@ -757,3 +746,5 @@ void USR_KEYBRD_ProcessData(uint8_t pbuf) {
 }
 
 #endif // USE_HOST_MODE
+
+#endif // MICROPY_HW_ENABLE_USB

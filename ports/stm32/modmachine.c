@@ -204,7 +204,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t machine_bootloader(void) {
+    #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
+    #endif
     storage_flush();
 
     HAL_RCC_DeInit();

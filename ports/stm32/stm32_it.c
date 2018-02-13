@@ -143,9 +143,11 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
         NVIC_SystemReset();
     }
 
+    #if MICROPY_HW_ENABLE_USB
     // We need to disable the USB so it doesn't try to write data out on
     // the VCP and then block indefinitely waiting for the buffer to drain.
     pyb_usb_flags = 0;
+    #endif
 
     mp_hal_stdout_tx_str("HardFault\r\n");
 
@@ -337,14 +339,14 @@ void SysTick_Handler(void) {
   * @param  None
   * @retval None
   */
-#if defined(USE_USB_FS)
+#if MICROPY_HW_USB_FS
 void OTG_FS_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_IRQn);
     HAL_PCD_IRQHandler(&pcd_fs_handle);
     IRQ_EXIT(OTG_FS_IRQn);
 }
 #endif
-#if defined(USE_USB_HS)
+#if MICROPY_HW_USB_HS
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
     HAL_PCD_IRQHandler(&pcd_hs_handle);
@@ -352,7 +354,7 @@ void OTG_HS_IRQHandler(void) {
 }
 #endif
 
-#if defined(USE_USB_FS) || defined(USE_USB_HS)
+#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
 /**
   * @brief  This function handles USB OTG Common FS/HS Wakeup functions.
   * @param  *pcd_handle for FS or HS
@@ -393,7 +395,7 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 }
 #endif
 
-#if defined(USE_USB_FS)
+#if MICROPY_HW_USB_FS
 /**
   * @brief  This function handles USB OTG FS Wakeup IRQ Handler.
   * @param  None
@@ -411,7 +413,7 @@ void OTG_FS_WKUP_IRQHandler(void) {
 }
 #endif
 
-#if defined(USE_USB_HS)
+#if MICROPY_HW_USB_HS
 /**
   * @brief  This function handles USB OTG HS Wakeup IRQ Handler.
   * @param  None

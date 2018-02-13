@@ -5,11 +5,14 @@
 #include  "usbd_msc_bot.h"
 #include  "usbd_msc_scsi.h"
 #include  "usbd_ioreq.h"
-#include  STM32_HAL_H
+
+// These are included to get direct access the MICROPY_HW_USB_xxx config
+#include "mpconfigboard.h"
+#include "mpconfigboard_common.h"
 
 // Work out if we should support USB high-speed device mode
-#if defined(USE_USB_HS) \
-    && (!defined(USE_USB_HS_IN_FS) || defined(STM32F723xx) || defined(STM32F733xx))
+#if MICROPY_HW_USB_HS \
+    && (!MICROPY_HW_USB_HS_IN_FS || defined(STM32F723xx) || defined(STM32F733xx))
 #define USBD_SUPPORT_HS_MODE (1)
 #else
 #define USBD_SUPPORT_HS_MODE (0)
