@@ -1,5 +1,5 @@
 /*
-    GNU linker script for NRF52 w/ s132 5.0.0 SoftDevice
+    GNU linker script for NRF52 w/S140 6.0.0 SoftDevice
 
     MEMORY MAP
     ------------------------------------------------------------------------
@@ -18,7 +18,7 @@
     0x00000000..0x00000FFF   (4KB) Master Boot Record
 */
 
-/* Specify the memory areas (S132 5.0.0) */
+/* Specify the memory areas (S140 6.0.0) */
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x100000
@@ -33,7 +33,7 @@ MEMORY
 
 /* produce a link error if there is not this amount of RAM for these sections */
 _minimum_stack_size = 2K;
-_minimum_heap_size = 0 /*16K Circuit Python use static variable for HEAP */;
+_minimum_heap_size = 0;
 
 /* top end of the stack */
 
