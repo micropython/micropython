@@ -43,6 +43,17 @@ bool storage_write_block(const uint8_t *src, uint32_t block);
 mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
+uint32_t flash_bdev_num_blocks(void);
+void flash_bdev_init(void);
+void flash_bdev_irq_handler(void);
+void flash_bdev_flush(void);
+bool flash_bdev_readblock(uint8_t *dest, uint32_t block);
+bool flash_bdev_writeblock(const uint8_t *src, uint32_t block);
+
+void spi_bdev_init(void);
+bool spi_bdev_readblock(uint8_t *dest, uint32_t block);
+bool spi_bdev_writeblock(const uint8_t *src, uint32_t block);
+
 extern const struct _mp_obj_type_t pyb_flash_type;
 
 struct _fs_user_mount_t;

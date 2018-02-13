@@ -232,6 +232,8 @@ SRC_C = \
 	rng.c \
 	rtc.c \
 	flash.c \
+	flashbdev.c \
+	spibdev.c \
 	storage.c \
 	sdcard.c \
 	fatfs_port.c \
