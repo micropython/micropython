@@ -162,6 +162,7 @@ void timer_deinit(void) {
     }
 }
 
+#if defined(TIM5)
 // TIM5 is set-up for the servo controller
 // This function inits but does not start the timer
 void timer_tim5_init(void) {
@@ -181,6 +182,7 @@ void timer_tim5_init(void) {
 
     HAL_TIM_PWM_Init(&TIM5_Handle);
 }
+#endif
 
 #if defined(TIM6)
 // Init TIM6 with a counter-overflow at the given frequency (given in Hz)
@@ -557,8 +559,12 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
         case 1: __HAL_RCC_TIM1_CLK_ENABLE(); break;
         case 2: __HAL_RCC_TIM2_CLK_ENABLE(); break;
         case 3: __HAL_RCC_TIM3_CLK_ENABLE(); break;
+        #if defined(TIM4)
         case 4: __HAL_RCC_TIM4_CLK_ENABLE(); break;
+        #endif
+        #if defined(TIM5)
         case 5: __HAL_RCC_TIM5_CLK_ENABLE(); break;
+        #endif
         #if defined(TIM6)
         case 6: __HAL_RCC_TIM6_CLK_ENABLE(); break;
         #endif
@@ -646,8 +652,12 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
     TIM_ENTRY(3, TIM3_IRQn),
+    #if defined(TIM4)
     TIM_ENTRY(4, TIM4_IRQn),
+    #endif
+    #if defined(TIM5)
     TIM_ENTRY(5, TIM5_IRQn),
+    #endif
     #if defined(TIM6)
     TIM_ENTRY(6, TIM6_DAC_IRQn),
     #endif
@@ -1049,8 +1059,12 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
             if (self->tim.Instance != TIM1
             &&  self->tim.Instance != TIM2
             &&  self->tim.Instance != TIM3
+            #if defined(TIM4)
             &&  self->tim.Instance != TIM4
+            #endif
+            #if defined(TIM5)
             &&  self->tim.Instance != TIM5
+            #endif
             #if defined(TIM8)
             &&  self->tim.Instance != TIM8
             #endif
