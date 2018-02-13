@@ -175,5 +175,7 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 }
 
 void set_rgb_status_brightness(uint8_t level){
-      rgb_status_brightness = level;
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    rgb_status_brightness = level;
+    #endif
 }
