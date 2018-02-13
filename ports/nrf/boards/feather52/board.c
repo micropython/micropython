@@ -35,15 +35,16 @@
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
 uint32_t bootloaderVersion = 0;
 
-void board_init(void)
+void board_init (void)
 {
-  // Retrieve bootloader version
-  bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
+    // Retrieve bootloader version
+    bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
 }
 
 // Check the status of the two buttons on CircuitPlayground Express. If both are
 // pressed, then boot into user safe mode.
-bool board_requests_safe_mode(void) {
+bool board_requests_safe_mode (void)
+{
 //    gpio_set_pin_function(PIN_PA14, GPIO_PIN_FUNCTION_OFF);
 //    gpio_set_pin_direction(PIN_PA14, GPIO_DIRECTION_IN);
 //    gpio_set_pin_pull_mode(PIN_PA14, GPIO_PULL_DOWN);
@@ -57,10 +58,11 @@ bool board_requests_safe_mode(void) {
 //    reset_pin(PIN_PA28);
 //    return safe_mode;
 
-  return false;
+    return false;
 }
 
-void reset_board(void) {
+void reset_board (void)
+{
 //    uint8_t empty[30];
 //    memset(empty, 0, 30);
 //    digitalio_digitalinout_obj_t neopixel_pin;
