@@ -1,5 +1,20 @@
 # Setup
 
+The `feather52840` board is currently based on the `PCA10056` development
+board from Nordic Semiconductors, since commercial modules are not yet
+available for the nRF52840.
+
+The difference between the `pca10056` and `feather52840` board support
+packages is that no bootloader is present on the `pca10056` (a HW debugger
+like a Segger J-Link is required to flash firmware images), whereas the
+`feather52840` package uses a serial bootloader, with a slightly different
+flash layout to account for the bootloader's presence.
+
+Both targets run on the same hardware and assume the same pinouts.
+
+The `feather52840` board support package will be updated at a later date
+to reflect any pin changes in the final Feather form-factor HW.
+
 ## Installing CircuitPython submodules
 
 Before you can build, you will need to run the following commands once, which
