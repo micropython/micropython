@@ -57,15 +57,15 @@
 #define MICROPY_HW_LED2             (19) // LED2
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_PA08)
-#define MICROPY_HW_UART1_TX         (pin_PA06)
+#define MICROPY_HW_UART1_RX         (pin_P0_08)
+#define MICROPY_HW_UART1_TX         (pin_P0_06)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_PA12) // (Arduino D13)
-#define MICROPY_HW_SPI0_MOSI        (pin_PA13) // (Arduino D11)
-#define MICROPY_HW_SPI0_MISO        (pin_PA14) // (Arduino D12)
+#define MICROPY_HW_SPI0_SCK         (pin_P0_12) // (Arduino D13)
+#define MICROPY_HW_SPI0_MOSI        (pin_P0_13) // (Arduino D11)
+#define MICROPY_HW_SPI0_MISO        (pin_P0_14) // (Arduino D12)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"

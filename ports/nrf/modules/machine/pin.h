@@ -43,8 +43,6 @@ typedef struct {
 
   union {
     void          *reg;
-
-    PIN_DEFS_PORT_AF_UNION
   };
 } pin_af_obj_t;
 
