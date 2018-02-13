@@ -153,6 +153,10 @@ bool start_mp(safe_mode_t safe_mode) {
                 serial_write(MSG_DOUBLE_FILE_EXTENSION);
             }
         }
+
+        reset_port();
+        reset_board();
+        reset_mp();
         reset_status_led();
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -314,9 +318,6 @@ int __attribute__((used)) main(void) {
             }
             first_run = false;
             skip_repl = start_mp(safe_mode);
-            reset_port();
-            reset_board();
-            reset_mp();
         } else if (exit_code != 0) {
             break;
         }

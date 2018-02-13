@@ -46,6 +46,7 @@
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/pulseio/PWMOut.h"
 #include "tick.h"
 
 extern volatile bool mp_msc_enabled;
@@ -206,8 +207,8 @@ void reset_port(void) {
 //     pdmin_reset();
 //     pulsein_reset();
 //     pulseout_reset();
-//     pwmout_reset();
 // #endif
+    pwmout_reset();
 
     analogin_reset();
 

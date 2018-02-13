@@ -330,10 +330,16 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             tc->COUNT16.CC[0].reg = top;
             #endif
             #ifdef SAMD51
+
+            tc->COUNT16.CTRLA.bit.SWRST = 1;
+            while (tc->COUNT16.CTRLA.bit.SWRST == 1) {
+            }
+            tc_set_enable(tc, false);
             tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER(divisor);
-            tc->COUNT16.CTRLBSET.bit.LUPD = true;
+            //tc->COUNT16.CTRLBSET.bit.LUPD = true;
             tc->COUNT16.WAVE.reg = TC_WAVE_WAVEGEN_MPWM;
             tc->COUNT16.CCBUF[0].reg = top;
+            tc->COUNT16.CCBUF[1].reg = top / 2;
             #endif
 
             tc_set_enable(tc, true);
@@ -404,7 +410,10 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         tc_insts[t->index]->COUNT16.CC[t->wave_output].reg = adjusted_duty;
         #endif
         #ifdef SAMD51
-        tc_insts[t->index]->COUNT16.CCBUF[t->wave_output].reg = adjusted_duty;
+        while (tc_insts[t->index]->COUNT16.SYNCBUSY.bit.CC1 != 0) {
+            // Wait for a previous value to be written.
+        }
+        tc_insts[t->index]->COUNT16.CCBUF[1].reg = adjusted_duty;
         #endif
     } else {
         uint32_t adjusted_duty = ((uint64_t) tcc_periods[t->index]) * duty / 0xffff;
