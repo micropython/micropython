@@ -10,6 +10,7 @@
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8)
@@ -79,6 +80,7 @@
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_SET)
 
 // USB VBUS detect pin
+#define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 
 // MMA accelerometer config

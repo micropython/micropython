@@ -4,6 +4,7 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // MSI is used and is 4MHz
 #define MICROPY_HW_CLK_PLLM (1)
@@ -65,3 +66,6 @@
 #define MICROPY_HW_LED2             (pin_B14) // green
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+
+// USB config
+#define MICROPY_HW_USB_FS (1)

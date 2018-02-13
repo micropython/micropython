@@ -6,6 +6,7 @@
 #define MICROPY_HW_HAS_SDCARD       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8)
@@ -69,4 +70,5 @@
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (1)
 
 // USB config
+#define MICROPY_HW_USB_FS         (1)
 #define MICROPY_HW_USB_OTG_ID_PIN (pin_A10)

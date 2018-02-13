@@ -7,6 +7,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // SD card detect switch
 #if MICROPY_HW_HAS_SDCARD
@@ -20,6 +21,9 @@
 #define MICROPY_HW_CLK_PLLN (384) //this number is the PLL clock in MHz
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2) //divide PLL clock by this to get core clock
 #define MICROPY_HW_CLK_PLLQ (8) //divide core clock by this to get 48MHz
+
+// USB config
+#define MICROPY_HW_USB_FS (1)
 
 // UART config
 #define MICROPY_HW_UART1_TX     (pin_A9)
@@ -46,7 +50,7 @@
 #define MICROPY_HW_SPI1_SCK     (pin_A5)
 #define MICROPY_HW_SPI1_MISO    (pin_A6)
 #define MICROPY_HW_SPI1_MOSI    (pin_A7)
-#if defined(USE_USB_HS_IN_FS)
+#if MICROPY_HW_USB_HS_IN_FS
 // The HS USB uses B14 & B15 for D- and D+
 #else
 #define MICROPY_HW_SPI2_NSS  (pin_B12)

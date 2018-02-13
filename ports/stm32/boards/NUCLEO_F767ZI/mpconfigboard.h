@@ -12,6 +12,7 @@
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // HSE is 25MHz
 // VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
@@ -66,5 +67,6 @@
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config (CN13 - USB OTG FS)
+#define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)

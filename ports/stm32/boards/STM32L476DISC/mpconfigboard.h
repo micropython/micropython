@@ -8,6 +8,7 @@ void STM32L476DISC_board_early_init(void);
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // use external SPI flash for storage
 #define MICROPY_HW_SPIFLASH_SIZE_BITS (128 * 1024 * 1024)
@@ -57,4 +58,5 @@ void STM32L476DISC_board_early_init(void);
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // USB config
+#define MICROPY_HW_USB_FS (1)
 // #define MICROPY_HW_USB_OTG_ID_PIN      (pin_C12) // This is not the official ID Pin which should be PA10
