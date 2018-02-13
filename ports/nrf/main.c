@@ -134,7 +134,9 @@ soft_reset:
     timer_init0();
 #endif
 
+#if MICROPY_PY_MACHINE_UART
     uart_init0();
+#endif
 
 #if (MICROPY_PY_BLE_NUS == 0)
     {
