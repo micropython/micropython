@@ -52,7 +52,7 @@ void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)
             *port_pcr |= PORT_PCR_DSE;
 
             /* Configure the IO Speed */
-            if (GPIO_Init->Speed > GPIO_SPEED_MEDIUM) {
+            if (GPIO_Init->Speed > GPIO_SPEED_FREQ_MEDIUM) {
                 *port_pcr &= ~PORT_PCR_SRE;
             } else {
                 *port_pcr |= PORT_PCR_SRE;
