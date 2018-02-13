@@ -107,6 +107,23 @@ updates.
 
 ## Building and Flashing CircuitPython
 
+### Installing `nrfutil`
+
+If you haven't installed the required command-line tool yet, go to the
+`/libs/nrfutil` folder (where nrfutil 0.5.2 is installed as a sub-module)
+and run the following commands:
+
+> If you get a 'sudo: pip: command not found' error running 'sudo pip install',
+you can install pip via 'sudo easy_install pip'
+
+```
+$ cd ../../lib/nrfutil
+$ sudo pip install -r requirements.txt
+$ sudo python setup.py install
+```
+
+### Flashing CircuitPython
+
 With the serial bootloader present on your board, you can build and flash
 a CircuitPython binary via the following command:
 
