@@ -1,13 +1,4 @@
-MCU_SERIES = m4
-MCU_VARIANT = nrf52
-MCU_SUB_VARIANT = nrf52840
-SOFTDEV_VERSION ?= 6.0.0-6.alpha
-
-LD_FILE = boards/nrf52840_1M_256k.ld
-
-NRF_DEFINES += -DNRF52840_XXAA
-
-ifeq ($(SD), )
-INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_SUB_VARIANT)_$(SOFTDEV_VERSION)_API/include
-INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_SUB_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
-endif
+# This file is a placeholder to enable building with 'SD=s132' flag
+# The actual config data is stored in the file referenced below, regardless
+# of whether S132 is actively used or not.
+include boards/$(BOARD)/mpconfigboard.mk
