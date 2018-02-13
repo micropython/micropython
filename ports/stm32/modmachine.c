@@ -223,7 +223,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
 
     ((void (*)(void)) *((uint32_t*) 0x1FF00004))();
 #else
-    __HAL_REMAPMEMORY_SYSTEMFLASH();
+    __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
 
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.

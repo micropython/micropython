@@ -224,7 +224,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
     /*------------------------------ LSE Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE) {
         // Enable Power Clock
-        __PWR_CLK_ENABLE();
+        __HAL_RCC_PWR_CLK_ENABLE();
         HAL_PWR_EnableBkUpAccess();
         uint32_t tickstart = HAL_GetTick();
 
@@ -243,7 +243,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
         //PWR->CR |= PWR_CR_DBP;
         // Wait for Backup domain Write protection disable
         while ((PWR->CR & PWR_CR_DBP) == RESET) {
-            if (HAL_GetTick() - tickstart > DBP_TIMEOUT_VALUE) {
+            if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
                 return HAL_TIMEOUT;
             }
         }
@@ -399,7 +399,7 @@ STATIC void RTC_CalendarConfig(void) {
     date.Date = 1;
     date.WeekDay = RTC_WEEKDAY_THURSDAY;
 
-    if(HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BIN) != HAL_OK) {
+    if(HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
@@ -413,7 +413,7 @@ STATIC void RTC_CalendarConfig(void) {
     time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     time.StoreOperation = RTC_STOREOPERATION_RESET;
 
-    if (HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BIN) != HAL_OK) {
+    if (HAL_RTC_SetTime(&RTCHandle, &time, RTC_FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
@@ -496,8 +496,8 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         // note: need to call get time then get date to correctly access the registers
         RTC_DateTypeDef date;
         RTC_TimeTypeDef time;
-        HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
-        HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+        HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
+        HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
         mp_obj_t tuple[8] = {
             mp_obj_new_int(2000 + date.Year),
             mp_obj_new_int(date.Month),
@@ -519,7 +519,7 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         date.Month = mp_obj_get_int(items[1]);
         date.Date = mp_obj_get_int(items[2]);
         date.WeekDay = mp_obj_get_int(items[3]);
-        HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BIN);
+        HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
 
         RTC_TimeTypeDef time;
         time.Hours = mp_obj_get_int(items[4]);
@@ -529,7 +529,7 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         time.TimeFormat = RTC_HOURFORMAT12_AM;
         time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         time.StoreOperation = RTC_STOREOPERATION_SET;
-        HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BIN);
+        HAL_RTC_SetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
 
         return mp_const_none;
     }

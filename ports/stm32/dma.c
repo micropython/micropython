@@ -373,7 +373,7 @@ static void dma_enable_clock(dma_id_t dma_id) {
 
     if (dma_id < NSTREAMS_PER_CONTROLLER) {
         if (((old_enable_mask & DMA1_ENABLE_MASK) == 0) && !DMA1_IS_CLK_ENABLED()) {
-            __DMA1_CLK_ENABLE();
+            __HAL_RCC_DMA1_CLK_ENABLE();
 
             // We just turned on the clock. This means that anything stored
             // in dma_last_channel (for DMA1) needs to be invalidated.
@@ -384,7 +384,7 @@ static void dma_enable_clock(dma_id_t dma_id) {
         }
     } else {
         if (((old_enable_mask & DMA2_ENABLE_MASK) == 0) && !DMA2_IS_CLK_ENABLED()) {
-            __DMA2_CLK_ENABLE();
+            __HAL_RCC_DMA2_CLK_ENABLE();
 
             // We just turned on the clock. This means that anything stored
             // in dma_last_channel (for DMA1) needs to be invalidated.
@@ -494,9 +494,9 @@ void dma_idle_handler(int tick) {
                 // Now we'll really disable the clock.
                 dma_idle.counter[controller] = 0;
                 if (controller == 0) {
-                    __DMA1_CLK_DISABLE();
+                    __HAL_RCC_DMA1_CLK_DISABLE();
                 } else {
-                    __DMA2_CLK_DISABLE();
+                    __HAL_RCC_DMA2_CLK_DISABLE();
                 }
             } else {
                 // Something is still active, but the counter never got

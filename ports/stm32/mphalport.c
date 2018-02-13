@@ -99,53 +99,53 @@ void mp_hal_ticks_cpu_enable(void) {
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     if (0) {
-    #ifdef __GPIOA_CLK_ENABLE
+    #ifdef __HAL_RCC_GPIOA_CLK_ENABLE
     } else if (gpio == GPIOA) {
-        __GPIOA_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();
     #endif
-    #ifdef __GPIOB_CLK_ENABLE
+    #ifdef __HAL_RCC_GPIOB_CLK_ENABLE
     } else if (gpio == GPIOB) {
-        __GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOB_CLK_ENABLE();
     #endif
-    #ifdef __GPIOC_CLK_ENABLE
+    #ifdef __HAL_RCC_GPIOC_CLK_ENABLE
     } else if (gpio == GPIOC) {
-        __GPIOC_CLK_ENABLE();
+        __HAL_RCC_GPIOC_CLK_ENABLE();
     #endif
-    #ifdef __GPIOD_CLK_ENABLE
+    #ifdef __HAL_RCC_GPIOD_CLK_ENABLE
     } else if (gpio == GPIOD) {
-        __GPIOD_CLK_ENABLE();
+        __HAL_RCC_GPIOD_CLK_ENABLE();
     #endif
-    #ifdef __GPIOE_CLK_ENABLE
+    #ifdef __HAL_RCC_GPIOE_CLK_ENABLE
     } else if (gpio == GPIOE) {
-        __GPIOE_CLK_ENABLE();
+        __HAL_RCC_GPIOE_CLK_ENABLE();
     #endif
-    #if defined(GPIOF) && defined(__GPIOF_CLK_ENABLE)
+    #ifdef __HAL_RCC_GPIOF_CLK_ENABLE
     } else if (gpio == GPIOF) {
-        __GPIOF_CLK_ENABLE();
+        __HAL_RCC_GPIOF_CLK_ENABLE();
     #endif
-    #if defined(GPIOG) && defined(__GPIOG_CLK_ENABLE)
+    #ifdef __HAL_RCC_GPIOG_CLK_ENABLE
     } else if (gpio == GPIOG) {
         #if defined(STM32L476xx) || defined(STM32L486xx)
         // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
         HAL_PWREx_EnableVddIO2();
         #endif
-        __GPIOG_CLK_ENABLE();
+        __HAL_RCC_GPIOG_CLK_ENABLE();
     #endif
-    #ifdef __GPIOH_CLK_ENABLE
+    #ifdef __HAL_RCC_GPIOH_CLK_ENABLE
     } else if (gpio == GPIOH) {
-        __GPIOH_CLK_ENABLE();
+        __HAL_RCC_GPIOH_CLK_ENABLE();
     #endif
-    #if defined(GPIOI) && defined(__GPIOI_CLK_ENABLE)
+    #ifdef __HAL_RCC_GPIOI_CLK_ENABLE
     } else if (gpio == GPIOI) {
-        __GPIOI_CLK_ENABLE();
+        __HAL_RCC_GPIOI_CLK_ENABLE();
     #endif
-    #if defined(GPIOJ) && defined(__GPIOJ_CLK_ENABLE)
+    #ifdef __HAL_RCC_GPIOJ_CLK_ENABLE
     } else if (gpio == GPIOJ) {
-        __GPIOJ_CLK_ENABLE();
+        __HAL_RCC_GPIOJ_CLK_ENABLE();
     #endif
-    #if defined(GPIOK) && defined(__GPIOK_CLK_ENABLE)
+    #ifdef __HAL_RCC_GPIOK_CLK_ENABLE
     } else if (gpio == GPIOK) {
-        __GPIOK_CLK_ENABLE();
+        __HAL_RCC_GPIOK_CLK_ENABLE();
     #endif
     }
 }

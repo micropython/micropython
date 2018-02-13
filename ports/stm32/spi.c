@@ -537,7 +537,7 @@ STATIC void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy
             mp_printf(print, ", SPI.SLAVE");
         }
         mp_printf(print, ", polarity=%u, phase=%u, bits=%u", spi->Init.CLKPolarity == SPI_POLARITY_LOW ? 0 : 1, spi->Init.CLKPhase == SPI_PHASE_1EDGE ? 0 : 1, spi->Init.DataSize == SPI_DATASIZE_8BIT ? 8 : 16);
-        if (spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLED) {
+        if (spi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE) {
             mp_printf(print, ", crc=0x%x", spi->Init.CRCPolynomial);
         }
     }
@@ -600,12 +600,12 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
 
     init->Direction = args[5].u_int;
     init->NSS = args[7].u_int;
-    init->TIMode = args[9].u_bool ? SPI_TIMODE_ENABLED : SPI_TIMODE_DISABLED;
+    init->TIMode = args[9].u_bool ? SPI_TIMODE_ENABLE : SPI_TIMODE_DISABLE;
     if (args[10].u_obj == mp_const_none) {
-        init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+        init->CRCCalculation = SPI_CRCCALCULATION_DISABLE;
         init->CRCPolynomial = 0;
     } else {
-        init->CRCCalculation = SPI_CRCCALCULATION_ENABLED;
+        init->CRCCalculation = SPI_CRCCALCULATION_ENABLE;
         init->CRCPolynomial = mp_obj_get_int(args[10].u_obj);
     }
 
@@ -916,7 +916,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     init->Direction = SPI_DIRECTION_2LINES;
     init->NSS = SPI_NSS_SOFT;
     init->TIMode = SPI_TIMODE_DISABLED;
-    init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+    init->CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     init->CRCPolynomial = 0;
 
     // set configurable paramaters

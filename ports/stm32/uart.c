@@ -166,7 +166,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART1_IRQn;
             pins[0] = &MICROPY_HW_UART1_TX;
             pins[1] = &MICROPY_HW_UART1_RX;
-            __USART1_CLK_ENABLE();
+            __HAL_RCC_USART1_CLK_ENABLE();
             break;
         #endif
 
@@ -187,7 +187,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
                 pins[3] = &MICROPY_HW_UART2_CTS;
             }
             #endif
-            __USART2_CLK_ENABLE();
+            __HAL_RCC_USART2_CLK_ENABLE();
             break;
         #endif
 
@@ -208,7 +208,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
                 pins[3] = &MICROPY_HW_UART3_CTS;
             }
             #endif
-            __USART3_CLK_ENABLE();
+            __HAL_RCC_USART3_CLK_ENABLE();
             break;
         #endif
 
@@ -219,7 +219,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART4_IRQn;
             pins[0] = &MICROPY_HW_UART4_TX;
             pins[1] = &MICROPY_HW_UART4_RX;
-            __UART4_CLK_ENABLE();
+            __HAL_RCC_UART4_CLK_ENABLE();
             break;
         #endif
 
@@ -230,7 +230,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART5_IRQn;
             pins[0] = &MICROPY_HW_UART5_TX;
             pins[1] = &MICROPY_HW_UART5_RX;
-            __UART5_CLK_ENABLE();
+            __HAL_RCC_UART5_CLK_ENABLE();
             break;
         #endif
 
@@ -251,7 +251,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
                 pins[3] = &MICROPY_HW_UART6_CTS;
             }
             #endif
-            __USART6_CLK_ENABLE();
+            __HAL_RCC_USART6_CLK_ENABLE();
             break;
         #endif
 
@@ -262,7 +262,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART7_IRQn;
             pins[0] = &MICROPY_HW_UART7_TX;
             pins[1] = &MICROPY_HW_UART7_RX;
-            __UART7_CLK_ENABLE();
+            __HAL_RCC_UART7_CLK_ENABLE();
             break;
         #endif
 
@@ -273,7 +273,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART8_IRQn;
             pins[0] = &MICROPY_HW_UART8_TX;
             pins[1] = &MICROPY_HW_UART8_RX;
-            __UART8_CLK_ENABLE();
+            __HAL_RCC_UART8_CLK_ENABLE();
             break;
         #endif
 
@@ -801,55 +801,55 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
     HAL_UART_DeInit(uart);
     if (uart->Instance == USART1) {
         HAL_NVIC_DisableIRQ(USART1_IRQn);
-        __USART1_FORCE_RESET();
-        __USART1_RELEASE_RESET();
-        __USART1_CLK_DISABLE();
+        __HAL_RCC_USART1_FORCE_RESET();
+        __HAL_RCC_USART1_RELEASE_RESET();
+        __HAL_RCC_USART1_CLK_DISABLE();
     } else if (uart->Instance == USART2) {
         HAL_NVIC_DisableIRQ(USART2_IRQn);
-        __USART2_FORCE_RESET();
-        __USART2_RELEASE_RESET();
-        __USART2_CLK_DISABLE();
+        __HAL_RCC_USART2_FORCE_RESET();
+        __HAL_RCC_USART2_RELEASE_RESET();
+        __HAL_RCC_USART2_CLK_DISABLE();
     #if defined(USART3)
     } else if (uart->Instance == USART3) {
         HAL_NVIC_DisableIRQ(USART3_IRQn);
-        __USART3_FORCE_RESET();
-        __USART3_RELEASE_RESET();
-        __USART3_CLK_DISABLE();
+        __HAL_RCC_USART3_FORCE_RESET();
+        __HAL_RCC_USART3_RELEASE_RESET();
+        __HAL_RCC_USART3_CLK_DISABLE();
     #endif
     #if defined(UART4)
     } else if (uart->Instance == UART4) {
         HAL_NVIC_DisableIRQ(UART4_IRQn);
-        __UART4_FORCE_RESET();
-        __UART4_RELEASE_RESET();
-        __UART4_CLK_DISABLE();
+        __HAL_RCC_UART4_FORCE_RESET();
+        __HAL_RCC_UART4_RELEASE_RESET();
+        __HAL_RCC_UART4_CLK_DISABLE();
     #endif
     #if defined(UART5)
     } else if (uart->Instance == UART5) {
         HAL_NVIC_DisableIRQ(UART5_IRQn);
-        __UART5_FORCE_RESET();
-        __UART5_RELEASE_RESET();
-        __UART5_CLK_DISABLE();
+        __HAL_RCC_UART5_FORCE_RESET();
+        __HAL_RCC_UART5_RELEASE_RESET();
+        __HAL_RCC_UART5_CLK_DISABLE();
     #endif
     #if defined(UART6)
     } else if (uart->Instance == USART6) {
         HAL_NVIC_DisableIRQ(USART6_IRQn);
-        __USART6_FORCE_RESET();
-        __USART6_RELEASE_RESET();
-        __USART6_CLK_DISABLE();
+        __HAL_RCC_USART6_FORCE_RESET();
+        __HAL_RCC_USART6_RELEASE_RESET();
+        __HAL_RCC_USART6_CLK_DISABLE();
     #endif
     #if defined(UART7)
     } else if (uart->Instance == UART7) {
         HAL_NVIC_DisableIRQ(UART7_IRQn);
-        __UART7_FORCE_RESET();
-        __UART7_RELEASE_RESET();
-        __UART7_CLK_DISABLE();
+        __HAL_RCC_UART7_FORCE_RESET();
+        __HAL_RCC_UART7_RELEASE_RESET();
+        __HAL_RCC_UART7_CLK_DISABLE();
     #endif
     #if defined(UART8)
     } else if (uart->Instance == UART8) {
         HAL_NVIC_DisableIRQ(UART8_IRQn);
-        __UART8_FORCE_RESET();
-        __UART8_RELEASE_RESET();
-        __UART8_CLK_DISABLE();
+        __HAL_RCC_UART8_FORCE_RESET();
+        __HAL_RCC_UART8_RELEASE_RESET();
+        __HAL_RCC_UART8_CLK_DISABLE();
     #endif
     }
     return mp_const_none;

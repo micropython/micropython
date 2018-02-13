@@ -51,7 +51,7 @@
 
 /* ADC defintions */
 #define ADCx                    (ADC1)
-#define ADCx_CLK_ENABLE         __ADC1_CLK_ENABLE
+#define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
 #define ADC_NUM_CHANNELS        (19)
 
 #if defined(MCU_SERIES_F4)
@@ -261,7 +261,7 @@ STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
 
     HAL_ADC_Start(adcHandle);
     if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK
-        && (HAL_ADC_GetState(adcHandle) & HAL_ADC_STATE_EOC_REG) == HAL_ADC_STATE_EOC_REG) {
+        && (HAL_ADC_GetState(adcHandle) & HAL_ADC_STATE_REG_EOC) == HAL_ADC_STATE_REG_EOC) {
         rawValue = HAL_ADC_GetValue(adcHandle);
     }
     HAL_ADC_Stop(adcHandle);
@@ -535,7 +535,7 @@ uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t chan
 }
 
 int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
-    uint32_t res_reg = __HAL_ADC_GET_RESOLUTION(adcHandle);
+    uint32_t res_reg = ADC_GET_RESOLUTION(adcHandle);
 
     switch (res_reg) {
         case ADC_RESOLUTION_6B:  return 6;

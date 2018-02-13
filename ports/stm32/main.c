@@ -428,10 +428,10 @@ int main(void) {
     SystemClock_Config();
 
     // enable GPIO clocks
-    __GPIOA_CLK_ENABLE();
-    __GPIOB_CLK_ENABLE();
-    __GPIOC_CLK_ENABLE();
-    __GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
 
     #if defined(MCU_SERIES_F4) ||  defined(MCU_SERIES_F7)
         #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)

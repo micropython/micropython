@@ -2,11 +2,11 @@
 
 void NETDUINO_PLUS_2_board_early_init(void) {
 
-    __GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
     // Turn off the backlight. LCD_BL_CTRL = PK3
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Pull = GPIO_PULLUP;
 
