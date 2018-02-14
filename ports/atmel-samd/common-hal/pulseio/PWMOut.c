@@ -293,7 +293,11 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         #ifdef SAMD51
         Tc* tc = tc_insts[t->index];
         while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {
-            // Wait for a previous value to be written.
+            // Wait for a previous value to be written. This can wait up to one period so we do
+            // other stuff in the meantime.
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
         }
         tc->COUNT16.CCBUF[1].reg = adjusted_duty;
         #endif
@@ -302,7 +306,11 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         uint8_t channel = tcc_channel(t);
         Tcc* tcc = tcc_insts[t->index];
         while ((tcc->SYNCBUSY.vec.CC & (1 << channel)) != 0) {
-            // Wait for a previous value to be written.
+            // Wait for a previous value to be written. This can wait up to one period so we do
+            // other stuff in the meantime.
+            #ifdef MICROPY_VM_HOOK_LOOP
+                MICROPY_VM_HOOK_LOOP
+            #endif
         }
         #ifdef SAMD21
         tcc->CCB[channel].reg = adjusted_duty;

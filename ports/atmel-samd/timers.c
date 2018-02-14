@@ -35,6 +35,10 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #endif
 
+#ifdef SAMD51
+#include "hri/hri_gclk_d51.h"
+#endif
+
 // This bitmask keeps track of which channels of a TCC are currently claimed.
 #ifdef SAMD21
 const uint8_t tcc_cc_num[3] = {4, 2, 2};
@@ -51,7 +55,7 @@ const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC3_GCLK_ID,
 const uint8_t tcc_gclk_ids[3] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID};
 #endif
 #ifdef SAMD51
-static const uint8_t tcc_cc_num[5] = {6, 4, 3, 2, 2};
+const uint8_t tcc_cc_num[5] = {6, 4, 3, 2, 2};
 const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC0_GCLK_ID,
                                           TC1_GCLK_ID,
                                           TC2_GCLK_ID,
@@ -228,6 +232,13 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
     }
 }
 
+#ifdef SAMD51
+#define TC_OFFSET 0
+#endif
+#ifdef SAMD21
+#define TC_OFFSET 0
+#endif
+
 void TCC0_Handler(void) {
     shared_timer_handler(false, 0);
 }
@@ -237,22 +248,38 @@ void TCC1_Handler(void) {
 void TCC2_Handler(void) {
     shared_timer_handler(false, 2);
 }
-void TC3_Handler(void) {
+// TC0 - TC2 only exist on the SAMD51
+#ifdef TC0
+void TC0_Handler(void) {
     shared_timer_handler(true, 0);
 }
-void TC4_Handler(void) {
+#endif
+#ifdef TC1
+void TC1_Handler(void) {
     shared_timer_handler(true, 1);
 }
-void TC5_Handler(void) {
+#endif
+#ifdef TC2
+void TC2_Handler(void) {
     shared_timer_handler(true, 2);
+}
+#endif
+void TC3_Handler(void) {
+    shared_timer_handler(true, 3 - TC_OFFSET);
+}
+void TC4_Handler(void) {
+    shared_timer_handler(true, 4 - TC_OFFSET);
+}
+void TC5_Handler(void) {
+    shared_timer_handler(true, 5 - TC_OFFSET);
 }
 #ifdef TC6
 void TC6_Handler(void) {
-    shared_timer_handler(true, 3);
+    shared_timer_handler(true, 6 - TC_OFFSET);
 }
 #endif
 #ifdef TC7
 void TC7_Handler(void) {
-    shared_timer_handler(true, 4);
+    shared_timer_handler(true, 7 - TC_OFFSET);
 }
 #endif

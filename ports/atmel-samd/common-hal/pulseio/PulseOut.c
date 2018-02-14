@@ -185,6 +185,8 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     Tc* tc = tc_insts[pulseout_tc_index];
     tc->COUNT16.CC[0].reg = current_compare;
 
+    // Clear our interrupt in case it was set earlier
+    tc->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
     tc->COUNT16.INTENSET.reg = TC_INTENSET_MC0;
     tc_enable_interrupts(pulseout_tc_index);
     turn_on(active_pincfg);

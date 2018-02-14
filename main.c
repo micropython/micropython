@@ -146,6 +146,7 @@ bool start_mp(safe_mode_t safe_mode) {
         const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
         const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+        reset_mp();
         found_main = maybe_run_list(supported_filenames, &result);
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
@@ -156,7 +157,6 @@ bool start_mp(safe_mode_t safe_mode) {
 
         reset_port();
         reset_board();
-        reset_mp();
         reset_status_led();
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -300,6 +300,7 @@ int __attribute__((used)) main(void) {
     bool first_run = true;
     for (;;) {
         if (!skip_repl) {
+            reset_mp();
             autoreload_suspend();
             new_status_color(REPL_RUNNING);
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -310,7 +311,6 @@ int __attribute__((used)) main(void) {
             autoreload_resume();
             reset_port();
             reset_board();
-            reset_mp();
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {

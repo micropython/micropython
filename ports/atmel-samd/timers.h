@@ -34,7 +34,7 @@ const uint8_t tc_gclk_ids[TC_INST_NUM];
 const uint8_t tcc_gclk_ids[3];
 #endif
 #ifdef SAMD51
-static const uint8_t tcc_cc_num[5];
+const uint8_t tcc_cc_num[5];
 const uint8_t tc_gclk_ids[TC_INST_NUM];
 const uint8_t tcc_gclk_ids[5];
 #endif
