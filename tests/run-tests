@@ -54,6 +54,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
         'micropython/meminfo.py', 'basics/bytes_compare3.py',
         'basics/builtin_help.py', 'thread/thread_exc2.py',
     )
+    had_crash = False
     if pyb is None:
         # run on PC
         if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
@@ -128,8 +129,9 @@ def run_micropython(pyb, args, test_file, is_special=False):
             # run the actual test
             try:
                 output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError:
-                output_mupy = b'CRASH'
+            except subprocess.CalledProcessError as er:
+                had_crash = True
+                output_mupy = er.output + b'CRASH'
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
@@ -142,13 +144,14 @@ def run_micropython(pyb, args, test_file, is_special=False):
         try:
             output_mupy = pyb.execfile(test_file)
         except pyboard.PyboardError:
+            had_crash = True
             output_mupy = b'CRASH'
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
     # don't try to convert the output if we should skip this test
-    if output_mupy in (b'SKIP\n', b'CRASH'):
+    if had_crash or output_mupy in (b'SKIP\n', b'CRASH'):
         return output_mupy
 
     if is_special or test_file in special_tests:
