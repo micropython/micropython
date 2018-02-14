@@ -34,6 +34,9 @@
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
+#ifdef SAMD21
+#include "hpl/gclk/hpl_gclk_base.h"
+#endif
 
 #include "samd21_pins.h"
 
@@ -53,8 +56,16 @@ const uint16_t prescaler[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
 #ifdef SAMD21
 uint8_t tcc_channels[3] = {0xf0, 0xfc, 0xfc};
 const uint8_t tcc_cc_num[3] = {4, 2, 2};
-const uint8_t tc_gclk_ids[] = {};
-const uint8_t tc_gclk_ids[5] = {TC3_GCLK_ID, TC4_GCLK_ID, TC5_GCLK_ID, TC6_GCLK_ID, TC7_GCLK_ID};
+const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC3_GCLK_ID,
+                                          TC4_GCLK_ID,
+                                          TC5_GCLK_ID,
+#ifdef TC6_GCLK_ID
+                                        , TC6_GCLK_ID
+#endif
+#ifdef TC7_GCLK_ID
+                                        , TC7_GCLK_ID
+#endif
+                            };
 const uint8_t tcc_gclk_ids[3] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID};
 #endif
 #ifdef SAMD51
@@ -120,9 +131,16 @@ static uint8_t tcc_channel(const pin_timer_t* t) {
 
 static void tc_set_enable(Tc* tc, bool enable) {
     tc->COUNT16.CTRLA.bit.ENABLE = enable;
+    #ifdef SAMD21
+    while (tc->COUNT16.STATUS.bit.SYNCBUSY != 0) {
+        /* Wait for sync */
+    }
+    #endif
+    #ifdef SAMD51
     while (tc->COUNT16.SYNCBUSY.bit.ENABLE != 0) {
         /* Wait for sync */
     }
+    #endif
 }
 
 static void tcc_set_enable(Tcc* tcc, bool enable) {
@@ -130,6 +148,15 @@ static void tcc_set_enable(Tcc* tcc, bool enable) {
     while (tcc->SYNCBUSY.bit.ENABLE != 0) {
         /* Wait for sync */
     }
+}
+
+static void tc_wait_for_sync(Tc* tc) {
+    #ifdef SAMD21
+    while (tc->COUNT16.STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+    #ifdef SAMD51
+    while (tc->COUNT16.SYNCBUSY.reg != 0) {}
+    #endif
 }
 
 bool channel_ok(const pin_timer_t* t) {
@@ -381,9 +408,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         Tc* tc = tc_insts[t->index];
         tc_set_enable(tc, false);
         tc->COUNT16.CTRLA.bit.SWRST = true;
-        while (tc->COUNT16.SYNCBUSY.bit.SWRST != 0) {
-            /* Wait for sync */
-        }
+        tc_wait_for_sync(tc);
     } else {
         tcc_refcount[t->index]--;
         tcc_channels[t->index] &= ~(1 << tcc_channel(t));
@@ -422,7 +447,12 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         while ((tcc->SYNCBUSY.vec.CC & (1 << channel)) != 0) {
             // Wait for a previous value to be written.
         }
+        #ifdef SAMD21
+        tcc->CCB[channel].reg = adjusted_duty;
+        #endif
+        #ifdef SAMD51
         tcc->CCBUF[channel].reg = adjusted_duty;
+        #endif
     }
 }
 
@@ -430,9 +460,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
         Tc* tc = tc_insts[t->index];
-        while (tc->COUNT16.SYNCBUSY.reg != 0) {
-            /* Wait for sync */
-        }
+        tc_wait_for_sync(tc);
         uint16_t cv = tc->COUNT16.CC[t->wave_output].reg;
         return cv * 0xffff / tc_periods[t->index];
     } else {
@@ -487,39 +515,38 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         Tc* tc = tc_insts[t->index];
         uint8_t old_divisor = tc->COUNT16.CTRLA.bit.PRESCALER;
         if (new_divisor != old_divisor) {
-            tc->COUNT16.CTRLA.bit.ENABLE = false;
-            while (tc->COUNT16.SYNCBUSY.bit.ENABLE != 0) {
-                /* Wait for sync */
-            }
+            tc_set_enable(tc, false);
             tc->COUNT16.CTRLA.bit.PRESCALER = new_divisor;
-            tc->COUNT16.CTRLA.bit.ENABLE = true;
+            tc_set_enable(tc, true);
         }
         tc_periods[t->index] = new_top;
-        while (tc->COUNT16.SYNCBUSY.reg != 0) {
-            /* Wait for sync */
-        }
         #ifdef SAMD21
         tc->COUNT16.CC[0].reg = new_top;
         #endif
         #ifdef SAMD51
+        while (tc->COUNT16.SYNCBUSY.reg != 0) {
+            /* Wait for sync */
+        }
         tc->COUNT16.CCBUF[0].reg = new_top;
         #endif
     } else {
         Tcc* tcc = tcc_insts[t->index];
         uint8_t old_divisor = tcc->CTRLA.bit.PRESCALER;
         if (new_divisor != old_divisor) {
-            tcc->CTRLA.bit.ENABLE = false;
-            while (tcc->SYNCBUSY.bit.ENABLE != 0) {
-                /* Wait for sync */
-            }
+            tcc_set_enable(tcc, false);
             tcc->CTRLA.bit.PRESCALER = new_divisor;
-            tcc->CTRLA.bit.ENABLE = true;
+            tcc_set_enable(tcc, true);
         }
         tcc_periods[t->index] = new_top;
+        #ifdef SAMD21
+        tcc->PERB.bit.PERB = new_top;
+        #endif
+        #ifdef SAMD51
         while (tcc->SYNCBUSY.reg != 0) {
             /* Wait for sync */
         }
         tcc->PERBUF.bit.PERBUF = new_top;
+        #endif
     }
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, old_duty);

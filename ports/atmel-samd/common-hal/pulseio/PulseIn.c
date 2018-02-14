@@ -39,12 +39,12 @@
 
 #include "tick.h"
 
-static pulseio_pulsein_obj_t *active_pulseins[EIC_NUMBER_OF_INTERRUPTS];
-static uint64_t last_ms[EIC_NUMBER_OF_INTERRUPTS];
-static uint16_t last_us[EIC_NUMBER_OF_INTERRUPTS];
+static pulseio_pulsein_obj_t *active_pulseins[EIC_EXTINT_NUM];
+static uint64_t last_ms[EIC_EXTINT_NUM];
+static uint16_t last_us[EIC_EXTINT_NUM];
 
 void pulsein_reset(void) {
-    for (int i = 0; i < EIC_NUMBER_OF_INTERRUPTS; i++) {
+    for (int i = 0; i < EIC_EXTINT_NUM; i++) {
         if (active_pulseins[i] != NULL) {
             //extint_chan_disable_callback(i, EXTINT_CALLBACK_TYPE_DETECT);
         }

@@ -386,7 +386,11 @@ PIN(PA22, EXTINT_CHANNEL(6), NO_ADC, NO_TOUCH,
     SERCOM(3, 0),
     #ifdef SERCOM5
     SERCOM(5, 0),
-    #els0, 4));
+    #else
+    NO_SERCOM,
+    #endif
+    TC(4, 0),
+    TCC(0, 4));
 #endif
 #ifdef PIN_PA23
 PIN(PA23, EXTINT_CHANNEL(7), NO_ADC, NO_TOUCH,
