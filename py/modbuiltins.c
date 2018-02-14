@@ -346,7 +346,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     const char *str = mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     if (MP_OBJ_IS_STR(o_in)) {
-        len = unichar_charlen(str, len);
+        len = utf8_charlen((const byte*)str, len);
         if (len == 1) {
             return mp_obj_new_int(utf8_get_char((const byte*)str));
         }

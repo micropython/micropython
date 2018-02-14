@@ -121,8 +121,15 @@ typedef uint32_t unichar;
 typedef uint unichar;
 #endif
 
+#if MICROPY_PY_BUILTINS_STR_UNICODE
 unichar utf8_get_char(const byte *s);
 const byte *utf8_next_char(const byte *s);
+size_t utf8_charlen(const byte *str, size_t len);
+#else
+static inline unichar utf8_get_char(const byte *s) { return *s; }
+static inline const byte *utf8_next_char(const byte *s) { return s + 1; }
+static inline size_t utf8_charlen(const byte *str, size_t len) { (void)str; return len; }
+#endif
 
 bool unichar_isspace(unichar c);
 bool unichar_isalpha(unichar c);
@@ -135,7 +142,6 @@ bool unichar_islower(unichar c);
 unichar unichar_tolower(unichar c);
 unichar unichar_toupper(unichar c);
 mp_uint_t unichar_xdigit_value(unichar c);
-mp_uint_t unichar_charlen(const char *str, mp_uint_t len);
 #define UTF8_IS_NONASCII(ch) ((ch) & 0x80)
 #define UTF8_IS_CONT(ch) (((ch) & 0xC0) == 0x80)
 

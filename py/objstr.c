@@ -1704,7 +1704,7 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
 
     // if needle_len is zero then we count each gap between characters as an occurrence
     if (needle_len == 0) {
-        return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char*)start, end - start) + 1);
+        return MP_OBJ_NEW_SMALL_INT(utf8_charlen(start, end - start) + 1);
     }
 
     // count the occurrences
