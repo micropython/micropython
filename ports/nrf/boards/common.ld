@@ -77,7 +77,7 @@ SECTIONS
     .stack :
     {
         . = ALIGN(4);
-        . = . + _minimum_stack_size;
+        . = . + _stack_size;
         . = ALIGN(4);
     } >RAM
 
@@ -93,6 +93,11 @@ SECTIONS
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
+
+/* Define heap and stack areas */
+_ram_end = ORIGIN(RAM) + LENGTH(RAM);
+_estack = ORIGIN(RAM) + LENGTH(RAM);
+_heap_end = _ram_end - _stack_size;
 
 _flash_user_start = ORIGIN(FLASH_USER);
 _flash_user_end   = ORIGIN(FLASH_USER) + LENGTH(FLASH_USER);
