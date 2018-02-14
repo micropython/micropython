@@ -343,19 +343,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     size_t len;
-    const char *str = mp_obj_str_get_data(o_in, &len);
+    const byte *str = (const byte*)mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     if (MP_OBJ_IS_STR(o_in)) {
-        len = utf8_charlen((const byte*)str, len);
+        len = utf8_charlen(str, len);
         if (len == 1) {
-            return mp_obj_new_int(utf8_get_char((const byte*)str));
+            return mp_obj_new_int(utf8_get_char(str));
         }
     } else
     #endif
     {
         // a bytes object, or a str without unicode support (don't sign extend the char)
         if (len == 1) {
-            return MP_OBJ_NEW_SMALL_INT(((const byte*)str)[0]);
+            return MP_OBJ_NEW_SMALL_INT(str[0]);
         }
     }
 
