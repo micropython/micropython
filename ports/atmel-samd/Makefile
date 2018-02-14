@@ -188,7 +188,6 @@ SRC_ASF := \
 	hpl/rtc/hpl_rtc.c \
 	hpl/sercom/hpl_sercom.c \
 	hpl/systick/hpl_systick.c \
-	hpl/tc/hpl_tc.c \
 	hpl/usb/hpl_usb.c \
 	usb/class/cdc/device/cdcdf_acm.c \
 	usb/class/msc/device/mscdf.c \
@@ -227,6 +226,7 @@ SRC_C = \
 	peripherals.c \
 	$(CHIP_FAMILY)_pins.c \
 	tick.c \
+	timers.c \
 	usb.c \
 	usb_mass_storage.c \
 	boards/$(BOARD)/board.c \

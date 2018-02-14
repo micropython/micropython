@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_TIMERS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_TIMERS_H
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
+#include "include/sam.h"
 
-#include "common-hal/microcontroller/Pin.h"
+#ifdef SAMD21
+const uint8_t tcc_cc_num[3];
+const uint8_t tc_gclk_ids[TC_INST_NUM];
+const uint8_t tcc_gclk_ids[3];
+#endif
+#ifdef SAMD51
+static const uint8_t tcc_cc_num[5];
+const uint8_t tc_gclk_ids[TC_INST_NUM];
+const uint8_t tcc_gclk_ids[5];
+#endif
+Tc* const tc_insts[TC_INST_NUM];
+Tcc* const tcc_insts[TCC_INST_NUM];
 
-#include "py/obj.h"
+void turn_on_clocks(bool is_tc, uint8_t index, uint32_t gclk_index);
+void tc_set_enable(Tc* tc, bool enable);
+void tcc_set_enable(Tcc* tcc, bool enable);
+void tc_wait_for_sync(Tc* tc);
+void tc_reset(Tc* tc);
 
-typedef struct {
-    mp_obj_base_t base;
-    __IO PORT_PINCFG_Type *pincfg;
-    uint8_t pin;
-} pulseio_pulseout_obj_t;
+void tc_enable_interrupts(uint8_t tc_index);
+void tc_disable_interrupts(uint8_t tc_index);
 
-void pulseout_reset(void);
-void pulseout_interrupt_handler(uint8_t index);
+// Handlers
+void TCC0_Handler(void);
+void TCC1_Handler(void);
+void TCC2_Handler(void);
+void TC3_Handler(void);
+void TC4_Handler(void);
+void TC5_Handler(void);
+#ifdef TC6
+void TC6_Handler(void);
+#endif
+#ifdef TC7
+void TC7_Handler(void);
+#endif
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMERS_H

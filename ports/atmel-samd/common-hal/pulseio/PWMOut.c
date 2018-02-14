@@ -34,9 +34,7 @@
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
-#ifdef SAMD21
-#include "hpl/gclk/hpl_gclk_base.h"
-#endif
+#include "timers.h"
 
 #include "samd21_pins.h"
 
@@ -55,44 +53,10 @@ const uint16_t prescaler[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
 // This bitmask keeps track of which channels of a TCC are currently claimed.
 #ifdef SAMD21
 uint8_t tcc_channels[3] = {0xf0, 0xfc, 0xfc};
-const uint8_t tcc_cc_num[3] = {4, 2, 2};
-const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC3_GCLK_ID,
-                                          TC4_GCLK_ID,
-                                          TC5_GCLK_ID,
-#ifdef TC6_GCLK_ID
-                                        , TC6_GCLK_ID
-#endif
-#ifdef TC7_GCLK_ID
-                                        , TC7_GCLK_ID
-#endif
-                            };
-const uint8_t tcc_gclk_ids[3] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID};
 #endif
 #ifdef SAMD51
 uint8_t tcc_channels[5] = {0xc0, 0xf0, 0xf8, 0xfc, 0xfc};
-static const uint8_t tcc_cc_num[5] = {6, 4, 3, 2, 2};
-const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC0_GCLK_ID,
-                                          TC1_GCLK_ID,
-                                          TC2_GCLK_ID,
-                                          TC3_GCLK_ID
-#ifdef TC4_GCLK_ID
-                                          , TC4_GCLK_ID
 #endif
-#ifdef TC5_GCLK_ID
-                                          , TC5_GCLK_ID
-#endif
-#ifdef TC6_GCLK_ID
-                                          , TC6_GCLK_ID
-#endif
-#ifdef TC7_GCLK_ID
-                                          , TC7_GCLK_ID
-#endif
-                                      };
-const uint8_t tcc_gclk_ids[5] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID, TCC3_GCLK_ID,
-                                 TCC4_GCLK_ID};
-#endif
-static Tc* const tc_insts[TC_INST_NUM] = TC_INSTS;
-static Tcc* const tcc_insts[TCC_INST_NUM] = TCC_INSTS;
 
 void pwmout_reset(void) {
     // Reset all timers
@@ -129,118 +93,10 @@ static uint8_t tcc_channel(const pin_timer_t* t) {
     return t->wave_output % tcc_cc_num[t->index];
 }
 
-static void tc_set_enable(Tc* tc, bool enable) {
-    tc->COUNT16.CTRLA.bit.ENABLE = enable;
-    #ifdef SAMD21
-    while (tc->COUNT16.STATUS.bit.SYNCBUSY != 0) {
-        /* Wait for sync */
-    }
-    #endif
-    #ifdef SAMD51
-    while (tc->COUNT16.SYNCBUSY.bit.ENABLE != 0) {
-        /* Wait for sync */
-    }
-    #endif
-}
-
-static void tcc_set_enable(Tcc* tcc, bool enable) {
-    tcc->CTRLA.bit.ENABLE = enable;
-    while (tcc->SYNCBUSY.bit.ENABLE != 0) {
-        /* Wait for sync */
-    }
-}
-
-static void tc_wait_for_sync(Tc* tc) {
-    #ifdef SAMD21
-    while (tc->COUNT16.STATUS.bit.SYNCBUSY != 0) {}
-    #endif
-    #ifdef SAMD51
-    while (tc->COUNT16.SYNCBUSY.reg != 0) {}
-    #endif
-}
-
 bool channel_ok(const pin_timer_t* t) {
     uint8_t channel_bit = 1 << tcc_channel(t);
     return (!t->is_tc && ((tcc_channels[t->index] & channel_bit) == 0)) ||
             t->is_tc;
-}
-
-void turn_on_clocks(const pin_timer_t* timer) {
-    uint8_t gclk_id;
-    if (timer->is_tc) {
-        gclk_id = tc_gclk_ids[timer->index];
-    } else {
-        gclk_id = tcc_gclk_ids[timer->index];
-    }
-    // Turn on the clocks for the peripherals.
-    #ifdef SAMD51
-    if (timer->is_tc) {
-        switch (timer->index) {
-            case 0:
-                MCLK->APBAMASK.reg |= MCLK_APBAMASK_TC0;
-                break;
-            case 1:
-                MCLK->APBAMASK.reg |= MCLK_APBAMASK_TC1;
-                break;
-            case 2:
-                MCLK->APBBMASK.reg |= MCLK_APBBMASK_TC2;
-                break;
-            case 3:
-                MCLK->APBBMASK.reg |= MCLK_APBBMASK_TC3;
-                break;
-            case 4:
-                MCLK->APBCMASK.reg |= MCLK_APBCMASK_TC4;
-                break;
-            case 5:
-                MCLK->APBCMASK.reg |= MCLK_APBCMASK_TC5;
-                break;
-            case 6:
-                MCLK->APBDMASK.reg |= MCLK_APBDMASK_TC6;
-                break;
-            case 7:
-                MCLK->APBDMASK.reg |= MCLK_APBDMASK_TC7;
-                break;
-            default:
-                break;
-        }
-    } else {
-        switch (timer->index) {
-            case 0:
-                MCLK->APBBMASK.reg |= MCLK_APBBMASK_TCC0;
-                break;
-            case 1:
-                MCLK->APBBMASK.reg |= MCLK_APBBMASK_TCC1;
-                break;
-            case 2:
-                MCLK->APBCMASK.reg |= MCLK_APBCMASK_TCC2;
-                break;
-            case 3:
-                MCLK->APBCMASK.reg |= MCLK_APBCMASK_TCC3;
-                break;
-            case 4:
-                MCLK->APBDMASK.reg |= MCLK_APBDMASK_TCC4;
-                break;
-            default:
-                break;
-        }
-    }
-
-    // FIXME(tannewt): TC4-TC7 can only have 100mhz inputs.
-
-    hri_gclk_write_PCHCTRL_reg(GCLK, gclk_id,
-                               GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
-    #endif
-
-    #ifdef SAMD21
-    // Determine the clock slot on the APBC bus. TCC0 is the first and 8 slots in.
-    uint8_t clock_slot = 8 + timer->index;
-    // We index TCs starting at zero but in memory they begin at three so we have to add three.
-    if (timer->is_tc) {
-        clock_slot += 3;
-    }
-    PM->APBCMASK.reg |= 1 << clock_slot;
-    _gclk_enable_channel(gclk_id, GCLK_CLKCTRL_GEN_GCLK0_Val);
-    #endif
 }
 
 void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
@@ -345,7 +201,8 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             }
         }
 
-        turn_on_clocks(timer);
+        // We use the zeroeth clock on either port to go full speed.
+        turn_on_clocks(timer->is_tc, timer->index, 0);
 
         if (timer->is_tc) {
             tc_periods[timer->index] = top;
