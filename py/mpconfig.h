@@ -787,6 +787,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (1)
 #endif
 
+// Whether to support binary ops [only (in)equality is defined] between range
+// objects.  With this option disabled all range objects that are not exactly
+// the same object will compare as not-equal.  With it enabled the semantics
+// match CPython and ranges are equal if they yield the same sequence of items.
+#ifndef MICROPY_PY_BUILTINS_RANGE_BINOP
+#define MICROPY_PY_BUILTINS_RANGE_BINOP (0)
+#endif
+
 // Whether to support timeout exceptions (like socket.timeout)
 #ifndef MICROPY_PY_BUILTINS_TIMEOUTERROR
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
