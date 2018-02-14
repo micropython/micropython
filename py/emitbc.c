@@ -437,7 +437,9 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
+            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             emit->code_info_size + emit->bytecode_size,
+            #endif
             emit->const_table,
             #if MICROPY_PERSISTENT_CODE_SAVE
             emit->ct_cur_obj, emit->ct_cur_raw_code,
