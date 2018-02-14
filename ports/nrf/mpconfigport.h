@@ -43,7 +43,7 @@
 #define MICROPY_READER_VFS          (MICROPY_VFS)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_STACK_CHECK         (0)
+#define MICROPY_STACK_CHECK         (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
