@@ -1,5 +1,5 @@
 /*
-    GNU linker script for NRF52 w/S140 6.0.0 SoftDevice
+    GNU linker script for NRF52840 w/S140 6.0.0 SoftDevice
 
     MEMORY MAP
     ------------------------------------------------------------------------
@@ -27,7 +27,7 @@ MEMORY
     FLASH_TEXT (rx) : ORIGIN = 0x00026000, LENGTH = 0x08C000
     FLASH_FATFS (r) : ORIGIN = 0x000B2000, LENGTH = 0x040000
 
-    /* 0x2000000 - RAM:ORGIGIN is reserved for Softdevice */
+    /* 0x2000000 - RAM:ORIGIN is reserved for Softdevice */
     RAM (xrw)       : ORIGIN = 0x20004000, LENGTH = 0x20040000 - 0x20004000
 }
 
