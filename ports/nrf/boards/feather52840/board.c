@@ -31,41 +31,14 @@
 
 #include "boards/board.h"
 
-// Must match temp register in bootloader
-#define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
-uint32_t bootloaderVersion = 0;
-
 void board_init(void) {
-    // Retrieve bootloader version
-    bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
+
 }
 
-// Check the status of the two buttons on CircuitPlayground Express. If both are
-// pressed, then boot into user safe mode.
 bool board_requests_safe_mode(void) {
-//    gpio_set_pin_function(PIN_PA14, GPIO_PIN_FUNCTION_OFF);
-//    gpio_set_pin_direction(PIN_PA14, GPIO_DIRECTION_IN);
-//    gpio_set_pin_pull_mode(PIN_PA14, GPIO_PULL_DOWN);
-//
-//    gpio_set_pin_function(PIN_PA28, GPIO_PIN_FUNCTION_OFF);
-//    gpio_set_pin_direction(PIN_PA28, GPIO_DIRECTION_IN);
-//    gpio_set_pin_pull_mode(PIN_PA28, GPIO_PULL_DOWN);
-//    bool safe_mode = gpio_get_pin_level(PIN_PA14) &&
-//        gpio_get_pin_level(PIN_PA28);
-//    reset_pin(PIN_PA14);
-//    reset_pin(PIN_PA28);
-//    return safe_mode;
-
-    return false;
+  return false;
 }
 
 void reset_board(void) {
-//    uint8_t empty[30];
-//    memset(empty, 0, 30);
-//    digitalio_digitalinout_obj_t neopixel_pin;
-//    common_hal_digitalio_digitalinout_construct(&neopixel_pin, &pin_PB23);
-//    common_hal_digitalio_digitalinout_switch_to_output(&neopixel_pin, false,
-//        DRIVE_MODE_PUSH_PULL);
-//    common_hal_neopixel_write(&neopixel_pin, empty, 30);
-//    common_hal_digitalio_digitalinout_deinit(&neopixel_pin);
+
 }
