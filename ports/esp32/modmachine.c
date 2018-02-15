@@ -33,7 +33,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "rom/ets_sys.h"
+#include "rom/rtc.h"
 #include "esp_system.h"
+#include "driver/touch_pad.h"
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -43,8 +45,19 @@
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
+#include "machine_rtc.h"
 
 #if MICROPY_PY_MACHINE
+
+extern machine_rtc_config_t machine_rtc_config;
+
+typedef enum {
+    MP_PWRON_RESET = 1,
+    MP_HARD_RESET,
+    MP_WDT_RESET,
+    MP_DEEPSLEEP_RESET,
+    MP_SOFT_RESET
+} reset_reason_t;
 
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -63,6 +76,104 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
+
+STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
+    enum {ARG_sleep_ms};
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sleep_ms, MP_ARG_INT, { .u_int = 0 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+
+    mp_int_t expiry = args[ARG_sleep_ms].u_int;
+
+    if (expiry != 0) {
+        esp_sleep_enable_timer_wakeup(expiry * 1000);
+    }
+
+    if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
+        esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
+    }
+
+    if (machine_rtc_config.ext1_pins != 0) {
+        esp_sleep_enable_ext1_wakeup(
+            machine_rtc_config.ext1_pins,
+            machine_rtc_config.ext1_level ? ESP_EXT1_WAKEUP_ANY_HIGH : ESP_EXT1_WAKEUP_ALL_LOW);
+    }
+
+    if (machine_rtc_config.wake_on_touch) {
+        if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "esp_sleep_enable_touchpad_wakeup() failed"));
+        }
+    }
+
+    switch(wake_type) {
+        case MACHINE_WAKE_SLEEP:
+            esp_light_sleep_start();
+            break;
+        case MACHINE_WAKE_DEEPSLEEP:
+            esp_deep_sleep_start();
+            break;
+    }
+    return mp_const_none;
+}
+
+STATIC mp_obj_t machine_sleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "light sleep not available for this version of ESP-IDF"));
+    return machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, pos_args, kw_args);
+};
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_sleep_obj, 0,  machine_sleep);
+
+STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, pos_args, kw_args);
+};
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
+
+STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    switch(rtc_get_reset_reason(0)) {
+        case POWERON_RESET:
+            return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
+            break;
+        case SW_RESET:
+        case SW_CPU_RESET:
+            return MP_OBJ_NEW_SMALL_INT(MP_SOFT_RESET);
+            break;
+        case OWDT_RESET:
+        case TG0WDT_SYS_RESET:
+        case TG1WDT_SYS_RESET:
+        case RTCWDT_SYS_RESET:
+        case RTCWDT_BROWN_OUT_RESET:
+        case RTCWDT_CPU_RESET:
+        case RTCWDT_RTC_RESET:
+        case TGWDT_CPU_RESET:
+            return MP_OBJ_NEW_SMALL_INT(MP_WDT_RESET);
+            break;
+
+        case DEEPSLEEP_RESET:
+            return MP_OBJ_NEW_SMALL_INT(MP_DEEPSLEEP_RESET);
+            break;
+
+        case EXT_CPU_RESET:
+            return MP_OBJ_NEW_SMALL_INT(MP_HARD_RESET);
+            break;
+
+        case NO_MEAN:
+        case SDIO_RESET:
+        case INTRUSION_RESET:
+        default:
+            return MP_OBJ_NEW_SMALL_INT(0);
+            break;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
+
+STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
 
 STATIC mp_obj_t machine_reset(void) {
     esp_restart();
@@ -106,6 +217,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
@@ -115,6 +228,10 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
+
+    // wake abilities
+    { MP_ROM_QSTR(MP_QSTR_SLEEP), MP_ROM_INT(MACHINE_WAKE_SLEEP) },
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
     { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
@@ -122,8 +239,26 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&machine_dac_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) },
+    { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&mp_machine_soft_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
+
+    // Reset reasons
+    { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET), MP_ROM_INT(MP_HARD_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET), MP_ROM_INT(MP_PWRON_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET), MP_ROM_INT(MP_WDT_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET), MP_ROM_INT(MP_DEEPSLEEP_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET), MP_ROM_INT(MP_SOFT_RESET) },
+
+    // Wake reasons
+    { MP_ROM_QSTR(MP_QSTR_wake_reason), MP_ROM_PTR(&machine_wake_reason_obj) },
+    { MP_ROM_QSTR(MP_QSTR_PIN_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) },
+    { MP_ROM_QSTR(MP_QSTR_EXT0_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT0) },
+    { MP_ROM_QSTR(MP_QSTR_EXT1_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_EXT1) },
+    { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) },
+    { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
