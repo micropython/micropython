@@ -46,6 +46,7 @@
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "tick.h"
@@ -206,8 +207,8 @@ void reset_port(void) {
 //     audioout_reset();
 //     touchin_reset();
 //     pdmin_reset();
-//     pulsein_reset();
 // #endif
+    pulsein_reset();
     pulseout_reset();
     pwmout_reset();
 
