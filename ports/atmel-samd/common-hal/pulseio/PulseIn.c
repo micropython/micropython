@@ -236,6 +236,9 @@ void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
 
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         uint16_t trigger_duration) {
+    // Make sure we're paused.
+    common_hal_pulseio_pulsein_pause(self);
+
     // Send the trigger pulse.
     if (trigger_duration > 0) {
         gpio_set_pin_pull_mode(self->pin, GPIO_PULL_OFF);
