@@ -35,6 +35,10 @@
 #include "py/mphal.h"
 #include "modmachine.h"
 #include "extmod/virtpin.h"
+#include "machine_rtc.h"
+#include "modesp32.h"
+
+extern machine_rtc_config_t machine_rtc_config;
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
@@ -219,10 +223,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
 STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger, ARG_hard };
+    enum { ARG_handler, ARG_trigger, ARG_wake };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_PIN_INTR_POSEDGE | GPIO_PIN_INTR_NEGEDGE} },
+        { MP_QSTR_wake, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -232,14 +237,48 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         // configure irq
         mp_obj_t handler = args[ARG_handler].u_obj;
         uint32_t trigger = args[ARG_trigger].u_int;
-        if (handler == mp_const_none) {
-            handler = MP_OBJ_NULL;
-            trigger = 0;
+        mp_obj_t wake_obj = args[ARG_wake].u_obj;
+
+        if ((trigger == GPIO_PIN_INTR_LOLEVEL || trigger == GPIO_PIN_INTR_HILEVEL) && wake_obj != mp_const_none) {
+            mp_int_t wake;
+            if (mp_obj_get_int_maybe(wake_obj, &wake)) {
+                if (wake < 2 || wake > 7) {
+                    mp_raise_ValueError("bad wake value");
+                }
+            } else {
+                mp_raise_ValueError("bad wake value");
+            }
+
+            if (machine_rtc_config.wake_on_touch) { // not compatible
+                mp_raise_ValueError("no resources");
+            }
+
+            if (!RTC_IS_VALID_EXT_PIN(self->id)) {
+                mp_raise_ValueError("invalid pin for wake");
+            }
+
+            if (machine_rtc_config.ext0_pin == -1) {
+                machine_rtc_config.ext0_pin = self->id;
+            } else if (machine_rtc_config.ext0_pin != self->id) {
+                mp_raise_ValueError("no resources");
+            }
+
+            machine_rtc_config.ext0_level = trigger == GPIO_PIN_INTR_LOLEVEL ? 0 : 1;
+            machine_rtc_config.ext0_wake_types = wake;
+        } else {
+            if (machine_rtc_config.ext0_pin == self->id) {
+                machine_rtc_config.ext0_pin = -1;
+            }
+
+            if (handler == mp_const_none) {
+                handler = MP_OBJ_NULL;
+                trigger = 0;
+            }
+            gpio_isr_handler_remove(self->id);
+            MP_STATE_PORT(machine_pin_irq_handler)[self->id] = handler;
+            gpio_set_intr_type(self->id, trigger);
+            gpio_isr_handler_add(self->id, machine_pin_isr_handler, (void*)self);
         }
-        gpio_isr_handler_remove(self->id);
-        MP_STATE_PORT(machine_pin_irq_handler)[self->id] = handler;
-        gpio_set_intr_type(self->id, trigger);
-        gpio_isr_handler_add(self->id, machine_pin_isr_handler, (void*)self);
     }
 
     // return the irq object
@@ -261,6 +300,8 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULLDOWN_ONLY) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_PIN_INTR_POSEDGE) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
+    { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
+    { MP_ROM_QSTR(MP_QSTR_WAKE_HIGH), MP_ROM_INT(GPIO_PIN_INTR_HILEVEL) },
 };
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
