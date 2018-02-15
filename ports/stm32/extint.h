@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_EXTINT_H
-#define MICROPY_INCLUDED_STMHAL_EXTINT_H
+#ifndef MICROPY_INCLUDED_STM32_EXTINT_H
+#define MICROPY_INCLUDED_STM32_EXTINT_H
 
 // Vectors 0-15 are for regular pins
 // Vectors 16-22 are for internal sources.
@@ -64,4 +64,4 @@ void Handle_EXTI_Irq(uint32_t line);
 
 extern const mp_obj_type_t extint_type;
 
-#endif // MICROPY_INCLUDED_STMHAL_EXTINT_H
+#endif // MICROPY_INCLUDED_STM32_EXTINT_H

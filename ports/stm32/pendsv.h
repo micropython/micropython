@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_PENDSV_H
-#define MICROPY_INCLUDED_STMHAL_PENDSV_H
+#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
+#define MICROPY_INCLUDED_STM32_PENDSV_H
 
 void pendsv_init(void);
 void pendsv_kbd_intr(void);
@@ -33,4 +33,4 @@ void pendsv_kbd_intr(void);
 // prelude for this function
 void pendsv_isr_handler(void) __attribute__((naked));
 
-#endif // MICROPY_INCLUDED_STMHAL_PENDSV_H
+#endif // MICROPY_INCLUDED_STM32_PENDSV_H

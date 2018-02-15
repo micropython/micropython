@@ -25,8 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_STM32_IT_H
-#define MICROPY_INCLUDED_STMHAL_STM32_IT_H
+#ifndef MICROPY_INCLUDED_STM32_STM32_IT_H
+#define MICROPY_INCLUDED_STM32_STM32_IT_H
 
 /**
   ******************************************************************************
@@ -79,4 +79,4 @@ void SysTick_Handler(void);
 void OTG_FS_IRQHandler(void);
 void OTG_HS_IRQHandler(void);
 
-#endif // MICROPY_INCLUDED_STMHAL_STM32_IT_H
+#endif // MICROPY_INCLUDED_STM32_STM32_IT_H

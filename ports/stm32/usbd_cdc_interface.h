@@ -1,8 +1,8 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  */
-#ifndef MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
-#define MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
+#ifndef MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H
+#define MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H
 
 /**
   ******************************************************************************
@@ -63,4 +63,4 @@ void usbd_cdc_tx_always(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len);
 int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc);
 int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeout);
 
-#endif // MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
+#endif // MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H

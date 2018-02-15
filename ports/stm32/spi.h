@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_SPI_H
-#define MICROPY_INCLUDED_STMHAL_SPI_H
+#ifndef MICROPY_INCLUDED_STM32_SPI_H
+#define MICROPY_INCLUDED_STM32_SPI_H
 
 #include "dma.h"
 
@@ -51,4 +51,4 @@ void spi_init0(void);
 void spi_init(const spi_t *spi, bool enable_nss_pin);
 const spi_t *spi_from_mp_obj(mp_obj_t o);
 
-#endif // MICROPY_INCLUDED_STMHAL_SPI_H
+#endif // MICROPY_INCLUDED_STM32_SPI_H

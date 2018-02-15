@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_STORAGE_H
-#define MICROPY_INCLUDED_STMHAL_STORAGE_H
+#ifndef MICROPY_INCLUDED_STM32_STORAGE_H
+#define MICROPY_INCLUDED_STM32_STORAGE_H
 
 #define FLASH_BLOCK_SIZE (512)
 
@@ -59,4 +59,4 @@ extern const struct _mp_obj_type_t pyb_flash_type;
 struct _fs_user_mount_t;
 void pyb_flash_init_vfs(struct _fs_user_mount_t *vfs);
 
-#endif // MICROPY_INCLUDED_STMHAL_STORAGE_H
+#endif // MICROPY_INCLUDED_STM32_STORAGE_H
