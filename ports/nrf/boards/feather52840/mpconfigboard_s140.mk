@@ -31,9 +31,5 @@ dfu-flash:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
 	nrfutil --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
 
-#boot-flash:
-#	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-#	nrfutil dfu serial --package $(BOOTLOADER_PKG) -p $(SERIAL) -b 115200
-
 boot-flash:
 	nrfjprog --program $(BOOTLOADER_FILENAME).hex -f nrf52 --chiperase --reset
