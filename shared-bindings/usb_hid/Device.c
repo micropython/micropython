@@ -67,10 +67,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_re
 
 //|   .. attribute:: usage_page
 //|
-//|     The usage page of the device. Can be thought of a category.
-//|
-//|     :return: the device's usage page
-//|     :rtype: int
+//|     The usage page of the device as an `int`. Can be thought of a category. (read-only)
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -87,12 +84,10 @@ const mp_obj_property_t usb_hid_device_usage_page_obj = {
 
 //|   .. attribute:: usage
 //|
-//|     The functionality of the device. For example Keyboard is 0x06 within the
-//|     generic desktop usage page 0x01. Mouse is 0x02 within the same usage
-//|     page.
+//|     The functionality of the device as an int. (read-only)
 //|
-//|     :return: the usage within the usage page
-//|     :rtype: int
+//|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.
+//|     Mouse is 0x02 within the same usage page.
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);

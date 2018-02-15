@@ -50,13 +50,13 @@
 
 //| .. class:: Processor()
 //|
-//| You cannot create an instance of `microcontroller.Processor`.
-//| Use `microcontroller.cpu` to access the sole instance available.
+//|     You cannot create an instance of `microcontroller.Processor`.
+//|     Use `microcontroller.cpu` to access the sole instance available.
 //|
 
-//| .. attribute:: frequency
+//|     .. attribute:: frequency
 //|
-//|   Return the CPU operating frequency as an int, in Hz.
+//|       The CPU operating frequency as an `int`, in Hertz. (read-only)
 //|
 STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
     return mp_obj_new_int_from_uint(common_hal_mcu_processor_get_frequency());
@@ -72,10 +72,11 @@ const mp_obj_property_t mcu_processor_frequency_obj = {
     },
 };
 
-//| .. attribute:: temperature
+//|     .. attribute:: temperature
 //|
-//|   Return the on-chip temperature, in Celsius, as a float.
-//|   If the temperature is not available, return `None`.
+//|       The on-chip temperature, in Celsius, as a float. (read-only)
+//|
+//|       Is `None` if the temperature is not available.
 //|
 STATIC mp_obj_t mcu_processor_get_temperature(mp_obj_t self) {
     float temperature = common_hal_mcu_processor_get_temperature();
@@ -92,10 +93,9 @@ const mp_obj_property_t mcu_processor_temperature_obj = {
     },
 };
 
-//| .. attribute:: uid
+//|     .. attribute:: uid
 //|
-//|   Return the unique id (aka serial number) of the chip.
-//|   Returns a bytearray object. 
+//|       The unique id (aka serial number) of the chip as a `bytearray`. (read-only)
 //|
 STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];

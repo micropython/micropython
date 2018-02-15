@@ -201,7 +201,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_popleft_obj, pulseio_pulsein_obj_pople
 
 //|   .. attribute:: maxlen
 //|
-//|     Returns the maximum length of the PulseIn. When len() is equal to maxlen,
+//|     The maximum length of the PulseIn. When len() is equal to maxlen,
 //|     it is unclear which pulses are active and which are idle.
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_get_maxlen(mp_obj_t self_in) {

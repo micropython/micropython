@@ -105,13 +105,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4
 
 //|   .. attribute:: value
 //|
-//|     The value on the analog pin.  The value must be between 0 and 65535
-//|     inclusive (16-bit). Even if the underlying digital to analog converter
-//|     is lower resolution, the input must be scaled to be 16-bit.
+//|     The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
 //|
-//|     :return: the last value written
-//|     :rtype: int
-//|
+//|     Even if the underlying digital to analog converter (DAC) is lower
+//|     resolution, the value is 16-bit.
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
    analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
    raise_error_if_deinited(common_hal_analogio_analogout_deinited(self));
