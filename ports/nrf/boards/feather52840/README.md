@@ -105,6 +105,34 @@ Run.
 From this point onward, you can now use a simple serial port for firmware
 updates.
 
+### IMPORTANT: Disable Mass Storage on PCA10056 J-Link
+
+The J-Link firmware on the PCA10056 implement USB Mass Storage, but this
+causes a known conflict with reliable USB CDC serial port communication. In
+order to use the serial bootloader, **you must disable MSD support on the
+Segger J-Link**!
+
+To disable mass storage support, run the `JLinkExe` (or equivalent) command,
+and send `MSDDisable`. (You can re-enable MSD support via `MSDEnable`):
+
+```
+$ JLinkExe
+SEGGER J-Link Commander V6.20f (Compiled Oct 13 2017 17:20:01)
+DLL version V6.20f, compiled Oct 13 2017 17:19:52
+
+Connecting to J-Link via USB...O.K.
+Firmware: J-Link OB-SAM3U128-V2-NordicSemi compiled Jul 24 2017 17:30:12
+Hardware version: V1.00
+S/N: 683947110
+VTref = 3.300V
+
+
+Type "connect" to establish a target connection, '?' for help
+J-Link>MSDDisable
+Probe configured successfully.
+J-Link>exit
+```
+
 ## Building and Flashing CircuitPython
 
 ### Installing `nrfutil`
