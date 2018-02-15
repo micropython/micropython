@@ -43,9 +43,6 @@
 // Number of traceback entries to reserve in the emergency exception buffer
 #define EMG_TRACEBACK_ALLOC (2 * TRACEBACK_ENTRY_LEN)
 
-// Instance of MemoryError exception - needed by mp_malloc_fail
-const mp_obj_exception_t mp_const_MemoryError_obj = {{&mp_type_MemoryError}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
-
 // Optionally allocated buffer for storing the first argument of an exception
 // allocated when the heap is locked.
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
