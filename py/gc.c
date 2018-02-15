@@ -209,6 +209,7 @@ bool gc_is_locked(void) {
 // topmost block on the stack and repeat with that one.
 STATIC void gc_mark_subtree(size_t block) {
     // Start with the block passed in the argument.
+    size_t sp = 0;
     for (;;) {
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
@@ -227,8 +228,8 @@ STATIC void gc_mark_subtree(size_t block) {
                     // an unmarked head, mark it, and push it on gc stack
                     TRACE_MARK(childblock, ptr);
                     ATB_HEAD_TO_MARK(childblock);
-                    if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) {
-                        *MP_STATE_MEM(gc_sp)++ = childblock;
+                    if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
+                        MP_STATE_MEM(gc_stack)[sp++] = childblock;
                     } else {
                         MP_STATE_MEM(gc_stack_overflow) = 1;
                     }
@@ -237,19 +238,18 @@ STATIC void gc_mark_subtree(size_t block) {
         }
 
         // Are there any blocks on the stack?
-        if (MP_STATE_MEM(gc_sp) <= MP_STATE_MEM(gc_stack)) {
+        if (sp == 0) {
             break; // No, stack is empty, we're done.
         }
 
         // pop the next block off the stack
-        block = *--MP_STATE_MEM(gc_sp);
+        block = MP_STATE_MEM(gc_stack)[--sp];
     }
 }
 
 STATIC void gc_deal_with_stack_overflow(void) {
     while (MP_STATE_MEM(gc_stack_overflow)) {
         MP_STATE_MEM(gc_stack_overflow) = 0;
-        MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
         // scan entire memory looking for blocks which have been marked but not their children
         for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
@@ -323,7 +323,6 @@ void gc_collect_start(void) {
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
     MP_STATE_MEM(gc_stack_overflow) = 0;
-    MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
     // Trace root pointers.  This relies on the root pointers being organised
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,

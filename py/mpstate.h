@@ -78,7 +78,6 @@ typedef struct _mp_state_mem_t {
 
     int gc_stack_overflow;
     size_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
-    size_t *gc_sp;
     uint16_t gc_lock_depth;
 
     // This variable controls auto garbage collection.  If set to 0 then the
