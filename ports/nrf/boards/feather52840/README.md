@@ -138,7 +138,7 @@ J-Link>exit
 ### Installing `nrfutil`
 
 If you haven't installed the required command-line tool yet, go to the
-`/libs/nrfutil` folder (where nrfutil 0.5.2 is installed as a sub-module)
+`/libs/nrfutil` folder (where nrfutil 0.5.2b is installed as a sub-module)
 and run the following commands:
 
 > If you get a 'sudo: pip: command not found' error running 'sudo pip install',
@@ -150,11 +150,52 @@ $ sudo pip install -r requirements.txt
 $ sudo python setup.py install
 ```
 
-### Flashing CircuitPython
+#### Changes to `nrfutil` in 0.5.2b
 
-With the serial bootloader present on your board, you can build and flash
-a CircuitPython binary via the following command:
+**IMPORTANT**: Make sure that you have version **0.5.2b**, since a small
+change was required to `dfu_transport_serial.py` to account for the
+increased minimum flash erase time on the nRF52840 compared to the earlier
+nRF52832!
+
+You can also manually change the file with the following new values (lines
+67-68), and reinstall the utility via `sudo python setup.py install`:
 
 ```
-make SD=s140 SERIAL=/dev/ttyACM0 BOARD=feather52840 dfu-gen dfu-flash
+FLASH_PAGE_ERASE_MAX_TIME = 0.1      # Worst time to erase a page 100 ms
+FLASH_PAGE_ERASE_MIN_TIME = 0.09      # Best time to erase a page 90 ms
+```
+
+### Flashing CircuitPython
+
+With the serial bootloader present on your board, you first need to force your
+board into DFU mode by holding down BUTTON1 and RESETTING the board (with
+BUTTON1 still pressed as you come out of reset).
+
+This will give you a **fast blinky DFU pattern** to indicate you are in DFU
+mode.
+
+At this point, you can build and flash a CircuitPython binary via the following
+command:
+
+```
+$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 dfu-gen dfu-flash
+```
+
+This should give you the following results:
+
+```
+$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 dfu-gen dfu-flash
+nrfutil dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application build-feather52840-s140/firmware.hex build-feather52840-s140/dfu-package.zip
+Zip created at build-feather52840-s140/dfu-package.zip
+nrfutil --verbose dfu serial --package build-feather52840-s140/dfu-package.zip -p /dev/tty.usbmodem1411 -b 115200
+Upgrading target on /dev/tty.usbmodem1411 with DFU package /Users/kevintownsend/Dropbox/microBuilder/Code/CircuitPython/circuitpython-mb/ports/nrf/build-feather52840-s140/dfu-package.zip. Flow control is disabled.
+Starting DFU upgrade of type 4, SoftDevice size: 0, bootloader size: 0, application size: 195252
+Sending DFU start packet
+Sending DFU init packet
+Sending firmware file
+################################################################################################################################################################################################################################################################################################################################################################################################
+Activating new firmware
+
+DFU upgrade took 41.6610329151s
+Device programmed.
 ```
