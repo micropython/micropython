@@ -203,11 +203,13 @@ bool gc_is_locked(void) {
 #endif
 #endif
 
-STATIC void gc_drain_stack(void) {
-    while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
-        // pop the next block off the stack
-        size_t block = *--MP_STATE_MEM(gc_sp);
-
+// Take the given block as the topmost block on the stack. Check all it's
+// children: mark the unmarked child blocks and put those newly marked
+// blocks on the stack. When all children have been checked, pop off the
+// topmost block on the stack and repeat with that one.
+STATIC void gc_mark_subtree(size_t block) {
+    // Start with the block passed in the argument.
+    for (;;) {
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -233,6 +235,14 @@ STATIC void gc_drain_stack(void) {
                 }
             }
         }
+
+        // Are there any blocks on the stack?
+        if (MP_STATE_MEM(gc_sp) <= MP_STATE_MEM(gc_stack)) {
+            break; // No, stack is empty, we're done.
+        }
+
+        // pop the next block off the stack
+        block = *--MP_STATE_MEM(gc_sp);
     }
 }
 
@@ -245,8 +255,7 @@ STATIC void gc_deal_with_stack_overflow(void) {
         for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
             // trace (again) if mark bit set
             if (ATB_GET_KIND(block) == AT_MARK) {
-                *MP_STATE_MEM(gc_sp)++ = block;
-                gc_drain_stack();
+                gc_mark_subtree(block);
             }
         }
     }
@@ -339,8 +348,7 @@ void gc_collect_root(void **ptrs, size_t len) {
                 // an unmarked head, mark it, and push it on gc stack
                 TRACE_MARK(block, ptr);
                 ATB_HEAD_TO_MARK(block);
-                *MP_STATE_MEM(gc_sp)++ = block;
-                gc_drain_stack();
+                gc_mark_subtree(block);
             }
         }
     }
