@@ -8,12 +8,12 @@
     0x000FF000..0x000FFFFF (  4KB) Bootloader Settings
     0x000FE000..0x000FEFFF (  4KB) Master Boot Record Params
     0x000F4000..0x000FDFFF ( 40KB) Serial + OTA Bootloader
-    
+
     0x000F3000..0x000F3FFF ( 4KB ) Private Config Data (Bonding, Keys, etc.)
     0x000F2000..0x000F2FFF ( 4KB ) User NVM data
-    0x000D9000..0x000F1FFF ( 100KB) User Filesystem
+    0x000B2000..0x000F1FFF (256KB) User Filesystem
 
-    0x00025000..0x000D8FFF (720KB) Application Code (including ISR vector)
+    0x00025000..0x000B1FFF (564KB) Application Code (including ISR vector)
     0x00001000..0x00024FFF (144KB) SoftDevice
     0x00000000..0x00000FFF   (4KB) Master Boot Record
 */
@@ -24,9 +24,9 @@ MEMORY
     FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 0x100000
 
     FLASH_ISR (rx)  : ORIGIN = 0x00025000, LENGTH = 0x001000
-    FLASH_TEXT (rx) : ORIGIN = 0x00026000, LENGTH = 0x0B3000
-    FLASH_FATFS (r) : ORIGIN = 0x000D9000, LENGTH = 0x019000
-    
+    FLASH_TEXT (rx) : ORIGIN = 0x00026000, LENGTH = 0x08C000
+    FLASH_FATFS (r) : ORIGIN = 0x000B2000, LENGTH = 0x040000
+
     /* 0x2000000 - RAM:ORGIGIN is reserved for Softdevice */
     RAM (xrw)       : ORIGIN = 0x20004000, LENGTH = 0x20040000 - 0x20004000
 }
