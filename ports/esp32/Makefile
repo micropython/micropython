@@ -147,6 +147,7 @@ SRC_C = \
 	network_lan.c \
 	modsocket.c \
 	modesp.c \
+	modesp32.c \
 	moduhashlib.c \
 	espneopixel.c \
 	machine_hw_spi.c \
