@@ -36,7 +36,7 @@
 #include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "spi.h"
-#include "font_petme128_8x8.h"
+#include "../../extmod/font_petme128_8x8.h"
 #include "lcd.h"
 
 /// \moduleref pyb
