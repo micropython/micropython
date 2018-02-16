@@ -34,7 +34,7 @@
 #define MICROPY_PORT_B        (PORT_PB03 | PORT_PB22 | PORT_PB23)
 #define MICROPY_PORT_C        (0)
 
-#include "spi_flash.h"
+#include "external_flash.h"
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.

@@ -252,7 +252,10 @@ ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 SRC_C += internal_flash.c
 endif
 ifeq ($(SPI_FLASH_FILESYSTEM),1)
-SRC_C += spi_flash.c
+SRC_C += external_flash.c spi_flash.c
+endif
+ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+SRC_C += external_flash.c qspi_flash.c
 endif
 
 SRC_COMMON_HAL = \
