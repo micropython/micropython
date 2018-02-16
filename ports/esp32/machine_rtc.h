@@ -39,4 +39,6 @@ typedef struct {
     bool ext1_level : 1;
 } machine_rtc_config_t;
 
+extern machine_rtc_config_t machine_rtc_config;
+
 #endif

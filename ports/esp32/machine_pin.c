@@ -38,8 +38,6 @@
 #include "machine_rtc.h"
 #include "modesp32.h"
 
-extern machine_rtc_config_t machine_rtc_config;
-
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     gpio_num_t id;

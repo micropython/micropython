@@ -40,8 +40,6 @@
 #include "machine_rtc.h"
 #include "modesp32.h"
 
-extern machine_rtc_config_t machine_rtc_config;
-
 STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     if (machine_rtc_config.ext0_pin != -1) {

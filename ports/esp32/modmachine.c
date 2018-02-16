@@ -49,8 +49,6 @@
 
 #if MICROPY_PY_MACHINE
 
-extern machine_rtc_config_t machine_rtc_config;
-
 typedef enum {
     MP_PWRON_RESET = 1,
     MP_HARD_RESET,
