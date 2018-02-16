@@ -38,11 +38,50 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 
+#ifdef SAMD21
+#include "hpl/gclk/hpl_gclk_base.h"
+#endif
+
 #include "tick.h"
 
 static pulseio_pulsein_obj_t *active_pulseins[EIC_EXTINT_NUM];
 static uint64_t last_ms[EIC_EXTINT_NUM];
 static uint16_t last_us[EIC_EXTINT_NUM];
+
+bool eic_get_enable(void) {
+    #ifdef SAMD51
+    return EIC->CTRLA.bit.ENABLE;
+    #endif
+    #ifdef SAMD21
+    return EIC->CTRL.bit.ENABLE;
+    #endif
+}
+
+void eic_set_enable(bool value) {
+    #ifdef SAMD51
+    EIC->CTRLA.bit.ENABLE = value;
+    while (EIC->SYNCBUSY.bit.ENABLE != 0) {}
+    // This won't actually block long enough in Rev A of SAMD51 and will miss edges in the first
+    // three cycles of the peripheral clock. See the errata for details. It shouldn't impact us.
+    #endif
+    #ifdef SAMD21
+    EIC->CTRL.bit.ENABLE = value;
+    while (EIC->STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+}
+
+void eic_reset(void) {
+    #ifdef SAMD51
+    EIC->CTRLA.bit.SWRST = true;
+    while (EIC->SYNCBUSY.bit.SWRST != 0) {}
+    // This won't actually block long enough in Rev A of SAMD51 and will miss edges in the first
+    // three cycles of the peripheral clock. See the errata for details. It shouldn't impact us.
+    #endif
+    #ifdef SAMD21
+    EIC->CTRL.bit.SWRST = true;
+    while (EIC->STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+}
 
 void pulsein_reset(void) {
     for (int i = 0; i < EIC_EXTINT_NUM; i++) {
@@ -54,8 +93,7 @@ void pulsein_reset(void) {
         NVIC_ClearPendingIRQ(EIC_0_IRQn + i);
         #endif
     }
-    EIC->CTRLA.bit.SWRST = true;
-    while (EIC->SYNCBUSY.bit.SWRST != 0) {}
+    eic_reset();
     #ifdef SAMD21
     NVIC_DisableIRQ(EIC_IRQn);
     NVIC_ClearPendingIRQ(EIC_IRQn);
@@ -71,16 +109,12 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
     } else {
         sense_setting |= EIC_CONFIG_SENSE0_RISE_Val;
     }
-    EIC->CTRLA.bit.ENABLE = false;
-    while (EIC->SYNCBUSY.bit.ENABLE != 0) {}
+    eic_set_enable(false);
     uint8_t config_index = self->channel / 8;
     uint8_t position = (self->channel % 8) * 4;
     uint32_t masked_value = EIC->CONFIG[config_index].reg & ~(0xf << position);
     EIC->CONFIG[config_index].reg = masked_value | (sense_setting << position);
-    EIC->CTRLA.bit.ENABLE = true;
-    while (EIC->SYNCBUSY.bit.ENABLE != 0) {}
-    // This won't actually block long enough in Rev A of SAMD51 and will miss edges in the first
-    // three cycles of the peripheral clock. See the errata for details. It shouldn't impact us.
+    eic_set_enable(true);
 }
 
 static void pulsein_interrupt_handler(uint8_t channel) {
@@ -131,9 +165,15 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     }
     uint32_t mask = 1 << pin->extint_channel;
     if (active_pulseins[pin->extint_channel] != NULL ||
-        (EIC->CTRLA.bit.ENABLE == 1 &&
+        (eic_get_enable() == 1 &&
+#ifdef SAMD51
             ((EIC->INTENSET.bit.EXTINT & mask) != 0 ||
              (EIC->EVCTRL.bit.EXTINTEO & mask) != 0))) {
+#endif
+#ifdef SAMD21
+            ((EIC->INTENSET.vec.EXTINT & mask) != 0 ||
+             (EIC->EVCTRL.vec.EXTINTEO & mask) != 0))) {
+#endif
         mp_raise_RuntimeError("EXTINT channel already in use");
     }
 
@@ -153,7 +193,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
     // Check to see if the EIC is enabled and start it up if its not.'
     // SAMD51 EIC can only be clocked up to 100mhz so we use the 48mhz clock.
-    if (EIC->CTRLA.bit.ENABLE == 0) {
+    if (eic_get_enable() == 0) {
         #ifdef SAMD51
         MCLK->APBAMASK.bit.EIC_ = true;
         hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID,
@@ -161,7 +201,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         #endif
 
         #ifdef SAMD21
-        PM->APBAMASK.bit.EIC = true;
+        PM->APBAMASK.bit.EIC_ = true;
         _gclk_enable_channel(EIC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
         #endif
 
@@ -216,15 +256,15 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     #endif
     // Test if all channels are null and deinit everything if they are.
     if (all_null && EIC->EVCTRL.reg == 0 && EIC->INTENSET.reg == 0) {
-        EIC->CTRLA.bit.ENABLE = 0;
+        eic_set_enable(false);
         #ifdef SAMD51
         MCLK->APBAMASK.bit.EIC_ = false;
         hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID, 0);
         #endif
 
         #ifdef SAMD21
-        PM->APBAMASK.bit.EIC = false;
-        _gclk_disable_channel(EIC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+        PM->APBAMASK.bit.EIC_ = false;
+        hri_gclk_write_CLKCTRL_reg(GCLK, GCLK_CLKCTRL_ID(EIC_GCLK_ID));
         #endif
     }
 }
@@ -315,7 +355,7 @@ void external_interrupt_handler(uint8_t channel) {
 #ifdef SAMD21
 void EIC_Handler(void) {
     for (uint8_t i = 0; i < 16; i++) {
-        if ((EIC->INTFLAG.bit.EXTINT & (1 << i)) == 1) {
+        if ((EIC->INTFLAG.vec.EXTINT & (1 << i)) != 0) {
             external_interrupt_handler(i);
         }
     }

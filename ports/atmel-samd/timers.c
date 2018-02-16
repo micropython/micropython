@@ -236,7 +236,7 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
 #define TC_OFFSET 0
 #endif
 #ifdef SAMD21
-#define TC_OFFSET 0
+#define TC_OFFSET 3
 #endif
 
 void TCC0_Handler(void) {
