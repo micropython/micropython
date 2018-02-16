@@ -28,10 +28,8 @@
 
 #include <stdint.h>
 
-#include "asf/common2/services/delay/delay.h"
-#include "asf/sam0/drivers/extint/extint.h"
-#include "asf/sam0/drivers/extint/extint_callback.h"
-#include "asf/sam0/drivers/port/port.h"
+#include "atmel_start_pins.h"
+#include "hal/include/hal_gpio.h"
 
 #include "mpconfigport.h"
 #include "py/gc.h"
@@ -40,52 +38,94 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 
+#ifdef SAMD21
+#include "hpl/gclk/hpl_gclk_base.h"
+#endif
+
 #include "tick.h"
 
-static pulseio_pulsein_obj_t *active_pulseins[EIC_NUMBER_OF_INTERRUPTS];
-static uint64_t last_ms[EIC_NUMBER_OF_INTERRUPTS];
-static uint16_t last_us[EIC_NUMBER_OF_INTERRUPTS];
+static pulseio_pulsein_obj_t *active_pulseins[EIC_EXTINT_NUM];
+static uint64_t last_ms[EIC_EXTINT_NUM];
+static uint16_t last_us[EIC_EXTINT_NUM];
+
+bool eic_get_enable(void) {
+    #ifdef SAMD51
+    return EIC->CTRLA.bit.ENABLE;
+    #endif
+    #ifdef SAMD21
+    return EIC->CTRL.bit.ENABLE;
+    #endif
+}
+
+void eic_set_enable(bool value) {
+    #ifdef SAMD51
+    EIC->CTRLA.bit.ENABLE = value;
+    while (EIC->SYNCBUSY.bit.ENABLE != 0) {}
+    // This won't actually block long enough in Rev A of SAMD51 and will miss edges in the first
+    // three cycles of the peripheral clock. See the errata for details. It shouldn't impact us.
+    #endif
+    #ifdef SAMD21
+    EIC->CTRL.bit.ENABLE = value;
+    while (EIC->STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+}
+
+void eic_reset(void) {
+    #ifdef SAMD51
+    EIC->CTRLA.bit.SWRST = true;
+    while (EIC->SYNCBUSY.bit.SWRST != 0) {}
+    // This won't actually block long enough in Rev A of SAMD51 and will miss edges in the first
+    // three cycles of the peripheral clock. See the errata for details. It shouldn't impact us.
+    #endif
+    #ifdef SAMD21
+    EIC->CTRL.bit.SWRST = true;
+    while (EIC->STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+}
 
 void pulsein_reset(void) {
-    for (int i = 0; i < EIC_NUMBER_OF_INTERRUPTS; i++) {
-        if (active_pulseins[i] != NULL) {
-            extint_chan_disable_callback(i, EXTINT_CALLBACK_TYPE_DETECT);
-        }
+    for (int i = 0; i < EIC_EXTINT_NUM; i++) {
         active_pulseins[i] = NULL;
         last_ms[i] = 0;
         last_us[i] = 0;
+        #ifdef SAMD51
+        NVIC_DisableIRQ(EIC_0_IRQn + i);
+        NVIC_ClearPendingIRQ(EIC_0_IRQn + i);
+        #endif
     }
+    eic_reset();
+    #ifdef SAMD21
+    NVIC_DisableIRQ(EIC_IRQn);
+    NVIC_ClearPendingIRQ(EIC_IRQn);
+    #endif
 }
 
 static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
-    struct extint_chan_conf config;
-    extint_chan_get_config_defaults(&config);
-    config.gpio_pin            = self->pin;
-    config.gpio_pin_pull       = EXTINT_PULL_NONE;
-    config.filter_input_signal = true;
-
+    uint8_t sense_setting = EIC_CONFIG_FILTEN0;
     if (!first_edge) {
-        config.detection_criteria  = EXTINT_DETECT_BOTH;
+        sense_setting |= EIC_CONFIG_SENSE0_BOTH_Val;
     } else if (self->idle_state) {
-        config.detection_criteria  = EXTINT_DETECT_FALLING;
+        sense_setting |= EIC_CONFIG_SENSE0_FALL_Val;
     } else {
-        config.detection_criteria  = EXTINT_DETECT_RISING;
+        sense_setting |= EIC_CONFIG_SENSE0_RISE_Val;
     }
-    extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
-    extint_chan_set_config(self->channel, &config);
-    // Clear any interrupts that may have triggered without notifying the CPU.
-    EIC->INTFLAG.reg |=  (1UL << self->channel);
-    extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    eic_set_enable(false);
+    uint8_t config_index = self->channel / 8;
+    uint8_t position = (self->channel % 8) * 4;
+    uint32_t masked_value = EIC->CONFIG[config_index].reg & ~(0xf << position);
+    EIC->CONFIG[config_index].reg = masked_value | (sense_setting << position);
+    eic_set_enable(true);
 }
 
-static void pulsein_callback(void) {
+static void pulsein_interrupt_handler(uint8_t channel) {
     // Grab the current time first.
-    uint16_t current_us = tc_get_count_value(&ms_timer);
-    // Add the overflow flag to account for tick interrupts that are blocked by
-    // this interrupt.
-    uint64_t current_ms = ticks_ms + TC5->COUNT16.INTFLAG.bit.OVF;
-    pulseio_pulsein_obj_t* self = active_pulseins[extint_get_current_channel()];
-    current_us = current_us * 1000 / self->ticks_per_ms;
+    uint32_t current_us;
+    uint64_t current_ms;
+    current_tick(&current_ms, &current_us);
+    // current_tick gives us the remaining us until the next tick but we want the number since the
+    // last ms.
+    current_us = 1000 - current_us;
+    pulseio_pulsein_obj_t* self = active_pulseins[channel];
     if (self->first_edge) {
         self->first_edge = false;
         pulsein_set_config(self, false);
@@ -123,13 +163,21 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     if (!pin->has_extint) {
         mp_raise_RuntimeError("No hardware support on pin");
     }
-    // TODO(tannewt): Switch to checking actual extint peripheral state when other
-    // classes use extints.
-    if (active_pulseins[pin->extint_channel] != NULL) {
+    uint32_t mask = 1 << pin->extint_channel;
+    if (active_pulseins[pin->extint_channel] != NULL ||
+        (eic_get_enable() == 1 &&
+#ifdef SAMD51
+            ((EIC->INTENSET.bit.EXTINT & mask) != 0 ||
+             (EIC->EVCTRL.bit.EXTINTEO & mask) != 0))) {
+#endif
+#ifdef SAMD21
+            ((EIC->INTENSET.vec.EXTINT & mask) != 0 ||
+             (EIC->EVCTRL.vec.EXTINTEO & mask) != 0))) {
+#endif
         mp_raise_RuntimeError("EXTINT channel already in use");
     }
 
-    self->buffer = (uint16_t *) gc_alloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
         mp_raise_msg_varg(&mp_type_MemoryError, "Failed to allocate RX buffer of %d bytes", maxlen * sizeof(uint16_t));
     }
@@ -140,16 +188,42 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->start = 0;
     self->len = 0;
     self->first_edge = true;
-    self->ticks_per_ms = (system_cpu_clock_get_hz() / 1000 - 1);
 
     active_pulseins[pin->extint_channel] = self;
 
+    // Check to see if the EIC is enabled and start it up if its not.'
+    // SAMD51 EIC can only be clocked up to 100mhz so we use the 48mhz clock.
+    if (eic_get_enable() == 0) {
+        #ifdef SAMD51
+        MCLK->APBAMASK.bit.EIC_ = true;
+        hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID,
+                                   GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
+        #endif
+
+        #ifdef SAMD21
+        PM->APBAMASK.bit.EIC_ = true;
+        _gclk_enable_channel(EIC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+        #endif
+
+
+        #ifdef SAMD21
+        NVIC_DisableIRQ(EIC_IRQn);
+        NVIC_ClearPendingIRQ(EIC_IRQn);
+        NVIC_EnableIRQ(EIC_IRQn);
+        #endif
+    }
+
+    gpio_set_pin_function(pin->pin, GPIO_PIN_FUNCTION_A);
+
+    #ifdef SAMD51
+    NVIC_DisableIRQ(EIC_0_IRQn + self->channel);
+    NVIC_ClearPendingIRQ(EIC_0_IRQn + self->channel);
+    NVIC_EnableIRQ(EIC_0_IRQn + self->channel);
+    #endif
+
+    // Set config will enable the EIC.
     pulsein_set_config(self, true);
-    extint_register_callback(
-        pulsein_callback,
-        self->channel,
-        EXTINT_CALLBACK_TYPE_DETECT);
-    extint_chan_enable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    EIC->INTENSET.reg = mask << EIC_INTENSET_EXTINT_Pos;
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
@@ -160,38 +234,60 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
-    extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    uint32_t mask = 1 << self->channel;
+    EIC->INTENCLR.reg = mask << EIC_INTENSET_EXTINT_Pos;
+    #ifdef SAMD51
+    NVIC_DisableIRQ(EIC_0_IRQn + self->channel);
+    NVIC_ClearPendingIRQ(EIC_0_IRQn + self->channel);
+    #endif
     active_pulseins[self->channel] = NULL;
     reset_pin(self->pin);
     self->pin = NO_PIN;
+
+    bool all_null = true;
+    for (uint8_t i = 0; all_null && i < 16; i++) {
+        all_null = all_null && active_pulseins[i] == NULL;
+    }
+    #ifdef SAMD21
+    if (all_null && EIC->INTENSET.reg == 0) {
+        NVIC_DisableIRQ(EIC_IRQn);
+        NVIC_ClearPendingIRQ(EIC_IRQn);
+    }
+    #endif
+    // Test if all channels are null and deinit everything if they are.
+    if (all_null && EIC->EVCTRL.reg == 0 && EIC->INTENSET.reg == 0) {
+        eic_set_enable(false);
+        #ifdef SAMD51
+        MCLK->APBAMASK.bit.EIC_ = false;
+        hri_gclk_write_PCHCTRL_reg(GCLK, EIC_GCLK_ID, 0);
+        #endif
+
+        #ifdef SAMD21
+        PM->APBAMASK.bit.EIC_ = false;
+        hri_gclk_write_CLKCTRL_reg(GCLK, GCLK_CLKCTRL_ID(EIC_GCLK_ID));
+        #endif
+    }
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
-    extint_chan_disable_callback(self->channel, EXTINT_CALLBACK_TYPE_DETECT);
+    uint32_t mask = 1 << self->channel;
+    EIC->INTENCLR.reg = mask << EIC_INTENSET_EXTINT_Pos;
 }
 
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         uint16_t trigger_duration) {
+    // Make sure we're paused.
+    common_hal_pulseio_pulsein_pause(self);
+
     // Send the trigger pulse.
     if (trigger_duration > 0) {
-        struct port_config pin_conf;
-        port_get_config_defaults(&pin_conf);
-
-        pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-        pin_conf.input_pull = PORT_PIN_PULL_NONE;
-        port_pin_set_config(self->pin, &pin_conf);
-
-        // TODO(tannewt): delay_us isn't exactly correct so we adjust the value
-        // here before calling it. Find out why its not exact and fix it instead
-        // of hacking around it here.
-        uint32_t adjusted_duration = trigger_duration;
-        adjusted_duration *= 4;
-        adjusted_duration /= 5;
+        gpio_set_pin_pull_mode(self->pin, GPIO_PULL_OFF);
+        gpio_set_pin_direction(self->pin, GPIO_DIRECTION_OUT);
 
         common_hal_mcu_disable_interrupts();
-        port_pin_set_output_level(self->pin, !self->idle_state);
-        common_hal_mcu_delay_us(adjusted_duration);
-        port_pin_set_output_level(self->pin, self->idle_state);
+        gpio_set_pin_level(self->pin, !self->idle_state);
+        common_hal_mcu_delay_us(trigger_duration);
+        gpio_set_pin_level(self->pin, self->idle_state);
         common_hal_mcu_enable_interrupts();
     }
 
@@ -199,6 +295,12 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     last_ms[self->channel] = 0;
     last_us[self->channel] = 0;
     self->first_edge = true;
+    gpio_set_pin_function(self->pin, GPIO_PIN_FUNCTION_A);
+    uint32_t mask = 1 << self->channel;
+    // Clear previous interrupt state and re-enable it.
+    EIC->INTFLAG.reg = mask << EIC_INTFLAG_EXTINT_Pos;
+    EIC->INTENSET.reg = mask << EIC_INTENSET_EXTINT_Pos;
+
     pulsein_set_config(self, true);
 }
 
@@ -244,3 +346,69 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,
     common_hal_mcu_enable_interrupts();
     return value;
 }
+
+void external_interrupt_handler(uint8_t channel) {
+    pulsein_interrupt_handler(channel);
+    EIC->INTFLAG.reg = (1 << channel) << EIC_INTFLAG_EXTINT_Pos;
+}
+
+#ifdef SAMD21
+void EIC_Handler(void) {
+    for (uint8_t i = 0; i < 16; i++) {
+        if ((EIC->INTFLAG.vec.EXTINT & (1 << i)) != 0) {
+            external_interrupt_handler(i);
+        }
+    }
+}
+#endif
+
+#ifdef SAMD51
+void EIC_0_Handler(void) {
+    external_interrupt_handler(0);
+}
+void EIC_1_Handler(void) {
+    external_interrupt_handler(1);
+}
+void EIC_2_Handler(void) {
+    external_interrupt_handler(2);
+}
+void EIC_3_Handler(void) {
+    external_interrupt_handler(3);
+}
+void EIC_4_Handler(void) {
+    external_interrupt_handler(4);
+}
+void EIC_5_Handler(void) {
+    external_interrupt_handler(5);
+}
+void EIC_6_Handler(void) {
+    external_interrupt_handler(6);
+}
+void EIC_7_Handler(void) {
+    external_interrupt_handler(7);
+}
+void EIC_8_Handler(void) {
+    external_interrupt_handler(8);
+}
+void EIC_9_Handler(void) {
+    external_interrupt_handler(9);
+}
+void EIC_10_Handler(void) {
+    external_interrupt_handler(10);
+}
+void EIC_11_Handler(void) {
+    external_interrupt_handler(11);
+}
+void EIC_12_Handler(void) {
+    external_interrupt_handler(12);
+}
+void EIC_13_Handler(void) {
+    external_interrupt_handler(13);
+}
+void EIC_14_Handler(void) {
+    external_interrupt_handler(14);
+}
+void EIC_15_Handler(void) {
+    external_interrupt_handler(15);
+}
+#endif

@@ -40,14 +40,9 @@ typedef struct {
 } pin_sercom_t;
 
 typedef struct {
-    union {
-        Tc *const tc;
-        Tcc *const tcc;
-    };
-    #ifdef SAMD21
+    uint8_t index;
     bool is_tc:1;
-    #endif
-    uint8_t wave_output:4;
+    uint8_t wave_output:7;
 } pin_timer_t;
 
 #ifdef SAMD21
