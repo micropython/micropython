@@ -81,29 +81,84 @@ static void flash_disable(void) {
     gpio_set_pin_level(SPI_FLASH_CS_PIN, true);
 }
 
+static void spi_flash_command(uint8_t* request, uint8_t* response, uint32_t length) {
+    struct spi_xfer xfer = { request, response, length };
+    flash_enable();
+    spi_m_sync_transfer(&spi_flash_desc, &jedec_id_xfer);
+    flash_disable();
+}
+
+static void qspi_flash_command(uint8_t* request, uint8_t* response, uint32_t length) {
+
+}
+
+static void flash_command(uint8_t* request, uint8_t* response, uint32_t length) {
+    #ifdef CIRCUITPY_QSPI
+    qspi_flash_command(request, response, length);
+    #else
+    spi_flash_command(request, response, length);
+    #endif
+}
+
+static bool spi_flash_write_data(uint8_t* request, uint32_t request_length, uint8_t* data, uint32_t data_length) {
+    flash_enable();
+    uint8_t page_program_request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
+    // Write the SPI flash write address into the bytes following the command byte.
+    address_to_bytes(address + bytes_written, page_program_request + 1);
+    struct spi_xfer page_program_xfer = {request, 0, request_length};
+    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &page_program_xfer);
+    if (status >= 0) {
+        struct spi_xfer write_data_buffer_xfer = {data, 0, data_length};
+        status = spi_m_sync_transfer(&spi_flash_desc, &write_data_buffer_xfer);
+    }
+    flash_disable();
+    return status >= 0;
+}
+
+static bool qspi_flash_write_data(uint8_t* request, uint32_t request_length, uint8_t* data, uint32_t data_length) {
+    return true;
+}
+
+static bool flash_write_data(uint8_t* request, uint32_t request_length, uint8_t* data, uint32_t data_length) {
+    #ifdef CIRCUITPY_QSPI
+    return qspi_flash_write_data(request, request_length, data, data_length);
+    #else
+    return spi_flash_write_data(request, request_length, data, data_length);
+    #endif
+}
+
+static bool spi_flash_read_data(uint8_t* request, uint32_t request_length, uint8_t* data, uint32_t data_length) {
+
+}
+
+static bool qspi_flash_read_data(uint8_t* request, uint32_t request_length, uint8_t* data, uint32_t data_length) {
+    return true;
+}
+
+static bool flash_read_data(uint8_t* request, uint32_t request_length, uint8_t* data, uint32_t data_length) {
+    #ifdef CIRCUITPY_QSPI
+    return qspi_flash_write_data(request, request_length, data, data_length);
+    #else
+    return spi_flash_write_data(request, request_length, data, data_length);
+    #endif
+}
+
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
     uint8_t read_status_request[2] = {CMD_READ_STATUS, 0x00};
     uint8_t read_status_response[2] = {0x00, 0x00};
-    struct spi_xfer read_status_xfer = {read_status_request, read_status_response, 2};
-    int32_t status;
+    bool ok = true;
     // Both the write enable and write in progress bits should be low.
     do {
-        flash_enable();
-        status = spi_m_sync_transfer(&spi_flash_desc, &read_status_xfer);
-        flash_disable();
-    } while (status >= 0 && (read_status_response[1] & 0x3) != 0);
-    return status >= 0;         // status is number of chars read or a negative error code.
+        ok = flash_command(read_status_request, read_status_response, 2);
+    } while (ok && (read_status_response[1] & 0x3) != 0);
+    return ok;
 }
 
 // Turn on the write enable bit so we can program and erase the flash.
 static bool write_enable(void) {
-    flash_enable();
     uint8_t enable_write_request[1] = {CMD_ENABLE_WRITE};
-    struct spi_xfer enable_write_xfer = {enable_write_request, 0, 1};
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &enable_write_xfer);
-    flash_disable();
-    return status >= 0;         // status is number of chars read or a negative error code.
+    return flash_command(enable_write_request, 0, 1);
 }
 
 // Pack the low 24 bits of the address into a uint8_t array.
@@ -123,17 +178,9 @@ static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
     }
     // We can read as much as we want sequentially.
     uint8_t read_data_request[4] = {CMD_READ_DATA, 0x00, 0x00, 0x00};
-    struct spi_xfer read_data_xfer = {read_data_request, 0, 4};
     // Write the SPI flash read address into the bytes following the command byte.
     address_to_bytes(address, read_data_request + 1);
-    flash_enable();
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &read_data_xfer);
-    struct spi_xfer read_data_buffer_xfer = {0, data, data_length};
-    if (status >= 0) {
-        status = spi_m_sync_transfer(&spi_flash_desc, &read_data_buffer_xfer);
-    }
-    flash_disable();
-    return status >= 0;
+    return flash_read_data(read_data_request, 4, data, data_length);
 }
 
 // Writes data_length's worth of bytes starting at address from data. Assumes
@@ -173,18 +220,11 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
         // flash_disable();
         #endif
 
-        flash_enable();
         uint8_t page_program_request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
         // Write the SPI flash write address into the bytes following the command byte.
         address_to_bytes(address + bytes_written, page_program_request + 1);
-        struct spi_xfer page_program_xfer = {page_program_request, 0, 4};
-        status = spi_m_sync_transfer(&spi_flash_desc, &page_program_xfer);
-        if (status >= 0) {
-            struct spi_xfer write_data_buffer_xfer = {(uint8_t*) data + bytes_written, 0, SPI_FLASH_PAGE_SIZE};
-            status = spi_m_sync_transfer(&spi_flash_desc, &write_data_buffer_xfer);
-        }
-        flash_disable();
-        if (status < 0) {
+        if (!flash_write_data(page_program_request, 4, (uint8_t*) data + bytes_written,
+                              SPI_FLASH_PAGE_SIZE)) {
             return false;
         }
     }
@@ -230,11 +270,8 @@ static bool erase_sector(uint32_t sector_address) {
 
     uint8_t erase_request[4] = {CMD_SECTOR_ERASE, 0x00, 0x00, 0x00};
     address_to_bytes(sector_address, erase_request + 1);
-    struct spi_xfer erase_xfer = {erase_request, 0, 4};
-    flash_enable();
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &erase_xfer);
-    flash_disable();
-    return status >= 0;
+    flash_command(erase_request, NULL, 4);
+    return true;
 }
 
 // Sector is really 24 bits.
@@ -252,11 +289,7 @@ static bool copy_block(uint32_t src_address, uint32_t dest_address) {
     return true;
 }
 
-void spi_flash_init(void) {
-    if (spi_flash_is_initialised) {
-        return;
-    }
-
+void init_spi_peripheral(void) {
     samd_peripherals_sercom_clock_init(SPI_FLASH_SERCOM, SPI_FLASH_SERCOM_INDEX);
 
     // Set up with defaults, then change.
@@ -291,6 +324,47 @@ void spi_flash_init(void) {
     flash_disable();
 
     spi_m_sync_enable(&spi_flash_desc);
+}
+
+static void init_qspi_peripheral(void) {
+    MCLK->APBCMASK.bit.QSPI_ = true;
+    MCLK->AHBMASK.bit.QSPI_ = true;
+    MCLK->AHBMASK.bit.QSPI_2X_ = false; // Only true if we are doing DDR.
+
+    QSPI->CTRLA.reg = QSPI_CTRLA_SWRST;
+    // We don't need to wait because we're running as fast as the CPU.
+
+    QSPI->BAUD.bit.BAUD = 2;
+    QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |
+                      QSPI_CTRLB_CSMODE_NORELOAD |
+                      QSPI_CTRLB_DATALEN_8BITS |
+                      QSPI_CTRLB_CSMODE_LASTXFER;
+
+    QSPI->CTRLA.bit.ENABLE = 1;
+
+    // The QSPI is only connected to one set of pins in the SAMD51 so we can hard code it.
+    uint32_t pins = {PIN_PA08, PIN_PA09, PIN_PA10, PIN_PA11, PIN_PB10, PIN_PB11};
+    for (uint8_t i = 0; i < sizeof(pins); i++) {
+        gpio_set_pin_direction(SPI_FLASH_SCK_PIN, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(SPI_FLASH_SCK_PIN, GPIO_PULL_OFF);
+        gpio_set_pin_function(SPI_FLASH_SCK_PIN, GPIO_PIN_FUNCTION_H);
+    }
+}
+
+void init_peripherals(void) {
+    #ifdef CIRCUITPY_QSPI
+    init_qspi_peripheral();
+    #else
+    init_spi_peripheral();
+    #endif
+}
+
+void spi_flash_init(void) {
+    if (spi_flash_is_initialised) {
+        return;
+    }
+
+    init_peripherals();
 
     // Activity LED for flash writes.
 #ifdef MICROPY_HW_LED_MSC
@@ -302,10 +376,8 @@ void spi_flash_init(void) {
 
     uint8_t jedec_id_request[4] = {CMD_READ_JEDEC_ID, 0x00, 0x00, 0x00};
     uint8_t jedec_id_response[4] = {0x00, 0x00, 0x00, 0x00};
-    struct spi_xfer jedec_id_xfer = { jedec_id_request, jedec_id_response, 4 };
-    flash_enable();
-    spi_m_sync_transfer(&spi_flash_desc, &jedec_id_xfer);
-    flash_disable();
+    flash_command(jedec_id_request, jedec_id_response, 4);
+
     uint8_t manufacturer = jedec_id_response[1];
     if ((jedec_id_response[1] == SPI_FLASH_JEDEC_MANUFACTURER
 #ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
@@ -330,18 +402,12 @@ void spi_flash_init(void) {
 
         // Turn off sector protection
         uint8_t disable_protect_request[2] = {CMD_WRITE_STATUS_BYTE1, 0x00};
-        struct spi_xfer disable_protect_xfer = { disable_protect_request, 0, 4 };
-        flash_enable();
-        spi_m_sync_transfer(&spi_flash_desc, &disable_protect_xfer);
-        flash_disable();
+        flash_command(disable_protect_request, NULL, 2);
     }
 
     // Turn off writes in case this is a microcontroller only reset.
     uint8_t disable_write_request[1] = {CMD_DISABLE_WRITE};
-    struct spi_xfer disable_write_xfer = { disable_write_request, 0, 1 };
-    flash_enable();
-    spi_m_sync_transfer(&spi_flash_desc, &disable_write_xfer);
-    flash_disable();
+    flash_command(disable_write_request, NULL, 1);
 
     wait_for_flash_ready();
 
