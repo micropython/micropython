@@ -12,14 +12,15 @@
 #include "rgb_led_status.h"
 #include "samd21_pins.h"
 
-uint8_t rgb_status_brightness = 255;
 #ifdef MICROPY_HW_NEOPIXEL
+uint8_t rgb_status_brightness = 63;
 static uint8_t status_neopixel_color[3];
 static digitalio_digitalinout_obj_t status_neopixel;
 #endif
 
 
 #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
+uint8_t rgb_status_brightness = 255;
 static uint8_t status_apa102_color[12] = {0, 0, 0, 0, 0xff, 0, 0, 0};
 #ifdef CIRCUITPY_BITBANG_APA102
 static bitbangio_spi_obj_t status_apa102;
@@ -174,5 +175,7 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 }
 
 void set_rgb_status_brightness(uint8_t level){
-      rgb_status_brightness = level;
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    rgb_status_brightness = level;
+    #endif
 }

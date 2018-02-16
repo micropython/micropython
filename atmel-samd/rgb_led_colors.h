@@ -1,12 +1,12 @@
 #define BLACK   0x000000
-#define GREEN   0x001000
-#define BLUE    0x000010
-#define CYAN    0x001010
-#define RED     0x100000
-#define ORANGE  0x100800
-#define YELLOW  0x101000
-#define PURPLE  0x100010
-#define WHITE   0x101010
+#define GREEN   0x003000
+#define BLUE    0x000030
+#define CYAN    0x003030
+#define RED     0x300000
+#define ORANGE  0x302000
+#define YELLOW  0x303000
+#define PURPLE  0x300030
+#define WHITE   0x303030
 
 #define BOOT_RUNNING BLUE
 #define MAIN_RUNNING GREEN
