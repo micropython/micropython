@@ -156,7 +156,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             direction = 1;
             start = 0;
         }
-        for (uint8_t i = start; i >= 0 && i < NUM_TIMERS_PER_PIN && timer == NULL; i += direction) {
+        for (int8_t i = start; i >= 0 && i < NUM_TIMERS_PER_PIN && timer == NULL; i += direction) {
             const pin_timer_t* t = &pin->timer[i];
             if ((!t->is_tc && t->index >= TCC_INST_NUM) ||
                 (t->is_tc && t->index >= TC_INST_NUM)) {

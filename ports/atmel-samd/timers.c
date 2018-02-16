@@ -46,10 +46,10 @@ const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC3_GCLK_ID,
                TC4_GCLK_ID,
                TC5_GCLK_ID,
 #ifdef TC6_GCLK_ID
-             , TC6_GCLK_ID
+               TC6_GCLK_ID,
 #endif
 #ifdef TC7_GCLK_ID
-             , TC7_GCLK_ID
+               TC7_GCLK_ID,
 #endif
             };
 const uint8_t tcc_gclk_ids[3] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID};
@@ -59,18 +59,18 @@ const uint8_t tcc_cc_num[5] = {6, 4, 3, 2, 2};
 const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC0_GCLK_ID,
                                           TC1_GCLK_ID,
                                           TC2_GCLK_ID,
-                                          TC3_GCLK_ID
+                                          TC3_GCLK_ID,
 #ifdef TC4_GCLK_ID
-                                          , TC4_GCLK_ID
+                                          TC4_GCLK_ID,
 #endif
 #ifdef TC5_GCLK_ID
-                                          , TC5_GCLK_ID
+                                          TC5_GCLK_ID,
 #endif
 #ifdef TC6_GCLK_ID
-                                          , TC6_GCLK_ID
+                                          TC6_GCLK_ID,
 #endif
 #ifdef TC7_GCLK_ID
-                                          , TC7_GCLK_ID
+                                          TC7_GCLK_ID,
 #endif
                                       };
 const uint8_t tcc_gclk_ids[5] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID, TCC3_GCLK_ID,
@@ -91,12 +91,12 @@ IRQn_Type const tc_irq[TC_INST_NUM] = {
 #endif
     TC3_IRQn,
     TC4_IRQn,
-    TC5_IRQn
+    TC5_IRQn,
 #ifdef TC6
-    , TC6_IRQn
+    TC6_IRQn,
 #endif
 #ifdef TC7
-    , TC7_IRQn
+    TC7_IRQn,
 #endif
 };
 

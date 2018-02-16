@@ -98,7 +98,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     if (refcount == 0) {
         // Find a spare timer.
         Tc *tc = NULL;
-        uint8_t index = TC_INST_NUM - 1;
+        int8_t index = TC_INST_NUM - 1;
         for (; index >= 0; index--) {
             if (tc_insts[index]->COUNT16.CTRLA.bit.ENABLE == 0) {
                 tc = tc_insts[index];
