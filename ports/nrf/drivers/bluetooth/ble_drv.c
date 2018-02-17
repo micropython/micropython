@@ -61,6 +61,7 @@
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(12, UNIT_0_625_MS)
 #define BLE_SLAVE_LATENCY            0
 #define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
+#define MAX_TX_IN_PROGRESS           (6)
 
 #if !defined(GATT_MTU_SIZE_DEFAULT) && defined(BLE_GATT_ATT_MTU_DEFAULT)
 #define GATT_MTU_SIZE_DEFAULT BLE_GATT_ATT_MTU_DEFAULT
@@ -72,7 +73,7 @@ if (ble_drv_stack_enabled() == 0) { \
 }
 
 static volatile bool m_adv_in_progress;
-static volatile bool m_tx_in_progress;
+static volatile uint8_t m_tx_in_progress;
 
 static ble_drv_gap_evt_callback_t          gap_event_handler;
 static ble_drv_gatts_evt_callback_t        gatts_event_handler;
@@ -118,7 +119,7 @@ void softdevice_assert_handler(uint32_t id, uint32_t pc, uint32_t info) {
 #endif
 uint32_t ble_drv_stack_enable(void) {
     m_adv_in_progress = false;
-    m_tx_in_progress  = false;
+    m_tx_in_progress  = 0;
 
 #if (BLUETOOTH_SD == 100) || (BLUETOOTH_SD == 110)
 #if BLUETOOTH_LFCLK_RC
@@ -668,16 +669,16 @@ void ble_drv_attr_s_notify(uint16_t conn_handle, uint16_t handle, uint16_t len, 
     hvx_params.p_len  = &hvx_len;
     hvx_params.p_data = p_data;
 
-    while (m_tx_in_progress) {
+    while (m_tx_in_progress > MAX_TX_IN_PROGRESS) {
         ;
     }
 
-    m_tx_in_progress = true;
     uint32_t err_code;
     if ((err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params)) != 0) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
                   "Can not notify attribute value. status: 0x" HEX2_FMT, (uint16_t)err_code));
     }
+    m_tx_in_progress++;
 }
 
 void ble_drv_gap_event_handler_set(mp_obj_t obj, ble_drv_gap_evt_callback_t evt_handler) {
@@ -978,7 +979,7 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_EVT_TX_COMPLETE:
 #endif
             BLE_DRIVER_LOG("BLE EVT TX COMPLETE\n");
-            m_tx_in_progress = false;
+            m_tx_in_progress -= p_ble_evt->evt.common_evt.params.tx_complete.count;
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
