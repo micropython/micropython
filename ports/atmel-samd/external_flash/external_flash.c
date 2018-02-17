@@ -195,19 +195,20 @@ void external_flash_init(void) {
     gpio_set_pin_level(MICROPY_HW_LED_MSC, false);
 #endif
 
-    uint8_t jedec_id_response[4] = {0x00, 0x00, 0x00, 0x00};
-    spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 4);
+    uint8_t jedec_id_response[3] = {0x00, 0x00, 0x00};
+    spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
 
-    uint8_t manufacturer = jedec_id_response[1];
-    if ((jedec_id_response[1] == SPI_FLASH_JEDEC_MANUFACTURER
+    uint8_t manufacturer = jedec_id_response[0];
+    if ((jedec_id_response[0] == SPI_FLASH_JEDEC_MANUFACTURER
 #ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
-         || jedec_id_response[1] == SPI_FLASH_JEDEC_MANUFACTURER_2
+         || jedec_id_response[0] == SPI_FLASH_JEDEC_MANUFACTURER_2
 #endif
          ) &&
-        jedec_id_response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
-        jedec_id_response[3] == SPI_FLASH_JEDEC_CAPACITY) {
+        jedec_id_response[1] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
+        jedec_id_response[2] == SPI_FLASH_JEDEC_CAPACITY) {
         spi_flash_is_initialised = true;
     } else {
+        asm("bkpt");
         // Unknown flash chip!
         spi_flash_is_initialised = false;
         return;

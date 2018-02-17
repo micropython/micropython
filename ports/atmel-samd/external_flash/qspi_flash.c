@@ -95,23 +95,66 @@ bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length) {
 }
 
 bool spi_flash_sector_command(uint8_t command, uint32_t address) {
-//     QSPI->INSTRCTRL.bit.INSTR = command;
-//     QSPI->INSTRADDR.reg = addr;
-//     uint32_t iframe = QSPI->INSTRFRAME.reg;
-//
-// 	iframe = QSPI_INSTRFRAME_WIDTH(instr->ioFormat) | instr->options |
-// 			QSPI_INSTRFRAME_OPTCODELEN(instr->opcodeLen) | (instr->addrLen << QSPI_INSTRFRAME_ADDRLEN_Pos) |
-// 			( instr->continuousRead << QSPI_INSTRFRAME_CRMODE_Pos) | QSPI_INSTRFRAME_TFRTYPE(instr->type) | QSPI_INSTRFRAME_DUMMYLEN(instr->dummylen);
-//
-// QSPI->INSTRFRAME.reg = iframe;
+    QSPI->INSTRCTRL.bit.INSTR = command;
+    QSPI->INSTRADDR.bit.ADDR = address;
+
+    QSPI->INSTRFRAME.reg = QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI |
+                           QSPI_INSTRFRAME_ADDRLEN_24BITS |
+                           QSPI_INSTRFRAME_TFRTYPE_WRITE |
+                           QSPI_INSTRFRAME_INSTREN |
+                           QSPI_INSTRFRAME_ADDREN;
+
+    QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER;
+
+    while( !QSPI->INTFLAG.bit.INSTREND );
+
+    QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
+
     return true;
 }
 
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length) {
+bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
+    QSPI->INSTRCTRL.bit.INSTR = CMD_PAGE_PROGRAM;
+    uint32_t mode = QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI;
+
+    QSPI->INSTRFRAME.reg = mode |
+                           QSPI_INSTRFRAME_ADDRLEN_24BITS |
+                           QSPI_INSTRFRAME_TFRTYPE_WRITEMEMORY |
+                           QSPI_INSTRFRAME_INSTREN |
+                           QSPI_INSTRFRAME_ADDREN |
+                           QSPI_INSTRFRAME_DATAEN;
+
+    memcpy(((uint8_t *) QSPI_AHB) + address, data, length);
+
+    QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER;
+
+    while( !QSPI->INTFLAG.bit.INSTREND );
+
+    QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
+
     return true;
 }
 
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length) {
+bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
+    QSPI->INSTRCTRL.bit.INSTR = CMD_QUAD_READ;
+    uint32_t mode = QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT;
+
+    QSPI->INSTRFRAME.reg = mode |
+                           QSPI_INSTRFRAME_ADDRLEN_24BITS |
+                           QSPI_INSTRFRAME_TFRTYPE_READMEMORY |
+                           QSPI_INSTRFRAME_INSTREN |
+                           QSPI_INSTRFRAME_ADDREN |
+                           QSPI_INSTRFRAME_DATAEN |
+                           QSPI_INSTRFRAME_DUMMYLEN(8);
+
+    memcpy(data, ((uint8_t *) QSPI_AHB) + address, length);
+
+    QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER;
+
+    while( !QSPI->INTFLAG.bit.INSTREND );
+
+    QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
+
     return true;
 }
 

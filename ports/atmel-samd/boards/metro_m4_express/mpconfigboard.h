@@ -33,8 +33,8 @@
 #define SPI_FLASH_DIPO              3   // same as MISO pad
 
 // These are pins not to reset.
-#define MICROPY_PORT_A        (PORT_PA27)
-#define MICROPY_PORT_B        (PORT_PB06 | PORT_PB08 | PORT_PB09 | PORT_PB10 | PORT_PB11 | PORT_PB17)
+#define MICROPY_PORT_A        (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 | PORT_PA27)
+#define MICROPY_PORT_B        (PORT_PB10 | PORT_PB11 | PORT_PB17)
 #define MICROPY_PORT_C        (0)
 #define MICROPY_PORT_D        (0)
 

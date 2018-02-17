@@ -23,11 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "spi_flash.h"
+#include "spi_flash_api.h"
 
 #include <stdint.h>
 #include <string.h>
 
+#include "external_flash/common_commands.h"
 #include "peripherals.h"
 
 #include "hal_gpio.h"
@@ -45,11 +46,32 @@ static void flash_disable(void) {
     gpio_set_pin_level(SPI_FLASH_CS_PIN, true);
 }
 
-void spi_flash_command(uint8_t* request, uint8_t* response, uint32_t length) {
-    struct spi_xfer xfer = { request, response, length };
+static bool transfer(uint8_t* command, uint32_t command_length, uint8_t* data_in, uint8_t* data_out, uint32_t data_length) {
+    struct spi_xfer xfer = { command, NULL, command_length };
     flash_enable();
-    spi_m_sync_transfer(&spi_flash_desc, &xfer);
+    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &xfer);
+    if (status >= 0 && !(data_in == NULL && data_out == NULL)) {
+        struct spi_xfer data_xfer = {data_in, data_out, data_length};
+        status = spi_m_sync_transfer(&spi_flash_desc, &data_xfer);
+    }
     flash_disable();
+    return status >= 0;
+}
+
+static bool transfer_command(uint8_t command, uint8_t* data_in, uint8_t* data_out, uint32_t data_length) {
+    return transfer(&command, 1, data_in, data_out, data_length);
+}
+
+bool spi_flash_command(uint8_t command) {
+    return transfer_command(command, NULL, NULL, 0);
+}
+
+bool spi_flash_read_command(uint8_t command, uint8_t* data, uint32_t data_length) {
+    return transfer_command(command, NULL, data, data_length);
+}
+
+bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t data_length) {
+    return transfer_command(command, data, NULL, data_length);
 }
 
 // Pack the low 24 bits of the address into a uint8_t array.
@@ -59,32 +81,24 @@ static void address_to_bytes(uint32_t address, uint8_t* bytes) {
     bytes[2] = address & 0xff;
 }
 
-void spi_flash_sector_command(uint8_t command, uint32_t address) {
+bool spi_flash_sector_command(uint8_t command, uint32_t address) {
     uint8_t request[4] = {command, 0x00, 0x00, 0x00};
-    address_to_bytes(address, page_program_request + 1);
-    struct spi_xfer xfer = { request, NULL, 4 };
-    flash_enable();
-    spi_m_sync_transfer(&spi_flash_desc, &xfer);
-    flash_disable();
+    address_to_bytes(address, request + 1);
+    return transfer(request, 4, NULL, NULL, 0);
 }
 
 bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length) {
-    flash_enable();
-    uint8_t page_program_request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
+    uint8_t request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
     // Write the SPI flash write address into the bytes following the command byte.
-    address_to_bytes(address, page_program_request + 1);
-    struct spi_xfer page_program_xfer = {request, 0, request_length};
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &page_program_xfer);
-    if (status >= 0) {
-        struct spi_xfer write_data_buffer_xfer = {data, 0, data_length};
-        status = spi_m_sync_transfer(&spi_flash_desc, &write_data_buffer_xfer);
-    }
-    flash_disable();
-    return status >= 0;
+    address_to_bytes(address, request + 1);
+    return transfer(request, 4, data, NULL, data_length);
 }
 
 bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length) {
-
+    uint8_t request[4] = {CMD_READ_DATA, 0x00, 0x00, 0x00};
+    // Write the SPI flash write address into the bytes following the command byte.
+    address_to_bytes(address, request + 1);
+    return transfer(request, 4, NULL, data, data_length);
 }
 
 void spi_flash_init(void) {
