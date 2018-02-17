@@ -28,6 +28,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "external_flash/spi_flash_api.h"
+#include "external_flash/common_commands.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "py/misc.h"
@@ -35,7 +37,6 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 #include "peripherals.h"
-#include "spi_flash_api.h"
 #include "supervisor/shared/rgb_led_status.h"
 
 //#include "shared_dma.h"
@@ -46,17 +47,6 @@
 #define SPI_FLASH_PART1_START_BLOCK (0x1)
 
 #define NO_SECTOR_LOADED 0xFFFFFFFF
-
-#define CMD_READ_JEDEC_ID 0x9f
-#define CMD_READ_DATA 0x03
-#define CMD_SECTOR_ERASE 0x20
-// #define CMD_SECTOR_ERASE CMD_READ_JEDEC_ID
-#define CMD_DISABLE_WRITE 0x04
-#define CMD_ENABLE_WRITE 0x06
-#define CMD_PAGE_PROGRAM 0x02
-// #define CMD_PAGE_PROGRAM CMD_READ_JEDEC_ID
-#define CMD_READ_STATUS 0x05
-#define CMD_WRITE_STATUS_BYTE1 0x01
 
 static bool spi_flash_is_initialised = false;
 
@@ -74,20 +64,18 @@ static uint32_t dirty_mask;
 
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
-    uint8_t read_status_request[2] = {CMD_READ_STATUS, 0x00};
-    uint8_t read_status_response[2] = {0x00, 0x00};
+    uint8_t read_status_response[1] = {0x00};
     bool ok = true;
     // Both the write enable and write in progress bits should be low.
     do {
-        ok = spi_flash_command(read_status_request, read_status_response, 2);
-    } while (ok && (read_status_response[1] & 0x3) != 0);
+        ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+    } while (ok && (read_status_response[0] & 0x3) != 0);
     return ok;
 }
 
 // Turn on the write enable bit so we can program and erase the flash.
 static bool write_enable(void) {
-    uint8_t enable_write_request[1] = {CMD_ENABLE_WRITE};
-    return spi_flash_command(enable_write_request, 0, 1);
+    return spi_flash_command(CMD_ENABLE_WRITE);
 }
 
 // Read data_length's worth of bytes starting at address into data.
@@ -207,9 +195,8 @@ void external_flash_init(void) {
     gpio_set_pin_level(MICROPY_HW_LED_MSC, false);
 #endif
 
-    uint8_t jedec_id_request[4] = {CMD_READ_JEDEC_ID, 0x00, 0x00, 0x00};
     uint8_t jedec_id_response[4] = {0x00, 0x00, 0x00, 0x00};
-    spi_flash_command(jedec_id_request, jedec_id_response, 4);
+    spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 4);
 
     uint8_t manufacturer = jedec_id_response[1];
     if ((jedec_id_response[1] == SPI_FLASH_JEDEC_MANUFACTURER
@@ -234,13 +221,12 @@ void external_flash_init(void) {
         write_enable();
 
         // Turn off sector protection
-        uint8_t disable_protect_request[2] = {CMD_WRITE_STATUS_BYTE1, 0x00};
-        spi_flash_command(disable_protect_request, NULL, 2);
+        uint8_t data[1] = {0x00};
+        spi_flash_write_command(CMD_WRITE_STATUS_BYTE1, data, 1);
     }
 
     // Turn off writes in case this is a microcontroller only reset.
-    uint8_t disable_write_request[1] = {CMD_DISABLE_WRITE};
-    spi_flash_command(disable_write_request, NULL, 1);
+    spi_flash_command(CMD_DISABLE_WRITE);
 
     wait_for_flash_ready();
 

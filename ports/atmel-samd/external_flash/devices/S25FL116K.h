@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL116K_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL116K_H
 
-// This API is implemented for both normal SPI peripherals and QSPI peripherals.
+// Settings for the Cypress (was Spansion) S25FL116K 2MiB SPI flash.
+// Datasheet: http://www.cypress.com/file/196886/download
 
-bool spi_flash_command(uint8_t* request, uint8_t* response, uint32_t length);
-bool spi_flash_sector_command(uint8_t command, uint32_t address);
-bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length);
-bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length);
-void spi_flash_init(void);
+// The total flash size in bytes.
+#define SPI_FLASH_TOTAL_SIZE  (1 << 21) // 2 MiB
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SPI_FLASH_H
+// The size of the smallest erase unit thats erased with command 0x20.
+#define SPI_FLASH_ERASE_SIZE  (1 << 12) // 4 KiB
+
+// The size of a page that is programmed with page program command 0x02.
+#define SPI_FLASH_PAGE_SIZE   (256)     // 256 bytes
+
+// These are the first three response bytes to the JEDEC ID command 0x9f that is
+// used to confirm we're talking to the flash we expect.
+#ifndef SPI_FLASH_JEDEC_MANUFACTURER
+#define SPI_FLASH_JEDEC_MANUFACTURER 0x01
+#define SPI_FLASH_SECTOR_PROTECTION false
+#else
+#define SPI_FLASH_JEDEC_MANUFACTURER_2 0x01
+#define SPI_FLASH_SECTOR_PROTECTION_2 false
+#endif
+#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
+#define SPI_FLASH_JEDEC_CAPACITY     0x15
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H
