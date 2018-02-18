@@ -15,9 +15,8 @@ Example usage on ESP8266:
 
     import machine, sdcard, os
     sd = sdcard.SDCard(machine.SPI(1), machine.Pin(15))
-    os.umount()
-    os.VfsFat(sd, "")
-    os.listdir()
+    os.mount(sd, '/sd')
+    os.listdir('/')
 
 """
 
