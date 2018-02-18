@@ -51,8 +51,8 @@ STATIC const mtp_obj_t touchpad_obj[] = {
     {{&machine_touchpad_type}, GPIO_NUM_12, TOUCH_PAD_NUM5},
     {{&machine_touchpad_type}, GPIO_NUM_14, TOUCH_PAD_NUM6},
     {{&machine_touchpad_type}, GPIO_NUM_27, TOUCH_PAD_NUM7},
-    {{&machine_touchpad_type}, GPIO_NUM_33, TOUCH_PAD_NUM8},
-    {{&machine_touchpad_type}, GPIO_NUM_32, TOUCH_PAD_NUM9},
+    {{&machine_touchpad_type}, GPIO_NUM_32, TOUCH_PAD_NUM8},
+    {{&machine_touchpad_type}, GPIO_NUM_33, TOUCH_PAD_NUM9},
 };
 
 STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
