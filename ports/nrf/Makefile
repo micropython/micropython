@@ -69,6 +69,13 @@ CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-s
 
 CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) --short-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft -fno-builtin
 
+LTO ?= 1
+ifeq ($(LTO),1)
+CFLAGS_LTO += -flto
+else
+CFLAGS_LTO += -Wl,--gc-sections -ffunction-sections -fdata-sections
+endif
+
 
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES)) 
 CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
@@ -76,7 +83,7 @@ CFLAGS += -fno-strict-aliasing
 CFLAGS += -fstack-usage
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
-CFLAGS += -flto
+CFLAGS += $(CFLAGS_LTO)
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
