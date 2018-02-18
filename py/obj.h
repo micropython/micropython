@@ -291,6 +291,9 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
 #define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
         {{&mp_type_fun_builtin_3}, .fun._3 = fun_name}
+#define MP_DEFINE_CONST_FUN_OBJ_4(obj_name, fun_name) \
+    const mp_obj_fun_builtin_fixed_t obj_name = \
+        {{&mp_type_fun_builtin_4}, .fun._4 = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
         {{&mp_type_fun_builtin_var}, false, n_args_min, MP_OBJ_FUN_ARGS_MAX, .fun.var = fun_name}
@@ -404,6 +407,7 @@ typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
+typedef mp_obj_t (*mp_fun_4_t)(mp_obj_t, mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 // mp_fun_kw_t takes mp_map_t* (and not const mp_map_t*) to ease passing
 // this arg to mp_map_lookup().
@@ -567,6 +571,7 @@ extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
 extern const mp_obj_type_t mp_type_fun_builtin_2;
 extern const mp_obj_type_t mp_type_fun_builtin_3;
+extern const mp_obj_type_t mp_type_fun_builtin_4;
 extern const mp_obj_type_t mp_type_fun_builtin_var;
 extern const mp_obj_type_t mp_type_fun_bc;
 extern const mp_obj_type_t mp_type_module;
@@ -624,6 +629,7 @@ extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
 extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
+extern const struct _mp_obj_exception_t mp_const_MemoryError_obj;
 extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 
 // General API for objects
@@ -787,6 +793,7 @@ typedef struct _mp_obj_fun_builtin_fixed_t {
         mp_fun_1_t _1;
         mp_fun_2_t _2;
         mp_fun_3_t _3;
+        mp_fun_4_t _4;
     } fun;
 } mp_obj_fun_builtin_fixed_t;
 

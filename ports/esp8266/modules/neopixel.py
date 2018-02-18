@@ -1,7 +1,7 @@
 # NeoPixel driver for MicroPython on ESP8266
 # MIT license; Copyright (c) 2016 Damien P. George
 
-from esp import neopixel_write
+from esp import neopixel_write, neopixel_write_frac
 
 
 class NeoPixel:
@@ -30,3 +30,6 @@ class NeoPixel:
 
     def write(self):
         neopixel_write(self.pin, self.buf, True)
+
+    def write_frac(self, frac):
+        neopixel_write_frac(self.pin, self.buf, True, frac)

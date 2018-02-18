@@ -203,6 +203,15 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 
+STATIC mp_obj_t esp_neopixel_write_frac_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k, mp_obj_t frac) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+    esp_neopixel_write_frac(mp_obj_get_pin_obj(pin)->phys_port,
+			    (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k), mp_obj_get_float(frac));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_4(esp_neopixel_write_frac_obj, esp_neopixel_write_frac_);
+
 #if MICROPY_ESP8266_APA102
 STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
@@ -361,6 +370,7 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
     #if MICROPY_ESP8266_NEOPIXEL
     { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_neopixel_write_frac), MP_ROM_PTR(&esp_neopixel_write_frac_obj) },
     #endif
     #if MICROPY_ESP8266_APA102
     { MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj) },
