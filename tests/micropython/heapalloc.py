@@ -2,6 +2,15 @@
 
 import micropython
 
+# Check for stackless build, which can't call functions without
+# allocating a frame on heap.
+try:
+    def stackless(): pass
+    micropython.heap_lock(); stackless(); micropython.heap_unlock()
+except RuntimeError:
+    print("SKIP")
+    raise SystemExit
+
 def f1(a):
     print(a)
 

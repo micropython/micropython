@@ -203,7 +203,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         exti.Pin = pin->pin_mask;
         exti.Mode = mode;
         exti.Pull = pull;
-        exti.Speed = GPIO_SPEED_FAST;
+        exti.Speed = GPIO_SPEED_FREQ_HIGH;
         HAL_GPIO_Init(pin->gpio, &exti);
 
         // Calling HAL_GPIO_Init does an implicit extint_enable

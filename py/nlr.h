@@ -30,29 +30,34 @@
 // exception handling, basically a stack of setjmp/longjmp buffers
 
 #include <limits.h>
-#include <setjmp.h>
 #include <assert.h>
 
 #include "py/mpconfig.h"
 
-typedef struct _nlr_buf_t nlr_buf_t;
-struct _nlr_buf_t {
-    // the entries here must all be machine word size
-    nlr_buf_t *prev;
-    void *ret_val; // always a concrete object (an exception instance)
-#if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
+// If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
+#if !MICROPY_NLR_SETJMP
+// A lot of nlr-related things need different treatment on Windows
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define MICROPY_NLR_OS_WINDOWS 1
+#else
+#define MICROPY_NLR_OS_WINDOWS 0
+#endif
 #if defined(__i386__)
-    void *regs[6];
+    #define MICROPY_NLR_X86 (1)
+    #define MICROPY_NLR_NUM_REGS (6)
 #elif defined(__x86_64__)
-  #if defined(__CYGWIN__)
-    void *regs[12];
-  #else
-    void *regs[8];
-  #endif
+    #define MICROPY_NLR_X64 (1)
+    #if MICROPY_NLR_OS_WINDOWS
+        #define MICROPY_NLR_NUM_REGS (10)
+    #else
+        #define MICROPY_NLR_NUM_REGS (8)
+    #endif
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
-    void *regs[10];
+    #define MICROPY_NLR_THUMB (1)
+    #define MICROPY_NLR_NUM_REGS (10)
 #elif defined(__xtensa__)
-    void *regs[10];
+    #define MICROPY_NLR_XTENSA (1)
+    #define MICROPY_NLR_NUM_REGS (10)
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
@@ -60,24 +65,58 @@ struct _nlr_buf_t {
 #endif
 
 #if MICROPY_NLR_SETJMP
-    jmp_buf jmpbuf;
+#include <setjmp.h>
 #endif
+
+typedef struct _nlr_buf_t nlr_buf_t;
+struct _nlr_buf_t {
+    // the entries here must all be machine word size
+    nlr_buf_t *prev;
+    void *ret_val; // always a concrete object (an exception instance)
+
+    #if MICROPY_NLR_SETJMP
+    jmp_buf jmpbuf;
+    #else
+    void *regs[MICROPY_NLR_NUM_REGS];
+    #endif
+
+    #if MICROPY_ENABLE_PYSTACK
+    void *pystack;
+    #endif
 };
 
-#if MICROPY_NLR_SETJMP
-#include "py/mpstate.h"
+// Helper macros to save/restore the pystack state
+#if MICROPY_ENABLE_PYSTACK
+#define MP_NLR_SAVE_PYSTACK(nlr_buf) (nlr_buf)->pystack = MP_STATE_THREAD(pystack_cur)
+#define MP_NLR_RESTORE_PYSTACK(nlr_buf) MP_STATE_THREAD(pystack_cur) = (nlr_buf)->pystack
+#else
+#define MP_NLR_SAVE_PYSTACK(nlr_buf) (void)nlr_buf
+#define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
+#endif
 
-NORETURN void nlr_setjmp_jump(void *val);
+// Helper macro to use at the start of a specific nlr_jump implementation
+#define MP_NLR_JUMP_HEAD(val, top) \
+    nlr_buf_t **_top_ptr = &MP_STATE_THREAD(nlr_top); \
+    nlr_buf_t *top = *_top_ptr; \
+    if (top == NULL) { \
+        nlr_jump_fail(val); \
+    } \
+    top->ret_val = val; \
+    MP_NLR_RESTORE_PYSTACK(top); \
+    *_top_ptr = top->prev; \
+
+#if MICROPY_NLR_SETJMP
 // nlr_push() must be defined as a macro, because "The stack context will be
 // invalidated if the function which called setjmp() returns."
-#define nlr_push(buf) ((buf)->prev = MP_STATE_THREAD(nlr_top), MP_STATE_THREAD(nlr_top) = (buf), setjmp((buf)->jmpbuf))
-#define nlr_pop() { MP_STATE_THREAD(nlr_top) = MP_STATE_THREAD(nlr_top)->prev; }
-#define nlr_jump(val) nlr_setjmp_jump(val)
+// For this case it is safe to call nlr_push_tail() first.
+#define nlr_push(buf) (nlr_push_tail(buf), setjmp((buf)->jmpbuf))
 #else
 unsigned int nlr_push(nlr_buf_t *);
+#endif
+
+unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
 NORETURN void nlr_jump(void *val);
-#endif
 
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
@@ -106,7 +145,6 @@ NORETURN void nlr_jump_fail(void *val);
 /*
 #define nlr_push(val) \
     printf("nlr_push: before: nlr_top=%p, val=%p\n", MP_STATE_THREAD(nlr_top), val),assert(MP_STATE_THREAD(nlr_top) != val),nlr_push(val)
-#endif
 */
 #endif
 

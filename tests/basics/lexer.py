@@ -1,5 +1,12 @@
 # test the lexer
 
+try:
+    eval
+    exec
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 # __debug__ is a special symbol
 print(type(__debug__))
 

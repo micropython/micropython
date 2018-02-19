@@ -347,42 +347,13 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev ,
     break;
     
   case USB_DESC_TYPE_STRING:
-    switch ((uint8_t)(req->wValue))
-    {
-    case USBD_IDX_LANGID_STR:
-     pbuf = pdev->pDesc->GetLangIDStrDescriptor(pdev, &len);        
-      break;
-      
-    case USBD_IDX_MFC_STR:
-      pbuf = pdev->pDesc->GetManufacturerStrDescriptor(pdev, &len);
-      break;
-      
-    case USBD_IDX_PRODUCT_STR:
-      pbuf = pdev->pDesc->GetProductStrDescriptor(pdev, &len);
-      break;
-      
-    case USBD_IDX_SERIAL_STR:
-      pbuf = pdev->pDesc->GetSerialStrDescriptor(pdev, &len);
-      break;
-      
-    case USBD_IDX_CONFIG_STR:
-      pbuf = pdev->pDesc->GetConfigurationStrDescriptor(pdev, &len);
-      break;
-      
-    case USBD_IDX_INTERFACE_STR:
-      pbuf = pdev->pDesc->GetInterfaceStrDescriptor(pdev, &len);
-      break;
-      
-    default:
-#if (USBD_SUPPORT_USER_STRING == 1)
-      pbuf = pdev->pClass->GetUsrStrDescriptor(pdev, (req->wValue) , &len);
-      break;
-#else      
-       USBD_CtlError(pdev , req);
+    pbuf = pdev->pDesc->GetStrDescriptor(pdev, req->wValue & 0xff, &len);
+    if (pbuf == NULL) {
+      USBD_CtlError(pdev, req);
       return;
-#endif   
     }
     break;
+
   case USB_DESC_TYPE_DEVICE_QUALIFIER:                   
 
     if(pdev->dev_speed == USBD_SPEED_HIGH  )   

@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_CAN_H
-#define MICROPY_INCLUDED_STMHAL_CAN_H
+#ifndef MICROPY_INCLUDED_STM32_CAN_H
+#define MICROPY_INCLUDED_STM32_CAN_H
 
 #define PYB_CAN_1 (1)
 #define PYB_CAN_2 (2)
@@ -35,4 +35,4 @@ void can_init0(void);
 void can_deinit(void);
 void can_rx_irq_handler(uint can_id, uint fifo_id);
 
-#endif // MICROPY_INCLUDED_STMHAL_CAN_H
+#endif // MICROPY_INCLUDED_STM32_CAN_H

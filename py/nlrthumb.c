@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+#if MICROPY_NLR_THUMB
 
 #undef nlr_push
 
@@ -76,30 +76,14 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
 #endif
     );
 
-    return 0; // needed to silence compiler warning
+    #if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 8))
+    // Older versions of gcc give an error when naked functions don't return a value
+    return 0;
+    #endif
 }
 
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    nlr->prev = *top;
-    *top = nlr;
-    return 0; // normal return
-}
-
-void nlr_pop(void) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    *top = (*top)->prev;
-}
-
-NORETURN __attribute__((naked)) void nlr_jump(void *val) {
-    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
-    nlr_buf_t *top = *top_ptr;
-    if (top == NULL) {
-        nlr_jump_fail(val);
-    }
-
-    top->ret_val = val;
-    *top_ptr = top->prev;
+NORETURN void nlr_jump(void *val) {
+    MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
     "mov    r0, %0              \n" // r0 points to nlr_buf
@@ -136,7 +120,11 @@ NORETURN __attribute__((naked)) void nlr_jump(void *val) {
     :                               // clobbered registers
     );
 
+    #if defined(__GNUC__)
+    __builtin_unreachable();
+    #else
     for (;;); // needed to silence compiler warning
+    #endif
 }
 
-#endif // (!defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP) && (defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+#endif // MICROPY_NLR_THUMB

@@ -137,7 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     mp_uint_t c = mp_obj_get_int(o_in);
-    char str[4];
+    uint8_t str[4];
     int len = 0;
     if (c < 0x80) {
         *str = c; len = 1;
@@ -159,12 +159,12 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     } else {
         mp_raise_ValueError("chr() arg not in range(0x110000)");
     }
-    return mp_obj_new_str_via_qstr(str, len);
+    return mp_obj_new_str_via_qstr((char*)str, len);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {
-        char str[1] = {ord};
-        return mp_obj_new_str_via_qstr(str, 1);
+        uint8_t str[1] = {ord};
+        return mp_obj_new_str_via_qstr((char*)str, 1);
     } else {
         mp_raise_ValueError("chr() arg not in range(256)");
     }
@@ -173,46 +173,24 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
 STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
-    // TODO make this function more general and less of a hack
-
-    mp_obj_dict_t *dict = NULL;
-    mp_map_t *members = NULL;
-    if (n_args == 0) {
-        // make a list of names in the local name space
-        dict = mp_locals_get();
-    } else { // n_args == 1
-        // make a list of names in the given object
-        if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
-            dict = mp_obj_module_get_globals(args[0]);
-        } else {
-            mp_obj_type_t *type;
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
-                type = MP_OBJ_TO_PTR(args[0]);
-            } else {
-                type = mp_obj_get_type(args[0]);
-            }
-            if (type->locals_dict != NULL && type->locals_dict->base.type == &mp_type_dict) {
-                dict = type->locals_dict;
-            }
-        }
-        if (mp_obj_is_instance_type(mp_obj_get_type(args[0]))) {
-            mp_obj_instance_t *inst = MP_OBJ_TO_PTR(args[0]);
-            members = &inst->members;
-        }
-    }
-
     mp_obj_t dir = mp_obj_new_list(0, NULL);
-    if (dict != NULL) {
+    if (n_args == 0) {
+        // Make a list of names in the local namespace
+        mp_obj_dict_t *dict = mp_locals_get();
         for (size_t i = 0; i < dict->map.alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
                 mp_obj_list_append(dir, dict->map.table[i].key);
             }
         }
-    }
-    if (members != NULL) {
-        for (size_t i = 0; i < members->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(members, i)) {
-                mp_obj_list_append(dir, members->table[i].key);
+    } else { // n_args == 1
+        // Make a list of names in the given object
+        // Implemented by probing all possible qstrs with mp_load_method_maybe
+        size_t nqstr = QSTR_TOTAL();
+        for (size_t i = 1; i < nqstr; ++i) {
+            mp_obj_t dest[2];
+            mp_load_method_maybe(args[0], i, dest);
+            if (dest[0] != MP_OBJ_NULL) {
+                mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(i));
             }
         }
     }
@@ -343,19 +321,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     size_t len;
-    const char *str = mp_obj_str_get_data(o_in, &len);
+    const byte *str = (const byte*)mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     if (MP_OBJ_IS_STR(o_in)) {
-        len = unichar_charlen(str, len);
+        len = utf8_charlen(str, len);
         if (len == 1) {
-            return mp_obj_new_int(utf8_get_char((const byte*)str));
+            return mp_obj_new_int(utf8_get_char(str));
         }
     } else
     #endif
     {
         // a bytes object, or a str without unicode support (don't sign extend the char)
         if (len == 1) {
-            return MP_OBJ_NEW_SMALL_INT(((const byte*)str)[0]);
+            return MP_OBJ_NEW_SMALL_INT(str[0]);
         }
     }
 
@@ -383,46 +361,52 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
-STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    mp_map_elem_t *sep_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_sep), MP_MAP_LOOKUP);
-    mp_map_elem_t *end_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_end), MP_MAP_LOOKUP);
-    const char *sep_data = " ";
-    size_t sep_len = 1;
-    const char *end_data = "\n";
-    size_t end_len = 1;
-    if (sep_elem != NULL && sep_elem->value != mp_const_none) {
-        sep_data = mp_obj_str_get_data(sep_elem->value, &sep_len);
-    }
-    if (end_elem != NULL && end_elem->value != mp_const_none) {
-        end_data = mp_obj_str_get_data(end_elem->value, &end_len);
-    }
-    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-    void *stream_obj = &mp_sys_stdout_obj;
-    mp_map_elem_t *file_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_file), MP_MAP_LOOKUP);
-    if (file_elem != NULL && file_elem->value != mp_const_none) {
-        stream_obj = MP_OBJ_TO_PTR(file_elem->value); // XXX may not be a concrete object
-    }
+STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_sep, ARG_end, ARG_file };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__space_)} },
+        { MP_QSTR_end, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__0x0a_)} },
+        #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+        { MP_QSTR_file, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_sys_stdout_obj)} },
+        #endif
+    };
 
-    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
+    // parse args (a union is used to reduce the amount of C stack that is needed)
+    union {
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        size_t len[2];
+    } u;
+    mp_arg_parse_all(0, NULL, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, u.args);
+
+    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+    // TODO file may not be a concrete object (eg it could be a small-int)
+    mp_print_t print = {MP_OBJ_TO_PTR(u.args[ARG_file].u_obj), mp_stream_write_adaptor};
     #endif
+
+    // extract the objects first because we are going to use the other part of the union
+    mp_obj_t sep = u.args[ARG_sep].u_obj;
+    mp_obj_t end = u.args[ARG_end].u_obj;
+    const char *sep_data = mp_obj_str_get_data(sep, &u.len[0]);
+    const char *end_data = mp_obj_str_get_data(end, &u.len[1]);
+
     for (size_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-            mp_stream_write_adaptor(stream_obj, sep_data, sep_len);
+            mp_stream_write_adaptor(print.data, sep_data, u.len[0]);
             #else
-            mp_print_strn(&mp_plat_print, sep_data, sep_len, 0, 0, 0);
+            mp_print_strn(&mp_plat_print, sep_data, u.len[0], 0, 0, 0);
             #endif
         }
         #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-        mp_obj_print_helper(&print, args[i], PRINT_STR);
+        mp_obj_print_helper(&print, pos_args[i], PRINT_STR);
         #else
-        mp_obj_print_helper(&mp_plat_print, args[i], PRINT_STR);
+        mp_obj_print_helper(&mp_plat_print, pos_args[i], PRINT_STR);
         #endif
     }
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-    mp_stream_write_adaptor(stream_obj, end_data, end_len);
+    mp_stream_write_adaptor(print.data, end_data, u.len[1]);
     #else
-    mp_print_strn(&mp_plat_print, end_data, end_len, 0, 0, 0);
+    mp_print_strn(&mp_plat_print, end_data, u.len[1], 0, 0, 0);
     #endif
     return mp_const_none;
 }

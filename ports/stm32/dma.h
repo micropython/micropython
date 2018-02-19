@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_DMA_H
-#define MICROPY_INCLUDED_STMHAL_DMA_H
+#ifndef MICROPY_INCLUDED_STM32_DMA_H
+#define MICROPY_INCLUDED_STM32_DMA_H
 
 typedef struct _dma_descr_t dma_descr_t;
 
@@ -100,4 +100,4 @@ void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
 void dma_idle_handler(int controller);
 
-#endif // MICROPY_INCLUDED_STMHAL_DMA_H
+#endif // MICROPY_INCLUDED_STM32_DMA_H

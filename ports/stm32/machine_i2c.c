@@ -34,6 +34,8 @@
 #include "genhdr/pins.h"
 #include "i2c.h"
 
+#if MICROPY_HW_ENABLE_HW_I2C
+
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 
 #if defined(MCU_SERIES_F4)
@@ -548,3 +550,5 @@ STATIC const mp_obj_type_t machine_hard_i2c_type = {
     .protocol = &machine_hard_i2c_p,
     .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_HW_I2C

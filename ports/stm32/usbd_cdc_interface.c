@@ -198,7 +198,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
             // the host waits for all data to arrive (ie, waits for a packet < max packet size).
             // To flush a packet of exactly max packet size, we need to send a zero-size packet.
             // See eg http://www.cypress.com/?id=4&rID=92719
-            cdc->tx_need_empty_packet = (buffsize > 0 && buffsize % CDC_DATA_FS_MAX_PACKET_SIZE == 0 && cdc->tx_buf_ptr_out_shadow == cdc->tx_buf_ptr_in);
+            cdc->tx_need_empty_packet = (buffsize > 0 && buffsize % usbd_cdc_max_packet(usbd->pdev) == 0 && cdc->tx_buf_ptr_out_shadow == cdc->tx_buf_ptr_in);
         }
     }
 }

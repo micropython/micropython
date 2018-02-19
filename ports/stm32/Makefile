@@ -186,6 +186,7 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	memory/spiflash.c \
+	dht/dht.c \
 	)
 
 SRC_C = \
@@ -231,6 +232,8 @@ SRC_C = \
 	rng.c \
 	rtc.c \
 	flash.c \
+	flashbdev.c \
+	spibdev.c \
 	storage.c \
 	sdcard.c \
 	fatfs_port.c \
@@ -264,7 +267,6 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
-	hal_rng.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
 	hal_sd.c \

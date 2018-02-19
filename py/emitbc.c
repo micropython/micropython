@@ -313,9 +313,12 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->scope = scope;
     emit->last_source_line_offset = 0;
     emit->last_source_line = 1;
+    #ifndef NDEBUG
+    // With debugging enabled labels are checked for unique assignment
     if (pass < MP_PASS_EMIT) {
         memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(mp_uint_t));
     }
+    #endif
     emit->bytecode_offset = 0;
     emit->code_info_offset = 0;
 
@@ -434,7 +437,9 @@ void mp_emit_bc_end_pass(emit_t *emit) {
 
     } else if (emit->pass == MP_PASS_EMIT) {
         mp_emit_glue_assign_bytecode(emit->scope->raw_code, emit->code_base,
+            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
             emit->code_info_size + emit->bytecode_size,
+            #endif
             emit->const_table,
             #if MICROPY_PERSISTENT_CODE_SAVE
             emit->ct_cur_obj, emit->ct_cur_raw_code,
@@ -495,7 +500,6 @@ void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
         emit->label_offsets[l] = emit->bytecode_offset;
     } else {
         // ensure label offset has not changed from MP_PASS_CODE_SIZE to MP_PASS_EMIT
-        //printf("l%d: (at %d vs %d)\n", l, emit->bytecode_offset, emit->label_offsets[l]);
         assert(emit->label_offsets[l] == emit->bytecode_offset);
     }
 }

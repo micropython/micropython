@@ -26,20 +26,14 @@
 
 #include "py/mpstate.h"
 
-#if !MICROPY_NLR_SETJMP && defined(__i386__)
+#if MICROPY_NLR_X86
 
 #undef nlr_push
 
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#define NLR_OS_WINDOWS 1
-#else
-#define NLR_OS_WINDOWS 0
-#endif
-
-#if NLR_OS_WINDOWS
+#if MICROPY_NLR_OS_WINDOWS
 unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 #else
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
@@ -70,27 +64,8 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0; // needed to silence compiler warning
 }
 
-__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    nlr->prev = *top;
-    *top = nlr;
-    return 0; // normal return
-}
-
-void nlr_pop(void) {
-    nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
-    *top = (*top)->prev;
-}
-
 NORETURN void nlr_jump(void *val) {
-    nlr_buf_t **top_ptr = &MP_STATE_THREAD(nlr_top);
-    nlr_buf_t *top = *top_ptr;
-    if (top == NULL) {
-        nlr_jump_fail(val);
-    }
-
-    top->ret_val = val;
-    *top_ptr = top->prev;
+    MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
     "mov    %0, %%edx           \n" // %edx points to nlr_buf
@@ -112,4 +87,4 @@ NORETURN void nlr_jump(void *val) {
     for (;;); // needed to silence compiler warning
 }
 
-#endif // !MICROPY_NLR_SETJMP && defined(__i386__)
+#endif // MICROPY_NLR_X86

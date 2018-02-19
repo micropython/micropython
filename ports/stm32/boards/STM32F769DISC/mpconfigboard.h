@@ -8,15 +8,10 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SDCARD       (1)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // HSE is 25MHz
 // VCOClock = HSE * PLLN / PLLM = 25 MHz * 432 / 25 = 432 MHz
@@ -74,5 +69,7 @@
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // USB config (CN13 - USB OTG FS)
+#define MICROPY_HW_USB_HS              (1)
+#define MICROPY_HW_USB_HS_IN_FS        (1)
 /*#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_J12)*/
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_J12)

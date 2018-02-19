@@ -23,7 +23,7 @@ UART objects can be created and initialised using::
     *Note:* with parity=None, only 8 and 9 bits are supported.  With parity enabled,
     only 7 and 8 bits are supported.
 
-A UART object acts like a stream object and reading and writing is done
+A UART object acts like a `stream` object and reading and writing is done
 using the standard stream methods::
 
     uart.read(10)       # read 10 characters, returns a bytes object

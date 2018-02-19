@@ -99,6 +99,11 @@ void machine_init(void) {
     RCC->CSR |= RCC_CSR_RMVF;
 }
 
+void machine_deinit(void) {
+    // we are doing a soft-reset so change the reset_cause
+    reset_cause = PYB_RESET_SOFT;
+}
+
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
 STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
@@ -199,7 +204,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
 STATIC NORETURN mp_obj_t machine_bootloader(void) {
+    #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
+    #endif
     storage_flush();
 
     HAL_RCC_DeInit();
@@ -218,7 +225,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
 
     ((void (*)(void)) *((uint32_t*) 0x1FF00004))();
 #else
-    __HAL_REMAPMEMORY_SYSTEMFLASH();
+    __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
 
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.
@@ -359,27 +366,44 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 
         // set PLL as system clock source if wanted
         if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
+            uint32_t flash_latency;
             #if defined(MCU_SERIES_F7)
             // if possible, scale down the internal voltage regulator to save power
+            // the flash_latency values assume a supply voltage between 2.7V and 3.6V
             uint32_t volt_scale;
-            if (wanted_sysclk <= 151000000) {
+            if (wanted_sysclk <= 90000000) {
                 volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+                flash_latency = FLASH_LATENCY_2;
+            } else if (wanted_sysclk <= 120000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+                flash_latency = FLASH_LATENCY_3;
+            } else if (wanted_sysclk <= 144000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
+                flash_latency = FLASH_LATENCY_4;
             } else if (wanted_sysclk <= 180000000) {
                 volt_scale = PWR_REGULATOR_VOLTAGE_SCALE2;
+                flash_latency = FLASH_LATENCY_5;
+            } else if (wanted_sysclk <= 210000000) {
+                volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+                flash_latency = FLASH_LATENCY_6;
             } else {
                 volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+                flash_latency = FLASH_LATENCY_7;
             }
             if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
                 goto fail;
             }
             #endif
 
+            #if !defined(MCU_SERIES_F7)
             #if !defined(MICROPY_HW_FLASH_LATENCY)
             #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
             #endif
+            flash_latency = MICROPY_HW_FLASH_LATENCY;
+            #endif
             RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
             RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-            if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, MICROPY_HW_FLASH_LATENCY) != HAL_OK) {
+            if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, flash_latency) != HAL_OK) {
                 goto fail;
             }
         }
@@ -558,7 +582,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&pyb_adc_type) },
 #endif
+#if MICROPY_PY_MACHINE_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },

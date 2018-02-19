@@ -8,7 +8,7 @@ This module implements "foreign data interface" for MicroPython. The idea
 behind it is similar to CPython's ``ctypes`` modules, but the actual API is
 different, streamlined and optimized for small size. The basic idea of the
 module is to define data structure layout with about the same power as the
-C language allows, and the access it using familiar dot-syntax to reference
+C language allows, and then access it using familiar dot-syntax to reference
 sub-fields.
 
 .. seealso::
@@ -29,25 +29,25 @@ Following are encoding examples for various field types:
 
 * Scalar types::
 
-    "field_name": uctypes.UINT32 | 0
+    "field_name": offset | uctypes.UINT32
 
   in other words, value is scalar type identifier ORed with field offset
   (in bytes) from the start of the structure.
 
 * Recursive structures::
 
-    "sub": (2, {
-        "b0": uctypes.UINT8 | 0,
-        "b1": uctypes.UINT8 | 1,
+    "sub": (offset, {
+        "b0": 0 | uctypes.UINT8,
+        "b1": 1 | uctypes.UINT8,
     })
 
   i.e. value is a 2-tuple, first element of which is offset, and second is
   a structure descriptor dictionary (note: offsets in recursive descriptors
-  are relative to a structure it defines).
+  are relative to the structure it defines).
 
 * Arrays of primitive types::
 
-      "arr": (uctypes.ARRAY | 0, uctypes.UINT8 | 2),
+      "arr": (offset | uctypes.ARRAY, size | uctypes.UINT8),
 
   i.e. value is a 2-tuple, first element of which is ARRAY flag ORed
   with offset, and second is scalar element type ORed number of elements
@@ -55,7 +55,7 @@ Following are encoding examples for various field types:
 
 * Arrays of aggregate types::
 
-    "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
+    "arr2": (offset | uctypes.ARRAY, size, {"b": 0 | uctypes.UINT8}),
 
   i.e. value is a 3-tuple, first element of which is ARRAY flag ORed
   with offset, second is a number of elements in array, and third is
@@ -63,21 +63,21 @@ Following are encoding examples for various field types:
 
 * Pointer to a primitive type::
 
-    "ptr": (uctypes.PTR | 0, uctypes.UINT8),
+    "ptr": (offset | uctypes.PTR, uctypes.UINT8),
 
   i.e. value is a 2-tuple, first element of which is PTR flag ORed
   with offset, and second is scalar element type.
 
 * Pointer to an aggregate type::
 
-    "ptr2": (uctypes.PTR | 0, {"b": uctypes.UINT8 | 0}),
+    "ptr2": (offset | uctypes.PTR, {"b": 0 | uctypes.UINT8}),
 
   i.e. value is a 2-tuple, first element of which is PTR flag ORed
   with offset, second is descriptor of type pointed to.
 
 * Bitfields::
 
-    "bitf0": uctypes.BFUINT16 | 0 | 0 << uctypes.BF_POS | 8 << uctypes.BF_LEN,
+    "bitf0": offset | uctypes.BFUINT16 | lsbit << uctypes.BF_POS | bitsize << uctypes.BF_LEN,
 
   i.e. value is type of scalar value containing given bitfield (typenames are
   similar to scalar types, but prefixes with "BF"), ORed with offset for
@@ -86,20 +86,21 @@ Following are encoding examples for various field types:
   BF_POS and BF_LEN positions, respectively. Bitfield position is counted
   from the least significant bit, and is the number of right-most bit of a
   field (in other words, it's a number of bits a scalar needs to be shifted
-  right to extra the bitfield).
+  right to extract the bitfield).
 
-  In the example above, first UINT16 value will be extracted at offset 0
+  In the example above, first a UINT16 value will be extracted at offset 0
   (this detail may be important when accessing hardware registers, where
   particular access size and alignment are required), and then bitfield
-  whose rightmost bit is least-significant bit of this UINT16, and length
-  is 8 bits, will be extracted - effectively, this will access
-  least-significant byte of UINT16.
+  whose rightmost bit is *lsbit* bit of this UINT16, and length
+  is *bitsize* bits, will be extracted. For example, if *lsbit* is 0 and
+  *bitsize* is 8, then effectively it will access least-significant byte
+  of UINT16.
 
   Note that bitfield operations are independent of target byte endianness,
   in particular, example above will access least-significant byte of UINT16
   in both little- and big-endian structures. But it depends on the least
   significant bit being numbered 0. Some targets may use different
-  numbering in their native ABI, but ``uctypes`` always uses normalized
+  numbering in their native ABI, but ``uctypes`` always uses the normalized
   numbering described above.
 
 Module contents

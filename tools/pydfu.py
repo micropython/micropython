@@ -81,6 +81,7 @@ def init():
     if len(devices) > 1:
         raise ValueError("Multiple DFU devices found")
     __dev = devices[0]
+    __dev.set_configuration()
 
     # Claim DFU interface
     usb.util.claim_interface(__dev, __DFU_INTERFACE)

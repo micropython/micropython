@@ -112,6 +112,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_stack_use_obj, mp_micropython_st
 
 #endif // MICROPY_PY_MICROPYTHON_MEM_INFO
 
+#if MICROPY_ENABLE_PYSTACK
+STATIC mp_obj_t mp_micropython_pystack_use(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_pystack_usage());
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_pystack_use_obj, mp_micropython_pystack_use);
+#endif
+
 #if MICROPY_ENABLE_GC
 STATIC mp_obj_t mp_micropython_heap_lock(void) {
     gc_lock();
@@ -167,6 +174,9 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
     { MP_ROM_QSTR(MP_QSTR_alloc_emergency_exception_buf), MP_ROM_PTR(&mp_alloc_emergency_exception_buf_obj) },
 #endif
+    #if MICROPY_ENABLE_PYSTACK
+    { MP_ROM_QSTR(MP_QSTR_pystack_use), MP_ROM_PTR(&mp_micropython_pystack_use_obj) },
+    #endif
     #if MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_heap_lock), MP_ROM_PTR(&mp_micropython_heap_lock_obj) },
     { MP_ROM_QSTR(MP_QSTR_heap_unlock), MP_ROM_PTR(&mp_micropython_heap_unlock_obj) },

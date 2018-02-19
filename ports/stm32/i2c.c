@@ -36,6 +36,8 @@
 #include "dma.h"
 #include "i2c.h"
 
+#if MICROPY_HW_ENABLE_HW_I2C
+
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
 ///
@@ -87,6 +89,10 @@
 #define PYB_I2C_MASTER (0)
 #define PYB_I2C_SLAVE  (1)
 
+#define PYB_I2C_SPEED_STANDARD (100000L)
+#define PYB_I2C_SPEED_FULL     (400000L)
+#define PYB_I2C_SPEED_FAST     (1000000L)
+
 #if defined(MICROPY_HW_I2C1_SCL)
 I2C_HandleTypeDef I2CHandle1 = {.Instance = NULL};
 #endif
@@ -134,28 +140,34 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 // The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
 // defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING {{100000, 0x40912732}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (100000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (100000)
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x40912732}, \
+        {PYB_I2C_SPEED_FULL, 0x10911823}, \
+        {PYB_I2C_SPEED_FAST, 0x00611116}, \
+    }
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
 
-#elif defined(STM32F767xx) || defined(STM32F769xx)
+#elif defined(STM32F722xx) || defined(STM32F723xx) \
+    || defined(STM32F732xx) || defined(STM32F733xx) \
+    || defined(STM32F767xx) || defined(STM32F769xx)
 
 // These timing values are for f_I2CCLK=54MHz and are only approximate
 #define MICROPY_HW_I2C_BAUDRATE_TIMING { \
-        {100000, 0xb0420f13}, \
-        {400000, 0x70330309}, \
-        {1000000, 0x50100103}, \
+        {PYB_I2C_SPEED_STANDARD, 0xb0420f13}, \
+        {PYB_I2C_SPEED_FULL, 0x70330309}, \
+        {PYB_I2C_SPEED_FAST, 0x50100103}, \
     }
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (1000000)
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
 
 #elif defined(MCU_SERIES_L4)
 
 // The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
 // defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING {{100000, 0x90112626}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (100000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (100000)
+#define MICROPY_HW_I2C_BAUDRATE_TIMING {{PYB_I2C_SPEED_STANDARD, 0x90112626}}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_STANDARD)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_STANDARD)
 
 #else
 #error "no I2C timings for this MCU"
@@ -190,8 +202,8 @@ uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
 
 #else
 
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (400000)
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FULL)
 
 STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
     init->ClockSpeed = baudrate;
@@ -205,22 +217,19 @@ uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
 #endif
 
 void i2c_init0(void) {
-    // reset the I2C1 handles
+    // Initialise the I2C handles.
+    // The structs live on the BSS so all other fields will be zero after a reset.
     #if defined(MICROPY_HW_I2C1_SCL)
-    memset(&I2CHandle1, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle1.Instance = I2C1;
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    memset(&I2CHandle2, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle2.Instance = I2C2;
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    memset(&I2CHandle3, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle3.Instance = I2C3;
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    memset(&I2CHandle4, 0, sizeof(I2C_HandleTypeDef));
-    I2CHandle3.Instance = I2C4;
+    I2CHandle4.Instance = I2C4;
     #endif
 }
 
@@ -256,7 +265,7 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
         i2c_unit = 4;
         scl_pin = &MICROPY_HW_I2C4_SCL;
         sda_pin = &MICROPY_HW_I2C4_SDA;
-        __I2C3_CLK_ENABLE();
+        __I2C4_CLK_ENABLE();
     #endif
     } else {
         // I2C does not exist for this board (shouldn't get here, should be checked by caller)
@@ -1033,3 +1042,5 @@ const mp_obj_type_t pyb_i2c_type = {
     .make_new = pyb_i2c_make_new,
     .locals_dict = (mp_obj_dict_t*)&pyb_i2c_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_HW_I2C

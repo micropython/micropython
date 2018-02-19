@@ -1,8 +1,8 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  */
-#ifndef MICROPY_INCLUDED_STMHAL_USBD_HID_INTERFACE_H
-#define MICROPY_INCLUDED_STMHAL_USBD_HID_INTERFACE_H
+#ifndef MICROPY_INCLUDED_STM32_USBD_HID_INTERFACE_H
+#define MICROPY_INCLUDED_STM32_USBD_HID_INTERFACE_H
 
 #include "usbd_cdc_msc_hid.h"
 
@@ -18,4 +18,4 @@ typedef struct _usbd_hid_itf_t {
 int usbd_hid_rx_num(usbd_hid_itf_t *hid);
 int usbd_hid_rx(usbd_hid_itf_t *hid, size_t len, uint8_t *buf, uint32_t timeout);
 
-#endif // MICROPY_INCLUDED_STMHAL_USBD_HID_INTERFACE_H
+#endif // MICROPY_INCLUDED_STM32_USBD_HID_INTERFACE_H

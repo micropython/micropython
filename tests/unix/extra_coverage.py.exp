@@ -2,6 +2,7 @@
 -123 +123  123
 -0123
 123
+123
 1ABCDEF
 ab abc
 
@@ -23,16 +24,18 @@ RuntimeError:
 # repl
 ame__
 
-__name__        path            argv            version
-version_info    implementation  platform        byteorder
-maxsize         exit            stdin           stdout
-stderr          modules         exc_info        getsizeof
-print_exception
+__class__       __name__        argv            byteorder
+exc_info        exit            getsizeof       implementation
+maxsize         modules         path            platform
+print_exception                 stderr          stdin
+stdout          version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
 # str
 1
+# bytearray
+data
 # mpz
 1
 12345678
