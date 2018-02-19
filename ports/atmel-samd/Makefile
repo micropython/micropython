@@ -268,6 +268,7 @@ SRC_COMMON_HAL = \
 	neopixel_write/__init__.c \
 	os/__init__.c \
 	storage/__init__.c \
+        supervisor/Status.c \
 	time/__init__.c \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
