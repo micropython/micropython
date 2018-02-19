@@ -223,7 +223,10 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     }
 
     if (MP_OBJ_IS_SMALL_INT(args[0])) {
-        uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        if (len < 0) {
+            mp_raise_ValueError(NULL);
+        }
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         memset(vstr.buf, 0, len);
