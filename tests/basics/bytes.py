@@ -56,3 +56,9 @@ print(x[0], x[1], x[2], x[3])
 print(bytes([128, 255]))
 # For sequence of unknown len
 print(bytes(iter([128, 255])))
+
+# Shouldn't be able to make bytes with negative length
+try:
+    bytes(-1)
+except ValueError:
+    print('ValueError')
