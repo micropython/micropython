@@ -341,10 +341,9 @@ void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
         if (VERIFY_PTR(ptr)) {
-            // Mark and push this pointer
             size_t block = BLOCK_FROM_PTR(ptr);
             if (ATB_GET_KIND(block) == AT_HEAD) {
-                // an unmarked head, mark it, and push it on gc stack
+                // An unmarked head: mark it, and mark all its children
                 TRACE_MARK(block, ptr);
                 ATB_HEAD_TO_MARK(block);
                 gc_mark_subtree(block);
