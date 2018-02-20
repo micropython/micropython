@@ -23,11 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "spi_flash.h"
+#include "external_flash.h"
 
 #include <stdint.h>
 #include <string.h>
 
+#include "external_flash/spi_flash_api.h"
+#include "external_flash/common_commands.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "py/misc.h"
@@ -46,17 +48,6 @@
 
 #define NO_SECTOR_LOADED 0xFFFFFFFF
 
-#define CMD_READ_JEDEC_ID 0x9f
-#define CMD_READ_DATA 0x03
-#define CMD_SECTOR_ERASE 0x20
-// #define CMD_SECTOR_ERASE CMD_READ_JEDEC_ID
-#define CMD_DISABLE_WRITE 0x04
-#define CMD_ENABLE_WRITE 0x06
-#define CMD_PAGE_PROGRAM 0x02
-// #define CMD_PAGE_PROGRAM CMD_READ_JEDEC_ID
-#define CMD_READ_STATUS 0x05
-#define CMD_WRITE_STATUS_BYTE1 0x01
-
 static bool spi_flash_is_initialised = false;
 
 struct spi_m_sync_descriptor spi_flash_desc;
@@ -71,46 +62,20 @@ static uint32_t dirty_mask;
 // Address of the scratch flash sector.
 #define SCRATCH_SECTOR (SPI_FLASH_TOTAL_SIZE - SPI_FLASH_ERASE_SIZE)
 
-// Enable the flash over SPI.
-static void flash_enable(void) {
-    gpio_set_pin_level(SPI_FLASH_CS_PIN, false);
-}
-
-// Disable the flash over SPI.
-static void flash_disable(void) {
-    gpio_set_pin_level(SPI_FLASH_CS_PIN, true);
-}
-
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
-    uint8_t read_status_request[2] = {CMD_READ_STATUS, 0x00};
-    uint8_t read_status_response[2] = {0x00, 0x00};
-    struct spi_xfer read_status_xfer = {read_status_request, read_status_response, 2};
-    int32_t status;
+    uint8_t read_status_response[1] = {0x00};
+    bool ok = true;
     // Both the write enable and write in progress bits should be low.
     do {
-        flash_enable();
-        status = spi_m_sync_transfer(&spi_flash_desc, &read_status_xfer);
-        flash_disable();
-    } while (status >= 0 && (read_status_response[1] & 0x3) != 0);
-    return status >= 0;         // status is number of chars read or a negative error code.
+        ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+    } while (ok && (read_status_response[0] & 0x3) != 0);
+    return ok;
 }
 
 // Turn on the write enable bit so we can program and erase the flash.
 static bool write_enable(void) {
-    flash_enable();
-    uint8_t enable_write_request[1] = {CMD_ENABLE_WRITE};
-    struct spi_xfer enable_write_xfer = {enable_write_request, 0, 1};
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &enable_write_xfer);
-    flash_disable();
-    return status >= 0;         // status is number of chars read or a negative error code.
-}
-
-// Pack the low 24 bits of the address into a uint8_t array.
-static void address_to_bytes(uint32_t address, uint8_t* bytes) {
-    bytes[0] = (address >> 16) & 0xff;
-    bytes[1] = (address >> 8) & 0xff;
-    bytes[2] = address & 0xff;
+    return spi_flash_command(CMD_ENABLE_WRITE);
 }
 
 // Read data_length's worth of bytes starting at address into data.
@@ -121,19 +86,7 @@ static bool read_flash(uint32_t address, uint8_t* data, uint32_t data_length) {
     if (!wait_for_flash_ready()) {
         return false;
     }
-    // We can read as much as we want sequentially.
-    uint8_t read_data_request[4] = {CMD_READ_DATA, 0x00, 0x00, 0x00};
-    struct spi_xfer read_data_xfer = {read_data_request, 0, 4};
-    // Write the SPI flash read address into the bytes following the command byte.
-    address_to_bytes(address, read_data_request + 1);
-    flash_enable();
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &read_data_xfer);
-    struct spi_xfer read_data_buffer_xfer = {0, data, data_length};
-    if (status >= 0) {
-        status = spi_m_sync_transfer(&spi_flash_desc, &read_data_buffer_xfer);
-    }
-    flash_disable();
-    return status >= 0;
+    return spi_flash_read_data(address, data, data_length);
 }
 
 // Writes data_length's worth of bytes starting at address from data. Assumes
@@ -162,29 +115,9 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
         if (!wait_for_flash_ready() || !write_enable()) {
             return false;
         }
-        int32_t status;
 
-        #ifdef SPI_FLASH_SECTOR_PROTECTION
-        // Print out the protection status.
-        // uint8_t protect_check[5] = {0x3C, 0x00, 0x00, 0x00, 0x00};
-        // address_to_bytes(address + bytes_written, protect_check + 1);
-        // flash_enable();
-        // status = spi_write_buffer_wait(&spi_flash_desc, protect_check, 5);
-        // flash_disable();
-        #endif
-
-        flash_enable();
-        uint8_t page_program_request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
-        // Write the SPI flash write address into the bytes following the command byte.
-        address_to_bytes(address + bytes_written, page_program_request + 1);
-        struct spi_xfer page_program_xfer = {page_program_request, 0, 4};
-        status = spi_m_sync_transfer(&spi_flash_desc, &page_program_xfer);
-        if (status >= 0) {
-            struct spi_xfer write_data_buffer_xfer = {(uint8_t*) data + bytes_written, 0, SPI_FLASH_PAGE_SIZE};
-            status = spi_m_sync_transfer(&spi_flash_desc, &write_data_buffer_xfer);
-        }
-        flash_disable();
-        if (status < 0) {
+        if (!spi_flash_write_data(address + bytes_written, (uint8_t*) data + bytes_written,
+                                  SPI_FLASH_PAGE_SIZE)) {
             return false;
         }
     }
@@ -228,13 +161,8 @@ static bool erase_sector(uint32_t sector_address) {
         return false;
     }
 
-    uint8_t erase_request[4] = {CMD_SECTOR_ERASE, 0x00, 0x00, 0x00};
-    address_to_bytes(sector_address, erase_request + 1);
-    struct spi_xfer erase_xfer = {erase_request, 0, 4};
-    flash_enable();
-    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &erase_xfer);
-    flash_disable();
-    return status >= 0;
+    spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
+    return true;
 }
 
 // Sector is really 24 bits.
@@ -252,45 +180,12 @@ static bool copy_block(uint32_t src_address, uint32_t dest_address) {
     return true;
 }
 
-void spi_flash_init(void) {
+void external_flash_init(void) {
     if (spi_flash_is_initialised) {
         return;
     }
 
-    samd_peripherals_sercom_clock_init(SPI_FLASH_SERCOM, SPI_FLASH_SERCOM_INDEX);
-
-    // Set up with defaults, then change.
-    spi_m_sync_init(&spi_flash_desc, SPI_FLASH_SERCOM);
-
-    hri_sercomspi_write_CTRLA_DOPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DOPO);
-    hri_sercomspi_write_CTRLA_DIPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DIPO);
-
-    gpio_set_pin_direction(SPI_FLASH_SCK_PIN, GPIO_DIRECTION_OUT);
-    gpio_set_pin_pull_mode(SPI_FLASH_SCK_PIN, GPIO_PULL_OFF);
-    gpio_set_pin_function(SPI_FLASH_SCK_PIN, SPI_FLASH_SCK_PIN_FUNCTION);
-
-    gpio_set_pin_direction(SPI_FLASH_MOSI_PIN, GPIO_DIRECTION_OUT);
-    gpio_set_pin_pull_mode(SPI_FLASH_MOSI_PIN, GPIO_PULL_OFF);
-    gpio_set_pin_function(SPI_FLASH_MOSI_PIN, SPI_FLASH_MOSI_PIN_FUNCTION);
-
-    gpio_set_pin_direction(SPI_FLASH_MISO_PIN, GPIO_DIRECTION_IN);
-    gpio_set_pin_pull_mode(SPI_FLASH_MISO_PIN, GPIO_PULL_OFF);
-    gpio_set_pin_function(SPI_FLASH_MISO_PIN, SPI_FLASH_MISO_PIN_FUNCTION);
-
-    hri_sercomspi_write_CTRLA_DOPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DOPO);
-    hri_sercomspi_write_CTRLA_DIPO_bf(SPI_FLASH_SERCOM, SPI_FLASH_DIPO);
-
-    spi_m_sync_set_baudrate(&spi_flash_desc, samd_peripherals_spi_baudrate_to_baud_reg_value(SPI_FLASH_BAUDRATE));
-
-    gpio_set_pin_direction(SPI_FLASH_CS_PIN, GPIO_DIRECTION_OUT);
-    // There's already a pull-up on the board.
-    gpio_set_pin_pull_mode(SPI_FLASH_CS_PIN, GPIO_PULL_OFF);
-    gpio_set_pin_function(SPI_FLASH_CS_PIN, GPIO_PIN_FUNCTION_OFF);
-
-    // Set CS high (disabled).
-    flash_disable();
-
-    spi_m_sync_enable(&spi_flash_desc);
+    spi_flash_init();
 
     // Activity LED for flash writes.
 #ifdef MICROPY_HW_LED_MSC
@@ -300,20 +195,17 @@ void spi_flash_init(void) {
     gpio_set_pin_level(MICROPY_HW_LED_MSC, false);
 #endif
 
-    uint8_t jedec_id_request[4] = {CMD_READ_JEDEC_ID, 0x00, 0x00, 0x00};
-    uint8_t jedec_id_response[4] = {0x00, 0x00, 0x00, 0x00};
-    struct spi_xfer jedec_id_xfer = { jedec_id_request, jedec_id_response, 4 };
-    flash_enable();
-    spi_m_sync_transfer(&spi_flash_desc, &jedec_id_xfer);
-    flash_disable();
-    uint8_t manufacturer = jedec_id_response[1];
-    if ((jedec_id_response[1] == SPI_FLASH_JEDEC_MANUFACTURER
+    uint8_t jedec_id_response[3] = {0x00, 0x00, 0x00};
+    spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
+
+    uint8_t manufacturer = jedec_id_response[0];
+    if ((jedec_id_response[0] == SPI_FLASH_JEDEC_MANUFACTURER
 #ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
-         || jedec_id_response[1] == SPI_FLASH_JEDEC_MANUFACTURER_2
+         || jedec_id_response[0] == SPI_FLASH_JEDEC_MANUFACTURER_2
 #endif
          ) &&
-        jedec_id_response[2] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
-        jedec_id_response[3] == SPI_FLASH_JEDEC_CAPACITY) {
+        jedec_id_response[1] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
+        jedec_id_response[2] == SPI_FLASH_JEDEC_CAPACITY) {
         spi_flash_is_initialised = true;
     } else {
         // Unknown flash chip!
@@ -329,19 +221,12 @@ void spi_flash_init(void) {
         write_enable();
 
         // Turn off sector protection
-        uint8_t disable_protect_request[2] = {CMD_WRITE_STATUS_BYTE1, 0x00};
-        struct spi_xfer disable_protect_xfer = { disable_protect_request, 0, 4 };
-        flash_enable();
-        spi_m_sync_transfer(&spi_flash_desc, &disable_protect_xfer);
-        flash_disable();
+        uint8_t data[1] = {0x00};
+        spi_flash_write_command(CMD_WRITE_STATUS_BYTE1, data, 1);
     }
 
     // Turn off writes in case this is a microcontroller only reset.
-    uint8_t disable_write_request[1] = {CMD_DISABLE_WRITE};
-    struct spi_xfer disable_write_xfer = { disable_write_request, 0, 1 };
-    flash_enable();
-    spi_m_sync_transfer(&spi_flash_desc, &disable_write_xfer);
-    flash_disable();
+    spi_flash_command(CMD_DISABLE_WRITE);
 
     wait_for_flash_ready();
 
@@ -353,12 +238,12 @@ void spi_flash_init(void) {
 }
 
 // The size of each individual block.
-uint32_t spi_flash_get_block_size(void) {
+uint32_t external_flash_get_block_size(void) {
     return FILESYSTEM_BLOCK_SIZE;
 }
 
 // The total number of available blocks.
-uint32_t spi_flash_get_block_count(void) {
+uint32_t external_flash_get_block_count(void) {
     // We subtract one erase sector size because we may use it as a staging area
     // for writes.
     return SPI_FLASH_PART1_START_BLOCK + (SPI_FLASH_TOTAL_SIZE - SPI_FLASH_ERASE_SIZE) / FILESYSTEM_BLOCK_SIZE;
@@ -510,12 +395,12 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
 
 // External flash function used. If called externally we assume we won't need
 // the cache after.
-void spi_flash_flush(void) {
+void external_flash_flush(void) {
     spi_flash_flush_keep_cache(false);
 }
 
 void flash_flush(void) {
-    spi_flash_flush();
+    external_flash_flush();
 }
 
 // Builds a partition entry for the MBR.
@@ -557,7 +442,7 @@ static void build_partition(uint8_t *buf, int boot, int type,
 }
 
 static int32_t convert_block_to_flash_addr(uint32_t block) {
-    if (SPI_FLASH_PART1_START_BLOCK <= block && block < spi_flash_get_block_count()) {
+    if (SPI_FLASH_PART1_START_BLOCK <= block && block < external_flash_get_block_count()) {
         // a block in partition 1
         block -= SPI_FLASH_PART1_START_BLOCK;
         return block * FILESYSTEM_BLOCK_SIZE;
@@ -566,7 +451,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
     return -1;
 }
 
-bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
+bool external_flash_read_block(uint8_t *dest, uint32_t block) {
     if (block == 0) {
         // Fake the MBR so we can decide on our own partition table
         for (int i = 0; i < 446; i++) {
@@ -575,7 +460,7 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
 
         build_partition(dest + 446, 0, 0x01 /* FAT12 */,
                         SPI_FLASH_PART1_START_BLOCK,
-                        spi_flash_get_block_count() - SPI_FLASH_PART1_START_BLOCK);
+                        external_flash_get_block_count() - SPI_FLASH_PART1_START_BLOCK);
         build_partition(dest + 462, 0, 0, 0, 0);
         build_partition(dest + 478, 0, 0, 0, 0);
         build_partition(dest + 494, 0, 0, 0, 0);
@@ -618,7 +503,7 @@ bool spi_flash_read_block(uint8_t *dest, uint32_t block) {
     }
 }
 
-bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
+bool external_flash_write_block(const uint8_t *data, uint32_t block) {
     if (block < SPI_FLASH_PART1_START_BLOCK) {
         // Fake writing below the flash partition.
         return true;
@@ -670,18 +555,18 @@ bool spi_flash_write_block(const uint8_t *data, uint32_t block) {
     }
 }
 
-mp_uint_t spi_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+mp_uint_t external_flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     for (size_t i = 0; i < num_blocks; i++) {
-        if (!spi_flash_read_block(dest + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
+        if (!external_flash_read_block(dest + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }
     }
     return 0; // success
 }
 
-mp_uint_t spi_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+mp_uint_t external_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     for (size_t i = 0; i < num_blocks; i++) {
-        if (!spi_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
+        if (!external_flash_write_block(src + i * FILESYSTEM_BLOCK_SIZE, block_num + i)) {
             return 1; // error
         }
     }
@@ -694,58 +579,58 @@ mp_uint_t spi_flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_
 // Expose the flash as an object with the block protocol.
 
 // there is a singleton Flash object
-STATIC const mp_obj_base_t spi_flash_obj = {&spi_flash_type};
+STATIC const mp_obj_base_t external_flash_obj = {&external_flash_type};
 
-STATIC mp_obj_t spi_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t external_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return singleton object
-    return (mp_obj_t)&spi_flash_obj;
+    return (mp_obj_t)&external_flash_obj;
 }
 
-STATIC mp_obj_t spi_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
+STATIC mp_obj_t external_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = spi_flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
+    mp_uint_t ret = external_flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(spi_flash_obj_readblocks_obj, spi_flash_obj_readblocks);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(external_flash_obj_readblocks_obj, external_flash_obj_readblocks);
 
-STATIC mp_obj_t spi_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
+STATIC mp_obj_t external_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = spi_flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
+    mp_uint_t ret = external_flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(spi_flash_obj_writeblocks_obj, spi_flash_obj_writeblocks);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(external_flash_obj_writeblocks_obj, external_flash_obj_writeblocks);
 
-STATIC mp_obj_t spi_flash_obj_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
+STATIC mp_obj_t external_flash_obj_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case BP_IOCTL_INIT: spi_flash_init(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_DEINIT: spi_flash_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
-        case BP_IOCTL_SYNC: spi_flash_flush(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(spi_flash_get_block_count());
-        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(spi_flash_get_block_size());
+        case BP_IOCTL_INIT: external_flash_init(); return MP_OBJ_NEW_SMALL_INT(0);
+        case BP_IOCTL_DEINIT: external_flash_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
+        case BP_IOCTL_SYNC: external_flash_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(external_flash_get_block_count());
+        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(external_flash_get_block_size());
         default: return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(spi_flash_obj_ioctl_obj, spi_flash_obj_ioctl);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(external_flash_obj_ioctl_obj, external_flash_obj_ioctl);
 
-STATIC const mp_rom_map_elem_t spi_flash_obj_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&spi_flash_obj_readblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&spi_flash_obj_writeblocks_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&spi_flash_obj_ioctl_obj) },
+STATIC const mp_rom_map_elem_t external_flash_obj_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&external_flash_obj_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&external_flash_obj_writeblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&external_flash_obj_ioctl_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(spi_flash_obj_locals_dict, spi_flash_obj_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(external_flash_obj_locals_dict, external_flash_obj_locals_dict_table);
 
-const mp_obj_type_t spi_flash_type = {
+const mp_obj_type_t external_flash_type = {
     { &mp_type_type },
     .name = MP_QSTR_SPIFlash,
-    .make_new = spi_flash_obj_make_new,
-    .locals_dict = (mp_obj_t)&spi_flash_obj_locals_dict,
+    .make_new = external_flash_obj_make_new,
+    .locals_dict = (mp_obj_t)&external_flash_obj_locals_dict,
 };
 
 void flash_init_vfs(fs_user_mount_t *vfs) {
@@ -753,12 +638,12 @@ void flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
     vfs->fatfs.part = 1; // flash filesystem lives on first partition
-    vfs->readblocks[0] = (mp_obj_t)&spi_flash_obj_readblocks_obj;
-    vfs->readblocks[1] = (mp_obj_t)&spi_flash_obj;
-    vfs->readblocks[2] = (mp_obj_t)spi_flash_read_blocks; // native version
-    vfs->writeblocks[0] = (mp_obj_t)&spi_flash_obj_writeblocks_obj;
-    vfs->writeblocks[1] = (mp_obj_t)&spi_flash_obj;
-    vfs->writeblocks[2] = (mp_obj_t)spi_flash_write_blocks; // native version
-    vfs->u.ioctl[0] = (mp_obj_t)&spi_flash_obj_ioctl_obj;
-    vfs->u.ioctl[1] = (mp_obj_t)&spi_flash_obj;
+    vfs->readblocks[0] = (mp_obj_t)&external_flash_obj_readblocks_obj;
+    vfs->readblocks[1] = (mp_obj_t)&external_flash_obj;
+    vfs->readblocks[2] = (mp_obj_t)external_flash_read_blocks; // native version
+    vfs->writeblocks[0] = (mp_obj_t)&external_flash_obj_writeblocks_obj;
+    vfs->writeblocks[1] = (mp_obj_t)&external_flash_obj;
+    vfs->writeblocks[2] = (mp_obj_t)external_flash_write_blocks; // native version
+    vfs->u.ioctl[0] = (mp_obj_t)&external_flash_obj_ioctl_obj;
+    vfs->u.ioctl[1] = (mp_obj_t)&external_flash_obj;
 }

@@ -31,7 +31,7 @@
 #define MICROPY_PORT_B        ( 0 )
 #define MICROPY_PORT_C        ( 0 )
 
-#include "spi_flash.h"
+#include "external_flash/external_flash.h"
 
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code.
@@ -40,5 +40,5 @@
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#include "flash_S25FL216K.h"
-#include "flash_GD25Q16C.h"
+#include "external_flash/devices/S25FL216K.h"
+#include "external_flash/devices/GD25Q16C.h"
