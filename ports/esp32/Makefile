@@ -21,7 +21,7 @@ FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 4MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
 
-ESPIDF_SUPHASH := 2c95a77cf93781f296883d5dbafcdc18e4389656
+ESPIDF_SUPHASH := 3ede9f011b50999b0560683f9419538c066dd09e
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
@@ -90,6 +90,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_trace/include
+INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 
 CFLAGS_BASE = -std=gnu99 -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib -Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H -DESP_PLATFORM
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
@@ -336,9 +337,9 @@ ESPIDF_VFS_O = $(addprefix $(ESPCOMP)/vfs/,\
 	vfs.o \
 	)
 
-ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/,\
-	library/cJSON.o \
-	port/cJSON_Utils.o \
+ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/cJSON/,\
+	cJSON.o \
+	cJSON_Utils.o \
 	)
 
 ESPIDF_LOG_O = $(addprefix $(ESPCOMP)/log/,\
@@ -356,6 +357,10 @@ ESPIDF_TCPIP_ADAPTER_O = $(addprefix $(ESPCOMP)/tcpip_adapter/,\
 
 ESPIDF_APP_TRACE_O = $(addprefix $(ESPCOMP)/app_trace/,\
 	app_trace.o \
+	)
+
+ESPIDF_APP_UPDATE_O = $(addprefix $(ESPCOMP)/app_update/,\
+	esp_ota_ops.o \
 	)
 
 ESPIDF_NEWLIB_O = $(addprefix $(ESPCOMP)/newlib/,\
@@ -594,6 +599,7 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_MBEDTLS_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_XTENSA_DEBUG_MODULE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_TCPIP_ADAPTER_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_TRACE_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_UPDATE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NGHTTP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
@@ -671,6 +677,7 @@ $(BUILD)/%.o: %.cpp
 
 $(BUILD)/bootloader/$(ESPCOMP)/%.o: CFLAGS += -DBOOTLOADER_BUILD=1 -I$(ESPCOMP)/bootloader_support/include_priv -I$(ESPCOMP)/bootloader_support/include -I$(ESPCOMP)/micro-ecc/micro-ecc -I$(ESPCOMP)/esp32 -Wno-error=format
 BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
+	bootloader_support/src/bootloader_clock.o \
 	bootloader_support/src/bootloader_flash.o \
 	bootloader_support/src/bootloader_random.o \
 	bootloader_support/src/bootloader_sha.o \
