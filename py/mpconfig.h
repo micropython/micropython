@@ -405,6 +405,13 @@
 /*****************************************************************************/
 /* Python internal features                                                  */
 
+// Whether to enable import of external modules
+// When disabled, only importing of built-in modules is supported
+// When enabled, a port must implement mp_import_stat (among other things)
+#ifndef MICROPY_ENABLE_EXTERNAL_IMPORT
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
+#endif
+
 // Whether to use the POSIX reader for importing files
 #ifndef MICROPY_READER_POSIX
 #define MICROPY_READER_POSIX (0)
