@@ -220,6 +220,7 @@ PY_O_BASENAME = \
 	../extmod/moduheapq.o \
 	../extmod/modutimeq.o \
 	../extmod/moduhashlib.o \
+	../extmod/moducryptolib.o \
 	../extmod/modubinascii.o \
 	../extmod/virtpin.o \
 	../extmod/machine_mem.o \
