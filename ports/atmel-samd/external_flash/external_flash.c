@@ -208,7 +208,6 @@ void external_flash_init(void) {
         jedec_id_response[2] == SPI_FLASH_JEDEC_CAPACITY) {
         spi_flash_is_initialised = true;
     } else {
-        asm("bkpt");
         // Unknown flash chip!
         spi_flash_is_initialised = false;
         return;
