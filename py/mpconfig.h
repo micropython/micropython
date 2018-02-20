@@ -907,6 +907,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
 #endif
 
+// Whether to provide "micropython.stack_use" function
+#ifndef MICROPY_PY_MICROPYTHON_STACK_USE
+#define MICROPY_PY_MICROPYTHON_STACK_USE (MICROPY_PY_MICROPYTHON_MEM_INFO)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
