@@ -60,8 +60,7 @@ STATIC mp_obj_t deque_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
     o->base.type = type;
     o->alloc = maxlen + 1;
     o->i_get = o->i_put = 0;
-    o->items = m_new(mp_obj_t, o->alloc);
-    mp_seq_clear(o->items, 0, o->alloc, sizeof(*o->items));
+    o->items = m_new0(mp_obj_t, o->alloc);
 
     if (n_args > 2) {
         o->flags = mp_obj_get_int(args[2]);
