@@ -55,6 +55,12 @@ d.append(4)
 d.append(5)
 print(d.popleft(), d.popleft())
 
+# Negative maxlen is not allowed
+try:
+    deque((), -1)
+except ValueError:
+    print("ValueError")
+
 # Unsupported unary op
 try:
     ~d

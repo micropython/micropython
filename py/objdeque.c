@@ -50,9 +50,15 @@ STATIC mp_obj_t deque_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         mp_raise_ValueError(NULL);
     }
 
+    // Protect against -1 leading to zero-length allocation and bad array access
+    mp_int_t maxlen = mp_obj_get_int(args[1]);
+    if (maxlen < 0) {
+        mp_raise_ValueError(NULL);
+    }
+
     mp_obj_deque_t *o = m_new_obj(mp_obj_deque_t);
     o->base.type = type;
-    o->alloc = mp_obj_get_int(args[1]) + 1;
+    o->alloc = maxlen + 1;
     o->i_get = o->i_put = 0;
     o->items = m_new(mp_obj_t, o->alloc);
     mp_seq_clear(o->items, 0, o->alloc, sizeof(*o->items));
