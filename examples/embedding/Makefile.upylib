@@ -13,7 +13,7 @@ include $(MPTOP)/py/py.mk
 INC +=  -I.
 INC +=  -I..
 INC +=  -I$(MPTOP)
-INC +=  -I$(MPTOP)/unix
+INC +=  -I$(MPTOP)/ports/unix
 INC += -I$(BUILD)
 
 # compiler settings
@@ -79,7 +79,7 @@ endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
-INC +=  -I../lib/mp-readline
+INC +=  -I$(MPTOP)/lib/mp-readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 LIB_SRC_C_EXTRA += mp-readline/readline.c
 endif
@@ -105,11 +105,11 @@ endif
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d ../lib/libffi/build_dir/out/lib/libffi-*/include)
+LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(MPTOP)/lib/libffi/build_dir/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib32/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(MPTOP)/lib/libffi/build_dir/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = ../lib/libffi/build_dir/out/lib/libffi.a
+  LIBFFI_LDFLAGS_MOD = $(MPTOP)/lib/libffi/build_dir/out/lib/libffi.a
  endif
 else
 LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
@@ -128,7 +128,7 @@ endif
 MAIN_C = main.c
 
 # source files
-SRC_C = $(addprefix $(MPTOP)/unix/,\
+SRC_C = $(addprefix $(MPTOP)/ports/unix/,\
 	$(MAIN_C) \
 	gccollect.c \
 	unix_mphal.c \
@@ -181,18 +181,18 @@ deplibs: libffi axtls
 # install-exec-recursive & install-data-am targets are used to avoid building
 # docs and depending on makeinfo
 libffi:
-	cd ../lib/libffi; git clean -d -x -f
-	cd ../lib/libffi; ./autogen.sh
-	mkdir -p ../lib/libffi/build_dir; cd ../lib/libffi/build_dir; \
+	cd $(MPTOP)/lib/libffi; git clean -d -x -f
+	cd $(MPTOP)/lib/libffi; ./autogen.sh
+	mkdir -p $(MPTOP)/lib/libffi/build_dir; cd $(MPTOP)/lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
 	make install-exec-recursive; make -C include install-data-am
 
-axtls: ../lib/axtls/README
-	cd ../lib/axtls; cp config/upyconfig config/.config
-	cd ../lib/axtls; make oldconfig -B
-	cd ../lib/axtls; make clean
-	cd ../lib/axtls; make all CC="$(CC)" LD="$(LD)"
+axtls: $(MPTOP)/lib/axtls/README
+	cd $(MPTOP)/lib/axtls; cp config/upyconfig config/.config
+	cd $(MPTOP)/lib/axtls; make oldconfig -B
+	cd $(MPTOP)/lib/axtls; make clean
+	cd $(MPTOP)/lib/axtls; make all CC="$(CC)" LD="$(LD)"
 
-../lib/axtls/README:
+$(MPTOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
-	(cd ..; git submodule update --init --recursive)
+	(cd $(MPTOP); git submodule update --init --recursive)
