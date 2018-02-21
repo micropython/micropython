@@ -45,3 +45,18 @@ try:
     d.popleft()
 except IndexError:
     print("IndexError")
+
+# Case where get index wraps around when appending to full deque
+d = deque((), 2)
+d.append(1)
+d.append(2)
+d.append(3)
+d.append(4)
+d.append(5)
+print(d.popleft(), d.popleft())
+
+# Unsupported unary op
+try:
+    ~d
+except TypeError:
+    print("TypeError")
