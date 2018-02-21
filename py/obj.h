@@ -291,9 +291,6 @@ static inline bool mp_obj_is_integer(mp_const_obj_t o) { return MP_OBJ_IS_INT(o)
 #define MP_DEFINE_CONST_FUN_OBJ_3(obj_name, fun_name) \
     const mp_obj_fun_builtin_fixed_t obj_name = \
         {{&mp_type_fun_builtin_3}, .fun._3 = fun_name}
-#define MP_DEFINE_CONST_FUN_OBJ_4(obj_name, fun_name) \
-    const mp_obj_fun_builtin_fixed_t obj_name = \
-        {{&mp_type_fun_builtin_4}, .fun._4 = fun_name}
 #define MP_DEFINE_CONST_FUN_OBJ_VAR(obj_name, n_args_min, fun_name) \
     const mp_obj_fun_builtin_var_t obj_name = \
         {{&mp_type_fun_builtin_var}, false, n_args_min, MP_OBJ_FUN_ARGS_MAX, .fun.var = fun_name}
@@ -407,7 +404,6 @@ typedef mp_obj_t (*mp_fun_0_t)(void);
 typedef mp_obj_t (*mp_fun_1_t)(mp_obj_t);
 typedef mp_obj_t (*mp_fun_2_t)(mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_3_t)(mp_obj_t, mp_obj_t, mp_obj_t);
-typedef mp_obj_t (*mp_fun_4_t)(mp_obj_t, mp_obj_t, mp_obj_t, mp_obj_t);
 typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 // mp_fun_kw_t takes mp_map_t* (and not const mp_map_t*) to ease passing
 // this arg to mp_map_lookup().
@@ -794,7 +790,6 @@ typedef struct _mp_obj_fun_builtin_fixed_t {
         mp_fun_1_t _1;
         mp_fun_2_t _2;
         mp_fun_3_t _3;
-        mp_fun_4_t _4;
     } fun;
 } mp_obj_fun_builtin_fixed_t;
 

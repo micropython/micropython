@@ -105,20 +105,6 @@ const mp_obj_type_t mp_type_fun_builtin_3 = {
     .unary_op = mp_generic_unary_op,
 };
 
-STATIC mp_obj_t fun_builtin_4_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_4));
-    mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 4, 4, false);
-    return self->fun._4(args[0], args[1], args[2], args[3]);
-}
-
-const mp_obj_type_t mp_type_fun_builtin_4 = {
-    { &mp_type_type },
-    .name = MP_QSTR_function,
-    .call = fun_builtin_4_call,
-    .unary_op = mp_generic_unary_op,
-};
-
 STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_var));
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
