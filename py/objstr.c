@@ -663,9 +663,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
             }
             res->items[idx--] = mp_obj_new_str_of_type(self_type, s + sep_len, last - s - sep_len);
             last = s;
-            if (splits > 0) {
-                splits--;
-            }
+            splits--;
         }
         if (idx != 0) {
             // We split less parts than split limit, now go cleanup surplus

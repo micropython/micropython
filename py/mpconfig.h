@@ -405,6 +405,13 @@
 /*****************************************************************************/
 /* Python internal features                                                  */
 
+// Whether to enable import of external modules
+// When disabled, only importing of built-in modules is supported
+// When enabled, a port must implement mp_import_stat (among other things)
+#ifndef MICROPY_ENABLE_EXTERNAL_IMPORT
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
+#endif
+
 // Whether to use the POSIX reader for importing files
 #ifndef MICROPY_READER_POSIX
 #define MICROPY_READER_POSIX (0)
@@ -900,6 +907,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
 #endif
 
+// Whether to provide "micropython.stack_use" function
+#ifndef MICROPY_PY_MICROPYTHON_STACK_USE
+#define MICROPY_PY_MICROPYTHON_STACK_USE (MICROPY_PY_MICROPYTHON_MEM_INFO)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
@@ -922,6 +934,11 @@ typedef double mp_float_t;
 // Whether to provide "collections" module
 #ifndef MICROPY_PY_COLLECTIONS
 #define MICROPY_PY_COLLECTIONS (1)
+#endif
+
+// Whether to provide "ucollections.deque" type
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE
+#define MICROPY_PY_COLLECTIONS_DEQUE (0)
 #endif
 
 // Whether to provide "collections.OrderedDict" type

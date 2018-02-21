@@ -51,7 +51,7 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
 
     switch (id) {
         case 0:
-            esp_task_wdt_feed();
+            esp_task_wdt_add(NULL);
             return &wdt_default;
         default:
             mp_raise_ValueError(NULL);
@@ -60,7 +60,7 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
 
 STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
     (void)self_in;
-    esp_task_wdt_feed();
+    esp_task_wdt_reset();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);

@@ -1337,6 +1337,8 @@ import_error:
         return dest[0];
     }
 
+    #if MICROPY_ENABLE_EXTERNAL_IMPORT
+
     // See if it's a package, then can try FS import
     if (!mp_obj_is_package(module)) {
         goto import_error;
@@ -1363,6 +1365,13 @@ import_error:
 
     // TODO lookup __import__ and call that instead of going straight to builtin implementation
     return mp_builtin___import__(5, args);
+
+    #else
+
+    // Package import not supported with external imports disabled
+    goto import_error;
+
+    #endif
 }
 
 void mp_import_all(mp_obj_t module) {
