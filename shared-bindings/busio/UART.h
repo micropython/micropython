@@ -55,6 +55,10 @@ extern size_t common_hal_busio_uart_read(busio_uart_obj_t *self,
 extern size_t common_hal_busio_uart_write(busio_uart_obj_t *self,
                               const uint8_t *data, size_t len, int *errcode);
 
+extern uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self);
+extern void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate);
+
+
 extern uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self);
 extern bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self);
 

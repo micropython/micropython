@@ -1,3 +1,14 @@
+// Circuit Python SAMD21 clock tree:
+// DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK0
+//   GCLK0 (48MHz) -> peripherals
+
+// We'd like to use XOSC32K as a ref for DFLL48M on boards with a 32kHz crystal,
+// but haven't figured that out yet.
+
+// Used in hpl/core/hpl_init.c to define which clocks should be initialized first.
+#define CIRCUITPY_GCLK_INIT_1ST (1 << 0)
+
+
 /* Auto-generated config file hpl_gclk_config.h */
 #ifndef HPL_GCLK_CONFIG_H
 #define HPL_GCLK_CONFIG_H

@@ -114,23 +114,6 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
-    // Uncomment to init PIN_PA17 for debugging.
-    // struct port_config pin_conf;
-    // port_get_config_defaults(&pin_conf);
-    //
-    // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-    // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
-    // port_pin_set_output_level(MICROPY_HW_LED1, false);
-
-    // Output clocks for debugging.
-    // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
-    // #ifdef SAMD51
-    // gpio_set_pin_function(PIN_PA10, GPIO_PIN_FUNCTION_M); // GCLK4, D3
-    // gpio_set_pin_function(PIN_PA11, GPIO_PIN_FUNCTION_M); // GCLK5, A4
-    // gpio_set_pin_function(PIN_PB14, GPIO_PIN_FUNCTION_M); // GCLK0, D5
-    // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
-    // #endif
-
     // Init the nvm controller.
     // struct nvm_config config_nvm;
     // nvm_get_config_defaults(&config_nvm);
@@ -221,7 +204,26 @@ void reset_port(void) {
     analogout_reset();
 
     reset_all_pins();
-//
+
+    // Set up debugging pins after reset_all_pins().
+    
+    // Uncomment to init PIN_PA17 for debugging.
+    // struct port_config pin_conf;
+    // port_get_config_defaults(&pin_conf);
+    //
+    // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
+    // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
+    // port_pin_set_output_level(MICROPY_HW_LED1, false);
+
+    // Output clocks for debugging.
+    // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
+    // #ifdef SAMD51
+    // gpio_set_pin_function(PIN_PA10, GPIO_PIN_FUNCTION_M); // GCLK4, D3
+    // gpio_set_pin_function(PIN_PA11, GPIO_PIN_FUNCTION_M); // GCLK5, A4
+    // gpio_set_pin_function(PIN_PB14, GPIO_PIN_FUNCTION_M); // GCLK0, D5
+    // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
+    // #endif
+
 //
 //     usb_hid_reset();
 //
