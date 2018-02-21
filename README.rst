@@ -3,17 +3,17 @@ Adafruit CircuitPython
 
 |Build Status| |Doc Status| |Discord|
 
-**`Status <#status>`__** \| **`Supported Boards <#supported-boards>`__**
-\| **`Download <#download>`__** \|
-**`Documentation <#documentation>`__** \|
-**`Contributing <#contributing>`__** \| **`Differences from
-Micropython <#differences-from-micropython>`__** \| **`Project
-Structure <#project-structure>`__**
+`Status <#status>`__ \| `Supported Boards <#supported-boards>`__
+\| `Download <#download>`__ \|
+`Documentation <#documentation>`__ \|
+`Contributing <#contributing>`__ \| `Differences from
+Micropython <#differences-from-micropython>`__ \| `Project
+Structure <#project-structure>`__
 
 **CircuitPython** is an *education friendly* open source derivative of
-``MicroPython <https://micropython.org>``\ *. CircuitPython supports use
+`MicroPython <https://micropython.org>`_. CircuitPython supports use
 on educational development boards designed and sold by
-``Adafruit <https://adafruit.com>``*. Adafruit CircuitPython features
+`Adafruit <https://adafruit.com>`_. Adafruit CircuitPython features
 unified Python core APIs and a growing list of Adafruit libraries and
 drivers of that work with it.
 
@@ -126,17 +126,7 @@ Behavior
 API
 ~~~
 
--  Unified hardware APIs:
-   ```audioio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html>`__,
-   ```analogio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html>`__,
-   ```busio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html>`__,
-   ```digitalio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html>`__,
-   ```pulseio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html>`__,
-   ```touchio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html>`__,
-   ```microcontroller`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html>`__,
-   ```board`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html>`__,
-   ```bitbangio`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html>`__
-   (Only available on atmel-samd21 and ESP8266 currently.)
+-  Unified hardware APIs: `audioio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/audioio/__init__.html>`_, `analogio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/analogio/__init__.html>`_, `busio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/busio/__init__.html>`_, `digitalio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/digitalio/__init__.html>`_, `pulseio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/pulseio/__init__.html>`_, `touchio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/touchio/__init__.html>`_, `microcontroller <https://circuitpython.readthedocs.io/en/latest/shared-bindings/microcontroller/__init__.html>`_, `board <https://circuitpython.readthedocs.io/en/latest/shared-bindings/board/__init__.html>`_, `bitbangio <https://circuitpython.readthedocs.io/en/latest/shared-bindings/bitbangio/__init__.html>`_
 -  No ``machine`` API on Atmel SAMD21 port.
 
 Modules
@@ -155,7 +145,7 @@ Modules
    Therefore, code from CircuitPython is runnable on CPython but not
    necessarily the reverse.
 -  tick count is available as
-   ```time.monotonic()`` <https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic>`__
+   `time.monotonic() <https://circuitpython.readthedocs.io/en/latest/shared-bindings/time/__init__.html#time.monotonic>`__
 
 atmel-samd21 features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -243,7 +233,7 @@ The rest are here to maintain compatibility with the
 `MicroPython <https://github.com/micropython/micropython>`__ parent
 project.
 
-**`⬆ back to top <#adafruit-circuitpython>`__**
+`⬆ back to top <#adafruit-circuitpython>`__
 
 .. |Build Status| image:: https://travis-ci.org/adafruit/circuitpython.svg?branch=master
    :target: https://travis-ci.org/adafruit/circuitpython
