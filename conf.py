@@ -23,9 +23,7 @@ from recommonmark.parser import CommonMarkParser
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
 
-
-# Specify a custom master document based on the port name
-master_doc = 'index'
+master_doc = 'docs/index'
 
 # -- General configuration ------------------------------------------------
 
@@ -60,7 +58,7 @@ source_parsers = {'.md': CommonMarkParser,
 
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2017, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = '2014-2018, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
@@ -83,21 +81,27 @@ version = release = '0.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["*/build-*",
+exclude_patterns = ["*/build*",
                     ".venv",
                     "atmel-samd/asf",
                     "atmel-samd/asf_conf",
                     "atmel-samd/common-hal",
                     "atmel-samd/boards",
                     "atmel-samd/QTouch",
+                    "atmel-samd/freetouch",
                     "atmel-samd/*.c",
                     "atmel-samd/*.h",
                     "bare-arm",
                     "cc3200",
                     "cc3200/FreeRTOS",
                     "cc3200/hal",
+                    "docs/README.md",
                     "drivers",
-                    "esp8266",
+                    "esp8266/boards",
+                    "esp8266/common-hal",
+                    "esp8266/modules",
+                    "esp8266/*.c",
+                    "esp8266/*.h",
                     "examples",
                     "extmod",
                     "frozen",
@@ -107,6 +111,7 @@ exclude_patterns = ["*/build-*",
                     "pic16bit",
                     "py",
                     "qemu-arm",
+                    "shared-bindings/util.*",
                     "shared-module",
                     "stmhal",
                     "stmhal/hal",
@@ -148,7 +153,7 @@ pygments_style = 'sphinx'
 # of rst_prolog, so we follow. Absolute paths below mean "from the base
 # of the doctree".
 rst_epilog = """
-.. include:: /templates/replace.inc
+.. include:: /docs/templates/replace.inc
 """
 
 # -- Options for HTML output ----------------------------------------------

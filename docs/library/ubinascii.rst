@@ -1,10 +1,12 @@
 :mod:`ubinascii` -- binary/ASCII conversions
 ============================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: ubinascii
    :synopsis: binary/ASCII conversions
 
-|see_cpython_module| :mod:`python:binascii`.
+|see_cpython_module| :mod:`cpython:binascii`.
 
 This module implements conversions between binary data and various
 encodings of it in ASCII form (in both directions).

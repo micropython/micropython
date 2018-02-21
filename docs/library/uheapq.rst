@@ -1,10 +1,12 @@
 :mod:`uheapq` -- heap queue algorithm
 =====================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uheapq
    :synopsis: heap queue algorithm
 
-|see_cpython_module| :mod:`python:heapq`.
+|see_cpython_module| :mod:`cpython:heapq`.
 
 This module implements the heap queue algorithm.
 

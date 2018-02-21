@@ -2,10 +2,12 @@
 :mod:`usocket` -- socket module
 *******************************
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: usocket
    :synopsis: socket module
 
-|see_cpython_module| :mod:`python:socket`.
+|see_cpython_module| :mod:`cpython:socket`.
 
 This module provides access to the BSD socket interface.
 
@@ -36,11 +38,7 @@ power) and portable way to work with addresses.
 
 However, ``socket`` module (note the difference with native MicroPython
 ``usocket`` module described here) provides CPython-compatible way to specify
-addresses using tuples, as described below. Note that depending on a
-`MicroPython port`, ``socket`` module can be builtin or need to be
-installed from `micropython-lib` (as in the case of `MicroPython Unix port`),
-and some ports still accept only numeric addresses in the tuple format,
-and require to use `getaddrinfo` function to resolve domain names.
+addresses using tuples, as described below.
 
 Summing up:
 
@@ -60,8 +58,7 @@ Tuple address format for ``socket`` module:
   and *port* is an integer port number in the range 1-65535. *flowinfo*
   must be 0. *scopeid* is the interface scope identifier for link-local
   addresses. Note the domain names are not accepted as *ipv6_address*,
-  they should be resolved first using `usocket.getaddrinfo()`. Availability
-  of IPv6 support depends on a `MicroPython port`.
+  they should be resolved first using `usocket.getaddrinfo()`.
 
 Functions
 ---------
@@ -72,8 +69,8 @@ Functions
 
 .. function:: getaddrinfo(host, port)
 
-   Translate the host/port argument into a sequence of 5-tuples that contain all the 
-   necessary arguments for creating a socket connected to that service. The list of 
+   Translate the host/port argument into a sequence of 5-tuples that contain all the
+   necessary arguments for creating a socket connected to that service. The list of
    5-tuples has following structure::
 
       (family, type, proto, canonname, sockaddr)
@@ -90,7 +87,7 @@ Functions
       of error in this function. MicroPython doesn't have ``socket.gaierror``
       and raises OSError directly. Note that error numbers of `getaddrinfo()`
       form a separate namespace and may not match error numbers from
-      `uerrno` module. To distinguish `getaddrinfo()` errors, they are
+      :py:mod:`uerrno` module. To distinguish `getaddrinfo()` errors, they are
       represented by negative numbers, whereas standard system errors are
       positive numbers (error numbers are accessible using ``e.args[0]`` property
       from an exception object). The use of negative values is a provisional
@@ -142,7 +139,7 @@ Methods
    on the socket object will fail. The remote end will receive EOF indication if
    supported by protocol.
 
-   Sockets are automatically closed when they are garbage-collected, but it is recommended 
+   Sockets are automatically closed when they are garbage-collected, but it is recommended
    to `close()` them explicitly as soon you finished working with them.
 
 .. method:: socket.bind(address)

@@ -1,10 +1,12 @@
 :mod:`ure` -- simple regular expressions
 ========================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: ure
    :synopsis: regular expressions
 
-|see_cpython_module| :mod:`python:re`.
+|see_cpython_module| :mod:`cpython:re`.
 
 This module implements regular expression operations. Regular expression
 syntax supported is a subset of CPython ``re`` module (and actually is
