@@ -40,6 +40,11 @@
 #define MICROPY_HW_ENABLE_RNG (0)
 #endif
 
+// Whether to enable the ADC peripheral, exposed as pyb.ADC and pyb.ADCAll
+#ifndef MICROPY_HW_ENABLE_ADC
+#define MICROPY_HW_ENABLE_ADC (1)
+#endif
+
 // Whether to enable the DAC peripheral, exposed as pyb.DAC
 #ifndef MICROPY_HW_ENABLE_DAC
 #define MICROPY_HW_ENABLE_DAC (0)
