@@ -1,5 +1,6 @@
+MPTOP = ../..
 -include mpconfigport.mk
-include ../../py/mkenv.mk
+include $(MPTOP)/py/mkenv.mk
 
 all: lib
 
