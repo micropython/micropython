@@ -135,6 +135,17 @@ const uint8_t  AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8,
 const uint8_t  APBPrescTable[8] =  {0, 0, 0, 0, 1, 2, 3, 4};
 const uint32_t MSIRangeTable[12] = {100000, 200000, 400000, 800000, 1000000, 2000000, \
                                   4000000, 8000000, 16000000, 24000000, 32000000, 48000000};
+#elif defined(STM32H7)
+
+#define CONFIG_RCC_CR_1ST   (RCC_CR_HSION)
+#define CONFIG_RCC_CR_2ND   (~0xEAF6ED7F)
+#define CONFIG_RCC_PLLCFGR  (0x00000000)
+
+#define SRAM_BASE D1_AXISRAM_BASE
+#define FLASH_BASE FLASH_BANK1_BASE
+uint32_t SystemD2Clock = 64000000;
+const uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
+
 #else
 #error Unknown processor
 #endif
@@ -216,14 +227,51 @@ void SystemInit(void)
   /* Reset PLLCFGR register */
   RCC->PLLCFGR = CONFIG_RCC_PLLCFGR;
 
+  #if defined(STM32H7)
+  /* Reset D1CFGR register */
+  RCC->D1CFGR = 0x00000000;
+
+  /* Reset D2CFGR register */
+  RCC->D2CFGR = 0x00000000;
+
+  /* Reset D3CFGR register */
+  RCC->D3CFGR = 0x00000000;
+
+  /* Reset PLLCKSELR register */
+  RCC->PLLCKSELR = 0x00000000;
+
+  /* Reset PLL1DIVR register */
+  RCC->PLL1DIVR = 0x00000000;
+
+  /* Reset PLL1FRACR register */
+  RCC->PLL1FRACR = 0x00000000;
+
+  /* Reset PLL2DIVR register */
+  RCC->PLL2DIVR = 0x00000000;
+
+  /* Reset PLL2FRACR register */
+  RCC->PLL2FRACR = 0x00000000;
+
+  /* Reset PLL3DIVR register */
+  RCC->PLL3DIVR = 0x00000000;
+
+  /* Reset PLL3FRACR register */
+  RCC->PLL3FRACR = 0x00000000;
+  #endif
+
   /* Reset HSEBYP bit */
   RCC->CR &= (uint32_t)0xFFFBFFFF;
 
   /* Disable all interrupts */
   #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
   RCC->CIR = 0x00000000;
-  #elif defined(MCU_SERIES_L4)
+  #elif defined(MCU_SERIES_L4) || defined(STM32H7)
   RCC->CIER = 0x00000000;
+  #endif
+
+  #if defined(STM32H7)
+  /* Change the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
+  *((__IO uint32_t*)0x51008108) = 0x00000001;
   #endif
 
   /* Configure the Vector Table location add offset address ------------------*/
@@ -319,26 +367,44 @@ void SystemInit(void)
   */
 void SystemClock_Config(void)
 {
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_OscInitTypeDef RCC_OscInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    RCC_OscInitTypeDef RCC_OscInitStruct;
+    #if defined(STM32H7)
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    #endif
 
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-  /* Enable Power Control clock */
-  __PWR_CLK_ENABLE();
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7) || defined(STM32H7)
 
-  /* The voltage scaling allows optimizing the power consumption when the device is
-     clocked below the maximum system frequency, to update the voltage scaling value
-     regarding system frequency refer to product datasheet.  */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    /* Enable Power Control clock */
+    #if defined(STM32H7)
+    MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
+    #else
+    __PWR_CLK_ENABLE();
+    #endif
+
+    /* The voltage scaling allows optimizing the power consumption when the device is
+       clocked below the maximum system frequency, to update the voltage scaling value
+       regarding system frequency refer to product datasheet.  */
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
     #elif defined(MCU_SERIES_L4)
     // Configure LSE Drive Capability
     __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
     #endif
 
+    #if defined(STM32H7)
+    // Wait for PWR_FLAG_VOSRDY
+    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {
+    }
+    #endif
+
     /* Enable HSE Oscillator and activate PLL with HSE as source */
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7) || defined(STM32H7)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
+    #if defined(STM32H7)
+    RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
+    #endif
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     #elif defined(MCU_SERIES_L4)
     RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
@@ -352,6 +418,9 @@ void SystemClock_Config(void)
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
      clocks dividers */
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    #if defined(STM32H7)
+    RCC_ClkInitStruct.ClockType |= (RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1);
+    #endif
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 
 #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
@@ -401,23 +470,54 @@ void SystemClock_Config(void)
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
-    #if defined(MCU_SERIES_L4)
+    #if defined(MCU_SERIES_L4) || defined(STM32H7)
     RCC_OscInitStruct.PLL.PLLR = MICROPY_HW_CLK_PLLR;
     #endif
 
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    #if defined(STM32H7)
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_1;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    #endif
+
     #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
     #elif defined(MCU_SERIES_L4)
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    #elif defined(STM32H7)
+    RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider  = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
     #endif
 #endif
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    __fatal_error("HAL_RCC_OscConfig");
-  }
+
+    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+      __fatal_error("HAL_RCC_OscConfig");
+    }
+
+#if defined(STM32H7)
+    /* PLL3 for USB Clock */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
+    PeriphClkInitStruct.PLL3.PLL3M = 4;
+    PeriphClkInitStruct.PLL3.PLL3N = 120;
+    PeriphClkInitStruct.PLL3.PLL3P = 2;
+    PeriphClkInitStruct.PLL3.PLL3Q = 5;
+    PeriphClkInitStruct.PLL3.PLL3R = 2;
+    PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_1;
+    PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+    PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
+#endif
 
 #if defined(MCU_SERIES_F7)
   /* Activate the OverDrive to reach the 200 MHz Frequency */
@@ -435,6 +535,20 @@ void SystemClock_Config(void)
   {
     __fatal_error("HAL_RCC_ClockConfig");
   }
+
+#if defined(STM32H7)
+  /* Activate CSI clock mandatory for I/O Compensation Cell*/
+  __HAL_RCC_CSI_ENABLE() ;
+
+  /* Enable SYSCFG clock mandatory for I/O Compensation Cell */
+  __HAL_RCC_SYSCFG_CLK_ENABLE() ;
+
+  /* Enable the I/O Compensation Cell */
+  HAL_EnableCompensationCell();
+
+  /* Enable the USB voltage level detector */
+  HAL_PWREx_EnableUSBVoltageDetector();
+#endif
 
 #if defined(MCU_SERIES_F7)
   // The DFU bootloader changes the clocksource register from its default power
@@ -486,7 +600,7 @@ void SystemClock_Config(void)
 }
 
 void HAL_MspInit(void) {
-#if defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F7) || defined(STM32H7)
     /* Enable I-Cache */
     SCB_EnableICache();
 
