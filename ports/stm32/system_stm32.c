@@ -589,11 +589,7 @@ void SystemClock_Config(void)
 }
 
 void HAL_MspInit(void) {
-  #if defined(MCU_SERIES_H7)
-  /* Enable the CPU Cache */
-  CPU_CACHE_Enable();
-
-  #elif defined(MCU_SERIES_F7)
+  #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_H7)
   /* Enable I-Cache */
   SCB_EnableICache();
 
