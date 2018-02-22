@@ -30,97 +30,25 @@
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "samd21_pins.h"
+
 #include "tick.h"
 
-#include "asf/sam0/drivers/sercom/sercom_interrupt.h"
+#include "hpl_sercom_config.h"
+#include "peripheral_clk_config.h"
 
-#undef ENABLE
+#include "hal/include/hal_gpio.h"
+#include "hal/include/hal_usart_async.h"
+#include "hal/include/hpl_usart_async.h"
 
-busio_uart_obj_t *_uart_instances[SERCOM_INST_NUM];
+#include "peripherals.h"
+#include "pins.h"
 
-static void _sercom_default_handler(
-        const uint8_t instance)
-{
-    Assert(false);
-}
-
-static void _busio_uart_interrupt_handler(uint8_t instance)
-{
-    /* Temporary variables */
-    uint16_t interrupt_status;
-    uint8_t error_code;
-
-    /* Get device instance from the look-up table */
-    struct usart_module *module
-        = (struct usart_module *)_sercom_instances[instance];
-
-    busio_uart_obj_t *self = _uart_instances[instance];
-
-    /* Pointer to the hardware module instance */
-    SercomUsart *const usart_hw = &(module->hw->USART);
-
-    /* Wait for the synchronization to complete */
-    _usart_wait_for_sync(module);
-
-    /* Read and mask interrupt flag register */
-    interrupt_status = usart_hw->INTFLAG.reg;
-    interrupt_status &= usart_hw->INTENSET.reg;
-
-    /* Check if the Receive Complete interrupt has occurred, and that
-     * there's more data to receive */
-    if (interrupt_status & SERCOM_USART_INTFLAG_RXC) {
-        /* Read out the status code and mask away all but the 4 LSBs*/
-        error_code = (uint8_t)(usart_hw->STATUS.reg & SERCOM_USART_STATUS_MASK);
-        /* CTS status should not be considered as an error */
-        if(error_code & SERCOM_USART_STATUS_CTS) {
-            error_code &= ~SERCOM_USART_STATUS_CTS;
-        }
-        /* Check if an error has occurred during the receiving */
-        if (error_code) {
-            /* Check which error occurred */
-            if (error_code & SERCOM_USART_STATUS_FERR) {
-                /* Store the error code and clear flag by writing 1 to it */
-                usart_hw->STATUS.reg = SERCOM_USART_STATUS_FERR;
-            } else if (error_code & SERCOM_USART_STATUS_BUFOVF) {
-                /* Store the error code and clear flag by writing 1 to it */
-                usart_hw->STATUS.reg = SERCOM_USART_STATUS_BUFOVF;
-            } else if (error_code & SERCOM_USART_STATUS_PERR) {
-                /* Store the error code and clear flag by writing 1 to it */
-                usart_hw->STATUS.reg = SERCOM_USART_STATUS_PERR;
-            }
-            self->rx_error = true;
-        } else {
-            /* Read current packet from DATA register,
-             * increment buffer pointer and decrement buffer length */
-            uint16_t received_data = (usart_hw->DATA.reg & SERCOM_USART_DATA_MASK);
-
-            common_hal_mcu_disable_interrupts();
-            /* Read value will be at least 8-bits long */
-            uint32_t buffer_end = (self->buffer_start + self->buffer_size) % self->buffer_length;
-            self->buffer[buffer_end] = received_data;
-            self->buffer_size++;
-
-            if (module->character_size == USART_CHARACTER_SIZE_9BIT) {
-                buffer_end = (self->buffer_start + self->buffer_size) % self->buffer_length;
-                /* 9-bit data, write next received byte to the buffer */
-                self->buffer[buffer_end] = (received_data >> 8);
-                self->buffer_size++;
-            }
-
-            if (self->buffer_size > self->buffer_length) {
-                self->buffer_start++;
-                if (module->character_size == USART_CHARACTER_SIZE_9BIT) {
-                    self->buffer_start++;
-                }
-                self->buffer_size = self->buffer_length;
-            }
-            common_hal_mcu_enable_interrupts();
-        }
-    }
+// Do-nothing callback needed so that usart_async code will enable rx interrupts.
+// See comment below re usart_async_register_callback()
+static void usart_async_rxc_callback(const struct usart_async_descriptor *const descr) {
+    // Nothing needs to be done by us.
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -128,34 +56,55 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
         uint8_t receiver_buffer_size) {
     Sercom* sercom = NULL;
-    uint32_t rx_pinmux = PINMUX_UNUSED;
-    uint8_t rx_pad = 5; // Unset pad
-    uint32_t tx_pinmux = PINMUX_UNUSED;
-    uint8_t tx_pad = 5; // Unset pad
+    uint8_t sercom_index;
+    uint32_t rx_pinmux = 0;
+    uint8_t rx_pad = 255; // Unset pad
+    uint32_t tx_pinmux = 0;
+    uint8_t tx_pad = 255; // Unset pad
+
+    if (bits > 8) {
+        mp_raise_NotImplementedError("bytes > 8 bits not supported");
+    }
+
+    bool have_tx = tx != mp_const_none;
+    bool have_rx = rx != mp_const_none;
+    if (!have_tx && !have_rx) {
+        mp_raise_ValueError("tx and rx cannot both be None");
+    }
+    
+    self->baudrate = baudrate;
+    self->character_bits = bits;
+    self->timeout_ms = timeout;
+
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         Sercom* potential_sercom = NULL;
-        if (tx != NULL) {
+        if (have_tx) {
             potential_sercom = tx->sercom[i].sercom;
+            sercom_index = tx->sercom[i].index;
             if (potential_sercom == NULL ||
-                potential_sercom->I2CM.CTRLA.bit.ENABLE != 0 ||
+                potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0 ||
                   tx->sercom[i].pad == 2)) {
                 continue;
             }
             tx_pinmux = PINMUX(tx->pin, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
-            if (rx == NULL) {
+            if (rx == mp_const_none) {
                 sercom = potential_sercom;
                 break;
             }
         }
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
-            if (((tx == NULL && rx->sercom[j].sercom->I2CM.CTRLA.bit.ENABLE == 0) ||
+            if (((!have_tx && rx->sercom[j].sercom->USART.CTRLA.bit.ENABLE == 0) ||
                  potential_sercom == rx->sercom[j].sercom) &&
                 rx->sercom[j].pad != tx_pad) {
                 rx_pinmux = PINMUX(rx->pin, (j == 0) ? MUX_C : MUX_D);
                 rx_pad = rx->sercom[j].pad;
                 sercom = rx->sercom[j].sercom;
+                sercom_index = rx->sercom[j].index;
                 break;
             }
         }
@@ -166,81 +115,96 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (sercom == NULL) {
         mp_raise_ValueError("Invalid pins");
     }
-    if (tx == NULL) {
+    if (!have_tx) {
         tx_pad = 0;
         if (rx_pad == 0) {
             tx_pad = 2;
         }
     }
-    if (rx == NULL) {
+    if (!have_rx) {
         rx_pad = (tx_pad + 1) % 4;
     }
-    struct usart_config config_usart;
-    usart_get_config_defaults(&config_usart);
-    config_usart.mux_setting = (SERCOM_USART_CTRLA_RXPO(rx_pad) | SERCOM_USART_CTRLA_TXPO(tx_pad / 2));
 
-    if (parity == PARITY_ODD) {
-        config_usart.parity = USART_PARITY_ODD;
-    } else if (parity == PARITY_EVEN) {
-        config_usart.parity = USART_PARITY_EVEN;
-    }
-    config_usart.stopbits = stop - 1;
-    config_usart.character_size = bits % 8;
-    config_usart.baudrate = baudrate;
+    // Set up clocks on SERCOM.
+    samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
-    // Map pad to pinmux through a short array.
-    uint32_t *pinmuxes[4] = {&config_usart.pinmux_pad0,
-                             &config_usart.pinmux_pad1,
-                             &config_usart.pinmux_pad2,
-                             &config_usart.pinmux_pad3};
-    // Pin muxes have a default pin, set them to unused so that no other pins are changed.
-    for (int i = 0; i < 4; i++) {
-        *pinmuxes[i] = PINMUX_UNUSED;
+    if (rx && receiver_buffer_size > 0) {
+        self->buffer_length = receiver_buffer_size;
+        self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false, false);
+        if (self->buffer == NULL) {
+            common_hal_busio_uart_deinit(self);
+            mp_raise_msg(&mp_type_MemoryError, "Failed to allocate RX buffer");
+        }
+    } else {
+        self->buffer_length = 0;
+        self->buffer = NULL;
     }
 
-    self->rx_pin = NO_PIN;
-    config_usart.receiver_enable = rx != NULL;
-    if (rx != NULL) {
-        *pinmuxes[rx_pad] = rx_pinmux;
-        self->rx_pin = rx->pin;
-        claim_pin(rx);
+    if (usart_async_init(usart_desc_p, sercom, self->buffer, self->buffer_length, NULL) != ERR_NONE) {
+        mp_raise_ValueError("Could not initialize UART");
     }
 
-    self->tx_pin = NO_PIN;
-    config_usart.transmitter_enable = tx != NULL;
-    if (tx != NULL) {
-        *pinmuxes[tx_pad] = tx_pinmux;
-        self->tx_pin = tx->pin;
+    // usart_async_init() sets a number of defaults based on a prototypical SERCOM
+    // which don't necessarily match what we need. After calling it, set the values
+    // specific to this instantiation of UART.
+    
+    // Set pads computed for this SERCOM.
+    // TXPO:
+    // 0x0: TX pad 0; no RTS/CTS
+    // 0x1: TX pad 2; no RTS/CTS
+    // 0x2: TX pad 0; RTS: pad 2, CTS: pad 3 (not used by us right now)
+    // So divide by 2 to map pad to value.
+    hri_sercomusart_write_CTRLA_TXPO_bf(sercom, tx_pad / 2);
+    // RXPO:
+    // 0x0: RX pad 0
+    // 0x1: RX pad 1
+    // 0x2: RX pad 2
+    // 0x3: RX pad 3
+    hri_sercomusart_write_CTRLA_RXPO_bf(sercom, rx_pad);
+
+    // Enable tx and/or rx based on whether the pins were specified.
+    hri_sercomusart_write_CTRLB_TXEN_bit(sercom, have_tx);
+    hri_sercomusart_write_CTRLB_RXEN_bit(sercom, have_rx);
+
+    // Set parity, baud rate, stop bits, etc. 9-bit bytes not supported.
+    usart_async_set_parity(usart_desc_p, parity == PARITY_NONE ? USART_PARITY_NONE :
+                           (parity == PARITY_ODD ? USART_PARITY_ODD : USART_PARITY_EVEN));
+    usart_async_set_stopbits(usart_desc_p, stop == 1 ? USART_STOP_BITS_ONE : USART_STOP_BITS_TWO);
+    // This field is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
+    usart_async_set_character_size(usart_desc_p, bits % 8);
+    common_hal_busio_uart_set_baudrate(self, baudrate);
+
+    // Turn on rx interrupt handling. The UART async driver has its own set of internal callbacks,
+    // which are set up by uart_async_init(). These in turn can call user-specified callbacks.
+    // In fact, the actual interrupts are not enabled unless we set up a user-specified callback.
+    // This is confusing. It's explained in the Atmel START User Guide -> Implementation Description ->
+    // Different read function behavior in some asynchronous drivers. As of this writing:
+    // http://start.atmel.com/static/help/index.html?GUID-79201A5A-226F-4FBB-B0B8-AB0BE0554836
+    // Look at the ASFv4 code example for async USART.
+    usart_async_register_callback(usart_desc_p, USART_ASYNC_RXC_CB, usart_async_rxc_callback);
+    
+
+    if (have_tx) {
+        gpio_set_pin_direction(tx->pin, GPIO_DIRECTION_OUT);
+        gpio_set_pin_pull_mode(tx->pin, GPIO_PULL_OFF);
+        gpio_set_pin_function(tx->pin, tx_pinmux);
+        self->tx_pin  = tx->pin;
         claim_pin(tx);
+    } else {
+        self->tx_pin = NO_PIN;
+    }
+        
+    if (have_rx) {
+        gpio_set_pin_direction(rx->pin, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(rx->pin, GPIO_PULL_OFF);
+        gpio_set_pin_function(rx->pin, rx_pinmux);
+        self->rx_pin  = rx->pin;
+        claim_pin(rx);
+    } else {
+        self->rx_pin = NO_PIN;
     }
 
-    self->timeout_ms = timeout;
-
-    self->buffer_length = receiver_buffer_size;
-    self->buffer_length *= (bits + 7) / 8;
-    self->buffer = (uint8_t *) gc_alloc(self->buffer_length * sizeof(uint8_t), false);
-    if (self->buffer == NULL) {
-        common_hal_busio_uart_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "Failed to allocate RX buffer");
-    }
-
-    if (usart_init(&self->uart_instance, sercom, &config_usart) != STATUS_OK) {
-        common_hal_busio_uart_deinit(self);
-        mp_raise_OSError(MP_EIO);
-    }
-
-    // We use our own interrupt handler because we want a circular buffer
-    // instead of the jobs that ASF provides.
-    uint8_t instance_index = _sercom_get_sercom_inst_index(self->uart_instance.hw);
-    _sercom_set_handler(instance_index, _busio_uart_interrupt_handler);
-    _sercom_instances[instance_index] = &self->uart_instance;
-    _uart_instances[instance_index] = self;
-
-    /* Enable Global interrupt for module */
-    system_interrupt_enable(_sercom_get_interrupt_vector(self->uart_instance.hw));
-
-    usart_enable(&self->uart_instance);
-    self->uart_instance.hw->USART.INTENSET.bit.RXC = true;
+    usart_async_enable(usart_desc_p);
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -251,16 +215,10 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) {
         return;
     }
-    self->uart_instance.hw->USART.INTENCLR.bit.RXC = true;
-
-    uint8_t instance_index = _sercom_get_sercom_inst_index(self->uart_instance.hw);
-    _sercom_set_handler(instance_index, &_sercom_default_handler);
-    _sercom_instances[instance_index] = NULL;
-    _uart_instances[instance_index] = NULL;
-
-    system_interrupt_disable(_sercom_get_interrupt_vector(self->uart_instance.hw));
-
-    usart_disable(&self->uart_instance);
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    usart_async_disable(usart_desc_p);
+    usart_async_deinit(usart_desc_p);
     reset_pin(self->rx_pin);
     reset_pin(self->tx_pin);
     self->rx_pin = NO_PIN;
@@ -269,123 +227,120 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
+    if (self->rx_pin == NO_PIN) {
+        mp_raise_ValueError("No RX pin");
+    }
+
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+
+    if (len == 0) {
+        // Nothing to read.
+        return 0;
+    }
+    
+    struct io_descriptor *io;
+    usart_async_get_io_descriptor(usart_desc_p, &io);
+
     size_t total_read = 0;
     uint64_t start_ticks = ticks_ms;
-    while (total_read < len && ticks_ms - start_ticks < self->timeout_ms) {
-        if (self->buffer_size > 0) {
-            common_hal_mcu_disable_interrupts();
-            data[total_read] = self->buffer[self->buffer_start];
-            if (self->uart_instance.character_size == USART_CHARACTER_SIZE_9BIT) {
-                data[total_read + 1] = self->buffer[self->buffer_start + 1];
-                self->buffer_start += 2;
-                self->buffer_size -= 2;
-            } else {
-                self->buffer_start++;
-                self->buffer_size--;
-            }
-            self->buffer_start  = self->buffer_start % self->buffer_length;
-            common_hal_mcu_enable_interrupts();
-            // Reset the timeout every character read.
-            total_read++;
+
+    // Busy-wait until timeout or until we've read enough chars.
+    while (ticks_ms - start_ticks < self->timeout_ms) {
+        // Read as many chars as we can right now, up to len.
+        size_t num_read = io_read(io, data, len);
+
+        // Advance pointer in data buffer, and decrease how many chars left to read.
+        data += num_read;
+        len -= num_read;
+        total_read += num_read;
+        if (len == 0) {
+            // Don't need to read any more: data buf is full.
+            break;
+        }
+        if (num_read > 0) {
+            // Reset the timeout on every character read.
             start_ticks = ticks_ms;
         }
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+#ifdef MICROPY_VM_HOOK_LOOP
+        MICROPY_VM_HOOK_LOOP
+#endif
     }
-    if (total_read == 0) {
-        *errcode = MP_EAGAIN;
-        return MP_STREAM_ERROR;
-    }
+    
     return total_read;
 }
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
-    /* Check that the transmitter is enabled */
-    if (!(self->uart_instance.transmitter_enabled)) {
-        *errcode = MP_EIO;
-        return MP_STREAM_ERROR;
+    if (self->tx_pin == NO_PIN) {
+        mp_raise_ValueError("No TX pin");
     }
 
-    /* Get a pointer to the hardware module instance */
-    SercomUsart *const usart_hw = &(self->uart_instance.hw->USART);
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
 
-    /* Wait until synchronization is complete */
-    _usart_wait_for_sync(&self->uart_instance);
+    struct io_descriptor *io;
+    usart_async_get_io_descriptor(usart_desc_p, &io);
 
-    uint16_t tx_pos = 0;
-
-    bool ok = true;
-    uint64_t start_ticks = 0;
-    /* Blocks while buffer is being transferred */
-    while (len--) {
-        /* Wait for the USART to be ready for new data and abort
-        * operation if it doesn't get ready within the timeout*/
-        ok = false;
-        start_ticks = ticks_ms;
-        while (ticks_ms - start_ticks < self->timeout_ms) {
-            if (usart_hw->INTFLAG.reg & SERCOM_USART_INTFLAG_DRE) {
-                ok = true;
-                break;
-            }
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-        }
-
-        if (!ok) {
-            break;
-        }
-
-        /* Data to send is at least 8 bits long */
-        uint16_t data_to_send = data[tx_pos++];
-
-        /* Check if the character size exceeds 8 bit */
-        if (self->uart_instance.character_size == USART_CHARACTER_SIZE_9BIT) {
-            data_to_send |= (data[tx_pos++] << 8);
-        }
-
-        /* Send the data through the USART module */
-
-        enum status_code status = usart_write_wait(&self->uart_instance, data_to_send);
-        if (status != STATUS_OK) {
-            ok = false;
-        }
-    }
-
-    /* Wait until Transmit is complete or timeout */
-    if (ok) {
-        ok = false;
-        start_ticks = ticks_ms;
-        while (ticks_ms - start_ticks < self->timeout_ms) {
-            if (usart_hw->INTFLAG.reg & SERCOM_USART_INTFLAG_TXC) {
-                ok = true;
-                break;
-            }
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-        }
-    }
-
-    if (!ok && tx_pos == 0) {
+    if (io_write(io, data, len) < 0) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
-    return tx_pos;
+
+    // Wait until write is complete or timeout.
+    bool done = false;
+    uint64_t start_ticks = ticks_ms;
+    // Busy-wait for timeout.
+    while (ticks_ms - start_ticks < self->timeout_ms) {
+        if (usart_async_is_tx_empty(usart_desc_p)) {
+            done = true;
+            break;
+        }
+        #ifdef MICROPY_VM_HOOK_LOOP
+            MICROPY_VM_HOOK_LOOP
+        #endif
+    }
+
+    if (!done) {
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+    
+    struct usart_async_status async_status;
+    // Could return ERR_BUSY, but if that's true there's already a problem.
+    usart_async_get_status(usart_desc_p, &async_status);
+    return async_status.txcnt;
+}
+
+uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
+    return self->baudrate;
+}
+
+void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
+    // This assignment is only here because the usart_async routines take a *const argument.
+    struct usart_async_descriptor * const usart_desc_p = (struct usart_async_descriptor * const) &self->usart_desc;
+    usart_async_set_baud_rate(usart_desc_p,
+                              // Samples and ARITHMETIC vs FRACTIONAL must correspond to USART_SAMPR in
+                              // hpl_sercom_config.h.
+                              _usart_async_calculate_baud_rate(baudrate,  // e.g. 9600 baud
+                                                               PROTOTYPE_SERCOM_USART_ASYNC_CLOCK_FREQUENCY,
+                                                               16,   // samples
+                                                               USART_BAUDRATE_ASYNCH_ARITHMETIC,
+                                                               0  // fraction - not used for ARITHMETIC
+                                                               ));
+    self->baudrate = baudrate;
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    if (self->uart_instance.character_size == USART_CHARACTER_SIZE_9BIT) {
-        return self->buffer_size / 2;
-    }
     return self->buffer_size;
 }
 
 bool common_hal_busio_uart_ready_to_tx(busio_uart_obj_t *self) {
-    if (!(self->uart_instance.transmitter_enabled)) {
+    if (self->tx_pin == NO_PIN) {
         return false;
     }
-    return self->uart_instance.hw->USART.INTFLAG.bit.DRE;
+    // This assignment is only here because the usart_async routines take a *const argument.
+    const struct _usart_async_device * const usart_device_p =
+        (struct _usart_async_device * const) &self->usart_desc.device;
+    return _usart_async_is_byte_sent(usart_device_p);
 }

@@ -117,6 +117,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_OSError(MP_EIO);
     }
     
+    // Pads must be set after spi_m_sync_init(), which uses default values from
+    // the prototypical SERCOM.
     hri_sercomspi_write_CTRLA_DOPO_bf(sercom, dopo);
     hri_sercomspi_write_CTRLA_DIPO_bf(sercom, miso_pad);
 

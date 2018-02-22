@@ -1,7 +1,17 @@
-// The clock tree starts with 48mhz DFLL48M based on USB. GCLK5 divides it down
-// to 2mhz which DPLL0 boosts to 120mhz. This is then used by GCLK0 to clock the
-// core and main bus. GCLK1 is 48mhz based on DFLL48M which is used for USB.
-// GCLK4 also outputs the 120mhz clock for monitoring.
+// Circuit Python SAMD51 clock tree:
+// DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK1, GCLK5
+//   GCLK1 (48MHz) -> peripherals
+//   GCLK5 (divided down to 2 MHz) -> DPLL0
+//     DPLL0 (multiplied up to 120 MHz) -> GCLK0, GCLK4 (output for monitoring)
+
+// We'd like to use XOSC32K as a ref for DFLL48M on boards with a 32kHz crystal,
+// but haven't figured that out yet.
+
+// Used in hpl/core/hpl_init.c to define which clocks should be initialized first.
+// Not clear why all these need to be specified, but it doesn't work properly otherwise.
+
+//#define CIRCUITPY_GCLK_INIT_1ST (1 << 0 | 1 << 1 | 1 << 3 | 1 <<5)
+#define CIRCUITPY_GCLK_INIT_1ST 0xffff
 
 /* Auto-generated config file hpl_gclk_config.h */
 #ifndef HPL_GCLK_CONFIG_H

@@ -24,18 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H
 
 #include "common-hal/microcontroller/Pin.h"
-
-#include "hal/include/hal_usart_async.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    struct usart_async_descriptor usart_desc;
     uint8_t rx_pin;
     uint8_t tx_pin;
     uint8_t character_bits;
@@ -50,4 +47,4 @@ typedef struct {
     uint8_t* buffer;
 } busio_uart_obj_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BUSIO_UART_H

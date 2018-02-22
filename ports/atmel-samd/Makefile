@@ -36,6 +36,7 @@ INC += -I. \
        -Iasf4/$(CHIP_FAMILY)/hal/utils/include \
        -Iasf4/$(CHIP_FAMILY)/hri \
        -Iasf4/$(CHIP_FAMILY)/hpl/core \
+       -Iasf4/$(CHIP_FAMILY)/hpl/gclk \
        -Iasf4/$(CHIP_FAMILY)/hpl/pm \
        -Iasf4/$(CHIP_FAMILY)/hpl/port \
        -Iasf4/$(CHIP_FAMILY)/hpl/tc \
@@ -96,6 +97,7 @@ ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
   CFLAGS += -flto
+  ## CFLAGS += -fno-inline
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -178,6 +180,7 @@ SRC_ASF := \
 	hal/src/hal_sleep.c \
 	hal/src/hal_spi_m_sync.c \
 	hal/src/hal_timer.c \
+	hal/src/hal_usart_async.c \
 	hal/src/hal_usb_device.c \
 	hpl/adc/hpl_adc.c \
 	hpl/core/hpl_init.c \
@@ -194,6 +197,7 @@ SRC_ASF := \
 	usb/device/usbdc.c \
 	usb/usb_protocol.c \
 	hal/utils/src/utils_list.c \
+	hal/utils/src/utils_ringbuffer.c \
 
 ifeq ($(CHIP_FAMILY), samd21)
 SRC_ASF += \
@@ -263,6 +267,7 @@ SRC_COMMON_HAL = \
 	busio/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
+	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
@@ -283,7 +288,6 @@ SRC_COMMON_HAL = \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	busio/UART.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
 	touchio/__init__.c \
