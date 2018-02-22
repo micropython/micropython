@@ -107,7 +107,9 @@ void __fatal_error(const char *msg);
   * @{
   */
 
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F4) \
+    || defined(MCU_SERIES_F7) \
+    || defined(MCU_SERIES_H7)
 
 #define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
 #define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
@@ -119,10 +121,13 @@ const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
 #elif defined(MCU_SERIES_F7)
 const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
+#elif defined(MCU_SERIES_H7)
+////ROLAND: check validity!
+const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
 #endif
 
 #elif defined(MCU_SERIES_L4)
-
 #define CONFIG_RCC_CR_1ST (RCC_CR_MSION)
 #define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_HSION || RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x00001000)
@@ -133,8 +138,8 @@ const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
  */
 const uint8_t  AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t  APBPrescTable[8] =  {0, 0, 0, 0, 1, 2, 3, 4};
-const uint32_t MSIRangeTable[12] = {100000, 200000, 400000, 800000, 1000000, 2000000, \
-                                  4000000, 8000000, 16000000, 24000000, 32000000, 48000000};
+const uint32_t MSIRangeTable[12] = { 100000,  200000,   400000,   800000,  1000000,  2000000,
+                                    4000000, 8000000, 16000000, 24000000, 32000000, 48000000};
 #else
 #error Unknown processor
 #endif

@@ -1,3 +1,6 @@
+# MAC OSX
+.DS_Store
+
 # Compiled Sources
 ###################
 *.o

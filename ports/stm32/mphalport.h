@@ -9,10 +9,7 @@
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)
 #elif defined(MCU_SERIES_F7)
-#if defined(STM32F722xx) \
-    || defined(STM32F723xx) \
-    || defined(STM32F732xx) \
-    || defined(STM32F733xx)
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff07a10)
 #else
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
@@ -23,6 +20,11 @@
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)
+#elif defined(MCU_SERIES_H7)
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff1e800)
+////ROLAND: CHECK
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#define MP_HAL_CLEAN_DCACHE(addr, size) (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #else
 #error mphalport.h: Unrecognized MCU_SERIES
 #endif
