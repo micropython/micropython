@@ -194,23 +194,19 @@ STATIC mp_obj_t esp_check_fw(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
 
 
-STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
+STATIC mp_obj_t esp_neopixel_write_(size_t n_args, const mp_obj_t *args) {
+    const mp_obj_t pin = args[0];
+    const mp_obj_t buf = args[1];
+    const mp_obj_t is800k = args[2];
+    const mp_obj_t frac = n_args > 3 ? args[3] : NULL;
+    
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_neopixel_write(mp_obj_get_pin_obj(pin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k));
+			    (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k), frac ? mp_obj_get_float(frac) : 1.0);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
-
-STATIC mp_obj_t esp_neopixel_write_frac_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k, mp_obj_t frac) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    esp_neopixel_write_frac(mp_obj_get_pin_obj(pin)->phys_port,
-			    (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k), mp_obj_get_float(frac));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_4(esp_neopixel_write_frac_obj, esp_neopixel_write_frac_);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_neopixel_write_obj, 4, 4, esp_neopixel_write_);
 
 #if MICROPY_ESP8266_APA102
 STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
@@ -370,7 +366,6 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
     #if MICROPY_ESP8266_NEOPIXEL
     { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_neopixel_write_frac), MP_ROM_PTR(&esp_neopixel_write_frac_obj) },
     #endif
     #if MICROPY_ESP8266_APA102
     { MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj) },
