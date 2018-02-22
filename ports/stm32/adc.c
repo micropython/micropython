@@ -35,6 +35,8 @@
 #include "genhdr/pins.h"
 #include "timer.h"
 
+#if MICROPY_HW_ENABLE_ADC
+
 /// \moduleref pyb
 /// \class ADC - analog to digital conversion: read analog values on a pin
 ///
@@ -683,3 +685,5 @@ const mp_obj_type_t pyb_adc_all_type = {
     .make_new = adc_all_make_new,
     .locals_dict = (mp_obj_dict_t*)&adc_all_locals_dict,
 };
+
+#endif // MICROPY_HW_ENABLE_ADC
