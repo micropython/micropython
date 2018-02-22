@@ -101,7 +101,7 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 # py object files
-PY_O_BASENAME = \
+PY_CORE_O_BASENAME = \
 	mpstate.o \
 	nlr.o \
 	nlrx86.o \
@@ -214,6 +214,8 @@ PY_O_BASENAME = \
 	repl.o \
 	smallint.o \
 	frozenmod.o \
+
+PY_EXTMOD_O_BASENAME = \
 	../extmod/moductypes.o \
 	../extmod/modujson.o \
 	../extmod/modure.o \
@@ -248,7 +250,11 @@ PY_O_BASENAME = \
 	../lib/utils/printf.o \
 
 # prepend the build destination prefix to the py object files
-PY_O = $(addprefix $(PY_BUILD)/, $(PY_O_BASENAME))
+PY_CORE_O = $(addprefix $(PY_BUILD)/, $(PY_CORE_O_BASENAME))
+PY_EXTMOD_O = $(addprefix $(PY_BUILD)/, $(PY_EXTMOD_O_BASENAME))
+
+# this is a convenience variable for ports that want core, extmod and frozen code
+PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
 
 # object file for frozen files
 ifneq ($(FROZEN_DIR),)
@@ -262,7 +268,7 @@ endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = nlr% emitnx86% emitnx64% emitnthumb% emitnarm% emitnxtensa%
-SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_O_BASENAME:.o=.c)) emitnative.c)
+SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) emitnative.c $(PY_EXTMOD_O_BASENAME:.o=.c))
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
