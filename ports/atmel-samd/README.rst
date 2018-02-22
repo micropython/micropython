@@ -137,7 +137,7 @@ To build for other boards you must change it by setting ``BOARD``. For example:
 
     make BOARD=feather_m0_basic
 
-Board names are the directory names in the `boards <https://github.com/adafruit/circuitpython/tree/master/atmel-samd/boards>`_ folder.
+Board names are the directory names in the `boards <https://github.com/adafruit/circuitpython/tree/master/ports/atmel-samd/boards>`_ folder.
 
 Deploying
 ---------
