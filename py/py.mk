@@ -101,7 +101,7 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 # py object files
-PY_CORE_O_BASENAME = \
+PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
 	nlr.o \
 	nlrx86.o \
@@ -214,44 +214,45 @@ PY_CORE_O_BASENAME = \
 	repl.o \
 	smallint.o \
 	frozenmod.o \
+	)
 
 PY_EXTMOD_O_BASENAME = \
-	../extmod/moductypes.o \
-	../extmod/modujson.o \
-	../extmod/modure.o \
-	../extmod/moduzlib.o \
-	../extmod/moduheapq.o \
-	../extmod/modutimeq.o \
-	../extmod/moduhashlib.o \
-	../extmod/modubinascii.o \
-	../extmod/virtpin.o \
-	../extmod/machine_mem.o \
-	../extmod/machine_pinbase.o \
-	../extmod/machine_signal.o \
-	../extmod/machine_pulse.o \
-	../extmod/machine_i2c.o \
-	../extmod/machine_spi.o \
-	../extmod/modussl_axtls.o \
-	../extmod/modussl_mbedtls.o \
-	../extmod/modurandom.o \
-	../extmod/moduselect.o \
-	../extmod/modwebsocket.o \
-	../extmod/modwebrepl.o \
-	../extmod/modframebuf.o \
-	../extmod/vfs.o \
-	../extmod/vfs_reader.o \
-	../extmod/vfs_fat.o \
-	../extmod/vfs_fat_diskio.o \
-	../extmod/vfs_fat_file.o \
-	../extmod/vfs_fat_misc.o \
-	../extmod/utime_mphal.o \
-	../extmod/uos_dupterm.o \
-	../lib/embed/abort_.o \
-	../lib/utils/printf.o \
+	extmod/moductypes.o \
+	extmod/modujson.o \
+	extmod/modure.o \
+	extmod/moduzlib.o \
+	extmod/moduheapq.o \
+	extmod/modutimeq.o \
+	extmod/moduhashlib.o \
+	extmod/modubinascii.o \
+	extmod/virtpin.o \
+	extmod/machine_mem.o \
+	extmod/machine_pinbase.o \
+	extmod/machine_signal.o \
+	extmod/machine_pulse.o \
+	extmod/machine_i2c.o \
+	extmod/machine_spi.o \
+	extmod/modussl_axtls.o \
+	extmod/modussl_mbedtls.o \
+	extmod/modurandom.o \
+	extmod/moduselect.o \
+	extmod/modwebsocket.o \
+	extmod/modwebrepl.o \
+	extmod/modframebuf.o \
+	extmod/vfs.o \
+	extmod/vfs_reader.o \
+	extmod/vfs_fat.o \
+	extmod/vfs_fat_diskio.o \
+	extmod/vfs_fat_file.o \
+	extmod/vfs_fat_misc.o \
+	extmod/utime_mphal.o \
+	extmod/uos_dupterm.o \
+	lib/embed/abort_.o \
+	lib/utils/printf.o \
 
 # prepend the build destination prefix to the py object files
-PY_CORE_O = $(addprefix $(PY_BUILD)/, $(PY_CORE_O_BASENAME))
-PY_EXTMOD_O = $(addprefix $(PY_BUILD)/, $(PY_EXTMOD_O_BASENAME))
+PY_CORE_O = $(addprefix $(BUILD)/, $(PY_CORE_O_BASENAME))
+PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
 
 # this is a convenience variable for ports that want core, extmod and frozen code
 PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
@@ -267,8 +268,8 @@ PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
-SRC_QSTR_IGNORE = nlr% emitnx86% emitnx64% emitnthumb% emitnarm% emitnxtensa%
-SRC_QSTR = $(SRC_MOD) $(addprefix py/,$(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) emitnative.c $(PY_EXTMOD_O_BASENAME:.o=.c))
+SRC_QSTR_IGNORE = py/nlr% py/emitnx86% py/emitnx64% py/emitnthumb% py/emitnarm% py/emitnxtensa%
+SRC_QSTR = $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) py/emitnative.c $(PY_EXTMOD_O_BASENAME:.o=.c)
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
