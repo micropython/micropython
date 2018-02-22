@@ -1,10 +1,12 @@
 :mod:`array` -- arrays of numeric data
 ======================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: array
    :synopsis: efficient arrays of numeric data
 
-|see_cpython_module| :mod:`python:array`.
+|see_cpython_module| :mod:`cpython:array`.
 
 Supported format codes: ``b``, ``B``, ``h``, ``H``, ``i``, ``I``, ``l``,
 ``L``, ``q``, ``Q``, ``f``, ``d`` (the latter 2 depending on the

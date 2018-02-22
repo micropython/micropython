@@ -1,10 +1,12 @@
 :mod:`ussl` -- SSL/TLS module
 =============================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: ussl
    :synopsis: TLS/SSL wrapper for socket objects
 
-|see_cpython_module| :mod:`python:ssl`.
+|see_cpython_module| :mod:`cpython:ssl`.
 
 This module provides access to Transport Layer Security (previously and
 widely known as “Secure Sockets Layer”) encryption and peer authentication
@@ -18,8 +20,8 @@ Functions
    Takes a stream *sock* (usually usocket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, which wraps the underlying stream in
    an SSL context. Returned object has the usual stream interface methods like
-   `read()`, `write()`, etc. In MicroPython, the returned object does not expose
-   socket interface and methods like `recv()`, `send()`. In particular, a
+   ``read()``, ``write()``, etc. In MicroPython, the returned object does not expose
+   socket interface and methods like ``recv()``, ``send()``. In particular, a
    server-side SSL socket should be created from a normal socket returned from
    `accept()` on a non-SSL listening server socket.
 

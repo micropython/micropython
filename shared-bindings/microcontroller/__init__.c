@@ -59,11 +59,12 @@
 //|
 //|     Pin
 //|     Processor
+//|     RunMode
 //|
 
 //| .. attribute:: cpu
 //|
-//|   CPU information and control, such as `cpu.temperature` and `cpu.frequency`
+//|   CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //|   (clock frequency).
 //|   This object is the sole instance of `microcontroller.Processor`.
 //|
@@ -130,7 +131,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 //| .. method:: reset()
 //|
 //|   Reset the microcontroller. After reset, the microcontroller will enter the
-//|   run mode last set by `one_next_reset`.
+//|   run mode last set by `on_next_reset`.
 //|
 //|   .. warning:: This may result in file system corruption when connected to a
 //|     host computer. Be very careful when calling this! Make sure the device

@@ -1,10 +1,12 @@
 :mod:`uselect` -- wait for events on a set of streams
 ========================================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uselect
    :synopsis: wait for events on a set of streams
 
-|see_cpython_module| :mod:`python:select`.
+|see_cpython_module| :mod:`cpython:select`.
 
 This module provides functions to efficiently wait for events on multiple
 streams (select streams which are ready for operations).

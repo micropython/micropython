@@ -26,6 +26,15 @@
 
 #include "genhdr/mpversion.h"
 
+//| :func:`help` - Built-in method to provide helpful information
+//| ==============================================================
+//|
+//| .. method:: help(object=None)
+//|
+//|   Prints a help method about the given object. When ``object`` is none,
+//|   prints general port information.
+//|
+
 const char *circuitpython_help_text =
     "Welcome to Adafruit CircuitPython " MICROPY_GIT_TAG "!\r\n"
     "\r\n"

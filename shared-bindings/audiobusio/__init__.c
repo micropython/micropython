@@ -34,7 +34,7 @@
 #include "shared-bindings/audiobusio/PDMIn.h"
 
 //| :mod:`audiobusio` --- Support for audio input and output over digital bus
-//| =================================================
+//| =========================================================================
 //|
 //| .. module:: audiobusio
 //|   :synopsis: Support for audio input and output over digital bus
