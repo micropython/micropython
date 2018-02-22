@@ -275,11 +275,36 @@ STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
-STATIC mp_obj_t esp_status(mp_obj_t self_in) {
+STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        // no arguments: return None until link status is implemented
+        return mp_const_none;
+    }
+
+    // one argument: return status based on query parameter
+    switch ((uintptr_t)args[1]) {
+        case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_stations): {
+            // return list of connected stations, only if in soft-AP mode
+            require_if(args[0], WIFI_IF_AP);
+            wifi_sta_list_t station_list;
+            ESP_EXCEPTIONS(esp_wifi_ap_get_sta_list(&station_list));
+            wifi_sta_info_t *stations = (wifi_sta_info_t*)station_list.sta;
+            mp_obj_t list = mp_obj_new_list(0, NULL);
+            for (int i = 0; i < station_list.num; ++i) {
+                mp_obj_tuple_t *t = mp_obj_new_tuple(1, NULL);
+                t->items[0] = mp_obj_new_bytes(stations[i].mac, sizeof(stations[i].mac));
+                mp_obj_list_append(list, t);
+            }
+            return list;
+        }
+
+        default:
+            mp_raise_ValueError("unknown status param");
+    }
+
     return mp_const_none;
 }
-
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_status_obj, esp_status);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
 
 STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     // check that STA mode is active
