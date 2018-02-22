@@ -275,11 +275,41 @@ STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
-STATIC mp_obj_t esp_status(mp_obj_t self_in) {
-    return mp_const_none;
+
+STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+    wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    wifi_mode_t mode;
+    wifi_sta_list_t station_list;
+    wifi_sta_info_t* stations;
+    char sta_mac[17];
+
+    switch ((uintptr_t)args[1]) {
+        case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_stations) :
+	    mp_printf(MP_PYTHON_PRINTER, "getting connected stations... \n");
+	    ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+	    if ((mode & WIFI_MODE_AP)==0) {
+	        // we will only print stations in soft-AP mode, i.e. WIFI_MODE_AP
+	        mp_printf(MP_PYTHON_PRINTER, "Error: soft-AP mode not activated.\n");
+	    } else {
+		ESP_EXCEPTIONS(esp_wifi_ap_get_sta_list(&station_list));
+		stations = (wifi_sta_info_t*)(station_list.sta);
+		mp_printf(MP_PYTHON_PRINTER,"No. of connected stations : %d\n",station_list.num);
+		for (int i=0; i<station_list.num; i++) {
+		    
+		    sprintf(sta_mac,"%02x:%02x:%02x:%02x:%02x:%02x",stations[i].mac[0],stations[i].mac[1],stations[i].mac[2],stations[i].mac[3],stations[i].mac[4],stations[i].mac[5]);
+		    mp_printf(MP_PYTHON_PRINTER,"Station %d: %s\n",i,sta_mac);
+		}
+	    }
+	    break;
+	default :
+	    mp_printf(MP_PYTHON_PRINTER, "unrecognised argument\n");
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_status_obj, esp_status);
+return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
+
 
 STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     // check that STA mode is active
