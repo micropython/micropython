@@ -30,12 +30,9 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "drivers/dht/dht.h"
 #include "espuart.h"
 #include "user_interface.h"
 #include "mem.h"
-#include "espneopixel.h"
-#include "espapa102.h"
 #include "modmachine.h"
 
 #define MODESP_INCLUDE_CONSTANTS (1)
@@ -193,31 +190,6 @@ STATIC mp_obj_t esp_check_fw(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
 
-
-STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    if (!mp_obj_is_true(is800k)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_ValueError, "Only 800khz neopixels are supported."));
-    }
-    esp_neopixel_write(mp_obj_get_pin_obj(pin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
-
-#if MICROPY_ESP8266_APA102
-STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    esp_apa102_write(mp_obj_get_pin_obj(clockPin)->phys_port,
-        mp_obj_get_pin_obj(dataPin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
-#endif
-
 STATIC mp_obj_t esp_freemem() {
     return MP_OBJ_NEW_SMALL_INT(system_get_free_heap_size());
 }
@@ -362,13 +334,6 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash_user_start), MP_ROM_PTR(&esp_flash_user_start_obj) },
-    #if MICROPY_ESP8266_NEOPIXEL
-    { MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj) },
-    #endif
-    #if MICROPY_ESP8266_APA102
-    { MP_ROM_QSTR(MP_QSTR_apa102_write), MP_ROM_PTR(&esp_apa102_write_obj) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_freemem), MP_ROM_PTR(&esp_freemem_obj) },
     { MP_ROM_QSTR(MP_QSTR_meminfo), MP_ROM_PTR(&esp_meminfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_check_fw), MP_ROM_PTR(&esp_check_fw_obj) },
