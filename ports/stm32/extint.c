@@ -97,6 +97,11 @@
 #define EXTI_Mode_Event     offsetof(EXTI_TypeDef, EMR1)
 #define EXTI_RTSR EXTI->RTSR1
 #define EXTI_FTSR EXTI->FTSR1
+#elif defined(STM32H7)
+#define EXTI_Mode_Interrupt offsetof(EXTI_Core_TypeDef, IMR1)
+#define EXTI_Mode_Event     offsetof(EXTI_Core_TypeDef, EMR1)
+#define EXTI_RTSR EXTI->RTSR1
+#define EXTI_FTSR EXTI->FTSR1
 #else
 #define EXTI_Mode_Interrupt offsetof(EXTI_TypeDef, IMR)
 #define EXTI_Mode_Event     offsetof(EXTI_TypeDef, EMR)
@@ -277,13 +282,21 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(MCU_SERIES_F7)
+    #if defined(MCU_SERIES_F7) || defined(STM32H7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
+        #if defined(STM32H7)
+        EXTI_D1->IMR1 |= (1 << line);
+        #else
         EXTI->IMR |= (1 << line);
+        #endif
     } else {
+        #if defined(STM32H7)
+        EXTI_D1->EMR1 |= (1 << line);
+        #else
         EXTI->EMR |= (1 << line);
+        #endif
     }
     enable_irq(irq_state);
     #else
@@ -299,11 +312,16 @@ void extint_disable(uint line) {
         return;
     }
 
-    #if defined(MCU_SERIES_F7)
+    #if defined(MCU_SERIES_F7) || defined(STM32H7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
+    #if defined(STM32H7)
+    EXTI_D1->IMR1 &= ~(1 << line);
+    EXTI_D1->EMR1 &= ~(1 << line);
+    #else
     EXTI->IMR &= ~(1 << line);
     EXTI->EMR &= ~(1 << line);
+    #endif
     enable_irq(irq_state);
     #else
     // Since manipulating IMR/EMR is a read-modify-write, and we want this to
@@ -319,7 +337,7 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-#if defined(MCU_SERIES_L4)
+#if defined(MCU_SERIES_L4) || defined(STM32H7)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
 #else
@@ -381,6 +399,25 @@ STATIC mp_obj_t extint_regs(void) {
     printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
     printf("EXTI_PR1    %08lx\n", EXTI->PR1);
     printf("EXTI_PR2    %08lx\n", EXTI->PR2);
+    #elif defined(STM32H7)
+    printf("EXTI_IMR1   %08lx\n", EXTI_D1->IMR1);
+    printf("EXTI_IMR2   %08lx\n", EXTI_D1->IMR2);
+    printf("EXTI_IMR3   %08lx\n", EXTI_D1->IMR3);
+    printf("EXTI_EMR1   %08lx\n", EXTI_D1->EMR1);
+    printf("EXTI_EMR2   %08lx\n", EXTI_D1->EMR2);
+    printf("EXTI_EMR3   %08lx\n", EXTI_D1->EMR3);
+    printf("EXTI_RTSR1  %08lx\n", EXTI->RTSR1);
+    printf("EXTI_RTSR2  %08lx\n", EXTI->RTSR2);
+    printf("EXTI_RTSR3  %08lx\n", EXTI->RTSR3);
+    printf("EXTI_FTSR1  %08lx\n", EXTI->FTSR1);
+    printf("EXTI_FTSR2  %08lx\n", EXTI->FTSR2);
+    printf("EXTI_FTSR3  %08lx\n", EXTI->FTSR3);
+    printf("EXTI_SWIER1 %08lx\n", EXTI->SWIER1);
+    printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
+    printf("EXTI_SWIER3 %08lx\n", EXTI->SWIER3);
+    printf("EXTI_PR1    %08lx\n", EXTI_D1->PR1);
+    printf("EXTI_PR2    %08lx\n", EXTI_D1->PR2);
+    printf("EXTI_PR3    %08lx\n", EXTI_D1->PR3);
     #else
     printf("EXTI_IMR   %08lx\n", EXTI->IMR);
     printf("EXTI_EMR   %08lx\n", EXTI->EMR);
