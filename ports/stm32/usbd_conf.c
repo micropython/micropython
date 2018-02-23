@@ -69,7 +69,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    #if defined(MCU_SERIES_H7)
+    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+    #else
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
     
 	/* Configure VBUS Pin */
