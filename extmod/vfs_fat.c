@@ -121,8 +121,6 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_mkfs_fun_obj, fat_vfs_mkfs);
 STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(fat_vfs_mkfs_obj, MP_ROM_PTR(&fat_vfs_mkfs_fun_obj));
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_open_obj, fatfs_builtin_open_self);
-
 typedef struct _mp_vfs_fat_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
