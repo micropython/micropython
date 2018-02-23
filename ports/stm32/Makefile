@@ -83,7 +83,7 @@ LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
-CFLAGS += -fdata-sections -ffunction-sections
+CFLAGS += -fdata-sections -ffunction-sections -fno-strict-aliasing
 LDFLAGS += --gc-sections
 
 # Debugging/Optimization
@@ -253,7 +253,6 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
-	hal_can.c \
 	hal_cortex.c \
 	hal_dac.c \
 	hal_dac_ex.c \
@@ -278,6 +277,12 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_sdmmc.c \
 	ll_usb.c \
 	)
+
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
+    SRC_HAL += hal_fdcan.c
+else
+    SRC_HAL += hal_can.c
+endif
 
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
