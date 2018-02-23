@@ -1221,9 +1221,13 @@ STATIC void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns)
 
 STATIC void compile_assert_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // with optimisations enabled we don't compile assertions
+    #if MICROPY_ENABLE_OPTIMISER
     if (MP_STATE_VM(mp_optimise_value) != 0) {
         return;
     }
+    #else
+    return;
+    #endif
 
     uint l_end = comp_next_label(comp);
     c_if_cond(comp, pns->nodes[0], true, l_end);

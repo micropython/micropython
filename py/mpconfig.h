@@ -358,6 +358,11 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
 #endif
 
+// Whether to enable micropython.opt_level()
+#ifndef MICROPY_ENABLE_OPTIMISER
+#define MICROPY_ENABLE_OPTIMISER (1)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 

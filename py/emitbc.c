@@ -471,10 +471,12 @@ static inline void emit_bc_pre(emit_t *emit, mp_int_t stack_size_delta) {
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
     //printf("source: line %d -> %d  offset %d -> %d\n", emit->last_source_line, source_line, emit->last_source_line_offset, emit->bytecode_offset);
 #if MICROPY_ENABLE_SOURCE_LINE
+#if MICROPY_ENABLE_OPTIMISER
     if (MP_STATE_VM(mp_optimise_value) >= 3) {
         // If we compile with -O3, don't store line numbers.
         return;
     }
+#endif // MICROPY_ENABLE_OPTIMISER
     if (source_line > emit->last_source_line) {
         mp_uint_t bytes_to_skip = emit->bytecode_offset - emit->last_source_line_offset;
         mp_uint_t lines_to_skip = source_line - emit->last_source_line;

@@ -14,6 +14,7 @@
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_ENABLE_OPTIMISER    (0)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_CONST          (0)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (0)

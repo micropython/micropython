@@ -195,7 +195,9 @@ typedef struct _mp_state_vm_t {
     mp_thread_mutex_t qstr_mutex;
     #endif
 
+    #if MICROPY_ENABLE_OPTIMISER
     mp_uint_t mp_optimise_value;
+    #endif
 
     // size of the emergency exception buf, if it's dynamically allocated
     #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0

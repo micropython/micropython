@@ -550,7 +550,11 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             if (cmp == 0) {
                 lex->tok_kind = MP_TOKEN_KW_FALSE + i;
                 if (lex->tok_kind == MP_TOKEN_KW___DEBUG__) {
+                    #if MICROPY_ENABLE_OPTIMISER
                     lex->tok_kind = (MP_STATE_VM(mp_optimise_value) == 0 ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE);
+                    #else
+                    lex->tok_kind = MP_TOKEN_KW_TRUE;
+                    #endif
                 }
                 break;
             } else if (cmp < 0) {
