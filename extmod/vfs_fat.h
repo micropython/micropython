@@ -58,6 +58,5 @@ extern const mp_obj_type_t mp_fat_vfs_type;
 
 mp_import_stat_t fat_vfs_import_stat(struct _fs_user_mount_t *vfs, const char *path);
 MP_DECLARE_CONST_FUN_OBJ_3(fat_vfs_open_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
 #endif // MICROPY_INCLUDED_EXTMOD_VFS_FAT_H
