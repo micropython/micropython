@@ -69,7 +69,11 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    #if defined(STM32H7)
+    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+    #else
     GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
     
 	/* Configure VBUS Pin */
@@ -86,9 +90,14 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     GPIO_InitStruct.Pin = GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
 #endif
+
+    #if defined(STM32H7)
+    // Keep USB clock running during sleep or else __WFI() will disable the USB
+    __HAL_RCC_USB2_OTG_FS_CLK_SLEEP_ENABLE();
+    __HAL_RCC_USB2_OTG_FS_ULPI_CLK_SLEEP_DISABLE();
+    #endif
 
     /* Enable USB FS Clocks */ 
     __USB_OTG_FS_CLK_ENABLE();
