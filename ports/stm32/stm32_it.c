@@ -385,8 +385,13 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
     /* Select PLL as SYSCLK */
     MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
 
+    #if defined(STM32H7)
+    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1)
+    {}
+    #else
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
     {}
+    #endif
 
     /* ungate PHY clock */
      __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
