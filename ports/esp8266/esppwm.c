@@ -190,11 +190,8 @@ pwm_start(void)
         // start
         gpio_output_set(local_single[0].gpio_set, local_single[0].gpio_clear, pwm_gpio, 0);
 
-        // yeah, if all channels' duty is 0 or 255, don't need to start timer, otherwise start...
-        if (*local_channel != 1) {
-            pwm_timer_down = 0;
-            RTC_REG_WRITE(FRC1_LOAD_ADDRESS, local_single[0].h_time);
-        }
+        pwm_timer_down = 0;
+        RTC_REG_WRITE(FRC1_LOAD_ADDRESS, local_single[0].h_time);
     }
 
     if (pwm_toggle == 1) {
@@ -319,11 +316,7 @@ pwm_tim1_intr_handler(void *dummy)
 
         pwm_current_channel = 0;
 
-        if (*pwm_channel != 1) {
-            RTC_REG_WRITE(FRC1_LOAD_ADDRESS, pwm_single[pwm_current_channel].h_time);
-        } else {
-            pwm_timer_down = 1;
-        }
+        RTC_REG_WRITE(FRC1_LOAD_ADDRESS, pwm_single[pwm_current_channel].h_time);
     } else {
         gpio_output_set(pwm_single[pwm_current_channel].gpio_set,
                         pwm_single[pwm_current_channel].gpio_clear,
