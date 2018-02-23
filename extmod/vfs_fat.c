@@ -47,6 +47,20 @@
 
 #define mp_obj_fat_vfs_t fs_user_mount_t
 
+mp_import_stat_t fat_vfs_import_stat(fs_user_mount_t *vfs, const char *path) {
+    FILINFO fno;
+    assert(vfs != NULL);
+    FRESULT res = f_stat(&vfs->fatfs, path, &fno);
+    if (res == FR_OK) {
+        if ((fno.fattrib & AM_DIR) != 0) {
+            return MP_IMPORT_STAT_DIR;
+        } else {
+            return MP_IMPORT_STAT_FILE;
+        }
+    }
+    return MP_IMPORT_STAT_NO_EXIST;
+}
+
 STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
