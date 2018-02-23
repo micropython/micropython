@@ -516,8 +516,7 @@ void SystemClock_Config(void)
     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        /* Initialization Error */
-        Error_Handler();
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
     }
 #endif
 
