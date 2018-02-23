@@ -26,9 +26,7 @@ else
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
-ifeq ($(shell test -e boards/$(BOARD)/modules/boardmodules.mk && echo -n yes),yes)
-	include boards/$(BOARD)/modules/boardmodules.mk
-endif
+-include boards/$(BOARD)/modules/boardmodules.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
