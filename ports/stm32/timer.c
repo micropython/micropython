@@ -229,16 +229,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // respective APB clock.  See DM00031020 Rev 4, page 115.
 uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source;
+    uint32_t latency;
+    RCC_ClkInitTypeDef rcc_init;
+
+    // Get clock config.
+    HAL_RCC_GetClockConfig(&rcc_init, &latency);
+
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
         source = HAL_RCC_GetPCLK2Freq();
-        if ((uint32_t)((RCC->CFGR & RCC_CFGR_PPRE2) >> 3) != RCC_HCLK_DIV1) {
+        if (rcc_init.APB2CLKDivider != RCC_HCLK_DIV1) {
             source *= 2;
         }
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        if ((uint32_t)(RCC->CFGR & RCC_CFGR_PPRE1) != RCC_HCLK_DIV1) {
+        if (rcc_init.APB1CLKDivider != RCC_HCLK_DIV1) {
             source *= 2;
         }
     }
@@ -690,13 +696,25 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
     #if defined(TIM15)
+    #if defined(STM32H7)
+    TIM_ENTRY(15, TIM15_IRQn),
+    #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
     #endif
+    #endif
     #if defined(TIM16)
+    #if defined(STM32H7)
+    TIM_ENTRY(16, TIM16_IRQn),
+    #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
     #endif
+    #endif
     #if defined(TIM17)
+    #if defined(STM32H7)
+    TIM_ENTRY(17, TIM17_IRQn),
+    #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
+    #endif
     #endif
 };
 #undef TIM_ENTRY
