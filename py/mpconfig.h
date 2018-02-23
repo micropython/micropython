@@ -106,6 +106,15 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
 #endif
 
+// The C-type to use for entries in the GC stack.  By default it allows the
+// heap to be as large as the address space, but the bit-width of this type can
+// be reduced to save memory when the heap is small enough.  The type must be
+// big enough to index all blocks in the heap, which is set by
+// heap-size-in-bytes / MICROPY_BYTES_PER_GC_BLOCK.
+#ifndef MICROPY_GC_STACK_ENTRY_TYPE
+#define MICROPY_GC_STACK_ENTRY_TYPE size_t
+#endif
+
 // Be conservative and always clear to zero newly (re)allocated memory in the GC.
 // This helps eliminate stray pointers that hold on to memory that's no longer
 // used.  It decreases performance due to unnecessary memory clearing.
