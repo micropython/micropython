@@ -106,6 +106,14 @@
 #define MICROPY_ALLOC_GC_STACK_SIZE (64)
 #endif
 
+// Use uint16_t instead of size_t in the GC stack. This saves about 128
+// bytes of .bss. It can be used when the heap has less than 2**16 blocks,
+// which is normally the case when it is smaller than 1MB in size (see
+// MICROPY_BYTES_PER_GC_BLOCK).
+#ifndef MICROPY_GC_SMALL_HEAP
+#define MICROPY_GC_SMALL_HEAP (0)
+#endif
+
 // Be conservative and always clear to zero newly (re)allocated memory in the GC.
 // This helps eliminate stray pointers that hold on to memory that's no longer
 // used.  It decreases performance due to unnecessary memory clearing.
