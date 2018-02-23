@@ -82,7 +82,11 @@ static const flash_layout_t flash_layout[] = {
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
+    #if defined(MCU_SERIES_H7)
+    if (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_SWAP_BANK) == 0) {
+    #else
     if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0) {
+    #endif
         // no bank swap
         if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
             return FLASH_BANK_1;
@@ -161,8 +165,12 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
     EraseInitStruct.NbPages     = get_page(flash_dest + 4 * num_word32 - 1) - EraseInitStruct.Page + 1;;
     #else
     // Clear pending flags (if any)
+    #if defined(MCU_SERIES_H7)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
+    #else
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                            FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+    #endif
 
     // erase the sector(s)
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
@@ -239,7 +247,7 @@ void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
     // program the flash 256 bits at a time
     for (int i = 0; i < num_word32 / 8; i++) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flash_dest, (uint64_t)src) != HAL_OK) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, flash_dest, (uint64_t)(uint32_t)src) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash
             return;
