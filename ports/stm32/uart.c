@@ -91,8 +91,26 @@ struct _pyb_uart_obj_t {
 };
 
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
+extern void NORETURN __fatal_error(const char *msg);
 
 void uart_init0(void) {
+    #if defined(STM32H7)
+    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit = {0};
+    // Configure USART1/6 clock source
+    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART16;
+    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+    if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit) != HAL_OK) {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
+
+    // Configure USART2/3/4/5/7/8 clock source
+    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART234578;
+    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+    if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit) != HAL_OK) {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
+    #endif
+
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
         MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
     }
@@ -365,7 +383,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+        #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
         return self->uart.Instance->RDR & self->char_mask;
         #else
         return self->uart.Instance->DR & self->char_mask;
@@ -483,7 +501,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+                #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
                 int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
                 #else
                 int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
@@ -668,15 +686,28 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // compute actual baudrate that was configured
     // (this formula assumes UART_OVERSAMPLING_16)
     uint32_t actual_baudrate = 0;
-    #if defined(MCU_SERIES_F7)
+    #if defined(MCU_SERIES_F7) || defined(STM32H7)
     UART_ClockSourceTypeDef clocksource = UART_CLOCKSOURCE_UNDEFINED;
     UART_GETCLOCKSOURCE(&self->uart, clocksource);
     switch (clocksource) {
+        #if defined(STM32H7)
+        case UART_CLOCKSOURCE_D2PCLK1: actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
+        case UART_CLOCKSOURCE_D3PCLK1: actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
+        case UART_CLOCKSOURCE_D2PCLK2: actual_baudrate = HAL_RCC_GetPCLK2Freq(); break;
+        #else
         case UART_CLOCKSOURCE_PCLK1:  actual_baudrate = HAL_RCC_GetPCLK1Freq(); break;
         case UART_CLOCKSOURCE_PCLK2:  actual_baudrate = HAL_RCC_GetPCLK2Freq(); break;
-        case UART_CLOCKSOURCE_HSI:    actual_baudrate = HSI_VALUE; break;
         case UART_CLOCKSOURCE_SYSCLK: actual_baudrate = HAL_RCC_GetSysClockFreq(); break;
+        #endif
+        #if defined(STM32H7)
+        case UART_CLOCKSOURCE_CSI:    actual_baudrate = CSI_VALUE; break;
+        #endif
+        case UART_CLOCKSOURCE_HSI:    actual_baudrate = HSI_VALUE; break;
         case UART_CLOCKSOURCE_LSE:    actual_baudrate = LSE_VALUE; break;
+        #if defined(STM32H7)
+        case UART_CLOCKSOURCE_PLL2:
+        case UART_CLOCKSOURCE_PLL3:
+        #endif
         case UART_CLOCKSOURCE_UNDEFINED: break;
     }
     #else
@@ -906,7 +937,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+    #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
     self->uart.Instance->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uart.Instance->CR1 |= USART_CR1_SBK;
