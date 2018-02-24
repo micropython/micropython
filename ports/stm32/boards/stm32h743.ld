@@ -29,4 +29,4 @@ INCLUDE common.ld
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
-_heap_end = 0x24080000; /* tunable */
+_heap_end = 0x2407C000; /* tunable */
