@@ -7,7 +7,7 @@
 #define MICROPY_HW_ENABLE_RNG       (0)
 #define MICROPY_HW_ENABLE_RTC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
-#define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_USB       (0)
 #define MICROPY_HW_ENABLE_ADC       (0)
 
 #define MICROPY_BOARD_EARLY_INIT    NUCLEO_H743ZI_board_early_init
@@ -43,14 +43,10 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
 // UART config
-//#define MICROPY_HW_UART1_TX         (pin_A9)
-//#define MICROPY_HW_UART1_RX         (pin_B7)
-//#define MICROPY_HW_UART6_TX         (pin_C6)
-//#define MICROPY_HW_UART6_RX         (pin_C7)
-//#define MICROPY_HW_UART7_TX         (pin_F6)
-//#define MICROPY_HW_UART7_RX         (pin_F7)
-//#define MICROPY_HW_UART_REPL        PYB_UART_1
-//#define MICROPY_HW_UART_REPL_BAUD   115200
+#define MICROPY_HW_UART3_TX         (pin_D8)
+#define MICROPY_HW_UART3_RX         (pin_D9)
+#define MICROPY_HW_UART_REPL        PYB_UART_3
+#define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses
 //#define MICROPY_HW_I2C1_SCL         (pin_B8)
