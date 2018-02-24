@@ -498,19 +498,19 @@ void SystemClock_Config(void)
     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
     #endif
 #endif
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    __fatal_error("HAL_RCC_OscConfig");
-  }
+
+    if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+      __fatal_error("HAL_RCC_OscConfig");
+    }
 
 #if defined(MCU_SERIES_H7)
     /* PLL3 for USB Clock */
-    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
-    PeriphClkInitStruct.PLL3.PLL3M = 6;
-    PeriphClkInitStruct.PLL3.PLL3N = 192;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
+    PeriphClkInitStruct.PLL3.PLL3M = 4;
+    PeriphClkInitStruct.PLL3.PLL3N = 120;
     PeriphClkInitStruct.PLL3.PLL3P = 2;
-    PeriphClkInitStruct.PLL3.PLL3Q = 8;
+    PeriphClkInitStruct.PLL3.PLL3Q = 5;
     PeriphClkInitStruct.PLL3.PLL3R = 2;
     PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_1;
     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
