@@ -7,8 +7,11 @@
 #define MICROPY_HW_ENABLE_RNG       (0)
 #define MICROPY_HW_ENABLE_RTC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
-#define MICROPY_HW_ENABLE_USB       (0)
+#define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_ADC       (0)
+
+#define MICROPY_BOARD_EARLY_INIT    NUCLEO_H743ZI_board_early_init
+void NUCLEO_H743ZI_board_early_init(void);
 
 /**
 * System Clock Configuration
@@ -69,19 +72,17 @@
 //#define MICROPY_HW_USRSW_PRESSED    (1)
 
 // LEDs
-//#define MICROPY_HW_LED1             (pin_I1) // green
-//#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
-//#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+#define MICROPY_HW_LED1             (pin_B7)    // blue
+#define MICROPY_HW_LED2             (pin_B14)   // red
+#define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
+#define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
 // SD card detect switch
 //#define MICROPY_HW_SDCARD_DETECT_PIN        (pin_C13)
 //#define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 //#define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
-// USB config (CN13 - USB OTG FS)
-// The Hardware VBUS detect only works on pin PA9. The STM32F7 Discovery uses
-// PA9 for VCP_TX functionality and connects the VBUS to pin J12 (so software
-// only detect). So we don't define the VBUS detect pin since that requires PA9.
+// USB config
 #define MICROPY_HW_USB_FS              (1)
-//#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_J12)
-//#define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
+#define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
