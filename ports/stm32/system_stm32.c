@@ -143,7 +143,6 @@ const uint32_t MSIRangeTable[12] = {100000, 200000, 400000, 800000, 1000000, 200
 #define SRAM_BASE D1_AXISRAM_BASE
 #define FLASH_BASE FLASH_BANK1_BASE
 uint32_t SystemD2Clock = 64000000;
-const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
 const uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
 #else
 #error Unknown processor
