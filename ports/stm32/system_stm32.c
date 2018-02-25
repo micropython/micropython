@@ -519,9 +519,7 @@ void SystemClock_Config(void)
     }
 #endif
 
-#if defined(MCU_SERIES_H7)
-    HAL_PWREx_EnableUSBVoltageDetector();
-#elif defined(MCU_SERIES_F7)
+#if defined(MCU_SERIES_F7)
   /* Activate the OverDrive to reach the 200 MHz Frequency */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK) {
     __fatal_error("HAL_PWREx_EnableOverDrive");
@@ -536,6 +534,20 @@ void SystemClock_Config(void)
   {
     __fatal_error("HAL_RCC_ClockConfig");
   }
+
+#if defined(MCU_SERIES_H7)
+  /* Activate CSI clock mondatory for I/O Compensation Cell*/
+  __HAL_RCC_CSI_ENABLE() ;
+
+  /* Enable SYSCFG clock mondatory for I/O Compensation Cell */
+  __HAL_RCC_SYSCFG_CLK_ENABLE() ;
+
+  /* Enables the I/O Compensation Cell */
+  HAL_EnableCompensationCell();
+
+  /* Enable the USB voltage level detector */
+  HAL_PWREx_EnableUSBVoltageDetector();
+#endif
 
 #if defined(MCU_SERIES_F7)
   // The DFU bootloader changes the clocksource register from its default power
