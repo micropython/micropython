@@ -116,6 +116,14 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
+// Configuration for STM32H7 series
+#elif defined(STM32H7)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff1e800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
 
