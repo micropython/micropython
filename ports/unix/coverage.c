@@ -262,6 +262,39 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_set_from_int(&mpz, 1);
         mpz_shl_inpl(&mpz, &mpz, 70);
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
+
+        // mpz_set_from_float with inf as argument
+        mpz_set_from_float(&mpz, 1.0 / 0.0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0 as argument
+        mpz_set_from_float(&mpz, 0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0<x<1 as argument
+        mpz_set_from_float(&mpz, 1e-10);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 1<=x<2 as argument
+        mpz_set_from_float(&mpz, 1.5);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 2<x as argument
+        mpz_set_from_float(&mpz, 12345);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_mul_inpl with dest==rhs, lhs!=rhs
+        mpz_t mpz2;
+        mpz_set_from_int(&mpz, 2);
+        mpz_init_from_int(&mpz2, 3);
+        mpz_mul_inpl(&mpz, &mpz2, &mpz);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
     }
 
     // runtime utils
