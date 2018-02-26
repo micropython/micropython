@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit ItsyBitsy M0"
+#define MICROPY_HW_BOARD_NAME "Adafruit ItsyBitsy M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define CIRCUITPY_BITBANG_APA102
