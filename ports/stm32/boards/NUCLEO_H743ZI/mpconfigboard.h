@@ -7,7 +7,7 @@
 #define MICROPY_HW_ENABLE_RNG       (0)
 #define MICROPY_HW_ENABLE_RTC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
-#define MICROPY_HW_ENABLE_USB       (0)
+#define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_ADC       (0)
 
 #define MICROPY_BOARD_EARLY_INIT    NUCLEO_H743ZI_board_early_init
@@ -35,7 +35,7 @@ void NUCLEO_H743ZI_board_early_init(void);
 */
 #define MICROPY_HW_CLK_PLLM (4)
 #define MICROPY_HW_CLK_PLLN (400)
-#define MICROPY_HW_CLK_PLLP (4)
+#define MICROPY_HW_CLK_PLLP (2)
 #define MICROPY_HW_CLK_PLLQ (4)
 #define MICROPY_HW_CLK_PLLR (2)
 
