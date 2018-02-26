@@ -2,31 +2,6 @@
 #include STM32_HAL_H
 #include "pin.h"
 
-// The unique id address differs per MCU.  Ideally this define should
-// go in some MCU-specific header, but for now it lives here.
-#if defined(MCU_SERIES_F4)
-#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
-#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
-#define MP_HAL_CLEAN_DCACHE(addr, size)
-#elif defined(MCU_SERIES_F7)
-#if defined(STM32F722xx) \
-    || defined(STM32F723xx) \
-    || defined(STM32F732xx) \
-    || defined(STM32F733xx)
-#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff07a10)
-#else
-#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
-#endif
-#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
-#define MP_HAL_CLEAN_DCACHE(addr, size) (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
-#elif defined(MCU_SERIES_L4)
-#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
-#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
-#define MP_HAL_CLEAN_DCACHE(addr, size)
-#else
-#error mphalport.h: Unrecognized MCU_SERIES
-#endif
-
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);

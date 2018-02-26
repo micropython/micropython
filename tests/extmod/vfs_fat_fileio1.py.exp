@@ -11,3 +11,4 @@ o
 d
 True
 [('foo_dir', 16384, 0)]
+MemoryError

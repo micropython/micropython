@@ -387,7 +387,8 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
     }
 }
 
-void asm_x86_entry(asm_x86_t *as, mp_uint_t num_locals) {
+void asm_x86_entry(asm_x86_t *as, int num_locals) {
+    assert(num_locals >= 0);
     asm_x86_push_r32(as, ASM_X86_REG_EBP);
     asm_x86_mov_r32_r32(as, ASM_X86_REG_EBP, ASM_X86_REG_ESP);
     if (num_locals > 0) {

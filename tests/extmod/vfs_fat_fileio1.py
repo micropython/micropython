@@ -113,3 +113,15 @@ except OSError as e:
 
 vfs.remove("foo_file.txt")
 print(list(vfs.ilistdir()))
+
+# Here we test that opening a file with the heap locked fails correctly.  This
+# is a special case because file objects use a finaliser and allocating with a
+# finaliser is a different path to normal allocation.  It would be better to
+# test this in the core tests but there are no core objects that use finaliser.
+import micropython
+micropython.heap_lock()
+try:
+    vfs.open('x', 'r')
+except MemoryError:
+    print('MemoryError')
+micropython.heap_unlock()

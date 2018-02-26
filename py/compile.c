@@ -376,6 +376,7 @@ STATIC void c_assign_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns, as
                     EMIT(store_subscr);
                 }
             }
+            return;
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_period) {
             assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
             if (assign_kind == ASSIGN_AUG_LOAD) {
@@ -387,16 +388,10 @@ STATIC void c_assign_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns, as
                 }
                 EMIT_ARG(store_attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]));
             }
-        } else {
-            goto cannot_assign;
+            return;
         }
-    } else {
-        goto cannot_assign;
     }
 
-    return;
-
-cannot_assign:
     compile_syntax_error(comp, (mp_parse_node_t)pns, "can't assign to expression");
 }
 

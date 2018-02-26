@@ -128,7 +128,7 @@ endif
 MAIN_C = main.c
 
 # source files
-SRC_C = $(addprefix $(MPTOP)/ports/unix/,\
+SRC_C = $(addprefix ports/unix/,\
 	$(MAIN_C) \
 	gccollect.c \
 	unix_mphal.c \

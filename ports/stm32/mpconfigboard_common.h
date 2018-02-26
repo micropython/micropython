@@ -27,6 +27,8 @@
 // Common settings and defaults for board configuration.
 // The defaults here should be overridden in mpconfigboard.h.
 
+#include STM32_HAL_H
+
 /*****************************************************************************/
 // Feature settings with defaults
 
@@ -93,19 +95,37 @@
 /*****************************************************************************/
 // General configuration
 
-// Define the maximum number of peripherals that the MCU supports
-#if defined(MCU_SERIES_F7)
-#define PYB_EXTI_NUM_VECTORS (24)
-#define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (8)
-#elif defined(MCU_SERIES_L4)
-#define PYB_EXTI_NUM_VECTORS (23)
-#define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (6)
-#else
+// Configuration for STM32F4 series
+#if defined(STM32F4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_TIMER (14)
 #define MICROPY_HW_MAX_UART (6)
+
+// Configuration for STM32F7 series
+#elif defined(STM32F7)
+
+#if defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff07a10)
+#else
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff0f420)
+#endif
+
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+
+// Configuration for STM32L4 series
+#elif defined(STM32L4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7590)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (6)
+
+#else
+#error Unsupported MCU series
 #endif
 
 // Enable hardware I2C if there are any peripherals defined
@@ -118,3 +138,16 @@
 
 // Pin definition header file
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"
+
+// D-cache clean/invalidate helpers
+#if __DCACHE_PRESENT == 1
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
+    (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
+        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#define MP_HAL_CLEAN_DCACHE(addr, size) \
+    (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
+        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+#else
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
+#define MP_HAL_CLEAN_DCACHE(addr, size)
+#endif
