@@ -1,6 +1,8 @@
 :mod:`esp` --- functions related to the ESP8266
 ===============================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: esp
     :synopsis: functions related to the ESP8266
 

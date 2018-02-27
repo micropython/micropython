@@ -17,9 +17,9 @@ SAMD51, SAMD51 Express, and ESP8266.
 NOTE 2: **SAMD** and/or **SAMD Express** without additional numbers, means both SAMD21 & SAMD51 versions
 are supported.
 
-=================  ===============
-Module             Supported Ports  				
-=================  ===============
+=================  ==============================
+Module             Supported Ports
+=================  ==============================
 `analogio`         **All Supported**
 `audiobusio`       **SAMD/SAMD Express**
 `audioio`          **SAMD Express**
@@ -43,7 +43,7 @@ Module             Supported Ports
 `touchio`          **SAMD/SAMD Express**
 `uheap`            **Debug (All)**
 `usb_hid`          **SAMD/SAMD Express**
-=================  ===============  				
+=================  ==============================
 
 Modules
 ---------

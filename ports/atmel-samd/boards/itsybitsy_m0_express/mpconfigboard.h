@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit ItsyBitsy M0 Express"
+#define MICROPY_HW_BOARD_NAME "Adafruit Itsy Bitsy M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define CIRCUITPY_BITBANG_APA102
@@ -41,6 +41,5 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-//#include "external_flash/devices/S25FL216K.h"
-#include "external_flash/devices/W25Q80DV.h"
-//#include "external_flash/devices/GD25Q16C.h"
+#include "external_flash/devices/GD25Q16C.h"
+#include "external_flash/devices/W25Q16FW.h"

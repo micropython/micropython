@@ -23,7 +23,7 @@ happen on Linux and Mac OSX but its less likely.
 such as Feather M0 Express, Metro M0 Express and Circuit Playground Express:**
 
 
-#. Download the appropriate flash .erase uf2 from `here <https://github.com/adafruit/Adafruit_SPIFlash/tree/master/examples/flash_erase_express>`_.
+#. Download the appropriate flash .erase uf2 from `the Adafruit_SPIFlash repo <https://github.com/adafruit/Adafruit_SPIFlash/tree/master/examples/flash_erase_express>`_.
 #. Double-click the reset button.
 #. Copy the appropriate .uf2 to the xxxBOOT drive.
 #. The on-board NeoPixel will turn blue, indicating the erase has started.
@@ -32,7 +32,7 @@ such as Feather M0 Express, Metro M0 Express and Circuit Playground Express:**
 
 **For boards without SPI flash, such as Feather M0 Proto, Gemma M0 and, Trinket M0:**
 
-#. Download the appropriate erase .uf2 from `here <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/uf2_flash_erasers>`_.
+#. Download the appropriate erase .uf2 from `the Learn repo <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/uf2_flash_erasers>`_.
 #. Double-click the reset button.
 #. Copy the appropriate .uf2 to the xxxBOOT drive.
 #. The boot LED will start pulsing again, and the xxxBOOT drive will appear again.

@@ -24,32 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL116K_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL116K_H
+#include "boards/board.h"
 
-// Settings for the Cypress (was Spansion) S25FL116K 2MiB SPI flash.
-// Datasheet: http://www.cypress.com/file/196886/download
+void board_init(void)
+{
+}
 
-// The total flash size in bytes.
-#define SPI_FLASH_TOTAL_SIZE  (1 << 21) // 2 MiB
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-// The size of the smallest erase unit thats erased with command 0x20.
-#define SPI_FLASH_ERASE_SIZE  (1 << 12) // 4 KiB
-
-// The size of a page that is programmed with page program command 0x02.
-#define SPI_FLASH_PAGE_SIZE   (256)     // 256 bytes
-
-// These are the first three response bytes to the JEDEC ID command 0x9f that is
-// used to confirm we're talking to the flash we expect.
-#ifndef SPI_FLASH_JEDEC_MANUFACTURER
-#define SPI_FLASH_JEDEC_MANUFACTURER 0x01
-#define SPI_FLASH_SECTOR_PROTECTION false
-#define SPI_FLASH_JEDEC_MEMORY_TYPE  0x40
-#else
-#define SPI_FLASH_JEDEC_MANUFACTURER_2 0x01
-#define SPI_FLASH_SECTOR_PROTECTION_2 false
-#define SPI_FLASH_JEDEC_MEMORY_TYPE_2  0x40
-#endif
-#define SPI_FLASH_JEDEC_CAPACITY     0x15
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_FLASH_S25FL216K_H
+void reset_board(void) {
+}

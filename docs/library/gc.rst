@@ -1,10 +1,12 @@
 :mod:`gc` -- control the garbage collector
 ==========================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: gc
    :synopsis: control the garbage collector
 
-|see_cpython_module| :mod:`python:gc`.
+|see_cpython_module| :mod:`cpython:gc`.
 
 Functions
 ---------

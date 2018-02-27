@@ -204,7 +204,11 @@ void external_flash_init(void) {
          || jedec_id_response[0] == SPI_FLASH_JEDEC_MANUFACTURER_2
 #endif
          ) &&
-        jedec_id_response[1] == SPI_FLASH_JEDEC_MEMORY_TYPE &&
+        (jedec_id_response[1] == SPI_FLASH_JEDEC_MEMORY_TYPE
+#ifdef SPI_FLASH_JEDEC_MANUFACTURER_2
+         || jedec_id_response[1] == SPI_FLASH_JEDEC_MEMORY_TYPE_2
+#endif
+        ) &&
         jedec_id_response[2] == SPI_FLASH_JEDEC_CAPACITY) {
         spi_flash_is_initialised = true;
     } else {
