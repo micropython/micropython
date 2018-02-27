@@ -51,7 +51,7 @@ before_script:
   - ([[ $TRAVIS_BOARD != "feather52" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For coverage testing (upgrade is used to get latest urllib3 version)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
-  - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme)
+  - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
   - gcc --version
   - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
   - python3 --version
