@@ -1215,13 +1215,12 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
 
     if (type->iternext != NULL && send_value == mp_const_none) {
         mp_obj_t ret = type->iternext(self_in);
+        *ret_val = ret;
         if (ret != MP_OBJ_STOP_ITERATION) {
-            *ret_val = ret;
             return MP_VM_RETURN_YIELD;
         } else {
             // Emulate raise StopIteration()
             // Special case, handled in vm.c
-            *ret_val = MP_OBJ_NULL;
             return MP_VM_RETURN_NORMAL;
         }
     }
