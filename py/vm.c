@@ -1162,6 +1162,7 @@ yield:
                     mp_obj_t send_value = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
                     mp_obj_t ret_value;
+                    code_state->sp = sp; // Save sp because it's needed if mp_resume raises StopIteration
                     if (inject_exc != MP_OBJ_NULL) {
                         t_exc = inject_exc;
                         inject_exc = MP_OBJ_NULL;
@@ -1361,7 +1362,8 @@ exception_handler:
                     } else if (*code_state->ip == MP_BC_YIELD_FROM) {
                         // StopIteration inside yield from call means return a value of
                         // yield from, so inject exception's value as yield from's result
-                        *++code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+                        // (Instead of stack pop then push we just replace exhausted gen with value)
+                        *code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
                         code_state->ip++; // yield from is over, move to next instruction
                         goto outer_dispatch_loop; // continue with dispatch loop
                     }
