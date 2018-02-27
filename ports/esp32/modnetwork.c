@@ -277,36 +277,32 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
 
 STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
-
-    //wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     wifi_mode_t mode;
     wifi_sta_list_t station_list;
     wifi_sta_info_t* stations;
-    char sta_mac[18];
+    //char sta_mac[18];
     mp_obj_t list = mp_obj_new_list(0,NULL);
-
 
     if (n_args==1) {
 	    // no arguments -> return none
 	    return mp_const_none;
     }
-    
+   
+    ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+
     switch ((uintptr_t)args[1]) {
 	// one argument -> return results in list
-	//mp_obj_t list = mp_obj_new_list(0,NULL);
-
         case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_stations) :
 	    // return number of connected stations, only if in soft-AP mode
-	    ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
-	    if ((mode & WIFI_MODE_AP)==0) {
+            if ((mode & WIFI_MODE_AP)==0) {
 	        // we will only print stations in soft-AP mode, i.e. WIFI_MODE_AP
 	        mp_raise_ValueError("soft-AP mode must be activated to retrieve stations");
 	    } else {
 		ESP_EXCEPTIONS(esp_wifi_ap_get_sta_list(&station_list));
 		stations = (wifi_sta_info_t*)(station_list.sta);
 		for (int i=0; i<station_list.num; i++) {
-		    sprintf(sta_mac,"%02x:%02x:%02x:%02x:%02x:%02x",stations[i].mac[0],stations[i].mac[1],stations[i].mac[2],stations[i].mac[3],stations[i].mac[4],stations[i].mac[5]);
-                    mp_obj_t *s = mp_obj_new_str(sta_mac, 17);
+		    //sprintf(sta_mac,"%02x:%02x:%02x:%02x:%02x:%02x",stations[i].mac[0],stations[i].mac[1],stations[i].mac[2],stations[i].mac[3],stations[i].mac[4],stations[i].mac[5]);
+                    mp_obj_t *s = mp_obj_new_bytes(stations[i].mac, sizeof(stations[i].mac));
 		    mp_obj_list_append(list, s);
 		}
 	    }
