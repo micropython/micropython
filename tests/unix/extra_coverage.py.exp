@@ -58,6 +58,8 @@ Warning: test
 # binary
 122
 456
+# VM
+2 1
 # scheduler
 sched(0)=1
 sched(1)=1

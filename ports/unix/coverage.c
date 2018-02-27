@@ -11,6 +11,7 @@
 #include "py/formatfloat.h"
 #include "py/stream.h"
 #include "py/binary.h"
+#include "py/bc.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -348,6 +349,23 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.0f\n", (double)far[0]);
         mp_binary_set_val_array_from_int('d', dar, 0, 456);
         mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
+    }
+
+    // VM
+    {
+        mp_printf(&mp_plat_print, "# VM\n");
+
+        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        mp_obj_fun_bc_t fun_bc;
+        fun_bc.bytecode = (const byte*)"\x01"; // just needed for n_state
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        code_state->fun_bc = &fun_bc;
+        code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
+        code_state->sp = &code_state->state[0];
+        code_state->exc_sp = NULL;
+        code_state->old_globals = NULL;
+        mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
+        mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
     }
 
     // scheduler
