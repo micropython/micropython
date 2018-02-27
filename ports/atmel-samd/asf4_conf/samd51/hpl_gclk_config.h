@@ -1,7 +1,7 @@
 // Circuit Python SAMD51 clock tree:
 // DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK1, GCLK5
-//   GCLK1 (48MHz) -> peripherals
-//   GCLK5 (divided down to 2 MHz) -> DPLL0
+//   GCLK1 (48MHz) -> 48 MHz peripherals
+//   GCLK5 (48 MHz divided down to 2 MHz) -> DPLL0, DAC peripherals
 //     DPLL0 (multiplied up to 120 MHz) -> GCLK0, GCLK4 (output for monitoring)
 
 // We'd like to use XOSC32K as a ref for DFLL48M on boards with a 32kHz crystal,
