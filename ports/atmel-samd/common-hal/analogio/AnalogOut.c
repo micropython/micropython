@@ -36,6 +36,7 @@
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
 #include "hpl/gclk/hpl_gclk_base.h"
+#include "peripheral_clk_config.h"
 
 #ifdef SAMD21
 #include "hpl/pm/hpl_pm_base.h"
@@ -65,15 +66,15 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
 
     #ifdef SAMD51
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
-    // This clock should be <= 12 MHz, per datasheet section 47.6.3.
-    hri_gclk_write_PCHCTRL_reg(GCLK, DAC_GCLK_ID, GCLK_PCHCTRL_GEN_GCLK5_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
     #endif
 
     #ifdef SAMD21
     _pm_enable_bus_clock(PM_BUS_APBC, DAC);
-    // This clock should be <= 350kHz, per datasheet table 37-6. 
-    _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK1_Val);
     #endif
+
+    // SAMD21: This clock should be <= 12 MHz, per datasheet section 47.6.3.
+    // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6. 
+    _gclk_enable_channel(DAC_GCLK_ID, CONF_GCLK_DAC_SRC);
 
     // Don't double init the DAC on the SAMD51 when both outputs are in use. We use the free state
     // of each output pin to determine DAC state.
