@@ -73,8 +73,16 @@ const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC0_GCLK_ID,
                                           TC7_GCLK_ID,
 #endif
                                       };
-const uint8_t tcc_gclk_ids[5] = {TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID, TCC3_GCLK_ID,
-                                 TCC4_GCLK_ID};
+const uint8_t tcc_gclk_ids[TCC_INST_NUM] = {TCC0_GCLK_ID, 
+                                            TCC1_GCLK_ID, 
+                                            TCC2_GCLK_ID,
+#ifdef TCC3_GCLK_ID
+                                            TCC3_GCLK_ID,
+#endif
+#ifdef TCC4_GCLK_ID
+                                            TCC4_GCLK_ID
+#endif
+                                    };
 #endif
 Tc* const tc_insts[TC_INST_NUM] = TC_INSTS;
 Tcc* const tcc_insts[TCC_INST_NUM] = TCC_INSTS;
@@ -89,9 +97,15 @@ IRQn_Type const tc_irq[TC_INST_NUM] = {
 #ifdef TC2
     TC2_IRQn,
 #endif
+#ifdef TC3
     TC3_IRQn,
+#endif
+#ifdef TC4
     TC4_IRQn,
+#endif
+#ifdef TC5
     TC5_IRQn,
+#endif
 #ifdef TC6
     TC6_IRQn,
 #endif
