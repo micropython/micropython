@@ -65,12 +65,14 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
 
     #ifdef SAMD51
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
+    // This clock should be <= 12 MHz, per datasheet section 47.6.3.
     hri_gclk_write_PCHCTRL_reg(GCLK, DAC_GCLK_ID, GCLK_PCHCTRL_GEN_GCLK5_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
     #endif
 
     #ifdef SAMD21
     _pm_enable_bus_clock(PM_BUS_APBC, DAC);
-    _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+    // This clock should be <= 350kHz, per datasheet table 37-6. 
+    _gclk_enable_channel(DAC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK1_Val);
     #endif
 
     // Don't double init the DAC on the SAMD51 when both outputs are in use. We use the free state
@@ -123,7 +125,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
         uint16_t value) {
-    // Input is 16 bit so make sure and set LEFTADJ to 1 to it takes the top
+    // Input is 16 bit so make sure and set LEFTADJ to 1 so it takes the top
     // bits. This is currently done in asf4_conf/*/hpl_dac_config.h.
     dac_sync_write(&self->descriptor, self->channel, &value, 1);
 }
