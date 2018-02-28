@@ -125,3 +125,17 @@ try:
 except MemoryError:
     print('MemoryError')
 micropython.heap_unlock()
+
+# Here we test that the finaliser is actually called during a garbage collection.
+import gc
+N = 4
+for i in range(N):
+    n = 'x%d' % i
+    f = vfs.open(n, 'w')
+    f.write(n)
+    f = None # release f without closing
+    [0, 1, 2, 3] # use up Python stack so f is really gone
+gc.collect() # should finalise all N files by closing them
+for i in range(N):
+    with vfs.open('x%d' % i, 'r') as f:
+        print(f.read())
