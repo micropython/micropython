@@ -43,9 +43,7 @@
 //| The `storage` provides storage management functionality such as mounting and
 //| unmounting which is typically handled by the operating system hosting Python.
 //| CircuitPython does not have an OS, so this module provides this functionality
-//| directly. Its based on MicroPython's `uos` module but deliberately separates
-//| CPython compatible functionality (in `os`) from incompatible functionality
-//| (in `storage`).
+//| directly.
 //|
 
 //| .. function:: mount(filesystem, mount_path, \*, readonly=False)

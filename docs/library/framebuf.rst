@@ -1,6 +1,8 @@
 :mod:`framebuf` --- Frame buffer manipulation
 =============================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: framebuf
    :synopsis: Frame buffer manipulation
 

@@ -1,10 +1,12 @@
 :mod:`uio` -- input/output streams
 ==================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uio
    :synopsis: input/output streams
 
-|see_cpython_module| :mod:`python:io`.
+|see_cpython_module| :mod:`cpython:io`.
 
 This module contains additional types of stream (file-like) objects
 and helper functions.
@@ -81,7 +83,7 @@ Functions
 
     Open a file. Builtin ``open()`` function is aliased to this function.
     All ports (which provide access to file system) are required to support
-    `mode` parameter, but support for other arguments vary by port.
+    ``mode`` parameter, but support for other arguments vary by port.
 
 Classes
 -------

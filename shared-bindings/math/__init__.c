@@ -176,7 +176,7 @@ STATIC NORETURN void math_error(void) {
   //|
   //| .. function:: pow(x, y)
   //|
-  //|   Returns `x` to the power of `y`.
+  //|   Returns ``x`` to the power of ``y``.
   //|
   //| .. function:: radians(x)
   //|
@@ -188,7 +188,7 @@ STATIC NORETURN void math_error(void) {
   //|
   //| .. function:: sqrt(x)
   //|
-  //|   Returns the square root of `x`.
+  //|   Returns the square root of ``x``.
   //|
   //| .. function:: tan(x)
   //|
@@ -299,25 +299,25 @@ MATH_FUN_2(ldexp, ldexp)
 
 // .. function:: erf(x)
 //
-//   Return the error function of `x`.
+//   Return the error function of ``x``.
 //
 MATH_FUN_1(erf, erf)
 
 // .. function:: erfc(x)
 //
-//   Return the complementary error function of `x`.
+//   Return the complementary error function of ``x``.
 //
 MATH_FUN_1(erfc, erfc)
 
 // .. function:: gamma(x)
 //
-//   Return the gamma function of `x`.
+//   Return the gamma function of ``x``.
 //
 MATH_FUN_1(gamma, tgamma)
 
 // .. function:: lgamma(x)
 //
-//   Return the natural logarithm of the gamma function of `x`.
+//   Return the natural logarithm of the gamma function of ``x``.
 //
 MATH_FUN_1(lgamma, lgamma)
 #endif

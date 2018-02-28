@@ -20,6 +20,7 @@ env:
   - TRAVIS_BOARD=feather52
   - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix
+  - TRAVIS_TEST=docs
 
 addons:
   artifacts:
@@ -28,12 +29,6 @@ addons:
     target_paths: /
 
 notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/c38b3bb3a3e131d955a1
-    on_success: change  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: never     # options: [always|never|change] default: always
   webhooks:
     urls:
       - https://rosie-ci.ngrok.io/travis
@@ -56,6 +51,7 @@ before_script:
   - ([[ $TRAVIS_BOARD != "feather52" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For coverage testing (upgrade is used to get latest urllib3 version)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
+  - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
   - gcc --version
   - ([[ -z "$TRAVIS_BOARD" ]] || arm-none-eabi-gcc --version)
   - python3 --version
@@ -100,6 +96,11 @@ script:
   - (echo 'Testing with mpy' && echo -en 'travis_fold:start:test_mpy\\r')
   - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --via-mpy -d basics float))
   - echo -en 'travis_fold:end:test_mpy\\r'
+
+  - (echo 'Building docs' && echo -en 'travis_fold:start:build_docs\\r')
+  - ([[ $TRAVIS_TEST != "docs" ]] || sphinx-build -E -W -b html . _build/html)
+  - echo -en 'travis_fold:end:build_docs\\r'
+
 
   # run coveralls coverage analysis (try to, even if some builds/tests failed)
   #- (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)

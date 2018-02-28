@@ -1,10 +1,12 @@
 :mod:`uselect` -- wait for events on a set of streams
 ========================================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uselect
    :synopsis: wait for events on a set of streams
 
-|see_cpython_module| :mod:`python:select`.
+|see_cpython_module| :mod:`cpython:select`.
 
 This module provides functions to efficiently wait for events on multiple
 streams (select streams which are ready for operations).
@@ -69,7 +71,7 @@ Methods
 .. method:: poll.ipoll(timeout=-1, flags=0)
 
    Like :meth:`poll.poll`, but instead returns an iterator which yields
-   `callee-owned tuples`. This function provides efficient, allocation-free
+   ``callee-owned tuples``. This function provides efficient, allocation-free
    way to poll on streams.
 
    If *flags* is 1, one-shot behavior for events is employed: streams for

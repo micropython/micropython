@@ -32,7 +32,22 @@
 #include "Layer.h"
 #include "Text.h"
 
-//| .. currentmodule:: _stage
+//| :mod:`_stage` --- C-level helpers for animation of sprites on a stage
+//| =====================================================================
+//|
+//| .. module:: _stage
+//|   :synopsis: C-level helpers for animation of sprites on a stage
+//|   :platform: SAMD21
+//|
+//| The `_stage` module contains native code to speed-up the ```stage`` Library
+//| <https://github.com/python-ugame/circuitpython-stage>`_.
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     Layer
+//|     Text
 //|
 //| .. function:: render(x0, y0, x1, y1, layers, buffer, spi)
 //|
@@ -42,9 +57,9 @@
 //|     :param int y0: Top edge of the fragment.
 //|     :param int x1: Right edge of the fragment.
 //|     :param int y1: Bottom edge of the fragment.
-//|     :param list layers: A list of the `Layer` objects.
+//|     :param list layers: A list of the :py:class:`~_stage.Layer` objects.
 //|     :param bytearray buffer: A buffer to use for rendering.
-//|     :param SPI spi: The SPI device to use.
+//|     :param ~busio.SPI spi: The SPI bus to use.
 //|
 //|     Note that this function only sends the raw pixel data. Setting up
 //|     the display for receiving it and handling the chip-select and

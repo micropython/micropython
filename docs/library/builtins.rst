@@ -1,6 +1,12 @@
 Builtin functions and exceptions
 ================================
 
+.. warning::
+
+    These builtins are inherited from MicroPython and may not work in CircuitPython
+    as documented or at all! If work differently from CPython, then their behavior
+    may change.
+
 All builtin functions and exceptions are described here. They are also
 available via ``builtins`` module.
 
@@ -21,7 +27,7 @@ Functions and types
 
 .. class:: bytes()
 
-    |see_cpython| `python:bytes`.
+    |see_cpython| `bytes`.
 
 .. function:: callable()
 
@@ -176,7 +182,7 @@ Exceptions
 
 .. exception:: OSError
 
-    |see_cpython| `python:OSError`. MicroPython doesn't implement ``errno``
+    |see_cpython| `OSError`. MicroPython doesn't implement ``errno``
     attribute, instead use the standard way to access exception arguments:
     ``exc.args[0]``.
 
@@ -188,11 +194,11 @@ Exceptions
 
 .. exception:: SystemExit
 
-    |see_cpython| `python:SystemExit`.
+    |see_cpython| :py:class:`python:SystemExit`.
 
 .. exception:: TypeError
 
-    |see_cpython| `python:TypeError`.
+    |see_cpython| :py:class:`python:TypeError`.
 
 .. exception:: ValueError
 

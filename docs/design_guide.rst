@@ -215,7 +215,7 @@ Renders as:
 Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Attributes are state on objects. (See `Getters/Setters` above for more discussion
+Attributes are state on objects. (See `Getters/Setters`_ above for more discussion
 about when to use them.) They can be defined internally in a number of different
 ways. Each approach is enumerated below with an explanation of where the comment
 goes.
@@ -400,10 +400,11 @@ For example, if you are writing a driver for an I2C device, then take in an I2C
 object instead of the pins themselves. This allows the calling code to provide
 any object with the appropriate methods such as an I2C expansion board.
 
-Another example is to expect a `DigitalInOut` for a pin to toggle instead of a
-`microcontroller.Pin` from `board`. Taking in the `~microcontroller.Pin` object
-alone would limit the driver to pins on the actual microcontroller instead of pins
-provided by another driver such as an IO expander.
+Another example is to expect a :py:class:`~digitalio.DigitalInOut` for a pin to
+toggle instead of a :py:class:`~microcontroller.Pin` from `board`. Taking in the
+:py:class:`~microcontroller.Pin` object alone would limit the driver to pins on
+the actual microcontroller instead of pins provided by another driver such as an
+IO expander.
 
 Lots of small modules
 --------------------------------------------------------------------------------
@@ -441,7 +442,7 @@ Examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ustruct.pack
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use `ustruct.pack_into` instead of `ustruct.pack`.
 
