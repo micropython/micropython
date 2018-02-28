@@ -104,7 +104,7 @@ void asm_x86_test_r8_with_r8(asm_x86_t* as, int src_r32_a, int src_r32_b);
 void asm_x86_setcc_r8(asm_x86_t* as, mp_uint_t jcc_type, int dest_r8);
 void asm_x86_jmp_label(asm_x86_t* as, mp_uint_t label);
 void asm_x86_jcc_label(asm_x86_t* as, mp_uint_t jcc_type, mp_uint_t label);
-void asm_x86_entry(asm_x86_t* as, mp_uint_t num_locals);
+void asm_x86_entry(asm_x86_t* as, int num_locals);
 void asm_x86_exit(asm_x86_t* as);
 void asm_x86_mov_arg_to_r32(asm_x86_t *as, int src_arg_num, int dest_r32);
 void asm_x86_mov_local_to_r32(asm_x86_t* as, int src_local_num, int dest_r32);

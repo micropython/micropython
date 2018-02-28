@@ -34,4 +34,13 @@ extern const mp_map_t mp_builtin_module_weak_links_map;
 mp_obj_t mp_module_get(qstr module_name);
 void mp_module_register(qstr qstr, mp_obj_t module);
 
+#if MICROPY_MODULE_BUILTIN_INIT
+void mp_module_call_init(qstr module_name, mp_obj_t module_obj);
+#else
+static inline void mp_module_call_init(qstr module_name, mp_obj_t module_obj) {
+    (void)module_name;
+    (void)module_obj;
+}
+#endif
+
 #endif // MICROPY_INCLUDED_PY_OBJMODULE_H

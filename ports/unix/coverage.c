@@ -11,6 +11,7 @@
 #include "py/formatfloat.h"
 #include "py/stream.h"
 #include "py/binary.h"
+#include "py/bc.h"
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -262,6 +263,39 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_set_from_int(&mpz, 1);
         mpz_shl_inpl(&mpz, &mpz, 70);
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
+
+        // mpz_set_from_float with inf as argument
+        mpz_set_from_float(&mpz, 1.0 / 0.0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0 as argument
+        mpz_set_from_float(&mpz, 0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0<x<1 as argument
+        mpz_set_from_float(&mpz, 1e-10);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 1<=x<2 as argument
+        mpz_set_from_float(&mpz, 1.5);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 2<x as argument
+        mpz_set_from_float(&mpz, 12345);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_mul_inpl with dest==rhs, lhs!=rhs
+        mpz_t mpz2;
+        mpz_set_from_int(&mpz, 2);
+        mpz_init_from_int(&mpz2, 3);
+        mpz_mul_inpl(&mpz, &mpz2, &mpz);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
     }
 
     // runtime utils
@@ -315,6 +349,23 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.0f\n", (double)far[0]);
         mp_binary_set_val_array_from_int('d', dar, 0, 456);
         mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
+    }
+
+    // VM
+    {
+        mp_printf(&mp_plat_print, "# VM\n");
+
+        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        mp_obj_fun_bc_t fun_bc;
+        fun_bc.bytecode = (const byte*)"\x01"; // just needed for n_state
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        code_state->fun_bc = &fun_bc;
+        code_state->ip = (const byte*)"\x00"; // just needed for an invalid opcode
+        code_state->sp = &code_state->state[0];
+        code_state->exc_sp = NULL;
+        code_state->old_globals = NULL;
+        mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
+        mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
     }
 
     // scheduler

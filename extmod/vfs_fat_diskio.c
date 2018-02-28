@@ -36,6 +36,8 @@
 #include "py/mphal.h"
 
 #include "py/runtime.h"
+#include "py/binary.h"
+#include "py/objarray.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/vfs_fat.h"
@@ -126,8 +128,9 @@ DRESULT disk_read (
             return RES_ERROR;
         }
     } else {
+        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), buff};
         vfs->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->readblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), buff);
+        vfs->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
         mp_call_method_n_kw(2, 0, vfs->readblocks);
         // TODO handle error return
     }
@@ -162,8 +165,9 @@ DRESULT disk_write (
             return RES_ERROR;
         }
     } else {
+        mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, count * SECSIZE(&vfs->fatfs), (void*)buff};
         vfs->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
-        vfs->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), (void*)buff);
+        vfs->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
         mp_call_method_n_kw(2, 0, vfs->writeblocks);
         // TODO handle error return
     }

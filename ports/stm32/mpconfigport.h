@@ -97,6 +97,7 @@
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #define MICROPY_PY_CMATH            (1)
@@ -287,8 +288,6 @@ typedef long mp_off_t;
 // value of the state variable, but rather just pass the return
 // value from disable_irq back to enable_irq.  If you really need
 // to know the machine-specific values, see irq.h.
-
-#include STM32_HAL_H
 
 static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);

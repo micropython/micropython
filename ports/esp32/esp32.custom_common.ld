@@ -89,7 +89,6 @@ SECTIONS
     *esp32/core_dump.o(.literal .text .literal.* .text.*)
     *app_trace/*(.literal .text .literal.* .text.*)
     *xtensa-debug-module/eri.o(.literal .text .literal.* .text.*)
-    *libphy.a:(.literal .text .literal.* .text.*)
     *librtc.a:(.literal .text .literal.* .text.*)
     *libsoc.a:(.literal .text .literal.* .text.*)
     *libhal.a:(.literal .text .literal.* .text.*)
@@ -195,6 +194,13 @@ SECTIONS
     *(.lit4.*)
     *(.gnu.linkonce.lit4.*)
     _lit4_end = ABSOLUTE(.);
+    . = ALIGN(4);
+    _thread_local_start = ABSOLUTE(.);
+    *(.tdata)
+    *(.tdata.*)
+    *(.tbss)
+    *(.tbss.*)
+    _thread_local_end = ABSOLUTE(.);
     . = ALIGN(4);
   } >drom0_0_seg
 

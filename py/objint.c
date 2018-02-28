@@ -378,7 +378,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
         // true acts as 0
         return mp_binary_op(op, lhs_in, MP_OBJ_NEW_SMALL_INT(1));
     } else if (op == MP_BINARY_OP_MULTIPLY) {
-        if (MP_OBJ_IS_STR(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_bytes) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
+        if (MP_OBJ_IS_STR_OR_BYTES(rhs_in) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_tuple) || MP_OBJ_IS_TYPE(rhs_in, &mp_type_list)) {
             // multiply is commutative for these types, so delegate to them
             return mp_binary_op(op, rhs_in, lhs_in);
         }

@@ -228,7 +228,7 @@ void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
     // program the flash word by word
     for (int i = 0; i < num_word32; i++) {
-        if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash
             return;

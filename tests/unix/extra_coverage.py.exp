@@ -41,6 +41,12 @@ data
 12345678
 0
 0
+0
+0
+0
+1
+12345
+6
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
@@ -52,6 +58,8 @@ Warning: test
 # binary
 122
 456
+# VM
+2 1
 # scheduler
 sched(0)=1
 sched(1)=1
