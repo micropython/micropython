@@ -144,8 +144,10 @@ const uint32_t MSIRangeTable[12] = {100000, 200000, 400000, 800000, 1000000, 200
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
+#ifndef VECT_TAB_OFFSET
 #define VECT_TAB_OFFSET  0x00 /*!< Vector Table base offset field.
                                    This value must be a multiple of 0x200. */
+#endif
 /******************************************************************************/
 
 /**
