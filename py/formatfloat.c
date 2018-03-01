@@ -330,7 +330,11 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // Print the digits of the mantissa
     for (int i = 0; i < num_digits; ++i, --dec) {
         int32_t d = (int32_t)f;
-        *s++ = '0' + d;
+        if (d < 0) {
+            *s++ = '0';
+        } else {
+            *s++ = '0' + d;
+        }
         if (dec == 0 && prec > 0) {
             *s++ = '.';
         }

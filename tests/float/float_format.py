@@ -13,3 +13,7 @@ for prec in range(8):
 # check certain cases that had a digit value of 10 render as a ":" character
 print('%.2e' % float('9' * 51 + 'e-39'))
 print('%.2e' % float('9' * 40 + 'e-21'))
+
+# check a case that would render negative digit values, eg ")" characters
+# the string is converted back to a float to check for no illegal characters
+float('%.23e' % 1e-80)
