@@ -20,8 +20,6 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#include "external_flash/external_flash.h"
-
 // If you change this, then make sure to update the linker scripts as well to
 // make sure you don't overwrite code
 // #define CIRCUITPY_INTERNAL_NVM_SIZE 256
@@ -29,5 +27,9 @@
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#include "external_flash/devices/S25FL116K.h"
-#include "external_flash/devices/GD25Q16C.h"
+#include "external_flash/devices.h"
+
+#define EXTERNAL_FLASH_DEVICE_COUNT 2
+#define EXTERNAL_FLASH_DEVICES S25FL116K, GD25Q16C
+
+#include "external_flash/external_flash.h"

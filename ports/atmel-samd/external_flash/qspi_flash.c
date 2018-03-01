@@ -167,7 +167,7 @@ void spi_flash_init(void) {
     QSPI->CTRLA.reg = QSPI_CTRLA_SWRST;
     // We don't need to wait because we're running as fast as the CPU.
 
-    QSPI->BAUD.bit.BAUD = 10;
+    QSPI->BAUD.bit.BAUD = 1;
     QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |
                       QSPI_CTRLB_DATALEN_8BITS |
                       QSPI_CTRLB_CSMODE_LASTXFER;
@@ -191,6 +191,4 @@ void spi_flash_init(void) {
         spi_flash_command(CMD_ENABLE_WRITE);
         spi_flash_write_command(0x01, full_status, 3);
     }
-
-    asm("nop");
 }
