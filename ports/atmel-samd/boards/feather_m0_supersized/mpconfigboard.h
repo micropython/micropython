@@ -42,4 +42,9 @@
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
-#include "external_flash/devices/S25FL064L.h"
+#include "external_flash/devices.h"
+
+#define EXTERNAL_FLASH_DEVICE_COUNT 1
+#define EXTERNAL_FLASH_DEVICES S25FL064L
+
+#include "external_flash/external_flash.h"

@@ -29,7 +29,7 @@
 
 #include "external_flash/devices.h"
 
-#define EXTERNAL_FLASH_DEVICE_COUNT 2
-#define EXTERNAL_FLASH_DEVICES S25FL116K, GD25Q16C
+#define EXTERNAL_FLASH_DEVICE_COUNT 3
+#define EXTERNAL_FLASH_DEVICES S25FL116K, S25FL216K, GD25Q16C
 
 #include "external_flash/external_flash.h"
