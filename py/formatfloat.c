@@ -258,7 +258,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
 
         // It can be that f was right on the edge of an entry in pos_pow needs to be reduced
-        if (f >= FPCONST(10.0)) {
+        if ((int)f >= 10) {
             e += 1;
             f *= FPCONST(0.1);
         }
