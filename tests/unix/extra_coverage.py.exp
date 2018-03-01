@@ -13,6 +13,10 @@ false true
 80000000
 80000000
 abc
+# GC
+0
+0
+0
 # vstr
 tests
 sts

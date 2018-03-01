@@ -4,6 +4,7 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "py/repl.h"
 #include "py/mpz.h"
 #include "py/builtin.h"
@@ -157,6 +158,29 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
+    }
+
+    // GC
+    {
+        mp_printf(&mp_plat_print, "# GC\n");
+
+        // calling gc_free while GC is locked
+        gc_lock();
+        gc_free(NULL);
+        gc_unlock();
+
+        // calling gc_realloc while GC is locked
+        void *p = gc_alloc(4, false);
+        gc_lock();
+        mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 8, true));
+        gc_unlock();
+
+        // using gc_realloc to resize to 0, which means free the memory
+        p = gc_alloc(4, false);
+        mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
+
+        // calling gc_nbytes with a non-heap pointer
+        mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
     }
 
     // vstr
