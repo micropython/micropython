@@ -36,6 +36,10 @@
 
 static uint32_t flash_tick_counter_last_write;
 
+#if defined(MICROPY_HW_SPIFLASH_MOSI)
+
+// External SPI flash uses standard SPI interface
+
 STATIC const mp_machine_soft_spi_obj_t spiflash_spi_bus = {
     .base = {&mp_machine_soft_spi_type},
     .delay_half = MICROPY_PY_MACHINE_SPI_MIN_DELAY,
@@ -52,6 +56,29 @@ STATIC const mp_spiflash_config_t spiflash_config = {
     .bus.u_spi.data = (void*)&spiflash_spi_bus,
     .bus.u_spi.proto = &mp_machine_soft_spi_p,
 };
+
+#elif defined(MICROPY_HW_SPIFLASH_IO0)
+
+// External SPI flash uses quad SPI interface
+
+#include "drivers/bus/qspi.h"
+
+STATIC const mp_soft_qspi_obj_t soft_qspi_bus = {
+    .cs = &MICROPY_HW_SPIFLASH_CS,
+    .clk = &MICROPY_HW_SPIFLASH_SCK,
+    .io0 = &MICROPY_HW_SPIFLASH_IO0,
+    .io1 = &MICROPY_HW_SPIFLASH_IO1,
+    .io2 = &MICROPY_HW_SPIFLASH_IO2,
+    .io3 = &MICROPY_HW_SPIFLASH_IO3,
+};
+
+STATIC const mp_spiflash_config_t spiflash_config = {
+    .bus_kind = MP_SPIFLASH_BUS_QSPI,
+    .bus.u_qspi.data = (void*)&soft_qspi_bus,
+    .bus.u_qspi.proto = &mp_soft_qspi_proto,
+};
+
+#endif
 
 STATIC mp_spiflash_t spiflash;
 
