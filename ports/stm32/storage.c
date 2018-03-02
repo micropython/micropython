@@ -39,6 +39,8 @@
 // Use external SPI flash as the storage medium
 #define BDEV_NUM_BLOCKS (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE)
 #define BDEV_INIT spi_bdev_init
+#define BDEV_IRQ_HANDLER spi_bdev_irq_handler
+#define BDEV_FLUSH spi_bdev_flush
 #define BDEV_READBLOCK spi_bdev_readblock
 #define BDEV_WRITEBLOCK spi_bdev_writeblock
 
