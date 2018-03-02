@@ -442,7 +442,13 @@ int main(void) {
         // enable the CCM RAM
         __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
         #endif
+    #elif defined(STM32H7)
+        // Enable D2 SRAM1/2/3 clocks.
+        __HAL_RCC_D2SRAM1_CLK_ENABLE();
+        __HAL_RCC_D2SRAM2_CLK_ENABLE();
+        __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
+
 
     #if defined(MICROPY_BOARD_EARLY_INIT)
     MICROPY_BOARD_EARLY_INIT();
