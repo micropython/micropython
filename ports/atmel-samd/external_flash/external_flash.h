@@ -37,6 +37,10 @@
 // Erase sector size.
 #define SPI_FLASH_SECTOR_SIZE (0x1000 - 100)
 
+// These are common across all NOR Flash.
+#define SPI_FLASH_ERASE_SIZE (1 << 12)
+#define SPI_FLASH_PAGE_SIZE (256)
+
 #define SPI_FLASH_SYSTICK_MASK    (0x1ff) // 512ms
 #define SPI_FLASH_IDLE_TICK(tick) (((tick) & SPI_FLASH_SYSTICK_MASK) == 2)
 
