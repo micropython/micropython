@@ -214,6 +214,7 @@ SRC_C = \
 	dma.c \
 	i2c.c \
 	spi.c \
+	qspi.c \
 	uart.c \
 	can.c \
 	usb.c \
