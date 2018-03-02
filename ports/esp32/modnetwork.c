@@ -280,7 +280,6 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
     wifi_mode_t mode;
     wifi_sta_list_t station_list;
     wifi_sta_info_t* stations;
-    //char sta_mac[18];
     mp_obj_t list = mp_obj_new_list(0,NULL);
 
     if (n_args==1) {
@@ -301,9 +300,9 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
 		ESP_EXCEPTIONS(esp_wifi_ap_get_sta_list(&station_list));
 		stations = (wifi_sta_info_t*)(station_list.sta);
 		for (int i=0; i<station_list.num; i++) {
-		    //sprintf(sta_mac,"%02x:%02x:%02x:%02x:%02x:%02x",stations[i].mac[0],stations[i].mac[1],stations[i].mac[2],stations[i].mac[3],stations[i].mac[4],stations[i].mac[5]);
-                    mp_obj_t *s = mp_obj_new_bytes(stations[i].mac, sizeof(stations[i].mac));
-		    mp_obj_list_append(list, s);
+                    mp_obj_tuple_t *t = mp_obj_new_tuple(1,NULL);
+		    t->items[0]  = mp_obj_new_bytes(stations[i].mac, sizeof(stations[i].mac));
+		    mp_obj_list_append(list, t);
 		}
 	    }
 	    return list;
