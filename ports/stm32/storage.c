@@ -151,8 +151,10 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 
         return true;
 
+    #if defined(BDEV_READBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
         return BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
+    #endif
     } else {
         return false;
     }
@@ -163,14 +165,22 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
     if (block == 0) {
         // can't write MBR, but pretend we did
         return true;
+    #if defined(BDEV_WRITEBLOCK)
     } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
         return BDEV_WRITEBLOCK(src, block - FLASH_PART1_START_BLOCK);
+    #endif
     } else {
         return false;
     }
 }
 
 mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+    #if defined(BDEV_READBLOCKS)
+    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
+        return BDEV_READBLOCKS(dest, block_num - FLASH_PART1_START_BLOCK, num_blocks);
+    }
+    #endif
+
     for (size_t i = 0; i < num_blocks; i++) {
         if (!storage_read_block(dest + i * FLASH_BLOCK_SIZE, block_num + i)) {
             return 1; // error
@@ -180,6 +190,12 @@ mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bl
 }
 
 mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+    #if defined(BDEV_WRITEBLOCKS)
+    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
+        return BDEV_WRITEBLOCKS(src, block_num - FLASH_PART1_START_BLOCK, num_blocks);
+    }
+    #endif
+
     for (size_t i = 0; i < num_blocks; i++) {
         if (!storage_write_block(src + i * FLASH_BLOCK_SIZE, block_num + i)) {
             return 1; // error
