@@ -41,8 +41,8 @@
 #define BDEV_INIT spi_bdev_init
 #define BDEV_IRQ_HANDLER spi_bdev_irq_handler
 #define BDEV_FLUSH spi_bdev_flush
-#define BDEV_READBLOCK spi_bdev_readblock
-#define BDEV_WRITEBLOCK spi_bdev_writeblock
+#define BDEV_READBLOCKS spi_bdev_readblocks
+#define BDEV_WRITEBLOCKS spi_bdev_writeblocks
 
 #else
 

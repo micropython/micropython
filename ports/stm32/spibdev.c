@@ -105,26 +105,26 @@ void spi_bdev_flush(void) {
     }
 }
 
-bool spi_bdev_readblock(uint8_t *dest, uint32_t block) {
+int spi_bdev_readblocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     // we must disable USB irqs to prevent MSC contention with SPI flash
     uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
-    mp_spiflash_read(&spiflash, block * FLASH_BLOCK_SIZE, FLASH_BLOCK_SIZE, dest);
+    mp_spiflash_read(&spiflash, block_num * FLASH_BLOCK_SIZE, num_blocks * FLASH_BLOCK_SIZE, dest);
     restore_irq_pri(basepri);
 
-    return true;
+    return 0;
 }
 
-bool spi_bdev_writeblock(const uint8_t *src, uint32_t block) {
+int spi_bdev_writeblocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     // we must disable USB irqs to prevent MSC contention with SPI flash
     uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
-    int ret = mp_spiflash_write(&spiflash, block * FLASH_BLOCK_SIZE, FLASH_BLOCK_SIZE, src);
+    int ret = mp_spiflash_write(&spiflash, block_num * FLASH_BLOCK_SIZE, num_blocks * FLASH_BLOCK_SIZE, src);
     if (spiflash.flags & 1) {
         led_state(PYB_LED_RED, 1); // indicate a dirty cache with LED on
         flash_tick_counter_last_write = HAL_GetTick();
     }
     restore_irq_pri(basepri);
 
-    return ret == 0;
+    return ret;
 }
 
 #endif // defined(MICROPY_HW_SPIFLASH_SIZE_BITS)

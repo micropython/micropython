@@ -53,8 +53,8 @@ bool flash_bdev_writeblock(const uint8_t *src, uint32_t block);
 void spi_bdev_init(void);
 void spi_bdev_irq_handler(void);
 void spi_bdev_flush(void);
-bool spi_bdev_readblock(uint8_t *dest, uint32_t block);
-bool spi_bdev_writeblock(const uint8_t *src, uint32_t block);
+int spi_bdev_readblocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
+int spi_bdev_writeblocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
 
 extern const struct _mp_obj_type_t pyb_flash_type;
 
