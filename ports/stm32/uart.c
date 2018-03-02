@@ -93,6 +93,19 @@ struct _pyb_uart_obj_t {
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
 
 void uart_init0(void) {
+    #if defined(MCU_SERIES_H7)
+    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
+    // Configure USART1/6 clock source
+    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART16;
+    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
+    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+
+    // Configure USART2/3/4/5/7/8 clock source
+    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART234578;
+    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+    #endif
+
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
         MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
     }
@@ -155,17 +168,6 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     USART_TypeDef *UARTx;
     IRQn_Type irqn;
     int uart_unit;
-
-    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
-    // Configure USART1/6 clock source
-    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART16;
-    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
-
-    // Configure USART2/3/4/5/7/8 clock source
-    RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART234578;
-    RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
 
     const pin_obj_t *pins[4] = {0};
 
