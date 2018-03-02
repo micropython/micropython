@@ -321,7 +321,7 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     mp_hal_pin_input(self->miso);
 }
 
-STATIC const mp_machine_spi_p_t mp_machine_soft_spi_p = {
+const mp_machine_spi_p_t mp_machine_soft_spi_p = {
     .init = mp_machine_soft_spi_init,
     .deinit = NULL,
     .transfer = mp_machine_soft_spi_transfer,

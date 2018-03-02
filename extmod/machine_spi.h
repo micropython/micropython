@@ -46,6 +46,7 @@ typedef struct _mp_machine_soft_spi_obj_t {
     mp_hal_pin_obj_t miso;
 } mp_machine_soft_spi_obj_t;
 
+extern const mp_machine_spi_p_t mp_machine_soft_spi_p;
 extern const mp_obj_type_t mp_machine_soft_spi_type;
 extern const mp_obj_dict_t mp_machine_spi_locals_dict;
 
