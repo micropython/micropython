@@ -433,6 +433,12 @@ int main(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
+    #if defined(MCU_SERIES_H7)
+    // AXI SRAM workaround (Errata 2.2.15)
+    *((__IO uint32_t*)0x51008008) = 0x00000001;
+    __DSB();
+    #endif
+
     #if defined(MCU_SERIES_F4) ||  defined(MCU_SERIES_F7)
         #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
         // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
