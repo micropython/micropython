@@ -91,19 +91,24 @@ struct _pyb_uart_obj_t {
 };
 
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in);
+extern void NORETURN __fatal_error(const char *msg);
 
 void uart_init0(void) {
     #if defined(MCU_SERIES_H7)
-    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
+    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit = {0};
     // Configure USART1/6 clock source
     RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART16;
     RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+    if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit) != HAL_OK) {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
 
     // Configure USART2/3/4/5/7/8 clock source
     RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART234578;
     RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
-    HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+    if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit) != HAL_OK) {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
     #endif
 
     for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
