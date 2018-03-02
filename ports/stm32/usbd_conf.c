@@ -94,13 +94,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 #endif
 
 #if defined (MCU_SERIES_H7)
-    #if MICROPY_HW_USB_HS
-    __HAL_RCC_USB1_OTG_HS_CLK_SLEEP_ENABLE();
-    __HAL_RCC_USB1_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
-    #else
+    // Keep USB clock running during sleep or else __WFI() will disable the USB
     __HAL_RCC_USB2_OTG_FS_CLK_SLEEP_ENABLE();
     __HAL_RCC_USB2_OTG_FS_ULPI_CLK_SLEEP_DISABLE();
-    #endif
 #endif
 
     /* Enable USB FS Clocks */ 
