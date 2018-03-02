@@ -93,9 +93,19 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
 #endif
 
+#if defined (MCU_SERIES_H7)
+    #if MICROPY_HW_USB_HS
+    __HAL_RCC_USB1_OTG_HS_CLK_SLEEP_ENABLE();
+    __HAL_RCC_USB1_OTG_HS_ULPI_CLK_SLEEP_DISABLE();
+    #else
+    __HAL_RCC_USB2_OTG_FS_CLK_SLEEP_ENABLE();
+    __HAL_RCC_USB2_OTG_FS_ULPI_CLK_SLEEP_DISABLE();
+    #endif
+#endif
+
     /* Enable USB FS Clocks */ 
     __USB_OTG_FS_CLK_ENABLE();
-    
+
 #if defined (MCU_SERIES_L4)
     /* Enable VDDUSB */
     if(__HAL_RCC_PWR_IS_CLK_DISABLED())
