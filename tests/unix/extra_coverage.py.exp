@@ -104,3 +104,4 @@ frzstr_pkg2.mod
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
+b'# test frozen package'
