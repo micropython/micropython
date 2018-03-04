@@ -448,9 +448,94 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(adc_read_timed_obj, adc_read_timed);
 
+/// Experimental
+STATIC mp_obj_t adc_read_timed_with(size_t n_args, const mp_obj_t *args) {
+
+    pyb_obj_adc_t *self = args[0];
+    pyb_obj_adc_t *adc1 = args[1];
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
+    size_t typesize = mp_binary_get_size('@', bufinfo.typecode, NULL);
+
+    mp_buffer_info_t bufinfo1;
+    mp_get_buffer_raise(args[3], &bufinfo1, MP_BUFFER_WRITE);
+    if ((bufinfo.len != bufinfo1.len) || (bufinfo.typecode != bufinfo1.typecode)) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
+            "size and type of buffers must match"));
+    }
+
+    TIM_HandleTypeDef *tim;
+    tim = pyb_timer_get_handle(args[4]);
+
+    uint nelems = bufinfo.len / typesize;
+    for (uint index = 0; index < nelems; index++) {
+        // Wait for the timer to trigger so we sample at the correct frequency
+        while (__HAL_TIM_GET_FLAG(tim, TIM_FLAG_UPDATE) == RESET) {
+        }
+        __HAL_TIM_CLEAR_FLAG(tim, TIM_FLAG_UPDATE);
+
+        // Set channel to self
+        adc_config_channel(&self->handle, self->channel);
+        if (index == 0) {
+            // for the first sample we need to turn the ADC on
+            HAL_ADC_Start(&self->handle);
+        } else {
+            // for subsequent samples we can just set the "start sample" bit
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+            ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+#elif defined(MCU_SERIES_L4)
+            SET_BIT(ADCx->CR, ADC_CR_ADSTART);
+#else
+            #error Unsupported processor
+#endif
+        }
+
+        // wait for sample to complete
+        #define READ_TIMED_TIMEOUT (10) // in ms
+        adc_wait_for_eoc_or_timeout(READ_TIMED_TIMEOUT);
+
+        // read value
+        uint value = ADCx->DR;
+
+        // Repeat for 2nd ADC. ADC is started, change channel
+        adc_config_channel(&adc1->handle, adc1->channel);
+        // set the "start sample" bit
+#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+        ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+#elif defined(MCU_SERIES_L4)
+        SET_BIT(ADCx->CR, ADC_CR_ADSTART);
+#else
+        #error Unsupported processor
+#endif
+
+        // wait for sample to complete
+        adc_wait_for_eoc_or_timeout(READ_TIMED_TIMEOUT);
+
+        // read value
+        uint value1 = ADCx->DR;
+
+        // store values in buffer
+        if (typesize == 1) {
+            value >>= 4;
+            value1 >>= 4;
+        }
+        mp_binary_set_val_array_from_int(bufinfo.typecode, bufinfo.buf, index, value);
+        mp_binary_set_val_array_from_int(bufinfo1.typecode, bufinfo1.buf, index, value1);
+    }
+
+    // turn the ADC off
+    HAL_ADC_Stop(&self->handle);
+    HAL_ADC_Stop(&adc1->handle);
+    return mp_obj_new_int(bufinfo.len);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adc_read_timed_with_obj, 5, 5, adc_read_timed_with);
+
 STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&adc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_timed), MP_ROM_PTR(&adc_read_timed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_timed_with), MP_ROM_PTR(&adc_read_timed_with_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
