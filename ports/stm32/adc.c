@@ -400,7 +400,6 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
     // TODO use DMA
 
     uint nelems = bufinfo.len / typesize;
-
     for (uint index = 0; index < nelems; index++) {
         // Wait for the timer to trigger so we sample at the correct frequency
         while (__HAL_TIM_GET_FLAG(tim, TIM_FLAG_UPDATE) == RESET) {
