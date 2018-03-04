@@ -32,3 +32,31 @@ adcv.read_timed(arv, tim)
 print(len(arv))
 for i in arv:
     assert i > 1000 and i < 2000
+
+# Test read_timed_multi
+arv = bytearray(b'\xff'*50)
+art = bytearray(b'\xff'*50)
+ADC.read_timed_multi((adcv, adct), (arv, art), tim)
+for i in arv:
+    assert i > 60 and i < 125
+# Wide range: unsure of accuracy of temp sensor.
+for i in art:
+    assert i > 15 and i < 200
+
+arv = array.array('i', 25 * [-1])
+art = array.array('i', 25 * [-1])
+ADC.read_timed_multi((adcv, adct), (arv, art), tim)
+for i in arv:
+    assert i > 1000 and i < 2000
+# Wide range: unsure of accuracy of temp sensor.
+for i in art:
+    assert i > 50 and i < 2000
+
+arv = array.array('h', 25 * [0x7fff])
+art = array.array('h', 25 * [0x7fff])
+ADC.read_timed_multi((adcv, adct), (arv, art), tim)
+for i in arv:
+    assert i > 1000 and i < 2000
+# Wide range: unsure of accuracy of temp sensor.
+for i in art:
+    assert i > 50 and i < 2000
