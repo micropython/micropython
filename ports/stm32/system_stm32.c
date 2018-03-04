@@ -390,8 +390,8 @@ void SystemClock_Config(void)
 
     // Wait for PWR_FLAG_VOSRDY
     #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
-    while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
-    }
+    //while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
+    //}
     #elif defined(MCU_SERIES_H7)
     while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {
     }
