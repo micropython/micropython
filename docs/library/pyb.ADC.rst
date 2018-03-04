@@ -76,6 +76,49 @@ Methods
 
        This function does not allocate any memory.
 
+    .. method:: ADC.read_timed_with(buf, (adcx, ...), (bufx, ...), timer)
+
+       Read analog values into from the ADC into ``buf`` at a rate set by the
+       ``timer`` object. After each sample is read, a sample is read from each
+       of N other adc's. This can be used to extract relative timing or phase
+       data.
+
+       The additional ADC and buffer instances are passed in tuples with each ADC
+       having an associated buffer. All buffers must be of the same type and
+       length.
+
+       Buffers can be bytearray or array.array for example. The ADC values have
+       12-bit resolution and are stored directly into ``buf`` if its element size
+       is 16 bits or greater.  If buffers have only 8-bit elements (eg a bytearray)
+       then the sample resolution will be reduced to 8 bits.
+
+       ``timer`` must be a Timer object, and a sample from each ADC is read each
+       time the timer triggers.  The timer must already be initialised and running
+       at the desired sampling frequency.
+
+       Return value: 1 (success) if the timer was never triggered before all samples
+       were completed. A value of 0 indicates that an overrun occurred. An overrun
+       does not neccessarily imply a missing sample, merely a loss of precision in
+       the acquisition time of at least one sample. Severe overruns do result in
+       missed samples. As a rough guide sample rates above 15KHz may result in
+       overruns. Rates above 120KHz are likely to lead to missed samples.
+
+       Example reading 3 ADC's::
+
+           adc0 = pyb.ADC(pyb.Pin.board.X1)    # Create ADC's
+           adc1 = pyb.ADC(pyb.Pin.board.X2)
+           adc2 = pyb.ADC(pyb.Pin.board.X3)
+           tim = pyb.Timer(8, freq=100)        # Create timer
+           rx0 = array.array('H', (0 for i in range(100)))  # ADC buffers of
+           rx1 = array.array('H', (0 for i in range(100)))  # 100 16-bit words
+           rx2 = array.array('H', (0 for i in range(100)))
+           # read analog values into buf at 100Hz (takes one second)
+           adc0.read_timed_with(rx0, (adc1, adc2), (rx1, rx2), tim)
+           for n in range(len(rx0)):
+               print(rx0[n], rx1[n], rx2[n])
+
+       This function does not allocate any memory.
+
 The ADCAll Object
 -----------------
 
