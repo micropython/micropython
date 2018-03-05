@@ -37,6 +37,7 @@ DEVICE=0483:df11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
+STARTUP_FILE ?= boards/startup_stm32$(MCU_SERIES).o
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -248,7 +249,7 @@ SRC_C = \
 	$(wildcard boards/$(BOARD)/*.c)
 
 SRC_O = \
-	startup_stm32.o \
+	$(STARTUP_FILE) \
 	gchelper.o \
 
 $(BUILD)/$(HAL_DIR)/Src/%.o: CFLAGS += -fno-strict-aliasing
