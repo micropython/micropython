@@ -275,11 +275,47 @@ STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_disconnect_obj, esp_disconnect);
 
-STATIC mp_obj_t esp_status(mp_obj_t self_in) {
+
+STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
+    wifi_mode_t mode;
+    wifi_sta_list_t station_list;
+    wifi_sta_info_t* stations;
+    mp_obj_t list = mp_obj_new_list(0,NULL);
+
+    if (n_args==1) {
+	    // no arguments -> return none
+	    return mp_const_none;
+    }
+   
+    ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+
+    switch ((uintptr_t)args[1]) {
+	// one argument -> return results in list
+        case (uintptr_t)MP_OBJ_NEW_QSTR(MP_QSTR_stations) :
+	    // return number of connected stations, only if in soft-AP mode
+            if ((mode & WIFI_MODE_AP)==0) {
+	        // we will only print stations in soft-AP mode, i.e. WIFI_MODE_AP
+	        mp_raise_ValueError("soft-AP mode must be activated to retrieve stations");
+	    } else {
+		ESP_EXCEPTIONS(esp_wifi_ap_get_sta_list(&station_list));
+		stations = (wifi_sta_info_t*)(station_list.sta);
+		for (int i=0; i<station_list.num; i++) {
+                    mp_obj_tuple_t *t = mp_obj_new_tuple(1,NULL);
+		    t->items[0]  = mp_obj_new_bytes(stations[i].mac, sizeof(stations[i].mac));
+		    mp_obj_list_append(list, t);
+		}
+	    }
+	    return list;
+	    break;
+	default :
+	   mp_raise_ValueError("unrecognised argument");
+    }
+
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_status_obj, esp_status);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_status_obj, 1, 2, esp_status);
+
 
 STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     // check that STA mode is active
