@@ -74,7 +74,8 @@ Methods
            for val in buf:                     # loop over all values
                print(val)                      # print the value out
 
-       This function does not allocate any memory.
+       This function does not allocate any memory. It has blocking behaviour: it
+       does not return to the calling program until the buffer is full.
 
     .. method:: ADC.read_timed_with(buf, (adcx, ...), (bufx, ...), timer)
 
@@ -117,7 +118,8 @@ Methods
            for n in range(len(rx0)):
                print(rx0[n], rx1[n], rx2[n])
 
-       This function does not allocate any memory.
+       This function does not allocate any memory. It has blocking behaviour: it
+       does not return to the calling program until the buffer is full.
 
 The ADCAll Object
 -----------------
