@@ -175,6 +175,25 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     return r;
 }
 
+STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
+    (void)arg;
+    switch (request) {
+        case MP_STREAM_CLOSE:
+            if (self->ssl_sock != NULL) {
+                ssl_free(self->ssl_sock);
+                ssl_ctx_free(self->ssl_ctx);
+                self->ssl_sock = NULL;
+                mp_stream_close(self->sock);
+            }
+            return 0;
+
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
+}
+
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     // Currently supports only blocking mode
     (void)self_in;
@@ -185,26 +204,13 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
-STATIC mp_obj_t socket_close(mp_obj_t self_in) {
-    mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->ssl_sock != NULL) {
-        ssl_free(self->ssl_sock);
-        ssl_ctx_free(self->ssl_ctx);
-        self->ssl_sock = NULL;
-        return mp_stream_close(self->sock);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
-
 STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 #if MICROPY_PY_USSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
 #endif
@@ -215,6 +221,7 @@ STATIC MP_DEFINE_CONST_DICT(ussl_socket_locals_dict, ussl_socket_locals_dict_tab
 STATIC const mp_stream_p_t ussl_socket_stream_p = {
     .read = socket_read,
     .write = socket_write,
+    .ioctl = socket_ioctl,
 };
 
 STATIC const mp_obj_type_t ussl_socket_type = {

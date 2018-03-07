@@ -637,42 +637,6 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
     return socket;
 }
 
-STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
-    lwip_socket_obj_t *socket = self_in;
-    bool socket_is_listener = false;
-
-    if (socket->pcb.tcp == NULL) {
-        return mp_const_none;
-    }
-    switch (socket->type) {
-        case MOD_NETWORK_SOCK_STREAM: {
-            if (socket->pcb.tcp->state == LISTEN) {
-                socket_is_listener = true;
-            }
-            if (tcp_close(socket->pcb.tcp) != ERR_OK) {
-                DEBUG_printf("lwip_close: had to call tcp_abort()\n");
-                tcp_abort(socket->pcb.tcp);
-            }
-            break;
-        }
-        case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
-        //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
-    }
-    socket->pcb.tcp = NULL;
-    socket->state = _ERR_BADF;
-    if (socket->incoming.pbuf != NULL) {
-        if (!socket_is_listener) {
-            pbuf_free(socket->incoming.pbuf);
-        } else {
-            tcp_abort(socket->incoming.connection);
-        }
-        socket->incoming.pbuf = NULL;
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(lwip_socket_close_obj, lwip_socket_close);
-
 STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     lwip_socket_obj_t *socket = self_in;
 
@@ -1179,6 +1143,38 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
         }
 
+    } else if (request == MP_STREAM_CLOSE) {
+        bool socket_is_listener = false;
+
+        if (socket->pcb.tcp == NULL) {
+            return 0;
+        }
+        switch (socket->type) {
+            case MOD_NETWORK_SOCK_STREAM: {
+                if (socket->pcb.tcp->state == LISTEN) {
+                    socket_is_listener = true;
+                }
+                if (tcp_close(socket->pcb.tcp) != ERR_OK) {
+                    DEBUG_printf("lwip_close: had to call tcp_abort()\n");
+                    tcp_abort(socket->pcb.tcp);
+                }
+                break;
+            }
+            case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
+            //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
+        }
+        socket->pcb.tcp = NULL;
+        socket->state = _ERR_BADF;
+        if (socket->incoming.pbuf != NULL) {
+            if (!socket_is_listener) {
+                pbuf_free(socket->incoming.pbuf);
+            } else {
+                tcp_abort(socket->incoming.connection);
+            }
+            socket->incoming.pbuf = NULL;
+        }
+        ret = 0;
+
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -1188,8 +1184,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 }
 
 STATIC const mp_rom_map_elem_t lwip_socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&lwip_socket_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&lwip_socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&lwip_socket_bind_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&lwip_socket_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&lwip_socket_accept_obj) },
