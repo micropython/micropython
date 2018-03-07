@@ -143,6 +143,7 @@ equivalent carbon dioxide (``eco2`` / ``eCO2``), and total volatile organic comp
     SHT31-D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/sht31d/en/latest/>
     Si7021 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/si7021/en/latest/>
     Thermistor Temperature <https://circuitpython.readthedocs.io/projects/thermistor/en/latest/>
+    AM2320 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/am2320/en/latest/>
 
 Light Sensors
 ---------------
