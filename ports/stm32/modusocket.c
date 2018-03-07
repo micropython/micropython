@@ -30,6 +30,7 @@
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
 #include "modnetwork.h"
@@ -79,16 +80,6 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
         }
     }
 }
-// method socket.close()
-STATIC mp_obj_t socket_close(mp_obj_t self_in) {
-    mod_network_socket_obj_t *self = self_in;
-    if (self->nic != MP_OBJ_NULL) {
-        self->nic_type->close(self);
-        self->nic = MP_OBJ_NULL;
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 // method socket.bind(address)
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
@@ -347,8 +338,8 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj) },
@@ -366,6 +357,13 @@ STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
 mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     mod_network_socket_obj_t *self = self_in;
+    if (request == MP_STREAM_CLOSE) {
+        if (self->nic != MP_OBJ_NULL) {
+            self->nic_type->close(self);
+            self->nic = MP_OBJ_NULL;
+        }
+        return 0;
+    }
     return self->nic_type->ioctl(self, request, arg, errcode);
 }
 

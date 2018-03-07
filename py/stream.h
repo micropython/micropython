@@ -35,7 +35,7 @@
 #define MP_STREAM_FLUSH (1)
 #define MP_STREAM_SEEK  (2)
 #define MP_STREAM_POLL  (3)
-//#define MP_STREAM_CLOSE       (4)  // Not yet implemented
+#define MP_STREAM_CLOSE         (4)
 #define MP_STREAM_TIMEOUT       (5)  // Get/set timeout (single op)
 #define MP_STREAM_GET_OPTS      (6)  // Get stream options
 #define MP_STREAM_SET_OPTS      (7)  // Set stream options
@@ -69,6 +69,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_write1_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_close_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);

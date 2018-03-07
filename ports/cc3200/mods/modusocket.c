@@ -336,6 +336,9 @@ STATIC int wlan_socket_ioctl (mod_network_socket_obj_t *s, mp_uint_t request, mp
         if (SL_FD_ISSET(sd, &xfds)) {
             ret |= MP_STREAM_POLL_HUP;
         }
+    } else if (request == MP_STREAM_CLOSE) {
+        wlan_socket_close(s);
+        ret = 0;
     } else {
         *_errno = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -465,14 +468,6 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     modusocket_socket_add(s->sock_base.sd, true);
     return s;
 }
-
-// method socket.close()
-STATIC mp_obj_t socket_close(mp_obj_t self_in) {
-    mod_network_socket_obj_t *self = self_in;
-    wlan_socket_close(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 // method socket.bind(address)
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
@@ -704,8 +699,8 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 6, socket_makefile);
 
 STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__),         MP_ROM_PTR(&socket_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close),           MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__),         MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close),           MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind),            MP_ROM_PTR(&socket_bind_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen),          MP_ROM_PTR(&socket_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_accept),          MP_ROM_PTR(&socket_accept_obj) },
