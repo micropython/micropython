@@ -118,25 +118,21 @@ STATIC mp_uint_t fdfile_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 return MP_STREAM_ERROR;
             }
             return 0;
+        case MP_STREAM_CLOSE:
+            close(o->fd);
+            #ifdef MICROPY_CPYTHON_COMPAT
+            o->fd = -1;
+            #endif
+            return 0;
         default:
             *errcode = EINVAL;
             return MP_STREAM_ERROR;
     }
 }
 
-STATIC mp_obj_t fdfile_close(mp_obj_t self_in) {
-    mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
-    close(self->fd);
-#ifdef MICROPY_CPYTHON_COMPAT
-    self->fd = -1;
-#endif
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(fdfile_close_obj, fdfile_close);
-
 STATIC mp_obj_t fdfile___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    return fdfile_close(args[0]);
+    return mp_stream_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fdfile___exit___obj, 4, 4, fdfile___exit__);
 
@@ -224,7 +220,7 @@ STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&fdfile_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&fdfile___exit___obj) },
 };

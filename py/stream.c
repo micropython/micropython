@@ -105,13 +105,6 @@ const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     return stream_p;
 }
 
-mp_obj_t mp_stream_close(mp_obj_t stream) {
-    // TODO: Still consider using ioctl for close
-    mp_obj_t dest[2];
-    mp_load_method(stream, MP_QSTR_close, dest);
-    return mp_call_method_n_kw(0, 0, dest);
-}
-
 STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte flags) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
 
@@ -433,6 +426,17 @@ mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self) {
     }
     return MP_OBJ_STOP_ITERATION;
 }
+
+mp_obj_t mp_stream_close(mp_obj_t stream) {
+    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream, MP_STREAM_OP_IOCTL);
+    int error;
+    mp_uint_t res = stream_p->ioctl(stream, MP_STREAM_CLOSE, 0, &error);
+    if (res == MP_STREAM_ERROR) {
+        mp_raise_OSError(error);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_close_obj, mp_stream_close);
 
 STATIC mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(args[0], MP_STREAM_OP_IOCTL);
