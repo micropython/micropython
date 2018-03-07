@@ -191,9 +191,9 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
                                             "Unsupported I2C baudrate: %lu", baudrate));
 }
 
-uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
+uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
     for (int i = 0; i < NUM_BAUDRATE_TIMINGS; i++) {
-        if (pyb_i2c_baudrate_timing[i].timing == init->Timing) {
+        if (pyb_i2c_baudrate_timing[i].timing == i2c->Init.Timing) {
             return pyb_i2c_baudrate_timing[i].baudrate;
         }
     }
@@ -210,8 +210,16 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
     init->DutyCycle = I2C_DUTYCYCLE_16_9;
 }
 
-uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
-    return init->ClockSpeed;
+uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
+    uint32_t pfreq = i2c->Instance->CR2 & 0x3f;
+    uint32_t ccr = i2c->Instance->CCR & 0xfff;
+    if (i2c->Instance->CCR & 0x8000) {
+        // Fast mode, assume duty cycle of 16/9
+        return pfreq * 40000 / ccr;
+    } else {
+        // Standard mode
+        return pfreq * 500000 / ccr;
+    }
 }
 
 #endif
@@ -545,7 +553,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         mp_printf(print, "I2C(%u)", i2c_num);
     } else {
         if (in_master_mode(self)) {
-            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, i2c_get_baudrate(&self->i2c->Init));
+            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, i2c_get_baudrate(self->i2c));
         } else {
             mp_printf(print, "I2C(%u, I2C.SLAVE, addr=0x%02x)", i2c_num, (self->i2c->Instance->OAR1 >> 1) & 0x7f);
         }

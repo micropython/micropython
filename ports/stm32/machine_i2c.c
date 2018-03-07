@@ -88,7 +88,7 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u, timeout=%u)",
         self - &machine_hard_i2c_obj[0] + 1,
-        i2c_get_baudrate(&self->pyb->i2c->Init),
+        i2c_get_baudrate(self->pyb->i2c),
         *self->timeout);
 }
 
