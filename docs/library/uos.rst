@@ -127,3 +127,119 @@ Terminal redirection and duplication
    the slot given by *index*.
 
    The function returns the previous stream-like object in the given slot.
+
+Filesystem mounting
+-------------------
+
+Some ports provide a Virtual Filesystem (VFS) and the ability to mount multiple
+"real" filesystems within this VFS.  Filesystem objects can be mounted at either
+the root of the VFS, or at a subdirectory that lives in the root.  This allows
+dynamic and flexible configuration of the filesystem that is seen by Python
+programs.  Ports that have this functionality provide the :func:`mount` and
+:func:`umount` functions, and possibly various filesystem implementations
+represented by VFS classes.
+
+.. function:: mount(fsobj, mount_point, \*, readonly)
+
+    Mount the filesystem object *fsobj* at the location in the VFS given by the
+    *mount_point* string.  *fsobj* can be a a VFS object that has a ``mount()``
+    method, or a block device.  If it's a block device then the filesystem type
+    is automatically detected (an exception is raised if no filesystem was
+    recognised).  *mount_point* may be ``'/'`` to mount *fsobj* at the root,
+    or ``'/<name>'`` to mount it at a subdirectory under the root.
+
+    If *readonly* is ``True`` then the filesystem is mounted read-only.
+
+    During the mount process the method ``mount()`` is called on the filesystem
+    object.
+
+    Will raise ``OSError(EPERM)`` if *mount_point* is already mounted.
+
+.. function:: umount(mount_point)
+
+    Unmount a filesystem. *mount_point* can be a string naming the mount location,
+    or a previously-mounted filesystem object.  During the unmount process the
+    method ``umount()`` is called on the filesystem object.
+
+    Will raise ``OSError(EINVAL)`` if *mount_point* is not found.
+
+.. class:: VfsFat(block_dev)
+
+    Create a filesystem object that uses the FAT filesystem format.  Storage of
+    the FAT filesystem is provided by *block_dev*.
+    Objects created by this constructor can be mounted using :func:`mount`.
+
+    .. staticmethod:: mkfs(block_dev)
+
+        Build a FAT filesystem on *block_dev*.
+
+Block devices
+-------------
+
+A block device is an object which implements the block protocol, which is a set
+of methods described below by the :class:`AbstractBlockDev` class.  A concrete
+implementation of this class will usually allow access to the memory-like
+functionality a piece of hardware (like flash memory).  A block device can be
+used by a particular filesystem driver to store the data for its filesystem.
+
+.. class:: AbstractBlockDev(...)
+
+    Construct a block device object.  The parameters to the constructor are
+    dependent on the specific block device.
+
+    .. method:: readblocks(block_num, buf)
+
+        Starting at *block_num*, read blocks from the device into *buf* (an array
+        of bytes).  The number of blocks to read is given by the length of *buf*,
+        which will be a multiple of the block size.
+
+    .. method:: writeblocks(block_num, buf)
+
+        Starting at *block_num*, write blocks from *buf* (an array of bytes) to
+        the device.  The number of blocks to write is given by the length of *buf*,
+        which will be a multiple of the block size.
+
+    .. method:: ioctl(op, arg)
+
+        Control the block device and query its parameters.  The operation to
+        perform is given by *op* which is one of the following integers:
+
+          - 1 -- initialise the device (*arg* is unused)
+          - 2 -- shutdown the device (*arg* is unused)
+          - 3 -- sync the device (*arg* is unused)
+          - 4 -- get a count of the number of blocks, should return an integer
+            (*arg* is unused)
+          - 5 -- get the number of bytes in a block, should return an integer,
+            or ``None`` in which case the default value of 512 is used
+            (*arg* is unused)
+
+By way of example, the following class will implement a block device that stores
+its data in RAM using a ``bytearray``::
+
+    class RAMBlockDev:
+        def __init__(self, block_size, num_blocks):
+            self.block_size = block_size
+            self.data = bytearray(block_size * num_blocks)
+
+        def readblocks(self, block_num, buf):
+            for i in range(len(buf)):
+                buf[i] = self.data[block_num * self.block_size + i]
+
+        def writeblocks(self, block_num, buf):
+            for i in range(len(buf)):
+                self.data[block_num * self.block_size + i] = buf[i]
+
+        def ioctl(self, op, arg):
+            if op == 4: # get number of blocks
+                return len(self.data) // self.block_size
+            if op == 5: # get block size
+                return self.block_size
+
+It can be used as follows::
+
+    import uos
+
+    bdev = RAMBlockDev(512, 50)
+    uos.VfsFat.mkfs(bdev)
+    vfs = uos.VfsFat(bdev)
+    uos.mount(vfs, '/ramdisk')
