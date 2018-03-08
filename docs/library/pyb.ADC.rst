@@ -77,32 +77,26 @@ Methods
        This function does not allocate any memory. It has blocking behaviour: it
        does not return to the calling program until the buffer is full.
 
-    .. method:: ADC.read_timed_with(buf, (adcx, ...), (bufx, ...), timer)
+    .. method:: ADC.read_timed_multi((adcx, adcy, ...), (bufx, bufy, ...), timer)
 
-       Read analog values into from the ADC into ``buf`` at a rate set by the
-       ``timer`` object. After each sample is read, a sample is read from each
-       of N other adc's. This can be used to extract relative timing or phase
-       data.
+       This is a static method. It can be used to extract relative timing or
+       phase data from multiple ADC's.
 
-       The additional ADC and buffer instances are passed in tuples with each ADC
-       having an associated buffer. All buffers must be of the same type and
-       length.
+       It reads analog values from multiple ADCs into buffers at a rate set by
+       the ``timer`` object. Each time the timer triggers a sample is rapidly
+       read from each ADC in turn.
+
+       ADC and buffer instances are passed in tuples with each ADC having an
+       associated buffer. All buffers must be of the same type and length and
+       the number of buffers must equal the number of ADC's.
 
        Buffers can be bytearray or array.array for example. The ADC values have
-       12-bit resolution and are stored directly into ``buf`` if its element size
-       is 16 bits or greater.  If buffers have only 8-bit elements (eg a bytearray)
-       then the sample resolution will be reduced to 8 bits.
+       12-bit resolution and are stored directly into the buffer if its element
+       size is 16 bits or greater.  If buffers have only 8-bit elements (eg a
+       bytearray) then the sample resolution will be reduced to 8 bits.
 
-       ``timer`` must be a Timer object, and a sample from each ADC is read each
-       time the timer triggers.  The timer must already be initialised and running
-       at the desired sampling frequency.
-
-       Return value: 1 (success) if the timer was never triggered before all samples
-       were completed. A value of 0 indicates that an overrun occurred. An overrun
-       does not neccessarily imply a missing sample, merely a loss of precision in
-       the acquisition time of at least one sample. Severe overruns do result in
-       missed samples. As a rough guide sample rates above 15KHz may result in
-       overruns. Rates above 120KHz are likely to lead to missed samples.
+       ``timer`` must be a Timer object. The timer must already be initialised
+       and running at the desired sampling frequency.
 
        Example reading 3 ADC's::
 
@@ -113,13 +107,25 @@ Methods
            rx0 = array.array('H', (0 for i in range(100)))  # ADC buffers of
            rx1 = array.array('H', (0 for i in range(100)))  # 100 16-bit words
            rx2 = array.array('H', (0 for i in range(100)))
-           # read analog values into buf at 100Hz (takes one second)
-           adc0.read_timed_with(rx0, (adc1, adc2), (rx1, rx2), tim)
+           # read analog values into buffers at 100Hz (takes one second)
+           pyb.ADC.read_timed_multi((adc0, adc1, adc2), (rx0, rx1, rx2), tim)
            for n in range(len(rx0)):
                print(rx0[n], rx1[n], rx2[n])
 
        This function does not allocate any memory. It has blocking behaviour: it
-       does not return to the calling program until the buffer is full.
+       does not return to the calling program until the buffers are full.
+
+       The function returns ``True`` if all samples were acquired with correct
+       timing. At high sample rates the time taken to acquire a set of samples
+       can exceed the timer period. In this case the function returns ``False``,
+       indicating a loss of precision in the sample interval. In extreme cases
+       samples may be missed.
+
+       The maximum rate depends on factors including the data width and the
+       number of ADC's being read. In testing two ADC's were sampled at a timer
+       rate of 140KHz without overrun. Samples were missed at 180KHz. At high
+       sample rates disabling interrupts for the duration can reduce the risk
+       of sporadic data loss.
 
 The ADCAll Object
 -----------------
@@ -147,42 +153,21 @@ The ADCAll Object
     ``vback = adc.read_core_vbat() * 1.21 / adc.read_core_vref()``
 
     It is possible to access these values without incurring the side effects of ``ADCAll``::
-    
-        def adcread(chan):                              # 16 temp 17 vbat 18 vref
-            assert chan >= 16 and chan <= 18, 'Invalid ADC channel'
-            start = pyb.millis()
-            timeout = 100
-            stm.mem32[stm.RCC + stm.RCC_APB2ENR] |= 0x100 # enable ADC1 clock.0x4100
-            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 1       # Turn on ADC
-            stm.mem32[stm.ADC1 + stm.ADC_CR1] = 0       # 12 bit
-            if chan == 17:
-                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x200000 # 15 cycles
-                stm.mem32[stm.ADC + 4] = 1 << 23
-            elif chan == 18:
-                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x1000000
-                stm.mem32[stm.ADC + 4] = 0xc00000
-            else:
-                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x40000
-                stm.mem32[stm.ADC + 4] = 1 << 23
-            stm.mem32[stm.ADC1 + stm.ADC_SQR3] = chan
-            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 1 | (1 << 30) | (1 << 10) # start conversion
-            while not stm.mem32[stm.ADC1 + stm.ADC_SR] & 2: # wait for EOC
-                if pyb.elapsed_millis(start) > timeout:
-                    raise OSError('ADC timout')
-            data = stm.mem32[stm.ADC1 + stm.ADC_DR]     # clear down EOC
-            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 0       # Turn off ADC
-            return data
 
+
+        adctemp = pyb.ADC(16)  # These specific channels are used. Temperature.
+        adcv = pyb.ADC(17)  # Reference/3.3V.
+        adcbat = pyb.ADC(18)  # Backup battery voltage.
         def v33():
-            return 4096 * 1.21 / adcread(17)
+            return 4096 * 1.21 / adcv.read()
 
         def vbat():
-            return  1.21 * 2 * adcread(18) / adcread(17)  # 2:1 divider on Vbat channel
+            return  1.21 * 2 * adcbat.read() / adcv.read()  # 2:1 divider on Vbat channel
 
         def vref():
-            return 3.3 * adcread(17) / 4096
+            return 3.3 * adcv.read() / 4096
 
         def temperature():
-            return 25 + 400 * (3.3 * adcread(16) / 4096 - 0.76)
+            return 25 + 400 * (3.3 * adctemp.read() / 4096 - 0.76)
 
     
