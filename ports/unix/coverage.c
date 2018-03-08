@@ -152,7 +152,11 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
+        #ifndef NDEBUG
         mp_printf(&mp_plat_print, "%s\n", NULL); // null string
+        #else
+        mp_printf(&mp_plat_print, "(null)\n"); // without debugging mp_printf won't check for null
+        #endif
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
