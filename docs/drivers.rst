@@ -129,6 +129,7 @@ equivalent carbon dioxide (``eco2`` / ``eCO2``), and total volatile organic comp
 
 .. toctree::
 
+    AM2320 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/am2320/en/latest/>
     BME280 Temperature, Humidity and Pressure <https://circuitpython.readthedocs.io/projects/bme280/en/latest/>
     BME680 Temperature, Humidity, Pressure and Gas <https://circuitpython.readthedocs.io/projects/bme680/en/latest/>
     BMP280 Barometric Pressure and Altitude <https://circuitpython.readthedocs.io/projects/bmp280/en/latest/>
@@ -143,7 +144,6 @@ equivalent carbon dioxide (``eco2`` / ``eCO2``), and total volatile organic comp
     SHT31-D Temperature and Humidity <https://circuitpython.readthedocs.io/projects/sht31d/en/latest/>
     Si7021 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/si7021/en/latest/>
     Thermistor Temperature <https://circuitpython.readthedocs.io/projects/thermistor/en/latest/>
-    AM2320 Temperature and Humidity <https://circuitpython.readthedocs.io/projects/am2320/en/latest/>
 
 Light Sensors
 ---------------
