@@ -29,6 +29,10 @@
 #include "py/runtime.h"
 #include "wdt.h"
 
+#if defined(MCU_SERIES_H7)
+#define IWDG (IWDG1)
+#endif
+
 typedef struct _pyb_wdt_obj_t {
     mp_obj_base_t base;
 } pyb_wdt_obj_t;
