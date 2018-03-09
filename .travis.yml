@@ -6,6 +6,8 @@ compiler:
 cache:
   directories:
     - "${HOME}/persist"
+env:
+  - MAKEOPTS="-j4"
 
 before_script:
 # Extra CPython versions
@@ -26,33 +28,33 @@ before_script:
   - python3 --version
 
 script:
-  - make -C mpy-cross
-  - make -C ports/minimal CROSS=1 build/firmware.bin
+  - make ${MAKEOPTS} -C mpy-cross
+  - make ${MAKEOPTS} -C ports/minimal CROSS=1 build/firmware.bin
   - ls -l ports/minimal/build/firmware.bin
   - tools/check_code_size.sh
   - mkdir -p ${HOME}/persist
   # Save new firmware for reference, but only if building a main branch, not a pull request
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then cp ports/minimal/build/firmware.bin ${HOME}/persist/; fi'
-  - make -C ports/unix deplibs
-  - make -C ports/unix
-  - make -C ports/unix nanbox
-  - make -C ports/bare-arm
-  - make -C ports/qemu-arm -f Makefile.test test
-  - make -C ports/stm32
-  - make -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
-  - make -C ports/stm32 BOARD=STM32F769DISC
-  - make -C ports/stm32 BOARD=STM32L476DISC
-  - make -C ports/teensy
-  - make -C ports/cc3200 BTARGET=application BTYPE=release
-  - make -C ports/cc3200 BTARGET=bootloader  BTYPE=release
-  - make -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
+  - make ${MAKEOPTS} -C ports/unix deplibs
+  - make ${MAKEOPTS} -C ports/unix
+  - make ${MAKEOPTS} -C ports/unix nanbox
+  - make ${MAKEOPTS} -C ports/bare-arm
+  - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
+  - make ${MAKEOPTS} -C ports/stm32
+  - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1
+  - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32F769DISC
+  - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
+  - make ${MAKEOPTS} -C ports/teensy
+  - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
+  - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
+  - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
   # run tests without coverage info
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests)
   #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --emit native)
 
   # run tests with coverage info
-  - make -C ports/unix coverage
+  - make ${MAKEOPTS} -C ports/unix coverage
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -d thread)
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --emit native)
@@ -66,7 +68,7 @@ script:
 
   # run tests on stackless build
   - rm -rf ports/unix/build-coverage
-  - make -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
+  - make ${MAKEOPTS} -C ports/unix coverage CFLAGS_EXTRA="-DMICROPY_STACKLESS=1 -DMICROPY_STACKLESS_STRICT=1"
   - (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests)
 
 after_failure:
