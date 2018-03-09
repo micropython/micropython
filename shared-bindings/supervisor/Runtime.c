@@ -26,24 +26,24 @@
 
 #include <stdbool.h>
 #include "py/objproperty.h"
-#include "shared-bindings/supervisor/Status.h"
+#include "shared-bindings/supervisor/Runtime.h"
 
 //TODO: add USB, REPL to description once they're operational
-//| .. currentmodule:: status
+//| .. currentmodule:: runtime
 //|   
-//| :class:`Status` --- Supervisor Status information
-//| -------------------------------------------------
+//| :class:`Runtime` --- Supervisor Runtime information
+//| ----------------------------------------------------
 //|
-//| Get current status of the serial connection.
+//| Get current status of runtime objects.
 //|
 //| Usage::
 //|
 //|    import supervisor
-//|    if supervisor.serial_connected:
+//|    if supervisor.runtime.serial_connected:
 //|        print("Hello World!")    
 //|
 
-//| .. attribute:: serial_connected
+//| .. attribute:: runtime.serial_connected
 //|
 //|    Returns the serial communication status (read-only)
 //|
@@ -64,14 +64,14 @@ const mp_obj_property_t supervisor_serial_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},  
 };
 
-STATIC const mp_rom_map_elem_t supervisor_status_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_serial_connected_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(supervisor_status_locals_dict, supervisor_status_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);
 
-const mp_obj_type_t supervisor_status_type = {
+const mp_obj_type_t supervisor_runtime_type = {
     .base = { &mp_type_type },
-    .name = MP_QSTR_Status,
-    .locals_dict = (mp_obj_t)&supervisor_status_locals_dict,
+    .name = MP_QSTR_Runtime,
+    .locals_dict = (mp_obj_t)&supervisor_runtime_locals_dict,
 };

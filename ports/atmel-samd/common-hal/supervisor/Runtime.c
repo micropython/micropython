@@ -25,7 +25,7 @@
  */
 
 #include <stdbool.h>
-#include "shared-bindings/supervisor/Status.h"
+#include "shared-bindings/supervisor/Runtime.h"
 #include "usb.h"
 
 bool common_hal_get_serial_connected(void) {

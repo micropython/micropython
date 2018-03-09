@@ -28,13 +28,21 @@
  #include "supervisor/shared/autoreload.h"
  #include "supervisor/shared/rgb_led_status.h"
  
- #include "shared-bindings/supervisor/Status.h"
+ #include "shared-bindings/supervisor/__init__.h"
+ #include "shared-bindings/supervisor/Runtime.h"
 //| :mod:`supervisor` --- Supervisor settings
 //| =================================================
 //|
 //| .. module:: supervisor
 //|   :synopsis: Supervisor settings
 //|   :platform: SAMD21
+//|
+
+//| .. attribute:: runtime
+//|
+//|   Runtime information, such as `runtime.serial_connected`
+//|   (USB serial connection status).
+//|   This object is the sole instance of `supervisor.Runtime`.
 //|
 
 //| .. method:: enable_autoreload()
@@ -79,7 +87,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Status),  MP_ROM_PTR(&supervisor_status_type) },
+    { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

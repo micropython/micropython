@@ -24,15 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_STATUS_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_STATUS_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_RUNTIME_STATUS_H
 
 #include <stdbool.h>
 #include "py/obj.h"
 
-//#include "common-hal/supervisor/Status.h"
 
-const mp_obj_type_t supervisor_status_type;
+const mp_obj_type_t supervisor_runtime_type;
 
 bool common_hal_get_serial_connected(void);
 
@@ -40,4 +39,4 @@ bool common_hal_get_serial_connected(void);
 //bool common_hal_get_repl_active(void);
 //bool common_hal_get_usb_enumerated(void);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_STATUS_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR_RUNTIME_H
