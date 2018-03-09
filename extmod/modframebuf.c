@@ -60,26 +60,29 @@ typedef struct _mp_framebuf_p_t {
 #define FRAMEBUF_MHLSB    (3)
 #define FRAMEBUF_MHMSB    (4)
 
-// Functions for MHLSB and MHMSB
+// Functions for MHLSB, MHMSB and MVLSB
 
-STATIC void mono_horiz_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
-    size_t index = (x + y * fb->stride) >> 3;
-    int offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : 7 - (x & 0x07);
+STATIC void mono_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
+    size_t index = fb->format == FRAMEBUF_MVLSB ? (y >> 3) * fb->stride + x : (x + y * fb->stride) >> 3;
+    uint8_t offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : (fb->format == FRAMEBUF_MHLSB ? 7 - (x & 0x07) : y & 0x07);
     ((uint8_t*)fb->buf)[index] = (((uint8_t*)fb->buf)[index] & ~(0x01 << offset)) | ((col != 0) << offset);
 }
 
-STATIC uint32_t mono_horiz_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
-    size_t index = (x + y * fb->stride) >> 3;
-    int offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : 7 - (x & 0x07);
+// mono_horiz_getpixel -> mono_getpixel
+STATIC uint32_t mono_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
+    size_t index = fb->format == FRAMEBUF_MVLSB ? (y >> 3) * fb->stride + x : (x + y * fb->stride) >> 3;
+    uint8_t offset = fb->format == FRAMEBUF_MHMSB ? x & 0x07 : (fb->format == FRAMEBUF_MHLSB ? 7 - (x & 0x07) : y & 0x07);
     return (((uint8_t*)fb->buf)[index] >> (offset)) & 0x01;
 }
 
+// Functions for MHLSB and MHMSB
+
 STATIC void mono_horiz_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
-    int reverse = fb->format == FRAMEBUF_MHMSB;
+    bool reverse = fb->format == FRAMEBUF_MHMSB;
     int advance = fb->stride >> 3;
     while (w--) {
         uint8_t *b = &((uint8_t*)fb->buf)[(x >> 3) + y * advance];
-        int offset = reverse ?  x & 7 : 7 - (x & 7);
+        int offset = reverse ? x & 0x07 : 7 - (x & 0x07);
         for (int hh = h; hh; --hh) {
             *b = (*b & ~(0x01 << offset)) | ((col != 0) << offset);
             b += advance;
@@ -89,16 +92,6 @@ STATIC void mono_horiz_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int 
 }
 
 // Functions for MVLSB format
-
-STATIC void mvlsb_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
-    size_t index = (y >> 3) * fb->stride + x;
-    uint8_t offset = y & 0x07;
-    ((uint8_t*)fb->buf)[index] = (((uint8_t*)fb->buf)[index] & ~(0x01 << offset)) | ((col != 0) << offset);
-}
-
-STATIC uint32_t mvlsb_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
-    return (((uint8_t*)fb->buf)[(y >> 3) * fb->stride + x] >> (y & 0x07)) & 0x01;
-}
 
 STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
     while (h--) {
@@ -227,13 +220,13 @@ STATIC void gs8_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int 
 }
 
 STATIC mp_framebuf_p_t formats[] = {
-    [FRAMEBUF_MVLSB] = {mvlsb_setpixel, mvlsb_getpixel, mvlsb_fill_rect},
+    [FRAMEBUF_MVLSB] = {mono_setpixel, mono_getpixel, mvlsb_fill_rect},
     [FRAMEBUF_RGB565] = {rgb565_setpixel, rgb565_getpixel, rgb565_fill_rect},
     [FRAMEBUF_GS2_HMSB] = {gs2_hmsb_setpixel, gs2_hmsb_getpixel, gs2_hmsb_fill_rect},
     [FRAMEBUF_GS4_HMSB] = {gs4_hmsb_setpixel, gs4_hmsb_getpixel, gs4_hmsb_fill_rect},
     [FRAMEBUF_GS8] = {gs8_setpixel, gs8_getpixel, gs8_fill_rect},
-    [FRAMEBUF_MHLSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
-    [FRAMEBUF_MHMSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
+    [FRAMEBUF_MHLSB] = {mono_setpixel, mono_getpixel, mono_horiz_fill_rect},
+    [FRAMEBUF_MHMSB] = {mono_setpixel, mono_getpixel, mono_horiz_fill_rect},
 };
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
