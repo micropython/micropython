@@ -27,17 +27,23 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_DMA_H
 
-extern struct dma_resource audio_dma;
-extern struct dma_resource general_dma_tx;
-extern struct dma_resource general_dma_rx;
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "include/sam.h"
 
 volatile bool audio_dma_in_use;
 
 void init_shared_dma(void);
 
-enum status_code shared_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
-enum status_code shared_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
-enum status_code shared_dma_transfer(Sercom* sercom, uint8_t* buffer_out, uint8_t* buffer_in, uint32_t length, uint8_t tx);
+#ifdef SAMD51
+int32_t qspi_dma_write(uint32_t address, const uint8_t* buffer, uint32_t length);
+int32_t qspi_dma_read(uint32_t address, uint8_t* buffer, uint32_t length);
+#endif
+
+int32_t sercom_dma_write(Sercom* sercom, const uint8_t* buffer, uint32_t length);
+int32_t sercom_dma_read(Sercom* sercom, uint8_t* buffer, uint32_t length, uint8_t tx);
+int32_t sercom_dma_transfer(Sercom* sercom, const uint8_t* buffer_out, uint8_t* buffer_in, uint32_t length);
 
 // Allocate a counter to track how far along we are in a DMA double buffer.
 bool allocate_block_counter(void);

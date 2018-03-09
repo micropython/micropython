@@ -11,7 +11,7 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PB17)
 
-#define SPI_FLASH_BAUDRATE  (8000000)
+#define SPI_FLASH_BAUDRATE  (60000000)
 
 // Rev B: single channel SPI
 // Rev C will be QSPI

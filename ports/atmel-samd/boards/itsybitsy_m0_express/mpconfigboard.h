@@ -5,7 +5,7 @@
 #define MICROPY_HW_APA102_MOSI   (&pin_PA01)
 #define MICROPY_HW_APA102_SCK    (&pin_PA00)
 
-// Salae reads 12mhz which is the limit even though we set it to the safer 8mhz.
+// Saleae reads 12mhz which is the limit even though we set it to the safer 8mhz.
 #define SPI_FLASH_BAUDRATE  (8000000)
 
 #define SPI_FLASH_MOSI_PIN          PIN_PB22

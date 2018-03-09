@@ -199,7 +199,6 @@ void external_flash_init(void) {
 
     spi_flash_init();
 
-
     for (uint8_t i = 0; i < num_possible_devices; i++) {
         const external_flash_device* possible_device = &possible_devices[i];
         uint8_t jedec_id_response[3] = {0x00, 0x00, 0x00};
@@ -213,7 +212,6 @@ void external_flash_init(void) {
     }
 
     if (flash_device == NULL) {
-        asm("bkpt");
         return;
     }
 

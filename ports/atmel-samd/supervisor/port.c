@@ -49,6 +49,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "shared_dma.h"
 #include "tick.h"
 
 extern volatile bool mp_msc_enabled;
@@ -120,7 +121,7 @@ safe_mode_t port_init(void) {
     // config_nvm.manual_page_write = false;
     // nvm_set_config(&config_nvm);
 
-    // init_shared_dma();
+    init_shared_dma();
     #ifdef CIRCUITPY_CANARY_WORD
     // Run in safe mode if the canary is corrupt.
     if (_ezero != CIRCUITPY_CANARY_WORD) {
@@ -206,7 +207,7 @@ void reset_port(void) {
     reset_all_pins();
 
     // Set up debugging pins after reset_all_pins().
-    
+
     // Uncomment to init PIN_PA17 for debugging.
     // struct port_config pin_conf;
     // port_get_config_defaults(&pin_conf);
