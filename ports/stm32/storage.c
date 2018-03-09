@@ -37,9 +37,14 @@
 #if defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
 
 // Use external SPI flash as the storage medium
-#define BDEV_IOCTL spi_bdev_ioctl
-#define BDEV_READBLOCKS spi_bdev_readblocks
-#define BDEV_WRITEBLOCKS spi_bdev_writeblocks
+STATIC spi_bdev_t spi_bdev;
+#define BDEV_IOCTL(op, arg) ( \
+    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
+    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
+    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
+)
+#define BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
+#define BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
 
 #else
 
