@@ -187,6 +187,7 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
         )
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
+	bus/softspi.c \
 	bus/softqspi.c \
 	memory/spiflash.c \
 	dht/dht.c \

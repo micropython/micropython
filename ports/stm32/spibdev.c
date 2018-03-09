@@ -42,12 +42,14 @@ static uint32_t flash_tick_counter_last_write;
 
 STATIC const mp_machine_soft_spi_obj_t spiflash_spi_bus = {
     .base = {&mp_machine_soft_spi_type},
-    .delay_half = MICROPY_PY_MACHINE_SPI_MIN_DELAY,
+    .spi = {
+    .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
     .polarity = 0,
     .phase = 0,
     .sck = &MICROPY_HW_SPIFLASH_SCK,
     .mosi = &MICROPY_HW_SPIFLASH_MOSI,
     .miso = &MICROPY_HW_SPIFLASH_MISO,
+    }
 };
 
 STATIC const mp_spiflash_config_t spiflash_config = {

@@ -38,61 +38,6 @@
 #define MICROPY_PY_MACHINE_SPI_LSB (1)
 #endif
 
-void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
-    uint32_t delay_half = self->delay_half;
-
-    // only MSB transfer is implemented
-
-    // If a port defines MICROPY_PY_MACHINE_SPI_MIN_DELAY, and the configured
-    // delay_half is equal to this value, then the software SPI implementation
-    // will run as fast as possible, limited only by CPU speed and GPIO time.
-    #ifdef MICROPY_PY_MACHINE_SPI_MIN_DELAY
-    if (delay_half == MICROPY_PY_MACHINE_SPI_MIN_DELAY) {
-        for (size_t i = 0; i < len; ++i) {
-            uint8_t data_out = src[i];
-            uint8_t data_in = 0;
-            for (int j = 0; j < 8; ++j, data_out <<= 1) {
-                mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-                data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
-                mp_hal_pin_write(self->sck, self->polarity);
-            }
-            if (dest != NULL) {
-                dest[i] = data_in;
-            }
-        }
-        return;
-    }
-    #endif
-
-    for (size_t i = 0; i < len; ++i) {
-        uint8_t data_out = src[i];
-        uint8_t data_in = 0;
-        for (int j = 0; j < 8; ++j, data_out <<= 1) {
-            mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
-            if (self->phase == 0) {
-                mp_hal_delay_us_fast(delay_half);
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-            } else {
-                mp_hal_pin_write(self->sck, 1 - self->polarity);
-                mp_hal_delay_us_fast(delay_half);
-            }
-            data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
-            if (self->phase == 0) {
-                mp_hal_delay_us_fast(delay_half);
-                mp_hal_pin_write(self->sck, self->polarity);
-            } else {
-                mp_hal_pin_write(self->sck, self->polarity);
-                mp_hal_delay_us_fast(delay_half);
-            }
-        }
-        if (dest != NULL) {
-            dest[i] = data_in;
-        }
-    }
-}
-
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
 
@@ -199,9 +144,9 @@ MP_DEFINE_CONST_DICT(mp_machine_spi_locals_dict, machine_spi_locals_dict_table);
 // Implementation of soft SPI
 
 STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
-    #ifdef MICROPY_PY_MACHINE_SPI_MIN_DELAY
-    if (delay_half == MICROPY_PY_MACHINE_SPI_MIN_DELAY) {
-        return MICROPY_PY_MACHINE_SPI_MAX_BAUDRATE;
+    #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
+    if (delay_half == MICROPY_HW_SOFTSPI_MIN_DELAY) {
+        return MICROPY_HW_SOFTSPI_MAX_BAUDRATE;
     } else
     #endif
     {
@@ -210,9 +155,9 @@ STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
 }
 
 STATIC uint32_t baudrate_to_delay_half(uint32_t baudrate) {
-    #ifdef MICROPY_PY_MACHINE_SPI_MIN_DELAY
-    if (baudrate >= MICROPY_PY_MACHINE_SPI_MAX_BAUDRATE) {
-        return MICROPY_PY_MACHINE_SPI_MIN_DELAY;
+    #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
+    if (baudrate >= MICROPY_HW_SOFTSPI_MAX_BAUDRATE) {
+        return MICROPY_HW_SOFTSPI_MIN_DELAY;
     } else
     #endif
     {
@@ -229,8 +174,8 @@ STATIC void mp_machine_soft_spi_print(const mp_print_t *print, mp_obj_t self_in,
     mp_machine_soft_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SoftSPI(baudrate=%u, polarity=%u, phase=%u,"
         " sck=" MP_HAL_PIN_FMT ", mosi=" MP_HAL_PIN_FMT ", miso=" MP_HAL_PIN_FMT ")",
-        baudrate_from_delay_half(self->delay_half), self->polarity, self->phase,
-        mp_hal_pin_name(self->sck), mp_hal_pin_name(self->mosi), mp_hal_pin_name(self->miso));
+        baudrate_from_delay_half(self->spi.delay_half), self->spi.polarity, self->spi.phase,
+        mp_hal_pin_name(self->spi.sck), mp_hal_pin_name(self->spi.mosi), mp_hal_pin_name(self->spi.miso));
 }
 
 STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -253,9 +198,9 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     self->base.type = &mp_machine_soft_spi_type;
 
     // set parameters
-    self->delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
-    self->polarity = args[ARG_polarity].u_int;
-    self->phase = args[ARG_phase].u_int;
+    self->spi.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
+    self->spi.polarity = args[ARG_polarity].u_int;
+    self->spi.phase = args[ARG_phase].u_int;
     if (args[ARG_bits].u_int != 8) {
         mp_raise_ValueError("bits must be 8");
     }
@@ -267,15 +212,12 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
         || args[ARG_miso].u_obj == MP_OBJ_NULL) {
         mp_raise_ValueError("must specify all of sck/mosi/miso");
     }
-    self->sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
-    self->mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
-    self->miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+    self->spi.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+    self->spi.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+    self->spi.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
 
-    // configure pins
-    mp_hal_pin_write(self->sck, self->polarity);
-    mp_hal_pin_output(self->sck);
-    mp_hal_pin_output(self->mosi);
-    mp_hal_pin_input(self->miso);
+    // configure bus
+    mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -296,29 +238,31 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_baudrate].u_int != -1) {
-        self->delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
+        self->spi.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
     }
     if (args[ARG_polarity].u_int != -1) {
-        self->polarity = args[ARG_polarity].u_int;
+        self->spi.polarity = args[ARG_polarity].u_int;
     }
     if (args[ARG_phase].u_int != -1) {
-        self->phase = args[ARG_phase].u_int;
+        self->spi.phase = args[ARG_phase].u_int;
     }
     if (args[ARG_sck].u_obj != MP_OBJ_NULL) {
-        self->sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
+        self->spi.sck = mp_hal_get_pin_obj(args[ARG_sck].u_obj);
     }
     if (args[ARG_mosi].u_obj != MP_OBJ_NULL) {
-        self->mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
+        self->spi.mosi = mp_hal_get_pin_obj(args[ARG_mosi].u_obj);
     }
     if (args[ARG_miso].u_obj != MP_OBJ_NULL) {
-        self->miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
+        self->spi.miso = mp_hal_get_pin_obj(args[ARG_miso].u_obj);
     }
 
-    // configure pins
-    mp_hal_pin_write(self->sck, self->polarity);
-    mp_hal_pin_output(self->sck);
-    mp_hal_pin_output(self->mosi);
-    mp_hal_pin_input(self->miso);
+    // configure bus
+    mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
+}
+
+STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+    mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t*)self_in;
+    mp_soft_spi_transfer(&self->spi, len, src, dest);
 }
 
 const mp_machine_spi_p_t mp_machine_soft_spi_p = {
