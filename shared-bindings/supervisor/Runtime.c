@@ -43,6 +43,12 @@
 //|        print("Hello World!")    
 //|
 
+//| .. class:: Runtime()
+//|
+//|     You cannot create an instance of `supervisor.Runtime`.
+//|     Use `supervisor.runtime` to access the sole instance available.
+//|
+
 //| .. attribute:: runtime.serial_connected
 //|
 //|    Returns the serial communication status (read-only)
