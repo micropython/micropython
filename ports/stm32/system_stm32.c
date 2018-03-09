@@ -110,7 +110,7 @@ void __fatal_error(const char *msg);
 #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
 
 #define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
-#define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
+#define CONFIG_RCC_CR_2ND (RCC_CR_HSEON | RCC_CR_CSSON | RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x24003010)
 
 #if defined(MCU_SERIES_F4)
@@ -124,7 +124,7 @@ const uint8_t APBPrescTable[8] = {0, 0, 0, 0, 1, 2, 3, 4};
 #elif defined(MCU_SERIES_L4)
 
 #define CONFIG_RCC_CR_1ST (RCC_CR_MSION)
-#define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_HSION || RCC_CR_PLLON)
+#define CONFIG_RCC_CR_2ND (RCC_CR_HSEON | RCC_CR_CSSON | RCC_CR_HSION | RCC_CR_PLLON)
 #define CONFIG_RCC_PLLCFGR (0x00001000)
 /*
  * FIXME Do not know why I have to define these arrays here! they should be defined in the
