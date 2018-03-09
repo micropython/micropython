@@ -142,8 +142,8 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
 
         // Note that FatFS already filters . and .., so we don't need to
 
-        // make 3-tuple with info about this entry
-        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
+        // make 4-tuple with info about this entry
+        mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(4, NULL));
         if (self->is_str) {
             t->items[0] = mp_obj_new_str(fn, strlen(fn));
         } else {
@@ -157,6 +157,7 @@ STATIC mp_obj_t mp_vfs_fat_ilistdir_it_iternext(mp_obj_t self_in) {
             t->items[1] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG);
         }
         t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // no inode number
+        t->items[3] = mp_obj_new_int_from_uint(fno.fsize);
 
         return MP_OBJ_FROM_PTR(t);
     }
