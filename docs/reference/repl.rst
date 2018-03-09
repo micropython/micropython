@@ -19,7 +19,7 @@ If your cursor is all the way back at the beginning, pressing RETURN will then
 execute the code that you've entered. The following shows what you'd see
 after entering a for statement (the underscore shows where the cursor winds up):
 
-    >>> for i in range(3):
+    >>> for i in range(30):
     ...     _
 
 If you then enter an if statement, an additional level of indentation will be
@@ -58,9 +58,10 @@ Auto-completion
 
 While typing a command at the REPL, if the line typed so far corresponds to
 the beginning of the name of something, then pressing TAB will show
-possible things that could be entered. For example type ``m`` and press TAB
-and it should expand to ``machine``. Enter a dot ``.`` and press TAB again. You
-should see something like:
+possible things that could be entered. For example, first import the machine
+module by entering ``import machine`` and pressing RETURN.
+Then type ``m`` and press TAB and it should expand to ``machine``.
+Enter a dot ``.`` and press TAB again. You should see something like:
 
     >>> machine.
     __name__        info            unique_id       reset
@@ -151,7 +152,7 @@ method by which you're connected to the MicroPython board (USB-serial, or Wifi).
 You can perform a soft reset from the REPL by pressing Ctrl-D, or from your python
 code by executing: ::
 
-    raise SystemExit
+    machine.soft_reset()
 
 For example, if you reset your MicroPython board, and you execute a dir()
 command, you'd see something like this:
