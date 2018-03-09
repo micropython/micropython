@@ -30,54 +30,6 @@
 #include "led.h"
 #include "storage.h"
 
-#if defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
-
-#include "drivers/memory/spiflash.h"
-#include "genhdr/pins.h"
-
-#if defined(MICROPY_HW_SPIFLASH_MOSI)
-
-// External SPI flash uses standard SPI interface
-
-STATIC const mp_soft_spi_obj_t soft_spi_bus = {
-    .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
-    .polarity = 0,
-    .phase = 0,
-    .sck = &MICROPY_HW_SPIFLASH_SCK,
-    .mosi = &MICROPY_HW_SPIFLASH_MOSI,
-    .miso = &MICROPY_HW_SPIFLASH_MISO,
-};
-
-const mp_spiflash_config_t spiflash_config = {
-    .bus_kind = MP_SPIFLASH_BUS_SPI,
-    .bus.u_spi.cs = &MICROPY_HW_SPIFLASH_CS,
-    .bus.u_spi.data = (void*)&soft_spi_bus,
-    .bus.u_spi.proto = &mp_soft_spi_proto,
-};
-
-#elif defined(MICROPY_HW_SPIFLASH_IO0)
-
-// External SPI flash uses quad SPI interface
-
-#include "drivers/bus/qspi.h"
-
-STATIC const mp_soft_qspi_obj_t soft_qspi_bus = {
-    .cs = &MICROPY_HW_SPIFLASH_CS,
-    .clk = &MICROPY_HW_SPIFLASH_SCK,
-    .io0 = &MICROPY_HW_SPIFLASH_IO0,
-    .io1 = &MICROPY_HW_SPIFLASH_IO1,
-    .io2 = &MICROPY_HW_SPIFLASH_IO2,
-    .io3 = &MICROPY_HW_SPIFLASH_IO3,
-};
-
-const mp_spiflash_config_t spiflash_config = {
-    .bus_kind = MP_SPIFLASH_BUS_QSPI,
-    .bus.u_qspi.data = (void*)&soft_qspi_bus,
-    .bus.u_qspi.proto = &mp_soft_qspi_proto,
-};
-
-#endif
-
 int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
     switch (op) {
         case BDEV_IOCTL_INIT:
@@ -85,9 +37,6 @@ int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
             mp_spiflash_init(&bdev->spiflash);
             bdev->flash_tick_counter_last_write = 0;
             return 0;
-
-        case BDEV_IOCTL_NUM_BLOCKS:
-            return MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE;
 
         case BDEV_IOCTL_IRQ_HANDLER:
             if ((bdev->spiflash.flags & 1) && sys_tick_has_passed(bdev->flash_tick_counter_last_write, 1000)) {
@@ -130,5 +79,3 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
 
     return ret;
 }
-
-#endif // defined(MICROPY_HW_SPIFLASH_SIZE_BITS)

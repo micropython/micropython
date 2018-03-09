@@ -62,8 +62,6 @@ typedef struct _spi_bdev_t {
     uint32_t flash_tick_counter_last_write;
 } spi_bdev_t;
 
-extern const mp_spiflash_config_t spiflash_config;
-
 int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg);
 int spi_bdev_readblocks(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
