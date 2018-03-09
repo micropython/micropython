@@ -40,23 +40,20 @@ static uint32_t flash_tick_counter_last_write;
 
 // External SPI flash uses standard SPI interface
 
-STATIC const mp_machine_soft_spi_obj_t spiflash_spi_bus = {
-    .base = {&mp_machine_soft_spi_type},
-    .spi = {
+STATIC const mp_soft_spi_obj_t soft_spi_bus = {
     .delay_half = MICROPY_HW_SOFTSPI_MIN_DELAY,
     .polarity = 0,
     .phase = 0,
     .sck = &MICROPY_HW_SPIFLASH_SCK,
     .mosi = &MICROPY_HW_SPIFLASH_MOSI,
     .miso = &MICROPY_HW_SPIFLASH_MISO,
-    }
 };
 
 STATIC const mp_spiflash_config_t spiflash_config = {
     .bus_kind = MP_SPIFLASH_BUS_SPI,
     .bus.u_spi.cs = &MICROPY_HW_SPIFLASH_CS,
-    .bus.u_spi.data = (void*)&spiflash_spi_bus,
-    .bus.u_spi.proto = &mp_machine_soft_spi_p,
+    .bus.u_spi.data = (void*)&soft_spi_bus,
+    .bus.u_spi.proto = &mp_soft_spi_proto,
 };
 
 #elif defined(MICROPY_HW_SPIFLASH_IO0)

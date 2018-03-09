@@ -162,7 +162,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     if (self->config->bus_kind == MP_SPIFLASH_BUS_SPI) {
         mp_hal_pin_write(self->config->bus.u_spi.cs, 1);
         mp_hal_pin_output(self->config->bus.u_spi.cs);
-        self->config->bus.u_spi.proto->init(self->config->bus.u_spi.data, 0, NULL, (mp_map_t*)&mp_const_empty_map);
+        self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
         self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT);
     }

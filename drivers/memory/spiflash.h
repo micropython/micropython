@@ -26,8 +26,8 @@
 #ifndef MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H
 #define MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H
 
+#include "drivers/bus/spi.h"
 #include "drivers/bus/qspi.h"
-#include "extmod/machine_spi.h"
 
 enum {
     MP_SPIFLASH_BUS_SPI,
@@ -40,7 +40,7 @@ typedef struct _mp_spiflash_config_t {
         struct {
             mp_hal_pin_obj_t cs;
             void *data;
-            const mp_machine_spi_p_t *proto;
+            const mp_spi_proto_t *proto;
         } u_spi;
         struct {
             void *data;
