@@ -25,6 +25,7 @@
  */
 
 #include "py/obj.h"
+#include "py/mperrno.h"
 #include "systick.h"
 #include "led.h"
 #include "storage.h"
@@ -81,27 +82,36 @@ STATIC const mp_spiflash_config_t spiflash_config = {
 
 STATIC mp_spiflash_t spiflash;
 
-void spi_bdev_init(void) {
-    spiflash.config = &spiflash_config;
-    mp_spiflash_init(&spiflash);
-    flash_tick_counter_last_write = 0;
-}
+int32_t spi_bdev_ioctl(uint32_t op, uint32_t arg) {
+    (void)arg;
+    switch (op) {
+        case BDEV_IOCTL_INIT:
+            spiflash.config = &spiflash_config;
+            mp_spiflash_init(&spiflash);
+            flash_tick_counter_last_write = 0;
+            return 0;
 
-void spi_bdev_irq_handler(void) {
-    if ((spiflash.flags & 1) && sys_tick_has_passed(flash_tick_counter_last_write, 1000)) {
-        mp_spiflash_flush(&spiflash);
-        led_state(PYB_LED_RED, 0); // indicate a clean cache with LED off
-    }
-}
+        case BDEV_IOCTL_NUM_BLOCKS:
+            return MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE;
 
-void spi_bdev_flush(void) {
-    if (spiflash.flags & 1) {
-        // we must disable USB irqs to prevent MSC contention with SPI flash
-        uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
-        mp_spiflash_flush(&spiflash);
-        led_state(PYB_LED_RED, 0); // indicate a clean cache with LED off
-        restore_irq_pri(basepri);
+        case BDEV_IOCTL_IRQ_HANDLER:
+            if ((spiflash.flags & 1) && sys_tick_has_passed(flash_tick_counter_last_write, 1000)) {
+                mp_spiflash_flush(&spiflash);
+                led_state(PYB_LED_RED, 0); // indicate a clean cache with LED off
+            }
+            return 0;
+
+        case BDEV_IOCTL_SYNC:
+            if (spiflash.flags & 1) {
+                // we must disable USB irqs to prevent MSC contention with SPI flash
+                uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
+                mp_spiflash_flush(&spiflash);
+                led_state(PYB_LED_RED, 0); // indicate a clean cache with LED off
+                restore_irq_pri(basepri);
+            }
+            return 0;
     }
+    return -MP_EINVAL;
 }
 
 int spi_bdev_readblocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {

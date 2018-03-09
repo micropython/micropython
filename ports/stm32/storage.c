@@ -37,20 +37,14 @@
 #if defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
 
 // Use external SPI flash as the storage medium
-#define BDEV_NUM_BLOCKS (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE)
-#define BDEV_INIT spi_bdev_init
-#define BDEV_IRQ_HANDLER spi_bdev_irq_handler
-#define BDEV_FLUSH spi_bdev_flush
+#define BDEV_IOCTL spi_bdev_ioctl
 #define BDEV_READBLOCKS spi_bdev_readblocks
 #define BDEV_WRITEBLOCKS spi_bdev_writeblocks
 
 #else
 
 // Use internal flash as the storage medium
-#define BDEV_NUM_BLOCKS flash_bdev_num_blocks()
-#define BDEV_INIT flash_bdev_init
-#define BDEV_IRQ_HANDLER flash_bdev_irq_handler
-#define BDEV_FLUSH flash_bdev_flush
+#define BDEV_IOCTL flash_bdev_ioctl
 #define BDEV_READBLOCK flash_bdev_readblock
 #define BDEV_WRITEBLOCK flash_bdev_writeblock
 
@@ -64,15 +58,13 @@ void storage_init(void) {
     if (!storage_is_initialised) {
         storage_is_initialised = true;
 
-        BDEV_INIT();
+        BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
 
-        #if defined(BDEV_IRQ_HANDLER)
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
         // It needs to go at a higher priority than all those components that rely on
         // the flash storage (eg higher than USB MSC).
         HAL_NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH, IRQ_SUBPRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
-        #endif
     }
 }
 
@@ -81,19 +73,15 @@ uint32_t storage_get_block_size(void) {
 }
 
 uint32_t storage_get_block_count(void) {
-    return FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS;
+    return FLASH_PART1_START_BLOCK + BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0);
 }
 
 void storage_irq_handler(void) {
-    #if defined(BDEV_IRQ_HANDLER)
-    BDEV_IRQ_HANDLER();
-    #endif
+    BDEV_IOCTL(BDEV_IOCTL_IRQ_HANDLER, 0);
 }
 
 void storage_flush(void) {
-    #if defined(BDEV_FLUSH)
-    BDEV_FLUSH();
-    #endif
+    BDEV_IOCTL(BDEV_IOCTL_SYNC, 0);
 }
 
 static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_block, uint32_t num_blocks) {
@@ -141,7 +129,7 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
             dest[i] = 0;
         }
 
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */, FLASH_PART1_START_BLOCK, BDEV_NUM_BLOCKS);
+        build_partition(dest + 446, 0, 0x01 /* FAT12 */, FLASH_PART1_START_BLOCK, BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0));
         build_partition(dest + 462, 0, 0, 0, 0);
         build_partition(dest + 478, 0, 0, 0, 0);
         build_partition(dest + 494, 0, 0, 0, 0);
@@ -152,7 +140,7 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
         return true;
 
     #if defined(BDEV_READBLOCK)
-    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
+    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return BDEV_READBLOCK(dest, block - FLASH_PART1_START_BLOCK);
     #endif
     } else {
@@ -166,7 +154,7 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
         // can't write MBR, but pretend we did
         return true;
     #if defined(BDEV_WRITEBLOCK)
-    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
+    } else if (FLASH_PART1_START_BLOCK <= block && block < FLASH_PART1_START_BLOCK + BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return BDEV_WRITEBLOCK(src, block - FLASH_PART1_START_BLOCK);
     #endif
     } else {
@@ -176,7 +164,7 @@ bool storage_write_block(const uint8_t *src, uint32_t block) {
 
 mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     #if defined(BDEV_READBLOCKS)
-    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
+    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return BDEV_READBLOCKS(dest, block_num - FLASH_PART1_START_BLOCK, num_blocks);
     }
     #endif
@@ -191,7 +179,7 @@ mp_uint_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bl
 
 mp_uint_t storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     #if defined(BDEV_WRITEBLOCKS)
-    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + BDEV_NUM_BLOCKS) {
+    if (FLASH_PART1_START_BLOCK <= block_num && block_num + num_blocks <= FLASH_PART1_START_BLOCK + BDEV_IOCTL(BDEV_IOCTL_NUM_BLOCKS, 0)) {
         return BDEV_WRITEBLOCKS(src, block_num - FLASH_PART1_START_BLOCK, num_blocks);
     }
     #endif

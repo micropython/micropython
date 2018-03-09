@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/obj.h"
+#include "py/mperrno.h"
 #include "systick.h"
 #include "led.h"
 #include "flash.h"
@@ -122,23 +123,34 @@ static uint32_t flash_cache_sector_start;
 static uint32_t flash_cache_sector_size;
 static uint32_t flash_tick_counter_last_write;
 
-void flash_bdev_init(void) {
-    flash_flags = 0;
-    flash_cache_sector_id = 0;
-    flash_tick_counter_last_write = 0;
-}
+static void flash_bdev_irq_handler(void);
 
-uint32_t flash_bdev_num_blocks(void) {
-    return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
-}
+int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
+    (void)arg;
+    switch (op) {
+        case BDEV_IOCTL_INIT:
+            flash_flags = 0;
+            flash_cache_sector_id = 0;
+            flash_tick_counter_last_write = 0;
+            return 0;
 
-void flash_bdev_flush(void) {
-    if (flash_flags & FLASH_FLAG_DIRTY) {
-        flash_flags |= FLASH_FLAG_FORCE_WRITE;
-        while (flash_flags & FLASH_FLAG_DIRTY) {
-           NVIC->STIR = FLASH_IRQn;
-        }
+        case BDEV_IOCTL_NUM_BLOCKS:
+            return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
+
+        case BDEV_IOCTL_IRQ_HANDLER:
+            flash_bdev_irq_handler();
+            return 0;
+
+        case BDEV_IOCTL_SYNC:
+            if (flash_flags & FLASH_FLAG_DIRTY) {
+                flash_flags |= FLASH_FLAG_FORCE_WRITE;
+                while (flash_flags & FLASH_FLAG_DIRTY) {
+                   NVIC->STIR = FLASH_IRQn;
+                }
+            }
+            return 0;
     }
+    return -MP_EINVAL;
 }
 
 static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
@@ -149,7 +161,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_sector_size = FLASH_SECTOR_SIZE_MAX;
     }
     if (flash_cache_sector_id != flash_sector_id) {
-        flash_bdev_flush();
+        flash_bdev_ioctl(BDEV_IOCTL_SYNC, 0);
         memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
         flash_cache_sector_id = flash_sector_id;
         flash_cache_sector_start = flash_sector_start;
@@ -186,7 +198,7 @@ static uint32_t convert_block_to_flash_addr(uint32_t block) {
     return -1;
 }
 
-void flash_bdev_irq_handler(void) {
+static void flash_bdev_irq_handler(void) {
     if (!(flash_flags & FLASH_FLAG_DIRTY)) {
         return;
     }
