@@ -43,11 +43,11 @@ Filesystem access
 
 .. function:: ilistdir([dir])
 
-   This function returns an iterator which then yields 3-tuples corresponding to
+   This function returns an iterator which then yields tuples corresponding to
    the entries in the directory that it is listing.  With no argument it lists the
    current directory, otherwise it lists the directory given by *dir*.
 
-   The 3-tuples have the form *(name, type, inode)*:
+   The tuples have the form *(name, type, inode[, size])*:
 
     - *name* is a string (or bytes if *dir* is a bytes object) and is the name of
       the entry;
@@ -55,6 +55,10 @@ Filesystem access
       directories and 0x8000 for regular files;
     - *inode* is an integer corresponding to the inode of the file, and may be 0
       for filesystems that don't have such a notion.
+    - Some platforms may return a 4-tuple that includes the entry's *size*.  For
+      file entries, *size* is an integer representing the size of the file
+      or -1 if unknown.  Its meaning is currently undefined for directory
+      entries.
 
 .. function:: listdir([dir])
 

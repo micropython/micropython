@@ -10,7 +10,7 @@ e
 o
 d
 True
-[('foo_dir', 16384, 0)]
+[('foo_dir', 16384, 0, 0)]
 MemoryError
 x0
 x1
