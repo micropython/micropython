@@ -37,6 +37,15 @@
 //|   :synopsis: Supervisor settings
 //|   :platform: SAMD21
 //|
+//| The `supervisor` module. (TODO: expand description)
+//|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     Runtime
+//|
 
 //| .. attribute:: runtime
 //|
