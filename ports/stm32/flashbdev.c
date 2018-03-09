@@ -34,7 +34,7 @@
 #include "flash.h"
 #include "storage.h"
 
-#if !defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
 // Here we try to automatically configure the location and size of the flash
 // pages to use for the internal storage.  We also configure the location of the
@@ -265,4 +265,4 @@ bool flash_bdev_writeblock(const uint8_t *src, uint32_t block) {
     return true;
 }
 
-#endif // !defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
+#endif // MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE

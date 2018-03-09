@@ -32,6 +32,11 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
+// Whether to enable storage on the internal flash of the MCU
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#endif
+
 // Whether to enable the RTC, exposed as pyb.RTC
 #ifndef MICROPY_HW_ENABLE_RTC
 #define MICROPY_HW_ENABLE_RTC (0)
@@ -134,6 +139,13 @@
 
 #else
 #error Unsupported MCU series
+#endif
+
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+// Provide block device macros if internal flash storage is enabled
+#define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
+#define MICROPY_HW_BDEV_READBLOCK flash_bdev_readblock
+#define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
 #endif
 
 // Enable hardware I2C if there are any peripherals defined

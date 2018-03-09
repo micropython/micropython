@@ -34,15 +34,6 @@
 #include "storage.h"
 #include "irq.h"
 
-#if !defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
-
-// Use internal flash as the storage medium
-#define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
-#define MICROPY_HW_BDEV_READBLOCK flash_bdev_readblock
-#define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
-
-#endif
-
 #define FLASH_PART1_START_BLOCK (0x100)
 
 static bool storage_is_initialised = false;
