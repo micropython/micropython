@@ -34,6 +34,7 @@
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_spi_m_sync.h"
 #include "hal/include/hpl_spi_m_sync.h"
+#include "supervisor/shared/rgb_led_status.h"
 
 #include "peripherals.h"
 #include "pins.h"
@@ -59,7 +60,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         if (potential_sercom == NULL ||
         #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
             (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
-             potential_sercom != status_apa102.spi_master_instance.hw &&
+             potential_sercom != status_apa102.spi_desc.dev.prvt &&
              !apa102_sck_in_use)) {
         #else
             potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {
@@ -113,6 +114,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // Set up SPI clocks on SERCOM.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
     
+    #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
+    // if we're re-using the dotstar sercom, make sure it is disabled or the init will fail out
+    hri_sercomspi_clear_CTRLA_ENABLE_bit(sercom);
+    #endif
     if (spi_m_sync_init(&self->spi_desc, sercom) != ERR_NONE) {
         mp_raise_OSError(MP_EIO);
     }
