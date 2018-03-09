@@ -29,7 +29,7 @@
 #include "shared-bindings/supervisor/Runtime.h"
 
 //TODO: add USB, REPL to description once they're operational
-//| .. currentmodule:: runtime
+//| .. currentmodule:: supervisor
 //|   
 //| :class:`Runtime` --- Supervisor Runtime information
 //| ----------------------------------------------------
