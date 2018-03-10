@@ -217,9 +217,6 @@ endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
-# Skip this source for now.
-#	shared_dma.c \
-
 SRC_C = \
 	background.c \
 	fatfs_port.c \
@@ -229,6 +226,7 @@ SRC_C = \
 	$(CHIP_FAMILY)_peripherals.c \
 	peripherals.c \
 	$(CHIP_FAMILY)_pins.c \
+	shared_dma.c \
 	tick.c \
 	timers.c \
 	usb.c \

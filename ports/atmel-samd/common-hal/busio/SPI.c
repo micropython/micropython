@@ -38,7 +38,7 @@
 
 #include "peripherals.h"
 #include "pins.h"
-//#include "shared_dma.h"
+#include "shared_dma.h"
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
@@ -113,7 +113,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     // Set up SPI clocks on SERCOM.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
-    
+
     #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
     // if we're re-using the dotstar sercom, make sure it is disabled or the init will fail out
     hri_sercomspi_clear_CTRLA_ENABLE_bit(sercom);
@@ -121,7 +121,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (spi_m_sync_init(&self->spi_desc, sercom) != ERR_NONE) {
         mp_raise_OSError(MP_EIO);
     }
-    
+
     // Pads must be set after spi_m_sync_init(), which uses default values from
     // the prototypical SERCOM.
     hri_sercomspi_write_CTRLA_DOPO_bf(sercom, dopo);
@@ -135,7 +135,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         // busy or not
         mp_raise_OSError(MP_EIO);
     }
-        
+
     gpio_set_pin_direction(clock->pin, GPIO_DIRECTION_OUT);
     gpio_set_pin_pull_mode(clock->pin, GPIO_PULL_OFF);
     gpio_set_pin_function(clock->pin, clock_pinmux);
@@ -194,7 +194,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         return true;
     }
 
-    // Disable, set values (most or all are enable-protected), and re-enable. 
+    // Disable, set values (most or all are enable-protected), and re-enable.
     spi_m_sync_disable(&self->spi_desc);
     hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
 
@@ -235,14 +235,14 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         return true;
     }
     int32_t status;
-//    if (len >= 16) {
-//        status = shared_dma_write(self->spi_desc.dev.prvt, data, len);
-//    } else {
+    if (len >= 16) {
+        status = sercom_dma_write(self->spi_desc.dev.prvt, data, len);
+    } else {
         struct io_descriptor *spi_io;
         spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
         status = spi_io->write(spi_io, data, len);
-//    }
-        return status >= 0; // Status is number of chars read or an error code < 0.
+    }
+    return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
@@ -251,17 +251,17 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         return true;
     }
     int32_t status;
-//    if (len >= 16) {
-//        status = shared_dma_read(self->spi_desc.dev.prvt, data, len, write_value);
-//    } else {
+    if (len >= 16) {
+        status = sercom_dma_read(self->spi_desc.dev.prvt, data, len, write_value);
+    } else {
         self->spi_desc.dev.dummy_byte = write_value;
 
         struct io_descriptor *spi_io;
         spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
 
         status = spi_io->read(spi_io, data, len);
-//    }
-        return status >= 0; // Status is number of chars read or an error code < 0.
+    }
+    return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
@@ -269,16 +269,16 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
         return true;
     }
     int32_t status;
-//    if (len >= 16) {
-//        status = shared_dma_transfer(self->spi_master_instance.hw, data_out, data_in, len, 0 /*ignored*/);
-//    } else {
+    if (len >= 16) {
+        status = sercom_dma_transfer(self->spi_desc.dev.prvt, data_out, data_in, len);
+    } else {
         struct spi_xfer xfer;
         xfer.txbuf = data_out;
         xfer.rxbuf = data_in;
         xfer.size = len;
         status = spi_m_sync_transfer(&self->spi_desc, &xfer);
-//    }
-        return status >= 0; // Status is number of chars read or an error code < 0.
+    }
+    return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {

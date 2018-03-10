@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "external_flash/common_commands.h"
+#include "shared_dma.h"
 
 #include "atmel_start_pins.h"
 #include "hal_gpio.h"
@@ -125,6 +126,8 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
                            QSPI_INSTRFRAME_DATAEN;
 
     memcpy(((uint8_t *) QSPI_AHB) + address, data, length);
+    // TODO(tannewt): Fix DMA and enable it.
+    // qspi_dma_write(address, data, length);
 
     QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER;
 
@@ -148,6 +151,8 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
                            QSPI_INSTRFRAME_DUMMYLEN(8);
 
     memcpy(data, ((uint8_t *) QSPI_AHB) + address, length);
+    // TODO(tannewt): Fix DMA and enable it.
+    // qspi_dma_read(address, data, length);
 
     QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE | QSPI_CTRLA_LASTXFER;
 
@@ -167,12 +172,15 @@ void spi_flash_init(void) {
     QSPI->CTRLA.reg = QSPI_CTRLA_SWRST;
     // We don't need to wait because we're running as fast as the CPU.
 
-    QSPI->BAUD.bit.BAUD = 1;
+    // Slow, good for debugging with Saleae
+    // QSPI->BAUD.bit.BAUD = 32;
+    // Super fast
+    QSPI->BAUD.bit.BAUD = 2;
     QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |
                       QSPI_CTRLB_DATALEN_8BITS |
                       QSPI_CTRLB_CSMODE_LASTXFER;
 
-    QSPI->CTRLA.bit.ENABLE = 1;
+    QSPI->CTRLA.reg = QSPI_CTRLA_ENABLE;
 
     // The QSPI is only connected to one set of pins in the SAMD51 so we can hard code it.
     uint32_t pins[6] = {PIN_PA08, PIN_PA09, PIN_PA10, PIN_PA11, PIN_PB10, PIN_PB11};

@@ -30,6 +30,7 @@
 
 #include "external_flash/common_commands.h"
 #include "peripherals.h"
+#include "shared_dma.h"
 
 #include "hal_gpio.h"
 #include "hal_spi_m_sync.h"
@@ -91,14 +92,28 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t data_length)
     uint8_t request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
     // Write the SPI flash write address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
-    return transfer(request, 4, data, NULL, data_length);
+    struct spi_xfer xfer = { request, NULL, 4 };
+    flash_enable();
+    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &xfer);
+    if (status >= 0) {
+        status = sercom_dma_write(spi_flash_desc.dev.prvt, data, data_length);
+    }
+    flash_disable();
+    return status >= 0;
 }
 
 bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t data_length) {
     uint8_t request[4] = {CMD_READ_DATA, 0x00, 0x00, 0x00};
     // Write the SPI flash write address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
-    return transfer(request, 4, NULL, data, data_length);
+    struct spi_xfer xfer = { request, NULL, 4 };
+    flash_enable();
+    int32_t status = spi_m_sync_transfer(&spi_flash_desc, &xfer);
+    if (status >= 0) {
+        status = sercom_dma_read(spi_flash_desc.dev.prvt, data, data_length, 0xff);
+    }
+    flash_disable();
+    return status >= 0;
 }
 
 void spi_flash_init(void) {
