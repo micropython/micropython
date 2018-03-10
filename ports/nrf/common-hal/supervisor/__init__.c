@@ -24,11 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include "shared-bindings/supervisor/Status.h"
-#include "supervisor/serial.h"
 
-bool common_hal_get_serial_connected(void) {
-    return (bool) serial_connected();
-}
+#include "py/obj.h"
 
+#include "shared-bindings/supervisor/__init__.h"
+#include "shared-bindings/supervisor/Runtime.h"
+
+
+// The singleton supervisor.Runtime object, bound to supervisor.runtime
+// It currently only has properties, and no state.
+const super_runtime_obj_t common_hal_supervisor_runtime_obj = {
+    .base = {
+        .type = &supervisor_runtime_type,
+    },
+};
