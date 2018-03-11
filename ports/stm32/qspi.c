@@ -48,6 +48,7 @@ void qspi_init(void) {
 
     QUADSPI->CR =
         2 << QUADSPI_CR_PRESCALER_Pos // F_CLK = F_AHB/3 (72MHz when CPU is 216MHz)
+        | 3 << QUADSPI_CR_FTHRES_Pos // 4 bytes must be available to read/write
         #if defined(QUADSPI_CR_FSEL_Pos)
         | 0 << QUADSPI_CR_FSEL_Pos // FLASH 1 selected
         #endif
@@ -232,9 +233,37 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
 
 STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
     (void)self_in;
-    // This assumes that cmd=0xeb
-    qspi_memory_map();
-    memcpy(dest, (void*)(0x90000000 + addr), len);
+    QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
+
+    QUADSPI->DLR = len - 1; // number of bytes to read
+
+    QUADSPI->CCR =
+        0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
+        | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
+        | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
+        | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
+        | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+        | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
+        | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+        | 2 << QUADSPI_CCR_ADSIZE_Pos // 24-bit address size
+        | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
+        | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
+        | cmd << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
+        ;
+
+    QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
+    QUADSPI->AR = addr; // addres to read from
+
+    // Read in the data
+    while (len) {
+        while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
+        }
+        *(uint32_t*)dest = QUADSPI->DR;
+        dest += 4;
+        len -= 4;
+    }
+
+    QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 }
 
 const mp_qspi_proto_t qspi_proto = {
