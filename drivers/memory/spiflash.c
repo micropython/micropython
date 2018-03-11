@@ -181,8 +181,8 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         // Set QE bit
         uint32_t data = (mp_spiflash_read_cmd(self, CMD_RDSR, 1) & 0xff)
             | (mp_spiflash_read_cmd(self, CMD_RDCR, 1) & 0xff) << 8;
-        if (!(data & (QSPI_QE_MASK << 16))) {
-            data |= QSPI_QE_MASK << 16;
+        if (!(data & (QSPI_QE_MASK << 8))) {
+            data |= QSPI_QE_MASK << 8;
             mp_spiflash_write_cmd(self, CMD_WREN);
             mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);
             mp_spiflash_wait_wip0(self);
