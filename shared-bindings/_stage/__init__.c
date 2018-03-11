@@ -71,10 +71,10 @@
 //|     This function is intended for internal use in the ``stage`` library
 //|     and all the necessary checks are performed there.
 STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
-    uint8_t x0 = mp_obj_get_int(args[0]);
-    uint8_t y0 = mp_obj_get_int(args[1]);
-    uint8_t x1 = mp_obj_get_int(args[2]);
-    uint8_t y1 = mp_obj_get_int(args[3]);
+    uint16_t x0 = mp_obj_get_int(args[0]);
+    uint16_t y0 = mp_obj_get_int(args[1]);
+    uint16_t x1 = mp_obj_get_int(args[2]);
+    uint16_t y1 = mp_obj_get_int(args[3]);
 
     size_t layers_size = 0;
     mp_obj_t *layers;
