@@ -52,6 +52,10 @@
 #include "shared_dma.h"
 #include "tick.h"
 
+#ifdef CIRCUITPY_GAMEPAD_TICKS
+#include "shared-module/gamepad/__init__.h"
+#endif
+
 extern volatile bool mp_msc_enabled;
 
 #if defined(SAMD21) && defined(ENABLE_MICRO_TRACE_BUFFER)
@@ -198,10 +202,10 @@ void reset_port(void) {
 
     analogin_reset();
 
-// #ifdef CIRCUITPY_GAMEPAD_TICKS
-//     gamepad_reset();
-// #endif
-//
+#ifdef CIRCUITPY_GAMEPAD_TICKS
+    gamepad_reset();
+#endif
+
     analogout_reset();
 
     reset_all_pins();
