@@ -195,12 +195,19 @@ extern const struct _mp_obj_module_t usb_hid_module;
     // Scan gamepad every 32ms
     #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
+    #if defined(__SAMD51G19A__) || defined(__SAMD51G18A__)
+        #define AUDIOBUSIO_MODULE
+    #else
+        #define AUDIOBUSIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
+    #endif
+
     #define EXTRA_BUILTIN_MODULES \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
+        AUDIOBUSIO_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
-//        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
-//        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
     #define EXPRESS_BOARD
+
 #else
     #define MICROPY_PY_BUILTINS_REVERSED (0)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
@@ -253,15 +260,12 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#include "shared_dma.h"
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
-    struct tc_module* audiodma_block_counter; \
-    struct events_resource* audiodma_block_event; \
-    struct tc_module* audioout_sample_timer; \
-    struct dac_module* audioout_dac_instance; \
-    struct events_resource* audioout_sample_event; \
-    struct events_resource* audioout_dac_event; \
+    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT]; \
     FLASH_ROOT_POINTERS \
 
 void run_background_tasks(void);

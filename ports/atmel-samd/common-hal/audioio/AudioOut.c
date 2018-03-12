@@ -35,155 +35,128 @@
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/dac/dac.h"
-#include "asf/sam0/drivers/dma/dma.h"
-#include "asf/sam0/drivers/events/events.h"
-#include "asf/sam0/drivers/port/port.h"
-#include "asf/sam0/drivers/tc/tc.h"
+#include "atmel_start_pins.h"
+#include "hal/include/hal_gpio.h"
+#include "hpl/gclk/hpl_gclk_base.h"
+#include "peripheral_clk_config.h"
+
+#ifdef SAMD21
+#include "hpl/pm/hpl_pm_base.h"
+#endif
+
+#include "audio_dma.h"
+#include "events.h"
 #include "samd21_pins.h"
 #include "shared_dma.h"
-
-#undef ENABLE
-
-// Shared with PWMOut
-// TODO(tannewt): Factor these out so audioio can exist without PWMOut.
-extern uint32_t target_timer_frequencies[TC_INST_NUM + TCC_INST_NUM];
-extern uint8_t timer_refcount[TC_INST_NUM + TCC_INST_NUM];
-extern const uint16_t prescaler[8];
-
-// This timer is shared amongst all AudioOut objects under the assumption that
-// the code is single threaded. The audioout_sample_timer, audioout_dac_instance,
-// audioout_sample_event, and audioout_dac_event pointers live in
-// MICROPY_PORT_ROOT_POINTERS so they don't get garbage collected.
-
-// The AudioOut object is being currently played. Only it can pause the timer
-// and change its frequency.
-static audioio_audioout_obj_t* active_audioout;
-
-static uint8_t refcount = 0;
-
-struct wave_format_chunk {
-    uint16_t audio_format;
-    uint16_t num_channels;
-    uint32_t sample_rate;
-    uint32_t byte_rate;
-    uint16_t block_align;
-    uint16_t bits_per_sample;
-    uint16_t extra_params; // Assumed to be zero below.
-};
+#include "timers.h"
 
 void audioout_reset(void) {
     // Only reset DMA. PWMOut will reset the timer. Other code will reset the DAC.
-    refcount = 0;
-    MP_STATE_VM(audioout_sample_timer) = NULL;
-    MP_STATE_VM(audiodma_block_counter) = NULL;
-    MP_STATE_VM(audioout_dac_instance) = NULL;
-
-    if (MP_STATE_VM(audioout_sample_event) != NULL) {
-        events_detach_user(MP_STATE_VM(audioout_sample_event), EVSYS_ID_USER_DAC_START);
-        events_release(MP_STATE_VM(audioout_sample_event));
-    }
-    MP_STATE_VM(audioout_sample_event) = NULL;
-
-    if (MP_STATE_VM(audiodma_block_event) != NULL) {
-        events_release(MP_STATE_VM(audiodma_block_event));
-    }
-    MP_STATE_VM(audiodma_block_event) = NULL;
-
-    if (MP_STATE_VM(audioout_dac_event) != NULL) {
-        events_detach_user(MP_STATE_VM(audioout_dac_event), EVSYS_ID_USER_DMAC_CH_0);
-        events_release(MP_STATE_VM(audioout_dac_event));
-    }
-    MP_STATE_VM(audioout_dac_event) = NULL;
-
-    dma_abort_job(&audio_dma);
 }
 
-// WARN(tannewt): DO NOT print from here. It calls background tasks and causes a
-// stack overflow.
-void audioout_background(void) {
-    if (MP_STATE_VM(audiodma_block_counter) != NULL &&
-            active_audioout != NULL &&
-            active_audioout->second_buffer != NULL &&
-            active_audioout->last_loaded_block < tc_get_count_value(MP_STATE_VM(audiodma_block_counter))) {
-        uint8_t* buffer;
-        if (tc_get_count_value(MP_STATE_VM(audiodma_block_counter)) % 2 == 1) {
-            buffer = active_audioout->buffer;
-        } else {
-            buffer = active_audioout->second_buffer;
-        }
-        uint16_t num_bytes_to_load = active_audioout->len;
-        if (num_bytes_to_load > active_audioout->bytes_remaining) {
-            num_bytes_to_load = active_audioout->bytes_remaining;
-        }
-        UINT length_read;
-        f_read(&active_audioout->file->fp, buffer, num_bytes_to_load, &length_read);
-        active_audioout->bytes_remaining -= length_read;
-        active_audioout->last_loaded_block += 1;
-
-        if (active_audioout->bytes_remaining == 0) {
-            if (active_audioout->loop) {
-                // Loop back to the start of the file.
-                f_lseek(&active_audioout->file->fp, active_audioout->data_start);
-                active_audioout->bytes_remaining = active_audioout->file_length;
-                f_read(&active_audioout->file->fp, buffer, active_audioout->len - num_bytes_to_load, &length_read);
-                active_audioout->bytes_remaining -= length_read;
-            } else {
-                DmacDescriptor* descriptor = audio_dma.descriptor;
-                if (buffer == active_audioout->second_buffer) {
-                    descriptor = active_audioout->second_descriptor;
-                }
-                descriptor->BTCNT.reg = length_read / active_audioout->bytes_per_sample;
-                descriptor->SRCADDR.reg = ((uint32_t) buffer) + length_read;
-                descriptor->DESCADDR.reg = 0;
-            }
-        }
-
-        if (active_audioout->bytes_per_sample == 2) {
-            // Undo twos complement.
-            for (uint16_t i = 0; i < length_read / 2; i++) {
-                buffer[2 * i + 1] ^= 0x80;
-            }
-        }
+void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
+        const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel) {
+    #ifdef SAMD21
+    if (right_channel != NULL) {
+        mp_raise_ValueError("Right channel unsupported");
     }
-}
-
-static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* pin) {
-    assert_pin_free(pin);
-
-    // Configure the DAC to output on input event and to output an empty event
-    // that triggers the DMA to load the next sample.
-    MP_STATE_VM(audioout_dac_instance) = gc_alloc(sizeof(struct dac_module), false);
-    if (MP_STATE_VM(audioout_dac_instance) == NULL) {
-        mp_raise_msg(&mp_type_MemoryError, "");
+    if (left_channel != &pin_PA02) {
+        mp_raise_ValueError("Invalid pin");
     }
-    struct dac_config config_dac;
-    dac_get_config_defaults(&config_dac);
-    config_dac.left_adjust = true;
-    config_dac.reference = DAC_REFERENCE_AVCC;
-    config_dac.clock_source = GCLK_GENERATOR_0;
-    enum status_code status = dac_init(MP_STATE_VM(audioout_dac_instance), DAC, &config_dac);
-    if (status != STATUS_OK) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_OSError(MP_EIO);
-        return;
+    assert_pin_free(left_channel);
+    claim_pin(left_channel);
+    #endif
+    #ifdef SAMD51
+    self->right_channel = NULL;
+    if (left_channel != &pin_PA02 && left_channel != &pin_PA05) {
+        mp_raise_ValueError("Invalid pin for left channel");
+    }
+    assert_pin_free(left_channel);
+    if (right_channel != NULL && right_channel != &pin_PA02 && right_channel != &pin_PA05) {
+        mp_raise_ValueError("Invalid pin for right channel");
+    }
+    if (right_channel == left_channel) {
+        mp_raise_ValueError("Cannot output both channels on the same pin");
+    }
+    claim_pin(left_channel);
+    if (right_channel != NULL) {
+        claim_pin(right_channel);
+        self->right_channel = right_channel;
+        gpio_set_pin_function(self->right_channel->pin, GPIO_PIN_FUNCTION_B);
+        audio_dma_init(&self->right_dma);
+    }
+    #endif
+    self->left_channel = left_channel;
+    gpio_set_pin_function(self->left_channel->pin, GPIO_PIN_FUNCTION_B);
+    audio_dma_init(&self->left_dma);
+
+    #ifdef SAMD51
+    hri_mclk_set_APBDMASK_DAC_bit(MCLK);
+    #endif
+
+    #ifdef SAMD21
+    _pm_enable_bus_clock(PM_BUS_APBC, DAC);
+    #endif
+
+    // SAMD21: This clock should be <= 12 MHz, per datasheet section 47.6.3.
+    // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6.
+    _gclk_enable_channel(DAC_GCLK_ID, CONF_GCLK_DAC_SRC);
+
+    // There is a small chance the other output is being used by AnalogOut on the SAMD51 so
+    // only reset if the DAC is disabled.
+    if (DAC->CTRLA.bit.ENABLE == 0) {
+        DAC->CTRLA.bit.SWRST = 1;
+        while (DAC->CTRLA.bit.SWRST == 1) {}
+
     }
 
-    struct dac_chan_config channel_config;
-    dac_chan_get_config_defaults(&channel_config);
-    dac_chan_set_config(MP_STATE_VM(audioout_dac_instance), DAC_CHANNEL_0, &channel_config);
-    dac_chan_enable(MP_STATE_VM(audioout_dac_instance), DAC_CHANNEL_0);
+    bool channel0_enabled = true;
+    #ifdef SAMD51
+    channel0_enabled = self->left_channel == &pin_PA02 || self->right_channel == &pin_PA02;
+    bool channel1_enabled = self->left_channel == &pin_PA05 || self->right_channel == &pin_PA05;
+    #endif
 
-    struct dac_events events_dac = { .generate_event_on_buffer_empty = true,
-                                     .on_event_start_conversion = true };
-    dac_enable_events(MP_STATE_VM(audioout_dac_instance), &events_dac);
+    if (channel0_enabled) {
+        #ifdef SAMD21
+        DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI;
+        DAC->CTRLB.reg = DAC_CTRLB_REFSEL_AVCC |
+                         DAC_CTRLB_LEFTADJ |
+                         DAC_CTRLB_EOEN;
+        #endif
+        #ifdef SAMD51
+        DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI0;
+        DAC->DACCTRL[0].reg = DAC_DACCTRL_CCTRL_CC1M |
+                              DAC_DACCTRL_ENABLE |
+                              DAC_DACCTRL_LEFTADJ;
+        DAC->CTRLB.reg = DAC_CTRLB_REFSEL_VREFPU;
+        #endif
+    }
+    #ifdef SAMD51
+    if (channel1_enabled) {
+        DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI1;
+        DAC->DACCTRL[1].reg = DAC_DACCTRL_CCTRL_CC1M |
+                              DAC_DACCTRL_ENABLE |
+                              DAC_DACCTRL_LEFTADJ;
+        DAC->CTRLB.reg = DAC_CTRLB_REFSEL_VREFPU;
+    }
+    #endif
 
-    // Figure out which timer we are using.
+    // Re-enable the DAC
+    DAC->CTRLA.bit.ENABLE = 1;
+    #ifdef SAMD21
+    while (DAC->STATUS.bit.SYNCBUSY == 1) {}
+    #endif
+    #ifdef SAMD51
+    while (DAC->SYNCBUSY.bit.ENABLE == 1) {}
+    #endif
+
+    // Use a timer to coordinate when DAC conversions occur.
     Tc *t = NULL;
-    Tc *tcs[TC_INST_NUM] = TC_INSTS;
+    uint8_t tc_index = TC_INST_NUM;
     for (uint8_t i = TC_INST_NUM; i > 0; i--) {
-        if (tcs[i - 1]->COUNT16.CTRLA.bit.ENABLE == 0) {
-            t = tcs[i - 1];
+        if (tc_insts[i - 1]->COUNT16.CTRLA.bit.ENABLE == 0) {
+            t = tc_insts[i - 1];
+            tc_index = i - 1;
             break;
         }
     }
@@ -192,234 +165,77 @@ static void shared_construct(audioio_audioout_obj_t* self, const mcu_pin_obj_t* 
         mp_raise_RuntimeError("All timers in use");
         return;
     }
-    MP_STATE_VM(audioout_sample_timer) = gc_alloc(sizeof(struct tc_module), false);
-    if (MP_STATE_VM(audioout_sample_timer) == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
+    self->tc_index = tc_index;
+
+    // Use the 48mhz clocks on both the SAMD21 and 51 because we will be going much slower.
+    uint8_t tc_gclk = 0;
+    #ifdef SAMD51
+    tc_gclk = 1;
+    #endif
+
+    turn_on_clocks(true, tc_index, tc_gclk);
 
     // Don't bother setting the period. We set it before you playback anything.
-    struct tc_config config_tc;
-    tc_get_config_defaults(&config_tc);
-    config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
-    config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
-    config_tc.wave_generation = TC_WAVE_GENERATION_MATCH_FREQ;
-    if (tc_init(MP_STATE_VM(audioout_sample_timer), t, &config_tc) != STATUS_OK) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_OSError(MP_EIO);
-        return;
-    };
-
-    struct tc_events events_tc;
-    events_tc.generate_event_on_overflow = true;
-    events_tc.on_event_perform_action = false;
-    events_tc.event_action = TC_EVENT_ACTION_OFF;
-    tc_enable_events(MP_STATE_VM(audioout_sample_timer), &events_tc);
-
-    tc_enable(MP_STATE_VM(audioout_sample_timer));
-    tc_stop_counter(MP_STATE_VM(audioout_sample_timer));
+    tc_set_enable(t, false);
+    tc_reset(t);
+    #ifdef SAMD51
+    t->COUNT16.WAVE.reg = TC_WAVE_WAVEGEN_MFRQ;
+    #endif
+    #ifdef SAMD21
+    t->COUNT16.CTRLA.bit.WAVEGEN = TC_CTRLA_WAVEGEN_MFRQ_Val;
+    #endif
+    t->COUNT16.EVCTRL.reg = TC_EVCTRL_OVFEO;
+    tc_set_enable(t, true);
+    t->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;
 
     // Connect the timer overflow event, which happens at the target frequency,
-    // to the DAC conversion trigger.
-    MP_STATE_VM(audioout_sample_event) = gc_alloc(sizeof(struct events_resource), false);
-    if (MP_STATE_VM(audioout_sample_event) == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
-    struct events_config config;
-    events_get_config_defaults(&config);
+    // to the DAC conversion trigger(s).
+    #ifdef SAMD21
+    #define FIRST_TC_GEN_ID EVSYS_ID_GEN_TC3_OVF
+    #endif
+    #ifdef SAMD51
+    #define FIRST_TC_GEN_ID EVSYS_ID_GEN_TC0_OVF
+    #endif
+    uint8_t tc_gen_id = FIRST_TC_GEN_ID + 3 * tc_index;
 
-    uint8_t generator = EVSYS_ID_GEN_TC3_OVF;
-    if (t == TC4) {
-        generator = EVSYS_ID_GEN_TC4_OVF;
-    } else if (t == TC5) {
-        generator = EVSYS_ID_GEN_TC5_OVF;
-#ifdef TC6
-    } else if (t == TC6) {
-        generator = EVSYS_ID_GEN_TC6_OVF;
-#endif
-#ifdef TC7
-    } else if (t == TC7) {
-        generator = EVSYS_ID_GEN_TC7_OVF;
-#endif
-    }
+    turn_on_event_system();
 
-    config.generator    = generator;
-    config.path         = EVENTS_PATH_ASYNCHRONOUS;
-    if (events_allocate(MP_STATE_VM(audioout_sample_event), &config) != STATUS_OK ||
-        events_attach_user(MP_STATE_VM(audioout_sample_event), EVSYS_ID_USER_DAC_START) != STATUS_OK) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_OSError(MP_EIO);
-        return;
-    }
+    // Find a free event channel. We start at the highest channels because we only need and async
+    // path.
+    uint8_t channel = find_async_event_channel();
+    #ifdef SAMD51
+    connect_event_user_to_channel(EVSYS_ID_USER_DAC_START_1, channel);
+    #define EVSYS_ID_USER_DAC_START EVSYS_ID_USER_DAC_START_0
+    #endif
+    connect_event_user_to_channel(EVSYS_ID_USER_DAC_START, channel);
+    init_async_event_channel(channel, tc_gen_id);
 
-    // Connect the DAC to DMA
-    MP_STATE_VM(audioout_dac_event) = gc_alloc(sizeof(struct events_resource), false);
-    if (MP_STATE_VM(audioout_dac_event) == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
-    events_get_config_defaults(&config);
-    config.generator    = EVSYS_ID_GEN_DAC_EMPTY;
-    config.path         = EVENTS_PATH_ASYNCHRONOUS;
-    if (events_allocate(MP_STATE_VM(audioout_dac_event), &config) != STATUS_OK ||
-        events_attach_user(MP_STATE_VM(audioout_dac_event), EVSYS_ID_USER_DMAC_CH_0) != STATUS_OK) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_OSError(MP_EIO);
-        return;
-    }
+    self->tc_to_dac_event_channel = channel;
 
-    // Leave the DMA setup to the specific constructor.
-}
-
-void common_hal_audioio_audioout_construct_from_buffer(audioio_audioout_obj_t* self,
-                                                       const mcu_pin_obj_t* pin,
-                                                       uint16_t* buffer,
-                                                       uint32_t len,
-                                                       uint8_t bytes_per_sample) {
-    self->pin = pin;
-    if (pin != &pin_PA02) {
-        mp_raise_ValueError("Invalid pin");
-    }
-    if (refcount == 0) {
-        refcount++;
-        shared_construct(self, pin);
-    }
-
-    self->buffer = (uint8_t*) buffer;
-    self->second_buffer = NULL;
-    self->bytes_per_sample = bytes_per_sample;
-    self->len = len;
-    self->frequency = 8000;
-}
-
-void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* self,
-                                                     const mcu_pin_obj_t* pin,
-                                                     pyb_file_obj_t* file) {
-    self->pin = pin;
-    if (pin != &pin_PA02) {
-        mp_raise_ValueError("Invalid pin");
-    }
-    if (refcount == 0) {
-        refcount++;
-        shared_construct(self, pin);
-    }
-    if (MP_STATE_VM(audiodma_block_counter) == NULL && !allocate_block_counter()) {
-        mp_raise_RuntimeError("Unable to allocate audio DMA block counter.");
-    }
-
-    // Load the wave
-    self->file = file;
-    uint8_t chunk_header[16];
-    f_rewind(&self->file->fp);
-    UINT bytes_read;
-    f_read(&self->file->fp, chunk_header, 16, &bytes_read);
-    if (bytes_read != 16 ||
-        memcmp(chunk_header, "RIFF", 4) != 0 ||
-        memcmp(chunk_header + 8, "WAVEfmt ", 8) != 0) {
-        mp_raise_ValueError("Invalid wave file");
-    }
-    uint32_t format_size;
-    f_read(&self->file->fp, &format_size, 4, &bytes_read);
-    if (bytes_read != 4 ||
-        format_size > sizeof(struct wave_format_chunk)) {
-        mp_raise_ValueError("Invalid format chunk size");
-    }
-    struct wave_format_chunk format;
-    f_read(&self->file->fp, &format, format_size, &bytes_read);
-    if (bytes_read != format_size) {
-    }
-
-    if (format.audio_format != 1 ||
-        format.num_channels > 1 ||
-        format.bits_per_sample > 16 ||
-        (format_size == 18 &&
-         format.extra_params != 0)) {
-        mp_raise_ValueError("Unsupported format");
-    }
-    // Get the frequency
-    self->frequency = format.sample_rate;
-    self->len = 512;
-
-    self->bytes_per_sample = format.bits_per_sample / 8;
-
-    // TODO(tannewt): Skip any extra chunks that occur before the data section.
-
-    uint8_t data_tag[4];
-    f_read(&self->file->fp, &data_tag, 4, &bytes_read);
-    if (bytes_read != 4 ||
-        memcmp((uint8_t *) data_tag, "data", 4) != 0) {
-        mp_raise_ValueError("Data chunk must follow fmt chunk");
-    }
-
-    uint32_t data_length;
-    f_read(&self->file->fp, &data_length, 4, &bytes_read);
-    if (bytes_read != 4) {
-        mp_raise_ValueError("Invalid file");
-    }
-    self->file_length = data_length;
-    self->data_start = self->file->fp.fptr;
-
-    // Try to allocate two buffers, one will be loaded from file and the other
-    // DMAed to DAC.
-    self->buffer = gc_alloc(self->len, false);
-    if (self->buffer == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
-
-    self->second_buffer = gc_alloc(self->len, false);
-    if (self->second_buffer == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
-
-    self->second_descriptor = gc_alloc(sizeof(DmacDescriptor), false);
-    if (self->second_descriptor == NULL) {
-        common_hal_audioio_audioout_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError, "");
-    }
+    // Leave the DMA setup to playback.
 }
 
 bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self) {
-    return self->pin == mp_const_none;
+    return self->left_channel == mp_const_none;
 }
 
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
     if (common_hal_audioio_audioout_deinited(self)) {
         return;
     }
-    refcount--;
-    if (refcount == 0) {
-        if (MP_STATE_VM(audioout_sample_timer) != NULL) {
-            tc_reset(MP_STATE_VM(audioout_sample_timer));
-            gc_free(MP_STATE_VM(audioout_sample_timer));
-            MP_STATE_VM(audioout_sample_timer) = NULL;
-        }
-        if (MP_STATE_VM(audioout_dac_instance) != NULL) {
-            dac_reset(MP_STATE_VM(audioout_dac_instance));
-            gc_free(MP_STATE_VM(audioout_dac_instance));
-            MP_STATE_VM(audioout_dac_instance) = NULL;
-        }
-        if (MP_STATE_VM(audioout_sample_event) != NULL) {
-            events_detach_user(MP_STATE_VM(audioout_sample_event), EVSYS_ID_USER_DAC_START);
-            events_release(MP_STATE_VM(audioout_sample_event));
-            gc_free(MP_STATE_VM(audioout_sample_event));
-            MP_STATE_VM(audioout_sample_event) = NULL;
-        }
-        if (MP_STATE_VM(audioout_dac_event) != NULL) {
-            events_release(MP_STATE_VM(audioout_dac_event));
-            gc_free(MP_STATE_VM(audioout_dac_event));
-            MP_STATE_VM(audioout_dac_event) = NULL;
-        }
-        reset_pin(self->pin->pin);
-    }
 
-    self->pin = mp_const_none;
+    disable_event_channel(self->tc_to_dac_event_channel);
+
+    reset_pin(self->left_channel->pin);
+    self->left_channel = mp_const_none;
+    #ifdef SAMD51
+    reset_pin(self->right_channel->pin);
+    self->right_channel = mp_const_none;
+    #endif
 }
 
-static void set_timer_frequency(uint32_t frequency) {
-    uint32_t system_clock = system_cpu_clock_get_hz();
+static void set_timer_frequency(Tc* timer, uint32_t frequency) {
+    uint32_t system_clock = 48000000;
     uint32_t new_top;
     uint8_t new_divisor;
     for (new_divisor = 0; new_divisor < 8; new_divisor++) {
@@ -428,133 +244,91 @@ static void set_timer_frequency(uint32_t frequency) {
             break;
         }
     }
-    uint8_t old_divisor = MP_STATE_VM(audioout_sample_timer)->hw->COUNT16.CTRLA.bit.PRESCALER;
+    uint8_t old_divisor = timer->COUNT16.CTRLA.bit.PRESCALER;
     if (new_divisor != old_divisor) {
-        tc_disable(MP_STATE_VM(audioout_sample_timer));
-        MP_STATE_VM(audioout_sample_timer)->hw->COUNT16.CTRLA.bit.PRESCALER = new_divisor;
-        tc_enable(MP_STATE_VM(audioout_sample_timer));
+        tc_set_enable(timer, false);
+        timer->COUNT16.CTRLA.bit.PRESCALER = new_divisor;
+        tc_set_enable(timer, true);
     }
-    while (tc_is_syncing(MP_STATE_VM(audioout_sample_timer))) {
-        /* Wait for sync */
-    }
-    MP_STATE_VM(audioout_sample_timer)->hw->COUNT16.CC[0].reg = new_top;
-    while (tc_is_syncing(MP_STATE_VM(audioout_sample_timer))) {
-        /* Wait for sync */
-    }
+    tc_wait_for_sync(timer);
+    timer->COUNT16.CC[0].reg = new_top;
+    tc_wait_for_sync(timer);
 }
 
-void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop) {
-    common_hal_audioio_audioout_get_playing(self);
-    // Shut down any active playback.
-    if (active_audioout != NULL) {
-        tc_stop_counter(MP_STATE_VM(audioout_sample_timer));
-        dma_abort_job(&audio_dma);
-    } else {
-        dac_enable(MP_STATE_VM(audioout_dac_instance));
+void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
+                                      mp_obj_t sample, bool loop) {
+    if (common_hal_audioio_audioout_get_playing(self)) {
+        common_hal_audioio_audioout_stop(self);
     }
-    switch_audiodma_trigger(DAC_DMAC_ID_EMPTY);
-    struct dma_descriptor_config descriptor_config;
-    dma_descriptor_get_config_defaults(&descriptor_config);
-    if (self->bytes_per_sample == 2) {
-        descriptor_config.beat_size = DMA_BEAT_SIZE_HWORD;
-    } else {
-        descriptor_config.beat_size = DMA_BEAT_SIZE_BYTE;
+    audio_dma_result result = AUDIO_DMA_OK;
+    #ifdef SAMD21
+    result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
+                                      false /* output unsigned */,
+                                      (uint32_t) &DAC->DATABUF.reg,
+                                      DAC_DMAC_ID_EMPTY);
+    #endif
+
+    #ifdef SAMD51
+    uint32_t left_channel_reg = (uint32_t) &DAC->DATABUF[0].reg;
+    uint8_t left_channel_trigger = DAC_DMAC_ID_EMPTY_0;
+    uint32_t right_channel_reg = 0;
+    uint8_t right_channel_trigger = 0;
+    if (self->left_channel == &pin_PA05) {
+        left_channel_reg = (uint32_t) &DAC->DATABUF[1].reg;
+        left_channel_trigger = DAC_DMAC_ID_EMPTY_1;
+    } else if (self->right_channel == &pin_PA05) {
+        right_channel_reg = (uint32_t) &DAC->DATABUF[1].reg;
+        right_channel_trigger = DAC_DMAC_ID_EMPTY_1;
     }
-
-    descriptor_config.dst_increment_enable = false;
-    // Block transfer count is the number of beats per block (aka descriptor).
-    // In this case there are two bytes per beat so divide the length by two.
-    descriptor_config.block_transfer_count = self->len / self->bytes_per_sample;
-    descriptor_config.source_address = ((uint32_t)self->buffer + self->len);
-    descriptor_config.destination_address = ((uint32_t)&DAC->DATABUF.reg + 1);
-    descriptor_config.event_output_selection = DMA_EVENT_OUTPUT_BLOCK;
-    self->loop = loop;
-    if (self->second_buffer == NULL) {
-        if (loop) {
-            descriptor_config.next_descriptor_address = ((uint32_t)audio_dma.descriptor);
-        } else {
-            descriptor_config.next_descriptor_address = 0;
-        }
-    } else {
-        descriptor_config.next_descriptor_address = ((uint32_t)self->second_descriptor);
+    if (self->right_channel == &pin_PA02) {
+        right_channel_reg = (uint32_t) &DAC->DATABUF[0].reg;
+        right_channel_trigger = DAC_DMAC_ID_EMPTY_0;
     }
-    dma_descriptor_create(audio_dma.descriptor, &descriptor_config);
-
-    if (self->second_buffer != NULL) {
-        // TODO(tannewt): Correctly set the end of this.
-        descriptor_config.block_transfer_count = self->len / self->bytes_per_sample;
-        descriptor_config.source_address = ((uint32_t)self->second_buffer + self->len);
-        descriptor_config.next_descriptor_address = ((uint32_t)audio_dma.descriptor);
-        dma_descriptor_create(self->second_descriptor, &descriptor_config);
-
-        self->last_loaded_block = 0;
-        self->bytes_remaining = self->file_length;
-
-        f_lseek(&self->file->fp, self->data_start);
-        // Seek to the start of the PCM.
-        UINT length_read;
-        f_read(&self->file->fp, self->buffer, self->len, &length_read);
-        self->bytes_remaining -= length_read;
-        if (self->bytes_per_sample == 2) {
-            // Undo twos complement.
-            for (uint16_t i = 0; i < length_read / 2; i++) {
-                self->buffer[2 * i + 1] ^= 0x80;
-            }
-        }
-
-        f_read(&self->file->fp, self->second_buffer, self->len, &length_read);
-        self->bytes_remaining -= length_read;
-        if (self->bytes_per_sample == 2) {
-            // Undo twos complement.
-            for (uint16_t i = 0; i < length_read / 2; i++) {
-                self->second_buffer[2 * i + 1] ^= 0x80;
-            }
+    result = audio_dma_setup_playback(&self->left_dma, sample, loop, true, 0,
+                                      false /* output unsigned */,
+                                      left_channel_reg,
+                                      left_channel_trigger);
+    if (right_channel_reg != 0 && result == AUDIO_DMA_OK) {
+        result = audio_dma_setup_playback(&self->right_dma, sample, loop, true, 1,
+                                          false /* output unsigned */,
+                                          right_channel_reg,
+                                          right_channel_trigger);
+    }
+    #endif
+    if (result != AUDIO_DMA_OK) {
+        audio_dma_stop(&self->left_dma);
+        #ifdef SAMD51
+        audio_dma_stop(&self->right_dma);
+        #endif
+        if (result == AUDIO_DMA_DMA_BUSY) {
+            mp_raise_RuntimeError("No DMA channel found");
+        } else if (result == AUDIO_DMA_MEMORY_ERROR) {
+            mp_raise_RuntimeError("Unable to allocate buffers for signed conversion");
         }
     }
-    active_audioout = self;
-    dma_start_transfer_job(&audio_dma);
-
-    if (MP_STATE_VM(audiodma_block_counter) != NULL) {
-        tc_start_counter(MP_STATE_VM(audiodma_block_counter));
-    }
-    set_timer_frequency(self->frequency);
-    tc_start_counter(MP_STATE_VM(audioout_sample_timer));
+    Tc* timer = tc_insts[self->tc_index];
+    set_timer_frequency(timer, audiosample_sample_rate(sample));
+    timer->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_RETRIGGER;
+    while (timer->COUNT16.STATUS.bit.STOP == 1) {}
+    self->playing = true;
 }
 
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
-    if (active_audioout == self) {
-        if (MP_STATE_VM(audiodma_block_counter) != NULL) {
-            tc_stop_counter(MP_STATE_VM(audiodma_block_counter));
-        }
-        tc_stop_counter(MP_STATE_VM(audioout_sample_timer));
-        dma_abort_job(&audio_dma);
-        active_audioout = NULL;
-        dac_disable(MP_STATE_VM(audioout_dac_instance));
-    }
+    Tc* timer = tc_insts[self->tc_index];
+    timer->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;
+    audio_dma_stop(&self->left_dma);
+    #ifdef SAMD51
+    audio_dma_stop(&self->right_dma);
+    #endif
+
+    // FIXME(tannewt): Do we want to disable? What if we're sharing with an AnalogOut on the 51?
+    // dac_disable(MP_STATE_VM(audioout_dac_instance));
 }
 
 bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self) {
-    if (!dma_is_busy(&audio_dma)) {
-        if (active_audioout != NULL) {
-            common_hal_audioio_audioout_stop(active_audioout);
-        }
-        active_audioout = NULL;
+    bool now_playing = audio_dma_get_playing(&self->left_dma);
+    if (self->playing && !now_playing) {
+        common_hal_audioio_audioout_stop(self);
     }
-    return active_audioout == self;
-}
-
-void common_hal_audioio_audioout_set_frequency(audioio_audioout_obj_t* self,
-                                              uint32_t frequency) {
-    if (frequency == 0 || frequency > 350000) {
-        mp_raise_ValueError("Unsupported playback frequency");
-    }
-    self->frequency = frequency;
-
-    if (common_hal_audioio_audioout_get_playing(self)) {
-        set_timer_frequency(frequency);
-    }
-}
-
-uint32_t common_hal_audioio_audioout_get_frequency(audioio_audioout_obj_t* self) {
-    return self->frequency;
+    return now_playing;
 }

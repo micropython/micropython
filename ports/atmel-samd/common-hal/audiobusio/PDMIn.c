@@ -37,7 +37,6 @@
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/port/port.h"
 #include "samd21_pins.h"
 
 #include "shared_dma.h"

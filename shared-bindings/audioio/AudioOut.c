@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/AudioOut.h"
+#include "shared-bindings/audioio/RawSample.h"
 #include "shared-bindings/util.h"
 
 //| .. currentmodule:: audioio
@@ -41,18 +42,13 @@
 //|
 //| AudioOut can be used to output an analog audio signal on a given pin.
 //|
-//| .. class:: AudioOut(pin, sample_source)
+//| .. class:: AudioOut(left_channel, right_channel=None)
 //|
-//|   Create a AudioOut object associated with the given pin. This allows you to
-//|   play audio signals out on the given pin. Sample_source must be a `bytes-like object <https://docs.python.org/3/glossary.html#term-bytes-like-object>`_.
+//|   Create a AudioOut object associated with the given pin(s). This allows you to
+//|   play audio signals out on the given pin(s).
 //|
-//|   The sample itself should consist of 16 bit samples and be mono.
-//|   Microcontrollers with a lower output resolution will use the highest order
-//|   bits to output. For example, the SAMD21 has a 10 bit DAC that ignores the
-//|   lowest 6 bits when playing 16 bit samples.
-//|
-//|   :param ~microcontroller.Pin pin: The pin to output to
-//|   :param bytes-like sample_source: The source of the sample
+//|   :param ~microcontroller.Pin left_channel: The pin to output the left channel to
+//|   :param ~microcontroller.Pin right_channel: The pin to output the right channel to
 //|
 //|   Simple 8ksps 440 Hz sin wave::
 //|
@@ -68,8 +64,9 @@
 //|     for i in range(length):
 //|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15) + 2 ** 15)
 //|
-//|     sample = audioio.AudioOut(board.SPEAKER, sine_wave)
-//|     sample.play(loop=True)
+//|     dac = audioio.AudioOut(board.SPEAKER)
+//|     sine_wave = audioio.RawSample(sine_wave, mono=True, sample_rate=8000)
+//|     dac.play(sine_wave, loop=True)
 //|     time.sleep(1)
 //|     sample.stop()
 //|
@@ -83,41 +80,42 @@
 //|     speaker_enable = digitalio.DigitalInOut(board.SPEAKER_ENABLE)
 //|     speaker_enable.switch_to_output(value=True)
 //|
-//|     f = open("cplay-5.1-16bit-16khz.wav", "rb")
-//
-//|     a = audioio.AudioOut(board.A0, f)
+//|     wav = audioio.WaveFile("cplay-5.1-16bit-16khz.wav")
+//|     a = audioio.AudioOut(board.A0)
 //|
 //|     print("playing")
-//|     a.play()
+//|     a.play(wav)
 //|     while a.playing:
 //|       pass
 //|     print("stopped")
 //|
-STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, true);
-    mp_obj_t pin_obj = args[0];
-    assert_pin(pin_obj, false);
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
-    // We explicitly don't check whether the pin is free because multiple
-    // AudioOuts may share it.
+STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+    mp_arg_check_num(n_args, n_kw, 1, 2, true);
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+    enum { ARG_left_channel, ARG_right_channel };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_right_channel, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = mp_const_none} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t left_channel_obj = args[ARG_left_channel].u_obj;
+    assert_pin(left_channel_obj, false);
+    const mcu_pin_obj_t *left_channel_pin = MP_OBJ_TO_PTR(left_channel_obj);
+
+    mp_obj_t right_channel_obj = args[ARG_right_channel].u_obj;
+    const mcu_pin_obj_t *right_channel_pin = NULL;
+    if (right_channel_obj != mp_const_none) {
+        assert_pin(right_channel_obj, false);
+        right_channel_pin = MP_OBJ_TO_PTR(right_channel_obj);
+    }
 
     // create AudioOut object from the given pin
     audioio_audioout_obj_t *self = m_new_obj(audioio_audioout_obj_t);
     self->base.type = &audioio_audioout_type;
-    mp_buffer_info_t bufinfo;
-    if (MP_OBJ_IS_TYPE(args[1], &fatfs_type_fileio)) {
-        common_hal_audioio_audioout_construct_from_file(self, pin, MP_OBJ_TO_PTR(args[1]));
-    } else if (mp_get_buffer(args[1], &bufinfo, MP_BUFFER_READ)) {
-        uint8_t bytes_per_sample = 1;
-        if (bufinfo.typecode == 'H') {
-            bytes_per_sample = 2;
-        } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-            mp_raise_ValueError("sample_source buffer must be a bytearray or array of type 'H' or 'B'");
-        }
-        common_hal_audioio_audioout_construct_from_buffer(self, pin, ((uint16_t*)bufinfo.buf), bufinfo.len, bytes_per_sample);
-    } else {
-        mp_raise_TypeError("sample_source must be a file or bytes-like object");
-    }
+    common_hal_audioio_audioout_construct(self, left_channel_pin, right_channel_pin);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -152,30 +150,38 @@ STATIC mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, audioio_audioout_obj___exit__);
 
 
-//|   .. method:: play(loop=False)
+//|   .. method:: play(sample, *, loop=False)
 //|
 //|     Plays the sample once when loop=False and continuously when loop=True.
 //|     Does not block. Use `playing` to block.
 //|
+//|     Sample must be an `audioio.WaveFile` or `audioio.RawSample`.
+//|
+//|     The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
+//|     resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
+//|     DAC that ignores the lowest 6 bits when playing 16 bit samples.
+//|
 STATIC mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_loop };
+    enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_loop,      MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_audioio_audioout_play(self, args[ARG_loop].u_bool);
+    mp_obj_t sample = args[ARG_sample].u_obj;
+    common_hal_audioio_audioout_play(self, sample, args[ARG_loop].u_bool);
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_audioout_play_obj, 1, audioio_audioout_obj_play);
 
 //|   .. method:: stop()
 //|
-//|     Stops playback of this sample. If another sample is playing instead, it
-//|     won't be stopped.
+//|     Stops playback.
 //|
 STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -187,7 +193,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 
 //|   .. attribute:: playing
 //|
-//|     True when the audio sample is being output. (read-only)
+//|     True when an audio sample is being output. (read-only)
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -203,34 +209,6 @@ const mp_obj_property_t audioio_audioout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: frequency
-//|
-//|     32 bit value that dictates how quickly samples are loaded into the DAC
-//|     in Hertz (cycles per second). When the sample is looped, this can change
-//|     the pitch output without changing the underlying sample.
-//|
-STATIC mp_obj_t audioio_audioout_obj_get_frequency(mp_obj_t self_in) {
-    audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
-    return MP_OBJ_NEW_SMALL_INT(common_hal_audioio_audioout_get_frequency(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_frequency_obj, audioio_audioout_obj_get_frequency);
-
-STATIC mp_obj_t audioio_audioout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
-    audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
-    common_hal_audioio_audioout_set_frequency(self, mp_obj_get_int(frequency));
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(audioio_audioout_set_frequency_obj, audioio_audioout_obj_set_frequency);
-
-const mp_obj_property_t audioio_audioout_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audioio_audioout_get_frequency_obj,
-              (mp_obj_t)&audioio_audioout_set_frequency_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
 STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_audioout_deinit_obj) },
@@ -241,7 +219,6 @@ STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_audioout_playing_obj) },
-    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&audioio_audioout_frequency_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_audioout_locals_dict, audioio_audioout_locals_dict_table);
 

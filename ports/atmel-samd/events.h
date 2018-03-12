@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_EVENTS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_EVENTS_H
 
-#include "common-hal/microcontroller/Pin.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "extmod/vfs_fat_file.h"
-#include "py/obj.h"
+#include "include/sam.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *data_pin;
-    uint32_t frequency;
-    uint8_t serializer;
-    uint8_t clock_unit;
-    uint8_t bytes_per_sample;
-    uint8_t bit_depth;
-} audiobusio_pdmin_obj_t;
+void turn_on_event_system(void);
+void reset_event_system(void);
+uint8_t find_async_event_channel(void);
+uint8_t find_sync_event_channel(void);
+void disable_event_channel(uint8_t channel_number);
+void disable_event_user(uint8_t user_number);
+void connect_event_user_to_channel(uint8_t user, uint8_t channel);
+void init_async_event_channel(uint8_t channel, uint8_t generator);
+void init_event_channel_interrupt(uint8_t channel, uint8_t gclk, uint8_t generator);
+bool event_interrupt_active(uint8_t channel);
 
-void pdmin_reset(void);
-
-void pdmin_background(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_EVENTS_H

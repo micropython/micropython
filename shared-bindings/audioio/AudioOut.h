@@ -29,21 +29,18 @@
 
 #include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "extmod/vfs_fat_file.h"
+#include "shared-bindings/audioio/RawSample.h"
 
 extern const mp_obj_type_t audioio_audioout_type;
 
-void common_hal_audioio_audioout_construct_from_buffer(audioio_audioout_obj_t* self,
-    const mcu_pin_obj_t* pin, uint16_t* buffer, uint32_t len, uint8_t bytes_per_sample);
-void common_hal_audioio_audioout_construct_from_file(audioio_audioout_obj_t* self,
-    const mcu_pin_obj_t* pin, pyb_file_obj_t* file);
+// left_channel will always be non-NULL but right_channel may be for mono output.
+void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
+    const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel);
 
 void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self);
 bool common_hal_audioio_audioout_deinited(audioio_audioout_obj_t* self);
-void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, bool loop);
+void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self, mp_obj_t sample, bool loop);
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self);
 bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self);
-uint32_t common_hal_audioio_audioout_get_frequency(audioio_audioout_obj_t* self);
-void common_hal_audioio_audioout_set_frequency(audioio_audioout_obj_t* self, uint32_t frequency);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_AUDIOOUT_H
