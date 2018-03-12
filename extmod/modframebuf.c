@@ -59,6 +59,7 @@ typedef struct _mp_framebuf_p_t {
 #define FRAMEBUF_GS8      (6)
 #define FRAMEBUF_MHLSB    (3)
 #define FRAMEBUF_MHMSB    (4)
+#define FRAMEBUF_RGB888   (7)
 
 // Functions for MHLSB and MHMSB
 
@@ -109,6 +110,34 @@ STATIC void mvlsb_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, in
             ++b;
         }
         ++y;
+    }
+}
+
+// Functions for RGB888 format (little endian format)
+
+STATIC void rgb888_setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
+    uint8_t *pixel = &((uint8_t*)fb->buf)[3 * x + y * fb->stride];
+    *pixel++ = col & 0xff;
+    *pixel++ = (col >> 8) & 0xff;
+    *pixel++ = (col >> 16) & 0xff;
+}
+
+STATIC uint32_t rgb888_getpixel(const mp_obj_framebuf_t *fb, int x, int y) {
+    uint32_t col;
+    uint8_t *pixel = &((uint8_t*)fb->buf)[3 * x + y * fb->stride];
+    col = *pixel++;
+    col = col + ((*pixel++) << 8);
+    return col + ((*pixel++) << 16);
+}
+
+STATIC void rgb888_fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, uint32_t col) {
+    for (int yy=y; yy < y+h; yy++) {
+        uint8_t *pixel = &((uint8_t*)fb->buf)[3 * x + yy * fb->stride];
+        for (int xx=x; xx < x+w; xx++) {
+            *pixel++ = col & 0xff;
+            *pixel++ = (col >> 8) & 0xff;
+            *pixel++ = (col >> 16) & 0xff;
+        }
     }
 }
 
@@ -234,6 +263,7 @@ STATIC mp_framebuf_p_t formats[] = {
     [FRAMEBUF_GS8] = {gs8_setpixel, gs8_getpixel, gs8_fill_rect},
     [FRAMEBUF_MHLSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
     [FRAMEBUF_MHMSB] = {mono_horiz_setpixel, mono_horiz_getpixel, mono_horiz_fill_rect},
+    [FRAMEBUF_RGB888] = {rgb888_setpixel, rgb888_getpixel, rgb888_fill_rect},
 };
 
 static inline void setpixel(const mp_obj_framebuf_t *fb, int x, int y, uint32_t col) {
@@ -294,6 +324,9 @@ STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size
             o->stride = (o->stride + 1) & ~1;
             break;
         case FRAMEBUF_GS8:
+            break;
+        case FRAMEBUF_RGB888:
+            o->stride = o->stride * 3;
             break;
         default:
             mp_raise_ValueError("invalid format");
@@ -636,6 +669,7 @@ STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GS8), MP_ROM_INT(FRAMEBUF_GS8) },
     { MP_ROM_QSTR(MP_QSTR_MONO_HLSB), MP_ROM_INT(FRAMEBUF_MHLSB) },
     { MP_ROM_QSTR(MP_QSTR_MONO_HMSB), MP_ROM_INT(FRAMEBUF_MHMSB) },
+    { MP_ROM_QSTR(MP_QSTR_RGB888), MP_ROM_INT(FRAMEBUF_RGB888) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(framebuf_module_globals, framebuf_module_globals_table);
