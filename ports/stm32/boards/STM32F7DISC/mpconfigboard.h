@@ -80,3 +80,16 @@ void STM32F7DISC_board_early_init(void);
 
 /*#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_J12)*/
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+
+// Ethernet RMII Interface
+#define RMII_REF_CLK                (pin_A1)
+#define RMII_MDIO                   (pin_A2)
+#define RMII_MDC                    (pin_C1)
+#define RMII_MII_CRS_DV             (pin_A7)
+#define RMII_MII_RXD0               (pin_C4)
+#define RMII_MII_RXD1               (pin_C5)
+#define RMII_MII_RXER               (pin_G2)
+#define RMII_MII_TX_EN              (pin_G11)
+#define RMII_MII_TXD0               (pin_G13)
+#define RMII_MII_TXD1               (pin_G14)
+
