@@ -744,8 +744,6 @@ void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
-struct _mp_obj_list_t;
-void mp_obj_list_init(struct _mp_obj_list_t *o, size_t n);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
