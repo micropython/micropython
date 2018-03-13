@@ -8,7 +8,7 @@ Current supported board is STM32F746G-Discovery and NUCLEO_F767ZI.
 ## How to build
 
 ```
-git clone -b stm32-ethernet https://github.com/boochow/micropython.git
+git clone -b stm32-ethernet-F7DISC https://github.com/forester3/micropython.git
 cd micropython
 git submodule update --init
 make -C mpy-cross
