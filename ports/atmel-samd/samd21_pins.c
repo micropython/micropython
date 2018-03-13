@@ -57,7 +57,7 @@
   .wave_output = p_wave_output \
 }
 
-#define NO_TIMER TCC(0, 0)
+#define NO_TIMER TCC(0xff, 0)
 
 #define TOUCH(y_line) \
     .has_touch = true, \
