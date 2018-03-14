@@ -30,15 +30,13 @@
 
 #define SERCOM(sercom_index, p_pad)     \
 { \
-  .sercom = SERCOM## sercom_index, \
   .index = sercom_index,   \
   .pad = p_pad \
 }
 
 #define NO_SERCOM \
 { \
-  .sercom = 0, \
-  .index = 0, \
+  .index = 0x3f, \
   .pad = 0 \
 }
 
@@ -91,8 +89,6 @@ const mcu_pin_obj_t pin_## p_name = { \
     .timer = { p_primary_timer, p_secondary_timer}, \
     .sercom = {p_primary_sercom, p_secondary_sercom}, \
 }
-
-#define NO_ADC_INPUT (0)
 
 // Pins in datasheet order.
 // NOTE(tannewt): TC wave out 0 is commented out because the first channel is

@@ -71,7 +71,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (!have_tx && !have_rx) {
         mp_raise_ValueError("tx and rx cannot both be None");
     }
-    
+
     self->baudrate = baudrate;
     self->character_bits = bits;
     self->timeout_ms = timeout;
@@ -82,10 +82,12 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
         Sercom* potential_sercom = NULL;
         if (have_tx) {
-            potential_sercom = tx->sercom[i].sercom;
             sercom_index = tx->sercom[i].index;
-            if (potential_sercom == NULL ||
-                potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
+            if (sercom_index >= SERCOM_INST_NUM) {
+                continue;
+            }
+            potential_sercom = sercom_insts[sercom_index];
+            if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0 ||
                   tx->sercom[i].pad == 2)) {
                 continue;
@@ -98,12 +100,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
-            if (((!have_tx && rx->sercom[j].sercom->USART.CTRLA.bit.ENABLE == 0) ||
-                 potential_sercom == rx->sercom[j].sercom) &&
+            if (((!have_tx && rx->sercom[j].index < SERCOM_INST_NUM &&
+                  sercom_insts[rx->sercom[j].index]->USART.CTRLA.bit.ENABLE == 0) ||
+                 sercom_index == rx->sercom[j].index) &&
                 rx->sercom[j].pad != tx_pad) {
                 rx_pinmux = PINMUX(rx->pin, (j == 0) ? MUX_C : MUX_D);
                 rx_pad = rx->sercom[j].pad;
-                sercom = rx->sercom[j].sercom;
+                sercom = sercom_insts[rx->sercom[j].index];
                 sercom_index = rx->sercom[j].index;
                 break;
             }
@@ -147,7 +150,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // usart_async_init() sets a number of defaults based on a prototypical SERCOM
     // which don't necessarily match what we need. After calling it, set the values
     // specific to this instantiation of UART.
-    
+
     // Set pads computed for this SERCOM.
     // TXPO:
     // 0x0: TX pad 0; no RTS/CTS
@@ -182,7 +185,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // http://start.atmel.com/static/help/index.html?GUID-79201A5A-226F-4FBB-B0B8-AB0BE0554836
     // Look at the ASFv4 code example for async USART.
     usart_async_register_callback(usart_desc_p, USART_ASYNC_RXC_CB, usart_async_rxc_callback);
-    
+
 
     if (have_tx) {
         gpio_set_pin_direction(tx->pin, GPIO_DIRECTION_OUT);
@@ -193,7 +196,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     } else {
         self->tx_pin = NO_PIN;
     }
-        
+
     if (have_rx) {
         gpio_set_pin_direction(rx->pin, GPIO_DIRECTION_IN);
         gpio_set_pin_pull_mode(rx->pin, GPIO_PULL_OFF);
@@ -238,7 +241,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         // Nothing to read.
         return 0;
     }
-    
+
     struct io_descriptor *io;
     usart_async_get_io_descriptor(usart_desc_p, &io);
 
@@ -266,7 +269,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         MICROPY_VM_HOOK_LOOP
 #endif
     }
-    
+
     return total_read;
 }
 
@@ -305,7 +308,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
-    
+
     struct usart_async_status async_status;
     // Could return ERR_BUSY, but if that's true there's already a problem.
     usart_async_get_status(usart_desc_p, &async_status);

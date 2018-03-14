@@ -60,7 +60,8 @@ static const uint8_t SERCOMx_GCLK_ID_SLOW[] = {
 #endif
 };
 
-    
+Sercom* sercom_insts[SERCOM_INST_NUM] = SERCOM_INSTS;
+
 // Clock initialization as done in Atmel START.
 void samd_peripherals_sercom_clock_init(Sercom* sercom, uint8_t sercom_index) {
 	hri_gclk_write_PCHCTRL_reg(GCLK,
