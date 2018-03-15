@@ -27,10 +27,10 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_UART_REPL_BAUD   115200
 
 // I2C busses
-//#define MICROPY_HW_I2C1_SCL         (pin_B8)
-//#define MICROPY_HW_I2C1_SDA         (pin_B9)
-//#define MICROPY_HW_I2C3_SCL         (pin_H7)
-//#define MICROPY_HW_I2C3_SDA         (pin_H8)
+#define MICROPY_HW_I2C1_SCL         (pin_B8)
+#define MICROPY_HW_I2C1_SDA         (pin_B9)
+#define MICROPY_HW_I2C2_SCL         (pin_F1)
+#define MICROPY_HW_I2C2_SDA         (pin_F0)
 
 // SPI
 //#define MICROPY_HW_SPI2_NSS         (pin_I0)
