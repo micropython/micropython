@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2014-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -170,6 +170,43 @@ STATIC void can_clearfilter(uint32_t f) {
     filter.BankNumber           = can2_start_bank;
 
     HAL_CAN_ConfigFilter(NULL, &filter);
+}
+
+STATIC int can_receive(CAN_TypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint32_t timeout_ms) {
+    volatile uint32_t *rfr;
+    if (fifo == CAN_FIFO0) {
+        rfr = &can->RF0R;
+    } else {
+        rfr = &can->RF1R;
+    }
+
+    // Wait for a message to become available, with timeout
+    uint32_t start = HAL_GetTick();
+    while ((*rfr & 3) == 0) {
+        MICROPY_EVENT_POLL_HOOK
+        if (HAL_GetTick() - start >= timeout_ms) {
+            return -MP_ETIMEDOUT;
+        }
+    }
+
+    // Read message data
+    CAN_FIFOMailBox_TypeDef *box = &can->sFIFOMailBox[fifo];
+    msg->IDE = box->RIR & 4;
+    if (msg->IDE == CAN_ID_STD) {
+        msg->StdId = box->RIR >> 21;
+    } else {
+        msg->ExtId = box->RIR >> 3;
+    }
+    msg->RTR = box->RIR & 2;
+    msg->DLC = box->RDTR & 0xf;
+    msg->FMI = box->RDTR >> 8 & 0xff;
+    *(uint32_t*)&msg->Data[0] = box->RDLR;
+    *(uint32_t*)&msg->Data[4] = box->RDHR;
+
+    // Release (free) message from FIFO
+    *rfr |= CAN_RF0R_RFOM0;
+
+    return 0; // success
 }
 
 // We have our own version of CAN transmit so we can handle Timeout=0 correctly.
@@ -530,11 +567,9 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     // receive the data
     CanRxMsgTypeDef rx_msg;
-    self->can.pRxMsg = self->can.pRx1Msg = &rx_msg;
-    HAL_StatusTypeDef status = HAL_CAN_Receive(&self->can, args[0].u_int, args[1].u_int);
-
-    if (status != HAL_OK) {
-        mp_hal_raise(status);
+    int ret = can_receive(self->can.Instance, args[0].u_int, &rx_msg, args[1].u_int);
+    if (ret < 0) {
+        mp_raise_OSError(-ret);
     }
 
     // Manage the rx state machine
