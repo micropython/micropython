@@ -65,7 +65,8 @@ Methods
      - *bs2* defines the location of the transmit point in units of the time quanta;
        it can be between 1 and 16 inclusive
      - *auto_restart* sets whether the controller will automatically try and restart
-       communications after entering the bus-off state
+       communications after entering the bus-off state; if this is disabled then
+       :meth:`~CAN.restart()` can be used to leave the bus-off state
 
    The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
    prescaler value divided by PCLK1 (the frequency of internal peripheral bus 1);
@@ -86,6 +87,17 @@ Methods
 .. method:: CAN.deinit()
 
    Turn off the CAN bus.
+
+.. method:: CAN.restart()
+
+   Force a software restart of the CAN controller without resetting its
+   configuration.
+   
+   If the controller enters the bus-off state then it will no longer participate
+   in bus activity.  If the controller is not configured to automatically restart
+   (see :meth:`~CAN.init()`) then this method can be used to trigger a restart,
+   and the controller will follow the CAN protocol to leave the bus-off state and
+   go into the error active state.
 
 .. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr)
 

@@ -467,6 +467,23 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_deinit_obj, pyb_can_deinit);
 
+// Force a software restart of the controller, to allow transmission after a bus error
+STATIC mp_obj_t pyb_can_restart(mp_obj_t self_in) {
+    pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (!self->is_enabled) {
+        mp_raise_ValueError(NULL);
+    }
+    CAN_TypeDef *can = self->can.Instance;
+    can->MCR |= CAN_MCR_INRQ;
+    while ((can->MSR & CAN_MSR_INAK) == 0) {
+    }
+    can->MCR &= ~CAN_MCR_INRQ;
+    while ((can->MSR & CAN_MSR_INAK)) {
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_restart_obj, pyb_can_restart);
+
 /// \method any(fifo)
 /// Return `True` if any message waiting on the FIFO, else `False`.
 STATIC mp_obj_t pyb_can_any(mp_obj_t self_in, mp_obj_t fifo_in) {
@@ -824,6 +841,7 @@ STATIC const mp_rom_map_elem_t pyb_can_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_can_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_can_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&pyb_can_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_can_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_can_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_can_recv_obj) },
