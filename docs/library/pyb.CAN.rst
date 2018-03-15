@@ -24,11 +24,11 @@ Constructors
 
 .. class:: pyb.CAN(bus, ...)
 
-   Construct a CAN object on the given bus.  ``bus`` can be 1-2, or 'YA' or 'YB'.
+   Construct a CAN object on the given bus.  *bus* can be 1-2, or ``'YA'`` or ``'YB'``.
    With no additional parameters, the CAN object is created but not
    initialised (it has the settings from the last initialisation of
    the bus, if any).  If extra arguments are given, the bus is initialised.
-   See ``init`` for parameters of initialisation.
+   See :meth:`CAN.init` for parameters of initialisation.
 
    The physical pins of the CAN busses are:
 
@@ -42,7 +42,7 @@ Class Methods
    Reset and disable all filter banks and assign how many banks should be available for CAN(1).
 
    STM32F405 has 28 filter banks that are shared between the two available CAN bus controllers.
-   This function configures how many filter banks should be assigned to each. ``nr`` is the number of banks
+   This function configures how many filter banks should be assigned to each. *nr* is the number of banks
    that will be assigned to CAN(1), the rest of the 28 are assigned to CAN(2).
    At boot, 14 banks are assigned to each controller.
 
@@ -53,16 +53,16 @@ Methods
 
    Initialise the CAN bus with the given parameters:
 
-     - ``mode`` is one of:  NORMAL, LOOPBACK, SILENT, SILENT_LOOPBACK
-     - if ``extframe`` is True then the bus uses extended identifiers in the frames
+     - *mode* is one of:  NORMAL, LOOPBACK, SILENT, SILENT_LOOPBACK
+     - if *extframe* is True then the bus uses extended identifiers in the frames
        (29 bits); otherwise it uses standard 11 bit identifiers
-     - ``prescaler`` is used to set the duration of 1 time quanta; the time quanta
+     - *prescaler* is used to set the duration of 1 time quanta; the time quanta
        will be the input clock (PCLK1, see :meth:`pyb.freq()`) divided by the prescaler
-     - ``sjw`` is the resynchronisation jump width in units of the time quanta;
+     - *sjw* is the resynchronisation jump width in units of the time quanta;
        it can be 1, 2, 3, 4
-     - ``bs1`` defines the location of the sample point in units of the time quanta;
+     - *bs1* defines the location of the sample point in units of the time quanta;
        it can be between 1 and 1024 inclusive
-     - ``bs2`` defines the location of the transmit point in units of the time quanta;
+     - *bs2* defines the location of the transmit point in units of the time quanta;
        it can be between 1 and 16 inclusive
 
    The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
@@ -89,13 +89,13 @@ Methods
 
    Configure a filter bank:
 
-   - ``bank`` is the filter bank that is to be configured.
-   - ``mode`` is the mode the filter should operate in.
-   - ``fifo`` is which fifo (0 or 1) a message should be stored in, if it is accepted by this filter.
-   - ``params`` is an array of values the defines the filter. The contents of the array depends on the ``mode`` argument.
+   - *bank* is the filter bank that is to be configured.
+   - *mode* is the mode the filter should operate in.
+   - *fifo* is which fifo (0 or 1) a message should be stored in, if it is accepted by this filter.
+   - *params* is an array of values the defines the filter. The contents of the array depends on the *mode* argument.
 
    +-----------+---------------------------------------------------------+
-   |``mode``   |contents of parameter array                              |
+   |*mode*     |contents of *params* array                               |
    +===========+=========================================================+
    |CAN.LIST16 |Four 16 bit ids that will be accepted                    |
    +-----------+---------------------------------------------------------+
@@ -110,13 +110,13 @@ Methods
    |CAN.MASK32 |As with CAN.MASK16 but with only one 32 bit id/mask pair.|
    +-----------+---------------------------------------------------------+
 
-   - ``rtr`` is an array of booleans that states if a filter should accept a
+   - *rtr* is an array of booleans that states if a filter should accept a
      remote transmission request message.  If this argument is not given
-     then it defaults to False for all entries.  The length of the array
-     depends on the ``mode`` argument.
+     then it defaults to ``False`` for all entries.  The length of the array
+     depends on the *mode* argument.
 
    +-----------+----------------------+
-   |``mode``   |length of rtr array   |
+   |*mode*     |length of *rtr* array |
    +===========+======================+
    |CAN.LIST16 |4                     |
    +-----------+----------------------+
@@ -131,7 +131,7 @@ Methods
 
    Clear and disables a filter bank:
 
-   - ``bank`` is the filter bank that is to be cleared.
+   - *bank* is the filter bank that is to be cleared.
 
 .. method:: CAN.any(fifo)
 
@@ -141,8 +141,8 @@ Methods
 
    Receive data on the bus:
 
-     - ``fifo`` is an integer, which is the FIFO to receive on
-     - ``timeout`` is the timeout in milliseconds to wait for the receive.
+     - *fifo* is an integer, which is the FIFO to receive on
+     - *timeout* is the timeout in milliseconds to wait for the receive.
 
    Return value: A tuple containing four values.
 
@@ -155,13 +155,13 @@ Methods
 
    Send a message on the bus:
 
-     - ``data`` is the data to send (an integer to send, or a buffer object).
-     - ``id`` is the id of the message to be sent.
-     - ``timeout`` is the timeout in milliseconds to wait for the send.
-     - ``rtr`` is a boolean that specifies if the message shall be sent as
-       a remote transmission request.  If ``rtr`` is True then only the length
-       of ``data`` is used to fill in the DLC slot of the frame; the actual
-       bytes in ``data`` are unused.
+     - *data* is the data to send (an integer to send, or a buffer object).
+     - *id* is the id of the message to be sent.
+     - *timeout* is the timeout in milliseconds to wait for the send.
+     - *rtr* is a boolean that specifies if the message shall be sent as
+       a remote transmission request.  If *rtr* is True then only the length
+       of *data* is used to fill in the DLC slot of the frame; the actual
+       bytes in *data* are unused.
 
      If timeout is 0 the message is placed in a buffer in one of three hardware
      buffers and the method returns immediately. If all three buffers are in use
@@ -175,8 +175,8 @@ Methods
 
    Register a function to be called when a message is accepted into a empty fifo:
 
-   - ``fifo`` is the receiving fifo.
-   - ``fun`` is the function to be called when the fifo becomes non empty.
+   - *fifo* is the receiving fifo.
+   - *fun* is the function to be called when the fifo becomes non empty.
 
    The callback function takes two arguments the first is the can object it self the second is
    a integer that indicates the reason for the callback.
