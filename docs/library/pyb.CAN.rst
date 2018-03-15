@@ -49,7 +49,7 @@ Class Methods
 Methods
 -------
 
-.. method:: CAN.init(mode, extframe=False, prescaler=100, \*, sjw=1, bs1=6, bs2=8)
+.. method:: CAN.init(mode, extframe=False, prescaler=100, \*, sjw=1, bs1=6, bs2=8, auto_restart=False)
 
    Initialise the CAN bus with the given parameters:
 
@@ -64,6 +64,8 @@ Methods
        it can be between 1 and 1024 inclusive
      - *bs2* defines the location of the transmit point in units of the time quanta;
        it can be between 1 and 16 inclusive
+     - *auto_restart* sets whether the controller will automatically try and restart
+       communications after entering the bus-off state
 
    The time quanta tq is the basic unit of time for the CAN bus.  tq is the CAN
    prescaler value divided by PCLK1 (the frequency of internal peripheral bus 1);

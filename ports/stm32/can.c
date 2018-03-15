@@ -307,7 +307,6 @@ STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     if (!self->is_enabled) {
         mp_printf(print, "CAN(%u)", self->can_id);
     } else {
-        mp_printf(print, "CAN(%u, CAN.", self->can_id);
         qstr mode;
         switch (self->can.Init.Mode) {
             case CAN_MODE_NORMAL: mode = MP_QSTR_NORMAL; break;
@@ -315,19 +314,17 @@ STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
             case CAN_MODE_SILENT: mode = MP_QSTR_SILENT; break;
             case CAN_MODE_SILENT_LOOPBACK: default: mode = MP_QSTR_SILENT_LOOPBACK; break;
         }
-        mp_printf(print, "%q, extframe=", mode);
-        if (self->extframe) {
-            mode = MP_QSTR_True;
-        } else {
-            mode = MP_QSTR_False;
-        }
-        mp_printf(print, "%q)", mode);
+        mp_printf(print, "CAN(%u, CAN.%q, extframe=%q, auto_restart=%q)",
+            self->can_id,
+            mode,
+            self->extframe ? MP_QSTR_True : MP_QSTR_False,
+            (self->can.Instance->MCR & CAN_MCR_ABOM) ? MP_QSTR_True : MP_QSTR_False);
     }
 }
 
 // init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2 };
+    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int  = CAN_MODE_NORMAL} },
         { MP_QSTR_extframe,     MP_ARG_BOOL,                    {.u_bool = false} },
@@ -335,6 +332,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
         { MP_QSTR_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 1} },
         { MP_QSTR_bs1,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 6} },
         { MP_QSTR_bs2,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 8} },
+        { MP_QSTR_auto_restart, MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
     };
 
     // parse args
@@ -352,7 +350,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     init->BS1 = ((args[ARG_bs1].u_int - 1) & 0xf) << 16;
     init->BS2 = ((args[ARG_bs2].u_int - 1) & 7) << 20;
     init->TTCM = DISABLE;
-    init->ABOM = DISABLE;
+    init->ABOM = args[ARG_auto_restart].u_bool ? ENABLE : DISABLE;
     init->AWUM = DISABLE;
     init->NART = DISABLE;
     init->RFLM = DISABLE;
