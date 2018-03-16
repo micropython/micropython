@@ -259,11 +259,11 @@ Constants
 ---------
 
 .. data:: CAN.NORMAL
-.. data:: CAN.LOOPBACK
-.. data:: CAN.SILENT
-.. data:: CAN.SILENT_LOOPBACK
+          CAN.LOOPBACK
+          CAN.SILENT
+          CAN.SILENT_LOOPBACK
 
-   the mode of the CAN bus
+   The mode of the CAN bus used in :meth:`~CAN.init()`.
 
 .. data:: CAN.STOPPED
           CAN.ERROR_ACTIVE
@@ -271,11 +271,11 @@ Constants
           CAN.ERROR_PASSIVE
           CAN.BUS_OFF
 
-   Possible states of the CAN controller.
+   Possible states of the CAN controller returned from :meth:`~CAN.state()`.
 
 .. data:: CAN.LIST16
-.. data:: CAN.MASK16
-.. data:: CAN.LIST32
-.. data:: CAN.MASK32
+          CAN.MASK16
+          CAN.LIST32
+          CAN.MASK32
 
-   the operation mode of a filter
+   The operation mode of a filter used in :meth:`~CAN.setfilter()`.
