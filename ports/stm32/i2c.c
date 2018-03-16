@@ -131,7 +131,7 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #endif
 };
 
-#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+#if defined(STM32F7) || defined(STM32L4)
 
 // The STM32F0, F3, F7 and L4 use a TIMINGR register rather than ClockSpeed and
 // DutyCycle.
@@ -161,7 +161,7 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 #define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
 #define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
 
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
 
 // The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
 // defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
@@ -424,7 +424,7 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
             return;
     }
 
-    #if defined(MCU_SERIES_F4)
+    #if defined(STM32F4)
 
     if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
         if (hi2c->XferCount != 0U) {
@@ -476,7 +476,7 @@ void i2c_er_irq_handler(mp_uint_t i2c_id) {
             return;
     }
 
-    #if defined(MCU_SERIES_F4)
+    #if defined(STM32F4)
 
     uint32_t sr1 = hi2c->Instance->SR1;
 

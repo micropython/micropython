@@ -54,7 +54,7 @@
 #include "wdt.h"
 #include "genhdr/pllfreqtable.h"
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
 #endif
@@ -86,13 +86,13 @@
 STATIC uint32_t reset_cause;
 
 void machine_init(void) {
-    #if defined(MCU_SERIES_F4)
+    #if defined(STM32F4)
     if (PWR->CSR & PWR_CSR_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->CR |= PWR_CR_CSBF;
     } else
-    #elif defined(MCU_SERIES_F7)
+    #elif defined(STM32F7)
     if (PWR->CSR1 & PWR_CSR1_SBF) {
         // came out of standby
         reset_cause = PYB_RESET_DEEPSLEEP;
@@ -241,7 +241,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
     HAL_MPU_Disable();
     #endif
 
-#if defined(MCU_SERIES_F7) || defined(STM32H7)
+#if defined(STM32F7) || defined(STM32H7)
     // arm-none-eabi-gcc 4.9.0 does not correctly inline this
     // MSP function, so we write it out explicitly here.
     //__set_MSP(*((uint32_t*) 0x1FF00000));
@@ -296,7 +296,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set
         mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
 
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         mp_raise_NotImplementedError("machine.freq set not supported yet");
         #endif
 
@@ -391,7 +391,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set PLL as system clock source if wanted
         if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
             uint32_t flash_latency;
-            #if defined(MCU_SERIES_F7)
+            #if defined(STM32F7)
             // if possible, scale down the internal voltage regulator to save power
             // the flash_latency values assume a supply voltage between 2.7V and 3.6V
             uint32_t volt_scale;
@@ -419,7 +419,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             }
             #endif
 
-            #if !defined(MCU_SERIES_F7)
+            #if !defined(STM32F7)
             #if !defined(MICROPY_HW_FLASH_LATENCY)
             #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_5
             #endif
@@ -433,7 +433,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         }
 
         #if defined(MICROPY_HW_CLK_LAST_FREQ) && MICROPY_HW_CLK_LAST_FREQ
-        #if defined(MCU_SERIES_F7)
+        #if defined(STM32F7)
         #define FREQ_BKP BKP31R
         #else
         #define FREQ_BKP BKP19R
@@ -459,7 +459,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 
 STATIC mp_obj_t machine_sleep(void) {
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
 
     // Enter Stop 1 mode
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
@@ -491,7 +491,7 @@ STATIC mp_obj_t machine_sleep(void) {
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
 
-    # if defined(MCU_SERIES_F7)
+    # if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     # else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
@@ -527,7 +527,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_sleep_obj, machine_sleep);
 STATIC mp_obj_t machine_deepsleep(void) {
     rtc_init_finalise();
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
     printf("machine.deepsleep not supported yet\n");
 #else
     // We need to clear the PWR wake-up-flag before entering standby, since
@@ -549,7 +549,7 @@ STATIC mp_obj_t machine_deepsleep(void) {
     // clear RTC wake-up flags
     RTC->ISR &= ~(RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF);
 
-    #if defined(MCU_SERIES_F7)
+    #if defined(STM32F7)
     // disable wake-up flags
     PWR->CSR2 &= ~(PWR_CSR2_EWUP6 | PWR_CSR2_EWUP5 | PWR_CSR2_EWUP4 | PWR_CSR2_EWUP3 | PWR_CSR2_EWUP2 | PWR_CSR2_EWUP1);
     // clear global wake-up flag

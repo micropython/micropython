@@ -38,7 +38,7 @@
 
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 
-#if defined(MCU_SERIES_F4)
+#if defined(STM32F4)
 
 // F4xx specific driver for I2C hardware peripheral
 // The hardware-specific I2C code below is based heavily on the code from

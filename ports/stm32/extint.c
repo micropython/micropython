@@ -89,7 +89,7 @@
 // register in an atomic fashion by using bitband addressing.
 #define EXTI_MODE_BB(mode, line) (*(__IO uint32_t *)(PERIPH_BB_BASE + ((EXTI_OFFSET + (mode)) * 32) + ((line) * 4)))
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 // The L4 MCU supports 40 Events/IRQs lines of the type configurable and direct.
 // Here we only support configurable line types.  Details, see page 330 of RM0351, Rev 1.
 // The USB_FS_WAKUP event is a direct type and there is no support for it.
@@ -137,7 +137,7 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
     EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,   EXTI9_5_IRQn,
     EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn, EXTI15_10_IRQn,
     EXTI15_10_IRQn,
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
     PVD_PVM_IRQn,
     #else
     PVD_IRQn,
@@ -282,7 +282,7 @@ void extint_enable(uint line) {
     if (line >= EXTI_NUM_VECTORS) {
         return;
     }
-    #if defined(MCU_SERIES_F7) || defined(STM32H7)
+    #if defined(STM32F7) || defined(STM32H7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     if (pyb_extint_mode[line] == EXTI_Mode_Interrupt) {
@@ -312,7 +312,7 @@ void extint_disable(uint line) {
         return;
     }
 
-    #if defined(MCU_SERIES_F7) || defined(STM32H7)
+    #if defined(STM32F7) || defined(STM32H7)
     // The Cortex-M7 doesn't have bitband support.
     mp_uint_t irq_state = disable_irq();
     #if defined(STM32H7)
@@ -337,7 +337,7 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-#if defined(MCU_SERIES_L4) || defined(STM32H7)
+#if defined(STM32L4) || defined(STM32H7)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
 #else
@@ -386,7 +386,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// \classmethod regs()
 /// Dump the values of the EXTI registers.
 STATIC mp_obj_t extint_regs(void) {
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
     printf("EXTI_IMR1   %08lx\n", EXTI->IMR1);
     printf("EXTI_IMR2   %08lx\n", EXTI->IMR2);
     printf("EXTI_EMR1   %08lx\n", EXTI->EMR1);

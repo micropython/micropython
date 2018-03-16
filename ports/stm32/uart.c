@@ -383,7 +383,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
+        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
         return self->uart.Instance->RDR & self->char_mask;
         #else
         return self->uart.Instance->DR & self->char_mask;
@@ -462,7 +462,7 @@ STATIC size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_
         } else {
             data = *src++;
         }
-        #if defined(MCU_SERIES_F4)
+        #if defined(STM32F4)
         uart->DR = data;
         #else
         uart->TDR = data;
@@ -501,7 +501,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
+                #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
                 int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
                 #else
                 int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
@@ -686,7 +686,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // compute actual baudrate that was configured
     // (this formula assumes UART_OVERSAMPLING_16)
     uint32_t actual_baudrate = 0;
-    #if defined(MCU_SERIES_F7) || defined(STM32H7)
+    #if defined(STM32F7) || defined(STM32H7)
     UART_ClockSourceTypeDef clocksource = UART_CLOCKSOURCE_UNDEFINED;
     UART_GETCLOCKSOURCE(&self->uart, clocksource);
     switch (clocksource) {
@@ -937,7 +937,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
+    #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
     self->uart.Instance->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uart.Instance->CR1 |= USART_CR1_SBK;

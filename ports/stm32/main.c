@@ -433,7 +433,7 @@ int main(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
-    #if defined(MCU_SERIES_F4) ||  defined(MCU_SERIES_F7)
+    #if defined(STM32F4) ||  defined(STM32F7)
         #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
         // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
         // which behaves more or less like normal SRAM.

@@ -28,7 +28,7 @@
 
 typedef struct _dma_descr_t dma_descr_t;
 
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
 
 extern const dma_descr_t dma_I2C_1_RX;
 extern const dma_descr_t dma_SPI_3_RX;
@@ -57,7 +57,7 @@ extern const dma_descr_t dma_SDMMC_2_TX;
 extern const dma_descr_t dma_SPI_6_RX;
 extern const dma_descr_t dma_SDIO_0_TX;
 
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
 
 extern const dma_descr_t dma_ADC_1_RX;
 extern const dma_descr_t dma_ADC_2_RX;

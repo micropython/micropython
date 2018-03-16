@@ -56,7 +56,7 @@
 #define ADCx_CLK_ENABLE         __HAL_RCC_ADC1_CLK_ENABLE
 #define ADC_NUM_CHANNELS        (19)
 
-#if defined(MCU_SERIES_F4)
+#if defined(STM32F4)
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
@@ -64,7 +64,7 @@
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
 
-#elif defined(MCU_SERIES_F7)
+#elif defined(STM32F7)
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (15)
@@ -78,7 +78,7 @@
 #define ADC_CAL1                ((uint16_t*)(ADC_CAL_ADDRESS + 2))
 #define ADC_CAL2                ((uint16_t*)(ADC_CAL_ADDRESS + 4))
 
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
 
 #define ADC_FIRST_GPIO_CHANNEL  (1)
 #define ADC_LAST_GPIO_CHANNEL   (16)
@@ -127,7 +127,7 @@ typedef struct _pyb_obj_adc_t {
 
 // convert user-facing channel number into internal channel number
 static inline uint32_t adc_get_internal_channel(uint32_t channel) {
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     // on F4 and F7 MCUs we want channel 16 to always be the TEMPSENSOR
     // (on some MCUs ADC_CHANNEL_TEMPSENSOR=16, on others it doesn't)
     if (channel == 16) {
@@ -138,9 +138,9 @@ static inline uint32_t adc_get_internal_channel(uint32_t channel) {
 }
 
 STATIC bool is_adcx_channel(int channel) {
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
     return IS_ADC_CHANNEL(channel);
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
     ADC_HandleTypeDef handle;
     handle.Instance = ADCx;
     return IS_ADC_CHANNEL(&handle, channel);
@@ -151,9 +151,9 @@ STATIC bool is_adcx_channel(int channel) {
 
 STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
     uint32_t tickstart = HAL_GetTick();
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
     while ((ADCx->SR & ADC_FLAG_EOC) != ADC_FLAG_EOC) {
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
     while (READ_BIT(ADCx->ISR, ADC_FLAG_EOC) != ADC_FLAG_EOC) {
 #else
     #error Unsupported processor
@@ -165,9 +165,9 @@ STATIC void adc_wait_for_eoc_or_timeout(int32_t timeout) {
 }
 
 STATIC void adcx_clock_enable(void) {
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
     ADCx_CLK_ENABLE();
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
     __HAL_RCC_ADC_CLK_ENABLE();
 #else
     #error Unsupported processor
@@ -186,9 +186,9 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
       mp_hal_gpio_clock_enable(pin->gpio);
       GPIO_InitTypeDef GPIO_InitStructure;
       GPIO_InitStructure.Pin = pin->pin_mask;
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
       GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
       GPIO_InitStructure.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
 #else
     #error Unsupported processor
@@ -209,12 +209,12 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
     adcHandle->Init.Resolution            = ADC_RESOLUTION_12B;
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
     adcHandle->Init.EOCSelection          = DISABLE;
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
     adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
@@ -229,7 +229,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 
     HAL_ADC_Init(adcHandle);
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
     ADC_MultiModeTypeDef multimode;
     multimode.Mode = ADC_MODE_INDEPENDENT;
     if (HAL_ADCEx_MultiModeConfigChannel(adcHandle, &multimode) != HAL_OK)
@@ -244,9 +244,9 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 
     sConfig.Channel = channel;
     sConfig.Rank = 1;
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
     sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
     sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
@@ -411,9 +411,9 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
             HAL_ADC_Start(&self->handle);
         } else {
             // for subsequent samples we can just set the "start sample" bit
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
             SET_BIT(ADCx->CR, ADC_CR_ADSTART);
 #else
             #error Unsupported processor
@@ -513,11 +513,11 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
     adcHandle->Init.EOCSelection          = DISABLE;
-#if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+#if defined(STM32F4) || defined(STM32F7)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
     adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIG_T1_CC1;
@@ -578,7 +578,7 @@ float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     //       be 12-bits.
     raw_value <<= (12 - adc_get_resolution(adcHandle));
 
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     // ST docs say that (at least on STM32F42x and STM32F43x), VBATE must
     // be disabled when TSVREFE is enabled for TEMPSENSOR and VREFINT
     // conversions to work.  VBATE is enabled by the above call to read

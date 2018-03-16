@@ -191,7 +191,7 @@ void rtc_init_finalise() {
 
     // fresh reset; configure RTC Calendar
     RTC_CalendarConfig();
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
     if(__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
     #else
     if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
@@ -232,7 +232,7 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
         HAL_PWR_EnableBkUpAccess();
         uint32_t tickstart = HAL_GetTick();
 
-        #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4) || defined(STM32H7)
+        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
         //__HAL_RCC_PWR_CLK_ENABLE();
         // Enable write access to Backup domain
         //PWR->CR1 |= PWR_CR1_DBP;
@@ -302,10 +302,10 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         // Exit Initialization mode
         hrtc->Instance->ISR &= (uint32_t)~RTC_ISR_INIT;
 
-        #if defined(MCU_SERIES_L4) || defined(STM32H7)
+        #if defined(STM32L4) || defined(STM32H7)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMOUTTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
-        #elif defined(MCU_SERIES_F7)
+        #elif defined(STM32F7)
         hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
         #else
@@ -635,7 +635,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // enable external interrupts on line 22
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         EXTI->IMR1 |= 1 << 22;
         EXTI->RTSR1 |= 1 << 22;
         #elif defined(STM32H7)
@@ -648,7 +648,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
 
         // clear interrupt flags
         RTC->ISR &= ~(1 << 10);
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         EXTI->PR1 = 1 << 22;
         #elif defined(STM32H7)
         EXTI_D1->PR1 = 1 << 22;
@@ -668,7 +668,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->WPR = 0xff;
 
         // disable external interrupts on line 22
-        #if defined(MCU_SERIES_L4)
+        #if defined(STM32L4)
         EXTI->IMR1 &= ~(1 << 22);
         #elif defined(STM32H7)
         EXTI_D1->IMR1 |= 1 << 22;

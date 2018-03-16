@@ -102,7 +102,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     /* Enable USB FS Clocks */ 
     __USB_OTG_FS_CLK_ENABLE();
     
-#if defined (MCU_SERIES_L4)
+#if defined(STM32L4)
     /* Enable VDDUSB */
     if(__HAL_RCC_PWR_IS_CLK_DISABLED())
     {
@@ -432,7 +432,7 @@ if (pdev->id ==  USB_PHY_FS_ID)
   pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
   pcd_fs_handle.Init.Sof_enable = 1;
   pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
   pcd_fs_handle.Init.lpm_enable = DISABLE;
   pcd_fs_handle.Init.battery_charging_enable = DISABLE;
 #endif

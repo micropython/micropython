@@ -651,9 +651,9 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 // It assumes that timer instance pointer has the lower 8 bits cleared.
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
-    #elif defined(MCU_SERIES_L4)
+    #elif defined(STM32L4)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
@@ -671,9 +671,9 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(7, TIM7_IRQn),
     #endif
     #if defined(TIM8)
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
-    #elif defined(MCU_SERIES_L4)
+    #elif defined(STM32L4)
     TIM_ENTRY(8, TIM8_UP_IRQn),
     #endif
     #endif

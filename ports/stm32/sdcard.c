@@ -40,7 +40,7 @@
 
 #if MICROPY_HW_HAS_SDCARD
 
-#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+#if defined(STM32F7) || defined(STM32L4)
 
 // The F7 has 2 SDMMC units but at the moment we only support using one of them in
 // a given build.  If a boards config file defines MICROPY_HW_SDMMC2_CK then SDMMC2
@@ -198,7 +198,7 @@ bool sdcard_power_on(void) {
     }
 
     // configure the SD bus width for wide operation
-    #if defined(MCU_SERIES_F7)
+    #if defined(STM32F7)
     // use maximum SDMMC clock speed on F7 MCUs
     sd_handle.Init.ClockBypass = SDMMC_CLOCK_BYPASS_ENABLE;
     #endif
@@ -239,7 +239,7 @@ void SDIO_IRQHandler(void) {
 }
 #endif
 
-#if defined(MCU_SERIES_F7)
+#if defined(STM32F7)
 void SDMMC2_IRQHandler(void) {
     IRQ_ENTER(SDMMC2_IRQn);
     HAL_SD_IRQHandler(&sd_handle);
