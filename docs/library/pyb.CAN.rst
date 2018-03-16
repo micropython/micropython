@@ -99,6 +99,20 @@ Methods
    and the controller will follow the CAN protocol to leave the bus-off state and
    go into the error active state.
 
+.. method:: CAN.state()
+
+   Return the state of the controller.  The return value can be one of:
+
+   - ``CAN.STOPPED`` -- the controller is completely off and reset;
+   - ``CAN.ERROR_ACTIVE`` -- the controller is on and in the Error Active state
+     (both TEC and REC are less than 96);
+   - ``CAN.ERROR_WARNING`` -- the controller is on and in the Error Warning state
+     (at least one of TEC or REC is 96 or greater);
+   - ``CAN.ERROR_PASSIVE`` -- the controller is on and in the Error Passive state
+     (at least one of TEC or REC is 128 or greater);
+   - ``CAN.BUS_OFF`` -- the controller is on but not participating in bus activity
+     (TEC overflowed beyond 255).
+
 .. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr)
 
    Configure a filter bank:
@@ -228,6 +242,14 @@ Constants
 .. data:: CAN.SILENT_LOOPBACK
 
    the mode of the CAN bus
+
+.. data:: CAN.STOPPED
+          CAN.ERROR_ACTIVE
+          CAN.ERROR_WARNING
+          CAN.ERROR_PASSIVE
+          CAN.BUS_OFF
+
+   Possible states of the CAN controller.
 
 .. data:: CAN.LIST16
 .. data:: CAN.MASK16
