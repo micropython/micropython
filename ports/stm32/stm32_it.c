@@ -749,6 +749,12 @@ void CAN1_RX1_IRQHandler(void) {
     IRQ_EXIT(CAN1_RX1_IRQn);
 }
 
+void CAN1_SCE_IRQHandler(void) {
+    IRQ_ENTER(CAN1_SCE_IRQn);
+    can_sce_irq_handler(PYB_CAN_1);
+    IRQ_EXIT(CAN1_SCE_IRQn);
+}
+
 void CAN2_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
@@ -759,6 +765,12 @@ void CAN2_RX1_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX1_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
     IRQ_EXIT(CAN2_RX1_IRQn);
+}
+
+void CAN2_SCE_IRQHandler(void) {
+    IRQ_ENTER(CAN2_SCE_IRQn);
+    can_sce_irq_handler(PYB_CAN_2);
+    IRQ_EXIT(CAN2_SCE_IRQn);
 }
 #endif // MICROPY_HW_ENABLE_CAN
 

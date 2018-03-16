@@ -89,6 +89,9 @@ typedef struct _pyb_can_obj_t {
     bool extframe : 1;
     byte rx_state0;
     byte rx_state1;
+    uint16_t num_error_warning;
+    uint16_t num_error_passive;
+    uint16_t num_bus_off;
     CAN_HandleTypeDef can;
 } pyb_can_obj_t;
 
@@ -103,6 +106,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
     uint32_t GPIO_Pin = 0;
     uint8_t  GPIO_AF_CANx = 0;
     GPIO_TypeDef* GPIO_Port = NULL;
+    uint32_t sce_irq = 0;
 
     switch (can_obj->can_id) {
         // CAN1 is on RX,TX = Y3,Y4 = PB9,PB9
@@ -111,6 +115,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             GPIO_AF_CANx = GPIO_AF9_CAN1;
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
+            sce_irq = CAN1_SCE_IRQn;
             __CAN1_CLK_ENABLE();
             break;
 
@@ -121,6 +126,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
             GPIO_AF_CANx = GPIO_AF9_CAN2;
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_12 | GPIO_PIN_13;
+            sce_irq = CAN2_SCE_IRQn;
             __CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
             __CAN2_CLK_ENABLE();
             break;
@@ -144,6 +150,14 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
     HAL_CAN_Init(&can_obj->can);
 
     can_obj->is_enabled = true;
+    can_obj->num_error_warning = 0;
+    can_obj->num_error_passive = 0;
+    can_obj->num_bus_off = 0;
+
+    __HAL_CAN_ENABLE_IT(&can_obj->can, CAN_IT_ERR | CAN_IT_BOF | CAN_IT_EPV | CAN_IT_EWG);
+
+    HAL_NVIC_SetPriority(sce_irq, IRQ_PRI_CAN, IRQ_SUBPRI_CAN);
+    HAL_NVIC_EnableIRQ(sce_irq);
 
     return true;
 }
@@ -459,6 +473,7 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
     if (self->can.Instance == CAN1) {
         HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN1_RX1_IRQn);
+        HAL_NVIC_DisableIRQ(CAN1_SCE_IRQn);
         __CAN1_FORCE_RESET();
         __CAN1_RELEASE_RESET();
         __CAN1_CLK_DISABLE();
@@ -466,6 +481,7 @@ STATIC mp_obj_t pyb_can_deinit(mp_obj_t self_in) {
     } else if (self->can.Instance == CAN2) {
         HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
         HAL_NVIC_DisableIRQ(CAN2_RX1_IRQn);
+        HAL_NVIC_DisableIRQ(CAN2_SCE_IRQn);
         __CAN2_FORCE_RESET();
         __CAN2_RELEASE_RESET();
         __CAN2_CLK_DISABLE();
@@ -511,6 +527,36 @@ STATIC mp_obj_t pyb_can_state(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(state);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_state_obj, pyb_can_state);
+
+// Get info about error states and TX/RX buffers
+STATIC mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
+    pyb_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_list_t *list;
+    if (n_args == 1) {
+        list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
+    } else {
+        if (!MP_OBJ_IS_TYPE(args[1], &mp_type_list)) {
+            mp_raise_TypeError(NULL);
+        }
+        list = MP_OBJ_TO_PTR(args[1]);
+        if (list->len < 8) {
+            mp_raise_ValueError(NULL);
+        }
+    }
+    CAN_TypeDef *can = self->can.Instance;
+    uint32_t esr = can->ESR;
+    list->items[0] = MP_OBJ_NEW_SMALL_INT(esr >> CAN_ESR_TEC_Pos & 0xff);
+    list->items[1] = MP_OBJ_NEW_SMALL_INT(esr >> CAN_ESR_REC_Pos & 0xff);
+    list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning);
+    list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive);
+    list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off);
+    int n_tx_pending = 0x01121223 >> ((can->TSR >> CAN_TSR_TME_Pos & 7) << 2) & 0xf;
+    list->items[5] = MP_OBJ_NEW_SMALL_INT(n_tx_pending);
+    list->items[6] = MP_OBJ_NEW_SMALL_INT(can->RF0R >> CAN_RF0R_FMP0_Pos & 3);
+    list->items[7] = MP_OBJ_NEW_SMALL_INT(can->RF1R >> CAN_RF1R_FMP1_Pos & 3);
+    return MP_OBJ_FROM_PTR(list);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_can_info_obj, 1, 2, pyb_can_info);
 
 /// \method any(fifo)
 /// Return `True` if any message waiting on the FIFO, else `False`.
@@ -871,6 +917,7 @@ STATIC const mp_rom_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_can_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&pyb_can_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&pyb_can_state_obj) },
+    { MP_ROM_QSTR(MP_QSTR_info), MP_ROM_PTR(&pyb_can_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_can_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_can_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_can_recv_obj) },
@@ -976,6 +1023,21 @@ void can_rx_irq_handler(uint can_id, uint fifo_id) {
         }
         gc_unlock();
         mp_sched_unlock();
+    }
+}
+
+void can_sce_irq_handler(uint can_id) {
+    pyb_can_obj_t *self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+    if (self) {
+        self->can.Instance->MSR = CAN_MSR_ERRI;
+        uint32_t esr = self->can.Instance->ESR;
+        if (esr & CAN_ESR_BOFF) {
+            ++self->num_bus_off;
+        } else if (esr & CAN_ESR_EPVF) {
+            ++self->num_error_passive;
+        } else if (esr & CAN_ESR_EWGF) {
+            ++self->num_error_warning;
+        }
     }
 }
 

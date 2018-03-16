@@ -113,6 +113,28 @@ Methods
    - ``CAN.BUS_OFF`` -- the controller is on but not participating in bus activity
      (TEC overflowed beyond 255).
 
+.. method:: CAN.info([list])
+
+   Get information about the controller's error states and TX and RX buffers.
+   If *list* is provided then it should be a list object with at least 8 entries,
+   which will be filled in with the information.  Otherwise a new list will be
+   created and filled in.  In both cases the return value of the method is the
+   populated list.
+
+   The values in the list are:
+
+   - TEC value
+   - REC value
+   - number of times the controller enterted the Error Warning state (wrapped
+     around to 0 after 65535)
+   - number of times the controller enterted the Error Passive state (wrapped
+     around to 0 after 65535)
+   - number of times the controller enterted the Bus Off state (wrapped
+     around to 0 after 65535)
+   - number of pending TX messages
+   - number of pending RX messages on fifo 0
+   - number of pending RX messages on fifo 1
+
 .. method:: CAN.setfilter(bank, mode, fifo, params, \*, rtr)
 
    Configure a filter bank:
