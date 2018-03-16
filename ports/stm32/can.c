@@ -222,8 +222,16 @@ STATIC int can_receive(CAN_TypeDef *can, int fifo, CanRxMsgTypeDef *msg, uint32_
     msg->RTR = box->RIR & 2;
     msg->DLC = box->RDTR & 0xf;
     msg->FMI = box->RDTR >> 8 & 0xff;
-    *(uint32_t*)&msg->Data[0] = box->RDLR;
-    *(uint32_t*)&msg->Data[4] = box->RDHR;
+    uint32_t rdlr = box->RDLR;
+    msg->Data[0] = rdlr;
+    msg->Data[1] = rdlr >> 8;
+    msg->Data[2] = rdlr >> 16;
+    msg->Data[3] = rdlr >> 24;
+    uint32_t rdhr = box->RDHR;
+    msg->Data[4] = rdhr;
+    msg->Data[5] = rdhr >> 8;
+    msg->Data[6] = rdhr >> 16;
+    msg->Data[7] = rdhr >> 24;
 
     // Release (free) message from FIFO
     *rfr |= CAN_RF0R_RFOM0;
