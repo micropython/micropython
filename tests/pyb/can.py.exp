@@ -7,14 +7,14 @@ CAN YA
 CAN YB
 ValueError YC
 CAN(1)
-CAN(1, CAN.LOOPBACK, extframe=False)
+CAN(1, CAN.LOOPBACK, extframe=False, auto_restart=False)
 False
 True
 (123, False, 0, b'abcd')
 (2047, False, 0, b'abcd')
 (0, False, 0, b'abcd')
 passed
-CAN(1, CAN.LOOPBACK, extframe=True)
+CAN(1, CAN.LOOPBACK, extframe=True, auto_restart=False)
 passed
 ('0x8', '0x1c', '0xa', b'ok')
 ('0x800', '0x1c00', '0xa00', b'ok')
