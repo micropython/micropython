@@ -82,7 +82,7 @@ Methods
    the given frequency, and the frequency of the repeating triangle wave
    itself is 2048 times smaller.
 
-.. method:: DAC.write(value, \*, buffered=True))
+.. method:: DAC.write(value, \*, buffered=True)
 
    Direct access to the DAC output.  The minimum value is 0.  The maximum
    value is 2\*\*``bits``-1, where ``bits`` is set when creating the DAC
@@ -109,7 +109,7 @@ Methods
 
    ``mode`` can be ``DAC.NORMAL`` or ``DAC.CIRCULAR``.
 
-   ``buffered`` is boolean. See note on DAC.write() above.
+   ``buffered`` is boolean. See note on ``DAC.write()`` above.
 
    Example using both DACs at the same time::
 
