@@ -29,8 +29,10 @@
 #include <stdarg.h>
 
 #include "py/objtuple.h"
+#include "py/objarray.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/binary.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -645,18 +647,20 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_send_obj, 1, pyb_can_send);
 
-/// \method recv(fifo, *, timeout=5000)
+/// \method recv(fifo, list=None, *, timeout=5000)
 ///
 /// Receive data on the bus:
 ///
 ///   - `fifo` is an integer, which is the FIFO to receive on
+///   - `list` if not None is a list with at least 4 elements
 ///   - `timeout` is the timeout in milliseconds to wait for the receive.
 ///
 /// Return value: buffer of data bytes.
 STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_fifo, ARG_timeout };
+    enum { ARG_fifo, ARG_list, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_fifo,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_list,    MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 5000} },
     };
 
@@ -700,23 +704,49 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         }
     }
 
-    // return the received data
-    // TODO use a namedtuple (when namedtuple types can be stored in ROM)
-    mp_obj_tuple_t *tuple = mp_obj_new_tuple(4, NULL);
-    if (rx_msg.IDE == CAN_ID_STD) {
-        tuple->items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.StdId);
+    // Create the tuple, or get the list, that will hold the return values
+    // Also populate the fourth element, either a new bytes or reuse existing memoryview
+    mp_obj_t ret_obj = args[ARG_list].u_obj;
+    mp_obj_t *items;
+    if (ret_obj == mp_const_none) {
+        ret_obj = mp_obj_new_tuple(4, NULL);
+        items = ((mp_obj_tuple_t*)MP_OBJ_TO_PTR(ret_obj))->items;
+        items[3] = mp_obj_new_bytes(&rx_msg.Data[0], rx_msg.DLC);
     } else {
-        tuple->items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.ExtId);
+        // User should provide a list of length at least 4 to hold the values
+        if (!MP_OBJ_IS_TYPE(ret_obj, &mp_type_list)) {
+            mp_raise_TypeError(NULL);
+        }
+        mp_obj_list_t *list = MP_OBJ_TO_PTR(ret_obj);
+        if (list->len < 4) {
+            mp_raise_ValueError(NULL);
+        }
+        items = list->items;
+        // Fourth element must be a memoryview which we assume points to a
+        // byte-like array which is large enough, and then we resize it inplace
+        if (!MP_OBJ_IS_TYPE(items[3], &mp_type_memoryview)) {
+            mp_raise_TypeError(NULL);
+        }
+        mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[3]);
+        if (!(mv->typecode == (0x80 | BYTEARRAY_TYPECODE)
+            || (mv->typecode | 0x20) == (0x80 | 'b'))) {
+            mp_raise_ValueError(NULL);
+        }
+        mv->len = rx_msg.DLC;
+        memcpy(mv->items, &rx_msg.Data[0], rx_msg.DLC);
     }
-    tuple->items[1] = rx_msg.RTR == CAN_RTR_REMOTE ? mp_const_true : mp_const_false;
-    tuple->items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
-    vstr_t vstr;
-    vstr_init_len(&vstr, rx_msg.DLC);
-    for (mp_uint_t i = 0; i < rx_msg.DLC; i++) {
-        vstr.buf[i] = rx_msg.Data[i]; // Data is uint32_t but holds only 1 byte
+
+    // Populate the first 3 values of the tuple/list
+    if (rx_msg.IDE == CAN_ID_STD) {
+        items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.StdId);
+    } else {
+        items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.ExtId);
     }
-    tuple->items[3] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-    return tuple;
+    items[1] = rx_msg.RTR == CAN_RTR_REMOTE ? mp_const_true : mp_const_false;
+    items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
+
+    // Return the result
+    return ret_obj;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 

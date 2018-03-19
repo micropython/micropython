@@ -187,11 +187,12 @@ Methods
 
    Return ``True`` if any message waiting on the FIFO, else ``False``.
 
-.. method:: CAN.recv(fifo, \*, timeout=5000)
+.. method:: CAN.recv(fifo, list=None, \*, timeout=5000)
 
    Receive data on the bus:
 
      - *fifo* is an integer, which is the FIFO to receive on
+     - *list* is an optional list object to be used as the return value
      - *timeout* is the timeout in milliseconds to wait for the receive.
 
    Return value: A tuple containing four values.
@@ -200,6 +201,24 @@ Methods
      - A boolean that indicates if the message is an RTR message.
      - The FMI (Filter Match Index) value.
      - An array containing the data.
+
+   If *list* is ``None`` then a new tuple will be allocated, as well as a new
+   bytes object to contain the data (as the fourth element in the tuple).
+
+   If *list* is not ``None`` then it should be a list object with a least four
+   elements.  The fourth element should be a memoryview object which is created
+   from either a bytearray or an array of type 'B' or 'b', and this array must
+   have enough room for at least 8 bytes.  The list object will then be
+   populated with the first three return values above, and the memoryview object
+   will be resized inplace to the size of the data and filled in with that data.
+   The same list and memoryview objects can be reused in subsequent calls to
+   this method, providing a way of receiving data without using the heap.
+   For example::
+
+        buf = bytearray(8)
+        lst = [0, 0, 0, memoryview(buf)]
+        # No heap memory is allocated in the following call
+        can.recv(0, lst)
 
 .. method:: CAN.send(data, id, \*, timeout=0, rtr=False)
 
