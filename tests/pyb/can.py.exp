@@ -7,13 +7,27 @@ CAN YA
 CAN YB
 ValueError YC
 CAN(1)
+True
 CAN(1, CAN.LOOPBACK, extframe=False, auto_restart=False)
 False
 True
+[0, 0, 0, 0, 0, 0, 0, 0]
+True [0, 0, 0, 0, 0, 0, 1, 0]
 (123, False, 0, b'abcd')
 (2047, False, 0, b'abcd')
 (0, False, 0, b'abcd')
 passed
+[42, False, 0, <memoryview>] 0 bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+[42, False, 0, <memoryview>] 4 bytearray(b'1234\x00\x00\x00\x00\x00\x00')
+[42, False, 0, <memoryview>] 8 bytearray(b'01234567\x00\x00')
+[42, False, 0, <memoryview>] 3 bytearray(b'abc34567\x00\x00')
+b'abc'
+b'def'
+TypeError
+ValueError
+TypeError
+ValueError
+ValueError
 CAN(1, CAN.LOOPBACK, extframe=True, auto_restart=False)
 passed
 ('0x8', '0x1c', '0xa', b'ok')

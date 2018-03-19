@@ -4,6 +4,8 @@ except ImportError:
     print('SKIP')
     raise SystemExit
 
+from array import array
+import micropython
 import pyb
 
 # test we can correctly create by id or name
@@ -19,15 +21,27 @@ CAN.initfilterbanks(14)
 can = CAN(1)
 print(can)
 
+# Test state when de-init'd
+print(can.state() == can.STOPPED)
+
 can.init(CAN.LOOPBACK)
 print(can)
 print(can.any(0))
+
+# Test state when freshly created
+print(can.state() == can.ERROR_ACTIVE)
+
+# Test that restart can be called
+can.restart()
+
+# Test info returns a sensible value
+print(can.info())
 
 # Catch all filter
 can.setfilter(0, CAN.MASK16, 0, (0, 0, 0, 0))
 
 can.send('abcd', 123, timeout=5000)
-print(can.any(0))
+print(can.any(0), can.info())
 print(can.recv(0))
 
 can.send('abcd', -1, timeout=5000)
@@ -43,6 +57,77 @@ except ValueError:
     print('passed')
 else:
     print('failed')
+
+# Test that recv can work without allocating memory on the heap
+
+buf = bytearray(10)
+l = [0, 0, 0, memoryview(buf)]
+l2 = None
+
+micropython.heap_lock()
+
+can.send('', 42)
+l2 = can.recv(0, l)
+assert l is l2
+print(l, len(l[3]), buf)
+
+can.send('1234', 42)
+l2 = can.recv(0, l)
+assert l is l2
+print(l, len(l[3]), buf)
+
+can.send('01234567', 42)
+l2 = can.recv(0, l)
+assert l is l2
+print(l, len(l[3]), buf)
+
+can.send('abc', 42)
+l2 = can.recv(0, l)
+assert l is l2
+print(l, len(l[3]), buf)
+
+micropython.heap_unlock()
+
+# Test that recv can work with different arrays behind the memoryview
+can.send('abc', 1)
+print(bytes(can.recv(0, [0, 0, 0, memoryview(array('B', range(8)))])[3]))
+can.send('def', 1)
+print(bytes(can.recv(0, [0, 0, 0, memoryview(array('b', range(8)))])[3]))
+
+# Test for non-list passed as second arg to recv
+can.send('abc', 1)
+try:
+    can.recv(0, 1)
+except TypeError:
+    print('TypeError')
+
+# Test for too-short-list passed as second arg to recv
+can.send('abc', 1)
+try:
+    can.recv(0, [0, 0, 0])
+except ValueError:
+    print('ValueError')
+
+# Test for non-memoryview passed as 4th element to recv
+can.send('abc', 1)
+try:
+    can.recv(0, [0, 0, 0, 0])
+except TypeError:
+    print('TypeError')
+
+# Test for read-only-memoryview passed as 4th element to recv
+can.send('abc', 1)
+try:
+    can.recv(0, [0, 0, 0, memoryview(bytes(8))])
+except ValueError:
+    print('ValueError')
+
+# Test for bad-typecode-memoryview passed as 4th element to recv
+can.send('abc', 1)
+try:
+    can.recv(0, [0, 0, 0, memoryview(array('i', range(8)))])
+except ValueError:
+    print('ValueError')
 
 del can
 
