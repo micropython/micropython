@@ -168,7 +168,7 @@
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            ((uint32_t)0x0F) /*!< tick interrupt priority */
 #define  USE_RTOS                     0
-#define  USE_SD_TRANSCEIVER           1U               /*!< use uSD Transceiver */
+#define  USE_SD_TRANSCEIVER           0U               /*!< use uSD Transceiver */
 
 /* ########################### Ethernet Configuration ######################### */
 #define ETH_TX_DESC_CNT         4  /* number of Ethernet Tx DMA descriptors */
