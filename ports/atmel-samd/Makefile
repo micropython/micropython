@@ -72,7 +72,6 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
