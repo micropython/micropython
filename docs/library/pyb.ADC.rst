@@ -10,14 +10,16 @@ class ADC -- analog to digital conversion
 
         import pyb
     
-        adc = pyb.ADC(pin)              # create an analog object from a pin
-        val = adc.read()                # read an analog value
+        adc = pyb.ADC(pin)                  # create an analog object from a pin
+        val = adc.read()                    # read an analog value
     
-        adc = pyb.ADCAll(resolution)    # create an ADCAll object
-        val = adc.read_channel(channel) # read the given channel
-        val = adc.read_core_temp()      # read MCU temperature
-        val = adc.read_core_vbat()      # read MCU VBAT
-        val = adc.read_core_vref()      # read MCU VREF
+        adc = pyb.ADCAll(resolution)        # create an ADCAll object
+        adc = pyb.ADCAll(resolution, mask)  # create an ADCAll object for selected analog channels
+        val = adc.read_channel(channel)     # read the given channel
+        val = adc.read_core_temp()          # read MCU temperature
+        val = adc.read_core_vbat()          # read MCU VBAT
+        val = adc.read_core_vref()          # read MCU VREF
+        val = adc.read_vref()               # read MCU supply voltage
 
  
 Constructors
@@ -81,27 +83,42 @@ The ADCAll Object
 
 .. only:: port_pyboard
 
-    Instantiating this changes all ADC pins to analog inputs. The raw MCU temperature,
+    Instantiating this changes all masked ADC pins to analog inputs. The preprocessed MCU temperature,
     VREF and VBAT data can be accessed on ADC channels 16, 17 and 18 respectively.
-    Appropriate scaling will need to be applied. The temperature sensor on the chip
-    has poor absolute accuracy and is suitable only for detecting temperature changes.
+    Appropriate scaling is handled according to reference voltage used (usually 3.3V).
+    The temperature sensor on the chip is factory calibrated and allows to read the die temperature
+    to +/- 1 degree centigrade. Although this sounds pretty accurate, don't forget that the MCU's internal
+    temperature is measured. Depending on processing loads and I/O subsystems active the die temperature
+    may easily be tens of degrees above ambient temperature. On the other hand a pyboard woken up after a
+    long standby period will show correct ambient temperature within limits mentioned above.
 
-    The ``ADCAll`` ``read_core_vbat()`` and ``read_core_vref()`` methods read
-    the backup battery voltage and the (1.21V nominal) reference voltage using the
-    3.3V supply as a reference. Assuming the ``ADCAll`` object has been Instantiated with
-    ``adc = pyb.ADCAll(12)`` the 3.3V supply voltage may be calculated:
-    
-    ``v33 = 3.3 * 1.21 / adc.read_core_vref()``
+    The ``ADCAll`` ``read_core_vbat()``, ``read_vref()`` and ``read_core_vref()`` methods read
+    the backup battery voltage, reference voltage and the (1.21V nominal) reference voltage using the
+    actual supply as a reference. All results are floating point numbers giving direct voltage values.
 
-    If the 3.3V supply is correct the value of ``adc.read_core_vbat()`` will be
-    valid. If the supply voltage can drop below 3.3V, for example in in battery
-    powered systems with a discharging battery, the regulator will fail to preserve
-    the 3.3V supply resulting in an incorrect reading. To produce a value which will
-    remain valid under these circumstances use the following:
+    ``read_core_vbat()`` returns the voltage of the backup battery. This voltage is also adjusted according
+    to the actual supply voltage. To avoid analog input overload the battery voltage is measured
+    via a voltage divider and scaled according to the divider value. To prevent excessive loads
+    to the backup battery, the voltage divider is only active during ADC conversion.
 
-    ``vback = adc.read_core_vbat() * 1.21 / adc.read_core_vref()``
+    ``read_vref()`` is evaluated by measuring the internal voltage reference and backscale it using
+    factory calibration value of the internal voltage reference. In most cases the reading would be close
+    to 3.3V. If the pyboard is operated from a battery, the supply voltage may drop to values below 3.3V.
+    The pyboard will still operate fine as long as the operating conditions are met. With proper settings
+    of MCU clock, flash access speed and programming mode it is possible to run the pyboard down to
+    2 V and still get useful ADC conversion.
 
-    It is possible to access these values without incurring the side effects of ``ADCAll``::
+    It is very important to make sure analog input voltages never exceed actual supply voltage.
+
+    Other analog input channels (0..15) will return unscaled integer values according to the selected
+    precision.
+
+    To avoid unwanted activation of analog inputs (channel 0..15) a second prarmeter can be specified.
+    This parameter is a binary pattern where each requested analog input has the corresponding bit set.
+    The default value is 0xffffffff which means all analog inputs are active. If just the internal
+    channels (16..18) are required, the mask value should be 0x70000.
+ 
+    It is possible to access channle 16..18 values without incurring the side effects of ``ADCAll``::
     
         def adcread(chan):                              # 16 temp 17 vbat 18 vref
             assert chan >= 16 and chan <= 18, 'Invalid ADC channel'
@@ -140,4 +157,5 @@ The ADCAll Object
         def temperature():
             return 25 + 400 * (3.3 * adcread(16) / 4096 - 0.76)
 
-    
+    Note that this example is only valid for the F405 MCU and all values are not corrected by Vref and
+    factory calibration data.
