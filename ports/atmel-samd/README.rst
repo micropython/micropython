@@ -115,12 +115,28 @@ PB03                   **Yes**                         **Yes**  **Yes**  **Yes**
 
 Setup
 -----
-Install required compiler packages:
+
+An ARM compiler is required for the build, along with the associated binary
+utilities.  On Ubuntu, these can be installed as follows:
 
 .. code-block:: shell
 
     sudo add-apt-repository ppa:team-gcc-arm-embedded/ppa
     sudo apt-get install gcc-arm-embedded
+
+On Arch Linux the compiler is available for via the package
+``arm-none-eabi-gcc``.
+
+For other systems, the `GNU Arm Embedded Toolchain <https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads>`_
+may be available in binary form.
+
+The latest available package from team-gcc-arm-embedded is used to produce the
+binaries shipped by AdaFruit.  Other compiler versions, particularly older
+ones, may not work properly.  In particular, the ``gcc-arm-none-eabi`` package
+in Debian Stretch is too old.
+
+The compiler can be changed using the ``CROSS_COMPILE`` variable when invoking
+``make``.
 
 Building
 --------
