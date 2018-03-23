@@ -331,6 +331,9 @@ bool usb_connected(void) {
 void usb_cdc_background() {
     //
     if (mp_interrupt_char != -1 && cdc_enabled() && !pending_read) {
-        start_read();
+        // Make sure we have space in the buffer
+        if (usb_rx_count < 64) {
+            start_read();
+        }        
     }
 }
