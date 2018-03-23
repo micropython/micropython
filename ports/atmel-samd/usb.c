@@ -25,7 +25,6 @@
  */
 
 #include "usb.h"
-#include <stdio.h>
 
 #include <stdint.h>
 
@@ -50,7 +49,6 @@
 #include "usb_mass_storage.h"
 
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/serial.h"
 
 // Store received characters on our own so that we can filter control characters
 // and act immediately on CTRL-C for example.
@@ -128,7 +126,7 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
         atomic_leave_critical(&flags);
         return true;
     }
-    
+
     for (uint16_t i = 0; i < count; i++) {
         uint8_t c = cdc_packet_buffer[i];
         if (c == mp_interrupt_char) {
@@ -152,7 +150,7 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
         }
     }
     atomic_leave_critical(&flags);
-    
+
     // Trigger a follow up read if we have space.
     /*if (usb_rx_count < USB_RX_BUF_SIZE - 64) {
         int32_t result = start_read();
@@ -160,7 +158,7 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
             return true;
         }
     }*/
-    
+
     /* No error. */
     return false;
 }
@@ -283,7 +281,7 @@ int usb_read(void) {
     /*if (!pending_read && usb_rx_count == USB_RX_BUF_SIZE - 1) {
         start_read();
     }*/
-     
+
     return data;
 }
 
