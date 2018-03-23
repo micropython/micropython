@@ -174,7 +174,7 @@ void spi_flash_init(void) {
 
     // Slow, good for debugging with Saleae
     // QSPI->BAUD.bit.BAUD = 32;
-    // Super fast
+    // Super fast, may be unreliable when Saleae is connected to high speed lines.
     QSPI->BAUD.bit.BAUD = 2;
     QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |
                       QSPI_CTRLB_DATALEN_8BITS |
@@ -189,14 +189,17 @@ void spi_flash_init(void) {
         gpio_set_pin_pull_mode(pins[i], GPIO_PULL_OFF);
         gpio_set_pin_function(pins[i], GPIO_PIN_FUNCTION_H);
     }
+}
 
+void spi_flash_init_device(const external_flash_device* device) {
     // Verify that QSPI mode is enabled.
     uint8_t status;
-    spi_flash_read_command(0x35, &status, 1);
+    spi_flash_read_command(CMD_READ_STATUS2, &status, 1);
 
+    // Bit 1 is Quad Enable
     if ((status & 0x2) == 0) {
-        uint8_t full_status[3] = { 0, status | 0x2, 0x70};
+        uint8_t full_status[2] = { 0x0, 0x2};
         spi_flash_command(CMD_ENABLE_WRITE);
-        spi_flash_write_command(0x01, full_status, 3);
+        spi_flash_write_command(CMD_WRITE_STATUS_BYTE1, full_status, 2);
     }
 }

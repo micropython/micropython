@@ -152,3 +152,7 @@ void spi_flash_init(void) {
 
     spi_m_sync_enable(&spi_flash_desc);
 }
+
+void spi_flash_init_device(const external_flash_device* device) {
+
+}
