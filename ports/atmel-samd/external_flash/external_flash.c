@@ -185,12 +185,11 @@ void external_flash_init(void) {
     if (flash_device != NULL) {
         return;
     }
-    uint8_t num_possible_devices = sizeof(*possible_devices) / sizeof(external_flash_device);
 
     // Delay to give the SPI Flash time to get going.
     // TODO(tannewt): Only do this when we know power was applied vs a reset.
     uint16_t max_start_up_delay_us = 0;
-    for (uint8_t i = 0; i < num_possible_devices; i++) {
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
         if (possible_devices[i].start_up_time_us > max_start_up_delay_us) {
             max_start_up_delay_us = possible_devices[i].start_up_time_us;
         }
@@ -205,9 +204,8 @@ void external_flash_init(void) {
         spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
     }
 
-    for (uint8_t i = 0; i < num_possible_devices; i++) {
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
         const external_flash_device* possible_device = &possible_devices[i];
-
         if (jedec_id_response[0] == possible_device->manufacturer_id &&
             jedec_id_response[1] == possible_device->memory_type &&
             jedec_id_response[2] == possible_device->capacity) {

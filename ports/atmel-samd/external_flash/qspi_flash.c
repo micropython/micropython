@@ -29,6 +29,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "mpconfigboard.h" // for EXTERNAL_FLASH_QSPI_DUAL
+
 #include "external_flash/common_commands.h"
 #include "shared_dma.h"
 
@@ -139,8 +141,13 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
 }
 
 bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
+    #ifdef EXTERNAL_FLASH_QSPI_DUAL
+    QSPI->INSTRCTRL.bit.INSTR = CMD_DUAL_READ;
+    uint32_t mode = QSPI_INSTRFRAME_WIDTH_DUAL_OUTPUT;
+    #else
     QSPI->INSTRCTRL.bit.INSTR = CMD_QUAD_READ;
     uint32_t mode = QSPI_INSTRFRAME_WIDTH_QUAD_OUTPUT;
+    #endif
 
     QSPI->INSTRFRAME.reg = mode |
                            QSPI_INSTRFRAME_ADDRLEN_24BITS |

@@ -11,6 +11,7 @@ env:
   - TRAVIS_BOARD=feather_m0_rfm69
   - TRAVIS_BOARD=feather_m0_rfm9x
   - TRAVIS_BOARD=feather_m0_express
+  - TRAVIS_BOARD=feather_m4_express
   - TRAVIS_BOARD=itsybitsy_m0_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
