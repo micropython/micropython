@@ -91,10 +91,8 @@ with open("foo_file.txt") as f2:
 
     f2.seek(0, 1) # SEEK_CUR
     print(f2.read(1))
-    try:
-        f2.seek(1, 1) # SEEK_END
-    except OSError as e:
-        print(e.args[0] == uerrno.EOPNOTSUPP)
+    f2.seek(2, 1) # SEEK_CUR
+    print(f2.read(1))
 
     f2.seek(-2, 2) # SEEK_END
     print(f2.read(1))
