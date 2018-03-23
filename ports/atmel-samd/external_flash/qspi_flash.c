@@ -174,7 +174,7 @@ void spi_flash_init(void) {
 
     // Slow, good for debugging with Saleae
     // QSPI->BAUD.bit.BAUD = 32;
-    // Super fast
+    // Super fast, may be unreliable when Saleae is connected to high speed lines.
     QSPI->BAUD.bit.BAUD = 2;
     QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |
                       QSPI_CTRLB_DATALEN_8BITS |
