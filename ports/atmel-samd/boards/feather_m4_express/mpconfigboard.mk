@@ -1,6 +1,6 @@
 LD_FILE = boards/samd51x19-bootloader-external-flash.ld
 USB_VID = 0x239A
-USB_PID = 0x8021
+USB_PID = 0x8026
 USB_PRODUCT = "Feather M4 Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
