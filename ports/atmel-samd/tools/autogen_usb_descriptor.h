@@ -32,5 +32,7 @@
 struct usbd_descriptors descriptor_bounds;
 uint8_t* serial_number;
 uint8_t serial_number_length;
+uint8_t hid_mouse_endpoint_in;
+uint8_t hid_keyboard_endpoint_in;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_TOOLS_AUTOGEN_USB_DESCRIPTOR_H

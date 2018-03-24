@@ -34,9 +34,8 @@
 
 #include "hal/include/hal_gpio.h"
 #include "usb/class/cdc/device/cdcdf_acm.h"
-// #include "hiddf_mouse.h"
-// #include "hiddf_keyboard.h"
-#include "usb/class/hid/device/hiddf_generic.h"
+#include "usb/class/hid/device/hiddf_mouse.h"
+#include "usb/class/hid/device/hiddf_keyboard.h"
 #include "usb/class/composite/device/composite_desc.h"
 #include "usb/class/msc/device/mscdf.h"
 #include "peripheral_clk_config.h"
@@ -209,9 +208,6 @@ void init_usb(void) {
     pending_read = false;
 
     mscdf_init(1);
-    // hiddf_mouse_init();
-    // hiddf_keyboard_init();
-
     mscdf_register_callback(MSCDF_CB_INQUIRY_DISK, (FUNC_PTR)usb_msc_inquiry_info);
     mscdf_register_callback(MSCDF_CB_GET_DISK_CAPACITY, (FUNC_PTR)usb_msc_get_capacity);
     mscdf_register_callback(MSCDF_CB_START_READ_DISK, (FUNC_PTR)usb_msc_new_read);
@@ -220,6 +216,9 @@ void init_usb(void) {
     mscdf_register_callback(MSCDF_CB_TEST_DISK_READY, (FUNC_PTR)usb_msc_disk_is_ready);
     mscdf_register_callback(MSCDF_CB_XFER_BLOCKS_DONE, (FUNC_PTR)usb_msc_xfer_done);
     mscdf_register_callback(MSCDF_CB_IS_WRITABLE, (FUNC_PTR)usb_msc_disk_is_writable);
+
+    hiddf_mouse_init();
+    hiddf_keyboard_init();
 
     usbdc_start(&descriptor_bounds);
 

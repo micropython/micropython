@@ -30,8 +30,34 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "common-hal/usb_hid/types.h"
+#include "py/obj.h"
 
-bool usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len);
+#define UDI_HID_MOUSE_REPORT_SIZE 4
+#define UDI_HID_KBD_REPORT_SIZE 8
+
+enum usb_hid_device_kind {
+    USB_HID_UNKNOWN,
+    USB_HID_MOUSE,
+    USB_HID_KEYBOARD,
+};
+
+typedef struct {
+    mp_obj_base_t base;
+    enum usb_hid_device_kind kind;
+    uint8_t endpoint;
+    uint8_t report_length;
+    uint8_t* report_buffer;
+    uint8_t usage_page;
+    uint8_t usage;
+
+} usb_hid_device_obj_t;
+
+usb_hid_device_obj_t usb_hid_devices[2];
+// Indices into usb_hid_devices:
+#define USB_HID_DEVICE_MOUSE 0
+#define USB_HID_DEVICE_KEYBOARD 1
+
+void usb_hid_init(void);
+void usb_hid_reset(void);
 
 #endif  // COMMON_HAL_USB_HID_DEVICE_H

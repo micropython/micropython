@@ -28,6 +28,8 @@
 
 #include "supervisor/serial.h"
 
+#include "common-hal/usb_hid/Device.h"
+
 #include "usb.h"
 #include "tools/autogen_usb_descriptor.h"
 
@@ -57,6 +59,7 @@ void load_serial_number(void) {
 void serial_init(void) {
     load_serial_number();
     init_usb();
+    usb_hid_init();
 }
 
 bool serial_connected(void) {

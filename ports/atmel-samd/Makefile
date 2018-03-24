@@ -97,7 +97,7 @@ ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
   CFLAGS += -flto
-  ## CFLAGS += -fno-inline
+  CFLAGS += -fno-inline
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -193,6 +193,8 @@ SRC_ASF := \
 	hpl/systick/hpl_systick.c \
 	hpl/usb/hpl_usb.c \
 	usb/class/cdc/device/cdcdf_acm.c \
+	usb/class/hid/device/hiddf_keyboard.c \
+	usb/class/hid/device/hiddf_mouse.c \
 	usb/class/msc/device/mscdf.c \
 	usb/device/usbdc.c \
 	usb/usb_protocol.c \
@@ -282,6 +284,8 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
+	usb_hid/__init__.c \
+	usb_hid/Device.c
 #	audiobusio/__init__.c \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
@@ -290,8 +294,6 @@ SRC_COMMON_HAL = \
 	nvm/ByteArray.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
-	usb_hid/__init__.c \
-	usb_hid/Device.c
 
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = $(addprefix lib/,\

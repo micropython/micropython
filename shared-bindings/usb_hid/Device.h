@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_USB_HID_DEVICE_H
 
-#include "common-hal/usb_hid/types.h"
+#include "common-hal/usb_hid/Device.h"
 
 const mp_obj_type_t usb_hid_device_type;
 
