@@ -126,7 +126,7 @@
 //       if an sd card is detected. This will save approx 260 bytes of RAM
 //       when no sdcard was being used.
 static SD_HandleTypeDef sd_handle;
-#if defined(SDIO_USE_GP_DMA)
+#if defined(SDIO_USE_GPDMA)
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
 #endif
 
