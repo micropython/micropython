@@ -76,7 +76,7 @@ void filesystem_init(bool create_allowed) {
         f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
         make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
-        make_empty_file(&vfs_fat->fatfs, "/.feventsd/no_log");
+        make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
 
         // and ensure everything is flushed
         flash_flush();
