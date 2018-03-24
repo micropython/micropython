@@ -39,7 +39,7 @@
 
 #if MICROPY_HW_HAS_SDCARD
 
-#if defined(STM32F7) || defined(STM32L4)
+#if defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
 
 // The F7 has 2 SDMMC units but at the moment we only support using one of them in
 // a given build.  If a boards config file defines MICROPY_HW_SDMMC2_CK then SDMMC2
@@ -80,7 +80,15 @@
 #define SDIO_HARDWARE_FLOW_CONTROL_DISABLE  SDMMC_HARDWARE_FLOW_CONTROL_DISABLE
 #define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
 
+#if defined(STM32H7)
+#define GPIO_AF12_SDIO                      GPIO_AF12_SDIO1
+#define SDIO_IRQHandler                     SDMMC1_IRQHandler
+#define SDIO_TRANSFER_CLK_DIV               SDMMC_NSpeed_CLK_DIV
+#define SDIO_USE_GPDMA                      0
+#else
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_TRANSFER_CLK_DIV
+#define SDIO_USE_GPDMA                      1
+#endif
 
 #else
 
@@ -91,6 +99,7 @@
 #define SDMMC_IRQn SDIO_IRQn
 #define SDMMC_TX_DMA dma_SDIO_0_TX
 #define SDMMC_RX_DMA dma_SDIO_0_RX
+#define SDIO_USE_GPDMA 1
 
 #endif
 
@@ -116,7 +125,9 @@
 //       if an sd card is detected. This will save approx 260 bytes of RAM
 //       when no sdcard was being used.
 static SD_HandleTypeDef sd_handle;
+#if SDIO_USE_GPDMA
 static DMA_HandleTypeDef sd_rx_dma, sd_tx_dma;
+#endif
 
 void sdcard_init(void) {
     // invalidate the sd_handle
@@ -155,6 +166,12 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
     // enable SDIO clock
     SDMMC_CLK_ENABLE();
 
+    #if defined(STM32H7)
+    // Reset SDMMC
+    __HAL_RCC_SDMMC1_FORCE_RESET();
+    __HAL_RCC_SDMMC1_RELEASE_RESET();
+    #endif
+
     // NVIC configuration for SDIO interrupts
     HAL_NVIC_SetPriority(SDMMC_IRQn, IRQ_PRI_SDIO, IRQ_SUBPRI_SDIO);
     HAL_NVIC_EnableIRQ(SDMMC_IRQn);
@@ -182,7 +199,9 @@ bool sdcard_power_on(void) {
     // SD device interface configuration
     sd_handle.Instance = SDIO;
     sd_handle.Init.ClockEdge           = SDIO_CLOCK_EDGE_RISING;
+    #ifndef STM32H7
     sd_handle.Init.ClockBypass         = SDIO_CLOCK_BYPASS_DISABLE;
+    #endif
     sd_handle.Init.ClockPowerSave      = SDIO_CLOCK_POWER_SAVE_ENABLE;
     sd_handle.Init.BusWide             = SDIO_BUS_WIDE_1B;
     sd_handle.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
@@ -310,8 +329,10 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
+        #if SDIO_USE_GPDMA
         dma_init(&sd_rx_dma, &SDMMC_RX_DMA, &sd_handle);
         sd_handle.hdmarx = &sd_rx_dma;
+        #endif
 
         // make sure cache is flushed and invalidated so when DMA updates the RAM
         // from reading the peripheral the CPU then reads the new data
@@ -322,8 +343,10 @@ mp_uint_t sdcard_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blo
             err = sdcard_wait_finished(&sd_handle, 60000);
         }
 
+        #if SDIO_USE_GPDMA
         dma_deinit(&SDMMC_RX_DMA);
         sd_handle.hdmarx = NULL;
+        #endif
 
         restore_irq_pri(basepri);
     } else {
@@ -372,8 +395,10 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         // we must disable USB irqs to prevent MSC contention with SD card
         uint32_t basepri = raise_irq_pri(IRQ_PRI_OTG_FS);
 
+        #if SDIO_USE_GPDMA
         dma_init(&sd_tx_dma, &SDMMC_TX_DMA, &sd_handle);
         sd_handle.hdmatx = &sd_tx_dma;
+        #endif
 
         // make sure cache is flushed to RAM so the DMA can read the correct data
         MP_HAL_CLEAN_DCACHE(src, num_blocks * SDCARD_BLOCK_SIZE);
@@ -382,8 +407,11 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
         if (err == HAL_OK) {
             err = sdcard_wait_finished(&sd_handle, 60000);
         }
+
+        #if SDIO_USE_GPDMA
         dma_deinit(&SDMMC_TX_DMA);
         sd_handle.hdmatx = NULL;
+        #endif
 
         restore_irq_pri(basepri);
     } else {
