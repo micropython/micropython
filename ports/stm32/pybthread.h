@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_PYBTHREAD_H
-#define MICROPY_INCLUDED_STMHAL_PYBTHREAD_H
+#ifndef MICROPY_INCLUDED_STM32_PYBTHREAD_H
+#define MICROPY_INCLUDED_STM32_PYBTHREAD_H
 
 typedef struct _pyb_thread_t {
     void *sp;
@@ -74,4 +74,4 @@ void pyb_mutex_init(pyb_mutex_t *m);
 int pyb_mutex_lock(pyb_mutex_t *m, int wait);
 void pyb_mutex_unlock(pyb_mutex_t *m);
 
-#endif // MICROPY_INCLUDED_STMHAL_PYBTHREAD_H
+#endif // MICROPY_INCLUDED_STM32_PYBTHREAD_H

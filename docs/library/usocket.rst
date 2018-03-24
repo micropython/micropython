@@ -99,7 +99,7 @@ Functions
       of error in this function. MicroPython doesn't have ``socket.gaierror``
       and raises OSError directly. Note that error numbers of `getaddrinfo()`
       form a separate namespace and may not match error numbers from
-      `uerrno` module. To distinguish `getaddrinfo()` errors, they are
+      the :mod:`uerrno` module. To distinguish `getaddrinfo()` errors, they are
       represented by negative numbers, whereas standard system errors are
       positive numbers (error numbers are accessible using ``e.args[0]`` property
       from an exception object). The use of negative values is a provisional

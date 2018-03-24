@@ -276,7 +276,7 @@ void uart_task_handler(os_event_t *evt) {
 
     int c, ret = 0;
     while ((c = ringbuf_get(&input_buf)) >= 0) {
-        if (c == interrupt_char) {
+        if (c == mp_interrupt_char) {
             mp_keyboard_interrupt();
         }
         ret = pyexec_event_repl_process_char(c);

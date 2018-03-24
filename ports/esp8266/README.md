@@ -49,7 +49,7 @@ $ make -C mpy-cross
 
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
-$ cd esp8266
+$ cd ports/esp8266
 $ make axtls
 $ make
 ```

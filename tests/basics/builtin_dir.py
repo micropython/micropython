@@ -17,3 +17,22 @@ foo = Foo()
 print('__init__' in dir(foo))
 print('x' in dir(foo))
 
+# dir of subclass
+class A:
+    def a():
+        pass
+class B(A):
+    def b():
+        pass
+d = dir(B())
+print(d.count('a'), d.count('b'))
+
+# dir of class with multiple bases and a common parent
+class C(A):
+    def c():
+        pass
+class D(B, C):
+    def d():
+        pass
+d = dir(D())
+print(d.count('a'), d.count('b'), d.count('c'), d.count('d'))

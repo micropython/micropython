@@ -1,7 +1,8 @@
 # test that iterating doesn't use the heap
 try:
+    frozenset
     import array
-except ImportError:
+except (NameError, ImportError):
     print("SKIP")
     raise SystemExit
 

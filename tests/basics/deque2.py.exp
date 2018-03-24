@@ -1,0 +1,15 @@
+ValueError
+ValueError
+TypeError
+IndexError
+None
+1
+2
+3 4
+IndexError('empty',)
+2
+IndexError('full',)
+2
+5 6
+0
+IndexError('empty',)

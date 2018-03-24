@@ -1,5 +1,11 @@
 # tests that differ when running under Python 3.4 vs 3.5/3.6
 
+try:
+    exec
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 # from basics/fun_kwvarargs.py
 # test evaluation order of arguments (in 3.4 it's backwards, 3.5 it's fixed)
 def f4(*vargs, **kwargs):

@@ -134,11 +134,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
                 break;
 
             case 1: // SEEK_CUR
-                if (s->offset != 0) {
-                    *errcode = MP_EOPNOTSUPP;
-                    return MP_STREAM_ERROR;
-                }
-                // no-operation
+                f_lseek(&self->fp, f_tell(&self->fp) + s->offset);
                 break;
 
             case 2: // SEEK_END
@@ -286,7 +282,7 @@ const mp_obj_type_t mp_type_textio = {
 };
 
 // Factory function for I/O stream classes
-mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
+STATIC mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
     // TODO: analyze buffering args and instantiate appropriate type
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
@@ -295,5 +291,6 @@ mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode)
     arg_vals[2].u_obj = mp_const_none;
     return file_open(self, &mp_type_textio, arg_vals);
 }
+MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_open_obj, fatfs_builtin_open_self);
 
 #endif // MICROPY_VFS && MICROPY_VFS_FAT
