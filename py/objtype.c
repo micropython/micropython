@@ -981,8 +981,14 @@ const mp_obj_type_t mp_type_type = {
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
-    assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // MicroPython restriction, for now
-    assert(MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)); // MicroPython restriction, for now
+    if(!MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)) {
+        // MicroPython restriction, for now
+        mp_raise_TypeError("type() argument 2 must be tuple");
+    }
+    if(!MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)) {
+        // MicroPython restriction, for now
+        mp_raise_TypeError("type() argument 3 must be dict");
+    }
 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
@@ -991,7 +997,9 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_obj_t *items;
     mp_obj_tuple_get(bases_tuple, &len, &items);
     for (size_t i = 0; i < len; i++) {
-        assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
+        if(!MP_OBJ_IS_TYPE(items[i], &mp_type_type)) {
+            mp_raise_TypeError("type is not an acceptable base type");
+        }
         mp_obj_type_t *t = MP_OBJ_TO_PTR(items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
