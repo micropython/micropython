@@ -253,7 +253,6 @@ SRC_O = \
 	$(STARTUP_FILE) \
 	gchelper.o \
 
-$(BUILD)/$(HAL_DIR)/Src/%.o: CFLAGS += -fno-strict-aliasing
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
