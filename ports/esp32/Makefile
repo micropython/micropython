@@ -92,7 +92,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_trace/include
-INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 
 CFLAGS_BASE = -std=gnu99 -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib -Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H -DESP_PLATFORM
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
@@ -378,6 +377,7 @@ ESPIDF_NEWLIB_O = $(addprefix $(ESPCOMP)/newlib/,\
 ESPIDF_BOOTLOADER_SUPPORT_O = $(addprefix $(ESPCOMP)/bootloader_support/,\
 	src/esp_image_format.o \
 	src/bootloader_flash.o \
+	src/bootloader_sha.o \
 	)
 
 ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
@@ -423,10 +423,6 @@ ESPIDF_SPI_FLASH_O = $(addprefix $(ESPCOMP)/spi_flash/,\
 	spi_flash_rom_patch.o \
 	cache_utils.o \
 	flash_ops.o \
-	)
-
-ESPIDF_APP_UPDATE_O = $(addprefix $(ESPCOMP)/app_update/,\
-	esp_ota_ops.o \
 	)
 
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
@@ -618,7 +614,6 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_BOOTLOADER_SUPPORT_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
-OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_UPDATE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
 ################################################################################
 # Main targets
