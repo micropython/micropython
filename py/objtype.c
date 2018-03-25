@@ -1112,6 +1112,9 @@ STATIC mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
+        mp_raise_TypeError(NULL);
+    }
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
     *o = (mp_obj_super_t){{type_in}, args[0], args[1]};
     return MP_OBJ_FROM_PTR(o);
