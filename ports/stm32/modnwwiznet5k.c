@@ -48,7 +48,7 @@
 typedef struct _wiznet5k_obj_t {
     mp_obj_base_t base;
     mp_uint_t cris_state;
-    SPI_HandleTypeDef *spi;
+    const spi_t *spi;
     const pin_obj_t *cs;
     const pin_obj_t *rst;
     uint8_t socket_used;
@@ -73,12 +73,12 @@ STATIC void wiz_cs_deselect(void) {
 }
 
 STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi, buf, len, 5000);
+    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi->spi, buf, len, 5000);
     (void)status;
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
-    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi, (uint8_t*)buf, len, 5000);
+    HAL_StatusTypeDef status = HAL_SPI_Transmit(wiznet5k_obj.spi->spi, (uint8_t*)buf, len, 5000);
     (void)status;
 }
 
@@ -345,23 +345,24 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     // init the wiznet5k object
     wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
-    wiznet5k_obj.spi = spi_get_handle(args[0]);
+    wiznet5k_obj.spi = spi_from_mp_obj(args[0]);
     wiznet5k_obj.cs = pin_find(args[1]);
     wiznet5k_obj.rst = pin_find(args[2]);
     wiznet5k_obj.socket_used = 0;
 
     /*!< SPI configuration */
-    wiznet5k_obj.spi->Init.Mode = SPI_MODE_MASTER;
-    wiznet5k_obj.spi->Init.Direction = SPI_DIRECTION_2LINES;
-    wiznet5k_obj.spi->Init.DataSize = SPI_DATASIZE_8BIT;
-    wiznet5k_obj.spi->Init.CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
-    wiznet5k_obj.spi->Init.CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
-    wiznet5k_obj.spi->Init.NSS = SPI_NSS_SOFT;
-    wiznet5k_obj.spi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
-    wiznet5k_obj.spi->Init.FirstBit = SPI_FIRSTBIT_MSB;
-    wiznet5k_obj.spi->Init.TIMode = SPI_TIMODE_DISABLED;
-    wiznet5k_obj.spi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-    wiznet5k_obj.spi->Init.CRCPolynomial = 7; // unused
+    SPI_InitTypeDef *init = &wiznet5k_obj.spi->spi->Init;
+    init->Mode = SPI_MODE_MASTER;
+    init->Direction = SPI_DIRECTION_2LINES;
+    init->DataSize = SPI_DATASIZE_8BIT;
+    init->CLKPolarity = SPI_POLARITY_LOW; // clock is low when idle
+    init->CLKPhase = SPI_PHASE_1EDGE; // data latched on first edge, which is rising edge for low-idle
+    init->NSS = SPI_NSS_SOFT;
+    init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; // clock freq = f_PCLK / this_prescale_value; Wiz820i can do up to 80MHz
+    init->FirstBit = SPI_FIRSTBIT_MSB;
+    init->TIMode = SPI_TIMODE_DISABLED;
+    init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+    init->CRCPolynomial = 7; // unused
     spi_init(wiznet5k_obj.spi, false);
 
     mp_hal_pin_output(wiznet5k_obj.cs);

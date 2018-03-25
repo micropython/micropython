@@ -37,6 +37,7 @@ DEVICE=0483:df11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
+STARTUP_FILE ?= boards/startup_stm32$(MCU_SERIES).o
 
 CROSS_COMPILE = arm-none-eabi-
 
@@ -53,16 +54,17 @@ INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 CFLAGS_CORTEX_M = -mthumb
 
 # Select hardware floating-point support
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 endif
 
 # Options for particular MCU series
-CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_F4
-CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7 -DMCU_SERIES_F7
-CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -DMCU_SERIES_L4
+CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
 
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
@@ -185,7 +187,10 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
         )
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
+	bus/softspi.c \
+	bus/softqspi.c \
 	memory/spiflash.c \
+	dht/dht.c \
 	)
 
 SRC_C = \
@@ -212,6 +217,7 @@ SRC_C = \
 	dma.c \
 	i2c.c \
 	spi.c \
+	qspi.c \
 	uart.c \
 	can.c \
 	usb.c \
@@ -231,6 +237,8 @@ SRC_C = \
 	rng.c \
 	rtc.c \
 	flash.c \
+	flashbdev.c \
+	spibdev.c \
 	storage.c \
 	sdcard.c \
 	fatfs_port.c \
@@ -242,14 +250,14 @@ SRC_C = \
 	$(wildcard boards/$(BOARD)/*.c)
 
 SRC_O = \
-	startup_stm32.o \
+	$(STARTUP_FILE) \
 	gchelper.o \
 
+$(BUILD)/$(HAL_DIR)/Src/%.o: CFLAGS += -fno-strict-aliasing
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
-	hal_can.c \
 	hal_cortex.c \
 	hal_dac.c \
 	hal_dac_ex.c \
@@ -264,7 +272,6 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
-	hal_rng.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
 	hal_sd.c \
@@ -275,6 +282,12 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_sdmmc.c \
 	ll_usb.c \
 	)
+
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
+    SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
+else
+    SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
+endif
 
 SRC_USBDEV = $(addprefix $(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
@@ -389,13 +402,13 @@ deploy-openocd: $(BUILD)/firmware.dfu
 	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(FLASH_ADDR) $(BUILD)/firmware1.bin $(TEXT_ADDR)"
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
 	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(OBJCOPY) -O ihex $< $@
 
 $(BUILD)/firmware.elf: $(OBJ)
@@ -444,7 +457,7 @@ main.c: $(GEN_CDCINF_HEADER)
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
 $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
@@ -459,22 +472,22 @@ CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
 
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PLLVALUES) -c file:boards/$(BOARD)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
 
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
 # Use a pattern rule here so that make will only call make-stmconst.py once to
 # make both modstm_const.h and modstm_qstr.h
 $(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
-	$(ECHO) "Create stmconst $@"
+	$(ECHO) "GEN stmconst $@"
 	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(FILE2H) $< > $@
 
 $(GEN_CDCINF_FILE): $(CDCINF_TEMPLATE) $(INSERT_USB_IDS) $(USB_IDS_FILE) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(INSERT_USB_IDS) $(USB_IDS_FILE) $< > $@
 
 include $(TOP)/py/mkrules.mk

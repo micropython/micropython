@@ -89,7 +89,7 @@ typedef struct _pyb_lcd_obj_t {
     mp_obj_base_t base;
 
     // hardware control for the LCD
-    SPI_HandleTypeDef *spi;
+    const spi_t *spi;
     const pin_obj_t *pin_cs1;
     const pin_obj_t *pin_rst;
     const pin_obj_t *pin_a0;
@@ -119,7 +119,7 @@ STATIC void lcd_out(pyb_lcd_obj_t *lcd, int instr_data, uint8_t i) {
         mp_hal_pin_high(lcd->pin_a0); // A0=1; select data reg
     }
     lcd_delay();
-    HAL_SPI_Transmit(lcd->spi, &i, 1, 1000);
+    HAL_SPI_Transmit(lcd->spi->spi, &i, 1, 1000);
     lcd_delay();
     mp_hal_pin_high(lcd->pin_cs1); // CS=1; disable
 }
@@ -207,13 +207,13 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // configure pins
     // TODO accept an SPI object and pin objects for full customisation
     if ((lcd_id[0] | 0x20) == 'x' && lcd_id[1] == '\0') {
-        lcd->spi = &SPIHandle1;
+        lcd->spi = &spi_obj[0];
         lcd->pin_cs1 = &pyb_pin_X3;
         lcd->pin_rst = &pyb_pin_X4;
         lcd->pin_a0 = &pyb_pin_X5;
         lcd->pin_bl = &pyb_pin_X12;
     } else if ((lcd_id[0] | 0x20) == 'y' && lcd_id[1] == '\0') {
-        lcd->spi = &SPIHandle2;
+        lcd->spi = &spi_obj[1];
         lcd->pin_cs1 = &pyb_pin_Y3;
         lcd->pin_rst = &pyb_pin_Y4;
         lcd->pin_a0 = &pyb_pin_Y5;
@@ -223,13 +223,13 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // init the SPI bus
-    SPI_InitTypeDef *init = &lcd->spi->Init;
+    SPI_InitTypeDef *init = &lcd->spi->spi->Init;
     init->Mode = SPI_MODE_MASTER;
 
     // compute the baudrate prescaler from the desired baudrate
     // select a prescaler that yields at most the desired baudrate
     uint spi_clock;
-    if (lcd->spi->Instance == SPI1) {
+    if (lcd->spi->spi->Instance == SPI1) {
         // SPI1 is on APB2
         spi_clock = HAL_RCC_GetPCLK2Freq();
     } else {

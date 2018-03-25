@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_I2C_H
-#define MICROPY_INCLUDED_STMHAL_I2C_H
+#ifndef MICROPY_INCLUDED_STM32_I2C_H
+#define MICROPY_INCLUDED_STM32_I2C_H
 
 #include "dma.h"
 
@@ -48,8 +48,8 @@ extern const pyb_i2c_obj_t pyb_i2c_obj[4];
 void i2c_init0(void);
 void i2c_init(I2C_HandleTypeDef *i2c);
 void i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq);
-uint32_t i2c_get_baudrate(I2C_InitTypeDef *init);
+uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c);
 void i2c_ev_irq_handler(mp_uint_t i2c_id);
 void i2c_er_irq_handler(mp_uint_t i2c_id);
 
-#endif // MICROPY_INCLUDED_STMHAL_I2C_H
+#endif // MICROPY_INCLUDED_STM32_I2C_H

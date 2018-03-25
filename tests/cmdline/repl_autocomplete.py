@@ -6,5 +6,4 @@ x = '123'
 1, x.isdi	()
 i = str
 i.lowe	('ABC')
-j = None
-j.	
+None.	

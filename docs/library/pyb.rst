@@ -278,7 +278,8 @@ Miscellaneous functions
 
    - ``None``: disables USB
    - ``'VCP'``: enable with VCP (Virtual COM Port) interface
-   - ``'VCP+MSC'``: enable with VCP and MSC (mass storage device class)
+   - ``'MSC'``: enable with MSC (mass storage device class) interface
+   - ``'VCP+MSC'``: enable with VCP and MSC
    - ``'VCP+HID'``: enable with VCP and HID (human interface device)
 
    For backwards compatibility, ``'CDC'`` is understood to mean

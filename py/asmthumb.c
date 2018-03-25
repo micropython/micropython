@@ -104,6 +104,8 @@ STATIC void asm_thumb_write_word32(asm_thumb_t *as, int w32) {
 //  | low address    | high address in RAM
 
 void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
+    assert(num_locals >= 0);
+
     // work out what to push and how many extra spaces to reserve on stack
     // so that we have enough for all locals and it's aligned an 8-byte boundary
     // we push extra regs (r1, r2, r3) to help do the stack adjustment
@@ -111,9 +113,6 @@ void asm_thumb_entry(asm_thumb_t *as, int num_locals) {
     // for push rlist, lowest numbered register at the lowest address
     uint reglist;
     uint stack_adjust;
-    if (num_locals < 0) {
-        num_locals = 0;
-    }
     // don't pop r0 because it's used for return value
     switch (num_locals) {
         case 0:

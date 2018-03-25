@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,35 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-
-#include "py/obj.h"
 #include "rng.h"
 
 #if MICROPY_HW_ENABLE_RNG
 
-/// \moduleref pyb
-
-STATIC RNG_HandleTypeDef RNGHandle = {.Instance = NULL};
-
-void rng_init0(void) {
-    // reset the RNG handle
-    memset(&RNGHandle, 0, sizeof(RNG_HandleTypeDef));
-    RNGHandle.Instance = RNG;
-}
-
-void rng_init(void) {
-    __RNG_CLK_ENABLE();
-    HAL_RNG_Init(&RNGHandle);
-}
+#define RNG_TIMEOUT_MS (10)
 
 uint32_t rng_get(void) {
-    if (RNGHandle.State == HAL_RNG_STATE_RESET) {
-        rng_init();
+    // Enable the RNG peripheral if it's not already enabled
+    if (!(RNG->CR & RNG_CR_RNGEN)) {
+        __HAL_RCC_RNG_CLK_ENABLE();
+        RNG->CR |= RNG_CR_RNGEN;
     }
-    return HAL_RNG_GetRandomNumber(&RNGHandle);
+
+    // Wait for a new random number to be ready, takes on the order of 10us
+    uint32_t start = HAL_GetTick();
+    while (!(RNG->SR & RNG_SR_DRDY)) {
+        if (HAL_GetTick() - start >= RNG_TIMEOUT_MS) {
+            return 0;
+        }
+    }
+
+    // Get and return the new random number
+    return RNG->DR;
 }
 
-/// \function rng()
-/// Return a 30-bit hardware generated random number.
+// Return a 30-bit hardware generated random number.
 STATIC mp_obj_t pyb_rng_get(void) {
-    if (RNGHandle.State == HAL_RNG_STATE_RESET) {
-        rng_init();
-    }
-    return mp_obj_new_int(HAL_RNG_GetRandomNumber(&RNGHandle) >> 2);
+    return mp_obj_new_int(rng_get() >> 2);
 }
-
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
 
 #endif // MICROPY_HW_ENABLE_RNG

@@ -3,7 +3,7 @@ True
 statvfs: (512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
 getcwd: /
 True
-[('foo_file.txt', 32768, 0)]
+[('foo_file.txt', 32768, 0, 6)]
 stat root: (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 stat file: (32768, 0, 0, 0, 0, 0, 6)
 True
@@ -12,5 +12,5 @@ getcwd: /foo_dir
 []
 True
 getcwd: /
-[(b'foo_file.txt', 32768, 0), (b'foo_dir', 16384, 0)]
+[(b'foo_file.txt', 32768, 0, 6), (b'foo_dir', 16384, 0, 0)]
 ENOENT: True

@@ -13,6 +13,9 @@ false true
 80000000
 80000000
 abc
+# GC
+0
+0
 # vstr
 tests
 sts
@@ -24,21 +27,29 @@ RuntimeError:
 # repl
 ame__
 
-__name__        path            argv            version
-version_info    implementation  platform        byteorder
-maxsize         exit            stdin           stdout
-stderr          modules         exc_info        getsizeof
-print_exception
+__class__       __name__        argv            byteorder
+exc_info        exit            getsizeof       implementation
+maxsize         modules         path            platform
+print_exception                 stderr          stdin
+stdout          version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
 # str
 1
+# bytearray
+data
 # mpz
 1
 12345678
 0
 0
+0
+0
+0
+1
+12345
+6
 # runtime utils
 TypeError: unsupported type for __abs__: 'str'
 TypeError: unsupported types for __divmod__: 'str', 'str'
@@ -48,8 +59,10 @@ Warning: test
 +1e+00
 +1e+00
 # binary
-122
+123
 456
+# VM
+2 1
 # scheduler
 sched(0)=1
 sched(1)=1
@@ -91,3 +104,4 @@ frzstr_pkg2.mod
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
+b'# test frozen package'

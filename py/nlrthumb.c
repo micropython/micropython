@@ -76,9 +76,9 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
 #endif
     );
 
-    #if defined(__GNUC__)
+    #if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 8))
     // Older versions of gcc give an error when naked functions don't return a value
-    __builtin_unreachable();
+    return 0;
     #endif
 }
 

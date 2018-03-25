@@ -159,9 +159,9 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // DAC peripheral clock
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     __DAC_CLK_ENABLE();
-    #elif defined(MCU_SERIES_L4)
+    #elif defined(STM32L4)
     __HAL_RCC_DAC1_CLK_ENABLE();
     #else
     #error Unsupported Processor

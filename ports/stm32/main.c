@@ -263,7 +263,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 }
 
 #if MICROPY_HW_HAS_SDCARD
-STATIC bool init_sdcard_fs(bool first_soft_reset) {
+STATIC bool init_sdcard_fs(void) {
     bool first_part = true;
     for (int part_num = 1; part_num <= 4; ++part_num) {
         // create vfs object
@@ -308,14 +308,14 @@ STATIC bool init_sdcard_fs(bool first_soft_reset) {
                 }
             }
 
-            if (first_soft_reset) {
-                // use SD card as medium for the USB MSD
-                #if defined(USE_DEVICE_MODE)
+            #if MICROPY_HW_ENABLE_USB
+            if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
+                // if no USB MSC medium is selected then use the SD card
                 pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_SDCARD;
-                #endif
             }
+            #endif
 
-            #if defined(USE_DEVICE_MODE)
+            #if MICROPY_HW_ENABLE_USB
             // only use SD card as current directory if that's what the USB medium is
             if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_SDCARD)
             #endif
@@ -428,12 +428,12 @@ int main(void) {
     SystemClock_Config();
 
     // enable GPIO clocks
-    __GPIOA_CLK_ENABLE();
-    __GPIOB_CLK_ENABLE();
-    __GPIOC_CLK_ENABLE();
-    __GPIOD_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
 
-    #if defined(MCU_SERIES_F4) ||  defined(MCU_SERIES_F7)
+    #if defined(STM32F4) ||  defined(STM32F7)
         #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
         // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
         // which behaves more or less like normal SRAM.
@@ -442,7 +442,13 @@ int main(void) {
         // enable the CCM RAM
         __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
         #endif
+    #elif defined(STM32H7)
+        // Enable D2 SRAM1/2/3 clocks.
+        __HAL_RCC_D2SRAM1_CLK_ENABLE();
+        __HAL_RCC_D2SRAM2_CLK_ENABLE();
+        __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
+
 
     #if defined(MICROPY_BOARD_EARLY_INIT)
     MICROPY_BOARD_EARLY_INIT();
@@ -454,16 +460,21 @@ int main(void) {
     #endif
     pendsv_init();
     led_init();
-#if MICROPY_HW_HAS_SWITCH
+    #if MICROPY_HW_HAS_SWITCH
     switch_init0();
-#endif
-
-#if defined(USE_DEVICE_MODE)
-    // default to internal flash being the usb medium
-    pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
-#endif
-
-    int first_soft_reset = true;
+    #endif
+    machine_init();
+    #if MICROPY_HW_ENABLE_RTC
+    rtc_init_start(false);
+    #endif
+    spi_init0();
+    #if MICROPY_HW_ENABLE_HW_I2C
+    i2c_init0();
+    #endif
+    #if MICROPY_HW_HAS_SDCARD
+    sdcard_init();
+    #endif
+    storage_init();
 
 soft_reset:
 
@@ -478,24 +489,6 @@ soft_reset:
     led_state(3, 0);
     led_state(4, 0);
     uint reset_mode = update_reset_mode(1);
-
-    machine_init();
-
-#if MICROPY_HW_ENABLE_RTC
-    if (first_soft_reset) {
-        rtc_init_start(false);
-    }
-#endif
-
-    // more sub-system init
-#if MICROPY_HW_HAS_SDCARD
-    if (first_soft_reset) {
-        sdcard_init();
-    }
-#endif
-    if (first_soft_reset) {
-        storage_init();
-    }
 
     // Python threading init
     #if MICROPY_PY_THREAD
@@ -552,16 +545,9 @@ soft_reset:
     can_init0();
 #endif
 
-#if MICROPY_HW_ENABLE_RNG
-    rng_init0();
-#endif
-
-    #if MICROPY_HW_ENABLE_HW_I2C
-    i2c_init0();
-    #endif
-
-    spi_init0();
+    #if MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
+    #endif
 
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
@@ -573,10 +559,17 @@ soft_reset:
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
         if (!mounted_flash || f_stat(&fs_user_mount_flash.fatfs, "/SKIPSD", NULL) != FR_OK) {
-            mounted_sdcard = init_sdcard_fs(first_soft_reset);
+            mounted_sdcard = init_sdcard_fs();
         }
     }
 #endif
+
+    #if MICROPY_HW_ENABLE_USB
+    // if the SD card isn't used as the USB MSC medium then use the internal flash
+    if (pyb_usb_storage_medium == PYB_USB_STORAGE_MEDIUM_NONE) {
+        pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_FLASH;
+    }
+    #endif
 
     // set sys.path based on mounted filesystems (/sd is first so it can override /flash)
     if (mounted_sdcard) {
@@ -622,12 +615,12 @@ soft_reset:
     // or whose initialisation can be safely deferred until after running
     // boot.py.
 
-#if defined(USE_DEVICE_MODE)
+    #if MICROPY_HW_ENABLE_USB
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
         pyb_usb_dev_init(USBD_VID, USBD_PID_CDC_MSC, USBD_MODE_CDC_MSC, NULL);
     }
-#endif
+    #endif
 
 #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset
@@ -697,11 +690,11 @@ soft_reset_exit:
 #if MICROPY_HW_ENABLE_CAN
     can_deinit();
 #endif
+    machine_deinit();
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();
     #endif
 
-    first_soft_reset = false;
     goto soft_reset;
 }

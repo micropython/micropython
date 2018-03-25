@@ -347,7 +347,7 @@
 #endif
 
 // Whether to enable optimisation of: a, b, c = d, e, f
-// Cost 156 bytes (Thumb2)
+// Requires MICROPY_COMP_DOUBLE_TUPLE_ASSIGN and costs 68 bytes (Thumb2)
 #ifndef MICROPY_COMP_TRIPLE_TUPLE_ASSIGN
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #endif
@@ -404,6 +404,13 @@
 
 /*****************************************************************************/
 /* Python internal features                                                  */
+
+// Whether to enable import of external modules
+// When disabled, only importing of built-in modules is supported
+// When enabled, a port must implement mp_import_stat (among other things)
+#ifndef MICROPY_ENABLE_EXTERNAL_IMPORT
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
+#endif
 
 // Whether to use the POSIX reader for importing files
 #ifndef MICROPY_READER_POSIX
@@ -787,6 +794,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS (1)
 #endif
 
+// Whether to support binary ops [only (in)equality is defined] between range
+// objects.  With this option disabled all range objects that are not exactly
+// the same object will compare as not-equal.  With it enabled the semantics
+// match CPython and ranges are equal if they yield the same sequence of items.
+#ifndef MICROPY_PY_BUILTINS_RANGE_BINOP
+#define MICROPY_PY_BUILTINS_RANGE_BINOP (0)
+#endif
+
 // Whether to support timeout exceptions (like socket.timeout)
 #ifndef MICROPY_PY_BUILTINS_TIMEOUTERROR
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
@@ -892,6 +907,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
 #endif
 
+// Whether to provide "micropython.stack_use" function
+#ifndef MICROPY_PY_MICROPYTHON_STACK_USE
+#define MICROPY_PY_MICROPYTHON_STACK_USE (MICROPY_PY_MICROPYTHON_MEM_INFO)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
@@ -914,6 +934,11 @@ typedef double mp_float_t;
 // Whether to provide "collections" module
 #ifndef MICROPY_PY_COLLECTIONS
 #define MICROPY_PY_COLLECTIONS (1)
+#endif
+
+// Whether to provide "ucollections.deque" type
+#ifndef MICROPY_PY_COLLECTIONS_DEQUE
+#define MICROPY_PY_COLLECTIONS_DEQUE (0)
 #endif
 
 // Whether to provide "collections.OrderedDict" type
