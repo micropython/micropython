@@ -6,10 +6,10 @@ class FlashBdev:
 
     def __init__(self, blocks, offset=None):
         self.blocks = blocks
-	if not offset:
-		self.START_SEC = esp.flash_user_start() // self.SEC_SIZE
-	else:
-		self.START_SEC = offset // self.SEC_SIZE
+        if not offset:
+            self.START_SEC = esp.flash_user_start() // self.SEC_SIZE
+        else:
+            self.START_SEC = offset // self.SEC_SIZE
 
     def readblocks(self, n, buf):
         #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))

@@ -5,7 +5,7 @@ from flashbdev import bdev
 try:
     if bdev:
         uos.mount(bdev, '/')
-	print("Mounted /")
+        print("Mounted /")
 except OSError:
     import inisetup
     vfs = inisetup.setup()
