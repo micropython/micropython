@@ -119,10 +119,8 @@ import machine
 import time
 
 u = machine.ULP()
-f = open('test.bin', 'rb')
-b = f.read()
-
-u.load_binary(0,b)
-
-u.run(0)
+with open('test.bin', 'rb') as f:
+	b = f.read()
+	u.load_binary(0,b)
+	u.run(0)
 ```
