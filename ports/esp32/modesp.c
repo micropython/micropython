@@ -122,7 +122,7 @@ STATIC mp_obj_t mp_esp_partition_find_first(mp_obj_t type_in, mp_obj_t subtype_i
     tuple[1] = mp_obj_new_int(part->subtype);
     tuple[2] = mp_obj_new_int(part->address);
     tuple[3] = mp_obj_new_int(part->size);
-    tuple[4] = mp_obj_new_str(part->label,16,false);
+    tuple[4] = mp_obj_new_str(part->label,16);
     tuple[5] = mp_obj_new_bool(part->encrypted);
     tuple[6] = mp_obj_new_bytes(partptr, sizeof(partptr));
 
