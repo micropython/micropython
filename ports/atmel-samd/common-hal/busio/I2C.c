@@ -72,6 +72,19 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError("Invalid pins");
     }
 
+    // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
+    gpio_set_pin_function(sda->pin, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_function(scl->pin, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(sda->pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_direction(scl->pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_OFF);
+    gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_OFF);
+
+    if (!gpio_get_pin_level(sda->pin) || !gpio_get_pin_level(scl->pin)) {
+        mp_raise_RuntimeError("SDA or SCL need a pull up");
+    }
+    gpio_set_pin_function(sda->pin, sda_pinmux);
+    gpio_set_pin_function(scl->pin, scl_pinmux);
 
     // Set up I2C clocks on sercom.
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
@@ -79,12 +92,6 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (i2c_m_sync_init(&self->i2c_desc, sercom) != ERR_NONE) {
             mp_raise_OSError(MP_EIO);
     }
-
-    gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_OFF);
-    gpio_set_pin_function(sda->pin, sda_pinmux);
-
-    gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_OFF);
-    gpio_set_pin_function(scl->pin, scl_pinmux);
 
     // clkrate is always 0. baud_rate is in kHz.
 
