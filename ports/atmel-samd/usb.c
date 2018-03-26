@@ -241,7 +241,7 @@ bool usb_bytes_available(void) {
     // Check if the buffer has data, but not enough
     // space to hold another read.
     if (usb_rx_count > USB_RX_BUF_SIZE - CDC_BULKOUT_SIZE) {
-        return usb_rx_count > 0;
+        return true;
     }
     // Buffer has enough room
     if (cdc_enabled() && !pending_read) {
