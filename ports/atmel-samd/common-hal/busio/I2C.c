@@ -34,6 +34,7 @@
 
 #include "peripherals.h"
 #include "pins.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 
 // Number of times to try to send packet if failed.
@@ -77,10 +78,21 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     gpio_set_pin_function(scl->pin, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_direction(sda->pin, GPIO_DIRECTION_IN);
     gpio_set_pin_direction(scl->pin, GPIO_DIRECTION_IN);
+
+    gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_DOWN);
+    gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_DOWN);
+
+    common_hal_mcu_delay_us(10);
+
     gpio_set_pin_pull_mode(sda->pin, GPIO_PULL_OFF);
     gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_OFF);
 
+    // We must pull up within 3us to achieve 400khz.
+    common_hal_mcu_delay_us(3);
+
     if (!gpio_get_pin_level(sda->pin) || !gpio_get_pin_level(scl->pin)) {
+        reset_pin(sda->pin);
+        reset_pin(scl->pin);
         mp_raise_RuntimeError("SDA or SCL needs a pull up");
     }
     gpio_set_pin_function(sda->pin, sda_pinmux);
@@ -90,13 +102,17 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     samd_peripherals_sercom_clock_init(sercom, sercom_index);
 
     if (i2c_m_sync_init(&self->i2c_desc, sercom) != ERR_NONE) {
-            mp_raise_OSError(MP_EIO);
+        reset_pin(sda->pin);
+        reset_pin(scl->pin);
+        mp_raise_OSError(MP_EIO);
     }
 
     // clkrate is always 0. baud_rate is in kHz.
 
     // Frequency must be set before the I2C device is enabled.
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
+        reset_pin(sda->pin);
+        reset_pin(scl->pin);
         mp_raise_ValueError("Unsupported baudrate");
     }
 
