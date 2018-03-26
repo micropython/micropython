@@ -222,17 +222,17 @@ void init_usb(void) {
 }
 
 static bool cdc_enabled(void) {
-    if (mp_cdc_enabled) {
-        return true;
-    }
     if (!cdcdf_acm_is_enabled()) {
+        mp_cdc_enabled = false;
         return false;
     }
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)read_complete);
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)write_complete);
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)usb_device_cb_state_c);
-    cdcdf_acm_register_callback(CDCDF_ACM_CB_LINE_CODING_C, (FUNC_PTR)usb_device_cb_line_coding_c);
-    mp_cdc_enabled = true;
+    if (!mp_cdc_enabled) {
+        cdcdf_acm_register_callback(CDCDF_ACM_CB_READ, (FUNC_PTR)read_complete);
+        cdcdf_acm_register_callback(CDCDF_ACM_CB_WRITE, (FUNC_PTR)write_complete);
+        cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)usb_device_cb_state_c);
+        cdcdf_acm_register_callback(CDCDF_ACM_CB_LINE_CODING_C, (FUNC_PTR)usb_device_cb_line_coding_c);
+        mp_cdc_enabled = true;
+    }    
 
     return true;
 }
@@ -240,7 +240,7 @@ static bool cdc_enabled(void) {
 bool usb_bytes_available(void) {
     // Check if the buffer has data, but not enough
     // space to hold another read.
-    if (usb_rx_count > CDC_BULKOUT_SIZE) {
+    if (usb_rx_count > USB_RX_BUF_SIZE - CDC_BULKOUT_SIZE) {
         return usb_rx_count > 0;
     }
     // Buffer has enough room
@@ -319,7 +319,7 @@ bool usb_connected(void) {
 // also make sure we have enough room in the local buffer
 void usb_cdc_background() {
     //
-    if (mp_interrupt_char != -1 && cdc_enabled() && !pending_read && usb_rx_count < CDC_BULKOUT_SIZE) {
+    if (mp_interrupt_char != -1 && cdc_enabled() && !pending_read && (usb_rx_count < USB_RX_BUF_SIZE - CDC_BULKOUT_SIZE)) {
         start_read();
     }
 }
