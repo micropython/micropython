@@ -81,7 +81,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     gpio_set_pin_pull_mode(scl->pin, GPIO_PULL_OFF);
 
     if (!gpio_get_pin_level(sda->pin) || !gpio_get_pin_level(scl->pin)) {
-        mp_raise_RuntimeError("SDA or SCL need a pull up");
+        mp_raise_RuntimeError("SDA or SCL needs a pull up");
     }
     gpio_set_pin_function(sda->pin, sda_pinmux);
     gpio_set_pin_function(scl->pin, scl_pinmux);
