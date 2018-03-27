@@ -275,10 +275,14 @@ void SystemInit(void)
   #endif
 
   /* Configure the Vector Table location add offset address ------------------*/
+#ifdef MICROPY_HW_VTOR
+  SCB->VTOR = MICROPY_HW_VTOR;
+#else
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = SRAM1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+#endif
 #endif
 
   /* dpgeorge: enable 8-byte stack alignment for IRQ handlers, in accord with EABI */
