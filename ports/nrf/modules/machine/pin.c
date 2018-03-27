@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "pin.h"
+#include "nrf_gpio.h"
 
 /// \moduleref pyb
 /// \class Pin - control I/O pins
@@ -101,9 +102,6 @@ STATIC bool pin_class_debug;
 #define pin_class_debug (0)
 #endif
 
-// Forward declare function
-void gpio_irq_event_callback(hal_gpio_event_channel_t channel);
-
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
     MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
@@ -111,8 +109,6 @@ void pin_init0(void) {
     #if PIN_DEBUG
     pin_class_debug = false;
     #endif
-
-    hal_gpio_register_callback(gpio_irq_event_callback);
 }
 
 // C API used to convert a user-supplied pin name into an ordinal pin number.
@@ -374,9 +370,9 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get pull mode
-    uint pull = HAL_GPIO_PULL_DISABLED;
+    nrf_gpio_pin_pull_t pull = NRF_GPIO_PIN_NOPULL;
     if (args[1].u_obj != mp_const_none) {
-        pull = mp_obj_get_int(args[1].u_obj);
+        pull = (nrf_gpio_pin_pull_t)mp_obj_get_int(args[1].u_obj);
     }
 
     // if given, set the pin value before initialising to prevent glitches
@@ -384,10 +380,21 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
         mp_hal_pin_write(self, mp_obj_is_true(args[3].u_obj));
     }
 
+
     // get io mode
-    uint mode = args[0].u_int;
-    if (mode == HAL_GPIO_MODE_OUTPUT || mode == HAL_GPIO_MODE_INPUT) {
-        hal_gpio_cfg_pin(self->port, self->pin, mode, pull);
+    nrf_gpio_pin_dir_t mode = (nrf_gpio_pin_dir_t)args[0].u_int;
+
+    // Connect input or not
+    nrf_gpio_pin_input_t input = (mode == NRF_GPIO_PIN_DIR_INPUT) ? NRF_GPIO_PIN_INPUT_CONNECT 
+	                                                          : NRF_GPIO_PIN_INPUT_DISCONNECT;
+
+    if (mode == NRF_GPIO_PIN_DIR_OUTPUT || mode == NRF_GPIO_PIN_DIR_INPUT) {
+        nrf_gpio_cfg(self->pin,
+                     mode,
+                     input,
+                     pull,
+                     NRF_GPIO_PIN_S0S1,
+                     NRF_GPIO_PIN_NOSENSE);
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
     }
@@ -508,6 +515,7 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
+/*
 STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
@@ -524,7 +532,7 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
-
+*/
 
 STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
@@ -543,7 +551,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&pin_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_pull),    MP_ROM_PTR(&pin_pull_obj) },
     { MP_ROM_QSTR(MP_QSTR_af),      MP_ROM_PTR(&pin_af_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
 
     // class methods
     { MP_ROM_QSTR(MP_QSTR_mapper),  MP_ROM_PTR(&pin_mapper_obj) },
@@ -557,22 +565,22 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
 
     // class constants
-    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(HAL_GPIO_MODE_INPUT) },
-    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(HAL_GPIO_MODE_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(NRF_GPIO_PIN_DIR_INPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(NRF_GPIO_PIN_DIR_OUTPUT) },
 /*
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),     MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
     { MP_ROM_QSTR(MP_QSTR_ALT),            MP_ROM_INT(GPIO_MODE_AF_PP) },
     { MP_ROM_QSTR(MP_QSTR_ALT_OPEN_DRAIN), MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_ANALOG),         MP_ROM_INT(GPIO_MODE_ANALOG) },
 */
-    { MP_ROM_QSTR(MP_QSTR_PULL_DISABLED), MP_ROM_INT(HAL_GPIO_PULL_DISABLED) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_UP),       MP_ROM_INT(HAL_GPIO_PULL_UP) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),     MP_ROM_INT(HAL_GPIO_PULL_DOWN) },
-
+    { MP_ROM_QSTR(MP_QSTR_PULL_DISABLED), MP_ROM_INT(NRF_GPIO_PIN_NOPULL) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_UP),       MP_ROM_INT(NRF_GPIO_PIN_PULLUP) },
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),     MP_ROM_INT(NRF_GPIO_PIN_PULLDOWN) },
+/*
     // IRQ triggers, can be or'd together
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),    MP_ROM_INT(HAL_GPIO_POLARITY_EVENT_LOW_TO_HIGH) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),   MP_ROM_INT(HAL_GPIO_POLARITY_EVENT_HIGH_TO_LOW) },
-/*
+
     // legacy class constants
     { MP_ROM_QSTR(MP_QSTR_OUT_PP),    MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
     { MP_ROM_QSTR(MP_QSTR_OUT_OD),    MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
@@ -669,10 +677,6 @@ const mp_obj_type_t pin_af_type = {
 
 /******************************************************************************/
 // Pin IRQ object
-
-void gpio_irq_event_callback(hal_gpio_event_channel_t channel) {
-    // printf("### gpio irq received on channel %d\n", (uint16_t)channel);
-}
 
 typedef struct _pin_irq_obj_t {
     mp_obj_base_t base;

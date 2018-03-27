@@ -36,8 +36,7 @@
 #include "nrf_sdm.h"
 #include "ble_gap.h"
 #include "ble.h" // sd_ble_uuid_encode
-#include "hal_irq.h"
-#include "hal/hal_nvmc.h"
+#include "drivers/flash.h"
 #include "mphalport.h"
 
 
@@ -906,12 +905,12 @@ void ble_drv_discover_descriptors(void) {
 
 static void sd_evt_handler(uint32_t evt_id) {
     switch (evt_id) {
-#ifdef HAL_NVMC_MODULE_ENABLED
+#if MICROPY_HW_HAS_BUILTIN_FLASH
         case NRF_EVT_FLASH_OPERATION_SUCCESS:
-            hal_nvmc_operation_finished(HAL_NVMC_SUCCESS);
+            flash_operation_finished(FLASH_STATE_SUCCESS);
             break;
         case NRF_EVT_FLASH_OPERATION_ERROR:
-            hal_nvmc_operation_finished(HAL_NVMC_ERROR);
+            flash_operation_finished(FLASH_STATE_ERROR);
             break;
 #endif
         default:
