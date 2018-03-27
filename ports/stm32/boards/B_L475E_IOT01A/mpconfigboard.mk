@@ -4,5 +4,5 @@ CMSIS_MCU = STM32L475xx
 # the only diffrence to the stm32l476 - so reuse some files.
 AF_FILE = boards/stm32l476_af.csv
 LD_FILES = boards/stm32l476xg.ld boards/common_ifs.ld
-TEXT_ADDR = 0x08004000
+TEXT1_ADDR = 0x08004000
 OPENOCD_CONFIG = boards/openocd_stm32l4.cfg
