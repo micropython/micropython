@@ -387,8 +387,29 @@ else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
 
+# A board should specify TEXT0_ADDR if to use a different location than the
+# default for the firmware memory location.  A board can also optionally define
+# TEXT1_ADDR to split the firmware into two sections; see below for details.
 TEXT0_ADDR ?= 0x08000000
-TEXT1_ADDR ?= 0x08020000
+
+ifeq ($(TEXT1_ADDR),)
+# No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
+
+deploy-stlink: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(TEXT0_ADDR)
+
+deploy-openocd: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK using OpenOCD"
+	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware.bin $(TEXT0_ADDR)"
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
+	$(ECHO) "Create $@"
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(PYTHON) $(DFU) -b $(TEXT0_ADDR):$(BUILD)/firmware.bin $@
+
+else
+# TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
@@ -405,6 +426,8 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
 	$(Q)$(PYTHON) $(DFU) -b $(TEXT0_ADDR):$(BUILD)/firmware0.bin -b $(TEXT1_ADDR):$(BUILD)/firmware1.bin $@
+
+endif
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"
