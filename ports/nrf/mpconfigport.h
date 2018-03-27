@@ -99,6 +99,7 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS           (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO          (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN            (0)
+#define MICROPY_NONSTANDARD_TYPECODES            (0)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS          (0)
 #define MICROPY_PY_SYS_EXIT                      (1)
 #define MICROPY_PY_SYS_MAXSIZE                   (1)

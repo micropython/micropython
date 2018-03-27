@@ -9,6 +9,12 @@ except:
         print("SKIP")
         raise SystemExit
 
+try:
+    struct.pack('O', None)
+except ValueError:
+    print("SKIP")
+    raise SystemExit
+
 class A():
     pass
 

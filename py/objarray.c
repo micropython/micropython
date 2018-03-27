@@ -470,9 +470,11 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 } else {
                     mp_seq_replace_slice_no_grow(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, item_sz);
+#if MICROPY_NONSTANDARD_TYPECODES
                     // Clear "freed" elements at the end of list
                     // TODO: This is actually only needed for typecode=='O'
                     mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
+#endif
                     // TODO: alloc policy after shrinking
                 }
                 o->len += len_adj;

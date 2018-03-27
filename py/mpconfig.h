@@ -888,6 +888,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
 #endif
 
+// Whether to support nonstandard typecodes "O", "P" and "S"
+// in array and struct modules.
+#ifndef MICROPY_NONSTANDARD_TYPECODES
+#define MICROPY_NONSTANDARD_TYPECODES (1)
+#endif
+
 // Whether to support attrtuple type (MicroPython extension)
 // It provides space-efficient tuples with attribute access
 #ifndef MICROPY_PY_ATTRTUPLE
