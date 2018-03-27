@@ -78,9 +78,9 @@ mp_obj_property_t *make_property_long_lived(mp_obj_property_t *prop, uint8_t max
     if (max_depth == 0) {
         return prop;
     }
-    prop->proxy[0] = make_fun_bc_long_lived((mp_obj_fun_bc_t*) prop->proxy[0], max_depth - 1);
-    prop->proxy[1] = make_fun_bc_long_lived((mp_obj_fun_bc_t*) prop->proxy[1], max_depth - 1);
-    prop->proxy[2] = make_fun_bc_long_lived((mp_obj_fun_bc_t*) prop->proxy[2], max_depth - 1);
+    prop->proxy[0] = make_obj_long_lived((mp_obj_fun_bc_t*) prop->proxy[0], max_depth - 1);
+    prop->proxy[1] = make_obj_long_lived((mp_obj_fun_bc_t*) prop->proxy[1], max_depth - 1);
+    prop->proxy[2] = make_obj_long_lived((mp_obj_fun_bc_t*) prop->proxy[2], max_depth - 1);
     return gc_make_long_lived(prop);
 }
 

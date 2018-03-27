@@ -567,6 +567,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     mp_obj_class_lookup(&lookup, self->base.type);
     mp_obj_t member = dest[0];
     if (member != MP_OBJ_NULL) {
+        // changes here may may require changes to super_attr, below
         #if MICROPY_PY_BUILTINS_PROPERTY
         if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
             // object member is a property; delegate the load to the property
@@ -1112,14 +1113,37 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             assert(MP_OBJ_IS_TYPE(items[i], &mp_type_type));
             mp_obj_class_lookup(&lookup, (mp_obj_type_t*)MP_OBJ_TO_PTR(items[i]));
             if (dest[0] != MP_OBJ_NULL) {
-                return;
+                break;
             }
         }
     } else {
         mp_obj_class_lookup(&lookup, type->parent);
-        if (dest[0] != MP_OBJ_NULL) {
-            return;
+    }
+
+    if (dest[0] != MP_OBJ_NULL) {
+        mp_obj_t member = dest[0];
+        // changes to mp_obj_instance_load_attr may require changes
+        // here...
+        #if MICROPY_PY_BUILTINS_PROPERTY
+        if (MP_OBJ_IS_TYPE(member, &mp_type_property)) {
+            const mp_obj_t *proxy = mp_obj_property_get(member);
+            if (proxy[0] == mp_const_none) {
+                mp_raise_AttributeError("unreadable attribute");
+            } else {
+                dest[0] = mp_call_function_n_kw(proxy[0], 1, 0, &self_in);
+            }
         }
+        #endif
+        #if MICROPY_PY_DESCRIPTORS
+        mp_obj_t attr_get_method[4];
+        mp_load_method_maybe(member, MP_QSTR___get__, attr_get_method);
+        if (attr_get_method[0] != MP_OBJ_NULL) {
+            attr_get_method[2] = self_in;
+            attr_get_method[3] = MP_OBJ_FROM_PTR(mp_obj_get_type(self_in));
+            dest[0] = mp_call_method_n_kw(2, 0, attr_get_method);
+        }
+        #endif
+        return;
     }
 
     mp_obj_class_lookup(&lookup, &mp_type_object);
