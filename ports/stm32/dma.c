@@ -89,7 +89,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #endif
 };
 
-#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
+#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD && !defined(STM32H7)
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
@@ -344,26 +344,14 @@ const dma_descr_t dma_I2C_1_TX = { DMA1_Stream7, DMA_REQUEST_I2C1_TX, DMA_MEMORY
 const dma_descr_t dma_I2C_2_TX = { DMA1_Stream7, DMA_REQUEST_I2C2_TX, DMA_MEMORY_TO_PERIPH, dma_id_7,   &dma_init_struct_spi_i2c };
 
 // DMA2 streams
-#if defined(SDMMC2) && MICROPY_HW_HAS_SDCARD
-const dma_descr_t dma_SDMMC_2_RX= { DMA2_Stream0, DMA_CHANNEL_11, DMA_PERIPH_TO_MEMORY, dma_id_8,  &dma_init_struct_sdio };
-#endif
 const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_REQUEST_SPI1_RX, DMA_PERIPH_TO_MEMORY, dma_id_10,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_REQUEST_SPI5_RX, DMA_PERIPH_TO_MEMORY, dma_id_11,  &dma_init_struct_spi_i2c };
-#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
-const dma_descr_t dma_SDIO_0_RX= { DMA2_Stream3, DMA_CHANNEL_4, DMA_PERIPH_TO_MEMORY, dma_id_11,  &dma_init_struct_sdio };
-#endif
 const dma_descr_t dma_SPI_4_RX = { DMA2_Stream3, DMA_REQUEST_SPI4_RX, DMA_PERIPH_TO_MEMORY, dma_id_11,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_5_TX = { DMA2_Stream4, DMA_REQUEST_SPI5_TX, DMA_MEMORY_TO_PERIPH, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_4_TX = { DMA2_Stream4, DMA_REQUEST_SPI4_TX, DMA_MEMORY_TO_PERIPH, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_TX = { DMA2_Stream5, BDMA_REQUEST_SPI6_TX, DMA_MEMORY_TO_PERIPH, dma_id_13,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_1_TX = { DMA2_Stream5, DMA_REQUEST_SPI1_TX, DMA_MEMORY_TO_PERIPH, dma_id_13,  &dma_init_struct_spi_i2c };
-#if defined(SDMMC2) && MICROPY_HW_HAS_SDCARD
-const dma_descr_t dma_SDMMC_2_TX= { DMA2_Stream5, DMA_CHANNEL_11, DMA_MEMORY_TO_PERIPH, dma_id_13,  &dma_init_struct_sdio };
-#endif
 const dma_descr_t dma_SPI_6_RX = { DMA2_Stream6, BDMA_REQUEST_SPI6_RX, DMA_PERIPH_TO_MEMORY, dma_id_14,  &dma_init_struct_spi_i2c };
-#if defined(MICROPY_HW_HAS_SDCARD) && MICROPY_HW_HAS_SDCARD
-const dma_descr_t dma_SDIO_0_TX= { DMA2_Stream6, DMA_CHANNEL_4, DMA_MEMORY_TO_PERIPH, dma_id_14,  &dma_init_struct_sdio };
-#endif
 
 static const uint8_t dma_irqn[NSTREAM] = {
     DMA1_Stream0_IRQn,
