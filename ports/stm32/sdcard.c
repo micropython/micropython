@@ -168,9 +168,6 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
     SDMMC_CLK_ENABLE();
 
     #if defined(STM32H7)
-    // Enable MDMA clock
-    __HAL_RCC_MDMA_CLK_ENABLE();
-
     // Reset SDMMC
     __HAL_RCC_SDMMC1_FORCE_RESET();
     __HAL_RCC_SDMMC1_RELEASE_RESET();
