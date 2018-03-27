@@ -80,7 +80,7 @@ CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 endif
 
-LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.

@@ -1,3 +1,16 @@
+/* Memory layout for internal flash storage configuration:
+
+    FLASH_ISR   .isr_vector
+
+    FLASH_TEXT  .text
+    FLASH_TEXT  .data
+
+    RAM         .data
+    RAM         .bss
+    RAM         .heap
+    RAM         .stack
+*/
+
 ENTRY(Reset_Handler)
 
 /* define output sections */

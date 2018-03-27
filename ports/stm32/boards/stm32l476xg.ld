@@ -24,9 +24,6 @@ _minimum_heap_size = 16K;
    aligned for a call. */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
-/* define common sections and symbols */
-INCLUDE common.ld
-
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
