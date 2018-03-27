@@ -25,10 +25,10 @@
  */
 
 #include <string.h>
-#include "hal_gpio.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "nrf_gpio.h"
 #include "microbitimage.h"
 #include "microbitdisplay.h"
 #include "iters.h"
@@ -188,9 +188,9 @@ static const DisplayPoint display_map[COLUMN_COUNT][ROW_COUNT] = {
 
 static inline void displaySetPinsForRow(microbit_display_obj_t * p_display, uint8_t brightness) {
     if (brightness == 0) {
-        hal_gpio_out_clear(0, COLUMN_PINS_MASK & ~p_display->pins_for_brightness[brightness]);
+        nrf_gpio_port_out_clear(NRF_GPIO, COLUMN_PINS_MASK & ~p_display->pins_for_brightness[brightness]);
     } else {
-        hal_gpio_out_set(0, p_display->pins_for_brightness[brightness]);
+        nrf_gpio_pin_set(p_display->pins_for_brightness[brightness]);
     }
 }
 
@@ -219,9 +219,9 @@ static inline void displaySetPinsForRow(microbit_display_obj_t * p_display, uint
  */
 static void displayAdvanceRow(microbit_display_obj_t * p_display) {
     /* Clear all of the column bits */
-    hal_gpio_out_set(0, COLUMN_PINS_MASK);
+    nrf_gpio_port_out_set(NRF_GPIO, COLUMN_PINS_MASK);
     /* Clear the strobe bit for this row */
-    hal_gpio_pin_clear(0, p_display->strobe_row + MIN_ROW_PIN);
+    nrf_gpio_pin_clear(p_display->strobe_row + MIN_ROW_PIN);
 
     /* Move to the next row.  Before this, "this row" refers to the row
      * manipulated by the previous invocation of this function.  After this,
@@ -247,9 +247,9 @@ static void displayAdvanceRow(microbit_display_obj_t * p_display) {
         (void)brightness;
     }
     /* Enable the strobe bit for this row */
-    hal_gpio_pin_set(0, p_display->strobe_row + MIN_ROW_PIN);
+    nrf_gpio_pin_set(p_display->strobe_row + MIN_ROW_PIN);
     /* Enable the column bits for all pins that need to be on. */
-    hal_gpio_out_clear(0, p_display->pins_for_brightness[MAX_BRIGHTNESS]);
+    nrf_gpio_port_out_clear(NRF_GPIO, p_display->pins_for_brightness[MAX_BRIGHTNESS]);
 }
 
 static const uint16_t render_timings[] =
@@ -458,7 +458,7 @@ mp_obj_t microbit_display_off_func(mp_obj_t obj) {
     self->active = false;
     /* Disable the row strobes, allowing the columns to be used freely for
      * GPIO. */
-    hal_gpio_out_clear(0, ROW_PINS_MASK);
+    nrf_gpio_port_out_clear(0, ROW_PINS_MASK);
     /* Free pins for other uses */
 /*
     microbit_obj_pin_free(&microbit_p3_obj);
@@ -571,6 +571,6 @@ microbit_display_obj_t microbit_display_obj = {
 void microbit_display_init(void) {
     //  Set pins as output.
     for (int i = MIN_COLUMN_PIN; i <= MAX_ROW_PIN; i++) {
-        hal_gpio_cfg_pin(0, i, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN);
+        nrf_gpio_cfg_output(i);
     }
 }

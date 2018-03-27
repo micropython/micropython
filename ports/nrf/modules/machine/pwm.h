@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2016-2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include "hal_pwm.h"
-
-typedef struct _pyb_pwm_obj_t {
-    mp_obj_base_t base;
-    PWM_HandleTypeDef *pwm;
-} pyb_pwm_obj_t;
-
-typedef struct _machine_hard_pwm_obj_t {
-    mp_obj_base_t base;
-    const pyb_pwm_obj_t *pyb;
-} machine_hard_pwm_obj_t;
 
 void pwm_init0(void);
 

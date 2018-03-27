@@ -31,8 +31,8 @@
 #include <sys/stat.h>
 
 #include "microbitfs.h"
-#include "hal/hal_nvmc.h"
-#include "hal/hal_rng.h"
+#include "drivers/flash.h"
+#include "modrandom.h"
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/stream.h"
@@ -85,7 +85,7 @@
 
 //Minimum number of free chunks to justify sweeping.
 //If this is too low it may cause excessive wear
-#define MIN_CHUNKS_FOR_SWEEP (HAL_NVMC_PAGESIZE / CHUNK_SIZE)
+#define MIN_CHUNKS_FOR_SWEEP (FLASH_PAGESIZE / CHUNK_SIZE)
 
 #define FILE_NOT_FOUND ((uint8_t)-1)
 
@@ -154,30 +154,30 @@ STATIC inline byte *roundup(byte *addr, uint32_t align) {
 
 
 STATIC inline void *first_page(void) {
-    return _flash_user_end - HAL_NVMC_PAGESIZE * first_page_index;
+    return _flash_user_end - FLASH_PAGESIZE * first_page_index;
 }
 
 STATIC inline void *last_page(void) {
-    return _flash_user_end - HAL_NVMC_PAGESIZE * last_page_index;
+    return _flash_user_end - FLASH_PAGESIZE * last_page_index;
 }
 
 STATIC void init_limits(void) {
     // First determine where to end
     byte *end = _flash_user_end;
-    end = rounddown(end, HAL_NVMC_PAGESIZE)-HAL_NVMC_PAGESIZE;
-    last_page_index = (_flash_user_end - end)/HAL_NVMC_PAGESIZE;
+    end = rounddown(end, FLASH_PAGESIZE)-FLASH_PAGESIZE;
+    last_page_index = (_flash_user_end - end)/FLASH_PAGESIZE;
 
     // Now find the start
-    byte *start = roundup(end - CHUNK_SIZE*MAX_CHUNKS_IN_FILE_SYSTEM, HAL_NVMC_PAGESIZE);
+    byte *start = roundup(end - CHUNK_SIZE*MAX_CHUNKS_IN_FILE_SYSTEM, FLASH_PAGESIZE);
     while (start < _flash_user_start) {
-        start += HAL_NVMC_PAGESIZE;
+        start += FLASH_PAGESIZE;
     }
-    first_page_index = (_flash_user_end - start)/HAL_NVMC_PAGESIZE;
+    first_page_index = (_flash_user_end - start)/FLASH_PAGESIZE;
     chunks_in_file_system = (end-start)>>MBFS_LOG_CHUNK_SIZE;
 }
 
 STATIC void randomise_start_index(void) {
-    start_index = hal_rng_generate() / (chunks_in_file_system-1) + 1;
+    start_index = machine_rng_generate_random_word() % chunks_in_file_system + 1;
 }
 
 void microbit_filesystem_init(void) {
@@ -185,24 +185,24 @@ void microbit_filesystem_init(void) {
     randomise_start_index();
     file_chunk *base = first_page();
     if (base->marker == PERSISTENT_DATA_MARKER) {
-        file_system_chunks = &base[(HAL_NVMC_PAGESIZE>>MBFS_LOG_CHUNK_SIZE)-1];
+        file_system_chunks = &base[(FLASH_PAGESIZE>>MBFS_LOG_CHUNK_SIZE)-1];
     } else if (((file_chunk *)last_page())->marker == PERSISTENT_DATA_MARKER) {
         file_system_chunks = &base[-1];
     } else {
-        hal_nvmc_write_byte(&((file_chunk *)last_page())->marker, PERSISTENT_DATA_MARKER);
+        flash_write_byte((uint32_t)&((file_chunk *)last_page())->marker, PERSISTENT_DATA_MARKER);
         file_system_chunks = &base[-1];
     }
 }
 
 STATIC void copy_page(void *dest, void *src) {
     DEBUG(("FILE DEBUG: Copying page from %lx to %lx.\r\n", (uint32_t)src, (uint32_t)dest));
-    hal_nvmc_erase_page((uint32_t)dest);
+    flash_page_erase((uint32_t)dest);
     file_chunk *src_chunk = src;
     file_chunk *dest_chunk = dest;
-    uint32_t chunks = HAL_NVMC_PAGESIZE>>MBFS_LOG_CHUNK_SIZE;
+    uint32_t chunks = FLASH_PAGESIZE>>MBFS_LOG_CHUNK_SIZE;
     for (uint32_t i = 0; i < chunks; i++) {
         if (src_chunk[i].marker != FREED_CHUNK) {
-            hal_nvmc_write_buffer(&dest_chunk[i], &src_chunk[i], CHUNK_SIZE);
+            flash_write_bytes((uint32_t)&dest_chunk[i], (uint8_t*)&src_chunk[i], CHUNK_SIZE);
         }
     }
 }
@@ -222,7 +222,7 @@ STATIC void filesystem_sweep(void) {
     uint8_t *page;
     uint8_t *end_page;
     int step;
-    uint32_t page_size = HAL_NVMC_PAGESIZE;
+    uint32_t page_size = FLASH_PAGESIZE;
     DEBUG(("FILE DEBUG: Sweeping file system\r\n"));
     if (((file_chunk *)first_page())->marker == PERSISTENT_DATA_MARKER) {
         config = *(persistent_config_t *)first_page();
@@ -237,12 +237,12 @@ STATIC void filesystem_sweep(void) {
     }
     while (page != end_page) {
         uint8_t *next_page = page+step;
-        hal_nvmc_erase_page((uint32_t)page);
+        flash_page_erase((uint32_t)page);
         copy_page(page, next_page);
         page = next_page;
     }
-    hal_nvmc_erase_page((uint32_t)end_page);
-    hal_nvmc_write_buffer(end_page, &config, sizeof(config));
+    flash_page_erase((uint32_t)end_page);
+    flash_write_bytes((uint32_t)end_page, (uint8_t*)&config, sizeof(config));
     microbit_filesystem_init();
 }
 
@@ -292,13 +292,13 @@ STATIC uint8_t find_chunk_and_erase(void) {
     // Search for FREED page, and total up FREED chunks
     uint32_t freed_chunks = 0;
     index = start_index;
-    uint32_t chunks_per_page = HAL_NVMC_PAGESIZE>>MBFS_LOG_CHUNK_SIZE;
+    uint32_t chunks_per_page = FLASH_PAGESIZE>>MBFS_LOG_CHUNK_SIZE;
     do {
         const file_chunk *p = &file_system_chunks[index];
         if (p->marker == FREED_CHUNK) {
             freed_chunks++;
         }
-        if (HAL_NVMC_IS_PAGE_ALIGNED(p)) {
+        if (FLASH_IS_PAGE_ALIGNED(p)) {
             uint32_t i;
             for (i = 0; i < chunks_per_page; i++) {
                 if (p[i].marker != FREED_CHUNK)
@@ -306,7 +306,7 @@ STATIC uint8_t find_chunk_and_erase(void) {
             }
             if (i == chunks_per_page) {
                 DEBUG(("FILE DEBUG: Found freed page of chunks: %d\r\n", index));
-                hal_nvmc_erase_page((uint32_t)&file_system_chunks[index]);
+                flash_page_erase((uint32_t)&file_system_chunks[index]);
                 return index;
             }
         }
@@ -331,7 +331,7 @@ STATIC file_descriptor_obj *microbit_file_descriptor_new(uint8_t start_chunk, bo
 
 STATIC void clear_file(uint8_t chunk) {
     do {
-        hal_nvmc_write_byte(&(file_system_chunks[chunk].marker), FREED_CHUNK);
+        flash_write_byte((uint32_t)&(file_system_chunks[chunk].marker), FREED_CHUNK);
         DEBUG(("FILE DEBUG: Freeing chunk %d.\n", chunk));
         chunk = file_system_chunks[chunk].next_chunk;
     } while (chunk <= chunks_in_file_system);
@@ -351,9 +351,9 @@ STATIC file_descriptor_obj *microbit_file_open(const char *name, size_t name_len
         if (index == FILE_NOT_FOUND) {
             mp_raise_OSError(MP_ENOSPC);
         }
-        hal_nvmc_write_byte(&(file_system_chunks[index].marker), FILE_START);
-        hal_nvmc_write_byte(&(file_system_chunks[index].header.name_len), name_len);
-        hal_nvmc_write_buffer(&(file_system_chunks[index].header.filename[0]), name, name_len);
+        flash_write_byte((uint32_t)&(file_system_chunks[index].marker), FILE_START);
+        flash_write_byte((uint32_t)&(file_system_chunks[index].header.name_len), name_len);
+        flash_write_bytes((uint32_t)&(file_system_chunks[index].header.filename[0]), (uint8_t*)name, name_len);
     } else {
         if (index == FILE_NOT_FOUND) {
             return NULL;
@@ -408,8 +408,8 @@ STATIC int advance(file_descriptor_obj *self, uint32_t n, bool write) {
                 return ENOSPC;
             }
             // Link next chunk to this one
-            hal_nvmc_write_byte(&(file_system_chunks[self->seek_chunk].next_chunk), next_chunk);
-            hal_nvmc_write_byte(&(file_system_chunks[next_chunk].marker), self->seek_chunk);
+            flash_write_byte((uint32_t)&(file_system_chunks[self->seek_chunk].next_chunk), next_chunk);
+            flash_write_byte((uint32_t)&(file_system_chunks[next_chunk].marker), self->seek_chunk);
         }
         self->seek_chunk = file_system_chunks[self->seek_chunk].next_chunk;
     }
@@ -458,7 +458,7 @@ STATIC mp_uint_t microbit_file_write(mp_obj_t obj, const void *buf, mp_uint_t si
     const uint8_t *data = buf;
     while (len) {
         uint32_t to_write = MIN(((uint32_t)(DATA_PER_CHUNK - self->seek_offset)), len);
-        hal_nvmc_write_buffer(seek_address(self), data, to_write);
+        flash_write_bytes((uint32_t)seek_address(self), data, to_write);
         int err = advance(self, to_write, true);
         if (err) {
             *errcode = err;
@@ -472,7 +472,7 @@ STATIC mp_uint_t microbit_file_write(mp_obj_t obj, const void *buf, mp_uint_t si
 
 STATIC void microbit_file_close(file_descriptor_obj *fd) {
     if (fd->writable) {
-        hal_nvmc_write_byte(&(file_system_chunks[fd->start_chunk].header.end_offset), fd->seek_offset);
+        flash_write_byte((uint32_t)&(file_system_chunks[fd->start_chunk].header.end_offset), fd->seek_offset);
     }
     fd->open = false;
 }

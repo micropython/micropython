@@ -27,8 +27,8 @@
 #ifndef ADC_H__
 #define ADC_H__
 
-#include "hal_adc.h"
-
 extern const mp_obj_type_t machine_adc_type;
+
+void adc_init0(void);
 
 #endif // ADC_H__

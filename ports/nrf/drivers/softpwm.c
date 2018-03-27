@@ -31,8 +31,8 @@
 #include "stddef.h"
 #include "py/runtime.h"
 #include "py/gc.h"
-#include "hal_timer.h"
-#include "hal_gpio.h"
+#include "nrf_timer.h"
+#include "nrf_gpio.h"
 #include "pin.h"
 
 #include "ticker.h"
@@ -154,10 +154,11 @@ int32_t pwm_callback(void) {
     int32_t tnow = (event->time*events->period)>>10;
     do {
         if (event->turn_on) {
-            hal_gpio_pin_set(0, event->pin);
+            nrf_gpio_pin_set(event->pin);
             next_event++;
         } else {
-            hal_gpio_out_clear(0, events->all_pins);
+            // TODO: Resolve port for nrf52
+            nrf_gpio_port_out_clear(NRF_GPIO, events->all_pins);
             next_event = 0;
             tnow = 0;
             if (pending_events) {
@@ -214,7 +215,7 @@ void pwm_set_duty_cycle(int32_t pin, uint32_t value) {
         old_events = active_events;
     }
     if (((1<<pin)&old_events->all_pins) == 0) {
-        hal_gpio_cfg_pin(0, pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
+        nrf_gpio_cfg_output(pin);
     }
     int ev = find_pin_in_events(old_events, pin);
     pwm_events *events;
@@ -251,7 +252,7 @@ void pwm_release(int32_t pin) {
         return;
     // If i >= 0 it means that `ev` is in RAM, so it safe to discard the const qualifier
     ((pwm_events *)ev)->events[i].pin = 31;
-    hal_gpio_pin_clear(0, pin);
+    nrf_gpio_pin_clear(pin);
 }
 
 #endif // MICROPY_PY_MACHINE_SOFT_PWM

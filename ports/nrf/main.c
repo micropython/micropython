@@ -50,7 +50,8 @@
 #include "pin.h"
 #include "spi.h"
 #include "i2c.h"
-#include "rtc.h"
+#include "adc.h"
+#include "rtcounter.h"
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
 #endif
@@ -122,11 +123,15 @@ soft_reset:
     i2c_init0();
 #endif
 
+#if MICROPY_PY_MACHINE_ADC
+    adc_init0();
+#endif
+
 #if MICROPY_PY_MACHINE_HW_PWM
     pwm_init0();
 #endif
 
-#if MICROPY_PY_MACHINE_RTC
+#if MICROPY_PY_MACHINE_RTCOUNTER
     rtc_init0();
 #endif
 
@@ -294,7 +299,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void HardFault_Handler(void)
 {
-#if NRF52
+#if defined(NRF52_SERIES)
 	static volatile uint32_t reg;
 	static volatile uint32_t reg2;
 	static volatile uint32_t bfar;
