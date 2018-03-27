@@ -30,7 +30,6 @@
 #include "py/mphal.h"
 #include "extint.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "usrsw.h"
 
 #if MICROPY_HW_HAS_SWITCH

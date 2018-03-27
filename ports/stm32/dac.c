@@ -33,7 +33,6 @@
 #include "dac.h"
 #include "dma.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 
 /// \moduleref pyb
 /// \class DAC - digital to analog conversion

@@ -28,7 +28,6 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "genhdr/pins.h"
 #include "qspi.h"
 
 #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)

@@ -30,7 +30,6 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "i2c.h"
 #include "accel.h"
 

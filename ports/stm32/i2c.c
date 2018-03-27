@@ -31,7 +31,6 @@
 #include "py/mphal.h"
 #include "irq.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "dma.h"
 #include "i2c.h"

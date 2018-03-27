@@ -33,7 +33,6 @@
 
 #include "sdcard.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "dma.h"
 #include "irq.h"

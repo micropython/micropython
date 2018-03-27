@@ -1,5 +1,4 @@
 #include "py/mphal.h"
-#include "genhdr/pins.h"
 
 void STM32L476DISC_board_early_init(void) {
     // set SPI flash WP and HOLD pins high

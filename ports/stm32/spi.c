@@ -32,7 +32,6 @@
 #include "extmod/machine_spi.h"
 #include "irq.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "spi.h"
 

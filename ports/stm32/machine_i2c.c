@@ -31,7 +31,6 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
-#include "genhdr/pins.h"
 #include "i2c.h"
 
 #if MICROPY_HW_ENABLE_HW_I2C

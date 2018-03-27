@@ -32,7 +32,6 @@
 #include "py/mphal.h"
 #include "adc.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "timer.h"
 
 #if MICROPY_HW_ENABLE_ADC

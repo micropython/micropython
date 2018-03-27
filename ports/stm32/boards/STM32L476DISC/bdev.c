@@ -1,5 +1,4 @@
 #include "storage.h"
-#include "genhdr/pins.h"
 
 // External SPI flash uses standard SPI interface
 

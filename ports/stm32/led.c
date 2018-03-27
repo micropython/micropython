@@ -31,7 +31,6 @@
 #include "timer.h"
 #include "led.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 
 #if defined(MICROPY_HW_LED1)
 

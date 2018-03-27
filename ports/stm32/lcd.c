@@ -33,7 +33,6 @@
 #if MICROPY_HW_HAS_LCD
 
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "spi.h"
 #include "font_petme128_8x8.h"

@@ -34,7 +34,6 @@
 #include "py/mphal.h"
 #include "uart.h"
 #include "irq.h"
-#include "genhdr/pins.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
