@@ -41,16 +41,10 @@ MPY_TOOL = ../../tools/mpy-tool.py
 
 CROSS_COMPILE = arm-none-eabi-
 
-MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
-
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
 INC += -I./../../lib/cmsis/inc
-INC += -I./device
-INC += -I./device/$(MCU_VARIANT)
-INC += -I./hal
-INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music
@@ -59,8 +53,29 @@ INC += -I./modules/ble
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
+INC += -I../../lib/nrfx/
+INC += -I../../lib/nrfx/drivers
+INC += -I../../lib/nrfx/drivers/include
+INC += -I../../lib/nrfx/mdk
+INC += -I../../lib/nrfx/hal
 
-NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
+MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
+MCU_SUB_VARIANT_UPPER = $(shell echo $(MCU_SUB_VARIANT) | tr '[:lower:]' '[:upper:]')
+
+# Figure out correct system file to use base on chip sub-variant name.
+SYSTEM_C_SRC :=
+ifeq ($(MCU_SUB_VARIANT),nrf51822)
+	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf51.c)
+        NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
+else ifeq ($(MCU_SUB_VARIANT),nrf52832)
+	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf52.c)
+        NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
+else ifeq ($(MCU_SUB_VARIANT),nrf52840)
+	SYSTEM_C_SRC += $(addprefix lib/nrfx/mdk/, system_nrf52840.c)
+	# Do not pass MCU_VARIANT_UPPER flag, as NRF52 defines NRF52832 only.
+endif
+
+NRF_DEFINES += -D$(MCU_SUB_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
@@ -140,28 +155,22 @@ SRC_LIB += $(addprefix lib/,\
 	oofatfs/option/unicode.c \
 	)
 
-SRC_HAL = $(addprefix hal/,\
-	hal_uart.c \
-	hal_uarte.c \
-	hal_spi.c \
-	hal_spie.c \
-	hal_time.c \
-	hal_rtc.c \
-	hal_timer.c \
-	hal_twi.c \
-	hal_adc.c \
-	hal_adce.c \
-	hal_temp.c \
-	hal_gpio.c \
-	hal_rng.c \
-	hal_nvmc.c \
+SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
+	prs/nrfx_prs.c \
+	nrfx_uart.c \
+	nrfx_adc.c \
+	nrfx_saadc.c \
+	nrfx_rng.c \
+	nrfx_twi.c \
+	nrfx_spi.c \
+	nrfx_rtc.c \
+	nrfx_timer.c \
+	nrfx_pwm.c \
 	)
 
-ifeq ($(MCU_VARIANT), nrf52)
-SRC_HAL += $(addprefix hal/,\
-	hal_pwm.c \
+SRC_NRFX_HAL += $(addprefix lib/nrfx/hal/,\
+	nrf_nvmc.c \
 	)
-endif
 
 SRC_C += \
 	main.c \
@@ -170,6 +179,7 @@ SRC_C += \
 	gccollect.c \
 	pin_named_pins.c \
 	fatfs_port.c \
+	drivers/flash.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
@@ -183,7 +193,7 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/adc.c \
 	machine/pin.c \
 	machine/timer.c \
-	machine/rtc.c \
+	machine/rtcounter.c \
 	machine/pwm.c \
 	machine/led.c \
 	machine/temp.c \
@@ -207,9 +217,10 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	random/modrandom.c \
 	)
 
+# Custom micropython startup file with smaller interrupt vector table
+# than the file provided in nrfx.
 SRC_C += \
-	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
-	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
+	device/startup_$(MCU_SUB_VARIANT).c \
 
 ifneq ($(FROZEN_MPY_DIR),)
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
@@ -218,8 +229,10 @@ endif
 
 OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
 OBJ += $(BUILD)/pins_gen.o
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os

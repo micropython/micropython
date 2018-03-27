@@ -28,9 +28,10 @@
 #define __NRF52_HAL
 
 #include "py/mpconfig.h"
-#include NRF5_HAL_H
+#include <nrfx.h>
 #include "pin.h"
-#include "hal_gpio.h"
+#include "nrf_gpio.h"
+#include "nrfx_config.h"
 
 typedef enum
 {
@@ -54,15 +55,20 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 int mp_hal_stdin_rx_chr(void);
 void mp_hal_stdout_tx_str(const char *str);
 
+void mp_hal_delay_ms(mp_uint_t ms);
+void mp_hal_delay_us(mp_uint_t us);
+
+const char * nrfx_error_code_lookup(uint32_t err_code);
+
 #define mp_hal_pin_obj_t const pin_obj_t*
 #define mp_hal_get_pin_obj(o)    pin_find(o)
-#define mp_hal_pin_high(p)       hal_gpio_pin_high(p)
-#define mp_hal_pin_low(p)        hal_gpio_pin_low(p)
-#define mp_hal_pin_read(p)       hal_gpio_pin_read(p)
+#define mp_hal_pin_high(p)       nrf_gpio_pin_set(p->pin)
+#define mp_hal_pin_low(p)        nrf_gpio_pin_clear(p->pin)
+#define mp_hal_pin_read(p)       nrf_gpio_pin_read(p->pin)
 #define mp_hal_pin_write(p, v)   do { if (v) { mp_hal_pin_high(p); } else { mp_hal_pin_low(p); } } while (0)
 #define mp_hal_pin_od_low(p)     mp_hal_pin_low(p)
 #define mp_hal_pin_od_high(p)    mp_hal_pin_high(p)
-#define mp_hal_pin_open_drain(p) hal_gpio_cfg_pin(p->port, p->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED)
+#define mp_hal_pin_open_drain(p) nrf_gpio_cfg_input(p->pin, NRF_GPIO_PIN_NOPULL)
 
 
 // TODO: empty implementation for now. Used by machine_spi.c:69

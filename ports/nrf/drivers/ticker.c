@@ -29,7 +29,7 @@
 #if MICROPY_PY_MACHINE_SOFT_PWM
 
 #include "ticker.h"
-#include "hal_irq.h"
+#include "nrfx_glue.h"
 
 #define FastTicker NRF_TIMER1
 #define FastTicker_IRQn TIMER1_IRQn
@@ -58,15 +58,15 @@ void ticker_init0(void) {
     ticker->SHORTS = 0;
 
 #ifdef NRF51
-    hal_irq_priority(FastTicker_IRQn, 1);
+    NRFX_IRQ_PRIORITY_SET(FastTicker_IRQn, 1);
 #else
-    hal_irq_priority(FastTicker_IRQn, 2);
+    NRFX_IRQ_PRIORITY_SET(FastTicker_IRQn, 2);
 #endif
 
-    hal_irq_priority(SlowTicker_IRQn, 3);
-    hal_irq_priority(SlowTicker_IRQn, 3);
+    NRFX_IRQ_PRIORITY_SET(SlowTicker_IRQn, 3);
+    NRFX_IRQ_PRIORITY_SET(SlowTicker_IRQn, 3);
 
-    hal_irq_enable(SlowTicker_IRQn);
+    NRFX_IRQ_ENABLE(SlowTicker_IRQn);
 }
 
 void ticker_register_low_pri_callback(callback_ptr slow_ticker_callback) {
@@ -77,7 +77,7 @@ void ticker_register_low_pri_callback(callback_ptr slow_ticker_callback) {
 * http://www.nordicsemi.com/eng/content/download/29490/494569/file/nRF51822-PAN%20v3.0.pdf
 */
 void ticker_start(void) {
-    hal_irq_enable(FastTicker_IRQn);
+    NRFX_IRQ_ENABLE(FastTicker_IRQn);
 #ifdef NRF51
     *(uint32_t *)0x40009C0C = 1; // for Timer 1
 #endif
@@ -85,7 +85,7 @@ void ticker_start(void) {
 }
 
 void ticker_stop(void) {
-    hal_irq_disable(FastTicker_IRQn);
+    NRFX_IRQ_DISABLE(FastTicker_IRQn);
     FastTicker->TASKS_STOP = 1;
 #ifdef NRF51
     *(uint32_t *)0x40009C0C = 0; // for Timer 1
@@ -119,7 +119,7 @@ void FastTicker_IRQHandler(void) {
         ticker->EVENTS_COMPARE[3] = 0;
         ticker->CC[3] += MICROSECONDS_PER_MACRO_TICK;
         ticks += MILLISECONDS_PER_MACRO_TICK;
-        hal_irq_pending(SlowTicker_IRQn);
+        NRFX_IRQ_PENDING_SET(SlowTicker_IRQn);
     }
 }
 

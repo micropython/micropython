@@ -31,7 +31,14 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "temp.h"
-#include "hal_temp.h"
+#include "nrf_temp.h"
+
+#if BLUETOOTH_SD
+#include "py/nlr.h"
+#include "ble_drv.h"
+#include "nrf_soc.h"
+#define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
+#endif // BLUETOOTH_SD
 
 #if MICROPY_PY_MACHINE_TEMP
 
@@ -72,7 +79,15 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
 /// Get temperature.
 STATIC mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
 
-    return MP_OBJ_NEW_SMALL_INT(hal_temp_read());
+#if BLUETOOTH_SD
+    if (BLUETOOTH_STACK_ENABLED() == 1) {
+        int32_t temp;
+        (void)sd_temp_get(&temp);
+        return MP_OBJ_NEW_SMALL_INT(temp / 4); // resolution of 0.25 degree celsius
+    }
+#endif // BLUETOOTH_SD
+
+    return MP_OBJ_NEW_SMALL_INT(nrf_temp_read());
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_temp_read_obj, 0, 1, machine_temp_read);

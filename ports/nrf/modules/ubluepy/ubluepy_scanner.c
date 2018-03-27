@@ -33,7 +33,7 @@
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
 #include "ble_drv.h"
-#include "hal_time.h"
+#include "mphalport.h"
 
 STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
     ubluepy_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);

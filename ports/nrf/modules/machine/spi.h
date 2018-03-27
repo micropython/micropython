@@ -26,13 +26,6 @@
  */
 #include "py/obj.h"
 
-#include "hal_spi.h"
-
-typedef struct _machine_hard_spi_obj_t {
-    mp_obj_base_t base;
-    SPI_HandleTypeDef *spi;
-} machine_hard_spi_obj_t;
-
 extern const mp_obj_type_t machine_hard_spi_type;
 
 void spi_init0(void);

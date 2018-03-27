@@ -26,7 +26,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include NRF5_HAL_H
 
 #include "py/nlr.h"
 #include "py/smallint.h"
