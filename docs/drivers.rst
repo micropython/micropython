@@ -76,6 +76,7 @@ Multi-color led drivers.
 
     NeoPixel <https://circuitpython.readthedocs.io/projects/neopixel/en/latest/>
     DotStar <https://circuitpython.readthedocs.io/projects/dotstar/en/latest/>
+    WS2801 <https://circuitpython.readthedocs.io/projects/ws2801/en/latest/>
 
 Displays
 -------------
@@ -111,7 +112,7 @@ Motion relating sensing including ``acceleration``, ``magnetic``, ``gyro``, and 
 .. toctree::
 
     BNO055 Accelerometer, Magnetometer, Gyroscope and Absolution Orientation <https://circuitpython.readthedocs.io/projects/bno055/en/latest/>
-    FXAS21002C Gyroscope <https://circuitpython.readthedocs.io/projects/fxas21002C/en/latest/>
+    FXAS21002C Gyroscope <https://circuitpython.readthedocs.io/projects/fxas21002c/en/latest/>
     FXOS8700 Accelerometer <https://circuitpython.readthedocs.io/projects/fxos8700/en/latest/>
     GPS Global Position <https://circuitpython.readthedocs.io/projects/gps/en/latest/>
     LIS3DH Accelerometer <https://circuitpython.readthedocs.io/projects/lis3dh/en/latest/>
@@ -154,6 +155,7 @@ These sensors detect light related attributes such as ``color``, ``light`` (unit
 .. toctree::
 
     APDS9960 Proximity, Light, RGB, and Gesture <https://circuitpython.readthedocs.io/projects/apds9960/en/latest/>
+    AS726x Color Spectrum Sensor <https://circuitpython.readthedocs.io/projects/as726x/en/latest/>
     TCS34725 Color Sensor <https://circuitpython.readthedocs.io/projects/tcs34725/en/latest/>
     TSL2561 Light Sensor <https://circuitpython.readthedocs.io/projects/tsl2561/en/latest/>
     TSL2591 High Dynamic Range Light Sensor <https://circuitpython.readthedocs.io/projects/tsl2591/en/latest/>
@@ -191,6 +193,7 @@ These provide functionality similar to `analogio`, `digitalio`, `pulseio`, and `
     ADS1x15 Analog-to-Digital Converter  <https://circuitpython.readthedocs.io/projects/ads1x15/en/latest/>
     DS2413 OneWire GPIO Expander <https://circuitpython.readthedocs.io/projects/ds2413/en/latest/>
     FocalTech Capacitive Touch <https://circuitpython.readthedocs.io/projects/focaltouch/en/latest/>
+    MCP230xx GPIO Expander <https://circuitpython.readthedocs.io/projects/mcp230xx/en/latest/>
     MCP4725 Digital-to-Analog Converter <https://circuitpython.readthedocs.io/projects/mcp4725/en/latest/>
     PCA9685 16 x 12-bit PWM Driver <https://circuitpython.readthedocs.io/projects/pca9685/en/latest/>
     TLC5947 24 x 12-bit PWM Driver <https://circuitpython.readthedocs.io/projects/tlc5947/en/latest/>
