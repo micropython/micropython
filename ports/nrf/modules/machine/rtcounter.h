@@ -24,7 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include <nrf.h>
+#ifndef RTCOUNTER_H__
+#define RTCOUNTER_H__
 
-// include config from board
-#include "nrf51_hal_conf.h"
+extern const mp_obj_type_t machine_rtcounter_type;
+
+void rtc_init0(void);
+
+#endif // RTCOUNTER_H__

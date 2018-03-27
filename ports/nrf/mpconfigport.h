@@ -165,8 +165,8 @@
 #define MICROPY_PY_MACHINE_TIMER    (0)
 #endif
 
-#ifndef MICROPY_PY_MACHINE_RTC
-#define MICROPY_PY_MACHINE_RTC      (0)
+#ifndef MICROPY_PY_MACHINE_RTCOUNTER
+#define MICROPY_PY_MACHINE_RTCOUNTER (0)
 #endif
 
 #ifndef MICROPY_PY_HW_RNG
@@ -293,28 +293,34 @@ extern const struct _mp_obj_module_t ble_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#if MICROPY_PY_MUSIC
+#define ROOT_POINTERS_MUSIC \
+    struct _music_data_t *music_data;
+#else
+#define ROOT_POINTERS_MUSIC
+#endif
+
+#if MICROPY_PY_MACHINE_SOFT_PWM
+#define ROOT_POINTERS_SOFTPWM \
+    const struct _pwm_events *pwm_active_events; \
+    const struct _pwm_events *pwm_pending_events;
+#else
+#define ROOT_POINTERS_SOFTPWM
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
-    mp_obj_t pyb_config_main; \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
-    /* Used to do callbacks to Python code on interrupt */ \
-    struct _pyb_timer_obj_t *pyb_timer_obj_all[14]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
     struct _machine_hard_uart_obj_t *pyb_stdio_uart; \
     \
-    /* pointers to all UART objects (if they have been created) */ \
-    struct _machine_hard_uart_obj_t *pyb_uart_obj_all[1]; \
+    ROOT_POINTERS_MUSIC \
+    ROOT_POINTERS_SOFTPWM \
     \
-    /* list of registered NICs */ \
-    mp_obj_list_t mod_network_nic_list; \
-    \
-    /* microbit modules */ \
+    /* micro:bit root pointers */ \
     void *async_data[2]; \
-    struct _music_data_t *music_data; \
-    const struct _pwm_events *pwm_active_events; \
-    const struct _pwm_events *pwm_pending_events; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 

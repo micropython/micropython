@@ -28,6 +28,8 @@
 // This file contains pin definitions that are specific to the nrf port.
 // This file should only ever be #included by pin.h and not directly.
 
+#include "nrf_gpio.h"
+
 enum {
   PORT_A,
   PORT_B,

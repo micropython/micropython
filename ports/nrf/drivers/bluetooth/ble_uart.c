@@ -29,14 +29,10 @@
 #include <string.h>
 #include "ble_uart.h"
 #include "ringbuffer.h"
-#include "hal/hal_time.h"
+#include "mphalport.h"
 #include "lib/utils/interrupt_char.h"
 
 #if MICROPY_PY_BLE_NUS
-
-#if BLUETOOTH_WEBBLUETOOTH_REPL
-#include "hal_time.h"
-#endif // BLUETOOTH_WEBBLUETOOTH_REPL
 
 static ubluepy_uuid_obj_t uuid_obj_service = {
     .base.type = &ubluepy_uuid_type,
