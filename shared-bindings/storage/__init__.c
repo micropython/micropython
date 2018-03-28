@@ -122,12 +122,22 @@ mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 1, storage_remount);
 
+//| .. function:: getmount(mount_path)
+//|
+//|   Retrieves the mount object associated with the mount path
+//|
+mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
+    return common_hal_storage_getmount(mp_obj_str_get_str(mnt_in));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
+
 STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_storage) },
 
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&storage_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&storage_umount_obj) },
     { MP_ROM_QSTR(MP_QSTR_remount), MP_ROM_PTR(&storage_remount_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getmount), MP_ROM_PTR(&storage_getmount_obj) },
 
     //| .. class:: VfsFat(block_device)
     //|

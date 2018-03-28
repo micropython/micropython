@@ -121,3 +121,7 @@ STATIC mp_obj_t storage_object_from_path(const char* mount_path) {
 void common_hal_storage_umount_path(const char* mount_path) {
     common_hal_storage_umount_object(storage_object_from_path(mount_path));
 }
+
+mp_obj_t common_hal_storage_getmount(const char *mount_path) {
+    return storage_object_from_path(mount_path);
+}
