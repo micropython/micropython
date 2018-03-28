@@ -56,8 +56,8 @@
 
 void accel_init(void) {
     // PB5 is connected to AVDD; pull high to enable MMA accel device
-    mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
-    mp_hal_pin_output(&MICROPY_HW_MMA_AVDD_PIN);
+    mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
+    mp_hal_pin_output(MICROPY_HW_MMA_AVDD_PIN);
 }
 
 STATIC void accel_start(void) {
@@ -73,9 +73,9 @@ STATIC void accel_start(void) {
     i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
-    mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off
+    mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off
     mp_hal_delay_ms(30);
-    mp_hal_pin_high(&MICROPY_HW_MMA_AVDD_PIN); // turn on
+    mp_hal_pin_high(MICROPY_HW_MMA_AVDD_PIN); // turn on
     mp_hal_delay_ms(30);
 
     HAL_StatusTypeDef status;

@@ -248,78 +248,78 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #if defined(MICROPY_HW_SPI1_SCK)
     } else if (spi->Instance == SPI1) {
         #if defined(MICROPY_HW_SPI1_NSS)
-        pins[0] = &MICROPY_HW_SPI1_NSS;
+        pins[0] = MICROPY_HW_SPI1_NSS;
         #endif
-        pins[1] = &MICROPY_HW_SPI1_SCK;
+        pins[1] = MICROPY_HW_SPI1_SCK;
         #if defined(MICROPY_HW_SPI1_MISO)
-        pins[2] = &MICROPY_HW_SPI1_MISO;
+        pins[2] = MICROPY_HW_SPI1_MISO;
         #endif
-        pins[3] = &MICROPY_HW_SPI1_MOSI;
+        pins[3] = MICROPY_HW_SPI1_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI1_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI2_SCK)
     } else if (spi->Instance == SPI2) {
         #if defined(MICROPY_HW_SPI2_NSS)
-        pins[0] = &MICROPY_HW_SPI2_NSS;
+        pins[0] = MICROPY_HW_SPI2_NSS;
         #endif
-        pins[1] = &MICROPY_HW_SPI2_SCK;
+        pins[1] = MICROPY_HW_SPI2_SCK;
         #if defined(MICROPY_HW_SPI2_MISO)
-        pins[2] = &MICROPY_HW_SPI2_MISO;
+        pins[2] = MICROPY_HW_SPI2_MISO;
         #endif
-        pins[3] = &MICROPY_HW_SPI2_MOSI;
+        pins[3] = MICROPY_HW_SPI2_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI2_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     } else if (spi->Instance == SPI3) {
         #if defined(MICROPY_HW_SPI3_NSS)
-        pins[0] = &MICROPY_HW_SPI3_NSS;
+        pins[0] = MICROPY_HW_SPI3_NSS;
         #endif
-        pins[1] = &MICROPY_HW_SPI3_SCK;
+        pins[1] = MICROPY_HW_SPI3_SCK;
         #if defined(MICROPY_HW_SPI3_MISO)
-        pins[2] = &MICROPY_HW_SPI3_MISO;
+        pins[2] = MICROPY_HW_SPI3_MISO;
         #endif
-        pins[3] = &MICROPY_HW_SPI3_MOSI;
+        pins[3] = MICROPY_HW_SPI3_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI3_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI4_SCK)
     } else if (spi->Instance == SPI4) {
         #if defined(MICROPY_HW_SPI4_NSS)
-        pins[0] = &MICROPY_HW_SPI4_NSS;
+        pins[0] = MICROPY_HW_SPI4_NSS;
         #endif
-        pins[1] = &MICROPY_HW_SPI4_SCK;
+        pins[1] = MICROPY_HW_SPI4_SCK;
         #if defined(MICROPY_HW_SPI4_MISO)
-        pins[2] = &MICROPY_HW_SPI4_MISO;
+        pins[2] = MICROPY_HW_SPI4_MISO;
         #endif
-        pins[3] = &MICROPY_HW_SPI4_MOSI;
+        pins[3] = MICROPY_HW_SPI4_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI4_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI5_SCK)
     } else if (spi->Instance == SPI5) {
         #if defined(MICROPY_HW_SPI5_NSS)
-        pins[0] = &MICROPY_HW_SPI5_NSS;
+        pins[0] = MICROPY_HW_SPI5_NSS;
         #endif
-        pins[1] = &MICROPY_HW_SPI5_SCK;
+        pins[1] = MICROPY_HW_SPI5_SCK;
         #if defined(MICROPY_HW_SPI5_MISO)
-        pins[2] = &MICROPY_HW_SPI5_MISO;
+        pins[2] = MICROPY_HW_SPI5_MISO;
         #endif
-        pins[3] = &MICROPY_HW_SPI5_MOSI;
+        pins[3] = MICROPY_HW_SPI5_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI5_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_SPI6_SCK)
     } else if (spi->Instance == SPI6) {
         #if defined(MICROPY_HW_SPI6_NSS)
-        pins[0] = &MICROPY_HW_SPI6_NSS;
+        pins[0] = MICROPY_HW_SPI6_NSS;
         #endif
-        pins[1] = &MICROPY_HW_SPI6_SCK;
+        pins[1] = MICROPY_HW_SPI6_SCK;
         #if defined(MICROPY_HW_SPI6_MISO)
-        pins[2] = &MICROPY_HW_SPI6_MISO;
+        pins[2] = MICROPY_HW_SPI6_MISO;
         #endif
-        pins[3] = &MICROPY_HW_SPI6_MOSI;
+        pins[3] = MICROPY_HW_SPI6_MOSI;
         // enable the SPI clock
         __HAL_RCC_SPI6_CLK_ENABLE();
     #endif

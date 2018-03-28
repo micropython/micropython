@@ -53,11 +53,11 @@
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
-    mp_hal_pin_config(&MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
+    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
 }
 
 int switch_get(void) {
-    int val = ((MICROPY_HW_USRSW_PIN.gpio->IDR & MICROPY_HW_USRSW_PIN.pin_mask) != 0);
+    int val = ((MICROPY_HW_USRSW_PIN->gpio->IDR & MICROPY_HW_USRSW_PIN->pin_mask) != 0);
     return val == MICROPY_HW_USRSW_PRESSED;
 }
 
@@ -118,7 +118,7 @@ mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
     // Init the EXTI each time this function is called, since the EXTI
     // may have been disabled by an exception in the interrupt, or the
     // user disabling the line explicitly.
-    extint_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
+    extint_register((mp_obj_t)MICROPY_HW_USRSW_PIN,
                     MICROPY_HW_USRSW_EXTI_MODE,
                     MICROPY_HW_USRSW_PULL,
                     callback == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,

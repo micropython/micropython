@@ -207,18 +207,18 @@ class Pin(object):
             print("// ",  end='')
         print('};')
         print('')
-        print('const pin_obj_t pin_{:s} = PIN({:s}, {:d}, {:s}, {:s}, {:d});'.format(
+        print('const pin_obj_t pin_{:s}_obj = PIN({:s}, {:d}, {:s}, {:s}, {:d});'.format(
             self.cpu_pin_name(), self.port_letter(), self.pin,
             self.alt_fn_name(null_if_0=True),
             self.adc_num_str(), self.adc_channel))
         print('')
 
     def print_header(self, hdr_file):
-        hdr_file.write('extern const pin_obj_t pin_{:s};\n'.
-                       format(self.cpu_pin_name()))
+        n = self.cpu_pin_name()
+        hdr_file.write('extern const pin_obj_t pin_{:s}_obj;\n'.format(n))
+        hdr_file.write('#define pin_{:s} (&pin_{:s}_obj)\n'.format(n, n))
         if self.alt_fn_count > 0:
-            hdr_file.write('extern const pin_af_obj_t pin_{:s}_af[];\n'.
-                           format(self.cpu_pin_name()))
+            hdr_file.write('extern const pin_af_obj_t pin_{:s}_af[];\n'.format(n))
 
     def qstr_list(self):
         result = []
@@ -287,7 +287,7 @@ class Pins(object):
         for named_pin in named_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
+                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}_obj) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
         print('};')
         print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
 
@@ -311,7 +311,7 @@ class Pins(object):
                 pin = named_pin.pin()
                 if (pin.is_board_pin() and
                     (pin.adc_num & (1 << (adc_num - 1))) and (pin.adc_channel == channel)):
-                    print('  &pin_{:s}, // {:d}'.format(pin.cpu_pin_name(), channel))
+                    print('  &pin_{:s}_obj, // {:d}'.format(pin.cpu_pin_name(), channel))
                     adc_found = True
                     break
             if not adc_found:

@@ -424,22 +424,22 @@ typedef mp_machine_soft_i2c_obj_t machine_hard_i2c_obj_t;
 
 STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
     #if defined(MICROPY_HW_I2C1_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, &MICROPY_HW_I2C1_SCL, &MICROPY_HW_I2C1_SDA},
+    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, &MICROPY_HW_I2C2_SCL, &MICROPY_HW_I2C2_SDA},
+    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, &MICROPY_HW_I2C3_SCL, &MICROPY_HW_I2C3_SDA},
+    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    {{&machine_hard_i2c_type}, 1, 500, &MICROPY_HW_I2C4_SCL, &MICROPY_HW_I2C4_SDA},
+    {{&machine_hard_i2c_type}, 1, 500, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
     #else
     {{NULL}, 0, 0, NULL, NULL},
     #endif

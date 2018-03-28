@@ -141,25 +141,25 @@ void sdcard_init(void) {
     // which clocks up to 25MHz maximum.
     #if defined(MICROPY_HW_SDMMC2_CK)
     // Use SDMMC2 peripheral with pins provided by the board's config
-    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
-    mp_hal_pin_config_alt(&MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
+    mp_hal_pin_config_alt(MICROPY_HW_SDMMC2_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, AF_FN_SDMMC, 2);
     #else
     // Default SDIO/SDMMC1 config
-    mp_hal_pin_config(&MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
-    mp_hal_pin_config(&MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(MICROPY_HW_SDMMC_D0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(MICROPY_HW_SDMMC_D1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(MICROPY_HW_SDMMC_D2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(MICROPY_HW_SDMMC_D3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(MICROPY_HW_SDMMC_CK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
+    mp_hal_pin_config(MICROPY_HW_SDMMC_CMD, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_UP, GPIO_AF12_SDIO);
     #endif
 
     // configure the SD card detect pin
     // we do this here so we can detect if the SD card is inserted before powering it on
-    mp_hal_pin_config(&MICROPY_HW_SDCARD_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_SDCARD_DETECT_PULL, 0);
+    mp_hal_pin_config(MICROPY_HW_SDCARD_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_SDCARD_DETECT_PULL, 0);
 }
 
 void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
@@ -185,7 +185,7 @@ void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd) {
 }
 
 bool sdcard_is_present(void) {
-    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN.gpio, MICROPY_HW_SDCARD_DETECT_PIN.pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
+    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN->gpio, MICROPY_HW_SDCARD_DETECT_PIN->pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
 }
 
 bool sdcard_power_on(void) {

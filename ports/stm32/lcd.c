@@ -207,16 +207,16 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // TODO accept an SPI object and pin objects for full customisation
     if ((lcd_id[0] | 0x20) == 'x' && lcd_id[1] == '\0') {
         lcd->spi = &spi_obj[0];
-        lcd->pin_cs1 = &pyb_pin_X3;
-        lcd->pin_rst = &pyb_pin_X4;
-        lcd->pin_a0 = &pyb_pin_X5;
-        lcd->pin_bl = &pyb_pin_X12;
+        lcd->pin_cs1 = pyb_pin_X3;
+        lcd->pin_rst = pyb_pin_X4;
+        lcd->pin_a0 = pyb_pin_X5;
+        lcd->pin_bl = pyb_pin_X12;
     } else if ((lcd_id[0] | 0x20) == 'y' && lcd_id[1] == '\0') {
         lcd->spi = &spi_obj[1];
-        lcd->pin_cs1 = &pyb_pin_Y3;
-        lcd->pin_rst = &pyb_pin_Y4;
-        lcd->pin_a0 = &pyb_pin_Y5;
-        lcd->pin_bl = &pyb_pin_Y12;
+        lcd->pin_cs1 = pyb_pin_Y3;
+        lcd->pin_rst = pyb_pin_Y4;
+        lcd->pin_a0 = pyb_pin_Y5;
+        lcd->pin_bl = pyb_pin_Y12;
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LCD(%s) doesn't exist", lcd_id));
     }

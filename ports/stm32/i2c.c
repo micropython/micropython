@@ -260,29 +260,29 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c == &I2CHandle1) {
         i2c_unit = 1;
-        scl_pin = &MICROPY_HW_I2C1_SCL;
-        sda_pin = &MICROPY_HW_I2C1_SDA;
+        scl_pin = MICROPY_HW_I2C1_SCL;
+        sda_pin = MICROPY_HW_I2C1_SDA;
         __I2C1_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c == &I2CHandle2) {
         i2c_unit = 2;
-        scl_pin = &MICROPY_HW_I2C2_SCL;
-        sda_pin = &MICROPY_HW_I2C2_SDA;
+        scl_pin = MICROPY_HW_I2C2_SCL;
+        sda_pin = MICROPY_HW_I2C2_SDA;
         __I2C2_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     } else if (i2c == &I2CHandle3) {
         i2c_unit = 3;
-        scl_pin = &MICROPY_HW_I2C3_SCL;
-        sda_pin = &MICROPY_HW_I2C3_SDA;
+        scl_pin = MICROPY_HW_I2C3_SCL;
+        sda_pin = MICROPY_HW_I2C3_SDA;
         __I2C3_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
     } else if (i2c == &I2CHandle4) {
         i2c_unit = 4;
-        scl_pin = &MICROPY_HW_I2C4_SCL;
-        sda_pin = &MICROPY_HW_I2C4_SDA;
+        scl_pin = MICROPY_HW_I2C4_SCL;
+        sda_pin = MICROPY_HW_I2C4_SDA;
         __I2C4_CLK_ENABLE();
     #endif
     } else {
