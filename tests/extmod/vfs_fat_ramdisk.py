@@ -54,6 +54,8 @@ print(b"hello!" not in bdev.data)
 vfs = uos.VfsFat(bdev)
 uos.mount(vfs, "/ramdisk")
 
+vfs.label = 'label test'
+print("label:", vfs.label)
 print("statvfs:", vfs.statvfs("/ramdisk"))
 print("getcwd:", vfs.getcwd())
 
