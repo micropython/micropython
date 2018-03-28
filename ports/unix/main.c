@@ -520,6 +520,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     printf("    cur   %d\n", m_get_current_bytes_allocated());
     printf("    peak  %d\n", m_get_peak_bytes_allocated());
     */
+#ifdef __AFL_HAVE_MANUAL_CONTROL
+    __AFL_INIT();
+#endif
 
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
