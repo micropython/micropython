@@ -33,9 +33,6 @@
 	path = lib/stm32lib
 	url = https://github.com/micropython/stm32lib
 	branch = work-F4-1.13.1+F7-1.5.0+L4-1.3.0
-[submodule "freetouch2"]
-       path = ports/atmel-samd/freetouch
-       url = https://github.com/adafruit/Adafruit_FreeTouch.git
 [submodule "atmel-samd/asf4"]
        path = ports/atmel-samd/asf4
        url = https://github.com/adafruit/asf4.git
@@ -46,3 +43,6 @@
 [submodule "lib/nrfutil"]
 	path = lib/nrfutil
 	url = https://github.com/adafruit/nRF52_nrfutil
+[submodule "ports/atmel-samd/freetouch"]
+	path = ports/atmel-samd/freetouch
+	url = https://github.com/adafruit/Adafruit_FreeTouch.git
