@@ -64,6 +64,7 @@
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 
 // fatfs configuration used in ffconf.h

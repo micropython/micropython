@@ -47,6 +47,7 @@
 //CP UPDATE: See mpconfigport.h for LONGINT implementation
 #define MICROPY_LONGINT_IMPL                     (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                       (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH          (1)
 
 #define MICROPY_OPT_COMPUTED_GOTO                (0)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
