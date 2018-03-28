@@ -145,6 +145,49 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     //|
     //|   :param block_device: Block device the the filesystem lives on
     //|
+    //|   .. attribute:: label
+    //|
+    //|     The filesystem label, up to 11 case-insensitive bytes.  Note that
+    //|     this property can only be set when the device is writable by the
+    //|     microcontroller.
+    //|
+    //|   .. method:: mkfs
+    //|
+    //|     Format the block device, deleting any data that may have been there
+    //|
+    //|   .. method:: open(path, mode)
+    //|
+    //|     Like builtin ``open()``
+    //|
+    //|   .. method:: ilistdir([path])
+    //|
+    //|     Return an iterator whose values describe files and folders within
+    //|     ``path``
+    //|
+    //|   .. method:: mkdir(path)
+    //|
+    //|     Like `os.mkdir`
+    //|
+    //|   .. method:: rmdir(path)
+    //|
+    //|     Like `os.rmdir`
+    //|
+    //|   .. method:: stat(path)
+    //|
+    //|     Like `os.stat`
+    //|
+    //|   .. method:: statvfs(path)
+    //|
+    //|     Like `os.statvfs`
+    //|
+    //|   .. method:: mount(readonly, mkfs)
+    //|
+    //|     Don't call this directly, call `storage.mount`.
+    //|
+    //|   .. method:: umount
+    //|
+    //|     Don't call this directly, call `storage.umount`.
+    //|
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 
