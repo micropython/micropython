@@ -517,7 +517,7 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
             extern uint32_t DMA_CalcBaseAndBitshift(DMA_HandleTypeDef *hdma);
             DMA_CalcBaseAndBitshift(dma);
 
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
             // copied from stm32l4xx_hal_dma.c:dma_init()
             if ((uint32_t)(dma->Instance) < (uint32_t)(DMA2_Channel1)) {
                 // DMA1
