@@ -172,10 +172,15 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 #if MICROPY_PY_BUILTINS_FLOAT
 
 // DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
+// SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define DEC_VAL_MAX 1e20F
+#define SMALL_NORMAL_VAL (1e-37F)
+#define SMALL_NORMAL_EXP (-37)
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define DEC_VAL_MAX 1e200
+#define SMALL_NORMAL_VAL (1e-307)
+#define SMALL_NORMAL_EXP (-307)
 #endif
 
     const char *top = str + len;
@@ -275,8 +280,13 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
             exp_val = -exp_val;
         }
 
-        // apply the exponent
-        dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val + exp_extra);
+        // apply the exponent, making sure it's not a subnormal value
+        exp_val += exp_extra;
+        if (exp_val < SMALL_NORMAL_EXP) {
+            exp_val -= SMALL_NORMAL_EXP;
+            dec_val *= SMALL_NORMAL_VAL;
+        }
+        dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
     }
 
     // negate value if needed

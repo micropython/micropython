@@ -17,7 +17,8 @@ it.  To make an input pin use::
     >>> pin = machine.Pin(0, machine.Pin.IN, machine.Pin.PULL_UP)
 
 You can either use PULL_UP or None for the input pull-mode.  If it's
-not specified then it defaults to None, which is no pull resistor.
+not specified then it defaults to None, which is no pull resistor. GPIO16
+has no pull-up mode.
 You can read the value on the pin using::
 
     >>> pin.value()

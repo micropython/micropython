@@ -975,21 +975,21 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         if (self->locals_dict != NULL) {
             assert(self->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
             mp_map_t *locals_map = &self->locals_dict->map;
+            if (locals_map->is_fixed) {
+                // can't apply delete/store to a fixed map
+                return;
+            }
             if (dest[1] == MP_OBJ_NULL) {
                 // delete attribute
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
-                // note that locals_map may be in ROM, so remove will fail in that case
                 if (elem != NULL) {
                     dest[0] = MP_OBJ_NULL; // indicate success
                 }
             } else {
                 // store attribute
                 mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
-                // note that locals_map may be in ROM, so add will fail in that case
-                if (elem != NULL) {
-                    elem->value = dest[1];
-                    dest[0] = MP_OBJ_NULL; // indicate success
-                }
+                elem->value = dest[1];
+                dest[0] = MP_OBJ_NULL; // indicate success
             }
         }
     }

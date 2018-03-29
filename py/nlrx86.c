@@ -33,6 +33,12 @@
 // For reference, x86 callee save regs are:
 //  ebx, esi, edi, ebp, esp, eip
 
+#if MICROPY_NLR_OS_WINDOWS
+unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
+#else
+__attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
+#endif
+
 unsigned int nlr_push(nlr_buf_t *nlr) {
     (void)nlr;
 
@@ -58,20 +64,24 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     return 0; // needed to silence compiler warning
 }
 
-NORETURN void nlr_jump_tail(nlr_buf_t *top) {
-    (void)top;
+NORETURN void nlr_jump(void *val) {
+    MP_NLR_JUMP_HEAD(val, top)
 
     __asm volatile (
-    "mov    28(%edx), %esi      \n" // load saved %esi
-    "mov    24(%edx), %edi      \n" // load saved %edi
-    "mov    20(%edx), %ebx      \n" // load saved %ebx
-    "mov    16(%edx), %esp      \n" // load saved %esp
-    "mov    12(%edx), %ebp      \n" // load saved %ebp
-    "mov    8(%edx), %eax       \n" // load saved %eip
-    "mov    %eax, (%esp)        \n" // store saved %eip to stack
-    "xor    %eax, %eax          \n" // clear return register
-    "inc    %al                 \n" // increase to make 1, non-local return
+    "mov    %0, %%edx           \n" // %edx points to nlr_buf
+    "mov    28(%%edx), %%esi    \n" // load saved %esi
+    "mov    24(%%edx), %%edi    \n" // load saved %edi
+    "mov    20(%%edx), %%ebx    \n" // load saved %ebx
+    "mov    16(%%edx), %%esp    \n" // load saved %esp
+    "mov    12(%%edx), %%ebp    \n" // load saved %ebp
+    "mov    8(%%edx), %%eax     \n" // load saved %eip
+    "mov    %%eax, (%%esp)      \n" // store saved %eip to stack
+    "xor    %%eax, %%eax        \n" // clear return register
+    "inc    %%al                \n" // increase to make 1, non-local return
     "ret                        \n" // return
+    :                               // output operands
+    : "r"(top)                      // input operands
+    :                               // clobbered registers
     );
 
     for (;;); // needed to silence compiler warning

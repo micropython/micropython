@@ -35,15 +35,20 @@
 #include "py/mpconfig.h"
 
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
-// Allow a port to set MICROPY_NLR_NUM_REGS to define their own implementation
-#if !MICROPY_NLR_SETJMP && !defined(MICROPY_NLR_NUM_REGS)
+#if !MICROPY_NLR_SETJMP
+// A lot of nlr-related things need different treatment on Windows
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define MICROPY_NLR_OS_WINDOWS 1
+#else
+#define MICROPY_NLR_OS_WINDOWS 0
+#endif
 #if defined(__i386__)
     #define MICROPY_NLR_X86 (1)
     #define MICROPY_NLR_NUM_REGS (6)
 #elif defined(__x86_64__)
     #define MICROPY_NLR_X64 (1)
-    #if defined(__CYGWIN__)
-        #define MICROPY_NLR_NUM_REGS (12)
+    #if MICROPY_NLR_OS_WINDOWS
+        #define MICROPY_NLR_NUM_REGS (10)
     #else
         #define MICROPY_NLR_NUM_REGS (8)
     #endif
@@ -80,6 +85,26 @@ struct _nlr_buf_t {
     #endif
 };
 
+// Helper macros to save/restore the pystack state
+#if MICROPY_ENABLE_PYSTACK
+#define MP_NLR_SAVE_PYSTACK(nlr_buf) (nlr_buf)->pystack = MP_STATE_THREAD(pystack_cur)
+#define MP_NLR_RESTORE_PYSTACK(nlr_buf) MP_STATE_THREAD(pystack_cur) = (nlr_buf)->pystack
+#else
+#define MP_NLR_SAVE_PYSTACK(nlr_buf) (void)nlr_buf
+#define MP_NLR_RESTORE_PYSTACK(nlr_buf) (void)nlr_buf
+#endif
+
+// Helper macro to use at the start of a specific nlr_jump implementation
+#define MP_NLR_JUMP_HEAD(val, top) \
+    nlr_buf_t **_top_ptr = &MP_STATE_THREAD(nlr_top); \
+    nlr_buf_t *top = *_top_ptr; \
+    if (top == NULL) { \
+        nlr_jump_fail(val); \
+    } \
+    top->ret_val = val; \
+    MP_NLR_RESTORE_PYSTACK(top); \
+    *_top_ptr = top->prev; \
+
 #if MICROPY_NLR_SETJMP
 // nlr_push() must be defined as a macro, because "The stack context will be
 // invalidated if the function which called setjmp() returns."
@@ -92,7 +117,6 @@ unsigned int nlr_push(nlr_buf_t *);
 unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
 NORETURN void nlr_jump(void *val);
-NORETURN void nlr_jump_tail(nlr_buf_t *top);
 
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather

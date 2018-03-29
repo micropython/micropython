@@ -43,7 +43,8 @@ void *mp_pystack_alloc(size_t n_bytes) {
     #endif
     if (MP_STATE_THREAD(pystack_cur) + n_bytes > MP_STATE_THREAD(pystack_end)) {
         // out of memory in the pystack
-        mp_raise_recursion_depth();
+        nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
+            MP_OBJ_NEW_QSTR(MP_QSTR_pystack_space_exhausted)));
     }
     void *ptr = MP_STATE_THREAD(pystack_cur);
     MP_STATE_THREAD(pystack_cur) += n_bytes;
