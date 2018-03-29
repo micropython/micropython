@@ -171,3 +171,5 @@
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)
 #endif
+
+#define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)

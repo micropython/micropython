@@ -338,6 +338,7 @@ STATIC bool init_sdcard_fs(void) {
 }
 #endif
 
+#if !MICROPY_HW_USES_BOOTLOADER
 STATIC uint update_reset_mode(uint reset_mode) {
 #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
@@ -412,6 +413,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
     return reset_mode;
 }
+#endif
 
 void stm32_main(uint32_t reset_mode) {
     // TODO disable JTAG
@@ -478,7 +480,6 @@ void stm32_main(uint32_t reset_mode) {
 
 soft_reset:
 
-    // check if user switch held to select the reset mode
 #if defined(MICROPY_HW_LED2)
     led_state(1, 0);
     led_state(2, 1);
@@ -488,7 +489,11 @@ soft_reset:
 #endif
     led_state(3, 0);
     led_state(4, 0);
+
+    #if !MICROPY_HW_USES_BOOTLOADER
+    // check if user switch held to select the reset mode
     reset_mode = update_reset_mode(1);
+    #endif
 
     // Python threading init
     #if MICROPY_PY_THREAD
