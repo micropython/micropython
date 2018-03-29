@@ -203,29 +203,14 @@ bool gc_is_locked(void) {
 #endif
 #endif
 
-// ptr should be of type void*
-#define VERIFY_MARK_AND_PUSH(ptr) \
-    do { \
-        if (VERIFY_PTR(ptr)) { \
-            size_t _block = BLOCK_FROM_PTR(ptr); \
-            if (ATB_GET_KIND(_block) == AT_HEAD) { \
-                /* an unmarked head, mark it, and push it on gc stack */ \
-                TRACE_MARK(_block, ptr); \
-                ATB_HEAD_TO_MARK(_block); \
-                if (MP_STATE_MEM(gc_sp) < &MP_STATE_MEM(gc_stack)[MICROPY_ALLOC_GC_STACK_SIZE]) { \
-                    *MP_STATE_MEM(gc_sp)++ = _block; \
-                } else { \
-                    MP_STATE_MEM(gc_stack_overflow) = 1; \
-                } \
-            } \
-        } \
-    } while (0)
-
-STATIC void gc_drain_stack(void) {
-    while (MP_STATE_MEM(gc_sp) > MP_STATE_MEM(gc_stack)) {
-        // pop the next block off the stack
-        size_t block = *--MP_STATE_MEM(gc_sp);
-
+// Take the given block as the topmost block on the stack. Check all it's
+// children: mark the unmarked child blocks and put those newly marked
+// blocks on the stack. When all children have been checked, pop off the
+// topmost block on the stack and repeat with that one.
+STATIC void gc_mark_subtree(size_t block) {
+    // Start with the block passed in the argument.
+    size_t sp = 0;
+    for (;;) {
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -236,22 +221,41 @@ STATIC void gc_drain_stack(void) {
         void **ptrs = (void**)PTR_FROM_BLOCK(block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void*); i > 0; i--, ptrs++) {
             void *ptr = *ptrs;
-            VERIFY_MARK_AND_PUSH(ptr);
+            if (VERIFY_PTR(ptr)) {
+                // Mark and push this pointer
+                size_t childblock = BLOCK_FROM_PTR(ptr);
+                if (ATB_GET_KIND(childblock) == AT_HEAD) {
+                    // an unmarked head, mark it, and push it on gc stack
+                    TRACE_MARK(childblock, ptr);
+                    ATB_HEAD_TO_MARK(childblock);
+                    if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
+                        MP_STATE_MEM(gc_stack)[sp++] = childblock;
+                    } else {
+                        MP_STATE_MEM(gc_stack_overflow) = 1;
+                    }
+                }
+            }
         }
+
+        // Are there any blocks on the stack?
+        if (sp == 0) {
+            break; // No, stack is empty, we're done.
+        }
+
+        // pop the next block off the stack
+        block = MP_STATE_MEM(gc_stack)[--sp];
     }
 }
 
 STATIC void gc_deal_with_stack_overflow(void) {
     while (MP_STATE_MEM(gc_stack_overflow)) {
         MP_STATE_MEM(gc_stack_overflow) = 0;
-        MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
         // scan entire memory looking for blocks which have been marked but not their children
         for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
             // trace (again) if mark bit set
             if (ATB_GET_KIND(block) == AT_MARK) {
-                *MP_STATE_MEM(gc_sp)++ = block;
-                gc_drain_stack();
+                gc_mark_subtree(block);
             }
         }
     }
@@ -319,7 +323,6 @@ void gc_collect_start(void) {
     MP_STATE_MEM(gc_alloc_amount) = 0;
     #endif
     MP_STATE_MEM(gc_stack_overflow) = 0;
-    MP_STATE_MEM(gc_sp) = MP_STATE_MEM(gc_stack);
 
     // Trace root pointers.  This relies on the root pointers being organised
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
@@ -337,8 +340,15 @@ void gc_collect_start(void) {
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         void *ptr = ptrs[i];
-        VERIFY_MARK_AND_PUSH(ptr);
-        gc_drain_stack();
+        if (VERIFY_PTR(ptr)) {
+            size_t block = BLOCK_FROM_PTR(ptr);
+            if (ATB_GET_KIND(block) == AT_HEAD) {
+                // An unmarked head: mark it, and mark all its children
+                TRACE_MARK(block, ptr);
+                ATB_HEAD_TO_MARK(block);
+                gc_mark_subtree(block);
+            }
+        }
     }
 }
 

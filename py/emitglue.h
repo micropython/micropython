@@ -63,7 +63,10 @@ typedef struct _mp_raw_code_t {
 
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
-void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code, mp_uint_t len,
+void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
+    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+    size_t len,
+    #endif
     const mp_uint_t *const_table,
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t n_obj, uint16_t n_raw_code,

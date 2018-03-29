@@ -48,14 +48,6 @@
 // top element.
 // Exception stack also grows up, top element is also pointed at.
 
-// Exception stack unwind reasons (WHY_* in CPython-speak)
-// TODO perhaps compress this to RETURN=0, JUMP>0, with number of unwinds
-// left to do encoded in the JUMP number
-typedef enum {
-    UNWIND_RETURN = 1,
-    UNWIND_JUMP,
-} mp_unwind_reason_t;
-
 #define DECODE_UINT \
     mp_uint_t unum = 0; \
     do { \
@@ -613,29 +605,18 @@ dispatch_loop:
                         mp_call_method_n_kw(3, 0, sp);
                         SET_TOP(mp_const_none);
                     } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
-                        mp_int_t cause_val = MP_OBJ_SMALL_INT_VALUE(TOP());
-                        if (cause_val == UNWIND_RETURN) {
-                            // stack: (..., __exit__, ctx_mgr, ret_val, UNWIND_RETURN)
-                            mp_obj_t ret_val = sp[-1];
-                            sp[-1] = mp_const_none;
-                            sp[0] = mp_const_none;
-                            sp[1] = mp_const_none;
-                            mp_call_method_n_kw(3, 0, sp - 3);
-                            sp[-3] = ret_val;
-                            sp[-2] = MP_OBJ_NEW_SMALL_INT(UNWIND_RETURN);
-                        } else {
-                            assert(cause_val == UNWIND_JUMP);
-                            // stack: (..., __exit__, ctx_mgr, dest_ip, num_exc, UNWIND_JUMP)
-                            mp_obj_t dest_ip = sp[-2];
-                            mp_obj_t num_exc = sp[-1];
-                            sp[-2] = mp_const_none;
-                            sp[-1] = mp_const_none;
-                            sp[0] = mp_const_none;
-                            mp_call_method_n_kw(3, 0, sp - 4);
-                            sp[-4] = dest_ip;
-                            sp[-3] = num_exc;
-                            sp[-2] = MP_OBJ_NEW_SMALL_INT(UNWIND_JUMP);
-                        }
+                        // Getting here there are two distinct cases:
+                        //  - unwind return, stack: (..., __exit__, ctx_mgr, ret_val, SMALL_INT(-1))
+                        //  - unwind jump, stack:   (..., __exit__, ctx_mgr, dest_ip, SMALL_INT(num_exc))
+                        // For both cases we do exactly the same thing.
+                        mp_obj_t data = sp[-1];
+                        mp_obj_t cause = sp[0];
+                        sp[-1] = mp_const_none;
+                        sp[0] = mp_const_none;
+                        sp[1] = mp_const_none;
+                        mp_call_method_n_kw(3, 0, sp - 3);
+                        sp[-3] = data;
+                        sp[-2] = cause;
                         sp -= 2; // we removed (__exit__, ctx_mgr)
                     } else {
                         assert(mp_obj_is_exception_instance(TOP()));
@@ -680,10 +661,11 @@ unwind_jump:;
                             // of a "with" block contains the context manager info.
                             // We're going to run "finally" code as a coroutine
                             // (not calling it recursively). Set up a sentinel
-                            // on a stack so it can return back to us when it is
+                            // on the stack so it can return back to us when it is
                             // done (when WITH_CLEANUP or END_FINALLY reached).
-                            PUSH((mp_obj_t)unum); // push number of exception handlers left to unwind
-                            PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_JUMP)); // push sentinel
+                            // The sentinel is the number of exception handlers left to
+                            // unwind, which is a non-negative integer.
+                            PUSH(MP_OBJ_NEW_SMALL_INT(unum));
                             ip = exc_sp->handler; // get exception handler byte code address
                             exc_sp--; // pop exception handler
                             goto dispatch_loop; // run the exception handler
@@ -720,11 +702,14 @@ unwind_jump:;
                     } else if (MP_OBJ_IS_SMALL_INT(TOP())) {
                         // We finished "finally" coroutine and now dispatch back
                         // to our caller, based on TOS value
-                        mp_unwind_reason_t reason = MP_OBJ_SMALL_INT_VALUE(POP());
-                        if (reason == UNWIND_RETURN) {
+                        mp_int_t cause = MP_OBJ_SMALL_INT_VALUE(POP());
+                        if (cause < 0) {
+                            // A negative cause indicates unwind return
                             goto unwind_return;
                         } else {
-                            assert(reason == UNWIND_JUMP);
+                            // Otherwise it's an unwind jump and we must push as a raw
+                            // number the number of exception handlers to unwind
+                            PUSH((mp_obj_t)cause);
                             goto unwind_jump;
                         }
                     } else {
@@ -1101,7 +1086,7 @@ unwind_return:
                             // (not calling it recursively). Set up a sentinel
                             // on a stack so it can return back to us when it is
                             // done (when WITH_CLEANUP or END_FINALLY reached).
-                            PUSH(MP_OBJ_NEW_SMALL_INT(UNWIND_RETURN));
+                            PUSH(MP_OBJ_NEW_SMALL_INT(-1));
                             ip = exc_sp->handler;
                             exc_sp--;
                             goto dispatch_loop;
@@ -1177,6 +1162,7 @@ yield:
                     mp_obj_t send_value = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
                     mp_obj_t ret_value;
+                    code_state->sp = sp; // Save sp because it's needed if mp_resume raises StopIteration
                     if (inject_exc != MP_OBJ_NULL) {
                         t_exc = inject_exc;
                         inject_exc = MP_OBJ_NULL;
@@ -1192,8 +1178,7 @@ yield:
                     } else if (ret_kind == MP_VM_RETURN_NORMAL) {
                         // Pop exhausted gen
                         sp--;
-                        // TODO: When ret_value can be MP_OBJ_NULL here??
-                        if (ret_value == MP_OBJ_NULL || ret_value == MP_OBJ_STOP_ITERATION) {
+                        if (ret_value == MP_OBJ_STOP_ITERATION) {
                             // Optimize StopIteration
                             // TODO: get StopIteration's value
                             PUSH(mp_const_none);
@@ -1376,7 +1361,8 @@ exception_handler:
                     } else if (*code_state->ip == MP_BC_YIELD_FROM) {
                         // StopIteration inside yield from call means return a value of
                         // yield from, so inject exception's value as yield from's result
-                        *++code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+                        // (Instead of stack pop then push we just replace exhausted gen with value)
+                        *code_state->sp = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
                         code_state->ip++; // yield from is over, move to next instruction
                         goto outer_dispatch_loop; // continue with dispatch loop
                     }
@@ -1389,8 +1375,7 @@ unwind_loop:
             // set file and line number that the exception occurred at
             // TODO: don't set traceback for exceptions re-raised by END_FINALLY.
             // But consider how to handle nested exceptions.
-            // TODO need a better way of not adding traceback to constant objects (right now, just GeneratorExit_obj and MemoryError_obj)
-            if (nlr.ret_val != &mp_const_GeneratorExit_obj && nlr.ret_val != &mp_const_MemoryError_obj) {
+            if (nlr.ret_val != &mp_const_GeneratorExit_obj) {
                 const byte *ip = code_state->fun_bc->bytecode;
                 ip = mp_decode_uint_skip(ip); // skip n_state
                 ip = mp_decode_uint_skip(ip); // skip n_exc_stack

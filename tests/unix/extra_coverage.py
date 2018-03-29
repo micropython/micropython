@@ -71,3 +71,8 @@ try:
     import frzmpy2
 except ZeroDivisionError:
     print('ZeroDivisionError')
+
+# test loading a resource from a frozen string
+import uio
+buf = uio.resource_stream('frzstr_pkg2', 'mod.py')
+print(buf.read(21))

@@ -383,10 +383,11 @@ parameter should be `id`.
             * 0 -- visible
             * 1 -- hidden
 
-    .. method:: wlan.status()
+    .. method:: wlan.status([param])
 
         Return the current status of the wireless connection.
 
+        When called with no argument the return value describes the network link status.
         The possible statuses are defined as constants:
 
             * ``STAT_IDLE`` -- no connection and no activity,
@@ -395,6 +396,9 @@ parameter should be `id`.
             * ``STAT_NO_AP_FOUND`` -- failed because no access point replied,
             * ``STAT_CONNECT_FAIL`` -- failed due to other problems,
             * ``STAT_GOT_IP`` -- connection successful.
+
+        When called with one argument *param* should be a string naming the status
+        parameter to retrieve.  Supported parameters in WiFI STA mode are: ``'rssi'``.
 
     .. method:: wlan.isconnected()
 

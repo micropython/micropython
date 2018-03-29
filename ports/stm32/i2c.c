@@ -31,7 +31,6 @@
 #include "py/mphal.h"
 #include "irq.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "bufhelper.h"
 #include "dma.h"
 #include "i2c.h"
@@ -89,6 +88,10 @@
 #define PYB_I2C_MASTER (0)
 #define PYB_I2C_SLAVE  (1)
 
+#define PYB_I2C_SPEED_STANDARD (100000L)
+#define PYB_I2C_SPEED_FULL     (400000L)
+#define PYB_I2C_SPEED_FAST     (1000000L)
+
 #if defined(MICROPY_HW_I2C1_SCL)
 I2C_HandleTypeDef I2CHandle1 = {.Instance = NULL};
 #endif
@@ -130,9 +133,9 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #endif
 };
 
-#if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
+#if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
 
-// The STM32F0, F3, F7 and L4 use a TIMINGR register rather than ClockSpeed and
+// The STM32F0, F3, F7, H7 and L4 use a TIMINGR register rather than ClockSpeed and
 // DutyCycle.
 
 #if defined(STM32F746xx)
@@ -140,12 +143,12 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 // The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
 // defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
 #define MICROPY_HW_I2C_BAUDRATE_TIMING { \
-        {100000, 0x40912732}, \
-        {400000, 0x10911823}, \
-        {1000000, 0x00611116}, \
+        {PYB_I2C_SPEED_STANDARD, 0x40912732}, \
+        {PYB_I2C_SPEED_FULL, 0x10911823}, \
+        {PYB_I2C_SPEED_FAST, 0x00611116}, \
     }
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (1000000)
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
 
 #elif defined(STM32F722xx) || defined(STM32F723xx) \
     || defined(STM32F732xx) || defined(STM32F733xx) \
@@ -153,20 +156,31 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 
 // These timing values are for f_I2CCLK=54MHz and are only approximate
 #define MICROPY_HW_I2C_BAUDRATE_TIMING { \
-        {100000, 0xb0420f13}, \
-        {400000, 0x70330309}, \
-        {1000000, 0x50100103}, \
+        {PYB_I2C_SPEED_STANDARD, 0xb0420f13}, \
+        {PYB_I2C_SPEED_FULL, 0x70330309}, \
+        {PYB_I2C_SPEED_FAST, 0x50100103}, \
     }
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (1000000)
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
 
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32H7)
+
+// I2C TIMINGs obtained from the STHAL examples.
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x40604E73}, \
+        {PYB_I2C_SPEED_FULL, 0x00901954}, \
+        {PYB_I2C_SPEED_FAST, 0x10810915}, \
+    }
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
+
+#elif defined(STM32L4)
 
 // The value 0x90112626 was obtained from the DISCOVERY_I2C1_TIMING constant
 // defined in the STM32L4Cube file Drivers/BSP/STM32L476G-Discovery/stm32l476g_discovery.h
-#define MICROPY_HW_I2C_BAUDRATE_TIMING {{100000, 0x90112626}}
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (100000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (100000)
+#define MICROPY_HW_I2C_BAUDRATE_TIMING {{PYB_I2C_SPEED_STANDARD, 0x90112626}}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_STANDARD)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_STANDARD)
 
 #else
 #error "no I2C timings for this MCU"
@@ -190,9 +204,9 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
                                             "Unsupported I2C baudrate: %lu", baudrate));
 }
 
-uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
+uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
     for (int i = 0; i < NUM_BAUDRATE_TIMINGS; i++) {
-        if (pyb_i2c_baudrate_timing[i].timing == init->Timing) {
+        if (pyb_i2c_baudrate_timing[i].timing == i2c->Init.Timing) {
             return pyb_i2c_baudrate_timing[i].baudrate;
         }
     }
@@ -201,36 +215,41 @@ uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
 
 #else
 
-#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (400000)
-#define MICROPY_HW_I2C_BAUDRATE_MAX (400000)
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FULL)
 
 STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
     init->ClockSpeed = baudrate;
     init->DutyCycle = I2C_DUTYCYCLE_16_9;
 }
 
-uint32_t i2c_get_baudrate(I2C_InitTypeDef *init) {
-    return init->ClockSpeed;
+uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
+    uint32_t pfreq = i2c->Instance->CR2 & 0x3f;
+    uint32_t ccr = i2c->Instance->CCR & 0xfff;
+    if (i2c->Instance->CCR & 0x8000) {
+        // Fast mode, assume duty cycle of 16/9
+        return pfreq * 40000 / ccr;
+    } else {
+        // Standard mode
+        return pfreq * 500000 / ccr;
+    }
 }
 
 #endif
 
 void i2c_init0(void) {
-    // reset the I2C1 handles
+    // Initialise the I2C handles.
+    // The structs live on the BSS so all other fields will be zero after a reset.
     #if defined(MICROPY_HW_I2C1_SCL)
-    memset(&I2CHandle1, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle1.Instance = I2C1;
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
-    memset(&I2CHandle2, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle2.Instance = I2C2;
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
-    memset(&I2CHandle3, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle3.Instance = I2C3;
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
-    memset(&I2CHandle4, 0, sizeof(I2C_HandleTypeDef));
     I2CHandle4.Instance = I2C4;
     #endif
 }
@@ -244,29 +263,29 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
     #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c == &I2CHandle1) {
         i2c_unit = 1;
-        scl_pin = &MICROPY_HW_I2C1_SCL;
-        sda_pin = &MICROPY_HW_I2C1_SDA;
+        scl_pin = MICROPY_HW_I2C1_SCL;
+        sda_pin = MICROPY_HW_I2C1_SDA;
         __I2C1_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c == &I2CHandle2) {
         i2c_unit = 2;
-        scl_pin = &MICROPY_HW_I2C2_SCL;
-        sda_pin = &MICROPY_HW_I2C2_SDA;
+        scl_pin = MICROPY_HW_I2C2_SCL;
+        sda_pin = MICROPY_HW_I2C2_SDA;
         __I2C2_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     } else if (i2c == &I2CHandle3) {
         i2c_unit = 3;
-        scl_pin = &MICROPY_HW_I2C3_SCL;
-        sda_pin = &MICROPY_HW_I2C3_SDA;
+        scl_pin = MICROPY_HW_I2C3_SCL;
+        sda_pin = MICROPY_HW_I2C3_SDA;
         __I2C3_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
     } else if (i2c == &I2CHandle4) {
         i2c_unit = 4;
-        scl_pin = &MICROPY_HW_I2C4_SCL;
-        sda_pin = &MICROPY_HW_I2C4_SDA;
+        scl_pin = MICROPY_HW_I2C4_SCL;
+        sda_pin = MICROPY_HW_I2C4_SDA;
         __I2C4_CLK_ENABLE();
     #endif
     } else {
@@ -418,7 +437,7 @@ void i2c_ev_irq_handler(mp_uint_t i2c_id) {
             return;
     }
 
-    #if defined(MCU_SERIES_F4)
+    #if defined(STM32F4)
 
     if (hi2c->Instance->SR1 & I2C_FLAG_BTF && hi2c->State == HAL_I2C_STATE_BUSY_TX) {
         if (hi2c->XferCount != 0U) {
@@ -470,7 +489,7 @@ void i2c_er_irq_handler(mp_uint_t i2c_id) {
             return;
     }
 
-    #if defined(MCU_SERIES_F4)
+    #if defined(STM32F4)
 
     uint32_t sr1 = hi2c->Instance->SR1;
 
@@ -547,7 +566,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         mp_printf(print, "I2C(%u)", i2c_num);
     } else {
         if (in_master_mode(self)) {
-            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, i2c_get_baudrate(&self->i2c->Init));
+            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, i2c_get_baudrate(self->i2c));
         } else {
             mp_printf(print, "I2C(%u, I2C.SLAVE, addr=0x%02x)", i2c_num, (self->i2c->Instance->OAR1 >> 1) & 0x7f);
         }

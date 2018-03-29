@@ -200,7 +200,11 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 
     // create raw_code and return it
     mp_raw_code_t *rc = mp_emit_glue_new_raw_code();
-    mp_emit_glue_assign_bytecode(rc, bytecode, bc_len, const_table,
+    mp_emit_glue_assign_bytecode(rc, bytecode,
+        #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+        bc_len,
+        #endif
+        const_table,
         #if MICROPY_PERSISTENT_CODE_SAVE
         n_obj, n_raw_code,
         #endif

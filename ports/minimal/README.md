@@ -9,7 +9,7 @@ By default the port will be built for the host machine:
 
     $ make
 
-To run a small test script do:
+To run the executable and get a basic working REPL do:
 
     $ make run
 

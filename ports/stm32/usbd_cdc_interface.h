@@ -1,8 +1,8 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  */
-#ifndef MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
-#define MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
+#ifndef MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H
+#define MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H
 
 /**
   ******************************************************************************
@@ -37,7 +37,7 @@
 typedef struct _usbd_cdc_itf_t {
     usbd_cdc_msc_hid_state_t *usbd; // the parent USB device
 
-    uint8_t rx_packet_buf[CDC_DATA_FS_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
+    uint8_t rx_packet_buf[CDC_DATA_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
     uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it
     volatile uint16_t rx_buf_put; // circular buffer index
     uint16_t rx_buf_get; // circular buffer index
@@ -63,4 +63,4 @@ void usbd_cdc_tx_always(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len);
 int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc);
 int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeout);
 
-#endif // MICROPY_INCLUDED_STMHAL_USBD_CDC_INTERFACE_H
+#endif // MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H

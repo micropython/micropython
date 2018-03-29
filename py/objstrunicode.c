@@ -104,7 +104,7 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
         case MP_UNARY_OP_BOOL:
             return mp_obj_new_bool(str_len != 0);
         case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char *)str_data, str_len));
+            return MP_OBJ_NEW_SMALL_INT(utf8_charlen(str_data, str_len));
         default:
             return MP_OBJ_NULL; // op not supported
     }

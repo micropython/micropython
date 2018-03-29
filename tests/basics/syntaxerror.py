@@ -1,5 +1,11 @@
 # test syntax errors
 
+try:
+    exec
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 def test_syntax(code):
     try:
         exec(code)

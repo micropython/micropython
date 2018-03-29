@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_RTC_H
-#define MICROPY_INCLUDED_STMHAL_RTC_H
+#ifndef MICROPY_INCLUDED_STM32_RTC_H
+#define MICROPY_INCLUDED_STM32_RTC_H
 
 extern RTC_HandleTypeDef RTCHandle;
 extern const mp_obj_type_t pyb_rtc_type;
@@ -32,4 +32,4 @@ extern const mp_obj_type_t pyb_rtc_type;
 void rtc_init_start(bool force_init);
 void rtc_init_finalise(void);
 
-#endif // MICROPY_INCLUDED_STMHAL_RTC_H
+#endif // MICROPY_INCLUDED_STM32_RTC_H

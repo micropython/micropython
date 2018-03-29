@@ -190,11 +190,8 @@ pwm_start(void)
         // start
         gpio_output_set(local_single[0].gpio_set, local_single[0].gpio_clear, pwm_gpio, 0);
 
-        // yeah, if all channels' duty is 0 or 255, don't need to start timer, otherwise start...
-        if (*local_channel != 1) {
-            pwm_timer_down = 0;
-            RTC_REG_WRITE(FRC1_LOAD_ADDRESS, local_single[0].h_time);
-        }
+        pwm_timer_down = 0;
+        RTC_REG_WRITE(FRC1_LOAD_ADDRESS, local_single[0].h_time);
     }
 
     if (pwm_toggle == 1) {
@@ -210,12 +207,12 @@ pwm_start(void)
 /******************************************************************************
  * FunctionName : pwm_set_duty
  * Description  : set each channel's duty params
- * Parameters   : uint8 duty    : 0 ~ PWM_DEPTH
+ * Parameters   : int16_t duty  : 0 ~ PWM_DEPTH
  *                uint8 channel : channel index
  * Returns      : NONE
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
-pwm_set_duty(uint16 duty, uint8 channel)
+pwm_set_duty(int16_t duty, uint8 channel)
 {
     uint8 i;
     for(i=0;i<pwm_channel_num;i++){
@@ -319,11 +316,7 @@ pwm_tim1_intr_handler(void *dummy)
 
         pwm_current_channel = 0;
 
-        if (*pwm_channel != 1) {
-            RTC_REG_WRITE(FRC1_LOAD_ADDRESS, pwm_single[pwm_current_channel].h_time);
-        } else {
-            pwm_timer_down = 1;
-        }
+        RTC_REG_WRITE(FRC1_LOAD_ADDRESS, pwm_single[pwm_current_channel].h_time);
     } else {
         gpio_output_set(pwm_single[pwm_current_channel].gpio_set,
                         pwm_single[pwm_current_channel].gpio_clear,

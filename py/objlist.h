@@ -35,4 +35,6 @@ typedef struct _mp_obj_list_t {
     mp_obj_t *items;
 } mp_obj_list_t;
 
+void mp_obj_list_init(mp_obj_list_t *o, size_t n);
+
 #endif // MICROPY_INCLUDED_PY_OBJLIST_H
