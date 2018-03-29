@@ -413,7 +413,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
     return reset_mode;
 }
 
-int main(void) {
+void stm32_main(uint32_t reset_mode) {
     // TODO disable JTAG
 
     /* STM32F4xx HAL library initialization:
@@ -488,7 +488,7 @@ soft_reset:
 #endif
     led_state(3, 0);
     led_state(4, 0);
-    uint reset_mode = update_reset_mode(1);
+    reset_mode = update_reset_mode(1);
 
     // Python threading init
     #if MICROPY_PY_THREAD

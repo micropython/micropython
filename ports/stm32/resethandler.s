@@ -33,6 +33,9 @@
     .type Reset_Handler, %function
 
 Reset_Handler:
+    /* Save the first argument to pass through to stm32_main */
+    mov  r4, r0
+
     /* Load the stack pointer */
     ldr  sp, =_estack
 
@@ -61,6 +64,7 @@ Reset_Handler:
 
     /* Initialise the system and jump to the main code */
     bl   SystemInit
-    b    main
+    mov  r0, r4
+    b    stm32_main
 
     .size Reset_Handler, .-Reset_Handler
