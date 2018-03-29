@@ -252,6 +252,7 @@ SRC_C = \
 
 SRC_O = \
 	$(STARTUP_FILE) \
+	resethandler.o \
 	gchelper.o \
 
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
