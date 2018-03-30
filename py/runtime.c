@@ -1282,7 +1282,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         // will be propagated up. This behavior is approved by test_pep380.py
         // test_delegation_of_close_to_non_generator(),
         //  test_delegating_throw_to_non_generator()
-        *ret_val = throw_value;
+        *ret_val = mp_make_raise_obj(throw_value);
         return MP_VM_RETURN_EXCEPTION;
     }
 }
