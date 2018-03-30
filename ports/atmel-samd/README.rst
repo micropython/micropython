@@ -143,8 +143,7 @@ Building
 
 Before building the firmware for a given board, there are two additional steps.
 These commands should be executed from the root directory of the repository
-(``%clone_location%/circuitpython/``). All other commands are run from the
-``%clone_location%/circuitpython/ports/atmel-samd/`` directory.
+(``~/circuitpython/``).
 
 1. There are various submodules that reside in different repositories. In order
    to have these submodules locally, you must pull them into your clone, using:
@@ -162,14 +161,15 @@ These commands should be executed from the root directory of the repository
     make -C mpy-cross
 
 
+Build commands are run from the ``~/circuitpython/ports/atmel-samd`` directory.
+
 To build for the Arduino Zero:
 
 .. code-block:: shell
 
     make
 
-To build for other boards you must change it by setting ``BOARD``. This command
-is executed from the ``~/circuitpython/ports/atmel-samd`` directory. For example:
+To build for other boards you must change it by setting ``BOARD``. For example:
 
 .. code-block:: shell
 
