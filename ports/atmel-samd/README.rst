@@ -143,11 +143,11 @@ Building
 
 Before building the firmware for a given board, there are two additional steps.
 These commands should be executed from the root directory of the repository
-(``%clone location%/circuitpython/``). All other commands are run from the
-``%clone location%/circuitpython/ports/atmel-samd/``directory.
+(``%clone_location%/circuitpython/``). All other commands are run from the
+``%clone_location%/circuitpython/ports/atmel-samd/`` directory.
 
 1. There are various submodules that reside in different repositories. In order
-   to have these submodules locally, you must pull them into your clone.
+   to have these submodules locally, you must pull them into your clone, using:
 
 .. code-block:: shell
 
