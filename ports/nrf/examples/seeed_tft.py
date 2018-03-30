@@ -52,7 +52,7 @@ from machine import SPI, Pin
 from sdcard import SDCard
 
 def mount_tf(self, mount_point="/"):
-    sd = SDCard(SPI(0), Pin("A15", mode=Pin.OUT))
+    sd = SDCard(SPI(0), Pin("P15", mode=Pin.OUT))
     os.mount(sd, mount_point)
 
 class ILI9341:
@@ -65,9 +65,9 @@ class ILI9341:
 
         self.spi = SPI(0)
         # chip select
-        self.cs = Pin("A16", mode=Pin.OUT, pull=Pin.PULL_UP)
+        self.cs = Pin("P16", mode=Pin.OUT, pull=Pin.PULL_UP)
         # command
-        self.dc = Pin("A17", mode=Pin.OUT, pull=Pin.PULL_UP)
+        self.dc = Pin("P17", mode=Pin.OUT, pull=Pin.PULL_UP)
         
         # initialize all pins high
         self.cs.high()

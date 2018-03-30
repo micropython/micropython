@@ -1,8 +1,8 @@
 # 
-# Example usage where "A3" is the Buzzer pin.
+# Example usage where "P3" is the Buzzer pin.
 #
 #  from musictest import play
-#  play("A3")
+#  play("P3")
 #
 
 from machine import Pin

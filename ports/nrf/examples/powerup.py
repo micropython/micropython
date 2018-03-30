@@ -28,8 +28,8 @@
 # Examples is written for nrf52832, pca10040 using s132 bluetooth stack.
 #
 # Joystick shield pin mapping:
-#  - analog stick x-direction - ADC0 - P0.02/"A02"
-#  - buttons P0.13 - P0.16 / "A13", "A14", "A15", "A16"
+#  - analog stick x-direction - ADC0 - P0.02/"P2"
+#  - buttons P0.13 - P0.16 / "P13", "P14", "P15", "P16"
 #
 # Example usage:
 #
@@ -70,10 +70,10 @@ class PowerUp3:
     def __init__(self):
         self.x_adc = ADC(1)
 
-        self.btn_speed_up = Pin("A13", mode=Pin.IN, pull=Pin.PULL_UP)
-        self.btn_speed_down = Pin("A15", mode=Pin.IN, pull=Pin.PULL_UP)
-        self.btn_speed_full = Pin("A14", mode=Pin.IN, pull=Pin.PULL_UP)
-        self.btn_speed_off = Pin("A16", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_up = Pin("P13", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_down = Pin("P15", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_full = Pin("P14", mode=Pin.IN, pull=Pin.PULL_UP)
+        self.btn_speed_off = Pin("P16", mode=Pin.IN, pull=Pin.PULL_UP)
 
         self.x_mid = 0
         

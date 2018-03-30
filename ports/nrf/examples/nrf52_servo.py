@@ -30,7 +30,7 @@ class Servo():
         if pin_name:
             self.pin = Pin(pin_name, mode=Pin.OUT, pull=Pin.PULL_DOWN)
         else:
-            self.pin = Pin("A22", mode=Pin.OUT, pull=Pin.PULL_DOWN)
+            self.pin = Pin("P22", mode=Pin.OUT, pull=Pin.PULL_DOWN)
     def left(self):
         p = PWM(0, self.pin, freq=PWM.FREQ_125KHZ, pulse_width=105, period=2500, mode=PWM.MODE_HIGH_LOW)
         p.init()

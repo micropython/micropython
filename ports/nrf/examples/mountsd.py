@@ -25,7 +25,7 @@ from machine import SPI, Pin
 from sdcard import SDCard
 
 def mnt():
-    cs = Pin("A22", mode=Pin.OUT)
+    cs = Pin("P22", mode=Pin.OUT)
     sd = SDCard(SPI(0), cs)
     os.mount(sd, '/')
 
