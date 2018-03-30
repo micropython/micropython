@@ -11,19 +11,16 @@ SUPPORTED_FN = {
     'UART'  : ['RX', 'TX', 'CTS', 'RTS']
 }
 
-def parse_port_pin(name_str):
-    """Parses a string and returns a (port-num, pin-num) tuple."""
-    if len(name_str) < 3:
+def parse_pin(name_str):
+    """Parses a string and returns a pin-num."""
+    if len(name_str) < 1:
         raise ValueError("Expecting pin name to be at least 4 charcters.")
     if name_str[0] != 'P':
         raise ValueError("Expecting pin name to start with P")
-    if name_str[1] not in ('A', 'B'):
-        raise ValueError("Expecting pin port to be in A or B")
-    port = ord(name_str[1]) - ord('A')
-    pin_str = name_str[2:].split('/')[0]
+    pin_str = name_str[1:].split('/')[0]
     if not pin_str.isdigit():
         raise ValueError("Expecting numeric pin number.")
-    return (port, int(pin_str))
+    return int(pin_str)
 
 def split_name_num(name_num):
     num = None
@@ -89,8 +86,7 @@ class AlternateFunction(object):
 class Pin(object):
     """Holds the information associated with a pin."""
 
-    def __init__(self, port, pin):
-        self.port = port
+    def __init__(self, pin):
         self.pin = pin
         self.alt_fn = []
         self.alt_fn_count = 0
@@ -98,11 +94,8 @@ class Pin(object):
         self.adc_channel = 0
         self.board_pin = False
 
-    def port_letter(self):
-        return chr(self.port + ord('A'))
-
     def cpu_pin_name(self):
-        return '{:s}{:d}'.format(self.port_letter(), self.pin)
+        return '{:s}{:d}'.format("P", self.pin)
 
     def is_board_pin(self):
         return self.board_pin
@@ -157,8 +150,8 @@ class Pin(object):
             print("// ",  end='')
         print('};')
         print('')
-        print('const pin_obj_t pin_{:s} = PIN({:s}, {:d}, {:s}, {:s}, {:d});'.format(
-            self.cpu_pin_name(), self.port_letter(), self.pin,
+        print('const pin_obj_t pin_{:s} = PIN({:d}, {:s}, {:s}, {:d});'.format(
+            self.cpu_pin_name(), self.pin,
             self.alt_fn_name(null_if_0=True),
             self.adc_num_str(), self.adc_channel))
         print('')
@@ -197,10 +190,10 @@ class Pins(object):
         self.cpu_pins = []   # list of NamedPin objects
         self.board_pins = [] # list of NamedPin objects
 
-    def find_pin(self, port_num, pin_num):
+    def find_pin(self, pin_num):
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
-            if pin.port == port_num and pin.pin == pin_num:
+            if pin.pin == pin_num:
                 return pin
 
     def parse_af_file(self, filename, pinname_col, af_col, af_col_end):
@@ -208,10 +201,10 @@ class Pins(object):
             rows = csv.reader(csvfile)
             for row in rows:
                 try:
-                    (port_num, pin_num) = parse_port_pin(row[pinname_col])
+                    pin_num = parse_pin(row[pinname_col])
                 except:
                     continue
-                pin = Pin(port_num, pin_num)
+                pin = Pin(pin_num)
                 for af_idx in range(af_col, len(row)):
                     if af_idx < af_col_end:
                         pin.parse_af(af_idx - af_col, row[af_idx])
@@ -224,10 +217,10 @@ class Pins(object):
             rows = csv.reader(csvfile)
             for row in rows:
                 try:
-                    (port_num, pin_num) = parse_port_pin(row[1])
+                    pin_num = parse_pin(row[1])
                 except:
                     continue
-                pin = self.find_pin(port_num, pin_num)
+                pin = self.find_pin(pin_num)
                 if pin:
                     pin.set_is_board_pin()
                     self.board_pins.append(NamedPin(row[0], pin))

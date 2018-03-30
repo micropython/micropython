@@ -51,13 +51,10 @@ typedef struct {
 typedef struct {
   mp_obj_base_t base;
   qstr name;
-  uint32_t port   : 4;
-  uint32_t pin    : 5;      // Some ARM processors use 32 bits/PORT
+  uint32_t pin : 8;
   uint32_t num_af : 4;
   uint32_t adc_channel : 5; // Some ARM processors use 32 bits/PORT
   uint32_t adc_num  : 3;    // 1 bit per ADC
-  uint32_t pin_mask;
-  pin_gpio_t *gpio;
   const pin_af_obj_t *af;
   uint32_t pull;
 } pin_obj_t;

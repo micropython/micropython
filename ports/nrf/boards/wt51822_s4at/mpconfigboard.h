@@ -55,12 +55,12 @@
 #define MICROPY_HW_ENABLE_CAN       (0)
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_A1)
-#define MICROPY_HW_UART1_TX         (pin_A2)
+#define MICROPY_HW_UART1_RX         (pin_P1)
+#define MICROPY_HW_UART1_TX         (pin_P2)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_A9)
-#define MICROPY_HW_SPI0_MOSI        (pin_A10)
-#define MICROPY_HW_SPI0_MISO        (pin_A13)
+#define MICROPY_HW_SPI0_SCK         (pin_P9)
+#define MICROPY_HW_SPI0_MOSI        (pin_P10)
+#define MICROPY_HW_SPI0_MISO        (pin_P13)

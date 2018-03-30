@@ -56,15 +56,15 @@
 #define MICROPY_HW_ENABLE_CAN       (0)
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_A25)
-#define MICROPY_HW_UART1_TX         (pin_A24)
+#define MICROPY_HW_UART1_RX         (pin_P25)
+#define MICROPY_HW_UART1_TX         (pin_P24)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_A23)
-#define MICROPY_HW_SPI0_MOSI        (pin_A21)
-#define MICROPY_HW_SPI0_MISO        (pin_A22)
+#define MICROPY_HW_SPI0_SCK         (pin_P23)
+#define MICROPY_HW_SPI0_MOSI        (pin_P21)
+#define MICROPY_HW_SPI0_MISO        (pin_P22)
 
 // micro:bit music pin
-#define MICROPY_HW_MUSIC_PIN        (pin_A3)
+#define MICROPY_HW_MUSIC_PIN        (pin_P3)
