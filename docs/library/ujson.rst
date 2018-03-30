@@ -1,10 +1,12 @@
 :mod:`ujson` -- JSON encoding and decoding
 ==========================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: ujson
    :synopsis: JSON encoding and decoding
 
-|see_cpython_module| :mod:`python:json`.
+|see_cpython_module| :mod:`cpython:json`.
 
 This modules allows to convert between Python objects and the JSON
 data format.

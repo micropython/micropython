@@ -32,6 +32,9 @@
 #include "tick.h"
 
 #ifdef SAMD51
+#include "hri/hri_cmcc_d51.h"
+#include "hri/hri_nvmctrl_d51.h"
+
 // This magical macro makes sure the delay isn't optimized out and is the
 // minimal three instructions.
 #define delay_cycles(cycles) \
@@ -62,11 +65,30 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     // Turn off interrupts of any kind during timing-sensitive code.
     mp_hal_disable_all_interrupts();
 
+
     #ifdef SAMD21
     // Make sure the NVM cache is consistently timed.
     NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_DETERMINISTIC_Val;
     #endif
 
+    #ifdef SAMD51
+    // When this routine is positioned at certain addresses, the timing logic
+    // below can be too fast by about 2.5x. This is some kind of (un)fortunate code
+    // positiong with respect to a cache line.
+    // Theoretically we should turn on off the CMCC caches and the
+    // NVM caches to ensure consistent timing. Testing shows the the NVMCTRL
+    // cache disabling seems to make the difference. But turn both off to make sure.
+    // It's difficult to test because additions to the code before the timing loop
+    // below change instruction placement. Testing was done by adding cache changes
+    // below the loop (so only the first time through is wrong).
+    //
+    // Turn off instruction, data, and NVM caches to force consistent timing.
+    // Invalidate existing cache entries.
+    hri_cmcc_set_CFG_reg(CMCC, CMCC_CFG_DCDIS | CMCC_CFG_ICDIS);
+    hri_cmcc_write_MAINT0_reg(CMCC, CMCC_MAINT0_INVALL);
+    hri_nvmctrl_set_CTRLA_CACHEDIS0_bit(NVMCTRL);
+    hri_nvmctrl_set_CTRLA_CACHEDIS1_bit(NVMCTRL);
+   #endif
 
     uint32_t pin = digitalinout->pin->pin;
     port    =  &PORT->Group[GPIO_PORT(pin)];  // Convert GPIO # to port register
@@ -124,7 +146,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
             if(ptr >= end) break;
             p       = *ptr++;
             bitMask = 0x80;
-            // This is the delay between bytes. Its similar to the other branch
+            // This is the delay between bytes. It's similar to the other branch
             // in the if statement except its tuned to account for the time the
             // above operations take.
             // For the SK6812 its 0.6us +- 0.15us
@@ -137,6 +159,14 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     #ifdef SAMD21
     // Speed up! (But inconsistent timing.)
     NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY_Val;
+    #endif
+
+    #ifdef SAMD51
+    // Turn instruction, data, and NVM caches back on.
+    hri_cmcc_clear_CFG_reg(CMCC, CMCC_CFG_DCDIS | CMCC_CFG_ICDIS);
+    hri_nvmctrl_clear_CTRLA_CACHEDIS0_bit(NVMCTRL);
+    hri_nvmctrl_clear_CTRLA_CACHEDIS1_bit(NVMCTRL);
+
     #endif
 
     // ticks_ms may be out of date at this point because we stopped the

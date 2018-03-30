@@ -34,3 +34,10 @@ class B(A):
         print(super().bar) # accessing attribute after super()
         return super().foo().count(2) # calling a subsequent method
 print(B().foo())
+
+try:
+    super(1, 1).x
+except TypeError:
+    print(True)
+else:
+    print(False)

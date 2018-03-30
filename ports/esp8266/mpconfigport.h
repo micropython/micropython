@@ -49,6 +49,7 @@
 #define MICROPY_PY_GC               (1)
 #define MICROPY_PY_ARRAY            (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
+#define MICROPY_NONSTANDARD_TYPECODES (0)
 #define MICROPY_PY_COLLECTIONS      (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH             (0)
@@ -90,6 +91,7 @@
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
@@ -106,7 +108,6 @@
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_VFS_FAT                (1)
-#define MICROPY_ESP8266_APA102         (1)
 #define MICROPY_ESP8266_NEOPIXEL       (1)
 
 extern void ets_event_poll(void);

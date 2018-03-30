@@ -29,7 +29,7 @@
 
 
 // Get the color of the pixel on the layer.
-uint16_t get_layer_pixel(layer_obj_t *layer, int16_t x, uint16_t y) {
+uint16_t get_layer_pixel(layer_obj_t *layer, uint16_t x, uint16_t y) {
 
     // Shift by the layer's position offset.
     x -= layer->x;

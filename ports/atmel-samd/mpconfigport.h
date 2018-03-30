@@ -46,6 +46,7 @@
 #define MICROPY_PY_BUILTINS_SLICE   (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
+#define MICROPY_NONSTANDARD_TYPECODES (0)
 #define MICROPY_PY_BUILTINS_PROPERTY (1)
 #define MICROPY_PY_BUILTINS_MIN_MAX (1)
 #define MICROPY_PY___FILE__         (1)
@@ -63,6 +64,7 @@
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 
 // fatfs configuration used in ffconf.h
@@ -194,10 +196,10 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 
     #define EXTRA_BUILTIN_MODULES \
-        { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }
+        { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
 //        { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
 //        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
-//    { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
     #define EXPRESS_BOARD
 #else
     #define MICROPY_PY_BUILTINS_REVERSED (0)

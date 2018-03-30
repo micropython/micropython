@@ -102,12 +102,13 @@ static void init_hardware(void) {
     #endif
 }
 
-COMPILER_ALIGNED(4) uint8_t cdc_packet_buffer[64];
+#define CDC_BULKOUT_SIZE CONF_USB_COMPOSITE_CDC_ACM_DATA_BULKOUT_MAXPKSZ
+COMPILER_ALIGNED(4) uint8_t cdc_packet_buffer[CDC_BULKOUT_SIZE];
 static volatile bool pending_read;
 
 static int32_t start_read(void) {
     pending_read = true;
-    int32_t result = cdcdf_acm_read(cdc_packet_buffer, 64);
+    int32_t result = cdcdf_acm_read(cdc_packet_buffer, CDC_BULKOUT_SIZE);
     if (result != ERR_NONE) {
         pending_read = false;
     }
@@ -151,14 +152,6 @@ static bool read_complete(const uint8_t ep, const enum usb_xfer_code rc, const u
     }
     atomic_leave_critical(&flags);
 
-    // Trigger a follow up read if we have space.
-    if (usb_rx_count < USB_RX_BUF_SIZE) {
-        int32_t result = start_read();
-        if (result != ERR_NONE) {
-            return true;
-        }
-    }
-
     /* No error. */
     return false;
 }
@@ -170,7 +163,9 @@ static bool write_complete(const uint8_t ep,
         return false; // No errors.
     }
     // This is called after writes are finished.
+
     usb_transmitting = false;
+
     /* No error. */
     return false;
 }
@@ -243,9 +238,16 @@ static bool cdc_enabled(void) {
 }
 
 bool usb_bytes_available(void) {
+    // Check if the buffer has data, but not enough
+    // space to hold another read.
+    if (usb_rx_count > USB_RX_BUF_SIZE - CDC_BULKOUT_SIZE) {
+        return true;
+    }
+    // Buffer has enough room
     if (cdc_enabled() && !pending_read) {
         start_read();
     }
+    // Buffer is empty and/or no new data is available
     if (usb_rx_count == 0) {
         return false;
     }
@@ -263,15 +265,10 @@ int usb_read(void) {
     data = usb_rx_buf[usb_rx_buf_head];
     usb_rx_buf_head++;
     usb_rx_count--;
-    if ((USB_RX_BUF_SIZE) == usb_rx_buf_head) {
+    if (usb_rx_buf_head == USB_RX_BUF_SIZE) {
       usb_rx_buf_head = 0;
     }
     CRITICAL_SECTION_LEAVE();
-
-    // Trigger a new read because we just cleared some space.
-    if (!pending_read && usb_rx_count == USB_RX_BUF_SIZE - 1) {
-        start_read();
-    }
 
     return data;
 }
@@ -319,9 +316,10 @@ bool usb_connected(void) {
 
 // Poll for input if keyboard interrupts are enabled,
 // so that we can check for the interrupt char. read_complete() does the checking.
+// also make sure we have enough room in the local buffer
 void usb_cdc_background() {
     //
-    if (mp_interrupt_char != -1 && cdc_enabled() && !pending_read) {
+    if (mp_interrupt_char != -1 && cdc_enabled() && !pending_read && (usb_rx_count < USB_RX_BUF_SIZE - CDC_BULKOUT_SIZE)) {
         start_read();
     }
 }

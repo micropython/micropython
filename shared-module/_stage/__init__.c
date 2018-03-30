@@ -31,17 +31,14 @@
 #include "shared-bindings/_stage/Text.h"
 
 
-bool render_stage(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1,
+bool render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         mp_obj_t *layers, size_t layers_size,
         uint16_t *buffer, size_t buffer_size,
         busio_spi_obj_t *spi) {
 
-    // TODO(deshipu): Do a collision check of each layer with the
-    // rectangle, and only process the layers that overlap with it.
-
     size_t index = 0;
-    for (uint8_t y = y0; y < y1; ++y) {
-        for (uint8_t x = x0; x < x1; ++x) {
+    for (uint16_t y = y0; y < y1; ++y) {
+        for (uint16_t x = x0; x < x1; ++x) {
             for (size_t layer = 0; layer < layers_size; ++layer) {
                 uint16_t c = TRANSPARENT;
                 layer_obj_t *obj = MP_OBJ_TO_PTR(layers[layer]);

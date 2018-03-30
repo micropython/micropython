@@ -109,19 +109,19 @@ void common_hal_storage_umount_object(mp_obj_t vfs_obj) {
     mp_vfs_proxy_call(vfs, MP_QSTR_umount, 0, NULL);
 }
 
-void common_hal_storage_umount_path(const char* mount_path) {
-    // remove vfs from the mount table
-    mp_obj_t *vfs_obj = NULL;
+STATIC mp_obj_t storage_object_from_path(const char* mount_path) {
     for (mp_vfs_mount_t **vfsp = &MP_STATE_VM(vfs_mount_table); *vfsp != NULL; vfsp = &(*vfsp)->next) {
         if (strcmp(mount_path, (*vfsp)->str) == 0) {
-            vfs_obj = (*vfsp)->obj;
-            break;
+            return (*vfsp)->obj;
         }
     }
+    mp_raise_OSError(MP_EINVAL);
+}
 
-    if (vfs_obj == NULL) {
-        mp_raise_OSError(MP_EINVAL);
-    }
+void common_hal_storage_umount_path(const char* mount_path) {
+    common_hal_storage_umount_object(storage_object_from_path(mount_path));
+}
 
-    common_hal_storage_umount_object(vfs_obj);
+mp_obj_t common_hal_storage_getmount(const char *mount_path) {
+    return storage_object_from_path(mount_path);
 }

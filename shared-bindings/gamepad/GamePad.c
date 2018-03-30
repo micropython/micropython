@@ -49,8 +49,8 @@ gamepad_obj_t* gamepad_singleton = NULL;
 //|
 //|
 //|     pad = gamepad.GamePad(
-//|         digitalio.DigitalInOut(board.D0),
-//|         digitalio.DigitalInOut(board.D1),
+//|         digitalio.DigitalInOut(board.D10),
+//|         digitalio.DigitalInOut(board.D11),
 //|     )
 //|
 //|     y = 0
@@ -63,8 +63,9 @@ gamepad_obj_t* gamepad_singleton = NULL;
 //|             y += 1
 //|             print(y)
 //|         time.sleep(0.1)
-//|         while pad.get_pressed():
+//|         while buttons:
 //|             # Wait for all buttons to be released.
+//|             buttons = pad.get_pressed()
 //|             time.sleep(0.1)
 //|
 

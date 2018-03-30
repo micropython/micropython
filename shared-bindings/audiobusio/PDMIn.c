@@ -47,13 +47,13 @@
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
 //|   restrictions on the recording parameters. The overall frequency is
-//|   determined by `frequency` x `oversample`, and the total must be 1MHz or
+//|   determined by `frequency` x ``oversample``, and the total must be 1MHz or
 //|   higher, so `frequency` must be a minimum of 16000.
 //|
 //|   :param ~microcontroller.Pin clock_pin: The pin to output the clock to
 //|   :param ~microcontroller.Pin data_pin: The pin to read the data from
 //|   :param int frequency: Target frequency of the resulting samples. Check `frequency` for actual value.
-//|   Minimum frequency is about 16000 Hz.
+//|     Minimum frequency is about 16000 Hz.
 //|   :param int bit_depth: Final number of bits per sample. Must be divisible by 8
 //|   :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
 //|   :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
@@ -182,8 +182,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, 
 //|     audio at the given rate. For internal flash, writing all 1s to the file
 //|     before recording is recommended to speed up writes.
 //|
-//|    :return: The number of samples recorded. If this is less than `destination_length`,
-//|    some samples were missed due to processing time.
+//|     :return: The number of samples recorded. If this is less than ``destination_length``,
+//|       some samples were missed due to processing time.
 //|
 STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destination, mp_obj_t destination_length) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_obj);

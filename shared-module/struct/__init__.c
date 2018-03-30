@@ -33,9 +33,11 @@
 #include "py/parsenum.h"
 
 void struct_validate_format(char fmt) {
+#if MICROPY_NONSTANDARD_TYPECODES
     if( fmt == 'S' || fmt == 'O') {
         mp_raise_RuntimeError("'S' and 'O' are not supported format types");
     }
+#endif
 }
 
 char get_fmt_type(const char **fmt) {

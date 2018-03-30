@@ -33,6 +33,7 @@
 #include "lib/utils/context_manager_helpers.h"
 
 #include "py/ioctl.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
@@ -48,11 +49,11 @@
 //|   A common bidirectional serial protocol that uses an an agreed upon speed
 //|   rather than a shared clock line.
 //|
-//|   :param ~microcontroller.Pin tx: the pin to transmit with
-//|   :param ~microcontroller.Pin rx: the pin to receive on
-//|   :param int baudrate: the transmit and receive speed
+//|   :param ~microcontroller.Pin tx: the pin to transmit with, or ``None`` if this ``UART`` is receive-only.
+//|   :param ~microcontroller.Pin rx: the pin to receive on, or ``None`` if this ``UART`` is transmit-only.
+//|   :param int baudrate: the transmit and receive speed.
 ///   :param int bits:  the number of bits per byte, 7, 8 or 9.
-///   :param Parity parity:  the parity used for error checking
+///   :param Parity parity:  the parity used for error checking.
 ///   :param int stop:  the number of stop bits, 1 or 2.
 ///   :param int timeout:  the timeout in milliseconds to wait for the first character and between subsequent characters.
 ///   :param int receiver_buffer_size: the character length of the read buffer (0 to disable). (When a character is 9 bits the buffer will be 2 * receiver_buffer_size bytes.)
@@ -220,6 +221,33 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
     return ret;
 }
 
+//|   .. attribute:: baudrate
+//|
+//|     The current baudrate.
+//|
+STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_busio_uart_get_baudrate(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_baudrate_obj, busio_uart_obj_get_baudrate);
+
+STATIC mp_obj_t busio_uart_obj_set_baudrate(mp_obj_t self_in, mp_obj_t baudrate) {
+    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_busio_uart_deinited(self));
+    common_hal_busio_uart_set_baudrate(self, mp_obj_get_int(baudrate));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(busio_uart_set_baudrate_obj, busio_uart_obj_set_baudrate);
+
+
+const mp_obj_property_t busio_uart_baudrate_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&busio_uart_get_baudrate_obj,
+              (mp_obj_t)&busio_uart_set_baudrate_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //| .. class:: busio.UART.Parity
 //|
 //|     Enum-like class to define the parity used to verify correct data transfer.
@@ -274,6 +302,9 @@ STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),    MP_ROM_PTR(&mp_stream_write_obj) },
 
+    // Properties
+    { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&busio_uart_baudrate_obj) },
+    
     // Nested Enum-like Classes.
     { MP_ROM_QSTR(MP_QSTR_Parity),       MP_ROM_PTR(&busio_uart_parity_type) },
 };

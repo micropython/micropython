@@ -202,6 +202,7 @@ SRC_COMMON_HAL += \
 	busio/__init__.c\
 	busio/I2C.c \
 	busio/SPI.c \
+	busio/UART.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
@@ -213,6 +214,7 @@ SRC_COMMON_HAL += \
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
 SRC_BINDINGS_ENUMS = \
+	busio/OneWire.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -235,10 +237,10 @@ SRC_SHARED_MODULE = \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
-	bitbangio/SPI.c
+	bitbangio/SPI.c \
+	busio/OneWire.c \
 
-#  busio/OneWire.c \
-	uheap/__init__.c \
+#	uheap/__init__.c \
 	ustack/__init__.c
 
 SRC_SHARED_BINDINGS = \

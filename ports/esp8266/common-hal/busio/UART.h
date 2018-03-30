@@ -33,6 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
+    uint32_t baudrate;
     bool deinited;
 } busio_uart_obj_t;
 
