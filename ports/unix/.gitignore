@@ -4,8 +4,10 @@ build-minimal
 build-coverage
 build-nanbox
 build-freedos
+build-fuzzing
 micropython
 micropython_fast
+micropython_fuzzing
 micropython_minimal
 micropython_coverage
 micropython_nanbox

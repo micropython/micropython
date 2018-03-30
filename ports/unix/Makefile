@@ -215,6 +215,17 @@ minimal:
 	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
 	    MICROPY_USE_READLINE=0
 
+# build an interpreter for fuzz testing, particularly with afl-fuzz.
+# Generally, this will be invoked with CC= set to the fuzzer's compiler
+# wrapper, e.g.,
+#    make CC=/path/to/afl-clang/fast fuzzing
+fuzzing:
+	$(MAKE) COPT="-Os -g -fsanitize=undefined -fno-sanitize-recover=undefined" LDFLAGS_EXTRA='-fsanitize=undefined -fno-sanitize-recover=undefined' CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fuzzing.h>"' \
+	    BUILD=build-fuzzing PROG=micropython_fuzzing FROZEN_DIR= FROZEN_MPY_DIR= \
+	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
+	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
+	    MICROPY_USE_READLINE=0 STRIP=true
+
 # build interpreter with nan-boxing as object model
 nanbox:
 	$(MAKE) \
