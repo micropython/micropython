@@ -2062,6 +2062,12 @@ mp_obj_t mp_obj_str_intern(mp_obj_t str) {
     return mp_obj_new_str_via_qstr((const char*)data, len);
 }
 
+mp_obj_t mp_obj_str_intern_checked(mp_obj_t obj) {
+    size_t len;
+    const char *data = mp_obj_str_get_data(obj, &len);
+    return mp_obj_new_str_via_qstr((const char*)data, len);
+}
+
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
