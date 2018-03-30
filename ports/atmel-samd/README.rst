@@ -141,16 +141,27 @@ The compiler can be changed using the ``CROSS_COMPILE`` variable when invoking
 Building
 --------
 
-Before building the firmware for a given board the MicroPython cross-compiler
-must be built; it will be used to pre-compile some of the built-in scripts to
-bytecode.  The cross-compiler is built and run on the host machine, using:
+Before building the firmware for a given board, there are two additional steps.
+These commands should be executed from the root directory of the repository
+(``circuitpython/``).
+
+1. There are various submodules that reside in different repositories. In order
+   to have these submodules locally, you must pull them into your clone, using:
+
+.. code-block:: shell
+
+   git submodule update --init --recursive
+
+2. The MicroPython cross-compiler must be built; it will be used to pre-compile
+   some of the built-in scripts to bytecode.  The cross-compiler is built and
+   run on the host machine, using:
 
 .. code-block:: shell
 
     make -C mpy-cross
 
-This command should be executed from the root directory of this repository.
-All other commands below should be executed from the ports/atmel-samd/ directory.
+
+Build commands are run from the ``circuitpython/ports/atmel-samd`` directory.
 
 To build for the Arduino Zero:
 
