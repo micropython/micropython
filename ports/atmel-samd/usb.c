@@ -34,8 +34,7 @@
 
 #include "hal/include/hal_gpio.h"
 #include "usb/class/cdc/device/cdcdf_acm.h"
-#include "usb/class/hid/device/hiddf_mouse.h"
-#include "usb/class/hid/device/hiddf_keyboard.h"
+#include "usb/class/hid/device/hiddf_generic.h"
 #include "usb/class/composite/device/composite_desc.h"
 #include "usb/class/msc/device/mscdf.h"
 #include "peripheral_clk_config.h"
@@ -43,7 +42,7 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 
 #include "lib/utils/interrupt_char.h"
-#include "tools/autogen_usb_descriptor.h"
+#include "genhdr/autogen_usb_descriptor.h"
 #include "reset.h"
 #include "usb_mass_storage.h"
 
@@ -203,7 +202,7 @@ void init_usb(void) {
 
     usbdc_init(ctrl_buffer);
 
-    /* usbdc_register_funcion inside */
+    /* usbdc_register_function inside */
     cdcdf_acm_init();
     pending_read = false;
 
@@ -217,12 +216,13 @@ void init_usb(void) {
     mscdf_register_callback(MSCDF_CB_XFER_BLOCKS_DONE, (FUNC_PTR)usb_msc_xfer_done);
     mscdf_register_callback(MSCDF_CB_IS_WRITABLE, (FUNC_PTR)usb_msc_disk_is_writable);
 
-    hiddf_mouse_init();
-    hiddf_keyboard_init();
+    hiddf_generic_init(hid_report_descriptor, sizeof(hid_report_descriptor));
 
     usbdc_start(&descriptor_bounds);
 
     usbdc_attach();
+
+
 }
 
 static bool cdc_enabled(void) {

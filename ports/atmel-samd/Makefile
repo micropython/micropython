@@ -96,8 +96,8 @@ endif
 ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
-  CFLAGS += -flto
-  CFLAGS += -fno-inline
+##  CFLAGS += -flto
+  CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -193,8 +193,7 @@ SRC_ASF := \
 	hpl/systick/hpl_systick.c \
 	hpl/usb/hpl_usb.c \
 	usb/class/cdc/device/cdcdf_acm.c \
-	usb/class/hid/device/hiddf_keyboard.c \
-	usb/class/hid/device/hiddf_mouse.c \
+	usb/class/hid/device/hiddf_generic.c \
 	usb/class/msc/device/mscdf.c \
 	usb/device/usbdc.c \
 	usb/usb_protocol.c \
@@ -381,14 +380,19 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
 	python2 $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
-$(BUILD)/autogen_usb_descriptor.c: tools/gen_usb_descriptor.py Makefile
+$(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
+
+.INTERMEDIATE: autogen_usb_descriptor.intermediate
+
+autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile
 	install -d $(BUILD)
 	python3 tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
 		--vid $(USB_VID)\
 		--pid $(USB_PID)\
-		$@
+		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
+		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

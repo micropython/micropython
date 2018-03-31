@@ -32,37 +32,63 @@
 
 #include "shared-bindings/usb_hid/Device.h"
 
-#include "tools/autogen_usb_descriptor.h"
+#include "genhdr/autogen_usb_descriptor.h"
 
-static uint8_t mouse_report_buffer[UDI_HID_MOUSE_REPORT_SIZE];
-static uint8_t kbd_report_buffer[UDI_HID_KBD_REPORT_SIZE];
+// Buffers are report size + 1 to include the Report ID prefix byte
+static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
+static uint8_t mouse_report_buffer[USB_HID_REPORT_LENGTH_MOUSE + 1];
+static uint8_t consumer_report_buffer[USB_HID_REPORT_LENGTH_CONSUMER + 1];
+static uint8_t sys_control_report_buffer[USB_HID_REPORT_LENGTH_SYS_CONTROL + 1];
 
-usb_hid_device_obj_t usb_hid_devices[2] = {
+usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
     {
-        .kind = USB_HID_MOUSE,
-        .report_length = UDI_HID_MOUSE_REPORT_SIZE,
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = keyboard_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_KEYBOARD,
+        .report_length = USB_HID_REPORT_LENGTH_KEYBOARD,
+        .usage_page = 0x01,
+        .usage = 0x06,
+    },
+    {
+        .base = { .type = &usb_hid_device_type },
         .report_buffer = mouse_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_MOUSE,
+        .report_length = USB_HID_REPORT_LENGTH_MOUSE,
         .usage_page = 0x01,
         .usage = 0x02,
     },
     {
-        .kind = USB_HID_KEYBOARD,
-        .report_length = UDI_HID_KBD_REPORT_SIZE,
-        .report_buffer = kbd_report_buffer,
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = consumer_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_CONSUMER,
+        .report_length = USB_HID_REPORT_LENGTH_CONSUMER,
+        .usage_page = 0x0C,
+        .usage = 0x01,
+    },
+    {
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = sys_control_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_SYS_CONTROL,
+        .report_length = USB_HID_REPORT_LENGTH_SYS_CONTROL,
         .usage_page = 0x01,
-        .usage = 0x06,
-    }
+        .usage = 0x80,
+    },
 };
 
-// TODO(tannewt): Make this a mp_obj_tuple_t when it is dynamically allocated.
-// until then we hard code it to two entries so LTO is happy.
-mp_obj_tuple2_t common_hal_usb_hid_devices = {
+
+mp_obj_tuple_t common_hal_usb_hid_devices = {
     .base = {
         .type = &mp_type_tuple,
     },
-    .len = 2,
+    .len = USB_HID_NUM_DEVICES,
     .items = {
-        (mp_obj_t) &usb_hid_devices[USB_HID_DEVICE_MOUSE],
-        (mp_obj_t) &usb_hid_devices[USB_HID_DEVICE_KEYBOARD],
+        (mp_obj_t) &usb_hid_devices[0],
+        (mp_obj_t) &usb_hid_devices[1],
+        (mp_obj_t) &usb_hid_devices[2],
+        (mp_obj_t) &usb_hid_devices[3],
     }
 };

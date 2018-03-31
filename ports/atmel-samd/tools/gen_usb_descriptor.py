@@ -19,7 +19,8 @@ parser.add_argument('--pid', type=lambda x: int(x, 16),
                     help='product id')
 parser.add_argument('--serial_number_length', type=int, default=32,
                     help='length needed for the serial number in digits')
-parser.add_argument('output_file', type=argparse.FileType('w'))
+parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
+parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
 
 args = parser.parse_args()
 
@@ -33,6 +34,7 @@ strings = [langid, manufacturer, product, serial_number]
 # pid = 0x8021
 
 device = standard.DeviceDescriptor(
+    description="top",
     idVendor=args.vid,
     idProduct=args.pid,
     iManufacturer=strings.index(manufacturer),
@@ -43,6 +45,7 @@ device = standard.DeviceDescriptor(
 # until core.join_interfaces renumbers them.
 cdc_interfaces = [
     standard.InterfaceDescriptor(
+        description="CDC comm",
         bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
         bInterfaceSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
         bInterfaceProtocol=cdc.CDC_PROTOCOL_V25TER,  # Common AT Commands
@@ -53,12 +56,22 @@ cdc_interfaces = [
             # 05 24 01 03 01 call manage
             # 04 24 02 06 acm
             # 05 24 06 00 01 union
-            cdc.Header(bcdCDC=0x0110),
-            cdc.CallManagement(bmCapabilities=0x03, bDataInterface=0x01),
-            cdc.AbstractControlManagement(bmCapabilities=0x02),
-            cdc.Union(bMasterInterface=0x00,
-                      bSlaveInterface_list=[0x01]),
+            cdc.Header(
+                description="CDC comm",
+                bcdCDC=0x0110),
+            cdc.CallManagement(
+                description="CDC comm",
+                bmCapabilities=0x03,
+                bDataInterface=0x01),
+            cdc.AbstractControlManagement(
+                description="CDC comm",
+                bmCapabilities=0x02),
+            cdc.Union(
+                description="CDC comm",
+                bMasterInterface=0x00,
+                bSlaveInterface_list=[0x01]),
             standard.EndpointDescriptor(
+                description="CDC comm in",
                 bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
                 wMaxPacketSize=0x0040,
@@ -66,12 +79,15 @@ cdc_interfaces = [
         ]
     ),
     standard.InterfaceDescriptor(
+        description="CDC data",
         bInterfaceClass=cdc.CDC_CLASS_DATA,
         subdescriptors=[
             standard.EndpointDescriptor(
+                description="CDC data in",
                 bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
             standard.EndpointDescriptor(
+                description="CDC data out",
                 bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK)
         ]
@@ -80,66 +96,69 @@ cdc_interfaces = [
 
 msc_interfaces = [
     standard.InterfaceDescriptor(
+        description="MSC",
         bInterfaceClass=msc.MSC_CLASS,
         bInterfaceSubClass=msc.MSC_SUBCLASS_TRANSPARENT,
         bInterfaceProtocol=msc.MSC_PROTOCOL_BULK,
         subdescriptors=[
             standard.EndpointDescriptor(
+                description="MSC in",
                 bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
             standard.EndpointDescriptor(
+                description="MSC out",
                 bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK)
         ]
     )
 ]
 
-hid_report_descriptors = [
-    hid.ReportDescriptor.GENERIC_MOUSE_REPORT,
-    hid.ReportDescriptor.GENERIC_KEYBOARD_REPORT,
-]
+hid_report_descriptor = hid.ReportDescriptor.MOUSE_KEYBOARD_CONSUMER_SYS_CONTROL_REPORT
+hid_report_ids = hid.ReportDescriptor.REPORT_IDS
+hid_report_lengths = hid.ReportDescriptor.REPORT_LENGTHS
+hid_max_report_length = max(hid_report_lengths.values())
 
-mouse_endpoint_descriptor = standard.EndpointDescriptor(
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
-                wMaxPacketSize=8,    # mouse report is small
-                bInterval=0x0a)
+# ASF4 expects keyboard and generic devices to have both in and out endpoints,
+# and will fail in mysterious ways if you only supply one.
+hid_endpoint_in_descriptor = standard.EndpointDescriptor(
+    description="HID in",
+    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+    bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
+    wMaxPacketSize=hid_max_report_length + 1, # +1 for the Report ID
+    bInterval=0x02)
 
-keyboard_endpoint_descriptor = standard.EndpointDescriptor(
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
-                wMaxPacketSize=8,    # keyboard report is 8 bytes
-                bInterval=0x02)
+hid_endpoint_out_descriptor = standard.EndpointDescriptor(
+    description="HID out",
+    bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
+    bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT)
 
 hid_interfaces = [
     standard.InterfaceDescriptor(
-        bInterfaceClass = hid.HID_CLASS,
-        bInterfaceSubClass = hid.HID_SUBCLASS_BOOT,
-        bInterfaceProtocol = hid.HID_PROTOCOL_MOUSE,
+        description="HID Keyboard",
+        bInterfaceClass=hid.HID_CLASS,
+        bInterfaceSubClass=hid.HID_SUBCLASS_NOBOOT,
+        bInterfaceProtocol=hid.HID_PROTOCOL_KEYBOARD,
         subdescriptors=[
-            mouse_endpoint_descriptor,
-            hid.HIDDescriptor(wDescriptorLength=len(bytes(hid_report_descriptors[0]))),
+            hid.HIDDescriptor(wDescriptorLength=len(bytes(hid_report_descriptor))),
+            hid_endpoint_in_descriptor,
+            hid_endpoint_out_descriptor,
             ]
         ),
-    standard.InterfaceDescriptor(
-        bInterfaceClass = hid.HID_CLASS,
-        bInterfaceSubClass = hid.HID_SUBCLASS_NOBOOT,
-        bInterfaceProtocol = hid.HID_PROTOCOL_KEYBOARD,
-        subdescriptors=[
-            keyboard_endpoint_descriptor,
-            hid.HIDDescriptor(wDescriptorLength=len(bytes(hid_report_descriptors[1]))),
-            ]
-        ),
+        # bInterfaceClass = hid.HID_CLASS,
+        # bInterfaceSubClass = hid.HID_SUBCLASS_NOBOOT,
+        # bInterfaceProtocol=hid.HID_PROTOCOL_MOUSE,
+        # subdescriptors=[
+        #     hid.HIDDescriptor(wDescriptorLength=len(bytes(hid_report_descriptor))),
+        #     hid_endpoint_descriptor,
+        #     ]
+        # ),
     ]
 
 # This will renumber the endpoints to make them unique across descriptors.
-print(mouse_endpoint_descriptor.bEndpointAddress, keyboard_endpoint_descriptor.bEndpointAddress)
-###interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
-interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces)
-print(mouse_endpoint_descriptor.bEndpointAddress, keyboard_endpoint_descriptor.bEndpointAddress)
-
+interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
 
 cdc_function = standard.InterfaceAssociationDescriptor(
+    description="CDC function",
     bFirstInterface=interfaces.index(cdc_interfaces[0]),
     bInterfaceCount=len(cdc_interfaces),
     bFunctionClass=0x2,  # Communications Device Class
@@ -147,6 +166,7 @@ cdc_function = standard.InterfaceAssociationDescriptor(
     bFunctionProtocol=0x1)  # Common AT Commands
 
 configuration = standard.ConfigurationDescriptor(
+    description="CDC configuration",
     wTotalLength=(standard.ConfigurationDescriptor.bLength +
                   cdc_function.bLength +
                   sum([len(bytes(x)) for x in interfaces])),
@@ -154,56 +174,115 @@ configuration = standard.ConfigurationDescriptor(
 
 descriptor_list = [device, configuration, cdc_function]
 descriptor_list.extend(interfaces)
-##descriptor_list.extend(hid_report_descriptors)
 descriptor_list.extend(strings)
 
-output_file = args.output_file
+c_file = args.output_c_file
+h_file = args.output_h_file
 
-output_file.write("""
+
+c_file.write("""\
 #include <stdint.h>
 
-#include "tools/autogen_usb_descriptor.h"
+#include "{H_FILE_NAME}"
 
+""".format(H_FILE_NAME=h_file.name))
+
+c_file.write("""\
 uint8_t usb_descriptors[] = {
 """)
 
+# Write out all the regular descriptors as one long array (that's how ASF4 does it).
 descriptor_length = 0
 serial_number_offset = None
 for descriptor in descriptor_list:
-    print(str(descriptor))
-    print([hex(x) for x in bytes(descriptor)])
-    output_file.write("// " + str(descriptor) + "\n")
+    c_file.write("""\
+// {DESCRIPTION} : {CLASS}
+""".format(DESCRIPTION=descriptor.description,
+               CLASS=descriptor.__class__))
+
     b = bytes(descriptor)
     i = 0
+
     if descriptor == serial_number:
-        # Add two for the length and descriptor type bytes.
+        # Add two for bLength and bDescriptorType.
         serial_number_offset = descriptor_length + 2
+
     # This prints each subdescriptor on a separate line.
     while i < len(b):
         length = b[i]
         for j in range(length):
-            output_file.write("0x{:02x}, ".format(b[i + j]))
-        output_file.write("\n")
+            c_file.write("0x{:02x}, ".format(b[i + j]))
+        c_file.write("\n")
         i += length
         descriptor_length += length
 
 
-output_file.write("""
+c_file.write("""\
 };
-
 """)
 
-output_file.write("""
+# Now we values we need for the .h file.
+h_file.write("""\
+#ifndef MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
+#define MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
+
+#include "usb/device/usbdc.h"
+
+struct usbd_descriptors descriptor_bounds;
+#define SERIAL_NUMBER_OFFSET {SERIAL_NUMBER_OFFSET}
+#define SERIAL_NUMBER_LENGTH {SERIAL_NUMBER_LENGTH}
+uint8_t* serial_number;
+
+uint8_t hid_report_descriptor[{HID_REPORT_DESCRIPTOR_LENGTH}];
+#define USB_HID_ENDPOINT_IN {HID_ENDPOINT_IN_ADDRESS}
+#define USB_HID_ENDPOINT_OUT {HID_ENDPOINT_OUT_ADDRESS}
+
+"""
+.format(SERIAL_NUMBER_OFFSET=serial_number_offset,
+        SERIAL_NUMBER_LENGTH=args.serial_number_length,
+        HID_REPORT_DESCRIPTOR_LENGTH=len(bytes(hid_report_descriptor)),
+        HID_ENDPOINT_IN_ADDRESS=hex(hid_endpoint_in_descriptor.bEndpointAddress),
+        HID_ENDPOINT_OUT_ADDRESS=hex(hid_endpoint_out_descriptor.bEndpointAddress)))
+
+# #define the report ID's used in the combined HID descriptor
+for name, id in hid_report_ids.items():
+    h_file.write("""\
+#define USB_HID_REPORT_ID_{NAME} {ID}
+""".format(NAME=name,
+           ID = id))
+
+# #define the report sizes used in the combined HID descriptor
+for name, length in hid_report_lengths.items():
+    h_file.write("""\
+#define USB_HID_REPORT_LENGTH_{NAME} {LENGTH}
+""".format(NAME=name,
+           LENGTH=length))
+
+h_file.write("""\
+#define USB_HID_NUM_DEVICES {NUM_DEVICES}
+#define USB_HID_MAX_REPORT_LENGTH {MAX_LENGTH}
+""".format(NUM_DEVICES=len(hid_report_lengths),
+           MAX_LENGTH=hid_max_report_length))
+
+
+
+# Write out the report descriptor and info
+c_file.write("""\
+uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
+""".format(HID_DESCRIPTOR_LENGTH=len(bytes(hid_report_descriptor))))
+
+for b in bytes(hid_report_descriptor):
+    c_file.write("0x{:02x}, ".format(b))
+c_file.write("""
+};
+""")
+
+c_file.write("""\
 
 struct usbd_descriptors descriptor_bounds = {{usb_descriptors, usb_descriptors + sizeof(usb_descriptors)}};
 uint8_t* serial_number = usb_descriptors + {SERIAL_NUMBER_OFFSET};
-uint8_t serial_number_length = {SERIAL_NUMBER_LENGTH};
+""".format(SERIAL_NUMBER_OFFSET=serial_number_offset))
 
-uint8_t hid_mouse_endpoint_in = {MOUSE_ENDPOINT_ADDRESS};
-uint8_t hid_keyboard_endpoint_in = {KEYBOARD_ENDPOINT_ADDRESS};
-""".format(SERIAL_NUMBER_OFFSET=serial_number_offset,
-           SERIAL_NUMBER_LENGTH=args.serial_number_length,
-           MOUSE_ENDPOINT_ADDRESS=mouse_endpoint_descriptor.bEndpointAddress,
-           KEYBOARD_ENDPOINT_ADDRESS=keyboard_endpoint_descriptor.bEndpointAddress
-           )
-)
+h_file.write("""\
+#endif // MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
+""")

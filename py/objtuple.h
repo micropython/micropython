@@ -34,13 +34,6 @@ typedef struct _mp_obj_tuple_t {
     mp_obj_t items[];
 } mp_obj_tuple_t;
 
-// TODO(tannewt): Remove this when we no longer hard code the usb hid tuple.
-typedef struct _mp_obj_tuple2_t {
-    mp_obj_base_t base;
-    size_t len;
-    mp_obj_t items[2];
-} mp_obj_tuple2_t;
-
 typedef struct _mp_rom_obj_tuple_t {
     mp_obj_base_t base;
     size_t len;

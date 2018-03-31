@@ -31,7 +31,7 @@
 #include "common-hal/usb_hid/Device.h"
 
 #include "usb.h"
-#include "tools/autogen_usb_descriptor.h"
+#include "genhdr/autogen_usb_descriptor.h"
 
 // Serial number as hex characters. This writes directly to the USB
 // descriptor.

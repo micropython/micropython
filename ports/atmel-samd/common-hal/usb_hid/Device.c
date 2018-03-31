@@ -31,12 +31,11 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
-#include "tools/autogen_usb_descriptor.h"
+#include "genhdr/autogen_usb_descriptor.h"
 
 #include "tick.h"
 
-#include "usb/class/hid/device/hiddf_mouse.h"
-#include "usb/class/hid/device/hiddf_keyboard.h"
+#include "usb/class/hid/device/hiddf_generic.h"
 
 static uint32_t usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
 
@@ -60,22 +59,16 @@ static uint32_t usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report,
     // Copy the data only when endpoint is ready to send. The previous
     // buffer load gets zero'd out when transaction completes, so if
     // you copy before it's ready, only zeros will get sent.
-    memcpy(self->report_buffer, report, len);
 
-    switch (self->kind) {
-    case USB_HID_MOUSE:
-        status = hiddf_mouse_write(self->report_buffer, self->report_length);
-        break;
-
-    case USB_HID_KEYBOARD:
-        status = hiddf_keyboard_write(self->report_buffer, self->report_length);
-        break;
-
-    default:
-        mp_raise_ValueError("Unknown HID device");
+    // Prefix with a report id if one is supplied
+    if (self->report_id > 0) {
+        self->report_buffer[0] = self->report_id;
+        memcpy(&(self->report_buffer[1]), report, len);
+    } else {
+        memcpy(self->report_buffer, report, len);
     }
 
-    return status;
+    return hiddf_generic_write(self->report_buffer, self->report_length);
 }
 
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
@@ -98,18 +91,14 @@ uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
 
 
 void usb_hid_init() {
-    usb_hid_devices[USB_HID_DEVICE_MOUSE].base.type = &usb_hid_device_type;
-    usb_hid_devices[USB_HID_DEVICE_MOUSE].endpoint = hid_mouse_endpoint_in;
-
-    usb_hid_devices[USB_HID_DEVICE_KEYBOARD].base.type = &usb_hid_device_type;
-    usb_hid_devices[USB_HID_DEVICE_KEYBOARD].endpoint = hid_keyboard_endpoint_in;
 }
 
 void usb_hid_reset() {
     // We don't actually reset. We just set a report that is empty to prevent
     // long keypresses and such.
-    uint8_t report[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    uint8_t report[USB_HID_MAX_REPORT_LENGTH] = {0};
 
-    usb_hid_send_report(&usb_hid_devices[USB_HID_DEVICE_MOUSE], report, UDI_HID_MOUSE_REPORT_SIZE);
-    usb_hid_send_report(&usb_hid_devices[USB_HID_DEVICE_KEYBOARD], report, UDI_HID_KBD_REPORT_SIZE);
+    for (size_t i = 0; i < USB_HID_NUM_DEVICES; i++) {
+        usb_hid_send_report(&usb_hid_devices[i], report, usb_hid_devices[i].report_length);
+    }
 }

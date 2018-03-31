@@ -32,30 +32,20 @@
 
 #include "py/obj.h"
 
-#define UDI_HID_MOUSE_REPORT_SIZE 4
-#define UDI_HID_KBD_REPORT_SIZE 8
-
-enum usb_hid_device_kind {
-    USB_HID_UNKNOWN,
-    USB_HID_MOUSE,
-    USB_HID_KEYBOARD,
-};
+#include "genhdr/autogen_usb_descriptor.h"
 
 typedef struct {
     mp_obj_base_t base;
-    enum usb_hid_device_kind kind;
-    uint8_t endpoint;
-    uint8_t report_length;
     uint8_t* report_buffer;
+    uint8_t endpoint;
+    uint8_t report_id;     // If non-zero, prefix report with given id.
+    uint8_t report_length; // Length not including Report ID.
     uint8_t usage_page;
     uint8_t usage;
 
 } usb_hid_device_obj_t;
 
-usb_hid_device_obj_t usb_hid_devices[2];
-// Indices into usb_hid_devices:
-#define USB_HID_DEVICE_MOUSE 0
-#define USB_HID_DEVICE_KEYBOARD 1
+usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES];
 
 void usb_hid_init(void);
 void usb_hid_reset(void);
