@@ -22,7 +22,7 @@ test_script:
 - cmd: >-
     cd tests
 
-    %MICROPY_CPYTHON3% run-tests
+    %MICROPY_CPYTHON3% run-tests --auto-jobs
 
 skip_tags: true
 

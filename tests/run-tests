@@ -6,6 +6,9 @@ import sys
 import platform
 import argparse
 import re
+import threading
+import multiprocessing
+from multiprocessing.pool import ThreadPool
 from glob import glob
 
 # Tests require at least CPython 3.3. If your default python3 executable
@@ -197,13 +200,27 @@ def run_micropython(pyb, args, test_file, is_special=False):
 def run_feature_check(pyb, args, base_path, test_file):
     return run_micropython(pyb, args, base_path + "/feature_check/" + test_file, is_special=True)
 
+class ThreadSafeCounter:
+    def __init__(self, start=0):
+        self._value = start
+        self._lock = threading.Lock()
 
-def run_tests(pyb, tests, args, base_path="."):
-    test_count = 0
-    testcase_count = 0
-    passed_count = 0
-    failed_tests = []
-    skipped_tests = []
+    def add(self, to_add):
+        with self._lock: self._value += to_add
+
+    def append(self, arg):
+        self.add([arg])
+
+    @property
+    def value(self):
+        return self._value
+
+def run_tests(pyb, tests, args, base_path=".", num_threads=1):
+    test_count = ThreadSafeCounter()
+    testcase_count = ThreadSafeCounter()
+    passed_count = ThreadSafeCounter()
+    failed_tests = ThreadSafeCounter([])
+    skipped_tests = ThreadSafeCounter([])
 
     skip_tests = set()
     skip_native = False
@@ -354,7 +371,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
 
-    for test_file in tests:
+    def run_one_test(test_file):
         test_file = test_file.replace('\\', '/')
         test_basename = os.path.basename(test_file)
         test_name = os.path.splitext(test_basename)[0]
@@ -377,7 +394,7 @@ def run_tests(pyb, tests, args, base_path="."):
         if skip_it:
             print("skip ", test_file)
             skipped_tests.append(test_name)
-            continue
+            return
 
         # get expected output
         test_file_expected = test_file + '.exp'
@@ -405,7 +422,7 @@ def run_tests(pyb, tests, args, base_path="."):
         output_expected = output_expected.replace(b'\r\n', b'\n')
 
         if args.write_exp:
-            continue
+            return
 
         # run MicroPython
         output_mupy = run_micropython(pyb, args, test_file)
@@ -413,16 +430,16 @@ def run_tests(pyb, tests, args, base_path="."):
         if output_mupy == b'SKIP\n':
             print("skip ", test_file)
             skipped_tests.append(test_name)
-            continue
+            return
 
-        testcase_count += len(output_expected.splitlines())
+        testcase_count.add(len(output_expected.splitlines()))
 
         filename_expected = test_basename + ".exp"
         filename_mupy = test_basename + ".out"
 
         if output_expected == output_mupy:
             print("pass ", test_file)
-            passed_count += 1
+            passed_count.add(1)
             rm_f(filename_expected)
             rm_f(filename_mupy)
         else:
@@ -437,15 +454,22 @@ def run_tests(pyb, tests, args, base_path="."):
             print("FAIL ", test_file)
             failed_tests.append(test_name)
 
-        test_count += 1
+        test_count.add(1)
 
-    print("{} tests performed ({} individual testcases)".format(test_count, testcase_count))
-    print("{} tests passed".format(passed_count))
+    if num_threads > 1:
+        pool = ThreadPool(num_threads)
+        pool.map(run_one_test, tests)
+    else:
+        for test in tests:
+            run_one_test(test)
 
-    if len(skipped_tests) > 0:
-        print("{} tests skipped: {}".format(len(skipped_tests), ' '.join(skipped_tests)))
-    if len(failed_tests) > 0:
-        print("{} tests failed: {}".format(len(failed_tests), ' '.join(failed_tests)))
+    print("{} tests performed ({} individual testcases)".format(test_count.value, testcase_count.value))
+    print("{} tests passed".format(passed_count.value))
+
+    if len(skipped_tests.value) > 0:
+        print("{} tests skipped: {}".format(len(skipped_tests.value), ' '.join(sorted(skipped_tests.value))))
+    if len(failed_tests.value) > 0:
+        print("{} tests failed: {}".format(len(failed_tests.value), ' '.join(sorted(failed_tests.value))))
         return False
 
     # all tests succeeded
@@ -464,11 +488,14 @@ def main():
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
+    cmd_parser.add_argument('-j', '--jobs', default=1, metavar='N', type=int, help='Number of tests to run simultaneously')
+    cmd_parser.add_argument('--auto-jobs', action='store_const', dest='jobs', const=multiprocessing.cpu_count(), help='Set the -j values to the CPU (thread) count')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal')
     if args.target in EXTERNAL_TARGETS:
+        args.jobs = 1
         import pyboard
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
@@ -507,7 +534,7 @@ def main():
     # run-tests script itself.
     base_path = os.path.dirname(sys.argv[0]) or "."
     try:
-        res = run_tests(pyb, tests, args, base_path)
+        res = run_tests(pyb, tests, args, base_path, args.jobs)
     finally:
         if pyb:
             pyb.close()
