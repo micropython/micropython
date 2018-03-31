@@ -7,6 +7,7 @@ import platform
 import argparse
 import re
 import threading
+import multiprocessing
 from multiprocessing.pool import ThreadPool
 from glob import glob
 
@@ -488,6 +489,7 @@ def main():
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('-j', '--jobs', default=1, metavar='N', type=int, help='Number of tests to run simultaneously')
+    cmd_parser.add_argument('--auto-jobs', action='store_const', dest='jobs', const=multiprocessing.cpu_count(), help='Set the -j values to the CPU (thread) count')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
