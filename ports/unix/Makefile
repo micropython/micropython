@@ -189,7 +189,7 @@ include $(TOP)/py/mkrules.mk
 
 test: $(PROG) $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --auto-jobs
 
 # install micropython in /usr/local/bin
 TARGET = micropython
@@ -254,10 +254,10 @@ coverage:
 
 coverage_test: coverage
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -d thread
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --via-mpy -d basics float
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --auto-jobs
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --auto-jobs -d thread
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --auto-jobs --emit native
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
 	gcov -o build-coverage/py $(TOP)/py/*.c
 	gcov -o build-coverage/extmod $(TOP)/extmod/*.c
 
