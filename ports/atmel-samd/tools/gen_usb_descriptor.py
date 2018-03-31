@@ -129,7 +129,7 @@ hid_endpoint_in_descriptor = standard.EndpointDescriptor(
 
 hid_endpoint_out_descriptor = standard.EndpointDescriptor(
     description="HID out",
-    bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
+    bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT)
 
 hid_interfaces = [
@@ -155,7 +155,8 @@ hid_interfaces = [
     ]
 
 # This will renumber the endpoints to make them unique across descriptors.
-interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
+#interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
+interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces)
 
 cdc_function = standard.InterfaceAssociationDescriptor(
     description="CDC function",
