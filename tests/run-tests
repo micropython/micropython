@@ -7,6 +7,7 @@ import platform
 import argparse
 import re
 import threading
+from multiprocessing.pool import ThreadPool
 from glob import glob
 
 # Tests require at least CPython 3.3. If your default python3 executable
@@ -213,7 +214,7 @@ class ThreadSafeCounter:
     def value(self):
         return self._value
 
-def run_tests(pyb, tests, args, base_path="."):
+def run_tests(pyb, tests, args, base_path=".", num_threads=1):
     test_count = ThreadSafeCounter()
     testcase_count = ThreadSafeCounter()
     passed_count = ThreadSafeCounter()
@@ -454,8 +455,12 @@ def run_tests(pyb, tests, args, base_path="."):
 
         test_count.add(1)
 
-    for test_file in tests:
-        run_one_test(test_file)
+    if num_threads > 1:
+        pool = ThreadPool(num_threads)
+        pool.map(run_one_test, tests)
+    else:
+        for test in tests:
+            run_one_test(test)
 
     print("{} tests performed ({} individual testcases)".format(test_count.value, testcase_count.value))
     print("{} tests passed".format(passed_count.value))
@@ -482,6 +487,7 @@ def main():
     cmd_parser.add_argument('--heapsize', help='heapsize to use (use default if not specified)')
     cmd_parser.add_argument('--via-mpy', action='store_true', help='compile .py files to .mpy first')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
+    cmd_parser.add_argument('-j', '--jobs', default=1, metavar='N', type=int, help='Number of tests to run simultaneously')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
@@ -525,7 +531,7 @@ def main():
     # run-tests script itself.
     base_path = os.path.dirname(sys.argv[0]) or "."
     try:
-        res = run_tests(pyb, tests, args, base_path)
+        res = run_tests(pyb, tests, args, base_path, args.jobs)
     finally:
         if pyb:
             pyb.close()
