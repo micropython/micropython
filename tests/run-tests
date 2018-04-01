@@ -367,6 +367,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
         skip_tests.add('stress/gc_trace.py') # requires yield
+        skip_tests.add('stress/recursive_gen.py') # requires yield
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
