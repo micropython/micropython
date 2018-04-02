@@ -1,0 +1,5 @@
+# this file only useful for Coldcard project
+stm32/boards/COLDCARD
+unix/coldcard-mpy
+unix/unix_random.P
+
