@@ -78,20 +78,20 @@ script:
   - echo -en 'travis_fold:end:qemu\\r'
 
   # run tests without coverage info
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --auto-jobs)
-  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests --auto-jobs --emit native)
+  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests -j1)
+  #- (cd tests && MICROPY_CPYTHON3=python3.4 ./run-tests -j1 --emit native)
 
   # run tests with coverage info
   - echo 'Test all' && echo -en 'travis_fold:start:test_all\\r'
-  - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --auto-jobs))
+  - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1))
   - echo -en 'travis_fold:end:test_all\\r'
 
   - echo 'Test threads' && echo -en 'travis_fold:start:test_threads\\r'
-  - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --auto-jobs -d thread))
+  - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 -d thread))
   - echo -en 'travis_fold:end:test_threads\\r'
 
   - echo 'Testing with native' && echo -en 'travis_fold:start:test_native\\r'
-  - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests --auto-jobs --emit native))
+  - ([[ $TRAVIS_TEST != "unix" ]] || (cd tests && MICROPY_CPYTHON3=python3.4 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --emit native))
   - echo -en 'travis_fold:end:test_native\\r'
 
   - (echo 'Testing with mpy' && echo -en 'travis_fold:start:test_mpy\\r')
