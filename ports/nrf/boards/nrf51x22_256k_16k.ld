@@ -1,19 +1,12 @@
 /*
-    GNU linker script for NRF51 AA w/ no SoftDevice
+    GNU linker script for NRF51 AA
 */
-/* Specify the memory areas */
 SEARCH_DIR(.)
 GROUP(-lgcc -lc -lnosys)
-MEMORY
-{
-    FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 256K /* entire flash */
-    FLASH_TEXT (rx) : ORIGIN = 0x00000000, LENGTH = 192K /* app */
-    FLASH_USER (rx) : ORIGIN = 0x00030000, LENGTH = 64K  /* app data, filesystem */
-    RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 16K  /* use all RAM */
-}
- 
-/* produce a link error if there is not this amount of RAM for these sections */
-_stack_size = 4K;
-_minimum_heap_size = 8K;
 
-INCLUDE "boards/common.ld"
+_flash_size = 256K;
+_ram_size = 16K;
+
+/* Default stack size when there is no SoftDevice */
+_stack_size        = 4K;
+_minimum_heap_size = 8K;
