@@ -98,6 +98,3 @@ SECTIONS
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 _heap_end = _ram_end - _stack_size;
-
-_flash_user_start = ORIGIN(FLASH_USER);
-_flash_user_end   = ORIGIN(FLASH_USER) + LENGTH(FLASH_USER);
