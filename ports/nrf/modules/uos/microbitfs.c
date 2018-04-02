@@ -137,8 +137,8 @@ STATIC uint8_t start_index;
 STATIC file_chunk *file_system_chunks;
 
 // Defined by the linker
-extern byte _flash_user_start[];
-extern byte _flash_user_end[];
+extern byte _fs_start[];
+extern byte _fs_end[];
 
 STATIC_ASSERT((sizeof(file_chunk) == CHUNK_SIZE));
 
@@ -154,25 +154,25 @@ STATIC inline byte *roundup(byte *addr, uint32_t align) {
 
 
 STATIC inline void *first_page(void) {
-    return _flash_user_end - FLASH_PAGESIZE * first_page_index;
+    return _fs_end - FLASH_PAGESIZE * first_page_index;
 }
 
 STATIC inline void *last_page(void) {
-    return _flash_user_end - FLASH_PAGESIZE * last_page_index;
+    return _fs_end - FLASH_PAGESIZE * last_page_index;
 }
 
 STATIC void init_limits(void) {
     // First determine where to end
-    byte *end = _flash_user_end;
+    byte *end = _fs_end;
     end = rounddown(end, FLASH_PAGESIZE)-FLASH_PAGESIZE;
-    last_page_index = (_flash_user_end - end)/FLASH_PAGESIZE;
+    last_page_index = (_fs_end - end)/FLASH_PAGESIZE;
 
     // Now find the start
     byte *start = roundup(end - CHUNK_SIZE*MAX_CHUNKS_IN_FILE_SYSTEM, FLASH_PAGESIZE);
-    while (start < _flash_user_start) {
+    while (start < _fs_start) {
         start += FLASH_PAGESIZE;
     }
-    first_page_index = (_flash_user_end - start)/FLASH_PAGESIZE;
+    first_page_index = (_fs_end - start)/FLASH_PAGESIZE;
     chunks_in_file_system = (end-start)>>MBFS_LOG_CHUNK_SIZE;
 }
 

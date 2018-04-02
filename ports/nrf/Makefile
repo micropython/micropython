@@ -11,19 +11,26 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
 
+include boards/$(BOARD)/mpconfigboard.mk
 
 ifeq ($(SD), )
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)
 	include ../../py/mkenv.mk
-	include boards/$(BOARD)/mpconfigboard.mk
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
 	include ../../py/mkenv.mk
-	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
 
+	LD_FILES += boards/$(SD_LOWER)_$(SOFTDEV_VERSION).ld
 	include drivers/bluetooth/bluetooth_common.mk
+endif
+
+LD_FILES += boards/memory.ld boards/common.ld
+
+ifneq ($(LD_FILE),)
+	# Use custom LD file
+	LD_FILES = $(LD_FILE)
 endif
 
 -include boards/$(BOARD)/modules/boardmodules.mk
@@ -102,7 +109,7 @@ CFLAGS += $(CFLAGS_LTO)
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
-LDFLAGS += -mthumb -mabi=aapcs -T $(LD_FILE) -L boards/
+LDFLAGS += -mthumb -mabi=aapcs $(addprefix -T,$(LD_FILES)) -L boards/
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
