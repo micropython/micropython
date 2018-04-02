@@ -15,3 +15,10 @@ class A:
 a = A()
 a.f(1, **{'b':2})
 a.f(1, **{'b':val for val in range(1)})
+
+try:
+    f(1, **{len: 1})
+except TypeError:
+    print(True)
+else:
+    print(False)

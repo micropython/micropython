@@ -35,7 +35,7 @@
 //|   prints general port information.
 //|
 
-const char *circuitpython_help_text =
+const char circuitpython_help_text[] =
     "Welcome to Adafruit CircuitPython " MICROPY_GIT_TAG "!\r\n"
     "\r\n"
     "Please visit learn.adafruit.com/category/circuitpython for project guides.\r\n"

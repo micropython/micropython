@@ -190,6 +190,13 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
             mp_obj_t wanted_arg_name = kwargs[2 * i];
+            if(MP_UNLIKELY(!MP_OBJ_IS_QSTR(wanted_arg_name))) {
+                #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                    mp_raise_TypeError("unexpected keyword argument");
+                #else
+                    mp_raise_TypeError("keywords must be strings");
+                #endif
+            }
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
                 if (wanted_arg_name == arg_names[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {

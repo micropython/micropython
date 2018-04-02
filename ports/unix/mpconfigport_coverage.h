@@ -43,4 +43,5 @@
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
 #undef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT                (1)
+#define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_PY_FRAMEBUF            (1)

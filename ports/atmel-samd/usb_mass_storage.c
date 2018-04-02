@@ -260,6 +260,9 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
     if (active_read) {
         active_addr += 1;
         active_nblocks--;
+        if (active_nblocks == 0) {
+            active_read = false;
+        }
     }
 
     if (active_write) {
@@ -277,11 +280,14 @@ int32_t usb_msc_xfer_done(uint8_t lun) {
 // drive into our cache and trigger the USB DMA to output the
 // sector. Once the sector is transmitted, xfer_done will be called.
 void usb_msc_background(void) {
-    if (active_read && !usb_busy) {
-        if (active_nblocks == 0) {
-            active_read = false;
-            return;
-        }
+    // Check USB busy first because we never want to queue another transfer if it is. Checking
+    // active_read or active_write first leaves the possibility that they are true, an xfer done
+    // interrupt occurs (setting them false), turning off usb_busy and causing us to queue a
+    // spurious transfer.
+    if (usb_busy) {
+        return;
+    }
+    if (active_read) {
         fs_user_mount_t * vfs = get_vfs(active_lun);
         disk_read(vfs, sector_buffer, active_addr, 1);
         CRITICAL_SECTION_ENTER();
@@ -289,7 +295,7 @@ void usb_msc_background(void) {
         usb_busy = result == ERR_NONE;
         CRITICAL_SECTION_LEAVE();
     }
-    if (active_write && !usb_busy) {
+    if (active_write) {
         if (sector_loaded) {
             fs_user_mount_t * vfs = get_vfs(active_lun);
             disk_write(vfs, sector_buffer, active_addr, 1);

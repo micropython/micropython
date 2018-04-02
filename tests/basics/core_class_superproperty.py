@@ -1,8 +1,5 @@
 """
-categories: Core,Classes
-description: Calling super() getter property in subclass will return a property object, not the value
-cause: Unknown
-workaround: Unknown
+test that calling super() getter property in subclass will return the value
 """
 class A:
     @property

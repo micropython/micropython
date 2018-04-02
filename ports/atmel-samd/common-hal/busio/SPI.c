@@ -55,9 +55,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
     for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
-        Sercom* potential_sercom = clock->sercom[i].sercom;
         sercom_index = clock->sercom[i].index; // 2 for SERCOM2, etc.
-        if (potential_sercom == NULL ||
+        if (sercom_index >= SERCOM_INST_NUM) {
+            continue;
+        }
+        Sercom* potential_sercom = sercom_insts[sercom_index];
+        if (
         #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !defined(CIRCUITPY_BITBANG_APA102)
             (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
              potential_sercom != status_apa102.spi_desc.dev.prvt &&
@@ -74,7 +77,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         }
         for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
             if (!mosi_none) {
-                if(potential_sercom == mosi->sercom[j].sercom) {
+                if (sercom_index == mosi->sercom[j].index) {
                     mosi_pinmux = PINMUX(mosi->pin, (j == 0) ? MUX_C : MUX_D);
                     mosi_pad = mosi->sercom[j].pad;
                     dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
@@ -91,7 +94,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             }
             if (!miso_none) {
                 for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
-                    if (potential_sercom == miso->sercom[k].sercom) {
+                    if (sercom_index == miso->sercom[k].index) {
                         miso_pinmux = PINMUX(miso->pin, (k == 0) ? MUX_C : MUX_D);
                         miso_pad = miso->sercom[k].pad;
                         sercom = potential_sercom;

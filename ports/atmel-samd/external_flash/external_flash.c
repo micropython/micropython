@@ -185,12 +185,11 @@ void external_flash_init(void) {
     if (flash_device != NULL) {
         return;
     }
-    uint8_t num_possible_devices = sizeof(*possible_devices) / sizeof(external_flash_device);
 
     // Delay to give the SPI Flash time to get going.
     // TODO(tannewt): Only do this when we know power was applied vs a reset.
     uint16_t max_start_up_delay_us = 0;
-    for (uint8_t i = 0; i < num_possible_devices; i++) {
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
         if (possible_devices[i].start_up_time_us > max_start_up_delay_us) {
             max_start_up_delay_us = possible_devices[i].start_up_time_us;
         }
@@ -199,10 +198,14 @@ void external_flash_init(void) {
 
     spi_flash_init();
 
-    for (uint8_t i = 0; i < num_possible_devices; i++) {
-        const external_flash_device* possible_device = &possible_devices[i];
-        uint8_t jedec_id_response[3] = {0x00, 0x00, 0x00};
+    // The response will be 0xff if the flash needs more time to start up.
+    uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
+    while (jedec_id_response[0] == 0xff) {
         spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
+    }
+
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+        const external_flash_device* possible_device = &possible_devices[i];
         if (jedec_id_response[0] == possible_device->manufacturer_id &&
             jedec_id_response[1] == possible_device->memory_type &&
             jedec_id_response[2] == possible_device->capacity) {
@@ -214,6 +217,26 @@ void external_flash_init(void) {
     if (flash_device == NULL) {
         return;
     }
+
+    // We don't know what state the flash is in so wait for any remaining writes and then reset.
+    uint8_t read_status_response[1] = {0x00};
+    // The write in progress bit should be low.
+    do {
+        spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+    } while ((read_status_response[0] & 0x1) != 0);
+    // The suspended write/erase bit should be low.
+    do {
+        spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
+    } while ((read_status_response[0] & 0x80) != 0);
+
+
+    spi_flash_command(CMD_ENABLE_RESET);
+    spi_flash_command(CMD_RESET);
+
+    // Wait 30us for the reset
+    common_hal_mcu_delay_us(30);
+
+    spi_flash_init_device(flash_device);
 
     // Activity LED for flash writes.
 #ifdef MICROPY_HW_LED_MSC

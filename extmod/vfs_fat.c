@@ -33,6 +33,7 @@
 #endif
 
 #include <string.h>
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
@@ -317,6 +318,39 @@ STATIC mp_obj_t vfs_fat_umount(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_umount_obj, vfs_fat_umount);
 
+#if MICROPY_FATFS_USE_LABEL
+STATIC mp_obj_t vfs_fat_getlabel(mp_obj_t self_in) {
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+    char working_buf[12];
+    FRESULT res = f_getlabel(&self->fatfs, working_buf, NULL);
+    if (res != FR_OK) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    return mp_obj_new_str(working_buf, strlen(working_buf), false);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getlabel_obj, vfs_fat_getlabel);
+
+static mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+    const char *label_str = mp_obj_str_get_str(label_in);
+    FRESULT res = f_setlabel(&self->fatfs, label_str);
+    if (res != FR_OK) {
+        if(res == FR_WRITE_PROTECTED) {
+            mp_raise_msg(&mp_type_OSError, "Read-only filesystem");
+        }
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_setlabel_obj, vfs_fat_setlabel);
+STATIC const mp_obj_property_t fat_vfs_label_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&fat_vfs_getlabel_obj,
+              (mp_obj_t)&fat_vfs_setlabel_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+#endif
+
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&fat_vfs_open_obj) },
@@ -331,6 +365,9 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&fat_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_fat_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fat_vfs_umount_obj) },
+#if MICROPY_FATFS_USE_LABEL
+    { MP_ROM_QSTR(MP_QSTR_label), MP_ROM_PTR(&fat_vfs_label_obj) },
+#endif
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 

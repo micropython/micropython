@@ -169,7 +169,7 @@ typedef struct {
     .supports_qspi_writes = true, \
 }
 
-// Settings for the Winbond W25Q32BV 2MiB SPI flash.
+// Settings for the Winbond W25Q32BV 4MiB SPI flash.
 // Datasheet: https://www.winbond.com/resource-files/w25q32bv_revi_100413_wo_automotive.pdf
 #define W25Q32BV {\
     .total_size = (1 << 22), /* 4 MiB */ \
