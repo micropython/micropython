@@ -220,12 +220,12 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
             break;
     }
 
-    config.pseltxd = (&MICROPY_HW_UART1_TX)->pin;
-    config.pselrxd = (&MICROPY_HW_UART1_RX)->pin;
+    config.pseltxd = MICROPY_HW_UART1_TX;
+    config.pselrxd = MICROPY_HW_UART1_RX;
 
 #if MICROPY_HW_UART1_HWFC
-    config.pselrts = (&MICROPY_HW_UART1_RTS)->pin;
-    config.pselcts = (&MICROPY_HW_UART1_CTS)->pin;
+    config.pselrts = MICROPY_HW_UART1_RTS;
+    config.pselcts = MICROPY_HW_UART1_CTS;
 #endif
 
     // Set context to this instance of UART

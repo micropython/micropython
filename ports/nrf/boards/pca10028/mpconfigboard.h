@@ -61,16 +61,16 @@
 #define MICROPY_HW_LED4             (24) // LED4
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_P11)
-#define MICROPY_HW_UART1_TX         (pin_P9)
-#define MICROPY_HW_UART1_CTS        (pin_P10)
-#define MICROPY_HW_UART1_RTS        (pin_P8)
+#define MICROPY_HW_UART1_RX         (11)
+#define MICROPY_HW_UART1_TX         (9)
+#define MICROPY_HW_UART1_CTS        (10)
+#define MICROPY_HW_UART1_RTS        (8)
 #define MICROPY_HW_UART1_HWFC       (1)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_P29)
-#define MICROPY_HW_SPI0_MOSI        (pin_P25)
-#define MICROPY_HW_SPI0_MISO        (pin_P28)
+#define MICROPY_HW_SPI0_SCK         (29)
+#define MICROPY_HW_SPI0_MOSI        (25)
+#define MICROPY_HW_SPI0_MISO        (28)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3,4"

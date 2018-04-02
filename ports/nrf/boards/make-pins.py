@@ -140,6 +140,12 @@ class Pin(object):
             str = '0'
         return str
 
+    def print_const_table_entry(self):
+        print('  PIN({:d}, {:s}, {:s}, {:d}),'.format(
+            self.pin,
+            self.alt_fn_name(null_if_0=True),
+            self.adc_num_str(), self.adc_channel))
+
     def print(self):
         if self.alt_fn_count == 0:
             print("// ",  end='')
@@ -227,18 +233,27 @@ class Pins(object):
 
     def print_named(self, label, named_pins):
         print('STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{'.format(label))
+        index = 0
         for named_pin in named_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},'.format(named_pin.name(),  pin.cpu_pin_name()))
+                print('  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&machine_pin_obj[{:d}]) }},'.format(named_pin.name(), index))
+                index += 1
         print('};')
         print('MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);'.format(label, label));
 
-    def print(self):
+    def print_const_table(self):
+        print('')
+        print('const uint8_t machine_pin_num_of_pins = {:d};'.format(len(self.board_pins)))
+        print('')
+        print('const pin_obj_t machine_pin_obj[{:d}] = {{'.format(len(self.board_pins)))
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                pin.print()
+                pin.print_const_table_entry()
+        print('};');
+
+    def print(self):
         self.print_named('cpu', self.cpu_pins)
         print('')
         self.print_named('board', self.board_pins)
@@ -381,6 +396,8 @@ def main():
         print('')
         with open(args.prefix_filename, 'r') as prefix_file:
             print(prefix_file.read())
+
+    pins.print_const_table()
     pins.print()
     pins.print_header(args.hdr_filename)
     pins.print_qstr(args.qstr_filename)
