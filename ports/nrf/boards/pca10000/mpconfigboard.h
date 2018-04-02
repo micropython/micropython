@@ -60,8 +60,8 @@
 #define MICROPY_HW_LED_BLUE         (23) // BLUE
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_P11)
-#define MICROPY_HW_UART1_TX         (pin_P9)
+#define MICROPY_HW_UART1_RX         (11)
+#define MICROPY_HW_UART1_TX         (9)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 #define HELP_TEXT_BOARD_LED         "1,2,3"

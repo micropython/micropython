@@ -60,21 +60,21 @@
 #define MICROPY_HW_LED1             (20) // LED1
 
 // UART config
-#define MICROPY_HW_UART1_RX         (pin_P11)
-#define MICROPY_HW_UART1_TX         (pin_P12)
+#define MICROPY_HW_UART1_RX         (11)
+#define MICROPY_HW_UART1_TX         (12)
 #define MICROPY_HW_UART1_HWFC       (0)
 
 // SPI0 config
 #define MICROPY_HW_SPI0_NAME        "SPI0"
-#define MICROPY_HW_SPI0_SCK         (pin_P25) // (Arduino D13)
-#define MICROPY_HW_SPI0_MOSI        (pin_P23) // (Arduino D11)
-#define MICROPY_HW_SPI0_MISO        (pin_P24) // (Arduino D12)
+#define MICROPY_HW_SPI0_SCK         (25) // (Arduino D13)
+#define MICROPY_HW_SPI0_MOSI        (23) // (Arduino D11)
+#define MICROPY_HW_SPI0_MISO        (24) // (Arduino D12)
 
 #define MICROPY_HW_PWM0_NAME        "PWM0"
 #define MICROPY_HW_PWM1_NAME        "PWM1"
 #define MICROPY_HW_PWM2_NAME        "PWM2"
 
 // buzzer pin
-#define MICROPY_HW_MUSIC_PIN        (pin_P8)
+#define MICROPY_HW_MUSIC_PIN        (8)
 
 #define HELP_TEXT_BOARD_LED         "1"
