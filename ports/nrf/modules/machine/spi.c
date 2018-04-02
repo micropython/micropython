@@ -259,9 +259,9 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
         self->p_config->mosi_pin = ((const pin_obj_t *)args[ARG_NEW_mosi].u_obj)->pin;
         self->p_config->miso_pin = ((const pin_obj_t *)args[ARG_NEW_miso].u_obj)->pin;
     } else {
-        self->p_config->sck_pin  = (&MICROPY_HW_SPI0_SCK)->pin;
-        self->p_config->mosi_pin = (&MICROPY_HW_SPI0_MOSI)->pin;
-        self->p_config->miso_pin = (&MICROPY_HW_SPI0_MISO)->pin;
+        self->p_config->sck_pin  = MICROPY_HW_SPI0_SCK;
+        self->p_config->mosi_pin = MICROPY_HW_SPI0_MOSI;
+        self->p_config->miso_pin = MICROPY_HW_SPI0_MISO;
     }
 
     // Manually trigger slave select from upper layer.

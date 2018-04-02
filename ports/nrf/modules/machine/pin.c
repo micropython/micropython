@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2016, 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,10 @@
 #include "py/mphal.h"
 #include "pin.h"
 #include "nrf_gpio.h"
+#include "nrfx_gpiote.h"
+
+extern const pin_obj_t machine_pin_obj[];
+extern const uint8_t machine_pin_num_of_pins;
 
 /// \moduleref pyb
 /// \class Pin - control I/O pins
@@ -105,6 +109,13 @@ STATIC bool pin_class_debug;
 void pin_init0(void) {
     MP_STATE_PORT(pin_class_mapper) = mp_const_none;
     MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
+    for (int i = 0; i < NUM_OF_PINS; i++) {
+        MP_STATE_PORT(pin_irq_handlers)[i] = mp_const_none;
+    }
+    // Initialize GPIOTE if not done yet.
+    if (!nrfx_gpiote_is_init()) {
+        nrfx_gpiote_init();
+    }
 
     #if PIN_DEBUG
     pin_class_debug = false;
@@ -114,6 +125,15 @@ void pin_init0(void) {
 // C API used to convert a user-supplied pin name into an ordinal pin number.
 const pin_obj_t *pin_find(mp_obj_t user_obj) {
     const pin_obj_t *pin_obj;
+    // If pin is SMALL_INT
+    if (MP_OBJ_IS_SMALL_INT(user_obj)) {
+	uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
+        for (uint8_t i = 0; i < machine_pin_num_of_pins; i++) {
+            if (machine_pin_obj[i].pin == value) {
+                return &machine_pin_obj[i];
+	    }
+	}
+    }
 
     // If a pin was provided, then use it
     if (MP_OBJ_IS_TYPE(user_obj, &pin_type)) {
@@ -506,24 +526,51 @@ STATIC mp_obj_t pin_af(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
-/*
+
+STATIC void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+    mp_obj_t pin_handler = MP_STATE_PORT(pin_irq_handlers)[pin];
+    mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
+    const pin_obj_t *pin_obj  = pin_find(pin_number);
+
+    mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
+}
+
 STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+	enum {ARG_handler, ARG_trigger, ARG_wake};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_trigger, MP_ARG_INT,  {.u_int = HAL_GPIO_POLARITY_EVENT_TOGGLE} },
+        { MP_QSTR_handler, MP_ARG_OBJ | MP_ARG_REQUIRED,  {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT,  {.u_int = NRF_GPIOTE_POLARITY_LOTOHI | NRF_GPIOTE_POLARITY_HITOLO} },
         { MP_QSTR_wake,    MP_ARG_BOOL, {.u_bool = false} },
     };
     pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    (void)self;
+    nrfx_gpiote_pin_t pin = self->pin;
+
+    nrfx_gpiote_in_config_t config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+    if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_LOTOHI) {
+        config.sense = NRF_GPIOTE_POLARITY_LOTOHI;
+    } else if (args[ARG_trigger].u_int == NRF_GPIOTE_POLARITY_HITOLO) {
+        config.sense = NRF_GPIOTE_POLARITY_HITOLO;
+    }
+    config.pull = NRF_GPIO_PIN_PULLUP;
+
+    nrfx_err_t err_code = nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
+    if (err_code == NRFX_ERROR_INVALID_STATE) {
+        // Re-init if already configured.
+        nrfx_gpiote_in_uninit(pin);
+        nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
+    }
+
+    MP_STATE_PORT(pin_irq_handlers)[pin] = args[ARG_handler].u_obj;
+
+    nrfx_gpiote_in_event_enable(pin, true);
 
     // return the irq object
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
-*/
 
 STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
@@ -541,7 +588,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mode),    MP_ROM_PTR(&pin_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_pull),    MP_ROM_PTR(&pin_pull_obj) },
     { MP_ROM_QSTR(MP_QSTR_af),      MP_ROM_PTR(&pin_af_obj) },
-//    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
 
     // class methods
     { MP_ROM_QSTR(MP_QSTR_mapper),  MP_ROM_PTR(&pin_mapper_obj) },
@@ -566,11 +613,11 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DISABLED), MP_ROM_INT(NRF_GPIO_PIN_NOPULL) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),       MP_ROM_INT(NRF_GPIO_PIN_PULLUP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),     MP_ROM_INT(NRF_GPIO_PIN_PULLDOWN) },
-/*
-    // IRQ triggers, can be or'd together
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),    MP_ROM_INT(HAL_GPIO_POLARITY_EVENT_LOW_TO_HIGH) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),   MP_ROM_INT(HAL_GPIO_POLARITY_EVENT_HIGH_TO_LOW) },
 
+    // IRQ triggers, can be or'd together
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),    MP_ROM_INT(NRF_GPIOTE_POLARITY_LOTOHI) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),   MP_ROM_INT(NRF_GPIOTE_POLARITY_HITOLO) },
+/*
     // legacy class constants
     { MP_ROM_QSTR(MP_QSTR_OUT_PP),    MP_ROM_INT(GPIO_MODE_OUTPUT_PP) },
     { MP_ROM_QSTR(MP_QSTR_OUT_OD),    MP_ROM_INT(GPIO_MODE_OUTPUT_OD) },
@@ -664,39 +711,3 @@ const mp_obj_type_t pin_af_type = {
     .print = pin_af_obj_print,
     .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
 };
-
-/******************************************************************************/
-// Pin IRQ object
-
-typedef struct _pin_irq_obj_t {
-    mp_obj_base_t base;
-    pin_obj_t pin;
-} pin_irq_obj_t;
-
-// STATIC const mp_obj_type_t pin_irq_type;
-
-/*STATIC mp_obj_t pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    pin_irq_obj_t *self = self_in;
-    (void)self;
-    return mp_const_none;
-}*/
-
-/*STATIC mp_obj_t pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
-    pin_irq_obj_t *self = args[0];
-    (void)self;
-    return mp_const_none;
-}*/
-// STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_irq_trigger_obj, 1, 2, pin_irq_trigger);
-
-// STATIC const mp_rom_map_elem_t pin_irq_locals_dict_table[] = {
-//     { MP_ROM_QSTR(MP_QSTR_trigger),  MP_ROM_PTR(&pin_irq_trigger_obj) },
-// };
-
-// STATIC MP_DEFINE_CONST_DICT(pin_irq_locals_dict, pin_irq_locals_dict_table);
-
-/*STATIC const mp_obj_type_t pin_irq_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_IRQ,
-    .call = pin_irq_call,
-    .locals_dict = (mp_obj_dict_t*)&pin_irq_locals_dict,
-};*/
