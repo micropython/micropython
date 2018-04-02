@@ -32,6 +32,7 @@
 #include "py/bc.h"
 #include "py/objgenerator.h"
 #include "py/objfun.h"
+#include "py/stackctrl.h"
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -92,6 +93,7 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    MP_STACK_CHECK();
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {
