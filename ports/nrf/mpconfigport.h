@@ -308,10 +308,17 @@ extern const struct _mp_obj_module_t ble_module;
 #define ROOT_POINTERS_SOFTPWM
 #endif
 
+#if defined(NRF52840_XXAA)
+#define NUM_OF_PINS 48
+#else
+#define NUM_OF_PINS 32
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
+    mp_obj_t pin_irq_handlers[NUM_OF_PINS]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
     struct _machine_hard_uart_obj_t *pyb_stdio_uart; \
