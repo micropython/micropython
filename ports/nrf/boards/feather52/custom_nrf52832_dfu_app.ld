@@ -17,4 +17,7 @@ MEMORY
 _stack_size = 8K;
 _minimum_heap_size = 16K;
 
+_fs_start = ORIGIN(FLASH_USER);
+_fs_end   = ORIGIN(FLASH_USER) + LENGTH(FLASH_USER);
+
 INCLUDE "boards/common.ld"

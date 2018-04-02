@@ -1,8 +1,0 @@
-MCU_SERIES = m0
-MCU_VARIANT = nrf51
-MCU_SUB_VARIANT = nrf51822
-SOFTDEV_VERSION = 8.0.0
-LD_FILE = boards/microbit/custom_nrf51822_s110_microbit.ld
-FLASHER = pyocd
-
-CFLAGS += -DBLUETOOTH_LFCLK_RC
