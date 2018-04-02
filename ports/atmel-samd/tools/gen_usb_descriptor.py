@@ -119,7 +119,7 @@ hid_report_lengths = hid.ReportDescriptor.REPORT_LENGTHS
 hid_max_report_length = max(hid_report_lengths.values())
 
 # ASF4 expects keyboard and generic devices to have both in and out endpoints,
-# and will fail in mysterious ways if you only supply one.
+# and will fail (possibly silently) if both are not supplied.
 hid_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="HID in",
     bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
@@ -144,19 +144,12 @@ hid_interfaces = [
             hid_endpoint_out_descriptor,
             ]
         ),
-        # bInterfaceClass = hid.HID_CLASS,
-        # bInterfaceSubClass = hid.HID_SUBCLASS_NOBOOT,
-        # bInterfaceProtocol=hid.HID_PROTOCOL_MOUSE,
-        # subdescriptors=[
-        #     hid.HIDDescriptor(wDescriptorLength=len(bytes(hid_report_descriptor))),
-        #     hid_endpoint_descriptor,
-        #     ]
-        # ),
     ]
 
 # This will renumber the endpoints to make them unique across descriptors.
-#interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
-interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces)
+interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
+#interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces, msc_interfaces)
+#interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces)
 
 cdc_function = standard.InterfaceAssociationDescriptor(
     description="CDC function",
@@ -167,7 +160,7 @@ cdc_function = standard.InterfaceAssociationDescriptor(
     bFunctionProtocol=0x1)  # Common AT Commands
 
 configuration = standard.ConfigurationDescriptor(
-    description="CDC configuration",
+    description="Composite configuration",
     wTotalLength=(standard.ConfigurationDescriptor.bLength +
                   cdc_function.bLength +
                   sum([len(bytes(x)) for x in interfaces])),
@@ -185,6 +178,8 @@ c_file.write("""\
 #include <stdint.h>
 
 #include "{H_FILE_NAME}"
+
+#include "usb/device/usbdc.h"
 
 """.format(H_FILE_NAME=h_file.name))
 
@@ -227,9 +222,6 @@ h_file.write("""\
 #ifndef MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
 #define MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
 
-#include "usb/device/usbdc.h"
-
-struct usbd_descriptors descriptor_bounds;
 #define SERIAL_NUMBER_OFFSET {SERIAL_NUMBER_OFFSET}
 #define SERIAL_NUMBER_LENGTH {SERIAL_NUMBER_LENGTH}
 uint8_t* serial_number;
@@ -245,6 +237,21 @@ uint8_t hid_report_descriptor[{HID_REPORT_DESCRIPTOR_LENGTH}];
         HID_ENDPOINT_IN_ADDRESS=hex(hid_endpoint_in_descriptor.bEndpointAddress),
         HID_ENDPOINT_OUT_ADDRESS=hex(hid_endpoint_out_descriptor.bEndpointAddress)))
 
+# Write out #define's that declare which endpoints are in use.
+# These provide information for declaring cache sizes and perhaps other things at compile time
+for interface in interfaces:
+    for subdescriptor in interface.subdescriptors:
+        if isinstance(subdescriptor, standard.EndpointDescriptor):
+            endpoint_num = subdescriptor.bEndpointAddress & standard.EndpointDescriptor.NUMBER_MASK
+            endpoint_in = ((subdescriptor.bEndpointAddress & standard.EndpointDescriptor.DIRECTION_MASK) ==
+                           standard.EndpointDescriptor.DIRECTION_IN)
+            h_file.write("""\
+#define USB_ENDPOINT_{NUMBER}_{DIRECTION}_USED 1
+""".format(NUMBER=endpoint_num,
+           DIRECTION="IN" if endpoint_in else "OUT"))
+
+h_file.write("\n")
+
 # #define the report ID's used in the combined HID descriptor
 for name, id in hid_report_ids.items():
     h_file.write("""\
@@ -252,12 +259,16 @@ for name, id in hid_report_ids.items():
 """.format(NAME=name,
            ID = id))
 
+h_file.write("\n")
+
 # #define the report sizes used in the combined HID descriptor
 for name, length in hid_report_lengths.items():
     h_file.write("""\
 #define USB_HID_REPORT_LENGTH_{NAME} {LENGTH}
 """.format(NAME=name,
            LENGTH=length))
+
+h_file.write("\n")
 
 h_file.write("""\
 #define USB_HID_NUM_DEVICES {NUM_DEVICES}

@@ -48,6 +48,8 @@
 
 #include "supervisor/shared/autoreload.h"
 
+extern struct usbd_descriptors descriptor_bounds;
+
 // Store received characters on our own so that we can filter control characters
 // and act immediately on CTRL-C for example.
 
