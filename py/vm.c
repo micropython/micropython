@@ -1118,7 +1118,7 @@ unwind_return:
 
                 ENTRY(MP_BC_RAISE_VARARGS): {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_uint_t unum = *ip++;
+                    mp_uint_t unum = *ip;
                     mp_obj_t obj;
                     if (unum == 2) {
                         mp_warning("exception chaining not supported");
@@ -1139,7 +1139,7 @@ unwind_return:
                             RAISE(obj);
                         }
                     } else {
-                        obj = POP();
+                        obj = TOP();
                     }
                     obj = mp_make_raise_obj(obj);
                     RAISE(obj);
