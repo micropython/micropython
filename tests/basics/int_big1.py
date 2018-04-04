@@ -90,6 +90,11 @@ x = 1073741823 # small
 x = -1073741823 # small
 x = 1073741824 # big
 x = -1073741824 # big
+# for nan-boxing with 47-bit small ints
+print(int('0x3fffffffffff', 16)) # small
+print(int('-0x3fffffffffff', 16)) # small
+print(int('0x400000000000', 16)) # big
+print(int('-0x400000000000', 16)) # big
 # for 64 bit archs
 x = 4611686018427387903 # small
 x = -4611686018427387903 # small
