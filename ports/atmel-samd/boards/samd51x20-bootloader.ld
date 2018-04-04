@@ -13,7 +13,7 @@ MEMORY
 /* top end of the stack */
 /* stack must be double-word (8 byte) aligned */
 _estack = ORIGIN(RAM) + LENGTH(RAM) - 8;
-_bootloader_dbl_tap = _estack;
+_bootloader_dbl_tap = ORIGIN(RAM) + LENGTH(RAM) - 4;
 
 /* define output sections */
 SECTIONS
