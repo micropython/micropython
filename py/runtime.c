@@ -83,8 +83,10 @@ void mp_init(void) {
     MICROPY_PORT_INIT_FUNC;
 #endif
 
+    #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
+    #endif
 
     // init global module dict
     mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
