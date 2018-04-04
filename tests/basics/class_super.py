@@ -34,3 +34,14 @@ class B(A):
         print(super().bar) # accessing attribute after super()
         return super().foo().count(2) # calling a subsequent method
 print(B().foo())
+
+# store/delete of super attribute not allowed
+assert hasattr(super(B, B()), 'foo')
+try:
+    super(B, B()).foo = 1
+except AttributeError:
+    print('AttributeError')
+try:
+    del super(B, B()).foo
+except AttributeError:
+    print('AttributeError')
