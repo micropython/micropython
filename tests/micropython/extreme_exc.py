@@ -35,7 +35,7 @@ def main():
     except Exception as er:
         e = er
     micropython.heap_unlock()
-    print(repr(e)[:50])
+    print(repr(e)[:10])
 
     # create an exception with a long formatted error message while heap is low
     # should use the heap and truncate the message
@@ -51,7 +51,7 @@ def main():
         e = er
     lst[0] = None
     lst = None
-    print(repr(e)[:43])
+    print(repr(e)[:10])
 
     # raise a deep exception with the heap locked
     # should use emergency exception and be unable to resize traceback array
@@ -63,7 +63,7 @@ def main():
     except Exception as er:
         e = er
     micropython.heap_unlock()
-    print(repr(e))
+    print(repr(e)[:13])
 
     # create an exception on the heap with some traceback on the heap, but then
     # raise it with the heap locked so it can't allocate any more traceback
