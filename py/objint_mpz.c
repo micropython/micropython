@@ -170,11 +170,9 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
         zlhs = &z_int;
-    } else if (MP_OBJ_IS_TYPE(lhs_in, &mp_type_int)) {
-        zlhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(lhs_in))->mpz;
     } else {
-        // unsupported type
-        return MP_OBJ_NULL;
+        assert(MP_OBJ_IS_TYPE(lhs_in, &mp_type_int));
+        zlhs = &((mp_obj_int_t*)MP_OBJ_TO_PTR(lhs_in))->mpz;
     }
 
     // if rhs is small int, then lhs was not (otherwise mp_binary_op handles it)
