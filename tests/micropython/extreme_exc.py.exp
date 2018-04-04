@@ -1,5 +1,5 @@
 Exception()
 TypeError("unexpected keyword argument 'abcdefghij
-TypeError("unexpected keyword argument 'abc",)
+TypeError("unexpected keyword argument 'abc
 RuntimeError('maximum recursion depth exceeded',)
 Exception('my exception',)
