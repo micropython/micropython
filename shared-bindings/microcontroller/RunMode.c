@@ -76,7 +76,7 @@ STATIC void mcu_runmode_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         runmode = MP_QSTR_SAFE_MODE;
     } else if (MP_OBJ_TO_PTR(self_in) ==
                MP_ROM_PTR(&mcu_runmode_bootloader_obj)) {
-        runmode = MP_QSTR_SAFE_MODE;
+        runmode = MP_QSTR_BOOTLOADER;
     }
     mp_printf(print, "%q.%q.%q", MP_QSTR_microcontroller, MP_QSTR_RunMode,
               runmode);

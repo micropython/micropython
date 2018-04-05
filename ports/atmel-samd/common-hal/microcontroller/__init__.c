@@ -55,7 +55,7 @@ extern uint32_t _ezero;
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     // Set up the defaults.
-    _bootloader_dbl_tap = DBL_TAP_MAGIC;
+    _bootloader_dbl_tap = DBL_TAP_MAGIC_QUICK_BOOT;
     _ezero = CIRCUITPY_CANARY_WORD;
 
     if (runmode == RUNMODE_BOOTLOADER) {
