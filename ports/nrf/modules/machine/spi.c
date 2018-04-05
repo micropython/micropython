@@ -36,7 +36,11 @@
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
+#if NRFX_SPI_ENABLED
 #include "nrfx_spi.h"
+#else
+#include "nrfx_spim.h"
+#endif
 
 #if MICROPY_PY_MACHINE_HW_SPI
 
@@ -64,36 +68,62 @@
 ///     spi.send_recv(b'1234', buf)          # send 4 bytes and receive 4 into buf
 ///     spi.send_recv(buf, buf)              # send/recv 4 bytes from/to buf
 
+#if NRFX_SPIM_ENABLED
+
+#define nrfx_spi_t                  nrfx_spim_t
+#define nrfx_spi_config_t           nrfx_spim_config_t
+#define nrfx_spi_xfer_desc_t        nrfx_spim_xfer_desc_t
+
+#define NRFX_SPI_PIN_NOT_USED       NRFX_SPIM_PIN_NOT_USED
+#define NRFX_SPI_INSTANCE           NRFX_SPIM_INSTANCE
+#define NRF_SPI_BIT_ORDER_LSB_FIRST NRF_SPIM_BIT_ORDER_LSB_FIRST
+#define NRF_SPI_BIT_ORDER_MSB_FIRST NRF_SPIM_BIT_ORDER_MSB_FIRST
+#define NRF_SPI_MODE_0              NRF_SPIM_MODE_0
+#define NRF_SPI_MODE_1              NRF_SPIM_MODE_1
+#define NRF_SPI_MODE_2              NRF_SPIM_MODE_2
+#define NRF_SPI_MODE_3              NRF_SPIM_MODE_3
+#define NRF_SPI_FREQ_125K           NRF_SPIM_FREQ_125K
+#define NRF_SPI_FREQ_250K           NRF_SPIM_FREQ_250K
+#define NRF_SPI_FREQ_500K           NRF_SPIM_FREQ_500K
+#define NRF_SPI_FREQ_1M             NRF_SPIM_FREQ_1M
+#define NRF_SPI_FREQ_2M             NRF_SPIM_FREQ_2M
+#define NRF_SPI_FREQ_4M             NRF_SPIM_FREQ_4M
+#define NRF_SPI_FREQ_8M             NRF_SPIM_FREQ_8M
+
+#define nrfx_spi_init               nrfx_spim_init
+#define nrfx_spi_uninit             nrfx_spim_uninit
+#define nrfx_spi_xfer               nrfx_spim_xfer
+
+#endif // NRFX_SPIM_ENABLED
+
 typedef struct _machine_hard_spi_obj_t {
     mp_obj_base_t       base;
-    const nrfx_spi_t  * p_spi;    // Driver instance
-    nrfx_spi_config_t * p_config; // pointer to volatile part
+    const nrfx_spi_t   * p_spi;    // Driver instance
+    nrfx_spi_config_t  * p_config; // pointer to volatile part
 } machine_hard_spi_obj_t;
 
 STATIC const nrfx_spi_t machine_spi_instances[] = {
     NRFX_SPI_INSTANCE(0),
     NRFX_SPI_INSTANCE(1),
-#if NRF52
+#if defined(NRF52_SERIES)
     NRFX_SPI_INSTANCE(2),
-#if NRF52840_XXAA
+#if defined(NRF52840_XXAA) && NRFX_SPIM_ENABLED
     NRFX_SPI_INSTANCE(3),
-#endif // NRF52840_XXAA
-#endif // NRF52
+#endif // NRF52840_XXAA && NRFX_SPIM_ENABLED
+#endif // NRF52_SERIES
 };
-
-
 
 STATIC nrfx_spi_config_t configs[MP_ARRAY_SIZE(machine_spi_instances)];
 
 STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[0], .p_config = &configs[0]},
     {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[1], .p_config = &configs[1]},
-#if NRF52
+#if defined(NRF52_SERIES)
     {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[2], .p_config = &configs[2]},
-#if NRF52840_XXAA
+#if defined(NRF52840_XXAA) && NRFX_SPIM_ENABLED
     {{&machine_hard_spi_type}, .p_spi = &machine_spi_instances[3], .p_config = &configs[3]},
-#endif // NRF52840_XXAA
-#endif // NRF52
+#endif // NRF52840_XXAA && NRFX_SPIM_ENABLED
+#endif // NRF52_SERIES
 };
 
 void spi_init0(void) {
@@ -299,12 +329,12 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
         self->p_config->frequency = NRF_SPI_FREQ_4M;
     } else if (baudrate <= 8000000) {
         self->p_config->frequency = NRF_SPI_FREQ_8M;
-#if NRF52840_XXAA
+#if defined(NRF52840_XXAA) && NRFX_SPIM_ENABLED
     } else if (baudrate <= 16000000) {
-        self->p_config->frequency = SPIM_FREQUENCY_FREQUENCY_M16; // Temporary value until SPIM support is addressed (EasyDMA)
+        self->p_config->frequency = NRF_SPIM_FREQ_16M;
     } else if (baudrate <= 32000000) {
-        self->p_config->frequency = SPIM_FREQUENCY_FREQUENCY_M32; // Temporary value until SPIM support is addressed (EasyDMA)
-#endif
+        self->p_config->frequency = NRF_SPIM_FREQ_32M;
+#endif // NRF52840_XXAA && NRFX_SPIM_ENABLED
     } else { // Default
         self->p_config->frequency = NRF_SPI_FREQ_1M;
     }
