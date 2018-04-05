@@ -65,6 +65,10 @@
 
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
 
+#if defined(STM32H7)
+#define DAC     DAC1
+#endif
+
 STATIC DAC_HandleTypeDef DAC_Handle;
 
 void dac_init(void) {
@@ -162,6 +166,8 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     __DAC_CLK_ENABLE();
     #elif defined(STM32L4)
     __HAL_RCC_DAC1_CLK_ENABLE();
+    #elif defined(STM32H7)
+    __HAL_RCC_DAC12_CLK_ENABLE();
     #else
     #error Unsupported Processor
     #endif
@@ -256,10 +262,14 @@ STATIC mp_obj_t pyb_dac_deinit(mp_obj_t self_in) {
     pyb_dac_obj_t *self = self_in;
     if (self->dac_channel == DAC_CHANNEL_1) {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN1;
+        #ifndef STM32H7
         DAC_Handle.Instance->CR |= DAC_CR_BOFF1;
+        #endif
     } else {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN2;
+        #ifndef STM32H7
         DAC_Handle.Instance->CR |= DAC_CR_BOFF2;
+        #endif
     }
     return mp_const_none;
 }
