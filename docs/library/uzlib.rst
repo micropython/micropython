@@ -1,10 +1,12 @@
 :mod:`uzlib` -- zlib decompression
 ==================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uzlib
    :synopsis: zlib decompression
 
-|see_cpython_module| :mod:`python:zlib`.
+|see_cpython_module| :mod:`cpython:zlib`.
 
 This module allows to decompress binary data compressed with
 `DEFLATE algorithm <https://en.wikipedia.org/wiki/DEFLATE>`_

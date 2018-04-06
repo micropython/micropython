@@ -35,6 +35,8 @@
 uint8_t samd_peripherals_spi_baudrate_to_baud_reg_value(const uint32_t baudrate);
 uint32_t samd_peripherals_spi_baud_reg_value_to_baudrate(const uint8_t baud_reg_value);
 
+Sercom* sercom_insts[SERCOM_INST_NUM];
+
 #ifdef SAMD21
 #include "samd21_peripherals.h"
 #endif

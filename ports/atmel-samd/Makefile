@@ -36,6 +36,7 @@ INC += -I. \
        -Iasf4/$(CHIP_FAMILY)/hal/utils/include \
        -Iasf4/$(CHIP_FAMILY)/hri \
        -Iasf4/$(CHIP_FAMILY)/hpl/core \
+       -Iasf4/$(CHIP_FAMILY)/hpl/gclk \
        -Iasf4/$(CHIP_FAMILY)/hpl/pm \
        -Iasf4/$(CHIP_FAMILY)/hpl/port \
        -Iasf4/$(CHIP_FAMILY)/hpl/tc \
@@ -71,7 +72,6 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
@@ -96,6 +96,7 @@ ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
   CFLAGS += -flto
+  ## CFLAGS += -fno-inline
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -178,6 +179,7 @@ SRC_ASF := \
 	hal/src/hal_sleep.c \
 	hal/src/hal_spi_m_sync.c \
 	hal/src/hal_timer.c \
+	hal/src/hal_usart_async.c \
 	hal/src/hal_usb_device.c \
 	hpl/adc/hpl_adc.c \
 	hpl/core/hpl_init.c \
@@ -194,6 +196,7 @@ SRC_ASF := \
 	usb/device/usbdc.c \
 	usb/usb_protocol.c \
 	hal/utils/src/utils_list.c \
+	hal/utils/src/utils_ringbuffer.c \
 
 ifeq ($(CHIP_FAMILY), samd21)
 SRC_ASF += \
@@ -213,9 +216,6 @@ endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
-# Skip this source for now.
-#	shared_dma.c \
-
 SRC_C = \
 	background.c \
 	fatfs_port.c \
@@ -225,6 +225,7 @@ SRC_C = \
 	$(CHIP_FAMILY)_peripherals.c \
 	peripherals.c \
 	$(CHIP_FAMILY)_pins.c \
+	shared_dma.c \
 	tick.c \
 	timers.c \
 	usb.c \
@@ -252,7 +253,10 @@ ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
 SRC_C += internal_flash.c
 endif
 ifeq ($(SPI_FLASH_FILESYSTEM),1)
-SRC_C += spi_flash.c
+SRC_C += external_flash/external_flash.c external_flash/spi_flash.c
+endif
+ifeq ($(QSPI_FLASH_FILESYSTEM),1)
+SRC_C += external_flash/external_flash.c external_flash/qspi_flash.c
 endif
 
 SRC_COMMON_HAL = \
@@ -260,6 +264,7 @@ SRC_COMMON_HAL = \
 	busio/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
+	busio/UART.c \
 	digitalio/__init__.c \
 	digitalio/DigitalInOut.c \
 	microcontroller/__init__.c \
@@ -282,7 +287,6 @@ SRC_COMMON_HAL = \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	busio/UART.c \
 	nvm/__init__.c \
 	nvm/ByteArray.c \
 	touchio/__init__.c \

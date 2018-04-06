@@ -45,7 +45,7 @@ these resources are compatible with the MIT License of the rest of the code!
 Step 2: Init
 --------------
 Once your build is setup, the next step should be to get your clocks going as
-you expect from the supervisor. The supervisor calls `port_init` to allow for
+you expect from the supervisor. The supervisor calls ``port_init`` to allow for
 initialization at the beginning of main. This function also has the ability to
 request a safe mode state which prevents the supervisor from running user code
 while still allowing access to the REPL and other resources.

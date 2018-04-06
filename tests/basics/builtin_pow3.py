@@ -22,3 +22,8 @@ try:
     print(pow(4, 5, "z"))
 except TypeError:
     print("TypeError expected")
+
+try:
+    print(pow(4, 5, 0))
+except ValueError:
+    print("ValueError expected")

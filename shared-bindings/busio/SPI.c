@@ -258,7 +258,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 //|
 //|     :param bytearray buffer: Read data into this buffer
 //|     :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
-//|     :param int end: End of the slice; this index is not included 
+//|     :param int end: End of the slice; this index is not included
 //|     :param int write_value: Value to write while reading. (Usually ignored.)
 //|
 STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -304,7 +304,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 //|     :param bytearray buffer_out: Write out the data in this buffer
 //|     :param bytearray buffer_in: Read data into this buffer
 //|     :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
-//|     :param int out_end: End of the slice; this index is not included 
+//|     :param int out_end: End of the slice; this index is not included
 //|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
 //|     :param int in_end: End of the slice; this index is not included
 //|

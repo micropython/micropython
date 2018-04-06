@@ -21,11 +21,10 @@ from recommonmark.parser import CommonMarkParser
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+sys.path.insert(0, os.path.abspath('docs'))
 sys.path.insert(0, os.path.abspath('.'))
 
-
-# Specify a custom master document based on the port name
-master_doc = 'index'
+master_doc = 'docs/index'
 
 # -- General configuration ------------------------------------------------
 
@@ -83,13 +82,15 @@ version = release = '0.0.0'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["**/build-*",
+exclude_patterns = ["**/build*",
                     ".venv",
+                    "docs/README.md",
                     "drivers",
                     "examples",
                     "extmod",
                     "frozen",
                     "lib",
+                    "main.c",
                     "mpy-cross",
                     "ports/*/*.c",
                     "ports/*/*.h",
@@ -98,12 +99,17 @@ exclude_patterns = ["**/build-*",
                     "ports/*/supervisor",
                     "ports/atmel-samd/asf4",
                     "ports/atmel-samd/asf4_conf",
+                    "ports/atmel-samd/external_flash",
+                    "ports/atmel-samd/freetouch",
                     "ports/atmel-samd/QTouch",
+                    "ports/atmel-samd/tools",
                     "ports/bare-arm",
                     "ports/cc3200",
                     "ports/cc3200/FreeRTOS",
                     "ports/cc3200/hal",
-                    "ports/esp8266",
+                    "ports/esp8266/boards",
+                    "ports/esp8266/common-hal",
+                    "ports/esp8266/modules",
                     "ports/minimal",
                     "ports/nrf/device",
                     "ports/nrf/drivers",
@@ -121,7 +127,9 @@ exclude_patterns = ["**/build-*",
                     "ports/windows",
                     "ports/zephyr",
                     "py",
+                    "shared-bindings/util.*",
                     "shared-module",
+                    "supervisor",
                     "tests",
                     "tools"]
 
@@ -153,7 +161,7 @@ pygments_style = 'sphinx'
 # of rst_prolog, so we follow. Absolute paths below mean "from the base
 # of the doctree".
 rst_epilog = """
-.. include:: /templates/replace.inc
+.. include:: /docs/templates/replace.inc
 """
 
 # -- Options for HTML output ----------------------------------------------
@@ -334,5 +342,5 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
-                       "bus_device": ('https://circuitpython.readthedocs.io/projects/bus_device/en/latest/', None),
+                       "bus_device": ('https://circuitpython.readthedocs.io/projects/busdevice/en/latest/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}

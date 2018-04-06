@@ -29,22 +29,25 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "asf/sam0/drivers/sercom/usart/usart.h"
+#include "hal/include/hal_usart_async.h"
+
 #include "py/obj.h"
 
 typedef struct {
-  mp_obj_base_t base;
-  struct usart_module uart_instance;
-  uint8_t rx_pin;
-  uint8_t tx_pin;
-  uint32_t timeout_ms;
-  bool rx_error;
-  // Index of the oldest received character.
-  uint32_t buffer_start;
-  // Index of the next available spot to store a character.
-  uint32_t buffer_size;
-  uint32_t buffer_length;
-  uint8_t* buffer;
+    mp_obj_base_t base;
+    struct usart_async_descriptor usart_desc;
+    uint8_t rx_pin;
+    uint8_t tx_pin;
+    uint8_t character_bits;
+    bool rx_error;
+    uint32_t baudrate;
+    uint32_t timeout_ms;
+    // Index of the oldest received character.
+    uint32_t buffer_start;
+    // Index of the next available spot to store a character.
+    uint32_t buffer_size;
+    uint32_t buffer_length;
+    uint8_t* buffer;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_UART_H

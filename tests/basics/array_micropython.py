@@ -5,6 +5,12 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+try:
+    array.array('O')
+except ValueError:
+    print("SKIP")
+    raise SystemExit
+
 # arrays of objects
 a = array.array('O')
 a.append(1)

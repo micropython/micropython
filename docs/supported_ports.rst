@@ -1,11 +1,12 @@
 Supported Ports
 ==============================
 
-Adafruit's CircuitPython derivative currently has limited support with a focus on
-the Atmel SAMD21 port and ESP8266 port.
+Adafruit's CircuitPython currently has limited support with a focus on supporting the Atmel SAMD
+and ESP8266.
 
 .. toctree::
     :maxdepth: 2
 
-    ../atmel-samd/README
-    esp8266/index.rst
+    ../ports/atmel-samd/README
+    ../ports/esp8266/README
+    ../ports/nrf/README

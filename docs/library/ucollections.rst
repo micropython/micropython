@@ -1,10 +1,12 @@
 :mod:`ucollections` -- collection and container types
 =====================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: ucollections
    :synopsis: collection and container types
 
-|see_cpython_module| :mod:`python:collections`.
+|see_cpython_module| :mod:`cpython:collections`.
 
 This module implements advanced collection and container types to
 hold/accumulate various objects.

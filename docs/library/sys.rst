@@ -1,10 +1,12 @@
 :mod:`sys` -- system specific functions
 =======================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: sys
    :synopsis: system specific functions
 
-|see_cpython_module| :mod:`python:sys`.
+|see_cpython_module| :mod:`cpython:sys`.
 
 Functions
 ---------
@@ -27,8 +29,7 @@ Functions
       ``traceback`` module in CPython. Unlike ``traceback.print_exception()``,
       this function takes just exception value instead of exception type,
       exception value, and traceback object; *file* argument should be
-      positional; further arguments are not supported. CPython-compatible
-      ``traceback`` module can be found in `micropython-lib`.
+      positional; further arguments are not supported.
 
 Constants
 ---------

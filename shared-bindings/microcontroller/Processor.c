@@ -37,7 +37,7 @@
 //| .. currentmodule:: microcontroller
 //|
 //| :class:`Processor` --- Microcontroller CPU information and control
-//| --------------------------------------------------------
+//| ------------------------------------------------------------------
 //|
 //| Get information about the microcontroller CPU and control it.
 //|

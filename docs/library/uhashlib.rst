@@ -1,10 +1,12 @@
 :mod:`uhashlib` -- hashing algorithms
 =====================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uhashlib
    :synopsis: hashing algorithms
 
-|see_cpython_module| :mod:`python:hashlib`.
+|see_cpython_module| :mod:`cpython:hashlib`.
 
 This module implements binary data hashing algorithms. The exact inventory
 of available algorithms depends on a board. Among the algorithms which may

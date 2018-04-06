@@ -29,8 +29,8 @@
 #include "rgb_led_status.h"
 #include "pins.h"
 
-uint8_t rgb_status_brightness = 255;
 #ifdef MICROPY_HW_NEOPIXEL
+uint8_t rgb_status_brightness = 63;
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 static uint8_t status_neopixel_color[3];
@@ -39,7 +39,7 @@ static digitalio_digitalinout_obj_t status_neopixel;
 
 
 #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-
+uint8_t rgb_status_brightness = 255;
 static uint8_t status_apa102_color[12] = {0, 0, 0, 0, 0xff, 0, 0, 0};
 #ifdef CIRCUITPY_BITBANG_APA102
 #include "shared-bindings/bitbangio/SPI.h"
@@ -70,11 +70,11 @@ void rgb_led_status_init() {
                                               MICROPY_HW_APA102_MOSI,
                                               mp_const_none);
         #else
-        if (status_apa102.current_baudrate > 0) {
+        if (!common_hal_busio_spi_deinited(&status_apa102)) {
             // Don't use spi_deinit because that leads to infinite
             // recursion because reset_pin may call
             // rgb_led_status_init.
-            spi_disable(&status_apa102.spi_master_instance);
+            spi_m_sync_disable(&status_apa102.spi_desc);
         }
         common_hal_busio_spi_construct(&status_apa102,
                                       MICROPY_HW_APA102_SCK,
@@ -196,7 +196,9 @@ uint32_t color_brightness(uint32_t color, uint8_t brightness) {
 }
 
 void set_rgb_status_brightness(uint8_t level){
-      rgb_status_brightness = level;
+    #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
+    rgb_status_brightness = level;
+    #endif
 }
 
 void prep_rgb_status_animation(const pyexec_result_t* result,

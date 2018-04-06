@@ -1,6 +1,8 @@
 :mod:`micropython` -- access and control MicroPython internals
 ==============================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: micropython
    :synopsis: access and control MicroPython internals
 

@@ -40,11 +40,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx, uint32_t baudrate,
         uint8_t bits, uart_parity_t parity, uint8_t stop, uint32_t timeout,
         uint8_t receiver_buffer_size) {
-    if (rx != NULL || tx != &pin_GPIO2) {
+    if (rx != mp_const_none || tx != &pin_GPIO2) {
         nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "Only tx supported on UART1 (GPIO2)."));
     }
+
     // set baudrate
     UartDev.baut_rate = baudrate;
+    self->baudrate = baudrate;
 
     // set data bits
     switch (bits) {
@@ -90,6 +92,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     uart_setup(UART1);
+    self->deinited = false;
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
@@ -100,7 +103,8 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) {
         return;
     }
-    PIN_FUNC_SELECT(FUNC_U1TXD_BK, 0);
+    // Switch GPIO2 back to a GPIO pin.
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
     self->deinited = true;
 }
 
@@ -117,6 +121,16 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
 
     // return number of bytes written
     return len;
+}
+
+uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
+    return self->baudrate;
+}
+
+void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
+    UartDev.baut_rate = baudrate;
+    uart_setup(UART1);
+    self->baudrate = baudrate;
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {

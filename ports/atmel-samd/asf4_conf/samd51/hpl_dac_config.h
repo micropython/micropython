@@ -72,7 +72,7 @@
 // <i> This defines the refresh period. If it is 0, the refresh mode is disabled, else the refresh period is: value * 500us
 // <id> dac0_arch_refresh
 #ifndef CONF_DAC0_REFRESH
-#define CONF_DAC0_REFRESH 0
+#define CONF_DAC0_REFRESH 2
 #endif
 // </h>
 // <h> Channel 1 configuration
@@ -111,7 +111,7 @@
 // <i> This defines the refresh period. If it is 0, the refresh mode is disabled, else the refresh period is: value * 500us
 // <id> dac1_arch_refresh
 #ifndef CONF_DAC1_REFRESH
-#define CONF_DAC1_REFRESH 0
+#define CONF_DAC1_REFRESH 2
 #endif
 // </h>
 

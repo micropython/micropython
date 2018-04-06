@@ -1,5 +1,6 @@
 True
 True
+label: LABEL TEST
 statvfs: (512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
 getcwd: /
 True

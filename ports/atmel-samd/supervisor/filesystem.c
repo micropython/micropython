@@ -42,6 +42,12 @@
 fs_user_mount_t fs_user_mount_flash;
 mp_vfs_mount_t mp_vfs_mount_flash;
 
+static void make_empty_file(FATFS *fatfs, const char *path) {
+    FIL fp;
+    f_open(fatfs, &fp, path, FA_WRITE | FA_CREATE_ALWAYS);
+    f_close(&fp);
+}
+
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
 void filesystem_init(bool create_allowed) {
@@ -65,6 +71,14 @@ void filesystem_init(bool create_allowed) {
 
         // set label
         f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+
+        // inhibit file indexing on MacOS
+        f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
+        make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
+        make_empty_file(&vfs_fat->fatfs, "/.Trashes");
+        make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
+
+        // and ensure everything is flushed
         flash_flush();
     } else if (res != FR_OK) {
         return;
