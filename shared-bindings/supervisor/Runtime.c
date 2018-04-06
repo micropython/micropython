@@ -30,7 +30,7 @@
 
 //TODO: add USB, REPL to description once they're operational
 //| .. currentmodule:: supervisor
-//|   
+//|
 //| :class:`Runtime` --- Supervisor Runtime information
 //| ----------------------------------------------------
 //|
@@ -40,7 +40,7 @@
 //|
 //|    import supervisor
 //|    if supervisor.runtime.serial_connected:
-//|        print("Hello World!")    
+//|        print("Hello World!")
 //|
 
 //| .. class:: Runtime()
@@ -49,17 +49,27 @@
 //|     Use `supervisor.runtime` to access the sole instance available.
 //|
 
-//| .. attribute:: runtime.serial_connected
+//|     .. attribute:: runtime.serial_connected
 //|
-//|    Returns the serial communication status (read-only)
+//|         Returns the USB serial communication status (read-only).
 //|
+//|     .. note::
+//|
+//|         SAMD: Will return ``True`` if the USB serial connection
+//|         has been established at any point.  Will not reset if
+//|         USB is disconnected but power remains (e.g. battery connected)
+//|
+//|         Feather52 (nRF52832): Currently returns ``True`` regardless
+//|         of USB connection status.
+//|
+
 STATIC mp_obj_t supervisor_get_serial_connected(mp_obj_t self){
     if (!common_hal_get_serial_connected()) {
         return mp_const_false;
-    }    
+    }
     else {
         return mp_const_true;
-    } 
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_get_serial_connected_obj, supervisor_get_serial_connected);
 
@@ -67,7 +77,7 @@ const mp_obj_property_t supervisor_serial_connected_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&supervisor_get_serial_connected_obj,
               (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},  
+              (mp_obj_t)&mp_const_none_obj},
 };
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {

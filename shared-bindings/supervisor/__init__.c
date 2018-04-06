@@ -35,7 +35,7 @@
 //|
 //| .. module:: supervisor
 //|   :synopsis: Supervisor settings
-//|   :platform: SAMD21
+//|   :platform: SAMD21/51 (All), nRF (Runtime only)
 //|
 //| The `supervisor` module. (TODO: expand description)
 //|
