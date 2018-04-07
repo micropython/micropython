@@ -185,7 +185,7 @@ a file it will save RAM if this is done in a piecemeal fashion. Rather than
 creating a large string object, create a substring and feed it to the stream
 before dealing with the next.
 
-The best way to create dynamic strings is by means of the string `format`
+The best way to create dynamic strings is by means of the string ``format()``
 method:
 
 .. code::
@@ -259,7 +259,7 @@ were a string.
 **Runtime compiler execution**
 
 The Python funcitons `eval` and `exec` invoke the compiler at runtime, which
-requires significant amounts of RAM. Note that the `pickle` library from
+requires significant amounts of RAM. Note that the ``pickle`` library from
 `micropython-lib` employs `exec`. It may be more RAM efficient to use the
 `ujson` library for object serialisation.
 

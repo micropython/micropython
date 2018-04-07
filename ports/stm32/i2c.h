@@ -48,7 +48,7 @@ extern const pyb_i2c_obj_t pyb_i2c_obj[4];
 void i2c_init0(void);
 void i2c_init(I2C_HandleTypeDef *i2c);
 void i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq);
-uint32_t i2c_get_baudrate(I2C_InitTypeDef *init);
+uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c);
 void i2c_ev_irq_handler(mp_uint_t i2c_id);
 void i2c_er_irq_handler(mp_uint_t i2c_id);
 

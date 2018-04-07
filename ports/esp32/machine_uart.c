@@ -297,7 +297,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
 
     int bytes_read = uart_read_bytes(self->uart_num, buf_in, size, time_to_wait);
 
-    if (bytes_read < 0) {
+    if (bytes_read <= 0) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }

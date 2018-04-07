@@ -32,6 +32,11 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
+// Whether to enable storage on the internal flash of the MCU
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#endif
+
 // Whether to enable the RTC, exposed as pyb.RTC
 #ifndef MICROPY_HW_ENABLE_RTC
 #define MICROPY_HW_ENABLE_RTC (0)
@@ -116,6 +121,14 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 
+// Configuration for STM32H7 series
+#elif defined(STM32H7)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ff1e800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
 
@@ -126,6 +139,13 @@
 
 #else
 #error Unsupported MCU series
+#endif
+
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+// Provide block device macros if internal flash storage is enabled
+#define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
+#define MICROPY_HW_BDEV_READBLOCK flash_bdev_readblock
+#define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
 #endif
 
 // Enable hardware I2C if there are any peripherals defined
@@ -151,3 +171,5 @@
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)
 #endif
+
+#define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)

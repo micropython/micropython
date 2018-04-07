@@ -63,6 +63,9 @@ typedef struct {
 extern const mp_obj_type_t pin_type;
 extern const mp_obj_type_t pin_af_type;
 
+// Include all of the individual pin objects
+#include "genhdr/pins.h"
+
 typedef struct {
   const char *name;
   const pin_obj_t *pin;

@@ -172,7 +172,7 @@ Drawing text
 ------------
 
 To draw text one sets the position, color and font, and then uses
-`write` to draw the text.
+`LCD160CR.write` to draw the text.
 
 .. method:: LCD160CR.set_pos(x, y)
 
@@ -279,7 +279,7 @@ Touch screen methods
 .. method:: LCD160CR.is_touched()
 
     Returns a boolean: ``True`` if there is currently a touch force on the screen,
-    `False` otherwise.
+    ``False`` otherwise.
 
 .. method:: LCD160CR.get_touch()
 

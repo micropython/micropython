@@ -130,6 +130,7 @@ LIB_SRC_C += \
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
+	bus/softspi.c \
 	dht/dht.c \
         )
 

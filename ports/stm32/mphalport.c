@@ -7,8 +7,6 @@
 #include "usb.h"
 #include "uart.h"
 
-bool mp_hal_ticks_cpu_enabled = false;
-
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
@@ -90,7 +88,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
 }
 
 void mp_hal_ticks_cpu_enable(void) {
-    if (!mp_hal_ticks_cpu_enabled) {
+    if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
         CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
         #if defined(__CORTEX_M) && __CORTEX_M == 7
         // on Cortex-M7 we must unlock the DWT before writing to its registers
@@ -98,7 +96,6 @@ void mp_hal_ticks_cpu_enable(void) {
         #endif
         DWT->CYCCNT = 0;
         DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-        mp_hal_ticks_cpu_enabled = true;
     }
 }
 

@@ -28,12 +28,12 @@
 #include <string.h>
 
 #include "py/obj.h"
-#include "systick.h"
+#include "py/mperrno.h"
 #include "led.h"
 #include "flash.h"
 #include "storage.h"
 
-#if !defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
+#if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
 // Here we try to automatically configure the location and size of the flash
 // pages to use for the internal storage.  We also configure the location of the
@@ -85,6 +85,14 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_MEM_SEG1_START_ADDR (0x08008000) // sector 1
 #define FLASH_MEM_SEG1_NUM_BLOCKS (192) // sectors 1,2,3: 32k+32k+32=96k
 
+#elif defined(STM32H743xx)
+
+// The STM32H743 flash sectors are 128K
+#define CACHE_MEM_START_ADDR (0x20000000) // DTCM data RAM, 128k
+#define FLASH_SECTOR_SIZE_MAX (0x20000) // 128k max
+#define FLASH_MEM_SEG1_START_ADDR (0x08020000) // sector 1
+#define FLASH_MEM_SEG1_NUM_BLOCKS (256) // Sector 1: 128k / 512b = 256 blocks
+
 #elif defined(STM32L475xx) || defined(STM32L476xx)
 
 extern uint8_t _flash_fs_start;
@@ -114,23 +122,34 @@ static uint32_t flash_cache_sector_start;
 static uint32_t flash_cache_sector_size;
 static uint32_t flash_tick_counter_last_write;
 
-void flash_bdev_init(void) {
-    flash_flags = 0;
-    flash_cache_sector_id = 0;
-    flash_tick_counter_last_write = 0;
-}
+static void flash_bdev_irq_handler(void);
 
-uint32_t flash_bdev_num_blocks(void) {
-    return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
-}
+int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
+    (void)arg;
+    switch (op) {
+        case BDEV_IOCTL_INIT:
+            flash_flags = 0;
+            flash_cache_sector_id = 0;
+            flash_tick_counter_last_write = 0;
+            return 0;
 
-void flash_bdev_flush(void) {
-    if (flash_flags & FLASH_FLAG_DIRTY) {
-        flash_flags |= FLASH_FLAG_FORCE_WRITE;
-        while (flash_flags & FLASH_FLAG_DIRTY) {
-           NVIC->STIR = FLASH_IRQn;
-        }
+        case BDEV_IOCTL_NUM_BLOCKS:
+            return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
+
+        case BDEV_IOCTL_IRQ_HANDLER:
+            flash_bdev_irq_handler();
+            return 0;
+
+        case BDEV_IOCTL_SYNC:
+            if (flash_flags & FLASH_FLAG_DIRTY) {
+                flash_flags |= FLASH_FLAG_FORCE_WRITE;
+                while (flash_flags & FLASH_FLAG_DIRTY) {
+                   NVIC->STIR = FLASH_IRQn;
+                }
+            }
+            return 0;
     }
+    return -MP_EINVAL;
 }
 
 static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
@@ -141,7 +160,7 @@ static uint8_t *flash_cache_get_addr_for_write(uint32_t flash_addr) {
         flash_sector_size = FLASH_SECTOR_SIZE_MAX;
     }
     if (flash_cache_sector_id != flash_sector_id) {
-        flash_bdev_flush();
+        flash_bdev_ioctl(BDEV_IOCTL_SYNC, 0);
         memcpy((void*)CACHE_MEM_START_ADDR, (const void*)flash_sector_start, flash_sector_size);
         flash_cache_sector_id = flash_sector_id;
         flash_cache_sector_start = flash_sector_start;
@@ -178,7 +197,7 @@ static uint32_t convert_block_to_flash_addr(uint32_t block) {
     return -1;
 }
 
-void flash_bdev_irq_handler(void) {
+static void flash_bdev_irq_handler(void) {
     if (!(flash_flags & FLASH_FLAG_DIRTY)) {
         return;
     }
@@ -211,7 +230,7 @@ void flash_bdev_irq_handler(void) {
 
     // If not a forced write, wait at least 5 seconds after last write to flush
     // On file close and flash unmount we get a forced write, so we can afford to wait a while
-    if ((flash_flags & FLASH_FLAG_FORCE_WRITE) || sys_tick_has_passed(flash_tick_counter_last_write, 5000)) {
+    if ((flash_flags & FLASH_FLAG_FORCE_WRITE) || HAL_GetTick() - flash_tick_counter_last_write >= 5000) {
         // sync the cache RAM buffer by writing it to the flash page
         flash_write(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
         // clear the flash flags now that we have a clean cache
@@ -245,4 +264,4 @@ bool flash_bdev_writeblock(const uint8_t *src, uint32_t block) {
     return true;
 }
 
-#endif // !defined(MICROPY_HW_SPIFLASH_SIZE_BITS)
+#endif // MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE

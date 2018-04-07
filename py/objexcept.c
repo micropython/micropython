@@ -93,7 +93,7 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 // definition module-private so far, have it here.
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t*)&mp_const_empty_tuple_obj};
 
-STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
@@ -186,7 +186,7 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     }
 }
 
-STATIC void exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
@@ -214,17 +214,7 @@ const mp_obj_type_t mp_type_BaseException = {
     .name = MP_QSTR_BaseException,
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
-    .attr = exception_attr,
-};
-
-#define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-const mp_obj_type_t mp_type_ ## exc_name = { \
-    { &mp_type_type }, \
-    .name = MP_QSTR_ ## exc_name, \
-    .print = mp_obj_exception_print, \
-    .make_new = mp_obj_exception_make_new, \
-    .attr = exception_attr, \
-    .parent = &mp_type_ ## base_name, \
+    .attr = mp_obj_exception_attr,
 };
 
 // List of all exceptions, arranged as in the table at:
