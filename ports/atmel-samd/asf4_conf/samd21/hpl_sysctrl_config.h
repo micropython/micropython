@@ -197,7 +197,7 @@
 // <i> Indicates whether configuration for External 32K Osc is enabled or not
 // <id> enable_xosc32k
 #ifndef CONF_XOSC32K_CONFIG
-#define CONF_XOSC32K_CONFIG 0
+#define CONF_XOSC32K_CONFIG 1
 #endif
 
 // <h> 32kHz External Crystal Oscillator (XOSC32K) Control
@@ -205,7 +205,7 @@
 // <i> Indicates whether External 32K Oscillator is enabled or not
 // <id> xosc32k_arch_enable
 #ifndef CONF_XOSC32K_ENABLE
-#define CONF_XOSC32K_ENABLE 0
+#define CONF_XOSC32K_ENABLE 1
 #endif
 
 // <q> On Demand
@@ -223,7 +223,7 @@
 // <i> If this bit is 1: The oscillator is not stopped in standby sleep mode.
 // <id> xosc32k_arch_runstdby
 #ifndef CONF_XOSC32K_RUNSTDBY
-#define CONF_XOSC32K_RUNSTDBY 0
+#define CONF_XOSC32K_RUNSTDBY 1
 #endif
 
 // <q> Enable 1K
@@ -237,14 +237,14 @@
 // <i> Enable 32 Khz Output
 // <id> xosc32k_arch_en32k
 #ifndef CONF_XOSC32K_EN32K
-#define CONF_XOSC32K_EN32K 0
+#define CONF_XOSC32K_EN32K 1
 #endif
 
 // <q> Enable XTAL
 // <i> Enable XTAL
 // <id> xosc32k_arch_xtalen
 #ifndef CONF_XOSC32K_XTALEN
-#define CONF_XOSC32K_XTALEN 0
+#define CONF_XOSC32K_XTALEN 1
 #endif
 
 // <q> Write Lock
@@ -274,7 +274,7 @@
 // <i> Default: 122 us
 // <id> xosc32k_arch_startup
 #ifndef CONF_XOSC32K_STARTUP
-#define CONF_XOSC32K_STARTUP CONF_XOSC32K_STARTUP_TIME_122MCS
+#define CONF_XOSC32K_STARTUP CONF_XOSC32K_STARTUP_TIME_2000092MCS
 #endif
 
 // </h>
