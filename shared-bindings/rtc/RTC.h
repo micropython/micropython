@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Noralf Trønnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_RTC_RTC_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_RTC_RTC_H
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "lib/timeutils/timeutils.h"
 
-extern mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm);
-extern void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm);
+extern void common_hal_rtc_get_time(timeutils_struct_time_t *tm);
+extern void common_hal_rtc_set_time(timeutils_struct_time_t *tm);
 
-extern uint64_t common_hal_time_monotonic(void);
-extern void common_hal_time_delay_ms(uint32_t);
+extern int common_hal_rtc_get_calibration(void);
+extern void common_hal_rtc_set_calibration(int calibration);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_TIME___INIT___H
+extern const mp_obj_type_t rtc_rtc_type;
+
+typedef struct _rtc_rtc_obj_t {
+    mp_obj_base_t base;
+} rtc_rtc_obj_t;
+
+extern const rtc_rtc_obj_t rtc_rtc_obj;
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_RTC_RTC_H
