@@ -60,15 +60,16 @@ static uint32_t usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report,
     // buffer load gets zero'd out when transaction completes, so if
     // you copy before it's ready, only zeros will get sent.
 
-    // Prefix with a report id if one is supplied
+    // Prefix with a report id if one is supplied.
     if (self->report_id > 0) {
         self->report_buffer[0] = self->report_id;
         memcpy(&(self->report_buffer[1]), report, len);
+        return hiddf_generic_write(self->report_buffer, len + 1);
     } else {
         memcpy(self->report_buffer, report, len);
+        return hiddf_generic_write(self->report_buffer, len);
     }
 
-    return hiddf_generic_write(self->report_buffer, self->report_length);
 }
 
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {

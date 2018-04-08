@@ -24,75 +24,92 @@ parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=Tru
 
 args = parser.parse_args()
 
-langid = standard.StringDescriptor("\u0409")
-manufacturer = standard.StringDescriptor(args.manufacturer)
-product = standard.StringDescriptor(args.product)
-serial_number = standard.StringDescriptor("serial number. you should fill in a unique serial number here."[:args.serial_number_length])
-strings = [langid, manufacturer, product, serial_number]
+class StringIndex:
+    """Assign a monotonically increasing index to each unique string. Start with 0."""
+    string_to_index = {}
+    strings = []
 
-# vid = 0x239A
-# pid = 0x8021
+    @classmethod
+    def index(cls, string):
+        if string in cls.string_to_index:
+            return cls.string_to_index[string]
+        else:
+            idx = len(cls.strings)
+            cls.string_to_index[string] = idx
+            cls.strings.append(string)
+            return idx
+
+    @classmethod
+    def strings_in_order(cls):
+        return cls.strings
+
+
+
+# langid must be the 0th string descriptor
+LANGID_INDEX = StringIndex.index("\u0409")
+assert LANGID_INDEX == 0
+SERIAL_NUMBER_INDEX = StringIndex.index("S" * args.serial_number_length)
 
 device = standard.DeviceDescriptor(
     description="top",
     idVendor=args.vid,
     idProduct=args.pid,
-    iManufacturer=strings.index(manufacturer),
-    iProduct=strings.index(product),
-    iSerialNumber=strings.index(serial_number))
+    iManufacturer=StringIndex.index(args.manufacturer),
+    iProduct=StringIndex.index(args.product),
+    iSerialNumber=SERIAL_NUMBER_INDEX)
 
-# Interface numbers are interface set local and endpoints are interface local
-# until core.join_interfaces renumbers them.
-cdc_interfaces = [
-    standard.InterfaceDescriptor(
-        description="CDC comm",
-        bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
-        bInterfaceSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
-        bInterfaceProtocol=cdc.CDC_PROTOCOL_V25TER,  # Common AT Commands
-        subdescriptors=[
-            # Working 2.x
-            # radix: hexadecimal
-            # 05 24 00 10 01 header
-            # 05 24 01 03 01 call manage
-            # 04 24 02 06 acm
-            # 05 24 06 00 01 union
-            cdc.Header(
-                description="CDC comm",
-                bcdCDC=0x0110),
-            cdc.CallManagement(
-                description="CDC comm",
-                bmCapabilities=0x03,
-                bDataInterface=0x01),
-            cdc.AbstractControlManagement(
-                description="CDC comm",
-                bmCapabilities=0x02),
-            cdc.Union(
-                description="CDC comm",
-                bMasterInterface=0x00,
-                bSlaveInterface_list=[0x01]),
-            standard.EndpointDescriptor(
-                description="CDC comm in",
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
-                wMaxPacketSize=0x0040,
-                bInterval=0x10)
-        ]
-    ),
-    standard.InterfaceDescriptor(
-        description="CDC data",
-        bInterfaceClass=cdc.CDC_CLASS_DATA,
-        subdescriptors=[
-            standard.EndpointDescriptor(
-                description="CDC data in",
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
-            standard.EndpointDescriptor(
-                description="CDC data out",
-                bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
-                bmAttributes=standard.EndpointDescriptor.TYPE_BULK)
-        ]
-    )
-]
+# Interface numbers are interface-set local and endpoints are interface local
+# until util.join_interfaces renumbers them.
+
+cdc_union = cdc.Union(
+    description="CDC comm",
+    bMasterInterface=0x00,       # Adjust this after interfaces are renumbered.
+    bSlaveInterface_list=[0x01]) # Adjust this after interfaces are renumbered.
+
+cdc_call_management = cdc.CallManagement(
+    description="CDC comm",
+    bmCapabilities=0x01,
+    bDataInterface=0x01)         # Adjust this after interfaces are renumbered.
+
+cdc_comm_interface = standard.InterfaceDescriptor(
+    description="CDC comm",
+    bInterfaceClass=cdc.CDC_CLASS_COMM,  # Communications Device Class
+    bInterfaceSubClass=cdc.CDC_SUBCLASS_ACM,  # Abstract control model
+    bInterfaceProtocol=cdc.CDC_PROTOCOL_NONE,
+    iInterface=StringIndex.index("CircuitPython CDC control"),
+    subdescriptors=[
+        cdc.Header(
+            description="CDC comm",
+            bcdCDC=0x0110),
+        cdc_call_management,
+        cdc.AbstractControlManagement(
+            description="CDC comm",
+            bmCapabilities=0x02),
+        cdc_union,
+        standard.EndpointDescriptor(
+            description="CDC comm in",
+            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
+            wMaxPacketSize=0x0040,
+            bInterval=0x10)
+    ])
+
+cdc_data_interface = standard.InterfaceDescriptor(
+    description="CDC data",
+    bInterfaceClass=cdc.CDC_CLASS_DATA,
+    iInterface=StringIndex.index("CircuitPython CDC data"),
+    subdescriptors=[
+        standard.EndpointDescriptor(
+            description="CDC data out",
+            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
+            bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+        standard.EndpointDescriptor(
+            description="CDC data in",
+            bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
+            bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+    ])
+
+cdc_interfaces = [cdc_comm_interface, cdc_data_interface]
 
 msc_interfaces = [
     standard.InterfaceDescriptor(
@@ -100,6 +117,7 @@ msc_interfaces = [
         bInterfaceClass=msc.MSC_CLASS,
         bInterfaceSubClass=msc.MSC_SUBCLASS_TRANSPARENT,
         bInterfaceProtocol=msc.MSC_PROTOCOL_BULK,
+        iInterface=StringIndex.index("CircuitPython Mass Storage"),
         subdescriptors=[
             standard.EndpointDescriptor(
                 description="MSC in",
@@ -124,7 +142,6 @@ hid_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="HID in",
     bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
-    wMaxPacketSize=hid_max_report_length + 1, # +1 for the Report ID
     bInterval=0x02)
 
 hid_endpoint_out_descriptor = standard.EndpointDescriptor(
@@ -134,41 +151,63 @@ hid_endpoint_out_descriptor = standard.EndpointDescriptor(
 
 hid_interfaces = [
     standard.InterfaceDescriptor(
-        description="HID Keyboard",
+        description="HID Multiple Devices",
         bInterfaceClass=hid.HID_CLASS,
         bInterfaceSubClass=hid.HID_SUBCLASS_NOBOOT,
-        bInterfaceProtocol=hid.HID_PROTOCOL_KEYBOARD,
+        bInterfaceProtocol=hid.HID_PROTOCOL_NONE,
+        iInterface=StringIndex.index("CircuitPython HID"),
         subdescriptors=[
-            hid.HIDDescriptor(wDescriptorLength=len(bytes(hid_report_descriptor))),
+            hid.HIDDescriptor(
+                description="HID",
+                wDescriptorLength=len(bytes(hid_report_descriptor))),
             hid_endpoint_in_descriptor,
             hid_endpoint_out_descriptor,
             ]
         ),
     ]
 
-# This will renumber the endpoints to make them unique across descriptors.
-interfaces = util.join_interfaces(cdc_interfaces, msc_interfaces, hid_interfaces)
-#interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces, msc_interfaces)
-#interfaces = util.join_interfaces(cdc_interfaces, hid_interfaces)
+# This will renumber the endpoints to make them unique across descriptors,
+# and renumber the interfaces in order. But we still need to fix up certain
+# interface cross-references.
+interfaces = util.join_interfaces(hid_interfaces, msc_interfaces, cdc_interfaces)
 
-cdc_function = standard.InterfaceAssociationDescriptor(
-    description="CDC function",
-    bFirstInterface=interfaces.index(cdc_interfaces[0]),
+# Now adjust the CDC interface cross-references.
+
+cdc_union.bMasterInterface = cdc_comm_interface.bInterfaceNumber
+cdc_union.bSlaveInterface_list = [cdc_data_interface.bInterfaceNumber]
+
+cdc_call_management.bDataInterface = cdc_data_interface.bInterfaceNumber
+
+cdc_iad = standard.InterfaceAssociationDescriptor(
+    description="CDC IAD",
+    bFirstInterface=cdc_comm_interface.bInterfaceNumber,
     bInterfaceCount=len(cdc_interfaces),
     bFunctionClass=0x2,  # Communications Device Class
     bFunctionSubClass=0x2,  # Abstract control model
-    bFunctionProtocol=0x1)  # Common AT Commands
+    bFunctionProtocol=0x1)
 
 configuration = standard.ConfigurationDescriptor(
     description="Composite configuration",
     wTotalLength=(standard.ConfigurationDescriptor.bLength +
-                  cdc_function.bLength +
+                  cdc_iad.bLength +
                   sum([len(bytes(x)) for x in interfaces])),
     bNumInterfaces=len(interfaces))
 
-descriptor_list = [device, configuration, cdc_function]
-descriptor_list.extend(interfaces)
-descriptor_list.extend(strings)
+descriptor_list = []
+descriptor_list.append(device)
+descriptor_list.append(configuration)
+descriptor_list.extend(hid_interfaces)
+descriptor_list.extend(msc_interfaces)
+# Put the CDC IAD just before the CDC interfaces.
+# There appears to be a bug in the Windows composite USB driver that requests the
+# HID report descriptor with the wrong interface number if the HID interface is not given
+# first. However, it still fetches the descriptor anyway.
+descriptor_list.append(cdc_iad)
+descriptor_list.extend(cdc_interfaces)
+
+string_descriptors = [standard.StringDescriptor(string) for string in StringIndex.strings_in_order()]
+serial_number_descriptor = string_descriptors[SERIAL_NUMBER_INDEX]
+descriptor_list.extend(string_descriptors)
 
 c_file = args.output_c_file
 h_file = args.output_h_file
@@ -199,7 +238,7 @@ for descriptor in descriptor_list:
     b = bytes(descriptor)
     i = 0
 
-    if descriptor == serial_number:
+    if descriptor == serial_number_descriptor:
         # Add two for bLength and bDescriptorType.
         serial_number_offset = descriptor_length + 2
 

@@ -34,7 +34,7 @@
 
 #include "genhdr/autogen_usb_descriptor.h"
 
-// Buffers are report size + 1 to include the Report ID prefix byte
+// Buffers are report size + 1 to include the Report ID prefix byte if needed.
 static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
 static uint8_t mouse_report_buffer[USB_HID_REPORT_LENGTH_MOUSE + 1];
 static uint8_t consumer_report_buffer[USB_HID_REPORT_LENGTH_CONSUMER + 1];
