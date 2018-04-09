@@ -29,7 +29,7 @@
 
 #include <stdbool.h>
 
-void filesystem_init(bool create_allowed);
+void filesystem_init(bool create_allowed, bool create_force);
 void filesystem_flush(void);
 void filesystem_writable_by_python(bool writable);
 bool filesystem_present(void);

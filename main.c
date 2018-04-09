@@ -245,7 +245,7 @@ int __attribute__((used)) main(void) {
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.
-    filesystem_init(safe_mode == NO_SAFE_MODE);
+    filesystem_init(safe_mode == NO_SAFE_MODE, false);
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
