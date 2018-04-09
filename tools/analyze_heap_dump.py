@@ -56,8 +56,6 @@ SKIP_SYMBOLS = [".debug_ranges", ".debug_frame", ".debug_loc", ".comment", ".deb
               help="Draw the heap layout")
 @click.option("--draw-heap-ownership/--no-draw-heap-ownership", default=False,
               help="Draw the ownership graph of blocks on the heap")
-@click.option("--draw-heap-ownership/--no-draw-heap-ownership", default=False,
-              help="Draw the ownership graph of blocks on the heap")
 @click.option("--analyze-snapshots", default="last", type=click.Choice(['all', 'last']))
 def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_contents,
                       print_unknown_types, print_block_state, print_conflicting_symbols,
@@ -352,7 +350,7 @@ def do_all_the_things(ram_filename, bin_filename, map_filename, print_block_cont
                 else:
                     rom_offset = pool_ptr - rom_start
                     prev, total_prev_len, alloc, length = struct.unpack_from("<IIII", rom[rom_offset:rom_offset+32])
-                    pool = rom[rom_offset:rom_offset+length*4]
+                    pool = rom[rom_offset:rom_offset + 32 + length * 4]
 
                 if qstr_index >= total_prev_len:
                     offset = (qstr_index - total_prev_len) * 4 + 16
