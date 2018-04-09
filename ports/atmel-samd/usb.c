@@ -34,8 +34,6 @@
 
 #include "hal/include/hal_gpio.h"
 #include "usb/class/cdc/device/cdcdf_acm.h"
-// #include "hiddf_mouse.h"
-// #include "hiddf_keyboard.h"
 #include "usb/class/hid/device/hiddf_generic.h"
 #include "usb/class/composite/device/composite_desc.h"
 #include "usb/class/msc/device/mscdf.h"
@@ -44,11 +42,13 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 
 #include "lib/utils/interrupt_char.h"
-#include "tools/autogen_usb_descriptor.h"
+#include "genhdr/autogen_usb_descriptor.h"
 #include "reset.h"
 #include "usb_mass_storage.h"
 
 #include "supervisor/shared/autoreload.h"
+
+extern struct usbd_descriptors descriptor_bounds;
 
 // Store received characters on our own so that we can filter control characters
 // and act immediately on CTRL-C for example.
@@ -199,14 +199,11 @@ void init_usb(void) {
 
     usbdc_init(ctrl_buffer);
 
-    /* usbdc_register_funcion inside */
+    /* usbdc_register_function inside */
     cdcdf_acm_init();
     pending_read = false;
 
     mscdf_init(1);
-    // hiddf_mouse_init();
-    // hiddf_keyboard_init();
-
     mscdf_register_callback(MSCDF_CB_INQUIRY_DISK, (FUNC_PTR)usb_msc_inquiry_info);
     mscdf_register_callback(MSCDF_CB_GET_DISK_CAPACITY, (FUNC_PTR)usb_msc_get_capacity);
     mscdf_register_callback(MSCDF_CB_START_READ_DISK, (FUNC_PTR)usb_msc_new_read);
@@ -216,9 +213,13 @@ void init_usb(void) {
     mscdf_register_callback(MSCDF_CB_XFER_BLOCKS_DONE, (FUNC_PTR)usb_msc_xfer_done);
     mscdf_register_callback(MSCDF_CB_IS_WRITABLE, (FUNC_PTR)usb_msc_disk_is_writable);
 
+    hiddf_generic_init(hid_report_descriptor, sizeof(hid_report_descriptor));
+
     usbdc_start(&descriptor_bounds);
 
     usbdc_attach();
+
+
 }
 
 static bool cdc_enabled(void) {

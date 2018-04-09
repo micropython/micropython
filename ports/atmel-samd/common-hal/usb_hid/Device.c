@@ -26,60 +26,59 @@
 
 #include <string.h>
 
-#include "py/nlr.h"
-#include "common-hal/usb_hid/__init__.h"
+#include "common-hal/usb_hid/Device.h"
+
+#include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
+#include "genhdr/autogen_usb_descriptor.h"
 
-static void report_sent(udd_ep_status_t status, iram_size_t nb_sent,
-        udd_ep_id_t ep) {
-    UNUSED(status);
-    UNUSED(nb_sent);
-    for (uint8_t i = 0; i < 2; i++) {
-        if (ep == usb_hid_devices[i].endpoint) {
-            usb_hid_devices[i].transaction_ongoing = false;
-            return;
+#include "tick.h"
+
+#include "usb/class/hid/device/hiddf_generic.h"
+
+static uint32_t usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
+
+    int32_t status;
+
+    // Don't get stuck if USB fails in some way; timeout after a while.
+    uint64_t end_ticks = ticks_ms + 2000;
+
+    while (ticks_ms < end_ticks) {
+        status = usb_d_ep_get_status(self->endpoint, NULL);
+        if (status == USB_BUSY) {
+            continue;
         }
-    }
-}
-
-bool usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
-    if (!self->enabled) {
-        return true;
-    }
-    // Wait for the previous transaction to finish. Shouldn't happen.
-    uint32_t timeout = 0xffff;
-
-    while (self->transaction_ongoing && timeout > 0) {
-        timeout--;
+        if (status == USB_OK) {
+            break;
+        }
+        // Some error. Give up.
+        return status;
     }
 
-    if (self->transaction_ongoing) {
-        return false;
+    // Copy the data only when endpoint is ready to send. The previous
+    // buffer load gets zero'd out when transaction completes, so if
+    // you copy before it's ready, only zeros will get sent.
+
+    // Prefix with a report id if one is supplied.
+    if (self->report_id > 0) {
+        self->report_buffer[0] = self->report_id;
+        memcpy(&(self->report_buffer[1]), report, len);
+        return hiddf_generic_write(self->report_buffer, len + 1);
+    } else {
+        memcpy(self->report_buffer, report, len);
+        return hiddf_generic_write(self->report_buffer, len);
     }
 
-    memcpy(self->report_buffer, report, len);
-
-    // Disable interrupts to make sure we save the ongoing state before the
-    // report_sent interrupt.
-    common_hal_mcu_disable_interrupts();
-    bool ok = udd_ep_run(self->endpoint, false,
-        self->report_buffer, self->report_length, report_sent);
-    self->transaction_ongoing = ok;
-    common_hal_mcu_enable_interrupts();
-    return ok;
 }
 
 void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len) {
     if (len != self->report_length) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "Buffer incorrect size. Should be %d bytes.", self->report_length));
+        mp_raise_ValueError_varg("Buffer incorrect size. Should be %d bytes.", self->report_length);
     }
-    if (!self->enabled) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "USB Inactive"));
-    }
-    if (!usb_hid_send_report(self, report, len)) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "USB Busy"));
+    int32_t status = usb_hid_send_report(self, report, len);
+    if (status != ERR_NONE) {
+        mp_raise_msg(&mp_type_OSError, status == USB_BUSY ? "USB Busy" : "USB Error");
     }
 }
 
@@ -89,4 +88,18 @@ uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
 
 uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
     return self->usage;
+}
+
+
+void usb_hid_init() {
+}
+
+void usb_hid_reset() {
+    // We don't actually reset. We just set a report that is empty to prevent
+    // long keypresses and such.
+    uint8_t report[USB_HID_MAX_REPORT_LENGTH] = {0};
+
+    for (size_t i = 0; i < USB_HID_NUM_DEVICES; i++) {
+        usb_hid_send_report(&usb_hid_devices[i], report, usb_hid_devices[i].report_length);
+    }
 }

@@ -72,6 +72,7 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
+	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
@@ -80,6 +81,7 @@ BASE_CFLAGS = \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
 	--param max-inline-insns-single=500
+
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
@@ -95,8 +97,8 @@ endif
 ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
-  CFLAGS += -flto
-  ## CFLAGS += -fno-inline
+##  CFLAGS += -flto
+  CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
@@ -192,6 +194,7 @@ SRC_ASF := \
 	hpl/systick/hpl_systick.c \
 	hpl/usb/hpl_usb.c \
 	usb/class/cdc/device/cdcdf_acm.c \
+	usb/class/hid/device/hiddf_generic.c \
 	usb/class/msc/device/mscdf.c \
 	usb/device/usbdc.c \
 	usb/usb_protocol.c \
@@ -281,6 +284,8 @@ SRC_COMMON_HAL = \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
+	usb_hid/__init__.c \
+	usb_hid/Device.c
 #	audiobusio/__init__.c \
 	audiobusio/PDMIn.c \
 	audioio/__init__.c \
@@ -289,8 +294,6 @@ SRC_COMMON_HAL = \
 	nvm/ByteArray.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
-	usb_hid/__init__.c \
-	usb_hid/Device.c
 
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = $(addprefix lib/,\
@@ -378,14 +381,19 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
 	python2 $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
-$(BUILD)/autogen_usb_descriptor.c: tools/gen_usb_descriptor.py Makefile
+$(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
+
+.INTERMEDIATE: autogen_usb_descriptor.intermediate
+
+autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile
 	install -d $(BUILD)
 	python3 tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
 		--vid $(USB_VID)\
 		--pid $(USB_PID)\
-		$@
+		--output_c_file $(BUILD)/autogen_usb_descriptor.c\
+		--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

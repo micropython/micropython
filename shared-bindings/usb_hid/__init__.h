@@ -30,8 +30,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// TODO(tannewt): Make this a mp_obj_tuple_t when it is dynamically allocated.
-// until then we hard code it to two entries so LTO is happy.
-extern mp_obj_tuple2_t common_hal_usb_hid_devices;
+extern mp_obj_tuple_t common_hal_usb_hid_devices;
 
 #endif  // SHARED_BINDINGS_USB_HID_H

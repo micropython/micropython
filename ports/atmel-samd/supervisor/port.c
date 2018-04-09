@@ -49,6 +49,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/usb_hid/Device.h"
 #include "shared_dma.h"
 #include "tick.h"
 
@@ -229,9 +230,8 @@ void reset_port(void) {
     // gpio_set_pin_function(PIN_PB15, GPIO_PIN_FUNCTION_M); // GCLK1, D6
     // #endif
 
-//
-//     usb_hid_reset();
-//
+    usb_hid_reset();
+
 // #ifdef CALIBRATE_CRYSTALLESS
 //     // If we are on USB lets double check our fine calibration for the clock and
 //     // save the new value if its different enough.

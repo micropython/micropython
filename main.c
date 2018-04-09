@@ -286,12 +286,12 @@ int __attribute__((used)) main(void) {
         #endif
 
         // Reset to remove any state that boot.py setup. It should only be used to
-        // change internal state thats not in the heap.
+        // change internal state that's not in the heap.
         reset_port();
         reset_mp();
     }
 
-    // Start serial after giving boot.py a chance to tweak behavior.
+    // Start serial and HID after giving boot.py a chance to tweak behavior.
     serial_init();
 
     // Boot script is finished, so now go into REPL/main mode.

@@ -2,6 +2,62 @@
 #ifndef HPL_USB_CONFIG_H
 #define HPL_USB_CONFIG_H
 
+// CIRCUITPY:
+
+// Use 64-byte USB buffers for endpoint directions that are in use. They're set to 0 below otherwise.
+
+#include "genhdr/autogen_usb_descriptor.h"
+
+#if defined(USB_ENDPOINT_1_OUT_USED) && USB_ENDPOINT_1_OUT_USED
+#define CONF_USB_EP1_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_1_IN_USED) && USB_ENDPOINT_1_IN_USED
+#define CONF_USB_EP1_I_CACHE 64
+#endif
+
+#if defined(USB_ENDPOINT_2_OUT_USED) && USB_ENDPOINT_2_OUT_USED
+#define CONF_USB_EP2_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_2_IN_USED) && USB_ENDPOINT_2_IN_USED
+#define CONF_USB_EP2_I_CACHE 64
+#endif
+
+#if defined(USB_ENDPOINT_3_OUT_USED) && USB_ENDPOINT_3_OUT_USED
+#define CONF_USB_EP3_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_3_IN_USED) && USB_ENDPOINT_3_IN_USED
+#define CONF_USB_EP3_I_CACHE 64
+#endif
+
+#if defined(USB_ENDPOINT_4_OUT_USED) && USB_ENDPOINT_4_OUT_USED
+#define CONF_USB_EP4_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_4_IN_USED) && USB_ENDPOINT_4_IN_USED
+#define CONF_USB_EP4_I_CACHE 64
+#endif
+
+#if defined(USB_ENDPOINT_5_OUT_USED) && USB_ENDPOINT_5_OUT_USED
+#define CONF_USB_EP5_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_5_IN_USED) && USB_ENDPOINT_5_IN_USED
+#define CONF_USB_EP5_I_CACHE 64
+#endif
+
+#if defined(USB_ENDPOINT_6_OUT_USED) && USB_ENDPOINT_6_OUT_USED
+#define CONF_USB_EP6_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_6_IN_USED) && USB_ENDPOINT_6_IN_USED
+#define CONF_USB_EP6_I_CACHE 64
+#endif
+
+#if defined(USB_ENDPOINT_7_OUT_USED) && USB_ENDPOINT_7_OUT_USED
+#define CONF_USB_EP7_CACHE 64
+#endif
+#if defined(USB_ENDPOINT_7_IN_USED) && USB_ENDPOINT_7_IN_USED
+#define CONF_USB_EP7_I_CACHE 64
+#endif
+
+
 // <<< Use Configuration Wizard in Context Menu >>>
 
 #define CONF_USB_N_0 0
@@ -28,6 +84,8 @@
 
 // <y> Max number of endpoints supported
 // <i> Limits the number of endpoints (described by EP address) can be used in app.
+// NOTE(tannewt): This not only limits the number of endpoints but also the
+// addresses. In other words, even if you use endpoint 6 you need to set this to 11.
 // <CONF_USB_N_1"> 1 (EP0 only)
 // <CONF_USB_N_2"> 2 (EP0 + 1 endpoint)
 // <CONF_USB_N_3"> 3 (EP0 + 2 endpoints)
@@ -100,7 +158,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep1_cache
 #ifndef CONF_USB_EP1_CACHE
-#define CONF_USB_EP1_CACHE 64
+#define CONF_USB_EP1_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP1 IN
@@ -138,7 +196,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep2_cache
 #ifndef CONF_USB_EP2_CACHE
-#define CONF_USB_EP2_CACHE 64
+#define CONF_USB_EP2_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP2 IN
@@ -156,7 +214,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep2_I_CACHE
 #ifndef CONF_USB_EP2_I_CACHE
-#define CONF_USB_EP2_I_CACHE 64
+#define CONF_USB_EP2_I_CACHE 0
 #endif
 // </h>
 
@@ -194,7 +252,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_ep3_I_CACHE
 #ifndef CONF_USB_EP3_I_CACHE
-#define CONF_USB_EP3_I_CACHE 64
+#define CONF_USB_EP3_I_CACHE 0
 #endif
 // </h>
 
@@ -214,7 +272,7 @@
 // <1024=> Cached by 1024 bytes buffer (interrupt or isochronous EP)
 // <id> usb_arch_ep4_cache
 #ifndef CONF_USB_EP4_CACHE
-#define CONF_USB_EP4_CACHE 64
+#define CONF_USB_EP4_CACHE 0
 #endif
 
 // <o> Cache buffer size for EP4 IN

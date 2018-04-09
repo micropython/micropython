@@ -30,8 +30,24 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "common-hal/usb_hid/types.h"
+#include "py/obj.h"
 
-bool usb_hid_send_report(usb_hid_device_obj_t *self, uint8_t* report, uint8_t len);
+#include "genhdr/autogen_usb_descriptor.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t* report_buffer;
+    uint8_t endpoint;
+    uint8_t report_id;     // If non-zero, prefix report with given id.
+    uint8_t report_length; // Length not including Report ID.
+    uint8_t usage_page;
+    uint8_t usage;
+
+} usb_hid_device_obj_t;
+
+usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES];
+
+void usb_hid_init(void);
+void usb_hid_reset(void);
 
 #endif  // COMMON_HAL_USB_HID_DEVICE_H

@@ -28,90 +28,67 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 
-#include "common-hal/usb_hid/__init__.h"
 #include "common-hal/usb_hid/Device.h"
-#include "common-hal/usb_hid/types.h"
 
-#include "shared-bindings/usb_hid/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-#define UDI_HID_MOUSE_REPORT_SIZE 4
-#define UDI_HID_KBD_REPORT_SIZE 8
+#include "genhdr/autogen_usb_descriptor.h"
 
-uint8_t mouse_report_buffer[UDI_HID_MOUSE_REPORT_SIZE];
-uint8_t kbd_report_buffer[UDI_HID_KBD_REPORT_SIZE];
+// Buffers are report size + 1 to include the Report ID prefix byte if needed.
+static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
+static uint8_t mouse_report_buffer[USB_HID_REPORT_LENGTH_MOUSE + 1];
+static uint8_t consumer_report_buffer[USB_HID_REPORT_LENGTH_CONSUMER + 1];
+static uint8_t sys_control_report_buffer[USB_HID_REPORT_LENGTH_SYS_CONTROL + 1];
 
-usb_hid_device_obj_t usb_hid_devices[2] = {
+usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
     {
-        .endpoint = UDI_HID_MOUSE_EP_IN,
-        .report_length = UDI_HID_MOUSE_REPORT_SIZE,
-        .report_buffer = mouse_report_buffer,
-        .usage_page = 0x01,
-        .usage = 0x02,
-        .enabled = false,
-        .transaction_ongoing = false
-    },
-    {
-        .endpoint = UDI_HID_KBD_EP_IN,
-        .report_length = UDI_HID_KBD_REPORT_SIZE,
-        .report_buffer = kbd_report_buffer,
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = keyboard_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_KEYBOARD,
+        .report_length = USB_HID_REPORT_LENGTH_KEYBOARD,
         .usage_page = 0x01,
         .usage = 0x06,
-        .enabled = false,
-        .transaction_ongoing = false
-    }
+    },
+    {
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = mouse_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_MOUSE,
+        .report_length = USB_HID_REPORT_LENGTH_MOUSE,
+        .usage_page = 0x01,
+        .usage = 0x02,
+    },
+    {
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = consumer_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_CONSUMER,
+        .report_length = USB_HID_REPORT_LENGTH_CONSUMER,
+        .usage_page = 0x0C,
+        .usage = 0x01,
+    },
+    {
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = sys_control_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_SYS_CONTROL,
+        .report_length = USB_HID_REPORT_LENGTH_SYS_CONTROL,
+        .usage_page = 0x01,
+        .usage = 0x80,
+    },
 };
 
-// TODO(tannewt): Make this a mp_obj_tuple_t when it is dynamically allocated.
-// until then we hard code it to two entries so LTO is happy.
-mp_obj_tuple2_t common_hal_usb_hid_devices = {
+
+mp_obj_tuple_t common_hal_usb_hid_devices = {
     .base = {
         .type = &mp_type_tuple,
     },
-    .len = 2,
+    .len = USB_HID_NUM_DEVICES,
     .items = {
         (mp_obj_t) &usb_hid_devices[0],
-        (mp_obj_t) &usb_hid_devices[1]
+        (mp_obj_t) &usb_hid_devices[1],
+        (mp_obj_t) &usb_hid_devices[2],
+        (mp_obj_t) &usb_hid_devices[3],
     }
 };
-
-void usb_hid_init() {
-    usb_hid_devices[0].base.type = &usb_hid_device_type;
-    usb_hid_devices[1].base.type = &usb_hid_device_type;
-}
-
-void usb_hid_reset() {
-    // We don't actually reset. We just set a report that is empty to prevent
-    // long keypresses and such.
-    uint8_t report[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-    usb_hid_send_report(&usb_hid_devices[0], report, 4);
-    usb_hid_send_report(&usb_hid_devices[1], report, 8);
-}
-
-bool mp_mouse_enable(void)
-{
-	usb_hid_devices[0].enabled = true;
-	return true;
-}
-
-void mp_mouse_disable(void)
-{
-	usb_hid_devices[0].enabled = false;
-}
-
-bool mp_keyboard_enable(void)
-{
-	usb_hid_devices[1].enabled = true;
-	return true;
-}
-
-void mp_keyboard_disable(void)
-{
-	usb_hid_devices[1].enabled = false;
-}
-
-void mp_keyboard_led(uint8_t leds)
-{
-	UNUSED(leds);
-}
