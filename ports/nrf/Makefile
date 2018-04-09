@@ -208,6 +208,8 @@ SRC_COMMON_HAL += \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
 	storage/__init__.c \
+        supervisor/__init__.c \
+        supervisor/Runtime.c \
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
@@ -219,7 +221,6 @@ SRC_BINDINGS_ENUMS = \
 	microcontroller/RunMode.c \
 	help.c \
 	math/__init__.c \
-	supervisor/__init__.c \
 	util.c
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \

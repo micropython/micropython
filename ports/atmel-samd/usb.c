@@ -233,7 +233,7 @@ static bool cdc_enabled(void) {
         cdcdf_acm_register_callback(CDCDF_ACM_CB_STATE_C, (FUNC_PTR)usb_device_cb_state_c);
         cdcdf_acm_register_callback(CDCDF_ACM_CB_LINE_CODING_C, (FUNC_PTR)usb_device_cb_line_coding_c);
         mp_cdc_enabled = true;
-    }    
+    }
 
     return true;
 }
