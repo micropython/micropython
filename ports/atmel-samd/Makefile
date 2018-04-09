@@ -388,7 +388,7 @@ $(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: auto
 .INTERMEDIATE: autogen_usb_descriptor.intermediate
 
 autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile
-	install -d $(BUILD)
+	install -d $(BUILD)/genhdr
 	python3 tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
