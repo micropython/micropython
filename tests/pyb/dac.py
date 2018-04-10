@@ -12,3 +12,7 @@ dac.write(0)
 dac.write_timed(bytearray(10), 100, mode=pyb.DAC.NORMAL)
 pyb.delay(20)
 dac.write(0)
+
+# test buffering arg
+dac = pyb.DAC(1, buffering=True)
+dac.write(0)
