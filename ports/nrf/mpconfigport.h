@@ -169,8 +169,8 @@
 #define MICROPY_PY_MACHINE_RTCOUNTER (0)
 #endif
 
-#ifndef MICROPY_PY_HW_RNG
-#define MICROPY_PY_HW_RNG           (1)
+#ifndef MICROPY_PY_RANDOM_HW_RNG
+#define MICROPY_PY_RANDOM_HW_RNG    (0)
 #endif
 
 
@@ -227,8 +227,8 @@ extern const struct _mp_obj_module_t random_module;
 #define MUSIC_MODULE
 #endif
 
-#if MICROPY_PY_HW_RNG
-#define RANDOM_MODULE                        { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&random_module) },
+#if MICROPY_PY_RANDOM_HW_RNG
+#define RANDOM_MODULE                       { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&random_module) },
 #else
 #define RANDOM_MODULE
 #endif
