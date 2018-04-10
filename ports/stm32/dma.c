@@ -475,8 +475,22 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void 
     dma->Init.Direction = dma_descr->transfer_direction;
     #if defined(STM32L4) || defined(STM32H7)
     dma->Init.Request = dma_descr->sub_instance;
+
+    // Factor 4 (or <<2) for matching channel bit location with
+    // CSELR, IFCR, ISR .. register.
+    // See as well HAL_DMA_Init()
+    dma->ChannelIndex = ((dma_descr->id)%NSTREAMS_PER_CONTROLLER)<<2;
+    if (dma_descr->id < NSTREAMS_PER_CONTROLLER) {
+        dma->DmaBaseAddress = DMA1;
+    } else {
+        dma->DmaBaseAddress = DMA2;
+    }
     #else
     dma->Init.Channel = dma_descr->sub_instance;
+
+    // calculate DMA base address and bitshift to be used in IRQ handler
+    extern uint32_t DMA_CalcBaseAndBitshift(DMA_HandleTypeDef *hdma);
+    DMA_CalcBaseAndBitshift(dma);
     #endif
     // half of __HAL_LINKDMA(data, xxx, *dma)
     // caller must implement other half by doing: data->xxx = dma
@@ -512,25 +526,6 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
         } else {
             // only necessary initialization
             dma->State = HAL_DMA_STATE_READY;
-#if defined(STM32F4) || defined(STM32F7)
-            // calculate DMA base address and bitshift to be used in IRQ handler
-            extern uint32_t DMA_CalcBaseAndBitshift(DMA_HandleTypeDef *hdma);
-            DMA_CalcBaseAndBitshift(dma);
-
-#elif defined(STM32L4)
-            // copied from stm32l4xx_hal_dma.c:dma_init()
-            if ((uint32_t)(dma->Instance) < (uint32_t)(DMA2_Channel1)) {
-                // DMA1
-                dma->ChannelIndex = (((uint32_t)dma->Instance - (uint32_t)DMA1_Channel1) 
-                                        / ((uint32_t)DMA1_Channel2 - (uint32_t)DMA1_Channel1)) << 2;
-                dma->DmaBaseAddress = DMA1;
-            } else {
-                // DMA2
-                dma->ChannelIndex = (((uint32_t)dma->Instance - (uint32_t)DMA2_Channel1) 
-                                        / ((uint32_t)DMA2_Channel2 - (uint32_t)DMA2_Channel1)) << 2;
-                dma->DmaBaseAddress = DMA2;
-            }
-#endif
         }
 
         HAL_NVIC_EnableIRQ(dma_irqn[dma_id]);
