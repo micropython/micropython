@@ -312,9 +312,6 @@ def run_tests(pyb, tests, args, base_path="."):
 
         if args.target == 'wipy':
             skip_tests.add('misc/print_exception.py')       # requires error reporting full
-            skip_tests.add('misc/recursion.py')             # requires stack checking enabled
-            skip_tests.add('misc/recursive_data.py')        # requires stack checking enabled
-            skip_tests.add('misc/recursive_iternext.py')    # requires stack checking enabled
             skip_tests.update({'extmod/uctypes_%s.py' % t for t in 'bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native array_assign_le array_assign_native_le'.split()}) # requires uctypes
             skip_tests.add('extmod/zlibd_decompress.py')    # requires zlib
             skip_tests.add('extmod/uheapq1.py')             # uheapq not supported by WiPy
