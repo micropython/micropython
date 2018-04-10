@@ -262,28 +262,28 @@ void i2c_init(I2C_HandleTypeDef *i2c) {
         i2c_unit = 1;
         scl_pin = MICROPY_HW_I2C1_SCL;
         sda_pin = MICROPY_HW_I2C1_SDA;
-        __I2C1_CLK_ENABLE();
+        __HAL_RCC_I2C1_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c == &I2CHandle2) {
         i2c_unit = 2;
         scl_pin = MICROPY_HW_I2C2_SCL;
         sda_pin = MICROPY_HW_I2C2_SDA;
-        __I2C2_CLK_ENABLE();
+        __HAL_RCC_I2C2_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     } else if (i2c == &I2CHandle3) {
         i2c_unit = 3;
         scl_pin = MICROPY_HW_I2C3_SCL;
         sda_pin = MICROPY_HW_I2C3_SDA;
-        __I2C3_CLK_ENABLE();
+        __HAL_RCC_I2C3_CLK_ENABLE();
     #endif
     #if defined(MICROPY_HW_I2C4_SCL)
     } else if (i2c == &I2CHandle4) {
         i2c_unit = 4;
         scl_pin = MICROPY_HW_I2C4_SCL;
         sda_pin = MICROPY_HW_I2C4_SDA;
-        __I2C4_CLK_ENABLE();
+        __HAL_RCC_I2C4_CLK_ENABLE();
     #endif
     } else {
         // I2C does not exist for this board (shouldn't get here, should be checked by caller)
@@ -339,25 +339,25 @@ void i2c_deinit(I2C_HandleTypeDef *i2c) {
     if (0) {
     #if defined(MICROPY_HW_I2C1_SCL)
     } else if (i2c->Instance == I2C1) {
-        __I2C1_FORCE_RESET();
-        __I2C1_RELEASE_RESET();
-        __I2C1_CLK_DISABLE();
+        __HAL_RCC_I2C1_FORCE_RESET();
+        __HAL_RCC_I2C1_RELEASE_RESET();
+        __HAL_RCC_I2C1_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(I2C1_EV_IRQn);
         HAL_NVIC_DisableIRQ(I2C1_ER_IRQn);
     #endif
     #if defined(MICROPY_HW_I2C2_SCL)
     } else if (i2c->Instance == I2C2) {
-        __I2C2_FORCE_RESET();
-        __I2C2_RELEASE_RESET();
-        __I2C2_CLK_DISABLE();
+        __HAL_RCC_I2C2_FORCE_RESET();
+        __HAL_RCC_I2C2_RELEASE_RESET();
+        __HAL_RCC_I2C2_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(I2C2_EV_IRQn);
         HAL_NVIC_DisableIRQ(I2C2_ER_IRQn);
     #endif
     #if defined(MICROPY_HW_I2C3_SCL)
     } else if (i2c->Instance == I2C3) {
-        __I2C3_FORCE_RESET();
-        __I2C3_RELEASE_RESET();
-        __I2C3_CLK_DISABLE();
+        __HAL_RCC_I2C3_FORCE_RESET();
+        __HAL_RCC_I2C3_RELEASE_RESET();
+        __HAL_RCC_I2C3_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(I2C3_EV_IRQn);
         HAL_NVIC_DisableIRQ(I2C3_ER_IRQn);
     #endif
