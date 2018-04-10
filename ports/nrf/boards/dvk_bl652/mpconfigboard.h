@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#define DVK_BL652
-
 #define MICROPY_HW_BOARD_NAME       "DVK-BL652"
 #define MICROPY_HW_MCU_NAME         "NRF52832"
 #define MICROPY_PY_SYS_PLATFORM     "bl652"
@@ -40,19 +38,6 @@
 #define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_HW_HAS_LED          (1)
-#define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (0)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
-
 #define MICROPY_HW_LED_COUNT        (2)
 #define MICROPY_HW_LED_PULLUP       (0)
 
