@@ -282,7 +282,7 @@ STATIC mp_obj_t microbit_music_stop(mp_uint_t n_args, const mp_obj_t *args) {
     const pin_obj_t *pin;
     if (n_args == 0) {
 #ifdef MICROPY_HW_MUSIC_PIN
-        pin = pin_find(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
+        pin = mp_hal_get_pin_obj(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
 #else
         mp_raise_ValueError("pin parameter not given");
 #endif
@@ -335,7 +335,7 @@ STATIC mp_obj_t microbit_music_play(mp_uint_t n_args, const mp_obj_t *pos_args, 
     const pin_obj_t *pin;
     if (args[1].u_obj == MP_OBJ_NULL) {
 #ifdef MICROPY_HW_MUSIC_PIN
-        pin = pin_find(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
+        pin = mp_hal_get_pin_obj(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
 #else
         mp_raise_ValueError("pin parameter not given");
 #endif
@@ -390,7 +390,7 @@ STATIC mp_obj_t microbit_music_pitch(mp_uint_t n_args, const mp_obj_t *pos_args,
     const pin_obj_t *pin;
     if (args[2].u_obj == MP_OBJ_NULL) {
 #ifdef MICROPY_HW_MUSIC_PIN
-        pin = pin_find(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
+        pin = mp_hal_get_pin_obj(MP_OBJ_NEW_SMALL_INT(MICROPY_HW_MUSIC_PIN));
 #else
         mp_raise_ValueError("pin parameter not given");
 #endif
