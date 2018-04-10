@@ -52,8 +52,6 @@ typedef struct _machine_uart_obj_t {
 
 STATIC const char *_parity_name[] = {"None", "1", "0"};
 
-QueueHandle_t UART_QUEUE[UART_NUM_MAX] = {};
-
 /******************************************************************************/
 // MicroPython bindings for UART
 
@@ -242,7 +240,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     uart_param_config(self->uart_num, &uartcfg);
 
     // RX and TX buffers are currently hardcoded at 256 bytes each (IDF minimum).
-    uart_driver_install(uart_num, 256, 256, 10, &UART_QUEUE[self->uart_num], 0);
+    uart_driver_install(uart_num, 256, 256, 0, NULL, 0);
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
