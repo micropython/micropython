@@ -237,8 +237,7 @@ STATIC mp_obj_t machine_hard_pwm_make_new(mp_arg_val_t *args) {
 
     // check if PWM pin is set
     if (args[ARG_pin].u_obj != MP_OBJ_NULL) {
-        pin_obj_t *pin_obj = args[ARG_pin].u_obj;
-        self->p_config->pwm_pin = pin_obj->pin;
+        self->p_config->pwm_pin = mp_hal_get_pin_obj(args[ARG_pin].u_obj)->pin;
     } else {
         // TODO: raise exception.
     }
