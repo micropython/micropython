@@ -143,6 +143,7 @@ typedef struct _pyb_dac_obj_t {
     uint16_t pin; // GPIO_PIN_4 or GPIO_PIN_5
     uint8_t bits; // 8 or 12
     uint8_t state;
+    uint8_t buffered;
 } pyb_dac_obj_t;
 
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -196,6 +197,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
 
     // reset state of DAC
     self->state = DAC_STATE_RESET;
+    self->buffered = 0;
 
     return mp_const_none;
 }
@@ -292,6 +294,7 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
         config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_BUILTIN_WAVEFORM;
+        self->buffered = 1;
     }
 
     // set noise wave generation
@@ -322,6 +325,7 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
         config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_BUILTIN_WAVEFORM;
+        self->buffered = 1;
     }
 
     // set triangle wave generation
@@ -336,27 +340,39 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_triangle_obj, pyb_dac_triangle);
 
 /// \method write(value)
 /// Direct access to the DAC output (8 bit only at the moment).
-STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
-    pyb_dac_obj_t *self = self_in;
+/// `buffered` arg defaults False for compatibility with existing apps.
+STATIC mp_obj_t pyb_dac_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    pyb_dac_obj_t *self = pos_args[0];
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_val, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
 
-    if (self->state != DAC_STATE_WRITE_SINGLE) {
+    // parse args
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Get current buffered status
+    bool buffered = args[1].u_bool;
+    if (self->state != DAC_STATE_WRITE_SINGLE || self->buffered != buffered) {
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_NONE;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+        config.DAC_OutputBuffer = buffered ? DAC_OUTPUTBUFFER_ENABLE : DAC_OUTPUTBUFFER_DISABLE;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_WRITE_SINGLE;
+        self->buffered = buffered;
     }
 
     // DAC output is always 12-bit at the hardware level, and we provide support
     // for multiple bit "resolutions" simply by shifting the input value.
     HAL_DAC_SetValue(&DAC_Handle, self->dac_channel, DAC_ALIGN_12B_R,
-        mp_obj_get_int(val) << (12 - self->bits));
+        args[0].u_int << (12 - self->bits));
 
     HAL_DAC_Start(&DAC_Handle, self->dac_channel);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_dac_write_obj, 1, pyb_dac_write);
 
 #if defined(TIM6)
 /// \method write_timed(data, freq, *, mode=DAC.NORMAL)
@@ -370,6 +386,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_dac_write_obj, pyb_dac_write);
 ///
 /// `mode` can be `DAC.NORMAL` or `DAC.CIRCULAR`.
 ///
+/// `buffered` defaults True for compatibility with existing apps.
 // TODO add callback argument, to call when transfer is finished
 // TODO add double buffer argument
 //
@@ -383,6 +400,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_mode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DMA_NORMAL} },
+        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
     // parse args
@@ -451,12 +469,15 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     DAC_Handle.State = HAL_DAC_STATE_RESET;
     HAL_DAC_Init(&DAC_Handle);
 
-    if (self->state != DAC_STATE_DMA_WAVEFORM + dac_trigger) {
+    // Get current buffered status
+    bool buffered = args[3].u_bool;
+    if (self->state != DAC_STATE_DMA_WAVEFORM + dac_trigger || self->buffered != buffered) {
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = dac_trigger;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = buffered ? DAC_OUTPUTBUFFER_ENABLE : DAC_OUTPUTBUFFER_DISABLE;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_DMA_WAVEFORM + dac_trigger;
+        self->buffered = buffered;
     }
 
     if (self->bits == 8) {

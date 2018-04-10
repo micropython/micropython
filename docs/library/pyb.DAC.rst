@@ -82,13 +82,21 @@ Methods
    the given frequency, and the frequency of the repeating triangle wave
    itself is 2048 times smaller.
 
-.. method:: DAC.write(value)
+.. method:: DAC.write(value, \*, buffering=True)
 
    Direct access to the DAC output.  The minimum value is 0.  The maximum
    value is 2\*\*``bits``-1, where ``bits`` is set when creating the DAC
    object or by using the ``init`` method.
 
-.. method:: DAC.write_timed(data, freq, \*, mode=DAC.NORMAL)
+   The Pyboard DAC has an op-amp buffer whose purpose is to reduce its output
+   impedance. With the ``buffering`` argument set, the buffer is used,
+   otherwise it is bypassed. If used, the DAC pin can drive loads down to
+   5KΩ. Otherwise it has an output impedance of 15KΩ maximum: consequently
+   to achieve a 1% accuracy the applied load should not exceed 1.5MΩ. Using
+   the buffer incurs a penalty in accuracy, especially near the extremes of
+   range.
+
+.. method:: DAC.write_timed(data, freq, \*, mode=DAC.NORMAL, buffering=True)
 
    Initiates a burst of RAM to DAC using a DMA transfer.
    The input data is treated as an array of bytes in 8-bit mode, and
@@ -100,6 +108,8 @@ Methods
    are 2, 4, 5, 6, 7 and 8.
 
    ``mode`` can be ``DAC.NORMAL`` or ``DAC.CIRCULAR``.
+
+   ``buffering`` is boolean. See note on ``DAC.write()`` above.
 
    Example using both DACs at the same time::
 
