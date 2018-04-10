@@ -29,6 +29,9 @@
 #include <string.h>
 
 #include "py/runtime.h"
+
+#if MICROPY_PY_RANDOM_HW_RNG
+
 #include "nrf_rng.h"
 #include "modrandom.h"
 
@@ -37,8 +40,6 @@
 #include "ble_drv.h"
 #define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
 #endif
-
-#if MICROPY_PY_HW_RNG
 
 static inline uint32_t generate_hw_random(void) {
     uint32_t retval = 0;
@@ -219,4 +220,4 @@ const mp_obj_module_t random_module = {
     .globals = (mp_obj_dict_t*)&mp_module_random_globals,
 };
 
-#endif // MICROPY_PY_HW_RNG
+#endif // MICROPY_PY_RANDOM_HW_RNG
