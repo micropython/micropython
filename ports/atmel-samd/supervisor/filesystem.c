@@ -50,7 +50,7 @@ static void make_empty_file(FATFS *fatfs, const char *path) {
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
-void filesystem_init(bool create_allowed, bool create_force) {
+void filesystem_init(bool create_allowed, bool force_create) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &fs_user_mount_flash;
     vfs_fat->flags = 0;
@@ -59,7 +59,7 @@ void filesystem_init(bool create_allowed, bool create_force) {
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
 
-    if ((res == FR_NO_FILESYSTEM && create_allowed) || create_force) {
+    if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
         // No filesystem so create a fresh one, or reformat has been requested.
         uint8_t working_buf[_MAX_SS];
         res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
