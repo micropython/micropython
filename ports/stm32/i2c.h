@@ -42,6 +42,7 @@ typedef struct _pyb_i2c_obj_t {
 extern I2C_HandleTypeDef I2CHandle1;
 extern I2C_HandleTypeDef I2CHandle2;
 extern I2C_HandleTypeDef I2CHandle3;
+extern I2C_HandleTypeDef I2CHandle4;
 extern const mp_obj_type_t pyb_i2c_type;
 extern const pyb_i2c_obj_t pyb_i2c_obj[4];
 
