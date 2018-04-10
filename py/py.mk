@@ -267,8 +267,8 @@ PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
-SRC_QSTR_IGNORE = py/nlr% py/emitnx86% py/emitnx64% py/emitnthumb% py/emitnarm% py/emitnxtensa%
-SRC_QSTR = $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) py/emitnative.c $(PY_EXTMOD_O_BASENAME:.o=.c)
+SRC_QSTR_IGNORE = py/nlr%
+SRC_QSTR = $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
@@ -294,28 +294,6 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_C
 # Force nlr code to always be compiled with space-saving optimisation so
 # that the function preludes are of a minimal and predictable form.
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
-
-# emitters
-
-$(PY_BUILD)/emitnx64.o: CFLAGS += -DN_X64
-$(PY_BUILD)/emitnx64.o: py/emitnative.c
-	$(call compile_c)
-
-$(PY_BUILD)/emitnx86.o: CFLAGS += -DN_X86
-$(PY_BUILD)/emitnx86.o: py/emitnative.c
-	$(call compile_c)
-
-$(PY_BUILD)/emitnthumb.o: CFLAGS += -DN_THUMB
-$(PY_BUILD)/emitnthumb.o: py/emitnative.c
-	$(call compile_c)
-
-$(PY_BUILD)/emitnarm.o: CFLAGS += -DN_ARM
-$(PY_BUILD)/emitnarm.o: py/emitnative.c
-	$(call compile_c)
-
-$(PY_BUILD)/emitnxtensa.o: CFLAGS += -DN_XTENSA
-$(PY_BUILD)/emitnxtensa.o: py/emitnative.c
-	$(call compile_c)
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
 $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)

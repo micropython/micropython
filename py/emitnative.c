@@ -57,14 +57,7 @@
 #endif
 
 // wrapper around everything in this file
-#if (MICROPY_EMIT_X64 && N_X64) \
-    || (MICROPY_EMIT_X86 && N_X86) \
-    || (MICROPY_EMIT_THUMB && N_THUMB) \
-    || (MICROPY_EMIT_ARM && N_ARM) \
-    || (MICROPY_EMIT_XTENSA && N_XTENSA) \
-
-// this is defined so that the assembler exports generic assembler API macros
-#define GENERIC_ASM_API (1)
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA
 
 // define additional generic helper macros
 #define ASM_MOV_LOCAL_IMM_VIA(as, local_num, imm, reg_temp) \
@@ -72,94 +65,6 @@
         ASM_MOV_REG_IMM((as), (reg_temp), (imm)); \
         ASM_MOV_LOCAL_REG((as), (local_num), (reg_temp)); \
     } while (false)
-
-#if N_X64
-
-// x64 specific stuff
-#include "py/asmx64.h"
-#define EXPORT_FUN(name) emit_native_x64_##name
-
-#elif N_X86
-
-// x86 specific stuff
-
-STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
-    [MP_F_CONVERT_OBJ_TO_NATIVE] = 2,
-    [MP_F_CONVERT_NATIVE_TO_OBJ] = 2,
-    [MP_F_LOAD_NAME] = 1,
-    [MP_F_LOAD_GLOBAL] = 1,
-    [MP_F_LOAD_BUILD_CLASS] = 0,
-    [MP_F_LOAD_ATTR] = 2,
-    [MP_F_LOAD_METHOD] = 3,
-    [MP_F_LOAD_SUPER_METHOD] = 2,
-    [MP_F_STORE_NAME] = 2,
-    [MP_F_STORE_GLOBAL] = 2,
-    [MP_F_STORE_ATTR] = 3,
-    [MP_F_OBJ_SUBSCR] = 3,
-    [MP_F_OBJ_IS_TRUE] = 1,
-    [MP_F_UNARY_OP] = 2,
-    [MP_F_BINARY_OP] = 3,
-    [MP_F_BUILD_TUPLE] = 2,
-    [MP_F_BUILD_LIST] = 2,
-    [MP_F_LIST_APPEND] = 2,
-    [MP_F_BUILD_MAP] = 1,
-    [MP_F_STORE_MAP] = 3,
-#if MICROPY_PY_BUILTINS_SET
-    [MP_F_BUILD_SET] = 2,
-    [MP_F_STORE_SET] = 2,
-#endif
-    [MP_F_MAKE_FUNCTION_FROM_RAW_CODE] = 3,
-    [MP_F_NATIVE_CALL_FUNCTION_N_KW] = 3,
-    [MP_F_CALL_METHOD_N_KW] = 3,
-    [MP_F_CALL_METHOD_N_KW_VAR] = 3,
-    [MP_F_NATIVE_GETITER] = 2,
-    [MP_F_NATIVE_ITERNEXT] = 1,
-    [MP_F_NLR_PUSH] = 1,
-    [MP_F_NLR_POP] = 0,
-    [MP_F_NATIVE_RAISE] = 1,
-    [MP_F_IMPORT_NAME] = 3,
-    [MP_F_IMPORT_FROM] = 2,
-    [MP_F_IMPORT_ALL] = 1,
-#if MICROPY_PY_BUILTINS_SLICE
-    [MP_F_NEW_SLICE] = 3,
-#endif
-    [MP_F_UNPACK_SEQUENCE] = 3,
-    [MP_F_UNPACK_EX] = 3,
-    [MP_F_DELETE_NAME] = 1,
-    [MP_F_DELETE_GLOBAL] = 1,
-    [MP_F_NEW_CELL] = 1,
-    [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
-    [MP_F_SETUP_CODE_STATE] = 5,
-    [MP_F_SMALL_INT_FLOOR_DIVIDE] = 2,
-    [MP_F_SMALL_INT_MODULO] = 2,
-};
-
-#include "py/asmx86.h"
-#define EXPORT_FUN(name) emit_native_x86_##name
-
-#elif N_THUMB
-
-// thumb specific stuff
-#include "py/asmthumb.h"
-#define EXPORT_FUN(name) emit_native_thumb_##name
-
-#elif N_ARM
-
-// ARM specific stuff
-#include "py/asmarm.h"
-#define EXPORT_FUN(name) emit_native_arm_##name
-
-#elif N_XTENSA
-
-// Xtensa specific stuff
-#include "py/asmxtensa.h"
-#define EXPORT_FUN(name) emit_native_xtensa_##name
-
-#else
-
-#error unknown native emitter
-
-#endif
 
 #define EMIT_NATIVE_VIPER_TYPE_ERROR(emit, ...) do { \
         *emit->error_slot = mp_obj_new_exception_msg_varg(&mp_type_ViperTypeError, __VA_ARGS__); \
