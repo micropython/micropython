@@ -143,11 +143,14 @@ typedef struct _pyb_dac_obj_t {
     uint16_t pin; // GPIO_PIN_4 or GPIO_PIN_5
     uint8_t bits; // 8 or 12
     uint8_t state;
+    uint8_t outbuf_single;
+    uint8_t outbuf_waveform;
 } pyb_dac_obj_t;
 
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
 
     // parse args
@@ -192,6 +195,19 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
         self->bits = args[0].u_int;
     } else {
         mp_raise_ValueError("unsupported bits");
+    }
+
+    // set output buffer config
+    if (args[1].u_obj == mp_const_none) {
+        // due to legacy, default values differ for single and waveform outputs
+        self->outbuf_single = DAC_OUTPUTBUFFER_DISABLE;
+        self->outbuf_waveform = DAC_OUTPUTBUFFER_ENABLE;
+    } else if (mp_obj_is_true(args[1].u_obj)) {
+        self->outbuf_single = DAC_OUTPUTBUFFER_ENABLE;
+        self->outbuf_waveform = DAC_OUTPUTBUFFER_ENABLE;
+    } else {
+        self->outbuf_single = DAC_OUTPUTBUFFER_DISABLE;
+        self->outbuf_waveform = DAC_OUTPUTBUFFER_DISABLE;
     }
 
     // reset state of DAC
@@ -289,7 +305,7 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
         // configure DAC to trigger via TIM6
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = self->outbuf_waveform;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_BUILTIN_WAVEFORM;
     }
@@ -319,7 +335,7 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
         // configure DAC to trigger via TIM6
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = self->outbuf_waveform;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_BUILTIN_WAVEFORM;
     }
@@ -342,7 +358,7 @@ STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
     if (self->state != DAC_STATE_WRITE_SINGLE) {
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_NONE;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+        config.DAC_OutputBuffer = self->outbuf_single;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_WRITE_SINGLE;
     }
@@ -454,7 +470,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (self->state != DAC_STATE_DMA_WAVEFORM + dac_trigger) {
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = dac_trigger;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = self->outbuf_waveform;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_DMA_WAVEFORM + dac_trigger;
     }
