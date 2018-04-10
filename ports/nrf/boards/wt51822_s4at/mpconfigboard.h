@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#define WT51822_S4AT
-
 // Datasheet for board:
 // https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf
 #define MICROPY_HW_BOARD_NAME       "WT51822-S4AT"
@@ -41,18 +39,6 @@
 #define MICROPY_PY_MACHINE_TEMP     (1)
 
 #define MICROPY_HW_HAS_LED          (0)
-#define MICROPY_HW_HAS_SWITCH       (0)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (0)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
 
 // UART config
 #define MICROPY_HW_UART1_RX         (pin_P1)
