@@ -140,7 +140,7 @@ MP_WEAK MP_NOINLINE bool init_flash_fs(uint reset_mode) {
     "import pyb\r\n"
     "#pyb.main('main.py') # main script to run after this one\r\n"
     #if MICROPY_HW_ENABLE_USB
-    "pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
+    "#pyb.usb_mode('VCP+MSC') # act as a serial and a storage device\r\n"
     "#pyb.usb_mode('VCP+HID') # act as a serial device and a mouse\r\n"
     #endif
     ;
