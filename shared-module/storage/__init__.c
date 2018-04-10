@@ -32,9 +32,7 @@
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/storage/__init__.h"
-#include "supervisor/filesystem.h"
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
     if (vfs == MP_VFS_NONE) {
