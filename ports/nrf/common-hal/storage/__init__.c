@@ -37,3 +37,7 @@ void common_hal_storage_remount(const char* mount_path, bool readonly) {
         mp_raise_OSError(MP_EINVAL);
     }
 }
+
+void common_hal_storage_erase_filesystem() {
+    mp_raise_NotImplementedError("");
+}

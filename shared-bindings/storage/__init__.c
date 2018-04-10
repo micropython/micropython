@@ -133,15 +133,17 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 
 //| .. function:: erase_filesystem()
 //|
-//|   Erase and re-create the ``CIRCUITPY`` filesystem. Then call
-//|   `microcontroller.reset()` to restart CircuitPython and have the
+//|   Erase and re-create the ``CIRCUITPY`` filesystem.
+//|
+//|   On boards that present USB-visible ``CIRCUITPY`` drive (e.g., SAMD21 and SAMD51),
+//|   then call `microcontroller.reset()` to restart CircuitPython and have the
 //|   host computer remount CIRCUITPY.
 //|
 //|   This function can be called from the REPL when ``CIRCUITPY``
 //|   has become corrupted.
 //|
 //|   .. warning:: All the data on ``CIRCUITPY`` will be lost, and
-//|        CircuitPython will restart.
+//|        CircuitPython will restart on certain boards.
 
 mp_obj_t storage_erase_filesystem(void) {
     common_hal_storage_erase_filesystem();

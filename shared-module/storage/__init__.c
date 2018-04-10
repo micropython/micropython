@@ -127,9 +127,3 @@ void common_hal_storage_umount_path(const char* mount_path) {
 mp_obj_t common_hal_storage_getmount(const char *mount_path) {
     return storage_object_from_path(mount_path);
 }
-
-void common_hal_storage_erase_filesystem(void) {
-    filesystem_init(false, true);   // Force a re-format.
-    common_hal_mcu_reset();
-    // We won't actually get here, since we're resetting.
-}

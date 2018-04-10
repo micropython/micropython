@@ -29,7 +29,9 @@
 #include "flash_api.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/storage/__init__.h"
+#include "supervisor/filesystem.h"
 #include "usb.h"
 
 extern volatile bool mp_msc_enabled;
@@ -46,4 +48,10 @@ void common_hal_storage_remount(const char* mount_path, bool readonly) {
     }
 
     flash_set_usb_writable(readonly);
+}
+
+void common_hal_storage_erase_filesystem(void) {
+    filesystem_init(false, true);   // Force a re-format.
+    common_hal_mcu_reset();
+    // We won't actually get here, since we're resetting.
 }
