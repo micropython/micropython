@@ -32,3 +32,7 @@
 void common_hal_storage_remount(const char* mount_path, bool readonly) {
     mp_raise_NotImplementedError("");
 }
+
+void common_hal_storage_erase_filesystem() {
+    mp_raise_NotImplementedError("Use esptool to erase flash and re-upload Python instead");
+}

@@ -35,5 +35,6 @@ void common_hal_storage_umount_path(const char* path);
 void common_hal_storage_umount_object(mp_obj_t vfs_obj);
 void common_hal_storage_remount(const char* path, bool readonly);
 mp_obj_t common_hal_storage_getmount(const char* path);
+void common_hal_storage_erase_filesystem(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_STORAGE___INIT___H
