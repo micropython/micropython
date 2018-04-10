@@ -26,9 +26,6 @@
 
 #include <string.h>
 
-#include "lib/oofatfs/ff.h"
-#include "lib/oofatfs/diskio.h"
-#include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
 
