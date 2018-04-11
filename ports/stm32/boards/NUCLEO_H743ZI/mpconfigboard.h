@@ -19,6 +19,13 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_CLK_PLLQ (4)
 #define MICROPY_HW_CLK_PLLR (2)
 
+// with the 8MHz HSE, settings of the PLL for USB
+#define MICROPY_HW_PLL3_PLL3M (4)
+#define MICROPY_HW_PLL3_PLL3N (120)
+#define MICROPY_HW_PLL3_PLL3P (2)
+#define MICROPY_HW_PLL3_PLL3Q (5)
+#define MICROPY_HW_PLL3_PLL3R (2)
+
 // 4 wait states
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
 
