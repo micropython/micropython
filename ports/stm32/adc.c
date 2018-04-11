@@ -217,8 +217,8 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 #if defined(STM32F4) || defined(STM32F7)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
-    adcHandle->Init.EOCSelection          = DISABLE;
+    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
+    adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
 #elif defined(STM32L4)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
@@ -618,15 +618,15 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
     adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
     adcHandle->Init.NbrOfConversion       = 1;
     adcHandle->Init.DMAContinuousRequests = DISABLE;
-    adcHandle->Init.EOCSelection          = DISABLE;
+    adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
 #if defined(STM32F4) || defined(STM32F7)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
     adcHandle->Init.ScanConvMode          = DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
+    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
 #elif defined(STM32L4)
     adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
     adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_EXTERNALTRIG_T1_CC1;
+    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
     adcHandle->Init.LowPowerAutoWait      = DISABLE;
     adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
     adcHandle->Init.OversamplingMode      = DISABLE;
