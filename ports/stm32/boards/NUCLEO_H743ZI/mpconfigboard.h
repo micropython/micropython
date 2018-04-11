@@ -5,6 +5,8 @@
 #define MICROPY_HW_BOARD_NAME       "NUCLEO_H743ZI"
 #define MICROPY_HW_MCU_NAME         "STM32H743"
 
+#define MICROPY_HW_FLASH_FS_LABEL   "nucleoh7"
+
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_ADC       (0)
 #define MICROPY_HW_ENABLE_DAC       (1)
