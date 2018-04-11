@@ -736,7 +736,7 @@ void UART8_IRQHandler(void) {
 }
 #endif
 
-#if MICROPY_HW_ENABLE_CAN
+#if defined(MICROPY_HW_CAN1_TX)
 void CAN1_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
@@ -754,7 +754,9 @@ void CAN1_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_1);
     IRQ_EXIT(CAN1_SCE_IRQn);
 }
+#endif
 
+#if defined(MICROPY_HW_CAN2_TX)
 void CAN2_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
@@ -772,7 +774,7 @@ void CAN2_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_2);
     IRQ_EXIT(CAN2_SCE_IRQn);
 }
-#endif // MICROPY_HW_ENABLE_CAN
+#endif
 
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {

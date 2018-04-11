@@ -57,11 +57,6 @@
 #define MICROPY_HW_ENABLE_DAC (0)
 #endif
 
-// Whether to enable the CAN peripheral, exposed as pyb.CAN
-#ifndef MICROPY_HW_ENABLE_CAN
-#define MICROPY_HW_ENABLE_CAN (0)
-#endif
-
 // Whether to enable USB support
 #ifndef MICROPY_HW_ENABLE_USB
 #define MICROPY_HW_ENABLE_USB (0)
@@ -154,6 +149,13 @@
 #define MICROPY_HW_ENABLE_HW_I2C (1)
 #else
 #define MICROPY_HW_ENABLE_HW_I2C (0)
+#endif
+
+// Enable CAN if there are any peripherals defined
+#if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX)
+#define MICROPY_HW_ENABLE_CAN (1)
+#else
+#define MICROPY_HW_ENABLE_CAN (0)
 #endif
 
 // Pin definition header file
