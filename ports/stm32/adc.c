@@ -243,7 +243,7 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     HAL_ADC_Init(adch);
 
     #if defined(STM32H7)
-    HAL_ADCEx_Calibration_Start(adcHandle, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
+    HAL_ADCEx_Calibration_Start(adch, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
     #endif
 }
 
@@ -270,7 +270,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
       HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
     }
 
-    adcx_init_handle(&adc_obj->handle, ADC_RESOLUTION_12B);
+    adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
 
 #if defined(STM32L4)
     ADC_MultiModeTypeDef multimode;
@@ -569,7 +569,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             // ADC is started: set the "start sample" bit
             #if defined(STM32F4) || defined(STM32F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32L4)
+            #elif defined(STM32L4) || defined(STM32H7)
             SET_BIT(ADCx->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor
