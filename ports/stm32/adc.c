@@ -259,32 +259,6 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
       mp_hal_gpio_clock_enable(pin->gpio);
       GPIO_InitTypeDef GPIO_InitStructure;
       GPIO_InitStructure.Pin = pin->pin_mask;
-#if defined(STM32F4) || defined(STM32F7)
-      GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-#elif defined(STM32L4)
-      GPIO_InitStructure.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
-#else
-    #error Unsupported processor
-#endif
-      GPIO_InitStructure.Pull = GPIO_NOPULL;
-      HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
-    }
-
-    adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
-}
-
-STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
-    if (!is_adcx_channel(adc_obj->channel)) {
-        return;
-    }
-
-    if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
-      // Channels 0-16 correspond to real pins. Configure the GPIO pin in
-      // ADC mode.
-      const pin_obj_t *pin = pin_adc1[adc_obj->channel];
-      mp_hal_gpio_clock_enable(pin->gpio);
-      GPIO_InitTypeDef GPIO_InitStructure;
-      GPIO_InitStructure.Pin = pin->pin_mask;
 #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
       GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
 #elif defined(STM32L4)
