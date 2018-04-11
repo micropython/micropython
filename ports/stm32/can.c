@@ -104,31 +104,26 @@ STATIC uint8_t can2_start_bank = 14;
 // assumes Init parameters have been set up correctly
 STATIC bool can_init(pyb_can_obj_t *can_obj) {
     CAN_TypeDef *CANx = NULL;
-
-    uint32_t GPIO_Pin = 0;
-    uint8_t  GPIO_AF_CANx = 0;
-    GPIO_TypeDef* GPIO_Port = NULL;
     uint32_t sce_irq = 0;
+    const pin_obj_t *pins[2];
 
     switch (can_obj->can_id) {
-        // CAN1 is on RX,TX = Y3,Y4 = PB9,PB9
+        #if defined(MICROPY_HW_CAN1_TX)
         case PYB_CAN_1:
             CANx = CAN1;
-            GPIO_AF_CANx = GPIO_AF9_CAN1;
-            GPIO_Port = GPIOB;
-            GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
             sce_irq = CAN1_SCE_IRQn;
+            pins[0] = MICROPY_HW_CAN1_TX;
+            pins[1] = MICROPY_HW_CAN1_RX;
             __CAN1_CLK_ENABLE();
             break;
+        #endif
 
-        #if defined(CAN2)
-        // CAN2 is on RX,TX = Y5,Y6 = PB12,PB13
+        #if defined(MICROPY_HW_CAN2_TX)
         case PYB_CAN_2:
             CANx = CAN2;
-            GPIO_AF_CANx = GPIO_AF9_CAN2;
-            GPIO_Port = GPIOB;
-            GPIO_Pin = GPIO_PIN_12 | GPIO_PIN_13;
             sce_irq = CAN2_SCE_IRQn;
+            pins[0] = MICROPY_HW_CAN2_TX;
+            pins[1] = MICROPY_HW_CAN2_RX;
             __CAN1_CLK_ENABLE(); // CAN2 is a "slave" and needs CAN1 enabled as well
             __CAN2_CLK_ENABLE();
             break;
@@ -139,13 +134,13 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
     }
 
     // init GPIO
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Pin = GPIO_Pin;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStructure.Pull = GPIO_PULLUP;
-    GPIO_InitStructure.Alternate = GPIO_AF_CANx;
-    HAL_GPIO_Init(GPIO_Port, &GPIO_InitStructure);
+    uint32_t mode = MP_HAL_PIN_MODE_ALT;
+    uint32_t pull = MP_HAL_PIN_PULL_UP;
+    for (int i = 0; i < 2; i++) {
+        if (!mp_hal_pin_config_alt(pins[i], mode, pull, AF_FN_CAN, can_obj->can_id)) {
+            return false;
+        }
+    }
 
     // init CANx
     can_obj->can.Instance = CANx;
