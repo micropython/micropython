@@ -137,7 +137,10 @@ static inline uint32_t adc_get_internal_channel(uint32_t channel) {
 }
 
 STATIC bool is_adcx_channel(int channel) {
-#if defined(STM32F4) || defined(STM32F7)
+#if defined(STM32F411xE)
+    // The HAL has an incorrect IS_ADC_CHANNEL macro for the F411 so we check for temp
+    return IS_ADC_CHANNEL(channel) || channel == ADC_CHANNEL_TEMPSENSOR;
+#elif defined(STM32F4) || defined(STM32F7)
     return IS_ADC_CHANNEL(channel);
 #elif defined(STM32L4)
     ADC_HandleTypeDef handle;
