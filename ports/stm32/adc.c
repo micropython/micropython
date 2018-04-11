@@ -109,6 +109,9 @@
 #error Unsupported processor
 #endif
 
+// Timeout for waiting for end-of-conversion, in ms
+#define EOC_TIMEOUT (10)
+
 /* Core temperature sensor definitions */
 #define CORE_TEMP_V25          (943)  /* (0.76v/3.3v)*(2^ADC resoultion) */
 #define CORE_TEMP_AVG_SLOPE    (3)    /* (2.5mv/3.3v)*(2^ADC resoultion) */
@@ -261,16 +264,16 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
 }
 
 STATIC uint32_t adc_read_channel(ADC_HandleTypeDef *adcHandle) {
-    uint32_t rawValue = 0;
-
     HAL_ADC_Start(adcHandle);
-    if (HAL_ADC_PollForConversion(adcHandle, 10) == HAL_OK
-        && (HAL_ADC_GetState(adcHandle) & HAL_ADC_STATE_REG_EOC) == HAL_ADC_STATE_REG_EOC) {
-        rawValue = HAL_ADC_GetValue(adcHandle);
-    }
+    adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
+    uint32_t value = ADCx->DR;
     HAL_ADC_Stop(adcHandle);
+    return value;
+}
 
-    return rawValue;
+STATIC uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
+    adc_config_channel(adcHandle, channel);
+    return adc_read_channel(adcHandle);
 }
 
 /******************************************************************************/
@@ -334,10 +337,7 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 /// will be between 0 and 4095.
 STATIC mp_obj_t adc_read(mp_obj_t self_in) {
     pyb_obj_adc_t *self = self_in;
-
-    adc_config_channel(&self->handle, self->channel);
-    uint32_t data = adc_read_channel(&self->handle);
-    return mp_obj_new_int(data);
+    return mp_obj_new_int(adc_config_and_read_channel(&self->handle, self->channel));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(adc_read_obj, adc_read);
 
@@ -423,8 +423,7 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
         }
 
         // wait for sample to complete
-        #define READ_TIMED_TIMEOUT (10) // in ms
-        adc_wait_for_eoc_or_timeout(READ_TIMED_TIMEOUT);
+        adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
 
         // read value
         uint value = ADCx->DR;
@@ -494,8 +493,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
     adc_config_channel(&adc0->handle, adc0->channel);
     HAL_ADC_Start(&adc0->handle);
     // Wait for sample to complete and discard
-    #define READ_TIMED_TIMEOUT (10) // in ms
-    adc_wait_for_eoc_or_timeout(READ_TIMED_TIMEOUT);
+    adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
     // Read (and discard) value
     uint value = ADCx->DR;
 
@@ -533,8 +531,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             #error Unsupported processor
             #endif
             // wait for sample to complete
-            #define READ_TIMED_TIMEOUT (10) // in ms
-            adc_wait_for_eoc_or_timeout(READ_TIMED_TIMEOUT);
+            adc_wait_for_eoc_or_timeout(EOC_TIMEOUT);
 
             // read value
             value = ADCx->DR;
@@ -638,11 +635,6 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
 #endif
 
     HAL_ADC_Init(adcHandle);
-}
-
-uint32_t adc_config_and_read_channel(ADC_HandleTypeDef *adcHandle, uint32_t channel) {
-    adc_config_channel(adcHandle, channel);
-    return adc_read_channel(adcHandle);
 }
 
 int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
