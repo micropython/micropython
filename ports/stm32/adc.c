@@ -475,12 +475,14 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_array[0], &bufinfo, MP_BUFFER_WRITE);
     size_t typesize = mp_binary_get_size('@', bufinfo.typecode, NULL);
+    void *bufptrs[nbufs];
     for (uint array_index = 0; array_index < nbufs; array_index++) {
         mp_buffer_info_t bufinfo_curr;
         mp_get_buffer_raise(buf_array[array_index], &bufinfo_curr, MP_BUFFER_WRITE);
         if ((bufinfo.len != bufinfo_curr.len) || (bufinfo.typecode != bufinfo_curr.typecode)) {
             mp_raise_ValueError("size and type of buffers must match");
         }
+        bufptrs[array_index] = bufinfo_curr.buf;
     }
 
     // Use the supplied timer object as the sampling time base
@@ -541,9 +543,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             if (typesize == 1) {
                 value >>= 4;
             }
-            mp_buffer_info_t bufinfo_curr;  // Get buf for current ADC
-            mp_get_buffer_raise(buf_array[array_index], &bufinfo_curr, MP_BUFFER_WRITE);
-            mp_binary_set_val_array_from_int(bufinfo_curr.typecode, bufinfo_curr.buf, elem_index, value);
+            mp_binary_set_val_array_from_int(bufinfo.typecode, bufptrs[array_index], elem_index, value);
         }
     }
 
