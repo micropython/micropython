@@ -817,3 +817,17 @@ void I2C3_ER_IRQHandler(void) {
     IRQ_EXIT(I2C3_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C3_SCL)
+
+#if defined(MICROPY_HW_I2C4_SCL)
+void I2C4_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C4_EV_IRQn);
+    i2c_ev_irq_handler(4);
+    IRQ_EXIT(I2C4_EV_IRQn);
+}
+
+void I2C4_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C4_ER_IRQn);
+    i2c_er_irq_handler(4);
+    IRQ_EXIT(I2C4_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C4_SCL)
