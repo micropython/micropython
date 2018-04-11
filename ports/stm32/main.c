@@ -192,7 +192,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
         }
 
         // set label
-        f_setlabel(&vfs_fat->fatfs, "pybflash");
+        f_setlabel(&vfs_fat->fatfs, MICROPY_HW_FLASH_FS_LABEL);
 
         // create empty main.py
         FIL fp;
