@@ -115,17 +115,5 @@ enum {
   PIN_ADC3  = (1 << 2),
 };
 
-// Note that SPI and I2S are really the same peripheral as far as the HAL
-// is concerned, so there is no I2S_TypeDef.
-// We use void* for SDMMC because not all MCUs have the SDMMC_TypeDef type.
-#define PIN_DEFS_PORT_AF_UNION \
-    TIM_TypeDef   *TIM; \
-    I2C_TypeDef   *I2C; \
-    USART_TypeDef *USART; \
-    USART_TypeDef *UART; \
-    SPI_TypeDef   *SPI;\
-    SPI_TypeDef   *I2S; \
-    void          *SDMMC; \
-
 typedef GPIO_TypeDef pin_gpio_t;
 
