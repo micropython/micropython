@@ -125,9 +125,10 @@ Methods
 
        The maximum rate depends on factors including the data width and the
        number of ADC's being read. In testing two ADC's were sampled at a timer
-       rate of 140KHz without overrun. Samples were missed at 180KHz. At high
-       sample rates disabling interrupts for the duration can reduce the risk
-       of sporadic data loss.
+       rate of 210kHz without overrun. Samples were missed at 215kHz.  For three
+       ADC's the limit is around 140kHz, and for four it is around 110kHz.
+       At high sample rates disabling interrupts for the duration can reduce the
+       risk of sporadic data loss.
 
 The ADCAll Object
 -----------------
