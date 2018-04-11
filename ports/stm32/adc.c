@@ -179,6 +179,36 @@ STATIC void adcx_clock_enable(void) {
 #endif
 }
 
+STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
+    adcx_clock_enable();
+
+    adch->Instance                   = ADCx;
+    adch->Init.Resolution            = resolution;
+    adch->Init.ContinuousConvMode    = DISABLE;
+    adch->Init.DiscontinuousConvMode = DISABLE;
+    adch->Init.NbrOfDiscConversion   = 0;
+    adch->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+    adch->Init.NbrOfConversion       = 1;
+    adch->Init.DMAContinuousRequests = DISABLE;
+    adch->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
+    adch->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
+    adch->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    #if defined(STM32F4) || defined(STM32F7)
+    adch->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
+    adch->Init.ScanConvMode          = DISABLE;
+    #elif defined(STM32L4)
+    adch->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;
+    adch->Init.ScanConvMode          = ADC_SCAN_DISABLE;
+    adch->Init.LowPowerAutoWait      = DISABLE;
+    adch->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
+    adch->Init.OversamplingMode      = DISABLE;
+    #else
+    #error Unsupported processor
+    #endif
+
+    HAL_ADC_Init(adch);
+}
+
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     if (!is_adcx_channel(adc_obj->channel)) {
         return;
@@ -202,42 +232,12 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
       HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
     }
 
-    adcx_clock_enable();
-
-    ADC_HandleTypeDef *adcHandle = &adc_obj->handle;
-    adcHandle->Instance                   = ADCx;
-    adcHandle->Init.ContinuousConvMode    = DISABLE;
-    adcHandle->Init.DiscontinuousConvMode = DISABLE;
-    adcHandle->Init.NbrOfDiscConversion   = 0;
-    adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
-    adcHandle->Init.NbrOfConversion       = 1;
-    adcHandle->Init.DMAContinuousRequests = DISABLE;
-    adcHandle->Init.Resolution            = ADC_RESOLUTION_12B;
-#if defined(STM32F4) || defined(STM32F7)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
-    adcHandle->Init.ScanConvMode          = DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
-    adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
-#elif defined(STM32L4)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;
-    adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
-    adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
-    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
-    adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adcHandle->Init.LowPowerAutoWait      = DISABLE;
-    adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
-    adcHandle->Init.OversamplingMode      = DISABLE;
-#else
-    #error Unsupported processor
-#endif
-
-    HAL_ADC_Init(adcHandle);
+    adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
 
 #if defined(STM32L4)
     ADC_MultiModeTypeDef multimode;
     multimode.Mode = ADC_MODE_INDEPENDENT;
-    if (HAL_ADCEx_MultiModeConfigChannel(adcHandle, &multimode) != HAL_OK)
+    if (HAL_ADCEx_MultiModeConfigChannel(&adc_obj->handle, &multimode) != HAL_OK)
     {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Can not set multimode on ADC1 channel: %d", adc_obj->channel));
     }
@@ -606,35 +606,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
         }
     }
 
-    adcx_clock_enable();
-
-    ADC_HandleTypeDef *adcHandle = &adc_all->handle;
-    adcHandle->Instance = ADCx;
-    adcHandle->Init.Resolution            = resolution;
-    adcHandle->Init.ContinuousConvMode    = DISABLE;
-    adcHandle->Init.DiscontinuousConvMode = DISABLE;
-    adcHandle->Init.NbrOfDiscConversion   = 0;
-    adcHandle->Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
-    adcHandle->Init.DataAlign             = ADC_DATAALIGN_RIGHT;
-    adcHandle->Init.NbrOfConversion       = 1;
-    adcHandle->Init.DMAContinuousRequests = DISABLE;
-    adcHandle->Init.EOCSelection          = ADC_EOC_SINGLE_CONV;
-#if defined(STM32F4) || defined(STM32F7)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV2;
-    adcHandle->Init.ScanConvMode          = DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
-#elif defined(STM32L4)
-    adcHandle->Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;
-    adcHandle->Init.ScanConvMode          = ADC_SCAN_DISABLE;
-    adcHandle->Init.ExternalTrigConv      = ADC_SOFTWARE_START;
-    adcHandle->Init.LowPowerAutoWait      = DISABLE;
-    adcHandle->Init.Overrun               = ADC_OVR_DATA_PRESERVED;
-    adcHandle->Init.OversamplingMode      = DISABLE;
-#else
-    #error Unsupported processor
-#endif
-
-    HAL_ADC_Init(adcHandle);
+    adcx_init_periph(&adc_all->handle, resolution);
 }
 
 int adc_get_resolution(ADC_HandleTypeDef *adcHandle) {
