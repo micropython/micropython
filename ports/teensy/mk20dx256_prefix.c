@@ -15,7 +15,7 @@
     .fn = AF_FN_ ## af_fn, \
     .unit = (af_unit), \
     .type = AF_PIN_TYPE_ ## af_fn ## _ ## af_type, \
-    .af_fn = (af_ptr) \
+    .reg = (af_ptr) \
 }
 
 #define PIN(p_port, p_pin, p_num_af, p_af, p_adc_num, p_adc_channel) \
