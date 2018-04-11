@@ -136,6 +136,13 @@
 #error Unsupported MCU series
 #endif
 
+// Configure HSE for bypass or oscillator
+#if MICROPY_HW_CLK_USE_BYPASS
+#define MICROPY_HW_CLK_HSE_STATE (RCC_HSE_BYPASS)
+#else
+#define MICROPY_HW_CLK_HSE_STATE (RCC_HSE_ON)
+#endif
+
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // Provide block device macros if internal flash storage is enabled
 #define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
