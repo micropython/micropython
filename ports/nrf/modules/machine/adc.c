@@ -148,10 +148,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return MP_OBJ_FROM_PTR(self);
 }
 
-/// \method value()
-/// Read adc level.
-mp_obj_t machine_adc_value(mp_obj_t self_in) {
-    machine_adc_obj_t *self = self_in;
+int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
 
 #if NRF51
     nrf_adc_value_t value = 0;
@@ -168,8 +165,18 @@ mp_obj_t machine_adc_value(mp_obj_t self_in) {
 #else // NRF52
     nrf_saadc_value_t value = 0;
 
-    nrfx_saadc_sample_convert(self->id, &value);
+    nrfx_saadc_sample_convert(adc_obj->id, &value);
 #endif
+    return value;
+}
+
+
+/// \method value()
+/// Read adc level.
+mp_obj_t machine_adc_value(mp_obj_t self_in) {
+    machine_adc_obj_t *self = self_in;
+
+    int16_t value = machine_adc_value_read(self);
 
     return MP_OBJ_NEW_SMALL_INT(value);
 }
