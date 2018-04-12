@@ -111,7 +111,7 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
 
     // make the filesystem
     uint8_t working_buf[_MAX_SS];
-    FRESULT res = f_mkfs(&vfs->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
+    FRESULT res = f_mkfs(&vfs->fatfs, FM_ANY, 0, working_buf, sizeof(working_buf));
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
     }
@@ -383,7 +383,7 @@ STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs
     FRESULT res = (self->flags & FSUSER_NO_FILESYSTEM) ? FR_NO_FILESYSTEM : FR_OK;
     if (res == FR_NO_FILESYSTEM && mp_obj_is_true(mkfs)) {
         uint8_t working_buf[_MAX_SS];
-        res = f_mkfs(&self->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
+        res = f_mkfs(&self->fatfs, FM_ANY, 0, working_buf, sizeof(working_buf));
     }
     if (res != FR_OK) {
         mp_raise_OSError(fresult_to_errno_table[res]);
