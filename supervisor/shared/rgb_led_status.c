@@ -97,7 +97,7 @@ void rgb_led_status_init() {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK))
     // Force a write of the current status color.
     uint32_t rgb = current_status_color;
-    current_status_color = 0;
+    current_status_color = 0x1000000; // Not a valid color
     new_status_color(rgb);
     #endif
 }
@@ -118,7 +118,7 @@ void new_status_color(uint32_t rgb) {
         return;
     }
     uint32_t rgb_adjusted = color_brightness(rgb, rgb_status_brightness);
-    current_status_color = rgb_adjusted;
+    current_status_color = rgb;
     #endif
 
     #ifdef MICROPY_HW_NEOPIXEL

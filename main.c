@@ -75,7 +75,6 @@ static char heap[PORT_HEAP_SIZE];
 
 void reset_mp(void) {
     reset_status_led();
-    new_status_color(0x8f008f);
     autoreload_stop();
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
