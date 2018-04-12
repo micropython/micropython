@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2016 - 2018 Glenn Ruben Bakke
  * Copyright (c) 2018 Ayke van Laethem
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -152,7 +152,7 @@ STATIC int spi_find(mp_obj_t id) {
     }
 }
 
-STATIC void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest) {
+void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest) {
     nrfx_spi_xfer_desc_t xfer_desc = {
         .p_tx_buffer = src,
 	.tx_length   = len,
@@ -198,13 +198,13 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 1000000} },
-        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 /* SPI_FIRSTBIT_MSB */} },
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mosi,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_miso,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_polarity, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_phase,    MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bits,     MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_firstbit, MP_ARG_INT, {.u_int = 0 /* SPI_FIRSTBIT_MSB */} },
+        { MP_QSTR_sck,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mosi,     MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_miso,     MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     // parse args

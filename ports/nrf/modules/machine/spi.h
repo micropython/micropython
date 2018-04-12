@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2016 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,11 @@
  */
 #include "py/obj.h"
 
+typedef struct _machine_hard_spi_obj_t machine_hard_spi_obj_t;
 extern const mp_obj_type_t machine_hard_spi_type;
 
 void spi_init0(void);
+void spi_transfer(const machine_hard_spi_obj_t * self,
+                  size_t                         len,
+                  const void *                   src,
+                  void *                         dest);
