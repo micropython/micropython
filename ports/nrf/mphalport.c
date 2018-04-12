@@ -82,6 +82,10 @@ void mp_hal_stdout_tx_str(const char *str) {
 
 void mp_hal_delay_us(mp_uint_t us)
 {
+    if (us == 0) {
+        return;
+    }
+
     register uint32_t delay __ASM ("r0") = us;
     __ASM volatile (
 #ifdef NRF51
