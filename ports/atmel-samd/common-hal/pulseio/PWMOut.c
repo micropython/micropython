@@ -48,7 +48,6 @@ static uint32_t tc_periods[TC_INST_NUM];
 
 uint32_t target_tcc_frequencies[TCC_INST_NUM];
 uint8_t tcc_refcount[TCC_INST_NUM];
-const uint16_t prescaler[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
 
 // This bitmask keeps track of which channels of a TCC are currently claimed.
 #ifdef SAMD21

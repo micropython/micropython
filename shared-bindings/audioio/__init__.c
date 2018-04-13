@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audioio/__init__.h"
 #include "shared-bindings/audioio/AudioOut.h"
+#include "shared-bindings/audioio/WaveFile.h"
 
 //| :mod:`audioio` --- Support for audio input and output
 //| ======================================================
@@ -48,6 +49,8 @@
 //|     :maxdepth: 3
 //|
 //|     AudioOut
+//|     RawSample
+//|     WaveFile
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -58,6 +61,8 @@
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audioio) },
     { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audioio_audioout_type) },
+    { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
+    { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(audioio_module_globals, audioio_module_globals_table);

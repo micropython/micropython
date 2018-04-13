@@ -28,6 +28,8 @@
 
 #include "include/sam.h"
 
+const uint16_t prescaler[8];
+
 #ifdef SAMD21
 const uint8_t tcc_cc_num[3];
 const uint8_t tc_gclk_ids[TC_INST_NUM];

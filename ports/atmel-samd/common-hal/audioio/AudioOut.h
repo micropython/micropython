@@ -29,28 +29,21 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "extmod/vfs_fat_file.h"
+#include "audio_dma.h"
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    uint32_t frequency;
-    uint8_t* buffer;
+    const mcu_pin_obj_t *left_channel;
+    audio_dma_t left_dma;
+    #ifdef SAMD51
+    const mcu_pin_obj_t *right_channel;
+    audio_dma_t right_dma;
+    #endif
+    uint8_t tc_index;
 
-    // File playback specific:
-    uint8_t* second_buffer;
-    DmacDescriptor* second_descriptor;
-    uint32_t file_length; // In bytes
-    uint16_t data_start; // Where the data values start
-    uint8_t bytes_per_sample;
-    bool signed_samples;
-    uint16_t last_loaded_block;
-    uint32_t bytes_remaining;
-
-    bool loop;
-    uint32_t len;
-    pyb_file_obj_t* file;
+    uint8_t tc_to_dac_event_channel;
+    bool playing;
 } audioio_audioout_obj_t;
 
 void audioout_reset(void);

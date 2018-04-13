@@ -24,27 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "extmod/vfs_fat_file.h"
+#include "audio_dma.h"
 #include "py/obj.h"
 
+// We don't bit pack because we'll only have two at most. Its better to save code size instead.
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *data_pin;
-    uint32_t frequency;
-    uint8_t serializer;
+    bool left_justified;
+    const mcu_pin_obj_t *bit_clock;
+    const mcu_pin_obj_t *word_select;
+    const mcu_pin_obj_t *data;
     uint8_t clock_unit;
-    uint8_t bytes_per_sample;
-    uint8_t bit_depth;
-} audiobusio_pdmin_obj_t;
+    uint8_t serializer;
+    uint8_t gclk;
+    bool playing;
+    audio_dma_t dma;
+} audiobusio_i2sout_obj_t;
 
-void pdmin_reset(void);
+void i2sout_reset(void);
 
-void pdmin_background(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

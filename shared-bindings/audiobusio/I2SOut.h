@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017, 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H
 
+#include "common-hal/audiobusio/I2SOut.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#include "extmod/vfs_fat_file.h"
-#include "py/obj.h"
+extern const mp_obj_type_t audiobusio_i2sout_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *data_pin;
-    uint32_t frequency;
-    uint8_t serializer;
-    uint8_t clock_unit;
-    uint8_t bytes_per_sample;
-    uint8_t bit_depth;
-} audiobusio_pdmin_obj_t;
+void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
+    const mcu_pin_obj_t* bit_clock, const mcu_pin_obj_t* word_select, const mcu_pin_obj_t* data,
+    bool left_justified);
 
-void pdmin_reset(void);
+void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self);
+bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self);
+void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self, mp_obj_t sample, bool loop);
+void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self);
+bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self);
 
-void pdmin_background(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H

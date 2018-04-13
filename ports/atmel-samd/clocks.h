@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H
 
-#include "common-hal/microcontroller/Pin.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "extmod/vfs_fat_file.h"
-#include "py/obj.h"
+#include "include/sam.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *data_pin;
-    uint32_t frequency;
-    uint8_t serializer;
-    uint8_t clock_unit;
-    uint8_t bytes_per_sample;
-    uint8_t bit_depth;
-} audiobusio_pdmin_obj_t;
+#ifdef SAMD51
+#define CLOCK_48MHZ GCLK_GENCTRL_SRC_DFLL_Val
+#endif
+#ifdef SAMD21
+#define CLOCK_48MHZ GCLK_GENCTRL_SRC_DFLL48M_Val
+#endif
 
-void pdmin_reset(void);
+#define CORE_GCLK 0
 
-void pdmin_background(void);
+uint8_t find_free_gclk(uint16_t divisor);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+bool gclk_enabled(uint8_t gclk);
+void reset_gclks(void);
+
+void connect_gclk_to_peripheral(uint8_t gclk, uint8_t peripheral);
+void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral);
+
+void enable_clock_generator(uint8_t gclk, uint8_t source, uint16_t divisor);
+void disable_clock_generator(uint8_t gclk);
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H

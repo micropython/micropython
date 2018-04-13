@@ -220,7 +220,10 @@ endif
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
 SRC_C = \
+	audio_dma.c \
 	background.c \
+	clocks.c \
+	events.c \
 	fatfs_port.c \
 	flash_api.c \
 	mphalport.c \
@@ -276,7 +279,7 @@ SRC_COMMON_HAL = \
 	neopixel_write/__init__.c \
 	os/__init__.c \
 	storage/__init__.c \
-        supervisor/__init__.c \
+	supervisor/__init__.c \
 	supervisor/Runtime.c \
 	time/__init__.c \
 	analogio/__init__.c \
@@ -287,12 +290,11 @@ SRC_COMMON_HAL = \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
 	usb_hid/__init__.c \
-	usb_hid/Device.c
-#	audiobusio/__init__.c \
-	audiobusio/PDMIn.c \
+	usb_hid/Device.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-	nvm/__init__.c \
+#	nvm/__init__.c \
+	audiobusio/PDMIn.c \
 	nvm/ByteArray.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
@@ -338,6 +340,8 @@ SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE = \
+	audioio/RawSample.c \
+	audioio/WaveFile.c \
 	bitbangio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
@@ -354,6 +358,19 @@ SRC_SHARED_MODULE = \
 	struct/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c
+
+ifeq ($(CHIP_FAMILY),samd21)
+SRC_COMMON_HAL += \
+	audiobusio/__init__.c \
+	audiobusio/I2SOut.c
+endif
+ifneq ($(CHIP_VARIANT),SAMD51G18A)
+	ifneq ($(CHIP_VARIANT),SAMD51G19A)
+		SRC_COMMON_HAL += \
+			audiobusio/__init__.c \
+			audiobusio/I2SOut.c
+	endif
+endif
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE))

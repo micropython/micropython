@@ -34,18 +34,10 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 
-// We allocate three DMA resources for the entire lifecycle of the board (not the
-// vm) because the general_dma resource will be shared between the REPL and SPI
-// flash. Both uses must block each other in order to prevent conflict.
-COMPILER_ALIGNED(16) static DmacDescriptor dma_descriptors[3];
+COMPILER_ALIGNED(16) static DmacDescriptor dma_descriptors[DMA_CHANNEL_COUNT];
 
 // Don't use these directly. They are used by the DMA engine itself.
-COMPILER_ALIGNED(16) static DmacDescriptor write_back_descriptors[3];
-
-#define AUDIO_DMA_CHANNEL 0
-#define SHARED_TX_CHANNEL 1
-#define SHARED_RX_CHANNEL 2
-
+COMPILER_ALIGNED(16) static DmacDescriptor write_back_descriptors[DMA_CHANNEL_COUNT];
 
 #ifdef SAMD21
 #define FIRST_SERCOM_RX_TRIGSRC 0x01
@@ -55,51 +47,6 @@ COMPILER_ALIGNED(16) static DmacDescriptor write_back_descriptors[3];
 #define FIRST_SERCOM_RX_TRIGSRC 0x04
 #define FIRST_SERCOM_TX_TRIGSRC 0x05
 #endif
-
-// static void dma_configure_audio(uint8_t channel) {
-//     system_interrupt_enter_critical_section();
-//     /** Select the DMA channel and clear software trigger */
-//     DMAC->CHID.reg = DMAC_CHID_ID(channel);
-//     DMAC->CHCTRLA.reg &= ~DMAC_CHCTRLA_ENABLE;
-//     DMAC->CHCTRLA.reg = DMAC_CHCTRLA_SWRST;
-//     DMAC->SWTRIGCTRL.reg &= (uint32_t)(~(1 << channel));
-//     uint32_t event_output_enable = 0;
-//     if (output_event) {
-//         event_output_enable = DMAC_CHCTRLB_EVOE;
-//     }
-//     DMAC->CHCTRLB.reg = DMAC_CHCTRLB_LVL(DMA_PRIORITY_LEVEL_0) |
-//             DMAC_CHCTRLB_TRIGSRC(trigsrc) |
-//             DMAC_CHCTRLB_TRIGACT(DMA_TRIGGER_ACTION_BEAT) |
-//             event_output_enable;
-//     // config.peripheral_trigger = DAC_DMAC_ID_EMPTY;
-//     // config.trigger_action = DMA_TRIGGER_ACTION_BEAT;
-//     // config.event_config.input_action = DMA_EVENT_INPUT_TRIG;
-//     // config.event_config.event_output_enable = true;
-//     system_interrupt_leave_critical_section();
-// }
-
-void init_shared_dma(void) {
-    // Turn on the clocks
-    #ifdef SAMD51
-    MCLK->AHBMASK.reg |= MCLK_AHBMASK_DMAC;
-    #endif
-
-    #ifdef SAMD21
-    PM->AHBMASK.reg |= PM_AHBMASK_DMAC;
-    PM->APBBMASK.reg |= PM_APBBMASK_DMAC;
-    #endif
-
-    DMAC->CTRL.reg = DMAC_CTRL_SWRST;
-
-    DMAC->BASEADDR.reg = (uint32_t) dma_descriptors;
-    DMAC->WRBADDR.reg = (uint32_t) write_back_descriptors;
-
-    DMAC->CTRL.reg = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN0;
-
-    // This allocates the lowest channel first so make sure the audio is first
-    // so it gets the highest priority.
-    // dma_configure_audio(0);
-}
 
 static uint8_t sercom_index(Sercom* sercom) {
     #ifdef SAMD21
@@ -115,7 +62,7 @@ static uint8_t sercom_index(Sercom* sercom) {
     #endif
 }
 
-static void dma_configure(uint8_t channel_number, uint8_t trigsrc, bool output_event) {
+void dma_configure(uint8_t channel_number, uint8_t trigsrc, bool output_event) {
     #ifdef SAMD21
     common_hal_mcu_disable_interrupts();
     /** Select the DMA channel and clear software trigger */
@@ -147,7 +94,7 @@ static void dma_configure(uint8_t channel_number, uint8_t trigsrc, bool output_e
     #endif
 }
 
-static void enable_channel(uint8_t channel_number) {
+void dma_enable_channel(uint8_t channel_number) {
     #ifdef SAMD21
     common_hal_mcu_disable_interrupts();
     /** Select the DMA channel and clear software trigger */
@@ -162,7 +109,38 @@ static void enable_channel(uint8_t channel_number) {
     #endif
 }
 
-static uint8_t transfer_status(uint8_t channel_number) {
+void dma_disable_channel(uint8_t channel_number) {
+    #ifdef SAMD21
+    common_hal_mcu_disable_interrupts();
+    /** Select the DMA channel and clear software trigger */
+    DMAC->CHID.reg = DMAC_CHID_ID(channel_number);
+    DMAC->CHCTRLA.bit.ENABLE = false;
+    common_hal_mcu_enable_interrupts();
+    #endif
+
+    #ifdef SAMD51
+    DmacChannel* channel = &DMAC->Channel[channel_number];
+    channel->CHCTRLA.bit.ENABLE = false;
+    #endif
+}
+
+bool dma_channel_enabled(uint8_t channel_number) {
+    #ifdef SAMD21
+    common_hal_mcu_disable_interrupts();
+    /** Select the DMA channel and clear software trigger */
+    DMAC->CHID.reg = DMAC_CHID_ID(channel_number);
+    bool enabled = DMAC->CHCTRLA.bit.ENABLE;
+    common_hal_mcu_enable_interrupts();
+    return enabled;
+    #endif
+
+    #ifdef SAMD51
+    DmacChannel* channel = &DMAC->Channel[channel_number];
+    return channel->CHCTRLA.bit.ENABLE;
+    #endif
+}
+
+uint8_t dma_transfer_status(uint8_t channel_number) {
     #ifdef SAMD21
     common_hal_mcu_disable_interrupts();
     /** Select the DMA channel and clear software trigger */
@@ -181,7 +159,6 @@ static uint8_t transfer_status(uint8_t channel_number) {
 static bool channel_free(uint8_t channel_number) {
     #ifdef SAMD21
     common_hal_mcu_disable_interrupts();
-    /** Select the DMA channel and clear software trigger */
     DMAC->CHID.reg = DMAC_CHID_ID(channel_number);
     bool channel_free = DMAC->CHSTATUS.reg == 0;
     common_hal_mcu_enable_interrupts();
@@ -192,6 +169,29 @@ static bool channel_free(uint8_t channel_number) {
     DmacChannel* channel = &DMAC->Channel[channel_number];
     return channel->CHSTATUS.reg == 0;
     #endif
+}
+
+void init_shared_dma(void) {
+    // Turn on the clocks
+    #ifdef SAMD51
+    MCLK->AHBMASK.reg |= MCLK_AHBMASK_DMAC;
+    #endif
+
+    #ifdef SAMD21
+    PM->AHBMASK.reg |= PM_AHBMASK_DMAC;
+    PM->APBBMASK.reg |= PM_APBBMASK_DMAC;
+    #endif
+
+    DMAC->CTRL.reg = DMAC_CTRL_SWRST;
+
+    DMAC->BASEADDR.reg = (uint32_t) dma_descriptors;
+    DMAC->WRBADDR.reg = (uint32_t) write_back_descriptors;
+
+    DMAC->CTRL.reg = DMAC_CTRL_DMAENABLE | DMAC_CTRL_LVLEN0;
+
+    for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
+        dma_configure(i, 0, true);
+    }
 }
 
 // Do write and read simultaneously. If buffer_out is NULL, write the tx byte over and over.
@@ -284,10 +284,10 @@ static int32_t shared_dma_transfer(void* peripheral,
     // Start the RX job first so we don't miss the first byte. The TX job clocks
     // the output.
     if (rx_active) {
-        enable_channel(SHARED_RX_CHANNEL);
+        dma_enable_channel(SHARED_RX_CHANNEL);
     }
     if (tx_active) {
-        enable_channel(SHARED_TX_CHANNEL);
+        dma_enable_channel(SHARED_TX_CHANNEL);
     }
 
 
@@ -309,10 +309,10 @@ static int32_t shared_dma_transfer(void* peripheral,
     // Channels cycle between Suspend -> Pending -> Busy and back while transfering. So, we check
     // the channels transfer status for an error or completion.
     if (rx_active) {
-        while ((transfer_status(SHARED_RX_CHANNEL) & 0x3) == 0) {}
+        while ((dma_transfer_status(SHARED_RX_CHANNEL) & 0x3) == 0) {}
     }
     if (tx_active) {
-        while ((transfer_status(SHARED_TX_CHANNEL) & 0x3) == 0) {}
+        while ((dma_transfer_status(SHARED_TX_CHANNEL) & 0x3) == 0) {}
     }
 
     if (sercom) {
@@ -331,8 +331,8 @@ static int32_t shared_dma_transfer(void* peripheral,
         }
     }
 
-    if ((!rx_active || transfer_status(SHARED_RX_CHANNEL) == DMAC_CHINTFLAG_TCMPL) &&
-        (!tx_active || transfer_status(SHARED_TX_CHANNEL) == DMAC_CHINTFLAG_TCMPL)) {
+    if ((!rx_active || dma_transfer_status(SHARED_RX_CHANNEL) == DMAC_CHINTFLAG_TCMPL) &&
+        (!tx_active || dma_transfer_status(SHARED_TX_CHANNEL) == DMAC_CHINTFLAG_TCMPL)) {
         return length;
     }
     return -2;
@@ -362,75 +362,6 @@ int32_t qspi_dma_read(uint32_t address, uint8_t* buffer, uint32_t length) {
 }
 #endif
 
-bool allocate_block_counter() {
-//     // Find a timer to count DMA block completions.
-//     Tc *t = NULL;
-//     Tc *tcs[TC_INST_NUM] = TC_INSTS;
-//     for (uint8_t i = TC_INST_NUM; i > 0; i--) {
-//         if (tcs[i - 1]->COUNT16.CTRLA.bit.ENABLE == 0) {
-//             t = tcs[i - 1];
-//             break;
-//         }
-//     }
-//     if (t == NULL) {
-//         return false;
-//     }
-//     MP_STATE_VM(audiodma_block_counter) = gc_alloc(sizeof(struct tc_module), false);
-//     if (MP_STATE_VM(audiodma_block_counter) == NULL) {
-//         return false;
-//     }
-//
-//     // Don't bother setting the period. We set it before you playback anything.
-//     struct tc_config config_tc;
-//     tc_get_config_defaults(&config_tc);
-//     config_tc.counter_size    = TC_COUNTER_SIZE_16BIT;
-//     config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
-//     if (tc_init(MP_STATE_VM(audiodma_block_counter), t, &config_tc) != STATUS_OK) {
-//         return false;
-//     };
-//
-//     struct tc_events events_tc;
-//     events_tc.generate_event_on_overflow = false;
-//     events_tc.on_event_perform_action = true;
-//     events_tc.event_action = TC_EVENT_ACTION_INCREMENT_COUNTER;
-//     tc_enable_events(MP_STATE_VM(audiodma_block_counter), &events_tc);
-//
-//     // Connect the timer overflow event, which happens at the target frequency,
-//     // to the DAC conversion trigger.
-//     MP_STATE_VM(audiodma_block_event) = gc_alloc(sizeof(struct events_resource), false);
-//     if (MP_STATE_VM(audiodma_block_event) == NULL) {
-//         return false;
-//     }
-//     struct events_config config;
-//     events_get_config_defaults(&config);
-//
-//     uint8_t user = EVSYS_ID_USER_TC3_EVU;
-//     if (t == TC4) {
-//         user = EVSYS_ID_USER_TC4_EVU;
-//     } else if (t == TC5) {
-//         user = EVSYS_ID_USER_TC5_EVU;
-// #ifdef TC6
-//     } else if (t == TC6) {
-//         user = EVSYS_ID_USER_TC6_EVU;
-// #endif
-// #ifdef TC7
-//     } else if (t == TC7) {
-//         user = EVSYS_ID_USER_TC7_EVU;
-// #endif
-//     }
-//
-//     config.generator    = EVSYS_ID_GEN_DMAC_CH_0;
-//     config.path         = EVENTS_PATH_ASYNCHRONOUS;
-//     if (events_allocate(MP_STATE_VM(audiodma_block_event), &config) != STATUS_OK ||
-//         events_attach_user(MP_STATE_VM(audiodma_block_event), user) != STATUS_OK) {
-//         return false;
-//     }
-//
-//     tc_enable(MP_STATE_VM(audiodma_block_counter));
-//     tc_stop_counter(MP_STATE_VM(audiodma_block_counter));
-    return true;
-}
-
-void switch_audiodma_trigger(uint8_t trigger_dmac_id) {
-    //dma_configure(audio_dma.channel_id, trigger_dmac_id, true);
+DmacDescriptor* dma_descriptor(uint8_t channel_number) {
+    return &dma_descriptors[channel_number];
 }

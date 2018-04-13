@@ -39,6 +39,8 @@
 #include "hri/hri_gclk_d51.h"
 #endif
 
+const uint16_t prescaler[8] = {1, 2, 4, 8, 16, 64, 256, 1024};
+
 // This bitmask keeps track of which channels of a TCC are currently claimed.
 #ifdef SAMD21
 const uint8_t tcc_cc_num[3] = {4, 2, 2};
@@ -73,8 +75,8 @@ const uint8_t tc_gclk_ids[TC_INST_NUM] = {TC0_GCLK_ID,
                                           TC7_GCLK_ID,
 #endif
                                       };
-const uint8_t tcc_gclk_ids[TCC_INST_NUM] = {TCC0_GCLK_ID, 
-                                            TCC1_GCLK_ID, 
+const uint8_t tcc_gclk_ids[TCC_INST_NUM] = {TCC0_GCLK_ID,
+                                            TCC1_GCLK_ID,
                                             TCC2_GCLK_ID,
 #ifdef TCC3_GCLK_ID
                                             TCC3_GCLK_ID,

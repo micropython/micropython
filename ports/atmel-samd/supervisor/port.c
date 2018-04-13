@@ -45,11 +45,16 @@
 
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/analogio/AnalogOut.h"
+#include "common-hal/audiobusio/PDMIn.h"
+#include "common-hal/audiobusio/I2SOut.h"
+#include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/usb_hid/Device.h"
+#include "clocks.h"
+#include "events.h"
 #include "shared_dma.h"
 #include "tick.h"
 
@@ -192,14 +197,20 @@ void reset_port(void) {
         sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
     }
 
-// #ifdef EXPRESS_BOARD
-//     audioout_reset();
+#ifdef EXPRESS_BOARD
+    audioout_reset();
+    #if !defined(__SAMD51G19A__) && !defined(__SAMD51G18A__)
+    i2sout_reset();
+    #endif
+    audio_dma_reset();
 //     touchin_reset();
-//     pdmin_reset();
-// #endif
+    //pdmin_reset();
+#endif
     pulsein_reset();
     pulseout_reset();
     pwmout_reset();
+
+    reset_gclks();
 
     analogin_reset();
 
@@ -208,6 +219,8 @@ void reset_port(void) {
 #endif
 
     analogout_reset();
+
+    reset_event_system();
 
     reset_all_pins();
 

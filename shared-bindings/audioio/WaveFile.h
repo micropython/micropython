@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,27 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H
 
+#include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
-
 #include "extmod/vfs_fat_file.h"
-#include "py/obj.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *data_pin;
-    uint32_t frequency;
-    uint8_t serializer;
-    uint8_t clock_unit;
-    uint8_t bytes_per_sample;
-    uint8_t bit_depth;
-} audiobusio_pdmin_obj_t;
+extern const mp_obj_type_t audioio_wavefile_type;
 
-void pdmin_reset(void);
+void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
+    pyb_file_obj_t* file);
 
-void pdmin_background(void);
+void common_hal_audioio_wavefile_deinit(audioio_wavefile_obj_t* self);
+bool common_hal_audioio_wavefile_deinited(audioio_wavefile_obj_t* self);
+uint32_t common_hal_audioio_wavefile_get_sample_rate(audioio_wavefile_obj_t* self);
+void common_hal_audioio_wavefile_set_sample_rate(audioio_wavefile_obj_t* self, uint32_t sample_rate);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_WAVEFILE_H

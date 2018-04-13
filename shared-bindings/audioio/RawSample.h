@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
 
+#include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-module/audioio/RawSample.h"
 
-#include "extmod/vfs_fat_file.h"
-#include "py/obj.h"
+extern const mp_obj_type_t audioio_rawsample_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *clock_pin;
-    const mcu_pin_obj_t *data_pin;
-    uint32_t frequency;
-    uint8_t serializer;
-    uint8_t clock_unit;
-    uint8_t bytes_per_sample;
-    uint8_t bit_depth;
-} audiobusio_pdmin_obj_t;
+void common_hal_audioio_rawsample_construct(audioio_rawsample_obj_t* self,
+    uint8_t* buffer, uint32_t len, uint8_t bytes_per_sample, bool samples_signed,
+    uint8_t channel_count, uint32_t sample_rate);
 
-void pdmin_reset(void);
+void common_hal_audioio_rawsample_deinit(audioio_rawsample_obj_t* self);
+bool common_hal_audioio_rawsample_deinited(audioio_rawsample_obj_t* self);
+uint32_t common_hal_audioio_rawsample_get_sample_rate(audioio_rawsample_obj_t* self);
+void common_hal_audioio_rawsample_set_sample_rate(audioio_rawsample_obj_t* self, uint32_t sample_rate);
 
-void pdmin_background(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOIO_RAWSAMPLE_H
