@@ -39,7 +39,8 @@
 //| :class:`WaveFile` -- Load a wave file for audio playback
 //| ========================================================
 //|
-//| A .wav file prepped for audio playback
+//| A .wav file prepped for audio playback. Only mono and stereo files are supported. Samples must
+//| be 8 bit unsigned or 16 bit signed.
 //|
 //| .. class:: WaveFile(filename)
 //|

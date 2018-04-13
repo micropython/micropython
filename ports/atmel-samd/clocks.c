@@ -35,7 +35,7 @@
 // TODO(tannewt): Should we have a way of sharing GCLKs based on their speed? Divisor doesn't
 // gaurantee speed because it depends on the source.
 uint8_t find_free_gclk(uint16_t divisor) {
-    if (divisor > (1 << 8)) {
+    if (divisor > 0xff) {
         if (gclk_enabled(1)) {
             return 0xff;
         }

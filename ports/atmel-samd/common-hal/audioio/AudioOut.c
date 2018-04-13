@@ -51,11 +51,21 @@
 #include "timers.h"
 
 void audioout_reset(void) {
-    // Only reset DMA. PWMOut will reset the timer. Other code will reset the DAC.
 }
 
 void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
         const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel) {
+    #ifdef SAMD51
+    bool dac_clock_enabled = hri_mclk_get_APBDMASK_DAC_bit(MCLK);
+    #endif
+
+    #ifdef SAMD21
+    bool dac_clock_enabled = PM->APBCMASK.bit.DAC_;
+    #endif
+    // Only support exclusive use of the DAC.
+    if (dac_clock_enabled && DAC->CTRLA.bit.ENABLE == 1) {
+        mp_raise_RuntimeError("DAC already in use");
+    }
     #ifdef SAMD21
     if (right_channel != NULL) {
         mp_raise_ValueError("Right channel unsupported");
@@ -102,13 +112,9 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6.
     _gclk_enable_channel(DAC_GCLK_ID, CONF_GCLK_DAC_SRC);
 
-    // There is a small chance the other output is being used by AnalogOut on the SAMD51 so
-    // only reset if the DAC is disabled.
-    if (DAC->CTRLA.bit.ENABLE == 0) {
+
         DAC->CTRLA.bit.SWRST = 1;
         while (DAC->CTRLA.bit.SWRST == 1) {}
-
-    }
 
     bool channel0_enabled = true;
     #ifdef SAMD51
@@ -224,6 +230,14 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
         return;
     }
 
+    DAC->CTRLA.bit.ENABLE = 0;
+    #ifdef SAMD21
+    while (DAC->STATUS.bit.SYNCBUSY == 1) {}
+    #endif
+    #ifdef SAMD51
+    while (DAC->SYNCBUSY.bit.ENABLE == 1) {}
+    #endif
+
     disable_event_channel(self->tc_to_dac_event_channel);
 
     reset_pin(self->left_channel->pin);
@@ -320,9 +334,6 @@ void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
     #ifdef SAMD51
     audio_dma_stop(&self->right_dma);
     #endif
-
-    // FIXME(tannewt): Do we want to disable? What if we're sharing with an AnalogOut on the 51?
-    // dac_disable(MP_STATE_VM(audioout_dac_instance));
 }
 
 bool common_hal_audioio_audioout_get_playing(audioio_audioout_obj_t* self) {

@@ -364,15 +364,12 @@ SRC_COMMON_HAL += \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c
 endif
-ifeq ($(CHIP_VARIANT),SAMD51G18)
-SRC_COMMON_HAL += \
-	audiobusio/__init__.c \
-	audiobusio/I2SOut.c
-endif
-ifeq ($(CHIP_VARIANT),SAMD51G19)
-SRC_COMMON_HAL += \
-	audiobusio/__init__.c \
-	audiobusio/I2SOut.c
+ifneq ($(CHIP_VARIANT),SAMD51G18A)
+	ifneq ($(CHIP_VARIANT),SAMD51G19A)
+		SRC_COMMON_HAL += \
+			audiobusio/__init__.c \
+			audiobusio/I2SOut.c
+	endif
 endif
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
