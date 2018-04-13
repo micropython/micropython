@@ -360,17 +360,17 @@ SRC_SHARED_MODULE = \
 	ustack/__init__.c
 
 ifeq ($(CHIP_FAMILY),samd21)
-SRC_COMMON_HAL = $SRC_COMMON_HAL \
+SRC_COMMON_HAL += \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c
 endif
 ifeq ($(CHIP_VARIANT),SAMD51G18)
-SRC_COMMON_HAL = $SRC_COMMON_HAL \
+SRC_COMMON_HAL += \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c
 endif
 ifeq ($(CHIP_VARIANT),SAMD51G19)
-SRC_COMMON_HAL = $SRC_COMMON_HAL \
+SRC_COMMON_HAL += \
 	audiobusio/__init__.c \
 	audiobusio/I2SOut.c
 endif
