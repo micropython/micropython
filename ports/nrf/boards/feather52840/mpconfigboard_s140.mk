@@ -8,6 +8,12 @@ BOOTLOADER_FILENAME = boards/feather52840/bootloader/feather52840_bootloader_6.0
 
 NRF_DEFINES += -DNRF52840_XXAA
 
+ifeq ($(OS),Windows_NT)
+   NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
+else
+   NRFUTIL = nrfutil
+endif
+
 CFLAGS += -DADAFRUIT_FEATHER52840
 
 ifeq ($(SD), )
@@ -25,11 +31,11 @@ __check_defined = \
 .PHONY: dfu-gen dfu-flash boot-flash
 
 dfu-gen:
-	nrfutil dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
 
 dfu-flash:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	nrfutil --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
+	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
 
 boot-flash:
 	nrfjprog --program $(BOOTLOADER_FILENAME).hex -f nrf52 --chiperase --reset

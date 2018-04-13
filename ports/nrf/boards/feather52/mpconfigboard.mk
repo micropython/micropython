@@ -8,6 +8,12 @@ BOOTLOADER_PKG = boards/feather52/bootloader/feather52_bootloader_$(SOFTDEV_VERS
 
 NRF_DEFINES += -DNRF52832_XXAA
 
+ifeq ($(OS),Windows_NT)
+   NRFUTIL = ../../lib/nrfutil/binaries/win32/nrfutil.exe
+else
+   NRFUTIL = nrfutil
+endif
+
 ifeq ($(SD), )
 INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
 INC += -Idrivers/bluetooth/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s132_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
@@ -25,12 +31,12 @@ __check_defined = \
 .PHONY: dfu-gen dfu-flash boot-flash
 
 dfu-gen:
-	nrfutil dfu genpkg --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
+	$(NRFUTIL) dfu genpkg --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
 
 dfu-flash:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	nrfutil dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
+	$(NRFUTIL) dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
 
 boot-flash:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	nrfutil dfu serial --package $(BOOTLOADER_PKG) -p $(SERIAL) -b 115200
+	$(NRFUTIL) dfu serial --package $(BOOTLOADER_PKG) -p $(SERIAL) -b 115200
