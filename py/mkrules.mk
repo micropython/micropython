@@ -123,7 +123,7 @@ $(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
 	$(Q)$(PREPROCESS_FROZEN_MODULES) -o $@ $(FROZEN_MPY_DIRS)
 	$(Q)$(CD) $@ && \
 $(FIND) -L . -type f -name '*.py' | sed 's=^\./==' | \
-xargs -n1 $(abspath $(MPY_CROSS)) $(MPY_CROSS_FLAGS)
+xargs -n1 "$(abspath $(MPY_CROSS))" $(MPY_CROSS_FLAGS)
 
 # to build frozen_mpy.c from all .mpy files
 # You need to define MPY_TOOL_LONGINT_IMPL in mpconfigport.mk
