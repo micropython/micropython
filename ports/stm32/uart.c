@@ -183,6 +183,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART1_IRQn;
             pins[0] = MICROPY_HW_UART1_TX;
             pins[1] = MICROPY_HW_UART1_RX;
+            #if defined(MICROPY_HW_UART1_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART1_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART1_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART1_CTS;
+            }
+            #endif
             __HAL_RCC_USART1_CLK_ENABLE();
             break;
         #endif
@@ -236,6 +246,19 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART4_IRQn;
             pins[0] = MICROPY_HW_UART4_TX;
             pins[1] = MICROPY_HW_UART4_RX;
+#if !defined(STM32F4)
+            #if defined(MICROPY_HW_UART4_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART4_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART4_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART4_CTS;
+            }
+            #endif
+#endif
+
             __HAL_RCC_UART4_CLK_ENABLE();
             break;
         #endif
@@ -247,6 +270,18 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART5_IRQn;
             pins[0] = MICROPY_HW_UART5_TX;
             pins[1] = MICROPY_HW_UART5_RX;
+#if !defined(STM32F4)
+            #if defined(MICROPY_HW_UART5_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART5_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART5_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART5_CTS;
+            }
+            #endif
+#endif
             __HAL_RCC_UART5_CLK_ENABLE();
             break;
         #endif
@@ -258,6 +293,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = USART6_IRQn;
             pins[0] = MICROPY_HW_UART6_TX;
             pins[1] = MICROPY_HW_UART6_RX;
+#if !defined(STM32F4)
             #if defined(MICROPY_HW_UART6_RTS)
             if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
                 pins[2] = MICROPY_HW_UART6_RTS;
@@ -268,6 +304,7 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
                 pins[3] = MICROPY_HW_UART6_CTS;
             }
             #endif
+#endif
             __HAL_RCC_USART6_CLK_ENABLE();
             break;
         #endif
@@ -279,6 +316,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART7_IRQn;
             pins[0] = MICROPY_HW_UART7_TX;
             pins[1] = MICROPY_HW_UART7_RX;
+            #if defined(MICROPY_HW_UART7_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART7_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART7_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART7_CTS;
+            }
+            #endif
             __HAL_RCC_UART7_CLK_ENABLE();
             break;
         #endif
@@ -290,6 +337,16 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
             irqn = UART8_IRQn;
             pins[0] = MICROPY_HW_UART8_TX;
             pins[1] = MICROPY_HW_UART8_RX;
+            #if defined(MICROPY_HW_UART8_RTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_UART8_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_UART8_CTS)
+            if (uart_obj->uart.Init.HwFlowCtl & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_UART8_CTS;
+            }
+            #endif
             __HAL_RCC_UART8_CLK_ENABLE();
             break;
         #endif
