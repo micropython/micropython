@@ -2,6 +2,8 @@ import urequests
 import utime
 import urandom
 import network
+import untplib
+from machine import RTC
 
 DB = "counters-87809";
 if not DB:
@@ -9,7 +11,7 @@ if not DB:
 
 ACCESS_TOKEN="AIzaSyBiZak8OSV1wu0ENz7fUdHdQ0S4qRFc0QU";
 
-def wifi_connect():
+def wifiConnect():
 	sta_if = network.WLAN(network.STA_IF);
 	if not sta_if.isconnected():
 		print('connecting to network...');
@@ -18,6 +20,14 @@ def wifi_connect():
 		while not sta_if.isconnected():
 			pass;
 	print('network config:', sta_if.ifconfig());
+
+def setTime():
+	c=untplib.NTPClient();
+	resp=c.request('0.uk.pool.ntp.org', version=3, port=123);
+	print("Offset is ", resp.offset);
+	rtc = RTC();
+	print("Adjusting clock by ", resp.offset, "seconds");
+	rtc.init(utime.localtime(utime.time() + resp.offset));
 
 def sendToFirebase():
 	for a in range(5):
@@ -31,5 +41,6 @@ def sendToFirebase():
 		#print(response.status_code);
 		utime.sleep(1);
 
-wifi_connect();
+wifiConnect();
+setTime();
 sendToFirebase();
