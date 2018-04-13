@@ -36,12 +36,13 @@
 //| ================================================================================
 //|
 //| Non-volatile memory is available as a byte array that persists over reloads
-//| and power cycles.
+//| and power cycles. Each assignment causes an erase and write cycle so its recommended to assign
+//| all values to change at once.
 //|
 //| Usage::
 //|
 //|    import microcontroller
-//|    microcontroller.nvm[0] = 0xcc
+//|    microcontroller.nvm[0:] = b"\xcc\x10\x00"
 //|
 
 //| .. class:: ByteArray()

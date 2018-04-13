@@ -5,8 +5,8 @@
 /* Specify the memory areas */
 MEMORY
 {
-    /* Leave 16KiB for the bootloader and 512k for the filesystem. */
-    FLASH (rx) : ORIGIN = 0x00000000 + 16K, LENGTH = 1M - 16K - 512K
+    /* Leave 16KiB for the bootloader, 512k for the filesystem and 8k for user config data. */
+    FLASH (rx) : ORIGIN = 0x00000000 + 16K, LENGTH = 1M - 16K - 512K - 8K
     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 256K
 }
 
@@ -76,7 +76,7 @@ SECTIONS
     .stack :
     {
         . = ALIGN(4);
-        . = . + 2K; /* Reserve a minimum of 2K for the stack. */
+        . = . + 10K; /* Reserve a minimum of 10K for the stack. nvm will temporarily store 8k on the stack when writing. */
         . = ALIGN(4);
     } >RAM
 

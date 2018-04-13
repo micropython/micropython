@@ -74,10 +74,12 @@ bool gclk_enabled(uint8_t gclk) {
 
 void disable_gclk(uint8_t gclk) {
     #ifdef SAMD51
+    while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
     GCLK->GENCTRL[gclk].bit.GENEN = false;
     while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
     #endif
     #ifdef SAMD21
+    while (GCLK->STATUS.bit.SYNCBUSY == 1) {}
     GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(gclk);
     while (GCLK->STATUS.bit.SYNCBUSY == 1) {}
     #endif
