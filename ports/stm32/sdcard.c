@@ -539,7 +539,7 @@ STATIC mp_obj_t pyb_sdcard_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
         case BP_IOCTL_SEC_COUNT:
-            return MP_OBJ_NEW_SMALL_INT(0); // TODO
+            return MP_OBJ_NEW_SMALL_INT(sdcard_get_capacity_in_bytes() / SDCARD_BLOCK_SIZE);
 
         case BP_IOCTL_SEC_SIZE:
             return MP_OBJ_NEW_SMALL_INT(SDCARD_BLOCK_SIZE);
