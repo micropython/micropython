@@ -2,7 +2,7 @@ import urequests
 import utime
 import urandom
 import network
-import untplib
+import ntptime
 from machine import RTC
 from machine import Pin
 
@@ -23,16 +23,11 @@ def wifiConnect():
 	print('network config:', sta_if.ifconfig());
 
 def setTime():
-	c=untplib.NTPClient();
-	resp=c.request('0.uk.pool.ntp.org', version=3, port=123);
-	print("Offset is ", resp.offset);
-	rtc = RTC();
-	print("Adjusting clock by ", resp.offset, "seconds");
-	rtc.init(utime.localtime(utime.time() + resp.offset));
+	t = ntptime.settime();
 
 def sendToFirebase():
 	for a in range(5):
-		timestamp = int(utime.time());
+		timestamp = int(utime.localtime());
 		value1 = urandom.getrandbits(9);
 		value2 = urandom.getrandbits(9);
 		value3 = urandom.getrandbits(9);
