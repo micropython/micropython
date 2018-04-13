@@ -4,6 +4,7 @@ import urandom
 import network
 import untplib
 from machine import RTC
+from machine import Pin
 
 DB = "counters-87809";
 if not DB:
