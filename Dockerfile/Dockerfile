@@ -1,4 +1,4 @@
-# test comment
+# test comment 2
 FROM ubuntu:16.04
 ARG VERSION=master
 
