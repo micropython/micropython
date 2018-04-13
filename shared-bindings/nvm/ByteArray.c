@@ -42,7 +42,7 @@
 //| Usage::
 //|
 //|    import microcontroller
-//|    microcontroller.nvm[0:] = b"\xcc\x10\x00"
+//|    microcontroller.nvm[0:3] = b"\xcc\x10\x00"
 //|
 
 //| .. class:: ByteArray()
