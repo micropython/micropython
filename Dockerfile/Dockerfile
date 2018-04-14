@@ -33,6 +33,9 @@ RUN cd /micropython/mpy-cross && make
 
 RUN cd /micropython/ports/esp8266 && make axtls && make
 
+RUN cd build \
+  && curl --data '{"tag_name": "v.1.9.3-beta.1","target_commitish": "master","name": "v.1.9.3-beta.1","body": "Release of version v.1.9.3-beta.1","draft": false,"prerelease": false}' https://api.github.com/repos/ilyamordasov/micropython/releases?access_token=$GITHUB_ACCESS_TOKEN
+
 USER root
 RUN mkdir /mnt/dev
 ENV PATH=/micropython/mpy-cross:$PATH
