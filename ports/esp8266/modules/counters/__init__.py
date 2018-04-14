@@ -3,12 +3,12 @@ import uasyncio as asyncio
 from micropython import const
 import ustruct
 
-class Meter():
+class Counter():
 	debounce_ms = const(25);
 
 	def __init__(self, pin, value_storage):
 		self._value_storage = value_storage;
-		self._value = self._value.read();
+		self._value = self._value_storage;
 		self._value_changed = False;
 
 		self._pin = Pin(pin, Pin.IN, Pin.PULL_UP);
@@ -29,12 +29,12 @@ class Meter():
 					self._another_litre_passed();
 
 			# Ignore further state changes until switch has settled
-			await asyncio.sleep_ms(Meter.debounce_ms);
+			await asyncio.sleep_ms(Counter.debounce_ms);
 
 	def _another_litre_passed(self):
 		self._value += 1;
 		self._value_changed = True;
-		self._value_storage.write(self._value);
+		# self._value_storage.write(self._value);
 
 	def value(self):
 		self._value_changed = False;
