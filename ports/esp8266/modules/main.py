@@ -85,6 +85,7 @@ class WaterMeter():
     async def _connect_to_WiFi(self):
         print('Connecting to WiFi');
         sta_if = network.WLAN(network.STA_IF);
+        sta_if.active(True);
         sta_if.connect("Smart_box-142", "natalia31081980");
         
         conn = False;
