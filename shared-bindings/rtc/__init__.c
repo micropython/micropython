@@ -41,6 +41,13 @@
 //| The `rtc` module provides support for a Real Time Clock.
 //| It also backs the `time.time()` and `time.localtime()` functions using the onboard RTC if present.
 //|
+//| Libraries
+//|
+//| .. toctree::
+//|     :maxdepth: 3
+//|
+//|     RTC
+//|
 
 void rtc_reset(void) {
     MP_STATE_VM(rtc_time_source) = (mp_obj_t)&rtc_rtc_obj;
