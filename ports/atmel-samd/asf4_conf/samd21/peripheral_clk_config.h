@@ -321,7 +321,7 @@
 
 // <i> Select the clock source for RTC.
 #ifndef CONF_GCLK_RTC_SRC
-#define CONF_GCLK_RTC_SRC GCLK_CLKCTRL_GEN_GCLK0_Val
+#define CONF_GCLK_RTC_SRC GCLK_CLKCTRL_GEN_GCLK2_Val
 #endif
 
 /**

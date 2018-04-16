@@ -39,6 +39,7 @@ INC += -I. \
        -Iasf4/$(CHIP_FAMILY)/hpl/gclk \
        -Iasf4/$(CHIP_FAMILY)/hpl/pm \
        -Iasf4/$(CHIP_FAMILY)/hpl/port \
+       -Iasf4/$(CHIP_FAMILY)/hpl/rtc \
        -Iasf4/$(CHIP_FAMILY)/hpl/tc \
        -Iasf4/$(CHIP_FAMILY)/include \
        -Iasf4/$(CHIP_FAMILY)/CMSIS/Include \
@@ -173,6 +174,7 @@ SRC_ASF := \
 	gcc/system_$(CHIP_FAMILY).c \
 	hal/src/hal_adc_sync.c \
 	hal/src/hal_atomic.c \
+	hal/src/hal_calendar.c \
 	hal/src/hal_dac_sync.c \
 	hal/src/hal_delay.c \
 	hal/src/hal_flash.c \
@@ -278,6 +280,8 @@ SRC_COMMON_HAL = \
 	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
+	rtc/__init__.c \
+	rtc/RTC.c \
 	storage/__init__.c \
 	supervisor/__init__.c \
 	supervisor/Runtime.c \

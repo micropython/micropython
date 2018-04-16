@@ -52,7 +52,9 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/rtc/RTC.h"
 #include "common-hal/usb_hid/Device.h"
+#include "shared-bindings/rtc/__init__.h"
 #include "clocks.h"
 #include "events.h"
 #include "shared_dma.h"
@@ -124,6 +126,7 @@ safe_mode_t port_init(void) {
 
     // Configure millisecond timer initialization.
     tick_init();
+    rtc_init();
 
     // Init the nvm controller.
     // struct nvm_config config_nvm;
@@ -180,6 +183,7 @@ void reset_port(void) {
     pulsein_reset();
     pulseout_reset();
     pwmout_reset();
+    rtc_reset();
 
     reset_gclks();
 

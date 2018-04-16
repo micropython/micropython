@@ -10,6 +10,14 @@
 #define CONF_RTC_ENABLE 1
 #endif
 
+// <q> Force reset RTC on initialization
+// <i> Force RTC to reset on initialization, else init is not going on if RTC is already enabled.
+// <i> Note that the previous power down data in RTC is lost if it's enabled.
+// <id> rtc_arch_init_reset
+#ifndef CONF_RTC_INIT_RESET
+#define CONF_RTC_INIT_RESET 0
+#endif
+
 // <o> Prescaler configuration
 // <0x0=>Peripheral clock divided by 1
 // <0x1=>Peripheral clock divided by 2
@@ -25,7 +33,7 @@
 // <i> These bits define the RTC clock relative to the peripheral clock
 // <id> rtc_arch_prescaler
 #ifndef CONF_RTC_PRESCALER
-#define CONF_RTC_PRESCALER 0x0
+#define CONF_RTC_PRESCALER 0xa
 
 #endif
 
