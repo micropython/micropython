@@ -72,7 +72,7 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
 //|   .. attribute:: datetime
 //|
-//|       Get or set the date and time of the RTC.
+//|       The date and time of the RTC.
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_datetime(mp_obj_t self_in) {
     timeutils_struct_time_t tm;
