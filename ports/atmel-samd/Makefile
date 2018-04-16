@@ -285,6 +285,8 @@ SRC_COMMON_HAL = \
 	analogio/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
+	nvm/__init__.c \
+	nvm/ByteArray.c \
 	pulseio/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
@@ -293,9 +295,7 @@ SRC_COMMON_HAL = \
 	usb_hid/Device.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-#	nvm/__init__.c \
-	audiobusio/PDMIn.c \
-	nvm/ByteArray.c \
+#	audiobusio/PDMIn.c \
 	touchio/__init__.c \
 	touchio/TouchIn.c \
 
