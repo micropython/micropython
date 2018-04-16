@@ -286,7 +286,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
 
         common_hal_mcu_disable_interrupts();
         gpio_set_pin_level(self->pin, !self->idle_state);
-        common_hal_mcu_delay_us(trigger_duration);
+        common_hal_mcu_delay_us((uint32_t)trigger_duration);
         gpio_set_pin_level(self->pin, self->idle_state);
         common_hal_mcu_enable_interrupts();
     }
