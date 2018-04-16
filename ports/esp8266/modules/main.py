@@ -37,7 +37,8 @@ class WaterMeter():
         await asyncio.sleep(0);
 
     async def sendToFirebase(value1):
-        timestamp = int(utime.localtime());
+        ts = utime.localtime();
+        timestamp = utime.mktime(ts);
         data = {"timestamp":timestamp,"6123464":0,"11443721":0,"11444802":value1,"electricity":0};
         response = urequests.post('https://' + DB + '.firebaseio.com/.json', json=data);
         print(data);
