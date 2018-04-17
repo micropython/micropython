@@ -39,7 +39,7 @@ RUN cd /micropython/ports/esp8266 && make axtls && make
 #   && curl -H "Content-Type: application/zip" --data-binary @assets.zip "https://uploads.github.com/repos/ilyamordasov/micropython/releases/$GITHUB_RELEASE_ID/assets?name=assets.zip&access_token=$GITHUB_ACCESS_TOKEN"
 
 RUN cd /micropython/ports/esp8266/build \
-    && zip -R assets '*.bin' '*.elf'
+    && zip -R binaries '*.bin' '*.elf'
 
 USER root
 RUN mkdir /mnt/dev
