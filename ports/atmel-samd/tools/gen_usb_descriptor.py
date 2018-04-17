@@ -7,6 +7,7 @@ import sys
 sys.path.append("../../tools/usb_descriptor")
 
 from adafruit_usb_descriptor import cdc, hid, msc, standard, util
+from hid_report_descriptors import HIDReportDescriptors
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--manufacturer', type=str,
@@ -122,19 +123,29 @@ msc_interfaces = [
             standard.EndpointDescriptor(
                 description="MSC in",
                 bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
-                bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+                bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+                bInterval=0),
             standard.EndpointDescriptor(
                 description="MSC out",
                 bEndpointAddress=0x1 | standard.EndpointDescriptor.DIRECTION_OUT,
-                bmAttributes=standard.EndpointDescriptor.TYPE_BULK)
+                bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+                bInterval=0)
         ]
     )
 ]
 
-hid_report_descriptor = hid.ReportDescriptor.MOUSE_KEYBOARD_CONSUMER_SYS_CONTROL_REPORT
-hid_report_ids = hid.ReportDescriptor.REPORT_IDS
-hid_report_lengths = hid.ReportDescriptor.REPORT_LENGTHS
-hid_max_report_length = max(hid_report_lengths.values())
+# Include only these HID devices.
+# DIGITIZER works on Linux but conflicts with MOUSE, so leave it out for now.
+hid_devices = ("KEYBOARD", "MOUSE", "CONSUMER", "GAMEPAD")
+
+combined_hid_report_descriptor = hid.ReportDescriptor(
+    description="MULTIDEVICE",
+    report_descriptor=b''.join(
+        HIDReportDescriptors.REPORT_DESCRIPTORS[name].report_descriptor for name in hid_devices ))
+
+hid_report_ids_dict = { name: HIDReportDescriptors.REPORT_IDS[name] for name in hid_devices }
+hid_report_lengths_dict = { name: HIDReportDescriptors.REPORT_LENGTHS[name] for name in hid_devices }
+hid_max_report_length = max(hid_report_lengths_dict.values())
 
 # ASF4 expects keyboard and generic devices to have both in and out endpoints,
 # and will fail (possibly silently) if both are not supplied.
@@ -142,12 +153,13 @@ hid_endpoint_in_descriptor = standard.EndpointDescriptor(
     description="HID in",
     bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_IN,
     bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
-    bInterval=0x02)
+    bInterval=10)
 
 hid_endpoint_out_descriptor = standard.EndpointDescriptor(
     description="HID out",
     bEndpointAddress=0x0 | standard.EndpointDescriptor.DIRECTION_OUT,
-    bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT)
+    bmAttributes=standard.EndpointDescriptor.TYPE_INTERRUPT,
+    bInterval=10)
 
 hid_interfaces = [
     standard.InterfaceDescriptor(
@@ -159,7 +171,7 @@ hid_interfaces = [
         subdescriptors=[
             hid.HIDDescriptor(
                 description="HID",
-                wDescriptorLength=len(bytes(hid_report_descriptor))),
+                wDescriptorLength=len(bytes(combined_hid_report_descriptor))),
             hid_endpoint_in_descriptor,
             hid_endpoint_out_descriptor,
             ]
@@ -274,7 +286,7 @@ uint8_t hid_report_descriptor[{HID_REPORT_DESCRIPTOR_LENGTH}];
 """
 .format(SERIAL_NUMBER_OFFSET=serial_number_offset,
         SERIAL_NUMBER_LENGTH=args.serial_number_length,
-        HID_REPORT_DESCRIPTOR_LENGTH=len(bytes(hid_report_descriptor)),
+        HID_REPORT_DESCRIPTOR_LENGTH=len(bytes(combined_hid_report_descriptor)),
         HID_ENDPOINT_IN_ADDRESS=hex(hid_endpoint_in_descriptor.bEndpointAddress),
         HID_ENDPOINT_OUT_ADDRESS=hex(hid_endpoint_out_descriptor.bEndpointAddress)))
 
@@ -294,7 +306,7 @@ for interface in interfaces:
 h_file.write("\n")
 
 # #define the report ID's used in the combined HID descriptor
-for name, id in hid_report_ids.items():
+for name, id in hid_report_ids_dict.items():
     h_file.write("""\
 #define USB_HID_REPORT_ID_{NAME} {ID}
 """.format(NAME=name,
@@ -303,7 +315,7 @@ for name, id in hid_report_ids.items():
 h_file.write("\n")
 
 # #define the report sizes used in the combined HID descriptor
-for name, length in hid_report_lengths.items():
+for name, length in hid_report_lengths_dict.items():
     h_file.write("""\
 #define USB_HID_REPORT_LENGTH_{NAME} {LENGTH}
 """.format(NAME=name,
@@ -314,7 +326,7 @@ h_file.write("\n")
 h_file.write("""\
 #define USB_HID_NUM_DEVICES {NUM_DEVICES}
 #define USB_HID_MAX_REPORT_LENGTH {MAX_LENGTH}
-""".format(NUM_DEVICES=len(hid_report_lengths),
+""".format(NUM_DEVICES=len(hid_report_lengths_dict),
            MAX_LENGTH=hid_max_report_length))
 
 
@@ -322,9 +334,9 @@ h_file.write("""\
 # Write out the report descriptor and info
 c_file.write("""\
 uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
-""".format(HID_DESCRIPTOR_LENGTH=len(bytes(hid_report_descriptor))))
+""".format(HID_DESCRIPTOR_LENGTH=len(bytes(combined_hid_report_descriptor))))
 
-for b in bytes(hid_report_descriptor):
+for b in bytes(combined_hid_report_descriptor):
     c_file.write("0x{:02x}, ".format(b))
 c_file.write("""
 };
