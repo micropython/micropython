@@ -64,7 +64,7 @@ the following commands on (at least) Linux:
 
     $ export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
 
-You cam put this command in your `.profile` or `.bash_login`.
+You can put this command in your `.profile` or `.bash_login`.
 
 You then need to set the `ESPIDF` environment/makefile variable to point to
 the root of the ESP-IDF repository.  You can set the variable in your PATH,
