@@ -25,6 +25,7 @@ class WaterMeter():
     cold_counter = Counter(0, 200);
 
     def __init__(self):
+        print("Hello from __init__");
         self.internet_outage = True;
         self.internet_outages = 0;
         self.internet_outage_start = ticks_ms();
@@ -125,6 +126,7 @@ class WaterMeter():
                 await self.setTime();
                 await self._connect_to_WiFi();
                 await self._run_main_loop();
+                print("Hello from main");
                     
             except Exception as e:
                 print('Global communication failure: ', e);
