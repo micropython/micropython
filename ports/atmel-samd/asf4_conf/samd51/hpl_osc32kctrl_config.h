@@ -23,7 +23,7 @@
 // <q> Use 1 kHz output
 // <id> rtc_1khz_selection
 #ifndef CONF_RTCCTRL_1KHZ
-#define CONF_RTCCTRL_1KHZ 0
+#define CONF_RTCCTRL_1KHZ 1
 #endif
 
 #if CONF_RTCCTRL_SRC == GCLK_GENCTRL_SRC_OSCULP32K
@@ -62,7 +62,7 @@
 // <0x6=>8000092us
 // <id> xosc32k_arch_startup
 #ifndef CONF_XOSC32K_STARTUP
-#define CONF_XOSC32K_STARTUP 0x4
+#define CONF_XOSC32K_STARTUP 0x0
 #endif
 
 // <q> On Demand Control
@@ -76,7 +76,7 @@
 // <i> Indicates whether Run in Standby is enabled or not
 // <id> xosc32k_arch_runstdby
 #ifndef CONF_XOSC32K_RUNSTDBY
-#define CONF_XOSC32K_RUNSTDBY 1
+#define CONF_XOSC32K_RUNSTDBY 0
 #endif
 
 // <q> 1kHz Output Enable
@@ -90,7 +90,7 @@
 // <i> Indicates whether 32kHz Output is enabled or not
 // <id> xosc32k_arch_en32k
 #ifndef CONF_XOSC32K_EN32K
-#define CONF_XOSC32K_EN32K 1
+#define CONF_XOSC32K_EN32K 0
 #endif
 
 // <q> Clock Switch Back
@@ -118,7 +118,7 @@
 // <i> Indicates whether the connections between the I/O pads and the external clock or crystal oscillator is enabled or not
 // <id> xosc32k_arch_xtalen
 #ifndef CONF_XOSC32K_XTALEN
-#define CONF_XOSC32K_XTALEN 1
+#define CONF_XOSC32K_XTALEN 0
 #endif
 
 // <o> Control Gain Mode
@@ -137,7 +137,7 @@
 // <i> Indicates whether configuration for OSCULP32K is enabled or not
 // <id> enable_osculp32k
 #ifndef CONF_OSCULP32K_CONFIG
-#define CONF_OSCULP32K_CONFIG 0
+#define CONF_OSCULP32K_CONFIG 1
 #endif
 
 // <h> 32kHz Ultra Low Power Internal Oscillator Control
