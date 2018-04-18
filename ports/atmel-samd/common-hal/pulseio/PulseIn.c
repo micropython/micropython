@@ -283,8 +283,9 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     if (trigger_duration > 0) {
         gpio_set_pin_pull_mode(self->pin, GPIO_PULL_OFF);
         gpio_set_pin_direction(self->pin, GPIO_DIRECTION_OUT);
-
-        common_hal_mcu_disable_interrupts();
+        if(trigger_duration < 1000 ){  // only disable interrupts for < 1 ms
+            common_hal_mcu_disable_interrupts();
+        }
         gpio_set_pin_level(self->pin, !self->idle_state);
         common_hal_mcu_delay_us((uint32_t)trigger_duration);
         gpio_set_pin_level(self->pin, self->idle_state);
