@@ -157,7 +157,7 @@ int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
         .config.resolution = NRF_ADC_CONFIG_RES_8BIT,
         .config.input      = NRF_ADC_CONFIG_SCALING_INPUT_TWO_THIRDS,
         .config.reference  = NRF_ADC_CONFIG_REF_VBG,
-        .config.input      = self->ain,
+        .config.input      = adc_obj->ain,
         .config.extref     = ADC_CONFIG_EXTREFSEL_None << ADC_CONFIG_EXTREFSEL_Pos // Currently not defined in nrfx/hal.
     };
 
