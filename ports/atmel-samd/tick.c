@@ -60,15 +60,13 @@ void tick_delay(uint32_t us) {
     uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
     uint32_t us_until_next_tick = SysTick->VAL / ticks_per_us;
     uint32_t start_tick;
-    while (us > us_until_next_tick) {
+    while (us >= us_until_next_tick) {
         start_tick=SysTick->VAL;  // wait for SysTick->VAL to  RESET
         while (SysTick->VAL < start_tick) {}
         us -= us_until_next_tick;
         us_until_next_tick = 1000;
     }
-    if(us){
-        while (SysTick->VAL > ((us_until_next_tick - us) * ticks_per_us)) {}
-    }
+    while (SysTick->VAL > ((us_until_next_tick - us) * ticks_per_us)) {}
 }
 
 // us counts down!
