@@ -979,7 +979,11 @@ static void ble_evt_handler(ble_evt_t * p_ble_evt) {
         case BLE_EVT_TX_COMPLETE:
 #endif
             BLE_DRIVER_LOG("BLE EVT TX COMPLETE\n");
+#if (BLE_API_VERSION == 4)
+            m_tx_in_progress -= p_ble_evt->evt.gatts_evt.params.hvn_tx_complete.count;
+#else
             m_tx_in_progress -= p_ble_evt->evt.common_evt.params.tx_complete.count;
+#endif
             break;
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
