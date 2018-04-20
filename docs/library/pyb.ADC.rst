@@ -165,7 +165,7 @@ The ADCAll Object
     Other analog input channels (0..15) will return unscaled integer values according to the selected
     precision.
 
-    To avoid unwanted activation of analog inputs (channel 0..15) a second prarmeter can be specified.
+    To avoid unwanted activation of analog inputs (channel 0..15) a second parameter can be specified.
     This parameter is a binary pattern where each requested analog input has the corresponding bit set.
     The default value is 0xffffffff which means all analog inputs are active. If just the internal
     channels (16..18) are required, the mask value should be 0x70000.
