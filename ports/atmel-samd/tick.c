@@ -58,21 +58,24 @@ void tick_init() {
 
 void tick_delay(uint32_t us) {
     uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
-    uint32_t us_between_ticks = SysTick->VAL / ticks_per_us;
+    uint32_t us_until_next_tick = SysTick->VAL / ticks_per_us;
     uint32_t start_tick;
     while (us > 1000) {
+        // check if interrupts are disabled
+        if(__get_PRIMASK())
+           return; // if not just return
         start_tick=SysTick->VAL;  // wait for SysTick->VAL to  RESET
         while (SysTick->VAL < start_tick) {}
-        us -= us_between_ticks;
-        us_between_ticks = 1000;
+        us -= us_until_next_tick;
+        us_until_next_tick = 1000;
     }
-    if(us&&(us < us_between_ticks)){
-        while (SysTick->VAL > ((us_between_ticks - us) * ticks_per_us)) {}
+    if(us&&(us < us_until_next_tick)){
+        while (SysTick->VAL > ((us_until_next_tick - us) * ticks_per_us)) {}
     }
     else {
         start_tick=SysTick->VAL;  // wait for SysTick->VAL to  RESET
         while (SysTick->VAL < start_tick) {}
-        us -= us_between_ticks;
+        us -= us_until_next_tick;
         if(us){
             while (SysTick->VAL > ((1000 - us) * ticks_per_us)) {}
         }
