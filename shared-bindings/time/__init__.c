@@ -30,6 +30,8 @@
 
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
+#include "lib/timeutils/timeutils.h"
+#include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
 //| :mod:`time` --- time and timing related functions
@@ -133,6 +135,122 @@ const mp_obj_namedtuple_type_t struct_time_type_obj = {
         MP_QSTR_tm_isdst
     },
 };
+
+mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
+    timeutils_struct_time_t tmp;
+    mp_uint_t secs = timeutils_seconds_since_2000(tm->tm_year, tm->tm_mon, tm->tm_mday,
+                                                  tm->tm_hour, tm->tm_min, tm->tm_sec);
+    timeutils_seconds_since_2000_to_struct_time(secs, &tmp);
+    tm->tm_wday = tmp.tm_wday;
+    tm->tm_yday = tmp.tm_yday;
+
+    mp_obj_t elems[9] = {
+        mp_obj_new_int(tm->tm_year),
+        mp_obj_new_int(tm->tm_mon),
+        mp_obj_new_int(tm->tm_mday),
+        mp_obj_new_int(tm->tm_hour),
+        mp_obj_new_int(tm->tm_min),
+        mp_obj_new_int(tm->tm_sec),
+        mp_obj_new_int(tm->tm_wday),
+        mp_obj_new_int(tm->tm_yday),
+        mp_obj_new_int(-1), // tm_isdst is not supported
+    };
+
+    return namedtuple_make_new((const mp_obj_type_t*)&struct_time_type_obj, 9, 0, elems);
+};
+
+void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
+    mp_obj_t *elems;
+    size_t len;
+
+    if (!MP_OBJ_IS_TYPE(t, &mp_type_tuple) && !MP_OBJ_IS_TYPE(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
+        mp_raise_TypeError("Tuple or struct_time argument required");
+    }
+
+    mp_obj_tuple_get(t, &len, &elems);
+    if (len != 9) {
+        mp_raise_TypeError("function takes exactly 9 arguments");
+    }
+
+    tm->tm_year = mp_obj_get_int(elems[0]);
+    tm->tm_mon = mp_obj_get_int(elems[1]);
+    tm->tm_mday = mp_obj_get_int(elems[2]);
+    tm->tm_hour = mp_obj_get_int(elems[3]);
+    tm->tm_min = mp_obj_get_int(elems[4]);
+    tm->tm_sec = mp_obj_get_int(elems[5]);
+    tm->tm_wday = mp_obj_get_int(elems[6]);
+    tm->tm_yday = mp_obj_get_int(elems[7]);
+    // elems[8] tm_isdst is not supported
+}
+
+mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
+    mp_raise_RuntimeError("RTC is not supported on this board");
+}
+
+//| .. method:: time()
+//|
+//|   Return the current time in seconds since since Jan 1, 2000.
+//|
+//|   :return: the current time
+//|   :rtype: int
+//|
+STATIC mp_obj_t time_time(void) {
+    timeutils_struct_time_t tm;
+    struct_time_to_tm(rtc_get_time_source_time(), &tm);
+    mp_uint_t secs = timeutils_seconds_since_2000(tm.tm_year, tm.tm_mon, tm.tm_mday, // mp_uint_t date
+                                                  tm.tm_hour, tm.tm_min, tm.tm_sec);
+    return mp_obj_new_int_from_uint(secs);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
+
+//| .. method:: localtime([secs])
+//|
+//|   Convert a time expressed in seconds since Jan 1, 2000 to a struct_time in
+//|   local time. If secs is not provided or None, the current time as returned
+//|   by time() is used.
+//|
+//|   :return: the current time
+//|   :rtype: time.struct_time
+//|
+STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0 || args[0] == mp_const_none) {
+        return rtc_get_time_source_time();
+    }
+
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_2000_to_struct_time(mp_obj_get_int(args[0]), &tm);
+
+    return struct_time_from_tm(&tm);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
+
+//| .. method:: mktime(t)
+//|
+//|   This is the inverse function of localtime(). Its argument is the
+//|   struct_time or full 9-tuple (since the dst flag is needed; use -1 as the
+//|   dst flag if it is unknown) which expresses the time in local time, not UTC.
+//|   The earliest date for which it can generate a time is Jan 1, 2000.
+//|
+//|   :return: seconds
+//|   :rtype: int
+//|
+STATIC mp_obj_t time_mktime(mp_obj_t t) {
+    mp_obj_t *elem;
+    size_t len;
+
+    if (!MP_OBJ_IS_TYPE(t, &mp_type_tuple) && !MP_OBJ_IS_TYPE(t, MP_OBJ_FROM_PTR(&struct_time_type_obj))) {
+        mp_raise_TypeError("Tuple or struct_time argument required");
+    }
+
+    mp_obj_tuple_get(t, &len, &elem);
+    if (len != 9) {
+        mp_raise_TypeError("function takes exactly 9 arguments");
+    }
+
+    return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
+                                                     mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 #endif
 
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
@@ -142,7 +260,10 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&time_sleep_obj) },
     #if MICROPY_PY_COLLECTIONS
     { MP_ROM_QSTR(MP_QSTR_struct_time), MP_ROM_PTR(&struct_time_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);

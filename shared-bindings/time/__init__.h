@@ -30,6 +30,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "lib/timeutils/timeutils.h"
+
+extern mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm);
+extern void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm);
+
 extern uint64_t common_hal_time_monotonic(void);
 extern void common_hal_time_delay_ms(uint32_t);
 

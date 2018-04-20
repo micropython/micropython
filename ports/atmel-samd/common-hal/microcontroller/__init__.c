@@ -85,13 +85,13 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 // NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
 // The singleton nvm.ByteArray object.
-// const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
-//     .base = {
-//         .type = &nvm_bytearray_type,
-//     },
-//     .len = NVMCTRL_ROW_SIZE,
-//     .start_address = (uint8_t*) (FLASH_SIZE - NVMCTRL_ROW_SIZE)
-// };
+const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
+    .base = {
+        .type = &nvm_bytearray_type,
+    },
+    .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+    .start_address = (uint8_t*) (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+};
 #endif
 
 // This maps MCU pin names to pin objects.

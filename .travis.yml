@@ -16,7 +16,6 @@ env:
   - TRAVIS_BOARD=itsybitsy_m4_express
   - TRAVIS_BOARD=metro_m0_express
   - TRAVIS_BOARD=metro_m4_express
-  - TRAVIS_BOARD=metro_m4_express_revb
   - TRAVIS_BOARD=pirkey_m0
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0

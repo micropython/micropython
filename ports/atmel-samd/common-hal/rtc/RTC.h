@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Noralf Trønnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/nvm/ByteArray.h"
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RTC_RTC_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RTC_RTC_H
 
-#include "hal_flash.h"
+extern void rtc_init(void);
 
-#include <stdint.h>
-#include <string.h>
-
-uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
-    return self->len;
-}
-
-bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
-        uint32_t start_index, uint8_t* values, uint32_t len) {
-    // We don't use features that use any advanced NVMCTRL features so we can fake the descriptor
-    // whenever we need it instead of storing it long term.
-    struct flash_descriptor desc;
-    desc.dev.hw = NVMCTRL;
-    flash_write(&desc, (uint32_t) self->start_address + start_index, values, len);
-    return true;
-}
-
-// NVM memory is memory mapped so reading it is easy.
-void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t* values) {
-    memcpy(values, self->start_address + start_index, len);
-}
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RTC_RTC_H
