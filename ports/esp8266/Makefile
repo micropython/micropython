@@ -16,7 +16,7 @@ FROZEN_MPY_DIR ?= modules
 include $(TOP)/py/py.mk
 
 FWBIN = $(BUILD)/firmware-combined.bin
-PORT ?= /dev/ttyACM0
+PORT ?= /dev/tty.usbserial-A50285BI
 BAUD ?= 115200
 FLASH_MODE ?= qio
 FLASH_SIZE ?= detect
