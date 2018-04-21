@@ -30,19 +30,14 @@
 
 #define RNG_TIMEOUT_MS (10)
 
-void rng_init0(void) {
-    #if defined(STM32H7)
-    // Set RNG clock source
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RNG;
-    PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_PLL;
-    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-    #endif
-}
-
 uint32_t rng_get(void) {
     // Enable the RNG peripheral if it's not already enabled
     if (!(RNG->CR & RNG_CR_RNGEN)) {
+        #if defined(STM32H7)
+        // Set RNG Clock source
+        __HAL_RCC_PLLCLKOUT_ENABLE(RCC_PLL1_DIVQ);
+        __HAL_RCC_RNG_CONFIG(RCC_RNGCLKSOURCE_PLL);
+        #endif
         __HAL_RCC_RNG_CLK_ENABLE();
         RNG->CR |= RNG_CR_RNGEN;
     }
