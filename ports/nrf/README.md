@@ -99,7 +99,7 @@ wt51822_s4at         | s110                    | Peripheral             | Manual
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
 feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
-pca10056             |                         |                        | [Segger](#segger-targets)
+pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 
 ## Segger Targets
 

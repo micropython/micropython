@@ -58,6 +58,9 @@ STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_d
     item->data      = mp_obj_new_bytearray(data->data_len, data->p_data);
 
     mp_obj_list_append(self->adv_reports, item);
+
+    // Continue scanning
+    ble_drv_scan_start(true);
 }
 
 STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -94,7 +97,7 @@ STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
     ble_drv_adv_report_handler_set(MP_OBJ_FROM_PTR(self), adv_event_handler);
 
     // start
-    ble_drv_scan_start();
+    ble_drv_scan_start(false);
 
     // sleep
     mp_hal_delay_ms(timeout);
