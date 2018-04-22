@@ -6,32 +6,24 @@ ifeq ($(SD), s110)
 	INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
 	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
 	CFLAGS += -DBLUETOOTH_SD=110
-	SOFTDEV_HEX_NAME = $(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_softdevice.hex
-	SOFTDEV_HEX_PATH = drivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)
 
-else ifeq ($(SD), s120)
-	$(error No BLE wrapper available yet)
-else ifeq ($(SD), s130)
-	$(error No BLE wrapper available yet)
 else ifeq ($(SD), s132)
 	INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
 	INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
 	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
 	CFLAGS += -DBLUETOOTH_SD=132
 
-ifeq ($(SOFTDEV_VERSION), 2.0.1)
-	CFLAGS += -DBLE_API_VERSION=2
-else ifeq ($(SOFTDEV_VERSION), 3.0.0)
-	CFLAGS += -DBLE_API_VERSION=3
-else ifeq ($(SOFTDEV_VERSION), 5.0.0)
-	CFLAGS += -DBLE_API_VERSION=4
-endif
-
-	SOFTDEV_HEX_NAME = $(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_softdevice.hex
-	SOFTDEV_HEX_PATH = drivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)
+else ifeq ($(SD), s140)
+	INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
+	INC += -Idrivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
+	CFLAGS += -DBLUETOOTH_SD_DEBUG=1
+	CFLAGS += -DBLUETOOTH_SD=140
 else
 	$(error Incorrect softdevice set flag)
 endif
+
+SOFTDEV_HEX_NAME = $(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_softdevice.hex
+SOFTDEV_HEX_PATH = drivers/bluetooth/$(SD)_$(MCU_VARIANT)_$(SOFTDEV_VERSION)
 
 define STACK_MISSING_ERROR
 
