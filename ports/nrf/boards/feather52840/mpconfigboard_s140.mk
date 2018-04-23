@@ -4,7 +4,8 @@ MCU_SUB_VARIANT = nrf52840
 SOFTDEV_VERSION ?= 6.0.0-6.alpha
 
 LD_FILE = boards/feather52840/bluefruit_nrf52840_s140_6.0.0.ld
-BOOTLOADER_FILENAME = boards/feather52840/bootloader/feather52840_bootloader_6.0.0_s140_single
+BOOT_UART_FILE = boards/feather52840/bootloader/uart/feather52840_bootloader_6.0.0_s140_single
+BOOT_USB_FILE = boards/feather52840/bootloader/usb/feather52840_bootloader_6.0.0_s140_single
 
 NRF_DEFINES += -DNRF52840_XXAA
 
@@ -17,8 +18,8 @@ endif
 CFLAGS += -DADAFRUIT_FEATHER52840
 
 ifeq ($(SD), )
-INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_SUB_VARIANT)_$(SOFTDEV_VERSION)_API/include
-INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_SUB_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
+INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
+INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
 endif
 
 check_defined = \
@@ -38,4 +39,7 @@ dfu-flash:
 	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
 
 boot-flash:
-	nrfjprog --program $(BOOTLOADER_FILENAME).hex -f nrf52 --chiperase --reset
+	nrfjprog --program $(BOOT_UART_FILE).hex -f nrf52 --chiperase --reset
+
+boot-usb-flash:
+	nrfjprog --program $(BOOT_USB_FILE).hex -f nrf52 --chiperase --reset	

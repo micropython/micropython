@@ -28,7 +28,7 @@
 
 #define MICROPY_HW_BOARD_NAME       "Feather52840"
 #define MICROPY_HW_MCU_NAME         "NRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nrf52840-PDK"
+#define MICROPY_PY_SYS_PLATFORM     "nrf52840"
 
 #define MICROPY_PY_MACHINE_HW_PWM   (1)
 #define MICROPY_PY_MACHINE_HW_SPI   (1)
