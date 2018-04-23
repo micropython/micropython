@@ -1292,13 +1292,32 @@ STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) 
 
 // lwip.getaddrinfo
 STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
-    if (n_args > 2) {
-        mp_warning("getaddrinfo constraints not supported");
-    }
-
     mp_obj_t host_in = args[0], port_in = args[1];
     const char *host = mp_obj_str_get_str(host_in);
     mp_int_t port = mp_obj_get_int(port_in);
+
+    // If constraints were passed then check they are compatible with the supported params
+    if (n_args > 2) {
+        mp_int_t family = mp_obj_get_int(args[2]);
+        mp_int_t type = 0;
+        mp_int_t proto = 0;
+        mp_int_t flags = 0;
+        if (n_args > 3) {
+            type = mp_obj_get_int(args[3]);
+            if (n_args > 4) {
+                proto = mp_obj_get_int(args[4]);
+                if (n_args > 5) {
+                    flags = mp_obj_get_int(args[5]);
+                }
+            }
+        }
+        if (!((family == 0 || family == MOD_NETWORK_AF_INET)
+            && (type == 0 || type == MOD_NETWORK_SOCK_STREAM)
+            && proto == 0
+            && flags == 0)) {
+            mp_warning("unsupported getaddrinfo constraints");
+        }
+    }
 
     getaddrinfo_state_t state;
     state.status = 0;
