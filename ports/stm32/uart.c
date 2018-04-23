@@ -32,8 +32,10 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "lib/utils/interrupt_char.h"
 #include "uart.h"
 #include "irq.h"
+#include "pendsv.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -506,6 +508,11 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
                 #endif
                 data &= self->char_mask;
+                // Handle interrupt coming in on a UART REPL
+                if (data == mp_interrupt_char && self == MP_STATE_PORT(pyb_stdio_uart)) {
+                    pendsv_kbd_intr();
+                    return;
+                }
                 if (self->char_width == CHAR_WIDTH_9BIT) {
                     ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
                 } else {
