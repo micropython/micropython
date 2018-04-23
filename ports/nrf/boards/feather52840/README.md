@@ -74,7 +74,7 @@ nrfjprog version: 9.7.2
 JLinkARM.dll version: 6.20f
 ```
 
-### Flash the Bootloader with `nrfjprog`
+### Option 1 (nRF52832 or nRF52840): Flash the HW UART Bootloader with `nrfjprog`
 
 > This operation only needs to be done once, and only on boards that don't
   already have the serial bootloader installed.
@@ -93,6 +93,37 @@ a DFU blinky pattern on one of the board LEDs:
 $ make SD=s140 BOARD=feather52840 boot-flash
 Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
 nrfjprog --program boards/feather52840/bootloader/feather52840_bootloader_6.0.0_s140_single.hex -f nrf52 --chiperase --reset
+Parsing hex file.
+Erasing user available code and UICR flash areas.
+Applying system reset.
+Checking that the area to write is not protected.
+Programing device.
+Applying system reset.
+Run.
+```
+
+From this point onward, you can now use a simple serial port for firmware
+updates.
+
+### Option 2 (nRF52840): Flash the USB CDC Bootloader with 'nrfjprog'
+
+> This operation only needs to be done once, and only on boards that don't
+  already have the serial bootloader installed.
+
+Once `nrfjprog` is installed and available in `PATH` you can flash your
+board with the serial bootloader via the following command:
+
+```
+make SD=s140 BOARD=feather52840 boot-usb-flash
+```
+
+This should give you the following (or very similar) output, and you will see
+a DFU blinky pattern on one of the board LEDs:
+
+```
+$ make SD=s140 BOARD=feather52840 boot-usb-flash
+Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.
+nrfjprog --program boards/feather52840/bootloader/usb/feather52840_bootloader_6.0.0_s140_single.hex -f nrf52 --chiperase --reset	
 Parsing hex file.
 Erasing user available code and UICR flash areas.
 Applying system reset.
