@@ -116,9 +116,13 @@ STATIC mp_obj_t pyb_repl_uart(size_t n_args, const mp_obj_t *args) {
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(pyb_stdio_uart) = NULL;
+            if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+                uart_attach_to_repl(MP_STATE_PORT(pyb_stdio_uart), false);
+                MP_STATE_PORT(pyb_stdio_uart) = NULL;
+            }
         } else if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
             MP_STATE_PORT(pyb_stdio_uart) = args[0];
+            uart_attach_to_repl(MP_STATE_PORT(pyb_stdio_uart), true);
         } else {
             mp_raise_ValueError("need a UART object");
         }

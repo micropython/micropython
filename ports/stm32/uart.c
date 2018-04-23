@@ -81,6 +81,7 @@ struct _pyb_uart_obj_t {
     IRQn_Type irqn;
     pyb_uart_t uart_id : 8;
     bool is_enabled : 1;
+    bool attached_to_repl;              // whether the UART is attached to REPL
     byte char_width;                    // 0 for 7,8 bit chars, 1 for 9 bit chars
     uint16_t char_mask;                 // 0x7f for 7 bit, 0xff for 8 bit, 0x1ff for 9 bit
     uint16_t timeout;                   // timeout waiting for first char
@@ -320,8 +321,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     HAL_UART_Init(&uart_obj->uart);
 
     uart_obj->is_enabled = true;
+    uart_obj->attached_to_repl = false;
 
     return true;
+}
+
+void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
+    self->attached_to_repl = attached;
 }
 
 /* obsolete and unused
@@ -509,7 +515,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 #endif
                 data &= self->char_mask;
                 // Handle interrupt coming in on a UART REPL
-                if (data == mp_interrupt_char && self == MP_STATE_PORT(pyb_stdio_uart)) {
+                if (self->attached_to_repl && data == mp_interrupt_char) {
                     pendsv_kbd_intr();
                     return;
                 }
