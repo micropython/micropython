@@ -205,11 +205,11 @@ BUTTON1 still pressed as you come out of reset).
 This will give you a **fast blinky DFU pattern** to indicate you are in DFU
 mode.
 
-At this point, you can build and flash a CircuitPython binary via the following
+At this point, you can **build and flash** a CircuitPython binary via the following
 command:
 
 ```
-$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 dfu-gen dfu-flash
+$ make V=1 SD=s140 SERIAL=/dev/tty.usbmodem1411 BOARD=feather52840 all dfu-gen dfu-flash
 ```
 
 This should give you the following results:
