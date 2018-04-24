@@ -105,10 +105,14 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
     // work out the trigger channel (only certain ones are supported)
     if (tim->Instance == TIM2) {
         return DAC_TRIGGER_T2_TRGO;
+    #if defined(TIM4)
     } else if (tim->Instance == TIM4) {
         return DAC_TRIGGER_T4_TRGO;
+    #endif
+    #if defined(TIM5)
     } else if (tim->Instance == TIM5) {
         return DAC_TRIGGER_T5_TRGO;
+    #endif
     #if defined(TIM6)
     } else if (tim->Instance == TIM6) {
         return DAC_TRIGGER_T6_TRGO;
@@ -176,7 +180,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     #endif
 
     // stop anything already going on
-    __DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA1_CLK_ENABLE();
     DMA_HandleTypeDef DMA_Handle;
     /* Get currently configured dma */
     dma_init_handle(&DMA_Handle, self->tx_dma_descr, (void*)NULL);
@@ -420,7 +424,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         dac_trigger = TIMx_Config(args[1].u_obj);
     }
 
-    __DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA1_CLK_ENABLE();
 
     DMA_HandleTypeDef DMA_Handle;
     /* Get currently configured dma */
