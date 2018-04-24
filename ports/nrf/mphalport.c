@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <errno.h>
 #include <string.h>
 
 #include "py/mpstate.h"
