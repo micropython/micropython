@@ -201,7 +201,7 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
                                             "Unsupported I2C baudrate: %lu", baudrate));
 }
 
-uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
+uint32_t pyb_i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
     for (int i = 0; i < NUM_BAUDRATE_TIMINGS; i++) {
         if (pyb_i2c_baudrate_timing[i].timing == i2c->Init.Timing) {
             return pyb_i2c_baudrate_timing[i].baudrate;
@@ -220,7 +220,7 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
     init->DutyCycle = I2C_DUTYCYCLE_16_9;
 }
 
-uint32_t i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
+uint32_t pyb_i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
     uint32_t pfreq = i2c->Instance->CR2 & 0x3f;
     uint32_t ccr = i2c->Instance->CCR & 0xfff;
     if (i2c->Instance->CCR & 0x8000) {
@@ -251,7 +251,7 @@ void i2c_init0(void) {
     #endif
 }
 
-void i2c_init(I2C_HandleTypeDef *i2c) {
+void pyb_i2c_init(I2C_HandleTypeDef *i2c) {
     int i2c_unit;
     const pin_obj_t *scl_pin;
     const pin_obj_t *sda_pin;
@@ -372,7 +372,7 @@ void i2c_deinit(I2C_HandleTypeDef *i2c) {
     }
 }
 
-void i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq) {
+void pyb_i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq) {
     I2C_InitTypeDef *init = &self->i2c->Init;
 
     init->AddressingMode    = I2C_ADDRESSINGMODE_7BIT;
@@ -389,7 +389,7 @@ void i2c_init_freq(const pyb_i2c_obj_t *self, mp_int_t freq) {
 
     // init the I2C bus
     i2c_deinit(self->i2c);
-    i2c_init(self->i2c);
+    pyb_i2c_init(self->i2c);
 }
 
 STATIC void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
@@ -403,7 +403,7 @@ STATIC void i2c_reset_after_error(I2C_HandleTypeDef *i2c) {
     }
     // bus was/is busy, need to reset the peripheral to get it to work again
     i2c_deinit(i2c);
-    i2c_init(i2c);
+    pyb_i2c_init(i2c);
 }
 
 void i2c_ev_irq_handler(mp_uint_t i2c_id) {
@@ -563,7 +563,7 @@ STATIC void pyb_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
         mp_printf(print, "I2C(%u)", i2c_num);
     } else {
         if (in_master_mode(self)) {
-            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, i2c_get_baudrate(self->i2c));
+            mp_printf(print, "I2C(%u, I2C.MASTER, baudrate=%u)", i2c_num, pyb_i2c_get_baudrate(self->i2c));
         } else {
             mp_printf(print, "I2C(%u, I2C.SLAVE, addr=0x%02x)", i2c_num, (self->i2c->Instance->OAR1 >> 1) & 0x7f);
         }
@@ -612,7 +612,7 @@ STATIC mp_obj_t pyb_i2c_init_helper(const pyb_i2c_obj_t *self, size_t n_args, co
 
     // init the I2C bus
     i2c_deinit(self->i2c);
-    i2c_init(self->i2c);
+    pyb_i2c_init(self->i2c);
 
     return mp_const_none;
 }
@@ -680,10 +680,10 @@ STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return (mp_obj_t)i2c_obj;
 }
 
-STATIC mp_obj_t pyb_i2c_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pyb_i2c_init_(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pyb_i2c_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_i2c_init_obj, 1, pyb_i2c_init_);
 
 /// \method deinit()
 /// Turn off the I2C bus.
