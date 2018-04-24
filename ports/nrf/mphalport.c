@@ -153,9 +153,6 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
 #endif
         " BNE 1b\n"
-#ifdef NRF51
-        ".syntax divided\n"
-#endif
         : "+r" (delay));
 }
 
