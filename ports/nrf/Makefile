@@ -93,9 +93,10 @@ CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m
 
 LTO ?= 1
 ifeq ($(LTO),1)
-CFLAGS_LTO += -flto
+CFLAGS += -flto
 else
-CFLAGS_LTO += -Wl,--gc-sections -ffunction-sections -fdata-sections
+CFLAGS += -ffunction-sections -fdata-sections
+LDFLAGS += -Wl,--gc-sections
 endif
 
 
@@ -104,7 +105,6 @@ CFLAGS += $(INC) -Wall -Werror -g -ansi -std=c11 -nostdlib $(COPT) $(NRF_DEFINES
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
-CFLAGS += $(CFLAGS_LTO)
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
