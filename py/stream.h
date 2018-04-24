@@ -107,7 +107,7 @@ int mp_stream_posix_fsync(mp_obj_t stream);
 #endif
 
 #if MICROPY_STREAMS_NON_BLOCK
-#define mp_is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
+#define mp_is_nonblocking_error(errno) ((errno) == MP_EAGAIN || (errno) == MP_EWOULDBLOCK)
 #else
 #define mp_is_nonblocking_error(errno) (0)
 #endif
