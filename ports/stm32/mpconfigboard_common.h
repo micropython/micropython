@@ -32,6 +32,11 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
+// Whether to include the stm module, with peripheral register constants
+#ifndef MICROPY_PY_STM
+#define MICROPY_PY_STM (1)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
