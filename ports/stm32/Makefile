@@ -216,7 +216,7 @@ SRC_C = \
 	pin_named_pins.c \
 	bufhelper.c \
 	dma.c \
-	i2c.c \
+	pyb_i2c.c \
 	spi.c \
 	qspi.c \
 	uart.c \
