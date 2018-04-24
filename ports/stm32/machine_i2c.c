@@ -416,6 +416,66 @@ timeout:
     return -MP_ETIMEDOUT;
 }
 
+#elif defined(STM32F7)
+
+typedef struct _machine_hard_i2c_obj_t {
+    mp_obj_base_t base;
+    i2c_t *i2c;
+    mp_hal_pin_obj_t scl;
+    mp_hal_pin_obj_t sda;
+} machine_hard_i2c_obj_t;
+
+STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
+    #if defined(MICROPY_HW_I2C1_SCL)
+    {{&machine_hard_i2c_type}, I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
+    #else
+    {{NULL}, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_I2C2_SCL)
+    {{&machine_hard_i2c_type}, I2C2, MICROPY_HW_I2C2_SCL, MICROPY_HW_I2C2_SDA},
+    #else
+    {{NULL}, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_I2C3_SCL)
+    {{&machine_hard_i2c_type}, I2C3, MICROPY_HW_I2C3_SCL, MICROPY_HW_I2C3_SDA},
+    #else
+    {{NULL}, NULL, NULL, NULL},
+    #endif
+    #if defined(MICROPY_HW_I2C4_SCL)
+    {{&machine_hard_i2c_type}, I2C4, MICROPY_HW_I2C4_SCL, MICROPY_HW_I2C4_SDA},
+    #else
+    {{NULL}, NULL, NULL, NULL},
+    #endif
+};
+
+STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t timingr = self->i2c->TIMINGR;
+    uint32_t presc = timingr >> 28;
+    uint32_t sclh = timingr >> 8 & 0xff;
+    uint32_t scll = timingr & 0xff;
+    uint32_t freq = HAL_RCC_GetPCLK1Freq() / (presc + 1) / (sclh + scll + 2);
+    mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u, timingr=0x%08x)",
+        self - &machine_hard_i2c_obj[0] + 1,
+        mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
+        freq, timingr);
+}
+
+void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
+    (void)timeout;
+    i2c_init(self->i2c, self->scl, self->sda, freq);
+}
+
+int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
+    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return i2c_readfrom(self->i2c, addr, dest, len, stop);
+}
+
+int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
+    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return i2c_writeto(self->i2c, addr, src, len, stop);
+}
+
 #else
 
 // No hardware I2C driver for this MCU so use the software implementation
