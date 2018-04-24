@@ -31,10 +31,7 @@ HID specific descriptors
 
 from adafruit_usb_descriptor import hid
 
-class HIDReportDescriptors:
-    pass
-
-HIDReportDescriptors.REPORT_IDS = {
+REPORT_IDS = {
     "KEYBOARD" : 1,
     "MOUSE" : 2,
     "CONSUMER" : 3,
@@ -44,7 +41,7 @@ HIDReportDescriptors.REPORT_IDS = {
     }
 
 # Byte count for each kind of report. Length does not include report ID in first byte.
-HIDReportDescriptors.REPORT_LENGTHS = {
+REPORT_LENGTHS = {
     "KEYBOARD" : 8,
     "MOUSE" : 4,
     "CONSUMER" : 2,
@@ -53,14 +50,14 @@ HIDReportDescriptors.REPORT_LENGTHS = {
     "DIGITIZER" : 5,
     }
 
-HIDReportDescriptors.KEYBOARD_WITH_ID = hid.ReportDescriptor(
+KEYBOARD_WITH_ID = hid.ReportDescriptor(
     description="KEYBOARD",
     report_descriptor=bytes([
         # Regular keyboard
         0x05, 0x01,                 # Usage Page (Generic Desktop)
         0x09, 0x06,                 # Usage (Keyboard)
         0xA1, 0x01,                 # Collection (Application)
-        0x85, HIDReportDescriptors.REPORT_IDS["KEYBOARD"], #   Report ID (1)
+        0x85, REPORT_IDS["KEYBOARD"], #   Report ID (1)
         0x05, 0x07,                 #   Usage Page (Keyboard)
         0x19, 224,                  #   Usage Minimum (224)
         0x29, 231,                  #   Usage Maximum (231)
@@ -90,7 +87,7 @@ HIDReportDescriptors.KEYBOARD_WITH_ID = hid.ReportDescriptor(
         0xC0,                       # End Collection
     ]))
 
-HIDReportDescriptors.MOUSE_WITH_ID = hid.ReportDescriptor(
+MOUSE_WITH_ID = hid.ReportDescriptor(
     description="MOUSE",
     report_descriptor=bytes([
         # Regular mouse
@@ -99,7 +96,7 @@ HIDReportDescriptors.MOUSE_WITH_ID = hid.ReportDescriptor(
         0xA1, 0x01,        # Collection (Application)
         0x09, 0x01,        #   Usage (Pointer)
         0xA1, 0x00,        #   Collection (Physical)
-        0x85, HIDReportDescriptors.REPORT_IDS["MOUSE"], # Report ID (n)
+        0x85, REPORT_IDS["MOUSE"], # Report ID (n)
         0x05, 0x09,        #     Usage Page (Button)
         0x19, 0x01,        #     Usage Minimum (0x01)
         0x29, 0x05,        #     Usage Maximum (0x05)
@@ -129,14 +126,14 @@ HIDReportDescriptors.MOUSE_WITH_ID = hid.ReportDescriptor(
         0xC0,              # End Collection
     ]))
 
-HIDReportDescriptors.CONSUMER_WITH_ID = hid.ReportDescriptor(
+CONSUMER_WITH_ID = hid.ReportDescriptor(
     description="CONSUMER",
     report_descriptor=bytes([
         # Consumer ("multimedia") keys
         0x05, 0x0C,        # Usage Page (Consumer)
         0x09, 0x01,        # Usage (Consumer Control)
         0xA1, 0x01,        # Collection (Application)
-        0x85, HIDReportDescriptors.REPORT_IDS["CONSUMER"], # Report ID (n)
+        0x85, REPORT_IDS["CONSUMER"], # Report ID (n)
         0x75, 0x10,        #   Report Size (16)
         0x95, 0x01,        #   Report Count (1)
         0x15, 0x01,        #   Logical Minimum (1)
@@ -147,14 +144,14 @@ HIDReportDescriptors.CONSUMER_WITH_ID = hid.ReportDescriptor(
         0xC0,              # End Collection
     ]))
 
-HIDReportDescriptors.SYS_CONTROL_WITH_ID = hid.ReportDescriptor(
+SYS_CONTROL_WITH_ID = hid.ReportDescriptor(
     description="SYS_CONTROL",
     report_descriptor=bytes([
         # Power controls
         0x05, 0x01,        # Usage Page (Generic Desktop Ctrls)
         0x09, 0x80,        # Usage (Sys Control)
         0xA1, 0x01,        # Collection (Application)
-        0x85, HIDReportDescriptors.REPORT_IDS["SYS_CONTROL"], # Report ID (n)
+        0x85, REPORT_IDS["SYS_CONTROL"], # Report ID (n)
         0x75, 0x02,        #   Report Size (2)
         0x95, 0x01,        #   Report Count (1)
         0x15, 0x01,        #   Logical Minimum (1)
@@ -168,14 +165,14 @@ HIDReportDescriptors.SYS_CONTROL_WITH_ID = hid.ReportDescriptor(
         0xC0,              # End Collection
     ]))
 
-HIDReportDescriptors.GAMEPAD_WITH_ID = hid.ReportDescriptor(
+GAMEPAD_WITH_ID = hid.ReportDescriptor(
     description="GAMEPAD",
     report_descriptor=bytes([
         # Gamepad with 16 buttons and two joysticks
         0x05, 0x01,        # Usage Page (Generic Desktop Ctrls)
         0x09, 0x05,        # Usage (Game Pad)
         0xA1, 0x01,        # Collection (Application)
-        0x85, HIDReportDescriptors.REPORT_IDS["GAMEPAD"], # Report ID (n)
+        0x85, REPORT_IDS["GAMEPAD"], # Report ID (n)
         0x05, 0x09,        #   Usage Page (Button)
         0x19, 0x01,        #   Usage Minimum (Button 1)
         0x29, 0x10,        #   Usage Maximum (Button 16)
@@ -197,14 +194,14 @@ HIDReportDescriptors.GAMEPAD_WITH_ID = hid.ReportDescriptor(
         0xC0,              # End Collection
     ]))
 
-HIDReportDescriptors.DIGITIZER_WITH_ID = hid.ReportDescriptor(
+DIGITIZER_WITH_ID = hid.ReportDescriptor(
     description="DIGITIZER",
     report_descriptor=bytes([
         # Digitizer (used as an absolute pointer)
         0x05, 0x0D,        # Usage Page (Digitizers)
         0x09, 0x02,        # Usage (Pen)
         0xA1, 0x01,        # Collection (Application)
-        0x85, HIDReportDescriptors.REPORT_IDS["DIGITIZER"], # Report ID (n)
+        0x85, REPORT_IDS["DIGITIZER"], # Report ID (n)
         0x09, 0x01,        #   Usage (Stylus)
         0xA1, 0x00,        #   Collection (Physical)
         0x09, 0x32,        #     Usage (In-Range)
@@ -232,11 +229,11 @@ HIDReportDescriptors.DIGITIZER_WITH_ID = hid.ReportDescriptor(
     ]))
 
 # Byte count for each kind of report. Length does not include report ID in first byte.
-HIDReportDescriptors.REPORT_DESCRIPTORS = {
-    "KEYBOARD" : HIDReportDescriptors.KEYBOARD_WITH_ID,
-    "MOUSE" : HIDReportDescriptors.MOUSE_WITH_ID,
-    "CONSUMER" : HIDReportDescriptors.CONSUMER_WITH_ID,
-    "SYS_CONTROL" : HIDReportDescriptors.SYS_CONTROL_WITH_ID,
-    "GAMEPAD" : HIDReportDescriptors.GAMEPAD_WITH_ID,
-    "DIGITIZER" : HIDReportDescriptors.DIGITIZER_WITH_ID,
+REPORT_DESCRIPTORS = {
+    "KEYBOARD" : KEYBOARD_WITH_ID,
+    "MOUSE" : MOUSE_WITH_ID,
+    "CONSUMER" : CONSUMER_WITH_ID,
+    "SYS_CONTROL" : SYS_CONTROL_WITH_ID,
+    "GAMEPAD" : GAMEPAD_WITH_ID,
+    "DIGITIZER" : DIGITIZER_WITH_ID,
     }

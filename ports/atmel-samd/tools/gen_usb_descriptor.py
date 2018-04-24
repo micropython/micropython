@@ -7,7 +7,7 @@ import sys
 sys.path.append("../../tools/usb_descriptor")
 
 from adafruit_usb_descriptor import cdc, hid, msc, standard, util
-from hid_report_descriptors import HIDReportDescriptors
+import hid_report_descriptors
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--manufacturer', type=str,
@@ -141,10 +141,10 @@ hid_devices = ("KEYBOARD", "MOUSE", "CONSUMER", "GAMEPAD")
 combined_hid_report_descriptor = hid.ReportDescriptor(
     description="MULTIDEVICE",
     report_descriptor=b''.join(
-        HIDReportDescriptors.REPORT_DESCRIPTORS[name].report_descriptor for name in hid_devices ))
+        hid_report_descriptors.REPORT_DESCRIPTORS[name].report_descriptor for name in hid_devices ))
 
-hid_report_ids_dict = { name: HIDReportDescriptors.REPORT_IDS[name] for name in hid_devices }
-hid_report_lengths_dict = { name: HIDReportDescriptors.REPORT_LENGTHS[name] for name in hid_devices }
+hid_report_ids_dict = { name: hid_report_descriptors.REPORT_IDS[name] for name in hid_devices }
+hid_report_lengths_dict = { name: hid_report_descriptors.REPORT_LENGTHS[name] for name in hid_devices }
 hid_max_report_length = max(hid_report_lengths_dict.values())
 
 # ASF4 expects keyboard and generic devices to have both in and out endpoints,
