@@ -113,7 +113,28 @@ void mp_hal_delay_ms(uint32_t ms) {
 }
 
 void mp_hal_delay_us(uint32_t us) {
-    ets_delay_us(us);
+    // these constants are tested for a 240MHz clock
+    const uint32_t this_overhead = 5;
+    const uint32_t pend_overhead = 150;
+
+    // return if requested delay is less than calling overhead
+    if (us < this_overhead) {
+        return;
+    }
+    us -= this_overhead;
+
+    uint64_t t0 = esp_timer_get_time();
+    for (;;) {
+        uint64_t dt = esp_timer_get_time() - t0;
+        if (dt >= us) {
+            return;
+        }
+        if (dt + pend_overhead < us) {
+            // we have enough time to service pending events
+            // (don't use MICROPY_EVENT_POLL_HOOK because it also yields)
+            mp_handle_pending();
+        }
+    }
 }
 
 // this function could do with improvements (eg use ets_delay_us)
