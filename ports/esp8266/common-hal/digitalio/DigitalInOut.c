@@ -65,6 +65,9 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
         PIN_FUNC_SELECT(self->pin->peripheral, 0);
         PIN_PULLUP_DIS(self->pin->peripheral);
     } else {
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1); // mux configuration for XPD_DCDC and rtc_gpio0 connection
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
         gpio16_in_use = false;
     }
     self->pin = mp_const_none;
