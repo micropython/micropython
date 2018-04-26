@@ -37,16 +37,31 @@
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "samd21_pins.h"
+#include "atmel_start_pins.h"
+#include "hal/include/hal_gpio.h"
+#include "hal/utils/include/utils.h"
 
+#include "audio_dma.h"
+#include "clocks.h"
+#include "events.h"
+#include "i2s.h"
+#include "pins.h"
 #include "shared_dma.h"
 #include "tick.h"
 
 #define OVERSAMPLING 64
-#define SAMPLES_PER_BUFFER 32
+#define SAMPLES_PER_BUFFER 64
 
 // MEMS microphones must be clocked at at least 1MHz.
 #define MIN_MIC_CLOCK 1000000
+
+#ifdef SAMD21
+#define SERCTRL(name) I2S_SERCTRL_ ## name
+#endif
+
+#ifdef SAMD51
+#define SERCTRL(name) I2S_RXCTRL_ ## name
+#endif
 
 void pdmin_reset(void) {
     while (I2S->SYNCBUSY.reg & I2S_SYNCBUSY_ENABLE) {}
@@ -60,20 +75,33 @@ void pdmin_reset(void) {
 void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
                                            const mcu_pin_obj_t* clock_pin,
                                            const mcu_pin_obj_t* data_pin,
-                                           uint32_t frequency,
+                                           uint32_t sample_rate,
                                            uint8_t bit_depth,
                                            bool mono,
                                            uint8_t oversample) {
     self->clock_pin = clock_pin; // PA10, PA20 -> SCK0, PB11 -> SCK1
-    if (clock_pin == &pin_PA10
-    #ifdef PIN_PA20
-        || clock_pin == &pin_PA20
+    #ifdef SAMD21
+        if (clock_pin == &pin_PA10
+        #ifdef PIN_PA20
+            || clock_pin == &pin_PA20
+        #endif
+            ) {
+            self->clock_unit = 0;
+        #ifdef PIN_PB11
+        } else if (clock_pin == &pin_PB11) {
+            self->clock_unit = 1;
+        #endif
     #endif
+    #ifdef SAMD51
+        if (clock_pin == &pin_PA10 || clock_pin == &pin_PB16) {
+            self->clock_unit = 0;
+    } else if (clock_pin == &pin_PB12
+        #ifdef PIN_PB28
+        || data_pin == &pin_PB28) {
+        #else
         ) {
-        self->clock_unit = 0;
-    #ifdef PIN_PB11
-    } else if (clock_pin == &pin_PB11) {
-        self->clock_unit = 1;
+        #endif
+            self->clock_unit = 1;
     #endif
     } else {
         mp_raise_ValueError("Invalid clock pin");
@@ -81,80 +109,108 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
 
     self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
 
+    #ifdef SAMD21
     if (data_pin == &pin_PA07 || data_pin == &pin_PA19) {
         self->serializer = 0;
     } else if (data_pin == &pin_PA08
-        #ifdef PB16
+        #ifdef PIN_PB16
         || data_pin == &pin_PB16) {
         #else
         ) {
         #endif
         self->serializer = 1;
+    #endif
+    #ifdef SAMD51
+    if (data_pin == &pin_PB10 || data_pin == &pin_PA22) {
+        self->serializer = 1;
+    #endif
     } else {
         mp_raise_ValueError("Invalid data pin");
-    }
-
-    claim_pin(clock_pin);
-    claim_pin(data_pin);
-
-    if (MP_STATE_VM(audiodma_block_counter) == NULL &&
-        !allocate_block_counter()) {
-        mp_raise_RuntimeError("Unable to allocate audio DMA block counter.");
     }
 
     if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
         mp_raise_NotImplementedError("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported.");
     }
 
-    // TODO(tannewt): Use the DPLL to get a more precise sampling rate.
-    // DFLL -> GCLK (/600 for 8khz, /300 for 16khz and /150 for 32khz) -> DPLL (*(63 + 1)) -> GCLK ( / 10) -> 512khz
+    turn_on_i2s();
 
-    i2s_init(&self->i2s_instance, I2S);
-    struct i2s_clock_unit_config config_clock_unit;
-    i2s_clock_unit_get_config_defaults(&config_clock_unit);
-    config_clock_unit.clock.gclk_src = GCLK_GENERATOR_3;
-
-    config_clock_unit.clock.mck_src = I2S_MASTER_CLOCK_SOURCE_GCLK;
-    config_clock_unit.clock.mck_out_enable = false;
-
-    config_clock_unit.clock.sck_src = I2S_SERIAL_CLOCK_SOURCE_MCKDIV;
-    uint32_t clock_divisor = (uint32_t) roundf( 8000000.0f / frequency / oversample);
-    config_clock_unit.clock.sck_div = clock_divisor;
-    float mic_clock_freq = 8000000.0f / clock_divisor;
-    self->frequency =  mic_clock_freq / oversample;
-    if (mic_clock_freq <  MIN_MIC_CLOCK || clock_divisor == 0 || clock_divisor > 255) {
-        mp_raise_ValueError("sampling frequency out of range");
+    if (I2S->CTRLA.bit.ENABLE == 0) {
+        I2S->CTRLA.bit.SWRST = 1;
+        while (I2S->CTRLA.bit.SWRST == 1) {}
+    } else {
+        #ifdef SAMD21
+        if ((I2S->CTRLA.vec.SEREN & (1 << self->serializer)) != 0) {
+            mp_raise_RuntimeError("Serializer in use");
+        }
+        #endif
+        #ifdef SAMD51
+        if (I2S->CTRLA.bit.RXEN == 1) {
+            mp_raise_RuntimeError("Serializer in use");
+        }
+        #endif
     }
+    #ifdef SAMD51
+    #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_J
+    #endif
+    #ifdef SAMD21
+    #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_G
+    #endif
+    assert_pin_free(clock_pin);
+    assert_pin_free(data_pin);
 
-    config_clock_unit.frame.number_slots = 2;
-    config_clock_unit.frame.slot_size = I2S_SLOT_SIZE_16_BIT;
-    config_clock_unit.frame.data_delay = I2S_DATA_DELAY_0;
+    uint32_t clock_divisor = (uint32_t) roundf( 48000000.0f / sample_rate / oversample);
+    float mic_clock_freq = 48000000.0f / clock_divisor;
+    self->sample_rate =  mic_clock_freq / oversample;
+    if (mic_clock_freq <  MIN_MIC_CLOCK || clock_divisor == 0) {
+        mp_raise_ValueError("sampling rate out of range");
+    }
+    // Find a free GCLK to generate the MCLK signal.
+    uint8_t gclk = find_free_gclk(clock_divisor);
+    if (gclk > GCLK_GEN_NUM) {
+        mp_raise_RuntimeError("Unable to find free GCLK");
+    }
+    self->gclk = gclk;
 
-    config_clock_unit.frame.frame_sync.width = I2S_FRAME_SYNC_WIDTH_SLOT;
+    enable_clock_generator(self->gclk, CLOCK_48MHZ, clock_divisor);
+    connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
 
-    config_clock_unit.mck_pin.enable = false;
-    config_clock_unit.sck_pin.enable = true;
-    config_clock_unit.sck_pin.gpio = self->clock_pin->pin;
-    // Mux is always the same.
-    config_clock_unit.sck_pin.mux = 6L;
-    config_clock_unit.fs_pin.enable = false;
-    i2s_clock_unit_set_config(&self->i2s_instance, self->clock_unit, &config_clock_unit);
+    // Clock unit configuration
 
-    struct i2s_serializer_config config_serializer;
-    i2s_serializer_get_config_defaults(&config_serializer);
-    config_serializer.clock_unit = self->clock_unit;
-    config_serializer.mode = I2S_SERIALIZER_PDM2;
-    config_serializer.data_size = I2S_DATA_SIZE_32BIT;
-    config_serializer.data_pin.gpio = self->data_pin->pin;
-    // Mux is always the same.
-    config_serializer.data_pin.mux = 6L;
-    config_serializer.data_pin.enable = true;
-    i2s_serializer_set_config(&self->i2s_instance, self->serializer, &config_serializer);
-    i2s_enable(&self->i2s_instance);
+    uint32_t clkctrl = I2S_CLKCTRL_MCKSEL_GCLK |
+                       I2S_CLKCTRL_NBSLOTS(2) |
+                       I2S_CLKCTRL_FSWIDTH_SLOT |
+                       I2S_CLKCTRL_SLOTSIZE_16;
+
+    // Serializer configuration
+    #ifdef SAMD21
+    uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
+    #endif
+    #ifdef SAMD51
+    uint32_t serctrl = (self->clock_unit << I2S_RXCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
+    #endif
+
+    // Configure the I2S peripheral
+    i2s_set_enable(false);
+
+    I2S->CLKCTRL[self->clock_unit].reg = clkctrl;
+    #ifdef SAMD21
+    I2S->SERCTRL[self->serializer].reg = serctrl;
+    #endif
+    #ifdef SAMD51
+    I2S->RXCTRL.reg = serctrl;
+    #endif
+
+    i2s_set_enable(true);
 
     // Run the serializer all the time. This eliminates startup delay for the microphone.
-    i2s_clock_unit_enable(&self->i2s_instance, self->clock_unit);
-    i2s_serializer_enable(&self->i2s_instance, self->serializer);
+    i2s_set_clock_unit_enable(self->clock_unit, true);
+    i2s_set_serializer_enable(self->serializer, true);
+
+    claim_pin(clock_pin);
+    claim_pin(data_pin);
+
+    gpio_set_pin_function(self->clock_pin->pin, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->data_pin->pin, GPIO_I2S_FUNCTION);
 
     self->bytes_per_sample = oversample >> 3;
     self->bit_depth = bit_depth;
@@ -168,10 +224,15 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
     if (common_hal_audiobusio_pdmin_deinited(self)) {
         return;
     }
-    i2s_disable(&self->i2s_instance);
-    i2s_serializer_disable(&self->i2s_instance, self->serializer);
-    i2s_clock_unit_disable(&self->i2s_instance, self->clock_unit);
-    i2s_reset(&self->i2s_instance);
+
+    i2s_set_serializer_enable(self->serializer, false);
+    i2s_set_clock_unit_enable(self->clock_unit, false);
+
+    i2s_set_enable(false);
+
+    disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
+    disable_clock_generator(self->gclk);
+
     reset_pin(self->clock_pin->pin);
     reset_pin(self->data_pin->pin);
     self->clock_pin = mp_const_none;
@@ -182,65 +243,67 @@ uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) 
     return self->bit_depth;
 }
 
-uint32_t common_hal_audiobusio_pdmin_get_frequency(audiobusio_pdmin_obj_t* self) {
-    return self->frequency;
+uint32_t common_hal_audiobusio_pdmin_get_sample_rate(audiobusio_pdmin_obj_t* self) {
+    return self->sample_rate;
 }
 
 static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
-        DmacDescriptor* second_descriptor,
-        uint8_t words_per_buffer, uint8_t words_per_sample,
-        uint32_t* first_buffer, uint32_t* second_buffer) {
-    // Set up the DMA
-    struct dma_descriptor_config descriptor_config;
-    dma_descriptor_get_config_defaults(&descriptor_config);
-    descriptor_config.beat_size = DMA_BEAT_SIZE_WORD;
-    descriptor_config.step_selection = DMA_STEPSEL_SRC;
-    descriptor_config.source_address = (uint32_t)&I2S->DATA[self->serializer];
-    descriptor_config.src_increment_enable = false;
+                      DmacDescriptor* descriptor,
+                      DmacDescriptor* second_descriptor,
+                      uint32_t words_per_buffer, uint8_t words_per_sample,
+                      uint32_t* first_buffer, uint32_t* second_buffer) {
+    descriptor->BTCTRL.reg = DMAC_BTCTRL_VALID |
+                             DMAC_BTCTRL_BLOCKACT_NOACT |
+                             DMAC_BTCTRL_EVOSEL_BLOCK |
+                             DMAC_BTCTRL_DSTINC |
+                             DMAC_BTCTRL_BEATSIZE_WORD;
+
     // Block transfer count is the number of beats per block (aka descriptor).
     // In this case there are two bytes per beat so divide the length by two.
     uint16_t block_transfer_count = words_per_buffer;
     if (length * words_per_sample < words_per_buffer) {
         block_transfer_count = length * words_per_sample;
     }
-    descriptor_config.block_transfer_count = block_transfer_count;
-    descriptor_config.destination_address = ((uint32_t) first_buffer + sizeof(uint32_t) * block_transfer_count);
-    descriptor_config.event_output_selection = DMA_EVENT_OUTPUT_BLOCK;
-    descriptor_config.next_descriptor_address = 0;
+
+    descriptor->BTCNT.reg = block_transfer_count;
+    descriptor->DSTADDR.reg = ((uint32_t) first_buffer + sizeof(uint32_t) * block_transfer_count);
+    descriptor->DESCADDR.reg = 0;
     if (length * words_per_sample > words_per_buffer) {
-        descriptor_config.next_descriptor_address = ((uint32_t)second_descriptor);
+        descriptor->DESCADDR.reg = ((uint32_t)second_descriptor);
     }
-    dma_descriptor_create(audio_dma.descriptor, &descriptor_config);
+    #ifdef SAMD21
+    descriptor->SRCADDR.reg = (uint32_t)&I2S->DATA[self->serializer];
+    #endif
+    #ifdef SAMD51
+    descriptor->SRCADDR.reg = (uint32_t)&I2S->RXDATA;
+    #endif
 
     // Do we need more values than will fit in the first buffer?
     // If so, set up a second buffer chained to be filled after the first buffer.
     if (length * words_per_sample > words_per_buffer) {
         block_transfer_count = words_per_buffer;
-        descriptor_config.next_descriptor_address = ((uint32_t)audio_dma.descriptor);
+        second_descriptor->DESCADDR.reg = ((uint32_t)descriptor);
         if (length * words_per_sample < 2 * words_per_buffer) {
             // Length needed is more than one buffer but less than two.
             // Subtract off the size of the first buffer, and what remains is the count we need.
             block_transfer_count = length * words_per_sample - words_per_buffer;
-            descriptor_config.next_descriptor_address = 0;
+            second_descriptor->DESCADDR.reg = 0;
         }
-        descriptor_config.block_transfer_count = block_transfer_count;
-        descriptor_config.destination_address = ((uint32_t) second_buffer + sizeof(uint32_t) * block_transfer_count);
-        dma_descriptor_create(second_descriptor, &descriptor_config);
+        second_descriptor->DSTADDR.reg = ((uint32_t) second_buffer + sizeof(uint32_t) * block_transfer_count);
+
+        second_descriptor->BTCNT.reg = block_transfer_count;
+        #ifdef SAMD21
+        second_descriptor->SRCADDR.reg = (uint32_t)&I2S->DATA[self->serializer];
+        #endif
+        #ifdef SAMD51
+        second_descriptor->SRCADDR.reg = (uint32_t)&I2S->RXDATA;
+        #endif
+        second_descriptor->BTCTRL.reg = DMAC_BTCTRL_VALID |
+                                        DMAC_BTCTRL_BLOCKACT_NOACT |
+                                        DMAC_BTCTRL_EVOSEL_BLOCK |
+                                        DMAC_BTCTRL_DSTINC |
+                                        DMAC_BTCTRL_BEATSIZE_WORD;
     }
-
-    switch_audiodma_trigger(I2S_DMAC_ID_RX_0 + self->serializer);
-}
-
-void start_dma(audiobusio_pdmin_obj_t* self) {
-    dma_start_transfer_job(&audio_dma);
-    tc_start_counter(MP_STATE_VM(audiodma_block_counter));
-    I2S->DATA[1].reg = I2S->DATA[1].reg;
-}
-
-void stop_dma(audiobusio_pdmin_obj_t* self) {
-    // Shutdown the DMA: serializer keeps running.
-    tc_stop_counter(MP_STATE_VM(audiodma_block_counter));
-    dma_abort_job(&audio_dma);
 }
 
 // a windowed sinc filter for 44 khz, 64 samples
@@ -290,20 +353,27 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
 // output_buffer_length is the number of slots, not the number of bytes.
 uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* self,
         uint16_t* output_buffer, uint32_t output_buffer_length) {
+    uint8_t dma_channel = find_free_audio_dma_channel();
+    uint8_t event_channel = find_sync_event_channel();
+
     // We allocate two buffers on the stack to use for double buffering.
     const uint8_t samples_per_buffer = SAMPLES_PER_BUFFER;
     // For every word we record, we throw away 2 bytes of a phantom second channel.
-    const uint8_t words_per_sample = self->bytes_per_sample / 2;
-    const uint8_t words_per_buffer = samples_per_buffer * words_per_sample;
+    uint8_t words_per_sample = self->bytes_per_sample / 2;
+    uint32_t words_per_buffer = samples_per_buffer * words_per_sample;
     uint32_t first_buffer[words_per_buffer];
     uint32_t second_buffer[words_per_buffer];
 
+    turn_on_event_system();
+
     COMPILER_ALIGNED(16) DmacDescriptor second_descriptor;
 
-    setup_dma(self, output_buffer_length, &second_descriptor, words_per_buffer,
-       words_per_sample, first_buffer, second_buffer);
+    setup_dma(self, output_buffer_length, dma_descriptor(dma_channel), &second_descriptor,
+              words_per_buffer, words_per_sample, first_buffer, second_buffer);
 
-    start_dma(self);
+    dma_configure(dma_channel, I2S_DMAC_ID_RX_0, true);
+    init_event_channel_interrupt(event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
+    dma_enable_channel(dma_channel);
 
     // Record
     uint32_t buffers_processed = 0;
@@ -311,16 +381,15 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 
     uint32_t remaining_samples_needed = output_buffer_length;
     while (values_output < output_buffer_length) {
+        if (event_interrupt_overflow(event_channel)) {
+            // Looks like we aren't keeping up. We shouldn't skip a buffer so stop early.
+            break;
+        }
         // Wait for the next buffer to fill
-        uint32_t block_counter;
-        while ((block_counter = tc_get_count_value(MP_STATE_VM(audiodma_block_counter))) == buffers_processed) {
+        while (!event_interrupt_active(event_channel)) {
             #ifdef MICROPY_VM_HOOK_LOOP
                 MICROPY_VM_HOOK_LOOP
             #endif
-        }
-        if (block_counter != (buffers_processed + 1)) {
-            // Looks like we aren't keeping up. We shouldn't skip a buffer.
-            break;
         }
 
         // The mic is running all the time, so we don't need to wait the usual 10msec or 100msec
@@ -328,7 +397,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 
         // Flip back and forth between processing the first and second buffers.
         uint32_t *buffer = first_buffer;
-        DmacDescriptor* descriptor = audio_dma.descriptor;
+        DmacDescriptor* descriptor = dma_descriptor(dma_channel);
         if (buffers_processed % 2 == 1) {
             buffer = second_buffer;
             descriptor = &second_descriptor;
@@ -375,7 +444,8 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         }
     }
 
-    stop_dma(self);
+    disable_event_channel(event_channel);
+    dma_disable_channel(dma_channel);
 
     return values_output;
 }

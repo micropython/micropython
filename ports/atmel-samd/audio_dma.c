@@ -267,7 +267,6 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         turn_on_event_system();
         dma->event_channel = find_sync_event_channel();
         init_event_channel_interrupt(dma->event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
-        find_sync_event_channel();
 
         // We keep the audio_dma_t for internal use and the sample as a root pointer because it
         // contains the audiodma structure.

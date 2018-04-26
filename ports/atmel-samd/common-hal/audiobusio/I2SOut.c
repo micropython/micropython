@@ -48,7 +48,8 @@
 #include "audio_dma.h"
 #include "clocks.h"
 #include "events.h"
-#include "samd21_pins.h"
+#include "i2s.h"
+#include "pins.h"
 #include "shared_dma.h"
 #include "timers.h"
 
@@ -155,18 +156,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     self->clock_unit = ws_clock_unit;
     self->serializer = serializer;
 
-    // Make sure the I2S peripheral is running so we can see if the resources we need are free.
-    #ifdef SAMD51
-    hri_mclk_set_APBDMASK_I2S_bit(MCLK);
-
-    // Connect the clock units to the 2mhz clock by default. They can't reset without it.
-    connect_gclk_to_peripheral(5, I2S_GCLK_ID_0);
-    connect_gclk_to_peripheral(5, I2S_GCLK_ID_1);
-    #endif
-
-    #ifdef SAMD21
-    _pm_enable_bus_clock(PM_BUS_APBC, I2S);
-    #endif
+    turn_on_i2s();
 
     if (I2S->CTRLA.bit.ENABLE == 0) {
         I2S->CTRLA.bit.SWRST = 1;
@@ -281,8 +271,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     }
 
     // Configure the I2S peripheral
-    I2S->CTRLA.bit.ENABLE = 0;
-    while (I2S->SYNCBUSY.bit.ENABLE == 1) {}
+    i2s_set_enable(false);
 
     I2S->CLKCTRL[self->clock_unit].reg = clkctrl;
     #ifdef SAMD21
@@ -296,8 +285,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     enable_clock_generator(self->gclk, CLOCK_48MHZ, divisor);
     connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
 
-    I2S->CTRLA.bit.ENABLE = 1;
-    while (I2S->SYNCBUSY.bit.ENABLE == 1) {}
+    i2s_set_enable(true);
 
     #ifdef SAMD21
     uint32_t tx_register = (uint32_t) &I2S->DATA[self->serializer].reg;
