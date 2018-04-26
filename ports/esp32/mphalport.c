@@ -27,7 +27,6 @@
  */
 
 #include <stdio.h>
-#include <sys/time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -86,35 +85,30 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
 }
 
 uint32_t mp_hal_ticks_ms(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    return esp_timer_get_time() / 1000;
 }
 
 uint32_t mp_hal_ticks_us(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000000 + tv.tv_usec;
+    return esp_timer_get_time();
 }
 
 void mp_hal_delay_ms(uint32_t ms) {
-    struct timeval tv_start;
-    struct timeval tv_end;
+    uint64_t us = ms * 1000;
     uint64_t dt;
-    gettimeofday(&tv_start, NULL);
+    uint64_t t0 = esp_timer_get_time();
     for (;;) {
-        gettimeofday(&tv_end, NULL);
-        dt = (tv_end.tv_sec - tv_start.tv_sec) * 1000 + (tv_end.tv_usec - tv_start.tv_usec) / 1000;
-        if (dt + portTICK_PERIOD_MS >= ms) {
-            // doing a vTaskDelay would take us beyound requested delay time
+        uint64_t t1 = esp_timer_get_time();
+        dt = t1 - t0;
+        if (dt + portTICK_PERIOD_MS * 1000 >= us) {
+            // doing a vTaskDelay would take us beyond requested delay time
             break;
         }
         MICROPY_EVENT_POLL_HOOK
         vTaskDelay(1);
     }
-    if (dt < ms) {
+    if (dt < us) {
         // do the remaining delay accurately
-        ets_delay_us((ms - dt) * 1000);
+        mp_hal_delay_us(us - dt);
     }
 }
 
