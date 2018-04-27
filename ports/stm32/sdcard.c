@@ -275,9 +275,7 @@ STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t tim
             enable_irq(irq_state);
             break;
         }
-#if !defined(STM32L4)
         __WFI();
-#endif
         enable_irq(irq_state);
         if (HAL_GetTick() - start >= timeout) {
             return HAL_TIMEOUT;
@@ -296,9 +294,7 @@ STATIC HAL_StatusTypeDef sdcard_wait_finished(SD_HandleTypeDef *sd, uint32_t tim
         if (HAL_GetTick() - start >= timeout) {
             return HAL_TIMEOUT;
         }
-#if !defined(STM32L4)
         __WFI();
-#endif
     }
     return HAL_OK;
 }
