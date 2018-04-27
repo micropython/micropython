@@ -127,6 +127,7 @@
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
+#define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)

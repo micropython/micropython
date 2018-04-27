@@ -63,6 +63,7 @@ void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
         uart_tx_one_char(str[i]);
     }
     MP_THREAD_GIL_ENTER();
+    mp_uos_dupterm_tx_strn(str, len);
 }
 
 // Efficiently convert "\n" to "\r\n"
