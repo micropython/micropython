@@ -598,8 +598,8 @@ void SystemClock_Config(void)
     HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
 
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+    HAL_NVIC_SetPriority(SysTick_IRQn, TICK_INT_PRIORITY, 0);
 #endif
 }
 
