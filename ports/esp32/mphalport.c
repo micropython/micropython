@@ -27,6 +27,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -52,36 +53,36 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_char(char c) {
-    uart_tx_one_char(c);
-    //mp_uos_dupterm_tx_strn(&c, 1);
-}
-
 void mp_hal_stdout_tx_str(const char *str) {
-    MP_THREAD_GIL_EXIT();
-    while (*str) {
-        mp_hal_stdout_tx_char(*str++);
-    }
-    MP_THREAD_GIL_ENTER();
+    mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
     MP_THREAD_GIL_EXIT();
-    while (len--) {
-        mp_hal_stdout_tx_char(*str++);
+    for (uint32_t i = 0; i < len; ++i) {
+        uart_tx_one_char(str[i]);
     }
     MP_THREAD_GIL_ENTER();
 }
 
-void mp_hal_stdout_tx_strn_cooked(const char *str, uint32_t len) {
-    MP_THREAD_GIL_EXIT();
+// Efficiently convert "\n" to "\r\n"
+void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
+    const char *last = str;
     while (len--) {
         if (*str == '\n') {
-            mp_hal_stdout_tx_char('\r');
+            if (str > last) {
+                mp_hal_stdout_tx_strn(last, str - last);
+            }
+            mp_hal_stdout_tx_strn("\r\n", 2);
+            ++str;
+            last = str;
+        } else {
+            ++str;
         }
-        mp_hal_stdout_tx_char(*str++);
     }
-    MP_THREAD_GIL_ENTER();
+    if (str > last) {
+        mp_hal_stdout_tx_strn(last, str - last);
+    }
 }
 
 uint32_t mp_hal_ticks_ms(void) {
