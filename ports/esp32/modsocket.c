@@ -47,6 +47,7 @@
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
 #include "tcpip_adapter.h"
+#include "modnetwork.h"
 
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
@@ -63,9 +64,78 @@ typedef struct _socket_obj_t {
     uint8_t type;
     uint8_t proto;
     unsigned int retries;
+    #if MICROPY_PY_USOCKET_EVENTS
+    mp_obj_t events_callback;
+    struct _socket_obj_t *events_next;
+    #endif
 } socket_obj_t;
 
 void _socket_settimeout(socket_obj_t *sock, uint64_t timeout_ms);
+
+#if MICROPY_PY_USOCKET_EVENTS
+// Support for callbacks on asynchronous socket events (when socket becomes readable)
+
+// This divisor is used to reduce the load on the system, so it doesn't poll sockets too often
+#define USOCKET_EVENTS_DIVISOR (8)
+
+STATIC uint8_t usocket_events_divisor;
+STATIC socket_obj_t *usocket_events_head;
+
+void usocket_events_deinit(void) {
+    usocket_events_head = NULL;
+}
+
+// Assumes the socket is not already in the linked list, and adds it
+STATIC void usocket_events_add(socket_obj_t *sock) {
+    sock->events_next = usocket_events_head;
+    usocket_events_head = sock;
+}
+
+// Assumes the socket is already in the linked list, and removes it
+STATIC void usocket_events_remove(socket_obj_t *sock) {
+    for (socket_obj_t **s = &usocket_events_head;; s = &(*s)->events_next) {
+        if (*s == sock) {
+            *s = (*s)->events_next;
+            return;
+        }
+    }
+}
+
+// Polls all registered sockets for readability and calls their callback if they are readable
+void usocket_events_handler(void) {
+    if (usocket_events_head == NULL) {
+        return;
+    }
+    if (--usocket_events_divisor) {
+        return;
+    }
+    usocket_events_divisor = USOCKET_EVENTS_DIVISOR;
+
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    int max_fd = 0;
+
+    for (socket_obj_t *s = usocket_events_head; s != NULL; s = s->events_next) {
+        FD_SET(s->fd, &rfds);
+        max_fd = MAX(max_fd, s->fd);
+    }
+
+    // Poll the sockets
+    struct timeval timeout = { .tv_sec = 0, .tv_usec = 0 };
+    int r = select(max_fd + 1, &rfds, NULL, NULL, &timeout);
+    if (r <= 0) {
+        return;
+    }
+
+    // Call the callbacks
+    for (socket_obj_t *s = usocket_events_head; s != NULL; s = s->events_next) {
+        if (FD_ISSET(s->fd, &rfds)) {
+            mp_call_function_1_protected(s->events_callback, s);
+        }
+    }
+}
+
+#endif // MICROPY_PY_USOCKET_EVENTS
 
 NORETURN static void exception_from_errno(int _errno) {
     // Here we need to convert from lwip errno values to MicroPython's standard ones
@@ -208,6 +278,25 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             }
             break;
         }
+
+        #if MICROPY_PY_USOCKET_EVENTS
+        // level: SOL_SOCKET
+        // special "register callback" option
+        case 20: {
+            if (args[3] == mp_const_none) {
+                if (self->events_callback != MP_OBJ_NULL) {
+                    usocket_events_remove(self);
+                    self->events_callback = MP_OBJ_NULL;
+                }
+            } else {
+                if (self->events_callback == MP_OBJ_NULL) {
+                    usocket_events_add(self);
+                }
+                self->events_callback = args[3];
+            }
+            break;
+        }
+        #endif
 
         // level: IPPROTO_IP
         case IP_ADD_MEMBERSHIP: {
@@ -439,6 +528,12 @@ STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
         return ret;
     } else if (request == MP_STREAM_CLOSE) {
         if (socket->fd >= 0) {
+            #if MICROPY_PY_USOCKET_EVENTS
+            if (socket->events_callback != MP_OBJ_NULL) {
+                usocket_events_remove(socket);
+                socket->events_callback = MP_OBJ_NULL;
+            }
+            #endif
             int ret = lwip_close_r(socket->fd);
             if (ret != 0) {
                 *errcode = errno;
