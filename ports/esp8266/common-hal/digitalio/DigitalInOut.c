@@ -45,9 +45,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
         WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
         gpio16_in_use = true;
-    } else {
+    } else {    
         PIN_FUNC_SELECT(self->pin->peripheral, self->pin->gpio_function);
-    }
+    }    
     return DIGITALINOUT_OK;
 }
 
@@ -112,7 +112,7 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 void common_hal_digitalio_digitalinout_set_value(
         digitalio_digitalinout_obj_t* self, bool value) {
     if (self->pin->gpio_number == 16) {
-        if (self->open_drain) {
+        if (self->open_drain && value) {
                 // configure GPIO16 as input with output register holding 0
                 WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1);
                 WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);
@@ -158,7 +158,11 @@ bool common_hal_digitalio_digitalinout_get_value(
         return GPIO_INPUT_GET(self->pin->gpio_number);
     } else {
         if (self->pin->gpio_number == 16) {
-            return READ_PERI_REG(RTC_GPIO_OUT) & 1;
+            if (self->open_drain && (READ_PERI_REG(RTC_GPIO_OUT) | READ_PERI_REG(RTC_GPIO_ENABLE)) == 0) {
+                return true;
+            } else {
+                return READ_PERI_REG(RTC_GPIO_OUT) & 1;
+            }
         } else {
             uint32_t pin_mask = 1 << self->pin->gpio_number;
             if (self->open_drain && ((*PIN_DIR) & pin_mask) == 0) {
@@ -199,9 +203,14 @@ void common_hal_digitalio_digitalinout_set_pull(
         return;
     }
     if (self->pin->gpio_number == 16) {
-        // PULL_DOWN is the only hardware pull direction available on GPIO16
+        // PULL_DOWN is the only hardware pull direction available on GPIO16.
         // since we don't support pull down, just return without attempting
-        // to set pull (which won't work anyway).
+        // to set pull (which won't work anyway). If PULL_UP is requested,
+        // raise the exception so the user knows PULL_UP is not available
+        if (pull != PULL_NONE){
+            nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError,
+            "GPIO16 does not support pull up."));
+        }
         return;
     }
     if (pull == PULL_NONE) {
