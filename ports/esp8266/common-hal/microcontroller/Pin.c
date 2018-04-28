@@ -32,23 +32,45 @@
 
 #include "eagle_soc.h"
 
-extern volatile bool adc_in_use;
-volatile bool gpio16_in_use __attribute__((aligned(4))) = false;
+bool adc_in_use;
+bool gpio16_in_use;
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     if (pin == &pin_TOUT) {
         return !adc_in_use;
     }
+    if (pin == &pin_XPD_DCDC) {
+        return !gpio16_in_use;
+    }
     if (pin->gpio_number == NO_GPIO) {
         return false;
-    }
-    if (pin->gpio_number == 16) {
-        return !gpio16_in_use;
     }
     return (READ_PERI_REG(pin->peripheral) &
                 (PERIPHS_IO_MUX_FUNC<<PERIPHS_IO_MUX_FUNC_S)) == 0 &&
              (GPIO_REG_READ(GPIO_ENABLE_ADDRESS) & (1 << pin->gpio_number)) == 0 &&
-             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0;
+             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0;     
+}
+
+void claim_pin(const mcu_pin_obj_t* pin) {
+    if (pin == &pin_XPD_DCDC) {
+        gpio16_in_use = true;
+    }
+    if (pin == &pin_TOUT) {
+        adc_in_use = true;
+    }
+}
+
+void reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == &pin_XPD_DCDC) {
+        // Set GPIO16 as input
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1); 	// mux configuration for XPD_DCDC and rtc_gpio0 connection
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
+        gpio16_in_use = false;
+    }
+    if (pin == &pin_TOUT) {
+        adc_in_use = false;
+    }
 }
 
 void reset_pins(void) {
@@ -67,5 +89,7 @@ void reset_pins(void) {
     WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1); 	// mux configuration for XPD_DCDC and rtc_gpio0 connection
     WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
     WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
+
+    adc_in_use = false;
     gpio16_in_use = false;
 }

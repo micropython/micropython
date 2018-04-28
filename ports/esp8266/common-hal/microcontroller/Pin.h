@@ -41,6 +41,8 @@ typedef struct {
 #define NO_GPIO 0xff
 #define SPECIAL_CASE 0xfe
 
+void claim_pin(const mcu_pin_obj_t* pin);
+void reset_pin(const mcu_pin_obj_t* pin);
 void reset_pins(void);
 
 #endif  // MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H
