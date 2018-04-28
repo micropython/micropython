@@ -708,11 +708,7 @@ float adc_read_core_vbat(ADC_HandleTypeDef *adcHandle) {
     ADC->CCR &= ~ADC_CCR_VBATE;
     #endif
     
-    #if defined(STM32H7)
-    return raw_value * VBAT_DIV * ADC_SCALE;
-    #else
     return raw_value * VBAT_DIV * ADC_SCALE * adc_refcor;
-    #endif
 }
 
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
@@ -725,11 +721,7 @@ float adc_read_core_vref(ADC_HandleTypeDef *adcHandle) {
     // update the reference correction factor
     adc_refcor = ((float)(*VREFIN_CAL)) / ((float)raw_value);
 
-    #if defined(STM32H7)
-    return raw_value * ADC_SCALE;
-    #else
     return (*VREFIN_CAL) * ADC_SCALE;
-    #endif
 }
 #endif
 
