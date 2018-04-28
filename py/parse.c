@@ -976,6 +976,18 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         || MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_const_object)) {
                         pop_result(&parser); // MP_PARSE_NODE_NULL
                         pop_result(&parser); // const expression (leaf or RULE_const_object)
+                        if (MP_PARSE_NODE_IS_STRUCT_KIND(p, RULE_const_object)) {
+                            // Be more aggressive and release the allocated mp_obj_str_t now
+                            // to make room for more parsing.
+                            mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)p;
+                            // QSTR stored as a leaf, so const_object is always mp_obj_str_t
+                            mp_obj_str_t *o = MP_OBJ_TO_PTR(pns->nodes[0]);
+                            if (MP_OBJ_IS_STR_OR_BYTES(o)) {
+                                // Delete the actual string data, and then the object.
+                                m_del(byte, (byte *)o->data, o->len + 1);
+                                m_del_obj(mp_obj_str_t, o);
+                            }
+                        }
                         // Pushing the "pass" rule here will overwrite any RULE_const_object
                         // entry that was on the result stack, allowing the GC to reclaim
                         // the memory from the const object when needed.
