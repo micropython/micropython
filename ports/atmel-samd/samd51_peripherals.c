@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "hal/include/hal_adc_sync.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hri/hri_mclk_d51.h"
 
@@ -129,4 +130,36 @@ uint8_t samd_peripherals_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad) {
 
 bool samd_peripherals_valid_spi_clock_pad(uint8_t clock_pad) {
     return clock_pad == 1;
+}
+
+// Do initialization znd calibration setup needed for any use of the ADC.
+// The reference and resolution should be set by the caller.
+void samd_peripherals_adc_setup(struct adc_sync_descriptor *adc, Adc *instance) {
+    // Turn the clocks on.
+    if (instance == ADC0) {
+        hri_mclk_set_APBDMASK_ADC0_bit(MCLK);
+        hri_gclk_write_PCHCTRL_reg(GCLK, ADC0_GCLK_ID, GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
+    } else if (instance == ADC1) {
+        hri_mclk_set_APBDMASK_ADC1_bit(MCLK);
+        hri_gclk_write_PCHCTRL_reg(GCLK, ADC1_GCLK_ID, GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
+    }
+
+    adc_sync_init(adc, instance, (void *)NULL);
+
+    // SAMD51 has a CALIB register but doesn't have documented fuses for them.
+    uint8_t biasrefbuf;
+    uint8_t biasr2r;
+    uint8_t biascomp;
+    if (instance == ADC0) {
+        biasrefbuf = ((*(uint32_t*) ADC0_FUSES_BIASREFBUF_ADDR) & ADC0_FUSES_BIASREFBUF_Msk) >> ADC0_FUSES_BIASREFBUF_Pos;
+        biasr2r = ((*(uint32_t*) ADC0_FUSES_BIASR2R_ADDR) & ADC0_FUSES_BIASR2R_Msk) >> ADC0_FUSES_BIASR2R_Pos;
+        biascomp = ((*(uint32_t*) ADC0_FUSES_BIASCOMP_ADDR) & ADC0_FUSES_BIASCOMP_Msk) >> ADC0_FUSES_BIASCOMP_Pos;
+    } else {
+        biasrefbuf = ((*(uint32_t*) ADC1_FUSES_BIASREFBUF_ADDR) & ADC1_FUSES_BIASREFBUF_Msk) >> ADC1_FUSES_BIASREFBUF_Pos;
+        biasr2r = ((*(uint32_t*) ADC1_FUSES_BIASR2R_ADDR) & ADC1_FUSES_BIASR2R_Msk) >> ADC1_FUSES_BIASR2R_Pos;
+        biascomp = ((*(uint32_t*) ADC1_FUSES_BIASCOMP_ADDR) & ADC1_FUSES_BIASCOMP_Msk) >> ADC1_FUSES_BIASCOMP_Pos;
+    }
+    hri_adc_write_CALIB_BIASREFBUF_bf(instance, biasrefbuf);
+    hri_adc_write_CALIB_BIASR2R_bf(instance, biasr2r);
+    hri_adc_write_CALIB_BIASCOMP_bf(instance, biascomp);
 }

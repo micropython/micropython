@@ -24,8 +24,10 @@
  * THE SOFTWARE.
  */
 
+#include "hal/include/hal_adc_sync.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hpl/pm/hpl_pm_base.h"
+
 
 // The clock initializer values are rather random, so we need to put them in
 // tables for lookup. We can't compute them.
@@ -90,4 +92,22 @@ uint8_t samd_peripherals_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad) {
 
 bool samd_peripherals_valid_spi_clock_pad(uint8_t clock_pad) {
     return clock_pad == 1 || clock_pad == 3;
+}
+
+// Do initialization znd calibration setup needed for any use of the ADC.
+// The reference and resolution should be set by the caller.
+void samd_peripherals_adc_setup(struct adc_sync_descriptor *adc, Adc *instance) {
+    // Turn the clocks on.
+    _pm_enable_bus_clock(PM_BUS_APBC, ADC);
+    _gclk_enable_channel(ADC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
+
+    adc_sync_init(adc, instance, (void *)NULL);
+
+    // Load the factory calibration
+    hri_adc_write_CALIB_BIAS_CAL_bf(ADC, (*((uint32_t*) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos);
+    // Bits 7:5
+    uint16_t linearity = ((*((uint32_t*) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
+    // Bits 4:0
+    linearity |= (*((uint32_t*) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
+    hri_adc_write_CALIB_LINEARITY_CAL_bf(ADC, linearity);
 }

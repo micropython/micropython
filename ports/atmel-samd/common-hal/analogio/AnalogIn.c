@@ -34,6 +34,7 @@
 #include "py/binary.h"
 #include "py/mphal.h"
 
+#include "peripherals.h"
 #include "shared-bindings/analogio/AnalogIn.h"
 
 #include "atmel_start_pins.h"
@@ -89,57 +90,20 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     // Something else might have used the ADC in a different way,
     // so we completely re-initialize it.
 
-    // Turn the clocks on.
-    #ifdef SAMD51
-    if (self->instance == ADC0) {
-        hri_mclk_set_APBDMASK_ADC0_bit(MCLK);
-        hri_gclk_write_PCHCTRL_reg(GCLK, ADC0_GCLK_ID, GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
-    } else if (self->instance == ADC1) {
-        hri_mclk_set_APBDMASK_ADC1_bit(MCLK);
-        hri_gclk_write_PCHCTRL_reg(GCLK, ADC1_GCLK_ID, GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos));
-    }
-    #endif
-
-    #ifdef SAMD21
-    _pm_enable_bus_clock(PM_BUS_APBC, ADC);
-    _gclk_enable_channel(ADC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK0_Val);
-    #endif
-
     struct adc_sync_descriptor adc;
-    adc_sync_init(&adc, self->instance, (void *)NULL);
-    adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTVCC1_Val);
-    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
 
+    samd_peripherals_adc_setup(&adc, self->instance);
+
+    // Full scale is 3.3V (VDDANA) = 65535.
+
+    // On SAMD21, INTVCC1 is 0.5*VDDANA. On SAMD51, INTVCC1 is 1*VDDANA.
+    // So on SAMD21 only, divide the input by 2, so full scale will match 0.5*VDDANA.
+    adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTVCC1_Val);
     #ifdef SAMD21
     adc_sync_set_channel_gain(&adc, self->channel, ADC_INPUTCTRL_GAIN_DIV2_Val);
-
-    // Load the factory calibration
-    hri_adc_write_CALIB_BIAS_CAL_bf(ADC, (*((uint32_t*) ADC_FUSES_BIASCAL_ADDR) & ADC_FUSES_BIASCAL_Msk) >> ADC_FUSES_BIASCAL_Pos);
-    // Bits 7:5
-    uint16_t linearity = ((*((uint32_t*) ADC_FUSES_LINEARITY_1_ADDR) & ADC_FUSES_LINEARITY_1_Msk) >> ADC_FUSES_LINEARITY_1_Pos) << 5;
-    // Bits 4:0
-    linearity |= (*((uint32_t*) ADC_FUSES_LINEARITY_0_ADDR) & ADC_FUSES_LINEARITY_0_Msk) >> ADC_FUSES_LINEARITY_0_Pos;
-    hri_adc_write_CALIB_LINEARITY_CAL_bf(ADC, linearity);
     #endif
 
-    // SAMD51 has a CALIB register but doesn't have documented fuses for them.
-    #ifdef SAMD51
-    uint8_t biasrefbuf;
-    uint8_t biasr2r;
-    uint8_t biascomp;
-    if (self->instance == ADC0) {
-        biasrefbuf = ((*(uint32_t*) ADC0_FUSES_BIASREFBUF_ADDR) & ADC0_FUSES_BIASREFBUF_Msk) >> ADC0_FUSES_BIASREFBUF_Pos;
-        biasr2r = ((*(uint32_t*) ADC0_FUSES_BIASR2R_ADDR) & ADC0_FUSES_BIASR2R_Msk) >> ADC0_FUSES_BIASR2R_Pos;
-        biascomp = ((*(uint32_t*) ADC0_FUSES_BIASCOMP_ADDR) & ADC0_FUSES_BIASCOMP_Msk) >> ADC0_FUSES_BIASCOMP_Pos;
-    } else {
-        biasrefbuf = ((*(uint32_t*) ADC1_FUSES_BIASREFBUF_ADDR) & ADC1_FUSES_BIASREFBUF_Msk) >> ADC1_FUSES_BIASREFBUF_Pos;
-        biasr2r = ((*(uint32_t*) ADC1_FUSES_BIASR2R_ADDR) & ADC1_FUSES_BIASR2R_Msk) >> ADC1_FUSES_BIASR2R_Pos;
-        biascomp = ((*(uint32_t*) ADC1_FUSES_BIASCOMP_ADDR) & ADC1_FUSES_BIASCOMP_Msk) >> ADC1_FUSES_BIASCOMP_Pos;
-    }
-    hri_adc_write_CALIB_BIASREFBUF_bf(self->instance, biasrefbuf);
-    hri_adc_write_CALIB_BIASR2R_bf(self->instance, biasr2r);
-    hri_adc_write_CALIB_BIASCOMP_bf(self->instance, biascomp);
-    #endif
+    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
 
     adc_sync_enable_channel(&adc, self->channel);
 
