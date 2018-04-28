@@ -150,9 +150,9 @@ SRC_C = \
 	modsocket.c \
 	modesp.c \
 	modesp32.c \
+	esp32_ulp.c \
 	moduhashlib.c \
 	espneopixel.c \
-	machine_ulp.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
 	mpthreadport.c \

@@ -115,10 +115,10 @@ HALT
 
 ## Example python code using the ulp
 ```python
-import machine
+import esp32
 import time
 
-u = machine.ULP()
+u = esp32.ULP()
 with open('test.bin', 'rb') as f:
     b = f.read()
 u.load_binary(0,b)
