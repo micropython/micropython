@@ -404,7 +404,7 @@ STATIC int advance(file_descriptor_obj *self, uint32_t n, bool write) {
             if (next_chunk == FILE_NOT_FOUND) {
                 clear_file(self->start_chunk);
                 self->open = false;
-                return ENOSPC;
+                return MP_ENOSPC;
             }
             // Link next chunk to this one
             flash_write_byte((uint32_t)&(file_system_chunks[self->seek_chunk].next_chunk), next_chunk);
@@ -420,7 +420,7 @@ STATIC mp_uint_t microbit_file_read(mp_obj_t obj, void *buf, mp_uint_t size, int
     file_descriptor_obj *self = (file_descriptor_obj *)obj;
     check_file_open(self);
     if (self->writable || file_system_chunks[self->start_chunk].marker == FREED_CHUNK) {
-        *errcode = EBADF;
+        *errcode = MP_EBADF;
         return MP_STREAM_ERROR;
     }
     uint32_t bytes_read = 0;
@@ -450,7 +450,7 @@ STATIC mp_uint_t microbit_file_write(mp_obj_t obj, const void *buf, mp_uint_t si
     file_descriptor_obj *self = (file_descriptor_obj *)obj;
     check_file_open(self);
     if (!self->writable || file_system_chunks[self->start_chunk].marker == FREED_CHUNK) {
-        *errcode = EBADF;
+        *errcode = MP_EBADF;
         return MP_STREAM_ERROR;
     }
     uint32_t len = size;
