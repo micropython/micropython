@@ -554,15 +554,6 @@ STATIC mp_obj_t uos_mbfs_file_close(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uos_mbfs_file_close_obj, uos_mbfs_file_close);
 
-STATIC mp_obj_t uos_mbfs_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
-    // This function is called only once (indirectly from main()) and is
-    // not exposed to Python code. So we can ignore the readonly flag and
-    // not care about mounting a second time.
-    microbit_filesystem_init();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(uos_mbfs_mount_obj, uos_mbfs_mount);
-
 STATIC mp_obj_t uos_mbfs_remove(mp_obj_t name) {
     return microbit_remove(name);
 }
