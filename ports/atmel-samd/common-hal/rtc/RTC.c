@@ -64,6 +64,12 @@ void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
 }
 
 void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
+    // Reset prescaler to increase initial precision. Otherwise we can be up to 1 second off already.
+    uint32_t freqcorr = hri_rtcmode0_read_FREQCORR_reg(calendar.device.hw);
+    calendar_deinit(&calendar);
+    rtc_init();
+    hri_rtcmode0_write_FREQCORR_reg(calendar.device.hw, freqcorr);
+
     struct calendar_date date = {
         .year = tm->tm_year,
         .month = tm->tm_mon,
