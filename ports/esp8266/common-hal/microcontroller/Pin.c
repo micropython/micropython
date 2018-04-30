@@ -32,23 +32,49 @@
 
 #include "eagle_soc.h"
 
-extern volatile bool adc_in_use;
+bool adc_in_use;
+bool gpio16_in_use;
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     if (pin == &pin_TOUT) {
         return !adc_in_use;
     }
-    if (pin->gpio_number == NO_GPIO || pin->gpio_number == SPECIAL_CASE) {
+    if (pin == &pin_XPD_DCDC) {
+        return !gpio16_in_use;
+    }
+    if (pin->gpio_number == NO_GPIO) {
         return false;
     }
     return (READ_PERI_REG(pin->peripheral) &
                 (PERIPHS_IO_MUX_FUNC<<PERIPHS_IO_MUX_FUNC_S)) == 0 &&
              (GPIO_REG_READ(GPIO_ENABLE_ADDRESS) & (1 << pin->gpio_number)) == 0 &&
-             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0;
+             (READ_PERI_REG(pin->peripheral) & PERIPHS_IO_MUX_PULLUP) == 0;     
+}
+
+void claim_pin(const mcu_pin_obj_t* pin) {
+    if (pin == &pin_XPD_DCDC) {
+        gpio16_in_use = true;
+    }
+    if (pin == &pin_TOUT) {
+        adc_in_use = true;
+    }
+}
+
+void reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == &pin_XPD_DCDC) {
+        // Set GPIO16 as input
+        WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1); 	// mux configuration for XPD_DCDC and rtc_gpio0 connection
+        WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
+        WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
+        gpio16_in_use = false;
+    }
+    if (pin == &pin_TOUT) {
+        adc_in_use = false;
+    }
 }
 
 void reset_pins(void) {
-    for (int i = 0; i < 17; i++) {
+    for (int i = 0; i < 16; i++) {
         // 5 is RXD, 6 is TXD
         if ((i > 4 && i < 13) || i == 12) {
             continue;
@@ -59,4 +85,11 @@ void reset_pins(void) {
         // Disable the pin.
         gpio_output_set(0x0, 0x0, 0x0, 1 << i);
     }
+    // Set GPIO16 as input
+    WRITE_PERI_REG(PAD_XPD_DCDC_CONF, (READ_PERI_REG(PAD_XPD_DCDC_CONF) & 0xffffffbc) | 1); 	// mux configuration for XPD_DCDC and rtc_gpio0 connection
+    WRITE_PERI_REG(RTC_GPIO_CONF, READ_PERI_REG(RTC_GPIO_CONF) & ~1);	//mux configuration for out enable
+    WRITE_PERI_REG(RTC_GPIO_ENABLE, READ_PERI_REG(RTC_GPIO_ENABLE) & ~1);	//out disable
+
+    adc_in_use = false;
+    gpio16_in_use = false;
 }
