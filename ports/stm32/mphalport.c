@@ -171,3 +171,9 @@ bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, u
     mp_hal_pin_config(pin, mode, pull, af->idx);
     return true;
 }
+
+void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed) {
+    GPIO_TypeDef *gpio = pin_obj->gpio;
+    uint32_t pin = pin_obj->pin;
+    gpio->OSPEEDR = (gpio->OSPEEDR & ~(3 << (2 * pin))) | (speed << (2 * pin));
+}
