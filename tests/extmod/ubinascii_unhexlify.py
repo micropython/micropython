@@ -12,6 +12,9 @@ print(binascii.unhexlify(b'08090a0b0c0d0e0f'))
 print(binascii.unhexlify(b'7f80ff'))
 print(binascii.unhexlify(b'313233344142434461626364'))
 
+# Unicode strings can be decoded
+print(binascii.unhexlify('313233344142434461626364'))
+
 try:
     a = binascii.unhexlify(b'0') # odd buffer length
 except ValueError:
