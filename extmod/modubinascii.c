@@ -32,11 +32,20 @@
 #include "py/binary.h"
 #include "extmod/modubinascii.h"
 
+static void check_not_unicode(const mp_obj_t arg) {
+#if MICROPY_CPYTHON_COMPAT
+    if (MP_OBJ_IS_STR(arg)) {
+        mp_raise_TypeError("a bytes-like object is required");
+    }
+#endif
+}
+
 mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     // Second argument is for an extension to allow a separator to be used
     // between values.
     const char *sep = NULL;
     mp_buffer_info_t bufinfo;
+    check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     // Code below assumes non-zero buffer length when computing size with
@@ -165,6 +174,7 @@ mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
 mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
+    check_not_unicode(data);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
@@ -222,6 +232,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj, mod_binascii_b2a_base64);
 
 mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
+    check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     uint32_t crc = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 0;
     crc = uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
