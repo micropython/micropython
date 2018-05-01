@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "timer.h"
 #include "dac.h"
 #include "dma.h"
@@ -144,7 +145,7 @@ typedef struct _pyb_dac_obj_t {
     mp_obj_base_t base;
     uint32_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2
     const dma_descr_t *tx_dma_descr;
-    uint16_t pin; // GPIO_PIN_4 or GPIO_PIN_5
+    mp_hal_pin_obj_t pin; // pin_A4 or pin_A5
     uint8_t bits; // 8 or 12
     uint8_t state;
     uint8_t outbuf_single;
@@ -162,11 +163,7 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // GPIO configuration
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Pin = self->pin;
-    GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+    mp_hal_pin_config(self->pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
     // DAC peripheral clock
     #if defined(STM32F4) || defined(STM32F7)
@@ -251,11 +248,11 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     dac->base.type = &pyb_dac_type;
 
     if (dac_id == 1) {
-        dac->pin = GPIO_PIN_4;
+        dac->pin = pin_A4;
         dac->dac_channel = DAC_CHANNEL_1;
         dac->tx_dma_descr = &dma_DAC_1_TX;
     } else if (dac_id == 2) {
-        dac->pin = GPIO_PIN_5;
+        dac->pin = pin_A5;
         dac->dac_channel = DAC_CHANNEL_2;
         dac->tx_dma_descr = &dma_DAC_2_TX;
     } else {
