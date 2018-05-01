@@ -32,6 +32,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_core.h"
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "irq.h"
 #include "usb.h"
 
@@ -58,39 +59,28 @@ PCD_HandleTypeDef pcd_hs_handle;
   */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
-  GPIO_InitTypeDef  GPIO_InitStruct;
-  
   if(hpcd->Instance == USB_OTG_FS)
   {
-    /* Configure USB FS GPIOs */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    
-    GPIO_InitStruct.Pin = (GPIO_PIN_11 | GPIO_PIN_12);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     #if defined(STM32H7)
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG1_FS;
+    const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
     #else
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    const uint32_t otg_alt = GPIO_AF10_OTG_FS;
     #endif
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
+
+    mp_hal_pin_config(pin_A11, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
+    mp_hal_pin_config_speed(pin_A11, GPIO_SPEED_FREQ_VERY_HIGH);
+    mp_hal_pin_config(pin_A12, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, otg_alt);
+    mp_hal_pin_config_speed(pin_A12, GPIO_SPEED_FREQ_VERY_HIGH);
     
 	/* Configure VBUS Pin */
 #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
     // USB VBUS detect pin is always A9
-    GPIO_InitStruct.Pin = GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    mp_hal_pin_config(MICROPY_HW_USB_VBUS_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
 #endif
 	
 #if defined(MICROPY_HW_USB_OTG_ID_PIN)
     // USB ID pin is always A10
-    GPIO_InitStruct.Pin = GPIO_PIN_10;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct); 
+    mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, otg_alt);
 #endif
 
     #if defined(STM32H7)
@@ -128,34 +118,19 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 #if MICROPY_HW_USB_HS_IN_FS
 
     /* Configure USB FS GPIOs */
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    /* Configure DM DP Pins */
-    GPIO_InitStruct.Pin = (GPIO_PIN_14 | GPIO_PIN_15);
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    mp_hal_pin_config(pin_B14, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF12_OTG_HS_FS);
+    mp_hal_pin_config_speed(pin_B14, GPIO_SPEED_FREQ_VERY_HIGH);
+    mp_hal_pin_config(pin_B15, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, GPIO_AF12_OTG_HS_FS);
+    mp_hal_pin_config_speed(pin_B15, GPIO_SPEED_FREQ_VERY_HIGH);
 
 #if defined(MICROPY_HW_USB_VBUS_DETECT_PIN)
     /* Configure VBUS Pin */
-    GPIO_InitStruct.Pin = GPIO_PIN_13;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    mp_hal_pin_config(MICROPY_HW_USB_VBUS_DETECT_PIN, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_NONE, 0);
 #endif
 
 #if defined(MICROPY_HW_USB_OTG_ID_PIN)
     /* Configure ID pin */
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    mp_hal_pin_config(MICROPY_HW_USB_OTG_ID_PIN, MP_HAL_PIN_MODE_ALT_OPEN_DRAIN, MP_HAL_PIN_PULL_UP, GPIO_AF12_OTG_HS_FS);
 #endif
     /*
      * Enable calling WFI and correct
@@ -176,6 +151,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
 
 #else // !MICROPY_HW_USB_HS_IN_FS
+    GPIO_InitTypeDef GPIO_InitStruct;
 
     /* Configure USB HS GPIOs */
     __HAL_RCC_GPIOA_CLK_ENABLE();
