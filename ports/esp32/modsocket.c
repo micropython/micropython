@@ -146,12 +146,8 @@ NORETURN static void exception_from_errno(int _errno) {
     mp_raise_OSError(_errno);
 }
 
-void check_for_exceptions() {
-    mp_obj_t exc = MP_STATE_VM(mp_pending_exception);
-    if (exc != MP_OBJ_NULL) {
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        nlr_raise(exc);
-    }
+static inline void check_for_exceptions(void) {
+    mp_handle_pending();
 }
 
 static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struct addrinfo **resp) {
