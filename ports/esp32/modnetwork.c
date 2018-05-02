@@ -551,15 +551,15 @@ unknown:
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
-STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_active), (mp_obj_t)&esp_active_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_config), (mp_obj_t)&esp_config_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
+STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
@@ -576,43 +576,30 @@ STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
 
 
-STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&esp_initialize_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_wlan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LAN), (mp_obj_t)&get_lan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
+STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STA_IF),
-        MP_OBJ_NEW_SMALL_INT(WIFI_IF_STA)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_IF),
-        MP_OBJ_NEW_SMALL_INT(WIFI_IF_AP)},
+    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
+    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11G) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11N) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_OPEN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_MAX),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_MAX) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_LAN8720),
-        MP_OBJ_NEW_SMALL_INT(PHY_LAN8720) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_TLK110),
-        MP_OBJ_NEW_SMALL_INT(PHY_TLK110) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
 #endif
 };
 
