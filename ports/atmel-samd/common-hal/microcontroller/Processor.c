@@ -63,166 +63,219 @@
 
 #include "common-hal/microcontroller/Processor.h"
 
+#include "peripherals.h"
+
 #include "peripheral_clk_config.h"
 
-// #define ADC_TEMP_SAMPLE_LENGTH    4
-// #define INT1V_VALUE_FLOAT         1.0
-// #define INT1V_DIVIDER_1000	  1000.0
-// #define ADC_12BIT_FULL_SCALE_VALUE_FLOAT        4095.0
-//
-// typedef struct nvm_calibration_data_t {
-//     float tempR;       // Production Room temperature
-//     float tempH;       // Production Hot temperature
-//     float INT1VR;      // Room temp 2's complement of the internal 1V reference value
-//     float INT1VH;      // Hot temp 2's complement of the internal 1V reference value
-//     uint16_t ADCR;     // Production Room temperature ADC value
-//     uint16_t ADCH;     // Production Hot temperature ADC value
-//     float VADCR;       // Room temperature ADC voltage
-//     float VADCH;       // Hot temperature ADC voltage
-// } nvm_calibration_data_t;
+#define ADC_TEMP_SAMPLE_LENGTH 4
+#define INT1V_VALUE_FLOAT 1.0
+#define INT1V_DIVIDER_1000 1000.0
+#define ADC_12BIT_FULL_SCALE_VALUE_FLOAT 4095.0
 
 
 // Decimal to fraction conversion. (adapted from ASF sample).
-// STATIC float convert_dec_to_frac(uint8_t val) {
-//     float float_val = (float)val;
-//     if (val < 10) {
-//         return (float_val/10.0);
-//     } else if (val < 100) {
-//         return (float_val/100.0);
-//     } else {
-//         return (float_val/1000.0);
-//     }
-// }
+STATIC float convert_dec_to_frac(uint8_t val) {
+    float float_val = (float)val;
+    if (val < 10) {
+        return (float_val/10.0);
+    } else if (val < 100) {
+        return (float_val/100.0);
+    } else {
+        return (float_val/1000.0);
+    }
+}
 
-// STATIC void configure_adc_temp(struct adc_module *adc_instance) {
-//     struct adc_config config_adc;
-//     adc_get_config_defaults(&config_adc);
-//
-//     // The parameters chosen here are from the temperature example in:
-//     // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
-//     // That note also recommends in general:
-//     // "Discard the first conversion result whenever there is a change
-//     // in ADC configuration like voltage reference / ADC channel change."
-//
-//     config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV16;
-//     config_adc.reference = ADC_REFERENCE_INT1V;
-//     config_adc.positive_input = ADC_POSITIVE_INPUT_TEMP;
-//     config_adc.negative_input = ADC_NEGATIVE_INPUT_GND;
-//     config_adc.sample_length = ADC_TEMP_SAMPLE_LENGTH;
-//
-//     adc_init(adc_instance, ADC, &config_adc);
-//
-//     // Oversample and decimate. A higher samplenum produces a more stable result.
-//     ADC->AVGCTRL.reg = ADC_AVGCTRL_ADJRES(2) | ADC_AVGCTRL_SAMPLENUM_4;
-//     //ADC->AVGCTRL.reg = ADC_AVGCTRL_ADJRES(4) | ADC_AVGCTRL_SAMPLENUM_16;
-// }
+// Extract the production calibration data information from NVM (adapted from ASF sample),
+// then calculate the temperature
+#ifdef SAMD21
+STATIC float calculate_temperature(uint16_t raw_value) {
+    volatile uint32_t val1;    /* Temperature Log Row Content first 32 bits */
+    volatile uint32_t val2;    /* Temperature Log Row Content another 32 bits */
+    uint8_t room_temp_val_int; /* Integer part of room temperature in °C */
+    uint8_t room_temp_val_dec; /* Decimal part of room temperature in °C */
+    uint8_t hot_temp_val_int;  /* Integer part of hot temperature in °C */
+    uint8_t hot_temp_val_dec;  /* Decimal part of hot temperature in °C */
+    int8_t room_int1v_val;     /* internal 1V reference drift at room temperature */
+    int8_t hot_int1v_val;      /* internal 1V reference drift at hot temperature*/
 
-// Extract the production calibration data information from NVM (adapted from ASF sample).
-//
-// STATIC void load_calibration_data(nvm_calibration_data_t *cal) {
-//     volatile uint32_t val1;    /* Temperature Log Row Content first 32 bits */
-//     volatile uint32_t val2;    /* Temperature Log Row Content another 32 bits */
-//     uint8_t room_temp_val_int; /* Integer part of room temperature in °C */
-//     uint8_t room_temp_val_dec; /* Decimal part of room temperature in °C */
-//     uint8_t hot_temp_val_int;  /* Integer part of hot temperature in °C */
-//     uint8_t hot_temp_val_dec;  /* Decimal part of hot temperature in °C */
-//     int8_t room_int1v_val;     /* internal 1V reference drift at room temperature */
-//     int8_t hot_int1v_val;      /* internal 1V reference drift at hot temperature*/
-//
-//     uint32_t *temp_log_row_ptr = (uint32_t *)NVMCTRL_TEMP_LOG;
-//
-//     val1 = *temp_log_row_ptr;
-//     temp_log_row_ptr++;
-//     val2 = *temp_log_row_ptr;
-//
-//     room_temp_val_int = (uint8_t)((val1 & NVMCTRL_FUSES_ROOM_TEMP_VAL_INT_Msk) >> NVMCTRL_FUSES_ROOM_TEMP_VAL_INT_Pos);
-//     room_temp_val_dec = (uint8_t)((val1 & NVMCTRL_FUSES_ROOM_TEMP_VAL_DEC_Msk) >> NVMCTRL_FUSES_ROOM_TEMP_VAL_DEC_Pos);
-//
-//     hot_temp_val_int = (uint8_t)((val1 & NVMCTRL_FUSES_HOT_TEMP_VAL_INT_Msk) >> NVMCTRL_FUSES_HOT_TEMP_VAL_INT_Pos);
-//     hot_temp_val_dec = (uint8_t)((val1 & NVMCTRL_FUSES_HOT_TEMP_VAL_DEC_Msk) >> NVMCTRL_FUSES_HOT_TEMP_VAL_DEC_Pos);
-//
-//     room_int1v_val = (int8_t)((val1 & NVMCTRL_FUSES_ROOM_INT1V_VAL_Msk) >> NVMCTRL_FUSES_ROOM_INT1V_VAL_Pos);
-//     hot_int1v_val = (int8_t)((val2 & NVMCTRL_FUSES_HOT_INT1V_VAL_Msk) >> NVMCTRL_FUSES_HOT_INT1V_VAL_Pos);
-//
-//     cal->ADCR = (uint16_t)((val2 & NVMCTRL_FUSES_ROOM_ADC_VAL_Msk) >> NVMCTRL_FUSES_ROOM_ADC_VAL_Pos);
-//
-//     cal->ADCH = (uint16_t)((val2 & NVMCTRL_FUSES_HOT_ADC_VAL_Msk) >> NVMCTRL_FUSES_HOT_ADC_VAL_Pos);
-//
-//     cal->tempR = room_temp_val_int + convert_dec_to_frac(room_temp_val_dec);
-//     cal->tempH = hot_temp_val_int + convert_dec_to_frac(hot_temp_val_dec);
-//
-//     cal->INT1VR = 1 - ((float)room_int1v_val/INT1V_DIVIDER_1000);
-//     cal->INT1VH = 1 - ((float)hot_int1v_val/INT1V_DIVIDER_1000);
-//
-//     cal->VADCR = ((float)cal->ADCR * cal->INT1VR)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
-//     cal->VADCH = ((float)cal->ADCH * cal->INT1VH)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
-// }
+    float tempR;       // Production Room temperature
+    float tempH;       // Production Hot temperature
+    float INT1VR;      // Room temp 2's complement of the internal 1V reference value
+    float INT1VH;      // Hot temp 2's complement of the internal 1V reference value
+    uint16_t ADCR;     // Production Room temperature ADC value
+    uint16_t ADCH;     // Production Hot temperature ADC value
+    float VADCR;       // Room temperature ADC voltage
+    float VADCH;       // Hot temperature ADC voltage
 
-/*
- * Calculate fine temperature using Equation1 and Equation
- * 1b as mentioned in data sheet section "Temperature Sensor Characteristics"
- * of Electrical Characteristics. (adapted from ASF sample code).
- */
-// STATIC float calculate_temperature(uint16_t raw_code, nvm_calibration_data_t *cal)
-// {
-//     float VADC;      /* Voltage calculation using ADC result for Coarse Temp calculation */
-//     float VADCM;     /* Voltage calculation using ADC result for Fine Temp calculation. */
-//     float INT1VM;    /* Voltage calculation for reality INT1V value during the ADC conversion */
-//
-//     VADC = ((float)raw_code * INT1V_VALUE_FLOAT)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
-//
-//     // Hopefully compiler will remove common subepxressions here.
-//
-//     /* Coarse Temp Calculation by assume INT1V=1V for this ADC conversion */
-//     float coarse_temp = cal->tempR + (((cal->tempH - cal->tempR)/(cal->VADCH - cal->VADCR)) * (VADC - cal->VADCR));
-//
-//     /* Calculation to find the real INT1V value during the ADC conversion */
-//     INT1VM = cal->INT1VR + (((cal->INT1VH - cal->INT1VR) * (coarse_temp - cal->tempR))/(cal->tempH - cal->tempR));
-//
-//     VADCM = ((float)raw_code * INT1VM)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
-//
-//     /* Fine Temp Calculation by replace INT1V=1V by INT1V = INT1Vm for ADC conversion */
-//     float fine_temp = cal->tempR + (((cal->tempH - cal->tempR)/(cal->VADCH - cal->VADCR)) * (VADCM - cal->VADCR));
-//
-//     return fine_temp;
-// }
+    uint32_t *temp_log_row_ptr = (uint32_t *)NVMCTRL_TEMP_LOG;
 
+    val1 = *temp_log_row_ptr;
+    temp_log_row_ptr++;
+    val2 = *temp_log_row_ptr;
 
-// External interface.
-//
+    room_temp_val_int = (uint8_t)((val1 & FUSES_ROOM_TEMP_VAL_INT_Msk) >> FUSES_ROOM_TEMP_VAL_INT_Pos);
+    room_temp_val_dec = (uint8_t)((val1 & FUSES_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_ROOM_TEMP_VAL_DEC_Pos);
+
+    hot_temp_val_int = (uint8_t)((val1 & FUSES_HOT_TEMP_VAL_INT_Msk) >> FUSES_HOT_TEMP_VAL_INT_Pos);
+    hot_temp_val_dec = (uint8_t)((val1 & FUSES_HOT_TEMP_VAL_DEC_Msk) >> FUSES_HOT_TEMP_VAL_DEC_Pos);
+
+    room_int1v_val = (int8_t)((val1 & FUSES_ROOM_INT1V_VAL_Msk) >> FUSES_ROOM_INT1V_VAL_Pos);
+    hot_int1v_val = (int8_t)((val2 & FUSES_HOT_INT1V_VAL_Msk) >> FUSES_HOT_INT1V_VAL_Pos);
+
+    ADCR = (uint16_t)((val2 & FUSES_ROOM_ADC_VAL_Msk) >> FUSES_ROOM_ADC_VAL_Pos);
+    ADCH = (uint16_t)((val2 & FUSES_HOT_ADC_VAL_Msk) >> FUSES_HOT_ADC_VAL_Pos);
+
+    tempR = room_temp_val_int + convert_dec_to_frac(room_temp_val_dec);
+    tempH = hot_temp_val_int + convert_dec_to_frac(hot_temp_val_dec);
+
+    INT1VR = 1 - ((float)room_int1v_val/INT1V_DIVIDER_1000);
+    INT1VH = 1 - ((float)hot_int1v_val/INT1V_DIVIDER_1000);
+
+    VADCR = ((float)ADCR * INT1VR)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+    VADCH = ((float)ADCH * INT1VH)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+
+    float VADC;      /* Voltage calculation using ADC result for Coarse Temp calculation */
+    float VADCM;     /* Voltage calculation using ADC result for Fine Temp calculation. */
+    float INT1VM;    /* Voltage calculation for reality INT1V value during the ADC conversion */
+
+    VADC = ((float)raw_value * INT1V_VALUE_FLOAT)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+
+    // Hopefully compiler will remove common subepxressions here.
+
+    // calculate fine temperature using Equation1 and Equation
+    // 1b as mentioned in data sheet section "Temperature Sensor Characteristics"
+    // of Electrical Characteristics. (adapted from ASF sample code).
+    // Coarse Temp Calculation by assume INT1V=1V for this ADC conversion
+    float coarse_temp = tempR + (((tempH - tempR)/(VADCH - VADCR)) * (VADC - VADCR));
+
+    // Calculation to find the real INT1V value during the ADC conversion
+    INT1VM = INT1VR + (((INT1VH - INT1VR) * (coarse_temp - tempR))/(tempH - tempR));
+
+    VADCM = ((float)raw_value * INT1VM)/ADC_12BIT_FULL_SCALE_VALUE_FLOAT;
+
+    // Fine Temp Calculation by replace INT1V=1V by INT1V = INT1Vm for ADC conversion
+    float fine_temp = tempR + (((tempH - tempR)/(VADCH - VADCR)) * (VADCM - VADCR));
+
+    return fine_temp;
+}
+#endif // SAMD21
+
+#ifdef SAMD51
+STATIC float calculate_temperature(uint16_t TP, uint16_t TC) {
+    uint32_t TLI = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_INT_ADDR & FUSES_ROOM_TEMP_VAL_INT_Msk) >> FUSES_ROOM_TEMP_VAL_INT_Pos;
+    uint32_t TLD = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_DEC_ADDR & FUSES_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_ROOM_TEMP_VAL_DEC_Pos;
+    float TL = TLI + convert_dec_to_frac(TLD);
+
+    uint32_t THI = (*(uint32_t *)FUSES_HOT_TEMP_VAL_INT_ADDR & FUSES_HOT_TEMP_VAL_INT_Msk) >> FUSES_HOT_TEMP_VAL_INT_Pos;
+    uint32_t THD = (*(uint32_t *)FUSES_HOT_TEMP_VAL_DEC_ADDR & FUSES_HOT_TEMP_VAL_DEC_Msk) >> FUSES_HOT_TEMP_VAL_DEC_Pos;
+    float TH = THI + convert_dec_to_frac(THD);
+
+    uint16_t VPL = (*(uint32_t *)FUSES_ROOM_ADC_VAL_PTAT_ADDR & FUSES_ROOM_ADC_VAL_PTAT_Msk) >> FUSES_ROOM_ADC_VAL_PTAT_Pos;
+    uint16_t VPH = (*(uint32_t *)FUSES_HOT_ADC_VAL_PTAT_ADDR & FUSES_HOT_ADC_VAL_PTAT_Msk) >> FUSES_HOT_ADC_VAL_PTAT_Pos;
+
+    uint16_t VCL = (*(uint32_t *)FUSES_ROOM_ADC_VAL_CTAT_ADDR & FUSES_ROOM_ADC_VAL_CTAT_Msk) >> FUSES_ROOM_ADC_VAL_CTAT_Pos;
+    uint16_t VCH = (*(uint32_t *)FUSES_HOT_ADC_VAL_CTAT_ADDR & FUSES_HOT_ADC_VAL_CTAT_Msk) >> FUSES_HOT_ADC_VAL_CTAT_Pos;
+
+    // From SAMD51 datasheet: section 45.6.3.1 (page 1327).
+    return (TL*VPH*TC - VPL*TH*TC - TL*VCH*TP + TH*VCL*TP) / (VCL*TP - VCH*TP - VPL*TC + VPH*TC);
+}
+#endif // SAMD51
+
 float common_hal_mcu_processor_get_temperature(void) {
-    // struct adc_module adc_instance_struct;
-    //
-    // system_voltage_reference_enable(SYSTEM_VOLTAGE_REFERENCE_TEMPSENSE);
-    // configure_adc_temp(&adc_instance_struct);
-    // nvm_calibration_data_t nvm_calibration_data;
-    // load_calibration_data(&nvm_calibration_data);
-    //
-    // adc_enable(&adc_instance_struct);
-    //
-    // uint16_t data;
-    // enum status_code status;
-    //
-    // // Read twice and discard first result, as recommended in section 14 of
-    // // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
-    // // "Discard the first conversion result whenever there is a change in ADC configuration
-    // // like voltage reference / ADC channel change"
-    // // Empirical observation shows the first reading is quite different than subsequent ones.
-    //
-    // adc_start_conversion(&adc_instance_struct);
-    // do {
-    //     status = adc_read(&adc_instance_struct, &data);
-    // } while (status == STATUS_BUSY);
-    //
-    // adc_start_conversion(&adc_instance_struct);
-    // do {
-    //     status = adc_read(&adc_instance_struct, &data);
-    // } while (status == STATUS_BUSY);
-    //
-    // // Disable so that someone else can use the adc with different settings.
-    // adc_disable(&adc_instance_struct);
-    // return calculate_temperature(data, &nvm_calibration_data);
-    return 0;
+    struct adc_sync_descriptor adc;
+
+    static Adc* adc_insts[] = ADC_INSTS;
+    samd_peripherals_adc_setup(&adc, adc_insts[0]);
+
+#ifdef SAMD21
+    // The parameters chosen here are from the temperature example in:
+    // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
+    // That note also recommends in general:
+    // "Discard the first conversion result whenever there is a change
+    // in ADC configuration like voltage reference / ADC channel change."
+
+    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
+    adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INT1V_Val);
+    // Channel passed in adc_sync_enable_channel is actually ignored (!).
+    adc_sync_enable_channel(&adc, ADC_INPUTCTRL_MUXPOS_TEMP_Val);
+    adc_sync_set_inputs(&adc,
+                        ADC_INPUTCTRL_MUXPOS_TEMP_Val,   // pos_input
+                        ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
+                        ADC_INPUTCTRL_MUXPOS_TEMP_Val);  // channel channel (this arg is ignored (!))
+
+    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
+
+    hri_adc_write_CTRLB_PRESCALER_bf(adc.device.hw, ADC_CTRLB_PRESCALER_DIV32_Val);
+    hri_adc_write_SAMPCTRL_SAMPLEN_bf(adc.device.hw, ADC_TEMP_SAMPLE_LENGTH);
+
+    hri_sysctrl_set_VREF_TSEN_bit(SYSCTRL);
+
+    // Oversample and decimate. A higher samplenum produces a more stable result.
+    hri_adc_write_AVGCTRL_SAMPLENUM_bf(adc.device.hw, ADC_AVGCTRL_SAMPLENUM_4_Val);
+    hri_adc_write_AVGCTRL_ADJRES_bf(adc.device.hw, 2);
+
+    volatile uint16_t value;
+
+    // Read twice and discard first result, as recommended in section 14 of
+    // http://www.atmel.com/images/Atmel-42645-ADC-Configurations-with-Examples_ApplicationNote_AT11481.pdf
+    // "Discard the first conversion result whenever there is a change in ADC configuration
+    // like voltage reference / ADC channel change"
+    // Empirical observation shows the first reading is quite different than subsequent ones.
+
+    // The channel listed in adc_sync_read_channel is actually ignored(!).
+    // Must be set as above with adc_sync_set_inputs.
+    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_TEMP_Val, ((uint8_t*) &value), 2);
+    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_TEMP_Val, ((uint8_t*) &value), 2);
+
+    adc_sync_deinit(&adc);
+    return calculate_temperature(value);
+#endif // SAMD21
+
+#ifdef SAMD51
+    adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
+    // Reference voltage choice is a guess. It's not specified in the datasheet that I can see.
+    // INTVCC1 seems to read a little high.
+    // INTREF doesn't work: ADC hangs BUSY.
+    adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTVCC0_Val);
+
+    // If ONDEMAND=1, we don't need to use the VREF.TSSEL bit to choose PTAT and CTAT.
+    hri_supc_set_VREF_ONDEMAND_bit(SUPC);
+    hri_supc_set_VREF_TSEN_bit(SUPC);
+
+    // Channel passed in adc_sync_enable_channel is actually ignored (!).
+    adc_sync_enable_channel(&adc, ADC_INPUTCTRL_MUXPOS_PTAT_Val);
+    adc_sync_set_inputs(&adc,
+                        ADC_INPUTCTRL_MUXPOS_PTAT_Val,   // pos_input
+                        ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
+                        ADC_INPUTCTRL_MUXPOS_PTAT_Val);  // channel (this arg is ignored (!))
+
+    // Read both temperature sensors.
+    volatile uint16_t ptat;
+    volatile uint16_t ctat;
+
+    // The channel listed in adc_sync_read_channel is actually ignored(!).
+    // Must be set as above with adc_sync_set_inputs.
+    // Read twice for stability (necessary?)
+    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_PTAT_Val, ((uint8_t*) &ptat), 2);
+    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_PTAT_Val, ((uint8_t*) &ptat), 2);
+
+    adc_sync_set_inputs(&adc,
+                        ADC_INPUTCTRL_MUXPOS_CTAT_Val,   // pos_input
+                        ADC_INPUTCTRL_MUXNEG_GND_Val,    // neg_input
+                        ADC_INPUTCTRL_MUXPOS_CTAT_Val);  // channel (this arg is ignored (!))
+
+    // Channel passed in adc_sync_enable_channel is actually ignored (!).
+    adc_sync_enable_channel(&adc, ADC_INPUTCTRL_MUXPOS_CTAT_Val);
+    // The channel listed in adc_sync_read_channel is actually ignored(!).
+    // Must be set as above with adc_sync_set_inputs.
+    // Read twice for stability (necessary?)
+    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_CTAT_Val, ((uint8_t*) &ctat), 2);
+    adc_sync_read_channel(&adc, ADC_INPUTCTRL_MUXPOS_CTAT_Val, ((uint8_t*) &ctat), 2);
+    hri_supc_set_VREF_ONDEMAND_bit(SUPC);
+
+    adc_sync_deinit(&adc);
+    return calculate_temperature(ptat, ctat);
+#endif // SAMD51
 }
 
 

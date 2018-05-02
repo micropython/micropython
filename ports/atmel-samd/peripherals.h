@@ -44,4 +44,4 @@ Sercom* sercom_insts[SERCOM_INST_NUM];
 #include "samd51_peripherals.h"
 #endif
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_PINS_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_H
