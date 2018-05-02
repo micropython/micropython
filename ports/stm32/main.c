@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -418,15 +418,48 @@ STATIC uint update_reset_mode(uint reset_mode) {
 #endif
 
 void stm32_main(uint32_t reset_mode) {
-    // TODO disable JTAG
+    // Enable caches and prefetch buffers
 
-    /* STM32F4xx HAL library initialization:
-         - Configure the Flash prefetch, instruction and Data caches
-         - Configure the Systick to generate an interrupt each 1 msec
-         - Set NVIC Group Priority to 4
-         - Global MSP (MCU Support Package) initialization
-       */
-    HAL_Init();
+    #if defined(STM32F4)
+
+    #if INSTRUCTION_CACHE_ENABLE
+    __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
+    #endif
+    #if DATA_CACHE_ENABLE
+    __HAL_FLASH_DATA_CACHE_ENABLE();
+    #endif
+    #if PREFETCH_ENABLE
+    __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    #endif
+
+    #elif defined(STM32F7) || defined(STM32H7)
+
+    #if ART_ACCLERATOR_ENABLE
+    __HAL_FLASH_ART_ENABLE();
+    #endif
+
+    SCB_EnableICache();
+    SCB_EnableDCache();
+
+    #elif defined(STM32L4)
+
+    #if !INSTRUCTION_CACHE_ENABLE
+    __HAL_FLASH_INSTRUCTION_CACHE_DISABLE();
+    #endif
+    #if !DATA_CACHE_ENABLE
+    __HAL_FLASH_DATA_CACHE_DISABLE();
+    #endif
+    #if PREFETCH_ENABLE
+    __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
+    #endif
+
+    #endif
+
+    // Set the priority grouping
+    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+
+    // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
+    HAL_InitTick(TICK_INT_PRIORITY);
 
     // set the system clock to be HSE
     SystemClock_Config();

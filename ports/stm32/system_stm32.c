@@ -602,13 +602,3 @@ void SystemClock_Config(void)
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, TICK_INT_PRIORITY, 0));
 #endif
 }
-
-void HAL_MspInit(void) {
-#if defined(STM32F7) || defined(STM32H7)
-    /* Enable I-Cache */
-    SCB_EnableICache();
-
-    /* Enable D-Cache */
-    SCB_EnableDCache();
-#endif
-}
