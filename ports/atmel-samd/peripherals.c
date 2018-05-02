@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include "peripherals.h"
 
 #include "hpl_sercom_config.h"
 
