@@ -50,7 +50,7 @@
 #include "tick.h"
 
 #define OVERSAMPLING 64
-#define SAMPLES_PER_BUFFER 64
+#define SAMPLES_PER_BUFFER 32
 
 // MEMS microphones must be clocked at at least 1MHz.
 #define MIN_MIC_CLOCK 1000000
