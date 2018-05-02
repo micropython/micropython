@@ -170,7 +170,7 @@ void timer_tim5_init(void) {
     __HAL_RCC_TIM5_CLK_ENABLE();
 
     // set up and enable interrupt
-    HAL_NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5, IRQ_SUBPRI_TIM5);
+    NVIC_SetPriority(TIM5_IRQn, IRQ_PRI_TIM5);
     HAL_NVIC_EnableIRQ(TIM5_IRQn);
 
     // PWM clock configuration
@@ -611,12 +611,12 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 
     // set IRQ priority (if not a special timer)
     if (self->tim_id != 5) {
-        HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
+        NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_TIMX);
         if (self->tim_id == 1) {
-            HAL_NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
+            NVIC_SetPriority(TIM1_CC_IRQn, IRQ_PRI_TIMX);
         #if defined(TIM8)
         } else if (self->tim_id == 8) {
-            HAL_NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX, IRQ_SUBPRI_TIMX);
+            NVIC_SetPriority(TIM8_CC_IRQn, IRQ_PRI_TIMX);
         #endif
         }
     }
