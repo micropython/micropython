@@ -52,7 +52,7 @@ def get_version_info_from_git():
     return git_tag, git_hash, ver
 
 def get_version_info_from_docs_conf():
-    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "docs", "conf.py")) as f:
+    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "conf.py")) as f:
         for line in f:
             if line.startswith("version = release = '"):
                 ver = line.strip().split(" = ")[2].strip("'")
