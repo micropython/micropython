@@ -371,7 +371,12 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     setup_dma(self, output_buffer_length, dma_descriptor(dma_channel), &second_descriptor,
               words_per_buffer, words_per_sample, first_buffer, second_buffer);
 
-    dma_configure(dma_channel, I2S_DMAC_ID_RX_0, true);
+    uint8_t trigger_source = I2S_DMAC_ID_RX_0;
+    #ifdef SAMD21
+    trigger_source += self->serializer;
+    #endif
+
+    dma_configure(dma_channel, trigger_source, true);
     init_event_channel_interrupt(event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
     dma_enable_channel(dma_channel);
 
