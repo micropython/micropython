@@ -100,56 +100,30 @@ void mp_hal_ticks_cpu_enable(void) {
 }
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
-    if (0) {
-    #ifdef __HAL_RCC_GPIOA_CLK_ENABLE
-    } else if (gpio == GPIOA) {
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOB_CLK_ENABLE
-    } else if (gpio == GPIOB) {
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOC_CLK_ENABLE
-    } else if (gpio == GPIOC) {
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOD_CLK_ENABLE
-    } else if (gpio == GPIOD) {
-        __HAL_RCC_GPIOD_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOE_CLK_ENABLE
-    } else if (gpio == GPIOE) {
-        __HAL_RCC_GPIOE_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOF_CLK_ENABLE
-    } else if (gpio == GPIOF) {
-        __HAL_RCC_GPIOF_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOG_CLK_ENABLE
-    } else if (gpio == GPIOG) {
-        #if defined(STM32L476xx) || defined(STM32L486xx)
+    #if defined(STM32L476xx) || defined(STM32L486xx)
+    if (gpio == GPIOG) {
         // Port G pins 2 thru 15 are powered using VddIO2 on these MCUs.
         HAL_PWREx_EnableVddIO2();
-        #endif
-        __HAL_RCC_GPIOG_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOH_CLK_ENABLE
-    } else if (gpio == GPIOH) {
-        __HAL_RCC_GPIOH_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOI_CLK_ENABLE
-    } else if (gpio == GPIOI) {
-        __HAL_RCC_GPIOI_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOJ_CLK_ENABLE
-    } else if (gpio == GPIOJ) {
-        __HAL_RCC_GPIOJ_CLK_ENABLE();
-    #endif
-    #ifdef __HAL_RCC_GPIOK_CLK_ENABLE
-    } else if (gpio == GPIOK) {
-        __HAL_RCC_GPIOK_CLK_ENABLE();
-    #endif
     }
+    #endif
+
+    // This logic assumes that all the GPIOx_EN bits are adjacent and ordered in one register
+
+    #if defined(STM32F4) || defined(STM32F7)
+    #define AHBxENR AHB1ENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB1ENR_GPIOAEN_Pos
+    #elif defined(STM32H7)
+    #define AHBxENR AHB4ENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
+    #elif defined(STM32L4)
+    #define AHBxENR AHB2ENR
+    #define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
+    #endif
+
+    uint32_t gpio_idx = ((uint32_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
+    RCC->AHBxENR |= 1 << (AHBxENR_GPIOAEN_Pos + gpio_idx);
+    volatile uint32_t tmp = RCC->AHBxENR; // Delay after enabling clock
+    (void)tmp;
 }
 
 void mp_hal_pin_config(mp_hal_pin_obj_t pin_obj, uint32_t mode, uint32_t pull, uint32_t alt) {
