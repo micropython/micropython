@@ -132,7 +132,7 @@ bool samd_peripherals_valid_spi_clock_pad(uint8_t clock_pad) {
     return clock_pad == 1;
 }
 
-// Do initialization znd calibration setup needed for any use of the ADC.
+// Do initialization and calibration setup needed for any use of the ADC.
 // The reference and resolution should be set by the caller.
 void samd_peripherals_adc_setup(struct adc_sync_descriptor *adc, Adc *instance) {
     // Turn the clocks on.
