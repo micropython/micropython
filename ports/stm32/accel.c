@@ -70,7 +70,7 @@ STATIC void accel_start(void) {
     I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
     I2CHandle1.Init.OwnAddress1     = PYB_I2C_MASTER_ADDRESS;
     I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
-    i2c_init(&I2CHandle1);
+    pyb_i2c_init(&I2CHandle1);
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
     mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off

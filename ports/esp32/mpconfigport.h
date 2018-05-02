@@ -127,6 +127,7 @@
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
+#define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
@@ -141,7 +142,9 @@
 #define MICROPY_SSL_MBEDTLS                 (1)
 #define MICROPY_PY_USSL_FINALISER           (1)
 #define MICROPY_PY_WEBSOCKET                (1)
+#define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
+#define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -220,11 +223,18 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MICROPY_BEGIN_ATOMIC_SECTION() portENTER_CRITICAL_NESTED()
 #define MICROPY_END_ATOMIC_SECTION(state) portEXIT_CRITICAL_NESTED(state)
 
+#if MICROPY_PY_USOCKET_EVENTS
+#define MICROPY_PY_USOCKET_EVENTS_HANDLER extern void usocket_events_handler(void); usocket_events_handler();
+#else
+#define MICROPY_PY_USOCKET_EVENTS_HANDLER
+#endif
+
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        MICROPY_PY_USOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
         MP_THREAD_GIL_ENTER(); \
     } while (0);
@@ -233,6 +243,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        MICROPY_PY_USOCKET_EVENTS_HANDLER \
         asm("waiti 0"); \
     } while (0);
 #endif

@@ -30,8 +30,11 @@
 #include "py/obj.h"
 #include "py/objint.h"
 #include "extmod/machine_mem.h"
-#include "genhdr/modstm_mpz.h"
 #include "portmodules.h"
+
+#if MICROPY_PY_STM
+
+#include "genhdr/modstm_mpz.h"
 
 STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_stm) },
@@ -49,3 +52,5 @@ const mp_obj_module_t stm_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&stm_module_globals,
 };
+
+#endif // MICROPY_PY_STM

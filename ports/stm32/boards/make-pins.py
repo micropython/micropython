@@ -16,6 +16,7 @@ SUPPORTED_FN = {
     'UART'  : ['RX', 'TX', 'CTS', 'RTS'],
     'SPI'   : ['NSS', 'SCK', 'MISO', 'MOSI'],
     'SDMMC' : ['CK', 'CMD', 'D0', 'D1', 'D2', 'D3'],
+    'CAN'   : ['TX', 'RX'],
 }
 
 CONDITIONAL_VAR = {
@@ -25,6 +26,7 @@ CONDITIONAL_VAR = {
     'UART'  : 'MICROPY_HW_UART{num}_TX',
     'USART' : 'MICROPY_HW_UART{num}_TX',
     'SDMMC' : 'MICROPY_HW_SDMMC{num}_CK',
+    'CAN'   : 'MICROPY_HW_CAN{num}_TX',
 }
 
 def parse_port_pin(name_str):

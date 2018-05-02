@@ -32,8 +32,10 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "lib/utils/interrupt_char.h"
 #include "uart.h"
 #include "irq.h"
+#include "pendsv.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -79,6 +81,7 @@ struct _pyb_uart_obj_t {
     IRQn_Type irqn;
     pyb_uart_t uart_id : 8;
     bool is_enabled : 1;
+    bool attached_to_repl;              // whether the UART is attached to REPL
     byte char_width;                    // 0 for 7,8 bit chars, 1 for 9 bit chars
     uint16_t char_mask;                 // 0x7f for 7 bit, 0xff for 8 bit, 0x1ff for 9 bit
     uint16_t timeout;                   // timeout waiting for first char
@@ -318,8 +321,13 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
     HAL_UART_Init(&uart_obj->uart);
 
     uart_obj->is_enabled = true;
+    uart_obj->attached_to_repl = false;
 
     return true;
+}
+
+void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
+    self->attached_to_repl = attached;
 }
 
 /* obsolete and unused
@@ -506,6 +514,11 @@ void uart_irq_handler(mp_uint_t uart_id) {
                 int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
                 #endif
                 data &= self->char_mask;
+                // Handle interrupt coming in on a UART REPL
+                if (self->attached_to_repl && data == mp_interrupt_char) {
+                    pendsv_kbd_intr();
+                    return;
+                }
                 if (self->char_width == CHAR_WIDTH_9BIT) {
                     ((uint16_t*)self->read_buf)[self->read_buf_head] = data;
                 } else {
@@ -678,7 +691,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         self->read_buf_len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
         self->read_buf = m_new(byte, self->read_buf_len << self->char_width);
         __HAL_UART_ENABLE_IT(&self->uart, UART_IT_RXNE);
-        HAL_NVIC_SetPriority(self->irqn, IRQ_PRI_UART, IRQ_SUBPRI_UART);
+        NVIC_SetPriority(IRQn_NONNEG(self->irqn), IRQ_PRI_UART);
         HAL_NVIC_EnableIRQ(self->irqn);
     }
 

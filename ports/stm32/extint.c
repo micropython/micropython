@@ -214,7 +214,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         // Calling HAL_GPIO_Init does an implicit extint_enable
 
         /* Enable and set NVIC Interrupt to the lowest priority */
-        HAL_NVIC_SetPriority(nvic_irq_channel[v_line], IRQ_PRI_EXTINT, IRQ_SUBPRI_EXTINT);
+        NVIC_SetPriority(IRQn_NONNEG(nvic_irq_channel[v_line]), IRQ_PRI_EXTINT);
         HAL_NVIC_EnableIRQ(nvic_irq_channel[v_line]);
     }
     return v_line;
@@ -270,7 +270,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         }
 
         // Configure the NVIC
-        HAL_NVIC_SetPriority(nvic_irq_channel[line], IRQ_PRI_EXTINT, IRQ_SUBPRI_EXTINT);
+        NVIC_SetPriority(IRQn_NONNEG(nvic_irq_channel[line]), IRQ_PRI_EXTINT);
         HAL_NVIC_EnableIRQ(nvic_irq_channel[line]);
 
         // Enable the interrupt

@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_ASMTHUMB_H
 #define MICROPY_INCLUDED_PY_ASMTHUMB_H
 
+#include <assert.h>
 #include "py/misc.h"
 #include "py/asmbase.h"
 

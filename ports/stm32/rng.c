@@ -33,6 +33,11 @@
 uint32_t rng_get(void) {
     // Enable the RNG peripheral if it's not already enabled
     if (!(RNG->CR & RNG_CR_RNGEN)) {
+        #if defined(STM32H7)
+        // Set RNG Clock source
+        __HAL_RCC_PLLCLKOUT_ENABLE(RCC_PLL1_DIVQ);
+        __HAL_RCC_RNG_CONFIG(RCC_RNGCLKSOURCE_PLL);
+        #endif
         __HAL_RCC_RNG_CLK_ENABLE();
         RNG->CR |= RNG_CR_RNGEN;
     }

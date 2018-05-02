@@ -10,4 +10,4 @@ except Exception as e:
     # CPython throws ValueError, but MicroPython has consistent stream
     # interface, so BytesIO raises the same error as a real file, which
     # is OSError(EINVAL).
-    print(repr(e))
+    print(type(e), e.args[0] > 0)

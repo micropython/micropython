@@ -205,7 +205,7 @@ static void flash_bdev_irq_handler(void) {
     // This code uses interrupts to erase the flash
     /*
     if (flash_erase_state == 0) {
-        flash_erase_it(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        flash_erase_it(flash_cache_sector_start, flash_cache_sector_size / 4);
         flash_erase_state = 1;
         return;
     }
@@ -223,7 +223,7 @@ static void flash_bdev_irq_handler(void) {
 
     // This code erases the flash directly, waiting for it to finish
     if (!(flash_flags & FLASH_FLAG_ERASED)) {
-        flash_erase(flash_cache_sector_start, (const uint32_t*)CACHE_MEM_START_ADDR, flash_cache_sector_size / 4);
+        flash_erase(flash_cache_sector_start, flash_cache_sector_size / 4);
         flash_flags |= FLASH_FLAG_ERASED;
         return;
     }

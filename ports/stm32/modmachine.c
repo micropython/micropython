@@ -377,7 +377,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // even if we don't use the PLL for the system clock, we still need it for USB, RNG and SDIO
         RCC_OscInitTypeDef RCC_OscInitStruct;
         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+        RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
         RCC_OscInitStruct.PLL.PLLM = m;
@@ -500,7 +500,7 @@ STATIC mp_obj_t machine_sleep(void) {
     // reconfigure the system clock after waking up
 
     // enable HSE
-    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY)) {
     }
 
