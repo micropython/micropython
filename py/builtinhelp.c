@@ -100,7 +100,7 @@ STATIC void mp_help_print_modules(void) {
     // print the list of modules in a column-first order
     #define NUM_COLUMNS (4)
     #define COLUMN_WIDTH (18)
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);
     unsigned int num_rows = (len + NUM_COLUMNS - 1) / NUM_COLUMNS;
