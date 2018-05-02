@@ -248,21 +248,9 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
     }
 
     if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
-      // Channels 0-16 correspond to real pins. Configure the GPIO pin in
-      // ADC mode.
-      const pin_obj_t *pin = pin_adc1[adc_obj->channel];
-      mp_hal_gpio_clock_enable(pin->gpio);
-      GPIO_InitTypeDef GPIO_InitStructure;
-      GPIO_InitStructure.Pin = pin->pin_mask;
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
-      GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-#elif defined(STM32L4)
-      GPIO_InitStructure.Mode = GPIO_MODE_ANALOG_ADC_CONTROL;
-#else
-    #error Unsupported processor
-#endif
-      GPIO_InitStructure.Pull = GPIO_NOPULL;
-      HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+        // Channels 0-16 correspond to real pins. Configure the GPIO pin in ADC mode.
+        const pin_obj_t *pin = pin_adc1[adc_obj->channel];
+        mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
     }
 
     adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
@@ -637,12 +625,7 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
             // ADC mode.
             const pin_obj_t *pin = pin_adc1[channel];
             if (pin) {
-                mp_hal_gpio_clock_enable(pin->gpio);
-                GPIO_InitTypeDef GPIO_InitStructure;
-                GPIO_InitStructure.Pin = pin->pin_mask;
-                GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-                GPIO_InitStructure.Pull = GPIO_NOPULL;
-                HAL_GPIO_Init(pin->gpio, &GPIO_InitStructure);
+                mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
             }
         }
     }
