@@ -64,6 +64,8 @@ uint8_t audiosample_channel_count(mp_obj_t sample_obj);
 void audio_dma_init(audio_dma_t* dma);
 void audio_dma_reset(void);
 
+uint8_t find_free_audio_dma_channel(void);
+
 // This sets everything up but doesn't start the timer.
 // Sample is the python object for the sample to play.
 // loop is true if we should loop the sample.

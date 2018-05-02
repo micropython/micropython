@@ -267,7 +267,6 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         turn_on_event_system();
         dma->event_channel = find_sync_event_channel();
         init_event_channel_interrupt(dma->event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
-        find_sync_event_channel();
 
         // We keep the audio_dma_t for internal use and the sample as a root pointer because it
         // contains the audiodma structure.
@@ -275,11 +274,16 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         MP_STATE_PORT(playing_audio)[dma->dma_channel] = dma->sample;
     }
 
-    dma->beat_size = 1;
-    dma->bytes_per_sample = 1;
+
     if (audiosample_bits_per_sample(sample) == 16) {
         dma->beat_size = 2;
         dma->bytes_per_sample = 2;
+    } else {
+        dma->beat_size = 1;
+        dma->bytes_per_sample = 1;
+        if (single_channel) {
+            output_register_address += 1;
+        }
     }
     // Transfer both channels at once.
     if (!single_channel && audiosample_channel_count(sample) == 2) {

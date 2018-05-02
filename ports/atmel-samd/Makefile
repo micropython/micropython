@@ -299,13 +299,13 @@ SRC_COMMON_HAL = \
 	usb_hid/Device.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-#	audiobusio/PDMIn.c \
-	touchio/__init__.c \
+#	touchio/__init__.c \
 	touchio/TouchIn.c \
 
 ifeq ($(INTERNAL_LIBM),1)
 SRC_LIBM = $(addprefix lib/,\
 	libm/math.c \
+	libm/roundf.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
@@ -363,16 +363,14 @@ SRC_SHARED_MODULE = \
 	uheap/__init__.c \
 	ustack/__init__.c
 
-ifeq ($(CHIP_FAMILY),samd21)
-SRC_COMMON_HAL += \
-	audiobusio/__init__.c \
-	audiobusio/I2SOut.c
-endif
+# The smallest SAMD51 packages don't have I2S. Everything else does.
 ifneq ($(CHIP_VARIANT),SAMD51G18A)
 	ifneq ($(CHIP_VARIANT),SAMD51G19A)
 		SRC_COMMON_HAL += \
 			audiobusio/__init__.c \
-			audiobusio/I2SOut.c
+			audiobusio/I2SOut.c \
+			audiobusio/PDMIn.c
+		SRC_C += i2s.c
 	endif
 endif
 

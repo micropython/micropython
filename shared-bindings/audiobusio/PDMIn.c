@@ -42,18 +42,18 @@
 //|
 //| PDMIn can be used to record an input audio signal on a given set of pins.
 //|
-//| .. class:: PDMIn(clock_pin, data_pin, \*, frequency=16000, bit_depth=8, mono=True, oversample=64, startup_delay=0.11)
+//| .. class:: PDMIn(clock_pin, data_pin, \*, sample_rate=16000, bit_depth=8, mono=True, oversample=64, startup_delay=0.11)
 //|
 //|   Create a PDMIn object associated with the given pins. This allows you to
 //|   record audio signals from the given pins. Individual ports may put further
-//|   restrictions on the recording parameters. The overall frequency is
-//|   determined by `frequency` x ``oversample``, and the total must be 1MHz or
-//|   higher, so `frequency` must be a minimum of 16000.
+//|   restrictions on the recording parameters. The overall sample rate is
+//|   determined by `sample_rate` x ``oversample``, and the total must be 1MHz or
+//|   higher, so `sample_rate` must be a minimum of 16000.
 //|
 //|   :param ~microcontroller.Pin clock_pin: The pin to output the clock to
 //|   :param ~microcontroller.Pin data_pin: The pin to read the data from
-//|   :param int frequency: Target frequency of the resulting samples. Check `frequency` for actual value.
-//|     Minimum frequency is about 16000 Hz.
+//|   :param int sample_rate: Target sample_rate of the resulting samples. Check `sample_rate` for actual value.
+//|     Minimum sample_rate is about 16000 Hz.
 //|   :param int bit_depth: Final number of bits per sample. Must be divisible by 8
 //|   :param bool mono: True when capturing a single channel of audio, captures two channels otherwise
 //|   :param int oversample: Number of single bit samples to decimate into a final sample. Must be divisible by 8
@@ -69,7 +69,7 @@
 //|
 //|     # Prep a buffer to record into
 //|     b = bytearray(200)
-//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, frequency=16000) as mic:
+//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000) as mic:
 //|         mic.record(b, len(b))
 //|
 //|   Record 16-bit unsigned samples to buffer::
@@ -83,15 +83,15 @@
 //|     b = array.array("H")
 //|     for i in range(200):
 //|         b.append(0)
-//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, frequency=16000, bit_depth=16) as mic:
+//|     with audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, sample_rate=16000, bit_depth=16) as mic:
 //|         mic.record(b, len(b))
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    enum { ARG_frequency, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
+    enum { ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_frequency,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16000} },
+        { MP_QSTR_sample_rate,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16000} },
         { MP_QSTR_bit_depth,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_mono,          MP_ARG_KW_ONLY | MP_ARG_BOOL,{.u_bool = true} },
         { MP_QSTR_oversample,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
@@ -117,7 +117,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     audiobusio_pdmin_obj_t *self = m_new_obj(audiobusio_pdmin_obj_t);
     self->base.type = &audiobusio_pdmin_type;
 
-    uint32_t frequency = args[ARG_frequency].u_int;
+    uint32_t sample_rate = args[ARG_sample_rate].u_int;
     uint8_t bit_depth = args[ARG_bit_depth].u_int;
     if (bit_depth % 8 != 0) {
         mp_raise_ValueError("Bit depth must be multiple of 8.");
@@ -135,7 +135,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_raise_ValueError("Microphone startup delay must be in range 0.0 to 1.0");
     }
 
-    common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, frequency,
+    common_hal_audiobusio_pdmin_construct(self, clock_pin, data_pin, sample_rate,
                                           bit_depth, mono, oversample);
 
     // Wait for the microphone to start up. Some start in 10 msecs; some take as much as 100 msecs.
@@ -215,21 +215,21 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
 }
 MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_record);
 
-//|   .. attribute:: frequency
+//|   .. attribute:: sample_rate
 //|
-//|     The actual frequency of the recording. This may not match the constructed
-//|     frequency due to internal clock limitations.
+//|     The actual sample_rate of the recording. This may not match the constructed
+//|     sample rate due to internal clock limitations.
 //|
-STATIC mp_obj_t audiobusio_pdmin_obj_get_frequency(mp_obj_t self_in) {
+STATIC mp_obj_t audiobusio_pdmin_obj_get_sample_rate(mp_obj_t self_in) {
     audiobusio_pdmin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_audiobusio_pdmin_deinited(self));
-    return MP_OBJ_NEW_SMALL_INT(common_hal_audiobusio_pdmin_get_frequency(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_audiobusio_pdmin_get_sample_rate(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_get_frequency_obj, audiobusio_pdmin_obj_get_frequency);
+MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_pdmin_get_sample_rate_obj, audiobusio_pdmin_obj_get_sample_rate);
 
-const mp_obj_property_t audiobusio_pdmin_frequency_obj = {
+const mp_obj_property_t audiobusio_pdmin_sample_rate_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiobusio_pdmin_get_frequency_obj,
+    .proxy = {(mp_obj_t)&audiobusio_pdmin_get_sample_rate_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
@@ -240,7 +240,7 @@ STATIC const mp_rom_map_elem_t audiobusio_pdmin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiobusio_pdmin___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_record), MP_ROM_PTR(&audiobusio_pdmin_record_obj) },
-    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&audiobusio_pdmin_frequency_obj) }
+    { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audiobusio_pdmin_sample_rate_obj) }
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_pdmin_locals_dict, audiobusio_pdmin_locals_dict_table);
 

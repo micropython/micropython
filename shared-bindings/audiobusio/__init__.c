@@ -62,7 +62,7 @@
 STATIC const mp_rom_map_elem_t audiobusio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiobusio) },
     { MP_ROM_QSTR(MP_QSTR_I2SOut), MP_ROM_PTR(&audiobusio_i2sout_type) },
-    //{ MP_ROM_QSTR(MP_QSTR_PDMIn), MP_ROM_PTR(&audiobusio_pdmin_type) },
+    { MP_ROM_QSTR(MP_QSTR_PDMIn), MP_ROM_PTR(&audiobusio_pdmin_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(audiobusio_module_globals, audiobusio_module_globals_table);
