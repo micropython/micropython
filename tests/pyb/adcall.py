@@ -5,19 +5,19 @@ pins = [Pin.cpu.A0, Pin.cpu.A1, Pin.cpu.A2, Pin.cpu.A3]
 # set pins to IN mode, init ADCAll, then check pins are ANALOG
 for p in pins:
     p.init(p.IN)
-adc = pyb.ADCAll(12)
+adc = ADCAll(12)
 for p in pins:
     print(p)
 
 # set pins to IN mode, init ADCAll with mask, then check some pins are ANALOG
 for p in pins:
     p.init(p.IN)
-adc = pyb.ADCAll(12, 0x70003)
+adc = ADCAll(12, 0x70003)
 for p in pins:
     print(p)
 
 # init all pins to ANALOG
-adc = pyb.ADCAll(12)
+adc = ADCAll(12)
 print(adc)
 
 # read all channels
