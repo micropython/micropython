@@ -26,6 +26,10 @@
 #ifndef MICROPY_INCLUDED_STM32_IRQ_H
 #define MICROPY_INCLUDED_STM32_IRQ_H
 
+// Use this macro together with NVIC_SetPriority to indicate that an IRQn is non-negative,
+// which helps the compiler optimise the resulting inline function.
+#define IRQn_NONNEG(pri) ((pri) & 0x7f)
+
 // these states correspond to values from query_irq, enable_irq and disable_irq
 #define IRQ_STATE_DISABLED (0x00000001)
 #define IRQ_STATE_ENABLED  (0x00000000)
@@ -98,55 +102,37 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 // The following interrupts are arranged from highest priority to lowest
 // priority to make it a bit easier to figure out.
 
-//                           Priority   Sub-Priority
-//                           --------   ------------
-//#def  IRQ_PRI_SYSTICK         0
-//#def  IRQ_SUBPRI_SYSTICK                  0
+//#def  IRQ_PRI_SYSTICK         NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0)
 
 // The UARTs have no FIFOs, so if they don't get serviced quickly then characters
 // get dropped. The handling for each character only consumes about 0.5 usec
-#define IRQ_PRI_UART            1
-#define IRQ_SUBPRI_UART                     0
+#define IRQ_PRI_UART            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0)
 
 // Flash IRQ must be higher priority than interrupts of all those components
 // that rely on the flash storage.
-#define IRQ_PRI_FLASH           2
-#define IRQ_SUBPRI_FLASH                    0
+#define IRQ_PRI_FLASH           NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 2, 0)
 
 // SDIO must be higher priority than DMA for SDIO DMA transfers to work.
-#define IRQ_PRI_SDIO            4
-#define IRQ_SUBPRI_SDIO                     0
+#define IRQ_PRI_SDIO            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 4, 0)
 
 // DMA should be higher priority than USB, since USB Mass Storage calls
 // into the sdcard driver which waits for the DMA to complete.
-#define IRQ_PRI_DMA             5
-#define IRQ_SUBPRI_DMA                      0
+#define IRQ_PRI_DMA             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 5, 0)
 
-#define IRQ_PRI_OTG_FS          6
-#define IRQ_SUBPRI_OTG_FS                   0
+#define IRQ_PRI_OTG_FS          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
+#define IRQ_PRI_OTG_HS          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
+#define IRQ_PRI_TIM5            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 
-#define IRQ_PRI_OTG_HS          6
-#define IRQ_SUBPRI_OTG_HS                   0
-
-#define IRQ_PRI_TIM5            6
-#define IRQ_SUBPRI_TIM5                     0
-
-#define IRQ_PRI_CAN             7
-#define IRQ_SUBPRI_CAN                      0
+#define IRQ_PRI_CAN             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
 
 // Interrupt priority for non-special timers.
-#define IRQ_PRI_TIMX            13
-#define IRQ_SUBPRI_TIMX                     0
+#define IRQ_PRI_TIMX            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 13, 0)
 
-#define IRQ_PRI_EXTINT          14
-#define IRQ_SUBPRI_EXTINT                   0
+#define IRQ_PRI_EXTINT          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 14, 0)
 
 // PENDSV should be at the lowst priority so that other interrupts complete
 // before exception is raised.
-#define IRQ_PRI_PENDSV          15
-#define IRQ_SUBPRI_PENDSV                   0
-
-#define IRQ_PRI_RTC_WKUP        15
-#define IRQ_SUBPRI_RTC_WKUP                 0
+#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
+#define IRQ_PRI_RTC_WKUP        NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
 
 #endif // MICROPY_INCLUDED_STM32_IRQ_H
