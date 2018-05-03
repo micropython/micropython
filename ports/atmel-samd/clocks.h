@@ -31,6 +31,7 @@
 #include <stdint.h>
 
 #include "include/sam.h"
+#include "mpconfigboard.h" // for BOARD_HAS_CRYSTAL
 
 #ifdef SAMD51
 #define CLOCK_48MHZ GCLK_GENCTRL_SRC_DFLL_Val
@@ -52,6 +53,14 @@ void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral);
 
 void enable_clock_generator(uint8_t gclk, uint32_t source, uint16_t divisor);
 void disable_clock_generator(uint8_t gclk);
+
+static inline bool board_has_crystal(void) {
+#ifdef BOARD_HAS_CRYSTAL
+    return BOARD_HAS_CRYSTAL == 1;
+#else
+    return false;
+#endif
+}
 
 void clock_init(void);
 

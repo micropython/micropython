@@ -47,3 +47,5 @@
                                GD25Q16C
 
 #include "external_flash/external_flash.h"
+
+#define BOARD_HAS_CRYSTAL 1

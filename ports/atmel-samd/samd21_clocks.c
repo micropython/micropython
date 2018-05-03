@@ -94,6 +94,13 @@ static void init_clock_source_osc32k(void) {
     while (!SYSCTRL->PCLKSR.bit.OSC32KRDY) {}
 }
 
+static void init_clock_source_xosc32k(void) {
+    SYSCTRL->XOSC32K.reg = SYSCTRL_XOSC32K_EN32K |
+                           SYSCTRL_XOSC32K_XTALEN |
+                           SYSCTRL_XOSC32K_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.XOSC32KRDY) {}
+}
+
 static void init_clock_source_dfll48m(void) {
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
@@ -116,9 +123,15 @@ static void init_clock_source_dfll48m(void) {
 void clock_init(void)
 {
     init_clock_source_osc8m();
-    init_clock_source_osc32k();
+    if (board_has_crystal())
+        init_clock_source_xosc32k();
+    else
+        init_clock_source_osc32k();
     enable_clock_generator(0, GCLK_GENCTRL_SRC_DFLL48M_Val, 1);
     enable_clock_generator(1, GCLK_GENCTRL_SRC_DFLL48M_Val, 150);
     init_clock_source_dfll48m();
-    enable_clock_generator(2, GCLK_GENCTRL_SRC_OSC32K_Val, 32);
+    if (board_has_crystal())
+        enable_clock_generator(2, GCLK_GENCTRL_SRC_XOSC32K_Val, 32);
+    else
+        enable_clock_generator(2, GCLK_GENCTRL_SRC_OSC32K_Val, 32);
 }
