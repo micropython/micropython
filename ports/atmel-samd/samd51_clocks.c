@@ -24,33 +24,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H
+#include "clocks.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "hpl_gclk_config.h"
 
-#include "include/sam.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
-#ifdef SAMD51
-#define CLOCK_48MHZ GCLK_GENCTRL_SRC_DFLL_Val
-#endif
-#ifdef SAMD21
-#define CLOCK_48MHZ GCLK_GENCTRL_SRC_DFLL48M_Val
-#endif
+#include "py/runtime.h"
 
-#define CORE_GCLK 0
+bool gclk_enabled(uint8_t gclk) {
+    return GCLK->GENCTRL[gclk].bit.GENEN;
+}
 
-uint8_t find_free_gclk(uint16_t divisor);
+void disable_gclk(uint8_t gclk) {
+    while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+    GCLK->GENCTRL[gclk].bit.GENEN = false;
+    while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+}
 
-bool gclk_enabled(uint8_t gclk);
-void disable_gclk(uint8_t gclk);
-void reset_gclks(void);
+void connect_gclk_to_peripheral(uint8_t gclk, uint8_t peripheral) {
+    GCLK->PCHCTRL[peripheral].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(gclk);
+    while(GCLK->SYNCBUSY.reg != 0) {}
+}
 
-void connect_gclk_to_peripheral(uint8_t gclk, uint8_t peripheral);
-void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral);
+void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral) {
+    GCLK->PCHCTRL[peripheral].reg = 0;
+}
 
-void enable_clock_generator(uint8_t gclk, uint8_t source, uint16_t divisor);
-void disable_clock_generator(uint8_t gclk);
+void enable_clock_generator(uint8_t gclk, uint8_t source, uint16_t divisor) {
+    GCLK->GENCTRL[gclk].reg = GCLK_GENCTRL_SRC(source) | GCLK_GENCTRL_DIV(divisor) | GCLK_GENCTRL_GENEN;
+    while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+}
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H
+void disable_clock_generator(uint8_t gclk) {
+    GCLK->GENCTRL[gclk].reg = 0;
+    while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+}

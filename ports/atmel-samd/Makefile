@@ -225,6 +225,7 @@ SRC_C = \
 	audio_dma.c \
 	background.c \
 	clocks.c \
+	$(CHIP_FAMILY)_clocks.c \
 	events.c \
 	fatfs_port.c \
 	flash_api.c \
