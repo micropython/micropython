@@ -48,6 +48,8 @@ LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -l
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 
+-include local.mk
+
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g
