@@ -57,13 +57,68 @@ void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral) {
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID(peripheral) | GCLK_CLKCTRL_GEN(gclk);
 }
 
-void enable_clock_generator(uint8_t gclk, uint8_t source, uint16_t divisor) {
+void enable_clock_generator(uint8_t gclk, uint32_t source, uint16_t divisor) {
+    uint32_t divsel = 0;
+    if (gclk == 2 && divisor > 31) {
+        divsel = GCLK_GENCTRL_DIVSEL;
+        for (int i = 15; i > 4; i++) {
+            if (divisor & (1 << i)) {
+                divisor = i - 1;
+                break;
+            }
+        }
+    }
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(gclk) | GCLK_GENDIV_DIV(divisor);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(gclk) | GCLK_GENCTRL_SRC(source) | GCLK_GENCTRL_GENEN;
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(gclk) | GCLK_GENCTRL_SRC(source) | divsel | GCLK_GENCTRL_OE | GCLK_GENCTRL_GENEN;
     while (GCLK->STATUS.bit.SYNCBUSY != 0) {}
 }
 
 void disable_clock_generator(uint8_t gclk) {
     GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(gclk);
     while (GCLK->STATUS.bit.SYNCBUSY != 0) {}
+}
+
+static void init_clock_source_osc8m(void) {
+    // Preserve CALIB and FRANGE
+    SYSCTRL->OSC8M.bit.ONDEMAND = 0;
+    SYSCTRL->OSC8M.bit.PRESC = 3;
+    SYSCTRL->OSC8M.bit.ENABLE = 1;
+    while (!SYSCTRL->PCLKSR.bit.OSC8MRDY) {}
+}
+
+static void init_clock_source_osc32k(void) {
+    uint32_t calib = (*((uint32_t *)FUSES_OSC32K_CAL_ADDR) & FUSES_OSC32K_CAL_Msk) >> FUSES_OSC32K_CAL_Pos;
+    SYSCTRL->OSC32K.reg = SYSCTRL_OSC32K_CALIB(calib) |
+                          SYSCTRL_OSC32K_EN32K |
+                          SYSCTRL_OSC32K_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.OSC32KRDY) {}
+}
+
+static void init_clock_source_dfll48m(void) {
+    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
+    SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_CSTEP(1) |
+                           SYSCTRL_DFLLMUL_FSTEP(1) |
+                           SYSCTRL_DFLLMUL_MUL(48000);
+    uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk) >> FUSES_DFLL48M_COARSE_CAL_Pos;
+    if (coarse == 0x3f)
+        coarse = 0x1f;
+    SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) |
+                           SYSCTRL_DFLLVAL_FINE(512);
+    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_CCDIS |
+                            SYSCTRL_DFLLCTRL_USBCRM |
+                            SYSCTRL_DFLLCTRL_MODE |
+                            SYSCTRL_DFLLCTRL_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
+    while (GCLK->STATUS.bit.SYNCBUSY) {}
+}
+
+void clock_init(void)
+{
+    init_clock_source_osc8m();
+    init_clock_source_osc32k();
+    enable_clock_generator(0, GCLK_GENCTRL_SRC_DFLL48M_Val, 1);
+    enable_clock_generator(1, GCLK_GENCTRL_SRC_DFLL48M_Val, 150);
+    init_clock_source_dfll48m();
+    enable_clock_generator(2, GCLK_GENCTRL_SRC_OSC32K_Val, 32);
 }

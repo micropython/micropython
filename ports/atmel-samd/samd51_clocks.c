@@ -51,7 +51,7 @@ void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral) {
     GCLK->PCHCTRL[peripheral].reg = 0;
 }
 
-void enable_clock_generator(uint8_t gclk, uint8_t source, uint16_t divisor) {
+void enable_clock_generator(uint8_t gclk, uint32_t source, uint16_t divisor) {
     GCLK->GENCTRL[gclk].reg = GCLK_GENCTRL_SRC(source) | GCLK_GENCTRL_DIV(divisor) | GCLK_GENCTRL_GENEN;
     while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
 }

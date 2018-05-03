@@ -50,7 +50,9 @@ void reset_gclks(void);
 void connect_gclk_to_peripheral(uint8_t gclk, uint8_t peripheral);
 void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral);
 
-void enable_clock_generator(uint8_t gclk, uint8_t source, uint16_t divisor);
+void enable_clock_generator(uint8_t gclk, uint32_t source, uint16_t divisor);
 void disable_clock_generator(uint8_t gclk);
+
+void clock_init(void);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H
