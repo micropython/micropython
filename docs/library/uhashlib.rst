@@ -55,5 +55,5 @@ Methods
 
 .. method:: hash.hexdigest()
 
-   This method is NOT implemented. Use ``ubinascii.hexlify(hash.digest())``
+   This method is NOT implemented. Use ``binascii.hexlify(hash.digest())``
    to achieve a similar effect.
