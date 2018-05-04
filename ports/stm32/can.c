@@ -153,7 +153,7 @@ STATIC bool can_init(pyb_can_obj_t *can_obj) {
 
     __HAL_CAN_ENABLE_IT(&can_obj->can, CAN_IT_ERR | CAN_IT_BOF | CAN_IT_EPV | CAN_IT_EWG);
 
-    HAL_NVIC_SetPriority(sce_irq, IRQ_PRI_CAN, IRQ_SUBPRI_CAN);
+    NVIC_SetPriority(sce_irq, IRQ_PRI_CAN);
     HAL_NVIC_EnableIRQ(sce_irq);
 
     return true;
@@ -934,7 +934,7 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
             irq = (fifo == 0) ? CAN2_RX0_IRQn : CAN2_RX1_IRQn;
         #endif
         }
-        HAL_NVIC_SetPriority(irq, IRQ_PRI_CAN, IRQ_SUBPRI_CAN);
+        NVIC_SetPriority(irq, IRQ_PRI_CAN);
         HAL_NVIC_EnableIRQ(irq);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FMP0 : CAN_IT_FMP1);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FF0  : CAN_IT_FF1);

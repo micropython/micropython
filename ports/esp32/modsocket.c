@@ -63,6 +63,7 @@ typedef struct _socket_obj_t {
     uint8_t domain;
     uint8_t type;
     uint8_t proto;
+    bool peer_closed;
     unsigned int retries;
     #if MICROPY_PY_USOCKET_EVENTS
     mp_obj_t events_callback;
@@ -145,12 +146,8 @@ NORETURN static void exception_from_errno(int _errno) {
     mp_raise_OSError(_errno);
 }
 
-void check_for_exceptions() {
-    mp_obj_t exc = MP_STATE_VM(mp_pending_exception);
-    if (exc != MP_OBJ_NULL) {
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-        nlr_raise(exc);
-    }
+static inline void check_for_exceptions(void) {
+    mp_handle_pending();
 }
 
 static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struct addrinfo **resp) {
@@ -233,6 +230,7 @@ STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {
     sock->domain = self->domain;
     sock->type = self->type;
     sock->proto = self->proto;
+    sock->peer_closed = false;
     _socket_settimeout(sock, UINT64_MAX);
 
     // make the return value
@@ -354,23 +352,57 @@ STATIC mp_obj_t socket_setblocking(const mp_obj_t arg0, const mp_obj_t arg1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
+// XXX this can end up waiting a very long time if the content is dribbled in one character
+// at a time, as the timeout resets each time a recvfrom succeeds ... this is probably not
+// good behaviour.
+STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,
+    struct sockaddr *from, socklen_t *from_len, int *errcode) {
+    socket_obj_t *sock = MP_OBJ_TO_PTR(self_in);
+
+    // If the peer closed the connection then the lwIP socket API will only return "0" once
+    // from lwip_recvfrom_r and then block on subsequent calls.  To emulate POSIX behaviour,
+    // which continues to return "0" for each call on a closed socket, we set a flag when
+    // the peer closed the socket.
+    if (sock->peer_closed) {
+        return 0;
+    }
+
+    // XXX Would be nicer to use RTC to handle timeouts
+    for (int i = 0; i <= sock->retries; ++i) {
+        MP_THREAD_GIL_EXIT();
+        int r = lwip_recvfrom_r(sock->fd, buf, size, 0, from, from_len);
+        MP_THREAD_GIL_ENTER();
+        if (r == 0) {
+            sock->peer_closed = true;
+        }
+        if (r >= 0) {
+            return r;
+        }
+        if (errno != EWOULDBLOCK) {
+            *errcode = errno;
+            return MP_STREAM_ERROR;
+        }
+        check_for_exceptions();
+    }
+
+    *errcode = sock->retries == 0 ? MP_EWOULDBLOCK : MP_ETIMEDOUT;
+    return MP_STREAM_ERROR;
+}
+
 mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,
         struct sockaddr *from, socklen_t *from_len) {
-    socket_obj_t *sock = MP_OBJ_TO_PTR(self_in);
     size_t len = mp_obj_get_int(len_in);
     vstr_t vstr;
     vstr_init_len(&vstr, len);
 
-    // XXX Would be nicer to use RTC to handle timeouts
-    for (int i=0; i<=sock->retries; i++) {
-        MP_THREAD_GIL_EXIT();
-        int r = lwip_recvfrom_r(sock->fd, vstr.buf, len, 0, from, from_len);
-        MP_THREAD_GIL_ENTER();
-        if (r >= 0) { vstr.len = r; return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr); }
-        if (errno != EWOULDBLOCK) exception_from_errno(errno);
-        check_for_exceptions();
+    int errcode;
+    mp_uint_t ret = _socket_read_data(self_in, vstr.buf, len, from, from_len, &errcode);
+    if (ret == MP_STREAM_ERROR) {
+        exception_from_errno(errcode);
     }
-    mp_raise_OSError(MP_ETIMEDOUT);
+
+    vstr.len = ret;
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
@@ -468,25 +500,8 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-
-// XXX this can end up waiting a very long time if the content is dribbled in one character
-// at a time, as the timeout resets each time a recvfrom succeeds ... this is probably not
-// good behaviour.
-
 STATIC mp_uint_t socket_stream_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    socket_obj_t *sock = self_in;
-
-    // XXX Would be nicer to use RTC to handle timeouts
-    for (int i=0; i<=sock->retries; i++) {
-        MP_THREAD_GIL_EXIT();
-        int r = lwip_recvfrom_r(sock->fd, buf, size, 0, NULL, NULL);
-        MP_THREAD_GIL_ENTER();
-        if (r >= 0) return r;
-        if (r < 0 && errno != EWOULDBLOCK) { *errcode = errno; return MP_STREAM_ERROR; }
-        check_for_exceptions();
-    }
-    *errcode = sock->retries == 0 ? MP_EWOULDBLOCK : MP_ETIMEDOUT;
-    return MP_STREAM_ERROR;
+    return _socket_read_data(self_in, buf, size, NULL, NULL, errcode);
 }
 
 STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
@@ -548,28 +563,28 @@ STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
     return MP_STREAM_ERROR;
 }
 
-STATIC const mp_map_elem_t socket_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___del__), (mp_obj_t)&mp_stream_close_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_close), (mp_obj_t)&mp_stream_close_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_bind), (mp_obj_t)&socket_bind_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_listen), (mp_obj_t)&socket_listen_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_accept), (mp_obj_t)&socket_accept_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&socket_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_send), (mp_obj_t)&socket_send_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sendall), (mp_obj_t)&socket_sendall_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_sendto), (mp_obj_t)&socket_sendto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recv), (mp_obj_t)&socket_recv_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_recvfrom), (mp_obj_t)&socket_recvfrom_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setsockopt), (mp_obj_t)&socket_setsockopt_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_settimeout), (mp_obj_t)&socket_settimeout_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_setblocking), (mp_obj_t)&socket_setblocking_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_makefile), (mp_obj_t)&socket_makefile_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_fileno), (mp_obj_t)&socket_fileno_obj },
+STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj) },
+    { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socket_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socket_sendall_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socket_settimeout_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
+    { MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fileno), MP_ROM_PTR(&socket_fileno_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_read), (mp_obj_t)&mp_stream_read_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto), (mp_obj_t)&mp_stream_readinto_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readline), (mp_obj_t)&mp_stream_unbuffered_readline_obj},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&mp_stream_write_obj },
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 
@@ -592,6 +607,7 @@ STATIC mp_obj_t get_socket(size_t n_args, const mp_obj_t *args) {
     sock->domain = AF_INET;
     sock->type = SOCK_STREAM;
     sock->proto = 0;
+    sock->peer_closed = false;
     if (n_args > 0) {
         sock->domain = mp_obj_get_int(args[0]);
         if (n_args > 1) {
@@ -659,23 +675,23 @@ STATIC mp_obj_t esp_socket_initialize() {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_socket_initialize_obj, esp_socket_initialize);
 
-STATIC const mp_map_elem_t mp_module_socket_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usocket) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&esp_socket_initialize_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&get_socket_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_getaddrinfo), (mp_obj_t)&esp_socket_getaddrinfo_obj },
+STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_socket_initialize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&get_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&esp_socket_getaddrinfo_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET), MP_OBJ_NEW_SMALL_INT(AF_INET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AF_INET6), MP_OBJ_NEW_SMALL_INT(AF_INET6) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_STREAM), MP_OBJ_NEW_SMALL_INT(SOCK_STREAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_DGRAM), MP_OBJ_NEW_SMALL_INT(SOCK_DGRAM) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOCK_RAW), MP_OBJ_NEW_SMALL_INT(SOCK_RAW) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_TCP), MP_OBJ_NEW_SMALL_INT(IPPROTO_TCP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_UDP), MP_OBJ_NEW_SMALL_INT(IPPROTO_UDP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IPPROTO_IP), MP_OBJ_NEW_SMALL_INT(IPPROTO_IP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SOL_SOCKET), MP_OBJ_NEW_SMALL_INT(SOL_SOCKET) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SO_REUSEADDR), MP_OBJ_NEW_SMALL_INT(SO_REUSEADDR) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_OBJ_NEW_SMALL_INT(IP_ADD_MEMBERSHIP) },
+    { MP_ROM_QSTR(MP_QSTR_AF_INET), MP_ROM_INT(AF_INET) },
+    { MP_ROM_QSTR(MP_QSTR_AF_INET6), MP_ROM_INT(AF_INET6) },
+    { MP_ROM_QSTR(MP_QSTR_SOCK_STREAM), MP_ROM_INT(SOCK_STREAM) },
+    { MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(SOCK_DGRAM) },
+    { MP_ROM_QSTR(MP_QSTR_SOCK_RAW), MP_ROM_INT(SOCK_RAW) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(IPPROTO_TCP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_UDP), MP_ROM_INT(IPPROTO_UDP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(IPPROTO_IP) },
+    { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(SOL_SOCKET) },
+    { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SO_REUSEADDR) },
+    { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);

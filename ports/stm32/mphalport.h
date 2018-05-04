@@ -32,6 +32,11 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define MP_HAL_PIN_MODE_OUTPUT          (1)
 #define MP_HAL_PIN_MODE_ALT             (2)
 #define MP_HAL_PIN_MODE_ANALOG          (3)
+#if defined(GPIO_ASCR_ASC0)
+#define MP_HAL_PIN_MODE_ADC             (11)
+#else
+#define MP_HAL_PIN_MODE_ADC             (3)
+#endif
 #define MP_HAL_PIN_MODE_OPEN_DRAIN      (5)
 #define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN  (6)
 #define MP_HAL_PIN_PULL_NONE            (GPIO_NOPULL)

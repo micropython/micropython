@@ -173,11 +173,11 @@ STATIC mp_obj_t machine_timer_value(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 
-STATIC const mp_map_elem_t machine_timer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), (mp_obj_t)&machine_timer_deinit_obj },
-    { MP_ROM_QSTR(MP_QSTR_deinit), (mp_obj_t)&machine_timer_deinit_obj },
-    { MP_ROM_QSTR(MP_QSTR_init), (mp_obj_t)&machine_timer_init_obj },
-    { MP_ROM_QSTR(MP_QSTR_value), (mp_obj_t)&machine_timer_value_obj },
+STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_timer_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_ONE_SHOT), MP_ROM_INT(false) },
     { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(true) },
 };

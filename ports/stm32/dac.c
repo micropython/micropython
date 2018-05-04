@@ -152,6 +152,13 @@ typedef struct _pyb_dac_obj_t {
     uint8_t outbuf_waveform;
 } pyb_dac_obj_t;
 
+STATIC void pyb_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "DAC(%u, bits=%u)",
+        self->dac_channel == DAC_CHANNEL_1 ? 1 : 2,
+        self->bits);
+}
+
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
@@ -279,12 +286,16 @@ STATIC mp_obj_t pyb_dac_deinit(mp_obj_t self_in) {
     pyb_dac_obj_t *self = self_in;
     if (self->dac_channel == DAC_CHANNEL_1) {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN1;
-        #ifndef STM32H7
+        #if defined(STM32H7) || defined(STM32L4)
+        DAC->MCR = (DAC->MCR & ~(7 << DAC_MCR_MODE1_Pos)) | 2 << DAC_MCR_MODE1_Pos;
+        #else
         DAC_Handle.Instance->CR |= DAC_CR_BOFF1;
         #endif
     } else {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN2;
-        #ifndef STM32H7
+        #if defined(STM32H7) || defined(STM32L4)
+        DAC->MCR = (DAC->MCR & ~(7 << DAC_MCR_MODE2_Pos)) | 2 << DAC_MCR_MODE2_Pos;
+        #else
         DAC_Handle.Instance->CR |= DAC_CR_BOFF2;
         #endif
     }
@@ -525,6 +536,7 @@ STATIC MP_DEFINE_CONST_DICT(pyb_dac_locals_dict, pyb_dac_locals_dict_table);
 const mp_obj_type_t pyb_dac_type = {
     { &mp_type_type },
     .name = MP_QSTR_DAC,
+    .print = pyb_dac_print,
     .make_new = pyb_dac_make_new,
     .locals_dict = (mp_obj_dict_t*)&pyb_dac_locals_dict,
 };

@@ -1132,7 +1132,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= MP_STREAM_POLL_RD;
         }
 
-        if (flags & MP_STREAM_POLL_WR && tcp_sndbuf(socket->pcb.tcp) > 0) {
+        // Note: pcb.tcp==NULL if state<0, and in this case we can't call tcp_sndbuf
+        if (flags & MP_STREAM_POLL_WR && socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
             ret |= MP_STREAM_POLL_WR;
         }
 
@@ -1141,6 +1142,13 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             // return EOF, write - error. Without this poll will hang on a
             // socket which was closed by peer.
             ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
+        } else if (socket->state == ERR_RST) {
+            // Socket was reset by peer, a write will return an error
+            ret |= flags & (MP_STREAM_POLL_WR | MP_STREAM_POLL_HUP);
+        } else if (socket->state < 0) {
+            // Socket in some other error state, use catch-all ERR flag
+            // TODO: may need to set other return flags here
+            ret |= flags & MP_STREAM_POLL_ERR;
         }
 
     } else if (request == MP_STREAM_CLOSE) {

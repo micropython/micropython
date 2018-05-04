@@ -281,7 +281,7 @@ void led_debug(int n, int delay) {
 
 void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_led_obj_t *self = self_in;
-    mp_printf(print, "LED(%lu)", self->led_id);
+    mp_printf(print, "LED(%u)", self->led_id);
 }
 
 /// \classmethod \constructor(id)

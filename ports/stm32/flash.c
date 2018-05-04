@@ -142,7 +142,7 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
     return 0;
 }
 
-void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
+void flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     // check there is something to write
     if (num_word32 == 0) {
         return;
@@ -192,7 +192,7 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
 /*
 // erase the sector using an interrupt
-void flash_erase_it(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
+void flash_erase_it(uint32_t flash_dest, uint32_t num_word32) {
     // check there is something to write
     if (num_word32 == 0) {
         return;
