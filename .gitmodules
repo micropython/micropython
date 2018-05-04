@@ -46,3 +46,9 @@
 [submodule "ports/atmel-samd/freetouch"]
 	path = ports/atmel-samd/freetouch
 	url = https://github.com/adafruit/Adafruit_FreeTouch.git
+[submodule "frozen/Adafruit_CircuitPython_CircuitPlayground"]
+	path = frozen/Adafruit_CircuitPython_CircuitPlayground
+	url = https://github.com/adafruit/Adafruit_CircuitPython_CircuitPlayground.git
+[submodule "frozen/Adafruit_CircuitPython_HID"]
+	path = frozen/Adafruit_CircuitPython_HID
+	url = https://github.com/adafruit/Adafruit_CircuitPython_HID.git
