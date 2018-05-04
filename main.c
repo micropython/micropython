@@ -102,24 +102,24 @@ void reset_mp(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-int first_existing_file_in_list(const char ** filenames) {
+const char* first_existing_file_in_list(const char ** filenames) {
     for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
-            return i;
+            return filenames[i];
         }
     }
-    return -1;
+    return NULL;
 }
 
 bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
-    int i = first_existing_file_in_list(filenames);
-    if (i == -1) {
+    const char* filename = first_existing_file_in_list(filenames);
+    if (filename == NULL) {
         return false;
     }
-    mp_hal_stdout_tx_str(filenames[i]);
+    mp_hal_stdout_tx_str(filename);
     mp_hal_stdout_tx_str(MSG_OUTPUT_SUFFIX);
-    pyexec_file(filenames[i], exec_result);
+    pyexec_file(filename, exec_result);
     return true;
 }
 
@@ -281,7 +281,7 @@ int __attribute__((used)) main(void) {
         // Get the base filesystem.
         FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
 
-        bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != -1;
+        bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
 
         bool skip_boot_output = false;
 
