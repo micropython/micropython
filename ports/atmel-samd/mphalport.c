@@ -45,6 +45,13 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     gpio_toggle_pin_level(MICROPY_HW_LED_TX);
     #endif
 
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    if (boot_output_file != NULL) {
+        UINT bytes_written = 0;
+        f_write(boot_output_file, str, len, &bytes_written);
+    }
+    #endif
+
     usb_write(str, len);
 }
 
