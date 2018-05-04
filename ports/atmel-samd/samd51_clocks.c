@@ -60,3 +60,27 @@ void disable_clock_generator(uint8_t gclk) {
     GCLK->GENCTRL[gclk].reg = 0;
     while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
 }
+
+bool clock_get_enabled(uint8_t type, uint8_t index) {
+    return false;
+}
+
+bool clock_get_parent(uint8_t type, uint8_t index, uint8_t *p_type, uint8_t *p_index) {
+    return false;
+}
+
+uint32_t clock_get_frequency(uint8_t type, uint8_t index) {
+    return 0;
+}
+
+uint32_t clock_get_calibration(uint8_t type, uint8_t index) {
+    return 0;
+}
+
+int clock_set_calibration(uint8_t type, uint8_t index, uint32_t val) {
+    return -2;
+}
+
+STATIC const mp_rom_map_elem_t samd_clock_global_dict_table[] = {
+};
+MP_DEFINE_CONST_DICT(samd_clock_globals, samd_clock_global_dict_table);

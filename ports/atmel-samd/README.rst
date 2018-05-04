@@ -231,3 +231,9 @@ Mass storage
 
 All boards will also show up as a mass storage device. Make sure to eject it
 before resetting or disconnecting the board.
+
+Port Specific modules
+---------------------
+
+.. toctree::
+    bindings/samd/__init__

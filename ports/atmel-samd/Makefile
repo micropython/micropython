@@ -239,6 +239,8 @@ SRC_C = \
 	timers.c \
 	usb.c \
 	usb_mass_storage.c \
+	bindings/samd/__init__.c \
+	bindings/samd/Clock.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	lib/oofatfs/ff.c \
