@@ -52,7 +52,7 @@ typedef enum {
     dma_id_15,
 } dma_id_t;
 
-typedef struct _dma_descr_t {
+struct _dma_descr_t {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
     #elif defined(STM32L4)
@@ -64,7 +64,7 @@ typedef struct _dma_descr_t {
     uint32_t transfer_direction; // periph to memory or vice-versa
     dma_id_t id;
     const DMA_InitTypeDef *init;
-} dma_descr_t;
+};
 
 // Default parameters to dma_init() shared by spi and i2c; Channel and Direction
 // vary depending on the peripheral instance so they get passed separately
