@@ -79,6 +79,14 @@ __attribute__((__aligned__(TRACE_BUFFER_SIZE_BYTES))) uint32_t mtb[TRACE_BUFFER_
 
 safe_mode_t port_init(void) {
 #if defined(SAMD21)
+
+    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
+    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Disable while changing level.
+    SYSCTRL->BOD33.bit.ENABLE = 0;
+    SYSCTRL->BOD33.bit.LEVEL = 39;  // 2.77V with hysteresis off. Table 37.20 in datasheet.
+    SYSCTRL->BOD33.bit.ENABLE = 1;
+
     #ifdef ENABLE_MICRO_TRACE_BUFFER
         REG_MTB_POSITION = ((uint32_t) (mtb - REG_MTB_BASE)) & 0xFFFFFFF8;
         REG_MTB_FLOW = (((uint32_t) mtb - REG_MTB_BASE) + TRACE_BUFFER_SIZE_BYTES) & 0xFFFFFFF8;
@@ -89,6 +97,16 @@ safe_mode_t port_init(void) {
         REG_MTB_MASTER = 0x00000000 + 6;
     #endif
 #endif
+
+#if defined(SAMD51)
+    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
+    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Disable while changing level.
+    SUPC->BOD33.bit.ENABLE = 0;
+    SUPC->BOD33.bit.LEVEL = 200;  // 2.7V: 1.5V + LEVEL * 6mV.
+    SUPC->BOD33.bit.ENABLE = 1;
+#endif
+
 
 
 // On power on start or external reset, set _ezero to the canary word. If it
