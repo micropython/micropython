@@ -387,44 +387,44 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 /// Dump the values of the EXTI registers.
 STATIC mp_obj_t extint_regs(void) {
     #if defined(STM32L4)
-    printf("EXTI_IMR1   %08lx\n", EXTI->IMR1);
-    printf("EXTI_IMR2   %08lx\n", EXTI->IMR2);
-    printf("EXTI_EMR1   %08lx\n", EXTI->EMR1);
-    printf("EXTI_EMR2   %08lx\n", EXTI->EMR2);
-    printf("EXTI_RTSR1  %08lx\n", EXTI->RTSR1);
-    printf("EXTI_RTSR2  %08lx\n", EXTI->RTSR2);
-    printf("EXTI_FTSR1  %08lx\n", EXTI->FTSR1);
-    printf("EXTI_FTSR2  %08lx\n", EXTI->FTSR2);
-    printf("EXTI_SWIER1 %08lx\n", EXTI->SWIER1);
-    printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
-    printf("EXTI_PR1    %08lx\n", EXTI->PR1);
-    printf("EXTI_PR2    %08lx\n", EXTI->PR2);
+    printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI->IMR1);
+    printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI->IMR2);
+    printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI->EMR1);
+    printf("EXTI_EMR2   %08x\n", (unsigned int)EXTI->EMR2);
+    printf("EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
+    printf("EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
+    printf("EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
+    printf("EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
+    printf("EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
+    printf("EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
+    printf("EXTI_PR1    %08x\n", (unsigned int)EXTI->PR1);
+    printf("EXTI_PR2    %08x\n", (unsigned int)EXTI->PR2);
     #elif defined(STM32H7)
-    printf("EXTI_IMR1   %08lx\n", EXTI_D1->IMR1);
-    printf("EXTI_IMR2   %08lx\n", EXTI_D1->IMR2);
-    printf("EXTI_IMR3   %08lx\n", EXTI_D1->IMR3);
-    printf("EXTI_EMR1   %08lx\n", EXTI_D1->EMR1);
-    printf("EXTI_EMR2   %08lx\n", EXTI_D1->EMR2);
-    printf("EXTI_EMR3   %08lx\n", EXTI_D1->EMR3);
-    printf("EXTI_RTSR1  %08lx\n", EXTI->RTSR1);
-    printf("EXTI_RTSR2  %08lx\n", EXTI->RTSR2);
-    printf("EXTI_RTSR3  %08lx\n", EXTI->RTSR3);
-    printf("EXTI_FTSR1  %08lx\n", EXTI->FTSR1);
-    printf("EXTI_FTSR2  %08lx\n", EXTI->FTSR2);
-    printf("EXTI_FTSR3  %08lx\n", EXTI->FTSR3);
-    printf("EXTI_SWIER1 %08lx\n", EXTI->SWIER1);
-    printf("EXTI_SWIER2 %08lx\n", EXTI->SWIER2);
-    printf("EXTI_SWIER3 %08lx\n", EXTI->SWIER3);
-    printf("EXTI_PR1    %08lx\n", EXTI_D1->PR1);
-    printf("EXTI_PR2    %08lx\n", EXTI_D1->PR2);
-    printf("EXTI_PR3    %08lx\n", EXTI_D1->PR3);
+    printf("EXTI_IMR1   %08x\n", (unsigned int)EXTI_D1->IMR1);
+    printf("EXTI_IMR2   %08x\n", (unsigned int)EXTI_D1->IMR2);
+    printf("EXTI_IMR3   %08x\n", (unsigned int)EXTI_D1->IMR3);
+    printf("EXTI_EMR1   %08x\n", (unsigned int)EXTI_D1->EMR1);
+    printf("EXTI_EMR2   %08x\n", (unsigned int)EXTI_D1->EMR2);
+    printf("EXTI_EMR3   %08x\n", (unsigned int)EXTI_D1->EMR3);
+    printf("EXTI_RTSR1  %08x\n", (unsigned int)EXTI->RTSR1);
+    printf("EXTI_RTSR2  %08x\n", (unsigned int)EXTI->RTSR2);
+    printf("EXTI_RTSR3  %08x\n", (unsigned int)EXTI->RTSR3);
+    printf("EXTI_FTSR1  %08x\n", (unsigned int)EXTI->FTSR1);
+    printf("EXTI_FTSR2  %08x\n", (unsigned int)EXTI->FTSR2);
+    printf("EXTI_FTSR3  %08x\n", (unsigned int)EXTI->FTSR3);
+    printf("EXTI_SWIER1 %08x\n", (unsigned int)EXTI->SWIER1);
+    printf("EXTI_SWIER2 %08x\n", (unsigned int)EXTI->SWIER2);
+    printf("EXTI_SWIER3 %08x\n", (unsigned int)EXTI->SWIER3);
+    printf("EXTI_PR1    %08x\n", (unsigned int)EXTI_D1->PR1);
+    printf("EXTI_PR2    %08x\n", (unsigned int)EXTI_D1->PR2);
+    printf("EXTI_PR3    %08x\n", (unsigned int)EXTI_D1->PR3);
     #else
-    printf("EXTI_IMR   %08lx\n", EXTI->IMR);
-    printf("EXTI_EMR   %08lx\n", EXTI->EMR);
-    printf("EXTI_RTSR  %08lx\n", EXTI->RTSR);
-    printf("EXTI_FTSR  %08lx\n", EXTI->FTSR);
-    printf("EXTI_SWIER %08lx\n", EXTI->SWIER);
-    printf("EXTI_PR    %08lx\n", EXTI->PR);
+    printf("EXTI_IMR   %08x\n", (unsigned int)EXTI->IMR);
+    printf("EXTI_EMR   %08x\n", (unsigned int)EXTI->EMR);
+    printf("EXTI_RTSR  %08x\n", (unsigned int)EXTI->RTSR);
+    printf("EXTI_FTSR  %08x\n", (unsigned int)EXTI->FTSR);
+    printf("EXTI_SWIER %08x\n", (unsigned int)EXTI->SWIER);
+    printf("EXTI_PR    %08x\n", (unsigned int)EXTI->PR);
     #endif
     return mp_const_none;
 }
@@ -534,7 +534,7 @@ void Handle_EXTI_Irq(uint32_t line) {
                     // Uncaught exception; disable the callback so it doesn't run again.
                     *cb = mp_const_none;
                     extint_disable(line);
-                    printf("Uncaught exception in ExtInt interrupt handler line %lu\n", line);
+                    printf("Uncaught exception in ExtInt interrupt handler line %u\n", (unsigned int)line);
                     mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
                 }
                 gc_unlock();

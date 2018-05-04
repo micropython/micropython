@@ -310,7 +310,7 @@ STATIC void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     pyb_obj_adc_t *self = self_in;
     mp_print_str(print, "<ADC on ");
     mp_obj_print_helper(print, self->pin_name, PRINT_STR);
-    mp_printf(print, " channel=%lu>", self->channel);
+    mp_printf(print, " channel=%u>", self->channel);
 }
 
 /// \classmethod \constructor(pin)

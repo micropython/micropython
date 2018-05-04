@@ -140,11 +140,11 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        printf("S=%lu\nH=%lu\nP1=%lu\nP2=%lu\n",
-               HAL_RCC_GetSysClockFreq(),
-               HAL_RCC_GetHCLKFreq(),
-               HAL_RCC_GetPCLK1Freq(),
-               HAL_RCC_GetPCLK2Freq());
+        printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
+               (unsigned int)HAL_RCC_GetSysClockFreq(),
+               (unsigned int)HAL_RCC_GetHCLKFreq(),
+               (unsigned int)HAL_RCC_GetPCLK1Freq(),
+               (unsigned int)HAL_RCC_GetPCLK2Freq());
     }
 
     // to print info about memory

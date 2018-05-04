@@ -198,7 +198,7 @@ STATIC void i2c_set_baudrate(I2C_InitTypeDef *init, uint32_t baudrate) {
         }
     }
     nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                                            "Unsupported I2C baudrate: %lu", baudrate));
+                                            "Unsupported I2C baudrate: %u", baudrate));
 }
 
 uint32_t pyb_i2c_get_baudrate(I2C_HandleTypeDef *i2c) {
