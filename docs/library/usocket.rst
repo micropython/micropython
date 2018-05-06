@@ -315,7 +315,8 @@ Methods
 
 .. method:: socket.readline()
 
-   Read a line, ending in a newline character.
+   Read a line, ending in a newline character. It may return sooner if timeout
+   is reached. (This method has no configurable timeout.)
 
    Return value: the line read.
 
