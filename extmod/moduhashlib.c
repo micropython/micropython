@@ -149,7 +149,7 @@ STATIC const mp_obj_type_t sha1_type = {
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_hashlib) },
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&sha256_type) },
     #if MICROPY_PY_UHASHLIB_SHA1
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&sha1_type) },
