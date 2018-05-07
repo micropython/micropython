@@ -311,6 +311,10 @@ int __attribute__((used)) main(void) {
             filesystem_writable_by_python(true);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
 
+            // Switch the filesystem back to non-writable now instead of later,
+            // since boot.py might change it back to writable.
+            filesystem_writable_by_python(false);
+
             // Write version info to boot_out.txt.
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
             mp_hal_stdout_tx_str("\r\n");
@@ -327,7 +331,6 @@ int __attribute__((used)) main(void) {
             filesystem_flush();
             boot_output_file = NULL;
         }
-        filesystem_writable_by_python(false);
         #endif
 
         // Reset to remove any state that boot.py setup. It should only be used to
