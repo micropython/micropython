@@ -75,7 +75,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     };
     return mp_obj_new_tuple(8, tuple);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(utime_localtime_obj, 0, 1, time_localtime);
 
 /// \function mktime()
 /// This is inverse function of localtime. It's argument is a full 8-tuple
@@ -95,7 +95,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
             mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]), mp_obj_get_int(elem[3]),
             mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
+MP_DEFINE_CONST_FUN_OBJ_1(utime_mktime_obj, time_mktime);
 
 /// \function time()
 /// Returns the number of seconds, as an integer, since 1/1/2000.
@@ -103,13 +103,13 @@ STATIC mp_obj_t time_time(void) {
     // get date and time
     return mp_obj_new_int(pyb_rtc_get_us_since_2000() / 1000 / 1000);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
+MP_DEFINE_CONST_FUN_OBJ_0(utime_time_obj, time_time);
 
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
-    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&utime_localtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&utime_mktime_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
@@ -118,7 +118,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&utime_time_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
