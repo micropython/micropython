@@ -36,6 +36,14 @@
 #include "lib/axtls/crypto/crypto.h"
 #endif
 
+static void check_not_unicode(const mp_obj_t arg) {
+#if MICROPY_CPYTHON_COMPAT
+    if (MP_OBJ_IS_STR(arg)) {
+        mp_raise_TypeError("a bytes-like object is required");
+    }
+#endif
+}
+
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;
     char state[0];
@@ -70,6 +78,7 @@ STATIC mp_obj_t sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 #endif
 
 STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg) {
+    check_not_unicode(arg);
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -80,6 +89,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(hash_update_obj, hash_update);
 
 #if MICROPY_PY_UHASHLIB_SHA1
 STATIC mp_obj_t sha1_update(mp_obj_t self_in, mp_obj_t arg) {
+    check_not_unicode(arg);
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
@@ -139,7 +149,7 @@ STATIC const mp_obj_type_t sha1_type = {
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_hashlib) },
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&sha256_type) },
     #if MICROPY_PY_UHASHLIB_SHA1
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&sha1_type) },

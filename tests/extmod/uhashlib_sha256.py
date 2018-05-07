@@ -23,6 +23,13 @@ print(h.digest())
 
 print(hashlib.sha256(b"\xff" * 64).digest())
 
+sha256 = hashlib.sha256(b'hello')
+try:
+    sha256.update(u'world')
+except TypeError as e:
+    print("TypeError")
+print(sha256.digest())
+
 # TODO: running .digest() several times in row is not supported()
 #h = hashlib.sha256(b'123')
 #print(h.digest())
