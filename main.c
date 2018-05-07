@@ -311,7 +311,7 @@ int __attribute__((used)) main(void) {
             filesystem_writable_by_python(true);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
 
-            // Switch the filesystem back to non-writable now instead of later,
+            // Switch the filesystem back to non-writable by Python now instead of later,
             // since boot.py might change it back to writable.
             filesystem_writable_by_python(false);
 
