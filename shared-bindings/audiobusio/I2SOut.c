@@ -236,10 +236,10 @@ STATIC mp_obj_t audiobusio_i2sout_obj_resume(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
 
-    if (!common_hal_audiobusio_i2sout_get_paused(self)) {
-        mp_raise_RuntimeError("No paused sample");
+    if (common_hal_audiobusio_i2sout_get_paused(self)) {
+        common_hal_audiobusio_i2sout_resume(self);
     }
-    common_hal_audiobusio_i2sout_resume(self);
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_resume_obj, audiobusio_i2sout_obj_resume);
