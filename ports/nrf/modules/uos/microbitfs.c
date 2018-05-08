@@ -39,7 +39,7 @@
 #include "extmod/vfs.h"
 #include "mpconfigport.h"
 
-#if MICROPY_HW_HAS_BUILTIN_FLASH
+#if MICROPY_MBFS
 
 #define DEBUG_FILE 0
 #if DEBUG_FILE
@@ -701,4 +701,4 @@ STATIC mp_obj_t uos_mbfs_stat(mp_obj_t filename) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(uos_mbfs_stat_obj, uos_mbfs_stat);
 
-#endif // MICROPY_HW_HAS_BUILTIN_FLASH
+#endif // MICROPY_MBFS
