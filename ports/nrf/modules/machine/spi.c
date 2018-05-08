@@ -29,8 +29,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_HW_SPI
+
+#include "py/nlr.h"
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "pin.h"
@@ -41,8 +44,6 @@
 #else
 #include "nrfx_spim.h"
 #endif
-
-#if MICROPY_PY_MACHINE_HW_SPI
 
 /// \moduleref pyb
 /// \class SPI - a master-driven serial protocol
