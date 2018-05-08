@@ -906,7 +906,7 @@ void ble_drv_discover_descriptors(void) {
 
 static void sd_evt_handler(uint32_t evt_id) {
     switch (evt_id) {
-#if MICROPY_HW_HAS_BUILTIN_FLASH
+#if MICROPY_MBFS
         case NRF_EVT_FLASH_OPERATION_SUCCESS:
             flash_operation_finished(FLASH_STATE_SUCCESS);
             break;

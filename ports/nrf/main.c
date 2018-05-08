@@ -155,7 +155,7 @@ soft_reset:
 
 pin_init0();
 
-#if MICROPY_HW_HAS_BUILTIN_FLASH
+#if MICROPY_MBFS
     microbit_filesystem_init();
 #endif
 
@@ -225,7 +225,7 @@ pin_init0();
     pwm_start();
 #endif
 
-#if MICROPY_VFS || MICROPY_HW_HAS_BUILTIN_FLASH
+#if MICROPY_VFS || MICROPY_MBFS
     // run boot.py and main.py if they exist.
     if (mp_import_stat("boot.py") == MP_IMPORT_STAT_FILE) {
         pyexec_file("boot.py");
@@ -262,7 +262,7 @@ pin_init0();
 }
 
 #if !MICROPY_VFS
-#if MICROPY_HW_HAS_BUILTIN_FLASH
+#if MICROPY_MBFS
 // Use micro:bit filesystem
 mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     return uos_mbfs_new_reader(filename);

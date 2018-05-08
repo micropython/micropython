@@ -26,7 +26,7 @@
 
 #include "py/mpconfig.h"
 
-#if MICROPY_HW_HAS_BUILTIN_FLASH && BLUETOOTH_SD
+#if MICROPY_MBFS && BLUETOOTH_SD
 
 #include "drivers/flash.h"
 #include "drivers/bluetooth/ble_drv.h"
@@ -129,4 +129,4 @@ void flash_write_bytes(uint32_t dst, const uint8_t *src, uint32_t num_bytes) {
     }
 }
 
-#endif // MICROPY_HW_HAS_BUILTIN_FLASH
+#endif // MICROPY_MBFS
