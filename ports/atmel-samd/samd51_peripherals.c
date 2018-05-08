@@ -163,3 +163,15 @@ void samd_peripherals_adc_setup(struct adc_sync_descriptor *adc, Adc *instance) 
     hri_adc_write_CALIB_BIASR2R_bf(instance, biasr2r);
     hri_adc_write_CALIB_BIASCOMP_bf(instance, biascomp);
 }
+
+// Turn off cache and invalidate all data in it.
+void samd_peripherals_disable_and_clear_cache(void) {
+    CMCC->CTRL.bit.CEN = 0;
+    while (CMCC->SR.bit.CSTS) {}
+    CMCC->MAINT0.bit.INVALL = 1;
+}
+
+// Enable cache
+void samd_peripherals_enable_cache(void) {
+    CMCC->CTRL.bit.CEN = 1;
+}

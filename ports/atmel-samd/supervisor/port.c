@@ -57,6 +57,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "clocks.h"
 #include "events.h"
+#include "peripherals.h"
 #include "shared_dma.h"
 #include "tick.h"
 
@@ -105,9 +106,47 @@ safe_mode_t port_init(void) {
     SUPC->BOD33.bit.ENABLE = 0;
     SUPC->BOD33.bit.LEVEL = 200;  // 2.7V: 1.5V + LEVEL * 6mV.
     SUPC->BOD33.bit.ENABLE = 1;
+
+    // MPU (Memory Protection Unit) setup.
+    // We hoped we could make the QSPI region be non-cachable with the MPU,
+    // but the CMCC doesn't seem to pay attention to the MPU settings.
+    // Leaving this code here disabled,
+    // because it was hard enough to figure out, and maybe there's
+    // a mistake that could make it work in the future.
+#if 0
+    // Designate QSPI memory mapped region as not cachable.
+
+    // Turn off MPU in case it is on.
+    MPU->CTRL = 0;
+    // Configure region 0.
+    MPU->RNR = 0;
+    // Region base: start of QSPI mapping area.
+    // QSPI region runs from 0x04000000 up to and not including 0x05000000: 16 megabytes
+    MPU->RBAR = QSPI_AHB;
+    MPU->RASR =
+        0b011 << MPU_RASR_AP_Pos |     // full read/write access for privileged and user mode
+        0b000 << MPU_RASR_TEX_Pos |    // caching not allowed, strongly ordered
+        1 << MPU_RASR_S_Pos |          // sharable
+        0 << MPU_RASR_C_Pos |          // not cachable
+        0 << MPU_RASR_B_Pos |          // not bufferable
+        0b10111 << MPU_RASR_SIZE_Pos | // 16MB region size
+        1 << MPU_RASR_ENABLE_Pos       // enable this region
+        ;
+    // Turn off regions 1-7.
+    for (uint32_t i = 1; i < 8; i ++) {
+        MPU->RNR = i;
+        MPU->RBAR = 0;
+        MPU->RASR = 0;
+    }
+
+    // Turn on MPU. Turn on PRIVDEFENA, which defines a default memory
+    // map for all privileged access, so we don't have to set up other regions
+    // besides QSPI.
+    MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
 #endif
 
-
+    samd_peripherals_enable_cache();
+#endif
 
 // On power on start or external reset, set _ezero to the canary word. If it
 // gets killed, we boot in safe mode. _ezero is the boundary between statically
