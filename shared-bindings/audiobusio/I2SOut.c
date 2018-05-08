@@ -221,7 +221,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
     raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
 
     if (!common_hal_audiobusio_i2sout_get_playing(self)) {
-        mp_raise_RuntimeError("No sample playing cannot pause");
+        mp_raise_RuntimeError("Not playing");
     }
     common_hal_audiobusio_i2sout_pause(self);
     return mp_const_none;
