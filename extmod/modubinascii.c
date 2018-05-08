@@ -228,7 +228,7 @@ mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj, mod_binascii_b2a_base64);
 
 #if MICROPY_PY_UBINASCII_CRC32
-#include "uzlib/tinf.h"
+#include "../../lib/uzlib/src/tinf.h"
 
 mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
