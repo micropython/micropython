@@ -81,6 +81,11 @@
 #define mp_builtin_open_obj mp_vfs_open_obj
 #endif
 
+// Enable micro:bit filesystem by default.
+#ifndef MICROPY_MBFS
+#define MICROPY_MBFS (1)
+#endif
+
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
