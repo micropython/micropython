@@ -225,6 +225,7 @@ SRC_C = \
 	audio_dma.c \
 	background.c \
 	clocks.c \
+	$(CHIP_FAMILY)_clocks.c \
 	events.c \
 	fatfs_port.c \
 	flash_api.c \
@@ -238,6 +239,8 @@ SRC_C = \
 	timers.c \
 	usb.c \
 	usb_mass_storage.c \
+	bindings/samd/__init__.c \
+	bindings/samd/Clock.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	lib/oofatfs/ff.c \
