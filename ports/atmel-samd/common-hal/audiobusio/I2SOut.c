@@ -324,6 +324,26 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     self->playing = true;
 }
 
+void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t* self) {
+    audio_dma_pause(&self->dma);
+}
+
+void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
+    // Clear any overrun/underrun errors
+    #ifdef SAMD21
+    I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 << self->serializer;
+    #endif
+    #ifdef SAMD51
+    I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 | I2S_INTFLAG_TXUR1;
+    #endif
+
+    audio_dma_resume(&self->dma);
+}
+
+bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
+    return audio_dma_get_paused(&self->dma);
+}
+
 void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     audio_dma_stop(&self->dma);
 

@@ -128,6 +128,37 @@ void dma_disable_channel(uint8_t channel_number) {
     #endif
 }
 
+void dma_suspend_channel(uint8_t channel_number) {
+    #ifdef SAMD21
+    common_hal_mcu_disable_interrupts();
+    /** Select the DMA channel and clear software trigger */
+    DMAC->CHID.reg = DMAC_CHID_ID(channel_number);
+    DMAC->CHCTRLB.bit.CMD = DMAC_CHCTRLB_CMD_SUSPEND_Val;
+    common_hal_mcu_enable_interrupts();
+    #endif
+
+    #ifdef SAMD51
+    DmacChannel* channel = &DMAC->Channel[channel_number];
+    channel->CHCTRLB.reg = DMAC_CHCTRLB_CMD_SUSPEND;
+    #endif
+}
+
+void dma_resume_channel(uint8_t channel_number) {
+    #ifdef SAMD21
+    common_hal_mcu_disable_interrupts();
+    /** Select the DMA channel and clear software trigger */
+    DMAC->CHID.reg = DMAC_CHID_ID(channel_number);
+    DMAC->CHCTRLB.bit.CMD = DMAC_CHCTRLB_CMD_RESUME_Val;
+    DMAC->CHINTFLAG.reg = DMAC_CHINTFLAG_SUSP;
+    common_hal_mcu_enable_interrupts();
+    #endif
+
+    #ifdef SAMD51
+    DmacChannel* channel = &DMAC->Channel[channel_number];
+    channel->CHCTRLB.reg = DMAC_CHCTRLB_CMD_RESUME;
+    #endif
+}
+
 bool dma_channel_enabled(uint8_t channel_number) {
     #ifdef SAMD21
     common_hal_mcu_disable_interrupts();

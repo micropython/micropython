@@ -181,7 +181,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(audioio_audioout_play_obj, 1, audioio_audioout_obj_pl
 
 //|   .. method:: stop()
 //|
-//|     Stops playback.
+//|     Stops playback and resets to the start of the sample.
 //|
 STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -193,7 +193,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 
 //|   .. attribute:: playing
 //|
-//|     True when an audio sample is being output. (read-only)
+//|     True when an audio sample is being output even if `paused`. (read-only)
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
     audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -209,6 +209,56 @@ const mp_obj_property_t audioio_audioout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. method:: pause()
+//|
+//|     Stops playback temporarily while remembering the position. Use `resume` to resume playback.
+//|
+STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
+    audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
+
+    if (!common_hal_audioio_audioout_get_playing(self)) {
+        mp_raise_RuntimeError("No sample playing cannot pause");
+    }
+    common_hal_audioio_audioout_pause(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_pause_obj, audioio_audioout_obj_pause);
+
+//|   .. method:: resume()
+//|
+//|     Resumes sample playback after :py:func:`pause`.
+//|
+STATIC mp_obj_t audioio_audioout_obj_resume(mp_obj_t self_in) {
+    audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
+
+    if (!common_hal_audioio_audioout_get_paused(self)) {
+        mp_raise_RuntimeError("No paused sample");
+    }
+    common_hal_audioio_audioout_resume(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_resume_obj, audioio_audioout_obj_resume);
+
+//|   .. attribute:: paused
+//|
+//|     True when playback is paused. (read-only)
+//|
+STATIC mp_obj_t audioio_audioout_obj_get_paused(mp_obj_t self_in) {
+    audioio_audioout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audioio_audioout_deinited(self));
+    return mp_obj_new_bool(common_hal_audioio_audioout_get_paused(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_get_paused_obj, audioio_audioout_obj_get_paused);
+
+const mp_obj_property_t audioio_audioout_paused_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audioio_audioout_get_paused_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audioio_audioout_deinit_obj) },
@@ -216,9 +266,12 @@ STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audioio_audioout___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audioio_audioout_play_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&audioio_audioout_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&audioio_audioout_pause_obj) },
+    { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&audioio_audioout_resume_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audioio_audioout_playing_obj) },
+    { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&audioio_audioout_paused_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_audioout_locals_dict, audioio_audioout_locals_dict_table);
 

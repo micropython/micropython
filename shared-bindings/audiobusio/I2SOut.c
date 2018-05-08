@@ -212,6 +212,56 @@ const mp_obj_property_t audiobusio_i2sout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. method:: pause()
+//|
+//|     Stops playback temporarily while remembering the position. Use `resume` to resume playback.
+//|
+STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
+    audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+
+    if (!common_hal_audiobusio_i2sout_get_playing(self)) {
+        mp_raise_RuntimeError("No sample playing cannot pause");
+    }
+    common_hal_audiobusio_i2sout_pause(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_pause_obj, audiobusio_i2sout_obj_pause);
+
+//|   .. method:: resume()
+//|
+//|     Resumes sample playback after :py:func:`pause`.
+//|
+STATIC mp_obj_t audiobusio_i2sout_obj_resume(mp_obj_t self_in) {
+    audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+
+    if (!common_hal_audiobusio_i2sout_get_paused(self)) {
+        mp_raise_RuntimeError("No paused sample");
+    }
+    common_hal_audiobusio_i2sout_resume(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_resume_obj, audiobusio_i2sout_obj_resume);
+
+//|   .. attribute:: paused
+//|
+//|     True when playback is paused. (read-only)
+//|
+STATIC mp_obj_t audiobusio_i2sout_obj_get_paused(mp_obj_t self_in) {
+    audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_audiobusio_i2sout_deinited(self));
+    return mp_obj_new_bool(common_hal_audiobusio_i2sout_get_paused(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_get_paused_obj, audiobusio_i2sout_obj_get_paused);
+
+const mp_obj_property_t audiobusio_i2sout_paused_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audiobusio_i2sout_get_paused_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
@@ -219,9 +269,12 @@ STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiobusio_i2sout___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audiobusio_i2sout_play_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&audiobusio_i2sout_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&audiobusio_i2sout_pause_obj) },
+    { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&audiobusio_i2sout_resume_obj) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiobusio_i2sout_playing_obj) },
+    { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&audiobusio_i2sout_paused_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_locals_dict_table);
 

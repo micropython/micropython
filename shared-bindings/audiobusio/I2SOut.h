@@ -41,5 +41,8 @@ bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self);
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self, mp_obj_t sample, bool loop);
 void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self);
 bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self);
+void common_hal_audiobusio_i2sout_pause(audiobusio_i2sout_obj_t* self);
+void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self);
+bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_AUDIOBUSIO_I2SOUT_H

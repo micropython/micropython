@@ -323,6 +323,23 @@ void audio_dma_stop(audio_dma_t* dma) {
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
 
+void audio_dma_pause(audio_dma_t* dma) {
+    dma_suspend_channel(dma->dma_channel);
+}
+
+void audio_dma_resume(audio_dma_t* dma) {
+    dma_resume_channel(dma->dma_channel);
+}
+
+bool audio_dma_get_paused(audio_dma_t* dma) {
+    if (dma->dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
+        return false;
+    }
+    uint32_t status = dma_transfer_status(dma->dma_channel);
+
+    return (status & DMAC_CHINTFLAG_SUSP) != 0;
+}
+
 void audio_dma_init(audio_dma_t* dma) {
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
@@ -341,11 +358,11 @@ bool audio_dma_get_playing(audio_dma_t* dma) {
         return false;
     }
     uint32_t status = dma_transfer_status(dma->dma_channel);
-    if ((status & DMAC_CHINTFLAG_TCMPL) != 0) {
+    if ((status & DMAC_CHINTFLAG_TCMPL) != 0 || (status & DMAC_CHINTFLAG_TERR) != 0) {
         audio_dma_stop(dma);
     }
 
-    return status == 0;
+    return (status & DMAC_CHINTFLAG_TERR) == 0;
 }
 
 // WARN(tannewt): DO NOT print from here. Printing calls background tasks such as this and causes a

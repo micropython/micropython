@@ -56,6 +56,8 @@ int32_t sercom_dma_transfer(Sercom* sercom, const uint8_t* buffer_out, uint8_t* 
 void dma_configure(uint8_t channel_number, uint8_t trigsrc, bool output_event);
 void dma_enable_channel(uint8_t channel_number);
 void dma_disable_channel(uint8_t channel_number);
+void dma_suspend_channel(uint8_t channel_number);
+void dma_resume_channel(uint8_t channel_number);
 bool dma_channel_enabled(uint8_t channel_number);
 uint8_t dma_transfer_status(uint8_t channel_number);
 DmacDescriptor* dma_descriptor(uint8_t channel_number);
