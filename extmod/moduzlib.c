@@ -33,7 +33,7 @@
 
 #if MICROPY_PY_UZLIB
 
-#include "uzlib/tinf.h"
+#include "../../lib/uzlib/src/tinf.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -215,10 +215,10 @@ const mp_obj_module_t mp_module_uzlib = {
 // Source files #include'd here to make sure they're compiled in
 // only if module is enabled by config setting.
 
-#include "uzlib/tinflate.c"
-#include "uzlib/tinfzlib.c"
-#include "uzlib/tinfgzip.c"
-#include "uzlib/adler32.c"
-#include "uzlib/crc32.c"
+#include "../../lib/uzlib/src/tinflate.c"
+#include "../../lib/uzlib/src/tinfzlib.c"
+#include "../../lib/uzlib/src/tinfgzip.c"
+#include "../../lib/uzlib/src/adler32.c"
+#include "../../lib/uzlib/src/crc32.c"
 
 #endif // MICROPY_PY_UZLIB

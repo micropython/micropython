@@ -11,6 +11,9 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
+[submodule "lib/uzlib"]
+	path = lib/uzlib
+	url = https://github.com/pfalcon/uzlib
 [submodule "tools/uf2"]
 	path = tools/uf2
 	url = https://github.com/Microsoft/uf2.git
