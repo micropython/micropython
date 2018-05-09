@@ -389,7 +389,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_isconnected_obj, pyb_usb_vcp_isconn
 
 // deprecated in favour of USB_VCP.isconnected
 STATIC mp_obj_t pyb_have_cdc(void) {
-    return pyb_usb_vcp_isconnected(MP_OBJ_NULL);
+    return pyb_usb_vcp_isconnected(MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 
