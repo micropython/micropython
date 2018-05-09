@@ -113,7 +113,8 @@ int i2c_start_addr(i2c_t *i2c, int rd_wrn, uint16_t addr, size_t len, bool stop)
 
     // Check if the slave responded or not
     if (i2c->ISR & I2C_ISR_NACKF) {
-        // If we get a NACK then I2C periph releases the bus, so don't send STOP
+        // If we get a NACK then I2C periph unconditionally sends a STOP
+        i2c_wait_isr_set(i2c, I2C_ISR_STOPF); // Don't leak errors from this call
         i2c->CR1 &= ~I2C_CR1_PE;
         return -MP_ENODEV;
     }
