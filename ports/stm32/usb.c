@@ -588,7 +588,7 @@ STATIC mp_obj_t pyb_usb_hid_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
     };
 
     // parse args
-    pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    pyb_usb_hid_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_arg_val_t vals[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, vals);
 
@@ -610,7 +610,7 @@ STATIC mp_obj_t pyb_usb_hid_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_hid_recv_obj, 1, pyb_usb_hid_recv);
 
 STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
-    pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pyb_usb_hid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     byte temp_buf[8];
     // get the buffer to send from
@@ -652,7 +652,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_hid_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_usb_hid_locals_dict, pyb_usb_hid_locals_dict_table);
 
 STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pyb_usb_hid_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
