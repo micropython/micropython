@@ -59,34 +59,39 @@ NORETURN void _esp_exceptions(esp_err_t e) {
         mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
       case ESP_ERR_WIFI_NOT_STARTED:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
-      case ESP_ERR_WIFI_CONN:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
-      case ESP_ERR_WIFI_SSID:
-        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
-      case ESP_ERR_WIFI_FAIL:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Failure");
+      case ESP_ERR_WIFI_NOT_STOPPED:
+        mp_raise_msg(&mp_type_OSError, "Wifi Not Stopped");
       case ESP_ERR_WIFI_IF:
         mp_raise_msg(&mp_type_OSError, "Wifi Invalid Interface");
-      case ESP_ERR_WIFI_MAC:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
-      case ESP_ERR_WIFI_ARG:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Argument");
       case ESP_ERR_WIFI_MODE:
         mp_raise_msg(&mp_type_OSError, "Wifi Invalid Mode");
-      case ESP_ERR_WIFI_PASSWORD:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+      case ESP_ERR_WIFI_STATE:
+        mp_raise_msg(&mp_type_OSError, "Wifi Internal State Error");
+      case ESP_ERR_WIFI_CONN:
+        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
       case ESP_ERR_WIFI_NVS:
         mp_raise_msg(&mp_type_OSError, "Wifi Internal NVS Error");
+      case ESP_ERR_WIFI_MAC:
+        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
+      case ESP_ERR_WIFI_SSID:
+        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
+      case ESP_ERR_WIFI_PASSWORD:
+        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+      case ESP_ERR_WIFI_TIMEOUT:
+        mp_raise_OSError(MP_ETIMEDOUT);
+      case ESP_ERR_WIFI_WAKE_FAIL:
+        mp_raise_msg(&mp_type_OSError, "Wifi Wakeup Failure");
+      case ESP_ERR_WIFI_WOULD_BLOCK:
+        mp_raise_msg(&mp_type_OSError, "Wifi Would Block");
+      case ESP_ERR_WIFI_NOT_CONNECT:
+        mp_raise_msg(&mp_type_OSError, "Wifi Not Connected");
       case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
         mp_raise_msg(&mp_type_OSError, "TCP/IP Invalid Parameters");
       case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
         mp_raise_msg(&mp_type_OSError, "TCP/IP IF Not Ready");
       case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
         mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
-      case ESP_ERR_WIFI_TIMEOUT:
-        mp_raise_OSError(MP_ETIMEDOUT);
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-      case ESP_ERR_WIFI_NO_MEM:
         mp_raise_OSError(MP_ENOMEM); 
       default:
         nlr_raise(mp_obj_new_exception_msg_varg(
