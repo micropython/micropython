@@ -240,7 +240,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_
 //|   .. method:: SPI.write_readinto(buffer_out, buffer_in, \*, out_start=0, out_end=len(buffer_out), in_start=0, in_end=len(buffer_in))
 //|
 //|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
-//|     The SPI object must be locked.
 //|     The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
 //|     must be equal.
 //|     If buffer slice lengths are both 0, nothing happens.
