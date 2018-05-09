@@ -186,7 +186,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Make a list of names in the given object
         // Implemented by probing all possible qstrs with mp_load_method_maybe
         size_t nqstr = QSTR_TOTAL();
-        for (size_t i = 1; i < nqstr; ++i) {
+        for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
             mp_obj_t dest[2];
             mp_load_method_maybe(args[0], i, dest);
             if (dest[0] != MP_OBJ_NULL) {
