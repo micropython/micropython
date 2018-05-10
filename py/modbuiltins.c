@@ -188,7 +188,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         size_t nqstr = QSTR_TOTAL();
         for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
             mp_obj_t dest[2];
-            mp_load_method_maybe(args[0], i, dest);
+            mp_load_method_protected(args[0], i, dest, false);
             if (dest[0] != MP_OBJ_NULL) {
                 mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(i));
             }
