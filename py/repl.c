@@ -158,7 +158,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                 // lookup will fail
                 return 0;
             }
-            mp_load_method_maybe(obj, q, dest);
+            mp_load_method_protected(obj, q, dest, true);
             obj = dest[0]; // attribute, method, or MP_OBJ_NULL if nothing found
 
             if (obj == MP_OBJ_NULL) {
@@ -180,7 +180,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                 size_t d_len;
                 const char *d_str = (const char*)qstr_data(q, &d_len);
                 if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
-                    mp_load_method_maybe(obj, q, dest);
+                    mp_load_method_protected(obj, q, dest, true);
                     if (dest[0] != MP_OBJ_NULL) {
                         if (match_str == NULL) {
                             match_str = d_str;
@@ -234,7 +234,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                 size_t d_len;
                 const char *d_str = (const char*)qstr_data(q, &d_len);
                 if (s_len <= d_len && strncmp(s_start, d_str, s_len) == 0) {
-                    mp_load_method_maybe(obj, q, dest);
+                    mp_load_method_protected(obj, q, dest, true);
                     if (dest[0] != MP_OBJ_NULL) {
                         int gap = (line_len + WORD_SLOT_LEN - 1) / WORD_SLOT_LEN * WORD_SLOT_LEN - line_len;
                         if (gap < 2) {
