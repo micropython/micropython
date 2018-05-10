@@ -94,6 +94,9 @@ class Cud():
         print("__isub__ called")
         return self
 
+    def __dir__(self):
+        return ['a', 'b', 'c']
+
 cud1 = Cud()
 cud2 = Cud()
 
@@ -112,6 +115,12 @@ cud1 / cud2
 cud2 // cud1
 cud1 += cud2
 cud1 -= cud2
+
+# test that dir() delegates to __dir__ special method
+print(dir(cud1))
+
+# test that dir() does not delegate to __dir__ for the type
+print('a' in dir(Cud))
 
 # TODO: the following operations are not supported on every ports
 #
