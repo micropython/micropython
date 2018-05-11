@@ -1161,9 +1161,10 @@ uint8_t USBD_HID_SendReport(usbd_cdc_msc_hid_state_t *usbd, uint8_t *report, uin
         if (usbd->HID_ClassData.state == HID_IDLE) {
             usbd->HID_ClassData.state = HID_BUSY;
             USBD_LL_Transmit(usbd->pdev, usbd->hid_in_ep, report, len);
+            return USBD_OK;
         }
     }
-    return USBD_OK;
+    return USBD_FAIL;
 }
 
 uint8_t USBD_HID_SetNAK(usbd_cdc_msc_hid_state_t *usbd) {
