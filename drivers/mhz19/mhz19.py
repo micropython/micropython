@@ -1,7 +1,7 @@
 # MH-Z19 CO2 sensor driver for MicroPython.
 # MIT license; Copyright (c) 2018 Fredrik Strupe
 
-from machine import Pin
+import machine
 import utime
 
 
@@ -27,9 +27,6 @@ class MHZ19:
             if utime.ticks_diff(utime.ticks_ms(), start) > timeout:
                 raise TimeoutError
 
-    def _rising_callback(self, pin):
-        self.cycle_started = True
-
     def pwm_read(self):
         '''Read CO2 value via PWM pin.
 
@@ -41,23 +38,12 @@ class MHZ19:
         Raises:
             TimeoutError: if the reading takes more than 5 seconds.
         '''
-        self.cycle_started = False
-
         # Wait until a new cycle starts
-        self.pin.irq(trigger=Pin.IRQ_RISING, handler=self._rising_callback)
-        self._wait_on_condition(lambda: self.cycle_started)
-        self.pin.irq(trigger=Pin.IRQ_RISING, handler=None)
-
-        # Measure pin high duration
-        h_start = utime.ticks_ms()
         self._wait_on_condition(lambda: self.pin.value() == 0)
-
-        # Measure pin low duration
-        h_end = l_start = utime.ticks_ms()
         self._wait_on_condition(lambda: self.pin.value() == 1)
-        l_end = utime.ticks_ms()
 
-        # Calculate result
-        t_h = utime.ticks_diff(h_end, h_start)
-        t_l = utime.ticks_diff(l_end, l_start)
+        # Measure high and low duration during cycle
+        t_h = machine.time_pulse_us(self.pin, 1, 1500000) / 1000
+        t_l = machine.time_pulse_us(self.pin, 0, 1500000) / 1000
+
         return self.max_value * (t_h - 2) / (t_h + t_l - 4)
