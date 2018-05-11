@@ -115,6 +115,13 @@ cud1 / cud2
 cud2 // cud1
 cud1 += cud2
 cud1 -= cud2
+cud1 % 2
+cud1 ** 2
+cud1 | cud2
+cud1 & cud2
+cud1 ^ cud2
+cud1 << 1
+cud1 >> 1
 
 # test that dir() delegates to __dir__ special method
 print(dir(cud1))
@@ -126,27 +133,6 @@ print('a' in dir(Cud))
 #
 # ne is not supported, !(eq) is called instead
 #cud1 != cud2
-#
-# binary and is not supported
-# cud1 & cud2
-#
-# binary lshift is not supported
-# cud1<<1
-#
-# modulus is not supported
-# cud1 % 2
-#
-# binary or is not supported
-# cud1 | cud2
-#
-# pow is not supported
-# cud1**2
-#
-# rshift is not suported
-# cud1>>1
-#
-# xor is not supported
-# cud1^cud2
 #
 # in the followin test, cpython still calls __eq__
 # cud3=cud1
