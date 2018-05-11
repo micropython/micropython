@@ -16,8 +16,6 @@
 tests/basics/string_cr_conversion.py -text
 tests/basics/string_crlf_conversion.py -text
 ports/stm32/pybcdc.inf_template -text
-ports/stm32/usbd_* -text
-ports/stm32/usbdev/** -text
 ports/stm32/usbhost/** -text
 ports/cc3200/hal/aes.c -text
 ports/cc3200/hal/aes.h -text
