@@ -706,7 +706,6 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 
         // Init Xfer states
         usbd->CDC_ClassData.TxState = 0;
-        usbd->CDC_ClassData.RxState = 0;
 
         // Prepare Out endpoint to receive next packet
         USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, buf, mp);
