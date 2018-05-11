@@ -94,12 +94,13 @@ int usbd_hid_rx(usbd_hid_itf_t *hid, size_t len, uint8_t *buf, uint32_t timeout)
     }
 
     // Copy bytes from device to user buffer
-    memcpy(buf, hid->buffer[hid->current_read_buffer], hid->last_read_len);
+    int read_len = hid->last_read_len;
+    memcpy(buf, hid->buffer[hid->current_read_buffer], read_len);
     hid->current_read_buffer = !hid->current_read_buffer;
 
     // Clear NAK to indicate we are ready to read more data
     USBD_HID_ClearNAK(hid->usbd);
 
     // Success, return number of bytes read
-    return hid->last_read_len;
+    return read_len;
 }
