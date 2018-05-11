@@ -17,8 +17,8 @@ print(float('.' + '9' * 70 + 'e-50') == float('1e-50'))
 
 # tiny fraction with large exponent
 print(float('.' + '0' * 60 + '1e10') == float('1e-51'))
-print(float('.' + '0' * 60 + '9e25'))
-print(float('.' + '0' * 60 + '9e40'))
+print(float('.' + '0' * 60 + '9e25') == float('9e-36'))
+print(float('.' + '0' * 60 + '9e40') == float('9e-21'))
 
 # ensure that accuracy is retained when value is close to a subnormal
 print(float('1.00000000000000000000e-37'))
