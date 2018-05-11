@@ -99,7 +99,6 @@ USBD_StatusTypeDef USBD_Init(USBD_HandleTypeDef *pdev, USBD_DescriptorsTypeDef *
   /* Check whether the USB Host handle is valid */
   if(pdev == NULL)
   {
-    USBD_ErrLog("Invalid Device handle");
     return USBD_FAIL; 
   }
   
@@ -166,7 +165,6 @@ USBD_StatusTypeDef  USBD_RegisterClass(USBD_HandleTypeDef *pdev, const USBD_Clas
   }
   else
   {
-    USBD_ErrLog("Invalid Class handle");
     status = USBD_FAIL; 
   }
   
