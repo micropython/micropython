@@ -175,7 +175,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
             // look for matches
             const char *match_str = NULL;
             size_t match_len = 0;
-            qstr q_first = 0, q_last;
+            qstr q_first = 0, q_last = 0;
             for (qstr q = MP_QSTR_ + 1; q < nqstr; ++q) {
                 size_t d_len;
                 const char *d_str = (const char*)qstr_data(q, &d_len);
