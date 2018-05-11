@@ -29,8 +29,8 @@
   ******************************************************************************
   */
 
-#ifndef __USBD_CONF_H
-#define __USBD_CONF_H
+#ifndef MICROPY_INCLUDED_STM32_USBD_CONF_H
+#define MICROPY_INCLUDED_STM32_USBD_CONF_H
 
 #include <stdint.h>
 #include <stdio.h>
@@ -43,6 +43,6 @@
 #define USBD_SELF_POWERED                     0
 #define USBD_DEBUG_LEVEL                      0
 
-#endif /* __USBD_CONF_H */
+#endif // MICROPY_INCLUDED_STM32_USBD_CONF_H
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
