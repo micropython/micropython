@@ -127,7 +127,7 @@
 #define MICROPY_PY_MACHINE_PULSE                 (0)
 #define MICROPY_PY_MACHINE_I2C_MAKE_NEW          machine_hard_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI                   (0)
-#define MICROPY_PY_FRAMEBUF                      (0)
+#define MICROPY_PY_FRAMEBUF                      (1)
 
 #define MICROPY_KBD_EXCEPTION                    (1)
 
