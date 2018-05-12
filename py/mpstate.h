@@ -105,10 +105,11 @@ typedef struct _mp_state_mem_t {
 // This structure hold runtime and VM information.  It includes a section
 // which contains root pointers that must be scanned by the GC.
 typedef struct _mp_state_vm_t {
-    ////////////////////////////////////////////////////////////
-    // START ROOT POINTER SECTION
-    // everything that needs GC scanning must go here
-    // this must start at the start of this structure
+    //
+    // CONTINUE ROOT POINTER SECTION
+    // This must start at the start of this structure and follows
+    // the state in the mp_state_thread_t structure, continuing
+    // the root pointer section from there.
     //
 
     qstr_pool_t *last_pool;
@@ -139,8 +140,6 @@ typedef struct _mp_state_vm_t {
     volatile mp_obj_t mp_pending_exception;
 
     #if MICROPY_ENABLE_SCHEDULER
-    volatile int16_t sched_state;
-    uint16_t sched_sp;
     mp_sched_item_t sched_stack[MICROPY_SCHEDULER_DEPTH];
     #endif
 
@@ -208,6 +207,11 @@ typedef struct _mp_state_vm_t {
     mp_int_t mp_emergency_exception_buf_size;
     #endif
 
+    #if MICROPY_ENABLE_SCHEDULER
+    volatile int16_t sched_state;
+    uint16_t sched_sp;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     // This is a global mutex used to make the VM/runtime thread-safe.
     mp_thread_mutex_t gil_mutex;
@@ -217,11 +221,6 @@ typedef struct _mp_state_vm_t {
 // This structure holds state that is specific to a given thread.
 // Everything in this structure is scanned for root pointers.
 typedef struct _mp_state_thread_t {
-    mp_obj_dict_t *dict_locals;
-    mp_obj_dict_t *dict_globals;
-
-    nlr_buf_t *nlr_top; // ROOT POINTER
-
     // Stack top at the start of program
     char *stack_top;
 
@@ -234,12 +233,21 @@ typedef struct _mp_state_thread_t {
     uint8_t *pystack_end;
     uint8_t *pystack_cur;
     #endif
+
+    ////////////////////////////////////////////////////////////
+    // START ROOT POINTER SECTION
+    // Everything that needs GC scanning must start here, and
+    // is followed by state in the mp_state_vm_t structure.
+    //
+
+    mp_obj_dict_t *dict_locals;
+    mp_obj_dict_t *dict_globals;
+
+    nlr_buf_t *nlr_top;
 } mp_state_thread_t;
 
 // This structure combines the above 3 structures.
 // The order of the entries are important for root pointer scanning in the GC to work.
-// Note: if this structure changes then revisit all nlr asm code since they
-// have the offset of nlr_top hard-coded.
 typedef struct _mp_state_ctx_t {
     mp_state_thread_t thread;
     mp_state_vm_t vm;

@@ -328,7 +328,9 @@ void gc_collect_start(void) {
     // correctly in the mp_state_ctx structure.  We scan nlr_top, dict_locals,
     // dict_globals, then the root pointer section of mp_state_vm.
     void **ptrs = (void**)(void*)&mp_state_ctx;
-    gc_collect_root(ptrs, offsetof(mp_state_ctx_t, vm.qstr_last_chunk) / sizeof(void*));
+    size_t root_start = offsetof(mp_state_ctx_t, thread.dict_locals);
+    size_t root_end = offsetof(mp_state_ctx_t, vm.qstr_last_chunk);
+    gc_collect_root(ptrs + root_start / sizeof(void*), (root_end - root_start) / sizeof(void*));
 
     #if MICROPY_ENABLE_PYSTACK
     // Trace root pointers from the Python stack.
