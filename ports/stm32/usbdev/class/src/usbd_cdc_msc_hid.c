@@ -1111,13 +1111,13 @@ uint8_t *USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor(USBD_HandleTypeDef *pdev,
 }
 
 // data received on non-control OUT endpoint
-uint8_t USBD_CDC_TransmitPacket(usbd_cdc_msc_hid_state_t *usbd, size_t len, const uint8_t *buf) {
-    if (usbd->cdc->tx_in_progress == 0) {
+uint8_t USBD_CDC_TransmitPacket(usbd_cdc_state_t *cdc, size_t len, const uint8_t *buf) {
+    if (cdc->tx_in_progress == 0) {
         // transmit next packet
-        USBD_LL_Transmit(usbd->pdev, CDC_IN_EP, (uint8_t*)buf, len);
+        USBD_LL_Transmit(cdc->usbd->pdev, cdc->in_ep, (uint8_t*)buf, len);
 
         // Tx transfer in progress
-        usbd->cdc->tx_in_progress = 1;
+        cdc->tx_in_progress = 1;
         return USBD_OK;
     } else {
         return USBD_BUSY;
@@ -1125,17 +1125,17 @@ uint8_t USBD_CDC_TransmitPacket(usbd_cdc_msc_hid_state_t *usbd, size_t len, cons
 }
 
 // prepare OUT endpoint for reception
-uint8_t USBD_CDC_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf) {
+uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf) {
     // Suspend or Resume USB Out process
 
     #if !USBD_SUPPORT_HS_MODE
-    if (usbd->pdev->dev_speed == USBD_SPEED_HIGH) {
+    if (cdc->usbd->pdev->dev_speed == USBD_SPEED_HIGH) {
         return USBD_FAIL;
     }
     #endif
 
     // Prepare Out endpoint to receive next packet
-    USBD_LL_PrepareReceive(usbd->pdev, CDC_OUT_EP, buf, usbd_cdc_max_packet(usbd->pdev));
+    USBD_LL_PrepareReceive(cdc->usbd->pdev, CDC_OUT_EP, buf, usbd_cdc_max_packet(cdc->usbd->pdev));
 
     return USBD_OK;
 }
