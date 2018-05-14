@@ -44,12 +44,16 @@
 #define CDC_OUT_EP    (0x03)
 #define CDC_CMD_EP    (0x82)
 
+struct _usbd_cdc_msc_hid_state_t;
+
 typedef struct {
-  uint32_t data[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32bits alignment
-  uint8_t  CmdOpCode;
-  uint8_t  CmdLength;    
-  volatile uint32_t TxState;
-} USBD_CDC_HandleTypeDef;
+    struct _usbd_cdc_msc_hid_state_t *usbd; // The parent USB device
+    uint32_t ctl_packet_buf[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32-bit alignment
+    uint8_t iface_num;
+    uint8_t cur_request;
+    uint8_t cur_length;
+    volatile uint8_t tx_in_progress;
+} usbd_cdc_state_t;
 
 typedef struct _USBD_STORAGE {
   int8_t (* Init) (uint8_t lun);
@@ -104,7 +108,6 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     USBD_HandleTypeDef *pdev;
 
     uint8_t usbd_mode;
-    uint8_t cdc_iface_num;
     uint8_t hid_in_ep;
     uint8_t hid_out_ep;
     uint8_t hid_iface_num;
@@ -112,7 +115,6 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     uint8_t *hid_desc;
     const uint8_t *hid_report_desc;
 
-    USBD_CDC_HandleTypeDef CDC_ClassData;
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
     USBD_HID_HandleTypeDef HID_ClassData;
 
@@ -121,7 +123,7 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     __ALIGN_BEGIN uint8_t usbd_str_desc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
-    void *cdc;
+    usbd_cdc_state_t *cdc;
     void *hid;
 } usbd_cdc_msc_hid_state_t;
 
@@ -178,10 +180,9 @@ uint8_t USBD_HID_SetNAK(usbd_cdc_msc_hid_state_t *usbd);
 uint8_t USBD_HID_ClearNAK(usbd_cdc_msc_hid_state_t *usbd);
 
 // These are provided externally to implement the CDC interface
-struct _usbd_cdc_itf_t;
-uint8_t *usbd_cdc_init(struct _usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd);
-int8_t usbd_cdc_control(struct _usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length);
-int8_t usbd_cdc_receive(struct _usbd_cdc_itf_t *cdc, size_t len);
+uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc);
+int8_t usbd_cdc_control(usbd_cdc_state_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length);
+int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc, size_t len);
 
 // These are provided externally to implement the HID interface
 struct _usbd_hid_itf_t;

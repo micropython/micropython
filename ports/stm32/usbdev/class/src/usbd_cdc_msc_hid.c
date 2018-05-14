@@ -617,13 +617,13 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
         case USBD_MODE_CDC_MSC:
             usbd->usbd_config_desc_size = sizeof(cdc_msc_template_config_desc);
             memcpy(usbd->usbd_config_desc, cdc_msc_template_config_desc, sizeof(cdc_msc_template_config_desc));
-            usbd->cdc_iface_num = CDC_IFACE_NUM_WITH_MSC;
+            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_MSC;
             break;
 
         case USBD_MODE_CDC_HID:
             usbd->usbd_config_desc_size = sizeof(cdc_hid_template_config_desc);
             memcpy(usbd->usbd_config_desc, cdc_hid_template_config_desc, sizeof(cdc_hid_template_config_desc));
-            usbd->cdc_iface_num = CDC_IFACE_NUM_WITH_HID;
+            usbd->cdc->iface_num = CDC_IFACE_NUM_WITH_HID;
             usbd->hid_in_ep = HID_IN_EP_WITH_CDC;
             usbd->hid_out_ep = HID_OUT_EP_WITH_CDC;
             usbd->hid_iface_num = HID_IFACE_NUM_WITH_CDC;
@@ -633,7 +633,7 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
         case USBD_MODE_CDC:
             usbd->usbd_config_desc_size = sizeof(cdc_template_config_desc);
             memcpy(usbd->usbd_config_desc, cdc_template_config_desc, sizeof(cdc_template_config_desc));
-            usbd->cdc_iface_num = CDC_IFACE_NUM_ALONE;
+            usbd->cdc->iface_num = CDC_IFACE_NUM_ALONE;
             break;
 
             /*
@@ -701,11 +701,13 @@ static uint8_t USBD_CDC_MSC_HID_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
                        USBD_EP_TYPE_INTR,
                        CDC_CMD_PACKET_SIZE);
 
-        // Init physical Interface components
-        uint8_t *buf = usbd_cdc_init(usbd->cdc, usbd);
-
         // Init Xfer states
-        usbd->CDC_ClassData.TxState = 0;
+        usbd->cdc->usbd = usbd;
+        usbd->cdc->cur_request = 0xff;
+        usbd->cdc->tx_in_progress = 0;
+
+        // Init physical Interface components
+        uint8_t *buf = usbd_cdc_init(usbd->cdc);
 
         // Prepare Out endpoint to receive next packet
         USBD_LL_PrepareReceive(pdev, CDC_OUT_EP, buf, mp);
@@ -826,7 +828,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     switch (req->bmRequest & USB_REQ_RECIPIENT_MASK) {
         case USB_REQ_RECIPIENT_INTERFACE: {
             uint16_t iface = req->wIndex;
-            if ((mode & USBD_MODE_CDC) && iface == usbd->cdc_iface_num) {
+            if ((mode & USBD_MODE_CDC) && iface == usbd->cdc->iface_num) {
                 recipient = USBD_MODE_CDC;
             } else if ((mode & USBD_MODE_MSC) && iface == MSC_IFACE_NUM_WITH_CDC) {
                 recipient = USBD_MODE_MSC;
@@ -862,13 +864,13 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
                 if (req->wLength) {
                     if (req->bmRequest & 0x80) {
                         // device-to-host request
-                        usbd_cdc_control(usbd->cdc, req->bRequest, (uint8_t*)usbd->CDC_ClassData.data, req->wLength);
-                        USBD_CtlSendData(pdev, (uint8_t*)usbd->CDC_ClassData.data, req->wLength);
+                        usbd_cdc_control(usbd->cdc, req->bRequest, (uint8_t*)usbd->cdc->ctl_packet_buf, req->wLength);
+                        USBD_CtlSendData(pdev, (uint8_t*)usbd->cdc->ctl_packet_buf, req->wLength);
                     } else {
                         // host-to-device request
-                        usbd->CDC_ClassData.CmdOpCode = req->bRequest;
-                        usbd->CDC_ClassData.CmdLength = req->wLength;
-                        USBD_CtlPrepareRx(pdev, (uint8_t*)usbd->CDC_ClassData.data, req->wLength);
+                        usbd->cdc->cur_request = req->bRequest;
+                        usbd->cdc->cur_length = req->wLength;
+                        USBD_CtlPrepareRx(pdev, (uint8_t*)usbd->cdc->ctl_packet_buf, req->wLength);
                     }
                 } else {
                     // Not a Data request
@@ -991,9 +993,9 @@ static uint8_t EP0_TxSent(USBD_HandleTypeDef *pdev) {
 
 static uint8_t USBD_CDC_MSC_HID_EP0_RxReady(USBD_HandleTypeDef *pdev) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
-    if (usbd->cdc != NULL && usbd->CDC_ClassData.CmdOpCode != 0xff) {
-        usbd_cdc_control(usbd->cdc, usbd->CDC_ClassData.CmdOpCode, (uint8_t*)usbd->CDC_ClassData.data, usbd->CDC_ClassData.CmdLength);
-        usbd->CDC_ClassData.CmdOpCode = 0xff;
+    if (usbd->cdc != NULL && usbd->cdc->cur_request != 0xff) {
+        usbd_cdc_control(usbd->cdc, usbd->cdc->cur_request, (uint8_t*)usbd->cdc->ctl_packet_buf, usbd->cdc->cur_length);
+        usbd->cdc->cur_request = 0xff;
     }
 
     return USBD_OK;
@@ -1002,7 +1004,7 @@ static uint8_t USBD_CDC_MSC_HID_EP0_RxReady(USBD_HandleTypeDef *pdev) {
 static uint8_t USBD_CDC_MSC_HID_DataIn(USBD_HandleTypeDef *pdev, uint8_t epnum) {
     usbd_cdc_msc_hid_state_t *usbd = pdev->pClassData;
     if ((usbd->usbd_mode & USBD_MODE_CDC) && (epnum == (CDC_IN_EP & 0x7f) || epnum == (CDC_CMD_EP & 0x7f))) {
-        usbd->CDC_ClassData.TxState = 0;
+        usbd->cdc->tx_in_progress = 0;
         return USBD_OK;
     } else if ((usbd->usbd_mode & USBD_MODE_MSC) && epnum == (MSC_IN_EP & 0x7f)) {
         MSC_BOT_DataIn(pdev, epnum);
@@ -1105,12 +1107,12 @@ uint8_t *USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor(USBD_HandleTypeDef *pdev,
 
 // data received on non-control OUT endpoint
 uint8_t USBD_CDC_TransmitPacket(usbd_cdc_msc_hid_state_t *usbd, size_t len, const uint8_t *buf) {
-    if (usbd->CDC_ClassData.TxState == 0) {
+    if (usbd->cdc->tx_in_progress == 0) {
         // transmit next packet
         USBD_LL_Transmit(usbd->pdev, CDC_IN_EP, (uint8_t*)buf, len);
 
         // Tx transfer in progress
-        usbd->CDC_ClassData.TxState = 1;
+        usbd->cdc->tx_in_progress = 1;
         return USBD_OK;
     } else {
         return USBD_BUSY;

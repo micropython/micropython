@@ -119,12 +119,6 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
     if (!usb_dev->enabled) {
         // only init USB once in the device's power-lifetime
 
-        // configure the VID, PID and the USBD mode (interfaces it will expose)
-        USBD_SetVIDPIDRelease(&usb_dev->usbd_cdc_msc_hid_state, vid, pid, 0x0200, mode == USBD_MODE_CDC);
-        if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info) != 0) {
-            return false;
-        }
-
         // set up the USBD state
         USBD_HandleTypeDef *usbd = &usb_dev->hUSBDDevice;
         usbd->id = MICROPY_HW_USB_MAIN_DEV;
@@ -132,9 +126,15 @@ bool pyb_usb_dev_init(uint16_t vid, uint16_t pid, usb_device_mode_t mode, USBD_H
         usbd->pDesc = (USBD_DescriptorsTypeDef*)&USBD_Descriptors;
         usbd->pClass = &USBD_CDC_MSC_HID;
         usb_dev->usbd_cdc_msc_hid_state.pdev = usbd;
-        usb_dev->usbd_cdc_msc_hid_state.cdc = &usb_dev->usbd_cdc_itf;
+        usb_dev->usbd_cdc_msc_hid_state.cdc = &usb_dev->usbd_cdc_itf.base;
         usb_dev->usbd_cdc_msc_hid_state.hid = &usb_dev->usbd_hid_itf;
         usbd->pClassData = &usb_dev->usbd_cdc_msc_hid_state;
+
+        // configure the VID, PID and the USBD mode (interfaces it will expose)
+        USBD_SetVIDPIDRelease(&usb_dev->usbd_cdc_msc_hid_state, vid, pid, 0x0200, mode == USBD_MODE_CDC);
+        if (USBD_SelectMode(&usb_dev->usbd_cdc_msc_hid_state, mode, hid_info) != 0) {
+            return false;
+        }
 
         switch (pyb_usb_storage_medium) {
 #if MICROPY_HW_HAS_SDCARD
