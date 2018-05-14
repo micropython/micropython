@@ -68,10 +68,7 @@ def board_not_in(*board):
 
 def no_cpython_compat():
     try:
-        try:
-            from collections import namedtuple
-        except ImportError:
-            from ucollections import namedtuple
+        from collections import namedtuple
     except ImportError:
         skip()
     try:

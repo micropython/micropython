@@ -1,9 +1,9 @@
-:mod:`ucollections` -- collection and container types
+:mod:`collections` -- collection and container types
 =====================================================
 
 .. include:: ../templates/unsupported_in_circuitpython.inc
 
-.. module:: ucollections
+.. module:: collections
    :synopsis: collection and container types
 
 |see_cpython_module| :mod:`cpython:collections`.
@@ -24,7 +24,7 @@ Classes
     a string with space-separated field named (but this is less efficient).
     Example of use::
 
-        from ucollections import namedtuple
+        from collections import namedtuple
 
         MyTuple = namedtuple("MyTuple", ("id", "name"))
         t1 = MyTuple(1, "foo")
@@ -38,7 +38,7 @@ Classes
     added. When ordered dict is iterated over, keys/items are returned in
     the order they were added::
 
-        from ucollections import OrderedDict
+        from collections import OrderedDict
 
         # To make benefit of ordered keys, OrderedDict should be initialized
         # from sequence of (key, value) pairs.

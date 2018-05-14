@@ -1,8 +1,5 @@
 try:
-    try:
-        from collections import namedtuple
-    except ImportError:
-        from ucollections import namedtuple
+    from collections import namedtuple
 except ImportError:
     print("SKIP")
     raise SystemExit

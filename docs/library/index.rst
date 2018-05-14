@@ -21,7 +21,7 @@ Python standard libraries and micro-libraries
    gc.rst
    sys.rst
    binascii.rst
-   ucollections.rst
+   collections.rst
    uerrno.rst
    hashlib.rst
    uheapq.rst
