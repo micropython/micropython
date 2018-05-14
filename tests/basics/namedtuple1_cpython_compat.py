@@ -2,10 +2,7 @@ import skip_if
 skip_if.no_cpython_compat()
 
 try:
-    try:
-        from collections import namedtuple
-    except ImportError:
-        from ucollections import namedtuple
+    from collections import namedtuple
 except ImportError:
     skip_if.skip()
 
