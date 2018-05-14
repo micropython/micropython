@@ -25,6 +25,7 @@
  */
  #include "py/obj.h"
  #include "py/runtime.h"
+ #include "py/reload.h"
 
  #include "lib/utils/interrupt_char.h"
  #include "supervisor/shared/autoreload.h"
@@ -101,13 +102,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_requested = true;
-
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception));
-    #if MICROPY_ENABLE_SCHEDULER
-        if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
-        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
-    }
-    #endif
+    mp_raise_reload_exception();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
