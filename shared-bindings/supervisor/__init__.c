@@ -100,7 +100,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //|   Reload the microcontroller (equivalent to hitting Ctrl-D at the REPL).
 //|
 STATIC mp_obj_t supervisor_reload(void) {
-    reload_next_character = true;
+    reload_requested = true;
 
     MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception));
     #if MICROPY_ENABLE_SCHEDULER
