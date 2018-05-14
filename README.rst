@@ -69,8 +69,15 @@ System <https://learn.adafruit.com/>`__ under the `CircuitPython
 category <https://learn.adafruit.com/category/circuitpython>`__ and
 `MicroPython
 category <https://learn.adafruit.com/category/micropython>`__. An API
-reference is also available on `Read the
-Docs <http://circuitpython.readthedocs.io/en/latest/?>`__.
+reference is also available on `Read the Docs
+<http://circuitpython.readthedocs.io/en/latest/?>`__. A collection of awesome
+resources can be found at `Awesome CircuitPython <https://github.com/adafruit/awesome-circuitpython>`__.
+
+Specifically useful documentation when starting out:
+
+- `Welcome to CircuitPython <https://learn.adafruit.com/welcome-to-circuitpython>`__
+- `CircuitPython Essentials <https://learn.adafruit.com/circuitpython-essentials>`__
+- `Example Code <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/CircuitPython_Essentials>`__
 
 Contributing
 ------------
