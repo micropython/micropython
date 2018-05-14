@@ -169,11 +169,11 @@ static inline void USBD_MSC_RegisterStorage(usbd_cdc_msc_hid_state_t *usbd, USBD
     usbd->MSC_BOT_ClassData.bdev_ops = fops;
 }
 
-uint8_t USBD_HID_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf);
-int USBD_HID_CanSendReport(usbd_cdc_msc_hid_state_t *usbd);
-uint8_t USBD_HID_SendReport(usbd_cdc_msc_hid_state_t *usbd, uint8_t *report, uint16_t len);
-uint8_t USBD_HID_SetNAK(usbd_cdc_msc_hid_state_t *usbd);
-uint8_t USBD_HID_ClearNAK(usbd_cdc_msc_hid_state_t *usbd);
+uint8_t USBD_HID_ReceivePacket(usbd_hid_state_t *usbd, uint8_t *buf);
+int USBD_HID_CanSendReport(usbd_hid_state_t *usbd);
+uint8_t USBD_HID_SendReport(usbd_hid_state_t *usbd, uint8_t *report, uint16_t len);
+uint8_t USBD_HID_SetNAK(usbd_hid_state_t *usbd);
+uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *usbd);
 
 // These are provided externally to implement the CDC interface
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc);

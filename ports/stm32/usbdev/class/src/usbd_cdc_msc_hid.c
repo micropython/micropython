@@ -1141,51 +1141,51 @@ uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf) {
 }
 
 // prepare OUT endpoint for reception
-uint8_t USBD_HID_ReceivePacket(usbd_cdc_msc_hid_state_t *usbd, uint8_t *buf) {
+uint8_t USBD_HID_ReceivePacket(usbd_hid_state_t *hid, uint8_t *buf) {
     // Suspend or Resume USB Out process
 
     #if !USBD_SUPPORT_HS_MODE
-    if (usbd->pdev->dev_speed == USBD_SPEED_HIGH) {
+    if (hid->usbd->pdev->dev_speed == USBD_SPEED_HIGH) {
         return USBD_FAIL;
     }
     #endif
 
     // Prepare Out endpoint to receive next packet
     uint16_t mps_out =
-        usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
-        | (usbd->hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
-    USBD_LL_PrepareReceive(usbd->pdev, usbd->hid->out_ep, buf, mps_out);
+        hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_LO]
+        | (hid->desc[HID_DESC_OFFSET_MAX_PACKET_OUT_HI] << 8);
+    USBD_LL_PrepareReceive(hid->usbd->pdev, hid->out_ep, buf, mps_out);
 
     return USBD_OK;
 }
 
-int USBD_HID_CanSendReport(usbd_cdc_msc_hid_state_t *usbd) {
-    return usbd->pdev->dev_state == USBD_STATE_CONFIGURED && usbd->hid->state == HID_IDLE;
+int USBD_HID_CanSendReport(usbd_hid_state_t *hid) {
+    return hid->usbd->pdev->dev_state == USBD_STATE_CONFIGURED && hid->state == HID_IDLE;
 }
 
-uint8_t USBD_HID_SendReport(usbd_cdc_msc_hid_state_t *usbd, uint8_t *report, uint16_t len) {
-    if (usbd->pdev->dev_state == USBD_STATE_CONFIGURED) {
-        if (usbd->hid->state == HID_IDLE) {
-            usbd->hid->state = HID_BUSY;
-            USBD_LL_Transmit(usbd->pdev, usbd->hid->in_ep, report, len);
+uint8_t USBD_HID_SendReport(usbd_hid_state_t *hid, uint8_t *report, uint16_t len) {
+    if (hid->usbd->pdev->dev_state == USBD_STATE_CONFIGURED) {
+        if (hid->state == HID_IDLE) {
+            hid->state = HID_BUSY;
+            USBD_LL_Transmit(hid->usbd->pdev, hid->in_ep, report, len);
             return USBD_OK;
         }
     }
     return USBD_FAIL;
 }
 
-uint8_t USBD_HID_SetNAK(usbd_cdc_msc_hid_state_t *usbd) {
+uint8_t USBD_HID_SetNAK(usbd_hid_state_t *hid) {
     // get USBx object from pdev (needed for USBx_OUTEP macro below)
-    PCD_HandleTypeDef *hpcd = usbd->pdev->pData;
+    PCD_HandleTypeDef *hpcd = hid->usbd->pdev->pData;
     USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
     // set NAK on HID OUT endpoint
     USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_SNAK;
     return USBD_OK;
 }
 
-uint8_t USBD_HID_ClearNAK(usbd_cdc_msc_hid_state_t *usbd) {
+uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *hid) {
     // get USBx object from pdev (needed for USBx_OUTEP macro below)
-    PCD_HandleTypeDef *hpcd = usbd->pdev->pData;
+    PCD_HandleTypeDef *hpcd = hid->usbd->pdev->pData;
     USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
     // clear NAK on HID OUT endpoint
     USBx_OUTEP(HID_OUT_EP_WITH_CDC)->DOEPCTL |= USB_OTG_DOEPCTL_CNAK;
