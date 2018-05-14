@@ -505,7 +505,7 @@ void stm32_main(uint32_t reset_mode) {
     rtc_init_start(false);
     #endif
     spi_init0();
-    #if MICROPY_HW_ENABLE_HW_I2C
+    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
     #if MICROPY_HW_HAS_SDCARD

@@ -776,6 +776,8 @@ void CAN2_SCE_IRQHandler(void) {
 }
 #endif
 
+#if MICROPY_PY_PYB_LEGACY
+
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
     IRQ_ENTER(I2C1_EV_IRQn);
@@ -831,3 +833,5 @@ void I2C4_ER_IRQHandler(void) {
     IRQ_EXIT(I2C4_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C4_SCL)
+
+#endif // MICROPY_PY_PYB_LEGACY
