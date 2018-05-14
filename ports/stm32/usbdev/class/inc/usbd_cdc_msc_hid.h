@@ -20,7 +20,11 @@
 
 // Needed for the CDC+MSC+HID state and should be maximum of all template
 // config descriptors defined in usbd_cdc_msc_hid.c
+#if MICROPY_HW_USB_ENABLE_CDC2
+#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 23 + (8 + 58) + (8 + 58))
+#else
 #define MAX_TEMPLATE_CONFIG_DESC_SIZE (107)
+#endif
 
 // CDC, MSC and HID packet sizes
 #define MSC_FS_MAX_PACKET           (64)
@@ -46,6 +50,7 @@ typedef struct {
     uint32_t ctl_packet_buf[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32-bit alignment
     uint8_t iface_num;
     uint8_t in_ep;
+    uint8_t out_ep;
     uint8_t cur_request;
     uint8_t cur_length;
     volatile uint8_t tx_in_progress;
@@ -120,6 +125,9 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
     usbd_cdc_state_t *cdc;
+    #if MICROPY_HW_USB_ENABLE_CDC2
+    usbd_cdc_state_t *cdc2;
+    #endif
     usbd_hid_state_t *hid;
 } usbd_cdc_msc_hid_state_t;
 

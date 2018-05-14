@@ -50,7 +50,11 @@ typedef struct _usbd_cdc_itf_t {
     uint8_t tx_need_empty_packet; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
     volatile uint8_t dev_is_connected; // indicates if we are connected
+    uint8_t attached_to_repl; // indicates if interface is connected to REPL
 } usbd_cdc_itf_t;
+
+// This is implemented in usb.c
+usbd_cdc_itf_t *usb_vcp_get(int idx);
 
 static inline int usbd_cdc_is_connected(usbd_cdc_itf_t *cdc) {
     return cdc->dev_is_connected;
