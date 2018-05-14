@@ -1,3 +1,7 @@
+# Set default python interpreters
+PYTHON2 ?= $(which python2 || which python2.7)
+PYTHON3 ?= python3
+
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
 BOARD ?= metro_m0_express
@@ -395,7 +399,7 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | python3 $(TOP)/tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -403,7 +407,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(ECHO) "Create $@"
-	python2 $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
+	$(PYTHON2) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 $(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: autogen_usb_descriptor.intermediate
 
@@ -411,7 +415,7 @@ $(BUILD)/autogen_usb_descriptor.c $(BUILD)/genhdr/autogen_usb_descriptor.h: auto
 
 autogen_usb_descriptor.intermediate: tools/gen_usb_descriptor.py Makefile
 	install -d $(BUILD)/genhdr
-	python3 tools/gen_usb_descriptor.py \
+	$(PYTHON3) tools/gen_usb_descriptor.py \
 		--manufacturer $(USB_MANUFACTURER)\
 		--product $(USB_PRODUCT)\
 		--vid $(USB_VID)\
