@@ -39,7 +39,8 @@ extern const mp_obj_type_t bitbangio_i2c_type;
 extern void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
                                                   const mcu_pin_obj_t * scl,
                                                   const mcu_pin_obj_t * sda,
-                                                  uint32_t frequency);
+                                                  uint32_t frequency,
+                                                  uint32_t us_timeout);
 
 extern void shared_module_bitbangio_i2c_deinit(bitbangio_i2c_obj_t *self);
 extern bool shared_module_bitbangio_i2c_deinited(bitbangio_i2c_obj_t *self);

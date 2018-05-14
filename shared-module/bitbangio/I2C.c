@@ -25,8 +25,8 @@
  */
 
 #include "shared-bindings/bitbangio/I2C.h"
-
 #include "py/mperrno.h"
+#include "py/nlr.h"
 #include "py/obj.h"
 
 #include "common-hal/microcontroller/Pin.h"
@@ -34,7 +34,6 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-module/bitbangio/types.h"
 
-#define I2C_STRETCH_LIMIT 255
 
 STATIC void delay(bitbangio_i2c_obj_t *self) {
     // We need to use an accurate delay to get acceptable I2C
@@ -48,10 +47,15 @@ STATIC void scl_low(bitbangio_i2c_obj_t *self) {
 
 STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_set_value(&self->scl, true);
+    uint32_t count = self->us_timeout;
     delay(self);
     // For clock stretching, wait for the SCL pin to be released, with timeout.
-    for (int count = I2C_STRETCH_LIMIT; !common_hal_digitalio_digitalinout_get_value(&self->scl) && count; --count) {
+    for (; !common_hal_digitalio_digitalinout_get_value(&self->scl) && count; --count) {
         common_hal_mcu_delay_us(1);
+    }
+    if(count==0) { /// raise exception on timeout
+        nlr_raise(mp_obj_new_exception_msg(&mp_type_TimeoutError,
+            "Clock Stretching Timeout."));
     }
 }
 
@@ -142,7 +146,10 @@ STATIC bool read_byte(bitbangio_i2c_obj_t *self, uint8_t *val, bool ack) {
 void shared_module_bitbangio_i2c_construct(bitbangio_i2c_obj_t *self,
                                            const mcu_pin_obj_t * scl,
                                            const mcu_pin_obj_t * sda,
-                                           uint32_t frequency) {
+                                           uint32_t frequency,
+                                           uint32_t us_timeout) {
+
+    self->us_timeout = us_timeout;
     self->us_delay = 500000 / frequency;
     if (self->us_delay == 0) {
         self->us_delay = 1;
