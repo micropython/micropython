@@ -26,7 +26,6 @@
 
 #include "shared-bindings/bitbangio/I2C.h"
 #include "py/mperrno.h"
-#include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 
