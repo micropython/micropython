@@ -26,8 +26,8 @@
 
 #include "autoreload.h"
 
-#include "lib/utils/interrupt_char.h"
 #include "py/mphal.h"
+#include "py/reload.h"
 
 volatile uint32_t autoreload_delay_ms = 0;
 bool autoreload_enabled = false;
@@ -40,7 +40,7 @@ inline void autoreload_tick() {
     }
     if (autoreload_delay_ms == 1 && autoreload_enabled &&
         !autoreload_suspended && !reload_requested) {
-        mp_keyboard_interrupt();
+        mp_raise_reload_exception();
         reload_requested = true;
     }
     autoreload_delay_ms--;
