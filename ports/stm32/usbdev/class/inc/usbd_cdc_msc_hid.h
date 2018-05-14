@@ -39,17 +39,13 @@
 #define MSC_IN_EP     (0x81)
 #define MSC_OUT_EP    (0x01)
 
-// Need to define here for usbd_cdc_interface.c (it needs CDC_IN_EP)
-#define CDC_IN_EP     (0x83)
-#define CDC_OUT_EP    (0x03)
-#define CDC_CMD_EP    (0x82)
-
 struct _usbd_cdc_msc_hid_state_t;
 
 typedef struct {
     struct _usbd_cdc_msc_hid_state_t *usbd; // The parent USB device
     uint32_t ctl_packet_buf[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32-bit alignment
     uint8_t iface_num;
+    uint8_t in_ep;
     uint8_t cur_request;
     uint8_t cur_length;
     volatile uint8_t tx_in_progress;

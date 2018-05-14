@@ -61,6 +61,11 @@
 #define MSC_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_CDC (0)
 #define HID_IFACE_NUM_WITH_MSC (1)
+
+#define CDC_IN_EP (0x83)
+#define CDC_OUT_EP (0x03)
+#define CDC_CMD_EP (0x82)
+
 #define HID_IN_EP_WITH_CDC (0x81)
 #define HID_OUT_EP_WITH_CDC (0x01)
 #define HID_IN_EP_WITH_MSC (0x83)
@@ -648,6 +653,10 @@ int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_Mode
         default:
             // mode not supported
             return -1;
+    }
+
+    if (usbd->usbd_mode & USBD_MODE_CDC) {
+        usbd->cdc->in_ep = CDC_IN_EP;
     }
 
     // configure the HID descriptor, if needed

@@ -165,7 +165,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
         // doing other things and we must give it a chance to read our data.
         if (cdc->tx_buf_ptr_wait_count < 500) {
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-            if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
+            if (USBx_INEP(cdc->base.in_ep & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
                 cdc->tx_buf_ptr_wait_count++;
                 return;
