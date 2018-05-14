@@ -28,6 +28,7 @@
 #include "py/mperrno.h"
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/runtime.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -54,8 +55,8 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
         common_hal_mcu_delay_us(1);
     }
     if(count==0) { /// raise exception on timeout
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_TimeoutError,
-            "Clock Stretching Timeout."));
+        mp_raise_msg(&mp_type_TimeoutError,
+           "Clock Stretching Timeout.");
     }
 }
 
