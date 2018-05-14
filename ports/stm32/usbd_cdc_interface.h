@@ -35,7 +35,7 @@
 #define USBD_CDC_TX_DATA_SIZE (1024) // I think this can be any value (was 2048)
 
 typedef struct _usbd_cdc_itf_t {
-    usbd_cdc_msc_hid_state_t *usbd; // the parent USB device
+    usbd_cdc_state_t base; // state for the base CDC layer
 
     uint8_t rx_packet_buf[CDC_DATA_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
     uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it

@@ -56,9 +56,8 @@
 #define CDC_SET_CONTROL_LINE_STATE                  0x22
 #define CDC_SEND_BREAK                              0x23
 
-uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
-    // Link the parent state
-    cdc->usbd = usbd;
+uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
 
     // Reset all the CDC state
     // Note: we don't reset tx_buf_ptr_in in order to allow the output buffer to
@@ -80,7 +79,9 @@ uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
 // pbuf: buffer containing command data (request parameters)
 // length: number of data to be sent (in bytes)
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-int8_t usbd_cdc_control(usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length) {
+int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, uint16_t length) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+
     switch (cmd) {
         case CDC_SEND_ENCAPSULATED_COMMAND:
             /* Add your code here */
@@ -144,7 +145,7 @@ int8_t usbd_cdc_control(usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_
 // needed (reducing latency), and often enough (increasing bandwidth).
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
-    usbd_cdc_itf_t *cdc = usbd->cdc;
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)usbd->cdc;
 
     if (cdc == NULL || !cdc->dev_is_connected) {
         // CDC device is not connected to a host, so we are unable to send any data
@@ -185,7 +186,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = cdc->tx_buf_ptr_out_shadow;
 
-        if (USBD_CDC_TransmitPacket(cdc->usbd, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(cdc->base.usbd, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
             cdc->tx_buf_ptr_out_shadow += buffsize;
             if (cdc->tx_buf_ptr_out_shadow == USBD_CDC_TX_DATA_SIZE) {
                 cdc->tx_buf_ptr_out_shadow = 0;
@@ -206,7 +207,9 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 // Data received over USB OUT endpoint is processed here.
 // len: number of bytes received into the buffer we passed to USBD_CDC_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, size_t len) {
+int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+
     // copy the incoming data into the circular buffer
     for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
         if (mp_interrupt_char != -1 && *src == mp_interrupt_char) {
@@ -223,7 +226,7 @@ int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, size_t len) {
     }
 
     // initiate next USB packet transfer
-    USBD_CDC_ReceivePacket(cdc->usbd, cdc->rx_packet_buf);
+    USBD_CDC_ReceivePacket(cdc->base.usbd, cdc->rx_packet_buf);
 
     return USBD_OK;
 }
