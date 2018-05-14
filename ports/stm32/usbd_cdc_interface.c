@@ -186,7 +186,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = cdc->tx_buf_ptr_out_shadow;
 
-        if (USBD_CDC_TransmitPacket(cdc->base.usbd, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(&cdc->base, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
             cdc->tx_buf_ptr_out_shadow += buffsize;
             if (cdc->tx_buf_ptr_out_shadow == USBD_CDC_TX_DATA_SIZE) {
                 cdc->tx_buf_ptr_out_shadow = 0;
@@ -226,7 +226,7 @@ int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
     }
 
     // initiate next USB packet transfer
-    USBD_CDC_ReceivePacket(cdc->base.usbd, cdc->rx_packet_buf);
+    USBD_CDC_ReceivePacket(&cdc->base, cdc->rx_packet_buf);
 
     return USBD_OK;
 }
