@@ -7,7 +7,7 @@
 #include "usbd_cdc_msc_hid.h"
 
 typedef struct _usbd_hid_itf_t {
-    usbd_cdc_msc_hid_state_t *usbd; // the parent USB device
+    usbd_hid_state_t base; // state for the base HID layer
 
     uint8_t buffer[2][HID_DATA_FS_MAX_PACKET_SIZE]; // pair of buffers to read individual packets into
     int8_t current_read_buffer; // which buffer to read from

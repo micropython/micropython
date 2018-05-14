@@ -98,25 +98,25 @@ typedef enum {
 } HID_StateTypeDef;
 
 typedef struct {
-    uint32_t             Protocol;
-    uint32_t             IdleState;
-    uint32_t             AltSetting;
-    HID_StateTypeDef     state;
-} USBD_HID_HandleTypeDef;
+    struct _usbd_cdc_msc_hid_state_t *usbd; // The parent USB device
+    uint8_t iface_num;
+    uint8_t in_ep;
+    uint8_t out_ep;
+    uint8_t state;
+    uint8_t ctl_protocol;
+    uint8_t ctl_idle_state;
+    uint8_t ctl_alt_setting;
+    uint8_t *desc;
+    const uint8_t *report_desc;
+} usbd_hid_state_t;
 
 typedef struct _usbd_cdc_msc_hid_state_t {
     USBD_HandleTypeDef *pdev;
 
     uint8_t usbd_mode;
-    uint8_t hid_in_ep;
-    uint8_t hid_out_ep;
-    uint8_t hid_iface_num;
     uint8_t usbd_config_desc_size;
-    uint8_t *hid_desc;
-    const uint8_t *hid_report_desc;
 
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
-    USBD_HID_HandleTypeDef HID_ClassData;
 
     // RAM to hold the current descriptors, which we configure on the fly
     __ALIGN_BEGIN uint8_t usbd_device_desc[USB_LEN_DEV_DESC] __ALIGN_END;
@@ -124,7 +124,7 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
     usbd_cdc_state_t *cdc;
-    void *hid;
+    usbd_hid_state_t *hid;
 } usbd_cdc_msc_hid_state_t;
 
 #define USBD_HID_MOUSE_MAX_PACKET          (4)
@@ -185,8 +185,7 @@ int8_t usbd_cdc_control(usbd_cdc_state_t *cdc, uint8_t cmd, uint8_t* pbuf, uint1
 int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc, size_t len);
 
 // These are provided externally to implement the HID interface
-struct _usbd_hid_itf_t;
-uint8_t *usbd_hid_init(struct _usbd_hid_itf_t *hid, usbd_cdc_msc_hid_state_t *usbd);
-int8_t usbd_hid_receive(struct _usbd_hid_itf_t *hid, size_t len);
+uint8_t *usbd_hid_init(usbd_hid_state_t *hid);
+int8_t usbd_hid_receive(usbd_hid_state_t *hid, size_t len);
 
 #endif // _USB_CDC_MSC_CORE_H_
