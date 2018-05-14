@@ -188,6 +188,8 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_BUILTINS_FROZENSET (1)
     #define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
     #define MICROPY_PY_BUILTINS_REVERSED (1)
+    #define MICROPY_PY_UERRNO (1)
+    #define MICROPY_PY_UERRNO_ERRORCODE (0)
     #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
     #define MICROPY_PY_FRAMEBUF         (1)
