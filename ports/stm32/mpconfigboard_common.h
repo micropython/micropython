@@ -37,6 +37,11 @@
 #define MICROPY_PY_STM (1)
 #endif
 
+// Whether to include legacy functions and classes in the pyb module
+#ifndef MICROPY_PY_PYB_LEGACY
+#define MICROPY_PY_PYB_LEGACY (1)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
