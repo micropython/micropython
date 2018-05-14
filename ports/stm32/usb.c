@@ -354,10 +354,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_mode_obj, 0, pyb_usb_mode);
 
 typedef struct _pyb_usb_vcp_obj_t {
     mp_obj_base_t base;
-    usb_device_t *usb_dev;
+    usbd_cdc_itf_t *cdc_itf;
 } pyb_usb_vcp_obj_t;
 
-STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp_obj = {{&pyb_usb_vcp_type}, &usb_device};
+STATIC const pyb_usb_vcp_obj_t pyb_usb_vcp_obj = {{&pyb_usb_vcp_type}, &usb_device.usbd_cdc_itf};
 
 STATIC void pyb_usb_vcp_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_print_str(print, "USB_VCP()");
@@ -383,7 +383,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_usb_vcp_setinterrupt_obj, pyb_usb_vcp_setin
 
 STATIC mp_obj_t pyb_usb_vcp_isconnected(mp_obj_t self_in) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(usbd_cdc_is_connected(&self->usb_dev->usbd_cdc_itf));
+    return mp_obj_new_bool(usbd_cdc_is_connected(self->cdc_itf));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_isconnected_obj, pyb_usb_vcp_isconnected);
 
@@ -397,7 +397,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_have_cdc_obj, pyb_have_cdc);
 /// Return `True` if any characters waiting, else `False`.
 STATIC mp_obj_t pyb_usb_vcp_any(mp_obj_t self_in) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (usbd_cdc_rx_num(&self->usb_dev->usbd_cdc_itf) > 0) {
+    if (usbd_cdc_rx_num(self->cdc_itf) > 0) {
         return mp_const_true;
     } else {
         return mp_const_false;
@@ -430,7 +430,7 @@ STATIC mp_obj_t pyb_usb_vcp_send(size_t n_args, const mp_obj_t *args, mp_map_t *
     pyb_buf_get_for_send(vals[0].u_obj, &bufinfo, data);
 
     // send the data
-    int ret = usbd_cdc_tx(&self->usb_dev->usbd_cdc_itf, bufinfo.buf, bufinfo.len, vals[1].u_int);
+    int ret = usbd_cdc_tx(self->cdc_itf, bufinfo.buf, bufinfo.len, vals[1].u_int);
 
     return mp_obj_new_int(ret);
 }
@@ -457,7 +457,7 @@ STATIC mp_obj_t pyb_usb_vcp_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
     mp_obj_t o_ret = pyb_buf_get_for_recv(vals[0].u_obj, &vstr);
 
     // receive the data
-    int ret = usbd_cdc_rx(&self->usb_dev->usbd_cdc_itf, (uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
+    int ret = usbd_cdc_rx(self->cdc_itf, (uint8_t*)vstr.buf, vstr.len, vals[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -495,7 +495,7 @@ STATIC MP_DEFINE_CONST_DICT(pyb_usb_vcp_locals_dict, pyb_usb_vcp_locals_dict_tab
 
 STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = usbd_cdc_rx(&self->usb_dev->usbd_cdc_itf, (byte*)buf, size, 0);
+    int ret = usbd_cdc_rx(self->cdc_itf, (byte*)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
         *errcode = MP_EAGAIN;
@@ -506,7 +506,7 @@ STATIC mp_uint_t pyb_usb_vcp_read(mp_obj_t self_in, void *buf, mp_uint_t size, i
 
 STATIC mp_uint_t pyb_usb_vcp_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    int ret = usbd_cdc_tx(&self->usb_dev->usbd_cdc_itf, (const byte*)buf, size, 0);
+    int ret = usbd_cdc_tx(self->cdc_itf, (const byte*)buf, size, 0);
     if (ret == 0) {
         // return EAGAIN error to indicate non-blocking
         *errcode = MP_EAGAIN;
@@ -521,10 +521,10 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && usbd_cdc_rx_num(&self->usb_dev->usbd_cdc_itf) > 0) {
+        if ((flags & MP_STREAM_POLL_RD) && usbd_cdc_rx_num(self->cdc_itf) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(&self->usb_dev->usbd_cdc_itf)) {
+        if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(self->cdc_itf)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
