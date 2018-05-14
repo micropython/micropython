@@ -880,7 +880,7 @@ static uint8_t USBD_CDC_MSC_HID_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTyp
     // Work out the recipient of the setup request
     uint8_t mode = usbd->usbd_mode;
     uint8_t recipient = 0;
-    usbd_cdc_state_t *cdc;
+    usbd_cdc_state_t *cdc = NULL;
     switch (req->bmRequest & USB_REQ_RECIPIENT_MASK) {
         case USB_REQ_RECIPIENT_INTERFACE: {
             uint16_t iface = req->wIndex;
