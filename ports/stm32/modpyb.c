@@ -28,19 +28,12 @@
 #include <stdio.h>
 
 #include "py/runtime.h"
-#include "py/gc.h"
-#include "py/builtin.h"
 #include "py/mphal.h"
 #include "lib/utils/pyexec.h"
-#include "lib/oofatfs/ff.h"
-#include "lib/oofatfs/diskio.h"
 #include "drivers/dht/dht.h"
-#include "gccollect.h"
 #include "stm32_it.h"
 #include "irq.h"
-#include "systick.h"
 #include "led.h"
-#include "pin.h"
 #include "timer.h"
 #include "extint.h"
 #include "usrsw.h"
@@ -71,16 +64,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_fault_debug_obj, pyb_fault_debug);
 
 #if MICROPY_PY_PYB_LEGACY
 
-/// \function elapsed_millis(start)
-/// Returns the number of milliseconds which have elapsed since `start`.
-///
-/// This function takes care of counter wrap, and always returns a positive
-/// number. This means it can be used to measure periods upto about 12.4 days.
-///
-/// Example:
-///     start = pyb.millis()
-///     while pyb.elapsed_millis(start) < 1000:
-///         # Perform some operation
+// Returns the number of milliseconds which have elapsed since `start`.
+// This function takes care of counter wrap and always returns a positive number.
 STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
     uint32_t startMillis = mp_obj_get_int(start);
     uint32_t currMillis = mp_hal_ticks_ms();
@@ -88,16 +73,8 @@ STATIC mp_obj_t pyb_elapsed_millis(mp_obj_t start) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_elapsed_millis_obj, pyb_elapsed_millis);
 
-/// \function elapsed_micros(start)
-/// Returns the number of microseconds which have elapsed since `start`.
-///
-/// This function takes care of counter wrap, and always returns a positive
-/// number. This means it can be used to measure periods upto about 17.8 minutes.
-///
-/// Example:
-///     start = pyb.micros()
-///     while pyb.elapsed_micros(start) < 1000:
-///         # Perform some operation
+// Returns the number of microseconds which have elapsed since `start`.
+// This function takes care of counter wrap and always returns a positive number.
 STATIC mp_obj_t pyb_elapsed_micros(mp_obj_t start) {
     uint32_t startMicros = mp_obj_get_int(start);
     uint32_t currMicros = mp_hal_ticks_us();
