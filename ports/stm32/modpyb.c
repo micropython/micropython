@@ -227,7 +227,7 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 #if defined(MICROPY_HW_LED1)
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pyb_led_type) },
 #endif
-    #if MICROPY_HW_ENABLE_HW_I2C
+    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&pyb_i2c_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&pyb_spi_type) },
