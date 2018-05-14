@@ -62,9 +62,9 @@ int8_t usbd_hid_receive(usbd_hid_state_t *hid_in, size_t len) {
     hid->current_write_buffer = !hid->current_write_buffer;
     hid->last_read_len = len;
     // initiate next USB packet transfer, to append to existing data in buffer
-    USBD_HID_ReceivePacket(hid->base.usbd, hid->buffer[hid->current_write_buffer]);
+    USBD_HID_ReceivePacket(&hid->base, hid->buffer[hid->current_write_buffer]);
     // Set NAK to indicate we need to process read buffer
-    USBD_HID_SetNAK(hid->base.usbd);
+    USBD_HID_SetNAK(&hid->base);
     return USBD_OK;
 }
 
@@ -102,7 +102,7 @@ int usbd_hid_rx(usbd_hid_itf_t *hid, size_t len, uint8_t *buf, uint32_t timeout)
     hid->current_read_buffer = !hid->current_read_buffer;
 
     // Clear NAK to indicate we are ready to read more data
-    USBD_HID_ClearNAK(hid->base.usbd);
+    USBD_HID_ClearNAK(&hid->base);
 
     // Success, return number of bytes read
     return read_len;

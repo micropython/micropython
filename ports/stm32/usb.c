@@ -628,7 +628,7 @@ STATIC mp_obj_t pyb_usb_hid_send(mp_obj_t self_in, mp_obj_t report_in) {
     }
 
     // send the data
-    if (USBD_OK == USBD_HID_SendReport(&self->usb_dev->usbd_cdc_msc_hid_state, bufinfo.buf, bufinfo.len)) {
+    if (USBD_OK == USBD_HID_SendReport(&self->usb_dev->usbd_hid_itf.base, bufinfo.buf, bufinfo.len)) {
         return mp_obj_new_int(bufinfo.len);
     } else {
         return mp_obj_new_int(0);
@@ -660,7 +660,7 @@ STATIC mp_uint_t pyb_usb_hid_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_
         if ((flags & MP_STREAM_POLL_RD) && usbd_hid_rx_num(&self->usb_dev->usbd_hid_itf) > 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&self->usb_dev->usbd_cdc_msc_hid_state)) {
+        if ((flags & MP_STREAM_POLL_WR) && USBD_HID_CanSendReport(&self->usb_dev->usbd_hid_itf.base)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
