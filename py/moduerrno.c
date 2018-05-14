@@ -100,6 +100,20 @@ const mp_obj_module_t mp_module_uerrno = {
 };
 
 qstr mp_errno_to_str(mp_obj_t errno_val) {
+    // For commonly encountered errors, return human readable strings
+    if (MP_OBJ_IS_SMALL_INT(errno_val)) {
+        switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
+            case EPERM:  return MP_QSTR_Permission_space_denied;
+            case ENOENT: return MP_QSTR_No_space_such_space_file_slash_directory;
+            case EIO:    return MP_QSTR_Input_slash_output_space_error;
+            case EACCES: return MP_QSTR_Permission_space_denied;
+            case EEXIST: return MP_QSTR_File_space_exists;
+            case ENODEV: return MP_QSTR_Unsupported_space_operation;
+            case EINVAL: return MP_QSTR_Invalid_space_argument;
+        }
+    }
+
+    // Otherwise, return the Exxxx string for that error code
     #if MICROPY_PY_UERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t*)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
