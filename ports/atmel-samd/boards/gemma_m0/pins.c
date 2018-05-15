@@ -23,12 +23,3 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
-// https://learn.adafruit.com/building-circuitpython/build-circuitpython
-// make BOARD=gemma_m0
-// screen  /dev/tty.usbmodem1411
-// enger
-// control AK to kill screen
-// import board
-// board.I2C()
-// two long clicks
-// /ports/amtel-sand/build-gemma_m0/firmware.uf2

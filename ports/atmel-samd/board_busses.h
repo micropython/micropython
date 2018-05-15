@@ -28,6 +28,6 @@
 #define MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
 
 void board_i2c(void);
-mp_obj_t board_i2c_obj;
+extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
