@@ -1,4 +1,5 @@
 #include "samd21_pins.h"
+#include "board_busses.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) },
@@ -26,5 +27,6 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RFM69_D0), MP_ROM_PTR(&pin_PA09) },
     { MP_ROM_QSTR(MP_QSTR_RFM69_RST), MP_ROM_PTR(&pin_PA08) },
     { MP_ROM_QSTR(MP_QSTR_RFM69_CS), MP_ROM_PTR(&pin_PA06) },
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
