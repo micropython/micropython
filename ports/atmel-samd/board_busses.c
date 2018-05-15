@@ -28,22 +28,35 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "mpconfigboard.h"
 #include "pins.h"
+#include "py/runtime.h"
 
-STATIC mp_obj_t i2c_singleton = NULL;
 
-STATIC mp_obj_t board_i2c(void) {
-    #if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)
-        mp_raise_NotImplementedError('no default bus');
-    #endif
-    if (i2c_singleton == NULL) {
-        busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
-        self->base.type = &busio_i2c_type;
 
-        assert_pin_free(DEFAULT_I2C_BUS_SDA);
-        assert_pin_free(DEFAULT_I2C_BUS_SCL);
-        common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000);
-        i2c_singleton = (mp_obj_t)self;
+#if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)
+
+    STATIC mp_obj_t board_i2c(void) {
+        //board_i2c_obj = NULL;
+        mp_raise_NotImplementedError("no default bus");
+        return NULL;
     }
-    return i2c_singleton;
-}
+
+#else
+    STATIC mp_obj_t i2c_singleton = NULL;
+
+    STATIC mp_obj_t board_i2c(void) {
+
+        if (i2c_singleton == NULL) {
+            busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
+            self->base.type = &busio_i2c_type;
+
+            assert_pin_free(DEFAULT_I2C_BUS_SDA);
+            assert_pin_free(DEFAULT_I2C_BUS_SCL);
+            common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000);
+            i2c_singleton = (mp_obj_t)self;
+        }
+        return i2c_singleton;
+
+    }
+#endif
+
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
