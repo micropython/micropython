@@ -36,7 +36,7 @@
 
     STATIC mp_obj_t board_i2c(void) {
         //board_i2c_obj = NULL;
-        mp_raise_NotImplementedError("no default bus");
+        mp_raise_NotImplementedError("No default I2C bus");
         return NULL;
     }
 
