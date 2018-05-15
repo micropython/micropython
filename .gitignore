@@ -7,7 +7,7 @@
 *.bin
 *.map
 *.hex
-!ports/nrf/**/bootloader/*.hex
+!ports/nrf/**/bootloader/**/*.hex
 *.dis
 *.exe
 
