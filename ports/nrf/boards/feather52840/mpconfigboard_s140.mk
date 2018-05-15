@@ -29,7 +29,7 @@ __check_defined = \
     $(if $(value $1),, \
     $(error Undefined make flag: $1$(if $2, ($2))))
 
-.PHONY: dfu-gen dfu-flash boot-flash
+.PHONY: dfu-gen dfu-flash boot-flash boot-usb-flash
 
 dfu-gen:
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
