@@ -33,6 +33,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+#include "extmod/misc.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "gccollect.h"
@@ -65,6 +66,25 @@ STATIC void mp_reset(void) {
         pyexec_file("main.py");
     }
 #endif
+
+    // Check if there are any dupterm objects registered and if not then
+    // activate UART(0), or else there will never be any chance to get a REPL
+    size_t idx;
+    for (idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
+        if (MP_STATE_VM(dupterm_objs[idx]) != MP_OBJ_NULL) {
+            break;
+        }
+    }
+    if (idx == MICROPY_PY_OS_DUPTERM) {
+        mp_obj_t args[2];
+        args[0] = MP_OBJ_NEW_SMALL_INT(0);
+        args[1] = MP_OBJ_NEW_SMALL_INT(115200);
+        args[0] = pyb_uart_type.make_new(&pyb_uart_type, 2, 0, args);
+        args[1] = MP_OBJ_NEW_SMALL_INT(1);
+        extern mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args);
+        os_dupterm(2, args);
+        mp_hal_stdout_tx_str("Activated UART(0) for REPL\r\n");
+    }
 }
 
 void soft_reset(void) {
