@@ -117,6 +117,7 @@ typedef struct
 typedef void (*uart_complete_cb)(void);
 
 void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_init);
+bool hal_uart_inited(NRF_UART_Type * p_instance);
 
 hal_uart_error_t hal_uart_char_write(NRF_UART_Type * p_instance, uint8_t ch);
 

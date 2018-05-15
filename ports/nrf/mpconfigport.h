@@ -330,6 +330,6 @@ extern const struct _mp_obj_module_t ble_module;
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
-//#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
+#define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #endif

@@ -31,7 +31,7 @@ __check_defined = \
 .PHONY: dfu-gen dfu-flash boot-flash
 
 dfu-gen:
-	$(NRFUTIL) dfu genpkg --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
+	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
 
 dfu-flash:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
