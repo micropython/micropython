@@ -720,7 +720,7 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
-#if defined(MICROPY_HW_UART7_TX)
+#if defined(UART8)
 void UART7_IRQHandler(void) {
     IRQ_ENTER(UART7_IRQn);
     uart_irq_handler(7);
@@ -728,7 +728,7 @@ void UART7_IRQHandler(void) {
 }
 #endif
 
-#if defined(MICROPY_HW_UART8_TX)
+#if defined(UART8)
 void UART8_IRQHandler(void) {
     IRQ_ENTER(UART8_IRQn);
     uart_irq_handler(8);
