@@ -12,6 +12,9 @@
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
+#define DEFAULT_I2C_BUS_SCL (&pin_PA04)
+#define DEFAULT_I2C_BUS_SCA (&pin_PA05)
+
 #include "internal_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
