@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 
+#include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
@@ -236,37 +237,66 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
-//|   .. method:: SPI.write_readinto(buffer_out, buffer_in)
+//|   .. method:: SPI.write_readinto(buffer_out, buffer_in, \*, out_start=0, out_end=len(buffer_out), in_start=0, in_end=len(buffer_in))
 //|
 //|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
-STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *args) {
-    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+//|     The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
+//|     must be equal.
+//|     If buffer slice lengths are both 0, nothing happens.
+//|
+//|     :param bytearray buffer_out: Write out the data in this buffer
+//|     :param bytearray buffer_in: Read data into this buffer
+//|     :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
+//|     :param int out_end: End of the slice; this index is not included
+//|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
+//|     :param int in_end: End of the slice; this index is not included
+//|
+STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer_out,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_buffer_in,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_out_start,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_out_end,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_in_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     raise_error_if_deinited(shared_module_bitbangio_spi_deinited(self));
 
-    mp_buffer_info_t bufinfoin;
-    mp_get_buffer_raise(args[2], &bufinfoin, MP_BUFFER_WRITE);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (bufinfoin.len == 0) {
+    mp_buffer_info_t buf_out_info;
+    mp_get_buffer_raise(args[ARG_buffer_out].u_obj, &buf_out_info, MP_BUFFER_READ);
+    int32_t out_start = args[ARG_out_start].u_int;
+    uint32_t out_length = buf_out_info.len;
+    normalize_buffer_bounds(&out_start, args[ARG_out_end].u_int, &out_length);
+
+    mp_buffer_info_t buf_in_info;
+    mp_get_buffer_raise(args[ARG_buffer_in].u_obj, &buf_in_info, MP_BUFFER_WRITE);
+    int32_t in_start = args[ARG_in_start].u_int;
+    uint32_t in_length = buf_in_info.len;
+    normalize_buffer_bounds(&in_start, args[ARG_in_end].u_int, &in_length);
+
+    if (out_length != in_length) {
+        mp_raise_ValueError("buffer slices must be of equal length");
+    }
+
+    if (out_length == 0) {
         return mp_const_none;
     }
 
-    mp_buffer_info_t bufinfoout;
-    mp_get_buffer_raise(args[1], &bufinfoout, MP_BUFFER_READ);
-
-    if (bufinfoout.len != bufinfoin.len) {
-        mp_raise_ValueError("buffers must be of equal length");
-    }
-
     bool ok = shared_module_bitbangio_spi_transfer(self,
-                                            ((uint8_t*)bufinfoout.buf),
-                                            ((uint8_t*)bufinfoin.buf),
-                                            bufinfoin.len);
+                                            ((uint8_t*)buf_out_info.buf) + out_start,
+                                            ((uint8_t*)buf_in_info.buf) + in_start,
+                                            out_length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_write_readinto_obj, 3, 3, bitbangio_spi_write_readinto);
+MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_readinto_obj, 2, bitbangio_spi_write_readinto);
 
 STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&bitbangio_spi_deinit_obj) },

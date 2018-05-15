@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 by Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_I2S_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_I2S_H
+
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "include/sam.h"
 
-void samd_peripherals_sercom_clock_init(Sercom* sercom, uint8_t sercom_index);
-uint8_t samd_peripherals_get_spi_dopo(uint8_t clock_pad, uint8_t mosi_pad);
-bool samd_peripherals_valid_spi_clock_pad(uint8_t clock_pad);
+void turn_on_i2s(void);
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SAMD21_PERIPHERALS_H
+void i2s_set_enable(bool enable);
+void i2s_set_clock_unit_enable(uint8_t clock, bool enable);
+void i2s_set_serializer_enable(uint8_t serializer, bool enable);
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_I2S_H

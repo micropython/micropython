@@ -267,7 +267,6 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         turn_on_event_system();
         dma->event_channel = find_sync_event_channel();
         init_event_channel_interrupt(dma->event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
-        find_sync_event_channel();
 
         // We keep the audio_dma_t for internal use and the sample as a root pointer because it
         // contains the audiodma structure.
@@ -275,11 +274,16 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         MP_STATE_PORT(playing_audio)[dma->dma_channel] = dma->sample;
     }
 
-    dma->beat_size = 1;
-    dma->bytes_per_sample = 1;
+
     if (audiosample_bits_per_sample(sample) == 16) {
         dma->beat_size = 2;
         dma->bytes_per_sample = 2;
+    } else {
+        dma->beat_size = 1;
+        dma->bytes_per_sample = 1;
+        if (single_channel) {
+            output_register_address += 1;
+        }
     }
     // Transfer both channels at once.
     if (!single_channel && audiosample_channel_count(sample) == 2) {
@@ -319,6 +323,23 @@ void audio_dma_stop(audio_dma_t* dma) {
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
 
+void audio_dma_pause(audio_dma_t* dma) {
+    dma_suspend_channel(dma->dma_channel);
+}
+
+void audio_dma_resume(audio_dma_t* dma) {
+    dma_resume_channel(dma->dma_channel);
+}
+
+bool audio_dma_get_paused(audio_dma_t* dma) {
+    if (dma->dma_channel >= AUDIO_DMA_CHANNEL_COUNT) {
+        return false;
+    }
+    uint32_t status = dma_transfer_status(dma->dma_channel);
+
+    return (status & DMAC_CHINTFLAG_SUSP) != 0;
+}
+
 void audio_dma_init(audio_dma_t* dma) {
     dma->dma_channel = AUDIO_DMA_CHANNEL_COUNT;
 }
@@ -337,11 +358,11 @@ bool audio_dma_get_playing(audio_dma_t* dma) {
         return false;
     }
     uint32_t status = dma_transfer_status(dma->dma_channel);
-    if ((status & DMAC_CHINTFLAG_TCMPL) != 0) {
+    if ((status & DMAC_CHINTFLAG_TCMPL) != 0 || (status & DMAC_CHINTFLAG_TERR) != 0) {
         audio_dma_stop(dma);
     }
 
-    return status == 0;
+    return (status & DMAC_CHINTFLAG_TERR) == 0;
 }
 
 // WARN(tannewt): DO NOT print from here. Printing calls background tasks such as this and causes a

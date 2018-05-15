@@ -52,21 +52,21 @@ void SysTick_Handler(void) {
 
 void tick_init() {
     uint32_t ticks_per_ms = common_hal_mcu_processor_get_frequency() / 1000;
-    SysTick_Config(ticks_per_ms);
+    SysTick_Config(ticks_per_ms-1);
     NVIC_EnableIRQ(SysTick_IRQn);
 }
 
 void tick_delay(uint32_t us) {
     uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
-    uint32_t us_between_ticks = SysTick->VAL / ticks_per_us;
-    uint64_t start_ms = ticks_ms;
-    while (us > 1000) {
-        while (ticks_ms == start_ms) {}
-        us -= us_between_ticks;
-        start_ms = ticks_ms;
-        us_between_ticks = 1000;
+    uint32_t us_until_next_tick = SysTick->VAL / ticks_per_us;
+    uint32_t start_tick;
+    while (us >= us_until_next_tick) {
+        start_tick=SysTick->VAL;  // wait for SysTick->VAL to  RESET
+        while (SysTick->VAL < start_tick) {}
+        us -= us_until_next_tick;
+        us_until_next_tick = 1000;
     }
-    while (SysTick->VAL > ((us_between_ticks - us) * ticks_per_us)) {}
+    while (SysTick->VAL > ((us_until_next_tick - us) * ticks_per_us)) {}
 }
 
 // us counts down!

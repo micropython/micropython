@@ -202,7 +202,7 @@ Methods
         (ssid, bssid, channel, RSSI, authmode, hidden)
 
     *bssid* is hardware address of an access point, in binary form, returned as
-    bytes object. You can use `ubinascii.hexlify()` to convert it to ASCII form.
+    bytes object. You can use `binascii.hexlify()` to convert it to ASCII form.
 
     There are five values for authmode:
 

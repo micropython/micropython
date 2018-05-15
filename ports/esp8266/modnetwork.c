@@ -410,8 +410,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             return mp_obj_new_bytes(mac, sizeof(mac));
         }
         case QS(MP_QSTR_essid):
-            req_if = SOFTAP_IF;
-            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            if (self->if_id == STATION_IF) {
+                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid), false);
+            } else {
+                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len, false);
+            }
             break;
         case QS(MP_QSTR_hidden):
             req_if = SOFTAP_IF;

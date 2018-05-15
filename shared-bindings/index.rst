@@ -23,11 +23,13 @@ Module             Supported Ports
 `analogio`         **All Supported**
 `audiobusio`       **SAMD/SAMD Express**
 `audioio`          **SAMD Express**
+`binascii`         **ESP8266**
 `bitbangio`        **SAMD Express, ESP8266**
 `board`            **All Supported**
 `busio`            **All Supported**
 `digitalio`        **All Supported**
 `gamepad`          **SAMD Express, nRF**
+`hashlib`          **ESP8266**
 `math`             **All Supported**
 `microcontroller`  **All Supported**
 `multiterminal`    **ESP8266**

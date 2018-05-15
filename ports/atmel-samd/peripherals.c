@@ -42,4 +42,3 @@ uint8_t samd_peripherals_spi_baudrate_to_baud_reg_value(const uint32_t baudrate)
 uint32_t samd_peripherals_spi_baud_reg_value_to_baudrate(const uint8_t baud_reg_value) {
     return PROTOTYPE_SERCOM_SPI_M_SYNC_CLOCK_FREQUENCY / (2 * (baud_reg_value + 1));
 }
-

@@ -327,6 +327,32 @@ void common_hal_audioio_audioout_play(audioio_audioout_obj_t* self,
     self->playing = true;
 }
 
+void common_hal_audioio_audioout_pause(audioio_audioout_obj_t* self) {
+    audio_dma_pause(&self->left_dma);
+    #ifdef SAMD51
+    audio_dma_pause(&self->right_dma);
+    #endif
+}
+
+void common_hal_audioio_audioout_resume(audioio_audioout_obj_t* self) {
+    // Clear any overrun/underrun errors
+    #ifdef SAMD21
+    DAC->INTFLAG.reg = DAC_INTFLAG_UNDERRUN;
+    #endif
+    #ifdef SAMD51
+    DAC->INTFLAG.reg = DAC_INTFLAG_UNDERRUN0 | DAC_INTFLAG_UNDERRUN1;
+    #endif
+
+    audio_dma_resume(&self->left_dma);
+    #ifdef SAMD51
+    audio_dma_resume(&self->right_dma);
+    #endif
+}
+
+bool common_hal_audioio_audioout_get_paused(audioio_audioout_obj_t* self) {
+    return audio_dma_get_paused(&self->left_dma);
+}
+
 void common_hal_audioio_audioout_stop(audioio_audioout_obj_t* self) {
     Tc* timer = tc_insts[self->tc_index];
     timer->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;

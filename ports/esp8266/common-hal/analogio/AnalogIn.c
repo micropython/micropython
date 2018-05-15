@@ -36,14 +36,12 @@
 
 #include "user_interface.h"
 
-volatile bool adc_in_use __attribute__((aligned(4))) = false;
-
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (pin != &pin_TOUT) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin %q does not have ADC capabilities", pin->name));
     }
-    adc_in_use = true;
+    claim_pin(pin);
 }
 
 bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t* self) {
@@ -54,7 +52,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t* self) {
     if (common_hal_analogio_analogin_deinited(self)) {
         return;
     }
-    adc_in_use = false;
+    reset_pin(&pin_TOUT);
     self->deinited = true;
 }
 

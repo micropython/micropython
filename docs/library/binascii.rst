@@ -1,9 +1,7 @@
-:mod:`ubinascii` -- binary/ASCII conversions
+:mod:`binascii` -- binary/ASCII conversions
 ============================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
-.. module:: ubinascii
+.. module:: binascii
    :synopsis: binary/ASCII conversions
 
 |see_cpython_module| :mod:`cpython:binascii`.

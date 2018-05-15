@@ -31,11 +31,14 @@ Designed for CircuitPython
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -  `Adafruit CircuitPlayground
-   Express <https://www.adafruit.com/product/3333>`__
+   Express <https://www.adafruit.com/product/3333>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-circuit-playground-express/circuitpython-quickstart>`__)
 -  `Adafruit Feather M0
-   Express <https://www.adafruit.com/product/3403>`__
--  `Adafruit Metro M0 Express <https://www.adafruit.com/product/3505>`__
--  `Adafruit Gemma M0 <https://www.adafruit.com/product/3501>`__
+   Express <https://www.adafruit.com/product/3403>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/kattni-circuitpython>`__)
+-  `Adafruit Metro M0 Express <https://www.adafruit.com/product/3505>`_ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m0-express-designed-for-circuitpython/circuitpython>`__)
+-  `Adafruit Gemma M0 <https://www.adafruit.com/product/3501>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-gemma-m0/circuitpython>`__)
+-  `Adafruit ItsyBitsy M0 Express <https://www.adafruit.com/product/3727>`_ (no CircuitPython Guide yet!)
+-  `Adafruit Trinket M0 <https://www.adafruit.com/product/3500>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-trinket-m0-circuitpython-arduino/circuitpython>`__)
+-  `Adafruit Metro M4 <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/overview>`__)
 
 Other
 ~~~~~
@@ -69,8 +72,15 @@ System <https://learn.adafruit.com/>`__ under the `CircuitPython
 category <https://learn.adafruit.com/category/circuitpython>`__ and
 `MicroPython
 category <https://learn.adafruit.com/category/micropython>`__. An API
-reference is also available on `Read the
-Docs <http://circuitpython.readthedocs.io/en/latest/?>`__.
+reference is also available on `Read the Docs
+<http://circuitpython.readthedocs.io/en/latest/?>`__. A collection of awesome
+resources can be found at `Awesome CircuitPython <https://github.com/adafruit/awesome-circuitpython>`__.
+
+Specifically useful documentation when starting out:
+
+- `Welcome to CircuitPython <https://learn.adafruit.com/welcome-to-circuitpython>`__
+- `CircuitPython Essentials <https://learn.adafruit.com/circuitpython-essentials>`__
+- `Example Code <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/CircuitPython_Essentials>`__
 
 Contributing
 ------------

@@ -28,6 +28,9 @@ print(binascii.a2b_base64(b'Zm9v=='))
 print(binascii.a2b_base64(b'Zm9v==='))
 print(binascii.a2b_base64(b'Zm9v===YmFy'))
 
+# Unicode strings can be decoded
+print(binascii.a2b_base64(u'Zm9v===YmFy'))
+
 try:
     print(binascii.a2b_base64(b'abc'))
 except ValueError:

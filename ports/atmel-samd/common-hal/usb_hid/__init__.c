@@ -35,12 +35,27 @@
 #include "genhdr/autogen_usb_descriptor.h"
 
 // Buffers are report size + 1 to include the Report ID prefix byte if needed.
+#ifdef USB_HID_REPORT_LENGTH_KEYBOARD
 static uint8_t keyboard_report_buffer[USB_HID_REPORT_LENGTH_KEYBOARD + 1];
+#endif
+#ifdef USB_HID_REPORT_ID_MOUSE
 static uint8_t mouse_report_buffer[USB_HID_REPORT_LENGTH_MOUSE + 1];
+#endif
+#ifdef USB_HID_REPORT_ID_CONSUMER
 static uint8_t consumer_report_buffer[USB_HID_REPORT_LENGTH_CONSUMER + 1];
+#endif
+#ifdef USB_HID_REPORT_ID_SYS_CONTROL
 static uint8_t sys_control_report_buffer[USB_HID_REPORT_LENGTH_SYS_CONTROL + 1];
+#endif
+#ifdef USB_HID_REPORT_ID_GAMEPAD
+static uint8_t gamepad_report_buffer[USB_HID_REPORT_LENGTH_GAMEPAD + 1];
+#endif
+#ifdef USB_HID_REPORT_ID_DIGITIZER
+static uint8_t digitizer_report_buffer[USB_HID_REPORT_LENGTH_DIGITIZER + 1];
+#endif
 
 usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
+#ifdef USB_HID_REPORT_LENGTH_KEYBOARD
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = keyboard_report_buffer,
@@ -50,6 +65,8 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .usage_page = 0x01,
         .usage = 0x06,
     },
+#endif
+#ifdef USB_HID_REPORT_ID_MOUSE
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = mouse_report_buffer,
@@ -59,6 +76,8 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .usage_page = 0x01,
         .usage = 0x02,
     },
+#endif
+#ifdef USB_HID_REPORT_ID_CONSUMER
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = consumer_report_buffer,
@@ -68,6 +87,8 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .usage_page = 0x0C,
         .usage = 0x01,
     },
+#endif
+#ifdef USB_HID_REPORT_ID_SYS_CONTROL
     {
         .base = { .type = &usb_hid_device_type },
         .report_buffer = sys_control_report_buffer,
@@ -77,6 +98,29 @@ usb_hid_device_obj_t usb_hid_devices[USB_HID_NUM_DEVICES] = {
         .usage_page = 0x01,
         .usage = 0x80,
     },
+#endif
+#ifdef USB_HID_REPORT_ID_GAMEPAD
+    {
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = gamepad_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_GAMEPAD,
+        .report_length = USB_HID_REPORT_LENGTH_GAMEPAD,
+        .usage_page = 0x01,
+        .usage = 0x05,
+    },
+#endif
+#ifdef USB_HID_REPORT_ID_DIGITIZER
+    {
+        .base = { .type = &usb_hid_device_type },
+        .report_buffer = digitizer_report_buffer,
+        .endpoint = USB_HID_ENDPOINT_IN,
+        .report_id = USB_HID_REPORT_ID_DIGITIZER,
+        .report_length = USB_HID_REPORT_LENGTH_DIGITIZER,
+        .usage_page = 0x0D,
+        .usage = 0x02,
+    },
+#endif
 };
 
 
@@ -86,9 +130,23 @@ mp_obj_tuple_t common_hal_usb_hid_devices = {
     },
     .len = USB_HID_NUM_DEVICES,
     .items = {
+#if USB_HID_NUM_DEVICES >= 1
         (mp_obj_t) &usb_hid_devices[0],
+#endif
+#if USB_HID_NUM_DEVICES >= 2
         (mp_obj_t) &usb_hid_devices[1],
+#endif
+#if USB_HID_NUM_DEVICES >= 3
         (mp_obj_t) &usb_hid_devices[2],
+#endif
+#if USB_HID_NUM_DEVICES >= 4
         (mp_obj_t) &usb_hid_devices[3],
+#endif
+#if USB_HID_NUM_DEVICES >= 5
+        (mp_obj_t) &usb_hid_devices[4],
+#endif
+#if USB_HID_NUM_DEVICES >= 6
+        (mp_obj_t) &usb_hid_devices[5],
+#endif
     }
 };

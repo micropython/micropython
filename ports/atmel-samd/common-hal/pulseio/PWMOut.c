@@ -151,6 +151,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         // one output so we start with the TCs to see if they work.
         int8_t direction = -1;
         uint8_t start = NUM_TIMERS_PER_PIN - 1;
+        bool found = false;
         if (variable_frequency) {
             direction = 1;
             start = 0;
@@ -162,6 +163,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 continue;
             }
             if (t->is_tc) {
+                found = true;
                 Tc* tc = tc_insts[t->index];
                 if (tc->COUNT16.CTRLA.bit.ENABLE == 0 && t->wave_output == 1) {
                     timer = t;
@@ -177,7 +179,11 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         }
 
         if (timer == NULL) {
-            mp_raise_RuntimeError("All timers in use");
+            if (found) {
+                mp_raise_ValueError("All timers for this pin are in use");
+            } else {
+                mp_raise_RuntimeError("All timers in use");
+            }
             return;
         }
 

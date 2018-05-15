@@ -91,7 +91,7 @@ uint8_t find_async_event_channel(void) {
 #define EVSYS_SYNCH_NUM EVSYS_CHANNELS
 #endif
 uint8_t find_sync_event_channel(void) {
-    int8_t channel;
+    uint8_t channel;
     for (channel = 0; channel < EVSYS_SYNCH_NUM; channel++) {
         if (channel_free(channel)) {
             break;
@@ -145,6 +145,8 @@ void init_event_channel_interrupt(uint8_t channel, uint8_t gclk, uint8_t generat
     EVSYS->Channel[channel].CHANNEL.reg = EVSYS_CHANNEL_EVGEN(generator) |
                                           EVSYS_CHANNEL_PATH_SYNCHRONOUS |
                                           EVSYS_CHANNEL_EDGSEL_RISING_EDGE;
+    EVSYS->Channel[channel].CHINTFLAG.reg = EVSYS_CHINTFLAG_EVD | EVSYS_CHINTFLAG_OVR;
+    EVSYS->Channel[channel].CHINTENSET.reg = EVSYS_CHINTENSET_EVD | EVSYS_CHINTENSET_OVR;
     #endif
     #ifdef SAMD21
     EVSYS->CHANNEL.reg = EVSYS_CHANNEL_CHANNEL(channel) |
@@ -187,8 +189,25 @@ bool event_interrupt_active(uint8_t channel) {
     // Only clear if we know its active, otherwise there is the possibility it becomes after we
     // check but before we clear.
     if (active) {
-        EVSYS->Channel[channel].CHINTFLAG.reg = EVSYS_CHINTFLAG_EVD;
+        EVSYS->Channel[channel].CHINTFLAG.reg = EVSYS_CHINTFLAG_EVD | EVSYS_CHINTFLAG_OVR;
     }
     #endif
     return active;
+}
+
+bool event_interrupt_overflow(uint8_t channel) {
+    bool overflow = false;
+    #ifdef SAMD21
+    if (channel > 7) {
+        uint8_t value = 1 << (channel - 7);
+        overflow = (EVSYS->INTFLAG.reg & EVSYS_INTFLAG_OVRp8(value)) != 0;
+    } else {
+        uint8_t value = 1 << channel;
+        overflow = (EVSYS->INTFLAG.reg & EVSYS_INTFLAG_OVR(value)) != 0;
+    }
+    #endif
+    #ifdef SAMD51
+    overflow = EVSYS->Channel[channel].CHINTFLAG.bit.OVR;
+    #endif
+    return overflow;
 }

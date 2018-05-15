@@ -20,10 +20,10 @@ Python standard libraries and micro-libraries
    array.rst
    gc.rst
    sys.rst
-   ubinascii.rst
-   ucollections.rst
+   binascii.rst
+   collections.rst
    uerrno.rst
-   uhashlib.rst
+   hashlib.rst
    uheapq.rst
    uio.rst
    ujson.rst

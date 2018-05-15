@@ -30,6 +30,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
+#include "genhdr/mpversion.h"
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/frozenmod.h"
@@ -99,19 +100,27 @@ void reset_mp(void) {
 }
 #define STRING_LIST(...) {__VA_ARGS__, ""}
 
-bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
-
+// Look for the first file that exists in the list of filenames, using mp_import_stat().
+// Return its index. If no file found, return -1.
+const char* first_existing_file_in_list(const char ** filenames) {
     for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
-        if (stat != MP_IMPORT_STAT_FILE) {
-            continue;
+        if (stat == MP_IMPORT_STAT_FILE) {
+            return filenames[i];
         }
-        serial_write(filenames[i]);
-        serial_write(MSG_OUTPUT_SUFFIX);
-        pyexec_file(filenames[i], exec_result);
-        return true;
     }
-    return false;
+    return NULL;
+}
+
+bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
+    const char* filename = first_existing_file_in_list(filenames);
+    if (filename == NULL) {
+        return false;
+    }
+    mp_hal_stdout_tx_str(filename);
+    mp_hal_stdout_tx_str(MSG_OUTPUT_SUFFIX);
+    pyexec_file(filename, exec_result);
+    return true;
 }
 
 bool start_mp(safe_mode_t safe_mode) {
@@ -261,27 +270,67 @@ int __attribute__((used)) main(void) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
+        static const char *boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+
         new_status_color(BOOT_RUNNING);
+
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        // Since USB isn't up yet we can cheat and let ourselves write the boot
-        // output file.
-        filesystem_writable_by_python(true);
         FIL file_pointer;
         boot_output_file = &file_pointer;
-        f_open(&((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs,
-            boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
-        filesystem_writable_by_python(false);
+
+        // Get the base filesystem.
+        FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+
+        bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
+
+        bool skip_boot_output = false;
+
+        // If there's no boot.py file that might write some changing output,
+        // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
+        // match the version info we would print anyway. If so, skip writing CIRCUITPY_BOOT_OUTPUT_FILE.
+        // This saves wear and tear on the flash and also prevents filesystem damage if power is lost
+        // during the write, which may happen due to bobbling the power connector or weak power.
+
+        if (!have_boot_py && f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
+            char file_contents[512];
+            UINT chars_read = 0;
+            f_read(boot_output_file, file_contents, 512, &chars_read);
+            f_close(boot_output_file);
+            skip_boot_output =
+                // + 2 accounts for  \r\n.
+                chars_read == strlen(MICROPY_FULL_VERSION_INFO) + 2 &&
+                strncmp(file_contents, MICROPY_FULL_VERSION_INFO, strlen(MICROPY_FULL_VERSION_INFO)) == 0;
+        }
+
+        if (!skip_boot_output) {
+            // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
+            // in case power is momentary or will fail shortly due to, say a low, battery.
+            mp_hal_delay_ms(1500);
+
+            // USB isn't up, so we can write the file.
+            filesystem_writable_by_python(true);
+            f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+
+            // Switch the filesystem back to non-writable by Python now instead of later,
+            // since boot.py might change it back to writable.
+            filesystem_writable_by_python(false);
+
+            // Write version info to boot_out.txt.
+            mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
+            mp_hal_stdout_tx_str("\r\n");
+        }
         #endif
 
         // TODO(tannewt): Re-add support for flashing boot error output.
-        static const char *filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
-        bool found_boot = maybe_run_list(filenames, NULL);
+        bool found_boot = maybe_run_list(boot_py_filenames, NULL);
         (void) found_boot;
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        f_close(boot_output_file);
-        filesystem_flush();
-        boot_output_file = NULL;
+        if (!skip_boot_output) {
+            f_close(boot_output_file);
+            filesystem_flush();
+            boot_output_file = NULL;
+        }
         #endif
 
         // Reset to remove any state that boot.py setup. It should only be used to

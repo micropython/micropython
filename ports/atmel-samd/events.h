@@ -42,5 +42,6 @@ void connect_event_user_to_channel(uint8_t user, uint8_t channel);
 void init_async_event_channel(uint8_t channel, uint8_t generator);
 void init_event_channel_interrupt(uint8_t channel, uint8_t gclk, uint8_t generator);
 bool event_interrupt_active(uint8_t channel);
+bool event_interrupt_overflow(uint8_t channel);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EVENTS_H

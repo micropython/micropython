@@ -32,6 +32,7 @@
 #include "mpconfigboard.h" // for EXTERNAL_FLASH_QSPI_DUAL
 
 #include "external_flash/common_commands.h"
+#include "peripherals.h"
 #include "shared_dma.h"
 
 #include "atmel_start_pins.h"
@@ -55,6 +56,8 @@ bool spi_flash_command(uint8_t command) {
 }
 
 bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length) {
+    samd_peripherals_disable_and_clear_cache();
+
     QSPI->INSTRCTRL.bit.INSTR = command;
 
     QSPI->INSTRFRAME.reg = QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI |
@@ -62,6 +65,11 @@ bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length)
                            QSPI_INSTRFRAME_TFRTYPE_READ |
                            QSPI_INSTRFRAME_INSTREN |
                            QSPI_INSTRFRAME_DATAEN;
+
+    // Dummy read of INSTRFRAME needed to synchronize.
+    // See Instruction Transmission Flow Diagram, figure 37.9, page 995
+    // and Example 4, page 998, section 37.6.8.5.
+    (volatile uint32_t) QSPI->INSTRFRAME.reg;
 
     memcpy(response, (uint8_t *) QSPI_AHB, length);
 
@@ -71,20 +79,28 @@ bool spi_flash_read_command(uint8_t command, uint8_t* response, uint32_t length)
 
     QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
 
+    samd_peripherals_enable_cache();
+
     return true;
 }
 
 bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length) {
+    samd_peripherals_disable_and_clear_cache();
+
     QSPI->INSTRCTRL.bit.INSTR = command;
 
     QSPI->INSTRFRAME.reg = QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI |
                            QSPI_INSTRFRAME_ADDRLEN_24BITS |
                            QSPI_INSTRFRAME_TFRTYPE_WRITE |
-                           QSPI_INSTRFRAME_INSTREN;
+                           QSPI_INSTRFRAME_INSTREN |
+                           (data != NULL ? QSPI_INSTRFRAME_DATAEN : 0);
+
+    // Dummy read of INSTRFRAME needed to synchronize.
+    // See Instruction Transmission Flow Diagram, figure 37.9, page 995
+    // and Example 4, page 998, section 37.6.8.5.
+    (volatile uint32_t) QSPI->INSTRFRAME.reg;
 
     if (data != NULL) {
-        QSPI->INSTRFRAME.bit.DATAEN = true;
-
         memcpy((uint8_t *) QSPI_AHB, data, length);
     }
 
@@ -93,6 +109,8 @@ bool spi_flash_write_command(uint8_t command, uint8_t* data, uint32_t length) {
     while( !QSPI->INTFLAG.bit.INSTREND );
 
     QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
+
+    samd_peripherals_enable_cache();
 
     return true;
 }
@@ -117,6 +135,8 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
 }
 
 bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
+    samd_peripherals_disable_and_clear_cache();
+
     QSPI->INSTRCTRL.bit.INSTR = CMD_PAGE_PROGRAM;
     uint32_t mode = QSPI_INSTRFRAME_WIDTH_SINGLE_BIT_SPI;
 
@@ -137,10 +157,14 @@ bool spi_flash_write_data(uint32_t address, uint8_t* data, uint32_t length) {
 
     QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
 
+    samd_peripherals_enable_cache();
+
     return true;
 }
 
 bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
+    samd_peripherals_disable_and_clear_cache();
+
     #ifdef EXTERNAL_FLASH_QSPI_DUAL
     QSPI->INSTRCTRL.bit.INSTR = CMD_DUAL_READ;
     uint32_t mode = QSPI_INSTRFRAME_WIDTH_DUAL_OUTPUT;
@@ -167,6 +191,8 @@ bool spi_flash_read_data(uint32_t address, uint8_t* data, uint32_t length) {
 
     QSPI->INTFLAG.reg = QSPI_INTFLAG_INSTREND;
 
+    samd_peripherals_enable_cache();
+
     return true;
 }
 
@@ -183,7 +209,7 @@ void spi_flash_init(void) {
     // QSPI->BAUD.bit.BAUD = 32;
     // Super fast, may be unreliable when Saleae is connected to high speed lines.
     QSPI->BAUD.bit.BAUD = 2;
-    QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |
+    QSPI->CTRLB.reg = QSPI_CTRLB_MODE_MEMORY |        // Serial memory mode (map to QSPI_AHB)
                       QSPI_CTRLB_DATALEN_8BITS |
                       QSPI_CTRLB_CSMODE_LASTXFER;
 

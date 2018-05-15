@@ -11,6 +11,9 @@
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
+[submodule "lib/uzlib"]
+	path = lib/uzlib
+	url = https://github.com/pfalcon/uzlib
 [submodule "tools/uf2"]
 	path = tools/uf2
 	url = https://github.com/Microsoft/uf2.git
@@ -46,3 +49,9 @@
 [submodule "ports/atmel-samd/freetouch"]
 	path = ports/atmel-samd/freetouch
 	url = https://github.com/adafruit/Adafruit_FreeTouch.git
+[submodule "frozen/Adafruit_CircuitPython_CircuitPlayground"]
+	path = frozen/Adafruit_CircuitPython_CircuitPlayground
+	url = https://github.com/adafruit/Adafruit_CircuitPython_CircuitPlayground.git
+[submodule "frozen/Adafruit_CircuitPython_HID"]
+	path = frozen/Adafruit_CircuitPython_HID
+	url = https://github.com/adafruit/Adafruit_CircuitPython_HID.git
