@@ -118,6 +118,9 @@ STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 //static wifi_config_t wifi_ap_config = {{{0}}};
 static wifi_config_t wifi_sta_config = {{{0}}};
 
+// Set to "true" if esp_wifi_start() was called
+static bool wifi_started = false;
+
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
 static bool wifi_sta_connected = false;
@@ -197,9 +200,6 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
         ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
         ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
         ESP_LOGD("modnetwork", "Initialized");
-        ESP_EXCEPTIONS( esp_wifi_set_mode(0) );
-        ESP_EXCEPTIONS( esp_wifi_start() );
-        ESP_LOGD("modnetwork", "Started");
         initialized = 1;
     }
 
@@ -233,16 +233,32 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_initialize_obj, esp_initialize);
 #endif
 
 STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
-
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
     wifi_mode_t mode;
-    ESP_EXCEPTIONS( esp_wifi_get_mode(&mode) );
+    if (!wifi_started) {
+        mode = WIFI_MODE_NULL;
+    } else {
+        ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+    }
+
     int bit = (self->if_id == WIFI_IF_STA) ? WIFI_MODE_STA : WIFI_MODE_AP;
 
     if (n_args > 1) {
-      bool active = mp_obj_is_true(args[1]);
-      mode = active ? (mode | bit) : (mode & ~bit);
-      ESP_EXCEPTIONS( esp_wifi_set_mode(mode) );
+        bool active = mp_obj_is_true(args[1]);
+        mode = active ? (mode | bit) : (mode & ~bit);
+        if (mode == WIFI_MODE_NULL) {
+            if (wifi_started) {
+                ESP_EXCEPTIONS(esp_wifi_stop());
+                wifi_started = false;
+            }
+        } else {
+            ESP_EXCEPTIONS(esp_wifi_set_mode(mode));
+            if (!wifi_started) {
+                ESP_EXCEPTIONS(esp_wifi_start());
+                wifi_started = true;
+            }
+        }
     }
 
     return (mode & bit) ? mp_const_true : mp_const_false;
