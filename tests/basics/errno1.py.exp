@@ -1,3 +1,4 @@
 <class 'int'>
-[Errno  ] EIO
+[Errno  ] Input/output error
+[Errno  ] ENOBUFS
 9999

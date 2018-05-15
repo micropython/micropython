@@ -22,6 +22,27 @@ preferably in a virtualenv:
 
 In `circuitpython/`, build the docs:
 
-    sphinx-build -v -b html . _build/html
+    make html
 
 You'll find the index page at `_build/html/index.html`.
+
+### More flexibility
+
+Running `make` by itself will list out the multiple doc generating commands available.
+
+All commands will, by default, run with `-E` (forces a rebuild from scratch of docs) and `-v` (verbosity level 1).  This can be customized as desired:
+
+    # will turn OFF the force rebuild
+    make html FORCE=
+    
+    # will turn OFF the verbosity
+    make html VERBOSE=
+    
+    # will turn OFF the force rebuild and make it doubly verbose when running
+    make html FORCE= VERBOSE="-v -v"
+
+You can also pass other options to sphinx by using `SPHINXOPTS`.
+
+    make html SPHINXOPTS="-T"
+
+For more flexibility and customization, take a look at the Makefile for all variables you can pass in and overwrite.

@@ -6,13 +6,16 @@ PYTHON        = python3
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
-BUILDDIR      = build/$(MICROPY_PORT)
-CPYDIFFDIR    = ../tools
-CPYDIFF       = gen-cpydiff.py
-GENRSTDIR     = genrst
+# path to build the generated docs
+BUILDDIR      = _build
+# path to source files to process
+SOURCEDIR     = .
+# path to conf.py
+CONFDIR      = .
 # Run "make FORCE= ..." to avoid rebuilding from scratch (and risk
 # producing incorrect docs).
 FORCE         = -E
+VERBOSE       = -v
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -22,9 +25,10 @@ endif
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+BASEOPTS        = -c $(CONFDIR) $(PAPEROPT_$(PAPER)) $(FORCE) $(VERBOSE) $(SPHINXOPTS) $(SOURCEDIR)
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
-I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
+I18NSPHINXOPTS  = $(BASEOPTS)
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
@@ -52,19 +56,12 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
-	@echo "  cpydiff    to generate the MicroPython differences from CPython"
 
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -f $(GENRSTDIR)/*
 
-cpydiff:
-	@echo "Generating MicroPython Differences."
-	rm -f $(GENRSTDIR)/*
-	cd $(CPYDIFFDIR) && $(PYTHON) $(CPYDIFF)
-
-html: cpydiff
-	$(SPHINXBUILD) $(FORCE) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+html:
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -117,30 +114,34 @@ epub:
 	@echo
 	@echo "Build finished. The epub file is in $(BUILDDIR)/epub."
 
-latex: cpydiff
+latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo
 	@echo "Build finished; the LaTeX files are in $(BUILDDIR)/latex."
 	@echo "Run \`make' in that directory to run these through (pdf)latex" \
 	      "(use \`make latexpdf' here to do that automatically)."
 
-latexpdf: cpydiff
-	$(SPHINXBUILD) $(FORCE) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
+# seems to be malfunctioning
+latexpdf:
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
-latexpdfja: cpydiff
+# seems to be malfunctioning
+latexpdfja:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through platex and dvipdfmx..."
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf-ja
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
+# seems to be malfunctioning
 text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
 	@echo
 	@echo "Build finished. The text files are in $(BUILDDIR)/text."
 
+# seems to be malfunctioning
 man:
 	$(SPHINXBUILD) -b man $(ALLSPHINXOPTS) $(BUILDDIR)/man
 	@echo
