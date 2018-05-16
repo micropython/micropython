@@ -31,3 +31,7 @@
 #define EXTERNAL_FLASH_QSPI_DUAL
 
 #include "external_flash/external_flash.h"
+
+#define DEFAULT_SPI_BUS_CLK (&pin_PA17)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA19)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA18)
