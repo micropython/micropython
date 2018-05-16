@@ -32,7 +32,7 @@
 #include "pins.h"
 #include "nrf.h"
 
-void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency) {
+void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout ) {
     if (scl->pin == sda->pin) {
         mp_raise_ValueError("Invalid pins");
     }
