@@ -14,8 +14,6 @@
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
 
-// https://learn.adafruit.com/assets/46254
-// https://learn.adafruit.com/assets/46255
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 
