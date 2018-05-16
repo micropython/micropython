@@ -51,7 +51,7 @@
 
             assert_pin_free(DEFAULT_I2C_BUS_SDA);
             assert_pin_free(DEFAULT_I2C_BUS_SCL);
-            common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000);
+            common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 0);
             i2c_singleton = (mp_obj_t)self;
         }
         return i2c_singleton;
