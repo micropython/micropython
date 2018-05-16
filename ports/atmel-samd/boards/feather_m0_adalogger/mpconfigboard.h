@@ -13,8 +13,8 @@
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB03)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB02)
+#define DEFAULT_I2C_BUS_SCL (&pin_PA22)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA23)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PB11)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PB10)

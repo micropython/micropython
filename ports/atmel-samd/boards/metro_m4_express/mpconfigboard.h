@@ -33,6 +33,9 @@
 
 #include "external_flash/external_flash.h"
 
+#define DEFAULT_I2C_BUS_SCL (&pin_PB03)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB02)
+
 #define DEFAULT_SPI_BUS_SCK (&pin_PA13)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA12)
 #define DEFAULT_SPI_BUS_MISO (&pin_PA14)
