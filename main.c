@@ -168,7 +168,7 @@ bool start_mp(safe_mode_t safe_mode) {
         reset_status_led();
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
-            return reload_next_character;
+            return reload_requested;
         }
     }
 
@@ -180,7 +180,7 @@ bool start_mp(safe_mode_t safe_mode) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
         #endif
-        if (reload_next_character) {
+        if (reload_requested) {
             return true;
         }
 

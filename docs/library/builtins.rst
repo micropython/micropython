@@ -188,6 +188,10 @@ Exceptions
 
 .. exception:: RuntimeError
 
+.. exception:: ReloadException
+
+   `ReloadException` is used internally to deal with soft restarts.
+
 .. exception:: StopIteration
 
 .. exception:: SyntaxError
