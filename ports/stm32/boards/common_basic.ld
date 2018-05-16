@@ -1,3 +1,15 @@
+/* Memory layout for basic configuration:
+
+    FLASH       .isr_vector
+    FLASH       .text
+    FLASH       .data
+
+    RAM         .data
+    RAM         .bss
+    RAM         .heap
+    RAM         .stack
+*/
+
 ENTRY(Reset_Handler)
 
 /* define output sections */
@@ -9,24 +21,8 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
 
-        /* This first flash block is 16K annd the isr vectors only take up
-           about 400 bytes. So we pull in a couple of object files to pad it
-           out. */
-
         . = ALIGN(4);
-
-        /* NOTE: If you update the list of files contained in .isr_vector,
-                 then be sure to also update smhal/Makefile where it forcibly
-           builds each of these files with -Os */
-
-        */ff.o(.text*)
-        */vfs_fat_*.o(.text*)
-        */py/formatfloat.o(.text*)
-        */py/parsenum.o(.text*)
-        */py/mpprint.o(.text*)
-
-        . = ALIGN(4);
-    } >FLASH_ISR
+    } >FLASH
 
     /* The program code and other data goes into FLASH */
     .text :
@@ -39,7 +35,7 @@ SECTIONS
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
-    } >FLASH_TEXT
+    } >FLASH
 
     /* used by the startup to initialize data */
     _sidata = LOADADDR(.data);
@@ -56,7 +52,7 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >RAM AT> FLASH_TEXT
+    } >RAM AT> FLASH
 
     /* Uninitialized data section */
     .bss :

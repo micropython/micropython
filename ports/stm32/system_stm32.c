@@ -275,10 +275,14 @@ void SystemInit(void)
   #endif
 
   /* Configure the Vector Table location add offset address ------------------*/
+#ifdef MICROPY_HW_VTOR
+  SCB->VTOR = MICROPY_HW_VTOR;
+#else
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = SRAM1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+#endif
 #endif
 
   /* dpgeorge: enable 8-byte stack alignment for IRQ handlers, in accord with EABI */
@@ -400,7 +404,7 @@ void SystemClock_Config(void)
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
     RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
     #if defined(STM32H7)
     RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
@@ -594,17 +598,7 @@ void SystemClock_Config(void)
     HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
 
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-#endif
-}
-
-void HAL_MspInit(void) {
-#if defined(STM32F7) || defined(STM32H7)
-    /* Enable I-Cache */
-    SCB_EnableICache();
-
-    /* Enable D-Cache */
-    SCB_EnableDCache();
+    NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, TICK_INT_PRIORITY, 0));
 #endif
 }

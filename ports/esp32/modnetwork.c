@@ -59,34 +59,39 @@ NORETURN void _esp_exceptions(esp_err_t e) {
         mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
       case ESP_ERR_WIFI_NOT_STARTED:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
-      case ESP_ERR_WIFI_CONN:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
-      case ESP_ERR_WIFI_SSID:
-        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
-      case ESP_ERR_WIFI_FAIL:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Failure");
+      case ESP_ERR_WIFI_NOT_STOPPED:
+        mp_raise_msg(&mp_type_OSError, "Wifi Not Stopped");
       case ESP_ERR_WIFI_IF:
         mp_raise_msg(&mp_type_OSError, "Wifi Invalid Interface");
-      case ESP_ERR_WIFI_MAC:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
-      case ESP_ERR_WIFI_ARG:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Argument");
       case ESP_ERR_WIFI_MODE:
         mp_raise_msg(&mp_type_OSError, "Wifi Invalid Mode");
-      case ESP_ERR_WIFI_PASSWORD:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+      case ESP_ERR_WIFI_STATE:
+        mp_raise_msg(&mp_type_OSError, "Wifi Internal State Error");
+      case ESP_ERR_WIFI_CONN:
+        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
       case ESP_ERR_WIFI_NVS:
         mp_raise_msg(&mp_type_OSError, "Wifi Internal NVS Error");
+      case ESP_ERR_WIFI_MAC:
+        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
+      case ESP_ERR_WIFI_SSID:
+        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
+      case ESP_ERR_WIFI_PASSWORD:
+        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+      case ESP_ERR_WIFI_TIMEOUT:
+        mp_raise_OSError(MP_ETIMEDOUT);
+      case ESP_ERR_WIFI_WAKE_FAIL:
+        mp_raise_msg(&mp_type_OSError, "Wifi Wakeup Failure");
+      case ESP_ERR_WIFI_WOULD_BLOCK:
+        mp_raise_msg(&mp_type_OSError, "Wifi Would Block");
+      case ESP_ERR_WIFI_NOT_CONNECT:
+        mp_raise_msg(&mp_type_OSError, "Wifi Not Connected");
       case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
         mp_raise_msg(&mp_type_OSError, "TCP/IP Invalid Parameters");
       case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
         mp_raise_msg(&mp_type_OSError, "TCP/IP IF Not Ready");
       case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
         mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
-      case ESP_ERR_WIFI_TIMEOUT:
-        mp_raise_OSError(MP_ETIMEDOUT);
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-      case ESP_ERR_WIFI_NO_MEM:
         mp_raise_OSError(MP_ENOMEM); 
       default:
         nlr_raise(mp_obj_new_exception_msg_varg(
@@ -112,6 +117,9 @@ STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 //static wifi_config_t wifi_ap_config = {{{0}}};
 static wifi_config_t wifi_sta_config = {{{0}}};
+
+// Set to "true" if esp_wifi_start() was called
+static bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
@@ -192,9 +200,6 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
         ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
         ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
         ESP_LOGD("modnetwork", "Initialized");
-        ESP_EXCEPTIONS( esp_wifi_set_mode(0) );
-        ESP_EXCEPTIONS( esp_wifi_start() );
-        ESP_LOGD("modnetwork", "Started");
         initialized = 1;
     }
 
@@ -228,16 +233,32 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_initialize_obj, esp_initialize);
 #endif
 
 STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
-
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
     wifi_mode_t mode;
-    ESP_EXCEPTIONS( esp_wifi_get_mode(&mode) );
+    if (!wifi_started) {
+        mode = WIFI_MODE_NULL;
+    } else {
+        ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+    }
+
     int bit = (self->if_id == WIFI_IF_STA) ? WIFI_MODE_STA : WIFI_MODE_AP;
 
     if (n_args > 1) {
-      bool active = mp_obj_is_true(args[1]);
-      mode = active ? (mode | bit) : (mode & ~bit);
-      ESP_EXCEPTIONS( esp_wifi_set_mode(mode) );
+        bool active = mp_obj_is_true(args[1]);
+        mode = active ? (mode | bit) : (mode & ~bit);
+        if (mode == WIFI_MODE_NULL) {
+            if (wifi_started) {
+                ESP_EXCEPTIONS(esp_wifi_stop());
+                wifi_started = false;
+            }
+        } else {
+            ESP_EXCEPTIONS(esp_wifi_set_mode(mode));
+            if (!wifi_started) {
+                ESP_EXCEPTIONS(esp_wifi_start());
+                wifi_started = true;
+            }
+        }
     }
 
     return (mode & bit) ? mp_const_true : mp_const_false;
@@ -509,8 +530,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             return mp_obj_new_bytes(mac, sizeof(mac));
         }
         case QS(MP_QSTR_essid):
-            req_if = WIFI_IF_AP;
-            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+            if (self->if_id == WIFI_IF_STA) {
+                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
+            } else {
+                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+            }
             break;
         case QS(MP_QSTR_hidden):
             req_if = WIFI_IF_AP;
@@ -548,15 +572,15 @@ unknown:
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
-STATIC const mp_map_elem_t wlan_if_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_active), (mp_obj_t)&esp_active_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_connect), (mp_obj_t)&esp_connect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disconnect), (mp_obj_t)&esp_disconnect_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_status), (mp_obj_t)&esp_status_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_scan), (mp_obj_t)&esp_scan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_isconnected), (mp_obj_t)&esp_isconnected_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_config), (mp_obj_t)&esp_config_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ifconfig), (mp_obj_t)&esp_ifconfig_obj },
+STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&esp_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&esp_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disconnect), MP_ROM_PTR(&esp_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&esp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&esp_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
@@ -573,43 +597,30 @@ STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
 
 
-STATIC const mp_map_elem_t mp_module_network_globals_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_network) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR___init__), (mp_obj_t)&esp_initialize_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_WLAN), (mp_obj_t)&get_wlan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LAN), (mp_obj_t)&get_lan_obj },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_phy_mode), (mp_obj_t)&esp_phy_mode_obj },
+STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
+    { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_phy_mode_obj) },
 
 #if MODNETWORK_INCLUDE_CONSTANTS
-    { MP_OBJ_NEW_QSTR(MP_QSTR_STA_IF),
-        MP_OBJ_NEW_SMALL_INT(WIFI_IF_STA)},
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AP_IF),
-        MP_OBJ_NEW_SMALL_INT(WIFI_IF_AP)},
+    { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
+    { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(WIFI_IF_AP)},
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11B),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11B) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11G),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11G) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MODE_11N),
-        MP_OBJ_NEW_SMALL_INT(WIFI_PROTOCOL_11N) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_OPEN),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_OPEN) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WEP),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WEP) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_WPA_WPA2_PSK) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_AUTH_MAX),
-        MP_OBJ_NEW_SMALL_INT(WIFI_AUTH_MAX) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_PSK), MP_ROM_INT(WIFI_AUTH_WPA_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK) },
+    { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_LAN8720),
-        MP_OBJ_NEW_SMALL_INT(PHY_LAN8720) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_PHY_TLK110),
-        MP_OBJ_NEW_SMALL_INT(PHY_TLK110) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_TLK110), MP_ROM_INT(PHY_TLK110) },
 #endif
 };
 

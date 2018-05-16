@@ -39,12 +39,7 @@ typedef struct {
   uint8_t fn;
   uint8_t unit;
   uint8_t type;
-
-  union {
-    void          *reg;
-
-    PIN_DEFS_PORT_AF_UNION
-  };
+  void *reg; // The peripheral associated with this AF
 } pin_af_obj_t;
 
 typedef struct {
@@ -62,6 +57,9 @@ typedef struct {
 
 extern const mp_obj_type_t pin_type;
 extern const mp_obj_type_t pin_af_type;
+
+// Include all of the individual pin objects
+#include "genhdr/pins.h"
 
 typedef struct {
   const char *name;

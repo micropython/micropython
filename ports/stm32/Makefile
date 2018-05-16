@@ -72,6 +72,7 @@ CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
+CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
@@ -80,7 +81,7 @@ CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant -Wdouble-promotion
 endif
 
-LDFLAGS = -nostdlib -L $(LD_DIR) -T $(LD_FILE) -Map=$(@:.elf=.map) --cref
+LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Remove uncalled code from the final image.
@@ -216,6 +217,7 @@ SRC_C = \
 	bufhelper.c \
 	dma.c \
 	i2c.c \
+	pyb_i2c.c \
 	spi.c \
 	qspi.c \
 	uart.c \
@@ -251,9 +253,9 @@ SRC_C = \
 
 SRC_O = \
 	$(STARTUP_FILE) \
+	resethandler.o \
 	gchelper.o \
 
-$(BUILD)/$(HAL_DIR)/Src/%.o: CFLAGS += -fno-strict-aliasing
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
@@ -348,6 +350,11 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
 
+# This file contains performance critical functions so turn up the optimisation
+# level.  It doesn't add much to the code size and improves performance a bit.
+# Don't use -O3 with this file because gcc tries to optimise memset in terms of itself.
+$(BUILD)/lib/libc/string0.o: COPT += -O2
+
 # We put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
 # to be compiled with -O0, then edit boards/common.ld (in the .isr_vector section)
@@ -388,24 +395,47 @@ else
 	$(Q)$(DFU_UTIL) -a 0 -d $(DEVICE) -D $<
 endif
 
-FLASH_ADDR ?= 0x08000000
-TEXT_ADDR ?= 0x08020000
+# A board should specify TEXT0_ADDR if to use a different location than the
+# default for the firmware memory location.  A board can also optionally define
+# TEXT1_ADDR to split the firmware into two sections; see below for details.
+TEXT0_ADDR ?= 0x08000000
+
+ifeq ($(TEXT1_ADDR),)
+# No TEXT1_ADDR given so put all firmware at TEXT0_ADDR location
+
+deploy-stlink: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(TEXT0_ADDR)
+
+deploy-openocd: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK using OpenOCD"
+	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware.bin $(TEXT0_ADDR)"
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
+	$(ECHO) "Create $@"
+	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
+	$(Q)$(PYTHON) $(DFU) -b $(TEXT0_ADDR):$(BUILD)/firmware.bin $@
+
+else
+# TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
 
 deploy-stlink: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin $(FLASH_ADDR)
+	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin $(TEXT0_ADDR)
 	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT_ADDR)
+	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT1_ADDR)
 
 deploy-openocd: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
-	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(FLASH_ADDR) $(BUILD)/firmware1.bin $(TEXT_ADDR)"
+	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(TEXT0_ADDR) $(BUILD)/firmware1.bin $(TEXT1_ADDR)"
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector $^ $(BUILD)/firmware0.bin
 	$(Q)$(OBJCOPY) -O binary -j .text -j .data $^ $(BUILD)/firmware1.bin
-	$(Q)$(PYTHON) $(DFU) -b $(FLASH_ADDR):$(BUILD)/firmware0.bin -b $(TEXT_ADDR):$(BUILD)/firmware1.bin $@
+	$(Q)$(PYTHON) $(DFU) -b $(TEXT0_ADDR):$(BUILD)/firmware0.bin -b $(TEXT1_ADDR):$(BUILD)/firmware1.bin $@
+
+endif
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(ECHO) "GEN $@"

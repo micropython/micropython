@@ -394,9 +394,11 @@ static int tinf_inflate_uncompressed_block(TINF_DATA *d)
         unsigned int length, invlength;
 
         /* get length */
-        length = uzlib_get_byte(d) + 256 * uzlib_get_byte(d);
+        length = uzlib_get_byte(d);
+        length += 256 * uzlib_get_byte(d);
         /* get one's complement of length */
-        invlength = uzlib_get_byte(d) + 256 * uzlib_get_byte(d);
+        invlength = uzlib_get_byte(d);
+        invlength += 256 * uzlib_get_byte(d);
         /* check length */
         if (length != (~invlength & 0x0000ffff)) return TINF_DATA_ERROR;
 

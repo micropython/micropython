@@ -36,7 +36,6 @@
 #include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "spi.h"
 
 #include "ethernet/wizchip_conf.h"

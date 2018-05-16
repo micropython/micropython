@@ -15,10 +15,9 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 #define mp_hal_quiet_timing_exit(irq_state) restore_irq_pri(irq_state)
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
-extern bool mp_hal_ticks_cpu_enabled;
 void mp_hal_ticks_cpu_enable(void);
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    if (!mp_hal_ticks_cpu_enabled) {
+    if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
         mp_hal_ticks_cpu_enable();
     }
     return DWT->CYCCNT;
@@ -33,6 +32,11 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define MP_HAL_PIN_MODE_OUTPUT          (1)
 #define MP_HAL_PIN_MODE_ALT             (2)
 #define MP_HAL_PIN_MODE_ANALOG          (3)
+#if defined(GPIO_ASCR_ASC0)
+#define MP_HAL_PIN_MODE_ADC             (11)
+#else
+#define MP_HAL_PIN_MODE_ADC             (3)
+#endif
 #define MP_HAL_PIN_MODE_OPEN_DRAIN      (5)
 #define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN  (6)
 #define MP_HAL_PIN_PULL_NONE            (GPIO_NOPULL)
@@ -60,3 +64,4 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio);
 void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt);
 bool mp_hal_pin_config_alt(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint8_t fn, uint8_t unit);
+void mp_hal_pin_config_speed(mp_hal_pin_obj_t pin_obj, uint32_t speed);

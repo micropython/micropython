@@ -47,6 +47,7 @@
 #include "lib/utils/pyexec.h"
 #include "uart.h"
 #include "modmachine.h"
+#include "modnetwork.h"
 #include "mpthreadport.h"
 
 // MicroPython runs as a task under FreeRTOS
@@ -110,6 +111,7 @@ soft_reset:
 
     // deinitialise peripherals
     machine_pins_deinit();
+    usocket_events_deinit();
 
     mp_deinit();
     fflush(stdout);

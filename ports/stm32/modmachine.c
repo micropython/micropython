@@ -140,11 +140,11 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        printf("S=%lu\nH=%lu\nP1=%lu\nP2=%lu\n",
-               HAL_RCC_GetSysClockFreq(),
-               HAL_RCC_GetHCLKFreq(),
-               HAL_RCC_GetPCLK1Freq(),
-               HAL_RCC_GetPCLK2Freq());
+        printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
+               (unsigned int)HAL_RCC_GetSysClockFreq(),
+               (unsigned int)HAL_RCC_GetHCLKFreq(),
+               (unsigned int)HAL_RCC_GetPCLK1Freq(),
+               (unsigned int)HAL_RCC_GetPCLK2Freq());
     }
 
     // to print info about memory
@@ -377,7 +377,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // even if we don't use the PLL for the system clock, we still need it for USB, RNG and SDIO
         RCC_OscInitTypeDef RCC_OscInitStruct;
         RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+        RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
         RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
         RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
         RCC_OscInitStruct.PLL.PLLM = m;
@@ -500,7 +500,7 @@ STATIC mp_obj_t machine_sleep(void) {
     // reconfigure the system clock after waking up
 
     // enable HSE
-    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY)) {
     }
 

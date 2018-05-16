@@ -140,10 +140,12 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
 #endif
 
+#if MICROPY_PY_SYS_GETSIZEOF
 STATIC mp_obj_t mp_sys_getsizeof(mp_obj_t obj) {
     return mp_unary_op(MP_UNARY_OP_SIZEOF, obj);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
+#endif
 
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },

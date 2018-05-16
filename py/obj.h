@@ -179,7 +179,7 @@ static inline bool MP_OBJ_IS_QSTR(mp_const_obj_t o)
 #define MP_OBJ_NEW_QSTR(qst) ((mp_obj_t)((((mp_uint_t)(qst)) << 1) | 0x0002000000000001))
 
 #if MICROPY_PY_BUILTINS_FLOAT
-#define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b125769 + 0x8004000000000000))}
+#define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
 
 static inline bool mp_obj_is_float(mp_const_obj_t o) {
@@ -720,6 +720,7 @@ qstr mp_obj_str_get_qstr(mp_obj_t self_in); // use this if you will anyway conve
 const char *mp_obj_str_get_str(mp_obj_t self_in); // use this only if you need the string to be null terminated
 const char *mp_obj_str_get_data(mp_obj_t self_in, size_t *len);
 mp_obj_t mp_obj_str_intern(mp_obj_t str);
+mp_obj_t mp_obj_str_intern_checked(mp_obj_t obj);
 void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t str_len, bool is_bytes);
 
 #if MICROPY_PY_BUILTINS_FLOAT

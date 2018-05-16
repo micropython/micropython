@@ -28,19 +28,18 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "genhdr/pins.h"
 #include "qspi.h"
 
 #if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
 
 void qspi_init(void) {
     // Configure pins
-    mp_hal_pin_config(&MICROPY_HW_QSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 10);
-    mp_hal_pin_config(&MICROPY_HW_QSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(&MICROPY_HW_QSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(&MICROPY_HW_QSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(&MICROPY_HW_QSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
-    mp_hal_pin_config(&MICROPY_HW_QSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_CS, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 10);
+    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_SCK, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO2, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
+    mp_hal_pin_config(MICROPY_HW_QSPIFLASH_IO3, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, 9);
 
     // Bring up the QSPI peripheral
 

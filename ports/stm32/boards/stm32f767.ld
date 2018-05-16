@@ -7,6 +7,7 @@ MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 1024K
     FLASH_ISR (rx)  : ORIGIN = 0x08000000, LENGTH = 32K     /* sector 0, 32K */
+    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 2016K   /* sectors 1-11 3x32K 1*128K 7*256K */
     FLASH_FS (r)    : ORIGIN = 0x08008000, LENGTH = 96K     /* sectors 1, 2, 3 (32K each) */
     FLASH_TEXT (rx) : ORIGIN = 0x08020000, LENGTH = 896K    /* sectors 4-7 1*128Kib 3*256KiB = 896K */
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
@@ -21,9 +22,6 @@ _minimum_heap_size = 16K;
    above last byte of RAM.  Note that EABI requires the stack to be 8-byte
    aligned for a call. */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
-
-/* define common sections and symbols */
-INCLUDE common.ld
 
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);

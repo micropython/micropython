@@ -35,7 +35,7 @@
 #define USBD_CDC_TX_DATA_SIZE (1024) // I think this can be any value (was 2048)
 
 typedef struct _usbd_cdc_itf_t {
-    usbd_cdc_msc_hid_state_t *usbd; // the parent USB device
+    usbd_cdc_state_t base; // state for the base CDC layer
 
     uint8_t rx_packet_buf[CDC_DATA_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
     uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it
@@ -50,7 +50,11 @@ typedef struct _usbd_cdc_itf_t {
     uint8_t tx_need_empty_packet; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
     volatile uint8_t dev_is_connected; // indicates if we are connected
+    uint8_t attached_to_repl; // indicates if interface is connected to REPL
 } usbd_cdc_itf_t;
+
+// This is implemented in usb.c
+usbd_cdc_itf_t *usb_vcp_get(int idx);
 
 static inline int usbd_cdc_is_connected(usbd_cdc_itf_t *cdc) {
     return cdc->dev_is_connected;

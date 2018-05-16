@@ -369,7 +369,7 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
     /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
     PLL as system clock source (HSE and PLL are disabled in STOP mode) */
 
-    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
 
     /* Wait till HSE is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
@@ -720,7 +720,7 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
-#if defined(MICROPY_HW_UART7_TX)
+#if defined(UART8)
 void UART7_IRQHandler(void) {
     IRQ_ENTER(UART7_IRQn);
     uart_irq_handler(7);
@@ -728,7 +728,7 @@ void UART7_IRQHandler(void) {
 }
 #endif
 
-#if defined(MICROPY_HW_UART8_TX)
+#if defined(UART8)
 void UART8_IRQHandler(void) {
     IRQ_ENTER(UART8_IRQn);
     uart_irq_handler(8);
@@ -736,7 +736,7 @@ void UART8_IRQHandler(void) {
 }
 #endif
 
-#if MICROPY_HW_ENABLE_CAN
+#if defined(MICROPY_HW_CAN1_TX)
 void CAN1_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
@@ -754,7 +754,9 @@ void CAN1_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_1);
     IRQ_EXIT(CAN1_SCE_IRQn);
 }
+#endif
 
+#if defined(MICROPY_HW_CAN2_TX)
 void CAN2_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
@@ -772,7 +774,9 @@ void CAN2_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_2);
     IRQ_EXIT(CAN2_SCE_IRQn);
 }
-#endif // MICROPY_HW_ENABLE_CAN
+#endif
+
+#if MICROPY_PY_PYB_LEGACY
 
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
@@ -815,3 +819,19 @@ void I2C3_ER_IRQHandler(void) {
     IRQ_EXIT(I2C3_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C3_SCL)
+
+#if defined(MICROPY_HW_I2C4_SCL)
+void I2C4_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C4_EV_IRQn);
+    i2c_ev_irq_handler(4);
+    IRQ_EXIT(I2C4_EV_IRQn);
+}
+
+void I2C4_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C4_ER_IRQn);
+    i2c_er_irq_handler(4);
+    IRQ_EXIT(I2C4_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C4_SCL)
+
+#endif // MICROPY_PY_PYB_LEGACY

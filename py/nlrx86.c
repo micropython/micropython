@@ -39,15 +39,29 @@ unsigned int nlr_push_tail(nlr_buf_t *nlr) asm("nlr_push_tail");
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
 #endif
 
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 8
+// Since gcc 8.0 the naked attribute is supported
+#define USE_NAKED (1)
+#define UNDO_PRELUDE (0)
+#elif defined(__ZEPHYR__) || defined(__ANDROID__)
+// Zephyr and Android use a different calling convention by default
+#define USE_NAKED (0)
+#define UNDO_PRELUDE (0)
+#else
+#define USE_NAKED (0)
+#define UNDO_PRELUDE (1)
+#endif
+
+#if USE_NAKED
+__attribute__((naked))
+#endif
 unsigned int nlr_push(nlr_buf_t *nlr) {
+    #if !USE_NAKED
     (void)nlr;
+    #endif
 
     __asm volatile (
-    // Check for Zephyr, which uses a different calling convention
-    // by default.
-    // TODE: Better support for various x86 calling conventions
-    // (unfortunately, __attribute__((naked)) is not supported on x86).
-    #if !(defined(__ZEPHYR__) || defined(__ANDROID__))
+    #if UNDO_PRELUDE
     "pop    %ebp                \n" // undo function's prelude
     #endif
     "mov    4(%esp), %edx       \n" // load nlr_buf
@@ -61,7 +75,9 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     "jmp    nlr_push_tail       \n" // do the rest in C
     );
 
+    #if !USE_NAKED
     return 0; // needed to silence compiler warning
+    #endif
 }
 
 NORETURN void nlr_jump(void *val) {

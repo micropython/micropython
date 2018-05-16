@@ -130,8 +130,26 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
         return fat_vfs_import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
     #endif
-    // TODO delegate to vfs.stat() method
-    return MP_IMPORT_STAT_NO_EXIST;
+
+    // delegate to vfs.stat() method
+    mp_obj_t path_o = mp_obj_new_str(path_out, strlen(path_out));
+    mp_obj_t stat;
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        stat = mp_vfs_proxy_call(vfs, MP_QSTR_stat, 1, &path_o);
+        nlr_pop();
+    } else {
+        // assume an exception means that the path is not found
+        return MP_IMPORT_STAT_NO_EXIST;
+    }
+    mp_obj_t *items;
+    mp_obj_get_array_fixed_n(stat, 10, &items);
+    mp_int_t st_mode = mp_obj_get_int(items[0]);
+    if (st_mode & MP_S_IFDIR) {
+        return MP_IMPORT_STAT_DIR;
+    } else {
+        return MP_IMPORT_STAT_FILE;
+    }
 }
 
 mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
