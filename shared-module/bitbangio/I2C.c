@@ -53,9 +53,9 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     for (; !common_hal_digitalio_digitalinout_get_value(&self->scl) && count; --count) {
         common_hal_mcu_delay_us(1);
     }
-    if(count==0) { /// raise exception on timeout
-        mp_raise_msg(&mp_type_TimeoutError,
-           "Clock Stretching Timeout.");
+    // raise exception on timeout
+    if (count == 0) {
+        mp_raise_msg(&mp_type_TimeoutError, "Clock stretch too long");
     }
 }
 
