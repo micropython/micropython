@@ -32,3 +32,6 @@
 #define EXTERNAL_FLASH_DEVICES S25FL116K, S25FL216K, GD25Q16C
 
 #include "external_flash/external_flash.h"
+
+#define DEFAULT_I2C_BUS_SCL (&pin_PB03)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB02)
