@@ -1,9 +1,10 @@
+
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
+ * Copyright (c) 2018 "Eric Poulsen" <eric@zyxod.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +24,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ESP32_MODNETWORK_H
-#define MICROPY_INCLUDED_ESP32_MODNETWORK_H
 
-enum { PHY_LAN8720, PHY_TLK110 };
+#ifndef MICROPY_INCLUDED_ESP32_MACHINE_UART_H
+#define MICROPY_INCLUDED_ESP32_MACHINE_UART_H
 
-MP_DECLARE_CONST_FUN_OBJ_KW(get_lan_obj);
-MP_DECLARE_CONST_FUN_OBJ_1(get_ppp_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj);
+#include "driver/uart.h"
 
-void usocket_events_deinit(void);
+typedef struct _machine_uart_obj_t {
+    mp_obj_base_t base;
+    uart_port_t uart_num;
+    uint8_t bits;
+    uint8_t parity;
+    uint8_t stop;
+    int8_t tx;
+    int8_t rx;
+    int8_t rts;
+    int8_t cts;
+    uint16_t timeout;       // timeout waiting for first char (in ms)
+    uint16_t timeout_char;  // timeout waiting between chars (in ms)
+} machine_uart_obj_t;
 
 #endif
