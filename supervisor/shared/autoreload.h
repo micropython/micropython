@@ -29,7 +29,7 @@
 
 #include <stdbool.h>
 
-extern volatile bool reload_next_character;
+extern volatile bool reload_requested;
 
 void autoreload_tick(void);
 

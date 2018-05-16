@@ -93,21 +93,21 @@ const mcu_pin_obj_t pin_## p_name = { \
 // Pins in datasheet order.
 // NOTE(tannewt): TC wave out 0 is commented out because the first channel is
 // used to vary the 16 bit timer's frequency.
-#ifdef PIN_PA00
+#if defined(PIN_PA00) && !defined(IGNORE_PIN_PA00)
 PIN(PA00, EXTINT_CHANNEL(0), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(1, 0),
     TCC(2, 0),
     NO_TIMER);
 #endif
-#ifdef PIN_PA01
+#if defined(PIN_PA01) && !defined(IGNORE_PIN_PA01)
 PIN(PA01, EXTINT_CHANNEL(1), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(1, 1),
     TCC(2, 1),
     NO_TIMER);
 #endif
-#ifdef PIN_PA02
+#if defined(PIN_PA02) && !defined(IGNORE_PIN_PA02)
 // Touch is not allowed on A0 (PA02) on Circuit Playground Express.
 PIN(PA02, EXTINT_CHANNEL(2), ADC_INPUT(0),
     #ifdef PA02_NO_TOUCH
@@ -120,140 +120,140 @@ PIN(PA02, EXTINT_CHANNEL(2), ADC_INPUT(0),
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PA03
+#if defined(PIN_PA03) && !defined(IGNORE_PIN_PA03)
 PIN(PA03, EXTINT_CHANNEL(3), ADC_INPUT(1), TOUCH(1),
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PB04
+#if defined(PIN_PB04) && !defined(IGNORE_PIN_PB04)
 PIN(PB04, EXTINT_CHANNEL(4), ADC_INPUT(12), TOUCH(10),
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PB05
+#if defined(PIN_PB05) && !defined(IGNORE_PIN_PB05)
 PIN(PB05, EXTINT_CHANNEL(5), ADC_INPUT(13), TOUCH(11),
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PB06
+#if defined(PIN_PB06) && !defined(IGNORE_PIN_PB06)
 PIN(PB06, EXTINT_CHANNEL(6), ADC_INPUT(14), TOUCH(12),
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PB07
+#if defined(PIN_PB07) && !defined(IGNORE_PIN_PB07)
 PIN(PB07, EXTINT_CHANNEL(7), ADC_INPUT(15), TOUCH(13),
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PB08
+#if defined(PIN_PB08) && !defined(IGNORE_PIN_PB08)
 PIN(PB08, EXTINT_CHANNEL(8), ADC_INPUT(2), TOUCH(14),
     NO_SERCOM,
     SERCOM(4, 0),
     TC(4, 0),
     NO_TIMER);
 #endif
-#ifdef PIN_PB09
+#if defined(PIN_PB09) && !defined(IGNORE_PIN_PB09)
 PIN(PB09, EXTINT_CHANNEL(9), ADC_INPUT(3), TOUCH(15),
     NO_SERCOM,
     SERCOM(4, 1),
     TC(4, 1),
     NO_TIMER);
 #endif
-#ifdef PIN_PA04
+#if defined(PIN_PA04) && !defined(IGNORE_PIN_PA04)
 PIN(PA04, EXTINT_CHANNEL(4), ADC_INPUT(4), TOUCH(2),
     NO_SERCOM,
     SERCOM(0, 0),
     TCC(0, 0),
     NO_TIMER);
 #endif
-#ifdef PIN_PA05
+#if defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)
 PIN(PA05, EXTINT_CHANNEL(5), ADC_INPUT(5), TOUCH(3),
     NO_SERCOM,
     SERCOM(0, 1),
     TCC(0, 1),
     NO_TIMER);
 #endif
-#ifdef PIN_PA06
+#if defined(PIN_PA06) && !defined(IGNORE_PIN_PA06)
 PIN(PA06, EXTINT_CHANNEL(6), ADC_INPUT(6), TOUCH(4),
     NO_SERCOM,
     SERCOM(0, 2),
     TCC(1, 0),
     NO_TIMER);
 #endif
-#ifdef PIN_PA07
+#if defined(PIN_PA07) && !defined(IGNORE_PIN_PA07)
 PIN(PA07, EXTINT_CHANNEL(7), ADC_INPUT(7), TOUCH(5),
     NO_SERCOM,
     SERCOM(0, 3),
     TCC(1, 1),
     NO_TIMER);
 #endif
-#ifdef PIN_PA08
+#if defined(PIN_PA08) && !defined(IGNORE_PIN_PA08)
 PIN(PA08, NO_EXTINT, ADC_INPUT(16), NO_TOUCH,
     SERCOM(0, 0),
     SERCOM(2, 0),
     TCC(0, 0),
     TCC(1, 2));
 #endif
-#ifdef PIN_PA09
+#if defined(PIN_PA09) && !defined(IGNORE_PIN_PA09)
 PIN(PA09, EXTINT_CHANNEL(9), ADC_INPUT(17), NO_TOUCH,
     SERCOM(0, 1),
     SERCOM(2, 1),
     TCC(0, 1),
     TCC(1, 3));
 #endif
-#ifdef PIN_PA10
+#if defined(PIN_PA10) && !defined(IGNORE_PIN_PA10)
 PIN(PA10, EXTINT_CHANNEL(10), ADC_INPUT(18), NO_TOUCH,
     SERCOM(0, 2),
     SERCOM(2, 2),
     TCC(1, 0),
     TCC(0, 2));
 #endif
-#ifdef PIN_PA11
+#if defined(PIN_PA11) && !defined(IGNORE_PIN_PA11)
 PIN(PA11, EXTINT_CHANNEL(11), ADC_INPUT(19), NO_TOUCH,
     SERCOM(0, 3),
     SERCOM(2, 3),
     TCC(1, 1),
     TCC(0, 3));
 #endif
-#ifdef PIN_PB10
+#if defined(PIN_PB10) && !defined(IGNORE_PIN_PB10)
 PIN(PB10, EXTINT_CHANNEL(10), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(4, 2),
     TC(5, 0),
     TCC(0, 4));
 #endif
-#ifdef PIN_PB11
+#if defined(PIN_PB11) && !defined(IGNORE_PIN_PB11)
 PIN(PB11, EXTINT_CHANNEL(11), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(4, 3),
     TC(5, 1),
     TCC(0, 5));
 #endif
-#ifdef PIN_PB12
+#if defined(PIN_PB12) && !defined(IGNORE_PIN_PB12)
 PIN(PB12, EXTINT_CHANNEL(12), NO_ADC, NO_TOUCH,
     SERCOM(4, 0),
     NO_SERCOM,
     TC(4, 0),
     TCC(0, 6));
 #endif
-#ifdef PIN_PB13
+#if defined(PIN_PB13) && !defined(IGNORE_PIN_PB13)
 PIN(PB13, EXTINT_CHANNEL(13), NO_ADC, NO_TOUCH,
     SERCOM(4, 1),
     NO_SERCOM,
     TC(4, 1),
     TCC(0, 7));
 #endif
-#ifdef PIN_PB14
+#if defined(PIN_PB14) && !defined(IGNORE_PIN_PB14)
 PIN(PB14, EXTINT_CHANNEL(14), NO_ADC, NO_TOUCH,
     SERCOM(4, 2),
     NO_SERCOM,
@@ -262,28 +262,28 @@ PIN(PB14, EXTINT_CHANNEL(14), NO_ADC, NO_TOUCH,
 #endif
 
 // Second page.
-#ifdef PIN_PB15
+#if defined(PIN_PB15) && !defined(IGNORE_PIN_PB15)
 PIN(PB15, EXTINT_CHANNEL(15), NO_ADC, NO_TOUCH,
     SERCOM(4, 3),
     NO_SERCOM,
     TC(5, 1),
     NO_TIMER);
 #endif
-#ifdef PIN_PA12
+#if defined(PIN_PA12) && !defined(IGNORE_PIN_PA12)
 PIN(PA12, EXTINT_CHANNEL(12), NO_ADC, NO_TOUCH,
     SERCOM(2, 0),
     SERCOM(4, 0),
     TCC(2, 0),
     TCC(0, 6));
 #endif
-#ifdef PIN_PA13
+#if defined(PIN_PA13) && !defined(IGNORE_PIN_PA13)
 PIN(PA13, EXTINT_CHANNEL(13), NO_ADC, NO_TOUCH,
     SERCOM(2, 1),
     SERCOM(4, 1),
     TCC(2, 1),
     TCC(0, 7));
 #endif
-#ifdef PIN_PA14
+#if defined(PIN_PA14) && !defined(IGNORE_PIN_PA14)
 PIN(PA14, EXTINT_CHANNEL(14), NO_ADC, NO_TOUCH,
     SERCOM(2, 2),
     #ifdef SERCOM4
@@ -294,7 +294,7 @@ PIN(PA14, EXTINT_CHANNEL(14), NO_ADC, NO_TOUCH,
     TC(3, 0),
     TCC(0, 4));
 #endif
-#ifdef PIN_PA15
+#if defined(PIN_PA15) && !defined(IGNORE_PIN_PA15)
 PIN(PA15, EXTINT_CHANNEL(15), NO_ADC, NO_TOUCH,
     SERCOM(2, 3),
     #ifdef SERCOM4
@@ -305,35 +305,35 @@ PIN(PA15, EXTINT_CHANNEL(15), NO_ADC, NO_TOUCH,
     TC(3, 1),
     TCC(0, 5));
 #endif
-#ifdef PIN_PA16
+#if defined(PIN_PA16) && !defined(IGNORE_PIN_PA16)
 PIN(PA16, EXTINT_CHANNEL(0), NO_ADC, NO_TOUCH,
     SERCOM(1, 0),
     SERCOM(3, 0),
     TCC(2, 0),
     TCC(0, 6));
 #endif
-#ifdef PIN_PA17
+#if defined(PIN_PA17) && !defined(IGNORE_PIN_PA17)
 PIN(PA17, EXTINT_CHANNEL(1), NO_ADC, NO_TOUCH,
     SERCOM(1, 1),
     SERCOM(3, 1),
     TCC(2, 1),
     TCC(0, 7));
 #endif
-#ifdef PIN_PA18
+#if defined(PIN_PA18) && !defined(IGNORE_PIN_PA18)
 PIN(PA18, EXTINT_CHANNEL(2), NO_ADC, NO_TOUCH,
     SERCOM(1, 2),
     SERCOM(3, 2),
     TC(3, 0),
     TCC(0, 2));
 #endif
-#ifdef PIN_PA19
+#if defined(PIN_PA19) && !defined(IGNORE_PIN_PA19)
 PIN(PA19, EXTINT_CHANNEL(3), NO_ADC, NO_TOUCH,
     SERCOM(1, 3),
     SERCOM(3, 3),
     TC(3, 1),
     TCC(0, 3));
 #endif
-#ifdef PIN_PB16
+#if defined(PIN_PB16) && !defined(IGNORE_PIN_PB16)
 PIN(PB16, EXTINT_CHANNEL(0), NO_ADC, NO_TOUCH,
     SERCOM(5, 0),
     NO_SERCOM,
@@ -344,7 +344,7 @@ PIN(PB16, EXTINT_CHANNEL(0), NO_ADC, NO_TOUCH,
     #endif
     TCC(0, 4));
 #endif
-#ifdef PIN_PB17
+#if defined(PIN_PB17) && !defined(IGNORE_PIN_PB17)
 PIN(PB17, EXTINT_CHANNEL(1), NO_ADC, NO_TOUCH,
     SERCOM(5, 1),
     NO_SERCOM,
@@ -355,7 +355,7 @@ PIN(PB17, EXTINT_CHANNEL(1), NO_ADC, NO_TOUCH,
     #endif
     TCC(0, 5));
 #endif
-#ifdef PIN_PA20
+#if defined(PIN_PA20) && !defined(IGNORE_PIN_PA20)
 PIN(PA20, EXTINT_CHANNEL(4), NO_ADC, NO_TOUCH,
     SERCOM(5, 2),
     SERCOM(3, 2),
@@ -366,7 +366,7 @@ PIN(PA20, EXTINT_CHANNEL(4), NO_ADC, NO_TOUCH,
     #endif
     TCC(0, 6));
 #endif
-#ifdef PIN_PA21
+#if defined(PIN_PA21) && !defined(IGNORE_PIN_PA21)
 PIN(PA21, EXTINT_CHANNEL(5), NO_ADC, NO_TOUCH,
     SERCOM(5, 3),
     SERCOM(3, 3),
@@ -377,7 +377,7 @@ PIN(PA21, EXTINT_CHANNEL(5), NO_ADC, NO_TOUCH,
     #endif
     TCC(0, 7));
 #endif
-#ifdef PIN_PA22
+#if defined(PIN_PA22) && !defined(IGNORE_PIN_PA22)
 PIN(PA22, EXTINT_CHANNEL(6), NO_ADC, NO_TOUCH,
     SERCOM(3, 0),
     #ifdef SERCOM5
@@ -388,7 +388,7 @@ PIN(PA22, EXTINT_CHANNEL(6), NO_ADC, NO_TOUCH,
     TC(4, 0),
     TCC(0, 4));
 #endif
-#ifdef PIN_PA23
+#if defined(PIN_PA23) && !defined(IGNORE_PIN_PA23)
 PIN(PA23, EXTINT_CHANNEL(7), NO_ADC, NO_TOUCH,
     SERCOM(3, 1),
     #ifdef SERCOM5
@@ -399,7 +399,7 @@ PIN(PA23, EXTINT_CHANNEL(7), NO_ADC, NO_TOUCH,
     TC(4, 1),
     TCC(0, 5));
 #endif
-#ifdef PIN_PA24
+#if defined(PIN_PA24) && !defined(IGNORE_PIN_PA24)
 PIN(PA24, EXTINT_CHANNEL(12), NO_ADC, NO_TOUCH,
     SERCOM(3, 2),
     #ifdef SERCOM5
@@ -410,7 +410,7 @@ PIN(PA24, EXTINT_CHANNEL(12), NO_ADC, NO_TOUCH,
     TC(5, 0),
     TCC(0, 2));
 #endif
-#ifdef PIN_PA25
+#if defined(PIN_PA25) && !defined(IGNORE_PIN_PA25)
 PIN(PA25, EXTINT_CHANNEL(13), NO_ADC, NO_TOUCH,
     SERCOM(3, 3),
     #ifdef SERCOM5
@@ -421,7 +421,7 @@ PIN(PA25, EXTINT_CHANNEL(13), NO_ADC, NO_TOUCH,
     TC(5, 1),
     TCC(1, 3));
 #endif
-#ifdef PIN_PB22
+#if defined(PIN_PB22) && !defined(IGNORE_PIN_PB22)
 PIN(PB22, EXTINT_CHANNEL(6), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(5, 2),
@@ -432,7 +432,7 @@ PIN(PB22, EXTINT_CHANNEL(6), NO_ADC, NO_TOUCH,
     #endif
     NO_TIMER);
 #endif
-#ifdef PIN_PB23
+#if defined(PIN_PB23) && !defined(IGNORE_PIN_PB23)
 PIN(PB23, EXTINT_CHANNEL(7), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(5, 3),
@@ -443,49 +443,49 @@ PIN(PB23, EXTINT_CHANNEL(7), NO_ADC, NO_TOUCH,
     #endif
     NO_TIMER);
 #endif
-#ifdef PIN_PA27
+#if defined(PIN_PA27) && !defined(IGNORE_PIN_PA27)
 PIN(PA27, EXTINT_CHANNEL(15), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PA28
+#if defined(PIN_PA28) && !defined(IGNORE_PIN_PA28)
 PIN(PA28, EXTINT_CHANNEL(8), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     NO_SERCOM,
     NO_TIMER,
     NO_TIMER);
 #endif
-#ifdef PIN_PA30
+#if defined(PIN_PA30) && !defined(IGNORE_PIN_PA30)
 PIN(PA30, EXTINT_CHANNEL(10), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(1, 2),
     TCC(1, 0),
     NO_TIMER);
 #endif
-#ifdef PIN_PA31
+#if defined(PIN_PA31) && !defined(IGNORE_PIN_PA31)
 PIN(PA31, EXTINT_CHANNEL(11), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(1, 3),
     TCC(1, 1),
     NO_TIMER);
 #endif
-#ifdef PIN_PB30
+#if defined(PIN_PB30) && !defined(IGNORE_PIN_PB30)
 PIN(PB30, EXTINT_CHANNEL(14), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(5, 0),
     TCC(0, 0),
     TCC(1, 2));
 #endif
-#ifdef PIN_PB31
+#if defined(PIN_PB31) && !defined(IGNORE_PIN_PB31)
 PIN(PB31, EXTINT_CHANNEL(15), NO_ADC, NO_TOUCH,
     NO_SERCOM,
     SERCOM(5, 1),
     TCC(0, 1),
     TCC(1, 3));
 #endif
-#ifdef PIN_PB00
+#if defined(PIN_PB00) && !defined(IGNORE_PIN_PB00)
 PIN(PB00, EXTINT_CHANNEL(0), ADC_INPUT(8), TOUCH(6),
     NO_SERCOM,
     SERCOM(5, 2),
@@ -496,7 +496,7 @@ PIN(PB00, EXTINT_CHANNEL(0), ADC_INPUT(8), TOUCH(6),
     #endif
     NO_TIMER);
 #endif
-#ifdef PIN_PB01
+#if defined(PIN_PB01) && !defined(IGNORE_PIN_PB01)
 PIN(PB01, EXTINT_CHANNEL(1), ADC_INPUT(9), TOUCH(7),
     NO_SERCOM,
     SERCOM(5, 3)),
@@ -507,7 +507,7 @@ PIN(PB01, EXTINT_CHANNEL(1), ADC_INPUT(9), TOUCH(7),
     #endif
     NO_TIMER;
 #endif
-#ifdef PIN_PB02
+#if defined(PIN_PB02) && !defined(IGNORE_PIN_PB02)
 PIN(PB02, EXTINT_CHANNEL(2), ADC_INPUT(10), TOUCH(8),
     NO_SERCOM,
     SERCOM(5, 0),
@@ -518,7 +518,7 @@ PIN(PB02, EXTINT_CHANNEL(2), ADC_INPUT(10), TOUCH(8),
     #endif
     NO_TIMER);
 #endif
-#ifdef PIN_PB03
+#if defined(PIN_PB03) && !defined(IGNORE_PIN_PB03)
 PIN(PB03, EXTINT_CHANNEL(3), ADC_INPUT(11), TOUCH(9),
     NO_SERCOM,
     SERCOM(5, 1),
