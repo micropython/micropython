@@ -60,3 +60,7 @@
                                GD25Q16C
 
 #include "external_flash/external_flash.h"
+
+#define DEFAULT_SPI_BUS_SCK (&pin_PA13)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA12)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA15)

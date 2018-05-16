@@ -57,3 +57,7 @@
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA23)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA22)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_PA07)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA06)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA09)

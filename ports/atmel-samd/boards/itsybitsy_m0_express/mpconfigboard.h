@@ -47,6 +47,6 @@
 
 #include "external_flash/external_flash.h"
 
-#define DEFAULT_SPI_BUS_CLK (&pin_PB11)
+#define DEFAULT_SPI_BUS_SCK (&pin_PB11)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PB10)
 #define DEFAULT_SPI_BUS_MISO (&pin_PA12)
