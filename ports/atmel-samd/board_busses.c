@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "mpconfigboard.h"
 #include "pins.h"
@@ -60,3 +61,30 @@
 #endif
 
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
+
+#if !defined(DEFAULT_SPI_BUS_CLK) || !defined(DEFAULT_SPI_BUS_MISO) || !defined(DEFAULT_SPI_BUS_MOSI)
+    STATIC mp_obj_t board_spi(void) {
+        mp_raise_NotImplementedError("No default SPI bus");
+        return NULL;
+    }
+#else
+    STATIC mp_obj_t spi_singleton = NULL;
+
+    STATIC mp_obj_t board_spi(void) {
+
+        if (spi_singleton == NULL) {
+            busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
+            self->base.type = &busio_spi_type;
+            assert_pin_free(DEFAULT_SPI_BUS_CLK);
+            assert_pin_free(DEFAULT_SPI_BUS_MOSI);
+            assert_pin_free(DEFAULT_SPI_BUS_MISO);
+            const mcu_pin_obj_t* clock = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_CLK);
+            const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
+            const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
+            common_hal_busio_spi_construct(self, clock, mosi, miso);
+            spi_singleton = (mp_obj_t)self;
+        }
+        return spi_singleton;
+    }
+#endif
+MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
