@@ -98,7 +98,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 
 //| .. method:: reload()
 //|
-//|   Reload the microcontroller (equivalent to hitting Ctrl-D at the REPL).
+//|   Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL).
 //|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_requested = true;
