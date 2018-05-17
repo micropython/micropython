@@ -61,3 +61,6 @@
 #define DEFAULT_SPI_BUS_SCK (&pin_PA07)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA06)
 #define DEFAULT_SPI_BUS_MISO (&pin_PA09)
+
+#define DEFAULT_UART_BUS_RX (&pin_PA07)
+#define DEFAULT_UART_BUS_TX (&pin_PA06)

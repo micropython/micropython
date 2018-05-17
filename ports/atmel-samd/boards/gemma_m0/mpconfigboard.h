@@ -15,6 +15,9 @@
 #define DEFAULT_I2C_BUS_SCL (&pin_PA05)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA04)
 
+#define DEFAULT_UART_BUS_RX (&pin_PA05)
+#define DEFAULT_UART_BUS_TX (&pin_PA04)
+
 #include "internal_flash.h"
 
 #define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)

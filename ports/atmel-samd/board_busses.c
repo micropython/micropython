@@ -26,6 +26,8 @@
 
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/busio/UART.h"
+
 #include "shared-bindings/microcontroller/Pin.h"
 #include "mpconfigboard.h"
 #include "pins.h"
@@ -34,13 +36,10 @@
 
 
 #if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)
-
     STATIC mp_obj_t board_i2c(void) {
-        //board_i2c_obj = NULL;
         mp_raise_NotImplementedError("No default I2C bus");
         return NULL;
     }
-
 #else
     STATIC mp_obj_t i2c_singleton = NULL;
 
@@ -59,7 +58,6 @@
 
     }
 #endif
-
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 #if !defined(DEFAULT_SPI_BUS_SCK) || !defined(DEFAULT_SPI_BUS_MISO) || !defined(DEFAULT_SPI_BUS_MOSI)
@@ -88,3 +86,30 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
     }
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
+
+#if !defined(DEFAULT_UART_BUS_RX) || !defined(DEFAULT_UART_BUS_TX)
+    STATIC mp_obj_t board_uart(void) {
+        mp_raise_NotImplementedError("No default UART bus");
+        return NULL;
+    }
+#else
+    STATIC mp_obj_t uart_singleton = NULL;
+
+    STATIC mp_obj_t board_uart(void) {
+        if (uart_singleton == NULL) {
+            busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
+            self->base.type = &busio_uart_type;
+
+            assert_pin_free(DEFAULT_UART_BUS_RX);
+            assert_pin_free(DEFAULT_UART_BUS_TX);
+
+            const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
+            const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
+
+            common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1000, 64);
+            uart_singleton = (mp_obj_t)self;
+        }
+        return uart_singleton;
+    }
+#endif
+MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart);
