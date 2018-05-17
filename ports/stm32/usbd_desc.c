@@ -41,6 +41,7 @@
 #define USBD_VID                      0xf055
 #define USBD_PID                      0x9800
 #define USBD_LANGID_STRING            0x409
+#ifndef USBD_MANUFACTURER_STRING
 #define USBD_MANUFACTURER_STRING      "MicroPython"
 #define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
 #define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
@@ -48,6 +49,7 @@
 #define USBD_INTERFACE_HS_STRING      "Pyboard Interface"
 #define USBD_CONFIGURATION_FS_STRING  "Pyboard Config"
 #define USBD_INTERFACE_FS_STRING      "Pyboard Interface"
+#endif
 
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
