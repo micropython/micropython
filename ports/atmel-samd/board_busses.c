@@ -103,7 +103,10 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
             assert_pin_free(DEFAULT_UART_BUS_RX);
             assert_pin_free(DEFAULT_UART_BUS_TX);
 
-            common_hal_busio_uart_construct(self, DEFAULT_UART_BUS_TX, DEFAULT_UART_BUS_RX, 9600, 8, PARITY_NONE, 1, 1000, 64);
+            const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_RX);
+            const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEFAULT_UART_BUS_TX);
+
+            common_hal_busio_uart_construct(self, tx, rx, 9600, 8, PARITY_NONE, 1, 1000, 64);
             uart_singleton = (mp_obj_t)self;
         }
         return uart_singleton;
