@@ -33,4 +33,7 @@ extern mp_obj_fun_builtin_fixed_t board_i2c_obj;
 void board_spi(void);
 extern mp_obj_fun_builtin_fixed_t board_spi_obj;
 
+void board_serial(void);
+extern mp_obj_fun_builtin_fixed_t board_serial_obj;
+
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARD_BUSSES_H
