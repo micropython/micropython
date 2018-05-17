@@ -723,6 +723,9 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     socket->pcb.tcp = new_pcb;
     tcp_accept(new_pcb, _lwip_tcp_accept);
 
+    // Socket is no longer considered "new" for purposes of polling
+    socket->state = STATE_CONNECTING;
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_listen_obj, lwip_socket_listen);
@@ -1176,7 +1179,10 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= MP_STREAM_POLL_WR;
         }
 
-        if (socket->state == STATE_PEER_CLOSED) {
+        if (socket->state == STATE_NEW) {
+            // New sockets are not connected so set HUP
+            ret |= flags & MP_STREAM_POLL_HUP;
+        } else if (socket->state == STATE_PEER_CLOSED) {
             // Peer-closed socket is both readable and writable: read will
             // return EOF, write - error. Without this poll will hang on a
             // socket which was closed by peer.
