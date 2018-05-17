@@ -122,6 +122,7 @@
 #define MICROPY_PY_UHEAPQ                   (1)
 #define MICROPY_PY_UTIMEQ                   (1)
 #define MICROPY_PY_UHASHLIB                 (0) // We use the ESP32 version
+#define MICROPY_PY_UCRYPTO                  (0) // We use the ESP32 version
 #define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
