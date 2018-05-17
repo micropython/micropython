@@ -26,7 +26,7 @@
 
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
-//#include "shared-bindings/busio/UART.h"
+#include "shared-bindings/busio/UART.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "mpconfigboard.h"
@@ -87,27 +87,26 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 
-#if !defined(DEFAULT_SERIAL_BUS_RX) || !defined(DEFAULT_SERIAL_BUS_TX)
-    STATIC mp_obj_t board_serial(void) {
-        mp_raise_NotImplementedError("No default serial bus");
+#if !defined(DEFAULT_UART_BUS_RX) || !defined(DEFAULT_UART_BUS_TX)
+    STATIC mp_obj_t board_uart(void) {
+        mp_raise_NotImplementedError("No default UART bus");
         return NULL;
     }
 #else
-    STATIC mp_obj_t serial_singleton = NULL;
+    STATIC mp_obj_t uart_singleton = NULL;
 
-    STATIC mp_obj_t board_serial(void) {
-        if (serial_singleton == NULL) {
-            //busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
-            //self->base.type = &busio_uart_type;
+    STATIC mp_obj_t board_uart(void) {
+        if (uart_singleton == NULL) {
+            busio_uart_obj_t *self = m_new_obj(busio_uart_obj_t);
+            self->base.type = &busio_uart_type;
 
-            assert_pin_free(DEFAULT_SERIAL_BUS_RX);
-            assert_pin_free(DEFAULT_SERIAL_BUS_TX);
+            assert_pin_free(DEFAULT_UART_BUS_RX);
+            assert_pin_free(DEFAULT_UART_BUS_TX);
 
-            //common_hal_busio_uart_construct(self, DEFAULT_SERIAL_BUS_TX, DEFAULT_SERIAL_BUS_RX, 9600, 8, PARITY_NONE, 1, 1000, 64);
-            //serial_singleton = (mp_obj_t)self;
-            serial_singleton = NULL;
+            common_hal_busio_uart_construct(self, DEFAULT_UART_BUS_TX, DEFAULT_UART_BUS_RX, 9600, 8, PARITY_NONE, 1, 1000, 64);
+            uart_singleton = (mp_obj_t)self;
         }
-        return serial_singleton;
+        return uart_singleton;
     }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_serial_obj, board_serial);
+MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart);
