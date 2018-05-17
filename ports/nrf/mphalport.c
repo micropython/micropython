@@ -65,9 +65,23 @@ bool mp_hal_stdin_any(void) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-  while(len--) {
-    hal_uart_char_write(UART_INSTANCE, *str++);
-  }
+
+//    #ifdef MICROPY_HW_LED_TX
+//    gpio_toggle_pin_level(MICROPY_HW_LED_TX);
+//    #endif
+//
+//    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+//    if (boot_output_file != NULL) {
+//        UINT bytes_written = 0;
+//        f_write(boot_output_file, str, len, &bytes_written);
+//    }
+//    #endif
+
+    if ( hal_uart_inited(UART_INSTANCE) ) {
+        while(len--) {
+            hal_uart_char_write(UART_INSTANCE, *str++);
+        }
+    }
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
