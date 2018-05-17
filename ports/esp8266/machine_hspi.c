@@ -39,6 +39,8 @@
 #include "modmachine.h"
 #include "hspi.h"
 
+#if MICROPY_PY_MACHINE_SPI
+
 typedef struct _machine_hspi_obj_t {
     mp_obj_base_t base;
     uint32_t baudrate;
@@ -180,3 +182,5 @@ const mp_obj_type_t machine_hspi_type = {
     .protocol = &machine_hspi_p,
     .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
 };
+
+#endif // MICROPY_PY_MACHINE_SPI
