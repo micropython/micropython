@@ -65,6 +65,9 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     int idx = 0;
     if (n_args > 0) {
         idx = mp_obj_get_int(args[0]);
+        if (idx < 0 || idx >= sizeof(wlan_objs)) {
+            mp_raise_ValueError(NULL);
+        }
     }
     return MP_OBJ_FROM_PTR(&wlan_objs[idx]);
 }
