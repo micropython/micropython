@@ -443,7 +443,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
             char* s = wifi_station_get_hostname();
-            val = mp_obj_new_str(s, strlen(s));
+            if (s == NULL) {
+                val = MP_OBJ_NEW_QSTR(MP_QSTR_);
+            } else {
+                val = mp_obj_new_str(s, strlen(s));
+            }
             break;
         }
         default:
