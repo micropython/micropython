@@ -171,12 +171,21 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&utime_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&uos_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) }, \
+    { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) }, \
+    { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) }, \
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
+    { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) }, \
+    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
+    { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) }, \
+    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&uos_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&mp_module_urandom) }, \
+    { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) }, \
     { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_module_uselect) }, \
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_lwip) }, \
+    { MP_ROM_QSTR(MP_QSTR_ssl), MP_ROM_PTR(&mp_module_ussl) }, \
+    { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&mp_module_ustruct) }, \
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&utime_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_zlib), MP_ROM_PTR(&mp_module_uzlib) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 
