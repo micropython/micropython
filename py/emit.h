@@ -59,6 +59,11 @@ typedef enum {
 #define MP_EMIT_IDOP_LOCAL_FAST (0)
 #define MP_EMIT_IDOP_LOCAL_DEREF (1)
 
+// Kind for emit->build()
+#define MP_EMIT_BUILD_TUPLE (0)
+#define MP_EMIT_BUILD_LIST (1)
+#define MP_EMIT_BUILD_MAP (3)
+
 // Kind for emit->yield()
 #define MP_EMIT_YIELD_VALUE (0)
 #define MP_EMIT_YIELD_FROM (1)
@@ -122,9 +127,7 @@ typedef struct _emit_method_table_t {
     void (*pop_except)(emit_t *emit);
     void (*unary_op)(emit_t *emit, mp_unary_op_t op);
     void (*binary_op)(emit_t *emit, mp_binary_op_t op);
-    void (*build_tuple)(emit_t *emit, mp_uint_t n_args);
-    void (*build_list)(emit_t *emit, mp_uint_t n_args);
-    void (*build_map)(emit_t *emit, mp_uint_t n_args);
+    void (*build)(emit_t *emit, mp_uint_t n_args, int kind);
     void (*store_map)(emit_t *emit);
     #if MICROPY_PY_BUILTINS_SET
     void (*build_set)(emit_t *emit, mp_uint_t n_args);
@@ -236,9 +239,7 @@ void mp_emit_bc_pop_block(emit_t *emit);
 void mp_emit_bc_pop_except(emit_t *emit);
 void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op);
 void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op);
-void mp_emit_bc_build_tuple(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_build(emit_t *emit, mp_uint_t n_args, int kind);
 void mp_emit_bc_store_map(emit_t *emit);
 #if MICROPY_PY_BUILTINS_SET
 void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args);
