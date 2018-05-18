@@ -1923,26 +1923,18 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
 }
 
-STATIC void emit_native_build_tuple(emit_t *emit, mp_uint_t n_args) {
+STATIC void emit_native_build(emit_t *emit, mp_uint_t n_args, int kind) {
     // for viper: call runtime, with types of args
     //   if wrapped in byte_array, or something, allocates memory and fills it
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_TUPLE == MP_F_BUILD_TUPLE);
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_LIST == MP_F_BUILD_LIST);
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_MAP == MP_F_BUILD_MAP);
     emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple
-}
-
-STATIC void emit_native_build_list(emit_t *emit, mp_uint_t n_args) {
-    emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_LIST, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
-}
-
-STATIC void emit_native_build_map(emit_t *emit, mp_uint_t n_args) {
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_BUILD_MAP, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new map
+    if (kind == MP_EMIT_BUILD_TUPLE || kind == MP_EMIT_BUILD_LIST) {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
+    }
+    emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE + kind, n_args, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple/list/map
 }
 
 STATIC void emit_native_store_map(emit_t *emit) {
@@ -2255,9 +2247,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_pop_except,
     emit_native_unary_op,
     emit_native_binary_op,
-    emit_native_build_tuple,
-    emit_native_build_list,
-    emit_native_build_map,
+    emit_native_build,
     emit_native_store_map,
     #if MICROPY_PY_BUILTINS_SET
     emit_native_build_set,

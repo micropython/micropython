@@ -273,7 +273,7 @@ STATIC void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t
         }
         total += n;
     }
-    EMIT_ARG(build_tuple, total);
+    EMIT_ARG(build, total, MP_EMIT_BUILD_TUPLE);
 }
 
 STATIC void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -652,12 +652,12 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
                     // in MicroPython we put the default positional parameters into a tuple using the bytecode
                     // we need to do this here before we start building the map for the default keywords
                     if (comp->num_default_params > 0) {
-                        EMIT_ARG(build_tuple, comp->num_default_params);
+                        EMIT_ARG(build, comp->num_default_params, MP_EMIT_BUILD_TUPLE);
                     } else {
                         EMIT(load_null); // sentinel indicating empty default positional args
                     }
                     // first default dict param, so make the map
-                    EMIT_ARG(build_map, 0);
+                    EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
                 }
 
                 // compile value then key, then store it to the dict
@@ -693,7 +693,7 @@ STATIC void compile_funcdef_lambdef(compiler_t *comp, scope_t *scope, mp_parse_n
     // in MicroPython we put the default positional parameters into a tuple using the bytecode
     // the default keywords args may have already made the tuple; if not, do it now
     if (comp->num_default_params > 0 && comp->num_dict_params == 0) {
-        EMIT_ARG(build_tuple, comp->num_default_params);
+        EMIT_ARG(build, comp->num_default_params, MP_EMIT_BUILD_TUPLE);
         EMIT(load_null); // sentinel indicating empty default keyword args
     }
 
@@ -1122,7 +1122,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
         // build the "fromlist" tuple
         EMIT_ARG(load_const_str, MP_QSTR__star_);
-        EMIT_ARG(build_tuple, 1);
+        EMIT_ARG(build, 1, MP_EMIT_BUILD_TUPLE);
 
         // do the import
         qstr dummy_q;
@@ -1141,7 +1141,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
             qstr id2 = MP_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
             EMIT_ARG(load_const_str, id2);
         }
-        EMIT_ARG(build_tuple, n);
+        EMIT_ARG(build, n, MP_EMIT_BUILD_TUPLE);
 
         // do the import
         qstr dummy_q;
@@ -2397,7 +2397,7 @@ STATIC void compile_atom_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_atom_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // empty list
-        EMIT_ARG(build_list, 0);
+        EMIT_ARG(build, 0, MP_EMIT_BUILD_LIST);
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
         mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t*)pns->nodes[0];
         if (MP_PARSE_NODE_IS_STRUCT(pns2->nodes[1])) {
@@ -2406,12 +2406,12 @@ STATIC void compile_atom_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) 
                 // list of one item, with trailing comma
                 assert(MP_PARSE_NODE_IS_NULL(pns3->nodes[0]));
                 compile_node(comp, pns2->nodes[0]);
-                EMIT_ARG(build_list, 1);
+                EMIT_ARG(build, 1, MP_EMIT_BUILD_LIST);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns3) == PN_testlist_comp_3c) {
                 // list of many items
                 compile_node(comp, pns2->nodes[0]);
                 compile_generic_all_nodes(comp, pns3);
-                EMIT_ARG(build_list, 1 + MP_PARSE_NODE_STRUCT_NUM_NODES(pns3));
+                EMIT_ARG(build, 1 + MP_PARSE_NODE_STRUCT_NUM_NODES(pns3), MP_EMIT_BUILD_LIST);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns3) == PN_comp_for) {
                 // list comprehension
                 compile_comprehension(comp, pns2, SCOPE_LIST_COMP);
@@ -2424,12 +2424,12 @@ STATIC void compile_atom_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) 
             list_with_2_items:
             compile_node(comp, pns2->nodes[0]);
             compile_node(comp, pns2->nodes[1]);
-            EMIT_ARG(build_list, 2);
+            EMIT_ARG(build, 2, MP_EMIT_BUILD_LIST);
         }
     } else {
         // list with 1 item
         compile_node(comp, pns->nodes[0]);
-        EMIT_ARG(build_list, 1);
+        EMIT_ARG(build, 1, MP_EMIT_BUILD_LIST);
     }
 }
 
@@ -2437,12 +2437,12 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
     mp_parse_node_t pn = pns->nodes[0];
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // empty dict
-        EMIT_ARG(build_map, 0);
+        EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
     } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker_item) {
             // dict with one element
-            EMIT_ARG(build_map, 1);
+            EMIT_ARG(build, 1, MP_EMIT_BUILD_MAP);
             compile_node(comp, pn);
             EMIT(store_map);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_dictorsetmaker) {
@@ -2459,7 +2459,7 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 bool is_dict;
                 if (!MICROPY_PY_BUILTINS_SET || MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_dictorsetmaker_item)) {
                     // a dictionary
-                    EMIT_ARG(build_map, 1 + n);
+                    EMIT_ARG(build, 1 + n, MP_EMIT_BUILD_MAP);
                     compile_node(comp, pns->nodes[0]);
                     EMIT(store_map);
                     is_dict = true;
@@ -3040,9 +3040,9 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         }
 
         if (scope->kind == SCOPE_LIST_COMP) {
-            EMIT_ARG(build_list, 0);
+            EMIT_ARG(build, 0, MP_EMIT_BUILD_LIST);
         } else if (scope->kind == SCOPE_DICT_COMP) {
-            EMIT_ARG(build_map, 0);
+            EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
         #if MICROPY_PY_BUILTINS_SET
         } else if (scope->kind == SCOPE_SET_COMP) {
             EMIT_ARG(build_set, 0);

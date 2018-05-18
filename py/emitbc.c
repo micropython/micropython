@@ -816,19 +816,16 @@ void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
 }
 
-void mp_emit_bc_build_tuple(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1 - n_args);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_TUPLE, n_args);
-}
-
-void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1 - n_args);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_LIST, n_args);
-}
-
-void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_MAP, n_args);
+void mp_emit_bc_build(emit_t *emit, mp_uint_t n_args, int kind) {
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_TUPLE == MP_BC_BUILD_TUPLE);
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_LIST == MP_BC_BUILD_LIST);
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_MAP == MP_BC_BUILD_MAP);
+    if (kind == MP_EMIT_BUILD_MAP) {
+        emit_bc_pre(emit, 1);
+    } else {
+        emit_bc_pre(emit, 1 - n_args);
+    }
+    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_TUPLE + kind, n_args);
 }
 
 void mp_emit_bc_store_map(emit_t *emit) {
@@ -1010,9 +1007,7 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_pop_except,
     mp_emit_bc_unary_op,
     mp_emit_bc_binary_op,
-    mp_emit_bc_build_tuple,
-    mp_emit_bc_build_list,
-    mp_emit_bc_build_map,
+    mp_emit_bc_build,
     mp_emit_bc_store_map,
     #if MICROPY_PY_BUILTINS_SET
     mp_emit_bc_build_set,
