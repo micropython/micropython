@@ -136,7 +136,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
 #else
-    #define DISPATCH() break
+    #define DISPATCH() goto dispatch_loop
     #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) case op
     #define ENTRY_DEFAULT default
