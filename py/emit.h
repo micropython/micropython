@@ -59,6 +59,10 @@ typedef enum {
 #define MP_EMIT_IDOP_LOCAL_FAST (0)
 #define MP_EMIT_IDOP_LOCAL_DEREF (1)
 
+// Kind for emit->yield()
+#define MP_EMIT_YIELD_VALUE (0)
+#define MP_EMIT_YIELD_FROM (1)
+
 typedef struct _emit_t emit_t;
 
 typedef struct _mp_emit_method_table_id_ops_t {
@@ -137,8 +141,7 @@ typedef struct _emit_method_table_t {
     void (*call_method)(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags);
     void (*return_value)(emit_t *emit);
     void (*raise_varargs)(emit_t *emit, mp_uint_t n_args);
-    void (*yield_value)(emit_t *emit);
-    void (*yield_from)(emit_t *emit);
+    void (*yield)(emit_t *emit, int kind);
 
     // these methods are used to control entry to/exit from an exception handler
     // they may or may not emit code
@@ -252,8 +255,7 @@ void mp_emit_bc_call_function(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_
 void mp_emit_bc_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags);
 void mp_emit_bc_return_value(emit_t *emit);
 void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_yield_value(emit_t *emit);
-void mp_emit_bc_yield_from(emit_t *emit);
+void mp_emit_bc_yield(emit_t *emit, int kind);
 void mp_emit_bc_start_except_handler(emit_t *emit);
 void mp_emit_bc_end_except_handler(emit_t *emit);
 

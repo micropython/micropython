@@ -1699,7 +1699,7 @@ STATIC void compile_with_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_yield_from(compiler_t *comp) {
     EMIT_ARG(get_iter, false);
     EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-    EMIT(yield_from);
+    EMIT_ARG(yield, MP_EMIT_YIELD_FROM);
 }
 
 #if MICROPY_PY_ASYNC_AWAIT
@@ -2621,14 +2621,14 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-        EMIT(yield_value);
+        EMIT_ARG(yield, MP_EMIT_YIELD_VALUE);
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_yield_arg_from)) {
         pns = (mp_parse_node_struct_t*)pns->nodes[0];
         compile_node(comp, pns->nodes[0]);
         compile_yield_from(comp);
     } else {
         compile_node(comp, pns->nodes[0]);
-        EMIT(yield_value);
+        EMIT_ARG(yield, MP_EMIT_YIELD_VALUE);
     }
 }
 
@@ -2862,7 +2862,7 @@ STATIC void compile_scope_comp_iter(compiler_t *comp, mp_parse_node_struct_t *pn
         // no more nested if/for; compile inner expression
         compile_node(comp, pn_inner_expr);
         if (comp->scope_cur->kind == SCOPE_GEN_EXPR) {
-            EMIT(yield_value);
+            EMIT_ARG(yield, MP_EMIT_YIELD_VALUE);
             EMIT(pop_top);
         } else {
             EMIT_ARG(store_comp, comp->scope_cur->kind, 4 * for_depth + 5);
