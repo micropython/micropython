@@ -11,6 +11,7 @@ MEMORY
     FLASH_FS (r)    : ORIGIN = 0x08060000, LENGTH = 128K /* sectors 192-255 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 96K
     SRAM2 (xrw)     : ORIGIN = 0x10000000, LENGTH = 32K
+    FS_CACHE(xrw)   : ORIGIN = 0x10007800, LENGTH = 2K
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
@@ -23,6 +24,8 @@ _minimum_heap_size = 16K;
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
+_ram_fs_cache_start = ORIGIN(FS_CACHE);
+_ram_fs_cache_block_size = LENGTH(FS_CACHE);
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
