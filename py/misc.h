@@ -50,6 +50,9 @@ typedef unsigned int uint;
 #define _MP_STRINGIFY(x) #x
 #define MP_STRINGIFY(x) _MP_STRINGIFY(x)
 
+// Static assertion macro
+#define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+
 /** memory allocation ******************************************/
 
 // TODO make a lazy m_renew that can increase by a smaller amount than requested (but by at least 1 more element)
