@@ -5,7 +5,7 @@
 # details.
 
 """This module implements enough functionality to program the STM32F4xx over
-DFU, without requiringdfu-util.
+DFU, without requiring dfu-util.
 
 See app note AN3156 for a description of the DFU protocol.
 See document UM0391 for a dscription of the DFuse file.
