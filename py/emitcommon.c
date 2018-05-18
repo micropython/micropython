@@ -67,10 +67,10 @@ void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emi
     } else if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
         emit_method_table->global(emit, qst);
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
-        emit_method_table->fast(emit, qst, id->local_num);
+        emit_method_table->local(emit, qst, id->local_num, MP_EMIT_IDOP_LOCAL_FAST);
     } else {
         assert(id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE);
-        emit_method_table->deref(emit, qst, id->local_num);
+        emit_method_table->local(emit, qst, id->local_num, MP_EMIT_IDOP_LOCAL_DEREF);
     }
 }
 

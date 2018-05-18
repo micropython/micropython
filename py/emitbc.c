@@ -556,20 +556,16 @@ void mp_emit_bc_load_null(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_LOAD_NULL);
 }
 
-void mp_emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    MP_STATIC_ASSERT(MP_BC_LOAD_FAST_N + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_LOAD_FAST_N);
+    MP_STATIC_ASSERT(MP_BC_LOAD_FAST_N + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_LOAD_DEREF);
     (void)qst;
     emit_bc_pre(emit, 1);
-    if (local_num <= 15) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST && local_num <= 15) {
         emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_MULTI + local_num);
     } else {
-        emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num);
+        emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_FAST_N + kind, local_num);
     }
-}
-
-void mp_emit_bc_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    (void)qst;
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_DEREF, local_num);
 }
 
 void mp_emit_bc_load_name(emit_t *emit, qstr qst) {
@@ -613,20 +609,16 @@ void mp_emit_bc_load_subscr(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_LOAD_SUBSCR);
 }
 
-void mp_emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    MP_STATIC_ASSERT(MP_BC_STORE_FAST_N + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_STORE_FAST_N);
+    MP_STATIC_ASSERT(MP_BC_STORE_FAST_N + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_STORE_DEREF);
     (void)qst;
     emit_bc_pre(emit, -1);
-    if (local_num <= 15) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST && local_num <= 15) {
         emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_MULTI + local_num);
     } else {
-        emit_write_bytecode_byte_uint(emit, MP_BC_STORE_FAST_N, local_num);
+        emit_write_bytecode_byte_uint(emit, MP_BC_STORE_FAST_N + kind, local_num);
     }
-}
-
-void mp_emit_bc_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    (void)qst;
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_STORE_DEREF, local_num);
 }
 
 void mp_emit_bc_store_name(emit_t *emit, qstr qst) {
@@ -652,14 +644,11 @@ void mp_emit_bc_store_subscr(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_STORE_SUBSCR);
 }
 
-void mp_emit_bc_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_DELETE_FAST);
+    MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_DELETE_DEREF);
     (void)qst;
-    emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_FAST, local_num);
-}
-
-void mp_emit_bc_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    (void)qst;
-    emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_DEREF, local_num);
+    emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_FAST + kind, local_num);
 }
 
 void mp_emit_bc_delete_name(emit_t *emit, qstr qst) {
@@ -972,20 +961,17 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_set_source_line,
 
     {
-        mp_emit_bc_load_fast,
-        mp_emit_bc_load_deref,
+        mp_emit_bc_load_local,
         mp_emit_bc_load_name,
         mp_emit_bc_load_global,
     },
     {
-        mp_emit_bc_store_fast,
-        mp_emit_bc_store_deref,
+        mp_emit_bc_store_local,
         mp_emit_bc_store_name,
         mp_emit_bc_store_global,
     },
     {
-        mp_emit_bc_delete_fast,
-        mp_emit_bc_delete_deref,
+        mp_emit_bc_delete_local,
         mp_emit_bc_delete_name,
         mp_emit_bc_delete_global,
     },
@@ -1056,22 +1042,19 @@ const emit_method_table_t emit_bc_method_table = {
 };
 #else
 const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops = {
-    mp_emit_bc_load_fast,
-    mp_emit_bc_load_deref,
+    mp_emit_bc_load_local,
     mp_emit_bc_load_name,
     mp_emit_bc_load_global,
 };
 
 const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops = {
-    mp_emit_bc_store_fast,
-    mp_emit_bc_store_deref,
+    mp_emit_bc_store_local,
     mp_emit_bc_store_name,
     mp_emit_bc_store_global,
 };
 
 const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops = {
-    mp_emit_bc_delete_fast,
-    mp_emit_bc_delete_deref,
+    mp_emit_bc_delete_local,
     mp_emit_bc_delete_name,
     mp_emit_bc_delete_global,
 };
