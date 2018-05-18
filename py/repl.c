@@ -106,8 +106,14 @@ bool mp_repl_continue_with_input(const char *input) {
         }
     }
 
-    // continue if unmatched brackets or quotes
-    if (n_paren > 0 || n_brack > 0 || n_brace > 0 || in_quote == Q_3_SINGLE || in_quote == Q_3_DOUBLE) {
+    // continue if unmatched quotes
+    if (in_quote == Q_3_SINGLE || in_quote == Q_3_DOUBLE) {
+        return true;
+    }
+
+    // continue if unmatched brackets
+    if ((n_paren > 0 || n_brack > 0 || n_brace > 0) && in_quote == Q_NONE) {
+        // in_quote != Q_1_SINGLE && in_quote != Q_1_DOUBLE
         return true;
     }
 
