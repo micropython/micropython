@@ -9,6 +9,8 @@ SPI_FLASH_FILESYSTEM = 1
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
+MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
+
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground
