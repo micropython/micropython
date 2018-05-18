@@ -938,6 +938,14 @@ STATIC void emit_native_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) 
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
+STATIC void emit_native_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST) {
+        emit_native_load_fast(emit, qst, local_num);
+    } else {
+        emit_native_load_deref(emit, qst, local_num);
+    }
+}
+
 STATIC void emit_native_load_name(emit_t *emit, qstr qst) {
     DEBUG_printf("load_name(%s)\n", qstr_str(qst));
     emit_native_pre(emit);
@@ -1178,6 +1186,14 @@ STATIC void emit_native_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num)
     emit_post(emit);
 }
 
+STATIC void emit_native_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST) {
+        emit_native_store_fast(emit, qst, local_num);
+    } else {
+        emit_native_store_deref(emit, qst, local_num);
+    }
+}
+
 STATIC void emit_native_store_name(emit_t *emit, qstr qst) {
     // mp_store_name, but needs conversion of object (maybe have mp_viper_store_name(obj, type))
     vtype_kind_t vtype;
@@ -1389,19 +1405,16 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     }
 }
 
-STATIC void emit_native_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // TODO: This is not compliant implementation. We could use MP_OBJ_SENTINEL
-    // to mark deleted vars but then every var would need to be checked on
-    // each access. Very inefficient, so just set value to None to enable GC.
-    emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE);
-    emit_native_store_fast(emit, qst, local_num);
-}
-
-STATIC void emit_native_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // TODO implement me!
-    (void)emit;
-    (void)qst;
-    (void)local_num;
+STATIC void emit_native_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST) {
+        // TODO: This is not compliant implementation. We could use MP_OBJ_SENTINEL
+        // to mark deleted vars but then every var would need to be checked on
+        // each access. Very inefficient, so just set value to None to enable GC.
+        emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE);
+        emit_native_store_fast(emit, qst, local_num);
+    } else {
+        // TODO implement me!
+    }
 }
 
 STATIC void emit_native_delete_name(emit_t *emit, qstr qst) {
@@ -2192,20 +2205,17 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_set_source_line,
 
     {
-        emit_native_load_fast,
-        emit_native_load_deref,
+        emit_native_load_local,
         emit_native_load_name,
         emit_native_load_global,
     },
     {
-        emit_native_store_fast,
-        emit_native_store_deref,
+        emit_native_store_local,
         emit_native_store_name,
         emit_native_store_global,
     },
     {
-        emit_native_delete_fast,
-        emit_native_delete_deref,
+        emit_native_delete_local,
         emit_native_delete_name,
         emit_native_delete_global,
     },
