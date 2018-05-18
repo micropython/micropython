@@ -2170,15 +2170,11 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     emit_call(emit, MP_F_NATIVE_RAISE);
 }
 
-STATIC void emit_native_yield_value(emit_t *emit) {
+STATIC void emit_native_yield(emit_t *emit, int kind) {
     // not supported (for now)
     (void)emit;
+    (void)kind;
     mp_raise_NotImplementedError("native yield");
-}
-STATIC void emit_native_yield_from(emit_t *emit) {
-    // not supported (for now)
-    (void)emit;
-    mp_raise_NotImplementedError("native yield from");
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {
@@ -2278,8 +2274,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_call_method,
     emit_native_return_value,
     emit_native_raise_varargs,
-    emit_native_yield_value,
-    emit_native_yield_from,
+    emit_native_yield,
 
     emit_native_start_except_handler,
     emit_native_end_except_handler,

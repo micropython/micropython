@@ -931,16 +931,11 @@ void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     emit_write_bytecode_byte_byte(emit, MP_BC_RAISE_VARARGS, n_args);
 }
 
-void mp_emit_bc_yield_value(emit_t *emit) {
-    emit_bc_pre(emit, 0);
+void mp_emit_bc_yield(emit_t *emit, int kind) {
+    MP_STATIC_ASSERT(MP_BC_YIELD_VALUE + 1 == MP_BC_YIELD_FROM);
+    emit_bc_pre(emit, -kind);
     emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    emit_write_bytecode_byte(emit, MP_BC_YIELD_VALUE);
-}
-
-void mp_emit_bc_yield_from(emit_t *emit) {
-    emit_bc_pre(emit, -1);
-    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    emit_write_bytecode_byte(emit, MP_BC_YIELD_FROM);
+    emit_write_bytecode_byte(emit, MP_BC_YIELD_VALUE + kind);
 }
 
 void mp_emit_bc_start_except_handler(emit_t *emit) {
@@ -1034,8 +1029,7 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_call_method,
     mp_emit_bc_return_value,
     mp_emit_bc_raise_varargs,
-    mp_emit_bc_yield_value,
-    mp_emit_bc_yield_from,
+    mp_emit_bc_yield,
 
     mp_emit_bc_start_except_handler,
     mp_emit_bc_end_except_handler,
