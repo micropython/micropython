@@ -3052,7 +3052,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // There are 4 slots on the stack for the iterator, and the first one is
         // NULL to indicate that the second one points to the iterator object.
         if (scope->kind == SCOPE_GEN_EXPR) {
-            // TODO static assert that MP_OBJ_ITER_BUF_NSLOTS == 4
+            MP_STATIC_ASSERT(MP_OBJ_ITER_BUF_NSLOTS == 4);
             EMIT(load_null);
             compile_load_id(comp, qstr_arg);
             EMIT(load_null);
