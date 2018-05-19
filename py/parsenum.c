@@ -234,7 +234,8 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
             if ('0' <= dig && dig <= '9') {
                 dig -= '0';
                 if (in == PARSE_DEC_IN_EXP) {
-                    exp_val = 10 * exp_val + dig;
+                    if(exp_val < (INT_MAX-9)/10)
+                        exp_val = 10 * exp_val + dig;
                 } else {
                     if (dec_val < DEC_VAL_MAX) {
                         // dec_val won't overflow so keep accumulating
