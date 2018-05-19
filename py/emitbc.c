@@ -315,7 +315,7 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->last_source_line = 1;
     #ifndef NDEBUG
     // With debugging enabled labels are checked for unique assignment
-    if (pass < MP_PASS_EMIT) {
+    if (pass < MP_PASS_EMIT && emit->label_offsets != NULL) {
         memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(mp_uint_t));
     }
     #endif
