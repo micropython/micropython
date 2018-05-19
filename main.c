@@ -329,8 +329,8 @@ int __attribute__((used)) main(void) {
         if (!skip_boot_output) {
             f_close(boot_output_file);
             filesystem_flush();
-            boot_output_file = NULL;
         }
+        boot_output_file = NULL;
         #endif
 
         // Reset to remove any state that boot.py setup. It should only be used to
