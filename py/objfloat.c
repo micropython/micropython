@@ -99,7 +99,7 @@ typedef uint32_t mp_float_uint_t;
     }
 
     if (u.p.sgn) {
-        val = -val;
+        val = -(mp_uint_t)val;
     }
 
     return val;
