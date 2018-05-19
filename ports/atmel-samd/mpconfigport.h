@@ -141,7 +141,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define PORT_HEAP_SIZE (16384 + 4096)
 // If you change MICROPY_LONGINT_IMPL, also change MPY_TOOL_LONGINT_IMPL in mpconfigport.mk.
+#ifndef MICROPY_LONGINT_IMPL
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
+#endif
 #endif
 
 #ifdef SAMD51

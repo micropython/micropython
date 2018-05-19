@@ -2,7 +2,9 @@
 # $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
 # This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
 ifeq ($(CHIP_FAMILY), samd21)
+ifndef MPY_TOOL_LONGINT_IMPL
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=none
+endif
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)

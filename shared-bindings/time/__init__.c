@@ -34,6 +34,8 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
+#define EPOCH1970_EPOCH2000_DIFF_SECS    946684800
+
 //| :mod:`time` --- time and timing related functions
 //| ========================================================
 //|
@@ -183,13 +185,14 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     // elems[8] tm_isdst is not supported
 }
 
+#if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
     mp_raise_RuntimeError("RTC is not supported on this board");
 }
 
 //| .. method:: time()
 //|
-//|   Return the current time in seconds since since Jan 1, 2000.
+//|   Return the current time in seconds since since Jan 1, 1970.
 //|
 //|   :return: the current time
 //|   :rtype: int
@@ -197,17 +200,18 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 STATIC mp_obj_t time_time(void) {
     timeutils_struct_time_t tm;
     struct_time_to_tm(rtc_get_time_source_time(), &tm);
-    mp_uint_t secs = timeutils_seconds_since_2000(tm.tm_year, tm.tm_mon, tm.tm_mday, // mp_uint_t date
+    mp_uint_t secs = timeutils_seconds_since_2000(tm.tm_year, tm.tm_mon, tm.tm_mday,
                                                   tm.tm_hour, tm.tm_min, tm.tm_sec);
-    return mp_obj_new_int_from_uint(secs);
+    return mp_obj_new_int_from_uint(secs + EPOCH1970_EPOCH2000_DIFF_SECS);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
 //| .. method:: localtime([secs])
 //|
-//|   Convert a time expressed in seconds since Jan 1, 2000 to a struct_time in
+//|   Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
 //|   local time. If secs is not provided or None, the current time as returned
 //|   by time() is used.
+//|   The earliest date for which it can generate a time is Jan 1, 2000.
 //|
 //|   :return: the current time
 //|   :rtype: time.struct_time
@@ -217,8 +221,12 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
         return rtc_get_time_source_time();
     }
 
+    mp_int_t secs = mp_obj_int_get_checked(args[0]);
+    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
+        mp_raise_msg(&mp_type_OverflowError, "timestamp out of range for platform time_t");
+
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_2000_to_struct_time(mp_obj_get_int(args[0]), &tm);
+    timeutils_seconds_since_2000_to_struct_time(secs - EPOCH1970_EPOCH2000_DIFF_SECS, &tm);
 
     return struct_time_from_tm(&tm);
 }
@@ -247,11 +255,16 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
         mp_raise_TypeError("function takes exactly 9 arguments");
     }
 
-    return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
-                                                     mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5])));
+    if (mp_obj_get_int(elem[0]) < 2000)
+        mp_raise_msg(&mp_type_OverflowError, "timestamp out of range for platform time_t");
+
+    mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
+                                      mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));
+    return mp_obj_new_int_from_uint(secs + EPOCH1970_EPOCH2000_DIFF_SECS);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
-#endif
+#endif // MICROPY_LONGINT_IMPL
+#endif // MICROPY_PY_COLLECTIONS
 
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
@@ -260,10 +273,14 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&time_sleep_obj) },
     #if MICROPY_PY_COLLECTIONS
     { MP_ROM_QSTR(MP_QSTR_struct_time), MP_ROM_PTR(&struct_time_type_obj) },
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
-    #endif
+    #endif // MICROPY_LONGINT_IMPL
+    #endif // MICROPY_PY_COLLECTIONS
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
