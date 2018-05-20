@@ -297,12 +297,20 @@ STATIC mp_uint_t webrepl_write(mp_obj_t self_in, const void *buf, mp_uint_t size
     return stream_p->write(self->sock, buf, size, errcode);
 }
 
-STATIC mp_obj_t webrepl_close(mp_obj_t self_in) {
-    mp_obj_webrepl_t *self = MP_OBJ_TO_PTR(self_in);
-    // TODO: This is a place to do cleanup
-    return mp_stream_close(self->sock);
+STATIC mp_uint_t webrepl_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_webrepl_t *self = MP_OBJ_TO_PTR(o_in);
+    (void)arg;
+    switch (request) {
+        case MP_STREAM_CLOSE:
+            // TODO: This is a place to do cleanup
+            mp_stream_close(self->sock);
+            return 0;
+
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(webrepl_close_obj, webrepl_close);
 
 STATIC mp_obj_t webrepl_set_password(mp_obj_t passwd_in) {
     size_t len;
@@ -319,13 +327,14 @@ STATIC const mp_rom_map_elem_t webrepl_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&webrepl_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(webrepl_locals_dict, webrepl_locals_dict_table);
 
 STATIC const mp_stream_p_t webrepl_stream_p = {
     .read = webrepl_read,
     .write = webrepl_write,
+    .ioctl = webrepl_ioctl,
 };
 
 STATIC const mp_obj_type_t webrepl_type = {

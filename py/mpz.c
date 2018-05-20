@@ -705,17 +705,14 @@ STATIC void mpz_need_dig(mpz_t *z, size_t need) {
 }
 
 STATIC mpz_t *mpz_clone(const mpz_t *src) {
+    assert(src->alloc != 0);
     mpz_t *z = m_new_obj(mpz_t);
     z->neg = src->neg;
     z->fixed_dig = 0;
     z->alloc = src->alloc;
     z->len = src->len;
-    if (src->dig == NULL) {
-        z->dig = NULL;
-    } else {
-        z->dig = m_new(mpz_dig_t, z->alloc);
-        memcpy(z->dig, src->dig, src->alloc * sizeof(mpz_dig_t));
-    }
+    z->dig = m_new(mpz_dig_t, z->alloc);
+    memcpy(z->dig, src->dig, src->alloc * sizeof(mpz_dig_t));
     return z;
 }
 
@@ -983,6 +980,7 @@ these functions are unused
 /* returns abs(z)
 */
 mpz_t *mpz_abs(const mpz_t *z) {
+    // TODO: handle case of z->alloc=0
     mpz_t *z2 = mpz_clone(z);
     z2->neg = 0;
     return z2;
@@ -991,6 +989,7 @@ mpz_t *mpz_abs(const mpz_t *z) {
 /* returns -z
 */
 mpz_t *mpz_neg(const mpz_t *z) {
+    // TODO: handle case of z->alloc=0
     mpz_t *z2 = mpz_clone(z);
     z2->neg = 1 - z2->neg;
     return z2;
@@ -1408,6 +1407,7 @@ these functions are unused
 */
 mpz_t *mpz_gcd(const mpz_t *z1, const mpz_t *z2) {
     if (z1->len == 0) {
+        // TODO: handle case of z2->alloc=0
         mpz_t *a = mpz_clone(z2);
         a->neg = 0;
         return a;

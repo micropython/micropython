@@ -38,13 +38,18 @@
 #include "lib/netutils/netutils.h"
 
 #include "lwip/init.h"
-#include "lwip/timers.h"
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
 //#include "lwip/raw.h"
 #include "lwip/dns.h"
-#include "lwip/tcp_impl.h"
 #include "lwip/igmp.h"
+#if LWIP_VERSION_MAJOR < 2
+#include "lwip/timers.h"
+#include "lwip/tcp_impl.h"
+#else
+#include "lwip/timeouts.h"
+#include "lwip/priv/tcp_priv.h"
+#endif
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -171,11 +176,16 @@ STATIC const mp_obj_type_t lwip_slip_type = {
 // Table to convert lwIP err_t codes to socket errno codes, from the lwIP
 // socket API.
 
+// lwIP 2 changed LWIP_VERSION and it can no longer be used in macros,
+// so we define our own equivalent version that can.
+#define LWIP_VERSION_MACRO (LWIP_VERSION_MAJOR << 24 | LWIP_VERSION_MINOR << 16 \
+                            | LWIP_VERSION_REVISION << 8 | LWIP_VERSION_RC)
+
 // Extension to lwIP error codes
 #define _ERR_BADF -16
 // TODO: We just know that change happened somewhere between 1.4.0 and 1.4.1,
 // investigate in more detail.
-#if LWIP_VERSION < 0x01040100
+#if LWIP_VERSION_MACRO < 0x01040100
 static const int error_lookup_table[] = {
     0,                /* ERR_OK          0      No error, everything OK. */
     MP_ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
@@ -196,7 +206,7 @@ static const int error_lookup_table[] = {
     MP_EALREADY,      /* ERR_ISCONN     -15     Already connected.       */
     MP_EBADF,         /* _ERR_BADF      -16     Closed socket (null pcb) */
 };
-#else
+#elif LWIP_VERSION_MACRO < 0x02000000
 static const int error_lookup_table[] = {
     0,                /* ERR_OK          0      No error, everything OK. */
     MP_ENOMEM,        /* ERR_MEM        -1      Out of memory error.     */
@@ -216,6 +226,30 @@ static const int error_lookup_table[] = {
     MP_EIO,           /* ERR_ARG        -14     Illegal argument.        */
     -1,               /* ERR_IF         -15     Low-level netif error    */
     MP_EBADF,         /* _ERR_BADF      -16     Closed socket (null pcb) */
+};
+#else
+// Matches lwIP 2.0.3
+#undef _ERR_BADF
+#define _ERR_BADF -17
+static const int error_lookup_table[] = {
+    0,                /* ERR_OK          0      No error, everything OK  */
+    MP_ENOMEM,        /* ERR_MEM        -1      Out of memory error      */
+    MP_ENOBUFS,       /* ERR_BUF        -2      Buffer error             */
+    MP_EWOULDBLOCK,   /* ERR_TIMEOUT    -3      Timeout                  */
+    MP_EHOSTUNREACH,  /* ERR_RTE        -4      Routing problem          */
+    MP_EINPROGRESS,   /* ERR_INPROGRESS -5      Operation in progress    */
+    MP_EINVAL,        /* ERR_VAL        -6      Illegal value            */
+    MP_EWOULDBLOCK,   /* ERR_WOULDBLOCK -7      Operation would block    */
+    MP_EADDRINUSE,    /* ERR_USE        -8      Address in use           */
+    MP_EALREADY,      /* ERR_ALREADY    -9      Already connecting       */
+    MP_EALREADY,      /* ERR_ISCONN     -10     Conn already established */
+    MP_ENOTCONN,      /* ERR_CONN       -11     Not connected            */
+    -1,               /* ERR_IF         -12     Low-level netif error    */
+    MP_ECONNABORTED,  /* ERR_ABRT       -13     Connection aborted       */
+    MP_ECONNRESET,    /* ERR_RST        -14     Connection reset         */
+    MP_ENOTCONN,      /* ERR_CLSD       -15     Connection closed        */
+    MP_EIO,           /* ERR_ARG        -16     Illegal argument.        */
+    MP_EBADF,         /* _ERR_BADF      -17     Closed socket (null pcb) */
 };
 #endif
 
@@ -276,7 +310,12 @@ static inline void exec_user_callback(lwip_socket_obj_t *socket) {
 
 // Callback for incoming UDP packets. We simply stash the packet and the source address,
 // in case we need it for recvfrom.
-STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port) {
+#if LWIP_VERSION_MAJOR < 2
+STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
+#else
+STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
+#endif
+{
     lwip_socket_obj_t *socket = (lwip_socket_obj_t*)arg;
 
     if (socket->incoming.pbuf != NULL) {
@@ -637,42 +676,6 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
     return socket;
 }
 
-STATIC mp_obj_t lwip_socket_close(mp_obj_t self_in) {
-    lwip_socket_obj_t *socket = self_in;
-    bool socket_is_listener = false;
-
-    if (socket->pcb.tcp == NULL) {
-        return mp_const_none;
-    }
-    switch (socket->type) {
-        case MOD_NETWORK_SOCK_STREAM: {
-            if (socket->pcb.tcp->state == LISTEN) {
-                socket_is_listener = true;
-            }
-            if (tcp_close(socket->pcb.tcp) != ERR_OK) {
-                DEBUG_printf("lwip_close: had to call tcp_abort()\n");
-                tcp_abort(socket->pcb.tcp);
-            }
-            break;
-        }
-        case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
-        //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
-    }
-    socket->pcb.tcp = NULL;
-    socket->state = _ERR_BADF;
-    if (socket->incoming.pbuf != NULL) {
-        if (!socket_is_listener) {
-            pbuf_free(socket->incoming.pbuf);
-        } else {
-            tcp_abort(socket->incoming.connection);
-        }
-        socket->incoming.pbuf = NULL;
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(lwip_socket_close_obj, lwip_socket_close);
-
 STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     lwip_socket_obj_t *socket = self_in;
 
@@ -719,6 +722,9 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
     }
     socket->pcb.tcp = new_pcb;
     tcp_accept(new_pcb, _lwip_tcp_accept);
+
+    // Socket is no longer considered "new" for purposes of polling
+    socket->state = STATE_CONNECTING;
 
     return mp_const_none;
 }
@@ -1168,16 +1174,59 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
             ret |= MP_STREAM_POLL_RD;
         }
 
-        if (flags & MP_STREAM_POLL_WR && tcp_sndbuf(socket->pcb.tcp) > 0) {
+        // Note: pcb.tcp==NULL if state<0, and in this case we can't call tcp_sndbuf
+        if (flags & MP_STREAM_POLL_WR && socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
             ret |= MP_STREAM_POLL_WR;
         }
 
-        if (socket->state == STATE_PEER_CLOSED) {
+        if (socket->state == STATE_NEW) {
+            // New sockets are not connected so set HUP
+            ret |= flags & MP_STREAM_POLL_HUP;
+        } else if (socket->state == STATE_PEER_CLOSED) {
             // Peer-closed socket is both readable and writable: read will
             // return EOF, write - error. Without this poll will hang on a
             // socket which was closed by peer.
             ret |= flags & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR);
+        } else if (socket->state == ERR_RST) {
+            // Socket was reset by peer, a write will return an error
+            ret |= flags & (MP_STREAM_POLL_WR | MP_STREAM_POLL_HUP);
+        } else if (socket->state < 0) {
+            // Socket in some other error state, use catch-all ERR flag
+            // TODO: may need to set other return flags here
+            ret |= flags & MP_STREAM_POLL_ERR;
         }
+
+    } else if (request == MP_STREAM_CLOSE) {
+        bool socket_is_listener = false;
+
+        if (socket->pcb.tcp == NULL) {
+            return 0;
+        }
+        switch (socket->type) {
+            case MOD_NETWORK_SOCK_STREAM: {
+                if (socket->pcb.tcp->state == LISTEN) {
+                    socket_is_listener = true;
+                }
+                if (tcp_close(socket->pcb.tcp) != ERR_OK) {
+                    DEBUG_printf("lwip_close: had to call tcp_abort()\n");
+                    tcp_abort(socket->pcb.tcp);
+                }
+                break;
+            }
+            case MOD_NETWORK_SOCK_DGRAM: udp_remove(socket->pcb.udp); break;
+            //case MOD_NETWORK_SOCK_RAW: raw_remove(socket->pcb.raw); break;
+        }
+        socket->pcb.tcp = NULL;
+        socket->state = _ERR_BADF;
+        if (socket->incoming.pbuf != NULL) {
+            if (!socket_is_listener) {
+                pbuf_free(socket->incoming.pbuf);
+            } else {
+                tcp_abort(socket->incoming.connection);
+            }
+            socket->incoming.pbuf = NULL;
+        }
+        ret = 0;
 
     } else {
         *errcode = MP_EINVAL;
@@ -1188,8 +1237,8 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
 }
 
 STATIC const mp_rom_map_elem_t lwip_socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&lwip_socket_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&lwip_socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&lwip_socket_bind_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&lwip_socket_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&lwip_socket_accept_obj) },
@@ -1283,7 +1332,12 @@ typedef struct _getaddrinfo_state_t {
 } getaddrinfo_state_t;
 
 // Callback for incoming DNS requests.
-STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) {
+#if LWIP_VERSION_MAJOR < 2
+STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg)
+#else
+STATIC void lwip_getaddrinfo_cb(const char *name, const ip_addr_t *ipaddr, void *arg)
+#endif
+{
     getaddrinfo_state_t *state = arg;
     if (ipaddr != NULL) {
         state->status = 1;
@@ -1296,13 +1350,32 @@ STATIC void lwip_getaddrinfo_cb(const char *name, ip_addr_t *ipaddr, void *arg) 
 
 // lwip.getaddrinfo
 STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
-    if (n_args > 2) {
-        mp_warning("getaddrinfo constraints not supported");
-    }
-
     mp_obj_t host_in = args[0], port_in = args[1];
     const char *host = mp_obj_str_get_str(host_in);
     mp_int_t port = mp_obj_get_int(port_in);
+
+    // If constraints were passed then check they are compatible with the supported params
+    if (n_args > 2) {
+        mp_int_t family = mp_obj_get_int(args[2]);
+        mp_int_t type = 0;
+        mp_int_t proto = 0;
+        mp_int_t flags = 0;
+        if (n_args > 3) {
+            type = mp_obj_get_int(args[3]);
+            if (n_args > 4) {
+                proto = mp_obj_get_int(args[4]);
+                if (n_args > 5) {
+                    flags = mp_obj_get_int(args[5]);
+                }
+            }
+        }
+        if (!((family == 0 || family == MOD_NETWORK_AF_INET)
+            && (type == 0 || type == MOD_NETWORK_SOCK_STREAM)
+            && proto == 0
+            && flags == 0)) {
+            mp_warning("unsupported getaddrinfo constraints");
+        }
+    }
 
     getaddrinfo_state_t state;
     state.status = 0;

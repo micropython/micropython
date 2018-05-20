@@ -39,7 +39,6 @@
 #include "lib/netutils/netutils.h"
 #include "modnetwork.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "spi.h"
 
 #include "hci.h"
@@ -433,7 +432,7 @@ STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // set the pins to use
     SpiInit(
-        spi_get_handle(args[0]),
+        spi_from_mp_obj(args[0])->spi,
         pin_find(args[1]),
         pin_find(args[2]),
         pin_find(args[3])

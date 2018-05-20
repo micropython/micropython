@@ -526,11 +526,9 @@ void asm_x64_jcc_label(asm_x64_t *as, int jcc_type, mp_uint_t label) {
 }
 
 void asm_x64_entry(asm_x64_t *as, int num_locals) {
+    assert(num_locals >= 0);
     asm_x64_push_r64(as, ASM_X64_REG_RBP);
     asm_x64_mov_r64_r64(as, ASM_X64_REG_RBP, ASM_X64_REG_RSP);
-    if (num_locals < 0) {
-        num_locals = 0;
-    }
     num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
     asm_x64_sub_r64_i32(as, ASM_X64_REG_RSP, num_locals * WORD_SIZE);
     asm_x64_push_r64(as, ASM_X64_REG_RBX);

@@ -51,7 +51,7 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
 
     switch (id) {
         case 0:
-            esp_task_wdt_feed();
+            esp_task_wdt_add(NULL);
             return &wdt_default;
         default:
             mp_raise_ValueError(NULL);
@@ -60,13 +60,13 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
 
 STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
     (void)self_in;
-    esp_task_wdt_feed();
+    esp_task_wdt_reset();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
 
-STATIC const mp_map_elem_t machine_wdt_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_feed), (mp_obj_t)&machine_wdt_feed_obj },
+STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&machine_wdt_feed_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
 

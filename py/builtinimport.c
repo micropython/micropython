@@ -44,6 +44,8 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#if MICROPY_ENABLE_EXTERNAL_IMPORT
+
 #define PATH_SEP_CHAR '/'
 
 bool mp_obj_is_package(mp_obj_t module) {
@@ -389,19 +391,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     }
                     // found weak linked module
                     module_obj = el->value;
-                    if (MICROPY_MODULE_BUILTIN_INIT) {
-                        // look for __init__ and call it if it exists
-                        // Note: this code doesn't work fully correctly because it allows the
-                        // __init__ function to be called twice if the module is imported by its
-                        // non-weak-link name.  Also, this code is duplicated in objmodule.c.
-                        mp_obj_t dest[2];
-                        mp_load_method_maybe(el->value, MP_QSTR___init__, dest);
-                        if (dest[0] != MP_OBJ_NULL) {
-                            mp_call_method_n_kw(0, 0, dest);
-                            // register module so __init__ is not called again
-                            mp_module_register(mod_name, el->value);
-                        }
-                    }
+                    mp_module_call_init(mod_name, module_obj);
                 } else {
                     no_exist:
                 #else
@@ -485,4 +475,41 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     // Otherwise, we need to return top-level package
     return top_module_obj;
 }
+
+#else // MICROPY_ENABLE_EXTERNAL_IMPORT
+
+mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
+    // Check that it's not a relative import
+    if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
+        mp_raise_NotImplementedError("relative import");
+    }
+
+    // Check if module already exists, and return it if it does
+    qstr module_name_qstr = mp_obj_str_get_qstr(args[0]);
+    mp_obj_t module_obj = mp_module_get(module_name_qstr);
+    if (module_obj != MP_OBJ_NULL) {
+        return module_obj;
+    }
+
+    #if MICROPY_MODULE_WEAK_LINKS
+    // Check if there is a weak link to this module
+    mp_map_elem_t *el = mp_map_lookup((mp_map_t*)&mp_builtin_module_weak_links_map, MP_OBJ_NEW_QSTR(module_name_qstr), MP_MAP_LOOKUP);
+    if (el != NULL) {
+        // Found weak-linked module
+        mp_module_call_init(module_name_qstr, el->value);
+        return el->value;
+    }
+    #endif
+
+    // Couldn't find the module, so fail
+    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        mp_raise_msg(&mp_type_ImportError, "module not found");
+    } else {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
+            "no module named '%q'", module_name_qstr));
+    }
+}
+
+#endif // MICROPY_ENABLE_EXTERNAL_IMPORT
+
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);

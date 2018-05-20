@@ -195,9 +195,16 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 /******************************************************************************/
 /* dict methods                                                               */
 
+STATIC void mp_ensure_not_fixed(const mp_obj_dict_t *dict) {
+    if (dict->map.is_fixed) {
+        mp_raise_TypeError(NULL);
+    }
+}
+
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_ensure_not_fixed(self);
 
     mp_map_clear(&self->map);
 
@@ -253,6 +260,9 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, MP_ROM_PTR(&dict_fromk
 STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_lookup_kind_t lookup_kind) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (lookup_kind != MP_MAP_LOOKUP) {
+        mp_ensure_not_fixed(self);
+    }
     mp_map_elem_t *elem = mp_map_lookup(&self->map, args[1], lookup_kind);
     mp_obj_t value;
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
@@ -295,6 +305,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setde
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_ensure_not_fixed(self);
     size_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     if (next == NULL) {
@@ -313,6 +324,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_ensure_not_fixed(self);
 
     mp_arg_check_num(n_args, kwargs->used, 1, 2, true);
 
@@ -578,6 +590,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in) {
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
     mp_check_self(MP_OBJ_IS_DICT_TYPE(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_ensure_not_fixed(self);
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
     return self_in;
 }

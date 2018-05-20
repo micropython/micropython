@@ -258,7 +258,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
 
         // It can be that f was right on the edge of an entry in pos_pow needs to be reduced
-        if (f >= FPCONST(10.0)) {
+        if ((int)f >= 10) {
             e += 1;
             f *= FPCONST(0.1);
         }
@@ -330,7 +330,11 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // Print the digits of the mantissa
     for (int i = 0; i < num_digits; ++i, --dec) {
         int32_t d = (int32_t)f;
-        *s++ = '0' + d;
+        if (d < 0) {
+            *s++ = '0';
+        } else {
+            *s++ = '0' + d;
+        }
         if (dec == 0 && prec > 0) {
             *s++ = '.';
         }
@@ -341,7 +345,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // Round
     // If we print non-exponential format (i.e. 'f'), but a digit we're going
     // to round by (e) is too far away, then there's nothing to round.
-    if ((org_fmt != 'f' || e <= 1) && f >= FPCONST(5.0)) {
+    if ((org_fmt != 'f' || e <= num_digits) && f >= FPCONST(5.0)) {
         char *rs = s;
         rs--;
         while (1) {

@@ -21,7 +21,7 @@ FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 4MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
 
-ESPIDF_SUPHASH := 2c95a77cf93781f296883d5dbafcdc18e4389656
+ESPIDF_SUPHASH := a2556229aa6f55b16b171e3325ee9ab1943e8552
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
@@ -83,6 +83,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/lwip/posix
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
+INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
 INC_ESPCOMP += -I$(ESPCOMP)/vfs/include
 INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
 INC_ESPCOMP += -I$(ESPCOMP)/xtensa-debug-module/include
@@ -90,6 +91,8 @@ INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/ethernet/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_trace/include
+INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
+INC_ESPCOMP += -I$(ESPCOMP)/pthread/include
 
 CFLAGS_BASE = -std=gnu99 -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib -Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H -DESP_PLATFORM
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
@@ -147,11 +150,14 @@ SRC_C = \
 	network_lan.c \
 	modsocket.c \
 	modesp.c \
+	esp32_ulp.c \
+	modesp32.c \
 	moduhashlib.c \
 	espneopixel.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
 	mpthreadport.c \
+	machine_rtc.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -192,6 +198,7 @@ LIB_SRC_C += \
 endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
+	bus/softspi.c \
 	dht/dht.c \
 	)
 
@@ -251,6 +258,7 @@ ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	dport_access.o \
 	wifi_init.o \
 	wifi_internal.o \
+	sleep_modes.o \
 	)
 
 ESPIDF_HEAP_O = $(addprefix $(ESPCOMP)/heap/,\
@@ -333,9 +341,9 @@ ESPIDF_VFS_O = $(addprefix $(ESPCOMP)/vfs/,\
 	vfs.o \
 	)
 
-ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/,\
-	library/cJSON.o \
-	port/cJSON_Utils.o \
+ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/cJSON/,\
+	cJSON.o \
+	cJSON_Utils.o \
 	)
 
 ESPIDF_LOG_O = $(addprefix $(ESPCOMP)/log/,\
@@ -353,6 +361,10 @@ ESPIDF_TCPIP_ADAPTER_O = $(addprefix $(ESPCOMP)/tcpip_adapter/,\
 
 ESPIDF_APP_TRACE_O = $(addprefix $(ESPCOMP)/app_trace/,\
 	app_trace.o \
+	)
+
+ESPIDF_APP_UPDATE_O = $(addprefix $(ESPCOMP)/app_update/,\
+	esp_ota_ops.o \
 	)
 
 ESPIDF_NEWLIB_O = $(addprefix $(ESPCOMP)/newlib/,\
@@ -406,6 +418,10 @@ ESPIDF_SPI_FLASH_O = $(addprefix $(ESPCOMP)/spi_flash/,\
 	spi_flash_rom_patch.o \
 	cache_utils.o \
 	flash_ops.o \
+	)
+
+ESPIDF_ULP_O = $(addprefix $(ESPCOMP)/ulp/,\
+	ulp.o \
 	)
 
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
@@ -591,10 +607,12 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_MBEDTLS_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_XTENSA_DEBUG_MODULE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_TCPIP_ADAPTER_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_TRACE_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_UPDATE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NGHTTP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ULP_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
 ################################################################################
 # Main targets
@@ -668,9 +686,15 @@ $(BUILD)/%.o: %.cpp
 
 $(BUILD)/bootloader/$(ESPCOMP)/%.o: CFLAGS += -DBOOTLOADER_BUILD=1 -I$(ESPCOMP)/bootloader_support/include_priv -I$(ESPCOMP)/bootloader_support/include -I$(ESPCOMP)/micro-ecc/micro-ecc -I$(ESPCOMP)/esp32 -Wno-error=format
 BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
+	bootloader_support/src/bootloader_clock.o \
+	bootloader_support/src/bootloader_common.o \
 	bootloader_support/src/bootloader_flash.o \
+	bootloader_support/src/bootloader_init.o \
 	bootloader_support/src/bootloader_random.o \
 	bootloader_support/src/bootloader_sha.o \
+	bootloader_support/src/bootloader_utility.o \
+	bootloader_support/src/efuse.o \
+	bootloader_support/src/flash_qio_mode.o \
 	bootloader_support/src/secure_boot_signatures.o \
 	bootloader_support/src/secure_boot.o \
 	bootloader_support/src/esp_image_format.o \
@@ -680,6 +704,7 @@ BOOTLOADER_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	spi_flash/spi_flash_rom_patch.o \
 	soc/esp32/rtc_clk.o \
 	soc/esp32/rtc_time.o \
+	soc/esp32/cpu_util.o \
 	micro-ecc/micro-ecc/uECC.o \
 	bootloader/subproject/main/bootloader_start.o \
 	)
@@ -704,6 +729,7 @@ BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/esp32.bootloader.
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/esp32.bootloader.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.rom.spiram_incompatible_fns.ld
+BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.peripherals.ld
 
 BOOTLOADER_OBJ_DIRS = $(sort $(dir $(BOOTLOADER_OBJ)))
 $(BOOTLOADER_OBJ): | $(BOOTLOADER_OBJ_DIRS)

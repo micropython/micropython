@@ -54,6 +54,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
         'micropython/meminfo.py', 'basics/bytes_compare3.py',
         'basics/builtin_help.py', 'thread/thread_exc2.py',
     )
+    had_crash = False
     if pyb is None:
         # run on PC
         if test_file.startswith(('cmdline/', 'feature_check/')) or test_file in special_tests:
@@ -128,8 +129,9 @@ def run_micropython(pyb, args, test_file, is_special=False):
             # run the actual test
             try:
                 output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError:
-                output_mupy = b'CRASH'
+            except subprocess.CalledProcessError as er:
+                had_crash = True
+                output_mupy = er.output + b'CRASH'
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
@@ -142,13 +144,14 @@ def run_micropython(pyb, args, test_file, is_special=False):
         try:
             output_mupy = pyb.execfile(test_file)
         except pyboard.PyboardError:
+            had_crash = True
             output_mupy = b'CRASH'
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b'\r\n', b'\n')
 
     # don't try to convert the output if we should skip this test
-    if output_mupy in (b'SKIP\n', b'CRASH'):
+    if had_crash or output_mupy in (b'SKIP\n', b'CRASH'):
         return output_mupy
 
     if is_special or test_file in special_tests:
@@ -309,9 +312,6 @@ def run_tests(pyb, tests, args, base_path="."):
 
         if args.target == 'wipy':
             skip_tests.add('misc/print_exception.py')       # requires error reporting full
-            skip_tests.add('misc/recursion.py')             # requires stack checking enabled
-            skip_tests.add('misc/recursive_data.py')        # requires stack checking enabled
-            skip_tests.add('misc/recursive_iternext.py')    # requires stack checking enabled
             skip_tests.update({'extmod/uctypes_%s.py' % t for t in 'bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native array_assign_le array_assign_native_le'.split()}) # requires uctypes
             skip_tests.add('extmod/zlibd_decompress.py')    # requires zlib
             skip_tests.add('extmod/uheapq1.py')             # uheapq not supported by WiPy
@@ -324,7 +324,6 @@ def run_tests(pyb, tests, args, base_path="."):
             skip_tests.add('basics/subclass_native_init.py')# native subclassing corner cases not support
             skip_tests.add('misc/rge_sm.py')                # too large
             skip_tests.add('micropython/opt_level.py')      # don't assume line numbers are stored
-            skip_tests.add('float/float_parse.py')          # minor parsing artifacts with 32-bit floats
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == '64bit':
@@ -363,6 +362,8 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('micropython/heapalloc_traceback.py') # because native doesn't have proper traceback info
         skip_tests.add('micropython/heapalloc_iter.py') # requires generators
         skip_tests.add('micropython/schedule.py') # native code doesn't check pending events
+        skip_tests.add('stress/gc_trace.py') # requires yield
+        skip_tests.add('stress/recursive_gen.py') # requires yield
 
     for test_file in tests:
         test_file = test_file.replace('\\', '/')
@@ -514,7 +515,7 @@ the last matching regex is used:
     cmd_parser.add_argument('files', nargs='*', help='input test files')
     args = cmd_parser.parse_args()
 
-    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'minimal')
+    EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal')
     if args.target == 'unix' or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
@@ -529,7 +530,7 @@ the last matching regex is used:
             if args.target == 'pyboard':
                 # run pyboard tests
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'stress', 'extmod', 'pyb', 'pybnative', 'inlineasm')
-            elif args.target in ('esp8266', 'minimal'):
+            elif args.target in ('esp8266', 'esp32', 'minimal'):
                 test_dirs = ('basics', 'micropython', 'float', 'misc', 'extmod')
             elif args.target == 'wipy':
                 # run WiPy tests

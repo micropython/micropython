@@ -106,6 +106,18 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
 
+STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t prev_obj = mp_uos_dupterm_obj.fun.var(n_args, args);
+    if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
+        uart_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
+    }
+    if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+        uart_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
+    }
+    return prev_obj;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uos_dupterm_obj, 1, 2, uos_dupterm);
+
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
 
@@ -133,7 +145,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 #endif
 
     // these are MicroPython extensions
-    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },

@@ -74,10 +74,10 @@ typedef struct {
 #define IS_GPIO_PULL(PULL) (((PULL) == GPIO_NOPULL) || ((PULL) == GPIO_PULLUP) || \
                             ((PULL) == GPIO_PULLDOWN))
 
-#define  GPIO_SPEED_LOW         ((uint32_t)0)
-#define  GPIO_SPEED_MEDIUM      ((uint32_t)1)
-#define  GPIO_SPEED_FAST        ((uint32_t)2)
-#define  GPIO_SPEED_HIGH        ((uint32_t)3)
+#define GPIO_SPEED_FREQ_LOW       ((uint32_t)0)
+#define GPIO_SPEED_FREQ_MEDIUM    ((uint32_t)1)
+#define GPIO_SPEED_FREQ_HIGH      ((uint32_t)2)
+#define GPIO_SPEED_FREQ_VERY_HIGH ((uint32_t)3)
 
 #define IS_GPIO_AF(af)      ((af) >= 0 && (af) <= 7)
 

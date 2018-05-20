@@ -34,7 +34,7 @@ typedef struct {
     uint32_t sector_count;
 } flash_layout_t;
 
-#if defined(MCU_SERIES_F4)
+#if defined(STM32F4)
 
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x04000, 4 },
@@ -50,7 +50,7 @@ static const flash_layout_t flash_layout[] = {
     #endif
 };
 
-#elif defined(MCU_SERIES_F7)
+#elif defined(STM32F7)
 
 // FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
 // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
@@ -62,21 +62,31 @@ static const flash_layout_t flash_layout[] = {
     { 0x08040000, 0x40000, 3 },
 };
 
-#elif defined(MCU_SERIES_L4)
+#elif defined(STM32L4)
 
 static const flash_layout_t flash_layout[] = {
     { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
+};
+
+#elif defined(STM32H7)
+
+static const flash_layout_t flash_layout[] = {
+    { 0x08000000, 0x20000, 8 },
 };
 
 #else
 #error Unsupported processor
 #endif
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4) || defined(STM32H7)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
+    #if defined(STM32H7)
+    if (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_SWAP_BANK) == 0) {
+    #else
     if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0) {
+    #endif
         // no bank swap
         if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
             return FLASH_BANK_1;
@@ -93,6 +103,7 @@ static uint32_t get_bank(uint32_t addr) {
     }
 }
 
+#if defined(STM32L4)
 // get the page of a given flash address
 static uint32_t get_page(uint32_t addr) {
     if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
@@ -103,6 +114,7 @@ static uint32_t get_page(uint32_t addr) {
         return (addr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
     }
 }
+#endif
 
 #endif
 
@@ -130,7 +142,7 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
     return 0;
 }
 
-void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
+void flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     // check there is something to write
     if (num_word32 == 0) {
         return;
@@ -141,7 +153,7 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
     FLASH_EraseInitTypeDef EraseInitStruct;
 
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
     // erase the sector(s)
@@ -153,12 +165,19 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
     EraseInitStruct.NbPages     = get_page(flash_dest + 4 * num_word32 - 1) - EraseInitStruct.Page + 1;;
     #else
     // Clear pending flags (if any)
+    #if defined(STM32H7)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
+    #else
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
                            FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
+    #endif
 
     // erase the sector(s)
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
+    #if defined(STM32H7)
+    EraseInitStruct.Banks = get_bank(flash_dest);
+    #endif
     EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
     EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
     #endif
@@ -173,7 +192,7 @@ void flash_erase(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
 
 /*
 // erase the sector using an interrupt
-void flash_erase_it(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
+void flash_erase_it(uint32_t flash_dest, uint32_t num_word32) {
     // check there is something to write
     if (num_word32 == 0) {
         return;
@@ -201,7 +220,7 @@ void flash_erase_it(uint32_t flash_dest, const uint32_t *src, uint32_t num_word3
 */
 
 void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
-    #if defined(MCU_SERIES_L4)
+    #if defined(STM32L4)
 
     // program the flash uint64 by uint64
     for (int i = 0; i < num_word32 / 2; i++) {
@@ -224,11 +243,24 @@ void flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) 
         }
     }
 
+    #elif defined(STM32H7)
+
+    // program the flash 256 bits at a time
+    for (int i = 0; i < num_word32 / 8; i++) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, flash_dest, (uint64_t)(uint32_t)src) != HAL_OK) {
+            // error occurred during flash write
+            HAL_FLASH_Lock(); // lock the flash
+            return;
+        }
+        flash_dest += 32;
+        src += 8;
+    }
+
     #else
 
     // program the flash word by word
     for (int i = 0; i < num_word32; i++) {
-        if (HAL_FLASH_Program(TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flash_dest, *src) != HAL_OK) {
             // error occurred during flash write
             HAL_FLASH_Lock(); // lock the flash
             return;

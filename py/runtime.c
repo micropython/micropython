@@ -83,8 +83,10 @@ void mp_init(void) {
     MICROPY_PORT_INIT_FUNC;
 #endif
 
+    #if MICROPY_ENABLE_COMPILER
     // optimization disabled by default
     MP_STATE_VM(mp_optimise_value) = 0;
+    #endif
 
     // init global module dict
     mp_obj_dict_init(&MP_STATE_VM(mp_loaded_modules_dict), 3);
@@ -748,8 +750,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
             if (MP_MAP_SLOT_IS_FILLED(map, i)) {
                 // the key must be a qstr, so intern it if it's a string
                 mp_obj_t key = map->table[i].key;
-                if (MP_OBJ_IS_TYPE(key, &mp_type_str)) {
-                    key = mp_obj_str_intern(key);
+                if (!MP_OBJ_IS_QSTR(key)) {
+                    key = mp_obj_str_intern_checked(key);
                 }
                 args2[args2_len++] = key;
                 args2[args2_len++] = map->table[i].value;
@@ -778,8 +780,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
             }
 
             // the key must be a qstr, so intern it if it's a string
-            if (MP_OBJ_IS_TYPE(key, &mp_type_str)) {
-                key = mp_obj_str_intern(key);
+            if (!MP_OBJ_IS_QSTR(key)) {
+                key = mp_obj_str_intern_checked(key);
             }
 
             // get the value corresponding to the key
@@ -1084,6 +1086,22 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     }
 }
 
+// Acts like mp_load_method_maybe but catches AttributeError, and all other exceptions if requested
+void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_load_method_maybe(obj, attr, dest);
+        nlr_pop();
+    } else {
+        if (!catch_all_exc
+            && !mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type),
+                MP_OBJ_FROM_PTR(&mp_type_AttributeError))) {
+            // Re-raise the exception
+            nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+    }
+}
+
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     mp_obj_type_t *type = mp_obj_get_type(base);
@@ -1215,13 +1233,12 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
 
     if (type->iternext != NULL && send_value == mp_const_none) {
         mp_obj_t ret = type->iternext(self_in);
+        *ret_val = ret;
         if (ret != MP_OBJ_STOP_ITERATION) {
-            *ret_val = ret;
             return MP_VM_RETURN_YIELD;
         } else {
             // Emulate raise StopIteration()
             // Special case, handled in vm.c
-            *ret_val = MP_OBJ_NULL;
             return MP_VM_RETURN_NORMAL;
         }
     }
@@ -1283,7 +1300,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         // will be propagated up. This behavior is approved by test_pep380.py
         // test_delegation_of_close_to_non_generator(),
         //  test_delegating_throw_to_non_generator()
-        *ret_val = throw_value;
+        *ret_val = mp_make_raise_obj(throw_value);
         return MP_VM_RETURN_EXCEPTION;
     }
 }
@@ -1337,6 +1354,8 @@ import_error:
         return dest[0];
     }
 
+    #if MICROPY_ENABLE_EXTERNAL_IMPORT
+
     // See if it's a package, then can try FS import
     if (!mp_obj_is_package(module)) {
         goto import_error;
@@ -1363,6 +1382,13 @@ import_error:
 
     // TODO lookup __import__ and call that instead of going straight to builtin implementation
     return mp_builtin___import__(5, args);
+
+    #else
+
+    // Package import not supported with external imports disabled
+    goto import_error;
+
+    #endif
 }
 
 void mp_import_all(mp_obj_t module) {

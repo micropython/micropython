@@ -29,6 +29,7 @@
 
 // board specific definitions
 #include "mpconfigboard.h"
+#include "mpconfigboard_common.h"
 
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX      (128)
@@ -96,6 +97,7 @@
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #define MICROPY_PY_CMATH            (1)
@@ -131,12 +133,15 @@
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_I2C      (1)
+#if MICROPY_HW_ENABLE_HW_I2C
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
+#endif
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SPI_MSB  (SPI_FIRSTBIT_MSB)
 #define MICROPY_PY_MACHINE_SPI_LSB  (SPI_FIRSTBIT_LSB)
 #define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hard_spi_make_new
-#define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
-#define MICROPY_PY_MACHINE_SPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
+#define MICROPY_HW_SOFTSPI_MIN_DELAY (0)
+#define MICROPY_HW_SOFTSPI_MAX_BAUDRATE (HAL_RCC_GetSysClockFreq() / 48)
 #define MICROPY_PY_FRAMEBUF         (1)
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET          (1)
@@ -181,6 +186,12 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
+#if MICROPY_PY_STM
+#define STM_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
+#else
+#define STM_BUILTIN_MODULE
+#endif
+
 #if MICROPY_PY_USOCKET
 #define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
 #define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
@@ -198,7 +209,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) }, \
+    STM_BUILTIN_MODULE \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     SOCKET_BUILTIN_MODULE \
@@ -228,32 +239,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) }, \
-
-#if defined(MCU_SERIES_F7)
-#define PYB_EXTI_NUM_VECTORS (24)
-#define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (8)
-#elif defined(MCU_SERIES_L4)
-#define PYB_EXTI_NUM_VECTORS (23)
-#define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (6)
-#else
-#define PYB_EXTI_NUM_VECTORS (23)
-#define MICROPY_HW_MAX_TIMER (14)
-#define MICROPY_HW_MAX_UART (6)
-#endif
-
-// enable hardware I2C if there are any peripherals defined
-#define MICROPY_HW_ENABLE_HW_I2C ( \
-    defined(MICROPY_HW_I2C1_SCL) \
-    || defined(MICROPY_HW_I2C2_SCL) \
-    || defined(MICROPY_HW_I2C3_SCL) \
-    || defined(MICROPY_HW_I2C4_SCL) \
-)
-#if MICROPY_HW_ENABLE_HW_I2C
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW machine_hard_i2c_make_new
-#endif
+    STM_BUILTIN_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -309,8 +295,6 @@ typedef long mp_off_t;
 // value from disable_irq back to enable_irq.  If you really need
 // to know the machine-specific values, see irq.h.
 
-#include STM32_HAL_H
-
 static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);
 }
@@ -361,12 +345,5 @@ static inline mp_uint_t disable_irq(void) {
 #define free(p) m_free(p)
 #define realloc(p, n) m_realloc(p, n)
 
-// see stm32f4XX_hal_conf.h USE_USB_FS & USE_USB_HS
-// at the moment only USB_FS is supported
-#define USE_DEVICE_MODE
-//#define USE_HOST_MODE
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
-
-#define MICROPY_PIN_DEFS_PORT_H "pin_defs_stm32.h"

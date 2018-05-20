@@ -137,7 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     mp_uint_t c = mp_obj_get_int(o_in);
-    char str[4];
+    uint8_t str[4];
     int len = 0;
     if (c < 0x80) {
         *str = c; len = 1;
@@ -159,12 +159,12 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     } else {
         mp_raise_ValueError("chr() arg not in range(0x110000)");
     }
-    return mp_obj_new_str_via_qstr(str, len);
+    return mp_obj_new_str_via_qstr((char*)str, len);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {
-        char str[1] = {ord};
-        return mp_obj_new_str_via_qstr(str, 1);
+        uint8_t str[1] = {ord};
+        return mp_obj_new_str_via_qstr((char*)str, 1);
     } else {
         mp_raise_ValueError("chr() arg not in range(256)");
     }
@@ -173,46 +173,31 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_chr_obj, mp_builtin_chr);
 
 STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
-    // TODO make this function more general and less of a hack
-
-    mp_obj_dict_t *dict = NULL;
-    mp_map_t *members = NULL;
-    if (n_args == 0) {
-        // make a list of names in the local name space
-        dict = mp_locals_get();
-    } else { // n_args == 1
-        // make a list of names in the given object
-        if (MP_OBJ_IS_TYPE(args[0], &mp_type_module)) {
-            dict = mp_obj_module_get_globals(args[0]);
-        } else {
-            mp_obj_type_t *type;
-            if (MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
-                type = MP_OBJ_TO_PTR(args[0]);
-            } else {
-                type = mp_obj_get_type(args[0]);
-            }
-            if (type->locals_dict != NULL && type->locals_dict->base.type == &mp_type_dict) {
-                dict = type->locals_dict;
-            }
-        }
-        if (mp_obj_is_instance_type(mp_obj_get_type(args[0]))) {
-            mp_obj_instance_t *inst = MP_OBJ_TO_PTR(args[0]);
-            members = &inst->members;
-        }
-    }
-
     mp_obj_t dir = mp_obj_new_list(0, NULL);
-    if (dict != NULL) {
+    if (n_args == 0) {
+        // Make a list of names in the local namespace
+        mp_obj_dict_t *dict = mp_locals_get();
         for (size_t i = 0; i < dict->map.alloc; i++) {
             if (MP_MAP_SLOT_IS_FILLED(&dict->map, i)) {
                 mp_obj_list_append(dir, dict->map.table[i].key);
             }
         }
-    }
-    if (members != NULL) {
-        for (size_t i = 0; i < members->alloc; i++) {
-            if (MP_MAP_SLOT_IS_FILLED(members, i)) {
-                mp_obj_list_append(dir, members->table[i].key);
+    } else { // n_args == 1
+        // Make a list of names in the given object
+        // Implemented by probing all possible qstrs with mp_load_method_maybe
+        size_t nqstr = QSTR_TOTAL();
+        for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
+            mp_obj_t dest[2];
+            mp_load_method_protected(args[0], i, dest, false);
+            if (dest[0] != MP_OBJ_NULL) {
+                #if MICROPY_PY_ALL_SPECIAL_METHODS
+                // Support for __dir__: see if we can dispatch to this special method
+                // This relies on MP_QSTR__dir__ being first after MP_QSTR_
+                if (i == MP_QSTR___dir__ && dest[1] != MP_OBJ_NULL) {
+                    return mp_call_method_n_kw(0, 0, dest);
+                }
+                #endif
+                mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(i));
             }
         }
     }
@@ -343,19 +328,19 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     size_t len;
-    const char *str = mp_obj_str_get_data(o_in, &len);
+    const byte *str = (const byte*)mp_obj_str_get_data(o_in, &len);
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     if (MP_OBJ_IS_STR(o_in)) {
-        len = unichar_charlen(str, len);
+        len = utf8_charlen(str, len);
         if (len == 1) {
-            return mp_obj_new_int(utf8_get_char((const byte*)str));
+            return mp_obj_new_int(utf8_get_char(str));
         }
     } else
     #endif
     {
         // a bytes object, or a str without unicode support (don't sign extend the char)
         if (len == 1) {
-            return MP_OBJ_NEW_SMALL_INT(((const byte*)str)[0]);
+            return MP_OBJ_NEW_SMALL_INT(str[0]);
         }
     }
 
@@ -572,14 +557,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_delattr_obj, mp_builtin_delattr);
 
 STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
     qstr attr = mp_obj_str_get_qstr(attr_in);
-
     mp_obj_t dest[2];
-    // TODO: https://docs.python.org/3/library/functions.html?highlight=hasattr#hasattr
-    // explicitly says "This is implemented by calling getattr(object, name) and seeing
-    // whether it raises an AttributeError or not.", so we should explicitly wrap this
-    // in nlr_push and handle exception.
-    mp_load_method_maybe(object_in, attr, dest);
-
+    mp_load_method_protected(object_in, attr, dest, false);
     return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);

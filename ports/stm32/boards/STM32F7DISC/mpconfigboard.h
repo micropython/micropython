@@ -4,15 +4,9 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_HAS_SDCARD       (1)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 #define MICROPY_BOARD_EARLY_INIT    STM32F7DISC_board_early_init
 void STM32F7DISC_board_early_init(void);
@@ -55,6 +49,12 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_SPI2_MISO        (pin_B14)
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)
 
+// CAN busses
+#define MICROPY_HW_CAN1_TX          (pin_B9)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
+#define MICROPY_HW_CAN2_TX          (pin_B13)
+#define MICROPY_HW_CAN2_RX          (pin_B12)
+
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_I11)
 #define MICROPY_HW_USRSW_PULL       (GPIO_NOPULL)
@@ -75,6 +75,6 @@ void STM32F7DISC_board_early_init(void);
 // The Hardware VBUS detect only works on pin PA9. The STM32F7 Discovery uses
 // PA9 for VCP_TX functionality and connects the VBUS to pin J12 (so software
 // only detect). So we don't define the VBUS detect pin since that requires PA9.
-
+#define MICROPY_HW_USB_FS              (1)
 /*#define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_J12)*/
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)

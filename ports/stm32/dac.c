@@ -29,11 +29,11 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "timer.h"
 #include "dac.h"
 #include "dma.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 
 /// \moduleref pyb
 /// \class DAC - digital to analog conversion
@@ -65,6 +65,10 @@
 ///     dac.write_timed(buf, 400 * len(buf), mode=DAC.CIRCULAR)
 
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
+
+#if defined(STM32H7)
+#define DAC DAC1
+#endif
 
 STATIC DAC_HandleTypeDef DAC_Handle;
 
@@ -102,10 +106,14 @@ STATIC uint32_t TIMx_Config(mp_obj_t timer) {
     // work out the trigger channel (only certain ones are supported)
     if (tim->Instance == TIM2) {
         return DAC_TRIGGER_T2_TRGO;
+    #if defined(TIM4)
     } else if (tim->Instance == TIM4) {
         return DAC_TRIGGER_T4_TRGO;
+    #endif
+    #if defined(TIM5)
     } else if (tim->Instance == TIM5) {
         return DAC_TRIGGER_T5_TRGO;
+    #endif
     #if defined(TIM6)
     } else if (tim->Instance == TIM6) {
         return DAC_TRIGGER_T6_TRGO;
@@ -137,14 +145,24 @@ typedef struct _pyb_dac_obj_t {
     mp_obj_base_t base;
     uint32_t dac_channel; // DAC_CHANNEL_1 or DAC_CHANNEL_2
     const dma_descr_t *tx_dma_descr;
-    uint16_t pin; // GPIO_PIN_4 or GPIO_PIN_5
+    mp_hal_pin_obj_t pin; // pin_A4 or pin_A5
     uint8_t bits; // 8 or 12
     uint8_t state;
+    uint8_t outbuf_single;
+    uint8_t outbuf_waveform;
 } pyb_dac_obj_t;
+
+STATIC void pyb_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    pyb_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "DAC(%u, bits=%u)",
+        self->dac_channel == DAC_CHANNEL_1 ? 1 : 2,
+        self->bits);
+}
 
 STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_buffering, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
     };
 
     // parse args
@@ -152,23 +170,21 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // GPIO configuration
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.Pin = self->pin;
-    GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+    mp_hal_pin_config(self->pin, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
 
     // DAC peripheral clock
-    #if defined(MCU_SERIES_F4) || defined(MCU_SERIES_F7)
+    #if defined(STM32F4) || defined(STM32F7)
     __DAC_CLK_ENABLE();
-    #elif defined(MCU_SERIES_L4)
+    #elif defined(STM32H7)
+    __HAL_RCC_DAC12_CLK_ENABLE();
+    #elif defined(STM32L4)
     __HAL_RCC_DAC1_CLK_ENABLE();
     #else
     #error Unsupported Processor
     #endif
 
     // stop anything already going on
-    __DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA1_CLK_ENABLE();
     DMA_HandleTypeDef DMA_Handle;
     /* Get currently configured dma */
     dma_init_handle(&DMA_Handle, self->tx_dma_descr, (void*)NULL);
@@ -187,6 +203,19 @@ STATIC mp_obj_t pyb_dac_init_helper(pyb_dac_obj_t *self, size_t n_args, const mp
         self->bits = args[0].u_int;
     } else {
         mp_raise_ValueError("unsupported bits");
+    }
+
+    // set output buffer config
+    if (args[1].u_obj == mp_const_none) {
+        // due to legacy, default values differ for single and waveform outputs
+        self->outbuf_single = DAC_OUTPUTBUFFER_DISABLE;
+        self->outbuf_waveform = DAC_OUTPUTBUFFER_ENABLE;
+    } else if (mp_obj_is_true(args[1].u_obj)) {
+        self->outbuf_single = DAC_OUTPUTBUFFER_ENABLE;
+        self->outbuf_waveform = DAC_OUTPUTBUFFER_ENABLE;
+    } else {
+        self->outbuf_single = DAC_OUTPUTBUFFER_DISABLE;
+        self->outbuf_waveform = DAC_OUTPUTBUFFER_DISABLE;
     }
 
     // reset state of DAC
@@ -213,9 +242,9 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
         dac_id = mp_obj_get_int(args[0]);
     } else {
         const pin_obj_t *pin = pin_find(args[0]);
-        if (pin == &pin_A4) {
+        if (pin == pin_A4) {
             dac_id = 1;
-        } else if (pin == &pin_A5) {
+        } else if (pin == pin_A5) {
             dac_id = 2;
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) doesn't have DAC capabilities", pin->name));
@@ -226,11 +255,11 @@ STATIC mp_obj_t pyb_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_
     dac->base.type = &pyb_dac_type;
 
     if (dac_id == 1) {
-        dac->pin = GPIO_PIN_4;
+        dac->pin = pin_A4;
         dac->dac_channel = DAC_CHANNEL_1;
         dac->tx_dma_descr = &dma_DAC_1_TX;
     } else if (dac_id == 2) {
-        dac->pin = GPIO_PIN_5;
+        dac->pin = pin_A5;
         dac->dac_channel = DAC_CHANNEL_2;
         dac->tx_dma_descr = &dma_DAC_2_TX;
     } else {
@@ -257,10 +286,18 @@ STATIC mp_obj_t pyb_dac_deinit(mp_obj_t self_in) {
     pyb_dac_obj_t *self = self_in;
     if (self->dac_channel == DAC_CHANNEL_1) {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN1;
+        #if defined(STM32H7) || defined(STM32L4)
+        DAC->MCR = (DAC->MCR & ~(7 << DAC_MCR_MODE1_Pos)) | 2 << DAC_MCR_MODE1_Pos;
+        #else
         DAC_Handle.Instance->CR |= DAC_CR_BOFF1;
+        #endif
     } else {
         DAC_Handle.Instance->CR &= ~DAC_CR_EN2;
+        #if defined(STM32H7) || defined(STM32L4)
+        DAC->MCR = (DAC->MCR & ~(7 << DAC_MCR_MODE2_Pos)) | 2 << DAC_MCR_MODE2_Pos;
+        #else
         DAC_Handle.Instance->CR |= DAC_CR_BOFF2;
+        #endif
     }
     return mp_const_none;
 }
@@ -280,7 +317,7 @@ STATIC mp_obj_t pyb_dac_noise(mp_obj_t self_in, mp_obj_t freq) {
         // configure DAC to trigger via TIM6
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = self->outbuf_waveform;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_BUILTIN_WAVEFORM;
     }
@@ -310,7 +347,7 @@ STATIC mp_obj_t pyb_dac_triangle(mp_obj_t self_in, mp_obj_t freq) {
         // configure DAC to trigger via TIM6
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = self->outbuf_waveform;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_BUILTIN_WAVEFORM;
     }
@@ -333,7 +370,7 @@ STATIC mp_obj_t pyb_dac_write(mp_obj_t self_in, mp_obj_t val) {
     if (self->state != DAC_STATE_WRITE_SINGLE) {
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = DAC_TRIGGER_NONE;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_DISABLE;
+        config.DAC_OutputBuffer = self->outbuf_single;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_WRITE_SINGLE;
     }
@@ -395,7 +432,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         dac_trigger = TIMx_Config(args[1].u_obj);
     }
 
-    __DMA1_CLK_ENABLE();
+    __HAL_RCC_DMA1_CLK_ENABLE();
 
     DMA_HandleTypeDef DMA_Handle;
     /* Get currently configured dma */
@@ -445,7 +482,7 @@ mp_obj_t pyb_dac_write_timed(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (self->state != DAC_STATE_DMA_WAVEFORM + dac_trigger) {
         DAC_ChannelConfTypeDef config;
         config.DAC_Trigger = dac_trigger;
-        config.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+        config.DAC_OutputBuffer = self->outbuf_waveform;
         HAL_DAC_ConfigChannel(&DAC_Handle, &config, self->dac_channel);
         self->state = DAC_STATE_DMA_WAVEFORM + dac_trigger;
     }
@@ -499,6 +536,7 @@ STATIC MP_DEFINE_CONST_DICT(pyb_dac_locals_dict, pyb_dac_locals_dict_table);
 const mp_obj_type_t pyb_dac_type = {
     { &mp_type_type },
     .name = MP_QSTR_DAC,
+    .print = pyb_dac_print,
     .make_new = pyb_dac_make_new,
     .locals_dict = (mp_obj_dict_t*)&pyb_dac_locals_dict,
 };

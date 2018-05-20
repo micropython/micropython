@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "timer.h"
 #include "servo.h"
 
@@ -81,15 +80,15 @@ void servo_init(void) {
 
     // assign servo objects to specific pins (must be some permutation of PA0-PA3)
     #ifdef pyb_pin_X1
-    pyb_servo_obj[0].pin = &pyb_pin_X1;
-    pyb_servo_obj[1].pin = &pyb_pin_X2;
-    pyb_servo_obj[2].pin = &pyb_pin_X3;
-    pyb_servo_obj[3].pin = &pyb_pin_X4;
+    pyb_servo_obj[0].pin = pyb_pin_X1;
+    pyb_servo_obj[1].pin = pyb_pin_X2;
+    pyb_servo_obj[2].pin = pyb_pin_X3;
+    pyb_servo_obj[3].pin = pyb_pin_X4;
     #else
-    pyb_servo_obj[0].pin = &pin_A0;
-    pyb_servo_obj[1].pin = &pin_A1;
-    pyb_servo_obj[2].pin = &pin_A2;
-    pyb_servo_obj[3].pin = &pin_A3;
+    pyb_servo_obj[0].pin = pin_A0;
+    pyb_servo_obj[1].pin = pin_A1;
+    pyb_servo_obj[2].pin = pin_A2;
+    pyb_servo_obj[3].pin = pin_A3;
     #endif
 }
 
@@ -177,7 +176,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
 
 STATIC void pyb_servo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
-    mp_printf(print, "<Servo %lu at %luus>", self - &pyb_servo_obj[0] + 1, 10 * self->pulse_cur);
+    mp_printf(print, "<Servo %u at %uus>", self - &pyb_servo_obj[0] + 1, 10 * self->pulse_cur);
 }
 
 /// \classmethod \constructor(id)

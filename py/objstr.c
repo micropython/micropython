@@ -223,7 +223,10 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     }
 
     if (MP_OBJ_IS_SMALL_INT(args[0])) {
-        uint len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        mp_int_t len = MP_OBJ_SMALL_INT_VALUE(args[0]);
+        if (len < 0) {
+            mp_raise_ValueError(NULL);
+        }
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         memset(vstr.buf, 0, len);
@@ -660,9 +663,7 @@ STATIC mp_obj_t str_rsplit(size_t n_args, const mp_obj_t *args) {
             }
             res->items[idx--] = mp_obj_new_str_of_type(self_type, s + sep_len, last - s - sep_len);
             last = s;
-            if (splits > 0) {
-                splits--;
-            }
+            splits--;
         }
         if (idx != 0) {
             // We split less parts than split limit, now go cleanup surplus
@@ -698,8 +699,13 @@ STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
         end = str_index_to_ptr(self_type, haystack, haystack_len, args[3], true);
     }
 
+    if (end < start) {
+        goto out_error;
+    }
+
     const byte *p = find_subbytes(start, end - start, needle, needle_len, direction);
     if (p == NULL) {
+    out_error:
         // not found
         if (is_index) {
             mp_raise_ValueError("substring not found");
@@ -1704,7 +1710,7 @@ STATIC mp_obj_t str_count(size_t n_args, const mp_obj_t *args) {
 
     // if needle_len is zero then we count each gap between characters as an occurrence
     if (needle_len == 0) {
-        return MP_OBJ_NEW_SMALL_INT(unichar_charlen((const char*)start, end - start) + 1);
+        return MP_OBJ_NEW_SMALL_INT(utf8_charlen(start, end - start) + 1);
     }
 
     // count the occurrences
@@ -2058,6 +2064,12 @@ mp_obj_t mp_obj_new_str(const char* data, size_t len) {
 
 mp_obj_t mp_obj_str_intern(mp_obj_t str) {
     GET_STR_DATA_LEN(str, data, len);
+    return mp_obj_new_str_via_qstr((const char*)data, len);
+}
+
+mp_obj_t mp_obj_str_intern_checked(mp_obj_t obj) {
+    size_t len;
+    const char *data = mp_obj_str_get_data(obj, &len);
     return mp_obj_new_str_via_qstr((const char*)data, len);
 }
 

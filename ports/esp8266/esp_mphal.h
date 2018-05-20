@@ -86,7 +86,7 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
     } while (0)
 #define mp_hal_pin_od_high(p) do { \
         if ((p) == 16) { WRITE_PERI_REG(RTC_GPIO_ENABLE, (READ_PERI_REG(RTC_GPIO_ENABLE) & ~1)); } \
-        else { gpio_output_set(1 << (p), 0, 1 << (p), 0); } \
+        else { gpio_output_set(0, 0, 0, 1 << (p)); /* set as input to avoid glitches */ } \
     } while (0)
 #define mp_hal_pin_read(p) pin_get(p)
 #define mp_hal_pin_write(p, v) pin_set((p), (v))

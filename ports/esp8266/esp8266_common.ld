@@ -135,6 +135,7 @@ SECTIONS
         *lib/netutils/*.o*(.literal*, .text*)
         *lib/timeutils/*.o*(.literal*, .text*)
         *lib/utils/*.o*(.literal*, .text*)
+        *drivers/bus/*.o(.literal* .text*)
 
         build/main.o(.literal* .text*)
         *gccollect.o(.literal* .text*)
