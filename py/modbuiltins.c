@@ -445,30 +445,32 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_obj_t o_in = args[0];
     if (MP_OBJ_IS_INT(o_in)) {
-        if(n_args == 1 || mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE_EQUAL, args[1], mp_obj_new_int(0)))){
+        if(n_args<=1){
             return o_in;
         }
-        if (!MP_OBJ_IS_INT(args[1])){
-            mp_raise_TypeError("Second parameter must be an integer");
+        mp_int_t num_dig = mp_obj_get_int(args[1]);
+        if(num_dig >= 0){
+            return o_in;
         }
-        mp_obj_t num_dig = mp_unary_op(MP_UNARY_OP_NEGATIVE, (args[1]));
-        mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, mp_obj_new_int(10), num_dig);
-        mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, mp_obj_new_int(2));
+
+        mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
+        mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
         mp_obj_t floor = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, o_in, mult);
         mp_obj_t modulo = mp_binary_op(MP_BINARY_OP_MODULO, o_in, mult);
+        mp_obj_t restored = mp_binary_op(MP_BINARY_OP_MULTIPLY, floor, mult);
         if(mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, modulo, half_mult))){
-            return mp_binary_op(MP_BINARY_OP_ADD, mp_binary_op(MP_BINARY_OP_MULTIPLY, floor, mult), mult);
+            return mp_binary_op(MP_BINARY_OP_ADD, restored, mult);
 	}
         else if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, half_mult, modulo))){
-            return mp_binary_op(MP_BINARY_OP_MULTIPLY, floor, mult);
+            return restored;
         }
         else //round to even number
         {
             if(mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MODULO, floor, mp_obj_new_int(2)))){
-                return mp_binary_op(MP_BINARY_OP_ADD, mp_binary_op(MP_BINARY_OP_MULTIPLY, floor, mult), mult);
+                return mp_binary_op(MP_BINARY_OP_ADD, restored, mult);
             }
             else {
-                return mp_binary_op(MP_BINARY_OP_MULTIPLY, floor, mult);
+                return restored;
             }
         }
 }
