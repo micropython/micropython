@@ -227,10 +227,10 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         // string should be a decimal number
         parse_dec_in_t in = PARSE_DEC_IN_INTG;
         bool exp_neg = false;
-        mp_int_t exp_val = 0;
-        mp_int_t exp_extra = 0;
+        int exp_val = 0;
+        int exp_extra = 0;
         while (str < top) {
-            mp_uint_t dig = *str++;
+            unsigned int dig = *str++;
             if ('0' <= dig && dig <= '9') {
                 dig -= '0';
                 if (in == PARSE_DEC_IN_EXP) {
