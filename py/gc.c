@@ -453,6 +453,7 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser) {
     if (!collected && MP_STATE_MEM(gc_alloc_amount) >= MP_STATE_MEM(gc_alloc_threshold)) {
         GC_EXIT();
         gc_collect();
+        collected = 1;
         GC_ENTER();
     }
     #endif
