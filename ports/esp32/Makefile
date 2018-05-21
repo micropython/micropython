@@ -21,7 +21,7 @@ FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 4MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
 
-ESPIDF_SUPHASH := a2556229aa6f55b16b171e3325ee9ab1943e8552
+ESPIDF_SUPHASH := 1f7b41e206646417adc572da928175d33c986bd3
 
 # paths to ESP IDF and its components
 ifeq ($(ESPIDF),)
@@ -80,7 +80,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/tcpip_adapter/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/lwip
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/lwip/port
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/lwip/posix
-INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/include
+INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/mbedtls/include
 INC_ESPCOMP += -I$(ESPCOMP)/mbedtls/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/ulp/include
@@ -369,6 +369,7 @@ ESPIDF_APP_UPDATE_O = $(addprefix $(ESPCOMP)/app_update/,\
 
 ESPIDF_NEWLIB_O = $(addprefix $(ESPCOMP)/newlib/,\
 	time.o \
+	select.o \
 	syscalls.o \
 	syscall_table.o \
 	reent_init.o \
@@ -482,75 +483,76 @@ ESPIDF_LWIP_O = $(addprefix $(ESPCOMP)/lwip/,\
 	)
 
 ESPIDF_MBEDTLS_O = $(addprefix $(ESPCOMP)/mbedtls/,\
-	library/entropy.o \
-	library/pkcs12.o \
-	library/ccm.o \
-	library/pk.o \
-	library/sha1.o \
-	library/x509_csr.o \
-	library/ssl_cli.o \
-	library/ecp.o \
-	library/blowfish.o \
-	library/x509.o \
-	library/ecp_curves.o \
-	library/error.o \
-	library/ssl_ticket.o \
-	library/entropy_poll.o \
-	library/cipher.o \
-	library/version_features.o \
-	library/ripemd160.o \
-	library/rsa.o \
-	library/md.o \
-	library/md_wrap.o \
-	library/sha256.o \
-	library/dhm.o \
-	library/ssl_cache.o \
-	library/pkwrite.o \
-	library/base64.o \
-	library/asn1parse.o \
-	library/ssl_tls.o \
-	library/hmac_drbg.o \
-	library/pem.o \
-	library/version.o \
-	library/gcm.o \
-	library/memory_buffer_alloc.o \
-	library/md2.o \
-	library/ecdsa.o \
-	library/ssl_srv.o \
-	library/x509_crt.o \
-	library/ecdh.o \
-	library/asn1write.o \
-	library/md4.o \
-	library/debug.o \
-	library/x509_create.o \
-	library/ecjpake.o \
-	library/oid.o \
-	library/md5.o \
-	library/ssl_ciphersuites.o \
-	library/sha512.o \
-	library/xtea.o \
-	library/aes.o \
-	library/cipher_wrap.o \
-	library/arc4.o \
-	library/bignum.o \
-	library/pkparse.o \
-	library/padlock.o \
-	library/threading.o \
-	library/x509_crl.o \
-	library/pkcs11.o \
-	library/aesni.o \
-	library/timing.o \
-	library/certs.o \
-	library/pkcs5.o \
-	library/ssl_cookie.o \
-	library/camellia.o \
-	library/havege.o \
-	library/des.o \
-	library/x509write_csr.o \
-	library/platform.o \
-	library/ctr_drbg.o \
-	library/x509write_crt.o \
-	library/pk_wrap.o \
+	mbedtls/library/entropy.o \
+	mbedtls/library/pkcs12.o \
+	mbedtls/library/ccm.o \
+	mbedtls/library/pk.o \
+	mbedtls/library/sha1.o \
+	mbedtls/library/x509_csr.o \
+	mbedtls/library/ssl_cli.o \
+	mbedtls/library/ecp.o \
+	mbedtls/library/blowfish.o \
+	mbedtls/library/x509.o \
+	mbedtls/library/ecp_curves.o \
+	mbedtls/library/error.o \
+	mbedtls/library/ssl_ticket.o \
+	mbedtls/library/entropy_poll.o \
+	mbedtls/library/cipher.o \
+	mbedtls/library/version_features.o \
+	mbedtls/library/ripemd160.o \
+	mbedtls/library/rsa.o \
+	mbedtls/library/rsa_internal.o \
+	mbedtls/library/md.o \
+	mbedtls/library/md_wrap.o \
+	mbedtls/library/sha256.o \
+	mbedtls/library/dhm.o \
+	mbedtls/library/ssl_cache.o \
+	mbedtls/library/pkwrite.o \
+	mbedtls/library/base64.o \
+	mbedtls/library/asn1parse.o \
+	mbedtls/library/ssl_tls.o \
+	mbedtls/library/hmac_drbg.o \
+	mbedtls/library/pem.o \
+	mbedtls/library/version.o \
+	mbedtls/library/gcm.o \
+	mbedtls/library/memory_buffer_alloc.o \
+	mbedtls/library/md2.o \
+	mbedtls/library/ecdsa.o \
+	mbedtls/library/ssl_srv.o \
+	mbedtls/library/x509_crt.o \
+	mbedtls/library/ecdh.o \
+	mbedtls/library/asn1write.o \
+	mbedtls/library/md4.o \
+	mbedtls/library/debug.o \
+	mbedtls/library/x509_create.o \
+	mbedtls/library/ecjpake.o \
+	mbedtls/library/oid.o \
+	mbedtls/library/md5.o \
+	mbedtls/library/ssl_ciphersuites.o \
+	mbedtls/library/sha512.o \
+	mbedtls/library/xtea.o \
+	mbedtls/library/aes.o \
+	mbedtls/library/cipher_wrap.o \
+	mbedtls/library/arc4.o \
+	mbedtls/library/bignum.o \
+	mbedtls/library/pkparse.o \
+	mbedtls/library/padlock.o \
+	mbedtls/library/threading.o \
+	mbedtls/library/x509_crl.o \
+	mbedtls/library/pkcs11.o \
+	mbedtls/library/aesni.o \
+	mbedtls/library/timing.o \
+	mbedtls/library/certs.o \
+	mbedtls/library/pkcs5.o \
+	mbedtls/library/ssl_cookie.o \
+	mbedtls/library/camellia.o \
+	mbedtls/library/havege.o \
+	mbedtls/library/des.o \
+	mbedtls/library/x509write_csr.o \
+	mbedtls/library/platform.o \
+	mbedtls/library/ctr_drbg.o \
+	mbedtls/library/x509write_crt.o \
+	mbedtls/library/pk_wrap.o \
 	port/esp_bignum.o \
 	port/esp_hardware.o \
 	port/esp_sha1.o \
@@ -558,7 +560,7 @@ ESPIDF_MBEDTLS_O = $(addprefix $(ESPCOMP)/mbedtls/,\
 	port/esp_sha512.o \
 	)
 
-$(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DEMBEDDED_SUPP -D__ets__ -Wno-strict-aliasing
+$(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DEMBEDDED_SUPP -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_MSCHAPv2 -DEAP_TTLS -DEAP_TLS -DEAP_PEAP -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -D__ets__ -Wno-strict-aliasing
 ESPIDF_WPA_SUPPLICANT_O = $(addprefix $(ESPCOMP)/wpa_supplicant/,\
 	src/crypto/aes-internal-enc.o \
 	src/crypto/sha256-internal.o \
