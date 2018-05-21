@@ -24,3 +24,9 @@ print(float('.' + '0' * 60 + '9e40') == float('9e-21'))
 print(float('1.00000000000000000000e-37'))
 print(float('10.0000000000000000000e-38'))
 print(float('100.000000000000000000e-39'))
+
+# very large exponent literal
+print(float('1e4294967301'))
+print(float('1e-4294967301'))
+print(float('1e18446744073709551621'))
+print(float('1e-18446744073709551621'))
