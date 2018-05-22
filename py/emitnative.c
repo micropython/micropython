@@ -1950,18 +1950,29 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
 }
 
+#if MICROPY_PY_BUILTINS_SLICE
+STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args);
+#endif
+
 STATIC void emit_native_build(emit_t *emit, mp_uint_t n_args, int kind) {
     // for viper: call runtime, with types of args
     //   if wrapped in byte_array, or something, allocates memory and fills it
     MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_TUPLE == MP_F_BUILD_TUPLE);
     MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_LIST == MP_F_BUILD_LIST);
     MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_MAP == MP_F_BUILD_MAP);
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_SET == MP_F_BUILD_SET);
+    #if MICROPY_PY_BUILTINS_SLICE
+    if (kind == MP_EMIT_BUILD_SLICE) {
+        emit_native_build_slice(emit, n_args);
+        return;
+    }
+    #endif
     emit_native_pre(emit);
-    if (kind == MP_EMIT_BUILD_TUPLE || kind == MP_EMIT_BUILD_LIST) {
+    if (kind == MP_EMIT_BUILD_TUPLE || kind == MP_EMIT_BUILD_LIST || kind == MP_EMIT_BUILD_SET) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
     }
     emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE + kind, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple/list/map
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple/list/map/set
 }
 
 STATIC void emit_native_store_map(emit_t *emit) {
@@ -1973,15 +1984,6 @@ STATIC void emit_native_store_map(emit_t *emit) {
     emit_call(emit, MP_F_STORE_MAP);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // map
 }
-
-#if MICROPY_PY_BUILTINS_SET
-STATIC void emit_native_build_set(emit_t *emit, mp_uint_t n_args) {
-    emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_SET, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
-}
-#endif
 
 #if MICROPY_PY_BUILTINS_SLICE
 STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
@@ -2266,12 +2268,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_binary_op,
     emit_native_build,
     emit_native_store_map,
-    #if MICROPY_PY_BUILTINS_SET
-    emit_native_build_set,
-    #endif
-    #if MICROPY_PY_BUILTINS_SLICE
-    emit_native_build_slice,
-    #endif
     emit_native_store_comp,
     emit_native_unpack_sequence,
     emit_native_unpack_ex,

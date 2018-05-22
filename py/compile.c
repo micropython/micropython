@@ -2499,7 +2499,7 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 #if MICROPY_PY_BUILTINS_SET
                 // if it's a set, build it
                 if (!is_dict) {
-                    EMIT_ARG(build_set, 1 + n);
+                    EMIT_ARG(build, 1 + n, MP_EMIT_BUILD_SET);
                 }
                 #endif
             } else {
@@ -2522,7 +2522,7 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
         set_with_one_element:
         #if MICROPY_PY_BUILTINS_SET
         compile_node(comp, pn);
-        EMIT_ARG(build_set, 1);
+        EMIT_ARG(build, 1, MP_EMIT_BUILD_SET);
         #else
         assert(0);
         #endif
@@ -2551,7 +2551,7 @@ STATIC void compile_subscript_3_helper(compiler_t *comp, mp_parse_node_struct_t 
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // [?:]
         EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-        EMIT_ARG(build_slice, 2);
+        EMIT_ARG(build, 2, MP_EMIT_BUILD_SLICE);
     } else if (MP_PARSE_NODE_IS_STRUCT(pn)) {
         pns = (mp_parse_node_struct_t*)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_subscript_3c) {
@@ -2559,11 +2559,11 @@ STATIC void compile_subscript_3_helper(compiler_t *comp, mp_parse_node_struct_t 
             pn = pns->nodes[0];
             if (MP_PARSE_NODE_IS_NULL(pn)) {
                 // [?::]
-                EMIT_ARG(build_slice, 2);
+                EMIT_ARG(build, 2, MP_EMIT_BUILD_SLICE);
             } else {
                 // [?::x]
                 compile_node(comp, pn);
-                EMIT_ARG(build_slice, 3);
+                EMIT_ARG(build, 3, MP_EMIT_BUILD_SLICE);
             }
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_subscript_3d) {
             compile_node(comp, pns->nodes[0]);
@@ -2572,21 +2572,21 @@ STATIC void compile_subscript_3_helper(compiler_t *comp, mp_parse_node_struct_t 
             assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_sliceop); // should always be
             if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                 // [?:x:]
-                EMIT_ARG(build_slice, 2);
+                EMIT_ARG(build, 2, MP_EMIT_BUILD_SLICE);
             } else {
                 // [?:x:x]
                 compile_node(comp, pns->nodes[0]);
-                EMIT_ARG(build_slice, 3);
+                EMIT_ARG(build, 3, MP_EMIT_BUILD_SLICE);
             }
         } else {
             // [?:x]
             compile_node(comp, pn);
-            EMIT_ARG(build_slice, 2);
+            EMIT_ARG(build, 2, MP_EMIT_BUILD_SLICE);
         }
     } else {
         // [?:x]
         compile_node(comp, pn);
-        EMIT_ARG(build_slice, 2);
+        EMIT_ARG(build, 2, MP_EMIT_BUILD_SLICE);
     }
 }
 
@@ -3045,7 +3045,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             EMIT_ARG(build, 0, MP_EMIT_BUILD_MAP);
         #if MICROPY_PY_BUILTINS_SET
         } else if (scope->kind == SCOPE_SET_COMP) {
-            EMIT_ARG(build_set, 0);
+            EMIT_ARG(build, 0, MP_EMIT_BUILD_SET);
         #endif
         }
 
