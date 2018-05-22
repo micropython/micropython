@@ -165,16 +165,17 @@ ifndef INTERNAL_LIBM
 LIBS += -lm
 endif
 
-# Propagate longint choice from .mk to C.
-ifdef LONGINT_IMPL_NONE
+# Propagate longint choice from .mk to C. There's no easy string comparison
+# in cpp coniditionals, so we #define separate names for each.
+ifeq ($(LONGINT_IMPL),NONE)
 CFLAGS += -DLONGINT_IMPL_NONE
 endif
 
-ifdef LONGINT_IMPL_MPZ
+ifeq ($(LONGINT_IMPL),MPZ)
 CFLAGS += -DLONGINT_IMPL_MPZ
 endif
 
-ifdef LONGINT_IMPL_LONGLONG
+ifeq ($(LONGINT_IMPL),LONGLONG)
 CFLAGS += -DLONGINT_IMPL_LONGLONG
 endif
 
