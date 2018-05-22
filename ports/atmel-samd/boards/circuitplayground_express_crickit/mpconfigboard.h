@@ -1,5 +1,8 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express"
+#define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express with Crickit libraries"
 #define MICROPY_HW_MCU_NAME "samd21g18"
+
+// No framebuf on CRICKit version to save space.
+#define MICROPY_PY_FRAMEBUF         (0)
 
 // Don't allow touch on A0 (PA02), because it's connected to the speaker.
 #define PA02_NO_TOUCH       (true)

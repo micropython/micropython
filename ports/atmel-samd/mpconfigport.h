@@ -140,19 +140,25 @@ typedef long mp_off_t;
 #define CIRCUITPY_MCU_FAMILY samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define PORT_HEAP_SIZE (16384 + 4096)
-// If you change MICROPY_LONGINT_IMPL, also change MPY_TOOL_LONGINT_IMPL in mpconfigport.mk.
-#ifndef MICROPY_LONGINT_IMPL
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
-#endif
 #endif
 
 #ifdef SAMD51
 #define CIRCUITPY_MCU_FAMILY samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define PORT_HEAP_SIZE (0x20000) // 128KiB
-// If you change MICROPY_LONGINT_IMPL, also change MPY_TOOL_LONGINT_IMPL in mpconfigport.mk.
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#endif
+
+#ifdef LONGINT_IMPL_NONE
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
+#endif
+
+#ifdef LONGINT_IMPL_MPZ
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_MPZ)
 #define MP_SSIZE_MAX (0x7fffffff)
+#endif
+
+#ifdef LONGINT_IMPL_LONGLONG
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #endif
 
 // extra built in modules to add to the list of known ones
@@ -194,7 +200,9 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_UERRNO_ERRORCODE (0)
     #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-    #define MICROPY_PY_FRAMEBUF         (1)
+    #ifndef MICROPY_PY_FRAMEBUF
+      #define MICROPY_PY_FRAMEBUF         (1)
+    #endif
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
     #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
