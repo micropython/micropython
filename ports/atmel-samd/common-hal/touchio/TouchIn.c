@@ -73,10 +73,10 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
         if (gclk > GCLK_GEN_NUM) {
             mp_raise_RuntimeError("No free GCLKs");
         }
-        enable_clock_generator(self->gclk, CLOCK_48MHZ, 6);
+        enable_clock_generator(gclk, CLOCK_48MHZ, 6);
 
         /* Setup and enable generic clock source for PTC module. */
-        connect_gclk_to_peripheral(self->gclk, PTC_GCLK_ID);
+        connect_gclk_to_peripheral(gclk, PTC_GCLK_ID);
 
         _pm_enable_bus_clock(PM_BUS_APBC, PTC);
     }
@@ -107,7 +107,7 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
-    // We leave the clocks running because they may be in use by others.s
+    // We leave the clocks running because they may be in use by others.
 
     reset_pin(self->config.pin);
     self->config.pin = NO_PIN;

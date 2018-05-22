@@ -38,7 +38,6 @@ typedef struct {
     mp_obj_base_t base;
     struct adafruit_ptc_config config;
     uint16_t threshold;
-    uint8_t gclk;
 } touchio_touchin_obj_t;
 
 void touchin_reset(void);
