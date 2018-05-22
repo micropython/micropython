@@ -59,6 +59,10 @@ typedef enum {
 #define MP_EMIT_IDOP_LOCAL_FAST (0)
 #define MP_EMIT_IDOP_LOCAL_DEREF (1)
 
+// Kind for emit_id_ops->global()
+#define MP_EMIT_IDOP_GLOBAL_NAME (0)
+#define MP_EMIT_IDOP_GLOBAL_GLOBAL (1)
+
 // Kind for emit->build()
 #define MP_EMIT_BUILD_TUPLE (0)
 #define MP_EMIT_BUILD_LIST (1)
@@ -72,8 +76,7 @@ typedef struct _emit_t emit_t;
 
 typedef struct _mp_emit_method_table_id_ops_t {
     void (*local)(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
-    void (*name)(emit_t *emit, qstr qst);
-    void (*global)(emit_t *emit, qstr qst);
+    void (*global)(emit_t *emit, qstr qst, int kind);
 } mp_emit_method_table_id_ops_t;
 
 typedef struct _emit_method_table_t {
@@ -190,14 +193,11 @@ void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta);
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t line);
 
 void mp_emit_bc_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
-void mp_emit_bc_load_name(emit_t *emit, qstr qst);
-void mp_emit_bc_load_global(emit_t *emit, qstr qst);
+void mp_emit_bc_load_global(emit_t *emit, qstr qst, int kind);
 void mp_emit_bc_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
-void mp_emit_bc_store_name(emit_t *emit, qstr qst);
-void mp_emit_bc_store_global(emit_t *emit, qstr qst);
+void mp_emit_bc_store_global(emit_t *emit, qstr qst, int kind);
 void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
-void mp_emit_bc_delete_name(emit_t *emit, qstr qst);
-void mp_emit_bc_delete_global(emit_t *emit, qstr qst);
+void mp_emit_bc_delete_global(emit_t *emit, qstr qst, int kind);
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l);
 void mp_emit_bc_import_name(emit_t *emit, qstr qst);

@@ -946,33 +946,39 @@ STATIC void emit_native_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, 
     }
 }
 
-STATIC void emit_native_load_name(emit_t *emit, qstr qst) {
-    DEBUG_printf("load_name(%s)\n", qstr_str(qst));
+STATIC void emit_native_load_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_F_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_LOAD_NAME);
+    MP_STATIC_ASSERT(MP_F_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_LOAD_GLOBAL);
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_NAME, qst, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
-}
-
-STATIC void emit_native_load_global(emit_t *emit, qstr qst) {
-    DEBUG_printf("load_global(%s)\n", qstr_str(qst));
-    emit_native_pre(emit);
-    // check for builtin casting operators
-    if (emit->do_viper_types && qst == MP_QSTR_int) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_INT);
-    } else if (emit->do_viper_types && qst == MP_QSTR_uint) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_UINT);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr8) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR8);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr16) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR16);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr32) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR32);
+    if (kind == MP_EMIT_IDOP_GLOBAL_NAME) {
+        DEBUG_printf("load_name(%s)\n", qstr_str(qst));
     } else {
-        emit_call_with_imm_arg(emit, MP_F_LOAD_GLOBAL, qst, REG_ARG_1);
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+        DEBUG_printf("load_global(%s)\n", qstr_str(qst));
+        if (emit->do_viper_types) {
+            // check for builtin casting operators
+            if (qst == MP_QSTR_int) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_INT);
+                return;
+            } else if (qst == MP_QSTR_uint) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_UINT);
+                return;
+            } else if (qst == MP_QSTR_ptr) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR);
+                return;
+            } else if (qst == MP_QSTR_ptr8) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR8);
+                return;
+            } else if (qst == MP_QSTR_ptr16) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR16);
+                return;
+            } else if (qst == MP_QSTR_ptr32) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR32);
+                return;
+            }
+        }
     }
+    emit_call_with_imm_arg(emit, MP_F_LOAD_NAME + kind, qst, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_load_attr(emit_t *emit, qstr qst) {
@@ -1194,25 +1200,25 @@ STATIC void emit_native_store_local(emit_t *emit, qstr qst, mp_uint_t local_num,
     }
 }
 
-STATIC void emit_native_store_name(emit_t *emit, qstr qst) {
-    // mp_store_name, but needs conversion of object (maybe have mp_viper_store_name(obj, type))
-    vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
-    assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_STORE_NAME, qst, REG_ARG_1); // arg1 = name
-    emit_post(emit);
-}
-
-STATIC void emit_native_store_global(emit_t *emit, qstr qst) {
-    vtype_kind_t vtype = peek_vtype(emit, 0);
-    if (vtype == VTYPE_PYOBJ) {
+STATIC void emit_native_store_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_F_STORE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_STORE_NAME);
+    MP_STATIC_ASSERT(MP_F_STORE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_STORE_GLOBAL);
+    if (kind == MP_EMIT_IDOP_GLOBAL_NAME) {
+        // mp_store_name, but needs conversion of object (maybe have mp_viper_store_name(obj, type))
+        vtype_kind_t vtype;
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+        assert(vtype == VTYPE_PYOBJ);
     } else {
-        emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-        emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype, REG_ARG_2); // arg2 = type
-        ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
+        vtype_kind_t vtype = peek_vtype(emit, 0);
+        if (vtype == VTYPE_PYOBJ) {
+            emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+        } else {
+            emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+            emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype, REG_ARG_2); // arg2 = type
+            ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
+        }
     }
-    emit_call_with_imm_arg(emit, MP_F_STORE_GLOBAL, qst, REG_ARG_1); // arg1 = name
+    emit_call_with_imm_arg(emit, MP_F_STORE_NAME + kind, qst, REG_ARG_1); // arg1 = name
     emit_post(emit);
 }
 
@@ -1417,15 +1423,11 @@ STATIC void emit_native_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num
     }
 }
 
-STATIC void emit_native_delete_name(emit_t *emit, qstr qst) {
+STATIC void emit_native_delete_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_DELETE_NAME);
+    MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_DELETE_GLOBAL);
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME, qst, REG_ARG_1);
-    emit_post(emit);
-}
-
-STATIC void emit_native_delete_global(emit_t *emit, qstr qst) {
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_DELETE_GLOBAL, qst, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME + kind, qst, REG_ARG_1);
     emit_post(emit);
 }
 
@@ -2194,17 +2196,14 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
 
     {
         emit_native_load_local,
-        emit_native_load_name,
         emit_native_load_global,
     },
     {
         emit_native_store_local,
-        emit_native_store_name,
         emit_native_store_global,
     },
     {
         emit_native_delete_local,
-        emit_native_delete_name,
         emit_native_delete_global,
     },
 
