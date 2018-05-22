@@ -82,6 +82,8 @@ typedef enum {
 #define MP_EMIT_BUILD_TUPLE (0)
 #define MP_EMIT_BUILD_LIST (1)
 #define MP_EMIT_BUILD_MAP (3)
+#define MP_EMIT_BUILD_SET (6)
+#define MP_EMIT_BUILD_SLICE (8)
 
 // Kind for emit->yield()
 #define MP_EMIT_YIELD_VALUE (0)
@@ -140,12 +142,6 @@ typedef struct _emit_method_table_t {
     void (*binary_op)(emit_t *emit, mp_binary_op_t op);
     void (*build)(emit_t *emit, mp_uint_t n_args, int kind);
     void (*store_map)(emit_t *emit);
-    #if MICROPY_PY_BUILTINS_SET
-    void (*build_set)(emit_t *emit, mp_uint_t n_args);
-    #endif
-    #if MICROPY_PY_BUILTINS_SLICE
-    void (*build_slice)(emit_t *emit, mp_uint_t n_args);
-    #endif
     void (*store_comp)(emit_t *emit, scope_kind_t kind, mp_uint_t set_stack_index);
     void (*unpack_sequence)(emit_t *emit, mp_uint_t n_args);
     void (*unpack_ex)(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
@@ -241,12 +237,6 @@ void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op);
 void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op);
 void mp_emit_bc_build(emit_t *emit, mp_uint_t n_args, int kind);
 void mp_emit_bc_store_map(emit_t *emit);
-#if MICROPY_PY_BUILTINS_SET
-void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args);
-#endif
-#if MICROPY_PY_BUILTINS_SLICE
-void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args);
-#endif
 void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t list_stack_index);
 void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args);
 void mp_emit_bc_unpack_ex(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
