@@ -445,8 +445,35 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_obj_t o_in = args[0];
     if (MP_OBJ_IS_INT(o_in)) {
-        return o_in;
-    }
+        if(n_args<=1){
+            return o_in;
+        }
+        mp_int_t num_dig = mp_obj_get_int(args[1]);
+        if(num_dig >= 0){
+            return o_in;
+        }
+
+        mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
+        mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
+        mp_obj_t floor = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, o_in, mult);
+        mp_obj_t modulo = mp_binary_op(MP_BINARY_OP_MODULO, o_in, mult);
+        mp_obj_t restored = mp_binary_op(MP_BINARY_OP_MULTIPLY, floor, mult);
+        if(mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, modulo, half_mult))){
+            return mp_binary_op(MP_BINARY_OP_ADD, restored, mult);
+	}
+        else if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, half_mult, modulo))){
+            return restored;
+        }
+        else //round to even number
+        {
+            if(mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MODULO, floor, mp_obj_new_int(2)))){
+                return mp_binary_op(MP_BINARY_OP_ADD, restored, mult);
+            }
+            else {
+                return restored;
+            }
+        }
+}
 #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t val = mp_obj_get_float(o_in);
     if (n_args > 1) {
