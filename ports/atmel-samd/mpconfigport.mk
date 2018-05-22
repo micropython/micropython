@@ -10,7 +10,7 @@ ifeq ($(LONGINT_IMPL),MPZ)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
 endif
 
-ifeq ($(LONGINT_IMPL),LONGONG)
+ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
