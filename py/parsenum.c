@@ -319,11 +319,13 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         return mp_obj_new_complex(0, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
+    }
 #else
     if (imag || force_complex) {
         raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
+    }
 #endif
-    } else {
+    else {
         return mp_obj_new_float(dec_val);
     }
 
