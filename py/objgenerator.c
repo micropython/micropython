@@ -117,10 +117,10 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             *self->code_state.sp = send_value;
         }
     }
-    mp_obj_dict_t *old_globals = mp_globals_get();
+    self->code_state.old_globals = mp_globals_get();
     mp_globals_set(self->globals);
     mp_vm_return_kind_t ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
-    mp_globals_set(old_globals);
+    mp_globals_set(self->code_state.old_globals);
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:
