@@ -1447,6 +1447,16 @@ STATIC void emit_native_delete_subscr(emit_t *emit) {
     emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, (mp_uint_t)MP_OBJ_NULL, REG_ARG_3);
 }
 
+STATIC void emit_native_subscr(emit_t *emit, int kind) {
+    if (kind == MP_EMIT_SUBSCR_LOAD) {
+        emit_native_load_subscr(emit);
+    } else if (kind == MP_EMIT_SUBSCR_STORE) {
+        emit_native_store_subscr(emit);
+    } else {
+        emit_native_delete_subscr(emit);
+    }
+}
+
 STATIC void emit_native_dup_top(emit_t *emit) {
     DEBUG_printf("dup_top\n");
     vtype_kind_t vtype;
@@ -2219,11 +2229,9 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
-    emit_native_load_subscr,
+    emit_native_subscr,
     emit_native_store_attr,
-    emit_native_store_subscr,
     emit_native_delete_attr,
-    emit_native_delete_subscr,
     emit_native_dup_top,
     emit_native_dup_top_two,
     emit_native_pop_top,

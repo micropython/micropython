@@ -597,9 +597,18 @@ void mp_emit_bc_load_build_class(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_LOAD_BUILD_CLASS);
 }
 
-void mp_emit_bc_load_subscr(emit_t *emit) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte(emit, MP_BC_LOAD_SUBSCR);
+void mp_emit_bc_subscr(emit_t *emit, int kind) {
+    if (kind == MP_EMIT_SUBSCR_LOAD) {
+        emit_bc_pre(emit, -1);
+        emit_write_bytecode_byte(emit, MP_BC_LOAD_SUBSCR);
+    } else {
+        if (kind == MP_EMIT_SUBSCR_DELETE) {
+            mp_emit_bc_load_null(emit);
+            mp_emit_bc_rot_three(emit);
+        }
+        emit_bc_pre(emit, -3);
+        emit_write_bytecode_byte(emit, MP_BC_STORE_SUBSCR);
+    }
 }
 
 void mp_emit_bc_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
@@ -629,11 +638,6 @@ void mp_emit_bc_store_attr(emit_t *emit, qstr qst) {
     }
 }
 
-void mp_emit_bc_store_subscr(emit_t *emit) {
-    emit_bc_pre(emit, -3);
-    emit_write_bytecode_byte(emit, MP_BC_STORE_SUBSCR);
-}
-
 void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
     MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_DELETE_FAST);
     MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_DELETE_DEREF);
@@ -652,12 +656,6 @@ void mp_emit_bc_delete_attr(emit_t *emit, qstr qst) {
     mp_emit_bc_load_null(emit);
     mp_emit_bc_rot_two(emit);
     mp_emit_bc_store_attr(emit, qst);
-}
-
-void mp_emit_bc_delete_subscr(emit_t *emit) {
-    mp_emit_bc_load_null(emit);
-    mp_emit_bc_rot_three(emit);
-    mp_emit_bc_store_subscr(emit);
 }
 
 void mp_emit_bc_dup_top(emit_t *emit) {
@@ -964,11 +962,9 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_load_attr,
     mp_emit_bc_load_method,
     mp_emit_bc_load_build_class,
-    mp_emit_bc_load_subscr,
+    mp_emit_bc_subscr,
     mp_emit_bc_store_attr,
-    mp_emit_bc_store_subscr,
     mp_emit_bc_delete_attr,
-    mp_emit_bc_delete_subscr,
     mp_emit_bc_dup_top,
     mp_emit_bc_dup_top_two,
     mp_emit_bc_pop_top,

@@ -366,14 +366,14 @@ STATIC void c_assign_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns, as
         if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
             if (assign_kind == ASSIGN_AUG_STORE) {
                 EMIT(rot_three);
-                EMIT(store_subscr);
+                EMIT_ARG(subscr, MP_EMIT_SUBSCR_STORE);
             } else {
                 compile_node(comp, pns1->nodes[0]);
                 if (assign_kind == ASSIGN_AUG_LOAD) {
                     EMIT(dup_top_two);
-                    EMIT(load_subscr);
+                    EMIT_ARG(subscr, MP_EMIT_SUBSCR_LOAD);
                 } else {
-                    EMIT(store_subscr);
+                    EMIT_ARG(subscr, MP_EMIT_SUBSCR_STORE);
                 }
             }
             return;
@@ -884,7 +884,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
             }
             if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_bracket) {
                 compile_node(comp, pns1->nodes[0]);
-                EMIT(delete_subscr);
+                EMIT_ARG(subscr, MP_EMIT_SUBSCR_DELETE);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_period) {
                 assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
                 EMIT_ARG(delete_attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]));
@@ -2536,7 +2536,7 @@ STATIC void compile_trailer_paren(compiler_t *comp, mp_parse_node_struct_t *pns)
 STATIC void compile_trailer_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // object who's index we want is on top of stack
     compile_node(comp, pns->nodes[0]); // the index
-    EMIT(load_subscr);
+    EMIT_ARG(subscr, MP_EMIT_SUBSCR_LOAD);
 }
 
 STATIC void compile_trailer_period(compiler_t *comp, mp_parse_node_struct_t *pns) {
