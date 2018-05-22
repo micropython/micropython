@@ -950,7 +950,7 @@ STATIC void compile_break_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'break' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
-    EMIT_ARG(break_loop, comp->break_label, comp->cur_except_level - comp->break_continue_except_level);
+    EMIT_ARG(unwind_jump, comp->break_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
 STATIC void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
@@ -958,7 +958,7 @@ STATIC void compile_continue_stmt(compiler_t *comp, mp_parse_node_struct_t *pns)
         compile_syntax_error(comp, (mp_parse_node_t)pns, "'continue' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
-    EMIT_ARG(continue_loop, comp->continue_label, comp->cur_except_level - comp->break_continue_except_level);
+    EMIT_ARG(unwind_jump, comp->continue_label, comp->cur_except_level - comp->break_continue_except_level);
 }
 
 STATIC void compile_return_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {

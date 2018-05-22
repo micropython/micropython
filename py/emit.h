@@ -122,8 +122,7 @@ typedef struct _emit_method_table_t {
     void (*jump)(emit_t *emit, mp_uint_t label);
     void (*pop_jump_if)(emit_t *emit, bool cond, mp_uint_t label);
     void (*jump_if_or_pop)(emit_t *emit, bool cond, mp_uint_t label);
-    void (*break_loop)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-    void (*continue_loop)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
+    void (*unwind_jump)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
     void (*setup_with)(emit_t *emit, mp_uint_t label);
     void (*with_cleanup)(emit_t *emit, mp_uint_t label);
     void (*setup_except)(emit_t *emit, mp_uint_t label);
@@ -227,8 +226,6 @@ void mp_emit_bc_jump(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-#define mp_emit_bc_break_loop mp_emit_bc_unwind_jump
-#define mp_emit_bc_continue_loop mp_emit_bc_unwind_jump
 void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label);

@@ -1560,14 +1560,9 @@ STATIC void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label)
     emit_post(emit);
 }
 
-STATIC void emit_native_break_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
+STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
     (void)except_depth;
     emit_native_jump(emit, label & ~MP_EMIT_BREAK_FROM_FOR); // TODO properly
-}
-
-STATIC void emit_native_continue_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
-    (void)except_depth;
-    emit_native_jump(emit, label); // TODO properly
 }
 
 STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
@@ -2248,8 +2243,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_jump,
     emit_native_pop_jump_if,
     emit_native_jump_if_or_pop,
-    emit_native_break_loop,
-    emit_native_continue_loop,
+    emit_native_unwind_jump,
     emit_native_setup_with,
     emit_native_with_cleanup,
     emit_native_setup_except,
