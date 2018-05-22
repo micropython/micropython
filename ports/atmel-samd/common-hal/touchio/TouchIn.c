@@ -114,7 +114,14 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
 }
 
 void touchin_reset() {
-    // TODO(tannewt): Reset the PTC.
+    Ptc* ptc = ((Ptc *) PTC);
+    if (ptc->CTRLA.bit.ENABLE == 1) {
+        ptc->CTRLA.bit.ENABLE = 0;
+        while (ptc->CTRLA.bit.ENABLE == 1) {}
+
+        ptc->CTRLA.bit.SWRESET = 1;
+        while (ptc->CTRLA.bit.SWRESET == 1) {}
+    }
 }
 
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
