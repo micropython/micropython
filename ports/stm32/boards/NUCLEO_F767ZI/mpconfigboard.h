@@ -6,12 +6,15 @@
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F767ZI"
 #define MICROPY_HW_MCU_NAME         "STM32F767"
 
+#define MICROPY_PY_LWIP             (1)
+
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_ETH_RMII  (1)
 
 #define MICROPY_BOARD_EARLY_INIT    NUCLEO_F767ZI_board_early_init
 void NUCLEO_F767ZI_board_early_init(void);
