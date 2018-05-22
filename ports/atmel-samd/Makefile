@@ -165,6 +165,19 @@ ifndef INTERNAL_LIBM
 LIBS += -lm
 endif
 
+# Propagate longint choice from .mk to C.
+ifdef LONGINT_IMPL_NONE
+CFLAGS += -DLONGINT_IMPL_NONE
+endif
+
+ifdef LONGINT_IMPL_MPZ
+CFLAGS += -DLONGINT_IMPL_MPZ
+endif
+
+ifdef LONGINT_IMPL_LONGLONG
+CFLAGS += -DLONGINT_IMPL_LONGLONG
+endif
+
 ifeq ($(CHIP_FAMILY), samd21)
 LDFLAGS += -mthumb -mcpu=cortex-m0plus -Lasf/thirdparty/CMSIS/Lib/GCC/
 BOOTLOADER_SIZE := 0x2000

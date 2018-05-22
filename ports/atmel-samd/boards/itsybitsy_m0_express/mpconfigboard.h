@@ -1,9 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Itsy Bitsy M0 Express"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-#define MICROPY_LONGINT_IMPL MICROPY_LONGINT_IMPL_MPZ
-#define MP_SSIZE_MAX         0x7fffffff
-
 #define CIRCUITPY_BITBANG_APA102
 #define MICROPY_HW_APA102_MOSI   (&pin_PA01)
 #define MICROPY_HW_APA102_SCK    (&pin_PA00)
