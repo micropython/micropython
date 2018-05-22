@@ -381,12 +381,12 @@ STATIC void c_assign_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns, as
             assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
             if (assign_kind == ASSIGN_AUG_LOAD) {
                 EMIT(dup_top);
-                EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]));
+                EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]), MP_EMIT_ATTR_LOAD);
             } else {
                 if (assign_kind == ASSIGN_AUG_STORE) {
                     EMIT(rot_two);
                 }
-                EMIT_ARG(store_attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]));
+                EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]), MP_EMIT_ATTR_STORE);
             }
             return;
         }
@@ -820,7 +820,7 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
             compile_node(comp, name_nodes[0]);
             for (int j = 1; j < name_len; j++) {
                 assert(MP_PARSE_NODE_IS_ID(name_nodes[j])); // should be
-                EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[j]));
+                EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[j]), MP_EMIT_ATTR_LOAD);
             }
 
             // nodes[1] contains arguments to the decorator function, if any
@@ -887,7 +887,7 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
                 EMIT_ARG(subscr, MP_EMIT_SUBSCR_DELETE);
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_trailer_period) {
                 assert(MP_PARSE_NODE_IS_ID(pns1->nodes[0]));
-                EMIT_ARG(delete_attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]));
+                EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]), MP_EMIT_ATTR_DELETE);
             } else {
                 goto cannot_delete;
             }
@@ -1061,7 +1061,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             EMIT_ARG(import_name, q_full);
             if (is_as) {
                 for (int i = 1; i < n; i++) {
-                    EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
+                    EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), MP_EMIT_ATTR_LOAD);
                 }
             }
         }
@@ -1811,7 +1811,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         // at this point the stack contains: ..., __aexit__, self, exc
         EMIT(dup_top);
         #if MICROPY_CPYTHON_COMPAT
-        EMIT_ARG(load_attr, MP_QSTR___class__); // get type(exc)
+        EMIT_ARG(attr, MP_QSTR___class__, MP_EMIT_ATTR_LOAD); // get type(exc)
         #else
         compile_load_id(comp, MP_QSTR_type);
         EMIT(rot_two);
@@ -2541,7 +2541,7 @@ STATIC void compile_trailer_bracket(compiler_t *comp, mp_parse_node_struct_t *pn
 
 STATIC void compile_trailer_period(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // object who's attribute we want is on top of stack
-    EMIT_ARG(load_attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0])); // attribute to get
+    EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]), MP_EMIT_ATTR_LOAD); // attribute to get
 }
 
 #if MICROPY_PY_BUILTINS_SLICE

@@ -1457,6 +1457,16 @@ STATIC void emit_native_subscr(emit_t *emit, int kind) {
     }
 }
 
+STATIC void emit_native_attr(emit_t *emit, qstr qst, int kind) {
+    if (kind == MP_EMIT_ATTR_LOAD) {
+        emit_native_load_attr(emit, qst);
+    } else if (kind == MP_EMIT_ATTR_STORE) {
+        emit_native_store_attr(emit, qst);
+    } else {
+        emit_native_delete_attr(emit, qst);
+    }
+}
+
 STATIC void emit_native_dup_top(emit_t *emit) {
     DEBUG_printf("dup_top\n");
     vtype_kind_t vtype;
@@ -2226,12 +2236,10 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_load_const_str,
     emit_native_load_const_obj,
     emit_native_load_null,
-    emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
     emit_native_subscr,
-    emit_native_store_attr,
-    emit_native_delete_attr,
+    emit_native_attr,
     emit_native_dup_top,
     emit_native_dup_top_two,
     emit_native_pop_top,
