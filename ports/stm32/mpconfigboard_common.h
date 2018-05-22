@@ -72,6 +72,11 @@
 #define MICROPY_HW_ENABLE_USB (0)
 #endif
 
+// Whether to enable ETH RMII support
+#ifndef MICROPY_HW_ENABLE_ETH_RMII
+#define MICROPY_HW_ENABLE_ETH_RMII (0)
+#endif
+
 // Whether to enable the PA0-PA3 servo driver, exposed as pyb.Servo
 #ifndef MICROPY_HW_ENABLE_SERVO
 #define MICROPY_HW_ENABLE_SERVO (0)
