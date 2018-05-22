@@ -103,10 +103,14 @@ Differences from `MicroPython <https://github.com/micropython/micropython>`__
 
 CircuitPython:
 
--  includes a port for Atmel SAMD21 (Commonly known as M0 in Adafruit
-   product names.)
--  supports only Atmel SAMD21 and ESP8266 ports.
+-  includes a ports for MicroChip SAMD21 (Commonly known as M0 in Adafruit
+   product names and SAMD51 (M4).
+-  supports only SAMD21, SAMD51, and ESP8266 ports. An nRF port is under
+   development.
 -  tracks MicroPython's releases (not master).
+-  Longints (arbitrary-length integers) are turned on for most Express builds
+   (those boards with SPI flash chips external to the microcontroller),
+   but not for boards without SPI flash, for space reasons.
 
 Behavior
 ~~~~~~~~
