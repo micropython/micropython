@@ -136,7 +136,7 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
-// Resets the pyboard in a manner similar to pushing the external RESET button.
+// Resets the board in a manner similar to pushing the external RESET button.
 STATIC mp_obj_t machine_reset(void) {
     NVIC_SystemReset();
     return mp_const_none;
@@ -176,7 +176,7 @@ STATIC mp_obj_t machine_enable_irq(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_enable_irq_obj, machine_enable_irq);
 
-// Resets the pyboard in a manner similar to pushing the external RESET button.
+// Resets the board in a manner similar to pushing the external RESET button.
 STATIC mp_obj_t machine_disable_irq(void) {
 #ifndef BLUETOOTH_SD
     __disable_irq();
@@ -195,7 +195,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) },
 #if MICROPY_HW_ENABLE_RNG
-    { MP_ROM_QSTR(MP_QSTR_rng),                MP_ROM_PTR(&pyb_rng_get_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rng),                MP_ROM_PTR(&random_module) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),          MP_ROM_PTR(&machine_deepsleep_obj) },

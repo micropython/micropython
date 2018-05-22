@@ -149,7 +149,7 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(0),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        MP_STATE_PORT(pyb_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_STATE_PORT(board_stdio_uart) = machine_hard_uart_type.make_new((mp_obj_t)&machine_hard_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
 #endif
 
@@ -195,8 +195,8 @@ pin_init0();
 #if (MICROPY_HW_HAS_LED)
     led_init();
 
-    do_str("import pyb\r\n" \
-           "pyb.LED(1).on()",
+    do_str("import board\r\n" \
+           "board.LED(1).on()",
            MP_PARSE_FILE_INPUT);
 #endif
 

@@ -57,6 +57,7 @@ INC += -I./modules/ubluepy
 INC += -I./modules/music
 INC += -I./modules/random
 INC += -I./modules/ble
+INC += -I./modules/board
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
@@ -203,12 +204,12 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/timer.c \
 	machine/rtcounter.c \
 	machine/pwm.c \
-	machine/led.c \
 	machine/temp.c \
 	uos/moduos.c \
 	uos/microbitfs.c \
 	utime/modutime.c \
-	pyb/modpyb.c \
+	board/modboard.c \
+	board/led.c \
 	ubluepy/modubluepy.c \
 	ubluepy/ubluepy_peripheral.c \
 	ubluepy/ubluepy_service.c \
