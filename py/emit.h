@@ -63,6 +63,11 @@ typedef enum {
 #define MP_EMIT_IDOP_GLOBAL_NAME (0)
 #define MP_EMIT_IDOP_GLOBAL_GLOBAL (1)
 
+// Kind for emit->import()
+#define MP_EMIT_IMPORT_NAME (0)
+#define MP_EMIT_IMPORT_FROM (1)
+#define MP_EMIT_IMPORT_STAR (2)
+
 // Kind for emit->subscr()
 #define MP_EMIT_SUBSCR_LOAD (0)
 #define MP_EMIT_SUBSCR_STORE (1)
@@ -102,9 +107,7 @@ typedef struct _emit_method_table_t {
     mp_emit_method_table_id_ops_t delete_id;
 
     void (*label_assign)(emit_t *emit, mp_uint_t l);
-    void (*import_name)(emit_t *emit, qstr qst);
-    void (*import_from)(emit_t *emit, qstr qst);
-    void (*import_star)(emit_t *emit);
+    void (*import)(emit_t *emit, qstr qst, int kind);
     void (*load_const_tok)(emit_t *emit, mp_token_kind_t tok);
     void (*load_const_small_int)(emit_t *emit, mp_int_t arg);
     void (*load_const_str)(emit_t *emit, qstr qst);
@@ -205,9 +208,7 @@ void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int ki
 void mp_emit_bc_delete_global(emit_t *emit, qstr qst, int kind);
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l);
-void mp_emit_bc_import_name(emit_t *emit, qstr qst);
-void mp_emit_bc_import_from(emit_t *emit, qstr qst);
-void mp_emit_bc_import_star(emit_t *emit);
+void mp_emit_bc_import(emit_t *emit, qstr qst, int kind);
 void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok);
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg);
 void mp_emit_bc_load_const_str(emit_t *emit, qstr qst);

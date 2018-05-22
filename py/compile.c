@@ -1024,14 +1024,14 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
     if (MP_PARSE_NODE_IS_NULL(pn)) {
         // empty name (eg, from . import x)
         *q_base = MP_QSTR_;
-        EMIT_ARG(import_name, MP_QSTR_); // import the empty string
+        EMIT_ARG(import, MP_QSTR_, MP_EMIT_IMPORT_NAME); // import the empty string
     } else if (MP_PARSE_NODE_IS_ID(pn)) {
         // just a simple name
         qstr q_full = MP_PARSE_NODE_LEAF_ARG(pn);
         if (!is_as) {
             *q_base = q_full;
         }
-        EMIT_ARG(import_name, q_full);
+        EMIT_ARG(import, q_full, MP_EMIT_IMPORT_NAME);
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_dotted_name)); // should be
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)pn;
@@ -1058,7 +1058,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             }
             qstr q_full = qstr_from_strn(q_ptr, len);
             mp_local_free(q_ptr);
-            EMIT_ARG(import_name, q_full);
+            EMIT_ARG(import, q_full, MP_EMIT_IMPORT_NAME);
             if (is_as) {
                 for (int i = 1; i < n; i++) {
                     EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), MP_EMIT_ATTR_LOAD);
@@ -1127,7 +1127,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // do the import
         qstr dummy_q;
         do_import_name(comp, pn_import_source, &dummy_q);
-        EMIT(import_star);
+        EMIT_ARG(import, MP_QSTR_NULL, MP_EMIT_IMPORT_STAR);
 
     } else {
         EMIT_ARG(load_const_small_int, import_level);
@@ -1150,7 +1150,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn_nodes[i], PN_import_as_name));
             mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t*)pn_nodes[i];
             qstr id2 = MP_PARSE_NODE_LEAF_ARG(pns3->nodes[0]); // should be id
-            EMIT_ARG(import_from, id2);
+            EMIT_ARG(import, id2, MP_EMIT_IMPORT_FROM);
             if (MP_PARSE_NODE_IS_NULL(pns3->nodes[1])) {
                 compile_store_id(comp, id2);
             } else {

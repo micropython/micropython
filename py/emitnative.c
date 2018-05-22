@@ -837,6 +837,16 @@ STATIC void emit_native_import_star(emit_t *emit) {
     emit_post(emit);
 }
 
+STATIC void emit_native_import(emit_t *emit, qstr qst, int kind) {
+    if (kind == MP_EMIT_IMPORT_NAME) {
+        emit_native_import_name(emit, qst);
+    } else if (kind == MP_EMIT_IMPORT_FROM) {
+        emit_native_import_from(emit, qst);
+    } else {
+        emit_native_import_star(emit);
+    }
+}
+
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     DEBUG_printf("load_const_tok(tok=%u)\n", tok);
     emit_native_pre(emit);
@@ -2223,9 +2233,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     },
 
     emit_native_label_assign,
-    emit_native_import_name,
-    emit_native_import_from,
-    emit_native_import_star,
+    emit_native_import,
     emit_native_load_const_tok,
     emit_native_load_const_small_int,
     emit_native_load_const_str,

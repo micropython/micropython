@@ -504,19 +504,19 @@ void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
     }
 }
 
-void mp_emit_bc_import_name(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_IMPORT_NAME, qst);
-}
-
-void mp_emit_bc_import_from(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_IMPORT_FROM, qst);
-}
-
-void mp_emit_bc_import_star(emit_t *emit) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte(emit, MP_BC_IMPORT_STAR);
+void mp_emit_bc_import(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_BC_IMPORT_NAME + MP_EMIT_IMPORT_NAME == MP_BC_IMPORT_NAME);
+    MP_STATIC_ASSERT(MP_BC_IMPORT_NAME + MP_EMIT_IMPORT_FROM == MP_BC_IMPORT_FROM);
+    if (kind == MP_EMIT_IMPORT_FROM) {
+        emit_bc_pre(emit, 1);
+    } else {
+        emit_bc_pre(emit, -1);
+    }
+    if (kind == MP_EMIT_IMPORT_STAR) {
+        emit_write_bytecode_byte(emit, MP_BC_IMPORT_STAR);
+    } else {
+        emit_write_bytecode_byte_qstr(emit, MP_BC_IMPORT_NAME + kind, qst);
+    }
 }
 
 void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
@@ -946,9 +946,7 @@ const emit_method_table_t emit_bc_method_table = {
     },
 
     mp_emit_bc_label_assign,
-    mp_emit_bc_import_name,
-    mp_emit_bc_import_from,
-    mp_emit_bc_import_star,
+    mp_emit_bc_import,
     mp_emit_bc_load_const_tok,
     mp_emit_bc_load_const_small_int,
     mp_emit_bc_load_const_str,
