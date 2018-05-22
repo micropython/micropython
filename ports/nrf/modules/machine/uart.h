@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2015 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,6 @@
 
 #include "pin.h"
 #include "genhdr/pins.h"
-
-typedef enum {
-    PYB_UART_NONE = 0,
-    PYB_UART_1 = 1,
-} pyb_uart_t;
 
 typedef struct _machine_hard_uart_obj_t machine_hard_uart_obj_t;
 extern const mp_obj_type_t machine_hard_uart_type;

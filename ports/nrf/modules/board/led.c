@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013-2016 Damien P. George
- * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2015 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,41 +36,41 @@
 #define LED_OFF(pin) {(MICROPY_HW_LED_PULLUP) ? nrf_gpio_pin_set(pin) : nrf_gpio_pin_clear(pin); }
 #define LED_ON(pin) {(MICROPY_HW_LED_PULLUP) ? nrf_gpio_pin_clear(pin) : nrf_gpio_pin_set(pin); }
 
-typedef struct _pyb_led_obj_t {
+typedef struct _board_led_obj_t {
     mp_obj_base_t base;
     mp_uint_t led_id;
     mp_uint_t hw_pin;
     uint8_t hw_pin_port;
-} pyb_led_obj_t;
+} board_led_obj_t;
 
-STATIC const pyb_led_obj_t pyb_led_obj[] = {
+STATIC const board_led_obj_t board_led_obj[] = {
 #if MICROPY_HW_LED_TRICOLOR
-    {{&pyb_led_type}, PYB_LED_RED, MICROPY_HW_LED_RED},
-    {{&pyb_led_type}, PYB_LED_GREEN, MICROPY_HW_LED_GREEN},
-    {{&pyb_led_type}, PYB_LED_BLUE, MICROPY_HW_LED_BLUE},
+    {{&board_led_type}, BOARD_LED_RED, MICROPY_HW_LED_RED},
+    {{&board_led_type}, BOARD_LED_GREEN, MICROPY_HW_LED_GREEN},
+    {{&board_led_type}, BOARD_LED_BLUE, MICROPY_HW_LED_BLUE},
 #elif (MICROPY_HW_LED_COUNT == 1)
-    {{&pyb_led_type}, PYB_LED1, MICROPY_HW_LED1},
+    {{&board_led_type}, BOARD_LED1, MICROPY_HW_LED1},
 #elif (MICROPY_HW_LED_COUNT == 2)
-    {{&pyb_led_type}, PYB_LED1, MICROPY_HW_LED1},
-    {{&pyb_led_type}, PYB_LED2, MICROPY_HW_LED2},
+    {{&board_led_type}, BOARD_LED1, MICROPY_HW_LED1},
+    {{&board_led_type}, BOARD_LED2, MICROPY_HW_LED2},
 #else
-    {{&pyb_led_type}, PYB_LED1, MICROPY_HW_LED1},
-    {{&pyb_led_type}, PYB_LED2, MICROPY_HW_LED2},
-    {{&pyb_led_type}, PYB_LED3, MICROPY_HW_LED3},
-    {{&pyb_led_type}, PYB_LED4, MICROPY_HW_LED4},
+    {{&board_led_type}, BOARD_LED1, MICROPY_HW_LED1},
+    {{&board_led_type}, BOARD_LED2, MICROPY_HW_LED2},
+    {{&board_led_type}, BOARD_LED3, MICROPY_HW_LED3},
+    {{&board_led_type}, BOARD_LED4, MICROPY_HW_LED4},
 #endif
 };
 
-#define NUM_LEDS MP_ARRAY_SIZE(pyb_led_obj)
+#define NUM_LEDS MP_ARRAY_SIZE(board_led_obj)
 
 void led_init(void) {
     for (uint8_t i = 0; i < NUM_LEDS; i++) {
-        LED_OFF(pyb_led_obj[i].hw_pin);
-        nrf_gpio_cfg_output(pyb_led_obj[i].hw_pin);
+        LED_OFF(board_led_obj[i].hw_pin);
+        nrf_gpio_cfg_output(board_led_obj[i].hw_pin);
     }
 }
 
-void led_state(pyb_led_obj_t * led_obj, int state) {
+void led_state(board_led_obj_t * led_obj, int state) {
     if (state == 1) {
         LED_ON(led_obj->hw_pin);
     } else {
@@ -78,7 +78,7 @@ void led_state(pyb_led_obj_t * led_obj, int state) {
     }
 }
 
-void led_toggle(pyb_led_obj_t * led_obj) {
+void led_toggle(board_led_obj_t * led_obj) {
     nrf_gpio_pin_toggle(led_obj->hw_pin);
 }
 
@@ -88,7 +88,7 @@ void led_toggle(pyb_led_obj_t * led_obj) {
 /* MicroPython bindings                                                      */
 
 void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pyb_led_obj_t *self = self_in;
+    board_led_obj_t *self = self_in;
     mp_printf(print, "LED(%lu)", self->led_id);
 }
 
@@ -109,13 +109,13 @@ STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
 
     // return static led object
-    return (mp_obj_t)&pyb_led_obj[led_id - 1];
+    return (mp_obj_t)&board_led_obj[led_id - 1];
 }
 
 /// \method on()
 /// Turn the LED on.
 mp_obj_t led_obj_on(mp_obj_t self_in) {
-    pyb_led_obj_t *self = self_in;
+    board_led_obj_t *self = self_in;
     led_state(self, 1);
     return mp_const_none;
 }
@@ -123,7 +123,7 @@ mp_obj_t led_obj_on(mp_obj_t self_in) {
 /// \method off()
 /// Turn the LED off.
 mp_obj_t led_obj_off(mp_obj_t self_in) {
-    pyb_led_obj_t *self = self_in;
+    board_led_obj_t *self = self_in;
     led_state(self, 0);
     return mp_const_none;
 }
@@ -131,7 +131,7 @@ mp_obj_t led_obj_off(mp_obj_t self_in) {
 /// \method toggle()
 /// Toggle the LED between on and off.
 mp_obj_t led_obj_toggle(mp_obj_t self_in) {
-    pyb_led_obj_t *self = self_in;
+    board_led_obj_t *self = self_in;
     led_toggle(self);
     return mp_const_none;
 }
@@ -148,7 +148,7 @@ STATIC const mp_rom_map_elem_t led_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
-const mp_obj_type_t pyb_led_type = {
+const mp_obj_type_t board_led_type = {
     { &mp_type_type },
     .name = MP_QSTR_LED,
     .print = led_obj_print,

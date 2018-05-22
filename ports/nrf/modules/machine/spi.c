@@ -45,7 +45,7 @@
 #include "nrfx_spim.h"
 #endif
 
-/// \moduleref pyb
+/// \moduleref machine
 /// \class SPI - a master-driven serial protocol
 ///
 /// SPI is a serial protocol that is driven by a master.  At the physical level
@@ -54,7 +54,7 @@
 /// See usage model of I2C; SPI is very similar.  Main difference is
 /// parameters to init the SPI bus:
 ///
-///     from pyb import SPI
+///     from machine import SPI
 ///     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
 ///
 /// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
