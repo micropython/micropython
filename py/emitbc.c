@@ -967,7 +967,6 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_pop_jump_if,
     mp_emit_bc_jump_if_or_pop,
     mp_emit_bc_unwind_jump,
-    mp_emit_bc_unwind_jump,
     mp_emit_bc_setup_with,
     mp_emit_bc_with_cleanup,
     mp_emit_bc_setup_except,
