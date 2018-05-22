@@ -47,3 +47,8 @@
 #define EXTERNAL_FLASH_DEVICES S25FL216K
 
 #include "external_flash/external_flash.h"
+
+#define EXTRA_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module }
