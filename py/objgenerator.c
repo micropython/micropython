@@ -117,9 +117,19 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             *self->code_state.sp = send_value;
         }
     }
+
+    // We set self->globals=NULL while executing, for a sentinel to ensure the generator
+    // cannot be reentered during execution
+    if (self->globals == NULL) {
+        mp_raise_ValueError("generator already executing");
+    }
+
+    // Set up the correct globals context for the generator and execute it
     self->code_state.old_globals = mp_globals_get();
     mp_globals_set(self->globals);
+    self->globals = NULL;
     mp_vm_return_kind_t ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
+    self->globals = mp_globals_get();
     mp_globals_set(self->code_state.old_globals);
 
     switch (ret_kind) {
