@@ -63,6 +63,11 @@ typedef enum {
 #define MP_EMIT_IDOP_GLOBAL_NAME (0)
 #define MP_EMIT_IDOP_GLOBAL_GLOBAL (1)
 
+// Kind for emit->subscr()
+#define MP_EMIT_SUBSCR_LOAD (0)
+#define MP_EMIT_SUBSCR_STORE (1)
+#define MP_EMIT_SUBSCR_DELETE (2)
+
 // Kind for emit->build()
 #define MP_EMIT_BUILD_TUPLE (0)
 #define MP_EMIT_BUILD_LIST (1)
@@ -103,11 +108,9 @@ typedef struct _emit_method_table_t {
     void (*load_attr)(emit_t *emit, qstr qst);
     void (*load_method)(emit_t *emit, qstr qst, bool is_super);
     void (*load_build_class)(emit_t *emit);
-    void (*load_subscr)(emit_t *emit);
+    void (*subscr)(emit_t *emit, int kind);
     void (*store_attr)(emit_t *emit, qstr qst);
-    void (*store_subscr)(emit_t *emit);
     void (*delete_attr)(emit_t *emit, qstr qst);
-    void (*delete_subscr)(emit_t *emit);
     void (*dup_top)(emit_t *emit);
     void (*dup_top_two)(emit_t *emit);
     void (*pop_top)(emit_t *emit);
@@ -211,11 +214,9 @@ void mp_emit_bc_load_null(emit_t *emit);
 void mp_emit_bc_load_attr(emit_t *emit, qstr qst);
 void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super);
 void mp_emit_bc_load_build_class(emit_t *emit);
-void mp_emit_bc_load_subscr(emit_t *emit);
+void mp_emit_bc_subscr(emit_t *emit, int kind);
 void mp_emit_bc_store_attr(emit_t *emit, qstr qst);
-void mp_emit_bc_store_subscr(emit_t *emit);
 void mp_emit_bc_delete_attr(emit_t *emit, qstr qst);
-void mp_emit_bc_delete_subscr(emit_t *emit);
 void mp_emit_bc_dup_top(emit_t *emit);
 void mp_emit_bc_dup_top_two(emit_t *emit);
 void mp_emit_bc_pop_top(emit_t *emit);
