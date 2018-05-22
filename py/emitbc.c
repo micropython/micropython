@@ -579,14 +579,6 @@ void mp_emit_bc_load_global(emit_t *emit, qstr qst, int kind) {
     }
 }
 
-void mp_emit_bc_load_attr(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_ATTR, qst);
-    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
-        emit_write_bytecode_byte(emit, 0);
-    }
-}
-
 void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super) {
     emit_bc_pre(emit, 1 - 2 * is_super);
     emit_write_bytecode_byte_qstr(emit, is_super ? MP_BC_LOAD_SUPER_METHOD : MP_BC_LOAD_METHOD, qst);
@@ -611,6 +603,23 @@ void mp_emit_bc_subscr(emit_t *emit, int kind) {
     }
 }
 
+void mp_emit_bc_attr(emit_t *emit, qstr qst, int kind) {
+    if (kind == MP_EMIT_ATTR_LOAD) {
+        emit_bc_pre(emit, 0);
+        emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_ATTR, qst);
+    } else {
+        if (kind == MP_EMIT_ATTR_DELETE) {
+            mp_emit_bc_load_null(emit);
+            mp_emit_bc_rot_two(emit);
+        }
+        emit_bc_pre(emit, -2);
+        emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_ATTR, qst);
+    }
+    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
+        emit_write_bytecode_byte(emit, 0);
+    }
+}
+
 void mp_emit_bc_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
     MP_STATIC_ASSERT(MP_BC_STORE_FAST_N + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_STORE_FAST_N);
     MP_STATIC_ASSERT(MP_BC_STORE_FAST_N + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_STORE_DEREF);
@@ -630,14 +639,6 @@ void mp_emit_bc_store_global(emit_t *emit, qstr qst, int kind) {
     emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_NAME + kind, qst);
 }
 
-void mp_emit_bc_store_attr(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, -2);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_ATTR, qst);
-    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
-        emit_write_bytecode_byte(emit, 0);
-    }
-}
-
 void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
     MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_DELETE_FAST);
     MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_DELETE_DEREF);
@@ -650,12 +651,6 @@ void mp_emit_bc_delete_global(emit_t *emit, qstr qst, int kind) {
     MP_STATIC_ASSERT(MP_BC_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_BC_DELETE_GLOBAL);
     emit_bc_pre(emit, 0);
     emit_write_bytecode_byte_qstr(emit, MP_BC_DELETE_NAME + kind, qst);
-}
-
-void mp_emit_bc_delete_attr(emit_t *emit, qstr qst) {
-    mp_emit_bc_load_null(emit);
-    mp_emit_bc_rot_two(emit);
-    mp_emit_bc_store_attr(emit, qst);
 }
 
 void mp_emit_bc_dup_top(emit_t *emit) {
@@ -959,12 +954,10 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_load_const_str,
     mp_emit_bc_load_const_obj,
     mp_emit_bc_load_null,
-    mp_emit_bc_load_attr,
     mp_emit_bc_load_method,
     mp_emit_bc_load_build_class,
     mp_emit_bc_subscr,
-    mp_emit_bc_store_attr,
-    mp_emit_bc_delete_attr,
+    mp_emit_bc_attr,
     mp_emit_bc_dup_top,
     mp_emit_bc_dup_top_two,
     mp_emit_bc_pop_top,
