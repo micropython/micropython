@@ -38,7 +38,7 @@ p.advertise(device_name="MicroPython")
 DB setup:
 
 from ubluepy import Service, Characteristic, UUID, Peripheral, constants
-from pyb import LED
+from board import LED
 
 def event_handler(id, handle, data):
     print("BLE event:", id, "handle:", handle)

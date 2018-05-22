@@ -212,7 +212,7 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
+extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
@@ -255,7 +255,7 @@ extern const struct _mp_obj_module_t ble_module;
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
@@ -270,7 +270,7 @@ extern const struct _mp_obj_module_t ble_module;
 #else
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
@@ -292,7 +292,7 @@ extern const struct _mp_obj_module_t ble_module;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     BLE_MODULE \
 
@@ -326,7 +326,7 @@ extern const struct _mp_obj_module_t ble_module;
     mp_obj_t pin_irq_handlers[NUM_OF_PINS]; \
     \
     /* stdio is repeated on this UART object if it's not null */ \
-    struct _machine_hard_uart_obj_t *pyb_stdio_uart; \
+    struct _machine_hard_uart_obj_t *board_stdio_uart; \
     \
     ROOT_POINTERS_MUSIC \
     ROOT_POINTERS_SOFTPWM \

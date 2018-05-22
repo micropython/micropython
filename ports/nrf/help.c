@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2016 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ const char nrf5_help_text[] =
 "\n"
 "Quick overview of commands for the board:\n"
 #if MICROPY_HW_HAS_LED
-"  pyb.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
+"  board.LED(n)    -- create an LED object for LED n (n=" HELP_TEXT_BOARD_LED ")\n"
 "\n"
 #endif
 #if BLUETOOTH_SD
