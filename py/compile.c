@@ -1516,7 +1516,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
     uint l1 = comp_next_label(comp);
     uint success_label = comp_next_label(comp);
 
-    EMIT_ARG(setup_except, l1);
+    EMIT_ARG(setup_block, l1, MP_EMIT_SETUP_BLOCK_EXCEPT);
     compile_increase_except_level(comp);
 
     compile_node(comp, pn_body); // body
@@ -1571,7 +1571,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
         uint l3 = 0;
         if (qstr_exception_local != 0) {
             l3 = comp_next_label(comp);
-            EMIT_ARG(setup_finally, l3);
+            EMIT_ARG(setup_block, l3, MP_EMIT_SETUP_BLOCK_FINALLY);
             compile_increase_except_level(comp);
         }
         compile_node(comp, pns_except->nodes[1]);
@@ -1606,7 +1606,7 @@ STATIC void compile_try_except(compiler_t *comp, mp_parse_node_t pn_body, int n_
 STATIC void compile_try_finally(compiler_t *comp, mp_parse_node_t pn_body, int n_except, mp_parse_node_t *pn_except, mp_parse_node_t pn_else, mp_parse_node_t pn_finally) {
     uint l_finally_block = comp_next_label(comp);
 
-    EMIT_ARG(setup_finally, l_finally_block);
+    EMIT_ARG(setup_block, l_finally_block, MP_EMIT_SETUP_BLOCK_FINALLY);
     compile_increase_except_level(comp);
 
     if (n_except == 0) {
@@ -1668,12 +1668,12 @@ STATIC void compile_with_stmt_helper(compiler_t *comp, int n, mp_parse_node_t *n
             // this pre-bit is of the form "a as b"
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t*)nodes[0];
             compile_node(comp, pns->nodes[0]);
-            EMIT_ARG(setup_with, l_end);
+            EMIT_ARG(setup_block, l_end, MP_EMIT_SETUP_BLOCK_WITH);
             c_assign(comp, pns->nodes[1], ASSIGN_STORE);
         } else {
             // this pre-bit is just an expression
             compile_node(comp, nodes[0]);
-            EMIT_ARG(setup_with, l_end);
+            EMIT_ARG(setup_block, l_end, MP_EMIT_SETUP_BLOCK_WITH);
             EMIT(pop_top);
         }
         compile_increase_except_level(comp);
@@ -1726,7 +1726,7 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
 
     EMIT_ARG(label_assign, continue_label);
 
-    EMIT_ARG(setup_except, try_exception_label);
+    EMIT_ARG(setup_block, try_exception_label, MP_EMIT_SETUP_BLOCK_EXCEPT);
     compile_increase_except_level(comp);
 
     compile_load_id(comp, context);
@@ -1797,7 +1797,7 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
         compile_load_id(comp, context);
         EMIT_ARG(load_method, MP_QSTR___aexit__, false);
 
-        EMIT_ARG(setup_except, try_exception_label);
+        EMIT_ARG(setup_block, try_exception_label, MP_EMIT_SETUP_BLOCK_EXCEPT);
         compile_increase_except_level(comp);
         // compile additional pre-bits and the body
         compile_async_with_stmt_helper(comp, n - 1, nodes + 1, body);

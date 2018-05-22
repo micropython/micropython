@@ -78,6 +78,11 @@ typedef enum {
 #define MP_EMIT_ATTR_STORE (1)
 #define MP_EMIT_ATTR_DELETE (2)
 
+// Kind for emit->setup_block()
+#define MP_EMIT_SETUP_BLOCK_WITH (0)
+#define MP_EMIT_SETUP_BLOCK_EXCEPT (2)
+#define MP_EMIT_SETUP_BLOCK_FINALLY (3)
+
 // Kind for emit->build()
 #define MP_EMIT_BUILD_TUPLE (0)
 #define MP_EMIT_BUILD_LIST (1)
@@ -128,10 +133,8 @@ typedef struct _emit_method_table_t {
     void (*pop_jump_if)(emit_t *emit, bool cond, mp_uint_t label);
     void (*jump_if_or_pop)(emit_t *emit, bool cond, mp_uint_t label);
     void (*unwind_jump)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-    void (*setup_with)(emit_t *emit, mp_uint_t label);
+    void (*setup_block)(emit_t *emit, mp_uint_t label, int kind);
     void (*with_cleanup)(emit_t *emit, mp_uint_t label);
-    void (*setup_except)(emit_t *emit, mp_uint_t label);
-    void (*setup_finally)(emit_t *emit, mp_uint_t label);
     void (*end_finally)(emit_t *emit);
     void (*get_iter)(emit_t *emit, bool use_stack);
     void (*for_iter)(emit_t *emit, mp_uint_t label);
@@ -223,10 +226,8 @@ void mp_emit_bc_jump(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind);
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
-void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label);
-void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_end_finally(emit_t *emit);
 void mp_emit_bc_get_iter(emit_t *emit, bool use_stack);
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);
