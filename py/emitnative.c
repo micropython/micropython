@@ -1617,6 +1617,21 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     // stack: (..., __exit__, self, as_value, nlr_buf, as_value)
 }
 
+STATIC void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
+    if (kind == MP_EMIT_SETUP_BLOCK_WITH) {
+        emit_native_setup_with(emit, label);
+    } else {
+        // Set up except and finally
+        emit_native_pre(emit);
+        // need to commit stack because we may jump elsewhere
+        need_stack_settled(emit);
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
+        emit_call(emit, MP_F_NLR_PUSH);
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+        emit_post(emit);
+    }
+}
+
 STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     // note: label+1 is available as an auxiliary label
 
@@ -1684,20 +1699,6 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
 
     // end of with cleanup nlr_catch block
     emit_native_label_assign(emit, label + 1);
-}
-
-STATIC void emit_native_setup_except(emit_t *emit, mp_uint_t label) {
-    emit_native_pre(emit);
-    // need to commit stack because we may jump elsewhere
-    need_stack_settled(emit);
-    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
-    emit_call(emit, MP_F_NLR_PUSH);
-    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    emit_post(emit);
-}
-
-STATIC void emit_native_setup_finally(emit_t *emit, mp_uint_t label) {
-    emit_native_setup_except(emit, label);
 }
 
 STATIC void emit_native_end_finally(emit_t *emit) {
@@ -2254,10 +2255,8 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_pop_jump_if,
     emit_native_jump_if_or_pop,
     emit_native_unwind_jump,
-    emit_native_setup_with,
+    emit_native_setup_block,
     emit_native_with_cleanup,
-    emit_native_setup_except,
-    emit_native_setup_finally,
     emit_native_end_finally,
     emit_native_get_iter,
     emit_native_for_iter,

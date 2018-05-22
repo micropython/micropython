@@ -719,11 +719,18 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
     }
 }
 
-void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label) {
+void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind) {
+    MP_STATIC_ASSERT(MP_BC_SETUP_WITH + MP_EMIT_SETUP_BLOCK_WITH == MP_BC_SETUP_WITH);
+    MP_STATIC_ASSERT(MP_BC_SETUP_WITH + MP_EMIT_SETUP_BLOCK_EXCEPT == MP_BC_SETUP_EXCEPT);
+    MP_STATIC_ASSERT(MP_BC_SETUP_WITH + MP_EMIT_SETUP_BLOCK_FINALLY == MP_BC_SETUP_FINALLY);
+    if (kind == MP_EMIT_SETUP_BLOCK_WITH) {
     // The SETUP_WITH opcode pops ctx_mgr from the top of the stack
     // and then pushes 3 entries: __exit__, ctx_mgr, as_value.
-    emit_bc_pre(emit, 2);
-    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
+        emit_bc_pre(emit, 2);
+    } else {
+        emit_bc_pre(emit, 0);
+    }
+    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH + kind, label);
 }
 
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
@@ -732,17 +739,7 @@ void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
     mp_emit_bc_label_assign(emit, label);
     emit_bc_pre(emit, 2); // ensure we have enough stack space to call the __exit__ method
     emit_write_bytecode_byte(emit, MP_BC_WITH_CLEANUP);
-    emit_bc_pre(emit, -4); // cancel the 2 above, plus the 2 from mp_emit_bc_setup_with
-}
-
-void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_EXCEPT, label);
-}
-
-void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_FINALLY, label);
+    emit_bc_pre(emit, -4); // cancel the 2 above, plus the 2 from mp_emit_bc_setup_block(MP_EMIT_SETUP_BLOCK_WITH)
 }
 
 void mp_emit_bc_end_finally(emit_t *emit) {
@@ -953,10 +950,8 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_pop_jump_if,
     mp_emit_bc_jump_if_or_pop,
     mp_emit_bc_unwind_jump,
-    mp_emit_bc_setup_with,
+    mp_emit_bc_setup_block,
     mp_emit_bc_with_cleanup,
-    mp_emit_bc_setup_except,
-    mp_emit_bc_setup_finally,
     mp_emit_bc_end_finally,
     mp_emit_bc_get_iter,
     mp_emit_bc_for_iter,
