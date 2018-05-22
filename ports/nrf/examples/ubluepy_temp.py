@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE
 
-from pyb import LED
+from board import LED
 from machine import RTCounter, Temp
 from ubluepy import Service, Characteristic, UUID, Peripheral, constants
 

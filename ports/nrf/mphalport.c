@@ -54,8 +54,8 @@ void mp_hal_set_interrupt_char(int c) {
 #if !MICROPY_PY_BLE_NUS
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
+            return uart_rx_char(MP_STATE_PORT(board_stdio_uart));
         }
     }
 
@@ -63,14 +63,14 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    if (MP_STATE_PORT(board_stdio_uart) != NULL) {
+        uart_tx_strn(MP_STATE_PORT(board_stdio_uart), str, len);
     }
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    if (MP_STATE_PORT(board_stdio_uart) != NULL) {
+        uart_tx_strn_cooked(MP_STATE_PORT(board_stdio_uart), str, len);
     }
 }
 #endif

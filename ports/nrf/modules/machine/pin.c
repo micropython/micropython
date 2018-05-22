@@ -40,7 +40,7 @@
 extern const pin_obj_t machine_pin_obj[];
 extern const uint8_t machine_pin_num_of_pins;
 
-/// \moduleref pyb
+/// \moduleref machine
 /// \class Pin - control I/O pins
 ///
 /// A pin is the basic object to control I/O pins.  It has methods to set
@@ -49,40 +49,40 @@ extern const uint8_t machine_pin_num_of_pins;
 ///
 /// Usage Model:
 ///
-/// All Board Pins are predefined as pyb.Pin.board.Name
+/// All Board Pins are predefined as machine.Pin.board.Name
 ///
-///     x1_pin = pyb.Pin.board.X1
+///     x1_pin = machine.Pin.board.X1
 ///
-///     g = pyb.Pin(pyb.Pin.board.X1, pyb.Pin.IN)
+///     g = machine.Pin(machine.Pin.board.X1, machine.Pin.IN)
 ///
 /// CPU pins which correspond to the board pins are available
-/// as `pyb.cpu.Name`. For the CPU pins, the names are the port letter
-/// followed by the pin number. On the PYBv1.0, `pyb.Pin.board.X1` and
-/// `pyb.Pin.cpu.B6` are the same pin.
+/// as `machine.cpu.Name`. For the CPU pins, the names are the port letter
+/// followed by the pin number. On the PYBv1.0, `machine.Pin.board.X1` and
+/// `machine.Pin.cpu.B6` are the same pin.
 ///
 /// You can also use strings:
 ///
-///     g = pyb.Pin('X1', pyb.Pin.OUT_PP)
+///     g = machine.Pin('X1', machine.Pin.OUT)
 ///
 /// Users can add their own names:
 ///
-///     MyMapperDict = { 'LeftMotorDir' : pyb.Pin.cpu.C12 }
-///     pyb.Pin.dict(MyMapperDict)
-///     g = pyb.Pin("LeftMotorDir", pyb.Pin.OUT_OD)
+///     MyMapperDict = { 'LeftMotorDir' : machine.Pin.cpu.C12 }
+///     machine.Pin.dict(MyMapperDict)
+///     g = machine.Pin("LeftMotorDir", machine.Pin.OUT)
 ///
 /// and can query mappings
 ///
-///     pin = pyb.Pin("LeftMotorDir")
+///     pin = machine.Pin("LeftMotorDir")
 ///
 /// Users can also add their own mapping function:
 ///
 ///     def MyMapper(pin_name):
 ///        if pin_name == "LeftMotorDir":
-///            return pyb.Pin.cpu.A0
+///            return machine.Pin.cpu.A0
 ///
-///     pyb.Pin.mapper(MyMapper)
+///     machine.Pin.mapper(MyMapper)
 ///
-/// So, if you were to call: `pyb.Pin("LeftMotorDir", pyb.Pin.OUT_PP)`
+/// So, if you were to call: `machine.Pin("LeftMotorDir", machine.Pin.OUT)`
 /// then `"LeftMotorDir"` is passed directly to the mapper function.
 ///
 /// To summarise, the following order determines how things get mapped into
@@ -94,7 +94,7 @@ extern const uint8_t machine_pin_num_of_pins;
 /// 4. Supply a string which matches a board pin
 /// 5. Supply a string which matches a CPU port/pin
 ///
-/// You can set `pyb.Pin.debug(True)` to get some debug information about
+/// You can set `machine.Pin.debug(True)` to get some debug information about
 /// how a particular object gets mapped to a pin.
 
 #define PIN_DEBUG (0)
@@ -639,7 +639,7 @@ const mp_obj_type_t pin_type = {
     .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
 };
 
-/// \moduleref pyb
+/// \moduleref machine
 /// \class PinAF - Pin Alternate Functions
 ///
 /// A Pin represents a physical pin on the microcprocessor. Each pin
@@ -648,7 +648,7 @@ const mp_obj_type_t pin_type = {
 ///
 /// Usage Model:
 ///
-///     x3 = pyb.Pin.board.X3
+///     x3 = machine.Pin.board.X3
 ///     x3_af = x3.af_list()
 ///
 /// x3_af will now contain an array of PinAF objects which are availble on
@@ -662,9 +662,9 @@ const mp_obj_type_t pin_type = {
 /// is desired.
 ///
 /// To configure X3 to expose TIM2_CH3, you could use:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=pyb.Pin.AF1_TIM2)
+///    pin = machine.Pin(machine.Pin.board.X3, mode=machine.Pin.AF_PP, af=machine.Pin.AF1_TIM2)
 /// or:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=1)
+///    pin = machine.Pin(machine.Pin.board.X3, mode=machine.Pin.AF_PP, af=1)
 
 /// \method __str__()
 /// Return a string describing the alternate function.

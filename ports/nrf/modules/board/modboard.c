@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2015 Glenn Ruben Bakke
+ * Copyright (c) 2015 - 2018 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,29 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef LED_H
-#define LED_H
+#include "py/builtin.h"
+#include "lib/utils/pyexec.h"
+#include "py/runtime.h"
+#include "py/obj.h"
+#include "led.h"
+#include "nrf.h" // TODO: figure out where to put this import
+#include "pin.h"
 
-typedef enum {
-#if MICROPY_HW_LED_TRICOLOR
-    PYB_LED_RED = 1,
-    PYB_LED_GREEN = 2,
-    PYB_LED_BLUE = 3
-#elif (MICROPY_HW_LED_COUNT == 1)
-    PYB_LED1 = 1,
-#elif (MICROPY_HW_LED_COUNT == 2)
-    PYB_LED1 = 1,
-    PYB_LED2 = 2,
+#if MICROPY_HW_HAS_LED
+#define PYB_LED_MODULE { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&board_led_type) },
 #else
-    PYB_LED1 = 1,
-    PYB_LED2 = 2,
-    PYB_LED3 = 3,
-    PYB_LED4 = 4
+#define PYB_LED_MODULE
 #endif
-} pyb_led_t;
 
-void led_init(void);
+STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_board) },
+    { MP_ROM_QSTR(MP_QSTR_repl_info), MP_ROM_PTR(&pyb_set_repl_info_obj) },
+    PYB_LED_MODULE
+};
 
-extern const mp_obj_type_t pyb_led_type;
 
-#endif // LED_H
+STATIC MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
+
+const mp_obj_module_t board_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&board_module_globals,
+};

@@ -38,9 +38,12 @@
 #include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
 //#include "timeutils.h"
-//#include "rng.h"
 #include "uart.h"
 //#include "portmodules.h"
+
+#if MICROPY_HW_ENABLE_RNG
+#include "modrandom.h"
+#endif // MICROPY_HW_ENABLE_RNG
 
 /// \module os - basic "operating system" services
 ///
@@ -102,7 +105,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
     vstr_t vstr;
     vstr_init_len(&vstr, n);
     for (int i = 0; i < n; i++) {
-        vstr.buf[i] = rng_get();
+        vstr.buf[i] = (uint8_t)(machine_rng_generate_random_word() & 0xFF);
     }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
@@ -114,16 +117,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 // TODO should accept any object with read/write methods.
 STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (MP_STATE_PORT(pyb_stdio_uart) == NULL) {
+        if (MP_STATE_PORT(board_stdio_uart) == NULL) {
             return mp_const_none;
         } else {
-            return MP_STATE_PORT(pyb_stdio_uart);
+            return MP_STATE_PORT(board_stdio_uart);
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(pyb_stdio_uart) = NULL;
+            MP_STATE_PORT(board_stdio_uart) = NULL;
         } else if (mp_obj_get_type(args[0]) == &machine_hard_uart_type) {
-            MP_STATE_PORT(pyb_stdio_uart) = args[0];
+            MP_STATE_PORT(board_stdio_uart) = args[0];
         } else {
             mp_raise_ValueError("need a UART object");
         }
