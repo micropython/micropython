@@ -90,7 +90,7 @@ SECTIONS
     *app_trace/*(.literal .text .literal.* .text.*)
     *xtensa-debug-module/eri.o(.literal .text .literal.* .text.*)
     *librtc.a:(.literal .text .literal.* .text.*)
-    *libsoc.a:(.literal .text .literal.* .text.*)
+    *soc/esp32/*(.literal .text .literal.* .text.*)
     *libhal.a:(.literal .text .literal.* .text.*)
     *libgcc.a:lib2funcs.o(.literal .text .literal.* .text.*)
     *spi_flash/spi_flash_rom_patch.o(.literal .text .literal.* .text.*)
