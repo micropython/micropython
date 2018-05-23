@@ -67,7 +67,7 @@ M0 non-Express builds, due to limited flash memory:
 
 
 CircuitPython/MicroPython-specific libraries
-------------------------------
+--------------------------------------------
 
 Functionality specific to the CircuitPython/MicroPython implementation is available in
 the following libraries. These libraries may change signficantly or be removed in future
