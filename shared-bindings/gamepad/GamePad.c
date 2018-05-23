@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "shared-module/gamepad/GamePad.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/util.h"
 #include "GamePad.h"
 
 
@@ -93,15 +94,17 @@ gamepad_obj_t* volatile gamepad_singleton = NULL;
 //|
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         size_t n_kw, const mp_obj_t *args) {
+    for (size_t i = 0; i < n_args; ++i) {
+        if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
+            mp_raise_TypeError("Expected a DigitalInOut");
+        }
+        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(args[i]);
+        raise_error_if_deinited(
+            common_hal_digitalio_digitalinout_deinited(pin));
+    }
     if (!gamepad_singleton) {
         gamepad_singleton = m_new_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
-    }
-    for (size_t i = 0; i < n_args; ++i) {
-        if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "Expected a %q", digitalio_digitalinout_type.name));
-        }
     }
     gamepad_init(n_args, args);
     return MP_OBJ_FROM_PTR(gamepad_singleton);
