@@ -58,7 +58,7 @@ Not all of these functions and types are turned on in all CircuitPython ports, f
 
 .. class:: frozenset()
 
-`frozenset() is not enabled on non-Express CircuitPython boards.`
+`frozenset()` is not enabled on non-Express CircuitPython boards.
 
 .. function:: getattr()
 
@@ -128,7 +128,7 @@ Not all of these functions and types are turned on in all CircuitPython ports, f
 
 .. function:: reversed()
 
-`reversed() is not enabled on non-Express CircuitPython boards.`
+`reversed()` is not enabled on non-Express CircuitPython boards.
 
 .. function:: round()
 
