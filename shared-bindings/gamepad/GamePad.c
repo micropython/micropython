@@ -32,7 +32,7 @@
 #include "GamePad.h"
 
 
-gamepad_obj_t* volatile gamepad_singleton = NULL;
+gamepad_obj_t* gamepad_singleton = NULL;
 
 //| .. currentmodule:: gamepad
 //|
