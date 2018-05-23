@@ -46,7 +46,6 @@ Not all of these are enabled on all WiFi-capable ports.
    collections.rst
    gc.rst
    hashlib.rst
-   struct.rst
    sys.rst
    uerrno.rst
    uio.rst
