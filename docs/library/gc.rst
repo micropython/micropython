@@ -1,6 +1,8 @@
 :mod:`gc` -- control the garbage collector
 ==========================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: gc
    :synopsis: control the garbage collector
 

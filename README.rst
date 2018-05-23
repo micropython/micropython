@@ -108,9 +108,10 @@ CircuitPython:
 -  supports only SAMD21, SAMD51, and ESP8266 ports. An nRF port is under
    development.
 -  tracks MicroPython's releases (not master).
--  Longints (arbitrary-length integers) are turned on for most Express builds
-   (those boards with SPI flash chips external to the microcontroller),
-   but not for boards without SPI flash, for space reasons.
+-  Longints (arbitrary-length integers) are enabled for most M0
+   Express boards (those boards with SPI flash chips external
+   to the microcontroller), and for all M4 builds.
+   Longints are disabled on other boards due to lack of flash space.
 
 Behavior
 ~~~~~~~~

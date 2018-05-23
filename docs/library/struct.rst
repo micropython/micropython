@@ -1,6 +1,8 @@
 :mod:`struct` -- pack and unpack primitive data types
 ======================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: struct
    :synopsis: pack and unpack primitive data types
 

@@ -1,6 +1,8 @@
 :mod:`sys` -- system specific functions
 =======================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: sys
    :synopsis: system specific functions
 
@@ -98,7 +100,7 @@ Constants
    usually an identifier of the OS, e.g. ``"linux"``. For baremetal ports it
    is an identifier of the chip on a board, e.g. ``"MicroChip SAMD51"``.
    It thus can be used to distinguish one board from another.
-   If you need to check whether your program runs on MicroPython (vs other
+   If you need to check whether your program runs on CircuitPython (vs other
    Python implementation), use `sys.implementation` instead.
 
 .. data:: stderr

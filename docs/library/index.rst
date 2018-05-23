@@ -1,21 +1,30 @@
 .. _micropython_lib:
 
-CircuitPython libraries
+MicroPython libraries
 =====================
 
 Python standard libraries and micro-libraries
 ---------------------------------------------
 
-These libraries are the same or are subsets or slight variants of the standard Python libraries.
+These libraries are inherited from MicroPython.
+They are similar to the standard Python libraries with the same name
+or with the "u" prefix dropped.
+They implement a subset of or a variant of the corresponding
+standard Python library.
 
-MicroPython prefixed many of these libraries with ``u``. In CircuitPython, those
-that are subsets or the same as the standard Python libraries have been or will be renamed
-to their original names.
-Our aspiration is that code written in CircuitPython
-that uses Python standard libraries will be runnable on CPython without changes.
-But we may fall short of this goal in some cases.
+.. warning::
 
-Some of the libraries below are not enabled on CircuitPython builds with
+   Though these MicroPython-based libraries are available in CircuitPython,
+   their functionality may change in the future, perhaps significantly.
+   As CircuitPython continues to develop, new versions of these libraries will
+   be created that are more compliant with the standard Python libraries.
+   You may need to change your code later if you rely
+   on any non-standard functionality they currently provide.
+
+CircuitPython's goal long-term goalis that code written in CircuitPython
+using Python standard libraries will be runnable on CPython without changes.
+
+Some libraries below are not enabled on CircuitPython builds with
 limited flash memory, usually on non-Express builds:
 ``uerrno``, ``ure``.
 
@@ -51,8 +60,8 @@ Not all of these are enabled on all WiFi-capable ports.
 Omitted functions in the ``string`` library
 -------------------------------------------
 
-A few string operations are not enabled on CircuitPython builds with
-limited flash memory, usually on non-Express builds:
+A few string operations are not enabled on CircuitPython
+M0 non-Express builds, due to limited flash memory:
 ``string.center()``, ``string.partition()``, ``string.splitlines()``,
 ``string.reversed()``.
 
@@ -60,8 +69,9 @@ limited flash memory, usually on non-Express builds:
 CircuitPython/MicroPython-specific libraries
 ------------------------------
 
-Functionality specific to the CircuitPython (MicroPython) implementation is available in
-the following libraries.
+Functionality specific to the CircuitPython/MicroPython implementation is available in
+the following libraries. These libraries may change signficantly or be removed in future
+versions of CircuitPtyon.
 
 .. toctree::
    :maxdepth: 1
