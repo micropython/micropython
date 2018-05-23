@@ -1,8 +1,6 @@
 :mod:`array` -- arrays of numeric data
 ======================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
 .. module:: array
    :synopsis: efficient arrays of numeric data
 
