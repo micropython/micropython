@@ -119,9 +119,8 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
 //|         held down) can be recorded for the next call.
 //|
 STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
-    gamepad_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t gamepad = MP_OBJ_NEW_SMALL_INT(self->pressed);
-    self->pressed = 0;
+    mp_obj_t gamepad = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
+    gamepad_singleton->pressed = 0;
     return gamepad;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
