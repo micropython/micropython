@@ -92,7 +92,6 @@ int real_main(void) {
     upytest_set_heap(heap, heap + sizeof(heap));
     int r = tinytest_main(1, argv, groups);
     printf("status: %d\n", r);
-    return 0;
     #endif
 
 soft_reset:

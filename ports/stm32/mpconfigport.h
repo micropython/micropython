@@ -87,6 +87,7 @@
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
 #define MICROPY_PY_BUILTINS_FROZENSET (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPILE (1)
 #define MICROPY_PY_BUILTINS_EXECFILE (1)
@@ -192,12 +193,21 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define STM_BUILTIN_MODULE
 #endif
 
-#if MICROPY_PY_USOCKET
+#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
+// usocket implementation provided by lwIP
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_lwip) },
+#define SOCKET_POLL extern void pyb_lwip_poll(void); pyb_lwip_poll();
+#elif MICROPY_PY_USOCKET
+// usocket implementation provided by skeleton wrapper
 #define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
 #define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_usocket) },
+#define SOCKET_POLL
 #else
+// no usocket module
 #define SOCKET_BUILTIN_MODULE
 #define SOCKET_BUILTIN_MODULE_WEAK_LINKS
+#define SOCKET_POLL
 #endif
 
 #if MICROPY_PY_NETWORK
@@ -313,6 +323,7 @@ static inline mp_uint_t disable_irq(void) {
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        SOCKET_POLL \
         if (pyb_thread_enabled) { \
             MP_THREAD_GIL_EXIT(); \
             pyb_thread_yield(); \
@@ -328,6 +339,7 @@ static inline mp_uint_t disable_irq(void) {
     do { \
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
+        SOCKET_POLL \
         __WFI(); \
     } while (0);
 

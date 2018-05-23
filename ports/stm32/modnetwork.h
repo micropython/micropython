@@ -35,6 +35,17 @@
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
 
+#if MICROPY_PY_LWIP
+
+struct netif;
+
+typedef struct _mod_network_nic_type_t {
+    mp_obj_type_t base;
+    void (*poll_callback)(void *data, struct netif *netif);
+} mod_network_nic_type_t;
+
+#else
+
 struct _mod_network_socket_obj_t;
 
 typedef struct _mod_network_nic_type_t {
@@ -73,10 +84,13 @@ typedef struct _mod_network_socket_obj_t {
     };
 } mod_network_socket_obj_t;
 
+#endif
+
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 void mod_network_init(void);
+void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
 

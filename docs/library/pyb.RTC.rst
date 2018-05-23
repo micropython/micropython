@@ -31,7 +31,7 @@ Methods
    
    With no arguments, this method returns an 8-tuple with the current
    date and time.  With 1 argument (being an 8-tuple) it sets the date
-   and time.
+   and time (and ``subseconds`` is reset to 255).
    
    .. only:: port_pyboard
    

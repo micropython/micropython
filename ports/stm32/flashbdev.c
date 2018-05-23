@@ -93,14 +93,16 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define FLASH_MEM_SEG1_START_ADDR (0x08020000) // sector 1
 #define FLASH_MEM_SEG1_NUM_BLOCKS (256) // Sector 1: 128k / 512b = 256 blocks
 
-#elif defined(STM32L475xx) || defined(STM32L476xx)
+#elif defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L496xx)
 
 extern uint8_t _flash_fs_start;
 extern uint8_t _flash_fs_end;
+extern uint32_t _ram_fs_cache_start[2048 / 4];
+extern uint32_t _ram_fs_cache_block_size;
 
 // The STM32L475/6 doesn't have CCRAM, so we use the 32K SRAM2 for this.
-#define CACHE_MEM_START_ADDR (0x10000000)       // SRAM2 data RAM, 32k
-#define FLASH_SECTOR_SIZE_MAX (0x00800)         // 2k max
+#define CACHE_MEM_START_ADDR (&_ram_fs_cache_start)       // End of SRAM2 RAM segment-2k
+#define FLASH_SECTOR_SIZE_MAX (_ram_fs_cache_block_size)  // 2k max
 #define FLASH_MEM_SEG1_START_ADDR ((long)&_flash_fs_start)
 #define FLASH_MEM_SEG1_NUM_BLOCKS ((&_flash_fs_end - &_flash_fs_start) / 512)
 
