@@ -53,6 +53,7 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/touchio/TouchIn.h"
 #include "common-hal/usb_hid/Device.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "clocks.h"
@@ -240,8 +241,10 @@ void reset_port(void) {
     i2sout_reset();
     #endif
     audio_dma_reset();
-//     touchin_reset();
     //pdmin_reset();
+#endif
+#ifdef SAMD21
+    touchin_reset();
 #endif
     pulsein_reset();
     pulseout_reset();

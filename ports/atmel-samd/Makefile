@@ -112,8 +112,7 @@ else
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
   ifdef INTERNAL_FLASH_FILESYSTEM
-    ## Not currently needed
-    ## CFLAGS += -finline-limit=50
+    CFLAGS += -finline-limit=60
   endif
   CFLAGS += -flto
 endif
@@ -274,7 +273,7 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/autogen_usb_descriptor.c \
-	# freetouch/adafruit_ptc.c
+	freetouch/adafruit_ptc.c
 
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
@@ -321,7 +320,7 @@ SRC_COMMON_HAL = \
 	usb_hid/Device.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-#	touchio/__init__.c \
+	touchio/__init__.c \
 	touchio/TouchIn.c \
 
 ifeq ($(INTERNAL_LIBM),1)
