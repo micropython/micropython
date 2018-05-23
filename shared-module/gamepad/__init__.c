@@ -37,17 +37,18 @@ void gamepad_tick(void) {
         return;
     }
     uint8_t gamepad_current = 0;
-    for (int i=0; i<8; ++i) {
+    uint8_t bit = 1;
+    for (int i = 0; i < 8; ++i) {
         digitalio_digitalinout_obj_t* pin = gamepad_singleton->pins[i];
         if (!pin) {
             break;
         }
-        digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(pin);
-        bool value = common_hal_digitalio_digitalinout_get_value(pin);
-        if ((pull == PULL_UP && !value) || (pull == PULL_DOWN && value)) {
-            gamepad_current |= 1 << i;
+        if (common_hal_digitalio_digitalinout_get_value(pin)) {
+            gamepad_current |= bit;
         }
+        bit <<= 1;
     }
+    gamepad_current ^= gamepad_singleton->pulls;
     gamepad_singleton->pressed |= gamepad_singleton->last & gamepad_current;
     gamepad_singleton->last = gamepad_current;
 }
