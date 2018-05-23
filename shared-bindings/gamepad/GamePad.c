@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "shared-module/gamepad/GamePad.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/util.h"
 #include "GamePad.h"
 
 
@@ -93,15 +94,20 @@ gamepad_obj_t* gamepad_singleton = NULL;
 //|
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         size_t n_kw, const mp_obj_t *args) {
-    if (!gamepad_singleton) {
-        gamepad_singleton = m_new_obj(gamepad_obj_t);
-        gamepad_singleton->base.type = &gamepad_type;
+    if (n_args > 8) {
+        mp_raise_TypeError("too many arguments");
     }
     for (size_t i = 0; i < n_args; ++i) {
         if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                "Expected a %q", digitalio_digitalinout_type.name));
+            mp_raise_TypeError("expected a DigitalInOut");
         }
+        digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(args[i]);
+        raise_error_if_deinited(
+            common_hal_digitalio_digitalinout_deinited(pin));
+    }
+    if (!gamepad_singleton) {
+        gamepad_singleton = m_new_obj(gamepad_obj_t);
+        gamepad_singleton->base.type = &gamepad_type;
     }
     gamepad_init(n_args, args);
     return MP_OBJ_FROM_PTR(gamepad_singleton);
@@ -119,9 +125,8 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
 //|         held down) can be recorded for the next call.
 //|
 STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
-    gamepad_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t gamepad = MP_OBJ_NEW_SMALL_INT(self->pressed);
-    self->pressed = 0;
+    mp_obj_t gamepad = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
+    gamepad_singleton->pressed = 0;
     return gamepad;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);

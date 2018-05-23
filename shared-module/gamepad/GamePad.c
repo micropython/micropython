@@ -35,16 +35,22 @@
 
 
 void gamepad_init(size_t n_pins, const mp_obj_t* pins) {
-    for (size_t i=0; i<8; ++i) {
+    for (size_t i = 0; i < 8; ++i) {
         gamepad_singleton->pins[i] = NULL;
     }
-    for (size_t i=0; i<n_pins; ++i) {
+    gamepad_singleton->pulls = 0;
+    for (size_t i = 0; i < n_pins; ++i) {
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(pins[i]);
-        raise_error_if_deinited(common_hal_digitalio_digitalinout_deinited(pin));
         digitalio_direction_t direction = common_hal_digitalio_digitalinout_get_direction(pin);
-        digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(pin);
-        if (direction != DIRECTION_INPUT || pull == PULL_NONE) {
+        if (direction != DIRECTION_INPUT) {
             common_hal_digitalio_digitalinout_switch_to_input(pin, PULL_UP);
+        }
+        digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(pin);
+        if (pull == PULL_NONE) {
+            common_hal_digitalio_digitalinout_set_pull(pin, PULL_UP);
+        }
+        if (pull != PULL_DOWN) {
+            gamepad_singleton->pulls |= 1 << i;
         }
         gamepad_singleton->pins[i] = pin;
     }
