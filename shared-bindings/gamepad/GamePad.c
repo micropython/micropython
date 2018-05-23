@@ -94,9 +94,12 @@ gamepad_obj_t* volatile gamepad_singleton = NULL;
 //|
 STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         size_t n_kw, const mp_obj_t *args) {
+    if (n_args > 8) {
+        mp_raise_TypeError("too many arguments");
+    }
     for (size_t i = 0; i < n_args; ++i) {
         if (!MP_OBJ_IS_TYPE(args[i], &digitalio_digitalinout_type)) {
-            mp_raise_TypeError("Expected a DigitalInOut");
+            mp_raise_TypeError("expected a DigitalInOut");
         }
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(args[i]);
         raise_error_if_deinited(
