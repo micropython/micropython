@@ -13,8 +13,6 @@ MEMORY
     DTCM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K    /* Used for storage cache */
     ETH_RXDMA (rw)  : ORIGIN = 0x20020000, LENGTH = 256    /* 32 * 5 bytes for DMARxDscrTab in ethernetif.c */
     ETH_TXDMA (rw)  : ORIGIN = 0x20020100, LENGTH = 256    /* 32 * 5 bytes for DMATxDscrTab in ethernetif.c */
-    ETH_RXBUF (rw)  : ORIGIN = 0x20020200, LENGTH = 7620   /* 1524 * 5 bytes for Rx_Buff in ethernetif.c */
-    ETH_TXBUF (rw)  : ORIGIN = 0x20022100, LENGTH = 7620   /* 1524 * 5 bytes for Tx_Buff in ethernetif.c */
     RAM (xrw)       : ORIGIN = 0x20024000, LENGTH = 368K    /* SRAM1 = 368K, SRAM2 = 16K */
 }
 
@@ -28,8 +26,6 @@ SECTIONS
 {
     .RxDescripSection : { *(.DMARxDscrTab_section) } >ETH_RXDMA
     .TxDescripSection : { *(.DMATxDscrTab_section) } >ETH_TXDMA
-    .RxarraySection   : { *(.Rx_Buff_section) }      >ETH_RXBUF
-    .TxarraySection   : { *(.Tx_Buff_section) }      >ETH_TXBUF
 }
 
 /* Define tho top end of the stack.  The stack is full descending so begins just
