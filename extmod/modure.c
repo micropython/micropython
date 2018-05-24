@@ -85,7 +85,7 @@ STATIC mp_obj_t match_groups(mp_obj_t self_in) {
         return mp_const_empty_tuple;
     }
     mp_obj_tuple_t *groups = MP_OBJ_TO_PTR(mp_obj_new_tuple(self->num_matches - 1, NULL));
-    for (size_t no = 1; no < self->num_matches; no++) {
+    for (int no = 1; no < self->num_matches; no++) {
         const char *start = self->caps[no * 2];
         if (start == NULL) {
             // no match for this group
