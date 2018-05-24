@@ -44,6 +44,9 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
 #define MICROPY_PY_IO_RESOURCE_STREAM (1)
+#define MICROPY_PY_URE_MATCH_GROUPS    (1)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
+#define MICROPY_PY_URE_SUB             (1)
 #define MICROPY_VFS_POSIX              (1)
 #undef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT                (1)
