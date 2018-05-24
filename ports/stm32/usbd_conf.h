@@ -36,8 +36,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "py/mpconfig.h"
 
-#define USBD_MAX_NUM_INTERFACES               4
+#define USBD_MAX_NUM_INTERFACES               (2 + (MICROPY_HW_USB_NUM_CDC * 2))
 #define USBD_MAX_NUM_CONFIGURATION            1
 #define USBD_MAX_STR_DESC_SIZ                 0x100
 #define USBD_SELF_POWERED                     0

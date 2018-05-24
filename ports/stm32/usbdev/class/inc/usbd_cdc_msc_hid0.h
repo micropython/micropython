@@ -29,19 +29,6 @@
 // these are exports for the CDC/MSC/HID interface that are independent
 // from any other definitions/declarations
 
-// only CDC_MSC and CDC_HID are available
-typedef enum {
-    USBD_MODE_CDC = 0x01,
-    USBD_MODE_MSC = 0x02,
-    USBD_MODE_HID = 0x04,
-    USBD_MODE_CDC2 = 0x08,
-    USBD_MODE_CDC_MSC = USBD_MODE_CDC | USBD_MODE_MSC,
-    USBD_MODE_CDC_HID = USBD_MODE_CDC | USBD_MODE_HID,
-    USBD_MODE_MSC_HID = USBD_MODE_MSC | USBD_MODE_HID,
-    USBD_MODE_CDC2_MSC = USBD_MODE_CDC | USBD_MODE_MSC | USBD_MODE_CDC2,
-    USBD_MODE_HIGH_SPEED = 0x80, // or with one of the above
-} usb_device_mode_t;
-
 typedef struct _USBD_HID_ModeInfoTypeDef {
     uint8_t subclass; // 0=no sub class, 1=boot
     uint8_t protocol; // 0=none, 1=keyboard, 2=mouse

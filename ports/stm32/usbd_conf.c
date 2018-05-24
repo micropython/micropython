@@ -34,6 +34,7 @@
 #include "py/mphal.h"
 #include "irq.h"
 #include "usb.h"
+#include "usbdev/class/inc/usbd_cdc_msc_hid.h"
 
 #if MICROPY_HW_USB_FS
 PCD_HandleTypeDef pcd_fs_handle;
@@ -357,6 +358,59 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
 /*******************************************************************************
                        LL Driver Interface (USB Device Library --> PCD)
 *******************************************************************************/
+/**
+  * @brief  Configures the USB FIFO buffers for each endpoint.
+  * @param  pcd_handle: PCD handle
+  * @param  pdev: Device handle
+  * @retval USBD Status
+  */
+void USBD_LL_SetFifo(PCD_HandleTypeDef *pcd_handle, USBD_HandleTypeDef *pdev) {
+    usbd_cdc_msc_hid_state_t *usbd = (usbd_cdc_msc_hid_state_t *)pdev->pClassData;
+
+    #if MICROPY_HW_USB_FS
+    // We have 320 32-bit words in total to use here
+    #define TOTAL_AVAIL (320)
+    #endif 
+    #if MICROPY_HW_USB_HS
+    // We have 1024 32-bit words in total to use here
+    #define TOTAL_AVAIL (1024)
+    #endif 
+
+    #define RX_SIZE (TOTAL_AVAIL / 2)
+    #define EP0_SIZE (32)
+
+    // The available space after RX and EP0 are taken out will be split between the
+    // configured endpoints in the ratio defined here.
+    #define MSC_IN_RATIO (4)
+    #define HID_IN_RATIO (1)
+
+    #define CDC_IN_RATIO (2)
+    #define CDC_CMD_RATIO (1)
+
+    #define AVAIL (TOTAL_AVAIL - RX_SIZE - EP0_SIZE)
+    #define NEEDED (MSC_IN_RATIO + HID_IN_RATIO + \
+                    (MICROPY_HW_USB_NUM_CDC * (CDC_IN_RATIO + CDC_CMD_RATIO)))
+    #define MULT (AVAIL / NEEDED)
+    
+    HAL_PCD_SetRxFiFo(pcd_handle, RX_SIZE);
+    HAL_PCD_SetTxFiFo(pcd_handle, 0, EP0_SIZE);
+    
+    for (uint8_t i = 0; i < MICROPY_HW_USB_NUM_CDC; i++) {
+        if (usbd->cdc[i]->in_ep > 0) {
+        HAL_PCD_SetTxFiFo(pcd_handle, usbd->cdc[i]->in_ep & 0x7f, CDC_IN_RATIO * MULT);
+        }
+        if (usbd->cdc[i]->cmd_ep > 0) {
+        HAL_PCD_SetTxFiFo(pcd_handle, usbd->cdc[i]->cmd_ep & 0x7f, CDC_CMD_RATIO * MULT);
+        }
+    }
+
+    if (usbd->MSC_BOT_ClassData.in_ep > 0) {
+        HAL_PCD_SetTxFiFo(pcd_handle, usbd->MSC_BOT_ClassData.in_ep & 0x7f, MSC_IN_RATIO * MULT);
+    }
+    if (usbd->hid->in_ep > 0) {
+        HAL_PCD_SetTxFiFo(pcd_handle, usbd->hid->in_ep & 0x7f, HID_IN_RATIO * MULT);
+    }
+}
 
 /**
   * @brief  Initializes the Low Level portion of the Device driver.
@@ -364,15 +418,13 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
+
     #if MICROPY_HW_USB_FS
+    
     if (pdev->id ==  USB_PHY_FS_ID) {
         // Set LL Driver parameters
         pcd_fs_handle.Instance = USB_OTG_FS;
-        #if MICROPY_HW_USB_ENABLE_CDC2
-        pcd_fs_handle.Init.dev_endpoints = 6;
-        #else
-        pcd_fs_handle.Init.dev_endpoints = 4;
-        #endif
+        pcd_fs_handle.Init.dev_endpoints = usbd->used_endpoints;
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         pcd_fs_handle.Init.ep0_mps = 0x40;
         pcd_fs_handle.Init.dma_enable = 0;
@@ -397,22 +449,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_fs_handle);
 
-        // We have 320 32-bit words in total to use here
-        #if MICROPY_HW_USB_ENABLE_CDC2
-        HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 16); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 32); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 4, 16); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 5, 32); // CDC2 DATA
-        #else
-        HAL_PCD_SetRxFiFo(&pcd_fs_handle, 128);
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 1, 64); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 2, 32); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_fs_handle, 3, 64); // CDC DATA
-        #endif
+        USBD_LL_SetFifo(&pcd_fs_handle, pdev);
     }
     #endif
     #if MICROPY_HW_USB_HS
@@ -453,14 +490,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_hs_handle);
 
-        // We have 1024 32-bit words in total to use here
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 512);
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 32); // EP0
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 256); // MSC / HID
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 2, 32); // CDC CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 3, 64); // CDC DATA
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 4, 32); // CDC2 CMD
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 5, 64); // CDC2 DATA
+        USBD_LL_SetFifo(&pcd_hs_handle, pdev);
 
         #else // !MICROPY_HW_USB_HS_IN_FS
 
@@ -490,9 +520,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
         // Initialize LL Driver
         HAL_PCD_Init(&pcd_hs_handle);
 
-        HAL_PCD_SetRxFiFo(&pcd_hs_handle, 0x200);
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 0, 0x80);
-        HAL_PCD_SetTxFiFo(&pcd_hs_handle, 1, 0x174);
+        USBD_LL_SetFifo(&pcd_hs_handle, pdev);
 
         #endif // !MICROPY_HW_USB_HS_IN_FS
     }

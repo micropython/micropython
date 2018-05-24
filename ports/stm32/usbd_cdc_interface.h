@@ -51,6 +51,7 @@ typedef struct _usbd_cdc_itf_t {
 
     volatile uint8_t dev_is_connected; // indicates if we are connected
     uint8_t attached_to_repl; // indicates if interface is connected to REPL
+    uint8_t interface; // the interface index this represents
 } usbd_cdc_itf_t;
 
 // This is implemented in usb.c

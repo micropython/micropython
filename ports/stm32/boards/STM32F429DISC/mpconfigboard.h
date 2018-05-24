@@ -72,3 +72,4 @@
 #define MICROPY_HW_USB_HS_IN_FS        (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_B13)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_B12)
+#define MICROPY_HW_USB_NUM_CDC         (1)

@@ -69,14 +69,15 @@ uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
     cdc->tx_buf_ptr_wait_count = 0;
     cdc->tx_need_empty_packet = 0;
     cdc->dev_is_connected = 0;
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    cdc->attached_to_repl = &cdc->base == cdc->base.usbd->cdc;
-    #else
-    cdc->attached_to_repl = 1;
-    #endif
+    cdc->attached_to_repl = 0;
 
     // Return the buffer to place the first USB OUT packet
     return cdc->rx_packet_buf;
+}
+
+void usbd_cdc_attach_to_repl(usbd_cdc_state_t *cdc_in, bool enable) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+    cdc->attached_to_repl = enable;
 }
 
 // Manage the CDC class requests
@@ -208,10 +209,9 @@ static void usbd_cdc_sof(PCD_HandleTypeDef *hpcd, usbd_cdc_itf_t *cdc) {
 
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
     usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
-    usbd_cdc_sof(hpcd, (usbd_cdc_itf_t*)usbd->cdc);
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    usbd_cdc_sof(hpcd, (usbd_cdc_itf_t*)usbd->cdc2);
-    #endif
+    for (uint8_t i = 0; i < MICROPY_HW_USB_NUM_CDC; i++) {
+        usbd_cdc_sof(hpcd, (usbd_cdc_itf_t*)usbd->cdc[i]);
+    }
 }
 
 // Data received over USB OUT endpoint is processed here.

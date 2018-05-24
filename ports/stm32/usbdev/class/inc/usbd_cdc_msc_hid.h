@@ -1,6 +1,7 @@
 #ifndef _USB_CDC_MSC_CORE_H_
 #define _USB_CDC_MSC_CORE_H_
 
+#include <stdbool.h>
 #include  "usbd_cdc_msc_hid0.h"
 #include  "usbd_msc_bot.h"
 #include  "usbd_msc_scsi.h"
@@ -18,13 +19,18 @@
 #define USBD_SUPPORT_HS_MODE (0)
 #endif
 
-// Needed for the CDC+MSC+HID state and should be maximum of all template
-// config descriptors defined in usbd_cdc_msc_hid.c
-#if MICROPY_HW_USB_ENABLE_CDC2
-#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + 23 + (8 + 58) + (8 + 58))
-#else
-#define MAX_TEMPLATE_CONFIG_DESC_SIZE (107)
+// This can be increased in platform conf to provide extra Virtual COM Ports 
+#ifndef MICROPY_HW_USB_NUM_CDC
+#define MICROPY_HW_USB_NUM_CDC (1)
 #endif
+
+// Needed for the CDC+MSC+HID / CDC+MSC+CDC state and should be maximum of all template
+// config descriptors defined in usbd_cdc_msc_hid.c
+#define MAX_TEMPLATE_CONFIG_DESC_SIZE (9 + /* Configuration Descriptor */ \
+                                       23 + /* MSC Descriptor */ \
+                                       32 + /* HID Descriptor */ \
+                                       MICROPY_HW_USB_NUM_CDC * 66 /* CDC Descriptor(s) */ \
+                                       )
 
 // CDC, MSC and HID packet sizes
 #define MSC_FS_MAX_PACKET           (64)
@@ -39,22 +45,9 @@
 #define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
 #define HID_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 
-// Need to define here for BOT and SCSI layers
-#define MSC_IN_EP     (0x81)
-#define MSC_OUT_EP    (0x01)
 
 struct _usbd_cdc_msc_hid_state_t;
 
-typedef struct {
-    struct _usbd_cdc_msc_hid_state_t *usbd; // The parent USB device
-    uint32_t ctl_packet_buf[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32-bit alignment
-    uint8_t iface_num;
-    uint8_t in_ep;
-    uint8_t out_ep;
-    uint8_t cur_request;
-    uint8_t cur_length;
-    volatile uint8_t tx_in_progress;
-} usbd_cdc_state_t;
 
 typedef struct _USBD_STORAGE {
   int8_t (* Init) (uint8_t lun);
@@ -70,6 +63,9 @@ typedef struct _USBD_STORAGE {
 } USBD_StorageTypeDef;
 
 typedef struct {
+  int8_t iface_num;
+  uint8_t in_ep;
+  uint8_t out_ep;
   uint32_t                 max_lun;   
   uint32_t                 interface; 
   uint8_t                  bot_state;
@@ -100,7 +96,7 @@ typedef enum {
 
 typedef struct {
     struct _usbd_cdc_msc_hid_state_t *usbd; // The parent USB device
-    uint8_t iface_num;
+    int8_t iface_num;
     uint8_t in_ep;
     uint8_t out_ep;
     uint8_t state;
@@ -111,10 +107,21 @@ typedef struct {
     const uint8_t *report_desc;
 } usbd_hid_state_t;
 
+typedef struct {
+    struct _usbd_cdc_msc_hid_state_t *usbd; // The parent USB device
+    uint32_t ctl_packet_buf[CDC_DATA_MAX_PACKET_SIZE / 4]; // Force 32-bit alignment
+    int8_t iface_num;
+    uint8_t in_ep;
+    uint8_t out_ep;
+    uint8_t cmd_ep;
+    uint8_t cur_request;
+    uint8_t cur_length;
+    volatile uint8_t tx_in_progress;
+} usbd_cdc_state_t;
+
 typedef struct _usbd_cdc_msc_hid_state_t {
     USBD_HandleTypeDef *pdev;
 
-    uint8_t usbd_mode;
     uint8_t usbd_config_desc_size;
 
     USBD_MSC_BOT_HandleTypeDef MSC_BOT_ClassData;
@@ -124,11 +131,9 @@ typedef struct _usbd_cdc_msc_hid_state_t {
     __ALIGN_BEGIN uint8_t usbd_str_desc[USBD_MAX_STR_DESC_SIZ] __ALIGN_END;
     __ALIGN_BEGIN uint8_t usbd_config_desc[MAX_TEMPLATE_CONFIG_DESC_SIZE] __ALIGN_END;
 
-    usbd_cdc_state_t *cdc;
-    #if MICROPY_HW_USB_ENABLE_CDC2
-    usbd_cdc_state_t *cdc2;
-    #endif
+    usbd_cdc_state_t *cdc[MICROPY_HW_USB_NUM_CDC];
     usbd_hid_state_t *hid;
+    uint8_t used_endpoints;
 } usbd_cdc_msc_hid_state_t;
 
 #define USBD_HID_MOUSE_MAX_PACKET          (4)
@@ -166,9 +171,11 @@ static inline uint32_t usbd_cdc_max_packet(USBD_HandleTypeDef *pdev) {
 }
 
 // returns 0 on success, -1 on failure
-int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint32_t mode, USBD_HID_ModeInfoTypeDef *hid_info);
-// returns the current usb mode
-uint8_t USBD_GetMode(usbd_cdc_msc_hid_state_t *usbd);
+int USBD_SelectMode(usbd_cdc_msc_hid_state_t *usbd, uint8_t cdc, bool msc, bool hid, USBD_HID_ModeInfoTypeDef *hid_info);
+// returns the current usb mode information
+uint8_t USBD_CDC_Enabled(usbd_cdc_msc_hid_state_t *usbd);
+bool USBD_HID_Enabled(usbd_cdc_msc_hid_state_t *usbd);
+bool USBD_MSC_Enabled(usbd_cdc_msc_hid_state_t *usbd);
 
 uint8_t USBD_CDC_ReceivePacket(usbd_cdc_state_t *cdc, uint8_t *buf);
 uint8_t USBD_CDC_TransmitPacket(usbd_cdc_state_t *cdc, size_t len, const uint8_t *buf);
@@ -185,6 +192,7 @@ uint8_t USBD_HID_ClearNAK(usbd_hid_state_t *usbd);
 
 // These are provided externally to implement the CDC interface
 uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc);
+void usbd_cdc_attach_to_repl(usbd_cdc_state_t *cdc_in, bool enable);
 int8_t usbd_cdc_control(usbd_cdc_state_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length);
 int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc, size_t len);
 
