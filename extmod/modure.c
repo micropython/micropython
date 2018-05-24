@@ -40,6 +40,7 @@
 #include "re1.5/re1.5.h"
 
 #define FLAG_DEBUG 0x1000
+#define FLAG_IGNORECASE 0x0100
 
 typedef struct _mp_obj_re_t {
     mp_obj_base_t base;
@@ -248,10 +249,184 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
+#if MICROPY_PY_URE_SUB
+// str_to_int ... from objstr.c
+STATIC int str_to_int(const char *str, int *num) {
+    const char *s = str;
+    if ('0' <= *s && *s <= '9') {
+        *num = 0;
+        do {
+            *num = *num * 10 + (*s - '0');
+            s++;
+        } while ('0' <= *s && *s <= '9');
+    }
+    return s - str;
+}
+
+STATIC mp_obj_t ure_exec_sub(mp_obj_re_t *self, mp_obj_t replace, mp_obj_t where, mp_int_t count, mp_int_t flags) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(where, &bufinfo, MP_BUFFER_READ);
+    bool debug = (flags & FLAG_DEBUG);
+    (void)debug;
+    bool ignorecase = (flags & FLAG_IGNORECASE);
+    (void)ignorecase;
+    Subject subj;
+    subj.begin = bufinfo.buf;
+    subj.end = subj.begin + bufinfo.len;
+    int caps_num = (self->re.sub + 1) * 2;
+    int pre_m_l = -1, post_m_l = -1;
+    int num_sub = 0;
+    const char* where_str = subj.begin;
+
+    vstr_t *vstr_return = vstr_new(0);
+    for (;;) {
+        mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char*, caps_num);
+        // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
+        memset((char*)match->caps, 0, caps_num * sizeof(char*));
+        int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, false);
+
+        // if we didn't have a match, or had an empty match, it's time to stop
+        if (!res || match->caps[0] == match->caps[1]) {
+            break;
+        }
+
+        // process match
+
+        match->base.type = &match_type;
+        match->num_matches = caps_num / 2; // caps_num counts start and end pointers
+        match->str = where;
+
+        const char* replace_str = mp_obj_str_get_str((mp_obj_is_callable(replace) ? mp_call_function_1(replace, MP_OBJ_FROM_PTR(match)) : replace));
+
+        // add pre-match string
+        pre_m_l = (match->caps[0] - subj.begin);
+        if (pre_m_l != -1) {
+            vstr_add_strn(vstr_return, subj.begin, pre_m_l);
+        }
+
+        vstr_t *vstr_repl = vstr_new(0);
+        vstr_add_str(vstr_repl, replace_str);
+        const char *repl_p = vstr_null_terminated_str(vstr_repl);
+        do {
+            const char *group = NULL, *start_group = NULL, *end_group = NULL;
+            int match_no = -1, is_group_number = -1;
+            if (*repl_p == '\\') {
+                start_group = repl_p;
+                group = ++repl_p;
+
+                if (*group != 0 && *group == 'g') {
+                    // search group with syntax "\g<number>"
+                    const char *left_angle_bracket = ++group;
+                    if (left_angle_bracket != 0 && *left_angle_bracket == '<') {
+                        const char *value = ++left_angle_bracket;
+                        if (value != 0) {
+                            if (unichar_isalpha(*value)) {
+                                mp_raise_NotImplementedError("group with syntax \"\\g<name>\"");
+                            }
+
+                            int value_l = str_to_int(value, &match_no);
+                            if (match_no == -1) {
+                                nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "missing group number"));
+                            }
+
+                            const char *right_angle_bracket = value += value_l;
+                            if (right_angle_bracket != 0 && *right_angle_bracket == '>' && match_no < match->num_matches) {
+                                is_group_number = 1;
+                                end_group = value + 1;
+                            }
+                        }
+                    }
+                } else if (group != 0 && unichar_isdigit(*group)) {
+                    // search group with syntax "\number"
+                    const char *value = group;
+                    int value_l = str_to_int(value, &match_no);
+                    if (match_no > -1 && match_no < match->num_matches) {
+                        is_group_number = 0;
+                        end_group = value += value_l;
+                    }
+                }
+
+                if (match_no > -1 && is_group_number > -1 && start_group != NULL && end_group != NULL) {
+                    const char *start_match = match->caps[match_no * 2];
+                    if (start_match == NULL) {
+                        // no match for this group
+                        return where;
+                    }
+
+                    size_t mg_l = (match->caps[match_no * 2 + 1] - start_match);
+                    size_t gv_l = (end_group - start_group);
+
+                    if (gv_l < mg_l) {
+                        vstr_add_len(vstr_repl, (mg_l - gv_l));
+                        repl_p += gv_l;
+                    } else if (gv_l > mg_l) {
+                        vstr_cut_out_bytes(vstr_repl, (start_group - replace_str), (gv_l - mg_l));
+                        repl_p -= mg_l;
+                    }
+
+                    // replace the substring matched by group
+                    memmove((char *)(start_group + mg_l), (start_group + gv_l), strlen(start_group));
+                    memcpy((char *)(start_group), start_match, mg_l);
+                }
+            }
+        } while (*(++repl_p) != 0);
+
+        // add replace
+        vstr_add_str(vstr_return, vstr_str(vstr_repl));
+
+        // post-match string
+        post_m_l = (match->caps[1] - where_str);
+
+        vstr_free(vstr_repl);
+
+        num_sub++;
+
+        subj.begin = match->caps[1];
+        subj.end = subj.begin + strlen(match->caps[1]);
+
+        if (count > 0 && --count == 0) {
+            break;
+        }
+
+        m_del_var(mp_obj_match_t, char*, match->num_matches, match);
+    }
+
+    // add post-match string
+    if (post_m_l != -1) {
+        vstr_add_str(vstr_return, &where_str[post_m_l]);
+    }
+
+    const mp_obj_type_t *str_type = mp_obj_get_type(where);
+    return (!num_sub ? where : mp_obj_new_str_from_vstr(str_type, vstr_return));
+}
+
+STATIC mp_obj_t re_sub_helper(mp_obj_t self, size_t n_args, const mp_obj_t *args) {
+    mp_obj_t replace = args[1];
+    mp_obj_t where = args[2];
+    mp_int_t count = 0;
+    mp_int_t flags = 0;
+    if (n_args > 3) {
+        count = mp_obj_get_int(args[3]);
+        if (n_args > 4) {
+            flags = mp_obj_get_int(args[4]);
+        }
+    }
+    return ure_exec_sub(MP_OBJ_TO_PTR(self), replace, where, count, flags);
+}
+
+STATIC mp_obj_t re_sub(size_t n_args, const mp_obj_t *args) {
+    return re_sub_helper(args[0], n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_n_obj, 3, 5, re_sub);
+#endif
+
 STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
+    #if MICROPY_PY_URE_SUB
+    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_n_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -306,11 +481,23 @@ STATIC mp_obj_t mod_re_search(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 
+#if MICROPY_PY_URE_SUB
+STATIC mp_obj_t mod_re_sub(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t self = mod_re_compile(1, args);
+    return re_sub_helper(self, n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
+    #if MICROPY_PY_URE_SUB
+    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
+    { MP_ROM_QSTR(MP_QSTR_IGNORECASE), MP_ROM_INT(FLAG_IGNORECASE) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
 };
 
