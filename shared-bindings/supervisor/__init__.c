@@ -31,7 +31,7 @@
  #include "supervisor/shared/autoreload.h"
 
  #include "supervisor/shared/rgb_led_status.h"
- 
+
  #include "shared-bindings/supervisor/__init__.h"
  #include "shared-bindings/supervisor/Runtime.h"
 
@@ -107,6 +107,15 @@ STATIC mp_obj_t supervisor_reload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 
+//| .. method:: set_main_file(filename)
+//|
+//|   Set which file to run after a reload.
+//|
+STATIC mp_obj_t supervisor_set_main_file(void) {
+    
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(supervisor_set_main_file_obj, supervisor_set_main_file);
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
@@ -115,6 +124,8 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_main_file),  MP_ROM_PTR(&supervisor_set_main_file_obj) },
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

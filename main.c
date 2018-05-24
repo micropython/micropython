@@ -45,6 +45,7 @@
 
 #include "mpconfigboard.h"
 #include "supervisor/cpu.h"
+#include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 // TODO(tannewt): Figure out how to choose language at compile time.
@@ -73,11 +74,20 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
-static char heap[PORT_HEAP_SIZE];
-
-void reset_mp(void) {
+void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
+
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    mp_stack_ctrl_init();
+    mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
+
+#if MICROPY_MAX_STACK_USAGE
+    // _ezero (same as _ebss) is an int, so start 4 bytes above it.
+    mp_stack_set_bottom(&_ezero + 1);
+    mp_stack_fill_with_sentinel();
+#endif
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
     // as we re-init the GC all bets are off on the cache.
@@ -87,7 +97,7 @@ void reset_mp(void) {
     readline_init0();
 
     #if MICROPY_ENABLE_GC
-    gc_init(heap, heap + sizeof(heap));
+    gc_init(heap->ptr, heap->ptr + heap->length);
     #endif
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
@@ -99,6 +109,11 @@ void reset_mp(void) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 }
+
+void stop_mp(void) {
+
+}
+
 #define STRING_LIST(...) {__VA_ARGS__, ""}
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
@@ -124,7 +139,7 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     return true;
 }
 
-bool start_mp(safe_mode_t safe_mode) {
+bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
     if (serial_connected_at_start) {
@@ -155,7 +170,9 @@ bool start_mp(safe_mode_t safe_mode) {
         const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
         const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
-        reset_mp();
+
+        supervisor_allocation* heap = allocate_remaining_memory();
+        start_mp(heap);
         found_main = maybe_run_list(supported_filenames, &result);
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
@@ -163,6 +180,8 @@ bool start_mp(safe_mode_t safe_mode) {
                 serial_write(MSG_DOUBLE_FILE_EXTENSION);
             }
         }
+        stop_mp();
+        free_memory(heap);
 
         reset_port();
         reset_board();
@@ -306,26 +325,35 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         // Reset to remove any state that boot.py setup. It should only be used to
         // change internal state that's not in the heap.
         reset_port();
-        reset_mp();
     }
 }
 
+int run_repl(void) {
+    int exit_code = PYEXEC_FORCED_EXIT;
+    supervisor_allocation* heap = allocate_remaining_memory();
+    start_mp(heap);
+    autoreload_suspend();
+    new_status_color(REPL_RUNNING);
+    if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+        exit_code = pyexec_raw_repl();
+    } else {
+        exit_code = pyexec_friendly_repl();
+    }
+    reset_port();
+    reset_board();
+    stop_mp();
+    free_memory(heap);
+    autoreload_resume();
+    return exit_code;
+}
+
 int __attribute__((used)) main(void) {
+    memory_init();
+    
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
 
     rgb_led_status_init();
-
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_set_top((char*)&_estack);
-    mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
-
-#if MICROPY_MAX_STACK_USAGE
-    // _ezero (same as _ebss) is an int, so start 4 bytes above it.
-    mp_stack_set_bottom(&_ezero + 1);
-    mp_stack_fill_with_sentinel();
-#endif
 
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
@@ -335,7 +363,6 @@ int __attribute__((used)) main(void) {
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     reset_board();
-    reset_mp();
 
     // Turn on autoreload by default but before boot.py in case it wants to change it.
     autoreload_enable();
@@ -355,24 +382,14 @@ int __attribute__((used)) main(void) {
     bool first_run = true;
     for (;;) {
         if (!skip_repl) {
-            reset_mp();
-            autoreload_suspend();
-            new_status_color(REPL_RUNNING);
-            if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-                exit_code = pyexec_raw_repl();
-            } else {
-                exit_code = pyexec_friendly_repl();
-            }
-            autoreload_resume();
-            reset_port();
-            reset_board();
+            exit_code = run_repl();
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
                 serial_write(MSG_SOFT_REBOOT MSG_NEWLINE);
             }
             first_run = false;
-            skip_repl = start_mp(safe_mode);
+            skip_repl = run_code_py(safe_mode);
         } else if (exit_code != 0) {
             break;
         }

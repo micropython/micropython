@@ -1,5 +1,6 @@
 SRC_SUPERVISOR = \
 	main.c \
+	supervisor/memory.c \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/rgb_led_status.c
