@@ -26,6 +26,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/gc.h"
 #include "shared-module/gamepad/GamePad.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
@@ -108,6 +109,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
     if (!gamepad_singleton) {
         gamepad_singleton = m_new_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
+        gamepad_singleton = gc_make_long_lived(gamepad_singleton);
     }
     gamepad_init(n_args, args);
     return MP_OBJ_FROM_PTR(gamepad_singleton);
