@@ -40,7 +40,6 @@
 #include "re1.5/re1.5.h"
 
 #define FLAG_DEBUG 0x1000
-#define FLAG_IGNORECASE 0x0100
 
 typedef struct _mp_obj_re_t {
     mp_obj_base_t base;
@@ -263,13 +262,9 @@ STATIC int str_to_int(const char *str, int *num) {
     return s - str;
 }
 
-STATIC mp_obj_t ure_exec_sub(mp_obj_re_t *self, mp_obj_t replace, mp_obj_t where, mp_int_t count, mp_int_t flags) {
+STATIC mp_obj_t ure_exec_sub(mp_obj_re_t *self, mp_obj_t replace, mp_obj_t where, mp_int_t count) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(where, &bufinfo, MP_BUFFER_READ);
-    bool debug = (flags & FLAG_DEBUG);
-    (void)debug;
-    bool ignorecase = (flags & FLAG_IGNORECASE);
-    (void)ignorecase;
     Subject subj;
     subj.begin = bufinfo.buf;
     subj.end = subj.begin + bufinfo.len;
@@ -404,14 +399,11 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self, size_t n_args, const mp_obj_t *args
     mp_obj_t replace = args[1];
     mp_obj_t where = args[2];
     mp_int_t count = 0;
-    mp_int_t flags = 0;
     if (n_args > 3) {
         count = mp_obj_get_int(args[3]);
-        if (n_args > 4) {
-            flags = mp_obj_get_int(args[4]);
-        }
+        // Note: flags are currently ignored
     }
-    return ure_exec_sub(MP_OBJ_TO_PTR(self), replace, where, count, flags);
+    return ure_exec_sub(MP_OBJ_TO_PTR(self), replace, where, count);
 }
 
 STATIC mp_obj_t re_sub(size_t n_args, const mp_obj_t *args) {
@@ -496,7 +488,6 @@ STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
     #if MICROPY_PY_URE_SUB
     { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
-    { MP_ROM_QSTR(MP_QSTR_IGNORECASE), MP_ROM_INT(FLAG_IGNORECASE) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
 };
