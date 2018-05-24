@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -35,6 +36,7 @@
 #include "nvs_flash.h"
 #include "esp_task.h"
 #include "soc/cpu.h"
+#include "esp_log.h"
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
@@ -57,6 +59,11 @@
 
 STATIC StaticTask_t mp_task_tcb;
 STATIC StackType_t mp_task_stack[MP_TASK_STACK_LEN] __attribute__((aligned (8)));
+
+int vprintf_null(const char *format, va_list ap) {
+    // do nothing: this is used as a log target during raw repl mode
+    return 0;
+}
 
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)get_sp();
@@ -93,9 +100,11 @@ soft_reset:
 
     for (;;) {
         if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            vprintf_like_t vprintf_log = esp_log_set_vprintf(vprintf_null);
             if (pyexec_raw_repl() != 0) {
                 break;
             }
+            esp_log_set_vprintf(vprintf_log);
         } else {
             if (pyexec_friendly_repl() != 0) {
                 break;

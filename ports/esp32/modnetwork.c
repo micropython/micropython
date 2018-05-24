@@ -139,24 +139,26 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         // This is a workaround as ESP32 WiFi libs don't currently
         // auto-reassociate.
         system_event_sta_disconnected_t *disconn = &event->event_info.disconnected;
-        ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d", disconn->reason);
+        char *message = "";
         switch (disconn->reason) {
             case WIFI_REASON_BEACON_TIMEOUT:
-                mp_printf(MP_PYTHON_PRINTER, "beacon timeout\n");
                 // AP has dropped out; try to reconnect.
+                message = "\nbeacon timeout";
                 break;
             case WIFI_REASON_NO_AP_FOUND:
-                mp_printf(MP_PYTHON_PRINTER, "no AP found\n");
                 // AP may not exist, or it may have momentarily dropped out; try to reconnect.
+                message = "\nno AP found";
                 break;
             case WIFI_REASON_AUTH_FAIL:
-                mp_printf(MP_PYTHON_PRINTER, "authentication failed\n");
+                message = "\nauthentication failed";
                 wifi_sta_connected = false;
                 break;
             default:
                 // Let other errors through and try to reconnect.
                 break;
         }
+        ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
+
         if (wifi_sta_connected) {
             wifi_mode_t mode;
             if (esp_wifi_get_mode(&mode) == ESP_OK) {
@@ -164,7 +166,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                     // STA is active so attempt to reconnect.
                     esp_err_t e = esp_wifi_connect();
                     if (e != ESP_OK) {
-                        mp_printf(MP_PYTHON_PRINTER, "error attempting to reconnect: 0x%04x", e);
+                        ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
                     }
                 }
             }
