@@ -3,6 +3,12 @@ try:
 except ImportError:
     import re
 
+try:
+    re.sub
+except AttributeError:
+    print('SKIP')
+    raise SystemExit
+
 
 def multiply(m):
     return str(int(m.group(0)) * 2)
