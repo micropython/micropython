@@ -192,12 +192,6 @@ safe_mode_t port_init(void) {
     tick_init();
     rtc_init();
 
-    // Init the nvm controller.
-    // struct nvm_config config_nvm;
-    // nvm_get_config_defaults(&config_nvm);
-    // config_nvm.manual_page_write = false;
-    // nvm_set_config(&config_nvm);
-
     init_shared_dma();
     #ifdef CIRCUITPY_CANARY_WORD
     // Run in safe mode if the canary is corrupt.
