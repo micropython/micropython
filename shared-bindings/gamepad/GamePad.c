@@ -27,13 +27,13 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+#include "py/mpstate.h"
+#include "shared-module/gamepad/__init__.h"
 #include "shared-module/gamepad/GamePad.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 #include "GamePad.h"
 
-
-gamepad_obj_t* gamepad_singleton = NULL;
 
 //| .. currentmodule:: gamepad
 //|
@@ -106,13 +106,13 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
         raise_error_if_deinited(
             common_hal_digitalio_digitalinout_deinited(pin));
     }
-    if (!gamepad_singleton) {
-        gamepad_singleton = m_new_obj(gamepad_obj_t);
+    if (!MP_STATE_VM(gamepad_singleton)) {
+        gamepad_obj_t* gamepad_singleton = m_new_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
-        gamepad_singleton = gc_make_long_lived(gamepad_singleton);
+        MP_STATE_VM(gamepad_singleton) = gc_make_long_lived(gamepad_singleton);
     }
     gamepad_init(n_args, args);
-    return MP_OBJ_FROM_PTR(gamepad_singleton);
+    return MP_OBJ_FROM_PTR(MP_STATE_VM(gamepad_singleton));
 }
 
 
@@ -127,6 +127,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
 //|         held down) can be recorded for the next call.
 //|
 STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
+    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     mp_obj_t gamepad = MP_OBJ_NEW_SMALL_INT(gamepad_singleton->pressed);
     gamepad_singleton->pressed = 0;
     return gamepad;
@@ -139,14 +140,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
 //|         Disable button scanning.
 //|
 STATIC mp_obj_t gamepad_deinit(mp_obj_t self_in) {
-    gamepad_singleton = NULL;
+    gamepad_reset();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_deinit_obj, gamepad_deinit);
 
 
-STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
-        size_t n_kw, const mp_obj_t *args);
 STATIC const mp_rom_map_elem_t gamepad_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_get_pressed),  MP_ROM_PTR(&gamepad_get_pressed_obj)},
     { MP_OBJ_NEW_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&gamepad_deinit_obj)},
