@@ -101,10 +101,57 @@ MP_DEFINE_CONST_FUN_OBJ_1(match_groups_obj, match_groups);
 
 #endif
 
+#if MICROPY_PY_URE_MATCH_SPAN_START_END
+
+STATIC mp_obj_t match_span(size_t n_args, const mp_obj_t *args) {
+    mp_obj_match_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    mp_int_t no = 0;
+    if (n_args == 2) {
+        no = mp_obj_get_int(args[1]);
+        if (no < 0 || no >= self->num_matches) {
+            nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, args[1]));
+        }
+    }
+
+    mp_int_t s = -1;
+    mp_int_t e = -1;
+    const char *start = self->caps[no * 2];
+    if (start != NULL) {
+        // have a match for this group
+        const char *begin = mp_obj_str_get_str(self->str);
+        s = start - begin;
+        e = self->caps[no * 2 + 1] - begin;
+    }
+
+    mp_obj_t tuple[2] = {mp_obj_new_int(s), mp_obj_new_int(e)};
+    return mp_obj_new_tuple(2, tuple);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_span_obj, 1, 2, match_span);
+
+STATIC mp_obj_t match_start(size_t n_args, const mp_obj_t *args) {
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(match_span(n_args, args));
+    return tuple->items[0];
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_start_obj, 1, 2, match_start);
+
+STATIC mp_obj_t match_end(size_t n_args, const mp_obj_t *args) {
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(match_span(n_args, args));
+    return tuple->items[1];
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_end_obj, 1, 2, match_end);
+
+#endif
+
 STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
     #if MICROPY_PY_URE_MATCH_GROUPS
     { MP_ROM_QSTR(MP_QSTR_groups), MP_ROM_PTR(&match_groups_obj) },
+    #endif
+    #if MICROPY_PY_URE_MATCH_SPAN_START_END
+    { MP_ROM_QSTR(MP_QSTR_span), MP_ROM_PTR(&match_span_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&match_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_end), MP_ROM_PTR(&match_end_obj) },
     #endif
 };
 
