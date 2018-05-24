@@ -249,10 +249,127 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
+#if MICROPY_PY_URE_SUB
+
+STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *args) {
+    mp_obj_re_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t replace = args[1];
+    mp_obj_t where = args[2];
+    mp_int_t count = 0;
+    if (n_args > 3) {
+        count = mp_obj_get_int(args[3]);
+        // Note: flags are currently ignored
+    }
+
+    size_t where_len;
+    const char *where_str = mp_obj_str_get_data(where, &where_len);
+    Subject subj;
+    subj.begin = where_str;
+    subj.end = subj.begin + where_len;
+    int caps_num = (self->re.sub + 1) * 2;
+
+    vstr_t vstr_return;
+    vstr_return.buf = NULL; // We'll init the vstr after the first match
+    mp_obj_match_t *match = mp_local_alloc(sizeof(mp_obj_match_t) + caps_num * sizeof(char*));
+    match->base.type = &match_type;
+    match->num_matches = caps_num / 2; // caps_num counts start and end pointers
+    match->str = where;
+
+    for (;;) {
+        // cast is a workaround for a bug in msvc: it treats const char** as a const pointer instead of a pointer to pointer to const char
+        memset((char*)match->caps, 0, caps_num * sizeof(char*));
+        int res = re1_5_recursiveloopprog(&self->re, &subj, match->caps, caps_num, false);
+
+        // If we didn't have a match, or had an empty match, it's time to stop
+        if (!res || match->caps[0] == match->caps[1]) {
+            break;
+        }
+
+        // Initialise the vstr if it's not already
+        if (vstr_return.buf == NULL) {
+            vstr_init(&vstr_return, match->caps[0] - subj.begin);
+        }
+
+        // Add pre-match string
+        vstr_add_strn(&vstr_return, subj.begin, match->caps[0] - subj.begin);
+
+        // Get replacement string
+        const char* repl = mp_obj_str_get_str((mp_obj_is_callable(replace) ? mp_call_function_1(replace, MP_OBJ_FROM_PTR(match)) : replace));
+
+        // Append replacement string to result, substituting any regex groups
+        while (*repl != '\0') {
+            if (*repl == '\\') {
+                ++repl;
+                bool is_g_format = false;
+                if (*repl == 'g' && repl[1] == '<') {
+                    // Group specified with syntax "\g<number>"
+                    repl += 2;
+                    is_g_format = true;
+                }
+
+                if ('0' <= *repl && *repl <= '9') {
+                    // Group specified with syntax "\g<number>" or "\number"
+                    unsigned int match_no = 0;
+                    do {
+                        match_no = match_no * 10 + (*repl++ - '0');
+                    } while ('0' <= *repl && *repl <= '9');
+                    if (is_g_format && *repl == '>') {
+                        ++repl;
+                    }
+
+                    if (match_no >= (unsigned int)match->num_matches) {
+                        nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, MP_OBJ_NEW_SMALL_INT(match_no)));
+                    }
+
+                    const char *start_match = match->caps[match_no * 2];
+                    if (start_match != NULL) {
+                        // Add the substring matched by group
+                        const char *end_match = match->caps[match_no * 2 + 1];
+                        vstr_add_strn(&vstr_return, start_match, end_match - start_match);
+                    }
+                }
+            } else {
+                // Just add the current byte from the replacement string
+                vstr_add_byte(&vstr_return, *repl++);
+            }
+        }
+
+        // Move start pointer to end of last match
+        subj.begin = match->caps[1];
+
+        // Stop substitutions if count was given and gets to 0
+        if (count > 0 && --count == 0) {
+            break;
+        }
+    }
+
+    mp_local_free(match);
+
+    if (vstr_return.buf == NULL) {
+        // Optimisation for case of no substitutions
+        return where;
+    }
+
+    // Add post-match string
+    vstr_add_strn(&vstr_return, subj.begin, subj.end - subj.begin);
+
+    return mp_obj_new_str_from_vstr(mp_obj_get_type(where), &vstr_return);
+}
+
+STATIC mp_obj_t re_sub(size_t n_args, const mp_obj_t *args) {
+    return re_sub_helper(args[0], n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub);
+
+#endif
+
 STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
+    #if MICROPY_PY_URE_SUB
+    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&re_sub_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
@@ -307,11 +424,22 @@ STATIC mp_obj_t mod_re_search(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_search_obj, 2, 4, mod_re_search);
 
+#if MICROPY_PY_URE_SUB
+STATIC mp_obj_t mod_re_sub(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t self = mod_re_compile(1, args);
+    return re_sub_helper(self, n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_sub_obj, 3, 5, mod_re_sub);
+#endif
+
 STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ure) },
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&mod_re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&mod_re_search_obj) },
+    #if MICROPY_PY_URE_SUB
+    { MP_ROM_QSTR(MP_QSTR_sub), MP_ROM_PTR(&mod_re_sub_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_DEBUG), MP_ROM_INT(FLAG_DEBUG) },
 };
 
