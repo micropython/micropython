@@ -87,13 +87,10 @@
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busio) },
-    { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&busio_spi_type) },
-// a pIRKey does not need these. Remove them to make room for frozen modules.
-#ifndef PIRKEY_M0
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&busio_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&busio_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&busio_onewire_type) },
     { MP_ROM_QSTR(MP_QSTR_UART),   MP_ROM_PTR(&busio_uart_type) },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(busio_module_globals, busio_module_globals_table);
