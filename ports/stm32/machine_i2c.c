@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2016-2018 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,386 +37,7 @@
 
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 
-#if defined(STM32F4)
-
-// F4xx specific driver for I2C hardware peripheral
-// The hardware-specific I2C code below is based heavily on the code from
-// V1.5.2 of the STM32 CUBE F4 HAL.  Its copyright notice is given here.
-/*
-* COPYRIGHT(c) 2016 STMicroelectronics
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*   1. Redistributions of source code must retain the above copyright notice,
-*      this list of conditions and the following disclaimer.
-*   2. Redistributions in binary form must reproduce the above copyright notice,
-*      this list of conditions and the following disclaimer in the documentation
-*      and/or other materials provided with the distribution.
-*   3. Neither the name of STMicroelectronics nor the names of its contributors
-*      may be used to endorse or promote products derived from this software
-*      without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-typedef struct _machine_hard_i2c_obj_t {
-    mp_obj_base_t base;
-    const pyb_i2c_obj_t *pyb;
-    uint32_t *timeout;
-} machine_hard_i2c_obj_t;
-
-STATIC uint32_t machine_hard_i2c_timeout[4];
-
-STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
-    {{&machine_hard_i2c_type}, &pyb_i2c_obj[0], &machine_hard_i2c_timeout[0]},
-    {{&machine_hard_i2c_type}, &pyb_i2c_obj[1], &machine_hard_i2c_timeout[1]},
-    {{&machine_hard_i2c_type}, &pyb_i2c_obj[2], &machine_hard_i2c_timeout[2]},
-    {{&machine_hard_i2c_type}, &pyb_i2c_obj[3], &machine_hard_i2c_timeout[3]},
-};
-
-STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u, timeout=%u)",
-        self - &machine_hard_i2c_obj[0] + 1,
-        pyb_i2c_get_baudrate(self->pyb->i2c),
-        *self->timeout);
-}
-
-STATIC void machine_hard_i2c_init(const machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
-    *self->timeout = timeout;
-    pyb_i2c_init_freq(self->pyb, freq);
-}
-
-// this function is based on STM code
-STATIC bool I2C_IsAcknowledgeFailed(I2C_HandleTypeDef *hi2c) {
-    if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET) {
-        /* Clear NACKF Flag */
-        __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
-        return true;
-    }
-    return false;
-}
-
-// this function is based on STM code
-STATIC bool I2C_WaitOnFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Flag, FlagStatus Status, uint32_t Timeout, uint32_t Tickstart) {
-    /* Wait until flag is set */
-    while ((__HAL_I2C_GET_FLAG(hi2c, Flag) ? SET : RESET) == Status) {
-        if (Timeout != HAL_MAX_DELAY) {
-            if ((Timeout == 0U)||((HAL_GetTick() - Tickstart ) > Timeout)) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-// this function is based on STM code
-STATIC int I2C_WaitOnRXNEFlagUntilTimeout(I2C_HandleTypeDef *hi2c, uint32_t Timeout, uint32_t Tickstart) {
-    while (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_RXNE) == RESET) {
-        /* Check if a STOPF is detected */
-        if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_STOPF) == SET) {
-            /* Clear STOP Flag */
-            __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_STOPF);
-            return -MP_EBUSY;
-        }
-
-        /* Check for the Timeout */
-        if ((Timeout == 0U) || ((HAL_GetTick()-Tickstart) > Timeout)) {
-            return -MP_ETIMEDOUT;
-        }
-    }
-    return 0;
-}
-
-// this function is based on STM code
-STATIC int send_addr_byte(I2C_HandleTypeDef *hi2c, uint8_t addr_byte, uint32_t Timeout, uint32_t Tickstart) {
-    /* Generate Start */
-    hi2c->Instance->CR1 |= I2C_CR1_START;
-
-    /* Wait until SB flag is set */
-    if (!I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_SB, RESET, Timeout, Tickstart)) {
-        return -MP_ETIMEDOUT;
-    }
-
-    /* Send slave address */
-    hi2c->Instance->DR = addr_byte;
-
-    /* Wait until ADDR flag is set */
-    while (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_ADDR) == RESET) {
-        if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_AF) == SET) {
-            // nack received for addr, release the bus cleanly
-            hi2c->Instance->CR1 |= I2C_CR1_STOP;
-            __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
-            return -MP_ENODEV;
-        }
-
-        /* Check for the Timeout */
-        if (Timeout != HAL_MAX_DELAY) {
-            if ((Timeout == 0U)||((HAL_GetTick() - Tickstart ) > Timeout)) {
-                return -MP_ETIMEDOUT;
-            }
-        }
-    }
-
-    return 0;
-}
-
-// this function is based on STM code
-int machine_hard_i2c_readfrom(mp_obj_base_t *self_in, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
-    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t*)self_in;
-    I2C_HandleTypeDef *hi2c = self->pyb->i2c;
-    uint32_t Timeout = *self->timeout;
-
-    /* Init tickstart for timeout management*/
-    uint32_t tickstart = HAL_GetTick();
-
-#if 0
-    // TODO: for multi-master, here we could wait for the bus to be free
-    // we'd need a flag to tell if we were in the middle of a set of transactions
-    // (ie didn't send a stop bit in the last call)
-    /* Wait until BUSY flag is reset */
-    if (!I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_BUSY, SET, I2C_TIMEOUT_BUSY_FLAG, tickstart)) {
-        return -MP_EBUSY;
-    }
-#endif
-
-    /* Check if the I2C is already enabled */
-    if ((hi2c->Instance->CR1 & I2C_CR1_PE) != I2C_CR1_PE) {
-        /* Enable I2C peripheral */
-        __HAL_I2C_ENABLE(hi2c);
-    }
-
-    /* Disable Pos */
-    hi2c->Instance->CR1 &= ~I2C_CR1_POS;
-
-    /* Enable Acknowledge */
-    hi2c->Instance->CR1 |= I2C_CR1_ACK;
-
-    /* Send Slave Address */
-    int ret = send_addr_byte(hi2c, I2C_7BIT_ADD_READ(addr << 1), Timeout, tickstart);
-    if (ret != 0) {
-        return ret;
-    }
-
-    if (len == 0U) {
-        /* Clear ADDR flag */
-        __HAL_I2C_CLEAR_ADDRFLAG(hi2c);
-
-        /* Generate Stop */
-        if (stop) {
-            hi2c->Instance->CR1 |= I2C_CR1_STOP;
-        }
-    } else if (len == 1U) {
-        /* Disable Acknowledge */
-        hi2c->Instance->CR1 &= ~I2C_CR1_ACK;
-
-        /* Clear ADDR flag */
-        __HAL_I2C_CLEAR_ADDRFLAG(hi2c);
-
-        /* Generate Stop */
-        if (stop) {
-            hi2c->Instance->CR1 |= I2C_CR1_STOP;
-        }
-    } else if (len == 2U) {
-        /* Disable Acknowledge */
-        hi2c->Instance->CR1 &= ~I2C_CR1_ACK;
-
-        /* Enable Pos */
-        hi2c->Instance->CR1 |= I2C_CR1_POS;
-
-        /* Clear ADDR flag */
-        __HAL_I2C_CLEAR_ADDRFLAG(hi2c);
-    } else {
-        /* Enable Acknowledge */
-        hi2c->Instance->CR1 |= I2C_CR1_ACK;
-
-        /* Clear ADDR flag */
-        __HAL_I2C_CLEAR_ADDRFLAG(hi2c);
-    }
-
-    while (len > 0U) {
-        if (len <= 3U) {
-            if (len == 1U) {
-                /* Wait until RXNE flag is set */
-                int ret = I2C_WaitOnRXNEFlagUntilTimeout(hi2c, Timeout, tickstart);
-                if (ret != 0) {
-                    return ret;
-                }
-
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-            } else if (len == 2U) {
-                /* Wait until BTF flag is set */
-                if (!I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_BTF, RESET, Timeout, tickstart)) {
-                  return -MP_ETIMEDOUT;
-                }
-
-                /* Generate Stop */
-                if (stop) {
-                    hi2c->Instance->CR1 |= I2C_CR1_STOP;
-                }
-
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-            } else {
-                /* Wait until BTF flag is set */
-                if (!I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_BTF, RESET, Timeout, tickstart)) {
-                  return -MP_ETIMEDOUT;
-                }
-
-                /* Disable Acknowledge */
-                hi2c->Instance->CR1 &= ~I2C_CR1_ACK;
-
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-
-                /* Wait until BTF flag is set */
-                if (!I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_BTF, RESET, Timeout, tickstart)) {
-                    return -MP_ETIMEDOUT;
-                }
-
-                /* Generate Stop */
-                if (stop) {
-                    hi2c->Instance->CR1 |= I2C_CR1_STOP;
-                }
-
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-            }
-        } else {
-            /* Wait until RXNE flag is set */
-            int ret = I2C_WaitOnRXNEFlagUntilTimeout(hi2c, Timeout, tickstart);
-            if (ret != 0) {
-                return ret;
-            }
-
-            /* Read data from DR */
-            *dest++ = hi2c->Instance->DR;
-            len--;
-
-            if (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BTF) == SET) {
-                /* Read data from DR */
-                *dest++ = hi2c->Instance->DR;
-                len--;
-            }
-        }
-    }
-
-    return 0;
-}
-
-// this function is based on STM code
-int machine_hard_i2c_writeto(mp_obj_base_t *self_in, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
-    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t*)self_in;
-    I2C_HandleTypeDef *hi2c = self->pyb->i2c;
-    uint32_t Timeout = *self->timeout;
-
-    /* Init tickstart for timeout management*/
-    uint32_t tickstart = HAL_GetTick();
-
-#if 0
-    // TODO: for multi-master, here we could wait for the bus to be free
-    // we'd need a flag to tell if we were in the middle of a set of transactions
-    // (ie didn't send a stop bit in the last call)
-    /* Wait until BUSY flag is reset */
-    if (!I2C_WaitOnFlagUntilTimeout(hi2c, I2C_FLAG_BUSY, SET, I2C_TIMEOUT_BUSY_FLAG, tickstart)) {
-        return -MP_EBUSY;
-    }
-#endif
-
-    /* Check if the I2C is already enabled */
-    if ((hi2c->Instance->CR1 & I2C_CR1_PE) != I2C_CR1_PE) {
-        /* Enable I2C peripheral */
-        __HAL_I2C_ENABLE(hi2c);
-    }
-
-    /* Disable Pos */
-    hi2c->Instance->CR1 &= ~I2C_CR1_POS;
-
-    /* Send Slave Address */
-    int ret = send_addr_byte(hi2c, I2C_7BIT_ADD_WRITE(addr << 1), Timeout, tickstart);
-    if (ret != 0) {
-        return ret;
-    }
-
-    /* Clear ADDR flag */
-    __HAL_I2C_CLEAR_ADDRFLAG(hi2c);
-
-    int num_acks = 0;
-
-    while (len > 0U) {
-        /* Wait until TXE flag is set */
-        while (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_TXE) == RESET) {
-            /* Check if a NACK is detected */
-            if (I2C_IsAcknowledgeFailed(hi2c)) {
-                goto nack;
-            }
-
-            /* Check for the Timeout */
-            if (Timeout != HAL_MAX_DELAY) {
-                if ((Timeout == 0U) || ((HAL_GetTick()-tickstart) > Timeout)) {
-                    goto timeout;
-                }
-            }
-        }
-
-        /* Write data to DR */
-        hi2c->Instance->DR = *src++;
-        len--;
-
-        /* Wait until BTF flag is set */
-        while (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_BTF) == RESET) {
-            /* Check if a NACK is detected */
-            if (I2C_IsAcknowledgeFailed(hi2c)) {
-                goto nack;
-            }
-
-            /* Check for the Timeout */
-            if (Timeout != HAL_MAX_DELAY) {
-                if ((Timeout == 0U) || ((HAL_GetTick()-tickstart) > Timeout)) {
-                    goto timeout;
-                }
-            }
-        }
-        ++num_acks;
-    }
-nack:
-
-    /* Generate Stop */
-    if (stop) {
-        hi2c->Instance->CR1 |= I2C_CR1_STOP;
-    }
-
-    return num_acks;
-
-timeout:
-    // timeout, release the bus cleanly
-    hi2c->Instance->CR1 |= I2C_CR1_STOP;
-    return -MP_ETIMEDOUT;
-}
-
-#elif defined(STM32F7)
+#if defined(STM32F4) || defined(STM32F7)
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
@@ -450,6 +71,26 @@ STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
 
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    #if defined(STM32F4)
+
+    uint32_t freq = self->i2c->CR2 & 0x3f;
+    uint32_t ccr = self->i2c->CCR;
+    if (ccr & 0x8000) {
+        // Fast mode, assume duty cycle of 16/9
+        freq = freq * 40000 / (ccr & 0xfff);
+    } else {
+        // Standard mode
+        freq = freq * 500000 / (ccr & 0xfff);
+    }
+
+    mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u)",
+        self - &machine_hard_i2c_obj[0] + 1,
+        mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
+        freq);
+
+    #else
+
     uint32_t timingr = self->i2c->TIMINGR;
     uint32_t presc = timingr >> 28;
     uint32_t sclh = timingr >> 8 & 0xff;
@@ -459,6 +100,8 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
         self - &machine_hard_i2c_obj[0] + 1,
         mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda),
         freq, timingr);
+
+    #endif
 }
 
 void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {

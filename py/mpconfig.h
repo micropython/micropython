@@ -802,6 +802,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (0)
 #endif
 
+// Whether to support rounding of integers (incl bignum); eg round(123,-1)=120
+#ifndef MICROPY_PY_BUILTINS_ROUND_INT
+#define MICROPY_PY_BUILTINS_ROUND_INT (0)
+#endif
+
 // Whether to support timeout exceptions (like socket.timeout)
 #ifndef MICROPY_PY_BUILTINS_TIMEOUTERROR
 #define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
@@ -1256,28 +1261,25 @@ typedef double mp_float_t;
 #elif defined(MP_ENDIANNESS_BIG)
 #define MP_ENDIANNESS_LITTLE (!MP_ENDIANNESS_BIG)
 #else
-  // Endiannes not defined by port so try to autodetect it.
+  // Endianness not defined by port so try to autodetect it.
   #if defined(__BYTE_ORDER__)
     #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       #define MP_ENDIANNESS_LITTLE (1)
-    #else
+    #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
       #define MP_ENDIANNESS_LITTLE (0)
     #endif
-  #elif defined(__LITTLE_ENDIAN__) || defined(__LITTLE_ENDIAN) || defined (_LITTLE_ENDIAN)
-    #define MP_ENDIANNESS_LITTLE (1)
-  #elif defined(__BIG_ENDIAN__) || defined(__BIG_ENDIAN) || defined (_BIG_ENDIAN)
-    #define MP_ENDIANNESS_LITTLE (0)
   #else
     #include <endian.h>
       #if defined(__BYTE_ORDER)
         #if __BYTE_ORDER == __LITTLE_ENDIAN
           #define MP_ENDIANNESS_LITTLE (1)
-        #else
+        #elif __BYTE_ORDER == __BIG_ENDIAN
           #define MP_ENDIANNESS_LITTLE (0)
         #endif
-      #else
-        #error endianness not defined and cannot detect it
       #endif
+  #endif
+  #ifndef MP_ENDIANNESS_LITTLE
+    #error endianness not defined and cannot detect it
   #endif
   #define MP_ENDIANNESS_BIG (!MP_ENDIANNESS_LITTLE)
 #endif

@@ -837,6 +837,16 @@ STATIC void emit_native_import_star(emit_t *emit) {
     emit_post(emit);
 }
 
+STATIC void emit_native_import(emit_t *emit, qstr qst, int kind) {
+    if (kind == MP_EMIT_IMPORT_NAME) {
+        emit_native_import_name(emit, qst);
+    } else if (kind == MP_EMIT_IMPORT_FROM) {
+        emit_native_import_from(emit, qst);
+    } else {
+        emit_native_import_star(emit);
+    }
+}
+
 STATIC void emit_native_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
     DEBUG_printf("load_const_tok(tok=%u)\n", tok);
     emit_native_pre(emit);
@@ -938,33 +948,47 @@ STATIC void emit_native_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) 
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
-STATIC void emit_native_load_name(emit_t *emit, qstr qst) {
-    DEBUG_printf("load_name(%s)\n", qstr_str(qst));
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_LOAD_NAME, qst, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+STATIC void emit_native_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST) {
+        emit_native_load_fast(emit, qst, local_num);
+    } else {
+        emit_native_load_deref(emit, qst, local_num);
+    }
 }
 
-STATIC void emit_native_load_global(emit_t *emit, qstr qst) {
-    DEBUG_printf("load_global(%s)\n", qstr_str(qst));
+STATIC void emit_native_load_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_F_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_LOAD_NAME);
+    MP_STATIC_ASSERT(MP_F_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_LOAD_GLOBAL);
     emit_native_pre(emit);
-    // check for builtin casting operators
-    if (emit->do_viper_types && qst == MP_QSTR_int) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_INT);
-    } else if (emit->do_viper_types && qst == MP_QSTR_uint) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_UINT);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr8) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR8);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr16) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR16);
-    } else if (emit->do_viper_types && qst == MP_QSTR_ptr32) {
-        emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR32);
+    if (kind == MP_EMIT_IDOP_GLOBAL_NAME) {
+        DEBUG_printf("load_name(%s)\n", qstr_str(qst));
     } else {
-        emit_call_with_imm_arg(emit, MP_F_LOAD_GLOBAL, qst, REG_ARG_1);
-        emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
+        DEBUG_printf("load_global(%s)\n", qstr_str(qst));
+        if (emit->do_viper_types) {
+            // check for builtin casting operators
+            if (qst == MP_QSTR_int) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_INT);
+                return;
+            } else if (qst == MP_QSTR_uint) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_UINT);
+                return;
+            } else if (qst == MP_QSTR_ptr) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR);
+                return;
+            } else if (qst == MP_QSTR_ptr8) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR8);
+                return;
+            } else if (qst == MP_QSTR_ptr16) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR16);
+                return;
+            } else if (qst == MP_QSTR_ptr32) {
+                emit_post_push_imm(emit, VTYPE_BUILTIN_CAST, VTYPE_PTR32);
+                return;
+            }
+        }
     }
+    emit_call_with_imm_arg(emit, MP_F_LOAD_NAME + kind, qst, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
 STATIC void emit_native_load_attr(emit_t *emit, qstr qst) {
@@ -1178,25 +1202,33 @@ STATIC void emit_native_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num)
     emit_post(emit);
 }
 
-STATIC void emit_native_store_name(emit_t *emit, qstr qst) {
-    // mp_store_name, but needs conversion of object (maybe have mp_viper_store_name(obj, type))
-    vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
-    assert(vtype == VTYPE_PYOBJ);
-    emit_call_with_imm_arg(emit, MP_F_STORE_NAME, qst, REG_ARG_1); // arg1 = name
-    emit_post(emit);
+STATIC void emit_native_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST) {
+        emit_native_store_fast(emit, qst, local_num);
+    } else {
+        emit_native_store_deref(emit, qst, local_num);
+    }
 }
 
-STATIC void emit_native_store_global(emit_t *emit, qstr qst) {
-    vtype_kind_t vtype = peek_vtype(emit, 0);
-    if (vtype == VTYPE_PYOBJ) {
+STATIC void emit_native_store_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_F_STORE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_STORE_NAME);
+    MP_STATIC_ASSERT(MP_F_STORE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_STORE_GLOBAL);
+    if (kind == MP_EMIT_IDOP_GLOBAL_NAME) {
+        // mp_store_name, but needs conversion of object (maybe have mp_viper_store_name(obj, type))
+        vtype_kind_t vtype;
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+        assert(vtype == VTYPE_PYOBJ);
     } else {
-        emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
-        emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype, REG_ARG_2); // arg2 = type
-        ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
+        vtype_kind_t vtype = peek_vtype(emit, 0);
+        if (vtype == VTYPE_PYOBJ) {
+            emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
+        } else {
+            emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
+            emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype, REG_ARG_2); // arg2 = type
+            ASM_MOV_REG_REG(emit->as, REG_ARG_2, REG_RET);
+        }
     }
-    emit_call_with_imm_arg(emit, MP_F_STORE_GLOBAL, qst, REG_ARG_1); // arg1 = name
+    emit_call_with_imm_arg(emit, MP_F_STORE_NAME + kind, qst, REG_ARG_1); // arg1 = name
     emit_post(emit);
 }
 
@@ -1389,30 +1421,23 @@ STATIC void emit_native_store_subscr(emit_t *emit) {
     }
 }
 
-STATIC void emit_native_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // TODO: This is not compliant implementation. We could use MP_OBJ_SENTINEL
-    // to mark deleted vars but then every var would need to be checked on
-    // each access. Very inefficient, so just set value to None to enable GC.
-    emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE);
-    emit_native_store_fast(emit, qst, local_num);
+STATIC void emit_native_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST) {
+        // TODO: This is not compliant implementation. We could use MP_OBJ_SENTINEL
+        // to mark deleted vars but then every var would need to be checked on
+        // each access. Very inefficient, so just set value to None to enable GC.
+        emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE);
+        emit_native_store_fast(emit, qst, local_num);
+    } else {
+        // TODO implement me!
+    }
 }
 
-STATIC void emit_native_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    // TODO implement me!
-    (void)emit;
-    (void)qst;
-    (void)local_num;
-}
-
-STATIC void emit_native_delete_name(emit_t *emit, qstr qst) {
+STATIC void emit_native_delete_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_F_DELETE_NAME);
+    MP_STATIC_ASSERT(MP_F_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_F_DELETE_GLOBAL);
     emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME, qst, REG_ARG_1);
-    emit_post(emit);
-}
-
-STATIC void emit_native_delete_global(emit_t *emit, qstr qst) {
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_DELETE_GLOBAL, qst, REG_ARG_1);
+    emit_call_with_imm_arg(emit, MP_F_DELETE_NAME + kind, qst, REG_ARG_1);
     emit_post(emit);
 }
 
@@ -1430,6 +1455,26 @@ STATIC void emit_native_delete_subscr(emit_t *emit) {
     assert(vtype_index == VTYPE_PYOBJ);
     assert(vtype_base == VTYPE_PYOBJ);
     emit_call_with_imm_arg(emit, MP_F_OBJ_SUBSCR, (mp_uint_t)MP_OBJ_NULL, REG_ARG_3);
+}
+
+STATIC void emit_native_subscr(emit_t *emit, int kind) {
+    if (kind == MP_EMIT_SUBSCR_LOAD) {
+        emit_native_load_subscr(emit);
+    } else if (kind == MP_EMIT_SUBSCR_STORE) {
+        emit_native_store_subscr(emit);
+    } else {
+        emit_native_delete_subscr(emit);
+    }
+}
+
+STATIC void emit_native_attr(emit_t *emit, qstr qst, int kind) {
+    if (kind == MP_EMIT_ATTR_LOAD) {
+        emit_native_load_attr(emit, qst);
+    } else if (kind == MP_EMIT_ATTR_STORE) {
+        emit_native_store_attr(emit, qst);
+    } else {
+        emit_native_delete_attr(emit, qst);
+    }
 }
 
 STATIC void emit_native_dup_top(emit_t *emit) {
@@ -1525,14 +1570,9 @@ STATIC void emit_native_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label)
     emit_post(emit);
 }
 
-STATIC void emit_native_break_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
+STATIC void emit_native_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
     (void)except_depth;
     emit_native_jump(emit, label & ~MP_EMIT_BREAK_FROM_FOR); // TODO properly
-}
-
-STATIC void emit_native_continue_loop(emit_t *emit, mp_uint_t label, mp_uint_t except_depth) {
-    (void)except_depth;
-    emit_native_jump(emit, label); // TODO properly
 }
 
 STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
@@ -1575,6 +1615,21 @@ STATIC void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
     emit_access_stack(emit, sizeof(nlr_buf_t) / sizeof(mp_uint_t) + 1, &vtype, REG_RET); // access return value of __enter__
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // push return value of __enter__
     // stack: (..., __exit__, self, as_value, nlr_buf, as_value)
+}
+
+STATIC void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
+    if (kind == MP_EMIT_SETUP_BLOCK_WITH) {
+        emit_native_setup_with(emit, label);
+    } else {
+        // Set up except and finally
+        emit_native_pre(emit);
+        // need to commit stack because we may jump elsewhere
+        need_stack_settled(emit);
+        emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
+        emit_call(emit, MP_F_NLR_PUSH);
+        ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
+        emit_post(emit);
+    }
 }
 
 STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
@@ -1644,20 +1699,6 @@ STATIC void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
 
     // end of with cleanup nlr_catch block
     emit_native_label_assign(emit, label + 1);
-}
-
-STATIC void emit_native_setup_except(emit_t *emit, mp_uint_t label) {
-    emit_native_pre(emit);
-    // need to commit stack because we may jump elsewhere
-    need_stack_settled(emit);
-    emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_1, sizeof(nlr_buf_t) / sizeof(mp_uint_t)); // arg1 = pointer to nlr buf
-    emit_call(emit, MP_F_NLR_PUSH);
-    ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, label);
-    emit_post(emit);
-}
-
-STATIC void emit_native_setup_finally(emit_t *emit, mp_uint_t label) {
-    emit_native_setup_except(emit, label);
 }
 
 STATIC void emit_native_end_finally(emit_t *emit) {
@@ -1910,26 +1951,29 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
 }
 
-STATIC void emit_native_build_tuple(emit_t *emit, mp_uint_t n_args) {
+#if MICROPY_PY_BUILTINS_SLICE
+STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args);
+#endif
+
+STATIC void emit_native_build(emit_t *emit, mp_uint_t n_args, int kind) {
     // for viper: call runtime, with types of args
     //   if wrapped in byte_array, or something, allocates memory and fills it
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_TUPLE == MP_F_BUILD_TUPLE);
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_LIST == MP_F_BUILD_LIST);
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_MAP == MP_F_BUILD_MAP);
+    MP_STATIC_ASSERT(MP_F_BUILD_TUPLE + MP_EMIT_BUILD_SET == MP_F_BUILD_SET);
+    #if MICROPY_PY_BUILTINS_SLICE
+    if (kind == MP_EMIT_BUILD_SLICE) {
+        emit_native_build_slice(emit, n_args);
+        return;
+    }
+    #endif
     emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple
-}
-
-STATIC void emit_native_build_list(emit_t *emit, mp_uint_t n_args) {
-    emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_LIST, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new list
-}
-
-STATIC void emit_native_build_map(emit_t *emit, mp_uint_t n_args) {
-    emit_native_pre(emit);
-    emit_call_with_imm_arg(emit, MP_F_BUILD_MAP, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new map
+    if (kind == MP_EMIT_BUILD_TUPLE || kind == MP_EMIT_BUILD_LIST || kind == MP_EMIT_BUILD_SET) {
+        emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
+    }
+    emit_call_with_imm_arg(emit, MP_F_BUILD_TUPLE + kind, n_args, REG_ARG_1);
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new tuple/list/map/set
 }
 
 STATIC void emit_native_store_map(emit_t *emit) {
@@ -1941,15 +1985,6 @@ STATIC void emit_native_store_map(emit_t *emit) {
     emit_call(emit, MP_F_STORE_MAP);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // map
 }
-
-#if MICROPY_PY_BUILTINS_SET
-STATIC void emit_native_build_set(emit_t *emit, mp_uint_t n_args) {
-    emit_native_pre(emit);
-    emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, n_args); // pointer to items
-    emit_call_with_imm_arg(emit, MP_F_BUILD_SET, n_args, REG_ARG_1);
-    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET); // new set
-}
-#endif
 
 #if MICROPY_PY_BUILTINS_SLICE
 STATIC void emit_native_build_slice(emit_t *emit, mp_uint_t n_args) {
@@ -2157,15 +2192,11 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     emit_call(emit, MP_F_NATIVE_RAISE);
 }
 
-STATIC void emit_native_yield_value(emit_t *emit) {
+STATIC void emit_native_yield(emit_t *emit, int kind) {
     // not supported (for now)
     (void)emit;
+    (void)kind;
     mp_raise_NotImplementedError("native yield");
-}
-STATIC void emit_native_yield_from(emit_t *emit) {
-    // not supported (for now)
-    (void)emit;
-    mp_raise_NotImplementedError("native yield from");
 }
 
 STATIC void emit_native_start_except_handler(emit_t *emit) {
@@ -2192,41 +2223,29 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_set_source_line,
 
     {
-        emit_native_load_fast,
-        emit_native_load_deref,
-        emit_native_load_name,
+        emit_native_load_local,
         emit_native_load_global,
     },
     {
-        emit_native_store_fast,
-        emit_native_store_deref,
-        emit_native_store_name,
+        emit_native_store_local,
         emit_native_store_global,
     },
     {
-        emit_native_delete_fast,
-        emit_native_delete_deref,
-        emit_native_delete_name,
+        emit_native_delete_local,
         emit_native_delete_global,
     },
 
     emit_native_label_assign,
-    emit_native_import_name,
-    emit_native_import_from,
-    emit_native_import_star,
+    emit_native_import,
     emit_native_load_const_tok,
     emit_native_load_const_small_int,
     emit_native_load_const_str,
     emit_native_load_const_obj,
     emit_native_load_null,
-    emit_native_load_attr,
     emit_native_load_method,
     emit_native_load_build_class,
-    emit_native_load_subscr,
-    emit_native_store_attr,
-    emit_native_store_subscr,
-    emit_native_delete_attr,
-    emit_native_delete_subscr,
+    emit_native_subscr,
+    emit_native_attr,
     emit_native_dup_top,
     emit_native_dup_top_two,
     emit_native_pop_top,
@@ -2235,12 +2254,9 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_jump,
     emit_native_pop_jump_if,
     emit_native_jump_if_or_pop,
-    emit_native_break_loop,
-    emit_native_continue_loop,
-    emit_native_setup_with,
+    emit_native_unwind_jump,
+    emit_native_setup_block,
     emit_native_with_cleanup,
-    emit_native_setup_except,
-    emit_native_setup_finally,
     emit_native_end_finally,
     emit_native_get_iter,
     emit_native_for_iter,
@@ -2249,16 +2265,8 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_pop_except,
     emit_native_unary_op,
     emit_native_binary_op,
-    emit_native_build_tuple,
-    emit_native_build_list,
-    emit_native_build_map,
+    emit_native_build,
     emit_native_store_map,
-    #if MICROPY_PY_BUILTINS_SET
-    emit_native_build_set,
-    #endif
-    #if MICROPY_PY_BUILTINS_SLICE
-    emit_native_build_slice,
-    #endif
     emit_native_store_comp,
     emit_native_unpack_sequence,
     emit_native_unpack_ex,
@@ -2268,8 +2276,7 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_call_method,
     emit_native_return_value,
     emit_native_raise_varargs,
-    emit_native_yield_value,
-    emit_native_yield_from,
+    emit_native_yield,
 
     emit_native_start_except_handler,
     emit_native_end_except_handler,

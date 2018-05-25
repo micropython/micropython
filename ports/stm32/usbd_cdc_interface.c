@@ -56,9 +56,8 @@
 #define CDC_SET_CONTROL_LINE_STATE                  0x22
 #define CDC_SEND_BREAK                              0x23
 
-uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
-    // Link the parent state
-    cdc->usbd = usbd;
+uint8_t *usbd_cdc_init(usbd_cdc_state_t *cdc_in) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
 
     // Reset all the CDC state
     // Note: we don't reset tx_buf_ptr_in in order to allow the output buffer to
@@ -70,6 +69,11 @@ uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
     cdc->tx_buf_ptr_wait_count = 0;
     cdc->tx_need_empty_packet = 0;
     cdc->dev_is_connected = 0;
+    #if MICROPY_HW_USB_ENABLE_CDC2
+    cdc->attached_to_repl = &cdc->base == cdc->base.usbd->cdc;
+    #else
+    cdc->attached_to_repl = 1;
+    #endif
 
     // Return the buffer to place the first USB OUT packet
     return cdc->rx_packet_buf;
@@ -80,7 +84,9 @@ uint8_t *usbd_cdc_init(usbd_cdc_itf_t *cdc, usbd_cdc_msc_hid_state_t *usbd) {
 // pbuf: buffer containing command data (request parameters)
 // length: number of data to be sent (in bytes)
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-int8_t usbd_cdc_control(usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_t length) {
+int8_t usbd_cdc_control(usbd_cdc_state_t *cdc_in, uint8_t cmd, uint8_t* pbuf, uint16_t length) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+
     switch (cmd) {
         case CDC_SEND_ENCAPSULATED_COMMAND:
             /* Add your code here */
@@ -142,10 +148,7 @@ int8_t usbd_cdc_control(usbd_cdc_itf_t *cdc, uint8_t cmd, uint8_t* pbuf, uint16_
 // This function is called to process outgoing data.  We hook directly into the
 // SOF (start of frame) callback so that it is called exactly at the time it is
 // needed (reducing latency), and often enough (increasing bandwidth).
-void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
-    usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
-    usbd_cdc_itf_t *cdc = usbd->cdc;
-
+static void usbd_cdc_sof(PCD_HandleTypeDef *hpcd, usbd_cdc_itf_t *cdc) {
     if (cdc == NULL || !cdc->dev_is_connected) {
         // CDC device is not connected to a host, so we are unable to send any data
         return;
@@ -164,7 +167,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
         // doing other things and we must give it a chance to read our data.
         if (cdc->tx_buf_ptr_wait_count < 500) {
             USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
-            if (USBx_INEP(CDC_IN_EP & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
+            if (USBx_INEP(cdc->base.in_ep & 0x7f)->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ) {
                 // USB in-endpoint is still reading the data
                 cdc->tx_buf_ptr_wait_count++;
                 return;
@@ -185,7 +188,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
 
         buffptr = cdc->tx_buf_ptr_out_shadow;
 
-        if (USBD_CDC_TransmitPacket(cdc->usbd, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
+        if (USBD_CDC_TransmitPacket(&cdc->base, buffsize, &cdc->tx_buf[buffptr]) == USBD_OK) {
             cdc->tx_buf_ptr_out_shadow += buffsize;
             if (cdc->tx_buf_ptr_out_shadow == USBD_CDC_TX_DATA_SIZE) {
                 cdc->tx_buf_ptr_out_shadow = 0;
@@ -198,18 +201,28 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
             // the host waits for all data to arrive (ie, waits for a packet < max packet size).
             // To flush a packet of exactly max packet size, we need to send a zero-size packet.
             // See eg http://www.cypress.com/?id=4&rID=92719
-            cdc->tx_need_empty_packet = (buffsize > 0 && buffsize % usbd_cdc_max_packet(usbd->pdev) == 0 && cdc->tx_buf_ptr_out_shadow == cdc->tx_buf_ptr_in);
+            cdc->tx_need_empty_packet = (buffsize > 0 && buffsize % usbd_cdc_max_packet(cdc->base.usbd->pdev) == 0 && cdc->tx_buf_ptr_out_shadow == cdc->tx_buf_ptr_in);
         }
     }
+}
+
+void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd) {
+    usbd_cdc_msc_hid_state_t *usbd = ((USBD_HandleTypeDef*)hpcd->pData)->pClassData;
+    usbd_cdc_sof(hpcd, (usbd_cdc_itf_t*)usbd->cdc);
+    #if MICROPY_HW_USB_ENABLE_CDC2
+    usbd_cdc_sof(hpcd, (usbd_cdc_itf_t*)usbd->cdc2);
+    #endif
 }
 
 // Data received over USB OUT endpoint is processed here.
 // len: number of bytes received into the buffer we passed to USBD_CDC_ReceivePacket
 // Returns USBD_OK if all operations are OK else USBD_FAIL
-int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, size_t len) {
+int8_t usbd_cdc_receive(usbd_cdc_state_t *cdc_in, size_t len) {
+    usbd_cdc_itf_t *cdc = (usbd_cdc_itf_t*)cdc_in;
+
     // copy the incoming data into the circular buffer
     for (const uint8_t *src = cdc->rx_packet_buf, *top = cdc->rx_packet_buf + len; src < top; ++src) {
-        if (mp_interrupt_char != -1 && *src == mp_interrupt_char) {
+        if (cdc->attached_to_repl && mp_interrupt_char != -1 && *src == mp_interrupt_char) {
             pendsv_kbd_intr();
         } else {
             uint16_t next_put = (cdc->rx_buf_put + 1) & (USBD_CDC_RX_DATA_SIZE - 1);
@@ -223,7 +236,7 @@ int8_t usbd_cdc_receive(usbd_cdc_itf_t *cdc, size_t len) {
     }
 
     // initiate next USB packet transfer
-    USBD_CDC_ReceivePacket(cdc->usbd, cdc->rx_packet_buf);
+    USBD_CDC_ReceivePacket(&cdc->base, cdc->rx_packet_buf);
 
     return USBD_OK;
 }

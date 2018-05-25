@@ -118,7 +118,8 @@
 #define VBAT_DIV (4)
 #elif defined(STM32H743xx)
 #define VBAT_DIV (4)
-#elif defined(STM32L475xx) || defined(STM32L476xx)
+#elif defined(STM32L475xx) || defined(STM32L476xx) || \
+      defined(STM32L496xx)
 #define VBAT_DIV (3)
 #else
 #error Unsupported processor

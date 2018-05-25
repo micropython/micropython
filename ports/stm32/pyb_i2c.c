@@ -35,7 +35,7 @@
 #include "dma.h"
 #include "i2c.h"
 
-#if MICROPY_HW_ENABLE_HW_I2C
+#if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
 
 /// \moduleref pyb
 /// \class I2C - a two-wire serial protocol
@@ -1065,4 +1065,4 @@ const mp_obj_type_t pyb_i2c_type = {
     .locals_dict = (mp_obj_dict_t*)&pyb_i2c_locals_dict,
 };
 
-#endif // MICROPY_HW_ENABLE_HW_I2C
+#endif // MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C

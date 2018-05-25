@@ -720,7 +720,7 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
-#if defined(MICROPY_HW_UART7_TX)
+#if defined(UART8)
 void UART7_IRQHandler(void) {
     IRQ_ENTER(UART7_IRQn);
     uart_irq_handler(7);
@@ -728,7 +728,7 @@ void UART7_IRQHandler(void) {
 }
 #endif
 
-#if defined(MICROPY_HW_UART8_TX)
+#if defined(UART8)
 void UART8_IRQHandler(void) {
     IRQ_ENTER(UART8_IRQn);
     uart_irq_handler(8);
@@ -775,6 +775,8 @@ void CAN2_SCE_IRQHandler(void) {
     IRQ_EXIT(CAN2_SCE_IRQn);
 }
 #endif
+
+#if MICROPY_PY_PYB_LEGACY
 
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
@@ -831,3 +833,5 @@ void I2C4_ER_IRQHandler(void) {
     IRQ_EXIT(I2C4_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C4_SCL)
+
+#endif // MICROPY_PY_PYB_LEGACY

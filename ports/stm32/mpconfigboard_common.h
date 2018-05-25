@@ -37,6 +37,11 @@
 #define MICROPY_PY_STM (1)
 #endif
 
+// Whether to include legacy functions and classes in the pyb module
+#ifndef MICROPY_PY_PYB_LEGACY
+#define MICROPY_PY_PYB_LEGACY (1)
+#endif
+
 // Whether to enable storage on the internal flash of the MCU
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
@@ -111,7 +116,11 @@
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_TIMER (14)
+#ifdef UART8
+#define MICROPY_HW_MAX_UART (8)
+#else
 #define MICROPY_HW_MAX_UART (6)
+#endif
 
 // Configuration for STM32F7 series
 #elif defined(STM32F7)

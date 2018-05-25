@@ -529,7 +529,6 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         time.Hours = mp_obj_get_int(items[4]);
         time.Minutes = mp_obj_get_int(items[5]);
         time.Seconds = mp_obj_get_int(items[6]);
-        time.SubSeconds = rtc_us_to_subsec(mp_obj_get_int(items[7]));
         time.TimeFormat = RTC_HOURFORMAT12_AM;
         time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         time.StoreOperation = RTC_STOREOPERATION_SET;

@@ -34,6 +34,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "lib/oofatfs/ff.h"
+#include "lwip/init.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 
@@ -342,12 +343,12 @@ STATIC bool init_sdcard_fs(void) {
 
 #if !MICROPY_HW_USES_BOOTLOADER
 STATIC uint update_reset_mode(uint reset_mode) {
-#if MICROPY_HW_HAS_SWITCH
+    #if MICROPY_HW_HAS_SWITCH
     if (switch_get()) {
 
         // The original method used on the pyboard is appropriate if you have 2
         // or more LEDs.
-#if defined(MICROPY_HW_LED2)
+        #if defined(MICROPY_HW_LED2)
         for (uint i = 0; i < 3000; i++) {
             if (!switch_get()) {
                 break;
@@ -375,7 +376,7 @@ STATIC uint update_reset_mode(uint reset_mode) {
         }
         mp_hal_delay_ms(400);
 
-#elif defined(MICROPY_HW_LED1)
+        #elif defined(MICROPY_HW_LED1)
 
         // For boards with only a single LED, we'll flash that LED the
         // appropriate number of times, with a pause between each one
@@ -408,11 +409,11 @@ STATIC uint update_reset_mode(uint reset_mode) {
             }
             mp_hal_delay_ms(400);
         }
-#else
-#error Need a reset mode update method
-#endif
+        #else
+        #error Need a reset mode update method
+        #endif
     }
-#endif
+    #endif
     return reset_mode;
 }
 #endif
@@ -505,23 +506,29 @@ void stm32_main(uint32_t reset_mode) {
     rtc_init_start(false);
     #endif
     spi_init0();
-    #if MICROPY_HW_ENABLE_HW_I2C
+    #if MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C
     i2c_init0();
     #endif
     #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
     #endif
     storage_init();
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #endif
 
 soft_reset:
 
-#if defined(MICROPY_HW_LED2)
+    #if defined(MICROPY_HW_LED2)
     led_state(1, 0);
     led_state(2, 1);
-#else
+    #else
     led_state(1, 1);
     led_state(2, 0);
-#endif
+    #endif
     led_state(3, 0);
     led_state(4, 0);
 
@@ -569,7 +576,7 @@ soft_reset:
     // Define MICROPY_HW_UART_REPL to be PYB_UART_6 and define
     // MICROPY_HW_UART_REPL_BAUD in your mpconfigboard.h file if you want a
     // REPL on a hardware UART as well as on USB VCP
-#if defined(MICROPY_HW_UART_REPL)
+    #if defined(MICROPY_HW_UART_REPL)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(MICROPY_HW_UART_REPL),
@@ -578,13 +585,13 @@ soft_reset:
         MP_STATE_PORT(pyb_stdio_uart) = pyb_uart_type.make_new((mp_obj_t)&pyb_uart_type, MP_ARRAY_SIZE(args), 0, args);
         uart_attach_to_repl(MP_STATE_PORT(pyb_stdio_uart), true);
     }
-#else
+    #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
-#endif
+    #endif
 
-#if MICROPY_HW_ENABLE_CAN
+    #if MICROPY_HW_ENABLE_CAN
     can_init0();
-#endif
+    #endif
 
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_init0();
@@ -595,7 +602,7 @@ soft_reset:
     bool mounted_flash = init_flash_fs(reset_mode);
 
     bool mounted_sdcard = false;
-#if MICROPY_HW_HAS_SDCARD
+    #if MICROPY_HW_HAS_SDCARD
     // if an SD card is present then mount it on /sd/
     if (sdcard_is_present()) {
         // if there is a file in the flash called "SKIPSD", then we don't mount the SD card
@@ -603,7 +610,7 @@ soft_reset:
             mounted_sdcard = init_sdcard_fs();
         }
     }
-#endif
+    #endif
 
     #if MICROPY_HW_ENABLE_USB
     // if the SD card isn't used as the USB MSC medium then use the internal flash
@@ -642,12 +649,12 @@ soft_reset:
     }
 
     // turn boot-up LEDs off
-#if !defined(MICROPY_HW_LED2)
+    #if !defined(MICROPY_HW_LED2)
     // If there is only one LED on the board then it's used to signal boot-up
     // and so we turn it off here.  Otherwise LED(1) is used to indicate dirty
     // flash cache and so we shouldn't change its state.
     led_state(1, 0);
-#endif
+    #endif
     led_state(2, 0);
     led_state(3, 0);
     led_state(4, 0);
@@ -663,24 +670,22 @@ soft_reset:
     }
     #endif
 
-#if MICROPY_HW_HAS_MMA7660
+    #if MICROPY_HW_HAS_MMA7660
     // MMA accel: init and reset
     accel_init();
-#endif
+    #endif
 
-#if MICROPY_HW_ENABLE_SERVO
-    // servo
+    #if MICROPY_HW_ENABLE_SERVO
     servo_init();
-#endif
+    #endif
 
-#if MICROPY_HW_ENABLE_DAC
-    // DAC
+    #if MICROPY_HW_ENABLE_DAC
     dac_init();
-#endif
+    #endif
 
-#if MICROPY_PY_NETWORK
+    #if MICROPY_PY_NETWORK
     mod_network_init();
-#endif
+    #endif
 
     // At this point everything is fully configured and initialised.
 
@@ -726,11 +731,14 @@ soft_reset_exit:
     storage_flush();
 
     printf("PYB: soft reboot\n");
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
+    #endif
     timer_deinit();
     uart_deinit();
-#if MICROPY_HW_ENABLE_CAN
+    #if MICROPY_HW_ENABLE_CAN
     can_deinit();
-#endif
+    #endif
     machine_deinit();
 
     #if MICROPY_PY_THREAD

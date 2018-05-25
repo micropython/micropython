@@ -59,34 +59,39 @@ NORETURN void _esp_exceptions(esp_err_t e) {
         mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
       case ESP_ERR_WIFI_NOT_STARTED:
         mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
-      case ESP_ERR_WIFI_CONN:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
-      case ESP_ERR_WIFI_SSID:
-        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
-      case ESP_ERR_WIFI_FAIL:
-        mp_raise_msg(&mp_type_OSError, "Wifi Internal Failure");
+      case ESP_ERR_WIFI_NOT_STOPPED:
+        mp_raise_msg(&mp_type_OSError, "Wifi Not Stopped");
       case ESP_ERR_WIFI_IF:
         mp_raise_msg(&mp_type_OSError, "Wifi Invalid Interface");
-      case ESP_ERR_WIFI_MAC:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
-      case ESP_ERR_WIFI_ARG:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Argument");
       case ESP_ERR_WIFI_MODE:
         mp_raise_msg(&mp_type_OSError, "Wifi Invalid Mode");
-      case ESP_ERR_WIFI_PASSWORD:
-        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+      case ESP_ERR_WIFI_STATE:
+        mp_raise_msg(&mp_type_OSError, "Wifi Internal State Error");
+      case ESP_ERR_WIFI_CONN:
+        mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
       case ESP_ERR_WIFI_NVS:
         mp_raise_msg(&mp_type_OSError, "Wifi Internal NVS Error");
+      case ESP_ERR_WIFI_MAC:
+        mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
+      case ESP_ERR_WIFI_SSID:
+        mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
+      case ESP_ERR_WIFI_PASSWORD:
+        mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+      case ESP_ERR_WIFI_TIMEOUT:
+        mp_raise_OSError(MP_ETIMEDOUT);
+      case ESP_ERR_WIFI_WAKE_FAIL:
+        mp_raise_msg(&mp_type_OSError, "Wifi Wakeup Failure");
+      case ESP_ERR_WIFI_WOULD_BLOCK:
+        mp_raise_msg(&mp_type_OSError, "Wifi Would Block");
+      case ESP_ERR_WIFI_NOT_CONNECT:
+        mp_raise_msg(&mp_type_OSError, "Wifi Not Connected");
       case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
         mp_raise_msg(&mp_type_OSError, "TCP/IP Invalid Parameters");
       case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
         mp_raise_msg(&mp_type_OSError, "TCP/IP IF Not Ready");
       case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
         mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
-      case ESP_ERR_WIFI_TIMEOUT:
-        mp_raise_OSError(MP_ETIMEDOUT);
       case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
-      case ESP_ERR_WIFI_NO_MEM:
         mp_raise_OSError(MP_ENOMEM); 
       default:
         nlr_raise(mp_obj_new_exception_msg_varg(
@@ -112,6 +117,9 @@ STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 //static wifi_config_t wifi_ap_config = {{{0}}};
 static wifi_config_t wifi_sta_config = {{{0}}};
+
+// Set to "true" if esp_wifi_start() was called
+static bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
@@ -192,9 +200,6 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
         ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
         ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
         ESP_LOGD("modnetwork", "Initialized");
-        ESP_EXCEPTIONS( esp_wifi_set_mode(0) );
-        ESP_EXCEPTIONS( esp_wifi_start() );
-        ESP_LOGD("modnetwork", "Started");
         initialized = 1;
     }
 
@@ -228,16 +233,32 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_initialize_obj, esp_initialize);
 #endif
 
 STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
-
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
     wifi_mode_t mode;
-    ESP_EXCEPTIONS( esp_wifi_get_mode(&mode) );
+    if (!wifi_started) {
+        mode = WIFI_MODE_NULL;
+    } else {
+        ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
+    }
+
     int bit = (self->if_id == WIFI_IF_STA) ? WIFI_MODE_STA : WIFI_MODE_AP;
 
     if (n_args > 1) {
-      bool active = mp_obj_is_true(args[1]);
-      mode = active ? (mode | bit) : (mode & ~bit);
-      ESP_EXCEPTIONS( esp_wifi_set_mode(mode) );
+        bool active = mp_obj_is_true(args[1]);
+        mode = active ? (mode | bit) : (mode & ~bit);
+        if (mode == WIFI_MODE_NULL) {
+            if (wifi_started) {
+                ESP_EXCEPTIONS(esp_wifi_stop());
+                wifi_started = false;
+            }
+        } else {
+            ESP_EXCEPTIONS(esp_wifi_set_mode(mode));
+            if (!wifi_started) {
+                ESP_EXCEPTIONS(esp_wifi_start());
+                wifi_started = true;
+            }
+        }
     }
 
     return (mode & bit) ? mp_const_true : mp_const_false;

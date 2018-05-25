@@ -30,9 +30,33 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK
+
+#if MICROPY_PY_LWIP
+
+#include "lwip/netif.h"
+#include "lwip/timeouts.h"
+
+u32_t sys_now(void) {
+    return mp_hal_ticks_ms();
+}
+
+void pyb_lwip_poll(void) {
+    // Poll all the NICs for incoming data
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        if (netif->flags & NETIF_FLAG_LINK_UP) {
+            mod_network_nic_type_t *nic = netif->state;
+            nic->poll_callback(nic, netif);
+        }
+    }
+    // Run the lwIP internal updates
+    sys_check_timeouts();
+}
+
+#endif
 
 /// \module network - network configuration
 ///
@@ -40,6 +64,15 @@
 
 void mod_network_init(void) {
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
+}
+
+void mod_network_deinit(void) {
+    #if MICROPY_PY_LWIP
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        netif_remove(netif);
+    }
+    // TODO there may be some timeouts that are still pending...
+    #endif
 }
 
 void mod_network_register_nic(mp_obj_t nic) {
