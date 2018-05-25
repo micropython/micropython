@@ -706,14 +706,16 @@ typedef double mp_float_t;
 #define MICROPY_PY_FUNCTION_ATTRS (0)
 #endif
 
-// Whether to support descriptors (__get__ and __set__)
-// This costs some code size and makes all load attrs and store attrs slow
+// Whether to support the descriptors __get__, __set__, __delete__
+// This costs some code size and makes load/store/delete of instance
+// attributes slower for the classes that use this feature
 #ifndef MICROPY_PY_DESCRIPTORS
 #define MICROPY_PY_DESCRIPTORS (0)
 #endif
 
 // Whether to support class __delattr__ and __setattr__ methods
-// This costs some code size and makes all del attrs and store attrs slow
+// This costs some code size and makes store/delete of instance
+// attributes slower for the classes that use this feature
 #ifndef MICROPY_PY_DELATTR_SETATTR
 #define MICROPY_PY_DELATTR_SETATTR (0)
 #endif
