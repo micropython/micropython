@@ -455,8 +455,11 @@ struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
 
-    // The name of this type.
-    qstr name;
+    // Flags associated with this type.
+    uint16_t flags;
+
+    // The name of this type, a qstr.
+    uint16_t name;
 
     // Corresponds to __repr__ and __str__ special methods.
     mp_print_fun_t print;
