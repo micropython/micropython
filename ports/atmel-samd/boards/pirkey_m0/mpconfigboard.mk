@@ -9,3 +9,8 @@ LONGINT_IMPL = NONE
 
 CHIP_VARIANT = SAMD21E18A
 CHIP_FAMILY = samd21
+
+# Include these Python libraries in firmware.
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_IRRemote

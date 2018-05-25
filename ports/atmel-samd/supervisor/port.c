@@ -190,7 +190,10 @@ safe_mode_t port_init(void) {
 
     // Configure millisecond timer initialization.
     tick_init();
+
+#ifndef PIRKEY_M0
     rtc_init();
+#endif
 
     init_shared_dma();
     #ifdef CIRCUITPY_CANARY_WORD
@@ -243,17 +246,18 @@ void reset_port(void) {
     pulsein_reset();
     pulseout_reset();
     pwmout_reset();
+
+#ifndef PIRKEY_M0
+    analogin_reset();
+    analogout_reset();
     rtc_reset();
+#endif
 
     reset_gclks();
-
-    analogin_reset();
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
     gamepad_reset();
 #endif
-
-    analogout_reset();
 
     reset_event_system();
 
