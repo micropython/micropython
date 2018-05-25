@@ -6,6 +6,7 @@ compiler:
 env:
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express
+  - TRAVIS_BOARD=circuitplayground_express_crickit
   - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
   - TRAVIS_BOARD=feather_m0_rfm69
