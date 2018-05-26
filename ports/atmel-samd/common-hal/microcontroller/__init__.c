@@ -30,10 +30,10 @@
 #include "py/runtime.h"
 
 #include "reset.h"
-#include "samd21_pins.h"
 
 #include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {

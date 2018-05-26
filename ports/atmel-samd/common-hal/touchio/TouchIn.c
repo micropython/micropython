@@ -37,10 +37,10 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
-#include "clocks.h"
-#include "samd21_pins.h"
-#include "tick.h"
+#include "peripherals/clocks.h"
+#include "peripherals/pins.h"
 
+#include "tick.h"
 #include "adafruit_ptc.h"
 
 bool touch_enabled = false;

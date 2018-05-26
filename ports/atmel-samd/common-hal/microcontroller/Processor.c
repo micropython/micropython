@@ -63,7 +63,7 @@
 
 #include "common-hal/microcontroller/Processor.h"
 
-#include "peripherals.h"
+#include "peripherals/adc.h"
 
 #include "peripheral_clk_config.h"
 

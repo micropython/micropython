@@ -55,11 +55,11 @@
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/touchio/TouchIn.h"
 #include "common-hal/usb_hid/Device.h"
+#include "peripherals/cache.h"
+#include "peripherals/clocks.h"
+#include "peripherals/events.h"
+#include "peripherals/dma.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "clocks.h"
-#include "events.h"
-#include "peripherals.h"
-#include "shared_dma.h"
 #include "tick.h"
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS

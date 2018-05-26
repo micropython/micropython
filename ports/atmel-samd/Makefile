@@ -242,19 +242,24 @@ SRC_C = \
 	audio_dma.c \
 	board_busses.c \
 	background.c \
-	clocks.c \
-	$(CHIP_FAMILY)_clocks.c \
-	events.c \
 	fatfs_port.c \
 	flash_api.c \
 	mphalport.c \
 	reset.c \
-	$(CHIP_FAMILY)_peripherals.c \
-	peripherals.c \
-	$(CHIP_FAMILY)_pins.c \
-	shared_dma.c \
+	peripherals/clocks.c \
+	peripherals/dma.c \
+	peripherals/events.c \
+	peripherals/sercom.c \
+	peripherals/timers.c \
+	peripherals/$(CHIP_FAMILY)/adc.c \
+	peripherals/$(CHIP_FAMILY)/cache.c \
+	peripherals/$(CHIP_FAMILY)/clocks.c \
+	peripherals/$(CHIP_FAMILY)/dma.c \
+	peripherals/$(CHIP_FAMILY)/events.c \
+	peripherals/$(CHIP_FAMILY)/pins.c \
+	peripherals/$(CHIP_FAMILY)/sercom.c \
+	peripherals/$(CHIP_FAMILY)/timers.c \
 	tick.c \
-	timers.c \
 	usb.c \
 	usb_mass_storage.c \
 	bindings/samd/__init__.c \
@@ -301,6 +306,8 @@ SRC_COMMON_HAL = \
 	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
+	rotaryio/__init__.c \
+	rotaryio/IncrementalEncoder.c \
 	rtc/__init__.c \
 	rtc/RTC.c \
 	storage/__init__.c \
@@ -391,7 +398,7 @@ ifneq ($(CHIP_VARIANT),SAMD51G18A)
 			audiobusio/__init__.c \
 			audiobusio/I2SOut.c \
 			audiobusio/PDMIn.c
-		SRC_C += i2s.c
+		SRC_C += peripherals/i2s.c peripherals/$(CHIP_FAMILY)/i2s.c
 	endif
 endif
 

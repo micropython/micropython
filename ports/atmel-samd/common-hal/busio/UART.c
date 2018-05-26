@@ -42,8 +42,7 @@
 #include "hal/include/hal_usart_async.h"
 #include "hal/include/hpl_usart_async.h"
 
-#include "peripherals.h"
-#include "pins.h"
+#include "peripherals/sercom.h"
 
 // Do-nothing callback needed so that usart_async code will enable rx interrupts.
 // See comment below re usart_async_register_callback()

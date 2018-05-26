@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017-2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "samd21_pins.h"
+#include "peripherals/pins.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 

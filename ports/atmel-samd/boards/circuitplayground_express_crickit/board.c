@@ -31,7 +31,6 @@
 #include "hal/include/hal_gpio.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/neopixel_write/__init__.h"
-#include "samd21_pins.h"
 
 void board_init(void)
 {

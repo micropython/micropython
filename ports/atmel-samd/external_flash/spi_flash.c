@@ -29,8 +29,8 @@
 #include <string.h>
 
 #include "external_flash/common_commands.h"
-#include "peripherals.h"
-#include "shared_dma.h"
+#include "peripherals/sercom.h"
+#include "py/mpconfig.h"
 
 #include "hal_gpio.h"
 #include "hal_spi_m_sync.h"

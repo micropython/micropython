@@ -1,4 +1,5 @@
-#include "samd51_pins.h"
+#include "shared-bindings/board/__init__.h"
+
 #include "board_busses.h"
 
 // This mapping only includes functional names because pins broken

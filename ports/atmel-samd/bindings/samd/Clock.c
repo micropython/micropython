@@ -24,9 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "clocks.h"
 #include "bindings/samd/Clock.h"
-
+#include "peripherals/clocks.h"
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
