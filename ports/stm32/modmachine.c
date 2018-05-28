@@ -181,6 +181,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 
     // free space on flash
     {
+        #if MICROPY_VFS_FAT
         for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
             if (strncmp("/flash", vfs->str, vfs->len) == 0) {
                 // assumes that it's a FatFs filesystem
@@ -191,6 +192,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
                 break;
             }
         }
+        #endif
     }
 
     #if MICROPY_PY_THREAD
