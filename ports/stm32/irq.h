@@ -102,6 +102,24 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 // The following interrupts are arranged from highest priority to lowest
 // priority to make it a bit easier to figure out.
 
+#if __CORTEX_M == 0
+
+//#def  IRQ_PRI_SYSTICK         0
+#define IRQ_PRI_UART            1
+#define IRQ_PRI_FLASH           1
+#define IRQ_PRI_SDIO            1
+#define IRQ_PRI_DMA             1
+#define IRQ_PRI_OTG_FS          2
+#define IRQ_PRI_OTG_HS          2
+#define IRQ_PRI_TIM5            2
+#define IRQ_PRI_CAN             2
+#define IRQ_PRI_TIMX            2
+#define IRQ_PRI_EXTINT          2
+#define IRQ_PRI_PENDSV          3
+#define IRQ_PRI_RTC_WKUP        3
+
+#else
+
 //#def  IRQ_PRI_SYSTICK         NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0)
 
 // The UARTs have no FIFOs, so if they don't get serviced quickly then characters
@@ -134,5 +152,7 @@ MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 // before exception is raised.
 #define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
 #define IRQ_PRI_RTC_WKUP        NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
+
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_IRQ_H

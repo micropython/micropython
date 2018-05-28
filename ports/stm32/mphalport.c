@@ -87,6 +87,7 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     }
 }
 
+#if __CORTEX_M >= 0x03
 void mp_hal_ticks_cpu_enable(void) {
     if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
         CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
@@ -98,6 +99,7 @@ void mp_hal_ticks_cpu_enable(void) {
         DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
     }
 }
+#endif
 
 void mp_hal_gpio_clock_enable(GPIO_TypeDef *gpio) {
     #if defined(STM32L476xx) || defined(STM32L496xx)

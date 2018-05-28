@@ -165,6 +165,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     print_reg("PC    ", regs->pc);
     print_reg("XPSR  ", regs->xpsr);
 
+    #if __CORTEX_M >= 3
     uint32_t cfsr = SCB->CFSR;
 
     print_reg("HFSR  ", SCB->HFSR);
@@ -175,6 +176,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if (cfsr & 0x8000) {
         print_reg("BFAR  ", SCB->BFAR);
     }
+    #endif
 
     if ((void*)&_ram_start <= (void*)regs && (void*)regs < (void*)&_ram_end) {
         mp_hal_stdout_tx_str("Stack:\r\n");
@@ -207,6 +209,17 @@ void HardFault_Handler(void) {
     // main stack pointer (aka MSP). If CONTROL.SPSEL is 1, then the exception
     // was stacked up using the process stack pointer (aka PSP).
 
+    #if __CORTEX_M == 0
+    __asm volatile(
+    " mov r0, lr    \n"
+    " lsr r0, r0, #3 \n"        // Shift Bit 3 into carry to see which stack pointer we should use.
+    " mrs r0, msp   \n"         // Make R0 point to main stack pointer
+    " bcc .use_msp  \n"         // Keep MSP in R0 if SPSEL (carry) is 0
+    " mrs r0, psp   \n"         // Make R0 point to process stack pointer
+    " .use_msp:     \n"
+    " b HardFault_C_Handler \n" // Off to C land
+    );
+    #else
     __asm volatile(
     " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
     " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
@@ -214,6 +227,7 @@ void HardFault_Handler(void) {
     " mrsne r0, psp \n"         // Make R0 point to process stack pointer
     " b HardFault_C_Handler \n" // Off to C land
     );
+    #endif
 }
 
 /**
