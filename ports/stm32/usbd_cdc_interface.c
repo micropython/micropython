@@ -45,6 +45,8 @@
 #include "lib/utils/interrupt_char.h"
 #include "irq.h"
 
+#if MICROPY_HW_ENABLE_USB
+
 // CDC control commands
 #define CDC_SEND_ENCAPSULATED_COMMAND               0x00
 #define CDC_GET_ENCAPSULATED_RESPONSE               0x01
@@ -360,3 +362,5 @@ int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeou
     // Success, return number of bytes read
     return len;
 }
+
+#endif
