@@ -418,7 +418,7 @@ void USBD_LL_SetFifo(PCD_HandleTypeDef *pcd_handle, USBD_HandleTypeDef *pdev) {
   * @retval USBD Status
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
-
+    usbd_cdc_msc_hid_state_t *usbd = (usbd_cdc_msc_hid_state_t *)pdev->pClassData;
     #if MICROPY_HW_USB_FS
     
     if (pdev->id ==  USB_PHY_FS_ID) {
@@ -458,7 +458,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
 
         // Set LL Driver parameters
         pcd_hs_handle.Instance = USB_OTG_HS;
-        pcd_hs_handle.Init.dev_endpoints = 6;
+        pcd_hs_handle.Init.dev_endpoints = usbd->used_endpoints;
         pcd_hs_handle.Init.use_dedicated_ep1 = 0;
         pcd_hs_handle.Init.ep0_mps = 0x40;
         pcd_hs_handle.Init.dma_enable = 0;
@@ -496,7 +496,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed) {
 
         // Set LL Driver parameters
         pcd_hs_handle.Instance = USB_OTG_HS;
-        pcd_hs_handle.Init.dev_endpoints = 6;
+        pcd_hs_handle.Init.dev_endpoints = usbd->used_endpoints;
         pcd_hs_handle.Init.use_dedicated_ep1 = 0;
         pcd_hs_handle.Init.ep0_mps = 0x40;
 
