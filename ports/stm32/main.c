@@ -130,6 +130,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
+#if MICROPY_HW_ENABLE_STORAGE
 static const char fresh_boot_py[] =
 "# boot.py -- run on boot-up\r\n"
 "# can run arbitrary Python, but best to keep it minimal\r\n"
@@ -264,6 +265,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     return true;
 }
+#endif
 
 #if MICROPY_HW_HAS_SDCARD
 STATIC bool init_sdcard_fs(void) {
@@ -512,7 +514,9 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_HAS_SDCARD
     sdcard_init();
     #endif
+    #if MICROPY_HW_ENABLE_STORAGE
     storage_init();
+    #endif
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
@@ -599,7 +603,10 @@ soft_reset:
 
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
-    bool mounted_flash = init_flash_fs(reset_mode);
+    bool mounted_flash = false;
+    #if MICROPY_HW_ENABLE_STORAGE
+    mounted_flash = init_flash_fs(reset_mode);
+    #endif
 
     bool mounted_sdcard = false;
     #if MICROPY_HW_HAS_SDCARD
@@ -727,8 +734,10 @@ soft_reset_exit:
 
     // soft reset
 
+    #if MICROPY_HW_ENABLE_STORAGE
     printf("PYB: sync filesystems\n");
     storage_flush();
+    #endif
 
     printf("PYB: soft reboot\n");
     #if MICROPY_PY_NETWORK
