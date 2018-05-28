@@ -77,7 +77,7 @@ static const flash_layout_t flash_layout[] = {
 #elif defined(STM32H7)
 
 static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x20000, 8 },
+    { 0x08000000, 0x20000, 16 },
 };
 
 #else
