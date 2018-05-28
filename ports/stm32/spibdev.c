@@ -30,6 +30,8 @@
 #include "led.h"
 #include "storage.h"
 
+#if MICROPY_HW_ENABLE_STORAGE
+
 int32_t spi_bdev_ioctl(spi_bdev_t *bdev, uint32_t op, uint32_t arg) {
     switch (op) {
         case BDEV_IOCTL_INIT:
@@ -79,3 +81,5 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
 
     return ret;
 }
+
+#endif

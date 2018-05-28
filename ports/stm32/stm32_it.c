@@ -310,9 +310,11 @@ void SysTick_Handler(void) {
     // be generalised in the future then a dispatch table can be used as
     // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
 
+    #if MICROPY_HW_ENABLE_STORAGE
     if (STORAGE_IDLE_TICK(uwTick)) {
         NVIC->STIR = FLASH_IRQn;
     }
+    #endif
 
     if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
         dma_idle_handler(uwTick);
@@ -459,8 +461,10 @@ void FLASH_IRQHandler(void) {
         HAL_FLASH_IRQHandler();
     }
     */
+    #if MICROPY_HW_ENABLE_STORAGE
     // This call the storage IRQ handler, to check if the flash cache needs flushing
     storage_irq_handler();
+    #endif
     IRQ_EXIT(FLASH_IRQn);
 }
 
