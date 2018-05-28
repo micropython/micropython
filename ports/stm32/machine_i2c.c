@@ -37,7 +37,7 @@
 
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 
-#if defined(STM32F4) || defined(STM32F7)
+#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
