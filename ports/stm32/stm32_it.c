@@ -84,8 +84,12 @@
 #include "usb.h"
 
 extern void __fatal_error(const char*);
+#if defined(MICROPY_HW_USB_FS)
 extern PCD_HandleTypeDef pcd_fs_handle;
+#endif
+#if defined(MICROPY_HW_USB_HS)
 extern PCD_HandleTypeDef pcd_hs_handle;
+#endif
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
