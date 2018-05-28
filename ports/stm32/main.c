@@ -458,8 +458,10 @@ void stm32_main(uint32_t reset_mode) {
 
     #endif
 
+    #if __CORTEX_M >= 0x03
     // Set the priority grouping
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    #endif
 
     // SysTick is needed by HAL_RCC_ClockConfig (called in SystemClock_Config)
     HAL_InitTick(TICK_INT_PRIORITY);
