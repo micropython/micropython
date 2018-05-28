@@ -228,25 +228,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
 uint32_t timer_get_source_freq(uint32_t tim_id) {
-    uint32_t source;
-    uint32_t latency;
-    RCC_ClkInitTypeDef rcc_init;
-
-    // Get clock config.
-    HAL_RCC_GetClockConfig(&rcc_init, &latency);
-
+    uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
         source = HAL_RCC_GetPCLK2Freq();
-        if (rcc_init.APB2CLKDivider != RCC_HCLK_DIV1) {
-            source *= 2;
-        }
+        #if defined(STM32H7)
+        clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
+        #else
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
+        #endif
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        if (rcc_init.APB1CLKDivider != RCC_HCLK_DIV1) {
-            source *= 2;
-        }
+        #if defined(STM32H7)
+        clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
+        #else
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
+        #endif
+    }
+    if (clk_div != 0) {
+        // APB prescaler for this timer is > 1
+        source *= 2;
     }
     return source;
 }
