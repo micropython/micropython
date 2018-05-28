@@ -110,7 +110,11 @@ void machine_init(void) {
         uint32_t state = RCC->RCC_SR;
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
-        } else if (state & RCC_SR_PORRSTF || state & RCC_SR_BORRSTF) {
+        } else if (state & RCC_SR_PORRSTF
+            #if !defined(STM32F0)
+            || state & RCC_SR_BORRSTF
+            #endif
+            ) {
             reset_cause = PYB_RESET_POWER_ON;
         } else if (state & RCC_SR_PINRSTF) {
             reset_cause = PYB_RESET_HARD;
@@ -140,11 +144,18 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
+        #if defined(STM32F0)
+        printf("S=%u\nH=%u\nP1=%u\n",
+               (unsigned int)HAL_RCC_GetSysClockFreq(),
+               (unsigned int)HAL_RCC_GetHCLKFreq(),
+               (unsigned int)HAL_RCC_GetPCLK1Freq());
+        #else
         printf("S=%u\nH=%u\nP1=%u\nP2=%u\n",
                (unsigned int)HAL_RCC_GetSysClockFreq(),
                (unsigned int)HAL_RCC_GetHCLKFreq(),
                (unsigned int)HAL_RCC_GetPCLK1Freq(),
                (unsigned int)HAL_RCC_GetPCLK2Freq());
+        #endif
     }
 
     // to print info about memory
@@ -267,6 +278,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
+#if !(defined(STM32F0) || defined(STM32L4))
 // get or set the MCU frequencies
 STATIC mp_uint_t machine_freq_calc_ahb_div(mp_uint_t wanted_div) {
     if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
@@ -286,23 +298,28 @@ STATIC mp_uint_t machine_freq_calc_apb_div(mp_uint_t wanted_div) {
     else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
     else { return RCC_SYSCLK_DIV16; }
 }
+#endif
+
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        mp_obj_t tuple[4] = {
+        mp_obj_t tuple[] = {
            mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
            mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
            mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
+           #if !defined(STM32F0)
            mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
+           #endif
         };
-        return mp_obj_new_tuple(4, tuple);
+        return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
 
-        #if defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L4)
         mp_raise_NotImplementedError("machine.freq set not supported yet");
-        #endif
+        #else
+
+        mp_int_t wanted_sysclk = mp_obj_get_int(args[0]) / 1000000;
 
         // default PLL parameters that give 48MHz on PLL48CK
         uint32_t m = HSE_VALUE / 1000000, n = 336, p = 2, q = 7;
@@ -458,6 +475,8 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     fail:;
         void NORETURN __fatal_error(const char *msg);
         __fatal_error("can't change freq");
+
+        #endif
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
@@ -492,8 +511,10 @@ STATIC mp_obj_t machine_sleep(void) {
 
     #else
 
+    #if !defined(STM32F0)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
+    #endif
 
     # if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
@@ -542,16 +563,22 @@ STATIC mp_obj_t machine_deepsleep(void) {
 
     // Note: we only support RTC ALRA, ALRB, WUT and TS.
     // TODO support TAMP and WKUP (PA0 external pin).
-    uint32_t irq_bits = RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE;
+    #if defined(STM32F0)
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #else
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #endif
 
     // save RTC interrupts
-    uint32_t save_irq_bits = RTC->CR & irq_bits;
+    uint32_t save_irq_bits = RTC->CR & CR_BITS;
 
     // disable RTC interrupts
-    RTC->CR &= ~irq_bits;
+    RTC->CR &= ~CR_BITS;
 
     // clear RTC wake-up flags
-    RTC->ISR &= ~(RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF);
+    RTC->ISR &= ~ISR_BITS;
 
     #if defined(STM32F7)
     // disable wake-up flags

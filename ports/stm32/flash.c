@@ -34,7 +34,13 @@ typedef struct {
     uint32_t sector_count;
 } flash_layout_t;
 
-#if defined(STM32F4)
+#if defined(STM32F0)
+
+static const flash_layout_t flash_layout[] = {
+    { FLASH_BASE, FLASH_PAGE_SIZE, (FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE },
+};
+
+#elif defined(STM32F4)
 
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x04000, 4 },
@@ -153,7 +159,12 @@ void flash_erase(uint32_t flash_dest, uint32_t num_word32) {
 
     FLASH_EraseInitTypeDef EraseInitStruct;
 
-    #if defined(STM32L4)
+    #if defined(STM32F0)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR);
+    EraseInitStruct.TypeErase   = FLASH_TYPEERASE_PAGES;
+    EraseInitStruct.PageAddress = flash_dest;
+    EraseInitStruct.NbPages     = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
+    #elif defined(STM32L4)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
 
     // erase the sector(s)

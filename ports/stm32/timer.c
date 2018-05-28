@@ -231,16 +231,22 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
+        #if defined(STM32F0)
+        source = HAL_RCC_GetPCLK1Freq();
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE;
+        #elif defined(STM32H7)
         source = HAL_RCC_GetPCLK2Freq();
-        #if defined(STM32H7)
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
         #else
+        source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
         #endif
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        #if defined(STM32H7)
+        #if defined(STM32F0)
+        clk_div = RCC->CFGR & RCC_CFGR_PPRE;
+        #elif defined(STM32H7)
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
         #else
         clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
@@ -694,25 +700,27 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM13)
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
-    #if defined(TIM14)
+    #if defined(STM32F0)
+    TIM_ENTRY(14, TIM14_IRQn),
+    #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
     #if defined(TIM15)
-    #if defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32H7)
     TIM_ENTRY(15, TIM15_IRQn),
     #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
     #endif
     #endif
     #if defined(TIM16)
-    #if defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32H7)
     TIM_ENTRY(16, TIM16_IRQn),
     #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
     #if defined(TIM17)
-    #if defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32H7)
     TIM_ENTRY(17, TIM17_IRQn),
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),

@@ -579,6 +579,39 @@ void RTC_WKUP_IRQHandler(void) {
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
 
+#if defined(STM32F0)
+
+void RTC_IRQHandler(void) {
+    IRQ_ENTER(RTC_IRQn);
+    RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
+    Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    IRQ_EXIT(RTC_IRQn);
+}
+
+void EXTI0_1_IRQHandler(void) {
+    IRQ_ENTER(EXTI0_1_IRQn);
+    Handle_EXTI_Irq(0);
+    Handle_EXTI_Irq(1);
+    IRQ_EXIT(EXTI0_1_IRQn);
+}
+
+void EXTI2_3_IRQHandler(void) {
+    IRQ_ENTER(EXTI2_3_IRQn);
+    Handle_EXTI_Irq(2);
+    Handle_EXTI_Irq(3);
+    IRQ_EXIT(EXTI2_3_IRQn);
+}
+
+void EXTI4_15_IRQHandler(void) {
+    IRQ_ENTER(EXTI4_15_IRQn);
+    for (int i = 4; i <= 15; ++i) {
+        Handle_EXTI_Irq(i);
+    }
+    IRQ_EXIT(EXTI4_15_IRQn);
+}
+
+#endif
+
 void TIM1_BRK_TIM9_IRQHandler(void) {
     IRQ_ENTER(TIM1_BRK_TIM9_IRQn);
     timer_irq_handler(9);
@@ -718,6 +751,21 @@ void USART2_IRQHandler(void) {
     IRQ_EXIT(USART2_IRQn);
 }
 
+#if defined(STM32F0)
+
+void USART3_8_IRQHandler(void) {
+    IRQ_ENTER(USART3_8_IRQn);
+    uart_irq_handler(3);
+    uart_irq_handler(4);
+    uart_irq_handler(5);
+    uart_irq_handler(6);
+    uart_irq_handler(7);
+    uart_irq_handler(8);
+    IRQ_EXIT(USART3_8_IRQn);
+}
+
+#else
+
 void USART3_IRQHandler(void) {
     IRQ_ENTER(USART3_IRQn);
     uart_irq_handler(3);
@@ -756,6 +804,8 @@ void UART8_IRQHandler(void) {
     uart_irq_handler(8);
     IRQ_EXIT(UART8_IRQn);
 }
+#endif
+
 #endif
 
 #if defined(MICROPY_HW_CAN1_TX)
