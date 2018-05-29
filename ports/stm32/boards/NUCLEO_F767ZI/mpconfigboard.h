@@ -3,6 +3,9 @@
 // To use openocd run "OPENOCD_CONFIG=boards/openocd_stm32f7.cfg" in
 // the make command.
 
+#define MICROPY_BOARD_EARLY_INIT    NUCLEO_F767ZI_board_early_init
+void NUCLEO_F767ZI_board_early_init(void);
+
 #define MICROPY_HW_BOARD_NAME       "NUCLEO-F767ZI"
 #define MICROPY_HW_MCU_NAME         "STM32F767"
 
