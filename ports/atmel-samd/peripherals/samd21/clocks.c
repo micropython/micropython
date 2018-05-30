@@ -124,17 +124,23 @@ static void init_clock_source_dfll48m(void) {
 void clock_init(void)
 {
     init_clock_source_osc8m();
-    if (board_has_crystal())
+    if (board_has_crystal()) {
         init_clock_source_xosc32k();
-    else
+    } else {
         init_clock_source_osc32k();
+    }
+
     enable_clock_generator(0, GCLK_GENCTRL_SRC_DFLL48M_Val, 1);
     enable_clock_generator(1, GCLK_GENCTRL_SRC_DFLL48M_Val, 150);
     init_clock_source_dfll48m();
-    if (board_has_crystal())
+    if (board_has_crystal()) {
         enable_clock_generator(2, GCLK_GENCTRL_SRC_XOSC32K_Val, 32);
-    else
+    } else {
         enable_clock_generator(2, GCLK_GENCTRL_SRC_OSC32K_Val, 32);
+    }
+
+    // Do this after all static clock init so that they aren't used dynamically.
+    init_dynamic_clocks();
 }
 
 static bool clk_enabled(uint8_t clk) {

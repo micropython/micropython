@@ -36,7 +36,6 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
-//#include "peripherals.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/rgb_led_status.h"
 

@@ -63,6 +63,7 @@ static inline bool board_has_crystal(void) {
 }
 
 void clock_init(void);
+void init_dynamic_clocks(void);
 
 bool clock_get_enabled(uint8_t type, uint8_t index);
 bool clock_get_parent(uint8_t type, uint8_t index, uint8_t *p_type, uint8_t *p_index);

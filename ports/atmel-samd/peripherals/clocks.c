@@ -56,41 +56,20 @@ uint8_t find_free_gclk(uint16_t divisor) {
     return 0xff;
 }
 
+static uint8_t last_static_clock = 0;
+
+void init_dynamic_clocks(void) {
+    // Find the last statically initialized clock and save it. Everything after will be reset with
+    // the VM via reset_gclks.
+    for (uint8_t i = 0; i < GCLK_GEN_NUM; i++) {
+        if (gclk_enabled(i)) {
+            last_static_clock = i;
+        }
+    }
+}
+
 void reset_gclks(void) {
-    // Never reset GCLK0 because its used for the core
-    #if CONF_GCLK_GEN_1_GENEN == 0
-    disable_gclk(1);
-    #endif
-    #if CONF_GCLK_GEN_2_GENEN == 0
-    disable_gclk(2);
-    #endif
-    #if CONF_GCLK_GEN_3_GENEN == 0
-    disable_gclk(3);
-    #endif
-    #if CONF_GCLK_GEN_4_GENEN == 0
-    disable_gclk(4);
-    #endif
-    #if CONF_GCLK_GEN_5_GENEN == 0
-    disable_gclk(5);
-    #endif
-    #if CONF_GCLK_GEN_6_GENEN == 0
-    disable_gclk(6);
-    #endif
-    #if CONF_GCLK_GEN_7_GENEN == 0
-    disable_gclk(7);
-    #endif
-    #ifdef SAMD51
-    #if CONF_GCLK_GEN_8_GENEN == 0
-    disable_gclk(8);
-    #endif
-    #if CONF_GCLK_GEN_9_GENEN == 0
-    disable_gclk(9);
-    #endif
-    #if CONF_GCLK_GEN_10_GENEN == 0
-    disable_gclk(10);
-    #endif
-    #if CONF_GCLK_GEN_11_GENEN == 0
-    disable_gclk(11);
-    #endif
-    #endif
+    for (uint8_t i = last_static_clock + 1; i < GCLK_GEN_NUM; i++) {
+        disable_gclk(i);
+    }
 }

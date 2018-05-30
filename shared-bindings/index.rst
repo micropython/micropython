@@ -17,6 +17,9 @@ SAMD51, SAMD51 Express, and ESP8266.
 NOTE 2: **SAMD** and/or **SAMD Express** without additional numbers, means both SAMD21 & SAMD51 versions
 are supported.
 
+NOTE 3: The `pIRkey SAMD21 board <https://www.adafruit.com/product/3364>`_ is specialized and may not
+have modules as listed below.
+
 =================  ==============================
 Module             Supported Ports
 =================  ==============================
@@ -38,6 +41,7 @@ Module             Supported Ports
 `os`               **All Supported**
 `pulseio`          **SAMD/SAMD Express**
 `random`           **All Supported**
+`rotaryio`         **SAMD51, SAMD Express**
 `storage`          **All Supported**
 `struct`           **All Supported**
 `supervisor`       **SAMD/SAMD Express**

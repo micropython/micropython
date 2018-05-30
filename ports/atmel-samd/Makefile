@@ -249,6 +249,7 @@ SRC_C = \
 	peripherals/clocks.c \
 	peripherals/dma.c \
 	peripherals/events.c \
+	peripherals/external_interrupts.c \
 	peripherals/sercom.c \
 	peripherals/timers.c \
 	peripherals/$(CHIP_FAMILY)/adc.c \
@@ -256,6 +257,7 @@ SRC_C = \
 	peripherals/$(CHIP_FAMILY)/clocks.c \
 	peripherals/$(CHIP_FAMILY)/dma.c \
 	peripherals/$(CHIP_FAMILY)/events.c \
+	peripherals/$(CHIP_FAMILY)/external_interrupts.c \
 	peripherals/$(CHIP_FAMILY)/pins.c \
 	peripherals/$(CHIP_FAMILY)/sercom.c \
 	peripherals/$(CHIP_FAMILY)/timers.c \

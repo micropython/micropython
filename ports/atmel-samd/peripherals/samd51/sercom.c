@@ -28,8 +28,6 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hri/hri_mclk_d51.h"
 
-// FIXME(tannewt): Should this be called sercom.c?
-
 // The clock initializer values are rather random, so we need to put them in
 // tables for lookup. We can't compute them.
 

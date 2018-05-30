@@ -1,1 +1,1 @@
-// No pulseio module functions.
+// No rotaryio module functions.

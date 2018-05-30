@@ -24,36 +24,31 @@
  * THE SOFTWARE.
  */
 
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_EXTERNAL_INTERRUPTS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_EXTERNAL_INTERRUPTS_H
+
+#include <stdbool.h>
 #include <stdint.h>
 
-#include "peripherals/events.h"
-#include "py/runtime.h"
+#define EIC_HANDLER_NO_INTERRUPT 0x0
+#define EIC_HANDLER_PULSEIN 0x1
+#define EIC_HANDLER_INCREMENTAL_ENCODER 0x2
 
-uint8_t find_async_event_channel(void) {
-    int8_t channel;
-    for (channel = EVSYS_CHANNELS - 1; channel > 0; channel--) {
-        if (event_channel_free(channel)) {
-            break;
-        }
-    }
-    if (channel < 0) {
-        mp_raise_RuntimeError("All event channels in use");
-    }
-    return channel;
-}
+void turn_on_external_interrupt_controller(void);
+void turn_off_external_interrupt_controller(void);
+void turn_on_cpu_interrupt(uint8_t eic_channel);
+void turn_on_eic_channel(uint8_t eic_channel, uint32_t sense_setting,
+                         uint8_t channel_interrupt_handler);
+void configure_eic_channel(uint8_t eic_channel, uint32_t sense_setting);
+void turn_off_eic_channel(uint8_t eic_channel);
+bool eic_channel_free(uint8_t eic_channel);
+bool eic_get_enable(void);
+void eic_set_enable(bool value);
+void eic_reset(void);
 
-#ifdef SAMD21
-#define EVSYS_SYNCH_NUM EVSYS_CHANNELS
-#endif
-uint8_t find_sync_event_channel(void) {
-    uint8_t channel;
-    for (channel = 0; channel < EVSYS_SYNCH_NUM; channel++) {
-        if (event_channel_free(channel)) {
-            break;
-        }
-    }
-    if (channel >= EVSYS_SYNCH_NUM) {
-        mp_raise_RuntimeError("All sync event channels in use");
-    }
-    return channel;
-}
+void* get_eic_channel_data(uint8_t eic_channel);
+void set_eic_channel_data(uint8_t eic_channel, void* data);
+
+void external_interrupt_handler(uint8_t channel);
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_PERIPHERALS_EXTERNAL_INTERRUPTS_H

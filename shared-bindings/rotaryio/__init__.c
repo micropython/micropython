@@ -33,8 +33,8 @@
 #include "shared-bindings/rotaryio/__init__.h"
 #include "shared-bindings/rotaryio/IncrementalEncoder.h"
 
-//| :mod:`rotaryio` --- Support for pulse based protocols
-//| =====================================================
+//| :mod:`rotaryio` --- Support for reading rotation sensors
+//| ========================================================
 //|
 //| .. module:: rotaryio
 //|   :synopsis: Support for reading rotation sensors

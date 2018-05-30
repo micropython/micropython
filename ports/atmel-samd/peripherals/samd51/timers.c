@@ -29,8 +29,6 @@
 
 #include "peripherals/timers.h"
 
-//#include "common-hal/pulseio/PulseOut.h"
-
 #include "hri/hri_gclk_d51.h"
 
 const uint8_t tcc_cc_num[5] = {6, 4, 3, 2, 2};
