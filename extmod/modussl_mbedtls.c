@@ -73,15 +73,6 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
-// TODO: FIXME!
-STATIC int null_entropy_func(void *data, unsigned char *output, size_t len) {
-    (void)data;
-    (void)output;
-    (void)len;
-    // enjoy random bytes
-    return 0;
-}
-
 STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
@@ -140,7 +131,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     mbedtls_entropy_init(&o->entropy);
     const byte seed[] = "upy";
-    ret = mbedtls_ctr_drbg_seed(&o->ctr_drbg, null_entropy_func/*mbedtls_entropy_func*/, &o->entropy, seed, sizeof(seed));
+    ret = mbedtls_ctr_drbg_seed(&o->ctr_drbg, mbedtls_entropy_func, &o->entropy, seed, sizeof(seed));
     if (ret != 0) {
         goto cleanup;
     }
