@@ -26,6 +26,7 @@
 
 #include <stdbool.h>
 
+#include "py/mpstate.h"
 #include "__init__.h"
 #include "GamePad.h"
 
@@ -33,6 +34,7 @@
 
 
 void gamepad_tick(void) {
+    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton) {
         return;
     }
@@ -54,5 +56,5 @@ void gamepad_tick(void) {
 }
 
 void gamepad_reset(void) {
-    gamepad_singleton = NULL;
+    MP_STATE_VM(gamepad_singleton) = NULL;
 }

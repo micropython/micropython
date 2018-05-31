@@ -323,6 +323,7 @@ extern const struct _mp_obj_module_t ble_module;
     struct _music_data_t *music_data; \
     const struct _pwm_events *pwm_active_events; \
     const struct _pwm_events *pwm_pending_events; \
+    mp_obj_t gamepad_singleton; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 

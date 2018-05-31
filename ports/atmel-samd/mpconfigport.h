@@ -312,6 +312,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT]; \
     mp_obj_t rtc_time_source; \
     FLASH_ROOT_POINTERS \
+    mp_obj_t gamepad_singleton; \
 
 void run_background_tasks(void);
 #define MICROPY_VM_HOOK_LOOP run_background_tasks();

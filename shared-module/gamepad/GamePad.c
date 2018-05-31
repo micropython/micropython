@@ -26,6 +26,7 @@
 
 #include <stdbool.h>
 
+#include "py/mpstate.h"
 #include "__init__.h"
 #include "GamePad.h"
 
@@ -35,6 +36,7 @@
 
 
 void gamepad_init(size_t n_pins, const mp_obj_t* pins) {
+    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     for (size_t i = 0; i < 8; ++i) {
         gamepad_singleton->pins[i] = NULL;
     }
