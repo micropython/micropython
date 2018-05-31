@@ -30,6 +30,7 @@
 
 #include "supervisor/shared/autoreload.h"
 #include "shared-module/gamepad/__init__.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
 // Global millisecond tick count
@@ -38,7 +39,12 @@ volatile uint64_t ticks_ms = 0;
 void SysTick_Handler(void) {
     // SysTick interrupt handler called when the SysTick timer reaches zero
     // (every millisecond).
+    common_hal_mcu_disable_interrupts();
     ticks_ms += 1;
+
+    // Read the control register to reset the COUNTFLAG.
+    (void) SysTick->CTRL;
+    common_hal_mcu_enable_interrupts();
 
     #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
         autoreload_tick();
@@ -61,7 +67,7 @@ void tick_delay(uint32_t us) {
     uint32_t us_until_next_tick = SysTick->VAL / ticks_per_us;
     uint32_t start_tick;
     while (us >= us_until_next_tick) {
-        start_tick=SysTick->VAL;  // wait for SysTick->VAL to  RESET
+        start_tick = SysTick->VAL;  // wait for SysTick->VAL to  RESET
         while (SysTick->VAL < start_tick) {}
         us -= us_until_next_tick;
         us_until_next_tick = 1000;
@@ -72,11 +78,25 @@ void tick_delay(uint32_t us) {
 // us counts down!
 void current_tick(uint64_t* ms, uint32_t* us_until_ms) {
     uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
-    *ms = ticks_ms;
-    *us_until_ms = SysTick->VAL / ticks_per_us;
+
+    // We disable interrupts to prevent ticks_ms from changing while we grab it.
+    common_hal_mcu_disable_interrupts();
+    uint32_t tick_status = SysTick->CTRL;
+    uint32_t current_us = SysTick->VAL;
+    uint32_t tick_status2 = SysTick->CTRL;
+    uint64_t current_ms = ticks_ms;
+    // The second clause ensures our value actually rolled over. Its possible it hit zero between
+    // the VAL read and CTRL read.
+    if ((tick_status & SysTick_CTRL_COUNTFLAG_Msk) != 0 ||
+        ((tick_status2 & SysTick_CTRL_COUNTFLAG_Msk) != 0 && current_us > ticks_per_us)) {
+        current_ms++;
+    }
+    common_hal_mcu_enable_interrupts();
+    *ms = current_ms;
+    *us_until_ms = current_us / ticks_per_us;
 }
 
 void wait_until(uint64_t ms, uint32_t us_until_ms) {
     uint32_t ticks_per_us = common_hal_mcu_processor_get_frequency() / 1000 / 1000;
-    while(ticks_ms <= ms && SysTick->VAL / ticks_per_us >= us_until_ms) {}
+    while (ticks_ms <= ms && SysTick->VAL / ticks_per_us >= us_until_ms) {}
 }
