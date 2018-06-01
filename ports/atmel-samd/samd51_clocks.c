@@ -52,14 +52,72 @@ void disconnect_gclk_from_peripheral(uint8_t gclk, uint8_t peripheral) {
     GCLK->PCHCTRL[peripheral].reg = 0;
 }
 
+static void enable_clock_generator_sync(uint8_t gclk, uint32_t source, uint16_t divisor, bool sync) {
+    uint32_t divsel = 0;
+    // The datasheet says 8 bits and max value of 512, how is that possible?
+    if (divisor > 255) { // Generator 1 has 16 bits
+        divsel = GCLK_GENCTRL_DIVSEL;
+        for (int i = 15; i > 0; i--) {
+            if (divisor & (1 << i)) {
+                divisor = i - 1;
+                break;
+            }
+        }
+    }
+
+    GCLK->GENCTRL[gclk].reg = GCLK_GENCTRL_SRC(source) | GCLK_GENCTRL_DIV(divisor) | divsel | GCLK_GENCTRL_OE | GCLK_GENCTRL_GENEN;
+    if (sync)
+        while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+}
+
 void enable_clock_generator(uint8_t gclk, uint32_t source, uint16_t divisor) {
-    GCLK->GENCTRL[gclk].reg = GCLK_GENCTRL_SRC(source) | GCLK_GENCTRL_DIV(divisor) | GCLK_GENCTRL_GENEN;
-    while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+    enable_clock_generator_sync(gclk, source, divisor, true);
 }
 
 void disable_clock_generator(uint8_t gclk) {
     GCLK->GENCTRL[gclk].reg = 0;
     while ((GCLK->SYNCBUSY.vec.GENCTRL & (1 << gclk)) != 0) {}
+}
+
+static void init_clock_source_osculp32k(void) {
+    // Calibration value is loaded at startup
+    OSC32KCTRL->OSCULP32K.bit.EN1K = 0;
+    OSC32KCTRL->OSCULP32K.bit.EN32K = 0;
+}
+
+static void init_clock_source_xosc32k(void) {
+    OSC32KCTRL->XOSC32K.reg = OSC32KCTRL_XOSC32K_ONDEMAND |
+                              OSC32KCTRL_XOSC32K_ENABLE |
+                              OSC32KCTRL_XOSC32K_CGM(1);
+}
+
+static void init_clock_source_dpll0(void)
+{
+    GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL0].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(5);
+    OSCCTRL->Dpll[0].DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDRFRAC(0) | OSCCTRL_DPLLRATIO_LDR(59);
+    OSCCTRL->Dpll[0].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0);
+    OSCCTRL->Dpll[0].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE;
+
+    while (!(OSCCTRL->Dpll[0].DPLLSTATUS.bit.LOCK || OSCCTRL->Dpll[0].DPLLSTATUS.bit.CLKRDY)) {}
+}
+
+void clock_init(void) {
+    // DFLL48M is enabled by default
+
+    init_clock_source_osculp32k();
+    init_clock_source_xosc32k();
+
+    OSC32KCTRL->RTCCTRL.bit.RTCSEL = OSC32KCTRL_RTCCTRL_RTCSEL_ULP1K_Val;
+
+    MCLK->CPUDIV.reg = MCLK_CPUDIV_DIV(1);
+
+    enable_clock_generator_sync(0, GCLK_GENCTRL_SRC_DPLL0_Val, 1, false);
+    enable_clock_generator_sync(1, GCLK_GENCTRL_SRC_DFLL_Val, 1, false);
+    enable_clock_generator_sync(2, GCLK_GENCTRL_SRC_OSCULP32K_Val, 32, false);
+    enable_clock_generator_sync(4, GCLK_GENCTRL_SRC_DPLL0_Val, 1, false);
+    enable_clock_generator_sync(5, GCLK_GENCTRL_SRC_DFLL_Val, 24, false);
+
+    init_clock_source_dpll0();
 }
 
 static bool clk_enabled(uint8_t clk) {
