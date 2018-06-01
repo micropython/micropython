@@ -63,17 +63,14 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     set_eic_channel_data(self->eic_channel_a, (void*) self);
     set_eic_channel_data(self->eic_channel_b, (void*) self);
 
-    bool pin_a_level = gpio_get_pin_level(self->pin_a);
-    bool pin_b_level = gpio_get_pin_level(self->pin_b);
-    if (!pin_a_level && !pin_b_level) {
-        self->last_state = 1;
-    } else if (!pin_a_level && pin_b_level) {
-        self->last_state = 2;
-    } else if (pin_a_level && pin_b_level) {
-        self->last_state = 3;
-    } else {
-        self->last_state = 4;
-    }
+    self->position = 0;
+    self->quarter_count = 0;
+
+    // Top two bits of self->last_state don't matter, because they'll be gone as soon as
+    // interrupt handler is called.
+    self->last_state =
+        ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
+        (uint8_t) gpio_get_pin_level(self->pin_b);
 
     turn_on_eic_channel(self->eic_channel_a, EIC_CONFIG_SENSE0_BOTH_Val, EIC_HANDLER_INCREMENTAL_ENCODER);
     turn_on_eic_channel(self->eic_channel_b, EIC_CONFIG_SENSE0_BOTH_Val, EIC_HANDLER_INCREMENTAL_ENCODER);
@@ -101,29 +98,55 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
 
 void incrementalencoder_interrupt_handler(uint8_t channel) {
     rotaryio_incrementalencoder_obj_t* self = get_eic_channel_data(channel);
+
+    // This table also works for detent both at 11 and 00
+    // For 11 at detent:
+    // Turning cw: 11->01->00->10->11
+    // Turning ccw: 11->10->00->01->11
+    // For 00 at detent:
+    // Turning cw: 00->10->11->10->00
+    // Turning ccw: 00->01->11->10->00
+
+    // index table by state <oldA><oldB><newA><newB>
+    #define BAD 7
+    static const int8_t transitions[16] = {
+        0,    // 00 -> 00 no movement
+        -1,   // 00 -> 01 3/4 ccw (11 detent) or 1/4 ccw (00 at detent)
+        +1,   // 00 -> 10 3/4 cw or 1/4 cw
+        BAD,  // 00 -> 11 non-Gray-code transition
+        +1,   // 01 -> 00 2/4 or 4/4 cw
+        0,    // 01 -> 01 no movement
+        BAD,  // 01 -> 10 non-Gray-code transition
+        -1,   // 01 -> 11 4/4 or 2/4 ccw
+        -1,   // 10 -> 00 2/4 or 4/4 ccw
+        BAD,  // 10 -> 01 non-Gray-code transition
+        0,    // 10 -> 10 no movement
+        +1,   // 10 -> 11 4/4 or 2/4 cw
+        BAD,  // 11 -> 00 non-Gray-code transition
+        +1,   // 11 -> 01 1/4 or 3/4 cw
+        -1,   // 11 -> 10 1/4 or 3/4 ccw
+        0,    // 11 -> 11 no movement
+    };
+
+    // Shift the old AB bits to the "old" position, and set the new AB bits.
     // TODO(tannewt): If we need more speed then read the pin directly. gpio_get_pin_level has
     // smarts to compensate for pin direction we don't need.
-    bool pin_a = gpio_get_pin_level(self->pin_a);
-    bool pin_b = gpio_get_pin_level(self->pin_b);
+    self->last_state = (self->last_state & 0x3) << 2 |
+        ((uint8_t) gpio_get_pin_level(self->pin_a) << 1) |
+        (uint8_t) gpio_get_pin_level(self->pin_b);
 
-    uint8_t this_state;
-    if (!pin_a && !pin_b) {
-        this_state = 1;
-    } else if (!pin_a && pin_b) {
-        this_state = 2;
-    } else if (pin_a && pin_b) {
-        this_state = 3;
-    } else {
-        this_state = 4;
+    int8_t quarter_incr = transitions[self->last_state];
+    if (quarter_incr == BAD) {
+        // Missed a transition. We don't know which way we're going, so do nothing.
+        return;
     }
 
-    // Handle wrap around explicitly.
-    if (this_state == 4 && self->last_state == 1) {
-        self->position -= 1;
-    } else if (this_state == 1 && self->last_state == 4) {
+    self->quarter_count += quarter_incr;
+    if (self->quarter_count >= 4) {
         self->position += 1;
-    } else {
-        self->position += (this_state - self->last_state);
+        self->quarter_count = 0;
+    } else if (self->quarter_count <= -4) {
+        self->position -= 1;
+        self->quarter_count = 0;
     }
-    self->last_state = this_state;
 }

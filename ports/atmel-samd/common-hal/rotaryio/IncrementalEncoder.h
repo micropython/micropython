@@ -37,7 +37,8 @@ typedef struct {
     uint8_t pin_b;
     uint8_t eic_channel_a:4;
     uint8_t eic_channel_b:4;
-    uint8_t last_state;
+    uint8_t last_state:4;   // <old A><old B><new A><new B>
+    int8_t quarter_count:4; // count intermediate transitions between detents
     mp_int_t position;
 } rotaryio_incrementalencoder_obj_t;
 
