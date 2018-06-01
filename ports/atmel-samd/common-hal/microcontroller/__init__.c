@@ -30,10 +30,10 @@
 #include "py/runtime.h"
 
 #include "reset.h"
-#include "samd21_pins.h"
 
 #include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
@@ -42,13 +42,31 @@ void common_hal_mcu_delay_us(uint32_t delay) {
 
 // Interrupt flags that will be saved and restored during disable/Enable
 // interrupt functions below.
-volatile hal_atomic_t flags;
+
+// ASF4's interrupt disable doesn't handle duplicate calls
+volatile uint32_t interrupt_flags;
+volatile uint32_t nesting_count = 0;
 void common_hal_mcu_disable_interrupts(void) {
-    atomic_enter_critical(&flags);
+    if (nesting_count == 0) {
+        interrupt_flags = __get_PRIMASK();
+        __disable_irq();
+        __DMB();
+    }
+    nesting_count++;
 }
 
 void common_hal_mcu_enable_interrupts(void) {
-    atomic_leave_critical(&flags);
+    if (nesting_count == 0) {
+        // This is very very bad because it means there was mismatched disable/enables so we
+        // "HardFault".
+        HardFault_Handler();
+    }
+    nesting_count--;
+    if (nesting_count > 0) {
+        return;
+    }
+    __DMB();
+    __set_PRIMASK(interrupt_flags);
 }
 
 extern uint32_t _ezero;

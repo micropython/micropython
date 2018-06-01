@@ -42,10 +42,6 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
-#ifdef SAMD51
-#include "samd51_pins.h"
-#endif
-
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
     if (pin->pin != PIN_PA02
@@ -73,7 +69,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     #endif
 
     // SAMD21: This clock should be <= 12 MHz, per datasheet section 47.6.3.
-    // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6. 
+    // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6.
     _gclk_enable_channel(DAC_GCLK_ID, CONF_GCLK_DAC_SRC);
 
     // Don't double init the DAC on the SAMD51 when both outputs are in use. We use the free state

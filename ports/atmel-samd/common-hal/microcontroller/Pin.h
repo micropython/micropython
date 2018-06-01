@@ -81,4 +81,6 @@ void reset_all_pins(void);
 void reset_pin(uint8_t pin);
 void claim_pin(const mcu_pin_obj_t* pin);
 
+#include "peripherals/pins.h"
+
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H

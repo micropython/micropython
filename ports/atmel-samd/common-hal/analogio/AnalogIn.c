@@ -34,7 +34,7 @@
 #include "py/binary.h"
 #include "py/mphal.h"
 
-#include "peripherals.h"
+#include "peripherals/adc.h"
 #include "shared-bindings/analogio/AnalogIn.h"
 
 #include "atmel_start_pins.h"

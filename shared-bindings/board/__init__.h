@@ -29,6 +29,8 @@
 
 #include "py/obj.h"
 
+#include "shared-bindings/microcontroller/Pin.h"  // for the pin definitions
+
 extern const mp_obj_dict_t board_module_globals;
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_BOARD___INIT___H

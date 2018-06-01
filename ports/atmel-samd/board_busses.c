@@ -30,10 +30,8 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "mpconfigboard.h"
-#include "pins.h"
+#include "peripherals/pins.h"
 #include "py/runtime.h"
-
-
 
 #if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)
     STATIC mp_obj_t board_i2c(void) {

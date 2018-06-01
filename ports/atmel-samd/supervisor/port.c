@@ -55,11 +55,12 @@
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/touchio/TouchIn.h"
 #include "common-hal/usb_hid/Device.h"
+#include "peripherals/cache.h"
+#include "peripherals/clocks.h"
+#include "peripherals/events.h"
+#include "peripherals/external_interrupts.h"
+#include "peripherals/dma.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "clocks.h"
-#include "events.h"
-#include "peripherals.h"
-#include "shared_dma.h"
 #include "tick.h"
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
@@ -183,6 +184,7 @@ safe_mode_t port_init(void) {
     _pm_init();
 #endif
     clock_init();
+    init_dynamic_clocks();
 
     board_init();
 
@@ -248,7 +250,7 @@ void reset_port(void) {
 #ifdef SAMD21
     touchin_reset();
 #endif
-    pulsein_reset();
+    eic_reset();
     pulseout_reset();
     pwmout_reset();
 

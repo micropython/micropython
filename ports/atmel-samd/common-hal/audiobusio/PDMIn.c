@@ -41,12 +41,13 @@
 #include "hal/include/hal_gpio.h"
 #include "hal/utils/include/utils.h"
 
+#include "peripherals/clocks.h"
+#include "peripherals/events.h"
+#include "peripherals/i2s.h"
+#include "peripherals/pins.h"
+#include "peripherals/dma.h"
+
 #include "audio_dma.h"
-#include "clocks.h"
-#include "events.h"
-#include "i2s.h"
-#include "pins.h"
-#include "shared_dma.h"
 #include "tick.h"
 
 #define OVERSAMPLING 64

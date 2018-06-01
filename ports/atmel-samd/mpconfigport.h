@@ -174,6 +174,7 @@ extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t math_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
+extern const struct _mp_obj_module_t rotaryio_module;
 extern const struct _mp_obj_module_t rtc_module;
 extern const struct _mp_obj_module_t samd_module;
 extern const struct _mp_obj_module_t storage_module;
@@ -220,6 +221,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
         AUDIOBUSIO_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
     #endif
     #define EXPRESS_BOARD
@@ -304,7 +306,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#include "shared_dma.h"
+#include "peripherals/dma.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \

@@ -1,4 +1,5 @@
-#include "samd51_pins.h"
+#include "shared-bindings/board/__init__.h"
+
 #include "board_busses.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {

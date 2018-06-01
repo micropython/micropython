@@ -32,8 +32,8 @@
 #include "mpconfigboard.h" // for EXTERNAL_FLASH_QSPI_DUAL
 
 #include "external_flash/common_commands.h"
-#include "peripherals.h"
-#include "shared_dma.h"
+#include "peripherals/cache.h"
+#include "peripherals/dma.h"
 
 #include "atmel_start_pins.h"
 #include "hal_gpio.h"

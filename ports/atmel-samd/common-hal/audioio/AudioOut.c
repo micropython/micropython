@@ -45,10 +45,11 @@
 #endif
 
 #include "audio_dma.h"
-#include "events.h"
-#include "samd21_pins.h"
-#include "shared_dma.h"
-#include "timers.h"
+
+#include "peripherals/dma.h"
+#include "peripherals/events.h"
+#include "peripherals/pins.h"
+#include "peripherals/timers.h"
 
 void audioout_reset(void) {
 }
