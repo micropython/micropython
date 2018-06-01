@@ -36,8 +36,8 @@
 
 //| .. currentmodule:: rotaryio
 //|
-//| :class:`IncrementalEncoder` -- Read the position of the incremental encoder
-//| ============================================================================
+//| :class:`IncrementalEncoder` -- Track the relative position of an incremental encoder
+//| ====================================================================================
 //|
 //| IncrementalEncoder determines the relative rotational position based on two series of pulses.
 //|
@@ -47,8 +47,8 @@
 //|   state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
 //|   relative to the position when the object is contructed.
 //|
-//|   :param ~microcontroller.Pin pin: First pin to read pulses from.
-//|   :param ~microcontroller.Pin pin: Second pin to read pulses from.
+//|   :param ~microcontroller.Pin pin_a: First pin to read pulses from.
+//|   :param ~microcontroller.Pin pin_b: Second pin to read pulses from.
 //|
 //| For example::
 //|
@@ -94,7 +94,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
 
 //|   .. method:: deinit()
 //|
-//|      Deinitialises the IncrementalEncoder and releases any hardware resources for reuse.
+//|      Deinitializes the IncrementalEncoder and releases any hardware resources for reuse.
 //|
 STATIC mp_obj_t rotaryio_incrementalencoder_deinit(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -135,10 +135,19 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj_get_position(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rotaryio_incrementalencoder_get_position_obj, rotaryio_incrementalencoder_obj_get_position);
 
+STATIC mp_obj_t rotaryio_incrementalencoder_obj_set_position(mp_obj_t self_in, mp_obj_t new_position) {
+    rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_rotaryio_incrementalencoder_deinited(self));
+
+    common_hal_rotaryio_incrementalencoder_set_position(self, mp_obj_get_int(new_position));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(rotaryio_incrementalencoder_set_position_obj, rotaryio_incrementalencoder_obj_set_position);
+
 const mp_obj_property_t rotaryio_incrementalencoder_position_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&rotaryio_incrementalencoder_get_position_obj,
-              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&rotaryio_incrementalencoder_set_position_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 

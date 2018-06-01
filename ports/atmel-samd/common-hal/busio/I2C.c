@@ -41,6 +41,10 @@
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
+    #ifdef PIRKEY_M0
+    mp_raise_NotImplementedError("Not enough pins available");
+    return;
+    #endif
     Sercom* sercom = NULL;
     uint8_t sercom_index;
     uint32_t sda_pinmux = 0;

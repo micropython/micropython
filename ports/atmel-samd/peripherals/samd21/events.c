@@ -74,8 +74,8 @@ void init_event_channel_interrupt(uint8_t channel, uint8_t gclk, uint8_t generat
                          EVSYS_CHANNEL_EVGEN(generator) |
                          EVSYS_CHANNEL_PATH_RESYNCHRONIZED |
                          EVSYS_CHANNEL_EDGSEL_RISING_EDGE;
-    if (channel > 7) {
-        uint8_t value = 1 << (channel - 7);
+    if (channel >= 8) {
+        uint8_t value = 1 << (channel - 8);
         EVSYS->INTFLAG.reg = EVSYS_INTFLAG_EVDp8(value) | EVSYS_INTFLAG_OVRp8(value);
         EVSYS->INTENSET.reg = EVSYS_INTENSET_EVDp8(value) | EVSYS_INTENSET_OVRp8(value);
     } else {
@@ -87,8 +87,8 @@ void init_event_channel_interrupt(uint8_t channel, uint8_t gclk, uint8_t generat
 
 bool event_interrupt_active(uint8_t channel) {
     bool active = false;
-    if (channel > 7) {
-        uint8_t value = 1 << (channel - 7);
+    if (channel >= 8) {
+        uint8_t value = 1 << (channel - 8);
         active = (EVSYS->INTFLAG.reg & EVSYS_INTFLAG_EVDp8(value)) != 0;
         // Only clear if we know its active, otherwise there is the possibility it becomes active
         // after we check but before we clear.
@@ -107,8 +107,8 @@ bool event_interrupt_active(uint8_t channel) {
 
 bool event_interrupt_overflow(uint8_t channel) {
     bool overflow = false;
-    if (channel > 7) {
-        uint8_t value = 1 << (channel - 7);
+    if (channel >= 8) {
+        uint8_t value = 1 << (channel - 8);
         overflow = (EVSYS->INTFLAG.reg & EVSYS_INTFLAG_OVRp8(value)) != 0;
     } else {
         uint8_t value = 1 << channel;

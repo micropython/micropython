@@ -96,6 +96,11 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
     return self->position;
 }
 
+void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
+        mp_int_t new_position) {
+    self->position = new_position;
+}
+
 void incrementalencoder_interrupt_handler(uint8_t channel) {
     rotaryio_incrementalencoder_obj_t* self = get_eic_channel_data(channel);
 
