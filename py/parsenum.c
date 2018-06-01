@@ -83,6 +83,8 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
         mp_uint_t dig = *str;
         if ('0' <= dig && dig <= '9') {
             dig -= '0';
+        } else if (dig == '_') {
+            continue;
         } else {
             dig |= 0x20; // make digit lower-case
             if ('a' <= dig && dig <= 'z') {
@@ -273,6 +275,8 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
             } else if (allow_imag && (dig | 0x20) == 'j') {
                 imag = true;
                 break;
+            } else if (dig == '_') {
+                continue;
             } else {
                 // unknown character
                 str--;
