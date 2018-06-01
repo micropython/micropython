@@ -67,12 +67,6 @@ void mod_network_init(void) {
 }
 
 void mod_network_deinit(void) {
-    #if MICROPY_PY_LWIP
-    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
-        netif_remove(netif);
-    }
-    // TODO there may be some timeouts that are still pending...
-    #endif
 }
 
 void mod_network_register_nic(mp_obj_t nic) {
