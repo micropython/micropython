@@ -240,6 +240,8 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
 
     disable_event_channel(self->tc_to_dac_event_channel);
 
+    tc_set_enable(tc_insts[self->tc_index], false);
+
     reset_pin(self->left_channel->pin);
     self->left_channel = mp_const_none;
     #ifdef SAMD51
