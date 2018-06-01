@@ -44,6 +44,8 @@ typedef struct _mod_network_nic_type_t {
     void (*poll_callback)(void *data, struct netif *netif);
 } mod_network_nic_type_t;
 
+mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
+
 #else
 
 struct _mod_network_socket_obj_t;
