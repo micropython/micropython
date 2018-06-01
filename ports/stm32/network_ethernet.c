@@ -44,7 +44,7 @@ STATIC mp_obj_t ethernet_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // init the ethernet object
-    ethernet_obj.base.base.base.type = &mod_network_nic_type_ethernet;
+    ethernet_obj.base.base.type = &mod_network_nic_type_ethernet;
     ethernet_obj.base.poll_callback = ethernet_lwip_poll;
 
     // Hardware init
@@ -81,45 +81,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ethernet_active_obj, 1, 2, ethernet_a
 
 STATIC mp_obj_t ethernet_ifconfig(size_t n_args, const mp_obj_t *args) {
     ethernet_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    if (n_args == 1) {
-        // get
-        const ip_addr_t *dns = dns_getserver(0);
-        mp_obj_t tuple[4] = {
-            netutils_format_ipv4_addr((uint8_t*)&self->netif.ip_addr, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&self->netif.netmask, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&self->netif.gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns, NETUTILS_BIG),
-        };
-        return mp_obj_new_tuple(4, tuple);
-    } else if (args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
-        dhcp_set_struct(&self->netif, &self->dhcp_struct);
-        dhcp_start(&self->netif);
-
-        // wait for dhcp to get IP address
-        uint32_t start = mp_hal_ticks_ms();
-        while (!dhcp_supplied_address(&self->netif) && mp_hal_ticks_ms() - start < 8000) {
-            mp_hal_delay_ms(100);
-        }
-        if (!dhcp_supplied_address(&self->netif)) {
-            mp_raise_msg(&mp_type_OSError, "timeout waiting for DHCP to get IP address");
-        }
-        return mp_const_none;
-    } else {
-        // set
-        mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[1], 4, &items);
-        netutils_parse_ipv4_addr(items[0], (uint8_t*)&self->netif.ip_addr, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[1], (uint8_t*)&self->netif.netmask, NETUTILS_BIG);
-        netutils_parse_ipv4_addr(items[2], (uint8_t*)&self->netif.gw, NETUTILS_BIG);
-        ip_addr_t dns;
-        netutils_parse_ipv4_addr(items[3], (uint8_t*)&dns, NETUTILS_BIG);
-        dns_setserver(0, &dns);
-	ethernetif_update_config(&self->netif);
-        return mp_const_none;
-    }
+    return mod_network_nic_ifconfig(&self->netif, n_args - 1, args + 1);
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ethernet_ifconfig_obj, 1, 2, ethernet_ifconfig);
 
 /*******************************************************************************/
