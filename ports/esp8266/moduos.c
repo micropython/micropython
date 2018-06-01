@@ -76,6 +76,19 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
+// We wrap the mp_uos_dupterm function to detect if a UART is attached or not
+mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t prev_obj = mp_uos_dupterm_obj.fun.var(n_args, args);
+    if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+        ++uart_attached_to_dupterm;
+    }
+    if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
+        --uart_attached_to_dupterm;
+    }
+    return prev_obj;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_dupterm_obj, 1, 2, os_dupterm);
+
 STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
     mp_hal_signal_dupterm_input();
@@ -88,7 +101,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
     #if MICROPY_PY_OS_DUPTERM
-    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&os_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },
     #endif
     #if MICROPY_VFS_FAT

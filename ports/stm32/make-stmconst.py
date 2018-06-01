@@ -244,8 +244,10 @@ def main():
     print("")
 
     with open(args.qstr_filename, 'wt') as qstr_file:
+        print('#if MICROPY_PY_STM', file=qstr_file)
         for qstr in sorted(needed_qstrs):
             print('Q({})'.format(qstr), file=qstr_file)
+        print('#endif // MICROPY_PY_STM', file=qstr_file)
 
     with open(args.mpz_filename, 'wt') as mpz_file:
         for mpz in sorted(needed_mpzs):

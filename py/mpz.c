@@ -1532,7 +1532,7 @@ mpz_t *mpz_mod(const mpz_t *lhs, const mpz_t *rhs) {
 
 // must return actual int value if it fits in mp_int_t
 mp_int_t mpz_hash(const mpz_t *z) {
-    mp_int_t val = 0;
+    mp_uint_t val = 0;
     mpz_dig_t *d = z->dig + z->len;
 
     while (d-- > z->dig) {

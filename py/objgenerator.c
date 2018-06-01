@@ -32,6 +32,7 @@
 #include "py/bc.h"
 #include "py/objgenerator.h"
 #include "py/objfun.h"
+#include "py/stackctrl.h"
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -92,6 +93,7 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
+    MP_STACK_CHECK();
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_gen_instance));
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {
@@ -115,10 +117,20 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             *self->code_state.sp = send_value;
         }
     }
-    mp_obj_dict_t *old_globals = mp_globals_get();
+
+    // We set self->globals=NULL while executing, for a sentinel to ensure the generator
+    // cannot be reentered during execution
+    if (self->globals == NULL) {
+        mp_raise_ValueError("generator already executing");
+    }
+
+    // Set up the correct globals context for the generator and execute it
+    self->code_state.old_globals = mp_globals_get();
     mp_globals_set(self->globals);
+    self->globals = NULL;
     mp_vm_return_kind_t ret_kind = mp_execute_bytecode(&self->code_state, throw_value);
-    mp_globals_set(old_globals);
+    self->globals = mp_globals_get();
+    mp_globals_set(self->code_state.old_globals);
 
     switch (ret_kind) {
         case MP_VM_RETURN_NORMAL:

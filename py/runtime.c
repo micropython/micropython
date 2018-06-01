@@ -1086,6 +1086,22 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
     }
 }
 
+// Acts like mp_load_method_maybe but catches AttributeError, and all other exceptions if requested
+void mp_load_method_protected(mp_obj_t obj, qstr attr, mp_obj_t *dest, bool catch_all_exc) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_load_method_maybe(obj, attr, dest);
+        nlr_pop();
+    } else {
+        if (!catch_all_exc
+            && !mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type),
+                MP_OBJ_FROM_PTR(&mp_type_AttributeError))) {
+            // Re-raise the exception
+            nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+    }
+}
+
 void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     DEBUG_OP_printf("store attr %p.%s <- %p\n", base, qstr_str(attr), value);
     mp_obj_type_t *type = mp_obj_get_type(base);

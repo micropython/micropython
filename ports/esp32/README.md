@@ -32,7 +32,7 @@ git hash of this version can be found by running `make` without a configured
 
     $ git clone https://github.com/espressif/esp-idf.git
     $ git checkout <Current supported ESP-IDF commit hash>
-    $ git submodule update --recursive
+    $ git submodule update --init --recursive
 
 The binary toolchain (binutils, gcc, etc.) can be installed using the following
 guides:
@@ -64,7 +64,7 @@ the following commands on (at least) Linux:
 
     $ export PATH=$PATH:$HOME/esp/crosstool-NG/builds/xtensa-esp32-elf/bin
 
-You cam put this command in your `.profile` or `.bash_login`.
+You can put this command in your `.profile` or `.bash_login`.
 
 You then need to set the `ESPIDF` environment/makefile variable to point to
 the root of the ESP-IDF repository.  You can set the variable in your PATH,

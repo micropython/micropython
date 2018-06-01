@@ -110,4 +110,4 @@ To make a minimal build:
 To run a minimal build in QEMU without requiring TAP networking setup
 run the following after you built image with the previous command:
 
-    ./make-minimal BOARD=<qemu_x86|qemu_cortex_m3> run
+    ./make-minimal BOARD=<qemu_x86_nommu|qemu_x86|qemu_cortex_m3> run

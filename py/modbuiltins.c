@@ -186,10 +186,17 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Make a list of names in the given object
         // Implemented by probing all possible qstrs with mp_load_method_maybe
         size_t nqstr = QSTR_TOTAL();
-        for (size_t i = 1; i < nqstr; ++i) {
+        for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
             mp_obj_t dest[2];
-            mp_load_method_maybe(args[0], i, dest);
+            mp_load_method_protected(args[0], i, dest, false);
             if (dest[0] != MP_OBJ_NULL) {
+                #if MICROPY_PY_ALL_SPECIAL_METHODS
+                // Support for __dir__: see if we can dispatch to this special method
+                // This relies on MP_QSTR__dir__ being first after MP_QSTR_
+                if (i == MP_QSTR___dir__ && dest[1] != MP_OBJ_NULL) {
+                    return mp_call_method_n_kw(0, 0, dest);
+                }
+                #endif
                 mp_obj_list_append(dir, MP_OBJ_NEW_QSTR(i));
             }
         }
@@ -438,7 +445,36 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_repr_obj, mp_builtin_repr);
 STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_obj_t o_in = args[0];
     if (MP_OBJ_IS_INT(o_in)) {
-        return o_in;
+        if (n_args <= 1) {
+            return o_in;
+        }
+
+        #if !MICROPY_PY_BUILTINS_ROUND_INT
+        mp_raise_NotImplementedError(NULL);
+        #else
+        mp_int_t num_dig = mp_obj_get_int(args[1]);
+        if (num_dig >= 0) {
+            return o_in;
+        }
+
+        mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
+        mp_obj_t half_mult =  mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
+        mp_obj_t modulo = mp_binary_op(MP_BINARY_OP_MODULO, o_in, mult);
+        mp_obj_t rounded = mp_binary_op(MP_BINARY_OP_SUBTRACT, o_in, modulo);
+        if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, half_mult, modulo))) {
+            return rounded;
+        } else if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_MORE, modulo, half_mult))) {
+            return mp_binary_op(MP_BINARY_OP_ADD, rounded, mult);
+        } else {
+            // round to even number
+            mp_obj_t floor = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, o_in, mult);
+            if (mp_obj_is_true(mp_binary_op(MP_BINARY_OP_AND, floor, MP_OBJ_NEW_SMALL_INT(1)))) {
+                return mp_binary_op(MP_BINARY_OP_ADD, rounded, mult);
+            } else {
+                return rounded;
+            }
+        }
+        #endif
     }
 #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t val = mp_obj_get_float(o_in);
@@ -525,14 +561,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_delattr_obj, mp_builtin_delattr);
 
 STATIC mp_obj_t mp_builtin_hasattr(mp_obj_t object_in, mp_obj_t attr_in) {
     qstr attr = mp_obj_str_get_qstr(attr_in);
-
     mp_obj_t dest[2];
-    // TODO: https://docs.python.org/3/library/functions.html?highlight=hasattr#hasattr
-    // explicitly says "This is implemented by calling getattr(object, name) and seeing
-    // whether it raises an AttributeError or not.", so we should explicitly wrap this
-    // in nlr_push and handle exception.
-    mp_load_method_maybe(object_in, attr, dest);
-
+    mp_load_method_protected(object_in, attr, dest, false);
     return mp_obj_new_bool(dest[0] != MP_OBJ_NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_builtin_hasattr_obj, mp_builtin_hasattr);

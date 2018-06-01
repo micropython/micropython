@@ -562,7 +562,6 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     mp_map_elem_t *elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // object member, always treated as a value
-        // TODO should we check for properties?
         dest[0] = elem->value;
         return;
     }
@@ -1006,8 +1005,13 @@ const mp_obj_type_t mp_type_type = {
 };
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
-    assert(MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)); // MicroPython restriction, for now
-    assert(MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)); // MicroPython restriction, for now
+    // Verify input objects have expected type
+    if (!MP_OBJ_IS_TYPE(bases_tuple, &mp_type_tuple)) {
+        mp_raise_TypeError(NULL);
+    }
+    if (!MP_OBJ_IS_TYPE(locals_dict, &mp_type_dict)) {
+        mp_raise_TypeError(NULL);
+    }
 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
 
@@ -1016,7 +1020,9 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
-        assert(MP_OBJ_IS_TYPE(bases_items[i], &mp_type_type));
+        if (!MP_OBJ_IS_TYPE(bases_items[i], &mp_type_type)) {
+            mp_raise_TypeError(NULL);
+        }
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
         if (t->make_new == NULL) {
@@ -1106,6 +1112,9 @@ STATIC mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_type)) {
+        mp_raise_TypeError(NULL);
+    }
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
     *o = (mp_obj_super_t){{type_in}, args[0], args[1]};
     return MP_OBJ_FROM_PTR(o);

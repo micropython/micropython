@@ -315,7 +315,7 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->last_source_line = 1;
     #ifndef NDEBUG
     // With debugging enabled labels are checked for unique assignment
-    if (pass < MP_PASS_EMIT) {
+    if (pass < MP_PASS_EMIT && emit->label_offsets != NULL) {
         memset(emit->label_offsets, -1, emit->max_num_labels * sizeof(mp_uint_t));
     }
     #endif
@@ -504,19 +504,19 @@ void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
     }
 }
 
-void mp_emit_bc_import_name(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_IMPORT_NAME, qst);
-}
-
-void mp_emit_bc_import_from(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_IMPORT_FROM, qst);
-}
-
-void mp_emit_bc_import_star(emit_t *emit) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte(emit, MP_BC_IMPORT_STAR);
+void mp_emit_bc_import(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_BC_IMPORT_NAME + MP_EMIT_IMPORT_NAME == MP_BC_IMPORT_NAME);
+    MP_STATIC_ASSERT(MP_BC_IMPORT_NAME + MP_EMIT_IMPORT_FROM == MP_BC_IMPORT_FROM);
+    if (kind == MP_EMIT_IMPORT_FROM) {
+        emit_bc_pre(emit, 1);
+    } else {
+        emit_bc_pre(emit, -1);
+    }
+    if (kind == MP_EMIT_IMPORT_STAR) {
+        emit_write_bytecode_byte(emit, MP_BC_IMPORT_STAR);
+    } else {
+        emit_write_bytecode_byte_qstr(emit, MP_BC_IMPORT_NAME + kind, qst);
+    }
 }
 
 void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
@@ -556,43 +556,24 @@ void mp_emit_bc_load_null(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_LOAD_NULL);
 }
 
-void mp_emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    MP_STATIC_ASSERT(MP_BC_LOAD_FAST_N + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_LOAD_FAST_N);
+    MP_STATIC_ASSERT(MP_BC_LOAD_FAST_N + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_LOAD_DEREF);
     (void)qst;
     emit_bc_pre(emit, 1);
-    if (local_num <= 15) {
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST && local_num <= 15) {
         emit_write_bytecode_byte(emit, MP_BC_LOAD_FAST_MULTI + local_num);
     } else {
-        emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_FAST_N, local_num);
+        emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_FAST_N + kind, local_num);
     }
 }
 
-void mp_emit_bc_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_load_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_BC_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_BC_LOAD_NAME);
+    MP_STATIC_ASSERT(MP_BC_LOAD_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_BC_LOAD_GLOBAL);
     (void)qst;
     emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_LOAD_DEREF, local_num);
-}
-
-void mp_emit_bc_load_name(emit_t *emit, qstr qst) {
-    (void)qst;
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_NAME, qst);
-    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
-        emit_write_bytecode_byte(emit, 0);
-    }
-}
-
-void mp_emit_bc_load_global(emit_t *emit, qstr qst) {
-    (void)qst;
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_GLOBAL, qst);
-    if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
-        emit_write_bytecode_byte(emit, 0);
-    }
-}
-
-void mp_emit_bc_load_attr(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_ATTR, qst);
+    emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_NAME + kind, qst);
     if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
         emit_write_bytecode_byte(emit, 0);
     }
@@ -608,80 +589,68 @@ void mp_emit_bc_load_build_class(emit_t *emit) {
     emit_write_bytecode_byte(emit, MP_BC_LOAD_BUILD_CLASS);
 }
 
-void mp_emit_bc_load_subscr(emit_t *emit) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte(emit, MP_BC_LOAD_SUBSCR);
-}
-
-void mp_emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    (void)qst;
-    emit_bc_pre(emit, -1);
-    if (local_num <= 15) {
-        emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_MULTI + local_num);
+void mp_emit_bc_subscr(emit_t *emit, int kind) {
+    if (kind == MP_EMIT_SUBSCR_LOAD) {
+        emit_bc_pre(emit, -1);
+        emit_write_bytecode_byte(emit, MP_BC_LOAD_SUBSCR);
     } else {
-        emit_write_bytecode_byte_uint(emit, MP_BC_STORE_FAST_N, local_num);
+        if (kind == MP_EMIT_SUBSCR_DELETE) {
+            mp_emit_bc_load_null(emit);
+            mp_emit_bc_rot_three(emit);
+        }
+        emit_bc_pre(emit, -3);
+        emit_write_bytecode_byte(emit, MP_BC_STORE_SUBSCR);
     }
 }
 
-void mp_emit_bc_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
-    (void)qst;
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_STORE_DEREF, local_num);
-}
-
-void mp_emit_bc_store_name(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_NAME, qst);
-}
-
-void mp_emit_bc_store_global(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, -1);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_GLOBAL, qst);
-}
-
-void mp_emit_bc_store_attr(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, -2);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_ATTR, qst);
+void mp_emit_bc_attr(emit_t *emit, qstr qst, int kind) {
+    if (kind == MP_EMIT_ATTR_LOAD) {
+        emit_bc_pre(emit, 0);
+        emit_write_bytecode_byte_qstr(emit, MP_BC_LOAD_ATTR, qst);
+    } else {
+        if (kind == MP_EMIT_ATTR_DELETE) {
+            mp_emit_bc_load_null(emit);
+            mp_emit_bc_rot_two(emit);
+        }
+        emit_bc_pre(emit, -2);
+        emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_ATTR, qst);
+    }
     if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
         emit_write_bytecode_byte(emit, 0);
     }
 }
 
-void mp_emit_bc_store_subscr(emit_t *emit) {
-    emit_bc_pre(emit, -3);
-    emit_write_bytecode_byte(emit, MP_BC_STORE_SUBSCR);
-}
-
-void mp_emit_bc_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    MP_STATIC_ASSERT(MP_BC_STORE_FAST_N + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_STORE_FAST_N);
+    MP_STATIC_ASSERT(MP_BC_STORE_FAST_N + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_STORE_DEREF);
     (void)qst;
-    emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_FAST, local_num);
+    emit_bc_pre(emit, -1);
+    if (kind == MP_EMIT_IDOP_LOCAL_FAST && local_num <= 15) {
+        emit_write_bytecode_byte(emit, MP_BC_STORE_FAST_MULTI + local_num);
+    } else {
+        emit_write_bytecode_byte_uint(emit, MP_BC_STORE_FAST_N + kind, local_num);
+    }
 }
 
-void mp_emit_bc_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num) {
+void mp_emit_bc_store_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_BC_STORE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_BC_STORE_NAME);
+    MP_STATIC_ASSERT(MP_BC_STORE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_BC_STORE_GLOBAL);
+    emit_bc_pre(emit, -1);
+    emit_write_bytecode_byte_qstr(emit, MP_BC_STORE_NAME + kind, qst);
+}
+
+void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind) {
+    MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_FAST == MP_BC_DELETE_FAST);
+    MP_STATIC_ASSERT(MP_BC_DELETE_FAST + MP_EMIT_IDOP_LOCAL_DEREF == MP_BC_DELETE_DEREF);
     (void)qst;
-    emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_DEREF, local_num);
+    emit_write_bytecode_byte_uint(emit, MP_BC_DELETE_FAST + kind, local_num);
 }
 
-void mp_emit_bc_delete_name(emit_t *emit, qstr qst) {
+void mp_emit_bc_delete_global(emit_t *emit, qstr qst, int kind) {
+    MP_STATIC_ASSERT(MP_BC_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_NAME == MP_BC_DELETE_NAME);
+    MP_STATIC_ASSERT(MP_BC_DELETE_NAME + MP_EMIT_IDOP_GLOBAL_GLOBAL == MP_BC_DELETE_GLOBAL);
     emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_DELETE_NAME, qst);
-}
-
-void mp_emit_bc_delete_global(emit_t *emit, qstr qst) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_qstr(emit, MP_BC_DELETE_GLOBAL, qst);
-}
-
-void mp_emit_bc_delete_attr(emit_t *emit, qstr qst) {
-    mp_emit_bc_load_null(emit);
-    mp_emit_bc_rot_two(emit);
-    mp_emit_bc_store_attr(emit, qst);
-}
-
-void mp_emit_bc_delete_subscr(emit_t *emit) {
-    mp_emit_bc_load_null(emit);
-    mp_emit_bc_rot_three(emit);
-    mp_emit_bc_store_subscr(emit);
+    emit_write_bytecode_byte_qstr(emit, MP_BC_DELETE_NAME + kind, qst);
 }
 
 void mp_emit_bc_dup_top(emit_t *emit) {
@@ -750,11 +719,18 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
     }
 }
 
-void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label) {
+void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind) {
+    MP_STATIC_ASSERT(MP_BC_SETUP_WITH + MP_EMIT_SETUP_BLOCK_WITH == MP_BC_SETUP_WITH);
+    MP_STATIC_ASSERT(MP_BC_SETUP_WITH + MP_EMIT_SETUP_BLOCK_EXCEPT == MP_BC_SETUP_EXCEPT);
+    MP_STATIC_ASSERT(MP_BC_SETUP_WITH + MP_EMIT_SETUP_BLOCK_FINALLY == MP_BC_SETUP_FINALLY);
+    if (kind == MP_EMIT_SETUP_BLOCK_WITH) {
     // The SETUP_WITH opcode pops ctx_mgr from the top of the stack
     // and then pushes 3 entries: __exit__, ctx_mgr, as_value.
-    emit_bc_pre(emit, 2);
-    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH, label);
+        emit_bc_pre(emit, 2);
+    } else {
+        emit_bc_pre(emit, 0);
+    }
+    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_WITH + kind, label);
 }
 
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
@@ -763,17 +739,7 @@ void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label) {
     mp_emit_bc_label_assign(emit, label);
     emit_bc_pre(emit, 2); // ensure we have enough stack space to call the __exit__ method
     emit_write_bytecode_byte(emit, MP_BC_WITH_CLEANUP);
-    emit_bc_pre(emit, -4); // cancel the 2 above, plus the 2 from mp_emit_bc_setup_with
-}
-
-void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_EXCEPT, label);
-}
-
-void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label) {
-    emit_bc_pre(emit, 0);
-    emit_write_bytecode_byte_unsigned_label(emit, MP_BC_SETUP_FINALLY, label);
+    emit_bc_pre(emit, -4); // cancel the 2 above, plus the 2 from mp_emit_bc_setup_block(MP_EMIT_SETUP_BLOCK_WITH)
 }
 
 void mp_emit_bc_end_finally(emit_t *emit) {
@@ -827,39 +793,24 @@ void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op) {
     }
 }
 
-void mp_emit_bc_build_tuple(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1 - n_args);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_TUPLE, n_args);
-}
-
-void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1 - n_args);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_LIST, n_args);
-}
-
-void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_MAP, n_args);
+void mp_emit_bc_build(emit_t *emit, mp_uint_t n_args, int kind) {
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_TUPLE == MP_BC_BUILD_TUPLE);
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_LIST == MP_BC_BUILD_LIST);
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_MAP == MP_BC_BUILD_MAP);
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_SET == MP_BC_BUILD_SET);
+    MP_STATIC_ASSERT(MP_BC_BUILD_TUPLE + MP_EMIT_BUILD_SLICE == MP_BC_BUILD_SLICE);
+    if (kind == MP_EMIT_BUILD_MAP) {
+        emit_bc_pre(emit, 1);
+    } else {
+        emit_bc_pre(emit, 1 - n_args);
+    }
+    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_TUPLE + kind, n_args);
 }
 
 void mp_emit_bc_store_map(emit_t *emit) {
     emit_bc_pre(emit, -2);
     emit_write_bytecode_byte(emit, MP_BC_STORE_MAP);
 }
-
-#if MICROPY_PY_BUILTINS_SET
-void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1 - n_args);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SET, n_args);
-}
-#endif
-
-#if MICROPY_PY_BUILTINS_SLICE
-void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args) {
-    emit_bc_pre(emit, 1 - n_args);
-    emit_write_bytecode_byte_uint(emit, MP_BC_BUILD_SLICE, n_args);
-}
-#endif
 
 void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t collection_stack_index) {
     int t;
@@ -942,16 +893,11 @@ void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     emit_write_bytecode_byte_byte(emit, MP_BC_RAISE_VARARGS, n_args);
 }
 
-void mp_emit_bc_yield_value(emit_t *emit) {
-    emit_bc_pre(emit, 0);
+void mp_emit_bc_yield(emit_t *emit, int kind) {
+    MP_STATIC_ASSERT(MP_BC_YIELD_VALUE + 1 == MP_BC_YIELD_FROM);
+    emit_bc_pre(emit, -kind);
     emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    emit_write_bytecode_byte(emit, MP_BC_YIELD_VALUE);
-}
-
-void mp_emit_bc_yield_from(emit_t *emit) {
-    emit_bc_pre(emit, -1);
-    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
-    emit_write_bytecode_byte(emit, MP_BC_YIELD_FROM);
+    emit_write_bytecode_byte(emit, MP_BC_YIELD_VALUE + kind);
 }
 
 void mp_emit_bc_start_except_handler(emit_t *emit) {
@@ -972,41 +918,29 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_set_source_line,
 
     {
-        mp_emit_bc_load_fast,
-        mp_emit_bc_load_deref,
-        mp_emit_bc_load_name,
+        mp_emit_bc_load_local,
         mp_emit_bc_load_global,
     },
     {
-        mp_emit_bc_store_fast,
-        mp_emit_bc_store_deref,
-        mp_emit_bc_store_name,
+        mp_emit_bc_store_local,
         mp_emit_bc_store_global,
     },
     {
-        mp_emit_bc_delete_fast,
-        mp_emit_bc_delete_deref,
-        mp_emit_bc_delete_name,
+        mp_emit_bc_delete_local,
         mp_emit_bc_delete_global,
     },
 
     mp_emit_bc_label_assign,
-    mp_emit_bc_import_name,
-    mp_emit_bc_import_from,
-    mp_emit_bc_import_star,
+    mp_emit_bc_import,
     mp_emit_bc_load_const_tok,
     mp_emit_bc_load_const_small_int,
     mp_emit_bc_load_const_str,
     mp_emit_bc_load_const_obj,
     mp_emit_bc_load_null,
-    mp_emit_bc_load_attr,
     mp_emit_bc_load_method,
     mp_emit_bc_load_build_class,
-    mp_emit_bc_load_subscr,
-    mp_emit_bc_store_attr,
-    mp_emit_bc_store_subscr,
-    mp_emit_bc_delete_attr,
-    mp_emit_bc_delete_subscr,
+    mp_emit_bc_subscr,
+    mp_emit_bc_attr,
     mp_emit_bc_dup_top,
     mp_emit_bc_dup_top_two,
     mp_emit_bc_pop_top,
@@ -1016,11 +950,8 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_pop_jump_if,
     mp_emit_bc_jump_if_or_pop,
     mp_emit_bc_unwind_jump,
-    mp_emit_bc_unwind_jump,
-    mp_emit_bc_setup_with,
+    mp_emit_bc_setup_block,
     mp_emit_bc_with_cleanup,
-    mp_emit_bc_setup_except,
-    mp_emit_bc_setup_finally,
     mp_emit_bc_end_finally,
     mp_emit_bc_get_iter,
     mp_emit_bc_for_iter,
@@ -1029,16 +960,8 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_pop_except,
     mp_emit_bc_unary_op,
     mp_emit_bc_binary_op,
-    mp_emit_bc_build_tuple,
-    mp_emit_bc_build_list,
-    mp_emit_bc_build_map,
+    mp_emit_bc_build,
     mp_emit_bc_store_map,
-    #if MICROPY_PY_BUILTINS_SET
-    mp_emit_bc_build_set,
-    #endif
-    #if MICROPY_PY_BUILTINS_SLICE
-    mp_emit_bc_build_slice,
-    #endif
     mp_emit_bc_store_comp,
     mp_emit_bc_unpack_sequence,
     mp_emit_bc_unpack_ex,
@@ -1048,31 +971,24 @@ const emit_method_table_t emit_bc_method_table = {
     mp_emit_bc_call_method,
     mp_emit_bc_return_value,
     mp_emit_bc_raise_varargs,
-    mp_emit_bc_yield_value,
-    mp_emit_bc_yield_from,
+    mp_emit_bc_yield,
 
     mp_emit_bc_start_except_handler,
     mp_emit_bc_end_except_handler,
 };
 #else
 const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops = {
-    mp_emit_bc_load_fast,
-    mp_emit_bc_load_deref,
-    mp_emit_bc_load_name,
+    mp_emit_bc_load_local,
     mp_emit_bc_load_global,
 };
 
 const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops = {
-    mp_emit_bc_store_fast,
-    mp_emit_bc_store_deref,
-    mp_emit_bc_store_name,
+    mp_emit_bc_store_local,
     mp_emit_bc_store_global,
 };
 
 const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops = {
-    mp_emit_bc_delete_fast,
-    mp_emit_bc_delete_deref,
-    mp_emit_bc_delete_name,
+    mp_emit_bc_delete_local,
     mp_emit_bc_delete_global,
 };
 #endif

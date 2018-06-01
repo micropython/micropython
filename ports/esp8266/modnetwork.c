@@ -65,6 +65,9 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     int idx = 0;
     if (n_args > 0) {
         idx = mp_obj_get_int(args[0]);
+        if (idx < 0 || idx >= sizeof(wlan_objs)) {
+            mp_raise_ValueError(NULL);
+        }
     }
     return MP_OBJ_FROM_PTR(&wlan_objs[idx]);
 }
@@ -422,8 +425,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             return mp_obj_new_bytes(mac, sizeof(mac));
         }
         case MP_QSTR_essid:
-            req_if = SOFTAP_IF;
-            val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+            if (self->if_id == STATION_IF) {
+                val = mp_obj_new_str((char*)cfg.sta.ssid, strlen((char*)cfg.sta.ssid));
+            } else {
+                val = mp_obj_new_str((char*)cfg.ap.ssid, cfg.ap.ssid_len);
+            }
             break;
         case MP_QSTR_hidden:
             req_if = SOFTAP_IF;
@@ -440,7 +446,11 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         case MP_QSTR_dhcp_hostname: {
             req_if = STATION_IF;
             char* s = wifi_station_get_hostname();
-            val = mp_obj_new_str(s, strlen(s));
+            if (s == NULL) {
+                val = MP_OBJ_NEW_QSTR(MP_QSTR_);
+            } else {
+                val = mp_obj_new_str(s, strlen(s));
+            }
             break;
         }
         default:

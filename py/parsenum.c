@@ -227,14 +227,19 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         // string should be a decimal number
         parse_dec_in_t in = PARSE_DEC_IN_INTG;
         bool exp_neg = false;
-        mp_int_t exp_val = 0;
-        mp_int_t exp_extra = 0;
+        int exp_val = 0;
+        int exp_extra = 0;
         while (str < top) {
-            mp_uint_t dig = *str++;
+            unsigned int dig = *str++;
             if ('0' <= dig && dig <= '9') {
                 dig -= '0';
                 if (in == PARSE_DEC_IN_EXP) {
-                    exp_val = 10 * exp_val + dig;
+                    // don't overflow exp_val when adding next digit, instead just truncate
+                    // it and the resulting float will still be correct, either inf or 0.0
+                    // (use INT_MAX/2 to allow adding exp_extra at the end without overflow)
+                    if (exp_val < (INT_MAX / 2 - 9) / 10) {
+                        exp_val = 10 * exp_val + dig;
+                    }
                 } else {
                     if (dec_val < DEC_VAL_MAX) {
                         // dec_val won't overflow so keep accumulating
@@ -314,11 +319,13 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         return mp_obj_new_complex(0, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
+    }
 #else
     if (imag || force_complex) {
         raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, "complex values not supported"), lex);
+    }
 #endif
-    } else {
+    else {
         return mp_obj_new_float(dec_val);
     }
 

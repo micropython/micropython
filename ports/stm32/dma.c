@@ -52,10 +52,10 @@ typedef enum {
     dma_id_15,
 } dma_id_t;
 
-typedef struct _dma_descr_t {
+struct _dma_descr_t {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
-    #elif defined(STM32L4)
+    #elif defined(STM32F0) || defined(STM32L4)
     DMA_Channel_TypeDef *instance;
     #else
     #error "Unsupported Processor"
@@ -64,7 +64,7 @@ typedef struct _dma_descr_t {
     uint32_t transfer_direction; // periph to memory or vice-versa
     dma_id_t id;
     const DMA_InitTypeDef *init;
-} dma_descr_t;
+};
 
 // Default parameters to dma_init() shared by spi and i2c; Channel and Direction
 // vary depending on the peripheral instance so they get passed separately
@@ -141,7 +141,46 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
 };
 #endif
 
-#if defined(STM32F4) || defined(STM32F7)
+#if defined(STM32F0)
+
+#define NCONTROLLERS            (2)
+#define NSTREAMS_PER_CONTROLLER (7)
+#define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
+
+#define DMA_SUB_INSTANCE_AS_UINT8(dma_channel) (dma_channel)
+
+#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponfing to DMA1 (7 channels)
+#define DMA2_ENABLE_MASK (0x0f80) // Bits in dma_enable_mask corresponding to DMA2 (only 5 channels)
+
+// DMA1 streams
+#if MICROPY_HW_ENABLE_DAC
+const dma_descr_t dma_DAC_1_TX = { DMA1_Channel3, HAL_DMA1_CH3_DAC_CH1, DMA_MEMORY_TO_PERIPH, dma_id_3, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, HAL_DMA1_CH4_DAC_CH2, DMA_MEMORY_TO_PERIPH, dma_id_4, &dma_init_struct_dac };
+#endif
+const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, HAL_DMA1_CH5_SPI2_TX, DMA_MEMORY_TO_PERIPH, dma_id_5, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_2_RX = { DMA1_Channel6, HAL_DMA1_CH6_SPI2_RX, DMA_PERIPH_TO_MEMORY, dma_id_6, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_1_RX = { DMA2_Channel3, HAL_DMA2_CH3_SPI1_RX, DMA_PERIPH_TO_MEMORY, dma_id_3, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, HAL_DMA2_CH4_SPI1_TX, DMA_MEMORY_TO_PERIPH, dma_id_4, &dma_init_struct_spi_i2c};
+
+static const uint8_t dma_irqn[NSTREAM] = {
+    DMA1_Ch1_IRQn,
+    DMA1_Ch2_3_DMA2_Ch1_2_IRQn,
+    DMA1_Ch2_3_DMA2_Ch1_2_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+
+    DMA1_Ch2_3_DMA2_Ch1_2_IRQn,
+    DMA1_Ch2_3_DMA2_Ch1_2_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+    DMA1_Ch4_7_DMA2_Ch3_5_IRQn,
+    0,
+    0,
+};
+
+#elif defined(STM32F4) || defined(STM32F7)
 
 #define NCONTROLLERS            (2)
 #define NSTREAMS_PER_CONTROLLER (8)
@@ -336,8 +375,8 @@ const dma_descr_t dma_SPI_2_TX = { DMA1_Stream4, DMA_REQUEST_SPI2_TX, DMA_MEMORY
 const dma_descr_t dma_I2C_3_TX = { DMA1_Stream4, DMA_REQUEST_I2C3_TX, DMA_MEMORY_TO_PERIPH, dma_id_4,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_4_TX = { DMA1_Stream5, BDMA_REQUEST_I2C4_TX, DMA_MEMORY_TO_PERIPH, dma_id_5,   &dma_init_struct_spi_i2c };
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
-const dma_descr_t dma_DAC_1_TX = { DMA1_Stream5, DMA_REQUEST_DAC1_TX, DMA_MEMORY_TO_PERIPH, dma_id_5,   &dma_init_struct_dac };
-const dma_descr_t dma_DAC_2_TX = { DMA1_Stream6, DMA_REQUEST_DAC2_TX, DMA_MEMORY_TO_PERIPH, dma_id_6,   &dma_init_struct_dac };
+const dma_descr_t dma_DAC_1_TX = { DMA1_Stream5, DMA_REQUEST_DAC1_CH1, DMA_MEMORY_TO_PERIPH, dma_id_5,   &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { DMA1_Stream6, DMA_REQUEST_DAC1_CH2, DMA_MEMORY_TO_PERIPH, dma_id_6,   &dma_init_struct_dac };
 #endif
 const dma_descr_t dma_SPI_3_TX = { DMA1_Stream7, DMA_REQUEST_SPI3_TX, DMA_MEMORY_TO_PERIPH, dma_id_7,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_I2C_1_TX = { DMA1_Stream7, DMA_REQUEST_I2C1_TX, DMA_MEMORY_TO_PERIPH, dma_id_7,   &dma_init_struct_spi_i2c };
@@ -381,8 +420,13 @@ volatile dma_idle_count_t dma_idle;
 
 #define DMA_INVALID_CHANNEL 0xff    // Value stored in dma_last_channel which means invalid
 
+#if defined(STM32F0)
+#define DMA1_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA1EN) != 0)
+#define DMA2_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA2EN) != 0)
+#else
 #define DMA1_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA1EN) != 0)
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHB1ENR & RCC_AHB1ENR_DMA2EN) != 0)
+#endif
 
 #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
@@ -476,7 +520,9 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void 
     #if defined(STM32L4) || defined(STM32H7)
     dma->Init.Request = dma_descr->sub_instance;
     #else
+    #if !defined(STM32F0)
     dma->Init.Channel = dma_descr->sub_instance;
+    #endif
     #endif
     // half of __HAL_LINKDMA(data, xxx, *dma)
     // caller must implement other half by doing: data->xxx = dma
@@ -498,6 +544,14 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
 
         dma_enable_clock(dma_id);
 
+        #if defined(STM32L4)
+        // Always reset and configure the L4 DMA peripheral
+        // (dma->State is set to HAL_DMA_STATE_RESET by memset above)
+        // TODO: understand how L4 DMA works so this is not needed
+        HAL_DMA_DeInit(dma);
+        HAL_DMA_Init(dma);
+        NVIC_SetPriority(IRQn_NONNEG(dma_irqn[dma_id]), IRQ_PRI_DMA);
+        #else
         // if this stream was previously configured for this channel/request then we
         // can skip most of the initialisation
         uint8_t sub_inst = DMA_SUB_INSTANCE_AS_UINT8(dma_descr->sub_instance);
@@ -508,7 +562,14 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
             // (dma->State is set to HAL_DMA_STATE_RESET by memset above)
             HAL_DMA_DeInit(dma);
             HAL_DMA_Init(dma);
-            HAL_NVIC_SetPriority(dma_irqn[dma_id], IRQ_PRI_DMA, IRQ_SUBPRI_DMA);
+            NVIC_SetPriority(IRQn_NONNEG(dma_irqn[dma_id]), IRQ_PRI_DMA);
+            #if defined(STM32F0)
+            if (dma->Instance < DMA2_Channel1) {
+                __HAL_DMA1_REMAP(dma_descr->sub_instance);
+            } else {
+                __HAL_DMA2_REMAP(dma_descr->sub_instance);
+            }
+            #endif
         } else {
             // only necessary initialization
             dma->State = HAL_DMA_STATE_READY;
@@ -518,6 +579,7 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data){
             DMA_CalcBaseAndBitshift(dma);
 #endif
         }
+        #endif
 
         HAL_NVIC_EnableIRQ(dma_irqn[dma_id]);
     }
