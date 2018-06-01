@@ -32,6 +32,8 @@
 
 #include "external_flash/external_flash.h"
 
+#define BOARD_HAS_CRYSTAL 1
+
 #define DEFAULT_I2C_BUS_SCL (&pin_PA13)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA12)
 
