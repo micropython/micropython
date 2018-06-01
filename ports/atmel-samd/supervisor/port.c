@@ -201,9 +201,16 @@ safe_mode_t port_init(void) {
     }
     #endif
 
-    // if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
-    //     return BROWNOUT;
-    // }
+    #ifdef SAMD21
+    if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
+        return BROWNOUT;
+    }
+    #endif
+    #ifdef SAMD51
+    if (RSTC->RCAUSE.bit.BODVDD == 1 || RSTC->RCAUSE.bit.BODCORE == 1) {
+        return BROWNOUT;
+    }
+    #endif
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
