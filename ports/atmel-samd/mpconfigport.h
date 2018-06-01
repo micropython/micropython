@@ -294,7 +294,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
     X(EPERM) \
     X(ENOENT) \
     X(EIO) \
-    X(EBADF) \
     X(EAGAIN) \
     X(ENOMEM) \
     X(EACCES) \
@@ -302,17 +301,6 @@ extern const struct _mp_obj_module_t usb_hid_module;
     X(ENODEV) \
     X(EISDIR) \
     X(EINVAL) \
-    X(EOPNOTSUPP) \
-    X(EADDRINUSE) \
-    X(ECONNABORTED) \
-    X(ECONNRESET) \
-    X(ENOBUFS) \
-    X(ENOTCONN) \
-    X(ETIMEDOUT) \
-    X(ECONNREFUSED) \
-    X(EHOSTUNREACH) \
-    X(EALREADY) \
-    X(EINPROGRESS) \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
