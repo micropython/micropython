@@ -30,8 +30,6 @@
 #include "py/obj.h"
 #include "py/mperrno.h"
 
-#if MICROPY_PY_UERRNO
-
 // This list can be defined per port in mpconfigport.h to tailor it to a
 // specific port's needs.  If it's not defined then we provide a default.
 #ifndef MICROPY_PY_UERRNO_LIST
@@ -60,6 +58,8 @@
     X(EINPROGRESS) \
 
 #endif
+
+#if MICROPY_PY_UERRNO
 
 #if MICROPY_PY_UERRNO_ERRORCODE
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
@@ -131,6 +131,17 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
     }
     return MP_QSTR_NULL;
     #endif
+}
+
+#else //MICROPY_PY_UERRNO
+
+qstr mp_errno_to_str(mp_obj_t errno_val) {
+    int v = MP_OBJ_SMALL_INT_VALUE(errno_val);
+    #define X(e) if (v == e) return (MP_QSTR_ ## e);
+    MICROPY_PY_UERRNO_LIST
+    #undef X
+
+    return MP_QSTR_;
 }
 
 #endif //MICROPY_PY_UERRNO

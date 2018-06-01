@@ -113,7 +113,6 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
             mp_print_str(print, "");
             return;
         } else if (o->args->len == 1) {
-            #if MICROPY_PY_UERRNO
             // try to provide a nice OSError error message
             if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
                 qstr qst = mp_errno_to_str(o->args->items[0]);
@@ -122,7 +121,6 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
                     return;
                 }
             }
-            #endif
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
