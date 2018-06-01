@@ -251,6 +251,8 @@ int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char
     char comma = '\0';
     if (flags & PF_FLAG_SHOW_COMMA) {
         comma = ',';
+    } else if (flags & PF_FLAG_SHOW_UNDERSCORE) {
+        comma = '_';
     }
 
     // The size of this buffer is rather arbitrary. If it's not large
