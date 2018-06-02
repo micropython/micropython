@@ -24,14 +24,23 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+#include <stdlib.h>
+
 #include "peripherals/clocks.h"
 
-#include "hpl_gclk_config.h"
+#include "hal/include/hal_flash.h"
 
 #include "bindings/samd/Clock.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
 #include "py/runtime.h"
+
+#ifdef EXPRESS_BOARD
+#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - NVMCTRL_ROW_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+#else
+#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - NVMCTRL_ROW_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+#endif
 
 bool gclk_enabled(uint8_t gclk) {
     common_hal_mcu_disable_interrupts();
@@ -102,17 +111,48 @@ static void init_clock_source_xosc32k(void) {
     while (!SYSCTRL->PCLKSR.bit.XOSC32KRDY) {}
 }
 
-static void init_clock_source_dfll48m(void) {
+static void init_clock_source_dfll48m_xosc(void) {
+    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
+    SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_CSTEP(0x1f / 4) |
+                           SYSCTRL_DFLLMUL_FSTEP(0xff / 4) |
+                           SYSCTRL_DFLLMUL_MUL(48000000 / 32768);
+    uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk) >> FUSES_DFLL48M_COARSE_CAL_Pos;
+    if (coarse == 0x3f) {
+        coarse = 0x1f;
+    }
+    SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) |
+                           SYSCTRL_DFLLVAL_FINE(512);
+
+    SYSCTRL->DFLLCTRL.reg = 0;
+    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
+    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_MODE |
+                            SYSCTRL_DFLLCTRL_ENABLE;
+    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
+    while (GCLK->STATUS.bit.SYNCBUSY) {}
+}
+
+static void init_clock_source_dfll48m_usb(void) {
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
     SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_CSTEP(1) |
                            SYSCTRL_DFLLMUL_FSTEP(1) |
                            SYSCTRL_DFLLMUL_MUL(48000);
     uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk) >> FUSES_DFLL48M_COARSE_CAL_Pos;
-    if (coarse == 0x3f)
+    if (coarse == 0x3f) {
         coarse = 0x1f;
+    }
+    uint32_t fine = 512;
+    #ifdef CALIBRATE_CRYSTALLESS
+    // This is stored in an NVM page after the text and data storage but before
+    // the optional file system. The first 16 bytes are the identifier for the
+    // section.
+    if (strcmp((char*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        fine = ((uint16_t *) INTERNAL_CIRCUITPY_CONFIG_START_ADDR)[8];
+    }
+    #endif
     SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) |
-                           SYSCTRL_DFLLVAL_FINE(512);
+                           SYSCTRL_DFLLVAL_FINE(fine);
     SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_CCDIS |
                             SYSCTRL_DFLLCTRL_USBCRM |
                             SYSCTRL_DFLLCTRL_MODE |
@@ -130,9 +170,16 @@ void clock_init(void)
         init_clock_source_osc32k();
     }
 
+    if (board_has_crystal()) {
+        enable_clock_generator(3, GCLK_GENCTRL_SRC_XOSC32K_Val, 1);
+        connect_gclk_to_peripheral(3, GCLK_CLKCTRL_ID_DFLL48_Val);
+        init_clock_source_dfll48m_xosc();
+    } else {
+        init_clock_source_dfll48m_usb();
+    }
+
     enable_clock_generator(0, GCLK_GENCTRL_SRC_DFLL48M_Val, 1);
     enable_clock_generator(1, GCLK_GENCTRL_SRC_DFLL48M_Val, 150);
-    init_clock_source_dfll48m();
     if (board_has_crystal()) {
         enable_clock_generator(2, GCLK_GENCTRL_SRC_XOSC32K_Val, 32);
     } else {
@@ -314,6 +361,41 @@ int clock_set_calibration(uint8_t type, uint8_t index, uint32_t val) {
         return 0;
     }
     return -2; // calibration is read only
+}
+
+void save_usb_clock_calibration(void) {
+    #ifndef CALIBRATE_CRYSTALLESS
+    return;
+    #endif
+    // If we are on USB lets double check our fine calibration for the clock and
+    // save the new value if its different enough.
+    SYSCTRL->DFLLSYNC.bit.READREQ = 1;
+    uint16_t saved_calibration = 0x1ff;
+    if (strcmp((char*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
+        saved_calibration = ((uint16_t *) INTERNAL_CIRCUITPY_CONFIG_START_ADDR)[8];
+    }
+    while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
+        // TODO(tannewt): Run the mass storage stuff if this takes a while.
+    }
+    int16_t current_calibration = SYSCTRL->DFLLVAL.bit.FINE;
+    if (abs(current_calibration - saved_calibration) > 10) {
+        // Copy the full internal config page to memory.
+        uint8_t page_buffer[NVMCTRL_ROW_SIZE];
+        memcpy(page_buffer, (uint8_t*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, NVMCTRL_ROW_SIZE);
+
+        // Modify it.
+        memcpy(page_buffer, "CIRCUITPYTHON1", 15);
+        // First 16 bytes (0-15) are ID. Little endian!
+        page_buffer[16] = current_calibration & 0xff;
+        page_buffer[17] = current_calibration >> 8;
+
+        // Write it back.
+        // We don't use features that use any advanced NVMCTRL features so we can fake the descriptor
+        // whenever we need it instead of storing it long term.
+        struct flash_descriptor desc;
+        desc.dev.hw = NVMCTRL;
+        flash_write(&desc, (uint32_t) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, page_buffer, NVMCTRL_ROW_SIZE);
+    }
 }
 
 #ifdef SAMD21_EXPOSE_ALL_CLOCKS
