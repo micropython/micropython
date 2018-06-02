@@ -70,5 +70,6 @@ bool clock_get_parent(uint8_t type, uint8_t index, uint8_t *p_type, uint8_t *p_i
 uint32_t clock_get_frequency(uint8_t type, uint8_t index);
 uint32_t clock_get_calibration(uint8_t type, uint8_t index);
 int clock_set_calibration(uint8_t type, uint8_t index, uint32_t val);
+void save_usb_clock_calibration(void);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_CLOCKS_H

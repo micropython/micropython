@@ -123,6 +123,9 @@ void clock_init(void) {
     enable_clock_generator_sync(5, GCLK_GENCTRL_SRC_DFLL_Val, 24, false);
 
     init_clock_source_dpll0();
+
+    // Do this after all static clock init so that they aren't used dynamically.
+    init_dynamic_clocks();
 }
 
 static bool clk_enabled(uint8_t clk) {
@@ -203,6 +206,7 @@ static uint32_t dpll_get_frequency(uint8_t index) {
             break;
         case 0x2: // XOSC0
         case 0x3: // XOSC1
+        default:
             return 0; // unknown
     }
 
@@ -333,6 +337,10 @@ int clock_set_calibration(uint8_t type, uint8_t index, uint32_t val) {
         return 0;
     }
     return -2;
+}
+
+
+void save_usb_clock_calibration(void) {
 }
 
 #include <instance/can0.h>
