@@ -1,1 +1,1 @@
-../tools/pyboard.py
+../tools/cpboard.py
