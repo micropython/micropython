@@ -136,7 +136,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
             netutils_format_ipv4_addr((uint8_t*)&dns, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
-    } else if (args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
+    } else if (args[0] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
         // Start the DHCP client
         if (dhcp_supplied_address(netif)) {
             dhcp_renew(netif);
@@ -161,7 +161,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
         dhcp_stop(netif);
         // Set static IP addresses
         mp_obj_t *items;
-        mp_obj_get_array_fixed_n(args[1], 4, &items);
+        mp_obj_get_array_fixed_n(args[0], 4, &items);
         netutils_parse_ipv4_addr(items[0], (uint8_t*)&netif->ip_addr, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[1], (uint8_t*)&netif->netmask, NETUTILS_BIG);
         netutils_parse_ipv4_addr(items[2], (uint8_t*)&netif->gw, NETUTILS_BIG);
