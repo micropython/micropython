@@ -451,16 +451,6 @@ typedef struct _mp_buffer_p_t {
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
-// Stream protocol
-typedef struct _mp_stream_p_t {
-    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
-    // are implementation-dependent, but will be exposed to user, e.g. via exception).
-    mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
-    mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
-    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
-    mp_uint_t is_text : 1; // default is bytes, set this for text stream
-} mp_stream_p_t;
-
 struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
