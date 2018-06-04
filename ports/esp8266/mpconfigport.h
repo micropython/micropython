@@ -56,6 +56,7 @@
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
+#define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)

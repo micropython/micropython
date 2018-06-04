@@ -99,6 +99,7 @@
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_GC                       (1)
 #define MICROPY_PY_IO                       (1)
+#define MICROPY_PY_IO_IOBASE                (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
