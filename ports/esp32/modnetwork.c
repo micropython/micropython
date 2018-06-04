@@ -123,6 +123,9 @@ static bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
+static bool wifi_sta_connect_requested = false;
+
+// Set to "true" if the STA interface is connected to wifi and has IP address.
 static bool wifi_sta_connected = false;
 
 // This function is called by the system-event task and so runs in a different
@@ -132,8 +135,12 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     case SYSTEM_EVENT_STA_START:
         ESP_LOGI("wifi", "STA_START");
         break;
+    case SYSTEM_EVENT_STA_CONNECTED:
+        ESP_LOGI("network", "CONNECTED");
+        break;
     case SYSTEM_EVENT_STA_GOT_IP:
         ESP_LOGI("network", "GOT_IP");
+        wifi_sta_connected = true;
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
@@ -151,7 +158,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                 break;
             case WIFI_REASON_AUTH_FAIL:
                 message = "\nauthentication failed";
-                wifi_sta_connected = false;
+                wifi_sta_connect_requested = false;
                 break;
             default:
                 // Let other errors through and try to reconnect.
@@ -159,7 +166,8 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         }
         ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
 
-        if (wifi_sta_connected) {
+        bool reconnected = false;
+        if (wifi_sta_connect_requested) {
             wifi_mode_t mode;
             if (esp_wifi_get_mode(&mode) == ESP_OK) {
                 if (mode & WIFI_MODE_STA) {
@@ -167,9 +175,15 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                     esp_err_t e = esp_wifi_connect();
                     if (e != ESP_OK) {
                         ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
+                    } else {
+                        reconnected = true;
                     }
                 }
             }
+        }
+        if (wifi_sta_connected && !reconnected) {
+            // If already connected and we fail to reconnect
+            wifi_sta_connected = false;
         }
         break;
     }
@@ -283,7 +297,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
     MP_THREAD_GIL_EXIT();
     ESP_EXCEPTIONS( esp_wifi_connect() );
     MP_THREAD_GIL_ENTER();
-    wifi_sta_connected = true;
+    wifi_sta_connect_requested = true;
 
     return mp_const_none;
 }
@@ -291,7 +305,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_connect_obj, 1, 7, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
-    wifi_sta_connected = false;
+    wifi_sta_connect_requested = false;
     ESP_EXCEPTIONS( esp_wifi_disconnect() );
     return mp_const_none;
 }
@@ -370,9 +384,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_scan_obj, esp_scan);
 STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->if_id == WIFI_IF_STA) {
-        tcpip_adapter_ip_info_t info;
-        tcpip_adapter_get_ip_info(WIFI_IF_STA, &info);
-        return mp_obj_new_bool(info.ip.addr != 0);
+        return mp_obj_new_bool(wifi_sta_connected);
     } else {
         wifi_sta_list_t sta;
         esp_wifi_ap_get_sta_list(&sta);
