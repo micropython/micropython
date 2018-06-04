@@ -998,6 +998,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_IO (1)
 #endif
 
+// Whether to provide "io.IOBase" class to support user streams
+#ifndef MICROPY_PY_IO_IOBASE
+#define MICROPY_PY_IO_IOBASE (0)
+#endif
+
 // Whether to provide "uio.resource_stream()" function with
 // the semantics of CPython's pkg_resources.resource_stream()
 // (allows to access binary resources in frozen source packages).
