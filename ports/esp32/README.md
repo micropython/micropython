@@ -78,6 +78,7 @@ ESPIDF = <path to root of esp-idf repository>
 #FLASH_MODE = qio
 #FLASH_SIZE = 4MB
 #CROSS_COMPILE = xtensa-esp32-elf-
+#CONFIG_SPIRAM_SUPPORT = 1
 
 include Makefile
 ```
