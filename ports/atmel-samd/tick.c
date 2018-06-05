@@ -66,7 +66,16 @@ void tick_init() {
     }
     // Bump up the systick interrupt.
     NVIC_SetPriority(SysTick_IRQn, 1);
+    #ifdef SAMD21
     NVIC_SetPriority(USB_IRQn, 1);
+    #endif
+
+    #ifdef SAMD51
+    NVIC_SetPriority(USB_0_IRQn, 1);
+    NVIC_SetPriority(USB_1_IRQn, 1);
+    NVIC_SetPriority(USB_2_IRQn, 1);
+    NVIC_SetPriority(USB_3_IRQn, 1);
+    #endif
 }
 
 void tick_delay(uint32_t us) {
