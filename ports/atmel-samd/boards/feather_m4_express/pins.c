@@ -18,6 +18,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB16) },
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA12) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA13) },
+    { MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PA14) },
     { MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_PA16) },
     { MP_ROM_QSTR(MP_QSTR_D6), MP_ROM_PTR(&pin_PA18) },
     { MP_ROM_QSTR(MP_QSTR_D9), MP_ROM_PTR(&pin_PA19) },
