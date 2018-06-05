@@ -82,7 +82,7 @@
 #define MICROPY_STREAMS_NON_BLOCK                (1)
 #define MICROPY_MODULE_WEAK_LINKS                (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS            (1)
-#define MICROPY_USE_INTERNAL_ERRNO               (1)
+#define MICROPY_USE_INTERNAL_ERRNO               (0)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE          (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER           (0)
