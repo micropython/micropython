@@ -40,18 +40,10 @@ void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
 }
 
-// Interrupt flags that will be saved and restored during disable/Enable
-// interrupt functions below.
-
-// ASF4's interrupt disable doesn't handle duplicate calls
-volatile uint32_t interrupt_flags;
 volatile uint32_t nesting_count = 0;
 void common_hal_mcu_disable_interrupts(void) {
-    if (nesting_count == 0) {
-        interrupt_flags = __get_PRIMASK();
-        __disable_irq();
-        __DMB();
-    }
+    __disable_irq();
+    __DMB();
     nesting_count++;
 }
 
@@ -66,7 +58,7 @@ void common_hal_mcu_enable_interrupts(void) {
         return;
     }
     __DMB();
-    __set_PRIMASK(interrupt_flags);
+    __enable_irq();
 }
 
 extern uint32_t _ezero;

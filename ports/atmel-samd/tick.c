@@ -60,6 +60,13 @@ void tick_init() {
     uint32_t ticks_per_ms = common_hal_mcu_processor_get_frequency() / 1000;
     SysTick_Config(ticks_per_ms-1);
     NVIC_EnableIRQ(SysTick_IRQn);
+    // Set all peripheral interrupt priorities to the lowest priority by default.
+    for (uint16_t i = 0; i < PERIPH_COUNT_IRQn; i++) {
+        NVIC_SetPriority(i, (1UL << __NVIC_PRIO_BITS) - 1UL);
+    }
+    // Bump up the systick interrupt.
+    NVIC_SetPriority(SysTick_IRQn, 1);
+    NVIC_SetPriority(USB_IRQn, 1);
 }
 
 void tick_delay(uint32_t us) {

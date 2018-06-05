@@ -31,6 +31,7 @@
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
 
+#include "background.h"
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
@@ -60,10 +61,16 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_us;
     uint64_t current_ms;
     current_tick(&current_ms, &current_us);
+
     // current_tick gives us the remaining us until the next tick but we want the number since the
     // last ms.
     current_us = 1000 - current_us;
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
+    if (!background_tasks_ok() || self->errored_too_fast) {
+        self->errored_too_fast = true;
+        common_hal_pulseio_pulsein_pause(self);
+        return;
+    }
     if (self->first_edge) {
         self->first_edge = false;
         pulsein_set_config(self, false);
@@ -118,6 +125,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->first_edge = true;
     self->last_us = 0;
     self->last_ms = 0;
+    self->errored_too_fast = 0;
 
     set_eic_channel_data(pin->extint_channel, (void*) self);
 
@@ -156,6 +164,9 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         uint16_t trigger_duration) {
     // Make sure we're paused.
     common_hal_pulseio_pulsein_pause(self);
+
+    // Reset erroring
+    self->errored_too_fast = false;
 
     // Send the trigger pulse.
     if (trigger_duration > 0) {
@@ -205,6 +216,11 @@ uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
 
 uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
     return self->len;
+}
+
+bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
+    uint32_t mask = 1 << self->channel;
+    return (EIC->INTENSET.reg & (mask << EIC_INTENSET_EXTINT_Pos)) == 0;
 }
 
 uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,

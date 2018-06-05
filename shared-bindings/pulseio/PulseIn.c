@@ -219,6 +219,26 @@ const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|   .. attribute:: paused
+//|
+//|     True when pulse capture is paused as a result of :py:func:`pause` or an error during capture
+//|     such as a signal that is too fast.
+//|
+STATIC mp_obj_t pulseio_pulsein_obj_get_paused(mp_obj_t self_in) {
+    pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    raise_error_if_deinited(common_hal_pulseio_pulsein_deinited(self));
+
+    return mp_obj_new_bool(common_hal_pulseio_pulsein_get_paused(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_paused_obj, pulseio_pulsein_obj_get_paused);
+
+const mp_obj_property_t pulseio_pulsein_paused_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&pulseio_pulsein_get_paused_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|   .. method:: __len__()
 //|
 //|     Returns the current pulse length
@@ -285,7 +305,10 @@ STATIC const mp_rom_map_elem_t pulseio_pulsein_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pulseio_pulsein_resume_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&pulseio_pulsein_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_popleft), MP_ROM_PTR(&pulseio_pulsein_popleft_obj) },
+
+    // Properties
     { MP_ROM_QSTR(MP_QSTR_maxlen), MP_ROM_PTR(&pulseio_pulsein_maxlen_obj) },
+    { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&pulseio_pulsein_paused_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(pulseio_pulsein_locals_dict, pulseio_pulsein_locals_dict_table);
 

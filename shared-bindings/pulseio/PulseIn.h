@@ -41,6 +41,7 @@ extern void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint1
 extern void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self);
 extern uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self);
 extern uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self);
+extern bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self);
 extern uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self);
 extern uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_t index);
 
