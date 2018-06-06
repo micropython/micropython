@@ -241,7 +241,7 @@ int __attribute__((used)) main(void) {
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_ctrl_init();
+    mp_stack_set_top((char*)&_estack);
     mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
 
 #if MICROPY_MAX_STACK_USAGE
