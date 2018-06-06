@@ -1,10 +1,6 @@
 import uerrno
 try:
-    try:
-        import uos_vfs as uos
-        open = uos.vfs_open
-    except ImportError:
-        import uos
+    import uos
 except ImportError:
     print("SKIP")
     raise SystemExit
