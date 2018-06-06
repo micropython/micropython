@@ -686,6 +686,11 @@ typedef double mp_float_t;
 #define MICROPY_VFS_POSIX (0)
 #endif
 
+// Support for VFS FAT component, to mount a FAT filesystem within VFS
+#ifndef MICROPY_VFS
+#define MICROPY_VFS_FAT (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
