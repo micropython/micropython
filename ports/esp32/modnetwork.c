@@ -135,9 +135,13 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
     case SYSTEM_EVENT_STA_START:
         ESP_LOGI("wifi", "STA_START");
         break;
+    case SYSTEM_EVENT_STA_CONNECTED:
+        ESP_LOGI("network", "CONNECTED");
+        //wifi_isconnected = true;
+        break;
     case SYSTEM_EVENT_STA_GOT_IP:
         ESP_LOGI("network", "GOT_IP");
-	wifi_sta_connected = true;
+        wifi_sta_connected = true;
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED: {
         // This is a workaround as ESP32 WiFi libs don't currently
@@ -163,7 +167,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
         }
         ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
 
-	bool reconnected = false;
+        bool reconnected = false;
         if (wifi_sta_connect_requested) {
             wifi_mode_t mode;
             if (esp_wifi_get_mode(&mode) == ESP_OK) {
@@ -173,12 +177,15 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
                     if (e != ESP_OK) {
                         ESP_LOGI("wifi", "error attempting to reconnect: 0x%04x", e);
                     } else {
-			reconnected = true;
-		    }
+                        reconnected = true;
+                    }
                 }
             }
         }
-	wifi_sta_connected = reconnected;
+        if (wifi_sta_connected && !reconnected) {
+            // If already connected and we fail to reconnect
+            wifi_sta_connected = false;
+        }
         break;
     }
     default:
