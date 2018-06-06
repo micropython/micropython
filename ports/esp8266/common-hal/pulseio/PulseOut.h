@@ -27,12 +27,19 @@
 #ifndef MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PULSEOUT_H
 #define MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PULSEOUT_H
 
+#include "common-hal/microcontroller/Pin.h"
+
+#include "esp_mphal.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
+    os_timer_t timer;
+    uint8_t channel;
 } pulseio_pulseout_obj_t;
 
-void pwmout_reset(void);
+void pulseout_reset(void);
+void pulseout_interrupt_handler(void *);
 
 #endif // MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PULSEOUT_H
