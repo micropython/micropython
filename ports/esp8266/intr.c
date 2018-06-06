@@ -28,10 +28,14 @@
 #include "ets_alt_task.h"
 
 #include "modmachine.h"
+#include "common-hal/pulseio/PulseIn.h"
 
 // this is in a separate file so it can go in iRAM
 void pin_intr_handler_iram(void *arg) {
     uint32_t status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
     GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, status);
     pin_intr_handler(status);
+
+    // XXX bit of a hack
+    pulsein_interrupt_handler(status);
 }

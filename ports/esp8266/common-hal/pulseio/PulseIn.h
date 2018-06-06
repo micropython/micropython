@@ -28,11 +28,22 @@
 #define MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PULSEIN_H
 
 #include "py/obj.h"
+#include "common-hal/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
+    uint16_t *buffer;
+    uint16_t maxlen;
+    bool idle_state;
+    volatile uint16_t start;
+    volatile uint16_t len;
+    volatile bool first_edge;
+    volatile uint32_t last_us;
 } pulseio_pulsein_obj_t;
 
-void pwmout_reset(void);
+void pulsein_reset(void);
+
+void pulsein_interrupt_handler(uint32_t);
 
 #endif // MICROPY_INCLUDED_ESP8266_COMMON_HAL_PULSEIO_PULSEIN_H
