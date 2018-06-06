@@ -41,3 +41,7 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_PA16)
 #define DEFAULT_UART_BUS_TX (&pin_PA17)
+
+// USB is always used internally so skip the pin objects for it.
+#define IGNORE_PIN_PA24     1
+#define IGNORE_PIN_PA25     1

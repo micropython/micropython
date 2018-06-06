@@ -52,3 +52,7 @@
     { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module }
+
+// USB is always used internally so skip the pin objects for it.
+#define IGNORE_PIN_PA24     1
+#define IGNORE_PIN_PA25     1
