@@ -29,13 +29,10 @@
 #include "py/lexer.h"
 #include "py/obj.h"
 
-struct _mp_obj_vfs_posix_t;
-
 extern const mp_obj_type_t mp_type_vfs_posix;
 extern const mp_obj_type_t mp_type_vfs_posix_fileio;
 extern const mp_obj_type_t mp_type_vfs_posix_textio;
 
-mp_import_stat_t mp_vfs_posix_import_stat(struct _mp_obj_vfs_posix_t *self, const char *path_in);
 mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in);
 
 #endif // MICROPY_INCLUDED_EXTMOD_VFS_POSIX_H
