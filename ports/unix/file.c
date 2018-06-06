@@ -37,7 +37,7 @@
 #include "py/mphal.h"
 #include "fdfile.h"
 
-#if MICROPY_PY_IO
+#if MICROPY_PY_IO && !MICROPY_VFS
 
 #ifdef _WIN32
 #define fsync _commit
@@ -277,4 +277,4 @@ const mp_obj_fdfile_t mp_sys_stdin_obj  = { .base = {&mp_type_textio}, .fd = STD
 const mp_obj_fdfile_t mp_sys_stdout_obj = { .base = {&mp_type_textio}, .fd = STDOUT_FILENO };
 const mp_obj_fdfile_t mp_sys_stderr_obj = { .base = {&mp_type_textio}, .fd = STDERR_FILENO };
 
-#endif // MICROPY_PY_IO
+#endif // MICROPY_PY_IO && !MICROPY_VFS
