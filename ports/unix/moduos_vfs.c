@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "extmod/vfs.h"
+#include "extmod/vfs_posix.h"
 #include "extmod/vfs_fat.h"
 
 #if MICROPY_VFS
@@ -52,6 +53,9 @@ STATIC const mp_rom_map_elem_t uos_vfs_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
 
+    #if MICROPY_VFS_POSIX
+    { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
+    #endif
     #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     #endif
