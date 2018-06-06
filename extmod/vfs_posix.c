@@ -71,7 +71,8 @@ STATIC mp_obj_t vfs_posix_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*
     return mp_const_none;
 }
 
-mp_import_stat_t mp_vfs_posix_import_stat(mp_obj_vfs_posix_t *self, const char *path) {
+STATIC mp_import_stat_t mp_vfs_posix_import_stat(void *self_in, const char *path) {
+    mp_obj_vfs_posix_t *self = self_in;
     if (self->root_len != 0) {
         self->root.len = self->root_len;
         vstr_add_str(&self->root, path);
@@ -347,10 +348,15 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
+STATIC const mp_vfs_proto_t vfs_posix_proto = {
+    .import_stat = mp_vfs_posix_import_stat,
+};
+
 const mp_obj_type_t mp_type_vfs_posix = {
     { &mp_type_type },
     .name = MP_QSTR_VfsPosix,
     .make_new = vfs_posix_make_new,
+    .protocol = &vfs_posix_proto,
     .locals_dict = (mp_obj_dict_t*)&vfs_posix_locals_dict,
 };
 
