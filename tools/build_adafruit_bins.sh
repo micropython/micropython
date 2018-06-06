@@ -2,7 +2,7 @@ rm -rf ports/atmel-samd/build*
 rm -rf ports/esp8266/build*
 rm -rf ports/nrf/build*
 
-ATMEL_BOARDS="arduino_zero circuitplayground_express circuitplayground_express_crickit feather_m0_basic feather_m0_adalogger itsybitsy_m0_express itsybitsy_m4_express feather_m0_rfm69 feather_m0_rfm9x feather_m0_express feather_m4_express metro_m0_express metro_m4_express pirkey_m0 trinket_m0 gemma_m0 feather52"
+ATMEL_BOARDS="arduino_zero circuitplayground_express circuitplayground_express_crickit feather_m0_basic feather_m0_adalogger itsybitsy_m0_express itsybitsy_m4_express feather_m0_rfm69 feather_m0_rfm9x feather_m0_express feather_m0_express_crickit feather_m4_express metro_m0_express metro_m4_express pirkey_m0 trinket_m0 gemma_m0 feather52"
 ROSIE_SETUPS="rosie-ci"
 
 PARALLEL="-j 5"
