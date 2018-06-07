@@ -33,7 +33,7 @@
 #include "drivers/memory/spiflash.h"
 #include "storage.h"
 
-#if MICROPY_VFS && MICROPY_VFS_LITTLEFS
+#if MICROPY_VFS && MICROPY_VFS_LITTLEFS && MICROPY_HW_ENABLE_NATIVE_LFS
 
 // This is the mp_spiflash_t object that is used for the storage
 #define SPIFLASH &spi_bdev.spiflash
@@ -151,4 +151,4 @@ int pyb_littlefs_mount(void) {
     return 0;
 }
 
-#endif // MICROPY_VFS && MICROPY_VFS_LITTLEFS
+#endif // MICROPY_VFS && MICROPY_VFS_LITTLEFS && MICROPY_HW_ENABLE_NATIVE_LFS

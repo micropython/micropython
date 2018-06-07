@@ -621,8 +621,10 @@ soft_reset:
     }
     #endif
 
+    #if MICROPY_HW_ENABLE_NATIVE_LFS
     extern int pyb_littlefs_mount(void);
     pyb_littlefs_mount();
+    #endif
 
     #if MICROPY_HW_ENABLE_USB
     // if the SD card isn't used as the USB MSC medium then use the internal flash
