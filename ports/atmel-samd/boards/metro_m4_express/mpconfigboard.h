@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Metro M4 Express"
+#define MICROPY_HW_BOARD_NAME "Adafruit Metro M4 Express"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 
 #define CIRCUITPY_MCU_FAMILY samd51
