@@ -187,7 +187,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     mp_spiflash_release_bus(self);
 }
 
-STATIC int mp_spiflash_erase_sector(mp_spiflash_t *self, uint32_t addr) {
+STATIC int mp_spiflash_erase_block_internal(mp_spiflash_t *self, uint32_t addr) {
     // enable writes
     mp_spiflash_write_cmd(self, CMD_WREN);
 
@@ -204,7 +204,7 @@ STATIC int mp_spiflash_erase_sector(mp_spiflash_t *self, uint32_t addr) {
     return mp_spiflash_wait_wip0(self);
 }
 
-STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, const uint8_t *src) {
+STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
     // enable writes
     mp_spiflash_write_cmd(self, CMD_WREN);
 
@@ -215,10 +215,51 @@ STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, const uint
     }
 
     // write the page
-    mp_spiflash_write_cmd_addr_data(self, CMD_WRITE, addr, PAGE_SIZE, src);
+    mp_spiflash_write_cmd_addr_data(self, CMD_WRITE, addr, len, src);
 
     // wait WIP=0
     return mp_spiflash_wait_wip0(self);
+}
+
+/******************************************************************************/
+// Interface functions that go direct to the SPI flash device
+
+int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr) {
+    mp_spiflash_acquire_bus(self);
+    int ret = mp_spiflash_erase_block_internal(self, addr);
+    mp_spiflash_release_bus(self);
+    return ret;
+}
+
+void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
+    if (len == 0) {
+        return;
+    }
+    mp_spiflash_acquire_bus(self);
+    mp_spiflash_read_data(self, addr, len, dest);
+    mp_spiflash_release_bus(self);
+}
+
+int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
+    mp_spiflash_acquire_bus(self);
+    int ret = 0;
+    uint32_t offset = addr & (PAGE_SIZE - 1);
+    while (len) {
+        size_t rest = PAGE_SIZE - offset;
+        if (rest > len) {
+            rest = len;
+        }
+        ret = mp_spiflash_write_page(self, addr, rest, src);
+        if (ret != 0) {
+            break;
+        }
+        len -= rest;
+        addr += rest;
+        src += rest;
+        offset = 0;
+    }
+    mp_spiflash_release_bus(self);
+    return ret;
 }
 
 /******************************************************************************/
@@ -275,14 +316,15 @@ STATIC void mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
     mp_spiflash_cache_t *cache = self->config->cache;
 
     // Erase sector
-    int ret = mp_spiflash_erase_sector(self, cache->block * SECTOR_SIZE);
+    int ret = mp_spiflash_erase_block_internal(self, cache->block * SECTOR_SIZE);
     if (ret != 0) {
         return;
     }
 
     // Write
     for (int i = 0; i < 16; i += 1) {
-        int ret = mp_spiflash_write_page(self, cache->block * SECTOR_SIZE + i * PAGE_SIZE, cache->buf + i * PAGE_SIZE);
+        uint32_t addr = cache->block * SECTOR_SIZE + i * PAGE_SIZE;
+        int ret = mp_spiflash_write_page(self, addr, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
         if (ret != 0) {
             return;
         }
@@ -344,7 +386,7 @@ STATIC int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
         if (cache->buf[offset + i] != src[i]) {
             if (cache->buf[offset + i] != 0xff) {
                 // Erase sector
-                int ret = mp_spiflash_erase_sector(self, addr);
+                int ret = mp_spiflash_erase_block_internal(self, addr);
                 if (ret != 0) {
                     return ret;
                 }
@@ -363,7 +405,7 @@ STATIC int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
     // Write sector in pages of 256 bytes
     for (size_t i = 0; i < 16; ++i) {
         if (dirty & (1 << i)) {
-            int ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, cache->buf + i * PAGE_SIZE);
+            int ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, PAGE_SIZE, cache->buf + i * PAGE_SIZE);
             if (ret != 0) {
                 return ret;
             }

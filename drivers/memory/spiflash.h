@@ -59,7 +59,7 @@ typedef struct _mp_spiflash_config_t {
             const mp_qspi_proto_t *proto;
         } u_qspi;
     } bus;
-    mp_spiflash_cache_t *cache;
+    mp_spiflash_cache_t *cache; // can be NULL if cache functions not used
 } mp_spiflash_config_t;
 
 typedef struct _mp_spiflash_t {
@@ -68,6 +68,11 @@ typedef struct _mp_spiflash_t {
 } mp_spiflash_t;
 
 void mp_spiflash_init(mp_spiflash_t *self);
+
+// These functions go direct to the SPI flash device
+int mp_spiflash_erase_block(mp_spiflash_t *self, uint32_t addr);
+void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);
+int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src);
 
 // These functions use the cache (which must already be configured)
 void mp_spiflash_cache_flush(mp_spiflash_t *self);
