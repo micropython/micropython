@@ -48,12 +48,7 @@
 #define WAIT_SR_TIMEOUT (1000000)
 
 #define PAGE_SIZE (256) // maximum bytes we can write in one SPI transfer
-#define SECTOR_SIZE (4096) // size of erase sector
-
-// Note: this code is not reentrant with this shared buffer
-STATIC uint8_t buf[SECTOR_SIZE] __attribute__((aligned(4)));
-STATIC mp_spiflash_t *bufuser; // current user of buf
-STATIC uint32_t bufsec; // current sector stored in buf; 0xffffffff if invalid
+#define SECTOR_SIZE MP_SPIFLASH_ERASE_BLOCK_SIZE
 
 STATIC void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
@@ -231,15 +226,16 @@ void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *d
         return;
     }
     mp_spiflash_acquire_bus(self);
-    if (bufuser == self && bufsec != 0xffffffff) {
+    mp_spiflash_cache_t *cache = self->config->cache;
+    if (cache->user == self && cache->block != 0xffffffff) {
         uint32_t bis = addr / SECTOR_SIZE;
         uint32_t bie = (addr + len - 1) / SECTOR_SIZE;
-        if (bis <= bufsec && bufsec <= bie) {
+        if (bis <= cache->block && cache->block <= bie) {
             // Read straddles current buffer
             size_t rest = 0;
-            if (bis < bufsec) {
+            if (bis < cache->block) {
                 // Read direct from flash for first part
-                rest = bufsec * SECTOR_SIZE - addr;
+                rest = cache->block * SECTOR_SIZE - addr;
                 mp_spiflash_read_data(self, addr, rest, dest);
                 len -= rest;
                 dest += rest;
@@ -250,7 +246,7 @@ void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *d
             if (rest > len) {
                 rest = len;
             }
-            memcpy(dest, &buf[offset], rest);
+            memcpy(dest, &cache->buf[offset], rest);
             len -= rest;
             if (len == 0) {
                 mp_spiflash_release_bus(self);
@@ -273,15 +269,17 @@ STATIC void mp_spiflash_flush_internal(mp_spiflash_t *self) {
 
     self->flags &= ~1;
 
+    mp_spiflash_cache_t *cache = self->config->cache;
+
     // Erase sector
-    int ret = mp_spiflash_erase_sector(self, bufsec * SECTOR_SIZE);
+    int ret = mp_spiflash_erase_sector(self, cache->block * SECTOR_SIZE);
     if (ret != 0) {
         return;
     }
 
     // Write
     for (int i = 0; i < 16; i += 1) {
-        int ret = mp_spiflash_write_page(self, bufsec * SECTOR_SIZE + i * PAGE_SIZE, buf + i * PAGE_SIZE);
+        int ret = mp_spiflash_write_page(self, cache->block * SECTOR_SIZE + i * PAGE_SIZE, cache->buf + i * PAGE_SIZE);
         if (ret != 0) {
             return;
         }
@@ -302,35 +300,37 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
     addr = sec << 12;
 
     // Restriction for now, so we don't need to erase multiple pages
-    if (offset + len > sizeof(buf)) {
+    if (offset + len > SECTOR_SIZE) {
         printf("mp_spiflash_write_part: len is too large\n");
         return -MP_EIO;
     }
 
+    mp_spiflash_cache_t *cache = self->config->cache;
+
     // Acquire the sector buffer
-    if (bufuser != self) {
-        if (bufuser != NULL) {
-            mp_spiflash_flush(bufuser);
+    if (cache->user != self) {
+        if (cache->user != NULL) {
+            mp_spiflash_flush(cache->user);
         }
-        bufuser = self;
-        bufsec = 0xffffffff;
+        cache->user = self;
+        cache->block = 0xffffffff;
     }
 
-    if (bufsec != sec) {
+    if (cache->block != sec) {
         // Read sector
         #if USE_WR_DELAY
-        if (bufsec != 0xffffffff) {
+        if (cache->block != 0xffffffff) {
             mp_spiflash_flush_internal(self);
         }
         #endif
-        mp_spiflash_read_data(self, addr, SECTOR_SIZE, buf);
+        mp_spiflash_read_data(self, addr, SECTOR_SIZE, cache->buf);
     }
 
     #if USE_WR_DELAY
 
-    bufsec = sec;
+    cache->block = sec;
     // Just copy to buffer
-    memcpy(buf + offset, src, len);
+    memcpy(cache->buf + offset, src, len);
     // And mark dirty
     self->flags |= 1;
 
@@ -338,8 +338,8 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
 
     uint32_t dirty = 0;
     for (size_t i = 0; i < len; ++i) {
-        if (buf[offset + i] != src[i]) {
-            if (buf[offset + i] != 0xff) {
+        if (cache->buf[offset + i] != src[i]) {
+            if (cache->buf[offset + i] != 0xff) {
                 // Erase sector
                 int ret = mp_spiflash_erase_sector(self, addr);
                 if (ret != 0) {
@@ -353,14 +353,14 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
         }
     }
 
-    bufsec = sec;
+    cache->block = sec;
     // Copy new block into buffer
-    memcpy(buf + offset, src, len);
+    memcpy(cache->buf + offset, src, len);
 
     // Write sector in pages of 256 bytes
     for (size_t i = 0; i < 16; ++i) {
         if (dirty & (1 << i)) {
-            int ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, buf + i * PAGE_SIZE);
+            int ret = mp_spiflash_write_page(self, addr + i * PAGE_SIZE, cache->buf + i * PAGE_SIZE);
             if (ret != 0) {
                 return ret;
             }
@@ -378,16 +378,17 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
 
     mp_spiflash_acquire_bus(self);
 
-    if (bufuser == self && bis <= bufsec && bie >= bufsec) {
+    mp_spiflash_cache_t *cache = self->config->cache;
+    if (cache->user == self && bis <= cache->block && bie >= cache->block) {
         // Write straddles current buffer
         uint32_t pre;
         uint32_t offset;
-        if (bufsec * SECTOR_SIZE >= addr) {
-            pre = bufsec * SECTOR_SIZE - addr;
+        if (cache->block * SECTOR_SIZE >= addr) {
+            pre = cache->block * SECTOR_SIZE - addr;
             offset = 0;
         } else {
             pre = 0;
-            offset = addr - bufsec * SECTOR_SIZE;
+            offset = addr - cache->block * SECTOR_SIZE;
         }
 
         // Write buffered part first
@@ -397,7 +398,7 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
             len = len_in_buf - (SECTOR_SIZE - offset);
             len_in_buf = SECTOR_SIZE - offset;
         }
-        memcpy(&buf[offset], &src[pre], len_in_buf);
+        memcpy(&cache->buf[offset], &src[pre], len_in_buf);
         self->flags |= 1; // Mark dirty
 
         // Write part before buffer sector
