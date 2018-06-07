@@ -68,8 +68,10 @@ typedef struct _mp_spiflash_t {
 } mp_spiflash_t;
 
 void mp_spiflash_init(mp_spiflash_t *self);
-void mp_spiflash_flush(mp_spiflash_t *self);
-void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);
-int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src);
+
+// These functions use the cache (which must already be configured)
+void mp_spiflash_cache_flush(mp_spiflash_t *self);
+void mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest);
+int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src);
 
 #endif // MICROPY_INCLUDED_DRIVERS_MEMORY_SPIFLASH_H

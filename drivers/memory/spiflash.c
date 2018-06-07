@@ -221,7 +221,10 @@ STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, const uint
     return mp_spiflash_wait_wip0(self);
 }
 
-void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
+/******************************************************************************/
+// Interface functions that use the cache
+
+void mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     if (len == 0) {
         return;
     }
@@ -261,7 +264,7 @@ void mp_spiflash_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *d
     mp_spiflash_release_bus(self);
 }
 
-STATIC void mp_spiflash_flush_internal(mp_spiflash_t *self) {
+STATIC void mp_spiflash_cache_flush_internal(mp_spiflash_t *self) {
     #if USE_WR_DELAY
     if (!(self->flags & 1)) {
         return;
@@ -287,13 +290,13 @@ STATIC void mp_spiflash_flush_internal(mp_spiflash_t *self) {
     #endif
 }
 
-void mp_spiflash_flush(mp_spiflash_t *self) {
+void mp_spiflash_cache_flush(mp_spiflash_t *self) {
     mp_spiflash_acquire_bus(self);
-    mp_spiflash_flush_internal(self);
+    mp_spiflash_cache_flush_internal(self);
     mp_spiflash_release_bus(self);
 }
 
-STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
+STATIC int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
     // Align to 4096 sector
     uint32_t offset = addr & 0xfff;
     uint32_t sec = addr >> 12;
@@ -301,7 +304,7 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
 
     // Restriction for now, so we don't need to erase multiple pages
     if (offset + len > SECTOR_SIZE) {
-        printf("mp_spiflash_write_part: len is too large\n");
+        printf("mp_spiflash_cached_write_part: len is too large\n");
         return -MP_EIO;
     }
 
@@ -310,7 +313,7 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
     // Acquire the sector buffer
     if (cache->user != self) {
         if (cache->user != NULL) {
-            mp_spiflash_flush(cache->user);
+            mp_spiflash_cache_flush(cache->user);
         }
         cache->user = self;
         cache->block = 0xffffffff;
@@ -320,7 +323,7 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
         // Read sector
         #if USE_WR_DELAY
         if (cache->block != 0xffffffff) {
-            mp_spiflash_flush_internal(self);
+            mp_spiflash_cache_flush_internal(self);
         }
         #endif
         mp_spiflash_read_data(self, addr, SECTOR_SIZE, cache->buf);
@@ -372,7 +375,7 @@ STATIC int mp_spiflash_write_part(mp_spiflash_t *self, uint32_t addr, size_t len
     return 0; // success
 }
 
-int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
+int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint8_t *src) {
     uint32_t bis = addr / SECTOR_SIZE;
     uint32_t bie = (addr + len - 1) / SECTOR_SIZE;
 
@@ -407,7 +410,7 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
             if (rest == 0) {
                 rest = SECTOR_SIZE;
             }
-            int ret = mp_spiflash_write_part(self, addr, rest, src);
+            int ret = mp_spiflash_cached_write_part(self, addr, rest, src);
             if (ret != 0) {
                 mp_spiflash_release_bus(self);
                 return ret;
@@ -428,7 +431,7 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
         if (rest > len) {
             rest = len;
         }
-        int ret = mp_spiflash_write_part(self, addr, rest, src);
+        int ret = mp_spiflash_cached_write_part(self, addr, rest, src);
         if (ret != 0) {
             mp_spiflash_release_bus(self);
             return ret;
