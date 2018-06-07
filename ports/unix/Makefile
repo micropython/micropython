@@ -156,10 +156,17 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	)
 
+# for littlefs
+CFLAGS += -DLFS_NO_DEBUG -DLFS_NO_WARN -DLFS_NO_ERROR -DLFS_NO_ASSERT -DLFS_NO_MALLOC
+$(BUILD)/lib/littlefs/lfs.o: CFLAGS += -Wno-unused-parameter -Wno-shadow
+$(BUILD)/lib/littlefs/lfs_util.o: CFLAGS += -Wno-unused-parameter
+
 # FatFS VFS support
 LIB_SRC_C += $(addprefix lib/,\
 	oofatfs/ff.c \
 	oofatfs/option/unicode.c \
+	littlefs/lfs.c \
+	littlefs/lfs_util.c \
 	)
 
 OBJ = $(PY_O)
