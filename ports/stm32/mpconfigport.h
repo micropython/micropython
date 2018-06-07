@@ -79,6 +79,7 @@
 #ifndef MICROPY_VFS_FAT
 #define MICROPY_VFS_FAT             (1)
 #endif
+#define MICROPY_VFS_LITTLEFS        (1)
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
