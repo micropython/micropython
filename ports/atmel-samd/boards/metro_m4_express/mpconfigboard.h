@@ -32,3 +32,15 @@
 #define EXTERNAL_FLASH_DEVICES S25FL116K, S25FL216K, GD25Q16C
 
 #include "external_flash/external_flash.h"
+
+#define BOARD_HAS_CRYSTAL 1
+
+#define DEFAULT_I2C_BUS_SCL (&pin_PB03)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB02)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_PA13)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA12)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA14)
+
+#define DEFAULT_UART_BUS_RX (&pin_PA23)
+#define DEFAULT_UART_BUS_TX (&pin_PA22)

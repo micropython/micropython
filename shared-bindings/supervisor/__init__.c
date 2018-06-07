@@ -25,11 +25,16 @@
  */
  #include "py/obj.h"
  #include "py/runtime.h"
+ #include "py/reload.h"
+
+ #include "lib/utils/interrupt_char.h"
  #include "supervisor/shared/autoreload.h"
+
  #include "supervisor/shared/rgb_led_status.h"
  
  #include "shared-bindings/supervisor/__init__.h"
  #include "shared-bindings/supervisor/Runtime.h"
+
 //| :mod:`supervisor` --- Supervisor settings
 //| =================================================
 //|
@@ -91,12 +96,25 @@ STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
 
+//| .. method:: reload()
+//|
+//|   Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL).
+//|
+STATIC mp_obj_t supervisor_reload(void) {
+    reload_requested = true;
+    mp_raise_reload_exception();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
+
+
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

@@ -6,11 +6,13 @@ compiler:
 env:
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express
+  - TRAVIS_BOARD=circuitplayground_express_crickit
   - TRAVIS_BOARD=feather_m0_basic
   - TRAVIS_BOARD=feather_m0_adalogger
   - TRAVIS_BOARD=feather_m0_rfm69
   - TRAVIS_BOARD=feather_m0_rfm9x
   - TRAVIS_BOARD=feather_m0_express
+  - TRAVIS_BOARD=feather_m0_express_crickit
   - TRAVIS_BOARD=feather_m4_express
   - TRAVIS_BOARD=itsybitsy_m0_express
   - TRAVIS_BOARD=itsybitsy_m4_express
@@ -42,7 +44,11 @@ notifications:
 
 before_script:
   - sudo dpkg --add-architecture i386
-  - sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system
+  - |
+    sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system ||
+    sleep 30 ||
+    sudo apt-get install -y python3 gcc-multilib pkg-config libffi-dev libffi-dev:i386 qemu-system
+
   - ([[ -z "$TRAVIS_TEST" ]] || sudo apt-get install -y qemu-system)
   - ([[ -z "$TRAVIS_BOARD" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))
   - ([[ $TRAVIS_TEST != "qemu" ]] || (wget https://s3.amazonaws.com/adafruit-circuit-python/gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded*_amd64.deb))

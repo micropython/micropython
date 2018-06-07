@@ -140,17 +140,25 @@ typedef long mp_off_t;
 #define CIRCUITPY_MCU_FAMILY samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define PORT_HEAP_SIZE (16384 + 4096)
-// If you change MICROPY_LONGINT_IMPL, also change MPY_TOOL_LONGINT_IMPL in mpconfigport.mk.
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #endif
 
 #ifdef SAMD51
 #define CIRCUITPY_MCU_FAMILY samd51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
 #define PORT_HEAP_SIZE (0x20000) // 128KiB
-// If you change MICROPY_LONGINT_IMPL, also change MPY_TOOL_LONGINT_IMPL in mpconfigport.mk.
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
+#endif
+
+#ifdef LONGINT_IMPL_NONE
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_NONE)
+#endif
+
+#ifdef LONGINT_IMPL_MPZ
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_MPZ)
 #define MP_SSIZE_MAX (0x7fffffff)
+#endif
+
+#ifdef LONGINT_IMPL_LONGLONG
+#define MICROPY_LONGINT_IMPL (MICROPY_LONGINT_IMPL_LONGLONG)
 #endif
 
 // extra built in modules to add to the list of known ones
@@ -166,6 +174,7 @@ extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t math_module;
 extern const struct _mp_obj_module_t os_module;
 extern const struct _mp_obj_module_t random_module;
+extern const struct _mp_obj_module_t rotaryio_module;
 extern const struct _mp_obj_module_t rtc_module;
 extern const struct _mp_obj_module_t samd_module;
 extern const struct _mp_obj_module_t storage_module;
@@ -188,9 +197,13 @@ extern const struct _mp_obj_module_t usb_hid_module;
     #define MICROPY_PY_BUILTINS_FROZENSET (1)
     #define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
     #define MICROPY_PY_BUILTINS_REVERSED (1)
+    #define MICROPY_PY_UERRNO (1)
+    #define MICROPY_PY_UERRNO_ERRORCODE (0)
     #define MICROPY_PY_URE (1)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-    #define MICROPY_PY_FRAMEBUF         (1)
+    #ifndef MICROPY_PY_FRAMEBUF
+      #define MICROPY_PY_FRAMEBUF         (1)
+    #endif
 
     #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
     #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
@@ -203,18 +216,23 @@ extern const struct _mp_obj_module_t usb_hid_module;
         #define AUDIOBUSIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
     #endif
 
+    #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES \
         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
         AUDIOBUSIO_MODULE \
         { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module }, \
+        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module }, \
         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }
+    #endif
     #define EXPRESS_BOARD
 
 #else
     #define MICROPY_PY_BUILTINS_REVERSED (0)
     #define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
     #define MICROPY_PY_FRAMEBUF         (0)
+    #ifndef EXTRA_BUILTIN_MODULES
     #define EXTRA_BUILTIN_MODULES
+    #endif
 
     #define MICROPY_PY_BUILTINS_COMPLEX (0)
 
@@ -222,10 +240,32 @@ extern const struct _mp_obj_module_t usb_hid_module;
 #endif
 
 // Disabled for now.
-// { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module },
 
+#ifdef SAMD21
+#define TOUCHIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
+#endif
+#ifdef SAMD51
+#define TOUCHIO_MODULE
+#endif
 
+// A pIRKey has minimal I/O needs. Remove unneeded modules to make room
+// for frozen modules. math is very large and is also removed.
+#ifdef PIRKEY_M0
+#define MICROPY_PORT_BUILTIN_MODULES \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
+#else
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
@@ -244,11 +284,25 @@ extern const struct _mp_obj_module_t usb_hid_module;
     { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module }, \
+    TOUCHIO_MODULE \
     EXTRA_BUILTIN_MODULES
+#endif
 
 #define MICROPY_PORT_BUILTIN_DEBUG_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_ustack),(mp_obj_t)&ustack_module }
+
+#define MICROPY_PY_UERRNO_LIST \
+    X(EPERM) \
+    X(ENOENT) \
+    X(EIO) \
+    X(EAGAIN) \
+    X(ENOMEM) \
+    X(EACCES) \
+    X(EEXIST) \
+    X(ENODEV) \
+    X(EISDIR) \
+    X(EINVAL) \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -264,7 +318,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#include "shared_dma.h"
+#include "peripherals/dma.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
@@ -272,6 +326,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
     mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT]; \
     mp_obj_t rtc_time_source; \
     FLASH_ROOT_POINTERS \
+    mp_obj_t gamepad_singleton; \
 
 void run_background_tasks(void);
 #define MICROPY_VM_HOOK_LOOP run_background_tasks();

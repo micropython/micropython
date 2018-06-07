@@ -28,7 +28,7 @@ int mp_hal_stdin_rx_chr(void) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
         #endif
-        // if (reload_next_character) {
+        // if (reload_requested) {
         //     return CHAR_CTRL_D;
         // }
         if (usb_bytes_available()) {

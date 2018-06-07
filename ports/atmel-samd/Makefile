@@ -112,8 +112,7 @@ else
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
   ifdef INTERNAL_FLASH_FILESYSTEM
-    ## Not currently needed
-    ## CFLAGS += -finline-limit=50
+    CFLAGS += -finline-limit=60
   endif
   CFLAGS += -flto
 endif
@@ -163,6 +162,20 @@ LIBS := -lgcc -lc
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
 LIBS += -lm
+endif
+
+# Propagate longint choice from .mk to C. There's no easy string comparison
+# in cpp coniditionals, so we #define separate names for each.
+ifeq ($(LONGINT_IMPL),NONE)
+CFLAGS += -DLONGINT_IMPL_NONE
+endif
+
+ifeq ($(LONGINT_IMPL),MPZ)
+CFLAGS += -DLONGINT_IMPL_MPZ
+endif
+
+ifeq ($(LONGINT_IMPL),LONGLONG)
+CFLAGS += -DLONGINT_IMPL_LONGLONG
 endif
 
 ifeq ($(CHIP_FAMILY), samd21)
@@ -227,20 +240,28 @@ SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
 SRC_C = \
 	audio_dma.c \
+	board_busses.c \
 	background.c \
-	clocks.c \
-	$(CHIP_FAMILY)_clocks.c \
-	events.c \
 	fatfs_port.c \
 	flash_api.c \
 	mphalport.c \
 	reset.c \
-	$(CHIP_FAMILY)_peripherals.c \
-	peripherals.c \
-	$(CHIP_FAMILY)_pins.c \
-	shared_dma.c \
+	peripherals/clocks.c \
+	peripherals/dma.c \
+	peripherals/events.c \
+	peripherals/external_interrupts.c \
+	peripherals/sercom.c \
+	peripherals/timers.c \
+	peripherals/$(CHIP_FAMILY)/adc.c \
+	peripherals/$(CHIP_FAMILY)/cache.c \
+	peripherals/$(CHIP_FAMILY)/clocks.c \
+	peripherals/$(CHIP_FAMILY)/dma.c \
+	peripherals/$(CHIP_FAMILY)/events.c \
+	peripherals/$(CHIP_FAMILY)/external_interrupts.c \
+	peripherals/$(CHIP_FAMILY)/pins.c \
+	peripherals/$(CHIP_FAMILY)/sercom.c \
+	peripherals/$(CHIP_FAMILY)/timers.c \
 	tick.c \
-	timers.c \
 	usb.c \
 	usb_mass_storage.c \
 	bindings/samd/__init__.c \
@@ -259,7 +280,7 @@ SRC_C = \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/autogen_usb_descriptor.c \
-	# freetouch/adafruit_ptc.c
+	freetouch/adafruit_ptc.c
 
 # Choose which flash filesystem impl to use.
 # (Right now INTERNAL_FLASH_FILESYSTEM and SPI_FLASH_FILESYSTEM are mutually exclusive.
@@ -287,6 +308,8 @@ SRC_COMMON_HAL = \
 	microcontroller/Processor.c \
 	neopixel_write/__init__.c \
 	os/__init__.c \
+	rotaryio/__init__.c \
+	rotaryio/IncrementalEncoder.c \
 	rtc/__init__.c \
 	rtc/RTC.c \
 	storage/__init__.c \
@@ -306,7 +329,7 @@ SRC_COMMON_HAL = \
 	usb_hid/Device.c \
 	audioio/__init__.c \
 	audioio/AudioOut.c \
-#	touchio/__init__.c \
+	touchio/__init__.c \
 	touchio/TouchIn.c \
 
 ifeq ($(INTERNAL_LIBM),1)
@@ -377,7 +400,7 @@ ifneq ($(CHIP_VARIANT),SAMD51G18A)
 			audiobusio/__init__.c \
 			audiobusio/I2SOut.c \
 			audiobusio/PDMIn.c
-		SRC_C += i2s.c
+		SRC_C += peripherals/i2s.c peripherals/$(CHIP_FAMILY)/i2s.c
 	endif
 endif
 

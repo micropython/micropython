@@ -188,6 +188,7 @@ PY_O_BASENAME = \
 	objtype.o \
 	objzip.o \
 	opmethods.o \
+	reload.o \
 	sequence.o \
 	stream.o \
 	binary.o \

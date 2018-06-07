@@ -55,3 +55,15 @@
 [submodule "frozen/Adafruit_CircuitPython_HID"]
 	path = frozen/Adafruit_CircuitPython_HID
 	url = https://github.com/adafruit/Adafruit_CircuitPython_HID.git
+[submodule "ports/atmel-samd/Adafruit_CircuitPython_Motor"]
+	path = frozen/Adafruit_CircuitPython_Motor
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Motor.git
+[submodule "ports/atmel-samd/Adafruit_CircuitPython_seesaw"]
+	path = frozen/Adafruit_CircuitPython_seesaw
+	url = https://github.com/adafruit/Adafruit_CircuitPython_seesaw.git
+[submodule "frozen/Adafruit_CircuitPython_IRRemote"]
+	path = frozen/Adafruit_CircuitPython_IRRemote
+	url = https://github.com/adafruit/Adafruit_CircuitPython_IRRemote.git
+[submodule "frozen/Adafruit_CircuitPython_DotStar"]
+	path = frozen/Adafruit_CircuitPython_DotStar
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DotStar.git

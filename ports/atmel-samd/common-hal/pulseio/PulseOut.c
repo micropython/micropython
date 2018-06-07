@@ -31,11 +31,11 @@
 #include "hal/include/hal_gpio.h"
 
 #include "mpconfigport.h"
+#include "peripherals/pins.h"
+#include "peripherals/timers.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "samd21_pins.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "timers.h"
 
 // This timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
