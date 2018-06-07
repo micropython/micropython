@@ -119,6 +119,11 @@ endif
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
 
+# for littlefs
+CFLAGS += -DLFS_NO_DEBUG -DLFS_NO_WARN -DLFS_NO_ERROR -DLFS_NO_ASSERT -DLFS_NO_MALLOC
+$(BUILD)/lib/littlefs/lfs.o: CFLAGS += -Wno-unused-parameter -Wno-shadow
+$(BUILD)/lib/littlefs/lfs_util.o: CFLAGS += -Wno-unused-parameter
+
 SRC_LIB = $(addprefix lib/,\
 	libc/string0.c \
 	oofatfs/ff.c \
@@ -132,6 +137,8 @@ SRC_LIB = $(addprefix lib/,\
 	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
 	utils/mpirq.c \
+	littlefs/lfs.c \
+	littlefs/lfs_util.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -291,6 +298,7 @@ SRC_C = \
 	servo.c \
 	dac.c \
 	adc.c \
+	pyblittlefs.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O = \
