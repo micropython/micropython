@@ -36,9 +36,9 @@
 #include "py/bc.h"
 
 #if 0
-#define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
+#define _TRACE_IP(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
-#define TRACE(ip)
+#define _TRACE_IP(ip)
 #endif
 
 // Value stack grows up (this makes it incompatible with native C stack, but
@@ -128,7 +128,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     #define DISPATCH() do { \
-        TRACE(ip); \
+        _TRACE_IP(ip); \
         MARK_EXC_IP_GLOBAL(); \
         goto *entry_table[*ip++]; \
     } while (0)
@@ -199,7 +199,7 @@ dispatch_loop:
 #if MICROPY_OPT_COMPUTED_GOTO
                 DISPATCH();
 #else
-                TRACE(ip);
+                _TRACE_IP(ip);
                 MARK_EXC_IP_GLOBAL();
                 switch (*ip++) {
 #endif
