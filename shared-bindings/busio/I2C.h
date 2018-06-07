@@ -46,7 +46,8 @@ extern const mp_obj_type_t busio_i2c_type;
 extern void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                                               const mcu_pin_obj_t * scl,
                                               const mcu_pin_obj_t * sda,
-                                              uint32_t frequency);
+                                              uint32_t frequency,
+                                              uint32_t timeout);
 
 extern void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self);
 extern bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self);

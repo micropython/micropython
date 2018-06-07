@@ -7,6 +7,7 @@ class CStrip(sphinx.parsers.Parser):
     def parse(self, inputstring, document):
         # This setting is missing starting with Sphinx 1.7.1 so we set it ourself.
         document.settings.tab_width = 4
+        document.settings.character_level_inline_markup = False
         stripped = []
         for line in inputstring.split("\n"):
             line = line.strip()

@@ -29,13 +29,8 @@
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
 
+#include "peripherals/pins.h"
 #include "supervisor/shared/rgb_led_status.h"
-#ifdef SAMD21
-#include "samd21_pins.h"
-#endif
-#ifdef SAMD51
-#include "samd51_pins.h"
-#endif
 
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;

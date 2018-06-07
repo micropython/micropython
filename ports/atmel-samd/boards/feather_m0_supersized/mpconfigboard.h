@@ -47,3 +47,13 @@
 #define EXTERNAL_FLASH_DEVICES S25FL064L
 
 #include "external_flash/external_flash.h"
+
+#define DEFAULT_I2C_BUS_SCL (&pin_PA23)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA22)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_PB11)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PB10)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA12)
+
+#define DEFAULT_UART_BUS_RX (&pin_PA11)
+#define DEFAULT_UART_BUS_TX (&pin_PA10)

@@ -53,13 +53,16 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/touchio/TouchIn.h"
 #include "common-hal/usb_hid/Device.h"
+#include "peripherals/cache.h"
+#include "peripherals/clocks.h"
+#include "peripherals/events.h"
+#include "peripherals/external_interrupts.h"
+#include "peripherals/dma.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "clocks.h"
-#include "events.h"
-#include "peripherals.h"
-#include "shared_dma.h"
 #include "tick.h"
+#include "usb.h"
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
 #include "shared-module/gamepad/__init__.h"
@@ -180,22 +183,17 @@ safe_mode_t port_init(void) {
 #ifdef SAMD21
     hri_nvmctrl_set_CTRLB_RWS_bf(NVMCTRL, 2);
     _pm_init();
+#endif
     clock_init();
-#endif
-#ifdef SAMD51
-    init_mcu();
-#endif
+
     board_init();
 
     // Configure millisecond timer initialization.
     tick_init();
-    rtc_init();
 
-    // Init the nvm controller.
-    // struct nvm_config config_nvm;
-    // nvm_get_config_defaults(&config_nvm);
-    // config_nvm.manual_page_write = false;
-    // nvm_set_config(&config_nvm);
+#ifndef PIRKEY_M0
+    rtc_init();
+#endif
 
     init_shared_dma();
     #ifdef CIRCUITPY_CANARY_WORD
@@ -205,9 +203,16 @@ safe_mode_t port_init(void) {
     }
     #endif
 
-    // if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
-    //     return BROWNOUT;
-    // }
+    #ifdef SAMD21
+    if (PM->RCAUSE.bit.BOD33 == 1 || PM->RCAUSE.bit.BOD12 == 1) {
+        return BROWNOUT;
+    }
+    #endif
+    #ifdef SAMD51
+    if (RSTC->RCAUSE.bit.BODVDD == 1 || RSTC->RCAUSE.bit.BODCORE == 1) {
+        return BROWNOUT;
+    }
+    #endif
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
@@ -240,37 +245,30 @@ void reset_port(void) {
     i2sout_reset();
     #endif
     audio_dma_reset();
-//     touchin_reset();
     //pdmin_reset();
 #endif
-    pulsein_reset();
+#ifdef SAMD21
+    touchin_reset();
+#endif
+    eic_reset();
     pulseout_reset();
     pwmout_reset();
+
+#ifndef PIRKEY_M0
+    analogin_reset();
+    analogout_reset();
     rtc_reset();
+#endif
 
     reset_gclks();
-
-    analogin_reset();
 
 #ifdef CIRCUITPY_GAMEPAD_TICKS
     gamepad_reset();
 #endif
 
-    analogout_reset();
-
     reset_event_system();
 
     reset_all_pins();
-
-    // Set up debugging pins after reset_all_pins().
-
-    // Uncomment to init PIN_PA17 for debugging.
-    // struct port_config pin_conf;
-    // port_get_config_defaults(&pin_conf);
-    //
-    // pin_conf.direction  = PORT_PIN_DIR_OUTPUT;
-    // port_pin_set_config(MICROPY_HW_LED1, &pin_conf);
-    // port_pin_set_output_level(MICROPY_HW_LED1, false);
 
     // Output clocks for debugging.
     // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
@@ -283,52 +281,9 @@ void reset_port(void) {
 
     usb_hid_reset();
 
-// #ifdef CALIBRATE_CRYSTALLESS
-//     // If we are on USB lets double check our fine calibration for the clock and
-//     // save the new value if its different enough.
-//     if (mp_msc_enabled) {
-//         SYSCTRL->DFLLSYNC.bit.READREQ = 1;
-//         uint16_t saved_calibration = 0x1ff;
-//         if (strcmp((char*) INTERNAL_CIRCUITPY_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
-//             saved_calibration = ((uint16_t *) INTERNAL_CIRCUITPY_CONFIG_START_ADDR)[8];
-//         }
-//         while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
-//             // TODO(tannewt): Run the mass storage stuff if this takes a while.
-//         }
-//         int16_t current_calibration = SYSCTRL->DFLLVAL.bit.FINE;
-//         if (abs(current_calibration - saved_calibration) > 10) {
-//             enum status_code error_code;
-//             uint8_t page_buffer[NVMCTRL_ROW_SIZE];
-//             for (int i = 0; i < NVMCTRL_ROW_PAGES; i++) {
-//                 do
-//                 {
-//                     error_code = nvm_read_buffer(INTERNAL_CIRCUITPY_CONFIG_START_ADDR + i * NVMCTRL_PAGE_SIZE,
-//                                                  page_buffer + i * NVMCTRL_PAGE_SIZE,
-//                                                  NVMCTRL_PAGE_SIZE);
-//                 } while (error_code == STATUS_BUSY);
-//             }
-//             // If this is the first write, include the header.
-//             if (strcmp((char*) page_buffer, "CIRCUITPYTHON1") != 0) {
-//                 memcpy(page_buffer, "CIRCUITPYTHON1", 15);
-//             }
-//             // First 16 bytes (0-15) are ID. Little endian!
-//             page_buffer[16] = current_calibration & 0xff;
-//             page_buffer[17] = current_calibration >> 8;
-//             do
-//             {
-//                 error_code = nvm_erase_row(INTERNAL_CIRCUITPY_CONFIG_START_ADDR);
-//             } while (error_code == STATUS_BUSY);
-//             for (int i = 0; i < NVMCTRL_ROW_PAGES; i++) {
-//                 do
-//                 {
-//                     error_code = nvm_write_buffer(INTERNAL_CIRCUITPY_CONFIG_START_ADDR + i * NVMCTRL_PAGE_SIZE,
-//                                                   page_buffer + i * NVMCTRL_PAGE_SIZE,
-//                                                   NVMCTRL_PAGE_SIZE);
-//                 } while (error_code == STATUS_BUSY);
-//             }
-//         }
-//     }
-// #endif
+    if (usb_connected()) {
+        save_usb_clock_calibration();
+    }
 }
 
 /**

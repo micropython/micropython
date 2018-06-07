@@ -82,7 +82,7 @@
 #define MICROPY_STREAMS_NON_BLOCK                (1)
 #define MICROPY_MODULE_WEAK_LINKS                (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS            (1)
-#define MICROPY_USE_INTERNAL_ERRNO               (1)
+#define MICROPY_USE_INTERNAL_ERRNO               (0)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE          (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER           (0)
@@ -323,6 +323,7 @@ extern const struct _mp_obj_module_t ble_module;
     struct _music_data_t *music_data; \
     const struct _pwm_events *pwm_active_events; \
     const struct _pwm_events *pwm_pending_events; \
+    mp_obj_t gamepad_singleton; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 

@@ -32,13 +32,6 @@
 
 #include "flash_api.h"
 
-#ifdef EXPRESS_BOARD
-// #include "common-hal/touchio/TouchIn.h"
-#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
-#else
-#define INTERNAL_CIRCUITPY_CONFIG_START_ADDR (0x00040000 - 0x010000 - 0x100 - CIRCUITPY_INTERNAL_NVM_SIZE)
-#endif
-
 fs_user_mount_t fs_user_mount_flash;
 mp_vfs_mount_t mp_vfs_mount_flash;
 

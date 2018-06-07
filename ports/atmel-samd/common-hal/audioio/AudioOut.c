@@ -45,10 +45,11 @@
 #endif
 
 #include "audio_dma.h"
-#include "events.h"
-#include "samd21_pins.h"
-#include "shared_dma.h"
-#include "timers.h"
+
+#include "peripherals/dma.h"
+#include "peripherals/events.h"
+#include "peripherals/pins.h"
+#include "peripherals/timers.h"
 
 void audioout_reset(void) {
 }
@@ -239,6 +240,8 @@ void common_hal_audioio_audioout_deinit(audioio_audioout_obj_t* self) {
     #endif
 
     disable_event_channel(self->tc_to_dac_event_channel);
+
+    tc_set_enable(tc_insts[self->tc_index], false);
 
     reset_pin(self->left_channel->pin);
     self->left_channel = mp_const_none;

@@ -113,7 +113,6 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
             mp_print_str(print, "");
             return;
         } else if (o->args->len == 1) {
-            #if MICROPY_PY_UERRNO
             // try to provide a nice OSError error message
             if (o->base.type == &mp_type_OSError && MP_OBJ_IS_SMALL_INT(o->args->items[0])) {
                 qstr qst = mp_errno_to_str(o->args->items[0]);
@@ -122,7 +121,6 @@ STATIC void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
                     return;
                 }
             }
-            #endif
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
@@ -249,6 +247,7 @@ const mp_obj_type_t mp_type_ ## exc_name = { \
 // http://docs.python.org/3/library/exceptions.html
 MP_DEFINE_EXCEPTION(SystemExit, BaseException)
 MP_DEFINE_EXCEPTION(KeyboardInterrupt, BaseException)
+MP_DEFINE_EXCEPTION(ReloadException, BaseException)
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
   #if MICROPY_PY_ASYNC_AWAIT
@@ -275,9 +274,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
     */
   MP_DEFINE_EXCEPTION(OSError, Exception)
-#if MICROPY_PY_BUILTINS_TIMEOUTERROR
-    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-#endif
+  MP_DEFINE_EXCEPTION(TimeoutError, OSError)
     /*
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)

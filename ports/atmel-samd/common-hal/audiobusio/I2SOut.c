@@ -45,13 +45,14 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
+#include "peripherals/clocks.h"
+#include "peripherals/dma.h"
+#include "peripherals/events.h"
+#include "peripherals/i2s.h"
+#include "peripherals/pins.h"
+#include "peripherals/timers.h"
+
 #include "audio_dma.h"
-#include "clocks.h"
-#include "events.h"
-#include "i2s.h"
-#include "pins.h"
-#include "shared_dma.h"
-#include "timers.h"
 
 #ifdef SAMD21
 #define SERCTRL(name) I2S_SERCTRL_ ## name

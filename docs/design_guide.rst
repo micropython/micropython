@@ -441,10 +441,10 @@ buffers.
 Examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-ustruct.pack
+struct.pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use `ustruct.pack_into` instead of `ustruct.pack`.
+Use `struct.pack_into` instead of `struct.pack`.
 
 Sensor properties and units
 --------------------------------------------------------------------------------
