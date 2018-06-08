@@ -36,11 +36,12 @@ dfu-gen:
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
 
 dfu-flash:
-	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
 	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200 --singlebank
 
-boot-flash:
-	nrfjprog --program $(BOOT_UART_FILE).hex -f nrf52 --chiperase --reset
+dfu-bootloader:
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
+	$(NRFUTIL) --verbose dfu serial --package $(BOOT_USB_FILE).zip -p $(SERIAL) -b 115200
 
-boot-usb-flash:
+bootloader:
 	nrfjprog --program $(BOOT_USB_FILE).hex -f nrf52 --chiperase --reset	

@@ -38,6 +38,6 @@ dfu-flash:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
 	$(NRFUTIL) dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200 --singlebank
 
-boot-flash:
+dfu-bootloader:
 	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
 	$(NRFUTIL) dfu serial --package $(BOOTLOADER_PKG) -p $(SERIAL) -b 115200
