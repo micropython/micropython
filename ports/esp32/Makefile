@@ -168,6 +168,7 @@ SRC_C = \
 	esp32_ulp.c \
 	modesp32.c \
 	moduhashlib.c \
+	moducrypto.c \
 	espneopixel.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
