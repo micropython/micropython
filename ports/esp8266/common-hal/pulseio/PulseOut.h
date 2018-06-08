@@ -36,7 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     os_timer_t timer;
-    uint8_t channel;
+    const mcu_pin_obj_t *pin;
 } pulseio_pulseout_obj_t;
 
 void pulseout_reset(void);

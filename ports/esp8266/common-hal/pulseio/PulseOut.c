@@ -36,73 +36,29 @@
 #include "mpconfigport.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 
-#define NO_CHANNEL (255)
-
-static uint16_t *pulse_buffer = NULL;
-static volatile uint16_t pulse_index = 0;
-static uint16_t pulse_length;
-static volatile uint32_t current_compare = 0;
-
 void pulseout_set(pulseio_pulseout_obj_t *self, bool state) {
-    // XXX double kludge
-    //uint32_t duty = state ? pwm_get_period() * 11 : 0;
-    uint32_t duty = state ? 1000 : 500;
-    pwm_set_duty(duty, self->channel);
-    pwm_start();
-}
-
-void pulseout_interrupt_handler(void *data) {
-    pulseio_pulseout_obj_t *self = data;
-
-    if (pulse_buffer == NULL || self->channel == NO_CHANNEL) return;
-    if (pulse_index >= pulse_length) return;
-    pulse_index++;
-    pulseout_set(self, pulse_index % 2 == 0);
-
-    os_timer_arm(&self->timer, pulse_buffer[pulse_index], 0);
-}
-
-void pulseout_reset() {
-    pulse_buffer = NULL;
+    PIN_FUNC_SELECT(self->pin->peripheral, state ? self->pin->gpio_function : 0);
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                             const pulseio_pwmout_obj_t* carrier) {
-    self->channel = carrier->channel;
+    self->pin = carrier->pin;
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
-    return self->channel == NO_CHANNEL;
+    return self->pin == NULL;
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
-    os_timer_disarm(&self->timer);
-    self->channel = NO_CHANNEL;
+    self->pin = NULL;
     pulseout_set(self, true);
 }
 
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
-    if (pulse_buffer != NULL) {
-        mp_raise_RuntimeError("Another send is already active");
+void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self,
+        uint16_t* pulses, uint16_t length) {
+    for (uint16_t i = 0; i<length; i++) {
+        pulseout_set(self, i % 2 == 0);
+        ets_delay_us(pulses[i]);
     }
-    pulse_buffer = pulses;
-    pulse_index = 0;
-    pulse_length = length;
-
-    os_timer_disarm(&self->timer);
-    os_timer_setfn(&self->timer, pulseout_interrupt_handler, self);
-    os_timer_arm(&self->timer, pulse_buffer[0], 0);
-    pulseout_set(self, true);
-
-    // XXX in the circumstances, is it worth messing with os_timer?
-    // it isn't especially accurate anyway ...
-    // might it not be simpler to just call mp_hal_delay_us() a lot?
-    while(pulse_index < length) {
-        ets_loop_iter();
-    }
-
-    os_timer_disarm(&self->timer);
     pulseout_set(self, false);
-
-    pulse_buffer = NULL;
 }
