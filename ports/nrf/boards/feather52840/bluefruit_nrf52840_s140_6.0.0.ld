@@ -41,6 +41,6 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);
 
 /* RAM extents for the garbage collector */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-_heap_end = 0x20007000; /* tunable */
+_heap_end = 0x20020000; /* tunable */
 
 INCLUDE "boards/common.ld"
