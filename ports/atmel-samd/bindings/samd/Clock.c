@@ -47,15 +47,7 @@
 STATIC void samd_clock_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "%q.%q.%s(", MP_QSTR_samd, MP_QSTR_clock, self->name);
-    if (clock_get_enabled(self->type, self->index)) {
-        mp_printf(print, "frequency=%u", clock_get_frequency(self->type, self->index));
-        uint32_t calibration = clock_get_calibration(self->type, self->index);
-        if (calibration) {
-            mp_printf(print, ", calibration=%u", calibration);
-        }
-    }
-    mp_printf(print, ")");
+    mp_printf(print, "%q.%q.%q", MP_QSTR_samd, MP_QSTR_clock, self->name);
 }
 
 //|     .. attribute:: enabled

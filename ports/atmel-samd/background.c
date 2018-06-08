@@ -26,11 +26,19 @@
 #include "background.h"
 
 #include "audio_dma.h"
+#include "tick.h"
 #include "usb.h"
 #include "usb_mass_storage.h"
+
+volatile uint64_t last_finished_tick = 0;
 
 void run_background_tasks(void) {
     audio_dma_background();
     usb_msc_background();
     usb_cdc_background();
+    last_finished_tick = ticks_ms;
+}
+
+bool background_tasks_ok(void) {
+    return ticks_ms - last_finished_tick < 1000;
 }

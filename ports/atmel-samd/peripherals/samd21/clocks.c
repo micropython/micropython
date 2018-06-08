@@ -130,6 +130,9 @@ static void init_clock_source_dfll48m_xosc(void) {
                             SYSCTRL_DFLLCTRL_ENABLE;
     while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {}
     while (GCLK->STATUS.bit.SYNCBUSY) {}
+
+    // Wait for the fine lock on the DFLL.
+    while (!SYSCTRL->PCLKSR.bit.DFLLLCKC || !SYSCTRL->PCLKSR.bit.DFLLLCKF) {}
 }
 
 static void init_clock_source_dfll48m_usb(void) {
