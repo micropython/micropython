@@ -31,7 +31,9 @@
 
 #if MICROPY_PY_UHASHLIB
 
+#if MICROPY_PY_UHASHLIB_SHA256
 #include "crypto-algorithms/sha256.h"
+#endif
 
 #if MICROPY_PY_UHASHLIB_SHA1
 
@@ -50,6 +52,7 @@ typedef struct _mp_obj_hash_t {
     char state[0];
 } mp_obj_hash_t;
 
+#if MICROPY_PY_UHASHLIB_SHA256
 STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -94,6 +97,7 @@ STATIC const mp_obj_type_t uhashlib_sha256_type = {
     .make_new = uhashlib_sha256_make_new,
     .locals_dict = (void*)&uhashlib_sha256_locals_dict,
 };
+#endif
 
 #if MICROPY_PY_UHASHLIB_SHA1
 STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg);
@@ -177,7 +181,9 @@ STATIC const mp_obj_type_t uhashlib_sha1_type = {
 
 STATIC const mp_rom_map_elem_t mp_module_uhashlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    #if MICROPY_PY_UHASHLIB_SHA256
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&uhashlib_sha256_type) },
+    #endif
     #if MICROPY_PY_UHASHLIB_SHA1
     { MP_ROM_QSTR(MP_QSTR_sha1), MP_ROM_PTR(&uhashlib_sha1_type) },
     #endif
@@ -190,6 +196,8 @@ const mp_obj_module_t mp_module_uhashlib = {
     .globals = (mp_obj_dict_t*)&mp_module_uhashlib_globals,
 };
 
+#if MICROPY_PY_UHASHLIB_SHA256
 #include "crypto-algorithms/sha256.c"
+#endif
 
 #endif //MICROPY_PY_UHASHLIB
