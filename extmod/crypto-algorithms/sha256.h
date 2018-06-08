@@ -27,8 +27,8 @@ typedef struct {
 } CRYAL_SHA256_CTX;
 
 /*********************** FUNCTION DECLARATIONS **********************/
-void sha256_init(CRYAL_SHA256_CTX *ctx);
-void sha256_update(CRYAL_SHA256_CTX *ctx, const BYTE data[], size_t len);
-void sha256_final(CRYAL_SHA256_CTX *ctx, BYTE hash[]);
+void cryal_sha256_init(CRYAL_SHA256_CTX *ctx);
+void cryal_sha256_update(CRYAL_SHA256_CTX *ctx, const BYTE data[], size_t len);
+void cryal_sha256_final(CRYAL_SHA256_CTX *ctx, BYTE hash[]);
 
 #endif   // SHA256_H
