@@ -125,7 +125,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->first_edge = true;
     self->last_us = 0;
     self->last_ms = 0;
-    self->errored_too_fast = 0;
+    self->errored_too_fast = false;
 
     set_eic_channel_data(pin->extint_channel, (void*) self);
 
