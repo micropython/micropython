@@ -37,9 +37,6 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "common-hal/microcontroller/__init__.h"
 
-// XXX map gpio pins to pulsein objects: kinda clumsy.
-static pulseio_pulsein_obj_t *pulseio_pulsein_objs[GPIO_PIN_COUNT] = {0};
-
 static void pulsein_set_interrupt(pulseio_pulsein_obj_t *self, bool rising, bool falling) {
     ETS_GPIO_INTR_DISABLE();
     // Set interrupt mode
@@ -55,7 +52,9 @@ static void pulsein_set_interrupt(pulseio_pulsein_obj_t *self, bool rising, bool
     ETS_GPIO_INTR_ENABLE();
 }
 
-void pulseio_pulsein_interrupt_handler(pulseio_pulsein_obj_t *self, uint32_t time_us) {
+void pulseio_pulsein_interrupt_handler(void *data) {
+    pulseio_pulsein_obj_t *self = data;
+    uint32_t time_us = system_get_time();
     if (self->first_edge) {
         self->first_edge = false;
         pulsein_set_interrupt(self, true, true);
@@ -70,18 +69,6 @@ void pulseio_pulsein_interrupt_handler(pulseio_pulsein_obj_t *self, uint32_t tim
         }
     }
     self->last_us = time_us;
-}
-
-// XXX needs a better name, or a better abstraction
-// XXX called from intr.c:pin_intr_handler_iram ... inelegantly
-void pulsein_interrupt_handler(uint32_t status) {
-    uint32_t time_us = system_get_time();
-    for (int i=0; i<GPIO_PIN_COUNT; i++) {
-        if (status & 1<<i) {
-            pulseio_pulsein_obj_t *self = pulseio_pulsein_objs[i];
-            if (self) pulseio_pulsein_interrupt_handler(self, time_us);
-        }
-    }
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
@@ -104,19 +91,22 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->len = 0;
     self->first_edge = true;
     self->last_us = 0;
-    pulseio_pulsein_objs[self->pin->gpio_number] = self;
+
+    microcontroller_pin_register_intr_handler(self->pin->gpio_number,
+            pulseio_pulsein_interrupt_handler, (void *)self);
     pulsein_set_interrupt(self, !idle_state, idle_state);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
-    return pulseio_pulsein_objs[self->pin->gpio_number] == NULL;
+    return self->buffer == NULL;
 }
 
 void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     pulsein_set_interrupt(self, false, false);
-    pulseio_pulsein_objs[self->pin->gpio_number] = NULL;
+    microcontroller_pin_register_intr_handler(self->pin->gpio_number, NULL, NULL);
     PIN_FUNC_SELECT(self->pin->peripheral, 0);
     m_free(self->buffer);
+    self->buffer = NULL;
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {

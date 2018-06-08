@@ -34,8 +34,10 @@
 void pin_intr_handler_iram(void *arg) {
     uint32_t status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
     GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, status);
+
+    // machine.Pin handlers
     pin_intr_handler(status);
 
-    // XXX bit of a hack
-    pulsein_interrupt_handler(status);
+    // microcontroller.Pin handlers
+    microcontroller_pin_call_intr_handlers(status);
 }
