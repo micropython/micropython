@@ -392,7 +392,18 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
             break;
         }
         // Wait for the next buffer to fill
+        uint32_t wait_counts = 0;
+        #ifdef SAMD21
+          #define MAX_WAIT_COUNTS 1000
+        #endif
+        #ifdef SAMD51
+          #define MAX_WAIT_COUNTS 6000
+        #endif
         while (!event_interrupt_active(event_channel)) {
+            if (wait_counts++ > MAX_WAIT_COUNTS) {
+                // Buffer has stopped filling; DMA may have missed an I2S trigger event.
+                break;
+            }
             #ifdef MICROPY_VM_HOOK_LOOP
                 MICROPY_VM_HOOK_LOOP
             #endif
