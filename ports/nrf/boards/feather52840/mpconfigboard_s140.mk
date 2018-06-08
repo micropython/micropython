@@ -7,6 +7,7 @@ LD_FILE = boards/feather52840/bluefruit_nrf52840_s140_6.0.0.ld
 BOOT_UART_FILE = boards/feather52840/bootloader/uart/feather52840_bootloader_6.0.0_s140_single
 BOOT_USB_FILE = boards/feather52840/bootloader/usb/feather52840_bootloader_6.0.0_s140_single
 
+BOOT_SETTING_ADDR = 0xFF000
 NRF_DEFINES += -DNRF52840_XXAA
 
 ifeq ($(OS),Windows_NT)

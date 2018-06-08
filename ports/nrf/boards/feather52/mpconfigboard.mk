@@ -6,6 +6,7 @@ SOFTDEV_VERSION ?= 2.0.1
 LD_FILE = boards/feather52/custom_nrf52832_dfu_app_$(SOFTDEV_VERSION).ld
 BOOTLOADER_PKG = boards/feather52/bootloader/feather52_bootloader_$(SOFTDEV_VERSION)_s132_single.zip
 
+BOOT_SETTING_ADDR = 0x7F000
 NRF_DEFINES += -DNRF52832_XXAA
 
 ifeq ($(OS),Windows_NT)
