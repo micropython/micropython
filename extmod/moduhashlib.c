@@ -32,7 +32,13 @@
 #if MICROPY_PY_UHASHLIB
 
 #if MICROPY_PY_UHASHLIB_SHA256
+
+#if MICROPY_SSL_MBEDTLS
+#include "mbedtls/sha256.h"
+#else
 #include "crypto-algorithms/sha256.h"
+#endif
+
 #endif
 
 #if MICROPY_PY_UHASHLIB_SHA1
@@ -55,6 +61,38 @@ typedef struct _mp_obj_hash_t {
 #if MICROPY_PY_UHASHLIB_SHA256
 STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
+#if MICROPY_SSL_MBEDTLS
+
+STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_sha256_context));
+    o->base.type = type;
+    mbedtls_sha256_init((mbedtls_sha256_context*)&o->state);
+    mbedtls_sha256_starts((mbedtls_sha256_context*)&o->state, 0);
+    if (n_args == 1) {
+        uhashlib_sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    mbedtls_sha256_update((mbedtls_sha256_context*)&self->state, bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
+    mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
+    vstr_t vstr;
+    vstr_init_len(&vstr, 32);
+    mbedtls_sha256_finish((mbedtls_sha256_context*)&self->state, (unsigned char *)vstr.buf);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
+
+#else
+
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
@@ -73,7 +111,6 @@ STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
     sha256_update((CRYAL_SHA256_CTX*)self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_sha256_update_obj, uhashlib_sha256_update);
 
 STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
@@ -82,6 +119,9 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     sha256_final((CRYAL_SHA256_CTX*)self->state, (byte*)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
+#endif
+
+MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_sha256_update_obj, uhashlib_sha256_update);
 MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha256_digest_obj, uhashlib_sha256_digest);
 
 STATIC const mp_rom_map_elem_t uhashlib_sha256_locals_dict_table[] = {
