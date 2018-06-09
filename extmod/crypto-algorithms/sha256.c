@@ -81,7 +81,7 @@ static void sha256_transform(CRYAL_SHA256_CTX *ctx, const BYTE data[])
 	ctx->state[7] += h;
 }
 
-void cryal_sha256_init(CRYAL_SHA256_CTX *ctx)
+void sha256_init(CRYAL_SHA256_CTX *ctx)
 {
 	ctx->datalen = 0;
 	ctx->bitlen = 0;
@@ -95,7 +95,7 @@ void cryal_sha256_init(CRYAL_SHA256_CTX *ctx)
 	ctx->state[7] = 0x5be0cd19;
 }
 
-void cryal_sha256_update(CRYAL_SHA256_CTX *ctx, const BYTE data[], size_t len)
+void sha256_update(CRYAL_SHA256_CTX *ctx, const BYTE data[], size_t len)
 {
 	WORD i;
 
@@ -110,7 +110,7 @@ void cryal_sha256_update(CRYAL_SHA256_CTX *ctx, const BYTE data[], size_t len)
 	}
 }
 
-void cryal_sha256_final(CRYAL_SHA256_CTX *ctx, BYTE hash[])
+void sha256_final(CRYAL_SHA256_CTX *ctx, BYTE hash[])
 {
 	WORD i;
 

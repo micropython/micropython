@@ -101,7 +101,7 @@ STATIC mp_obj_t sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
     o->base.type = type;
-    cryal_sha256_init((CRYAL_SHA256_CTX*)o->state);
+    sha256_init((CRYAL_SHA256_CTX*)o->state);
     if (n_args == 1) {
         sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
     }
@@ -112,7 +112,7 @@ STATIC mp_obj_t sha256_update(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
-    cryal_sha256_update((CRYAL_SHA256_CTX*)self->state, bufinfo.buf, bufinfo.len);
+    sha256_update((CRYAL_SHA256_CTX*)self->state, bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 
@@ -120,7 +120,7 @@ STATIC mp_obj_t sha256_digest(mp_obj_t self_in) {
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
-    cryal_sha256_final((CRYAL_SHA256_CTX*)self->state, (byte*)vstr.buf);
+    sha256_final((CRYAL_SHA256_CTX*)self->state, (byte*)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif
