@@ -14,6 +14,7 @@ include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
+QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h boards/$(BOARD)/mpconfigboard.h
 
 # directory containing scripts to be frozen as bytecode
 FROZEN_MPY_DIR ?= modules
