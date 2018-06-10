@@ -2,7 +2,7 @@ rm -rf ports/atmel-samd/build*
 rm -rf ports/esp8266/build*
 rm -rf ports/nrf/build*
 
-ATMEL_BOARDS="arduino_zero circuitplayground_express circuitplayground_express_crickit feather_m0_basic feather_m0_adalogger itsybitsy_m0_express itsybitsy_m4_express feather_m0_rfm69 feather_m0_rfm9x feather_m0_express feather_m0_express_crickit feather_m4_express metro_m0_express metro_m4_express pirkey_m0 trinket_m0 gemma_m0 feather52"
+ATMEL_BOARDS="arduino_zero circuitplayground_express circuitplayground_express_crickit feather_m0_basic feather_m0_adalogger itsybitsy_m0_express itsybitsy_m4_express feather_m0_rfm69 feather_m0_rfm9x feather_m0_express feather_m0_express_crickit feather_m4_express metro_m0_express metro_m4_express pirkey_m0 trinket_m0 gemma_m0 feather52 feather_huzzah"
 ROSIE_SETUPS="rosie-ci"
 
 PARALLEL="-j 5"
@@ -17,7 +17,10 @@ else
 fi
 
 for board in $boards; do
-    if [ $board == "feather52" ]; then
+    if [ $board == "feather_huzzah" ]; then
+        make $PARALLEL -C ports/esp8266 BOARD=feather_huzzah
+        (( exit_status = exit_status || $? ))
+    elif [ $board == "feather52" ]; then
         make $PARALLEL -C ports/nrf BOARD=feather52
         (( exit_status = exit_status || $? ))
     else
@@ -25,10 +28,6 @@ for board in $boards; do
         (( exit_status = exit_status || $? ))
     fi
 done
-if [ -z "$TRAVIS" ]; then
-    make $PARALLEL -C ports/esp8266 BOARD=feather_huzzah
-    (( exit_status = exit_status || $? ))
-fi
 
 version=`git describe --tags --exact-match`
 if [ $? -ne 0 ]; then
@@ -46,9 +45,15 @@ fi
 
 for board in $boards; do
     mkdir -p bin/$board/
-    if [ $board == "feather52" ]; then
+    extension=uf2
+    if [ $board == "feather_huzzah" ]; then
+        cp ports/esp8266/build/firmware-combined.bin bin/$board/adafruit-circuitpython-$board-$version.bin
+        (( exit_status = exit_status || $? ))
+        extension=bin
+    elif [ $board == "feather52" ]; then
         cp ports/nrf/build-$board-s132/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
         (( exit_status = exit_status || $? ))
+        extension=bin
     else
         cp ports/atmel-samd/build-$board/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
         (( exit_status = exit_status || $? ))
@@ -59,16 +64,9 @@ for board in $boards; do
     if [ "$TRAVIS" == "true" ]; then
         for rosie in $ROSIE_SETUPS; do
             echo "Uploading to https://$rosie.ngrok.io/upload/$sha"
-            curl -F "file=@bin/$board/adafruit-circuitpython-$board-$version.uf2" https://$rosie.ngrok.io/upload/$sha
+            curl -F "file=@bin/$board/adafruit-circuitpython-$board-$version.$extension" https://$rosie.ngrok.io/upload/$sha
         done
     fi
 done
-
-# Skip ESP8266 on Travis
-if [ -z "$TRAVIS" ]; then
-    mkdir -p bin/esp8266/
-    cp ports/esp8266/build/firmware-combined.bin bin/esp8266/adafruit-circuitpython-feather_huzzah-$version.bin
-    (( exit_status = exit_status || $? ))
-fi
 
 exit $exit_status
