@@ -63,7 +63,7 @@ uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
 }
 
 bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
-    return true;
+    return false;
 }
 
 uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
