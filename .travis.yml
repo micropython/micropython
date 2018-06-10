@@ -4,6 +4,7 @@ language: c
 compiler:
   - gcc
 env:
+  - TRAVIS_BOARD=feather_huzzah
   - TRAVIS_BOARD=arduino_zero
   - TRAVIS_BOARD=circuitplayground_express
   - TRAVIS_BOARD=circuitplayground_express_crickit
@@ -57,6 +58,8 @@ before_script:
   - sudo apt-get install realpath
   # For nrf builds
   - ([[ $TRAVIS_BOARD != "feather52" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
+  # For huzzah builds
+  - if [[ $TRAVIS_BOARD = "feather_huzzah" ]]; then wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz; PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
   # For coverage testing (upgrade is used to get latest urllib3 version)
   - ([[ -z "$TRAVIS_TEST" ]] || sudo pip install --upgrade cpp-coveralls)
   - ([[ $TRAVIS_TEST != "docs" ]] || sudo pip install Sphinx sphinx-rtd-theme recommonmark)
