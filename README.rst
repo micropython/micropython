@@ -34,7 +34,7 @@ Designed for CircuitPython
 -  `Adafruit Feather M0 Express <https://www.adafruit.com/product/3403>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-feather-m0-express-designed-for-circuit-python-circuitpython/kattni-circuitpython>`__)
 -  `Adafruit Metro M0 Express <https://www.adafruit.com/product/3505>`_ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m0-express-designed-for-circuitpython/circuitpython>`__)
 -  `Adafruit Gemma M0 <https://www.adafruit.com/product/3501>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-gemma-m0/circuitpython>`__)
--  `Adafruit ItsyBitsy M0 Express <https://www.adafruit.com/product/3727>`_ (`CircuitPython Guide <https://learn.adafruit.com/introducing-itsy-bitsy-m0/kattni-circuitpython>`__)
+-  `Adafruit ItsyBitsy M0 Express <https://www.adafruit.com/product/3727>`_ (`CircuitPython Guide <https://learn.adafruit.com/introducing-itsy-bitsy-m0/circuitpython>`__)
 -  `Adafruit Trinket M0 <https://www.adafruit.com/product/3500>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-trinket-m0-circuitpython-arduino/circuitpython>`__)
 -  `Adafruit Metro M4 <https://www.adafruit.com/product/3382>`__ (`CircuitPython Guide <https://learn.adafruit.com/adafruit-metro-m4-express-featuring-atsamd51/overview>`__)
 
