@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Express"
+#define MICROPY_HW_BOARD_NAME "Adafruit Feather M0 Express with Crickit libraries"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA06)
@@ -58,7 +58,3 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_PA11)
 #define DEFAULT_UART_BUS_TX (&pin_PA10)
-
-// USB is always used internally so skip the pin objects for it.
-#define IGNORE_PIN_PA24     1
-#define IGNORE_PIN_PA25     1

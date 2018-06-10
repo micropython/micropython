@@ -40,6 +40,9 @@
 #define IGNORE_PIN_PA20     1
 #define IGNORE_PIN_PA21     1
 #define IGNORE_PIN_PA22     1
+// USB is always used.
+#define IGNORE_PIN_PA24     1
+#define IGNORE_PIN_PA25     1
 #define IGNORE_PIN_PA27     1
 #define IGNORE_PIN_PA28     1
 #define IGNORE_PIN_PA30     1

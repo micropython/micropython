@@ -104,7 +104,7 @@ Differences from `MicroPython <https://github.com/micropython/micropython>`__
 CircuitPython:
 
 -  includes a ports for MicroChip SAMD21 (Commonly known as M0 in Adafruit
-   product names and SAMD51 (M4).
+   product names) and SAMD51 (M4).
 -  supports only SAMD21, SAMD51, and ESP8266 ports. An nRF port is under
    development.
 -  tracks MicroPython's releases (not master).

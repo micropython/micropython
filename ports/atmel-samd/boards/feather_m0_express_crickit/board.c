@@ -23,22 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "background.h"
 
-#include "audio_dma.h"
-#include "tick.h"
-#include "usb.h"
-#include "usb_mass_storage.h"
+#include "boards/board.h"
 
-volatile uint64_t last_finished_tick = 0;
-
-void run_background_tasks(void) {
-    audio_dma_background();
-    usb_msc_background();
-    usb_cdc_background();
-    last_finished_tick = ticks_ms;
+void board_init(void)
+{
 }
 
-bool background_tasks_ok(void) {
-    return ticks_ms - last_finished_tick < 1000;
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
 }

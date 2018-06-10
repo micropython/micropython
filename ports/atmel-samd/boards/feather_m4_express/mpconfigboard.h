@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Feather M4 Express"
+#define MICROPY_HW_BOARD_NAME "Adafruit Feather M4 Express"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 
 #define CIRCUITPY_MCU_FAMILY samd51
@@ -43,3 +43,7 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_PB17)
 #define DEFAULT_UART_BUS_TX (&pin_PB16)
+
+// USB is always used internally so skip the pin objects for it.
+#define IGNORE_PIN_PA24     1
+#define IGNORE_PIN_PA25     1

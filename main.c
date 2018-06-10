@@ -233,40 +233,7 @@ bool start_mp(safe_mode_t safe_mode) {
     }
 }
 
-int __attribute__((used)) main(void) {
-    // initialise the cpu and peripherals
-    safe_mode_t safe_mode = port_init();
-
-    rgb_led_status_init();
-
-    // Stack limit should be less than real stack size, so we have a chance
-    // to recover from limit hit.  (Limit is measured in bytes.)
-    mp_stack_ctrl_init();
-    mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
-
-#if MICROPY_MAX_STACK_USAGE
-    // _ezero (same as _ebss) is an int, so start 4 bytes above it.
-    mp_stack_set_bottom(&_ezero + 1);
-    mp_stack_fill_with_sentinel();
-#endif
-
-    // Create a new filesystem only if we're not in a safe mode.
-    // A power brownout here could make it appear as if there's
-    // no SPI flash filesystem, and we might erase the existing one.
-    filesystem_init(safe_mode == NO_SAFE_MODE, false);
-
-    // Reset everything and prep MicroPython to run boot.py.
-    reset_port();
-    reset_board();
-    reset_mp();
-
-    // Turn on autoreload by default but before boot.py in case it wants to change it.
-    autoreload_enable();
-
-    // By default our internal flash is readonly to local python code and
-    // writable over USB. Set it here so that boot.py can change it.
-    filesystem_writable_by_python(false);
-
+void run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
@@ -338,6 +305,43 @@ int __attribute__((used)) main(void) {
         reset_port();
         reset_mp();
     }
+}
+
+int __attribute__((used)) main(void) {
+    // initialise the cpu and peripherals
+    safe_mode_t safe_mode = port_init();
+
+    rgb_led_status_init();
+
+    // Stack limit should be less than real stack size, so we have a chance
+    // to recover from limit hit.  (Limit is measured in bytes.)
+    mp_stack_set_top((char*)&_estack);
+    mp_stack_set_limit((char*)&_estack - (char*)&_ebss - 1024);
+
+#if MICROPY_MAX_STACK_USAGE
+    // _ezero (same as _ebss) is an int, so start 4 bytes above it.
+    mp_stack_set_bottom(&_ezero + 1);
+    mp_stack_fill_with_sentinel();
+#endif
+
+    // Create a new filesystem only if we're not in a safe mode.
+    // A power brownout here could make it appear as if there's
+    // no SPI flash filesystem, and we might erase the existing one.
+    filesystem_init(safe_mode == NO_SAFE_MODE, false);
+
+    // Reset everything and prep MicroPython to run boot.py.
+    reset_port();
+    reset_board();
+    reset_mp();
+
+    // Turn on autoreload by default but before boot.py in case it wants to change it.
+    autoreload_enable();
+
+    // By default our internal flash is readonly to local python code and
+    // writable over USB. Set it here so that boot.py can change it.
+    filesystem_writable_by_python(false);
+
+    run_boot_py(safe_mode);
 
     // Start serial and HID after giving boot.py a chance to tweak behavior.
     serial_init();

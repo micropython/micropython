@@ -50,19 +50,19 @@
 //|   :param ~microcontroller.Pin pin_a: First pin to read pulses from.
 //|   :param ~microcontroller.Pin pin_b: Second pin to read pulses from.
 //|
-//| For example::
+//|   For example::
 //|
-//|   import rotaryio
-//|   import time
-//|   from board import *
+//|     import rotaryio
+//|     import time
+//|     from board import *
 //|
-//|   enc = rotaryio.IncrementalEncoder(D1, D2)
-//|   last_position = None
-//|   while True;
-//|       position = enc.position
-//|       if last_position == None or position != last_position:
-//|           print(position)
-//|       last_position = position
+//|     enc = rotaryio.IncrementalEncoder(D1, D2)
+//|     last_position = None
+//|     while True:
+//|         position = enc.position
+//|         if last_position == None or position != last_position:
+//|             print(position)
+//|         last_position = position
 //|
 STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, true);
