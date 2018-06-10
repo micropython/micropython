@@ -36,6 +36,7 @@ typedef struct {
     uint16_t *buffer;
     uint16_t maxlen;
     bool idle_state;
+    bool paused;
     volatile uint16_t start;
     volatile uint16_t len;
     volatile bool first_edge;

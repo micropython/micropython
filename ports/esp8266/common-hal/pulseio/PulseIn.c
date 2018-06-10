@@ -91,6 +91,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->len = 0;
     self->first_edge = true;
     self->last_us = 0;
+    self->paused = false;
 
     microcontroller_pin_register_intr_handler(self->pin->gpio_number,
             pulseio_pulsein_interrupt_handler, (void *)self);
@@ -111,6 +112,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
     pulsein_set_interrupt(self, false, false);
+    self->paused = true;
 }
 
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
@@ -133,6 +135,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     self->first_edge = true;
     pulsein_set_interrupt(self, !self->idle_state, self->idle_state);
     common_hal_mcu_enable_interrupts();
+    self->paused = false;
 }
 
 void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
@@ -160,7 +163,7 @@ uint16_t common_hal_pulseio_pulsein_get_maxlen(pulseio_pulsein_obj_t* self) {
 }
 
 bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t* self) {
-    return false;
+    return self->paused;
 }
 
 uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t* self) {
