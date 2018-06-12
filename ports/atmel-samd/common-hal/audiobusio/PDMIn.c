@@ -203,9 +203,9 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
 
     i2s_set_enable(true);
 
-    // Run the serializer all the time. This eliminates startup delay for the microphone.
+    // Run the clock all the time. This eliminates startup delay for the microphone,
+    // which can be 10-100ms. Turn serializer on as needed.
     i2s_set_clock_unit_enable(self->clock_unit, true);
-    i2s_set_serializer_enable(self->serializer, true);
 
     claim_pin(clock_pin);
     claim_pin(data_pin);
@@ -379,6 +379,8 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 
     dma_configure(dma_channel, trigger_source, true);
     init_event_channel_interrupt(event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
+    // Turn on serializer now to get it in sync with DMA.
+    i2s_set_serializer_enable(self->serializer, true);
     dma_enable_channel(dma_channel);
 
     // Record
@@ -399,11 +401,9 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         #ifdef SAMD51
           #define MAX_WAIT_COUNTS 6000
         #endif
-        while (!event_interrupt_active(event_channel)) {
-            if (wait_counts++ > MAX_WAIT_COUNTS) {
-                // Buffer has stopped filling; DMA may have missed an I2S trigger event.
-                break;
-            }
+        // If wait_counts exceeds the max count, buffer has probably stopped filling;
+        // DMA may have missed an I2S trigger event.
+        while (!event_interrupt_active(event_channel) && ++wait_counts < MAX_WAIT_COUNTS) {
             #ifdef MICROPY_VM_HOOK_LOOP
                 MICROPY_VM_HOOK_LOOP
             #endif
@@ -463,6 +463,8 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 
     disable_event_channel(event_channel);
     dma_disable_channel(dma_channel);
+    // Turn off serializer, but leave clock on, to avoid mic startup delay.
+    i2s_set_serializer_enable(self->serializer, false);
 
     return values_output;
 }
