@@ -269,6 +269,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 #endif
     }
 
+    if (total_read == 0) {
+        *errcode = EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+
     return total_read;
 }
 
