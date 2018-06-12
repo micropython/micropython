@@ -38,6 +38,7 @@
 #define PF_FLAG_CENTER_ADJUST     (0x080)
 #define PF_FLAG_ADD_PERCENT       (0x100)
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
+#define PF_FLAG_SHOW_UNDERSCORE   (0x400)
 
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 #    define MP_PYTHON_PRINTER &mp_sys_stdout_print

@@ -1156,6 +1156,10 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 flags |= PF_FLAG_SHOW_COMMA;
                 s++;
             }
+            if (*s == '_') {
+                flags |= PF_FLAG_SHOW_UNDERSCORE;
+                s++;
+            }
             if (*s == '.') {
                 s++;
                 s = str_to_int(s, stop, &precision);
