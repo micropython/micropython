@@ -13,6 +13,9 @@ ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
 endif
 
+# Any files listed by this variable will cause a full regeneration of qstrs
+QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
+
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
