@@ -76,7 +76,7 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_WRITE);
+    const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
     mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
@@ -93,7 +93,7 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t*)ctx;
 
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_READ);
+    const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
     mp_uint_t out_sz = sock_stream->read(sock, buf, len, &err);
@@ -109,6 +109,9 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
+    // Verify the socket object has the full stream protocol
+    mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+
 #if MICROPY_PY_USSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
 #else
