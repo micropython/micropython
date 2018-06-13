@@ -74,15 +74,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // load block protocol methods
     mp_load_method(args[0], MP_QSTR_readblocks, vfs->readblocks);
     mp_load_method_maybe(args[0], MP_QSTR_writeblocks, vfs->writeblocks);
-    mp_load_method_maybe(args[0], MP_QSTR_ioctl, vfs->u.ioctl);
-    if (vfs->u.ioctl[0] != MP_OBJ_NULL) {
-        // device supports new block protocol, so indicate it
-        vfs->flags |= FSUSER_HAVE_IOCTL;
-    } else {
-        // no ioctl method, so assume the device uses the old block protocol
-        mp_load_method_maybe(args[0], MP_QSTR_sync, vfs->u.old.sync);
-        mp_load_method(args[0], MP_QSTR_count, vfs->u.old.count);
-    }
+    mp_load_method(args[0], MP_QSTR_ioctl, vfs->ioctl);
 
     // mount the block device so the VFS methods can be used
     FRESULT res = f_mount(&vfs->fatfs);
