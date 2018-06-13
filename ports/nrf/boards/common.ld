@@ -63,24 +63,6 @@ SECTIONS
         _ebss = .;         /* define a global symbol at bss end; used by startup code and GC */
     } >RAM
 
-    /* this is to define the start of the heap, and make sure we have a minimum size */
-    .heap :
-    {
-        . = ALIGN(4);
-	PROVIDE ( end = . );
-	PROVIDE ( _end = . );
-        _heap_start = .;    /* define a global symbol at heap start */
-        . = . + _minimum_heap_size;
-    } >RAM
-
-    /* this just checks there is enough RAM for the stack */
-    .stack :
-    {
-        . = ALIGN(4);
-        . = . + _stack_size;
-        . = ALIGN(4);
-    } >RAM
-
     /* Remove information from the standard libraries */
     /*
     /DISCARD/ :
@@ -97,4 +79,3 @@ SECTIONS
 /* Define heap and stack areas */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _estack = ORIGIN(RAM) + LENGTH(RAM);
-_heap_end = _ram_end - _stack_size;
