@@ -57,7 +57,6 @@
 
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
-#define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -99,7 +98,6 @@
 #define MICROPY_PY_CMATH                    (1)
 #define MICROPY_PY_GC                       (1)
 #define MICROPY_PY_IO                       (1)
-#define MICROPY_PY_IO_IOBASE                (1)
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO_BYTESIO               (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
@@ -124,9 +122,8 @@
 #define MICROPY_PY_URE                      (1)
 #define MICROPY_PY_UHEAPQ                   (1)
 #define MICROPY_PY_UTIMEQ                   (1)
-#define MICROPY_PY_UHASHLIB                 (1)
-#define MICROPY_PY_UHASHLIB_SHA1            (1)
-#define MICROPY_PY_UHASHLIB_SHA256          (1)
+#define MICROPY_PY_UHASHLIB                 (0) // We use the ESP32 version
+#define MICROPY_PY_UHASHLIB_SHA1            (MICROPY_PY_USSL && MICROPY_SSL_AXTLS)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
@@ -155,8 +152,8 @@
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         (437) /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
-#define mp_type_fileio                      mp_type_vfs_fat_fileio
-#define mp_type_textio                      mp_type_vfs_fat_textio
+#define mp_type_fileio                      fatfs_type_fileio
+#define mp_type_textio                      fatfs_type_textio
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

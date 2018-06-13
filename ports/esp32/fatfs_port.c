@@ -26,15 +26,20 @@
  * THE SOFTWARE.
  */
 
-#include <sys/time.h>
+#include "py/obj.h"
 #include "lib/oofatfs/ff.h"
 #include "timeutils.h"
+//#include "modmachine.h"
 
 DWORD get_fattime(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
+
+    // TODO: Optimize division (there's no HW division support on ESP8266,
+    // so it's expensive).
+    //uint32_t secs = (uint32_t)(pyb_rtc_get_us_since_2000() / 1000000);
+    uint32_t secs = 0;
+
     timeutils_struct_time_t tm;
-    timeutils_seconds_since_2000_to_struct_time(tv.tv_sec, &tm);
+    timeutils_seconds_since_2000_to_struct_time(secs, &tm);
 
     return (((DWORD)(tm.tm_year - 1980) << 25) | ((DWORD)tm.tm_mon << 21) | ((DWORD)tm.tm_mday << 16) |
            ((DWORD)tm.tm_hour << 11) | ((DWORD)tm.tm_min << 5) | ((DWORD)tm.tm_sec >> 1));

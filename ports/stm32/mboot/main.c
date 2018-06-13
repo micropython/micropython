@@ -619,8 +619,6 @@ uint8_t i2c_slave_process_tx_byte(void) {
 /******************************************************************************/
 // DFU
 
-#define DFU_XFER_SIZE (2048)
-
 enum {
     DFU_DNLOAD = 1,
     DFU_UPLOAD = 2,
@@ -651,7 +649,7 @@ typedef struct _dfu_state_t {
     uint16_t wBlockNum;
     uint16_t wLength;
     uint32_t addr;
-    uint8_t buf[DFU_XFER_SIZE] __attribute__((aligned(4)));
+    uint8_t buf[64] __attribute__((aligned(4)));
 } dfu_state_t;
 
 static dfu_state_t dfu_state;
@@ -764,7 +762,7 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
 /******************************************************************************/
 // USB
 
-#define USB_XFER_SIZE (DFU_XFER_SIZE)
+#define USB_TX_LEN (2048)
 
 enum {
     USB_PHY_FS_ID = 0,
@@ -778,8 +776,8 @@ typedef struct _pyb_usbdd_obj_t {
     uint8_t bRequest;
     uint16_t wValue;
     uint16_t wLength;
-    uint8_t rx_buf[USB_XFER_SIZE];
-    uint8_t tx_buf[USB_XFER_SIZE];
+    uint8_t rx_buf[64];
+    uint8_t tx_buf[USB_TX_LEN];
     bool tx_pending;
 
     // RAM to hold the current descriptors, which we configure on the fly
@@ -802,7 +800,7 @@ static const uint8_t dev_descr[0x12] = "\x12\x01\x00\x01\x00\x00\x00\x40\x83\x04
 static uint8_t cfg_descr[9 + 9 + 9] =
     "\x09\x02\x1b\x00\x01\x01\x00\xc0\x32"
     "\x09\x04\x00\x00\x00\xfe\x01\x02\x04"
-    "\x09\x21\x0b\xff\x00\x00\x08\x1a\x01" // \x00\x08 goes with USB_XFER_SIZE
+    "\x09\x21\x0b\xff\x00\x00\x08\x1a\x01" // \x00\x08 goes with tx_buf[USB_TX_LEN]
 ;
 
 static uint8_t *pyb_usbdd_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
@@ -910,7 +908,7 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
         }
     } else if (req->bmRequest == 0xa1) {
         // device-to-host request
-        int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_XFER_SIZE);
+        int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_TX_LEN);
         if (len >= 0) {
             self->tx_pending = true;
             USBD_CtlSendData(&self->hUSBDDevice, self->tx_buf, len);

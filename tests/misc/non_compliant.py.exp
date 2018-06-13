@@ -20,4 +20,3 @@ NotImplementedError
 AttributeError
 TypeError
 A.foo
-AttributeError

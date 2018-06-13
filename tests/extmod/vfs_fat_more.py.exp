@@ -26,4 +26,3 @@ mkdir OSError True
 /
 ['sys']
 []
-test_module!

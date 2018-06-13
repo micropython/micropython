@@ -94,20 +94,13 @@ INC_ESPCOMP += -I$(ESPCOMP)/app_trace/include
 INC_ESPCOMP += -I$(ESPCOMP)/app_update/include
 INC_ESPCOMP += -I$(ESPCOMP)/pthread/include
 
-# these flags are common to C and C++ compilation
-CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \
-	-mlongcalls -nostdlib \
-	-Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable \
-	-Wno-error=unused-variable -Wno-error=deprecated-declarations \
-	-DESP_PLATFORM
-
-CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
+CFLAGS_BASE = -std=gnu99 -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib -Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H -DESP_PLATFORM
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD)
 
 # this is what ESPIDF uses for c++ compilation
-CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP)
+CXXFLAGS = -std=gnu++11 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib -Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -DESP_PLATFORM $(INC) $(INC_ESPCOMP)
 
 LDFLAGS = -nostdlib -Map=$(@:.elf=.map) --cref
 LDFLAGS += --gc-sections -static -EL
@@ -117,6 +110,7 @@ LDFLAGS += -L$(ESPCOMP)/esp32/ld
 LDFLAGS += -T $(BUILD)/esp32_out.ld
 LDFLAGS += -T ./esp32.custom_common.ld
 LDFLAGS += -T esp32.rom.ld
+LDFLAGS += -T esp32.rom.spiram_incompatible_fns.ld
 LDFLAGS += -T esp32.peripherals.ld
 
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -130,15 +124,6 @@ else
 #CFLAGS += -fdata-sections -ffunction-sections
 COPT += -Os -DNDEBUG
 #LDFLAGS += --gc-sections
-endif
-
-# Enable SPIRAM support if CONFIG_SPIRAM_SUPPORT=1
-ifeq ($(CONFIG_SPIRAM_SUPPORT),1)
-CFLAGS_COMMON += -mfix-esp32-psram-cache-issue -DCONFIG_SPIRAM_SUPPORT=1
-LIBC_LIBM = $(ESPCOMP)/newlib/lib/libc-psram-workaround.a $(ESPCOMP)/newlib/lib/libm-psram-workaround.a
-else
-LDFLAGS += -T esp32.rom.spiram_incompatible_fns.ld
-LIBC_LIBM = $(ESPCOMP)/newlib/lib/libc.a $(ESPCOMP)/newlib/lib/libm.a
 endif
 
 ################################################################################
@@ -167,6 +152,7 @@ SRC_C = \
 	modesp.c \
 	esp32_ulp.c \
 	modesp32.c \
+	moduhashlib.c \
 	espneopixel.c \
 	machine_hw_spi.c \
 	machine_wdt.c \
@@ -273,8 +259,6 @@ ESPIDF_ESP32_O = $(addprefix $(ESPCOMP)/esp32/,\
 	wifi_init.o \
 	wifi_internal.o \
 	sleep_modes.o \
-	spiram.o \
-	spiram_psram.o \
 	)
 
 ESPIDF_HEAP_O = $(addprefix $(ESPCOMP)/heap/,\
@@ -664,7 +648,8 @@ APP_LD_ARGS += $(LDFLAGS_MOD)
 APP_LD_ARGS += --start-group
 APP_LD_ARGS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 APP_LD_ARGS += -L$(dir $(LIBSTDCXX_FILE_NAME)) -lstdc++
-APP_LD_ARGS += $(LIBC_LIBM)
+APP_LD_ARGS += $(ESPCOMP)/newlib/lib/libc.a
+APP_LD_ARGS += $(ESPCOMP)/newlib/lib/libm.a
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
 APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
 APP_LD_ARGS += $(OBJ)

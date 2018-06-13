@@ -756,7 +756,5 @@ soft_reset_exit:
     pyb_thread_deinit();
     #endif
 
-    gc_sweep_all();
-
     goto soft_reset;
 }

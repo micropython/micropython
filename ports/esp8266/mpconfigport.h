@@ -30,7 +30,6 @@
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
-#define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
@@ -56,7 +55,6 @@
 #define MICROPY_PY_MATH             (1)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (1)
-#define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_STRUCT           (1)
 #define MICROPY_PY_SYS              (1)
@@ -143,8 +141,8 @@ typedef uint32_t sys_prot_t; // for modlwip
 void *esp_native_code_commit(void*, size_t);
 #define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
+#define mp_type_fileio fatfs_type_fileio
+#define mp_type_textio fatfs_type_textio
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat

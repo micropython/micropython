@@ -681,16 +681,6 @@ typedef double mp_float_t;
 #define MICROPY_VFS (0)
 #endif
 
-// Support for VFS POSIX component, to mount a POSIX filesystem within VFS
-#ifndef MICROPY_VFS
-#define MICROPY_VFS_POSIX (0)
-#endif
-
-// Support for VFS FAT component, to mount a FAT filesystem within VFS
-#ifndef MICROPY_VFS
-#define MICROPY_VFS_FAT (0)
-#endif
-
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
@@ -706,16 +696,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_FUNCTION_ATTRS (0)
 #endif
 
-// Whether to support the descriptors __get__, __set__, __delete__
-// This costs some code size and makes load/store/delete of instance
-// attributes slower for the classes that use this feature
+// Whether to support descriptors (__get__ and __set__)
+// This costs some code size and makes all load attrs and store attrs slow
 #ifndef MICROPY_PY_DESCRIPTORS
 #define MICROPY_PY_DESCRIPTORS (0)
 #endif
 
 // Whether to support class __delattr__ and __setattr__ methods
-// This costs some code size and makes store/delete of instance
-// attributes slower for the classes that use this feature
+// This costs some code size and makes all del attrs and store attrs slow
 #ifndef MICROPY_PY_DELATTR_SETATTR
 #define MICROPY_PY_DELATTR_SETATTR (0)
 #endif
@@ -998,11 +986,6 @@ typedef double mp_float_t;
 #define MICROPY_PY_IO (1)
 #endif
 
-// Whether to provide "io.IOBase" class to support user streams
-#ifndef MICROPY_PY_IO_IOBASE
-#define MICROPY_PY_IO_IOBASE (0)
-#endif
-
 // Whether to provide "uio.resource_stream()" function with
 // the semantics of CPython's pkg_resources.resource_stream()
 // (allows to access binary resources in frozen source packages).
@@ -1153,14 +1136,6 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UHASHLIB
 #define MICROPY_PY_UHASHLIB (0)
-#endif
-
-#ifndef MICROPY_PY_UHASHLIB_SHA1
-#define MICROPY_PY_UHASHLIB_SHA1  (0)
-#endif
-
-#ifndef MICROPY_PY_UHASHLIB_SHA256
-#define MICROPY_PY_UHASHLIB_SHA256 (1)
 #endif
 
 #ifndef MICROPY_PY_UBINASCII
