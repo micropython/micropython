@@ -33,3 +33,6 @@ print_groups(re.match(r'(a)?b(c)', 'abc'))
 
 # optional group that doesn't match
 print_groups(re.match(r'(a)?b(c)', 'bc'))
+
+# only a single match
+print(re.match(r'abc', 'abc').groups())
