@@ -529,7 +529,6 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         time.Hours = mp_obj_get_int(items[4]);
         time.Minutes = mp_obj_get_int(items[5]);
         time.Seconds = mp_obj_get_int(items[6]);
-        time.SubSeconds = rtc_us_to_subsec(mp_obj_get_int(items[7]));
         time.TimeFormat = RTC_HOURFORMAT12_AM;
         time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         time.StoreOperation = RTC_STOREOPERATION_SET;
@@ -539,6 +538,10 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
+
+#if defined(STM32F0)
+#define RTC_WKUP_IRQn RTC_IRQn
+#endif
 
 // wakeup(None)
 // wakeup(ms, callback=None)
@@ -656,7 +659,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         EXTI->PR = 1 << 22;
         #endif
 
-        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP, IRQ_SUBPRI_RTC_WKUP);
+        NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
         //printf("wut=%d wucksel=%d\n", wut, wucksel);

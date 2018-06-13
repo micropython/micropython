@@ -34,5 +34,9 @@ def setup():
     with open("boot.py", "w") as f:
         f.write("""\
 # This file is executed on every boot (including wake-boot from deepsleep)
+#import esp
+#esp.osdebug(None)
+#import webrepl
+#webrepl.start()
 """)
     return vfs

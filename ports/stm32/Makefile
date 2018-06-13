@@ -14,6 +14,7 @@ include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
+QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h boards/$(BOARD)/mpconfigboard.h
 
 # directory containing scripts to be frozen as bytecode
 FROZEN_MPY_DIR ?= modules
@@ -57,10 +58,15 @@ CFLAGS_CORTEX_M = -mthumb
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 else
+ifeq ($(MCU_SERIES),f0)
+CFLAGS_CORTEX_M += -msoft-float
+else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+endif
 endif
 
 # Options for particular MCU series
+CFLAGS_MCU_f0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
@@ -155,7 +161,6 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 else
 SRC_LIBM = $(addprefix lib/libm/,\
 	math.c \
-	thumb_vfp_sqrtf.c \
 	acoshf.c \
 	asinfacosf.c \
 	asinhf.c \
@@ -181,9 +186,15 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	wf_lgamma.c \
 	wf_tgamma.c \
 	)
+ifeq ($(MCU_SERIES),f0)
+SRC_LIBM += lib/libm/ef_sqrt.c
+else
+SRC_LIBM += lib/libm/thumb_vfp_sqrtf.c
+endif
 endif
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
+	modlwip.c \
 	modonewire.c \
         )
 
@@ -196,7 +207,6 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 
 SRC_C = \
 	main.c \
-	system_stm32.c \
 	stm32_it.c \
 	usbd_conf.c \
 	usbd_desc.c \
@@ -217,6 +227,7 @@ SRC_C = \
 	bufhelper.c \
 	dma.c \
 	i2c.c \
+	pyb_i2c.c \
 	spi.c \
 	qspi.c \
 	uart.c \
@@ -250,10 +261,19 @@ SRC_C = \
 	adc.c \
 	$(wildcard boards/$(BOARD)/*.c)
 
+ifeq ($(MCU_SERIES),f0)
 SRC_O = \
 	$(STARTUP_FILE) \
+	system_stm32f0.o \
+	resethandler_m0.o \
+	gchelper_m0.o
+else
+SRC_O = \
+	$(STARTUP_FILE) \
+	system_stm32.o \
 	resethandler.o \
-	gchelper.o \
+	gchelper.o
+endif
 
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
@@ -275,14 +295,19 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_rcc_ex.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
-	hal_sd.c \
 	hal_spi.c \
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
+	)
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l4))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_sd.c \
 	ll_sdmmc.c \
 	ll_usb.c \
 	)
+endif
 
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
     SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
@@ -304,7 +329,7 @@ ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += modnwwiznet5k.c
+SRC_MOD += network_wiznet5k.c modnwwiznet5k.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
 	ethernet/wizchip_conf.c \
@@ -336,6 +361,47 @@ SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
 	)
 endif
 
+LWIP_DIR = lib/lwip/src
+INC += -I$(TOP)/$(LWIP_DIR)/include -Ilwip_inc
+$(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS += -Wno-address
+SRC_MOD += $(addprefix $(LWIP_DIR)/,\
+	core/def.c \
+	core/dns.c \
+	core/inet_chksum.c \
+	core/init.c \
+	core/ip.c \
+	core/mem.c \
+	core/memp.c \
+	core/netif.c \
+	core/pbuf.c \
+	core/raw.c \
+	core/stats.c \
+	core/sys.c \
+	core/tcp.c \
+	core/tcp_in.c \
+	core/tcp_out.c \
+	core/timeouts.c \
+	core/udp.c \
+	core/ipv4/autoip.c \
+	core/ipv4/dhcp.c \
+	core/ipv4/etharp.c \
+	core/ipv4/icmp.c \
+	core/ipv4/igmp.c \
+	core/ipv4/ip4_addr.c \
+	core/ipv4/ip4.c \
+	core/ipv4/ip4_frag.c \
+	core/ipv6/dhcp6.c \
+	core/ipv6/ethip6.c \
+	core/ipv6/icmp6.c \
+	core/ipv6/inet6.c \
+	core/ipv6/ip6_addr.c \
+	core/ipv6/ip6.c \
+	core/ipv6/ip6_frag.c \
+	core/ipv6/mld6.c \
+	core/ipv6/nd6.c \
+	netif/ethernet.c \
+	)
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
@@ -348,6 +414,11 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_USBDEV:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 OBJ += $(BUILD)/pins_$(BOARD).o
+
+# This file contains performance critical functions so turn up the optimisation
+# level.  It doesn't add much to the code size and improves performance a bit.
+# Don't use -O3 with this file because gcc tries to optimise memset in terms of itself.
+$(BUILD)/lib/libc/string0.o: COPT += -O2
 
 # We put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these

@@ -143,6 +143,17 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
         }
         case MP_STREAM_FLUSH:
             return 0;
+        case MP_STREAM_CLOSE:
+            #if MICROPY_CPYTHON_COMPAT
+            vstr_free(o->vstr);
+            o->vstr = NULL;
+            #else
+            vstr_clear(o->vstr);
+            o->vstr->alloc = 0;
+            o->vstr->len = 0;
+            o->pos = 0;
+            #endif
+            return 0;
         default:
             *errcode = MP_EINVAL;
             return MP_STREAM_ERROR;
@@ -159,24 +170,9 @@ STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
 
-STATIC mp_obj_t stringio_close(mp_obj_t self_in) {
-    mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
-#if MICROPY_CPYTHON_COMPAT
-    vstr_free(self->vstr);
-    self->vstr = NULL;
-#else
-    vstr_clear(self->vstr);
-    self->vstr->alloc = 0;
-    self->vstr->len = 0;
-    self->pos = 0;
-#endif
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_close_obj, stringio_close);
-
 STATIC mp_obj_t stringio___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    return stringio_close(args[0]);
+    return mp_stream_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
 
@@ -233,7 +229,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&stringio_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stringio___exit___obj) },

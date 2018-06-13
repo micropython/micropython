@@ -84,8 +84,12 @@
 #include "usb.h"
 
 extern void __fatal_error(const char*);
+#if defined(MICROPY_HW_USB_FS)
 extern PCD_HandleTypeDef pcd_fs_handle;
+#endif
+#if defined(MICROPY_HW_USB_HS)
 extern PCD_HandleTypeDef pcd_hs_handle;
+#endif
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -161,6 +165,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     print_reg("PC    ", regs->pc);
     print_reg("XPSR  ", regs->xpsr);
 
+    #if __CORTEX_M >= 3
     uint32_t cfsr = SCB->CFSR;
 
     print_reg("HFSR  ", SCB->HFSR);
@@ -171,6 +176,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if (cfsr & 0x8000) {
         print_reg("BFAR  ", SCB->BFAR);
     }
+    #endif
 
     if ((void*)&_ram_start <= (void*)regs && (void*)regs < (void*)&_ram_end) {
         mp_hal_stdout_tx_str("Stack:\r\n");
@@ -203,6 +209,17 @@ void HardFault_Handler(void) {
     // main stack pointer (aka MSP). If CONTROL.SPSEL is 1, then the exception
     // was stacked up using the process stack pointer (aka PSP).
 
+    #if __CORTEX_M == 0
+    __asm volatile(
+    " mov r0, lr    \n"
+    " lsr r0, r0, #3 \n"        // Shift Bit 3 into carry to see which stack pointer we should use.
+    " mrs r0, msp   \n"         // Make R0 point to main stack pointer
+    " bcc .use_msp  \n"         // Keep MSP in R0 if SPSEL (carry) is 0
+    " mrs r0, psp   \n"         // Make R0 point to process stack pointer
+    " .use_msp:     \n"
+    " b HardFault_C_Handler \n" // Off to C land
+    );
+    #else
     __asm volatile(
     " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
     " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
@@ -210,6 +227,7 @@ void HardFault_Handler(void) {
     " mrsne r0, psp \n"         // Make R0 point to process stack pointer
     " b HardFault_C_Handler \n" // Off to C land
     );
+    #endif
 }
 
 /**
@@ -306,9 +324,11 @@ void SysTick_Handler(void) {
     // be generalised in the future then a dispatch table can be used as
     // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
 
+    #if MICROPY_HW_ENABLE_STORAGE
     if (STORAGE_IDLE_TICK(uwTick)) {
         NVIC->STIR = FLASH_IRQn;
     }
+    #endif
 
     if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
         dma_idle_handler(uwTick);
@@ -369,7 +389,7 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
     /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
     PLL as system clock source (HSE and PLL are disabled in STOP mode) */
 
-    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+    __HAL_RCC_HSE_CONFIG(MICROPY_HW_CLK_HSE_STATE);
 
     /* Wait till HSE is ready */
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
@@ -455,8 +475,10 @@ void FLASH_IRQHandler(void) {
         HAL_FLASH_IRQHandler();
     }
     */
+    #if MICROPY_HW_ENABLE_STORAGE
     // This call the storage IRQ handler, to check if the flash cache needs flushing
     storage_irq_handler();
+    #endif
     IRQ_EXIT(FLASH_IRQn);
 }
 
@@ -556,6 +578,39 @@ void RTC_WKUP_IRQHandler(void) {
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
+
+#if defined(STM32F0)
+
+void RTC_IRQHandler(void) {
+    IRQ_ENTER(RTC_IRQn);
+    RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
+    Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    IRQ_EXIT(RTC_IRQn);
+}
+
+void EXTI0_1_IRQHandler(void) {
+    IRQ_ENTER(EXTI0_1_IRQn);
+    Handle_EXTI_Irq(0);
+    Handle_EXTI_Irq(1);
+    IRQ_EXIT(EXTI0_1_IRQn);
+}
+
+void EXTI2_3_IRQHandler(void) {
+    IRQ_ENTER(EXTI2_3_IRQn);
+    Handle_EXTI_Irq(2);
+    Handle_EXTI_Irq(3);
+    IRQ_EXIT(EXTI2_3_IRQn);
+}
+
+void EXTI4_15_IRQHandler(void) {
+    IRQ_ENTER(EXTI4_15_IRQn);
+    for (int i = 4; i <= 15; ++i) {
+        Handle_EXTI_Irq(i);
+    }
+    IRQ_EXIT(EXTI4_15_IRQn);
+}
+
+#endif
 
 void TIM1_BRK_TIM9_IRQHandler(void) {
     IRQ_ENTER(TIM1_BRK_TIM9_IRQn);
@@ -696,6 +751,21 @@ void USART2_IRQHandler(void) {
     IRQ_EXIT(USART2_IRQn);
 }
 
+#if defined(STM32F0)
+
+void USART3_8_IRQHandler(void) {
+    IRQ_ENTER(USART3_8_IRQn);
+    uart_irq_handler(3);
+    uart_irq_handler(4);
+    uart_irq_handler(5);
+    uart_irq_handler(6);
+    uart_irq_handler(7);
+    uart_irq_handler(8);
+    IRQ_EXIT(USART3_8_IRQn);
+}
+
+#else
+
 void USART3_IRQHandler(void) {
     IRQ_ENTER(USART3_IRQn);
     uart_irq_handler(3);
@@ -720,7 +790,7 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
-#if defined(MICROPY_HW_UART7_TX)
+#if defined(UART8)
 void UART7_IRQHandler(void) {
     IRQ_ENTER(UART7_IRQn);
     uart_irq_handler(7);
@@ -728,7 +798,7 @@ void UART7_IRQHandler(void) {
 }
 #endif
 
-#if defined(MICROPY_HW_UART8_TX)
+#if defined(UART8)
 void UART8_IRQHandler(void) {
     IRQ_ENTER(UART8_IRQn);
     uart_irq_handler(8);
@@ -736,7 +806,9 @@ void UART8_IRQHandler(void) {
 }
 #endif
 
-#if MICROPY_HW_ENABLE_CAN
+#endif
+
+#if defined(MICROPY_HW_CAN1_TX)
 void CAN1_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN1_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
@@ -754,7 +826,9 @@ void CAN1_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_1);
     IRQ_EXIT(CAN1_SCE_IRQn);
 }
+#endif
 
+#if defined(MICROPY_HW_CAN2_TX)
 void CAN2_RX0_IRQHandler(void) {
     IRQ_ENTER(CAN2_RX0_IRQn);
     can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
@@ -772,7 +846,9 @@ void CAN2_SCE_IRQHandler(void) {
     can_sce_irq_handler(PYB_CAN_2);
     IRQ_EXIT(CAN2_SCE_IRQn);
 }
-#endif // MICROPY_HW_ENABLE_CAN
+#endif
+
+#if MICROPY_PY_PYB_LEGACY
 
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
@@ -815,3 +891,19 @@ void I2C3_ER_IRQHandler(void) {
     IRQ_EXIT(I2C3_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C3_SCL)
+
+#if defined(MICROPY_HW_I2C4_SCL)
+void I2C4_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C4_EV_IRQn);
+    i2c_ev_irq_handler(4);
+    IRQ_EXIT(I2C4_EV_IRQn);
+}
+
+void I2C4_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C4_ER_IRQn);
+    i2c_er_irq_handler(4);
+    IRQ_EXIT(I2C4_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C4_SCL)
+
+#endif // MICROPY_PY_PYB_LEGACY

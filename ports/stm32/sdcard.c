@@ -173,7 +173,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
     #endif
 
     // NVIC configuration for SDIO interrupts
-    HAL_NVIC_SetPriority(SDMMC_IRQn, IRQ_PRI_SDIO, IRQ_SUBPRI_SDIO);
+    NVIC_SetPriority(SDMMC_IRQn, IRQ_PRI_SDIO);
     HAL_NVIC_EnableIRQ(SDMMC_IRQn);
 
     // GPIO have already been initialised by sdcard_init

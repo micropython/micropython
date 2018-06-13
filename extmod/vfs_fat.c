@@ -47,7 +47,8 @@
 
 #define mp_obj_fat_vfs_t fs_user_mount_t
 
-mp_import_stat_t fat_vfs_import_stat(fs_user_mount_t *vfs, const char *path) {
+STATIC mp_import_stat_t fat_vfs_import_stat(void *vfs_in, const char *path) {
+    fs_user_mount_t *vfs = vfs_in;
     FILINFO fno;
     assert(vfs != NULL);
     FRESULT res = f_stat(&vfs->fatfs, path, &fno);
@@ -421,11 +422,17 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 
+STATIC const mp_vfs_proto_t fat_vfs_proto = {
+    .import_stat = fat_vfs_import_stat,
+};
+
 const mp_obj_type_t mp_fat_vfs_type = {
     { &mp_type_type },
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
+    .protocol = &fat_vfs_proto,
     .locals_dict = (mp_obj_dict_t*)&fat_vfs_locals_dict,
+
 };
 
 #endif // MICROPY_VFS_FAT

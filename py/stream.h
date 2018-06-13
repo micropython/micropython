@@ -35,7 +35,7 @@
 #define MP_STREAM_FLUSH (1)
 #define MP_STREAM_SEEK  (2)
 #define MP_STREAM_POLL  (3)
-//#define MP_STREAM_CLOSE       (4)  // Not yet implemented
+#define MP_STREAM_CLOSE         (4)
 #define MP_STREAM_TIMEOUT       (5)  // Get/set timeout (single op)
 #define MP_STREAM_GET_OPTS      (6)  // Get stream options
 #define MP_STREAM_SET_OPTS      (7)  // Set stream options
@@ -62,6 +62,16 @@ struct mp_stream_seek_t {
 #define MP_SEEK_CUR (1)
 #define MP_SEEK_END (2)
 
+// Stream protocol
+typedef struct _mp_stream_p_t {
+    // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
+    // are implementation-dependent, but will be exposed to user, e.g. via exception).
+    mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
+    mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
+    mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
+    mp_uint_t is_text : 1; // default is bytes, set this for text stream
+} mp_stream_p_t;
+
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read1_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_readinto_obj);
@@ -69,6 +79,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_unbuffered_readline_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_write1_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_close_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);
@@ -106,7 +117,7 @@ int mp_stream_posix_fsync(mp_obj_t stream);
 #endif
 
 #if MICROPY_STREAMS_NON_BLOCK
-#define mp_is_nonblocking_error(errno) ((errno) == EAGAIN || (errno) == EWOULDBLOCK)
+#define mp_is_nonblocking_error(errno) ((errno) == MP_EAGAIN || (errno) == MP_EWOULDBLOCK)
 #else
 #define mp_is_nonblocking_error(errno) (0)
 #endif

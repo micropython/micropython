@@ -241,6 +241,8 @@ g_pfnVectors:
   .word     0                                 /* CRYP crypto                  */
   .word     HASH_RNG_IRQHandler               /* Hash and Rng                 */
   .word     FPU_IRQHandler                    /* FPU                          */
+  .word     UART7_IRQHandler                  /* UART7                        */
+  .word     UART8_IRQHandler                  /* UART8                        */
 
 /*******************************************************************************
 *
@@ -518,5 +520,11 @@ g_pfnVectors:
 
    .weak      FPU_IRQHandler
    .thumb_set FPU_IRQHandler,Default_Handler
+
+   .weak      UART7_IRQHandler
+   .thumb_set UART7_IRQHandler,Default_Handler
+
+   .weak      UART8_IRQHandler
+   .thumb_set UART8_IRQHandler,Default_Handler
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

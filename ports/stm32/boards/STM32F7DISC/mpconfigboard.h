@@ -6,7 +6,6 @@
 #define MICROPY_HW_HAS_SDCARD       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_CAN       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 
 #define MICROPY_BOARD_EARLY_INIT    STM32F7DISC_board_early_init
@@ -49,6 +48,12 @@ void STM32F7DISC_board_early_init(void);
 #define MICROPY_HW_SPI2_SCK         (pin_I1)
 #define MICROPY_HW_SPI2_MISO        (pin_B14)
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)
+
+// CAN busses
+#define MICROPY_HW_CAN1_TX          (pin_B9)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
+#define MICROPY_HW_CAN2_TX          (pin_B13)
+#define MICROPY_HW_CAN2_RX          (pin_B12)
 
 // USRSW is pulled low. Pressing the button makes the input go high.
 #define MICROPY_HW_USRSW_PIN        (pin_I11)

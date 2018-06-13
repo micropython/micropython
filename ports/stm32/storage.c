@@ -34,6 +34,8 @@
 #include "storage.h"
 #include "irq.h"
 
+#if MICROPY_HW_ENABLE_STORAGE
+
 #define FLASH_PART1_START_BLOCK (0x100)
 
 #if defined(MICROPY_HW_BDEV2_IOCTL)
@@ -55,7 +57,7 @@ void storage_init(void) {
         // Enable the flash IRQ, which is used to also call our storage IRQ handler
         // It needs to go at a higher priority than all those components that rely on
         // the flash storage (eg higher than USB MSC).
-        HAL_NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH, IRQ_SUBPRI_FLASH);
+        NVIC_SetPriority(FLASH_IRQn, IRQ_PRI_FLASH);
         HAL_NVIC_EnableIRQ(FLASH_IRQn);
     }
 }
@@ -284,3 +286,5 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
     vfs->u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
 }
+
+#endif

@@ -29,8 +29,6 @@ pyb.enable_irq()
 
 print(pyb.have_cdc())
 
-pyb.hid((0, 0, 0, 0)) # won't do anything
-
 pyb.sync()
 
 print(len(pyb.unique_id()))

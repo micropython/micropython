@@ -204,10 +204,11 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
         n_state_out_var = mp_decode_uint_value(bytecode);                         \
         size_t n_exc_stack = mp_decode_uint_value(mp_decode_uint_skip(bytecode)); \
                                                                                   \
-        n_state += VM_DETECT_STACK_OVERFLOW;                                      \
+        n_state_out_var += VM_DETECT_STACK_OVERFLOW;                              \
                                                                                   \
         /* state size in bytes */                                                 \
-        state_size_out_var = n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t); \
+        state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
+                           + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
 #define INIT_CODESTATE(code_state, _fun_bc, n_args, n_kw, args) \

@@ -21,12 +21,19 @@ class C:
     def __getattr__(self, attr):
         if attr == "exists":
             return attr
+        elif attr == "raise":
+            raise Exception(123)
         raise AttributeError
 
 c = C()
 print(hasattr(c, "exists"))
-# TODO
-#print(hasattr(c, "doesnt_exist"))
+print(hasattr(c, "doesnt_exist"))
+
+# ensure that non-AttributeError exceptions propagate out of hasattr
+try:
+    hasattr(c, "raise")
+except Exception as er:
+    print(er)
 
 try:
     hasattr(1, b'123')

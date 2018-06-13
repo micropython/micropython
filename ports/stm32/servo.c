@@ -176,7 +176,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
 
 STATIC void pyb_servo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = self_in;
-    mp_printf(print, "<Servo %lu at %luus>", self - &pyb_servo_obj[0] + 1, 10 * self->pulse_cur);
+    mp_printf(print, "<Servo %u at %uus>", self - &pyb_servo_obj[0] + 1, 10 * self->pulse_cur);
 }
 
 /// \classmethod \constructor(id)

@@ -217,7 +217,7 @@ void SystemInit(void)
   #endif
   /* Reset the RCC clock configuration to the default reset state ------------*/
 
-  /* Set HSION bit */
+  /* Set configured startup clk source */
   RCC->CR |= CONFIG_RCC_CR_1ST;
 
   /* Reset CFGR register */
@@ -406,14 +406,14 @@ MP_WEAK void SystemClock_Config(void)
     /* Enable HSE Oscillator and activate PLL with HSE as source */
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSEState = MICROPY_HW_CLK_HSE_STATE;
     RCC_OscInitStruct.HSIState = RCC_HSI_OFF;
     #if defined(STM32H7)
     RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
     #endif
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     #elif defined(STM32L4)
-    RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
     RCC_OscInitStruct.LSEState = RCC_LSE_ON;
     RCC_OscInitStruct.MSIState = RCC_MSI_ON;
     RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
@@ -573,7 +573,7 @@ MP_WEAK void SystemClock_Config(void)
                                               |RCC_PERIPHCLK_RNG |RCC_PERIPHCLK_RTC;
     PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
     /* PLLSAI is used to clock USB, ADC, I2C1 and RNG. The frequency is
-       HSE(8MHz)/PLLM(2)*PLLSAI1N(24)/PLLSAIQ(2) = 48MHz. See the STM32CubeMx
+       MSI(4MHz)/PLLM(1)*PLLSAI1N(24)/PLLSAIQ(2) = 48MHz. See the STM32CubeMx
        application or the reference manual. */
     PeriphClkInitStruct.Sai1ClockSelection = RCC_SAI1CLKSOURCE_PLLSAI1;
     PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1;
@@ -602,15 +602,5 @@ MP_WEAK void SystemClock_Config(void)
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
     HAL_NVIC_SetPriority(SysTick_IRQn, TICK_INT_PRIORITY, 0);
-#endif
-}
-
-void HAL_MspInit(void) {
-#if defined(STM32F7) || defined(STM32H7)
-    /* Enable I-Cache */
-    SCB_EnableICache();
-
-    /* Enable D-Cache */
-    SCB_EnableDCache();
 #endif
 }

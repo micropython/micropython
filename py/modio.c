@@ -30,6 +30,8 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/stream.h"
+#include "py/binary.h"
+#include "py/objarray.h"
 #include "py/objstringio.h"
 #include "py/frozenmod.h"
 
@@ -37,6 +39,70 @@
 
 extern const mp_obj_type_t mp_type_fileio;
 extern const mp_obj_type_t mp_type_textio;
+
+#if MICROPY_PY_IO_IOBASE
+
+STATIC const mp_obj_type_t mp_type_iobase;
+
+STATIC mp_obj_base_t iobase_singleton = {&mp_type_iobase};
+
+STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    (void)type;
+    (void)n_args;
+    (void)n_kw;
+    (void)args;
+    return MP_OBJ_FROM_PTR(&iobase_singleton);
+}
+
+STATIC mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode, qstr qst) {
+    mp_obj_t dest[3];
+    mp_load_method(obj, qst, dest);
+    mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
+    dest[2] = MP_OBJ_FROM_PTR(&ar);
+    mp_obj_t ret = mp_call_method_n_kw(1, 0, dest);
+    if (ret == mp_const_none) {
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    } else {
+        return mp_obj_get_int(ret);
+    }
+}
+STATIC mp_uint_t iobase_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
+    return iobase_read_write(obj, buf, size, errcode, MP_QSTR_readinto);
+}
+
+STATIC mp_uint_t iobase_write(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode) {
+    return iobase_read_write(obj, (void*)buf, size, errcode, MP_QSTR_write);
+}
+
+STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_t dest[4];
+    mp_load_method(obj, MP_QSTR_ioctl, dest);
+    dest[2] = mp_obj_new_int_from_uint(request);
+    dest[3] = mp_obj_new_int_from_uint(arg);
+    mp_int_t ret = mp_obj_get_int(mp_call_method_n_kw(2, 0, dest));
+    if (ret >= 0) {
+        return ret;
+    } else {
+        *errcode = -ret;
+        return MP_STREAM_ERROR;
+    }
+}
+
+STATIC const mp_stream_p_t iobase_p = {
+    .read = iobase_read,
+    .write = iobase_write,
+    .ioctl = iobase_ioctl,
+};
+
+STATIC const mp_obj_type_t mp_type_iobase = {
+    { &mp_type_type },
+    .name = MP_QSTR_IOBase,
+    .make_new = iobase_make_new,
+    .protocol = &iobase_p,
+};
+
+#endif // MICROPY_PY_IO_IOBASE
 
 #if MICROPY_PY_IO_BUFFEREDWRITER
 typedef struct _mp_obj_bufwriter_t {
@@ -187,6 +253,9 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    #if MICROPY_PY_IO_IOBASE
+    { MP_ROM_QSTR(MP_QSTR_IOBase), MP_ROM_PTR(&mp_type_iobase) },
+    #endif
     #if MICROPY_PY_IO_RESOURCE_STREAM
     { MP_ROM_QSTR(MP_QSTR_resource_stream), MP_ROM_PTR(&resource_stream_obj) },
     #endif
