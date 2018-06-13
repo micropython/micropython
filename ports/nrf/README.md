@@ -97,7 +97,7 @@ pca10028             | s110                    | Peripheral             | [Segge
 pca10031             | s110                    | Peripheral             | [Segger](#segger-targets)
 wt51822_s4at         | s110                    | Peripheral             | Manual, see [datasheet](https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf) for pinout
 pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
-feather52            | s132                    | Peripheral and Central | [UART DFU](#dfu-targets)
+feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
 arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
 pca10056             |                         |                        | [Segger](#segger-targets)
 
@@ -124,24 +124,6 @@ Install the necessary tools to flash and debug using OpenOCD:
     sudo apt-get install openocd
     sudo pip install pyOCD
 
-## DFU Targets
-
-    sudo apt-get install build-essential libffi-dev pkg-config gcc-arm-none-eabi git python python-pip
-    git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git
-    cd Adafruit_nRF52_Arduino/tools/nrfutil-0.5.2/
-    sudo pip install -r requirements.txt
-    sudo python setup.py install
-  
-**make flash** and **make sd** will not work with DFU targets. Hence, **dfu-gen** and **dfu-flash** must be used instead.
-* dfu-gen: Generates a Firmware zip to be used by the DFU flash application.
-* dfu-flash: Triggers the DFU flash application to upload the firmware from the generated Firmware zip file. 
-
-Example on how to generate and flash feather52 target:
-
-    make BOARD=feather52 SD=s132
-    make BOARD=feather52 SD=s132 dfu-gen
-    make BOARD=feather52 SD=s132 dfu-flash
-    
 ## Bluetooth LE REPL
 
 The port also implements a BLE REPL driver. This feature is disabled by default, as it will deactivate the UART REPL when activated. As some of the nRF devices only have one UART, using the BLE REPL free's the UART instance such that it can be used as a general UART peripheral not bound to REPL.
