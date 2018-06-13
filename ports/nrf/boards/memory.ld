@@ -10,6 +10,11 @@ _fs_start      = _sd_size + _app_size;
 _fs_end        = _fs_start + _fs_size;
 _app_ram_start = 0x20000000 + _sd_ram;
 _app_ram_size  = _ram_size - _sd_ram;
+_heap_start    = _ebss;
+_heap_end      = _ram_end - _stack_size;
+_heap_size     = _heap_end - _heap_start;
+
+ASSERT(_heap_size >= _minimum_heap_size, "not enough RAM left for heap")
 
 /* Specify the memory areas */
 MEMORY
