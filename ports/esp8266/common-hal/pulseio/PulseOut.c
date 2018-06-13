@@ -24,23 +24,41 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/pulseio/PulseOut.h"
 
 #include <stdint.h>
 
+#include <pwm.h>
+
+#include "ets_alt_task.h"
+#include "py/obj.h"
 #include "py/runtime.h"
+#include "mpconfigport.h"
 #include "shared-bindings/pulseio/PulseOut.h"
+
+void pulseout_set(pulseio_pulseout_obj_t *self, bool state) {
+    PIN_FUNC_SELECT(self->pin->peripheral, state ? self->pin->gpio_function : 0);
+}
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                             const pulseio_pwmout_obj_t* carrier) {
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "No hardware support for PulseOut."));
+    self->pin = carrier->pin;
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
-    return true;
+    return self->pin == NULL;
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+    self->pin = NULL;
+    pulseout_set(self, true);
 }
 
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
+void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self,
+        uint16_t* pulses, uint16_t length) {
+    for (uint16_t i = 0; i<length; i++) {
+        pulseout_set(self, i % 2 == 0);
+        ets_delay_us(pulses[i]);
+    }
+    pulseout_set(self, false);
 }

@@ -45,4 +45,7 @@ void claim_pin(const mcu_pin_obj_t* pin);
 void reset_pin(const mcu_pin_obj_t* pin);
 void reset_pins(void);
 
+void microcontroller_pin_register_intr_handler(uint8_t gpio_number, void (*func)(void *), void *data);
+void microcontroller_pin_call_intr_handlers(uint32_t status);
+
 #endif  // MICROPY_INCLUDED_ESP8266_COMMON_HAL_MICROCONTROLLER_PIN_H
