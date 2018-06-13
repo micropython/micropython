@@ -362,6 +362,13 @@ void gc_collect_end(void) {
     GC_EXIT();
 }
 
+void gc_sweep_all(void) {
+    GC_ENTER();
+    MP_STATE_MEM(gc_lock_depth)++;
+    MP_STATE_MEM(gc_stack_overflow) = 0;
+    gc_collect_end();
+}
+
 void gc_info(gc_info_t *info) {
     GC_ENTER();
     info->total = MP_STATE_MEM(gc_pool_end) - MP_STATE_MEM(gc_pool_start);

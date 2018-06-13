@@ -60,25 +60,29 @@ int mp_uos_dupterm_rx_chr(void) {
 
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            mp_obj_t readinto_m[3];
-            mp_load_method(MP_STATE_VM(dupterm_objs[idx]), MP_QSTR_readinto, readinto_m);
-            readinto_m[2] = MP_STATE_VM(dupterm_arr_obj);
-            mp_obj_t res = mp_call_method_n_kw(1, 0, readinto_m);
-            if (res == mp_const_none) {
-                nlr_pop();
-            } else if (res == MP_OBJ_NEW_SMALL_INT(0)) {
+            byte buf[1];
+            int errcode;
+            const mp_stream_p_t *stream_p = mp_get_stream_raise(MP_STATE_VM(dupterm_objs[idx]), MP_STREAM_OP_READ);
+            mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
+            if (out_sz == 0) {
                 nlr_pop();
                 mp_uos_deactivate(idx, "dupterm: EOF received, deactivating\n", MP_OBJ_NULL);
+            } else if (out_sz == MP_STREAM_ERROR) {
+                // errcode is valid
+                if (mp_is_nonblocking_error(errcode)) {
+                    nlr_pop();
+                } else {
+                    mp_raise_OSError(errcode);
+                }
             } else {
-                mp_buffer_info_t bufinfo;
-                mp_get_buffer_raise(MP_STATE_VM(dupterm_arr_obj), &bufinfo, MP_BUFFER_READ);
+                // read 1 byte
                 nlr_pop();
-                if (*(byte*)bufinfo.buf == mp_interrupt_char) {
+                if (buf[0] == mp_interrupt_char) {
                     // Signal keyboard interrupt to be raised as soon as the VM resumes
                     mp_keyboard_interrupt();
                     return -2;
                 }
-                return *(byte*)bufinfo.buf;
+                return buf[0];
             }
         } else {
             mp_uos_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", nlr.ret_val);
@@ -96,18 +100,7 @@ void mp_uos_dupterm_tx_strn(const char *str, size_t len) {
         }
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            mp_obj_t write_m[3];
-            mp_load_method(MP_STATE_VM(dupterm_objs[idx]), MP_QSTR_write, write_m);
-
-            mp_obj_array_t *arr = MP_OBJ_TO_PTR(MP_STATE_VM(dupterm_arr_obj));
-            void *org_items = arr->items;
-            arr->items = (void*)str;
-            arr->len = len;
-            write_m[2] = MP_STATE_VM(dupterm_arr_obj);
-            mp_call_method_n_kw(1, 0, write_m);
-            arr = MP_OBJ_TO_PTR(MP_STATE_VM(dupterm_arr_obj));
-            arr->items = org_items;
-            arr->len = 1;
+            mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
             nlr_pop();
         } else {
             mp_uos_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", nlr.ret_val);
@@ -133,9 +126,6 @@ STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
         MP_STATE_VM(dupterm_objs[idx]) = MP_OBJ_NULL;
     } else {
         MP_STATE_VM(dupterm_objs[idx]) = args[0];
-        if (MP_STATE_VM(dupterm_arr_obj) == MP_OBJ_NULL) {
-            MP_STATE_VM(dupterm_arr_obj) = mp_obj_new_bytearray(1, "");
-        }
     }
 
     return previous_obj;
