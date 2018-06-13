@@ -35,6 +35,12 @@ class B(A):
         return super().foo().count(2) # calling a subsequent method
 print(B().foo())
 
+# first arg to super must be a type
+try:
+    super(1, 1)
+except TypeError:
+    print('TypeError')
+
 # store/delete of super attribute not allowed
 assert hasattr(super(B, B()), 'foo')
 try:

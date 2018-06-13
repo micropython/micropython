@@ -13,6 +13,9 @@ ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
 endif
 
+# Any files listed by this variable will cause a full regeneration of qstrs
+QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
+
 # some code is performance bottleneck and compiled with other optimization options
 CSUPEROPT = -O3
 
@@ -241,6 +244,8 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
 	extmod/vfs_reader.o \
+	extmod/vfs_posix.o \
+	extmod/vfs_posix_file.o \
 	extmod/vfs_fat.o \
 	extmod/vfs_fat_diskio.o \
 	extmod/vfs_fat_file.o \
