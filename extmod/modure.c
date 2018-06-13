@@ -312,15 +312,11 @@ STATIC mp_obj_t ure_exec_sub(mp_obj_re_t *self, mp_obj_t replace, mp_obj_t where
                         }
 
                         const char *start_match = match->caps[match_no * 2];
-                        if (start_match == NULL) {
-                            // No match for this group
-                            return where;
+                        if (start_match != NULL) {
+                            // Add the substring matched by group
+                            const char *end_match = match->caps[match_no * 2 + 1];
+                            vstr_add_strn(vstr_return, start_match, end_match - start_match);
                         }
-
-                        const char *end_match = match->caps[match_no * 2 + 1];
-
-                        // Add the substring matched by group
-                        vstr_add_strn(vstr_return, start_match, end_match - start_match);
                     }
                 }
             } else {
@@ -340,7 +336,6 @@ STATIC mp_obj_t ure_exec_sub(mp_obj_re_t *self, mp_obj_t replace, mp_obj_t where
         if (count > 0 && --count == 0) {
             break;
         }
-
     }
     m_del_var(mp_obj_match_t, char*, caps_num, match);
 
