@@ -153,8 +153,6 @@ MP_WEAK MP_NOINLINE bool init_flash_fs(uint reset_mode) {
     ;
 
     static const char fresh_pybcdc_inf[] =
-
-    static const char fresh_pybcdc_inf[] =
 #include "genhdr/pybcdc_inf.h"
     ;
 
