@@ -1,9 +1,8 @@
 MCU_SERIES = m4
 MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52832
-SOFTDEV_VERSION = 2.0.1
-
-LD_FILE = boards/feather52/custom_nrf52832_dfu_app.ld
+SOFTDEV_VERSION = 3.0.0
+LD_FILES += boards/nrf52832_512k_64k.ld
 
 NRF_DEFINES += -DNRF52832_XXAA
 
