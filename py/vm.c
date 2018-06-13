@@ -336,7 +336,7 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
-                    if (mp_obj_get_type(top)->attr == mp_obj_instance_attr) {
+                    if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
                         mp_uint_t x = *ip;
                         mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
@@ -434,7 +434,7 @@ dispatch_loop:
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
-                    if (mp_obj_get_type(top)->attr == mp_obj_instance_attr && sp[-1] != MP_OBJ_NULL) {
+                    if (mp_obj_is_instance_type(mp_obj_get_type(top)) && sp[-1] != MP_OBJ_NULL) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
                         mp_uint_t x = *ip;
                         mp_obj_t key = MP_OBJ_NEW_QSTR(qst);

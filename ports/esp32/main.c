@@ -116,6 +116,8 @@ soft_reset:
     mp_thread_deinit();
     #endif
 
+    gc_sweep_all();
+
     mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
 
     // deinitialise peripherals

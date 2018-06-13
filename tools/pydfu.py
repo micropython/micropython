@@ -168,7 +168,7 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
             print ("Addr 0x%x %dKBs/%dKBs..." % (xfer_base + xfer_bytes,
                                                  xfer_bytes // 1024,
                                                  xfer_total // 1024))
-        if progress and xfer_count % 256 == 0:
+        if progress and xfer_count % 2 == 0:
             progress(progress_addr, xfer_base + xfer_bytes - progress_addr,
                      progress_size)
 
@@ -176,7 +176,9 @@ def write_memory(addr, buf, progress=None, progress_addr=0, progress_size=0):
         set_address(xfer_base+xfer_bytes)
 
         # Send DNLOAD with fw data
-        chunk = min(64, xfer_total-xfer_bytes)
+        # the "2048" is the DFU transfer size supported by the ST DFU bootloader
+        # TODO: this number should be extracted from the USB config descriptor
+        chunk = min(2048, xfer_total-xfer_bytes)
         __dev.ctrl_transfer(0x21, __DFU_DNLOAD, 2, __DFU_INTERFACE,
                             buf[xfer_bytes:xfer_bytes + chunk], __TIMEOUT)
 
