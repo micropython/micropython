@@ -1,7 +1,11 @@
 try:
     import ure as re
 except ImportError:
-    import re
+    try:
+        import re
+    except ImportError:
+        print('SKIP')
+        raise SystemExit
 
 try:
     re.sub
@@ -40,9 +44,6 @@ print(
 
 # no matches at all
 print(re.sub('a', 'b', 'c'))
-
-# first group matches, second optional group doesn't so is replaced with a blank
-print(re.sub(r'(a)(b)?', r'\2-\1', '1a2'))
 
 # with maximum substitution count specified
 print(re.sub('a', 'b', '1a2a3a', 2))
