@@ -34,6 +34,11 @@
 
 #include "py/mpstate.h"
 
+static audio_dma_t* audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
+
+// This cannot be in audio_dma_state because it's volatile.
+static volatile bool audio_dma_pending[AUDIO_DMA_CHANNEL_COUNT];
+
 uint32_t audiosample_sample_rate(mp_obj_t sample_obj) {
     if (MP_OBJ_IS_TYPE(sample_obj, &audioio_rawsample_type)) {
         audioio_rawsample_obj_t* sample = MP_OBJ_TO_PTR(sample_obj);
@@ -70,7 +75,7 @@ uint8_t audiosample_channel_count(mp_obj_t sample_obj) {
     return 1;
 }
 
-void audiosample_reset_buffer(mp_obj_t sample_obj, bool single_channel, uint8_t audio_channel) {
+static void audiosample_reset_buffer(mp_obj_t sample_obj, bool single_channel, uint8_t audio_channel) {
     if (MP_OBJ_IS_TYPE(sample_obj, &audioio_rawsample_type)) {
         audioio_rawsample_obj_t* sample = MP_OBJ_TO_PTR(sample_obj);
         audioio_rawsample_reset_buffer(sample, single_channel, audio_channel);
@@ -81,7 +86,10 @@ void audiosample_reset_buffer(mp_obj_t sample_obj, bool single_channel, uint8_t 
     }
 }
 
-bool audiosample_get_buffer(mp_obj_t sample_obj, bool single_channel, uint8_t channel, uint8_t** buffer, uint32_t* buffer_length) {
+static audioio_get_buffer_result_t audiosample_get_buffer(mp_obj_t sample_obj,
+                                                          bool single_channel,
+                                                          uint8_t channel,
+                                                          uint8_t** buffer, uint32_t* buffer_length) {
     if (MP_OBJ_IS_TYPE(sample_obj, &audioio_rawsample_type)) {
         audioio_rawsample_obj_t* sample = MP_OBJ_TO_PTR(sample_obj);
         return audioio_rawsample_get_buffer(sample, single_channel, channel, buffer, buffer_length);
@@ -90,7 +98,7 @@ bool audiosample_get_buffer(mp_obj_t sample_obj, bool single_channel, uint8_t ch
         audioio_wavefile_obj_t* file = MP_OBJ_TO_PTR(sample_obj);
         return audioio_wavefile_get_buffer(file, single_channel, channel, buffer, buffer_length);
     }
-    return true;
+    return GET_BUFFER_DONE;
 }
 
 static void audiosample_get_buffer_structure(mp_obj_t sample_obj, bool single_channel,
@@ -117,7 +125,6 @@ uint8_t find_free_audio_dma_channel(void) {
     return channel;
 }
 
-audio_dma_t* audio_dma_state[AUDIO_DMA_CHANNEL_COUNT];
 void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer_length,
                               uint8_t** output_buffer, uint32_t* output_buffer_length,
                               uint8_t* output_spacing) {
@@ -163,14 +170,20 @@ void audio_dma_convert_signed(audio_dma_t* dma, uint8_t* buffer, uint32_t buffer
 void audio_dma_load_next_block(audio_dma_t* dma) {
     uint8_t* buffer;
     uint32_t buffer_length;
-    bool last_buffer = audiosample_get_buffer(dma->sample, dma->single_channel, dma->audio_channel,
-                                              &buffer, &buffer_length);
+    audioio_get_buffer_result_t get_buffer_result =
+        audiosample_get_buffer(dma->sample, dma->single_channel, dma->audio_channel,
+                               &buffer, &buffer_length);
 
     DmacDescriptor* descriptor = dma->second_descriptor;
     if (dma->first_descriptor_free) {
         descriptor = dma_descriptor(dma->dma_channel);
     }
     dma->first_descriptor_free = !dma->first_descriptor_free;
+
+    if (get_buffer_result == GET_BUFFER_ERROR) {
+        audio_dma_stop(dma);
+        return;
+    }
 
     uint8_t* output_buffer;
     uint32_t output_buffer_length;
@@ -180,7 +193,7 @@ void audio_dma_load_next_block(audio_dma_t* dma) {
 
     descriptor->BTCNT.reg = output_buffer_length / dma->beat_size / output_spacing;
     descriptor->SRCADDR.reg = ((uint32_t) output_buffer) + output_buffer_length;
-    if (last_buffer) {
+    if (get_buffer_result == GET_BUFFER_DONE) {
         if (dma->loop) {
             audiosample_reset_buffer(dma->sample, dma->single_channel, dma->audio_channel);
         } else {
@@ -347,6 +360,7 @@ void audio_dma_init(audio_dma_t* dma) {
 void audio_dma_reset(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
         audio_dma_state[i] = NULL;
+        audio_dma_pending[i] = false;
         dma_disable_channel(i);
         dma_descriptor(i)->BTCTRL.bit.VALID = false;
         MP_STATE_PORT(playing_audio)[i] = NULL;
@@ -367,8 +381,12 @@ bool audio_dma_get_playing(audio_dma_t* dma) {
 
 // WARN(tannewt): DO NOT print from here. Printing calls background tasks such as this and causes a
 // stack overflow.
+
 void audio_dma_background(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
+        if (audio_dma_pending[i]) {
+            continue;
+        }
         audio_dma_t* dma = audio_dma_state[i];
         if (dma == NULL) {
             continue;
@@ -379,6 +397,10 @@ void audio_dma_background(void) {
             continue;
         }
 
+        // audio_dma_load_next_block() can call Python code, which can call audio_dma_background()
+        // recursively at the next background processing time. So disallow recursive calls to here.
+        audio_dma_pending[i] = true;
         audio_dma_load_next_block(dma);
+        audio_dma_pending[i] = false;
     }
 }

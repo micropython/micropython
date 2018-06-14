@@ -131,8 +131,17 @@ DRESULT disk_read (
     } else {
         vfs->readblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
         vfs->readblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), buff);
-        mp_call_method_n_kw(2, 0, vfs->readblocks);
-        // TODO handle error return
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->readblocks);
+            nlr_pop();
+            if (mp_obj_get_int(ret) != 0) {
+                return RES_ERROR;
+            }
+        } else {
+            // Exception thrown by readblocks or something it calls.
+            return RES_ERROR;
+        }
     }
 
     return RES_OK;
@@ -167,8 +176,17 @@ DRESULT disk_write (
     } else {
         vfs->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(sector);
         vfs->writeblocks[3] = mp_obj_new_bytearray_by_ref(count * SECSIZE(&vfs->fatfs), (void*)buff);
-        mp_call_method_n_kw(2, 0, vfs->writeblocks);
-        // TODO handle error return
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->writeblocks);
+            nlr_pop();
+            if (mp_obj_get_int(ret) != 0) {
+                return RES_ERROR;
+            }
+        } else {
+            // Exception thrown by writeblocks or something it calls.
+            return RES_ERROR;
+        }
     }
 
     return RES_OK;

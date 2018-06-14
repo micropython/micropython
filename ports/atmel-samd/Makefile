@@ -102,8 +102,10 @@ endif
 ifeq ($(DEBUG), 1)
   # Turn on Python modules useful for debugging (e.g. uheap, ustack).
   CFLAGS += -ggdb
-##  CFLAGS += -flto
-  CFLAGS += -fno-inline -fno-ipa-sra
+  # You may want to disable -flto if it interferes with debugging.
+  CFLAGS += -flto
+  # You may want to enable these flags to make setting breakpoints easier.
+##   CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif

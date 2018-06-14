@@ -66,18 +66,18 @@ void audioio_rawsample_reset_buffer(audioio_rawsample_obj_t* self,
                                     uint8_t channel) {
 }
 
-bool audioio_rawsample_get_buffer(audioio_rawsample_obj_t* self,
-                                  bool single_channel,
-                                  uint8_t channel,
-                                  uint8_t** buffer,
-                                  uint32_t* buffer_length) {
+audioio_get_buffer_result_t audioio_rawsample_get_buffer(audioio_rawsample_obj_t* self,
+                                                         bool single_channel,
+                                                         uint8_t channel,
+                                                         uint8_t** buffer,
+                                                         uint32_t* buffer_length) {
     *buffer_length = self->len;
     if (single_channel) {
         *buffer = self->buffer + (channel % self->channel_count) * (self->bits_per_sample / 8);
     } else {
         *buffer = self->buffer;
     }
-    return true;
+    return GET_BUFFER_DONE;
 }
 
 void audioio_rawsample_get_buffer_structure(audioio_rawsample_obj_t* self, bool single_channel,
