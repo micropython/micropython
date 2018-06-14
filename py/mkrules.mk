@@ -105,7 +105,7 @@ endif
 ifneq ($(FROZEN_MPY_DIR),)
 # to build the MicroPython cross compiler
 $(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
-	$(Q)$(MAKE) -C $(TOP)/mpy-cross
+	$(Q)$(MAKE) -C $(TOP)/mpy-cross USER_C_MODULES=
 
 # make a list of all the .py files that need compiling and freezing
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
@@ -121,6 +121,13 @@ $(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py $(TOP)/mpy-cross/mpy-cross
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
 	@$(ECHO) "GEN $@"
 	$(Q)$(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
+endif
+
+# to build a list of modules for py/objmodule.c.
+ifneq ($(USER_C_MODULES),)
+$(BUILD)/genhdr/cmodules.h: | $(HEADER_BUILD)/mpversion.h
+	@$(ECHO) "GEN $@"
+	$(Q)$(GEN_CMODULES) $(USER_C_MODULES) > $@
 endif
 
 ifneq ($(PROG),)

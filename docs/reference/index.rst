@@ -26,3 +26,11 @@ implementation and the best practices to use them.
    constrained.rst
    packages.rst
    asm_thumb2_index.rst
+   cmodules.rst
+
+.. only:: port_pyboard
+
+   .. toctree::
+      :maxdepth: 1
+
+      asm_thumb2_index.rst

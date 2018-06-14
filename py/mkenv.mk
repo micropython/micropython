@@ -61,6 +61,7 @@ endif
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
+GEN_CMODULES = $(PYTHON) $(TOP)/tools/gen-cmodules.py
 
 all:
 .PHONY: all
