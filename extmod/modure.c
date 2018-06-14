@@ -302,21 +302,23 @@ STATIC mp_obj_t ure_exec_sub(mp_obj_re_t *self, mp_obj_t replace, mp_obj_t where
 
                 if ('0' <= *repl && *repl <= '9') {
                     // Group specified with syntax "\number"
-                    int match_no = 0;
+                    unsigned int match_no = 0;
                     do {
                         match_no = match_no * 10 + (*repl++ - '0');
                     } while ('0' <= *repl && *repl <= '9');
-                    if (match_no < match->num_matches) {
-                        if (is_g_format && *repl == '>') {
-                            ++repl;
-                        }
+                    if (is_g_format && *repl == '>') {
+                        ++repl;
+                    }
 
-                        const char *start_match = match->caps[match_no * 2];
-                        if (start_match != NULL) {
-                            // Add the substring matched by group
-                            const char *end_match = match->caps[match_no * 2 + 1];
-                            vstr_add_strn(vstr_return, start_match, end_match - start_match);
-                        }
+                    if (match_no >= (unsigned int)match->num_matches) {
+                        nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, MP_OBJ_NEW_SMALL_INT(match_no)));
+                    }
+
+                    const char *start_match = match->caps[match_no * 2];
+                    if (start_match != NULL) {
+                        // Add the substring matched by group
+                        const char *end_match = match->caps[match_no * 2 + 1];
+                        vstr_add_strn(vstr_return, start_match, end_match - start_match);
                     }
                 }
             } else {
