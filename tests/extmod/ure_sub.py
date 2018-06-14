@@ -47,3 +47,15 @@ print(re.sub('a', 'b', 'c'))
 
 # with maximum substitution count specified
 print(re.sub('a', 'b', '1a2a3a', 2))
+
+# invalid group
+try:
+    re.sub('(a)', 'b\\2', 'a')
+except:
+    print('invalid group')
+
+# invalid group with very large number (to test overflow in uPy)
+try:
+    re.sub('(a)', 'b\\199999999999999999999999999999999999999', 'a')
+except:
+    print('invalid group')
