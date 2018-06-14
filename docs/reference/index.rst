@@ -25,6 +25,7 @@ implementation and the best practices to use them.
    speed_python.rst
    constrained.rst
    packages.rst
+   cmodules.rst
 
 .. only:: port_pyboard
 

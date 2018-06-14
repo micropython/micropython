@@ -27,6 +27,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#ifdef MICROPY_CMODULES_INCLUDE_H
+#include MICROPY_CMODULES_INCLUDE_H
+#endif
+
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -220,6 +224,11 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
+
+#ifdef MICROPY_EXTRA_BUILTIN_MODULES
+    // extra builtin modules from USER_C_MODULES
+    MICROPY_EXTRA_BUILTIN_MODULES
+#endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
