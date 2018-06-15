@@ -223,9 +223,6 @@ class SDCard:
         self.cs(1)
         self.spi.write(b'\xff')
 
-    def count(self):
-        return self.sectors
-
     def readblocks(self, block_num, buf):
         nblocks = len(buf) // 512
         assert nblocks and not len(buf) % 512, 'Buffer length is invalid'
@@ -270,3 +267,8 @@ class SDCard:
                 offset += 512
                 nblocks -= 1
             self.write_token(_TOKEN_STOP_TRAN)
+
+    def ioctl(self, op, arg):
+        print('ioctl', op, arg)
+        if op == 4: # get number of blocks
+            return self.sectors
