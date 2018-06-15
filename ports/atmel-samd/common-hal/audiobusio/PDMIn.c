@@ -41,11 +41,11 @@
 #include "hal/include/hal_gpio.h"
 #include "hal/utils/include/utils.h"
 
-#include "peripherals/clocks.h"
-#include "peripherals/events.h"
-#include "peripherals/i2s.h"
-#include "peripherals/pins.h"
-#include "peripherals/dma.h"
+#include "samd/clocks.h"
+#include "samd/events.h"
+#include "samd/i2s.h"
+#include "samd/pins.h"
+#include "samd/dma.h"
 
 #include "audio_dma.h"
 #include "tick.h"

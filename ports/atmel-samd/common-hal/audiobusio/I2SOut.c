@@ -45,12 +45,12 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
-#include "peripherals/clocks.h"
-#include "peripherals/dma.h"
-#include "peripherals/events.h"
-#include "peripherals/i2s.h"
-#include "peripherals/pins.h"
-#include "peripherals/timers.h"
+#include "samd/clocks.h"
+#include "samd/dma.h"
+#include "samd/events.h"
+#include "samd/i2s.h"
+#include "samd/pins.h"
+#include "samd/timers.h"
 
 #include "audio_dma.h"
 

@@ -34,9 +34,9 @@
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
-#include "peripherals/timers.h"
+#include "samd/timers.h"
 
-#include "peripherals/pins.h"
+#include "samd/pins.h"
 
 #undef ENABLE
 
