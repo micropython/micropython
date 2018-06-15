@@ -87,7 +87,7 @@ mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         path = mp_obj_str_get_str(args[0]);
     } else {
-        path = "";
+        path = mp_obj_str_get_str(common_hal_os_getcwd());
     }
     return common_hal_os_listdir(path);
 }
