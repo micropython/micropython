@@ -11,7 +11,7 @@ SECTIONS
     . = ALIGN(4);
     *(.rtc.literal .rtc.text)
     *rtc_wake_stub*.o(.literal .text .literal.* .text.*)
-  } >rtc_iram_seg
+  } > rtc_iram_seg
 
   /* RTC slow memory holds RTC wake stub
      data/rodata, including from any source file
@@ -33,6 +33,20 @@ SECTIONS
     *rtc_wake_stub*.o(.bss .bss.*)
     *rtc_wake_stub*.o(COMMON)
     _rtc_bss_end = ABSOLUTE(.);
+  } > rtc_slow_seg
+
+  /* This section holds data that should not be initialized at power up 
+     and will be retained during deep sleep. The section located in 
+     RTC SLOW Memory area. User data marked with RTC_NOINIT_ATTR will be placed
+     into this section. See the file "esp_attr.h" for more information.
+  */
+  .rtc_noinit (NOLOAD):
+  {
+    . = ALIGN(4);
+    _rtc_noinit_start = ABSOLUTE(.);
+    *(.rtc_noinit .rtc_noinit.*)
+    . = ALIGN(4) ;
+    _rtc_noinit_end = ABSOLUTE(.);
   } > rtc_slow_seg
 
   /* Send .iram0 code to iram */
@@ -99,7 +113,7 @@ SECTIONS
     *py/scheduler.o*(.literal .text .literal.* .text.*)
     _iram_text_end = ABSOLUTE(.);
   } > iram0_0_seg
-
+  
   .dram0.data :
   {
     _data_start = ABSOLUTE(.);
@@ -125,7 +139,21 @@ SECTIONS
     INCLUDE esp32.spiram.rom-functions-dram.ld
     _data_end = ABSOLUTE(.);
     . = ALIGN(4);
-  } >dram0_0_seg
+  } > dram0_0_seg
+
+  /*This section holds data that should not be initialized at power up.
+    The section located in Internal SRAM memory region. The macro _NOINIT
+    can be used as attribute to place data into this section.
+    See the esp_attr.h file for more information.
+  */
+  .noinit (NOLOAD):
+  {
+    . = ALIGN(4);
+    _noinit_start = ABSOLUTE(.);
+    *(.noinit .noinit.*) 
+    . = ALIGN(4) ;
+    _noinit_end = ABSOLUTE(.);
+  } > dram0_0_seg
 
   /* Shared RAM */
   .dram0.bss (NOLOAD) :
@@ -148,8 +176,9 @@ SECTIONS
     *(COMMON)
     . = ALIGN (8);
     _bss_end = ABSOLUTE(.);
+    /* The heap starts right after end of this section */
     _heap_start = ABSOLUTE(.);
-  } >dram0_0_seg
+  } > dram0_0_seg
 
   .flash.rodata :
   {
