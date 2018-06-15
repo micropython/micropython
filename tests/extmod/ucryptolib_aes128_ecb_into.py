@@ -1,16 +1,16 @@
 # Operations with pre-allocated output buffer
 try:
-    from ucryptolib import aes
+    from ucryptolib import aes, MODE_ECB
 except ImportError:
     print("SKIP")
     raise SystemExit
 
-crypto = aes(b"1234" * 4, 1)
+crypto = aes(b"1234" * 4, MODE_ECB)
 enc = bytearray(32)
 crypto.encrypt(bytes(range(32)), enc)
 print(enc)
 
-crypto = aes(b"1234" * 4, 1)
+crypto = aes(b"1234" * 4, MODE_ECB)
 dec = bytearray(32)
 crypto.decrypt(enc, dec)
 print(dec)
