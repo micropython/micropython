@@ -29,7 +29,7 @@
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
 
-#include "peripherals/pins.h"
+#include "samd/pins.h"
 #include "supervisor/shared/rgb_led_status.h"
 
 #ifdef MICROPY_HW_NEOPIXEL

@@ -30,7 +30,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "mpconfigboard.h"
-#include "peripherals/pins.h"
+#include "samd/pins.h"
 #include "py/runtime.h"
 
 #if !defined(DEFAULT_I2C_BUS_SDA) || !defined(DEFAULT_I2C_BUS_SCL)

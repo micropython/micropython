@@ -318,7 +318,7 @@ extern const struct _mp_obj_module_t usb_hid_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#include "peripherals/dma.h"
+#include "peripherals/samd/dma.h"
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \

@@ -28,7 +28,7 @@
 
 #include "atmel_start_pins.h"
 
-#include "peripherals/external_interrupts.h"
+#include "samd/external_interrupts.h"
 #include "py/runtime.h"
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,

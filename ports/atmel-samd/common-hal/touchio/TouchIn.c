@@ -37,8 +37,8 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
-#include "peripherals/clocks.h"
-#include "peripherals/pins.h"
+#include "samd/clocks.h"
+#include "samd/pins.h"
 
 #include "tick.h"
 #include "adafruit_ptc.h"

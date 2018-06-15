@@ -31,8 +31,8 @@
 #include "hal/include/hal_gpio.h"
 
 #include "mpconfigport.h"
-#include "peripherals/pins.h"
-#include "peripherals/timers.h"
+#include "samd/pins.h"
+#include "samd/timers.h"
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"

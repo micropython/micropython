@@ -32,7 +32,7 @@
 #include "hal/include/hal_i2c_m_sync.h"
 #include "hal/include/hpl_i2c_m_sync.h"
 
-#include "peripherals/sercom.h"
+#include "samd/sercom.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
 

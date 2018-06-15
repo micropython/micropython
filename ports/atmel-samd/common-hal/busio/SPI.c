@@ -36,8 +36,8 @@
 #include "hal/include/hpl_spi_m_sync.h"
 #include "supervisor/shared/rgb_led_status.h"
 
-#include "peripherals/dma.h"
-#include "peripherals/sercom.h"
+#include "samd/dma.h"
+#include "samd/sercom.h"
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
