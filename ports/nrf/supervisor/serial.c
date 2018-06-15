@@ -49,8 +49,13 @@ void serial_init(void) {
       .id           = 0,
       .rx_pin       = &MICROPY_HW_UART1_RX,
       .tx_pin       = &MICROPY_HW_UART1_TX,
+#if MICROPY_HW_UART1_HWFC
+      .rts_pin      = &MICROPY_HW_UART1_RTS,
+      .cts_pin      = &MICROPY_HW_UART1_CTS,
+#else
       .rts_pin      = NULL,
       .cts_pin      = NULL,
+#endif
       .flow_control = MICROPY_HW_UART1_HWFC ? true : false,
       .use_parity   = false,
       .baud_rate    = HAL_UART_BAUD_115K2,

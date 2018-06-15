@@ -114,7 +114,7 @@ int hal_uart_available(NRF_UART_Type * p_instance)
 
 void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_init) {
     hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DISABLED);
-    hal_gpio_cfg_pin(p_uart_init->tx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
+    hal_gpio_cfg_pin(p_uart_init->rx_pin->port, p_uart_init->rx_pin->pin, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_DISABLED);
 
     hal_gpio_pin_clear(p_uart_init->tx_pin->port, p_uart_init->tx_pin->pin);
 
@@ -156,6 +156,10 @@ void hal_uart_init(NRF_UART_Type * p_instance, hal_uart_init_t const * p_uart_in
     NVIC_EnableIRQ(p_uart_init->irq_num);
 }
 
+bool hal_uart_inited(NRF_UART_Type * p_instance)
+{
+    return !(p_instance->PSELTXD & (1 << 31)) && !(p_instance->PSELRXD & (1 << 31));
+}
 
 void UARTE0_UART0_IRQHandler(void)
 {

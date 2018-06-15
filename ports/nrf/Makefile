@@ -291,9 +291,22 @@ FLASHER ?=
 
 ifeq ($(FLASHER),)
 
+# Adafruit use bootloader that requires writing to its settting ( app valid = 0x0001, crc = 0x0000 )
+ifneq (,$(filter $(BOARD),feather52 feather52840))
+
+flash: $(BUILD)/$(OUTPUT_FILENAME).hex
+	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
+	nrfjprog --erasepage $(BOOT_SETTING_ADDR) -f $(MCU_VARIANT)
+	nrfjprog --memwr $(BOOT_SETTING_ADDR) --val 0x00000001 -f $(MCU_VARIANT)
+	nrfjprog --reset -f $(MCU_VARIANT)
+
+else
+
 flash: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --reset -f $(MCU_VARIANT)
+	
+endif
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	nrfjprog --eraseall -f $(MCU_VARIANT)

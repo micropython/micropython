@@ -4,8 +4,10 @@ MCU_SUB_VARIANT = nrf52840
 SOFTDEV_VERSION ?= 6.0.0-6.alpha
 
 LD_FILE = boards/feather52840/bluefruit_nrf52840_s140_6.0.0.ld
-BOOTLOADER_FILENAME = boards/feather52840/bootloader/feather52840_bootloader_6.0.0_s140_single
+BOOT_UART_FILE = boards/feather52840/bootloader/uart/feather52840_bootloader_6.0.0_s140_single
+BOOT_USB_FILE = boards/feather52840/bootloader/usb/feather52840_bootloader_6.0.0_s140_single
 
+BOOT_SETTING_ADDR = 0xFF000
 NRF_DEFINES += -DNRF52840_XXAA
 
 ifeq ($(OS),Windows_NT)
@@ -17,8 +19,8 @@ endif
 CFLAGS += -DADAFRUIT_FEATHER52840
 
 ifeq ($(SD), )
-INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_SUB_VARIANT)_$(SOFTDEV_VERSION)_API/include
-INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_SUB_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
+INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include
+INC += -Idrivers/bluetooth/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)/s140_$(MCU_VARIANT)_$(SOFTDEV_VERSION)_API/include/$(MCU_VARIANT)
 endif
 
 check_defined = \
@@ -28,14 +30,18 @@ __check_defined = \
     $(if $(value $1),, \
     $(error Undefined make flag: $1$(if $2, ($2))))
 
-.PHONY: dfu-gen dfu-flash boot-flash
+.PHONY: dfu-gen dfu-flash boot-flash boot-usb-flash
 
 dfu-gen:
 	$(NRFUTIL) dfu genpkg --sd-req 0xFFFE --dev-type 0x0052 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/dfu-package.zip
 
 dfu-flash:
-	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyUSB0)
-	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
+	$(NRFUTIL) --verbose dfu serial --package $(BUILD)/dfu-package.zip -p $(SERIAL) -b 115200 --singlebank
 
-boot-flash:
-	nrfjprog --program $(BOOTLOADER_FILENAME).hex -f nrf52 --chiperase --reset
+dfu-bootloader:
+	@:$(call check_defined, SERIAL, example: SERIAL=/dev/ttyACM0)
+	$(NRFUTIL) --verbose dfu serial --package $(BOOT_USB_FILE).zip -p $(SERIAL) -b 115200
+
+bootloader:
+	nrfjprog --program $(BOOT_USB_FILE).hex -f nrf52 --chiperase --reset	
