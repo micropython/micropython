@@ -54,59 +54,6 @@ STATIC fs_user_mount_t *disk_get_device(void *bdev) {
 }
 
 /*-----------------------------------------------------------------------*/
-/* Initialize a Drive                                                    */
-/*-----------------------------------------------------------------------*/
-
-STATIC
-DSTATUS disk_initialize (
-    bdev_t pdrv              /* Physical drive nmuber (0..) */
-)
-{
-    fs_user_mount_t *vfs = disk_get_device(pdrv);
-    if (vfs == NULL) {
-        return STA_NOINIT;
-    }
-
-    if (vfs->flags & FSUSER_HAVE_IOCTL) {
-        // new protocol with ioctl; call ioctl(INIT, 0)
-        vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_INIT);
-        vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-        mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-        if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
-            // error initialising
-            return STA_NOINIT;
-        }
-    }
-
-    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
-        return STA_PROTECT;
-    } else {
-        return 0;
-    }
-}
-
-/*-----------------------------------------------------------------------*/
-/* Get Disk Status                                                       */
-/*-----------------------------------------------------------------------*/
-
-STATIC
-DSTATUS disk_status (
-    bdev_t pdrv      /* Physical drive nmuber (0..) */
-)
-{
-    fs_user_mount_t *vfs = disk_get_device(pdrv);
-    if (vfs == NULL) {
-        return STA_NOINIT;
-    }
-
-    if (vfs->writeblocks[0] == MP_OBJ_NULL) {
-        return STA_PROTECT;
-    } else {
-        return 0;
-    }
-}
-
-/*-----------------------------------------------------------------------*/
 /* Read Sector(s)                                                        */
 /*-----------------------------------------------------------------------*/
 
@@ -191,93 +138,73 @@ DRESULT disk_ioctl (
         return RES_PARERR;
     }
 
-    if (vfs->flags & FSUSER_HAVE_IOCTL) {
-        // new protocol with ioctl
-        switch (cmd) {
-            case CTRL_SYNC:
-                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SYNC);
-                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-                mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-                return RES_OK;
+    switch (cmd) {
+        case CTRL_SYNC:
+            vfs->ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SYNC);
+            vfs->ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+            mp_call_method_n_kw(2, 0, vfs->ioctl);
+            return RES_OK;
 
-            case GET_SECTOR_COUNT: {
-                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_COUNT);
-                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-                mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-                *((DWORD*)buff) = mp_obj_get_int(ret);
-                return RES_OK;
-            }
-
-            case GET_SECTOR_SIZE: {
-                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_SIZE);
-                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-                mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
-                if (ret == mp_const_none) {
-                    // Default sector size
-                    *((WORD*)buff) = 512;
-                } else {
-                    *((WORD*)buff) = mp_obj_get_int(ret);
-                }
-                #if _MAX_SS != _MIN_SS
-                // need to store ssize because we use it in disk_read/disk_write
-                vfs->fatfs.ssize = *((WORD*)buff);
-                #endif
-                return RES_OK;
-            }
-
-            case GET_BLOCK_SIZE:
-                *((DWORD*)buff) = 1; // erase block size in units of sector size
-                return RES_OK;
-
-            case IOCTL_INIT:
-                *((DSTATUS*)buff) = disk_initialize(pdrv);
-                return RES_OK;
-
-            case IOCTL_STATUS:
-                *((DSTATUS*)buff) = disk_status(pdrv);
-                return RES_OK;
-
-            default:
-                return RES_PARERR;
+        case GET_SECTOR_COUNT: {
+            vfs->ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_COUNT);
+            vfs->ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+            mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->ioctl);
+            *((DWORD*)buff) = mp_obj_get_int(ret);
+            return RES_OK;
         }
-    } else {
-        // old protocol with sync and count
-        switch (cmd) {
-            case CTRL_SYNC:
-                if (vfs->u.old.sync[0] != MP_OBJ_NULL) {
-                    mp_call_method_n_kw(0, 0, vfs->u.old.sync);
-                }
-                return RES_OK;
 
-            case GET_SECTOR_COUNT: {
-                mp_obj_t ret = mp_call_method_n_kw(0, 0, vfs->u.old.count);
-                *((DWORD*)buff) = mp_obj_get_int(ret);
-                return RES_OK;
+        case GET_SECTOR_SIZE: {
+            vfs->ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_SEC_SIZE);
+            vfs->ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+            mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->ioctl);
+            if (ret == mp_const_none) {
+                // Default sector size
+                *((WORD*)buff) = 512;
+            } else {
+                *((WORD*)buff) = mp_obj_get_int(ret);
             }
-
-            case GET_SECTOR_SIZE:
-                *((WORD*)buff) = 512; // old protocol had fixed sector size
-                #if _MAX_SS != _MIN_SS
-                // need to store ssize because we use it in disk_read/disk_write
-                vfs->fatfs.ssize = 512;
-                #endif
-                return RES_OK;
-
-            case GET_BLOCK_SIZE:
-                *((DWORD*)buff) = 1; // erase block size in units of sector size
-                return RES_OK;
-
-            case IOCTL_INIT:
-                *((DSTATUS*)buff) = disk_initialize(pdrv);
-                return RES_OK;
-
-            case IOCTL_STATUS:
-                *((DSTATUS*)buff) = disk_status(pdrv);
-                return RES_OK;
-
-            default:
-                return RES_PARERR;
+            #if _MAX_SS != _MIN_SS
+            // need to store ssize because we use it in disk_read/disk_write
+            vfs->fatfs.ssize = *((WORD*)buff);
+            #endif
+            return RES_OK;
         }
+
+        case GET_BLOCK_SIZE:
+            *((DWORD*)buff) = 1; // erase block size in units of sector size
+            return RES_OK;
+
+        case IOCTL_INIT: {
+            // call ioctl(INIT, 0)
+            DSTATUS status;
+            vfs->ioctl[2] = MP_OBJ_NEW_SMALL_INT(BP_IOCTL_INIT);
+            vfs->ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+            mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->ioctl);
+            if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
+                // error initialising
+                status = STA_NOINIT;
+            } else if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+                status = STA_PROTECT;
+            } else {
+                status = 0;
+            }
+            *((DSTATUS*)buff) = status;
+            return RES_OK;
+        }
+
+        case IOCTL_STATUS: {
+            DSTATUS status;
+            if (vfs->writeblocks[0] == MP_OBJ_NULL) {
+                status = STA_PROTECT;
+            } else {
+                status = 0;
+            }
+            *((DSTATUS*)buff) = status;
+            return RES_OK;
+        }
+
+        default:
+            return RES_PARERR;
     }
 }
 

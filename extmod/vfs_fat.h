@@ -34,7 +34,6 @@
 // these are the values for fs_user_mount_t.flags
 #define FSUSER_NATIVE       (0x0001) // readblocks[2]/writeblocks[2] contain native func
 #define FSUSER_FREE_OBJ     (0x0002) // fs_user_mount_t obj should be freed on umount
-#define FSUSER_HAVE_IOCTL   (0x0004) // new protocol with ioctl
 #define FSUSER_NO_FILESYSTEM (0x0008) // the block device has no filesystem on it
 
 typedef struct _fs_user_mount_t {
@@ -42,14 +41,7 @@ typedef struct _fs_user_mount_t {
     uint16_t flags;
     mp_obj_t readblocks[4];
     mp_obj_t writeblocks[4];
-    // new protocol uses just ioctl, old uses sync (optional) and count
-    union {
-        mp_obj_t ioctl[4];
-        struct {
-            mp_obj_t sync[2];
-            mp_obj_t count[2];
-        } old;
-    } u;
+    mp_obj_t ioctl[4];
     FATFS fatfs;
 } fs_user_mount_t;
 
