@@ -54,6 +54,24 @@ enum {
 #define AES_CTX_IMPL AES_CTX
 #endif
 
+#if MICROPY_SSL_MBEDTLS
+#include <mbedtls/aes.h>
+
+// we can't run mbedtls AES key schedule until we know whether we're used for encrypt or decrypt.
+// therefore, we store the key & keysize and on the first call to encrypt/decrypt we override them
+// with the mbedtls_aes_context, as they are not longer required. (this is done to save space)
+struct mbedtls_aes_ctx_with_key {
+    union {
+        mbedtls_aes_context mbedtls_ctx;
+        struct {
+            uint8_t key[32];
+            uint8_t keysize;
+        } init_data;
+    } u;
+    unsigned char iv[16];
+};
+#define AES_CTX_IMPL struct mbedtls_aes_ctx_with_key
+#endif
 
 typedef struct _mp_obj_aes_t {
     mp_obj_base_t base;
@@ -101,6 +119,42 @@ STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *
     } else {
         AES_cbc_decrypt(ctx, in, out, in_len);
     }
+}
+#endif
+
+#if MICROPY_SSL_MBEDTLS
+STATIC void aes_initial_set_key_impl(AES_CTX_IMPL *ctx, const uint8_t *key, size_t keysize, const uint8_t iv[16]) {
+    ctx->u.init_data.keysize = keysize;
+    memcpy(ctx->u.init_data.key, key, keysize);
+
+    if (NULL != iv) {
+        memcpy(ctx->iv, iv, sizeof(ctx->iv));
+    }
+}
+
+STATIC void aes_final_set_key_impl(AES_CTX_IMPL *ctx, bool encrypt) {
+    // first, copy key aside
+    uint8_t key[32];
+    uint8_t keysize = ctx->u.init_data.keysize;
+    memcpy(key, ctx->u.init_data.key, keysize);
+    // now, override key with the mbedtls context object
+    mbedtls_aes_init(&ctx->u.mbedtls_ctx);
+
+    // setkey call will succeed, we've already checked the keysize earlier.
+    assert(16 == keysize || 32 == keysize);
+    if (encrypt) {
+        mbedtls_aes_setkey_enc(&ctx->u.mbedtls_ctx, key, keysize * 8);
+    } else {
+        mbedtls_aes_setkey_dec(&ctx->u.mbedtls_ctx, key, keysize * 8);
+    }
+}
+
+STATIC void aes_process_ecb_impl(AES_CTX_IMPL *ctx, const uint8_t in[16], uint8_t out[16], bool encrypt) {
+    mbedtls_aes_crypt_ecb(&ctx->u.mbedtls_ctx, encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT, in, out);
+}
+
+STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, bool encrypt) {
+    mbedtls_aes_crypt_cbc(&ctx->u.mbedtls_ctx, encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT, in_len, ctx->iv, in, out);
 }
 #endif
 
