@@ -36,6 +36,9 @@ typedef struct {
     uint32_t frequency;
     bool locked;
     bool deinited;
+    const mcu_pin_obj_t * mosi;
+    const mcu_pin_obj_t * miso;
+    const mcu_pin_obj_t * clock;
 } busio_spi_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP8266_COMMON_HAL_BUSIO_SPI_H
