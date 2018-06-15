@@ -233,7 +233,7 @@ bool start_mp(safe_mode_t safe_mode) {
     }
 }
 
-void run_boot_py(safe_mode_t safe_mode) {
+void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
@@ -258,10 +258,12 @@ void run_boot_py(safe_mode_t safe_mode) {
         // This saves wear and tear on the flash and also prevents filesystem damage if power is lost
         // during the write, which may happen due to bobbling the power connector or weak power.
 
+        static const size_t NUM_CHARS_TO_COMPARE = 160;
         if (!have_boot_py && f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
-            char file_contents[512];
+
+            char file_contents[NUM_CHARS_TO_COMPARE];
             UINT chars_read = 0;
-            f_read(boot_output_file, file_contents, 512, &chars_read);
+            f_read(boot_output_file, file_contents, NUM_CHARS_TO_COMPARE, &chars_read);
             f_close(boot_output_file);
             skip_boot_output =
                 // + 2 accounts for  \r\n.

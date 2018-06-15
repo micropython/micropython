@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mperrno.h"
 #include "py/runtime.h"
 
 #include "shared-module/audioio/WaveFile.h"
@@ -50,20 +51,26 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
     uint8_t chunk_header[16];
     f_rewind(&self->file->fp);
     UINT bytes_read;
-    f_read(&self->file->fp, chunk_header, 16, &bytes_read);
+    if (f_read(&self->file->fp, chunk_header, 16, &bytes_read) != FR_OK) {
+        mp_raise_OSError(MP_EIO);
+    }
     if (bytes_read != 16 ||
         memcmp(chunk_header, "RIFF", 4) != 0 ||
         memcmp(chunk_header + 8, "WAVEfmt ", 8) != 0) {
         mp_raise_ValueError("Invalid wave file");
     }
     uint32_t format_size;
-    f_read(&self->file->fp, &format_size, 4, &bytes_read);
+    if (f_read(&self->file->fp, &format_size, 4, &bytes_read) != FR_OK) {
+        mp_raise_OSError(MP_EIO);
+    }
     if (bytes_read != 4 ||
         format_size > sizeof(struct wave_format_chunk)) {
         mp_raise_ValueError("Invalid format chunk size");
     }
     struct wave_format_chunk format;
-    f_read(&self->file->fp, &format, format_size, &bytes_read);
+    if (f_read(&self->file->fp, &format, format_size, &bytes_read) != FR_OK) {
+        mp_raise_OSError(MP_EIO);
+    }
     if (bytes_read != format_size) {
     }
 
@@ -83,14 +90,18 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t* self,
     // TODO(tannewt): Skip any extra chunks that occur before the data section.
 
     uint8_t data_tag[4];
-    f_read(&self->file->fp, &data_tag, 4, &bytes_read);
+    if (f_read(&self->file->fp, &data_tag, 4, &bytes_read) != FR_OK) {
+        mp_raise_OSError(MP_EIO);
+    }
     if (bytes_read != 4 ||
         memcmp((uint8_t *) data_tag, "data", 4) != 0) {
         mp_raise_ValueError("Data chunk must follow fmt chunk");
     }
 
     uint32_t data_length;
-    f_read(&self->file->fp, &data_length, 4, &bytes_read);
+    if (f_read(&self->file->fp, &data_length, 4, &bytes_read) != FR_OK) {
+        mp_raise_OSError(MP_EIO);
+    }
     if (bytes_read != 4) {
         mp_raise_ValueError("Invalid file");
     }
@@ -152,11 +163,11 @@ void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t* self,
     self->right_read_count = 0;
 }
 
-bool audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
-                                 bool single_channel,
-                                 uint8_t channel,
-                                 uint8_t** buffer,
-                                 uint32_t* buffer_length) {
+audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
+                                                        bool single_channel,
+                                                        uint8_t channel,
+                                                        uint8_t** buffer,
+                                                        uint32_t* buffer_length) {
     if (!single_channel) {
         channel = 0;
     }
@@ -171,7 +182,7 @@ bool audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
     if (self->bytes_remaining == 0 && need_more_data) {
         *buffer = NULL;
         *buffer_length = 0;
-        return true;
+        return GET_BUFFER_DONE;
     }
 
     if (need_more_data) {
@@ -185,7 +196,9 @@ bool audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
         } else {
             *buffer = self->buffer;
         }
-        f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read);
+        if (f_read(&self->file->fp, *buffer, num_bytes_to_load, &length_read) != FR_OK) {
+            return GET_BUFFER_ERROR;
+        }
         *buffer_length = length_read;
         if (self->buffer_index % 2 == 1) {
             self->second_buffer_length = length_read;
@@ -213,7 +226,7 @@ bool audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
         *buffer = *buffer + self->bits_per_sample / 8;
     }
 
-    return self->bytes_remaining == 0;
+    return self->bytes_remaining == 0 ? GET_BUFFER_DONE : GET_BUFFER_MORE_DATA;
 }
 
 void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t* self, bool single_channel,

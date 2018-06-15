@@ -29,6 +29,8 @@
 
 #include "py/obj.h"
 
+#include "shared-module/audioio/__init__.h"
+
 typedef struct {
     mp_obj_base_t base;
     uint8_t* buffer;
@@ -56,11 +58,11 @@ typedef struct {
 void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t* self,
                                    bool single_channel,
                                    uint8_t channel);
-bool audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
-                                 bool single_channel,
-                                 uint8_t channel,
-                                 uint8_t** buffer,
-                                 uint32_t* buffer_length); // length in bytes
+audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t* self,
+                                                        bool single_channel,
+                                                        uint8_t channel,
+                                                        uint8_t** buffer,
+                                                        uint32_t* buffer_length); // length in bytes
 void audioio_wavefile_get_buffer_structure(audioio_wavefile_obj_t* self, bool single_channel,
                                            bool* single_buffer, bool* samples_signed,
                                            uint32_t* max_buffer_length, uint8_t* spacing);

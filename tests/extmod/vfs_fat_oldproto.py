@@ -25,11 +25,13 @@ class RAMFS_OLD:
         #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
         for i in range(len(buf)):
             buf[i] = self.data[n * self.SEC_SIZE + i]
+        return 0
 
     def writeblocks(self, n, buf):
         #print("writeblocks(%s, %x)" % (n, id(buf)))
         for i in range(len(buf)):
             self.data[n * self.SEC_SIZE + i] = buf[i]
+        return 0
 
     def sync(self):
         pass
