@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017-2018 Paul Sokolovsky
+ * Copyright (c) 2018 Yonatan Goldschmidt
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@
  */
 
 #include "py/mpconfig.h"
+
 #if MICROPY_PY_UCRYPTOLIB
 
 #include <assert.h>
@@ -38,17 +40,23 @@
 // of PEP 272 can be made with a simple wrapper which adds all the
 // needed boilerplate.
 
+// values follow PEP 272
+enum {
+    UCRYPTOLIB_MODE_MIN = 0,
+    UCRYPTOLIB_MODE_ECB,
+    UCRYPTOLIB_MODE_CBC,
+    UCRYPTOLIB_MODE_MAX,
+};
+
 #if MICROPY_SSL_AXTLS
 #include "lib/axtls/crypto/crypto.h"
 #endif
 
-#define MODE_ECB 1
-#define MODE_CBC 2
 
 typedef struct _mp_obj_aes_t {
     mp_obj_base_t base;
     AES_CTX ctx;
-    uint8_t mode: 7;
+    uint8_t block_mode: 7;
     uint8_t is_decrypt_key: 1;
 } mp_obj_aes_t;
 
@@ -57,10 +65,10 @@ STATIC mp_obj_t aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     mp_obj_aes_t *o = m_new_obj(mp_obj_aes_t);
     o->base.type = type;
 
-    o->mode = mp_obj_get_int(args[1]);
+    o->block_mode = mp_obj_get_int(args[1]);
     o->is_decrypt_key = 0;
 
-    if (o->mode < MODE_ECB || o->mode > MODE_CBC) {
+    if (o->block_mode <= UCRYPTOLIB_MODE_MIN || o->block_mode >= UCRYPTOLIB_MODE_MAX) {
         mp_raise_ValueError("mode");
     }
 
@@ -123,7 +131,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
         self->is_decrypt_key = 1;
     }
 
-    if (self->mode == MODE_ECB) {
+    if (self->block_mode == UCRYPTOLIB_MODE_ECB) {
             uint8_t *in = in_bufinfo.buf, *out = out_buf_ptr;
             uint8_t *top = in + in_bufinfo.len;
             for (; in < top; in += 16, out += 16) {
@@ -183,6 +191,10 @@ STATIC const mp_obj_type_t aes_type = {
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
     { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&aes_type) },
+#if MICROPY_PY_UCRYPTOLIB_CONSTS
+    { MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_CBC), MP_ROM_INT(UCRYPTOLIB_MODE_CBC) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ucryptolib_globals, mp_module_ucryptolib_globals_table);

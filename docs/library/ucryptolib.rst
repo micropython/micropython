@@ -21,8 +21,8 @@ Classes
             * *key* is an encryption/decryption key (bytes-like).
             * *mode* is:
 
-                * 1 for Electronic Code Book (ECB).
-                * 2 for Cipher Block Chaining (CBC)
+                * ``1`` (or ``ucryptolib.MODE_ECB`` if it exists) for Electronic Code Book (ECB).
+                * ``2`` (or ``ucryptolib.MODE_CBC`` if it exists) for Cipher Block Chaining (CBC)
 
             * *IV* is an initialization vector for CBC mode.
 
