@@ -655,11 +655,13 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     return mp_const_none;
 }
 
-// This table encodes the timer instance and irq number.
+// This table encodes the timer instance and irq number (for the update irq).
 // It assumes that timer instance pointer has the lower 8 bits cleared.
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
-    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(STM32F0)
+    TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
+    #elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
     #elif defined(STM32L4)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),

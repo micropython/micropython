@@ -610,6 +610,12 @@ void EXTI4_15_IRQHandler(void) {
     IRQ_EXIT(EXTI4_15_IRQn);
 }
 
+void TIM1_BRK_UP_TRG_COM_IRQHandler(void) {
+    IRQ_ENTER(TIM1_BRK_UP_TRG_COM_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_BRK_UP_TRG_COM_IRQn);
+}
+
 #endif
 
 void TIM1_BRK_TIM9_IRQHandler(void) {
