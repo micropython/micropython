@@ -44,6 +44,12 @@ void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
         uint32_t sr2 = i2c->SR2;
         i2c_slave_process_addr_match((sr2 >> I2C_SR2_TRA_Pos) & 1);
     }
+    if (sr1 & I2C_SR1_TXE) {
+        i2c->DR = i2c_slave_process_tx_byte();
+    }
+    if (sr1 & I2C_SR1_RXNE) {
+        i2c_slave_process_rx_byte(i2c->DR);
+    }
     if (sr1 & I2C_SR1_STOPF) {
         // STOPF only set at end of RX mode (in TX mode AF is set on NACK)
         // Read of SR1, write CR1 needed to clear STOPF bit
@@ -51,12 +57,6 @@ void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
         i2c->CR1 &= ~I2C_CR1_ACK;
         i2c_slave_process_rx_end();
         i2c->CR1 |= I2C_CR1_ACK;
-    }
-    if (sr1 & I2C_SR1_TXE) {
-        i2c->DR = i2c_slave_process_tx_byte();
-    }
-    if (sr1 & I2C_SR1_RXNE) {
-        i2c_slave_process_rx_byte(i2c->DR);
     }
 }
 
@@ -79,6 +79,12 @@ void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
         i2c->ICR = I2C_ICR_ADDRCF;
         i2c_slave_process_addr_match(0);
     }
+    if (isr & I2C_ISR_TXIS) {
+        i2c->TXDR = i2c_slave_process_tx_byte();
+    }
+    if (isr & I2C_ISR_RXNE) {
+        i2c_slave_process_rx_byte(i2c->RXDR);
+    }
     if (isr & I2C_ISR_STOPF) {
         // STOPF only set for STOP condition, not a repeated START
         i2c->ICR = I2C_ICR_STOPCF;
@@ -89,12 +95,6 @@ void i2c_slave_ev_irq_handler(i2c_slave_t *i2c) {
             i2c_slave_process_rx_end();
         }
         i2c->OAR1 |= I2C_OAR1_OA1EN;
-    }
-    if (isr & I2C_ISR_TXIS) {
-        i2c->TXDR = i2c_slave_process_tx_byte();
-    }
-    if (isr & I2C_ISR_RXNE) {
-        i2c_slave_process_rx_byte(i2c->RXDR);
     }
 }
 
