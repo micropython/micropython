@@ -38,18 +38,11 @@ extern const mcu_pin_obj_t pin_MTMS;
 extern const mcu_pin_obj_t pin_MTCK;
 extern const mcu_pin_obj_t pin_MTDI;
 
-void common_hal_busio_spi_construct(busio_spi_obj_t *self,
-        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
-        const mcu_pin_obj_t * miso) {
-    if (clock != &pin_MTMS || !((mosi == &pin_MTCK && miso ==  MP_OBJ_TO_PTR(mp_const_none)) ||
-                                (mosi == MP_OBJ_TO_PTR(mp_const_none) && miso == &pin_MTDI) ||
-                                (mosi == &pin_MTCK && miso == &pin_MTDI))) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
-            "Pins not valid for SPI"));
-    }
+void busio_spi_init_gpio(uint8_t sysclk_as_spiclk, const mcu_pin_obj_t * clock,
+        const mcu_pin_obj_t * mosi, const mcu_pin_obj_t * miso) {
 
     uint32_t clock_div_flag = 0;
-    if (SPI_CLK_USE_DIV) {
+    if (sysclk_as_spiclk) {
         clock_div_flag = 0x0001;
     }
 
@@ -65,6 +58,23 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
     // GPIO14 is HSPI CLK pin (Clock)
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, 2);
+}
+
+
+void common_hal_busio_spi_construct(busio_spi_obj_t *self,
+        const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
+        const mcu_pin_obj_t * miso) {
+    if (clock != &pin_MTMS || !((mosi == &pin_MTCK && miso ==  MP_OBJ_TO_PTR(mp_const_none)) ||
+                                (mosi == MP_OBJ_TO_PTR(mp_const_none) && miso == &pin_MTDI) ||
+                                (mosi == &pin_MTCK && miso == &pin_MTDI))) {
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError,
+            "Pins not valid for SPI"));
+    }
+
+    busio_spi_init_gpio(SPI_CLK_USE_DIV, clock, mosi, miso);
+    self->clock = clock;
+    self->mosi = mosi;
+    self->miso = miso;
 
     spi_clock(HSPI, SPI_CLK_PREDIV, SPI_CLK_CNTDIV);
     self->frequency = SPI_CLK_FREQ;
@@ -106,7 +116,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     }
     if (baudrate == 80000000L) {
         // Special case for full speed.
-        spi_init_gpio(HSPI, SPI_CLK_80MHZ_NODIV);
+        busio_spi_init_gpio(SPI_CLK_80MHZ_NODIV, self->clock, self->mosi, self->miso);
         spi_clock(HSPI, 0, 0);
         self->frequency = 80000000L;
     } else if (baudrate > 40000000L) {
@@ -118,7 +128,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         if (cntdiv > SPI_CLKCNT_N + 1 || cntdiv == 0 || prediv == 0) {
             return false;
         }
-        spi_init_gpio(HSPI, SPI_CLK_USE_DIV);
+        busio_spi_init_gpio(SPI_CLK_USE_DIV, self->clock, self->mosi, self->miso);
         spi_clock(HSPI, prediv, cntdiv);
         self->frequency = 80000000L / (prediv * cntdiv);
     }
