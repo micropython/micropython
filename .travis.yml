@@ -21,8 +21,9 @@ before_script:
   - sudo apt-get install -y --force-yes gcc-arm-none-eabi
   # For teensy build
   - sudo apt-get install realpath
-  # For coverage testing (upgrade is used to get latest urllib3 version)
-  - sudo pip install --upgrade cpp-coveralls
+  # For coverage testing (a specific urllib3 version is needed for requests and cpp-coveralls to work together)
+  - sudo pip install -Iv urllib3==1.22
+  - sudo pip install cpp-coveralls
   - gcc --version
   - arm-none-eabi-gcc --version
   - python3 --version

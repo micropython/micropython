@@ -289,11 +289,17 @@ STATIC bool uart_init2(pyb_uart_obj_t *uart_obj) {
         #if defined(MICROPY_HW_UART8_TX) && defined(MICROPY_HW_UART8_RX)
         case PYB_UART_8:
             uart_unit = 8;
+            #if defined(STM32F0)
+            UARTx = USART8;
+            irqn = USART3_8_IRQn;
+            __HAL_RCC_USART8_CLK_ENABLE();
+            #else
             UARTx = UART8;
             irqn = UART8_IRQn;
+            __HAL_RCC_UART8_CLK_ENABLE();
+            #endif
             pins[0] = MICROPY_HW_UART8_TX;
             pins[1] = MICROPY_HW_UART8_RX;
-            __HAL_RCC_UART8_CLK_ENABLE();
             break;
         #endif
 
@@ -390,7 +396,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
+        #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
         return self->uart.Instance->RDR & self->char_mask;
         #else
         return self->uart.Instance->DR & self->char_mask;
@@ -508,7 +514,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
+                #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
                 int data = self->uart.Instance->RDR; // clears UART_FLAG_RXNE
                 #else
                 int data = self->uart.Instance->DR; // clears UART_FLAG_RXNE
@@ -698,7 +704,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // compute actual baudrate that was configured
     // (this formula assumes UART_OVERSAMPLING_16)
     uint32_t actual_baudrate = 0;
-    #if defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F0)
+    actual_baudrate = HAL_RCC_GetPCLK1Freq();
+    #elif defined(STM32F7) || defined(STM32H7)
     UART_ClockSourceTypeDef clocksource = UART_CLOCKSOURCE_UNDEFINED;
     UART_GETCLOCKSOURCE(&self->uart, clocksource);
     switch (clocksource) {
@@ -854,7 +862,9 @@ STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
         __HAL_RCC_USART2_CLK_DISABLE();
     #if defined(USART3)
     } else if (uart->Instance == USART3) {
+        #if !defined(STM32F0)
         HAL_NVIC_DisableIRQ(USART3_IRQn);
+        #endif
         __HAL_RCC_USART3_FORCE_RESET();
         __HAL_RCC_USART3_RELEASE_RESET();
         __HAL_RCC_USART3_CLK_DISABLE();
@@ -949,7 +959,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_uart_readchar_obj, pyb_uart_readchar);
 // uart.sendbreak()
 STATIC mp_obj_t pyb_uart_sendbreak(mp_obj_t self_in) {
     pyb_uart_obj_t *self = self_in;
-    #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
     self->uart.Instance->RQR = USART_RQR_SBKRQ; // write-only register
     #else
     self->uart.Instance->CR1 |= USART_CR1_SBK;

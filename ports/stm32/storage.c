@@ -34,6 +34,8 @@
 #include "storage.h"
 #include "irq.h"
 
+#if MICROPY_HW_ENABLE_STORAGE
+
 #define FLASH_PART1_START_BLOCK (0x100)
 
 #if defined(MICROPY_HW_BDEV2_IOCTL)
@@ -284,3 +286,5 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
     vfs->u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
 }
+
+#endif

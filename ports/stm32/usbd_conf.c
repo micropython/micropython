@@ -35,6 +35,8 @@
 #include "irq.h"
 #include "usb.h"
 
+#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
+
 #if MICROPY_HW_USB_FS
 PCD_HandleTypeDef pcd_fs_handle;
 #endif
@@ -662,5 +664,7 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr) {
 void USBD_LL_Delay(uint32_t Delay) {
     HAL_Delay(Delay);
 }
+
+#endif // MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

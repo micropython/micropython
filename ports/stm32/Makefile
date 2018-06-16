@@ -14,6 +14,7 @@ include boards/$(BOARD)/mpconfigboard.mk
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
+QSTR_GLOBAL_DEPENDENCIES = mpconfigboard_common.h boards/$(BOARD)/mpconfigboard.h
 
 # directory containing scripts to be frozen as bytecode
 FROZEN_MPY_DIR ?= modules
@@ -57,10 +58,15 @@ CFLAGS_CORTEX_M = -mthumb
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F767xx STM32F769xx STM32H743xx))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 else
+ifeq ($(MCU_SERIES),f0)
+CFLAGS_CORTEX_M += -msoft-float
+else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+endif
 endif
 
 # Options for particular MCU series
+CFLAGS_MCU_f0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
@@ -155,7 +161,6 @@ SRC_LIBM = $(addprefix lib/libm_dbl/,\
 else
 SRC_LIBM = $(addprefix lib/libm/,\
 	math.c \
-	thumb_vfp_sqrtf.c \
 	acoshf.c \
 	asinfacosf.c \
 	asinhf.c \
@@ -181,6 +186,11 @@ SRC_LIBM = $(addprefix lib/libm/,\
 	wf_lgamma.c \
 	wf_tgamma.c \
 	)
+ifeq ($(MCU_SERIES),f0)
+SRC_LIBM += lib/libm/ef_sqrt.c
+else
+SRC_LIBM += lib/libm/thumb_vfp_sqrtf.c
+endif
 endif
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
@@ -197,7 +207,6 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 
 SRC_C = \
 	main.c \
-	system_stm32.c \
 	stm32_it.c \
 	usbd_conf.c \
 	usbd_desc.c \
@@ -252,10 +261,19 @@ SRC_C = \
 	adc.c \
 	$(wildcard boards/$(BOARD)/*.c)
 
+ifeq ($(MCU_SERIES),f0)
 SRC_O = \
 	$(STARTUP_FILE) \
+	system_stm32f0.o \
+	resethandler_m0.o \
+	gchelper_m0.o
+else
+SRC_O = \
+	$(STARTUP_FILE) \
+	system_stm32.o \
 	resethandler.o \
-	gchelper.o \
+	gchelper.o
+endif
 
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
@@ -277,14 +295,19 @@ SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_rcc_ex.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
-	hal_sd.c \
 	hal_spi.c \
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
+	)
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l4))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_sd.c \
 	ll_sdmmc.c \
 	ll_usb.c \
 	)
+endif
 
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
     SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
@@ -306,7 +329,7 @@ ifneq ($(MICROPY_PY_WIZNET5K),0)
 WIZNET5K_DIR=drivers/wiznet5k
 INC += -I$(TOP)/$(WIZNET5K_DIR)
 CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-SRC_MOD += modnwwiznet5k.c
+SRC_MOD += network_wiznet5k.c modnwwiznet5k.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
 	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
 	ethernet/wizchip_conf.c \

@@ -28,6 +28,8 @@
 #include "usbd_ioreq.h"
 #include "usbd_cdc_msc_hid.h"
 
+#if MICROPY_HW_ENABLE_USB
+
 #define MSC_TEMPLATE_CONFIG_DESC_SIZE (32)
 #define MSC_TEMPLATE_MSC_DESC_OFFSET (9)
 #define CDC_TEMPLATE_CONFIG_DESC_SIZE (67)
@@ -1312,3 +1314,5 @@ const USBD_ClassTypeDef USBD_CDC_MSC_HID = {
     USBD_CDC_MSC_HID_GetCfgDesc,
     USBD_CDC_MSC_HID_GetDeviceQualifierDescriptor,
 };
+
+#endif

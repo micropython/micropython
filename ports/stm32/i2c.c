@@ -262,7 +262,7 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
     return num_acks;
 }
 
-#elif defined(STM32F7)
+#elif defined(STM32F0) || defined(STM32F7)
 
 int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t freq) {
     uint32_t i2c_id = ((uint32_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
@@ -421,8 +421,13 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
         if ((ret = i2c_wait_isr_set(i2c, I2C_ISR_TCR | I2C_ISR_TC | I2C_ISR_STOPF))) {
             return ret;
         }
-        if (i2c->ISR & I2C_ISR_NACKF) {
+        uint32_t isr = i2c->ISR;
+        if (isr & I2C_ISR_NACKF) {
             // Slave did not respond to byte so stop sending
+            if (!(isr & I2C_ISR_TXE)) {
+                // The TXDR is still full so the byte previous to that wasn't actually ACK'd
+                --num_acks;
+            }
             break;
         }
         ++num_acks;
@@ -446,7 +451,7 @@ int i2c_write(i2c_t *i2c, const uint8_t *src, size_t len, size_t next_len) {
 
 #endif
 
-#if defined(STM32F4) || defined(STM32F7)
+#if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
 
 int i2c_readfrom(i2c_t *i2c, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     int ret;

@@ -203,6 +203,9 @@ STATIC void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baud
         if (prescale == 0xffffffff) {
             // prescaler not given, so select one that yields at most the requested baudrate
             mp_uint_t spi_clock;
+            #if defined(STM32F0)
+            spi_clock = HAL_RCC_GetPCLK1Freq();
+            #else
             if (spi->Instance == SPI2 || spi->Instance == SPI3) {
                 // SPI2 and SPI3 are on APB1
                 spi_clock = HAL_RCC_GetPCLK1Freq();
@@ -210,6 +213,7 @@ STATIC void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baud
                 // SPI1, SPI4, SPI5 and SPI6 are on APB2
                 spi_clock = HAL_RCC_GetPCLK2Freq();
             }
+            #endif
             prescale = spi_clock / baudrate;
         }
         if (prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
@@ -500,7 +504,9 @@ STATIC void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy
 
     uint spi_num = 1; // default to SPI1
     if (spi->Instance == SPI2) { spi_num = 2; }
+    #if defined(SPI3)
     else if (spi->Instance == SPI3) { spi_num = 3; }
+    #endif
     #if defined(SPI4)
     else if (spi->Instance == SPI4) { spi_num = 4; }
     #endif
@@ -516,6 +522,9 @@ STATIC void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
             uint spi_clock;
+            #if defined(STM32F0)
+            spi_clock = HAL_RCC_GetPCLK1Freq();
+            #else
             if (spi->Instance == SPI2 || spi->Instance == SPI3) {
                 // SPI2 and SPI3 are on APB1
                 spi_clock = HAL_RCC_GetPCLK1Freq();
@@ -523,6 +532,7 @@ STATIC void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy
                 // SPI1, SPI4, SPI5 and SPI6 are on APB2
                 spi_clock = HAL_RCC_GetPCLK2Freq();
             }
+            #endif
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;
             uint baudrate = spi_clock >> log_prescaler;
             if (legacy) {

@@ -110,8 +110,16 @@
 /*****************************************************************************/
 // General configuration
 
+// Configuration for STM32F0 series
+#if defined(STM32F0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x1ffff7ac)
+#define PYB_EXTI_NUM_VECTORS (23)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (8)
+
 // Configuration for STM32F4 series
-#if defined(STM32F4)
+#elif defined(STM32F4)
 
 #define MP_HAL_UNIQUE_ID_ADDRESS (0x1fff7a10)
 #define PYB_EXTI_NUM_VECTORS (23)
@@ -167,6 +175,13 @@
 #define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
 #define MICROPY_HW_BDEV_READBLOCK flash_bdev_readblock
 #define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
+#endif
+
+// Enable the storage sub-system if a block device is defined
+#if defined(MICROPY_HW_BDEV_IOCTL)
+#define MICROPY_HW_ENABLE_STORAGE (1)
+#else
+#define MICROPY_HW_ENABLE_STORAGE (0)
 #endif
 
 // Enable hardware I2C if there are any peripherals defined
