@@ -27,7 +27,20 @@
 #ifndef __MICROPY_INCLUDED_MICROBIT_CONSTIMAGE_H__
 #define __MICROPY_INCLUDED_MICROBIT_CONSTIMAGE_H__
 
+typedef struct _image_tuple_12 {
+    mp_obj_base_t base;
+    size_t len;
+    mp_rom_obj_t items[12];
+} image_tuple_12_t;
 
+typedef struct _image_tuple_8 {
+    mp_obj_base_t base;
+    size_t len;
+    mp_rom_obj_t items[8];
+} image_tuple_8_t;
+
+extern const image_tuple_12_t microbit_const_image_all_clocks_tuple_obj;
+extern const image_tuple_8_t microbit_const_image_all_arrows_tuple_obj;
 extern const mp_obj_type_t microbit_const_image_type;
 extern const struct _monochrome_5by5_t microbit_const_image_heart_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_heart_small_obj;
@@ -79,8 +92,6 @@ extern const struct _monochrome_5by5_t microbit_const_image_pitchfork_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_xmas_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_pacman_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_target_obj;
-extern const struct _mp_obj_tuple_t microbit_const_image_all_clocks_tuple_obj;
-extern const struct _mp_obj_tuple_t microbit_const_image_all_arrows_tuple_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_tshirt_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_rollerskate_obj;
 extern const struct _monochrome_5by5_t microbit_const_image_duck_obj;
