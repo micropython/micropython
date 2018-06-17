@@ -213,17 +213,26 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 }
 
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
-    byte header[4];
-    read_bytes(reader, header, sizeof(header));
-    if (header[0] != 'M'
-        || header[1] != MPY_VERSION
-        || header[2] != MPY_FEATURE_FLAGS
-        || header[3] > mp_small_int_bits()) {
-        mp_raise_ValueError("incompatible .mpy file");
+    nlr_buf_t nlr;
+
+    if (nlr_push(&nlr) == 0) {
+        byte header[4];
+        read_bytes(reader, header, sizeof(header));
+        if (header[0] != 'M'
+            || header[1] != MPY_VERSION
+            || header[2] != MPY_FEATURE_FLAGS
+            || header[3] > mp_small_int_bits()) {
+            mp_raise_ValueError("incompatible .mpy file");
+        }
+        mp_raw_code_t *rc = load_raw_code(reader);
+        nlr_pop();
+        reader->close(reader->data);
+        return rc;
+    } else {
+        // exception; close reader and re-raise same exception
+        reader->close(reader->data);
+        nlr_jump(nlr.ret_val);
     }
-    mp_raw_code_t *rc = load_raw_code(reader);
-    reader->close(reader->data);
-    return rc;
 }
 
 mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len) {
