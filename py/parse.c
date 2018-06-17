@@ -829,7 +829,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
     push_result_node(parser, (mp_parse_node_t)pn);
 }
 
-mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+STATIC mp_parse_tree_t _mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     // initialise parser and allocate memory for its stacks
 
@@ -1164,10 +1164,23 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
 
-    // we also free the lexer on behalf of the caller
-    mp_lexer_free(lex);
-
     return parser.tree;
+}
+
+mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        mp_parse_tree_t rc = _mp_parse(lex, input_kind);
+        nlr_pop();
+
+        // free the lexer on behalf of the caller before returning
+        mp_lexer_free(lex);
+        return rc;
+    } else {
+        // exception; free lexer and re-raise same exception
+        mp_lexer_free(lex);
+        nlr_jump(nlr.ret_val);
+    }
 }
 
 void mp_parse_tree_clear(mp_parse_tree_t *tree) {
