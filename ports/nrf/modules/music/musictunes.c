@@ -35,7 +35,14 @@
 #if MICROPY_PY_MUSIC
 
 #define N(q) MP_ROM_QSTR(MP_QSTR_ ## q)
-#define T(name, ...) const mp_obj_tuple_t microbit_music_tune_ ## name ## _obj = {{&mp_type_tuple}, .len = (sizeof((mp_obj_t[]){__VA_ARGS__})/sizeof(mp_obj_t)), .items = {__VA_ARGS__}};
+#define T(name, ...) \
+typedef struct music_tune_ ## name ## _s {\
+    mp_obj_base_t base; \
+    size_t len; \
+    mp_rom_obj_t items[sizeof((mp_obj_t[]){__VA_ARGS__})/sizeof(mp_obj_t)]; \
+} music_tune_ ## name ## _t; \
+\
+const music_tune_ ## name ## _t microbit_music_tune_ ## name ## _obj = {{&mp_type_tuple}, .len = (sizeof((mp_obj_t[]){__VA_ARGS__})/sizeof(mp_obj_t)), .items = {__VA_ARGS__}};
 
 
 T(dadadadum,
