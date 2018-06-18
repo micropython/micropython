@@ -62,7 +62,7 @@ int mp_uos_dupterm_rx_chr(void) {
         if (nlr_push(&nlr) == 0) {
             byte buf[1];
             int errcode;
-            const mp_stream_p_t *stream_p = mp_get_stream_raise(MP_STATE_VM(dupterm_objs[idx]), MP_STREAM_OP_READ);
+            const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (out_sz == 0) {
                 nlr_pop();
@@ -125,6 +125,7 @@ STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
     if (args[0] == mp_const_none) {
         MP_STATE_VM(dupterm_objs[idx]) = MP_OBJ_NULL;
     } else {
+        mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
         MP_STATE_VM(dupterm_objs[idx]) = args[0];
     }
 

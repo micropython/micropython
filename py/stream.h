@@ -90,6 +90,11 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 #define MP_STREAM_OP_WRITE (2)
 #define MP_STREAM_OP_IOCTL (4)
 
+// Object is assumed to have a non-NULL stream protocol with valid r/w/ioctl methods
+static inline const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
+    return (const mp_stream_p_t*)((const mp_obj_base_t*)MP_OBJ_TO_PTR(self))->type->protocol;
+}
+
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
 mp_obj_t mp_stream_close(mp_obj_t stream);
 
