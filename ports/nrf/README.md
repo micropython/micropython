@@ -132,9 +132,9 @@ The configuration can be enabled by editing the `bluetooth_conf.h` and set `MICR
 
 When enabled you have different options to test it:
 * [NUS Console for Linux](https://github.com/tralamazza/nus_console) (recommended)
-* [WebBluetooth REPL](https://glennrub.github.io/webbluetooth/micropython/repl/) (experimental)
+* [WebBluetooth REPL](https://aykevl.nl/apps/nus/) (experimental)
 
 Other:
 * nRF UART application for IPhone/Android
 
-WebBluetooth mode can also be configured by editing `bluetooth_conf.h` and set `BLUETOOTH_WEBBLUETOOTH_REPL` to 1. This will alternate advertisement between Eddystone URL and regular connectable advertisement. The Eddystone URL will point the phone or PC to download [WebBluetooth REPL](https://glennrub.github.io/webbluetooth/micropython/repl/) (experimental), which subsequently can be used to connect to the Bluetooth REPL from the PC or Phone browser.
+WebBluetooth mode can also be configured by editing `bluetooth_conf.h` and set `BLUETOOTH_WEBBLUETOOTH_REPL` to 1. This will alternate advertisement between Eddystone URL and regular connectable advertisement. The Eddystone URL will point the phone or PC to download [WebBluetooth REPL](https://aykevl.nl/apps/nus/) (experimental), which subsequently can be used to connect to the Bluetooth REPL from the PC or Phone browser.
