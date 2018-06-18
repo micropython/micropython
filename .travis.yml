@@ -22,7 +22,7 @@ env:
   - TRAVIS_BOARD=pirkey_m0
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0
-  - TRAVIS_BOARD=feather52
+  - TRAVIS_BOARD=feather52832
   - TRAVIS_BOARD=pca10056
   - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix

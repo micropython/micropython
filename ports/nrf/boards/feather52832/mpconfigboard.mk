@@ -3,8 +3,8 @@ MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52832
 SOFTDEV_VERSION ?= 2.0.1
 
-LD_FILE = boards/feather52/custom_nrf52832_dfu_app_$(SOFTDEV_VERSION).ld
-BOOTLOADER_PKG = boards/feather52/bootloader/feather52_bootloader_$(SOFTDEV_VERSION)_s132_single.zip
+LD_FILE = boards/feather52832/custom_nrf52832_dfu_app_$(SOFTDEV_VERSION).ld
+BOOTLOADER_PKG = boards/feather52832/bootloader/feather52_bootloader_$(SOFTDEV_VERSION)_s132_single.zip
 
 NRF_DEFINES += -DNRF52832_XXAA
 

@@ -2,7 +2,7 @@ rm -rf ports/atmel-samd/build*
 rm -rf ports/esp8266/build*
 rm -rf ports/nrf/build*
 
-ATMEL_BOARDS="arduino_zero circuitplayground_express circuitplayground_express_crickit feather_m0_basic feather_m0_adalogger itsybitsy_m0_express itsybitsy_m4_express feather_m0_rfm69 feather_m0_rfm9x feather_m0_express feather_m0_express_crickit feather_m4_express metro_m0_express metro_m4_express pirkey_m0 trinket_m0 gemma_m0 feather52 feather_huzzah pca10056"
+ATMEL_BOARDS="arduino_zero circuitplayground_express circuitplayground_express_crickit feather_m0_basic feather_m0_adalogger itsybitsy_m0_express itsybitsy_m4_express feather_m0_rfm69 feather_m0_rfm9x feather_m0_express feather_m0_express_crickit feather_m4_express metro_m0_express metro_m4_express pirkey_m0 trinket_m0 gemma_m0 feather52832 feather_huzzah pca10056"
 ROSIE_SETUPS="rosie-ci"
 
 PARALLEL="-j 5"
@@ -53,7 +53,7 @@ for board in $boards; do
         cp ports/esp8266/build/firmware-combined.bin bin/$board/adafruit-circuitpython-$board-$version.bin
         (( exit_status = exit_status || $? ))
         extension=bin
-    elif [ $board == "feather52" ]; then
+    elif [ $board == "feather52832" ]; then
         cp ports/nrf/build-$board-s132/firmware.bin bin/$board/adafruit-circuitpython-$board-$version.bin
         (( exit_status = exit_status || $? ))
         extension=bin
