@@ -723,8 +723,8 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             mp_raise_TypeError(NULL);
         }
         mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[3]);
-        if (!(mv->typecode == (0x80 | BYTEARRAY_TYPECODE)
-            || (mv->typecode | 0x20) == (0x80 | 'b'))) {
+        if (!(mv->typecode == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | BYTEARRAY_TYPECODE)
+            || (mv->typecode | 0x20) == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | 'b'))) {
             mp_raise_ValueError(NULL);
         }
         mv->len = rx_msg.DLC;
