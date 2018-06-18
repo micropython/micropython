@@ -1011,11 +1011,12 @@ static int get_reset_mode(void) {
     int reset_mode = 1;
     if (usrbtn_state()) {
         // Cycle through reset modes while USR is held
+        // Timeout is roughly 20s, where reset_mode=1
         systick_init();
         led_init();
         reset_mode = 0;
-        for (int i = 0; i < 1000; i++) {
-            if (i % 30 == 0) {
+        for (int i = 0; i < 1024; i++) {
+            if (i % 32 == 0) {
                 if (++reset_mode > 4) {
                     reset_mode = 1;
                 }
@@ -1027,7 +1028,7 @@ static int get_reset_mode(void) {
             if (!usrbtn_state()) {
                 break;
             }
-            mp_hal_delay_ms(20);
+            mp_hal_delay_ms(19);
         }
         // Flash the selected reset mode
         for (int i = 0; i < 6; i++) {
