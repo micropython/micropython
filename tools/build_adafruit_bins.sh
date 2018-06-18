@@ -20,8 +20,8 @@ for board in $boards; do
     if [ $board == "feather_huzzah" ]; then
         make $PARALLEL -C ports/esp8266 BOARD=feather_huzzah
         (( exit_status = exit_status || $? ))
-    elif [ $board == "feather52" ]; then
-        make $PARALLEL -C ports/nrf BOARD=feather52
+    elif [ $board == "feather52832" ]; then
+        make $PARALLEL -C ports/nrf BOARD=feather52832
         (( exit_status = exit_status || $? ))
     elif [ $board == "pca10056" ]; then
         make $PARALLEL -C ports/nrf BOARD=pca10056 SD=s140
