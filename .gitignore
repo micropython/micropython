@@ -42,3 +42,6 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+# OSX oddities
+.DS_Store

@@ -4,4 +4,5 @@ AF_FILE = boards/stm32f091_af.csv
 LD_FILES = boards/stm32f091xc.ld boards/common_basic.ld
 
 # Don't include default frozen modules because MCU is tight on flash space
-FROZEN_MPY_DIR ?=
+#FROZEN_MPY_DIR ?=
+FROZEN_MPY_DIR=boards/NUCLEO_F091RC/modules
