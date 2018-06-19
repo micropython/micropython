@@ -25,9 +25,9 @@
  */
 
 #include "audio_dma.h"
-#include "peripherals/clocks.h"
-#include "peripherals/events.h"
-#include "peripherals/dma.h"
+#include "samd/clocks.h"
+#include "samd/events.h"
+#include "samd/dma.h"
 
 #include "shared-bindings/audioio/RawSample.h"
 #include "shared-bindings/audioio/WaveFile.h"

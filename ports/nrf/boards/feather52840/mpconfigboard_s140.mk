@@ -1,7 +1,7 @@
 MCU_SERIES = m4
 MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52840
-SOFTDEV_VERSION ?= 6.0.0-6.alpha
+SOFTDEV_VERSION ?= 6.0.0
 
 LD_FILE = boards/feather52840/bluefruit_nrf52840_s140_6.0.0.ld
 BOOT_UART_FILE = boards/feather52840/bootloader/uart/feather52840_bootloader_6.0.0_s140_single

@@ -55,6 +55,7 @@ INC += -I. \
        -Iasf4_conf/$(CHIP_FAMILY) \
        -Iboards/$(BOARD) \
        -Iboards/ \
+       -Iperipherals/ \
        -Ifreetouch \
        -I$(BUILD)
 
@@ -248,21 +249,21 @@ SRC_C = \
 	flash_api.c \
 	mphalport.c \
 	reset.c \
-	peripherals/clocks.c \
-	peripherals/dma.c \
-	peripherals/events.c \
-	peripherals/external_interrupts.c \
-	peripherals/sercom.c \
-	peripherals/timers.c \
-	peripherals/$(CHIP_FAMILY)/adc.c \
-	peripherals/$(CHIP_FAMILY)/cache.c \
-	peripherals/$(CHIP_FAMILY)/clocks.c \
-	peripherals/$(CHIP_FAMILY)/dma.c \
-	peripherals/$(CHIP_FAMILY)/events.c \
-	peripherals/$(CHIP_FAMILY)/external_interrupts.c \
-	peripherals/$(CHIP_FAMILY)/pins.c \
-	peripherals/$(CHIP_FAMILY)/sercom.c \
-	peripherals/$(CHIP_FAMILY)/timers.c \
+	peripherals/samd/clocks.c \
+	peripherals/samd/dma.c \
+	peripherals/samd/events.c \
+	peripherals/samd/external_interrupts.c \
+	peripherals/samd/sercom.c \
+	peripherals/samd/timers.c \
+	peripherals/samd/$(CHIP_FAMILY)/adc.c \
+	peripherals/samd/$(CHIP_FAMILY)/cache.c \
+	peripherals/samd/$(CHIP_FAMILY)/clocks.c \
+	peripherals/samd/$(CHIP_FAMILY)/dma.c \
+	peripherals/samd/$(CHIP_FAMILY)/events.c \
+	peripherals/samd/$(CHIP_FAMILY)/external_interrupts.c \
+	peripherals/samd/$(CHIP_FAMILY)/pins.c \
+	peripherals/samd/$(CHIP_FAMILY)/sercom.c \
+	peripherals/samd/$(CHIP_FAMILY)/timers.c \
 	tick.c \
 	usb.c \
 	usb_mass_storage.c \
@@ -402,7 +403,7 @@ ifneq ($(CHIP_VARIANT),SAMD51G18A)
 			audiobusio/__init__.c \
 			audiobusio/I2SOut.c \
 			audiobusio/PDMIn.c
-		SRC_C += peripherals/i2s.c peripherals/$(CHIP_FAMILY)/i2s.c
+		SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
 	endif
 endif
 

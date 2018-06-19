@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "shared-bindings/os/__init__.h"
 #include "shared-bindings/storage/__init__.h"
 
 STATIC mp_obj_t mp_vfs_proxy_call(mp_vfs_mount_t *vfs, qstr meth_name, size_t n_args, const mp_obj_t *args) {
@@ -63,8 +64,14 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool rea
     args[0] = readonly ? mp_const_true : mp_const_false;
     args[1] = mp_const_false; // Don't make the file system automatically when mounting.
 
-    // call the underlying object to do any mounting operation
-    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
+    // Check that there's no file or directory with the same name as the mount point.
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        common_hal_os_stat(mount_path);
+        nlr_pop();
+        // Something with the same name exists.
+        mp_raise_OSError(MP_EEXIST);
+    }
 
     // check that the destination mount point is unused
     const char *path_out;
@@ -77,6 +84,9 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char* mount_path, bool rea
             mp_raise_OSError(MP_EPERM);
         }
     }
+
+    // call the underlying object to do any mounting operation
+    mp_vfs_proxy_call(vfs, MP_QSTR_mount, 2, (mp_obj_t*)&args);
 
     // Insert the vfs into the mount table by pushing it onto the front of the
     // mount table.

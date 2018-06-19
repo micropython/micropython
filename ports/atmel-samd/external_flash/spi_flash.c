@@ -29,7 +29,7 @@
 #include <string.h>
 
 #include "external_flash/common_commands.h"
-#include "peripherals/sercom.h"
+#include "samd/sercom.h"
 #include "py/mpconfig.h"
 
 #include "hal_gpio.h"

@@ -46,10 +46,10 @@
 
 #include "audio_dma.h"
 
-#include "peripherals/dma.h"
-#include "peripherals/events.h"
-#include "peripherals/pins.h"
-#include "peripherals/timers.h"
+#include "samd/dma.h"
+#include "samd/events.h"
+#include "samd/pins.h"
+#include "samd/timers.h"
 
 void audioout_reset(void) {
 }

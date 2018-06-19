@@ -22,7 +22,8 @@ env:
   - TRAVIS_BOARD=pirkey_m0
   - TRAVIS_BOARD=trinket_m0
   - TRAVIS_BOARD=gemma_m0
-  - TRAVIS_BOARD=feather52
+  - TRAVIS_BOARD=feather52832
+  - TRAVIS_BOARD=pca10056
   - TRAVIS_TEST=qemu
   - TRAVIS_TEST=unix
   - TRAVIS_TEST=docs
@@ -57,7 +58,7 @@ before_script:
   # For teensy build
   - sudo apt-get install realpath
   # For nrf builds
-  - ([[ $TRAVIS_BOARD != "feather52" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
+  - ([[ $TRAVIS_BOARD != "feather52832" && $TRAVIS_BOARD != "pca10056" ]] || sudo ports/nrf/drivers/bluetooth/download_ble_stack.sh)
   # For huzzah builds
   - if [[ $TRAVIS_BOARD = "feather_huzzah" ]]; then wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz && tar xavf xtensa-lx106-elf-standalone.tar.gz; PATH=$(readlink -f xtensa-lx106-elf/bin):$PATH; fi
   # For coverage testing (upgrade is used to get latest urllib3 version)

@@ -25,7 +25,7 @@
  */
 
 #include "bindings/samd/Clock.h"
-#include "peripherals/clocks.h"
+#include "samd/clocks.h"
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"

@@ -103,7 +103,7 @@ mp_obj_t common_hal_os_listdir(const char* path) {
         iter.base.type = &mp_type_polymorph_iter;
         iter.iternext = mp_vfs_ilistdir_it_iternext;
         iter.cur.vfs = MP_STATE_VM(vfs_mount_table);
-        iter.is_str = mp_obj_get_type(path) == &mp_type_str;
+        iter.is_str = true;
         iter.is_iter = false;
     } else {
         iter_obj = mp_vfs_proxy_call(vfs, MP_QSTR_ilistdir, 1, &path_out);

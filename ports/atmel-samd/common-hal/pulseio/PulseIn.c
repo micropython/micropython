@@ -35,8 +35,8 @@
 #include "mpconfigport.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "peripherals/external_interrupts.h"
-#include "peripherals/pins.h"
+#include "samd/external_interrupts.h"
+#include "samd/pins.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 
