@@ -41,7 +41,7 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 # include py core make definitions
 include ../../py/py.mk
 
-
+MICROPY_FATFS ?= 0
 FATFS_DIR = lib/oofatfs
 MPY_CROSS = ../../mpy-cross/mpy-cross
 MPY_TOOL = ../../tools/mpy-tool.py
@@ -158,9 +158,15 @@ SRC_LIB += $(addprefix lib/,\
 	utils/pyexec.c \
 	utils/interrupt_char.c \
 	timeutils/timeutils.c \
-	oofatfs/ff.c \
-	oofatfs/option/unicode.c \
 	)
+
+ifeq ($(MICROPY_FATFS), 1)
+SRC_LIB += $(addprefix lib/,\
+        oofatfs/ff.c \
+        oofatfs/option/unicode.c \
+        )
+endif
+
 
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	prs/nrfx_prs.c \
