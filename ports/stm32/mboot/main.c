@@ -1004,6 +1004,8 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
+#define RESET_MODE_NUM_STATES (4)
+#define RESET_MODE_TIMEOUT_CYCLES (8)
 #define RESET_MODE_LED_STATES 0x7421
 
 static int get_reset_mode(void) {
@@ -1015,9 +1017,9 @@ static int get_reset_mode(void) {
         systick_init();
         led_init();
         reset_mode = 0;
-        for (int i = 0; i < 1024; i++) {
+        for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
             if (i % 32 == 0) {
-                if (++reset_mode > 4) {
+                if (++reset_mode > RESET_MODE_NUM_STATES) {
                     reset_mode = 1;
                 }
                 uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
