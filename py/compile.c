@@ -1162,9 +1162,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
-    bool added;
-    id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
+STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qst, bool added, id_info_t *id_info) {
     if (!added && id_info->kind != ID_INFO_KIND_GLOBAL_EXPLICIT) {
         compile_syntax_error(comp, pn, "identifier redefined as global");
         return;
@@ -1178,19 +1176,7 @@ STATIC void compile_declare_global(compiler_t *comp, mp_parse_node_t pn, qstr qs
     }
 }
 
-STATIC void compile_global_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (comp->pass == MP_PASS_SCOPE) {
-        mp_parse_node_t *nodes;
-        int n = mp_parse_node_extract_list(&pns->nodes[0], PN_name_list, &nodes);
-        for (int i = 0; i < n; i++) {
-            compile_declare_global(comp, (mp_parse_node_t)pns, MP_PARSE_NODE_LEAF_ARG(nodes[i]));
-        }
-    }
-}
-
-STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst) {
-    bool added;
-    id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
+STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr qst, bool added, id_info_t *id_info) {
     if (added) {
         scope_find_local_and_close_over(comp->scope_cur, id_info, qst);
         if (id_info->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
@@ -1201,16 +1187,26 @@ STATIC void compile_declare_nonlocal(compiler_t *comp, mp_parse_node_t pn, qstr 
     }
 }
 
-STATIC void compile_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
+STATIC void compile_global_nonlocal_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (comp->pass == MP_PASS_SCOPE) {
-        if (comp->scope_cur->kind == SCOPE_MODULE) {
+        bool is_global = MP_PARSE_NODE_STRUCT_KIND(pns) == PN_global_stmt;
+
+        if (!is_global && comp->scope_cur->kind == SCOPE_MODULE) {
             compile_syntax_error(comp, (mp_parse_node_t)pns, "can't declare nonlocal in outer code");
             return;
         }
+
         mp_parse_node_t *nodes;
         int n = mp_parse_node_extract_list(&pns->nodes[0], PN_name_list, &nodes);
         for (int i = 0; i < n; i++) {
-            compile_declare_nonlocal(comp, (mp_parse_node_t)pns, MP_PARSE_NODE_LEAF_ARG(nodes[i]));
+            qstr qst = MP_PARSE_NODE_LEAF_ARG(nodes[i]);
+            bool added;
+            id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, qst, &added);
+            if (is_global) {
+                compile_declare_global(comp, (mp_parse_node_t)pns, qst, added, id_info);
+            } else {
+                compile_declare_nonlocal(comp, (mp_parse_node_t)pns, qst, added, id_info);
+            }
         }
     }
 }
