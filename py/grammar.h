@@ -231,8 +231,8 @@ DEF_RULE(lambdef_nocond, c(lambdef), and_blank(4), tok(KW_LAMBDA), opt_rule(vara
 // power: atom_expr ['**' factor]
 // atom_expr: 'await' atom trailer* | atom trailer*
 
-DEF_RULE(or_test, c(or_test), list, rule(and_test), tok(KW_OR))
-DEF_RULE(and_test, c(and_test), list, rule(not_test), tok(KW_AND))
+DEF_RULE(or_test, c(or_and_test), list, rule(and_test), tok(KW_OR))
+DEF_RULE(and_test, c(or_and_test), list, rule(not_test), tok(KW_AND))
 DEF_RULE_NC(not_test, or(2), rule(not_test_2), rule(comparison))
 DEF_RULE(not_test_2, c(not_test_2), and(2), tok(KW_NOT), rule(not_test))
 DEF_RULE(comparison, c(comparison), list, rule(expr), rule(comp_op))
