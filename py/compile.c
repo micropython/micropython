@@ -2099,7 +2099,7 @@ STATIC void compile_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns) {
     mp_binary_op_t binary_op = MP_BINARY_OP_OR + MP_PARSE_NODE_STRUCT_KIND(pns) - PN_expr;
     int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
     compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i < num_nodes; i += 1) {
+    for (int i = 1; i < num_nodes; ++i) {
         compile_node(comp, pns->nodes[i]);
         EMIT_ARG(binary_op, binary_op);
     }
