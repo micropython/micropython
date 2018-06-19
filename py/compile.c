@@ -1985,15 +1985,6 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     }
 }
 
-STATIC void c_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns, mp_binary_op_t binary_op) {
-    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-    compile_node(comp, pns->nodes[0]);
-    for (int i = 1; i < num_nodes; i += 1) {
-        compile_node(comp, pns->nodes[i]);
-        EMIT_ARG(binary_op, binary_op);
-    }
-}
-
 STATIC void compile_test_if_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_test_if_else));
     mp_parse_node_struct_t *pns_test_if_else = (mp_parse_node_struct_t*)pns->nodes[1];
@@ -2102,16 +2093,16 @@ STATIC void compile_star_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_syntax_error(comp, (mp_parse_node_t)pns, "*x must be assignment target");
 }
 
-STATIC void compile_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    c_binary_op(comp, pns, MP_BINARY_OP_OR);
-}
-
-STATIC void compile_xor_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    c_binary_op(comp, pns, MP_BINARY_OP_XOR);
-}
-
-STATIC void compile_and_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    c_binary_op(comp, pns, MP_BINARY_OP_AND);
+STATIC void compile_binary_op(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    MP_STATIC_ASSERT(MP_BINARY_OP_OR + PN_xor_expr - PN_expr == MP_BINARY_OP_XOR);
+    MP_STATIC_ASSERT(MP_BINARY_OP_OR + PN_and_expr - PN_expr == MP_BINARY_OP_AND);
+    mp_binary_op_t binary_op = MP_BINARY_OP_OR + MP_PARSE_NODE_STRUCT_KIND(pns) - PN_expr;
+    int num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+    compile_node(comp, pns->nodes[0]);
+    for (int i = 1; i < num_nodes; ++i) {
+        compile_node(comp, pns->nodes[i]);
+        EMIT_ARG(binary_op, binary_op);
+    }
 }
 
 STATIC void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
