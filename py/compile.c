@@ -2546,7 +2546,16 @@ STATIC void compile_trailer_period(compiler_t *comp, mp_parse_node_struct_t *pns
 }
 
 #if MICROPY_PY_BUILTINS_SLICE
-STATIC void compile_subscript_3_helper(compiler_t *comp, mp_parse_node_struct_t *pns) {
+STATIC void compile_subscript(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_subscript_2) {
+        compile_node(comp, pns->nodes[0]); // start of slice
+        assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])); // should always be
+        pns = (mp_parse_node_struct_t*)pns->nodes[1];
+    } else {
+        // pns is a PN_subscript_3, load None for start of slice
+        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
+    }
+
     assert(MP_PARSE_NODE_STRUCT_KIND(pns) == PN_subscript_3); // should always be
     mp_parse_node_t pn = pns->nodes[0];
     if (MP_PARSE_NODE_IS_NULL(pn)) {
@@ -2589,17 +2598,6 @@ STATIC void compile_subscript_3_helper(compiler_t *comp, mp_parse_node_struct_t 
         compile_node(comp, pn);
         EMIT_ARG(build, 2, MP_EMIT_BUILD_SLICE);
     }
-}
-
-STATIC void compile_subscript_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    compile_node(comp, pns->nodes[0]); // start of slice
-    assert(MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])); // should always be
-    compile_subscript_3_helper(comp, (mp_parse_node_struct_t*)pns->nodes[1]);
-}
-
-STATIC void compile_subscript_3(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-    compile_subscript_3_helper(comp, pns);
 }
 #endif // MICROPY_PY_BUILTINS_SLICE
 
