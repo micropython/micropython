@@ -641,6 +641,18 @@ soft_reset:
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
+    // execute the frozen boot.py
+#if MICROPY_MODULE_FROZEN
+    if (reset_mode==1 || reset_mode ==3) {
+      int ret = pyexec_frozen_module("boot.py");
+      if (ret & PYEXEC_FORCED_EXIT) {
+          goto soft_reset_exit;
+      }
+      if (!ret) {
+          flash_error(4);
+      }
+    }
+#else
     // run boot.py, if it exists
     // TODO perhaps have pyb.reboot([bootpy]) function to soft-reboot and execute custom boot.py
     if (reset_mode == 1 || reset_mode == 3) {
@@ -656,6 +668,7 @@ soft_reset:
             }
         }
     }
+#endif
 
     // turn boot-up LEDs off
     #if !defined(MICROPY_HW_LED2)
@@ -698,6 +711,18 @@ soft_reset:
 
     // At this point everything is fully configured and initialised.
 
+    // execute the frozen boot.py
+#if MICROPY_MODULE_FROZEN
+    if ((reset_mode == 1 || reset_mode == 3) && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        int ret = pyexec_frozen_module("main.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        if (!ret) {
+            flash_error(3);
+        }
+    }
+#else
     // Run the main script from the current directory.
     if ((reset_mode == 1 || reset_mode == 3) && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         const char *main_py;
@@ -717,6 +742,7 @@ soft_reset:
             }
         }
     }
+#endif
 
     // Main script is finished, so now go into REPL mode.
     // The REPL mode can change, or it can request a soft reset.
