@@ -42,8 +42,6 @@ FATFS_DIR = lib/oofatfs
 
 CROSS_COMPILE = arm-none-eabi-
 
-MCU_VARIANT_UPPER = $(shell echo $(MCU_VARIANT) | tr '[:lower:]' '[:upper:]')
-
 INC += -I.
 INC += -I../..
 INC += -I$(BUILD)
@@ -63,7 +61,6 @@ INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
 
-NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
 CFLAGS += -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
@@ -73,6 +70,7 @@ CFLAGS += -fno-strict-aliasing
 CFLAGS += -fstack-usage
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
+CFLAGS += -D__START=main
 
 LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
@@ -125,7 +123,7 @@ SRC_C += \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
 	boards/$(BOARD)/board.c \
-	device/$(MCU_VARIANT)/system_$(MCU_SUB_VARIANT).c \
+	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
 	device/$(MCU_VARIANT)/startup_$(MCU_SUB_VARIANT).c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/option/ccsbcs.c \

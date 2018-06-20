@@ -88,8 +88,6 @@ void TIMER2_IRQHandler(void) {
     common_irq_handler(2);
 }
 
-#if NRF52
-
 void TIMER3_IRQHandler(void) {
     common_irq_handler(3);
 }
@@ -97,7 +95,5 @@ void TIMER3_IRQHandler(void) {
 void TIMER4_IRQHandler(void) {
     common_irq_handler(4);
 }
-
-#endif
 
 #endif // HAL_TIMER_MODULE_ENABLED

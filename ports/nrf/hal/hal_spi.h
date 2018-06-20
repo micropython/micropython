@@ -30,31 +30,24 @@
 #include <stdbool.h>
 #include "nrf.h"
 
-#if NRF51
-  #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, NRF_SPI1_BASE}
-  #define SPI_IRQ_VALUES (const uint32_t[]){SPI0_TWI0_IRQn, SPI1_TWI1_IRQn}
+#ifdef NRF52832_XXAA
+  #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, \
+                                               NRF_SPI1_BASE, \
+                                               NRF_SPI2_BASE}
+  #define SPI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
+                                            SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, \
+                                            SPIM2_SPIS2_SPI2_IRQn}
 #endif
 
-#if NRF52
-  #ifdef NRF52832_XXAA
-    #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, \
-                                                 NRF_SPI1_BASE, \
-                                                 NRF_SPI2_BASE}
-    #define SPI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
-                                              SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, \
-                                              SPIM2_SPIS2_SPI2_IRQn}
-  #endif
-
-  #ifdef NRF52840_XXAA
-    #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, \
-                                                 NRF_SPI1_BASE, \
-                                                 NRF_SPI2_BASE, \
-                                                 NRF_SPIM3_BASE}
-    #define SPI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
-                                              SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, \
-                                              SPIM2_SPIS2_SPI2_IRQn, \
-                                              SPIM3_IRQn}
-  #endif
+#ifdef NRF52840_XXAA
+  #define SPI_BASE_POINTERS (const uint32_t[]){NRF_SPI0_BASE, \
+                                               NRF_SPI1_BASE, \
+                                               NRF_SPI2_BASE, \
+                                               NRF_SPIM3_BASE}
+  #define SPI_IRQ_VALUES (const uint32_t[]){SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, \
+                                            SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, \
+                                            SPIM2_SPIS2_SPI2_IRQn, \
+                                            SPIM3_IRQn}
 #endif
 
 #define SPI_BASE(x) ((NRF_SPI_Type *)SPI_BASE_POINTERS[x])

@@ -94,7 +94,7 @@ void GPIOTE_IRQHandler(void) {
         GPIOTE_BASE->EVENTS_IN[3] = 0;
         m_callback(HAL_GPIO_EVENT_CHANNEL_3);
     }
-#if NRF52
+
     if (GPIOTE_BASE->EVENTS_IN[4]) {
         GPIOTE_BASE->EVENTS_IN[4] = 0;
         m_callback(HAL_GPIO_EVENT_CHANNEL_4);
@@ -111,7 +111,6 @@ void GPIOTE_IRQHandler(void) {
         GPIOTE_BASE->EVENTS_IN[7] = 0;
         m_callback(HAL_GPIO_EVENT_CHANNEL_7);
     }
-#endif
 }
 
 #endif // if 0

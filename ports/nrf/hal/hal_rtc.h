@@ -29,21 +29,12 @@
 
 #include "nrf.h"
 
-#if NRF51
-  #define RTC_BASE_POINTERS (const uint32_t[]){NRF_RTC0_BASE, \
-                                               NRF_RTC1_BASE}
-  #define RTC_IRQ_VALUES (const uint32_t[]){RTC0_IRQn, \
-                                            RTC1_IRQn}
-#endif
-
-#if NRF52
-  #define RTC_BASE_POINTERS (const uint32_t[]){NRF_RTC0_BASE, \
-                                               NRF_RTC1_BASE, \
-                                               NRF_RTC2_BASE}
-  #define RTC_IRQ_VALUES (const uint32_t[]){RTC0_IRQn, \
-                                            RTC1_IRQn, \
-                                            RTC2_IRQn}
-#endif
+#define RTC_BASE_POINTERS (const uint32_t[]){NRF_RTC0_BASE, \
+                                             NRF_RTC1_BASE, \
+                                             NRF_RTC2_BASE}
+#define RTC_IRQ_VALUES (const uint32_t[]){RTC0_IRQn, \
+                                          RTC1_IRQn, \
+                                          RTC2_IRQn}
 
 #define RTC_BASE(x) ((NRF_RTC_Type *)RTC_BASE_POINTERS[x])
 #define RTC_IRQ_NUM(x) (RTC_IRQ_VALUES[x])

@@ -67,7 +67,6 @@ void reset_port(void) {
 
 void HardFault_Handler(void)
 {
-#if NRF52
 //	static volatile uint32_t reg;
 //	static volatile uint32_t reg2;
 //	static volatile uint32_t bfar;
@@ -80,6 +79,5 @@ void HardFault_Handler(void)
 //		(void)reg2;
 //		(void)bfar;
 //	}
-#endif
 }
 

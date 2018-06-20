@@ -29,27 +29,16 @@
 
 #include "nrf.h"
 
-#if NRF51
-  #define TIMER_BASE_POINTERS (const uint32_t[]){NRF_TIMER0_BASE, \
-                                                 NRF_TIMER1_BASE, \
-                                                 NRF_TIMER2_BASE}
-  #define TIMER_IRQ_VALUES (const uint32_t[]){TIMER0_IRQn, \
-                                              TIMER1_IRQn, \
-                                              TIMER2_IRQn}
-#endif
-
-#if NRF52
-  #define TIMER_BASE_POINTERS (const uint32_t[]){NRF_TIMER0_BASE, \
-                                                 NRF_TIMER1_BASE, \
-                                                 NRF_TIMER1_BASE, \
-                                                 NRF_TIMER1_BASE, \
-                                                 NRF_TIMER2_BASE}
-  #define TIMER_IRQ_VALUES (const uint32_t[]){TIMER0_IRQn, \
+#define TIMER_BASE_POINTERS (const uint32_t[]){NRF_TIMER0_BASE, \
+                                               NRF_TIMER1_BASE, \
+                                               NRF_TIMER1_BASE, \
+                                               NRF_TIMER1_BASE, \
+                                               NRF_TIMER2_BASE}
+#define TIMER_IRQ_VALUES (const uint32_t[]){TIMER0_IRQn, \
                                               TIMER1_IRQn, \
                                               TIMER2_IRQn, \
                                               TIMER3_IRQn, \
                                               TIMER4_IRQn}
-#endif
 
 #define TIMER_BASE(x) ((NRF_TIMER_Type *)TIMER_BASE_POINTERS[x])
 #define TIMER_IRQ_NUM(x) (TIMER_IRQ_VALUES[x])
