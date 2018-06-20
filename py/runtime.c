@@ -947,10 +947,10 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
         const mp_obj_type_t *arg0_type = mp_obj_get_type(args[0]);
         if (arg0_type != self->type) {
             if (MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_DETAILED) {
-                mp_raise_TypeError("argument has wrong type");
+                mp_raise_TypeError("arg has wrong type");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "argument should be a '%q' not a '%q'", self->type->name, arg0_type->name));
+                    "arg should be a '%q' not a '%q'", self->type->name, arg0_type->name));
             }
         }
     }

@@ -324,7 +324,7 @@ STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_
     return;
 
 unknown_op:
-    emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Xtensa instruction '%s' with %d arguments", op_str, n_args));
+    emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Xtensa instruction '%s' with %d args", op_str, n_args));
     return;
 
     /*

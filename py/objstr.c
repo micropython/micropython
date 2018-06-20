@@ -265,7 +265,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 
 wrong_args:
-    mp_raise_TypeError("wrong number of arguments");
+    mp_raise_TypeError("wrong number of args");
 }
 
 // like strstr but with specified length and allows \0 bytes

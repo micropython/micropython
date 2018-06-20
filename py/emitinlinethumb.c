@@ -803,7 +803,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     return;
 
 unknown_op:
-    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Thumb instruction '%s' with %d arguments", op_str, n_args));
+    emit_inline_thumb_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, "unsupported Thumb instruction '%s' with %d args", op_str, n_args));
     return;
 
 branch_not_in_range:
