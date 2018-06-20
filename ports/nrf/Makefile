@@ -18,7 +18,6 @@ ifeq ($(SD), )
 	include ../../py/mkenv.mk
 	include boards/$(BOARD)/mpconfigboard.mk
 	-include mpconfigport.mk
-
 else
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)-$(SD_LOWER)
@@ -28,7 +27,6 @@ else
 
 	include drivers/bluetooth/bluetooth_common.mk
 endif
-
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
@@ -51,6 +49,7 @@ INC += -I../..
 INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
+INC += -I./boards/$(BOARD)
 INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
@@ -67,19 +66,12 @@ INC += -I./drivers
 NRF_DEFINES += -D$(MCU_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
-CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
-
-CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-
-CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) --short-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft -fno-builtin
-
-
-CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
+CFLAGS += -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
+CFLAGS += -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS += $(INC) -Wall -Werror -ansi -std=gnu99 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -fstack-usage
 CFLAGS += -fdata-sections -ffunction-sections
-CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
 
 LDFLAGS = $(CFLAGS)
@@ -97,17 +89,13 @@ CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif
 
-LIBS = \
-
-ifeq ($(MCU_VARIANT), nrf52)
 LIBM_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libm.a)
 LIBC_FILE_NAME   = $(shell $(CC) $(CFLAGS) -print-file-name=libc.a)
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
-LIBS += -L $(dir $(LIBM_FILE_NAME)) -lm
+LIBS := -L $(dir $(LIBM_FILE_NAME)) -lm
 LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
-endif
 
 SRC_HAL = $(addprefix hal/,\
 	hal_uart.c \
@@ -122,14 +110,8 @@ SRC_HAL = $(addprefix hal/,\
 	hal_temp.c \
 	hal_gpio.c \
 	hal_rng.c \
-	)
-
-ifeq ($(MCU_VARIANT), nrf52)
-SRC_HAL += $(addprefix hal/,\
 	hal_pwm.c \
 	)
-endif
-
 
 SRC_C += \
 	mphalport.c \
@@ -174,7 +156,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	random/modrandom.c \
 	)
 
-
 SRC_COMMON_HAL += \
 	board/__init__.c \
 	digitalio/__init__.c \
@@ -196,8 +177,8 @@ SRC_COMMON_HAL += \
 	pulseio/PulseOut.c \
 	pulseio/PWMOut.c \
 	storage/__init__.c \
-        supervisor/__init__.c \
-        supervisor/Runtime.c \
+	supervisor/__init__.c \
+	supervisor/Runtime.c \
 
 # These don't have corresponding files in each port but are still located in
 # shared-bindings to make it clear what the contents of the modules are.
