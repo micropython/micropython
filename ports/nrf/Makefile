@@ -1,6 +1,6 @@
 # Select the board to build for: if not given on the command line,
-# then default to feather52.
-BOARD ?= feather52
+# then default to feather52832.
+BOARD ?= feather52832
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
