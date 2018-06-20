@@ -27,14 +27,11 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H
 
+#include "pin.h"
 #include "py/mphal.h"
-#include "modules/machine/pin.h"
 
-//typedef pin_obj_t mcu_pin_obj_t;
 #define mcu_pin_obj_t pin_obj_t
 void reset_all_pins(void);
 void reset_pin(uint8_t pin);
-//void claim_pin(const mcu_pin_obj_t* pin);
-
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_MICROCONTROLLER_PIN_H

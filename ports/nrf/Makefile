@@ -47,7 +47,6 @@ INC += -I./device
 INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
-INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music
 INC += -I./modules/random
@@ -109,7 +108,6 @@ SRC_HAL = $(addprefix hal/,\
 SRC_C += \
 	mphalport.c \
 	help.c \
-	pin_named_pins.c \
 	fatfs_port.c \
 	fifo.c \
 	tick.c \
@@ -295,10 +293,10 @@ SRC_QSTR_AUTO_DEPS +=
 $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
-# both pins_$(BOARD).c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+# both pins_g.c and pins.h
+$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
 	$(call compile_c)
@@ -310,8 +308,6 @@ PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
