@@ -12,19 +12,14 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 
 # TODO: Verify that it is a valid target.
 
-ifeq ($(SD), )
-	# If the build directory is not given, make it reflect the board name.
-	BUILD ?= build-$(BOARD)
-	include ../../py/mkenv.mk
-	include boards/$(BOARD)/mpconfigboard.mk
-	-include mpconfigport.mk
-else
-	# If the build directory is not given, make it reflect the board name.
-	BUILD ?= build-$(BOARD)-$(SD_LOWER)
-	include ../../py/mkenv.mk
-	include boards/$(BOARD)/mpconfigboard_$(SD_LOWER).mk
-	-include mpconfigport.mk
+# If the build directory is not given, make it reflect the board name
+BUILD ?= $(if $(SD),build-$(BOARD)-$(SD_LOWER),build-$(BOARD))
 
+include ../../py/mkenv.mk
+include boards/$(BOARD)/mpconfigboard.mk
+-include mpconfigport.mk
+
+ifneq ($(SD), )
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
