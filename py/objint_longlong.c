@@ -217,7 +217,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+    mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
 }
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {

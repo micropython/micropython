@@ -2826,7 +2826,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         bool added;
         id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, &added);
         if (!added) {
-            compile_syntax_error(comp, pn, "name reused for argument");
+            compile_syntax_error(comp, pn, "argument name reused");
             return;
         }
         id_info->kind = ID_INFO_KIND_LOCAL;

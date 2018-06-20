@@ -1145,7 +1145,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                 "unexpected indent");
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                "unindent does not match any outer indentation level");
+                "unindent doesn't match any outer indent level");
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 "invalid syntax");
