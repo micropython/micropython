@@ -1411,7 +1411,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         // Dictionary value lookup
         if (*str == '(') {
             if (dict == MP_OBJ_NULL) {
-                mp_raise_TypeError("format requires a dict");
+                mp_raise_TypeError("format needs a dict");
             }
             arg_i = 1; // we used up the single dict argument
             const byte *key = ++str;
@@ -1486,7 +1486,7 @@ incomplete_format:
         if (arg == MP_OBJ_NULL) {
             if (arg_i >= n_args) {
 not_enough_args:
-                mp_raise_TypeError("not enough arguments for format string");
+                mp_raise_TypeError("format string needs more arguments");
             }
             arg = args[arg_i++];
         }
@@ -1496,14 +1496,14 @@ not_enough_args:
                     size_t slen;
                     const char *s = mp_obj_str_get_data(arg, &slen);
                     if (slen != 1) {
-                        mp_raise_TypeError("%%c requires int or char");
+                        mp_raise_TypeError("%%c needs int or char");
                     }
                     mp_print_strn(&print, s, 1, flags, ' ', width);
                 } else if (arg_looks_integer(arg)) {
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
                 } else {
-                    mp_raise_TypeError("integer required");
+                    mp_raise_TypeError("integer needed");
                 }
                 break;
 
@@ -1573,7 +1573,7 @@ not_enough_args:
     }
 
     if (arg_i != n_args) {
-        mp_raise_TypeError("not all arguments converted during string formatting");
+        mp_raise_TypeError("format string didn't convert all arguments");
     }
 
     return mp_obj_new_str_from_vstr(is_bytes ? &mp_type_bytes : &mp_type_str, &vstr);

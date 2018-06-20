@@ -5,5 +5,5 @@ __exit__ None None None
 __init__
 __enter__
 1
-__exit__ <class 'NameError'> name 'fail' is not defined None
+__exit__ <class 'NameError'> name 'fail' isn't defined None
 NameError

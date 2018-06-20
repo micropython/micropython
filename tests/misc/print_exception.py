@@ -50,7 +50,7 @@ except Exception as e:
 # Here we have a function with lots of bytecode generated for a single source-line, and
 # there is an error right at the end of the bytecode.  It should report the correct line.
 def f():
-    f([1, 2], [1, 2], [1, 2], {1:1, 1:1, 1:1, 1:1, 1:1, 1:1, 1:X})
+    f([1, 2], [1, 2], [1, 2], {1:1, 1:1, 1:1, 1:1, 1:1, 1:1, 1:f.X})
     return 1
 try:
     f()
