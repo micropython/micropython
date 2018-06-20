@@ -30,7 +30,6 @@
 
 #if MICROPY_PY_BLE
 
-#include "led.h"
 #include "mpconfigboard.h"
 #include "ble_drv.h"
 

@@ -158,18 +158,6 @@ SRC_C += \
 
 
 DRIVERS_SRC_C += $(addprefix modules/,\
-	machine/modmachine.c \
-	machine/uart.c \
-	machine/spi.c \
-	machine/i2c.c \
-	machine/adc.c \
-	machine/pin.c \
-	machine/timer.c \
-	machine/pwm.c \
-	machine/led.c \
-	machine/temp.c \
-	utime/modutime.c \
-	pyb/modpyb.c \
 	ubluepy/modubluepy.c \
 	ubluepy/ubluepy_peripheral.c \
 	ubluepy/ubluepy_service.c \

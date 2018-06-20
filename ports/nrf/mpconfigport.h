@@ -121,12 +121,8 @@
 #define MICROPY_PY_URE                           (0)
 #define MICROPY_PY_UHEAPQ                        (0)
 #define MICROPY_PY_UHASHLIB                      (1)
-#define MICROPY_PY_UTIME_MP_HAL                  (1)
 #define MICROPY_PY_STRUCT                        (0)
 #define MICROPY_PY_MACHINE                       (1)
-#define MICROPY_PY_MACHINE_PULSE                 (0)
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW          machine_hard_i2c_make_new
-#define MICROPY_PY_MACHINE_SPI                   (0)
 #define MICROPY_PY_FRAMEBUF                      (1)
 
 #define MICROPY_KBD_EXCEPTION                    (1)
@@ -141,34 +137,6 @@
 
 #ifndef MICROPY_PY_MUSIC
 #define MICROPY_PY_MUSIC                         (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_ADC
-#define MICROPY_PY_MACHINE_ADC                   (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_I2C
-#define MICROPY_PY_MACHINE_I2C                   (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_HW_SPI
-#define MICROPY_PY_MACHINE_HW_SPI                (1)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_HW_PWM
-#define MICROPY_PY_MACHINE_HW_PWM                (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_SOFT_PWM
-#define MICROPY_PY_MACHINE_SOFT_PWM              (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_TIMER
-#define MICROPY_PY_MACHINE_TIMER                 (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_RTC
-#define MICROPY_PY_MACHINE_RTC                   (0)
 #endif
 
 #ifndef MICROPY_PY_HW_RNG
@@ -228,9 +196,7 @@ extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
 
-extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t machine_module;
-extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
 extern const struct _mp_obj_module_t random_module;
@@ -277,16 +243,10 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
-    { MP_ROM_QSTR     (MP_QSTR_pyb             ), MP_ROM_PTR(&pyb_module)           }, \
-    { MP_ROM_QSTR     (MP_QSTR_utime           ), MP_ROM_PTR(&mp_module_utime)      }, \
     MUSIC_MODULE \
     RANDOM_MODULE \
     BLE_MODULE \
     UBLUEPY_MODULE \
-
-
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR     (MP_QSTR_time    ), MP_ROM_PTR(&mp_module_utime)     }, \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
@@ -296,7 +256,6 @@ extern const struct _mp_obj_module_t ble_module;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR     (MP_QSTR_pyb     ), MP_ROM_PTR(&pyb_module)          }, \
     { MP_ROM_QSTR     (MP_QSTR_machine ), MP_ROM_PTR(&machine_module)      }, \
     BLE_MODULE \
 
