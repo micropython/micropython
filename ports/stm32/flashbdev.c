@@ -47,7 +47,7 @@
 #define FLASH_MEM_SEG1_NUM_BLOCKS (224) // sectors 1,2,3,4: 16k+16k+16k+64k=112k
 
 // enable this to get an extra 64k of storage (uses the last sector of the flash)
-#if 0
+#if defined(MICROPY_HW_HAS_FLASH_EXTRA)
 #define FLASH_MEM_SEG2_START_ADDR (0x080e0000) // sector 11
 #define FLASH_MEM_SEG2_NUM_BLOCKS (128) // sector 11: 128k
 #endif
