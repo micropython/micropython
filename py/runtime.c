@@ -171,7 +171,7 @@ mp_obj_t mp_load_global(qstr qst) {
                 mp_raise_msg(&mp_type_NameError, "name not defined");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError,
-                    "name '%q' is not defined", qst));
+                    "name '%q' isn't defined", qst));
             }
         }
     }
@@ -581,7 +581,7 @@ unsupported_op:
     }
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+    mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
 }
 
 mp_obj_t mp_call_function_0(mp_obj_t fun) {
@@ -618,7 +618,7 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
         mp_raise_TypeError("object not callable");
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "'%s' object is not callable", mp_obj_get_type_str(fun_in)));
+            "'%s' object isn't callable", mp_obj_get_type_str(fun_in)));
     }
 }
 
@@ -1157,7 +1157,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
         mp_raise_TypeError("object not iterable");
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "'%s' object is not iterable", mp_obj_get_type_str(o_in)));
+            "'%s' object isn't iterable", mp_obj_get_type_str(o_in)));
     }
 }
 
@@ -1179,7 +1179,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
                 mp_raise_TypeError("object not an iterator");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+                    "'%s' object isn't an iterator", mp_obj_get_type_str(o_in)));
             }
         }
     }
@@ -1215,7 +1215,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 mp_raise_TypeError("object not an iterator");
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                    "'%s' object is not an iterator", mp_obj_get_type_str(o_in)));
+                    "'%s' object isn't an iterator", mp_obj_get_type_str(o_in)));
             }
         }
     }
