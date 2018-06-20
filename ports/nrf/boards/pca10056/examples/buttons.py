@@ -4,10 +4,10 @@ import gamepad
 import time
 
 pad = gamepad.GamePad(
-    digitalio.DigitalInOut(board.PA11),
-    digitalio.DigitalInOut(board.PA12),
-    digitalio.DigitalInOut(board.PA24),
-    digitalio.DigitalInOut(board.PA25),
+    digitalio.DigitalInOut(board.P0_11),
+    digitalio.DigitalInOut(board.P0_12),
+    digitalio.DigitalInOut(board.P0_24),
+    digitalio.DigitalInOut(board.P0_25),
 )
 
 prev_buttons = 0
