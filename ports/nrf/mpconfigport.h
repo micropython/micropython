@@ -122,7 +122,6 @@
 #define MICROPY_PY_UHEAPQ                        (0)
 #define MICROPY_PY_UHASHLIB                      (1)
 #define MICROPY_PY_STRUCT                        (0)
-#define MICROPY_PY_MACHINE                       (1)
 #define MICROPY_PY_FRAMEBUF                      (1)
 
 #define MICROPY_KBD_EXCEPTION                    (1)
@@ -135,14 +134,9 @@
 #define MICROPY_HW_LED_PULLUP                    (0)
 #endif
 
-#ifndef MICROPY_PY_MUSIC
-#define MICROPY_PY_MUSIC                         (0)
-#endif
-
 #ifndef MICROPY_PY_HW_RNG
 #define MICROPY_PY_HW_RNG                        (1)
 #endif
-
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (0)
@@ -196,18 +190,10 @@ extern const struct _mp_obj_module_t time_module;
 extern const struct _mp_obj_module_t supervisor_module;
 extern const struct _mp_obj_module_t gamepad_module;
 
-extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
-extern const struct _mp_obj_module_t music_module;
 extern const struct _mp_obj_module_t random_module;
 
 extern const struct _mp_obj_module_t ble_module;
-
-#if MICROPY_PY_MUSIC
-#define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
-#else
-#define MUSIC_MODULE
-#endif
 
 #if MICROPY_PY_HW_RNG
 #define RANDOM_MODULE                        { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&random_module) },
@@ -243,7 +229,6 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_OBJ_NEW_QSTR (MP_QSTR_supervisor      ), (mp_obj_t)&supervisor_module      }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_gamepad         ), (mp_obj_t)&gamepad_module         }, \
     { MP_OBJ_NEW_QSTR (MP_QSTR_time            ), (mp_obj_t)&time_module            }, \
-    MUSIC_MODULE \
     RANDOM_MODULE \
     BLE_MODULE \
     UBLUEPY_MODULE \
@@ -256,32 +241,12 @@ extern const struct _mp_obj_module_t ble_module;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR     (MP_QSTR_machine ), MP_ROM_PTR(&machine_module)      }, \
     BLE_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
-    mp_obj_t pyb_config_main; \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    /* Used to do callbacks to Python code on interrupt */ \
-    struct _pyb_timer_obj_t *pyb_timer_obj_all[14]; \
-    \
-    /* stdio is repeated on this UART object if it's not null */ \
-    struct _machine_hard_uart_obj_t *pyb_stdio_uart; \
-    \
-    /* pointers to all UART objects (if they have been created) */ \
-    struct _machine_hard_uart_obj_t *pyb_uart_obj_all[1]; \
-    \
-    /* list of registered NICs */ \
-    mp_obj_list_t mod_network_nic_list; \
-    \
-    /* microbit modules */ \
-    struct _music_data_t *music_data; \
-    const struct _pwm_events *pwm_active_events; \
-    const struct _pwm_events *pwm_pending_events; \
     mp_obj_t gamepad_singleton; \
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)

@@ -48,7 +48,6 @@ INC += -I./device/$(MCU_VARIANT)
 INC += -I./hal
 INC += -I./hal/$(MCU_VARIANT)
 INC += -I./modules/ubluepy
-INC += -I./modules/music
 INC += -I./modules/random
 INC += -I./modules/ble
 INC += -I../../lib/mp-readline
@@ -141,8 +140,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_descriptor.c \
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
-	music/modmusic.c \
-	music/musictunes.c \
 	ble/modble.c \
 	random/modrandom.c \
 	)
