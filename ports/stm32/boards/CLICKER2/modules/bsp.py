@@ -74,7 +74,7 @@ class BSP():
         return (self.Button2.value() == 0)
 
 
-def main():
+if __name__ == '__main__':
     ''' the program that exercises the different functions when loaded through
         execfile('')
     '''
@@ -86,7 +86,3 @@ def main():
         print("Battery is charging")
     if clicker2.IsFaultActive():
         print("Oops there is a problem with the LTC3586")
-
-
-if __name__ == '__main__':
-    main()
