@@ -135,7 +135,7 @@ DRESULT disk_read (
         if (nlr_push(&nlr) == 0) {
             mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->readblocks);
             nlr_pop();
-            if (mp_obj_get_int(ret) != 0) {
+            if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
                 return RES_ERROR;
             }
         } else {
@@ -180,7 +180,7 @@ DRESULT disk_write (
         if (nlr_push(&nlr) == 0) {
             mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->writeblocks);
             nlr_pop();
-            if (mp_obj_get_int(ret) != 0) {
+            if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
                 return RES_ERROR;
             }
         } else {
