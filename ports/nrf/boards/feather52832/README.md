@@ -47,12 +47,12 @@ $ sudo python setup.py install
 #### REPL over UART (default settings)
 
 To build a CircuitPython binary with default settings for the
-`feather52` target enter:
+`feather52832` target enter:
 
-> **NOTE:** `BOARD=feather52` is the default option and isn't stricly required.
+> **NOTE:** `BOARD=feather52832` is the default option and isn't stricly required.
 
 ```
-$ make BOARD=feather52 V=1
+$ make BOARD=feather52832 V=1
 ```
 
 #### REPL over BLE UART (AKA 'NUS')
@@ -68,7 +68,7 @@ set to `1` in the `#elif (BLUETOOTH_SD == 132)` section:
 ... then build as normal, via:
 
 ```
-$ make BOARD=feather52 V=1
+$ make BOARD=feather52832 V=1
 ```
 
 You can then connect over BLE UART using an application like Bluefruit LE
@@ -95,7 +95,7 @@ Feather52 boards to a single-bank CircuitPython compatible version:
 By default s132 v2.0.1 is used when no `SOFTDEV_VERSION` field is passed in:
 
 ```
-$ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART boot-flash
+$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART boot-flash
 ```
 
 #### S132 v5.0.0 (BLE5, experimental):
@@ -103,7 +103,7 @@ $ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART boot-flash
 To enable BLE5 support and the latest S132 release, flash the v5.0.0 bootloader via:
 
 ```
-$ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SOFTDEV_VERSION=5.0.0 boot-flash
+$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART SOFTDEV_VERSION=5.0.0 boot-flash
 ```
 
 ### 2. Generate and flash a CircuitPython DFU .zip package over serial
@@ -117,7 +117,7 @@ image, as described earlier in this readme.
 > The name of the serial port target will vary, depending on your OS.
 
 ```
-$ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART dfu-gen dfu-flash
+$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART dfu-gen dfu-flash
 ```
 
 By default, CircuitPython will build with **BLE** support enabled using
@@ -125,7 +125,7 @@ By default, CircuitPython will build with **BLE** support enabled using
 SD family or version you can enter the optional fields as shown below:
 
 ```
-$ make BOARD=feather52 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 SOFTDEV_VERSION=5.0.0 dfu-gen dfu-flash
+$ make BOARD=feather52832 SERIAL=/dev/tty.SLAB_USBtoUART SD=s132 SOFTDEV_VERSION=5.0.0 dfu-gen dfu-flash
 ```
 
 ## Working with CircuitPython
