@@ -31,6 +31,32 @@ How to use
     #define MBOOT_BOOTPIN_PULL (MP_HAL_PIN_PULL_UP)
     #define MBOOT_BOOTPIN_ACTIVE (0)
 
+   Mboot supports programming external SPI flash via the DFU and I2C
+   interfaces.  SPI flash will be mapped to an address range.  To
+   configure it use the following options (edit as needed):
+
+    #define MBOOT_SPIFLASH_ADDR (0x80000000)
+    #define MBOOT_SPIFLASH_BYTE_SIZE (2 * 1024 * 1024)
+    #define MBOOT_SPIFLASH_LAYOUT "/0x80000000/64*32Kg"
+    #define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE (32 / 4)
+    #define MBOOT_SPIFLASH_SPIFLASH (&spi_bdev.spiflash)
+    #define MBOOT_SPIFLASH_CONFIG (&spiflash_config)
+
+   This assumes that the board declares and defines the relevant SPI flash
+   configuration structs, eg in the board-specific bdev.c file.  The
+   `MBOOT_SPIFLASH2_LAYOUT` string will be seen by the USB DFU utility and
+   must describe the SPI flash layout.  Note that the number of pages in
+   this layout description (the `64` above) cannot be larger than 99 (it
+   must fit in two digits) so the reported page size (the `32Kg` above)
+   must be made large enough so the number of pages fits in two digits.
+   Alternatively the layout can specify multiple sections like
+   `32*16Kg,32*16Kg`, in which case `MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE`
+   must be changed to `16 / 4` to match tho `16Kg` value.
+
+   Mboot supports up to two external SPI flash devices.  To configure the
+   second one use the same configuration names as above but with
+   `SPIFLASH2`, ie `MBOOT_SPIFLASH2_ADDR` etc.
+
 2. Build the board's main application firmware as usual.
 
 3. Build mboot via:
