@@ -394,24 +394,25 @@ def get_memory_layout(device):
     intf = cfg[(0, 0)]
     mem_layout_str = get_string(device, intf.iInterface)
     mem_layout = mem_layout_str.split('/')
-    addr = int(mem_layout[1], 0)
-    segments = mem_layout[2].split(',')
-    seg_re = re.compile(r'(\d+)\*(\d+)(.)(.)')
     result = []
-    for segment in segments:
-        seg_match = seg_re.match(segment)
-        num_pages = int(seg_match.groups()[0], 10)
-        page_size = int(seg_match.groups()[1], 10)
-        multiplier = seg_match.groups()[2]
-        if multiplier == 'K':
-            page_size *= 1024
-        if multiplier == 'M':
-            page_size *= 1024 * 1024
-        size = num_pages * page_size
-        last_addr = addr + size - 1
-        result.append(named((addr, last_addr, size, num_pages, page_size),
-                      "addr last_addr size num_pages page_size"))
-        addr += size
+    for mem_layout_index in range(1, len(mem_layout), 2):
+        addr = int(mem_layout[mem_layout_index], 0)
+        segments = mem_layout[mem_layout_index + 1].split(',')
+        seg_re = re.compile(r'(\d+)\*(\d+)(.)(.)')
+        for segment in segments:
+            seg_match = seg_re.match(segment)
+            num_pages = int(seg_match.groups()[0], 10)
+            page_size = int(seg_match.groups()[1], 10)
+            multiplier = seg_match.groups()[2]
+            if multiplier == 'K':
+                page_size *= 1024
+            if multiplier == 'M':
+                page_size *= 1024 * 1024
+            size = num_pages * page_size
+            last_addr = addr + size - 1
+            result.append(named((addr, last_addr, size, num_pages, page_size),
+                          "addr last_addr size num_pages page_size"))
+            addr += size
     return result
 
 
