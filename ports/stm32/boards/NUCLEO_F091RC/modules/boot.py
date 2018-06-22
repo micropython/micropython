@@ -12,14 +12,16 @@ import pyb
 
 def pins():
     for pin_name in dir(pyb.Pin.board):
-        pin = pyb.Pin(pin_name)
-        print('{:10s} {:s}'.format(pin_name, str(pin)))
+        if not(pin_name == "__class__" or pin_name == "__name__"):
+            pin = pyb.Pin(pin_name)
+            print('{:10s} {:s}'.format(pin_name, str(pin)))
 
 
 def af():
     for pin_name in dir(pyb.Pin.board):
-        pin = pyb.Pin(pin_name)
-        print('{:10s} {:s}'.format(pin_name, str(pin.af_list())))
+        if not(pin_name == "__class__" or pin_name == "__name__"):
+            pin = pyb.Pin(pin_name)
+            print('{:10s} {:s}'.format(pin_name, str(pin.af_list())))
 
 
 print("boot: added `af()` and `pins()` and running from flash")
