@@ -173,7 +173,7 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
     mp_buffer_info_t keyinfo;
     mp_get_buffer_raise(args[0], &keyinfo, MP_BUFFER_READ);
     if (32 != keyinfo.len && 16 != keyinfo.len) {
-        mp_raise_ValueError("bad key length");
+        mp_raise_ValueError("key");
     }
 
     mp_buffer_info_t ivinfo;
@@ -182,10 +182,10 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
         mp_get_buffer_raise(args[2], &ivinfo, MP_BUFFER_READ);
 
         if (16 != ivinfo.len) {
-            mp_raise_ValueError("bad iv length");
+            mp_raise_ValueError("IV");
         }
     } else if (o->block_mode == UCRYPTOLIB_MODE_CBC) {
-        mp_raise_ValueError("iv required for MODE_CBC");
+        mp_raise_ValueError("IV");
     }
 
     aes_initial_set_key_impl(&o->ctx, keyinfo.buf, keyinfo.len, ivinfo.buf);
@@ -216,7 +216,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     if (out_buf != MP_OBJ_NULL) {
         mp_get_buffer_raise(out_buf, &out_bufinfo, MP_BUFFER_WRITE);
         if (out_bufinfo.len < in_bufinfo.len) {
-            mp_raise_ValueError("output buffer too small");
+            mp_raise_ValueError("output too small");
         }
         out_buf_ptr = out_bufinfo.buf;
     } else {
@@ -231,7 +231,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
         if ((encrypt && self->key_type == AES_KEYTYPE_DEC) ||
             (!encrypt && self->key_type == AES_KEYTYPE_ENC)) {
 
-            mp_raise_ValueError("can't use same aes object for encrypt & decrypt");
+            mp_raise_ValueError("can't encrypt & decrypt");
         }
     }
 
