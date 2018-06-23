@@ -179,13 +179,13 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
     o->key_type = AES_KEYTYPE_NONE;
 
     if (o->block_mode <= UCRYPTOLIB_MODE_MIN || o->block_mode >= UCRYPTOLIB_MODE_MAX) {
-        mp_raise_ValueError("bad block mode");
+        mp_raise_ValueError("mode");
     }
 
     mp_buffer_info_t keyinfo;
     mp_get_buffer_raise(args[0], &keyinfo, MP_BUFFER_READ);
     if (32 != keyinfo.len && 16 != keyinfo.len) {
-        mp_raise_ValueError("bad key length");
+        mp_raise_ValueError("key");
     }
 
     mp_buffer_info_t ivinfo;
@@ -194,12 +194,12 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
         mp_get_buffer_raise(args[2], &ivinfo, MP_BUFFER_READ);
 
         if (16 != ivinfo.len) {
-            mp_raise_ValueError("bad iv length");
+            mp_raise_ValueError("IV");
         }
     }
 
     if (UCRYPTOLIB_MODE_CBC == o->block_mode && NULL == ivinfo.buf) {
-        mp_raise_ValueError("iv required for MODE_CBC");
+        mp_raise_ValueError("IV required");
     }
 
     aes_initial_set_key_impl(&o->ctx, keyinfo.buf, keyinfo.len, ivinfo.buf);
@@ -220,7 +220,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     mp_get_buffer_raise(in_buf, &in_bufinfo, MP_BUFFER_READ);
 
     if (in_bufinfo.len % 16 != 0) {
-        mp_raise_ValueError("bad input block size");
+        mp_raise_ValueError("input blocksize");
     }
 
     vstr_t vstr;
@@ -230,7 +230,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     if (out_buf != MP_OBJ_NULL) {
         mp_get_buffer_raise(out_buf, &out_bufinfo, MP_BUFFER_WRITE);
         if (out_bufinfo.len < in_bufinfo.len) {
-            mp_raise_ValueError("output buffer too small");
+            mp_raise_ValueError("output too small");
         }
         out_buf_ptr = out_bufinfo.buf;
     } else {
@@ -245,7 +245,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
         if ((encrypt && self->key_type == AES_KEYTYPE_DEC) ||
             (!encrypt && self->key_type == AES_KEYTYPE_ENC)) {
 
-            mp_raise_ValueError("can't use same aes object for encrypt & decrypt");
+            mp_raise_ValueError("can't encrypt & decrypt");
         }
     }
 
