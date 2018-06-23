@@ -133,7 +133,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
             netutils_format_ipv4_addr((uint8_t*)&netif->ip_addr, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&netif->netmask, NETUTILS_BIG),
             netutils_format_ipv4_addr((uint8_t*)&netif->gw, NETUTILS_BIG),
-            netutils_format_ipv4_addr((uint8_t*)&dns, NETUTILS_BIG),
+            netutils_format_ipv4_addr((uint8_t*)dns, NETUTILS_BIG),
         };
         return mp_obj_new_tuple(4, tuple);
     } else if (args[0] == MP_OBJ_NEW_QSTR(MP_QSTR_dhcp)) {
