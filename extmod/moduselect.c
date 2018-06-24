@@ -275,7 +275,7 @@ STATIC mp_obj_t poll_poll(uint n_args, const mp_obj_t *args) {
             ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
             if (self->flags & FLAG_ONESHOT) {
                 // Don't poll next time, until new event flags will be set explicitly
-                poll_obj->flags = 0;
+                poll_obj->flags &= ~(poll_obj->flags_ret & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR));
             }
         }
     }
@@ -319,7 +319,7 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
             t->items[1] = MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret);
             if (self->flags & FLAG_ONESHOT) {
                 // Don't poll next time, until new event flags will be set explicitly
-                poll_obj->flags = 0;
+                poll_obj->flags &= ~(poll_obj->flags_ret & (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR));
             }
             return MP_OBJ_FROM_PTR(t);
         }
